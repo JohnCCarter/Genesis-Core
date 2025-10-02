@@ -24,9 +24,7 @@ def test_registry_reads_champion(tmp_path: Path):
     )
     # Registry
     reg = models / "registry.json"
-    reg.write_text(
-        json.dumps({"tBTCUSD:1m": {"champion": str(champ)}}), encoding="utf-8"
-    )
+    reg.write_text(json.dumps({"tBTCUSD:1m": {"champion": str(champ)}}), encoding="utf-8")
 
     r = ModelRegistry(root=root, registry_path=reg)
     meta = r.get_meta("tBTCUSD", "1m")

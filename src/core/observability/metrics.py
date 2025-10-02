@@ -15,9 +15,7 @@ class Metrics:
         self.gauges[name] = float(value)
 
     def event(self, name: str, payload: Dict[str, Any] | None = None) -> None:
-        self.events.append(
-            {"ts": int(time.time()), "name": name, "payload": payload or {}}
-        )
+        self.events.append({"ts": int(time.time()), "name": name, "payload": payload or {}})
 
 
 metrics = Metrics()

@@ -18,9 +18,7 @@ def build_headers(endpoint: str, body: dict | None) -> dict[str, str]:
     nonce = get_nonce(api_key)
     payload_str = json.dumps(body or {}, separators=(",", ":"))
     message = f"/api/v2/{endpoint}{nonce}{payload_str}"
-    signature = hmac.new(
-        api_secret.encode(), message.encode(), hashlib.sha384
-    ).hexdigest()
+    signature = hmac.new(api_secret.encode(), message.encode(), hashlib.sha384).hexdigest()
     return {
         "bfx-apikey": api_key,
         "bfx-nonce": nonce,

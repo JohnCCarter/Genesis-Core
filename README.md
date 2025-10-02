@@ -1,10 +1,10 @@
 # Genesis-Core
-BOTEN ÄR UNDER AKTIV UTVECKLING OCH KAN ÄNDRAS UTAN VETANDE. DET ÄR INTE GARANTIAT ATT BOTEN FUNGERAR SOM FÖRUTSATT.
+Denna kodbas är under aktiv utveckling (WIP).
 
-> Status: Under utveckling
+<!--
 >
 > - Paper only: boten körs enbart mot Bitfinex Paper‑account. Livehandel aktiveras först när utvecklaren uttryckligen beslutar det.
-> - Single‑user: endast repoägaren/utvecklaren utvecklar och använder boten. `.env` är lokal och ska aldrig committas.
+> - Single‑user: endast repoägaren/utvecklaren utvecklar och använder boten.  
 
 Minimal kärna med FastAPI, config-validering, observability och Bitfinex IO.
 
@@ -124,3 +124,4 @@ pre-commit install
 ```powershell
 pwsh -File scripts/ci.ps1
 ```
+-->

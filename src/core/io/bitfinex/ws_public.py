@@ -18,9 +18,7 @@ async def one_message_ticker(symbol: str = "tBTCUSD", timeout: float = 5.0) -> d
             _LOGGER.info("WS pub subscribe ticker %s", symbol)
         except Exception as log_err:
             _LOGGER.debug("log_error: %s", log_err)
-        await ws.send(
-            json.dumps({"event": "subscribe", "channel": "ticker", "symbol": symbol})
-        )
+        await ws.send(json.dumps({"event": "subscribe", "channel": "ticker", "symbol": symbol}))
         try:
             for _ in range(10):
                 msg = await asyncio.wait_for(ws.recv(), timeout=timeout)
@@ -61,9 +59,7 @@ async def one_message_candles(
             _LOGGER.info("WS pub subscribe candles %s", key)
         except Exception as log_err:
             _LOGGER.debug("log_error: %s", log_err)
-        await ws.send(
-            json.dumps({"event": "subscribe", "channel": "candles", "key": key})
-        )
+        await ws.send(json.dumps({"event": "subscribe", "channel": "candles", "key": key}))
         try:
             for _ in range(10):
                 msg = await asyncio.wait_for(ws.recv(), timeout=timeout)

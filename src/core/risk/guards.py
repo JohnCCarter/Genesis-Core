@@ -6,9 +6,7 @@ def breached_max_drawdown(
 ) -> bool:
     if equity_peak_usd <= 0:
         return False
-    drop_pct = (
-        (equity_peak_usd - max(current_equity_usd, 0.0)) / equity_peak_usd * 100.0
-    )
+    drop_pct = (equity_peak_usd - max(current_equity_usd, 0.0)) / equity_peak_usd * 100.0
     return drop_pct >= max(0.0, max_dd_pct)
 
 

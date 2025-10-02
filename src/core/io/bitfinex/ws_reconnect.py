@@ -75,7 +75,11 @@ class WSReconnectClient:
                 # Låt ytterloopen reconnecta
                 try:
                     await ws.close()
-                except (OSError, RuntimeError, websockets.exceptions.WebSocketException) as close_err:  # type: ignore[attr-defined]
+                except (
+                    OSError,
+                    RuntimeError,
+                    websockets.exceptions.WebSocketException,
+                ) as close_err:  # type: ignore[attr-defined]
                     logger.debug("ws_close_error: %s", close_err)
                 logger.debug("ws_watchdog_break: %s", watchdog_err)
                 break

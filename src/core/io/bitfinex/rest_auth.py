@@ -29,17 +29,15 @@ def _sign_v2(endpoint: str, body: dict[str, Any] | None) -> dict[str, str]:
     }
 
 
-async def post_auth(
-    endpoint: str, body: dict[str, Any] | None = None
-) -> httpx.Response:
+async def post_auth(endpoint: str, body: dict[str, Any] | None = None) -> httpx.Response:
     s = get_settings()
     api_key = (s.BITFINEX_API_KEY or "").strip()
     headers = _sign_v2(endpoint, body)
     async with httpx.AsyncClient(timeout=10) as client:
         try:
-            r = await client.post(
-                f"{BASE}/v2/{endpoint}", headers=headers, content=json.dumps(body or {})
-            )
+            # Använd samma kompakta JSON‑sträng för content som vid signeringen
+            body_str = json.dumps(body or {}, separators=(",", ":"))
+            r = await client.post(f"{BASE}/v2/{endpoint}", headers=headers, content=body_str)
             r.raise_for_status()
             return r
         except httpx.HTTPStatusError as e:
@@ -48,10 +46,11 @@ async def post_auth(
             if "nonce" in text.lower():
                 bump_nonce(api_key)
                 headers = _sign_v2(endpoint, body)
+                body_str = json.dumps(body or {}, separators=(",", ":"))
                 r2 = await client.post(
                     f"{BASE}/v2/{endpoint}",
                     headers=headers,
-                    content=json.dumps(body or {}),
+                    content=body_str,
                 )
                 r2.raise_for_status()
                 return r2

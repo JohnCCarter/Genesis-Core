@@ -5,9 +5,7 @@ from core.config.settings import get_settings
 
 async def main():
     s = get_settings()
-    if not (
-        (s.BITFINEX_API_KEY or "").strip() and (s.BITFINEX_API_SECRET or "").strip()
-    ):
+    if not ((s.BITFINEX_API_KEY or "").strip() and (s.BITFINEX_API_SECRET or "").strip()):
         print({"skip": "missing api keys"})
         return
     res = await auth_ping()

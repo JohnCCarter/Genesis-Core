@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import pytest
 
 from core.utils.backoff import exponential_backoff_delay
 

@@ -63,9 +63,7 @@ def bump_nonce(key_id: str, min_increment_micro: int = 1_000_000) -> str:
                     data = {}
 
             last_nonce = int(data.get(key_id, 0) or 0)
-            target = max(
-                last_nonce + int(min_increment_micro), now + int(min_increment_micro)
-            )
+            target = max(last_nonce + int(min_increment_micro), now + int(min_increment_micro))
             data[key_id] = target
 
             NONCE_FILE.parent.mkdir(parents=True, exist_ok=True)

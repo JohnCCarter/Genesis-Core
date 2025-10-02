@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import json
-import signal
 import sys
 from pathlib import Path
 from typing import Any
@@ -34,10 +33,7 @@ async def burn_in(
             "BURN-IN start duration_s=%s symbols=%s rest_enabled=%s",
             duration_seconds,
             ",".join(symbols or ["tBTCUSD"]),
-            bool(
-                (s.BITFINEX_API_KEY or "").strip()
-                and (s.BITFINEX_API_SECRET or "").strip()
-            ),
+            bool((s.BITFINEX_API_KEY or "").strip() and (s.BITFINEX_API_SECRET or "").strip()),
         )
     except Exception:
         _log = None
@@ -54,9 +50,7 @@ async def burn_in(
 
     async def rest_loop() -> None:
         # Kör endast om nycklar finns
-        if not (
-            (s.BITFINEX_API_KEY or "").strip() and (s.BITFINEX_API_SECRET or "").strip()
-        ):
+        if not ((s.BITFINEX_API_KEY or "").strip() and (s.BITFINEX_API_SECRET or "").strip()):
             return
         end = asyncio.get_running_loop().time() + duration_seconds
         while asyncio.get_running_loop().time() < end:

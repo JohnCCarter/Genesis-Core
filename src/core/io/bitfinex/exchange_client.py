@@ -3,7 +3,6 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
-import secrets
 from typing import Any
 
 import httpx
@@ -38,17 +37,13 @@ class ExchangeClient:
     def __init__(self) -> None:
         self._settings = get_settings()
 
-    def _build_headers(
-        self, endpoint: str, body: dict[str, Any] | None
-    ) -> dict[str, str]:
+    def _build_headers(self, endpoint: str, body: dict[str, Any] | None) -> dict[str, str]:
         api_key = (self._settings.BITFINEX_API_KEY or "").strip()
         api_secret = (self._settings.BITFINEX_API_SECRET or "").strip()
         nonce = get_nonce(api_key)
         payload_str = json.dumps(body or {}, separators=(",", ":"))
         message = f"/api/v2/{endpoint}{nonce}{payload_str}"
-        signature = hmac.new(
-            api_secret.encode(), message.encode(), hashlib.sha384
-        ).hexdigest()
+        signature = hmac.new(api_secret.encode(), message.encode(), hashlib.sha384).hexdigest()
         return {
             "bfx-apikey": api_key,
             "bfx-nonce": nonce,
@@ -75,8 +70,10 @@ class ExchangeClient:
         headers = self._build_headers(endpoint, body)
 
         async def _do() -> httpx.Response:
+            # Viktigt: använd exakt samma JSON‑serialisering för innehållet som vid signering
+            body_str = json.dumps(body, separators=(",", ":"))
             req = getattr(client, method.lower())
-            return await req(url, headers=headers, content=json.dumps(body))
+            return await req(url, headers=headers, content=body_str)
 
         # Första försök
         try:

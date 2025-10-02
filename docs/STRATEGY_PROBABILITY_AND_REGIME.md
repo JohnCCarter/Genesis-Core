@@ -1,3 +1,35 @@
+### Strategy Probability and Regime – Spec
+
+- Moduler (pure): features, prob_model (wrapper), confidence, regime, decision
+- Orkestrering: `core/strategy/evaluate.py`
+- Observability: pure‑moduler returnerar `meta={versions,reasons}`; logging/counters sker i orkestrering
+
+#### Validation & Reliability (P2)
+
+- Reliability‑plots: bucket [0.5–0.6/…/0.9–1.0] per klass, tolerans ±7 pp
+- Script: `scripts/reliability.py --input samples.jsonl --class buy`
+- Drift (PSI/KS): jämför train vs live features (skala [0,1])
+- Helpers: `core/strategy/validation.py` (psi, ks_statistic)
+
+#### Features
+- Tidsrättning: endast stängda barer
+- Percentiler p10–p90 fryses via `config/strategy/defaults.json`
+
+#### Probability (wrapper)
+- Läser vikter/kalibrering från ModelRegistry
+- Säkerställ kalibrering alltid appliceras efter `predict_proba`
+
+#### Confidence
+- Monoton skalning och clamp [0,1]
+
+#### Regime (HTF)
+- Input: `{adx_norm, atr_pct, ema_slope}` över 4h/Daily
+- Hysteresis‑state returneras separat
+
+#### Decision
+- Gate‑ordning: EV → risk caps → regim‑riktning → proba‑tröskel → tie‑break → confidence → hysteresis → cooldown → sizing
+- Fail‑safe: saknas data ⇒ NONE
+
 ### Strategy: Regim + Sannolikhetsmodell – Ansvarsfördelning och flöde
 
 Syfte: Säkerställa strikt Separation of Concerns (SoC) mellan Probability, Confidence och Regim för att undvika överlappning, göra systemet transparent och lätt att testa.
@@ -113,6 +145,60 @@ Trösklar per regim (ex):
 - Events: snapshot av {features, top_proba, regime, decision} med redaktion av känsliga fält
 
 ---
+
+### Policy per regim (P3)
+
+- Thresholds (ex):
+  - trending: 0.55
+  - range: 0.60
+  - balanced: 0.58
+- Hysteresis: N = 2 beslut i rad över tröskel innan skifte
+- Cooldown: 120 sekunder (notera: implementeringen använder bars; mappa sekunder → bars via TF vid orkestrering)
+- Repo‑defaults är konservativa (prod‑lika). Använd lokala overrides för dev/snabbtest.
+
+Nycklar i `config/strategy/defaults.json`:
+- `thresholds.regime_proba`
+- `gates.hysteresis_steps`
+- `gates.cooldown_bars` (optionellt även `gates.cooldown_seconds` för dokumentationssyfte)
+
+---
+
+### Kalibrering (P3)
+
+- Stöd för logistisk kalibrering via `buy.calib={a,b}` och `sell.calib={a,b}` i modellfilen (redan i bruk)
+- Isotonic/logistic per symbol/TF kan versioneras separat (rekommenderat format):
+
+Exempel (logistic, i modellmeta):
+```json
+{
+  "schema": ["ema_delta_pct","rsi"],
+  "buy":  { "w": [1.0, 0.2],  "b": 0.0, "calib": { "a": 1.0, "b": 0.0 } },
+  "sell": { "w": [-1.0, 0.1], "b": 0.0, "calib": { "a": 1.0, "b": 0.0 } },
+  "calibration_version": "v1"
+}
+```
+
+Exempel (isotonic, separat fil):
+```json
+// calibration/tBTCUSD_1m.buy.isotonic.json
+{ "version": "v1", "knots": [[0.50,0.49],[0.60,0.58],[0.70,0.69],[0.80,0.79],[0.90,0.88]] }
+```
+
+Policy:
+- Logistic: använd `a,b` i modellen (snabbt, enkelt)
+- Isotonic: referera via fil + version i meta; wrappern kan applicera vid behov
+
+---
+
+### Champion‑process (P3)
+
+- Källor: `config/models/registry.json` (champion/challenger per `symbol:timeframe`)
+- Flöde:
+  1. Utvärdera kandidater (log loss primärt, Brier sekundärt) + robusthetskrav (reliability/PSI/KS)
+  2. Välj champion per `symbol:timeframe` (ev. även per regim framöver)
+  3. Skriv registry och versions‑tagga kalibrering/vikter
+  4. Rollback‑kriterier: degradationslarm (log loss ↑, PSI/KS ↑) över tröskel → återställ föregående champion
+- Dokumentation: spara beslut, datum, orsak och versionsinfo
 
 ### Definitioner (exakta)
 

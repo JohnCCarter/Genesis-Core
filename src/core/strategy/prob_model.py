@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, Iterable
+from typing import Any, Dict, Iterable, Tuple
 
 
 def _sigmoid(z: float) -> float:
@@ -56,3 +56,53 @@ def predict_proba(
         "hold": p_hold / total,
     }
 
+
+def predict_proba_for(
+    symbol: str,
+    timeframe: str,
+    features: Dict[str, float],
+    *,
+    model_meta: Dict[str, Any] | None = None,
+) -> Tuple[Dict[str, float], Dict[str, Any]]:
+    """Wrapper som hämtar vikter/kalibrering från ModelRegistry och applicerar kalibrering.
+
+    Returnerar (probas, meta) där meta innehåller versions (prob_model/calibration) och schema.
+    Inga sidoeffekter/loggning här.
+    """
+    from core.strategy.model_registry import ModelRegistry
+
+    if model_meta is None:
+        meta = ModelRegistry().get_meta(symbol, timeframe) or {}
+    else:
+        meta = model_meta
+
+    schema = tuple(meta.get("schema", ()))
+    buy = meta.get("buy", {})
+    sell = meta.get("sell", {})
+    calib_buy = (
+        buy.get("calib", {}).get("a", 1.0),
+        buy.get("calib", {}).get("b", 0.0),
+    )
+    calib_sell = (
+        sell.get("calib", {}).get("a", 1.0),
+        sell.get("calib", {}).get("b", 0.0),
+    )
+
+    probas = predict_proba(
+        features,
+        schema=schema,
+        buy_w=buy.get("w"),
+        buy_b=buy.get("b", 0.0),
+        sell_w=sell.get("w"),
+        sell_b=sell.get("b", 0.0),
+        calib_buy=calib_buy,
+        calib_sell=calib_sell,
+    )
+    meta_out: Dict[str, Any] = {
+        "versions": {
+            "prob_model_version": meta.get("version", "v1"),
+            "calibration_version": meta.get("calibration_version", "v1"),
+        },
+        "schema": list(schema),
+    }
+    return probas, meta_out

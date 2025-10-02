@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Iterable, List, Tuple
+from typing import Iterable, List
 
 
 def calculate_atr(
@@ -23,8 +23,8 @@ def calculate_atr(
         return []
     trs: List[float] = []
     prev_close = cs[0]
-    for h, l, c in zip(hs, ls, cs):
-        tr = max(h - l, abs(h - prev_close), abs(l - prev_close))
+    for h, low, c in zip(hs, ls, cs):
+        tr = max(h - low, abs(h - prev_close), abs(low - prev_close))
         trs.append(tr)
         prev_close = c
     # Smidig ATR: EMA över TR med alpha 1/period (Wilder's smoothing approximativt)

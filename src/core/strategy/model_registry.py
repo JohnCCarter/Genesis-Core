@@ -19,13 +19,9 @@ class ModelRegistry:
     - Fallback: None
     """
 
-    def __init__(
-        self, root: Optional[Path] = None, registry_path: Optional[Path] = None
-    ) -> None:
+    def __init__(self, root: Optional[Path] = None, registry_path: Optional[Path] = None) -> None:
         self.root = root or Path(__file__).resolve().parents[3]
-        self.registry_path = registry_path or (
-            self.root / "config" / "models" / "registry.json"
-        )
+        self.registry_path = registry_path or (self.root / "config" / "models" / "registry.json")
         self._cache: Dict[str, Tuple[Dict[str, Any], float]] = {}
 
     def _read_json(self, p: Path) -> Optional[Dict[str, Any]]:

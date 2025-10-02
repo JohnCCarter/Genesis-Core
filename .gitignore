@@ -17,3 +17,6 @@ coverage.xml
 *.sqlite
 
 !.env.example
+.env
+**/.nonce_tracker.json
+ dev.overrides.local.json

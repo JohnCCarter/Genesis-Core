@@ -6,12 +6,22 @@
   },
   "ev": { "R_default": 1.8 },
   "gates": { "cooldown_bars": 5, "hysteresis_steps": 2 },
+  "cooldown_seconds": 120,
   "tf_weights": { "15m": 0.8, "1h": 1.2, "4h": 1.5 },
   "event": { "atr_pct_pause_pctl": 97, "atr_pct_resume_pctl": 95 },
   "quality": {
     "stale_threshold_factor": 3.0,
     "vol_jump_window": 60,
     "clip_percentiles": [10, 90]
+  },
+  "features": {
+    "percentiles": {
+      "ema_delta_pct": [-0.05, 0.05],
+      "rsi": [-1.0, 1.0]
+    },
+    "versions": {
+      "feature_set": "v1"
+    }
   },
   "risk": {
     "risk_map": [

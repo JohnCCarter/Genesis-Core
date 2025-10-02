@@ -1,0 +1,18 @@
+{
+  "start": {
+    "duration_s": 1800,
+    "symbols": ["tBTCUSD", "tETHUSD", "tADAUSD", "tDOTUSD"],
+    "rest_enabled": true
+  },
+  "end": {
+    "ws_req": 2268,
+    "ws_ok": 2268,
+    "ws_err": 0,
+    "ws_to": 0,
+    "rest_req": 120,
+    "rest_ok": 120,
+    "ws_success_rate": 1.0,
+    "ws_error_rate": 0.0,
+    "ws_timeout_rate": 0.0
+  }
+}

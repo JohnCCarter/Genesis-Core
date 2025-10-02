@@ -1,0 +1,14 @@
+- Latens-metrics (REST/WS) med enkla timers
+- EMA/ATR indikator-portning (rena funktioner) + små tester
+- Minimal EMA-cross strategi (ren funktion)
+- One-shot candles WS (ack/error/timeout)
+- Prometheus-exporter (senare)
+- DRY_RUN för logiktester (ej IO)
+- Socket.IO‑bridge för UI (ws/manager.py, ws/subscription_events.py)
+- Avancerad rate limiter + transport‑CB (utils/advanced_rate_limiter.py, services/transport_circuit_breaker.py)
+- Unified Configuration Management (key_registry, unified_config_manager, validator, API)
+- Bracket/OCO och orderrouter (services/bracket_manager.py, order endpoints)
+- Backtest/validation services (services/backtest.py, cost_aware_backtest.py, validation_service.py)
+- Enhetliga signal‑/strategitjänster (unified_signal_service, strategy, realtime_strategy)
+- Runtime‑toggles/scheduler (services/runtime_config.py, scheduler)
+- Förbättrad observability/dashboard (enhanced_observability_service, /metrics)

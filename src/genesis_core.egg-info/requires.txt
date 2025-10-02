@@ -1,0 +1,15 @@
+fastapi<0.117,>=0.116
+uvicorn<0.25,>=0.24
+httpx<0.26,>=0.25
+websockets<13,>=12
+pydantic<3,>=2.7
+pydantic-settings<3,>=2
+python-dotenv<2,>=1
+jsonschema<5,>=4.20
+
+[dev]
+black>=24.10
+ruff>=0.6
+pytest>=8
+pytest-asyncio<1,>=0.23
+bandit>=1.7

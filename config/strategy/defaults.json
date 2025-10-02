@@ -1,0 +1,39 @@
+{
+  "thresholds": {
+    "entry_conf_overall": 0.7,
+    "regime_proba": { "trend": 0.55, "range": 0.6, "balanced": 0.58 },
+    "fallback_regime_proba_delta": 0.02
+  },
+  "ev": { "R_default": 1.8 },
+  "gates": { "cooldown_bars": 5, "hysteresis_steps": 2 },
+  "tf_weights": { "15m": 0.8, "1h": 1.2, "4h": 1.5 },
+  "event": { "atr_pct_pause_pctl": 97, "atr_pct_resume_pctl": 95 },
+  "quality": {
+    "stale_threshold_factor": 3.0,
+    "vol_jump_window": 60,
+    "clip_percentiles": [10, 90]
+  },
+  "risk": {
+    "risk_map": [
+      [0.6, 0.005],
+      [0.7, 0.008],
+      [0.8, 0.01],
+      [0.9, 0.012]
+    ],
+    "risk_cap_pct": 0.012,
+    "symbol_portfolio_cap_pct": 0.025
+  },
+  "reasons": [
+    "R_EVENT_BLOCK",
+    "R_TREND_ONLY_LONG",
+    "R_TREND_ONLY_SHORT",
+    "P_TIE_BREAK",
+    "Q_SPREAD_BAD",
+    "Q_VOL_SPIKE",
+    "HYST_WAIT",
+    "COOLDOWN_ACTIVE",
+    "EV_NEG",
+    "FAIL_SAFE_NULL",
+    "FALLBACK_HTF"
+  ]
+}

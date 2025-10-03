@@ -94,9 +94,15 @@ def ui_page() -> str:
 <body>
   <h1>Genesis‑Core – Minimal test</h1>
   <div id="status" style="margin:6px 0; color:#374151; font-size:14px;">Config: <span id="cfg_ver">-</span> | <span id="cfg_hash">-</span></div>
-  <div class=\"row\">
+  <div class="row">
     <label>Order‑symbol (TEST)</label>
-    <select id=\"symbol_select\"></select>
+    <select id="symbol_select"></select>
+
+    <label>Bearer token (för /config/runtime/propose)</label>
+    <div style="display:flex; gap:8px; align-items:center;">
+      <input id="bearer" type="password" placeholder="Bearer token" style="flex:1; padding:6px;" />
+      <button id="save_bearer">Spara token</button>
+    </div>
 
     <label>Timeframe</label>
     <select id=\"timeframe_select\">
@@ -231,8 +237,12 @@ def ui_page() -> str:
         }
       } catch {}
     }
+    function loadBearer() {
+      try { const b = localStorage.getItem('ui_bearer') || ''; if (el('bearer')) el('bearer').value = b; } catch {}
+    }
     el('save').addEventListener('click', save);
     el('restore').addEventListener('click', restore);
+    const sb = el('save_bearer'); if (sb) sb.addEventListener('click', () => { try { const v = el('bearer')?.value || ''; localStorage.setItem('ui_bearer', v); } catch {} });
     el('clear_cache').addEventListener('click', () => { clearCache(); el('configs').value=''; hydrateConfigsFromDefaultsIfEmpty(); });
     el('reset_defaults').addEventListener('click', async () => { clearCache(); el('configs').value=''; await hydrateConfigsFromDefaultsIfEmpty(); save(); });
     el('timeframe_select').addEventListener('change', syncPolicyFromInputs);
@@ -291,6 +301,7 @@ def ui_page() -> str:
     hydrateConfigsFromDefaultsIfEmpty();
     loadWhitelist().then(syncInputsFromPolicy);
     loadHealth();
+    loadBearer();
 
     el('submit_paper').addEventListener('click', async () => {
       try {

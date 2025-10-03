@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      SYMBOL_MODE: synthetic
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

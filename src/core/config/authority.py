@@ -14,6 +14,7 @@ from core.utils.logging_redaction import get_logger
 _LOGGER = get_logger(__name__)
 RUNTIME_PATH = Path.cwd() / "config" / "runtime.json"
 AUDIT_LOG = Path.cwd() / "logs" / "config_audit.jsonl"
+MAX_AUDIT_SIZE = 5 * 1024 * 1024  # 5 MB
 SEED_PATH = Path.cwd() / "config" / "runtime.seed.json"
 
 
@@ -101,6 +102,15 @@ class ConfigAuthority:
         # hash & audit
         h = self._hash_cfg(cfg_canon)
         try:
+            # simple rotation if file too large
+            try:
+                if AUDIT_LOG.exists() and AUDIT_LOG.stat().st_size > MAX_AUDIT_SIZE:
+                    rotated = AUDIT_LOG.with_suffix(AUDIT_LOG.suffix + ".1")
+                    if rotated.exists():
+                        rotated.unlink(missing_ok=True)  # type: ignore[arg-type]
+                    AUDIT_LOG.rename(rotated)
+            except Exception:
+                pass
             audit = {
                 "ts": time.time(),
                 "actor": actor,

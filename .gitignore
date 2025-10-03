@@ -82,6 +82,9 @@ dev.overrides.local.json
 .secrets.baseline
 bandit-report.json
 
+# Runtime config (SSOT) - environment specific
+config/runtime.json
+
 # Dependencies
 node_modules/
 

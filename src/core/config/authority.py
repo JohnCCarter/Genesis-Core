@@ -14,6 +14,7 @@ from core.utils.logging_redaction import get_logger
 _LOGGER = get_logger(__name__)
 RUNTIME_PATH = Path.cwd() / "config" / "runtime.json"
 AUDIT_LOG = Path.cwd() / "logs" / "config_audit.jsonl"
+SEED_PATH = Path.cwd() / "config" / "runtime.seed.json"
 
 
 def _json_dumps_canonical(data: dict[str, Any]) -> str:
@@ -28,7 +29,16 @@ class ConfigAuthority:
 
     def _read(self) -> tuple[int, dict[str, Any]]:
         if not self.path.exists():
-            # Seed empty defaults
+            # Seed från seed-fil om den finns, annars default RuntimeConfig
+            if SEED_PATH.exists():
+                try:
+                    data = json.loads(SEED_PATH.read_text(encoding="utf-8"))
+                    v = int(data.get("version") or 0)
+                    cfg_raw = data.get("cfg") or {}
+                    _ = RuntimeConfig(**cfg_raw)  # validera
+                    return v, cfg_raw
+                except Exception as e:
+                    _LOGGER.debug("seed_read_error: %s", e)
             cfg = RuntimeConfig().model_dump_canonical()
             return 0, cfg
         data = json.loads(self.path.read_text(encoding="utf-8"))

@@ -8,7 +8,6 @@ from fastapi.responses import HTMLResponse
 
 from core.config.authority import ConfigAuthority
 from core.config.settings import get_settings
-from core.config.validator import diff_config, validate_config
 from core.io.bitfinex import read_helpers as bfx_read
 from core.io.bitfinex.exchange_client import get_exchange_client
 from core.observability.metrics import get_dashboard
@@ -70,28 +69,9 @@ def observability_dashboard() -> dict:
     return get_dashboard()
 
 
-@app.get("/config/defaults")
-def get_strategy_defaults() -> dict:
-    return {"deprecated": True}
+ 
 
 
-@app.post("/config/validate")
-def config_validate(payload: dict = Body(...)) -> dict:
-    errors = validate_config(payload)
-    return {"valid": len(errors) == 0, "errors": errors}
-
-
-@app.post("/config/diff")
-def config_diff(payload: dict = Body(...)) -> dict:
-    old = payload.get("old", {}) or {}
-    new = payload.get("new", {}) or {}
-    changes = diff_config(old, new)
-    return {"changes": changes}
-
-
-@app.post("/config/audit")
-def config_audit(payload: dict = Body(...)) -> dict:
-    return {"deprecated": True}
 
 
 @app.get("/ui", response_class=HTMLResponse)
@@ -388,16 +368,7 @@ async def auth_check() -> dict:
     return {"ok": True, "wallets": w_count, "positions": p_count}
 
 
-@app.get("/dev/overrides")
-def dev_overrides() -> dict:
-    """Returnera innehållet i dev.overrides.local.json om den finns, annars 404‑liknande svar."""
-    p = Path.cwd() / "dev.overrides.local.json"
-    if not p.exists():
-        return {"error": "not_found"}
-    try:
-        return json.loads(p.read_text(encoding="utf-8"))
-    except Exception:
-        return {"error": "invalid_json"}
+ 
 
 
 @app.post("/paper/submit")

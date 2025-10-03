@@ -95,20 +95,11 @@ def test_auth_check_uses_helpers(monkeypatch):
         srv.bfx_read.get_positions = orig_ph  # type: ignore
 
 
-def test_dev_overrides_endpoint(tmp_path, monkeypatch):
-    from core.server import dev_overrides
-
-    p = tmp_path / "dev.overrides.local.json"
-    p.write_text('{"thresholds": {"entry_conf_overall": 0.5}}', encoding="utf-8")
-
-    orig_cwd = Path.cwd
-    Path.cwd = lambda: tmp_path  # type: ignore
-    try:
-        out = dev_overrides()
-        assert isinstance(out, dict)
-        assert out.get("thresholds", {}).get("entry_conf_overall") == 0.5
-    finally:
-        Path.cwd = orig_cwd  # type: ignore
+def test_runtime_endpoints_exist():
+    from core.server import app
+    c = TestClient(app)
+    r = c.get("/config/runtime")
+    assert r.status_code == 200
 
 
 def test_paper_submit_monkeypatched(monkeypatch):

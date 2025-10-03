@@ -8,7 +8,7 @@ from typing import Any
 import httpx
 
 from core.config.settings import get_settings
-from core.utils.nonce_manager import get_nonce, bump_nonce
+from core.utils.nonce_manager import bump_nonce, get_nonce
 
 BASE = "https://api.bitfinex.com"
 

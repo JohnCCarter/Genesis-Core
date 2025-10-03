@@ -9,9 +9,8 @@ from typing import Any
 import websockets
 
 from core.config.settings import get_settings
-from core.utils.logging_redaction import get_logger
 from core.utils.backoff import exponential_backoff_delay
-
+from core.utils.logging_redaction import get_logger
 
 WS_URL = "wss://api.bitfinex.com/ws/2"
 logger = get_logger(__name__)

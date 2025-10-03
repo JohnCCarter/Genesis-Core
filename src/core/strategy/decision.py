@@ -1,20 +1,20 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Literal, Tuple
+from typing import Any, Literal
 
 Action = Literal["LONG", "SHORT", "NONE"]
 
 
 def decide(
-    policy: Dict[str, Any],
+    policy: dict[str, Any],
     *,
-    probas: Dict[str, float] | None,
-    confidence: Dict[str, float] | None,
+    probas: dict[str, float] | None,
+    confidence: dict[str, float] | None,
     regime: str | None,
-    state: Dict[str, Any] | None,
-    risk_ctx: Dict[str, Any] | None,
-    cfg: Dict[str, Any] | None,
-) -> Tuple[Action, Dict[str, Any]]:
+    state: dict[str, Any] | None,
+    risk_ctx: dict[str, Any] | None,
+    cfg: dict[str, Any] | None,
+) -> tuple[Action, dict[str, Any]]:
     """Beslutsfunktion (pure) med strikt gate‑ordning.
 
     Ordning:
@@ -30,10 +30,10 @@ def decide(
     10) Sizing
     """
     reasons: list[str] = []
-    versions: Dict[str, Any] = {"decision": "v1"}
+    versions: dict[str, Any] = {"decision": "v1"}
     cfg = dict(cfg or {})
     state_in = dict(state or {})
-    state_out: Dict[str, Any] = dict(state_in)
+    state_out: dict[str, Any] = dict(state_in)
 
     # 1) Fail‑safe & EV‑filter
     if not probas or not isinstance(probas, dict):
@@ -45,7 +45,7 @@ def decide(
         }
     p_buy = float(probas.get("buy", 0.0))
     p_sell = float(probas.get("sell", 0.0))
-    R = float(((cfg.get("ev") or {}).get("R_default") or 1.0))
+    R = float((cfg.get("ev") or {}).get("R_default") or 1.0)
     ev = p_buy * R - p_sell
     if ev <= 0.0:
         reasons.append("EV_NEG")
@@ -146,7 +146,7 @@ def decide(
         }
 
     # 8) Hysteresis (håll kvar föregående riktning tills N steg bekräftar byte)
-    hysteresis_steps = int(((cfg.get("gates") or {}).get("hysteresis_steps") or 2))
+    hysteresis_steps = int((cfg.get("gates") or {}).get("hysteresis_steps") or 2)
     last_action = state_in.get("last_action")
     d_steps = int(state_in.get("decision_steps", 0))
     if last_action in ("LONG", "SHORT") and candidate != last_action:
@@ -188,11 +188,11 @@ def decide(
 
     state_out["last_action"] = candidate
     # Starta cooldown efter beslut
-    cooldown_bars = int(((cfg.get("gates") or {}).get("cooldown_bars") or 0))
+    cooldown_bars = int((cfg.get("gates") or {}).get("cooldown_bars") or 0)
     if cooldown_bars > 0:
         state_out["cooldown_remaining"] = cooldown_bars
 
-    meta: Dict[str, Any] = {
+    meta: dict[str, Any] = {
         "versions": versions,
         "reasons": reasons,
         "size": size,

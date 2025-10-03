@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Iterable, Tuple
+from collections.abc import Iterable
+from typing import Any
 
 
 def _sigmoid(z: float) -> float:
@@ -10,7 +11,7 @@ def _sigmoid(z: float) -> float:
 
 
 def predict_proba(
-    features: Dict[str, float],
+    features: dict[str, float],
     *,
     schema: Iterable[str] = ("ema", "rsi"),
     buy_w: Iterable[float] | None = None,
@@ -19,7 +20,7 @@ def predict_proba(
     sell_b: float = 0.0,
     calib_buy: tuple[float, float] = (1.0, 0.0),
     calib_sell: tuple[float, float] = (1.0, 0.0),
-) -> Dict[str, float]:
+) -> dict[str, float]:
     """Beräkna {buy,sell,hold} sannolikheter.
 
     - Två oberoende logistiska modeller (buy/sell); hold = 1 - (buy_raw + sell_raw)
@@ -60,10 +61,10 @@ def predict_proba(
 def predict_proba_for(
     symbol: str,
     timeframe: str,
-    features: Dict[str, float],
+    features: dict[str, float],
     *,
-    model_meta: Dict[str, Any] | None = None,
-) -> Tuple[Dict[str, float], Dict[str, Any]]:
+    model_meta: dict[str, Any] | None = None,
+) -> tuple[dict[str, float], dict[str, Any]]:
     """Wrapper som hämtar vikter/kalibrering från ModelRegistry och applicerar kalibrering.
 
     Returnerar (probas, meta) där meta innehåller versions (prob_model/calibration) och schema.
@@ -98,7 +99,7 @@ def predict_proba_for(
         calib_buy=calib_buy,
         calib_sell=calib_sell,
     )
-    meta_out: Dict[str, Any] = {
+    meta_out: dict[str, Any] = {
         "versions": {
             "prob_model_version": meta.get("version", "v1"),
             "calibration_version": meta.get("calibration_version", "v1"),

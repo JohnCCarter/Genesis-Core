@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import Iterable, List
+from collections.abc import Iterable
 
 
-def calculate_rsi(values: Iterable[float], period: int = 14) -> List[float]:
+def calculate_rsi(values: Iterable[float], period: int = 14) -> list[float]:
     """Beräkna RSI (Wilder's smoothing) som ren funktion.
 
     Returnerar lista med samma längd som input. För de första N-1 värdena
@@ -15,13 +15,13 @@ def calculate_rsi(values: Iterable[float], period: int = 14) -> List[float]:
         raise ValueError("period must be > 0")
     if not prices:
         return []
-    gains: List[float] = [0.0]
-    losses: List[float] = [0.0]
+    gains: list[float] = [0.0]
+    losses: list[float] = [0.0]
     for i in range(1, len(prices)):
         delta = prices[i] - prices[i - 1]
         gains.append(max(delta, 0.0))
         losses.append(max(-delta, 0.0))
-    rsi: List[float] = []
+    rsi: list[float] = []
     if len(prices) < n + 1:
         # för kort serie: enkel fallback
         return [50.0 for _ in prices]

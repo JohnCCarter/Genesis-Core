@@ -4,7 +4,6 @@ import logging
 import re
 from typing import Any
 
-
 SENSITIVE_KEYS = {
     "bfx-apikey",
     "bfx-signature",

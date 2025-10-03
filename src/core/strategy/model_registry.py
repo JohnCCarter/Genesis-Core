@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 
 class ModelRegistry:
@@ -19,30 +19,30 @@ class ModelRegistry:
     - Fallback: None
     """
 
-    def __init__(self, root: Optional[Path] = None, registry_path: Optional[Path] = None) -> None:
+    def __init__(self, root: Path | None = None, registry_path: Path | None = None) -> None:
         self.root = root or Path(__file__).resolve().parents[3]
         self.registry_path = registry_path or (self.root / "config" / "models" / "registry.json")
-        self._cache: Dict[str, Tuple[Dict[str, Any], float]] = {}
+        self._cache: dict[str, tuple[dict[str, Any], float]] = {}
 
-    def _read_json(self, p: Path) -> Optional[Dict[str, Any]]:
+    def _read_json(self, p: Path) -> dict[str, Any] | None:
         try:
             data = json.loads(p.read_text(encoding="utf-8"))
             return data if isinstance(data, dict) else None
         except Exception:
             return None
 
-    def _get_registry(self) -> Dict[str, Any]:
+    def _get_registry(self) -> dict[str, Any]:
         try:
             return self._read_json(self.registry_path) or {}
         except Exception:
             return {}
 
-    def _candidate_model_path(self, symbol: str, timeframe: str) -> Optional[Path]:
+    def _candidate_model_path(self, symbol: str, timeframe: str) -> Path | None:
         fname = f"{symbol}_{timeframe}.json"
         p = self.root / "config" / "models" / fname
         return p if p.exists() else None
 
-    def _load_model_meta(self, path: Path) -> Optional[Dict[str, Any]]:
+    def _load_model_meta(self, path: Path) -> dict[str, Any] | None:
         try:
             stat = path.stat()
             mtime = float(stat.st_mtime)
@@ -57,7 +57,7 @@ class ModelRegistry:
         except Exception:
             return self._read_json(path)
 
-    def get_meta(self, symbol: str, timeframe: str) -> Optional[Dict[str, Any]]:
+    def get_meta(self, symbol: str, timeframe: str) -> dict[str, Any] | None:
         key = f"{symbol}:{timeframe}"
         reg = self._get_registry()
         entry = reg.get(key) if isinstance(reg, dict) else None

@@ -1,17 +1,18 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Iterable, List, Tuple
+from collections.abc import Iterable
+from typing import Any
 
 from core.indicators.ema import calculate_ema
 from core.indicators.rsi import calculate_rsi
 
 
 def extract_features(
-    candles: (Dict[str, Iterable[float]] | List[Tuple[float, float, float, float, float, float]]),
+    candles: dict[str, Iterable[float]] | list[tuple[float, float, float, float, float, float]],
     *,
-    config: Dict[str, Any] | None = None,
+    config: dict[str, Any] | None = None,
     now_index: int | None = None,
-) -> Tuple[Dict[str, float], Dict[str, Any]]:
+) -> tuple[dict[str, float], dict[str, Any]]:
     """Extrahera features från stängda candles (pure, ingen IO).
 
     Inparametrar
@@ -77,12 +78,12 @@ def extract_features(
             return lo
         return max(lo, min(hi, x))
 
-    feats: Dict[str, float] = {
+    feats: dict[str, float] = {
         "ema_delta_pct": _clip(ema_delta_pct, float(ed_lo), float(ed_hi)),
         "rsi": _clip(rsi_latest, float(rsi_lo), float(rsi_hi)),
     }
 
-    meta: Dict[str, Any] = {
+    meta: dict[str, Any] = {
         "versions": {
             **((cfg.get("features") or {}).get("versions") or {}),
         },

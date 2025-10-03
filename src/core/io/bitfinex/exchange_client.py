@@ -8,11 +8,10 @@ from typing import Any
 import httpx
 
 from core.config.settings import get_settings
-from core.utils.nonce_manager import bump_nonce, get_nonce
 from core.observability.metrics import metrics
-from core.utils.logging_redaction import get_logger
 from core.utils.backoff import exponential_backoff_delay
-
+from core.utils.logging_redaction import get_logger
+from core.utils.nonce_manager import bump_nonce, get_nonce
 
 _HTTP_CLIENT: httpx.AsyncClient | None = None
 _BASE_URL = "https://api.bitfinex.com"

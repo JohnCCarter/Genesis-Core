@@ -9,8 +9,8 @@ import time
 import websockets
 
 from core.config.settings import get_settings
-from core.utils.nonce_manager import get_nonce
 from core.observability.metrics import metrics
+from core.utils.nonce_manager import get_nonce
 
 WS_URL = "wss://api.bitfinex.com/ws/2"
 
@@ -75,6 +75,6 @@ async def auth_ping(timeout: float = 5.0) -> dict:
                         }
             metrics.inc("ws_auth_timeout")
             return {"ok": False, "error": "timeout"}
-        except asyncio.TimeoutError:
+        except TimeoutError:
             metrics.inc("ws_auth_timeout")
             return {"ok": False, "error": "timeout"}

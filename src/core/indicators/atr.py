@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from typing import Iterable, List
+from collections.abc import Iterable
 
 
 def calculate_atr(
     highs: Iterable[float], lows: Iterable[float], closes: Iterable[float], period: int
-) -> List[float]:
+) -> list[float]:
     """Beräkna Average True Range (ATR) som ren funktion.
 
     highs/lows/closes ska vara lika långa. ATR returneras med samma längd;
@@ -21,15 +21,15 @@ def calculate_atr(
         raise ValueError("period must be > 0")
     if len(hs) == 0:
         return []
-    trs: List[float] = []
+    trs: list[float] = []
     prev_close = cs[0]
-    for h, low, c in zip(hs, ls, cs):
+    for h, low, c in zip(hs, ls, cs, strict=False):
         tr = max(h - low, abs(h - prev_close), abs(low - prev_close))
         trs.append(tr)
         prev_close = c
     # Smidig ATR: EMA över TR med alpha 1/period (Wilder's smoothing approximativt)
     alpha = 1.0 / float(n)
-    atr: List[float] = [trs[0]]
+    atr: list[float] = [trs[0]]
     for tr in trs[1:]:
         atr.append(atr[-1] + alpha * (tr - atr[-1]))
     return atr

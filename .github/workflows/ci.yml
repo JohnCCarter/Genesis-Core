@@ -21,7 +21,11 @@ jobs:
       - name: Lint & Test & Security
         run: |
           . .venv/bin/activate
+          # Code formatting
           python -m black --check src
+          # Linting
           python -m ruff check src
+          # Security scanning
+          python -m bandit -r src -f json -o bandit-report.json
+          # Run tests
           python -m pytest
-          python -m bandit -r src

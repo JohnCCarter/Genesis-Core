@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Tuple
+from typing import Any
 
 
 def _clamp01(x: float) -> float:
@@ -14,14 +14,14 @@ def _clamp01(x: float) -> float:
 
 
 def compute_confidence(
-    probas: Dict[str, float],
+    probas: dict[str, float],
     *,
     atr_pct: float | None = None,
     spread_bp: float | None = None,
     volume_score: float | None = None,
     data_quality: float | None = None,
-    config: Dict[str, Any] | None = None,
-) -> Tuple[Dict[str, float], Dict[str, Any]]:
+    config: dict[str, Any] | None = None,
+) -> tuple[dict[str, float], dict[str, Any]]:
     """Beräkna konfidenser (pure) från sannolikheter och kvalitetsmått.
 
     - Monotoni: rangordning mellan p_long/p_short ska bevaras
@@ -45,6 +45,6 @@ def compute_confidence(
     c_buy = _clamp01(p_buy * quality)
     c_sell = _clamp01(p_sell * quality)
 
-    confidences: Dict[str, float] = {"buy": c_buy, "sell": c_sell}
-    meta: Dict[str, Any] = {"versions": {"confidence": "v1"}, "reasons": []}
+    confidences: dict[str, float] = {"buy": c_buy, "sell": c_sell}
+    meta: dict[str, Any] = {"versions": {"confidence": "v1"}, "reasons": []}
     return confidences, meta

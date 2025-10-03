@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import asyncio
 import json
+
 import websockets
+
 from core.observability.metrics import metrics
 from core.utils.logging_redaction import get_logger
 
@@ -43,7 +45,7 @@ async def one_message_ticker(symbol: str = "tBTCUSD", timeout: float = 5.0) -> d
                         }
             metrics.inc("ws_public_timeout")
             return {"ok": False, "error": "timeout"}
-        except asyncio.TimeoutError:
+        except TimeoutError:
             metrics.inc("ws_public_timeout")
             return {"ok": False, "error": "timeout"}
 
@@ -88,6 +90,6 @@ async def one_message_candles(
                         }
             metrics.inc("ws_public_timeout")
             return {"ok": False, "error": "timeout"}
-        except asyncio.TimeoutError:
+        except TimeoutError:
             metrics.inc("ws_public_timeout")
             return {"ok": False, "error": "timeout"}

@@ -1,16 +1,17 @@
-from fastapi import FastAPI
-from fastapi import Body
-from fastapi.responses import HTMLResponse
-from core.config.validator import validate_config, diff_config, append_audit
-from core.observability.metrics import get_dashboard
-from core.strategy.evaluate import evaluate_pipeline
-import httpx
 import asyncio
+import json
+from pathlib import Path
+
+import httpx
+from fastapi import Body, FastAPI
+from fastapi.responses import HTMLResponse
+
+from core.config.settings import get_settings
+from core.config.validator import append_audit, diff_config, validate_config
 from core.io.bitfinex import read_helpers as bfx_read
 from core.io.bitfinex.exchange_client import get_exchange_client
-from pathlib import Path
-import json
-from core.config.settings import get_settings
+from core.observability.metrics import get_dashboard
+from core.strategy.evaluate import evaluate_pipeline
 
 app = FastAPI()
 

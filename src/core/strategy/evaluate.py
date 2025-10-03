@@ -1,22 +1,22 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Tuple
+from typing import Any
 
+from core.observability.metrics import metrics
+from core.strategy.confidence import compute_confidence
+from core.strategy.decision import decide
 from core.strategy.features import extract_features
 from core.strategy.prob_model import predict_proba_for
-from core.strategy.confidence import compute_confidence
 from core.strategy.regime import classify_regime
-from core.strategy.decision import decide
-from core.observability.metrics import metrics
 
 
 def evaluate_pipeline(
-    candles: Dict[str, Any],
+    candles: dict[str, Any],
     *,
-    policy: Dict[str, Any] | None = None,
-    configs: Dict[str, Any] | None = None,
-    state: Dict[str, Any] | None = None,
-) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    policy: dict[str, Any] | None = None,
+    configs: dict[str, Any] | None = None,
+    state: dict[str, Any] | None = None,
+) -> tuple[dict[str, Any], dict[str, Any]]:
     """Tunn orkestrerare som komponerar pure‑modulerna (utan IO/logg).
 
     Returnerar (result, meta). Meta bör inkludera reasons/versions från delmodulerna.
@@ -73,14 +73,14 @@ def evaluate_pipeline(
             metrics.inc(f"decision_{action.lower()}")
     except Exception:
         pass
-    result: Dict[str, Any] = {
+    result: dict[str, Any] = {
         "features": feats,
         "probas": probas,
         "confidence": conf,
         "regime": regime,
         "action": action,
     }
-    meta: Dict[str, Any] = {
+    meta: dict[str, Any] = {
         "features": feats_meta,
         "proba": pmeta,
         "confidence": conf_meta,

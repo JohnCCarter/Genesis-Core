@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Iterable, Literal
+from collections.abc import Iterable
+from typing import Literal
 
 from core.indicators.ema import calculate_ema
 

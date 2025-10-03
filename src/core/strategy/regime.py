@@ -1,27 +1,27 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Literal, Tuple
+from typing import Any, Literal
 
 Regime = Literal["trend", "range", "balanced"]
 
 
 def classify_regime(
-    htf_features: Dict[str, float],
+    htf_features: dict[str, float],
     *,
-    prev_state: Dict[str, Any] | None = None,
-    config: Dict[str, Any] | None = None,
-) -> Tuple[Regime, Dict[str, Any]]:
+    prev_state: dict[str, Any] | None = None,
+    config: dict[str, Any] | None = None,
+) -> tuple[Regime, dict[str, Any]]:
     """Klassificera regim (pure) utifrån HTF‑features med hysteresis.
 
     htf_features: {"adx_norm", "atr_pct", "ema_slope"}
     Hysteresis: kräv N på varandra följande observationer för regimskifte.
     """
     adx = float(htf_features.get("adx_norm", 0.0))
-    atr_pct = float(htf_features.get("atr_pct", 0.0))
+    # atr_pct = float(htf_features.get("atr_pct", 0.0))  # TODO: Implement ATR-based regime logic
     ema_slope = float(htf_features.get("ema_slope", 0.0))
 
     cfg = dict(config or {})
-    hysteresis_steps = int(((cfg.get("gates") or {}).get("hysteresis_steps") or 2))
+    hysteresis_steps = int((cfg.get("gates") or {}).get("hysteresis_steps") or 2)
 
     # Enkel heuristik: stark trend om hög adx och lutning ≠ 0; range annars.
     candidate: Regime
@@ -47,5 +47,5 @@ def classify_regime(
         else:
             regime = current  # hold tills hysteresis uppfylls
 
-    state: Dict[str, Any] = {"regime": regime, "steps": steps}
+    state: dict[str, Any] = {"regime": regime, "steps": steps}
     return regime, state

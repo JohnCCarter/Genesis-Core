@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import math
-from typing import Iterable, Tuple
+from collections.abc import Iterable
 
 
-def brier_score(probs: Iterable[Tuple[float, float, float]], labels: Iterable[str]) -> float:
+def brier_score(probs: Iterable[tuple[float, float, float]], labels: Iterable[str]) -> float:
     """Brier score för multi-class {buy,sell,hold}.
 
     probs: iterable av (p_buy, p_sell, p_hold) där varje element summerar ≈ 1
@@ -14,7 +14,7 @@ def brier_score(probs: Iterable[Tuple[float, float, float]], labels: Iterable[st
     total = 0.0
     n = 0
     mapping = {"buy": (1.0, 0.0, 0.0), "sell": (0.0, 1.0, 0.0), "hold": (0.0, 0.0, 1.0)}
-    for (pb, ps, ph), lab in zip(probs, labels):
+    for (pb, ps, ph), lab in zip(probs, labels, strict=False):
         yb, ys, yh = mapping.get(lab, (0.0, 0.0, 1.0))
         total += (pb - yb) ** 2 + (ps - ys) ** 2 + (ph - yh) ** 2
         n += 1
@@ -22,7 +22,7 @@ def brier_score(probs: Iterable[Tuple[float, float, float]], labels: Iterable[st
 
 
 def log_loss(
-    probs: Iterable[Tuple[float, float, float]],
+    probs: Iterable[tuple[float, float, float]],
     labels: Iterable[str],
     eps: float = 1e-12,
 ) -> float:
@@ -32,7 +32,7 @@ def log_loss(
     """
     total = 0.0
     n = 0
-    for (pb, ps, ph), lab in zip(probs, labels):
+    for (pb, ps, ph), lab in zip(probs, labels, strict=False):
         pb = min(1.0 - eps, max(eps, pb))
         ps = min(1.0 - eps, max(eps, ps))
         ph = min(1.0 - eps, max(eps, ph))

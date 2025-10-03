@@ -1,5 +1,8 @@
 {
   "tBTCUSD:1m": {
     "champion": "config/models/tBTCUSD_1m.json"
+  },
+  "tETHUSD:1m": {
+    "champion": "config/models/tETHUSD_1m.json"
   }
 }

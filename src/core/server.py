@@ -37,6 +37,12 @@ TEST_SPOT_WHITELIST: set[str] = {
 }
 
 
+@app.get("/paper/whitelist")
+def paper_whitelist() -> dict:
+    """Returnera whitelist av tillåtna TEST-spotpar för UI-val."""
+    return {"symbols": sorted(TEST_SPOT_WHITELIST)}
+
+
 @app.get("/health")
 def health() -> dict:
     return {"status": "ok"}
@@ -89,6 +95,19 @@ def ui_page() -> str:
 <body>
   <h1>Genesis‑Core – Minimal test</h1>
   <div class=\"row\">
+    <label>Symbol</label>
+    <select id=\"symbol_select\"></select>
+
+    <label>Timeframe</label>
+    <select id=\"timeframe_select\">
+      <option value=\"1m\">1m</option>
+      <option value=\"5m\">5m</option>
+      <option value=\"15m\">15m</option>
+      <option value=\"1h\">1h</option>
+      <option value=\"4h\">4h</option>
+      <option value=\"1D\">1D</option>
+    </select>
+
     <label>Policy JSON</label>
     <textarea id=\"policy\">{\n  \"symbol\": \"tBTCUSD\",\n  \"timeframe\": \"1m\"\n}</textarea>
     <div id=\"policy_err\" style=\"color:#b91c1c\"></div>
@@ -123,6 +142,41 @@ def ui_page() -> str:
       try { const v = JSON.parse(el(id).value || '{}'); err(errId, ''); return v; }
       catch (e) { err(errId, 'Ogiltig JSON'); throw e; }
     };
+    async function loadWhitelist() {
+      const sel = el('symbol_select');
+      try {
+        const r = await fetch('/paper/whitelist');
+        const data = await r.json();
+        const symbols = Array.isArray(data.symbols) ? data.symbols.slice().sort() : [];
+        sel.innerHTML = '';
+        for (const s of symbols) {
+          const opt = document.createElement('option');
+          opt.value = s; opt.textContent = s; sel.appendChild(opt);
+        }
+      } catch {
+        sel.innerHTML = '';
+        ['tTESTBTC:TESTUSD'].forEach(s => { const o = document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o); });
+      }
+    }
+    const syncPolicyFromInputs = () => {
+      try {
+        const pol = getJSON('policy','policy_err');
+        pol.symbol = el('symbol_select')?.value || pol.symbol || 'tTESTBTC:TESTUSD';
+        pol.timeframe = el('timeframe_select')?.value || pol.timeframe || '1m';
+        el('policy').value = JSON.stringify(pol, null, 2);
+      } catch {}
+    };
+    const syncInputsFromPolicy = () => {
+      try {
+        const pol = getJSON('policy','policy_err');
+        const symSel = el('symbol_select');
+        if (symSel && symSel.options && symSel.options.length) {
+          symSel.value = pol.symbol || symSel.value;
+        }
+        const tfSel = el('timeframe_select');
+        if (tfSel) tfSel.value = pol.timeframe || '1m';
+      } catch {}
+    };
     let lastData = null;
     const renderSummary = (data) => {
       try {
@@ -146,6 +200,8 @@ def ui_page() -> str:
     };
     el('save').addEventListener('click', save);
     el('restore').addEventListener('click', restore);
+    el('symbol_select').addEventListener('change', syncPolicyFromInputs);
+    el('timeframe_select').addEventListener('change', syncPolicyFromInputs);
     el('fetch_pub').addEventListener('click', async () => {
       try {
         const pol = getJSON('policy','policy_err');
@@ -191,6 +247,7 @@ def ui_page() -> str:
     });
     // Autoload saved
     restore();
+    loadWhitelist().then(syncInputsFromPolicy);
 
     el('submit_paper').addEventListener('click', async () => {
       try {

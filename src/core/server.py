@@ -111,7 +111,7 @@ def ui_page() -> str:
 <body>
   <h1>Genesis‑Core – Minimal test</h1>
   <div class=\"row\">
-    <label>Symbol</label>
+    <label>Order‑symbol (TEST)</label>
     <select id=\"symbol_select\"></select>
 
     <label>Timeframe</label>
@@ -179,7 +179,7 @@ def ui_page() -> str:
     const syncPolicyFromInputs = () => {
       try {
         const pol = getJSON('policy','policy_err');
-        pol.symbol = el('symbol_select')?.value || pol.symbol || 'tTESTBTC:TESTUSD';
+        // Endast timeframe synkas in i policy; symbol hanteras separat för order
         pol.timeframe = el('timeframe_select')?.value || pol.timeframe || '1m';
         el('policy').value = JSON.stringify(pol, null, 2);
       } catch {}
@@ -239,7 +239,6 @@ def ui_page() -> str:
     el('restore').addEventListener('click', restore);
     el('clear_cache').addEventListener('click', () => { clearCache(); el('configs').value=''; hydrateConfigsFromDefaultsIfEmpty(); });
     el('reset_defaults').addEventListener('click', async () => { clearCache(); el('configs').value=''; await hydrateConfigsFromDefaultsIfEmpty(); save(); });
-    el('symbol_select').addEventListener('change', syncPolicyFromInputs);
     el('timeframe_select').addEventListener('change', syncPolicyFromInputs);
     el('fetch_pub').addEventListener('click', async () => {
       try {
@@ -296,7 +295,8 @@ def ui_page() -> str:
         const action = lastData?.result?.action;
         const size = Number(lastData?.meta?.decision?.size || 0);
         if (!action || size <= 0) { err('configs_err','Ingen giltig order (action/size)'); return; }
-        const payload = { symbol: pol.symbol || 'tBTCUSD', side: action, size: size, type: 'MARKET' };
+        const orderSymbol = el('symbol_select')?.value || 'tTESTBTC:TESTUSD';
+        const payload = { symbol: orderSymbol, side: action, size: size, type: 'MARKET' };
         const r = await fetch('/paper/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         const data = await r.json();
         el('out').textContent = JSON.stringify(data, null, 2);

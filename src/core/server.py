@@ -12,8 +12,8 @@ from core.config.validator import append_audit, diff_config, validate_config
 from core.io.bitfinex import read_helpers as bfx_read
 from core.io.bitfinex.exchange_client import get_exchange_client
 from core.observability.metrics import get_dashboard
-from core.strategy.evaluate import evaluate_pipeline
 from core.server_config_api import router as config_router
+from core.strategy.evaluate import evaluate_pipeline
 
 app = FastAPI()
 app.include_router(config_router)
@@ -229,11 +229,11 @@ def ui_page() -> str:
     async function hydrateConfigsFromDefaultsIfEmpty() {
       try {
         if ((el('configs').value || '').trim()) return; // redan satt lokalt
-        const r = await fetch('/config/defaults');
+        const r = await fetch('/config/runtime');
         if (!r.ok) return;
         const data = await r.json();
-        if (data && !data.error) {
-          el('configs').value = JSON.stringify(data, null, 2);
+        if (data && data.cfg) {
+          el('configs').value = JSON.stringify(data.cfg, null, 2);
         }
       } catch {}
     }

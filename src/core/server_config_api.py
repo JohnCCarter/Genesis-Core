@@ -3,8 +3,6 @@ from __future__ import annotations
 from fastapi import APIRouter, HTTPException
 
 from core.config.authority import ConfigAuthority
-from core.config.schema import RuntimeConfig
-
 
 router = APIRouter()
 authority = ConfigAuthority()
@@ -38,10 +36,8 @@ def propose_runtime(payload: dict) -> dict:
             "version": snap.version,
         }
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
     except RuntimeError as e:
         if "version_conflict" in str(e):
-            raise HTTPException(status_code=409, detail="version_conflict")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
+            raise HTTPException(status_code=409, detail="version_conflict") from e
+        raise HTTPException(status_code=500, detail=str(e)) from e

@@ -11,7 +11,6 @@ from pydantic import ValidationError
 from core.config.schema import RuntimeConfig, RuntimeSnapshot
 from core.utils.logging_redaction import get_logger
 
-
 _LOGGER = get_logger(__name__)
 RUNTIME_PATH = Path.cwd() / "config" / "runtime.json"
 AUDIT_LOG = Path.cwd() / "logs" / "config_audit.jsonl"
@@ -96,7 +95,9 @@ class ConfigAuthority:
         h = self._hash_cfg(cfg_canon)
         return RuntimeSnapshot(version=next_version, hash=h, cfg=new_cfg)
 
-    def propose_update(self, patch: dict[str, Any], *, actor: str, expected_version: int) -> RuntimeSnapshot:
+    def propose_update(
+        self, patch: dict[str, Any], *, actor: str, expected_version: int
+    ) -> RuntimeSnapshot:
         # whitelist enforcement
         wl_top = {"thresholds", "gates", "risk", "ev"}
         for k in patch.keys():
@@ -111,5 +112,3 @@ class ConfigAuthority:
         except ValidationError as e:
             raise ValueError("validation_error") from e
         return self._persist_atomic(new_cfg, expected_version)
-
-

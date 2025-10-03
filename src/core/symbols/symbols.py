@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any
 
 from core.utils.logging_redaction import get_logger
-
 
 _LOGGER = get_logger(__name__)
 
@@ -94,5 +92,3 @@ class SymbolMapper:
         """
         _LOGGER.warning("SymbolMapper.force passthrough: %s", symbol)
         return symbol
-
-

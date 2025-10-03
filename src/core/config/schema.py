@@ -32,7 +32,7 @@ class Risk(BaseModel):
     @classmethod
     def _validate_risk_map(cls, v: Any) -> list[tuple[float, float]]:
         out: list[tuple[float, float]] = []
-        for item in (v or []):
+        for item in v or []:
             thr, sz = (float(item[0]), float(item[1]))
             out.append((thr, sz))
         return out
@@ -62,5 +62,3 @@ class RuntimeSnapshot(BaseModel):
     version: int
     hash: str
     cfg: RuntimeConfig
-
-

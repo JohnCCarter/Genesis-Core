@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Header, HTTPException
 
 from core.config.authority import ConfigAuthority
 
@@ -24,7 +24,15 @@ def validate_runtime(payload: dict) -> dict:
 
 
 @router.post("/config/runtime/propose")
-def propose_runtime(payload: dict) -> dict:
+def propose_runtime(payload: dict, authorization: str | None = Header(default=None)) -> dict:
+    from core.config.settings import get_settings
+
+    s = get_settings()
+    expected_bearer = (s.BEARER_TOKEN or "").strip()
+    if expected_bearer:
+        token = (authorization or "").replace("Bearer ", "").strip()
+        if token != expected_bearer:
+            raise HTTPException(status_code=401, detail="unauthorized")
     patch = payload.get("patch") or {}
     actor = str(payload.get("actor") or "system")
     expected_version = int(payload.get("expected_version") or 0)

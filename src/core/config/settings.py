@@ -4,6 +4,7 @@ from pydantic_settings import BaseSettings
 
 from core.symbols.symbols import SymbolMode
 
+
 class Settings(BaseSettings):
     BITFINEX_API_KEY: str | None = None
     BITFINEX_API_SECRET: str | None = None
@@ -11,6 +12,7 @@ class Settings(BaseSettings):
     BITFINEX_WS_API_SECRET: str | None = None
     # Keep raw env as string to avoid ValidationError when empty
     SYMBOL_MODE: str = "realistic"
+    BEARER_TOKEN: str | None = None
 
     @property
     def symbol_mode(self) -> SymbolMode:

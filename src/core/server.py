@@ -1,6 +1,5 @@
 import asyncio
 import json
-import json as _json
 from pathlib import Path
 
 import httpx
@@ -9,7 +8,7 @@ from fastapi.responses import HTMLResponse
 
 from core.config.authority import ConfigAuthority
 from core.config.settings import get_settings
-from core.config.validator import append_audit, diff_config, validate_config
+from core.config.validator import diff_config, validate_config
 from core.io.bitfinex import read_helpers as bfx_read
 from core.io.bitfinex.exchange_client import get_exchange_client
 from core.observability.metrics import get_dashboard
@@ -73,17 +72,7 @@ def observability_dashboard() -> dict:
 
 @app.get("/config/defaults")
 def get_strategy_defaults() -> dict:
-    """Läs och returnera strategy defaults från filsystemet.
-
-    Källfil: config/strategy/defaults.json
-    """
-    p = Path.cwd() / "config" / "strategy" / "defaults.json"
-    if not p.exists():
-        return {"error": "not_found"}
-    try:
-        return _json.loads(p.read_text(encoding="utf-8"))
-    except Exception:
-        return {"error": "invalid_json"}
+    return {"deprecated": True}
 
 
 @app.post("/config/validate")
@@ -102,10 +91,7 @@ def config_diff(payload: dict = Body(...)) -> dict:
 
 @app.post("/config/audit")
 def config_audit(payload: dict = Body(...)) -> dict:
-    changes = payload.get("changes", []) or []
-    user = str(payload.get("user") or "system")
-    append_audit(changes, user=user)
-    return {"status": "ok", "appended": len(changes)}
+    return {"deprecated": True}
 
 
 @app.get("/ui", response_class=HTMLResponse)
@@ -293,11 +279,16 @@ def ui_page() -> str:
         const rtData = await rt.json();
         const expected = Number(rtData?.version || 0);
         const patch = getJSON('configs','configs_err');
-        const r = await fetch('/config/runtime/propose', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ patch, actor: 'ui', expected_version: expected })});
+        const bearer = localStorage.getItem('ui_bearer') || '';
+        const headers = {'Content-Type':'application/json'};
+        if (bearer) headers['Authorization'] = 'Bearer ' + bearer;
+        const r = await fetch('/config/runtime/propose', { method:'POST', headers, body: JSON.stringify({ patch, actor: 'ui', expected_version: expected })});
         if (!r.ok) { const t = await r.text(); err('configs_err', 'Propose fel: '+t); return; }
         const data = await r.json();
         el('configs').value = JSON.stringify(data.cfg, null, 2);
         save();
+        // refresh status panel
+        loadHealth();
       } catch { err('configs_err','Propose fel'); }
     });
     el('run').addEventListener('click', async () => {

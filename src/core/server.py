@@ -127,6 +127,7 @@ def ui_page() -> str:
   </head>
 <body>
   <h1>Genesis‑Core – Minimal test</h1>
+  <div id="status" style="margin:6px 0; color:#374151; font-size:14px;">Config: <span id="cfg_ver">-</span> | <span id="cfg_hash">-</span></div>
   <div class=\"row\">
     <label>Order‑symbol (TEST)</label>
     <select id=\"symbol_select\"></select>
@@ -253,6 +254,17 @@ def ui_page() -> str:
         }
       } catch {}
     }
+    async function loadHealth() {
+      try {
+        const r = await fetch('/health');
+        if (!r.ok) return;
+        const d = await r.json();
+        if (d) {
+          if (el('cfg_ver')) el('cfg_ver').textContent = String(d.config_version ?? '-');
+          if (el('cfg_hash')) el('cfg_hash').textContent = String(d.config_hash ?? '-').slice(0, 12);
+        }
+      } catch {}
+    }
     el('save').addEventListener('click', save);
     el('restore').addEventListener('click', restore);
     el('clear_cache').addEventListener('click', () => { clearCache(); el('configs').value=''; hydrateConfigsFromDefaultsIfEmpty(); });
@@ -307,6 +319,7 @@ def ui_page() -> str:
     restore();
     hydrateConfigsFromDefaultsIfEmpty();
     loadWhitelist().then(syncInputsFromPolicy);
+    loadHealth();
 
     el('submit_paper').addEventListener('click', async () => {
       try {

@@ -9,7 +9,15 @@ class Settings(BaseSettings):
     BITFINEX_API_SECRET: str | None = None
     BITFINEX_WS_API_KEY: str | None = None
     BITFINEX_WS_API_SECRET: str | None = None
-    SYMBOL_MODE: SymbolMode = SymbolMode.REALISTIC
+    # Keep raw env as string to avoid ValidationError when empty
+    SYMBOL_MODE: str = "realistic"
+
+    @property
+    def symbol_mode(self) -> SymbolMode:
+        try:
+            return SymbolMode(str(self.SYMBOL_MODE or SymbolMode.REALISTIC))
+        except Exception:
+            return SymbolMode.REALISTIC
 
     class Config:
         env_file = ".env"

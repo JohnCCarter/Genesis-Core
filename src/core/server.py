@@ -13,8 +13,10 @@ from core.io.bitfinex import read_helpers as bfx_read
 from core.io.bitfinex.exchange_client import get_exchange_client
 from core.observability.metrics import get_dashboard
 from core.strategy.evaluate import evaluate_pipeline
+from core.server_config_api import router as config_router
 
 app = FastAPI()
+app.include_router(config_router)
 
 
 # Whitelist av tillåtna TEST-spotpar för paper-trading

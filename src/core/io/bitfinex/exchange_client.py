@@ -9,6 +9,7 @@ import httpx
 
 from core.config.settings import get_settings
 from core.observability.metrics import metrics
+from core.symbols.symbols import SymbolMapper, SymbolMode
 from core.utils.backoff import exponential_backoff_delay
 from core.utils.logging_redaction import get_logger
 from core.utils.nonce_manager import bump_nonce, get_nonce
@@ -35,6 +36,10 @@ class ExchangeClient:
 
     def __init__(self) -> None:
         self._settings = get_settings()
+        try:
+            self._symbol_mapper = SymbolMapper(self._settings.symbol_mode)
+        except Exception:
+            self._symbol_mapper = SymbolMapper(SymbolMode.REALISTIC)
 
     def _build_headers(self, endpoint: str, body: dict[str, Any] | None) -> dict[str, str]:
         api_key = (self._settings.BITFINEX_API_KEY or "").strip()
@@ -58,7 +63,15 @@ class ExchangeClient:
         body: dict[str, Any] | None = None,
         timeout: float | None = None,
     ) -> httpx.Response:
-        body = body or {}
+        body = dict(body or {})
+        # Resolve symbol if present
+        sym = body.get("symbol")
+        if isinstance(sym, str):
+            su = sym.upper()
+            if su.startswith("TTEST") or ":TEST" in su:
+                body["symbol"] = self._symbol_mapper.force(sym)
+            else:
+                body["symbol"] = self._symbol_mapper.resolve(sym)
         metrics.inc("rest_auth_request")
         try:
             _LOGGER.info("REST %s %s", method.upper(), endpoint)

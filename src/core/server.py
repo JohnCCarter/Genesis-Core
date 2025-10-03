@@ -159,7 +159,7 @@ def ui_page() -> str:
       <button id=\"restore\">Återställ</button>
       <button id=\"fetch_pub\">Hämta publika candles</button>
       <button id=\"auth\">Auth‑check</button>
-      <button id=\"load_overrides\">Ladda overrides</button>
+      <!-- overrides inaktiveras när SSOT används -->
       <button id=\"propose_cfg\">Föreslå ändring</button>
       <button id=\"submit_paper\">Submit paper order</button>
       <button id=\"reset_defaults\">Återställ defaults</button>
@@ -273,19 +273,7 @@ def ui_page() -> str:
       const data = await r.json();
       el('summary').innerHTML = `<div>Auth: ${data.ok ? 'OK' : 'FAIL'} (wallets=${data.wallets||0}, positions=${data.positions||0})</div>`;
     });
-    el('load_overrides').addEventListener('click', async () => {
-      try {
-        const r = await fetch('/dev/overrides');
-        if (r.ok) {
-          const data = await r.json();
-          el('configs').value = JSON.stringify(data, null, 2);
-        } else {
-          err('configs_err', 'Inga overrides hittades');
-        }
-      } catch {
-        err('configs_err', 'Fel vid läsning av overrides');
-      }
-    });
+    // overrides borttagen i SSOT-läge
     el('propose_cfg').addEventListener('click', async () => {
       try {
         const rt = await fetch('/config/runtime');

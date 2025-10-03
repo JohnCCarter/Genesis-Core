@@ -79,6 +79,8 @@ dev.overrides.local.json
 *.pem
 *.p12
 *.pfx
+.secrets.baseline
+bandit-report.json
 
 # Dependencies
 node_modules/

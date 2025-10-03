@@ -144,6 +144,8 @@ def ui_page() -> str:
       <button id=\"auth\">Auth‑check</button>
       <button id=\"load_overrides\">Ladda overrides</button>
       <button id=\"submit_paper\">Submit paper order</button>
+      <button id=\"reset_defaults\">Återställ defaults</button>
+      <button id=\"clear_cache\">Rensa cache</button>
     </div>
     <div>
       <h3>Result</h3>
@@ -214,6 +216,14 @@ def ui_page() -> str:
       const c = localStorage.getItem('ui_configs'); if (c) el('configs').value = c;
       const d = localStorage.getItem('ui_candles'); if (d) el('candles').value = d;
     };
+    const clearCache = () => {
+      try {
+        localStorage.removeItem('ui_policy');
+        localStorage.removeItem('ui_configs');
+        localStorage.removeItem('ui_candles');
+        err('policy_err',''); err('configs_err',''); err('candles_err','');
+      } catch {}
+    };
     async function hydrateConfigsFromDefaultsIfEmpty() {
       try {
         if ((el('configs').value || '').trim()) return; // redan satt lokalt
@@ -227,6 +237,8 @@ def ui_page() -> str:
     }
     el('save').addEventListener('click', save);
     el('restore').addEventListener('click', restore);
+    el('clear_cache').addEventListener('click', () => { clearCache(); el('configs').value=''; hydrateConfigsFromDefaultsIfEmpty(); });
+    el('reset_defaults').addEventListener('click', async () => { clearCache(); el('configs').value=''; await hydrateConfigsFromDefaultsIfEmpty(); save(); });
     el('symbol_select').addEventListener('change', syncPolicyFromInputs);
     el('timeframe_select').addEventListener('change', syncPolicyFromInputs);
     el('fetch_pub').addEventListener('click', async () => {

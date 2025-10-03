@@ -7,6 +7,7 @@ import httpx
 from fastapi import Body, FastAPI
 from fastapi.responses import HTMLResponse
 
+from core.config.authority import ConfigAuthority
 from core.config.settings import get_settings
 from core.config.validator import append_audit, diff_config, validate_config
 from core.io.bitfinex import read_helpers as bfx_read
@@ -17,6 +18,16 @@ from core.strategy.evaluate import evaluate_pipeline
 
 app = FastAPI()
 app.include_router(config_router)
+_AUTH = ConfigAuthority()
+
+
+@app.on_event("startup")
+def _log_config_version() -> None:
+    try:
+        _, h, v = _AUTH.get()
+        print(f"CONFIG_VERSION={v} CONFIG_HASH={h[:12]}")
+    except Exception as e:
+        print(f"CONFIG_READ_FAILED: {e}")
 
 
 # Whitelist av tillåtna TEST-spotpar för paper-trading
@@ -48,7 +59,11 @@ def paper_whitelist() -> dict:
 
 @app.get("/health")
 def health() -> dict:
-    return {"status": "ok"}
+    try:
+        _, h, v = _AUTH.get()
+        return {"status": "ok", "config_version": v, "config_hash": h}
+    except Exception:
+        return {"status": "ok", "config_version": None, "config_hash": None}
 
 
 @app.get("/observability/dashboard")
@@ -145,6 +160,7 @@ def ui_page() -> str:
       <button id=\"fetch_pub\">Hämta publika candles</button>
       <button id=\"auth\">Auth‑check</button>
       <button id=\"load_overrides\">Ladda overrides</button>
+      <button id=\"propose_cfg\">Föreslå ändring</button>
       <button id=\"submit_paper\">Submit paper order</button>
       <button id=\"reset_defaults\">Återställ defaults</button>
       <button id=\"clear_cache\">Rensa cache</button>
@@ -269,6 +285,20 @@ def ui_page() -> str:
       } catch {
         err('configs_err', 'Fel vid läsning av overrides');
       }
+    });
+    el('propose_cfg').addEventListener('click', async () => {
+      try {
+        const rt = await fetch('/config/runtime');
+        if (!rt.ok) { err('configs_err','Kunde inte läsa runtime'); return; }
+        const rtData = await rt.json();
+        const expected = Number(rtData?.version || 0);
+        const patch = getJSON('configs','configs_err');
+        const r = await fetch('/config/runtime/propose', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ patch, actor: 'ui', expected_version: expected })});
+        if (!r.ok) { const t = await r.text(); err('configs_err', 'Propose fel: '+t); return; }
+        const data = await r.json();
+        el('configs').value = JSON.stringify(data.cfg, null, 2);
+        save();
+      } catch { err('configs_err','Propose fel'); }
     });
     el('run').addEventListener('click', async () => {
       let payload;

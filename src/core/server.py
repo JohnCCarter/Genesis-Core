@@ -1,5 +1,6 @@
 import asyncio
 import json
+import json as _json
 from pathlib import Path
 
 import httpx
@@ -51,6 +52,21 @@ def health() -> dict:
 @app.get("/observability/dashboard")
 def observability_dashboard() -> dict:
     return get_dashboard()
+
+
+@app.get("/config/defaults")
+def get_strategy_defaults() -> dict:
+    """Läs och returnera strategy defaults från filsystemet.
+
+    Källfil: config/strategy/defaults.json
+    """
+    p = Path.cwd() / "config" / "strategy" / "defaults.json"
+    if not p.exists():
+        return {"error": "not_found"}
+    try:
+        return _json.loads(p.read_text(encoding="utf-8"))
+    except Exception:
+        return {"error": "invalid_json"}
 
 
 @app.post("/config/validate")
@@ -198,6 +214,17 @@ def ui_page() -> str:
       const c = localStorage.getItem('ui_configs'); if (c) el('configs').value = c;
       const d = localStorage.getItem('ui_candles'); if (d) el('candles').value = d;
     };
+    async function hydrateConfigsFromDefaultsIfEmpty() {
+      try {
+        if ((el('configs').value || '').trim()) return; // redan satt lokalt
+        const r = await fetch('/config/defaults');
+        if (!r.ok) return;
+        const data = await r.json();
+        if (data && !data.error) {
+          el('configs').value = JSON.stringify(data, null, 2);
+        }
+      } catch {}
+    }
     el('save').addEventListener('click', save);
     el('restore').addEventListener('click', restore);
     el('symbol_select').addEventListener('change', syncPolicyFromInputs);
@@ -247,6 +274,7 @@ def ui_page() -> str:
     });
     // Autoload saved
     restore();
+    hydrateConfigsFromDefaultsIfEmpty();
     loadWhitelist().then(syncInputsFromPolicy);
 
     el('submit_paper').addEventListener('click', async () => {

@@ -1,7 +1,7 @@
 {
   "thresholds": {
-    "entry_conf_overall": 0.7,
-    "regime_proba": { "trend": 0.55, "range": 0.6, "balanced": 0.58 },
+    "entry_conf_overall": 0.5,
+    "regime_proba": { "trend": 0.55, "range": 0.6, "balanced": 0.5 },
     "fallback_regime_proba_delta": 0.02
   },
   "ev": { "R_default": 1.8 },
@@ -25,6 +25,7 @@
   },
   "risk": {
     "risk_map": [
+      [0.5, 0.003]
       [0.6, 0.005],
       [0.7, 0.008],
       [0.8, 0.01],

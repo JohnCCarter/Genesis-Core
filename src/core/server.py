@@ -1,6 +1,4 @@
 import asyncio
-import json
-from pathlib import Path
 
 import httpx
 from fastapi import Body, FastAPI
@@ -48,6 +46,45 @@ TEST_SPOT_WHITELIST: set[str] = {
     "tTESTXTZ:TESTUSD",
 }
 
+# Minsta orderstorlek per test-ticker (kan uppdateras via probing)
+MIN_ORDER_SIZE: dict[str, float] = {
+    "tTESTADA:TESTUSD": 4.0,
+    "tTESTALGO:TESTUSD": 8.0,
+    "tTESTAPT:TESTUSD": 0.03,
+    "tTESTAVAX:TESTUSD": 0.08,
+    "tTESTBTC:TESTUSD": 0.001,
+    "tTESTBTC:TESTUSDT": 0.001,
+    "tTESTDOGE:TESTUSD": 22.0,
+    "tTESTDOT:TESTUSD": 0.2,
+    "tTESTEOS:TESTUSD": 2.0,
+    "tTESTETH:TESTUSD": 0.001,
+    "tTESTFIL:TESTUSD": 0.2,
+    "tTESTLTC:TESTUSD": 0.04,
+    "tTESTNEAR:TESTUSD": 0.4,
+    "tTESTSOL:TESTUSD": 0.02,
+    "tTESTXAUT:TESTUSD": 0.002,
+    "tTESTXTZ:TESTUSD": 2.0,
+}
+# Liten säkerhetsmarginal över minsta storlek
+MIN_ORDER_MARGIN: float = 0.05
+
+
+def _real_from_test(sym: str) -> str:
+    u = sym.upper().lstrip("T")
+    if ":" in u:
+        base_part, quote_part = u.split(":", 1)
+    else:
+        base_part, quote_part = u, "USD"
+    base_part = base_part.replace("TEST", "")
+    quote_part = quote_part.replace("TEST", "")
+    return "t" + base_part + quote_part
+
+
+def _base_ccy_from_test(sym: str) -> str:
+    u = sym.upper().lstrip("T")
+    base_part = u.split(":", 1)[0] if ":" in u else u
+    return base_part.replace("TEST", "")
+
 
 @app.get("/paper/whitelist")
 def paper_whitelist() -> dict:
@@ -67,11 +104,6 @@ def health() -> dict:
 @app.get("/observability/dashboard")
 def observability_dashboard() -> dict:
     return get_dashboard()
-
-
- 
-
-
 
 
 @app.get("/ui", response_class=HTMLResponse)
@@ -97,6 +129,11 @@ def ui_page() -> str:
   <div class="row">
     <label>Order‑symbol (TEST)</label>
     <select id="symbol_select"></select>
+    <div style="display:flex; align-items:center; gap:8px; font-size:12px; color:#374151;">
+      <input type="checkbox" id="auto_thresholds" checked />
+      <label for="auto_thresholds">Auto‑trösklar per symbol</label>
+    </div>
+    <div id="symbol_info" style="font-size:12px; color:#6b7280"></div>
 
     <label>Bearer token (för /config/runtime/propose)</label>
     <div style="display:flex; gap:8px; align-items:center;">
@@ -162,10 +199,42 @@ def ui_page() -> str:
           const opt = document.createElement('option');
           opt.value = s; opt.textContent = s; sel.appendChild(opt);
         }
+        await refreshSymbolInfo();
       } catch {
         sel.innerHTML = '';
         ['tTESTBTC:TESTUSD'].forEach(s => { const o = document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o); });
+        await refreshSymbolInfo();
       }
+    }
+    async function refreshSymbolInfo() {
+      try {
+        const symSel = el('symbol_select');
+        const sym = symSel?.value || 'tTESTBTC:TESTUSD';
+        const r = await fetch(`/paper/estimate?symbol=${encodeURIComponent(sym)}`);
+        if (!r.ok) return;
+        const d = await r.json();
+        const min = Number(d.required_min||0);
+        const minm = Number(d.min_with_margin||0);
+        const px = Number(d.last_price||0);
+        const usd = Number(d.usd_available||0);
+        const est = Number(d.est_max_size||0);
+        el('symbol_info').textContent = `Min: ${min} | Min+margin: ${minm} | Pris: ${px} | USD: ${usd} | Max≈ ${est}`;
+        // Applicera presets om valt
+        if (el('auto_thresholds')?.checked) {
+          try {
+            const cfg = getJSON('configs','configs_err');
+            cfg.thresholds = cfg.thresholds || {};
+            cfg.thresholds.entry_conf_overall = 0.5;
+            cfg.thresholds.regime_proba = { balanced: 0.5 };
+            cfg.risk = cfg.risk || {};
+            // Sätt risk_map till minst min+margin
+            const baseMap = [[0.5, minm]];
+            cfg.risk.risk_map = baseMap;
+            el('configs').value = JSON.stringify(cfg, null, 2);
+            err('configs_err','');
+          } catch {}
+        }
+      } catch {}
     }
     const syncPolicyFromInputs = () => {
       try {
@@ -246,6 +315,8 @@ def ui_page() -> str:
     el('clear_cache').addEventListener('click', () => { clearCache(); el('configs').value=''; hydrateConfigsFromDefaultsIfEmpty(); });
     el('reset_defaults').addEventListener('click', async () => { clearCache(); el('configs').value=''; await hydrateConfigsFromDefaultsIfEmpty(); save(); });
     el('timeframe_select').addEventListener('change', syncPolicyFromInputs);
+    const symSel = el('symbol_select'); if (symSel) symSel.addEventListener('change', refreshSymbolInfo);
+    const at = el('auto_thresholds'); if (at) at.addEventListener('change', refreshSymbolInfo);
     el('fetch_pub').addEventListener('click', async () => {
       try {
         const pol = getJSON('policy','policy_err');
@@ -308,9 +379,21 @@ def ui_page() -> str:
         if (!lastData) { err('policy_err','Kör pipeline först'); return; }
         const pol = getJSON('policy','policy_err');
         const action = lastData?.result?.action;
-        const size = Number(lastData?.meta?.decision?.size || 0);
-        if (!action || size <= 0) { err('configs_err','Ingen giltig order (action/size)'); return; }
+        let size = Number(lastData?.meta?.decision?.size || 0);
         const orderSymbol = el('symbol_select')?.value || 'tTESTBTC:TESTUSD';
+        // Force min+margin om size <= 0: hämta estimate och sätt storlek därefter
+        if (size <= 0 && action) {
+          try {
+            const est = await fetch(`/paper/estimate?symbol=${encodeURIComponent(orderSymbol)}`);
+            if (est.ok) {
+              const d = await est.json();
+              const minm = Number(d.min_with_margin||0);
+              const estMax = Number(d.est_max_size||0);
+              size = Math.max(minm, isFinite(estMax) && estMax>0 ? Math.min(minm, estMax) : minm);
+            }
+          } catch {}
+        }
+        if (!action || size <= 0) { err('configs_err','Ingen giltig order (action/size)'); return; }
         const payload = { symbol: orderSymbol, side: action, size: size, type: 'MARKET' };
         const r = await fetch('/paper/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         const data = await r.json();
@@ -379,8 +462,6 @@ async def auth_check() -> dict:
     return {"ok": True, "wallets": w_count, "positions": p_count}
 
 
- 
-
 
 @app.post("/paper/submit")
 async def paper_submit(payload: dict = Body(...)) -> dict:
@@ -392,14 +473,96 @@ async def paper_submit(payload: dict = Body(...)) -> dict:
     payload: {symbol, side:"LONG"|"SHORT"|"NONE", size:float, type?:"MARKET"|"LIMIT", price?:float}
     """
     # Använd endast symboler från whitelist; annars fall tillbaka till standard TEST-par
-    requested_symbol = str(payload.get("symbol") or "tTESTBTC:TESTUSD").upper()
-    symbol = requested_symbol if requested_symbol in TEST_SPOT_WHITELIST else "tTESTBTC:TESTUSD"
+    requested_symbol_raw = str(payload.get("symbol") or "tTESTBTC:TESTUSD")
+    key = requested_symbol_raw.upper()
+    allowed_map = {s.upper(): s for s in TEST_SPOT_WHITELIST}
+    symbol = allowed_map.get(key, "tTESTBTC:TESTUSD")
     side = str(payload.get("side") or "NONE").upper()
     size = float(payload.get("size") or 0.0)
     order_type = str(payload.get("type") or "MARKET").upper()
     price = payload.get("price")
     if side not in ("LONG", "SHORT") or size <= 0:
         return {"ok": False, "error": "invalid_action_or_size"}
+
+    # Minimikrav + liten marginal, auto-klampa om under
+    required_min = float(MIN_ORDER_SIZE.get(symbol, 0.0))
+    min_with_margin = required_min * (1.0 + MIN_ORDER_MARGIN)
+    auto_clamped = False
+    wallet_clamped = False
+    size_before = size
+    if abs(size) < min_with_margin:
+        size = min_with_margin
+        auto_clamped = True
+
+    # Wallet-medveten cap (opt-in): begränsa köp till tillgänglig USD och sälj till innehav av bas
+    try:
+        s = get_settings()
+        if int(getattr(s, "WALLET_CAP_ENABLED", 0) or 0) == 1 and s.BITFINEX_API_KEY and s.BITFINEX_API_SECRET:
+            # Hämta wallets
+            wallets = await bfx_read.get_wallets()
+            avail_by_ccy: dict[str, float] = {}
+            if isinstance(wallets, list):
+                for w in wallets:
+                    # Förvänta v2-format: [type, currency, balance, unsettled, available]
+                    if isinstance(w, list) and len(w) >= 5:
+                        ccy = str(w[1]).upper()
+                        try:
+                            avail = float(w[4])
+                        except Exception:
+                            continue
+                        # endast exchange-wallet
+                        if str(w[0]).lower() == "exchange":
+                            avail_by_ccy[ccy] = avail_by_ccy.get(ccy, 0.0) + max(0.0, avail)
+                    elif isinstance(w, dict):
+                        ccy = str(w.get("currency") or "").upper()
+                        avail = float(w.get("available") or 0.0)
+                        if str(w.get("type") or "").lower() == "exchange" and ccy:
+                            avail_by_ccy[ccy] = avail_by_ccy.get(ccy, 0.0) + max(0.0, avail)
+            # Derivera real-symbol för pris (tTESTDOGE:TESTUSD -> tDOGEUSD)
+            def _real_from_test(sym: str) -> str:
+                u = sym.upper().lstrip("T")  # ta bort ledande 't'
+                if ":" in u:
+                    base_part, quote_part = u.split(":", 1)
+                else:
+                    base_part, quote_part = u, "USD"
+                base_part = base_part.replace("TEST", "")
+                quote_part = quote_part.replace("TEST", "")
+                return "t" + base_part + quote_part
+
+            def _base_ccy_from_test(sym: str) -> str:
+                u = sym.upper().lstrip("T")
+                base_part = u.split(":", 1)[0] if ":" in u else u
+                return base_part.replace("TEST", "")
+
+            real_sym = _real_from_test(symbol)
+            base_ccy = _base_ccy_from_test(symbol)
+            # LONG: begränsa efter USD
+            if side == "LONG":
+                usd_avail = avail_by_ccy.get("USD", 0.0) or avail_by_ccy.get("TESTUSD", 0.0) or 0.0
+                px = None
+                try:
+                    r = httpx.get(f"https://api-pub.bitfinex.com/v2/ticker/{real_sym}", timeout=5)
+                    r.raise_for_status()
+                    arr = r.json()
+                    if isinstance(arr, list) and len(arr) >= 7:
+                        px = float(arr[6])
+                except Exception:
+                    px = None
+                if px and px > 0 and usd_avail > 0:
+                    max_affordable = usd_avail / px
+                    if size > max_affordable:
+                        size = max(max_affordable, min_with_margin)
+                        wallet_clamped = True
+            # SHORT: begränsa efter innehav av bas
+            elif side == "SHORT":
+                base_avail = avail_by_ccy.get(base_ccy, 0.0) or avail_by_ccy.get("TEST" + base_ccy, 0.0) or 0.0
+                if base_avail > 0 and abs(size) > base_avail:
+                    size = base_avail
+                    wallet_clamped = True
+    except Exception:
+        # Ignorera wallet-cap om något går fel
+        pass
+
     amount = size if side == "LONG" else -size
 
     # Bitfinex v2 order submit (MARKET/LIMIT):
@@ -418,7 +581,20 @@ async def paper_submit(payload: dict = Body(...)) -> dict:
     try:
         resp = await ec.signed_request(method="POST", endpoint="auth/w/order/submit", body=body)
         data = resp.json() if hasattr(resp, "json") else {"status": resp.status_code}
-        return {"ok": True, "exchange": "bitfinex", "request": body, "response": data}
+        return {
+            "ok": True,
+            "exchange": "bitfinex",
+            "request": body,
+            "response": data,
+            "meta": {
+                "auto_clamped": auto_clamped,
+                "wallet_clamped": wallet_clamped,
+                "size_before": size_before,
+                "size_after": size,
+                "required_min": required_min,
+                "min_with_margin": min_with_margin,
+            },
+        }
     except httpx.HTTPStatusError as e:
         status = getattr(e.response, "status_code", None)
         text = getattr(e.response, "text", "")
@@ -438,3 +614,70 @@ def debug_auth() -> dict:
         "suffix": k[-4:] if len(k) >= 4 else k,
     }
     return {"rest_api_key": masked}
+
+
+@app.get("/paper/estimate")
+async def paper_estimate(symbol: str) -> dict:
+    """Beräkna minsta storlek (med marginal) och ungefärlig max-storlek utifrån USD-saldo.
+
+    Returnerar även senaste pris och tillgängligt basinnehav för ev. sälj.
+    """
+    allowed_map = {s.upper(): s for s in TEST_SPOT_WHITELIST}
+    sym = allowed_map.get(symbol.upper(), "tTESTBTC:TESTUSD")
+    required_min = float(MIN_ORDER_SIZE.get(sym, 0.0))
+    min_with_margin = required_min * (1.0 + MIN_ORDER_MARGIN)
+    usd_avail: float | None = None
+    base_avail: float | None = None
+    last_price: float | None = None
+
+    # Hämta wallets (om nycklar finns)
+    try:
+        s = get_settings()
+        if s.BITFINEX_API_KEY and s.BITFINEX_API_SECRET:
+            wallets = await bfx_read.get_wallets()
+            avail_by_ccy: dict[str, float] = {}
+            if isinstance(wallets, list):
+                for w in wallets:
+                    if isinstance(w, list) and len(w) >= 5:
+                        ccy = str(w[1]).upper()
+                        try:
+                            avail = float(w[4])
+                        except Exception:
+                            continue
+                        if str(w[0]).lower() == "exchange":
+                            avail_by_ccy[ccy] = avail_by_ccy.get(ccy, 0.0) + max(0.0, avail)
+                    elif isinstance(w, dict):
+                        ccy = str(w.get("currency") or "").upper()
+                        avail = float(w.get("available") or 0.0)
+                        if str(w.get("type") or "").lower() == "exchange" and ccy:
+                            avail_by_ccy[ccy] = avail_by_ccy.get(ccy, 0.0) + max(0.0, avail)
+            usd_avail = (avail_by_ccy.get("USD") or avail_by_ccy.get("TESTUSD") or 0.0)
+            base = _base_ccy_from_test(sym)
+            base_avail = (avail_by_ccy.get(base) or avail_by_ccy.get("TEST" + base) or 0.0)
+    except Exception:
+        pass
+
+    # Hämta senaste pris
+    try:
+        real_sym = _real_from_test(sym)
+        r = httpx.get(f"https://api-pub.bitfinex.com/v2/ticker/{real_sym}", timeout=5)
+        r.raise_for_status()
+        arr = r.json()
+        if isinstance(arr, list) and len(arr) >= 7:
+            last_price = float(arr[6])
+    except Exception:
+        last_price = None
+
+    est_max_size: float | None = None
+    if (usd_avail is not None) and (last_price is not None) and last_price > 0:
+        est_max_size = usd_avail / last_price
+
+    return {
+        "symbol": sym,
+        "required_min": required_min,
+        "min_with_margin": min_with_margin,
+        "usd_available": usd_avail,
+        "base_available": base_avail,
+        "last_price": last_price,
+        "est_max_size": est_max_size,
+    }

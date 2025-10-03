@@ -1,0 +1,77 @@
+---
+alwaysApply: true
+---
+# Master Rule
+If the current chat approaches context limits (you notice reasoning or earlier details are at risk of being lost), stop and request a new chat session. Include a short summary of where we are in the project and the next steps before continuing.
+
+# Working Principles
+- Always work step by step, systematically and methodically.
+- Provide clear, concise commands and examples that can be executed directly in terminal (PowerShell, bash, Python).
+- Separate “Discussion” (hypotheses, risks, architecture) from “Code/Commands” (exact implementations).
+- Always be transparent about uncertainties or potential pitfalls.
+- Confirm when something is completed and stable (e.g., ✅ REST auth fixed).
+- Prefer Swedish responses unless specified otherwise.
+
+# Efficient Context Usage
+- Refer to files/modules with full paths (e.g., `core/io/bitfinex/exchange_client.py`).
+- Summarize decisions before moving to the next major block.
+- After completing a task, encapsulate it in a mini-log (e.g., ✅ REST auth fixed).
+- Keep code examples small and precise; split larger implementations into sections.
+
+# Genesis-Core Trading System Rules
+
+## Core Principles
+- Pause on uncertainty. Verify with codebase_search + grep. No assumptions.
+- Plan steps before acting. Work systematically and methodically.
+- Ask for a new chat session if the current chat becomes context-constrained.
+- Continue until task is complete. Reflect on root cause vs symptom.
+- Respond in Swedish unless specified. Use clear headings and ✅ markers.
+
+## Project Context
+Genesis-Core is a Python 3.11+ FastAPI trading system with:
+- P1-P3: Feature extraction (EMA+RSI), probability model with calibration, confidence/regime/decision
+- P4: E2E pipeline with observability
+- Bitfinex integration (REST + WebSocket)
+- Paper trading only with TEST symbols (tTESTBTC:TESTUSD whitelist)
+
+## Code Standards
+- Python 3.11+: Use modern syntax (dict not Dict, X|None not Optional[X])
+- Line length: 100 chars, black formatting, ruff linting
+- Structure: src/core/{config,indicators,io,observability,risk,strategy,utils}
+- Testing: pytest with comprehensive coverage
+
+## Critical Security Rules
+- NEVER commit: .env, .nonce_tracker.json, dev.overrides.local.json
+- API keys only from environment variables
+- Force TEST symbols for paper trading
+- Use compact JSON for signing: json.dumps(body, separators=(",",":"))
+
+## Development Workflow
+1. Before changes: read_file → codebase_search → grep → todo_write
+2. Making changes: Use edit tools (never output code), prefer editing over creating
+3. Testing: pytest → black --check → ruff check → bandit
+4. Git: Descriptive commits (feat:/fix:/security:), update .gitignore first
+
+## FastAPI Endpoints
+/ui (dashboard), /strategy/evaluate (pipeline), /public/candles (market data),
+/auth/check (verify auth), /paper/submit (TEST orders only), /debug/auth,
+/health, /metrics, /config/validate, /dev/overrides
+
+## Common Issues
+- "invalid key": Check JSON serialization consistency
+- "Ingen giltig order": Verify model exists, check risk config
+- Nonce errors: Use bump_nonce() for retry
+- WebSocket timeout: Implement exponential backoff
+
+## Key Files
+- src/core/server.py: FastAPI application and endpoints
+- src/core/strategy/evaluate.py: E2E pipeline orchestration
+- src/core/io/bitfinex/exchange_client.py: API integration
+- config/models/: Model configurations and registry
+- .env: API keys (BITFINEX_API_KEY, BITFINEX_API_SECRET)
+
+## Response Format
+- Swedish language with clear structure
+- Show progress with ✅ checkmarks
+- Explain problems with solutions
+- Quality over speed, security first

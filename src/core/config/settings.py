@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     # Keep raw env as string to avoid ValidationError when empty
     SYMBOL_MODE: str = "realistic"
     BEARER_TOKEN: str | None = None
+    WALLET_CAP_ENABLED: int = 0
 
     @property
     def symbol_mode(self) -> SymbolMode:

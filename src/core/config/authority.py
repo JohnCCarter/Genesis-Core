@@ -53,7 +53,15 @@ class ConfigAuthority:
         snap = self.load()
         return snap.cfg, snap.hash, snap.version
 
-    def _persist_atomic(self, new_cfg: RuntimeConfig, expected_version: int) -> RuntimeSnapshot:
+    def _persist_atomic(
+        self,
+        new_cfg: RuntimeConfig,
+        expected_version: int,
+        *,
+        actor: str = "system",
+        changed_paths: list[str] | None = None,
+        hash_before: str | None = None,
+    ) -> RuntimeSnapshot:
         # optimistic lock
         cur_version, _ = self._read()
         if cur_version != expected_version:
@@ -80,35 +88,76 @@ class ConfigAuthority:
         except Exception:
             pass
 
-        # audit
+        # hash & audit
+        h = self._hash_cfg(cfg_canon)
         try:
             audit = {
                 "ts": time.time(),
+                "actor": actor,
                 "expected_version": expected_version,
                 "new_version": next_version,
+                "hash_before": hash_before,
+                "hash_after": h,
+                "paths": changed_paths or [],
             }
             with open(AUDIT_LOG, "a", encoding="utf-8") as af:
                 af.write(json.dumps(audit, ensure_ascii=False) + "\n")
         except Exception as e:
             _LOGGER.debug("audit_write_error: %s", e)
 
-        h = self._hash_cfg(cfg_canon)
         return RuntimeSnapshot(version=next_version, hash=h, cfg=new_cfg)
 
     def propose_update(
         self, patch: dict[str, Any], *, actor: str, expected_version: int
     ) -> RuntimeSnapshot:
-        # whitelist enforcement
-        wl_top = {"thresholds", "gates", "risk", "ev"}
-        for k in patch.keys():
-            if k not in wl_top:
-                raise ValueError("non_whitelisted_field")
+        # whitelist enforcement (path-based)
+        def _enforce_whitelist(p: dict[str, Any]) -> None:
+            for k, v in (p or {}).items():
+                if k not in {"thresholds", "gates", "risk", "ev"}:
+                    raise ValueError("non_whitelisted_field")
+                if k == "risk":
+                    if not isinstance(v, dict) or any(subk != "risk_map" for subk in v.keys()):
+                        raise ValueError("non_whitelisted_field:risk")
+                if k == "ev":
+                    if not isinstance(v, dict) or any(subk != "R_default" for subk in v.keys()):
+                        raise ValueError("non_whitelisted_field:ev")
+
+        _enforce_whitelist(patch)
 
         # merge on top of current cfg
-        cur = self.load().cfg.model_dump_canonical()
+        current_cfg = self.load().cfg
+        cur = current_cfg.model_dump_canonical()
         merged = {**cur, **patch}
         try:
             new_cfg = RuntimeConfig(**merged)
         except ValidationError as e:
             raise ValueError("validation_error") from e
-        return self._persist_atomic(new_cfg, expected_version)
+
+        # diff paths for audit
+        def _diff_paths(a: Any, b: Any, prefix: str = "") -> list[str]:
+            paths: list[str] = []
+            if isinstance(a, dict) and isinstance(b, dict):
+                keys = set(a.keys()) | set(b.keys())
+                for key in keys:
+                    sub = prefix + ("." if prefix else "") + str(key)
+                    if key not in a or key not in b:
+                        paths.append(sub)
+                    else:
+                        paths.extend(_diff_paths(a[key], b[key], sub))
+            elif isinstance(a, list) and isinstance(b, list):
+                if a != b:
+                    paths.append(prefix)
+            else:
+                if a != b:
+                    paths.append(prefix)
+            return paths
+
+        old_hash = self._hash_cfg(cur)
+        changed = _diff_paths(cur, new_cfg.model_dump_canonical())
+        return self._persist_atomic(
+            new_cfg,
+            expected_version,
+            actor=actor,
+            changed_paths=changed,
+            hash_before=old_hash,
+        )

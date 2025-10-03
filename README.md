@@ -125,3 +125,25 @@ pre-commit install
 pwsh -File scripts/ci.ps1
 ```
 -->
+
+## Konfiguration (SSOT)
+
+- Runtime config lagras i `config/runtime.json` (SSOT). Filen ignoreras av git; `config/runtime.seed.json` används som seed.
+- API:
+  - `GET /config/runtime` → `{ cfg, version, hash }`
+  - `POST /config/runtime/validate` → `{ valid, errors, cfg? }`
+  - `POST /config/runtime/propose` (kräver Bearer) → `{ cfg, version, hash }`
+- Bearer‑auth: sätt env `BEARER_TOKEN` i backend. Skicka `Authorization: Bearer <token>` i UI/klient.
+- Audit: ändringar loggas i `logs/config_audit.jsonl` (rotation vid ~5MB). Innehåller `actor`, `paths`, `hash_before/after`.
+
+## UI‑noter
+- UI laddar alltid `/config/runtime` vid start och visar `config_version/hash` i status.
+- Knappen “Föreslå ändring” POST:ar `/config/runtime/propose` och uppdaterar status.
+- Sätt bearer‑token i UI‑fältet (sparas i `localStorage.ui_bearer`).
+
+## SymbolMapper
+- `SymbolMode`: `realistic|synthetic` (env `SYMBOL_MODE`, CI sätter `synthetic`).
+- Strategier använder mänskliga symboler (t.ex. `BTCUSD`); I/O mappar:
+  - Realistic: `BTCUSD` → `tBTCUSD`
+  - Synthetic: `BTCUSD` → `tTESTBTC:TESTUSD`
+- Explicit TEST‑symboler (`tTEST...:TESTUSD`) bypassas oförändrade.

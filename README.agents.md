@@ -27,37 +27,33 @@ pwsh -File scripts/ci.ps1
 uvicorn core.server:app --reload --app-dir src
 ```
 
+#### URL:er
+```
+UI: http://127.0.0.1:8000/ui
+Health: http://127.0.0.1:8000/health
+```
+
 #### Strategy‑pipeline lokalt
 Se exempel i `README.md` (GitHub‑läsare) eller kör tester:
 ```powershell
 python -m pytest -q
 ```
 
-#### Dev overrides (lokalt)
-- Behåll prod‑lika defaults i `config/strategy/defaults.json`.
-- Sätt lokala testtrösklar via UI‑rutan eller en privat fil `dev.overrides.local.json` (git‑ignorerad).
-- Exempel: `dev.overrides.example.json` (kopiera till `dev.overrides.local.json` och justera vid behov).
-- Vid API‑körning: skicka overrides i body till `POST /strategy/evaluate` under nyckeln `configs`.
+#### Konfiguration (SSOT)
+- Runtime: `config/runtime.json` är SSOT; seedas från `config/runtime.seed.json` om saknas. Filen är git‑ignorerad.
+- API:
+  - `GET /config/runtime` → `{ cfg, version, hash }`
+  - `POST /config/runtime/validate` → `{ valid, errors, cfg? }`
+  - `POST /config/runtime/propose` → kräver `Authorization: Bearer <token>` (env `BEARER_TOKEN`).
+- UI:
+  - Sätt bearer‑token i UI‑fältet (sparas i `localStorage.ui_bearer`).
+  - “Föreslå ändring” POST:ar `/config/runtime/propose` och uppdaterar statuspanel (version/hash).
+- Audit: ändringar loggas i `logs/config_audit.jsonl` (rotation ~5 MB) med `actor`, `paths`, `hash_before/after`.
+
+#### SymbolMapper
+- `SYMBOL_MODE=realistic|synthetic` (CI sätter `synthetic`).
+- Strategi använder mänskliga symboler (`BTCUSD`); I/O mappar till Bitfinex (`tBTCUSD`) eller TEST (`tTESTBTC:TESTUSD`).
+- TEST‑symboler bypassas (skickas oförändrade).
 
 #### Filstruktur (kärna)
-- `src/core/strategy/features.py` – tidsrättade features, percentilklipp
-- `src/core/strategy/prob_model.py` – `predict_proba` + `predict_proba_for`
-- `src/core/strategy/confidence.py` – monotoni + clamp [0,1]
-- `src/core/strategy/regime.py` – HTF + hysteresis/state
-- `src/core/strategy/decision.py` – gate‑ordning, fail‑safe, sizing
-- `src/core/strategy/evaluate.py` – orkestrering + observability
-
-#### Testfiler
-- `tests/test_features.py`
-- `tests/test_prob_model_integration.py`
-- `tests/test_confidence.py`
-- `tests/test_regime.py`
-- `tests/test_decision.py`
-- `tests/test_e2e_pipeline.py`
-
-#### Vanliga fel och åtgärder
-- Time alignment: använd endast stängda barer (se testerna för `now_index`).
-- Dubbeljustering: lägg spread/volym‑påverkan i confidence/policy, inte i probability/regime.
-- NaN/Inf: clampa i features/confidence.
-
-
+- `

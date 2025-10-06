@@ -13,3 +13,5 @@ ruff>=0.6
 pytest>=8
 pytest-asyncio<1,>=0.23
 bandit>=1.7
+pre-commit>=3.0
+detect-secrets>=1.5

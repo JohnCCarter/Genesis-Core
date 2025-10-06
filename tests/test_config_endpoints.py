@@ -1,5 +1,6 @@
-from core.config.validator import validate_config, diff_config
 from fastapi.testclient import TestClient
+
+from core.config.validator import diff_config, validate_config
 from core.server import app
 
 

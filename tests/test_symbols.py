@@ -24,5 +24,3 @@ def test_resolve_synthetic() -> None:
 def test_force_passthrough() -> None:
     m = SymbolMapper(SymbolMode.REALISTIC)
     assert m.force("tLTCUSD") == "tLTCUSD"
-
-

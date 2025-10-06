@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from core.indicators.ema import calculate_ema
 from core.indicators.atr import calculate_atr
+from core.indicators.ema import calculate_ema
 
 
 def test_calculate_ema_basic():

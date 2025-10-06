@@ -69,8 +69,18 @@ class ModelRegistry:
                     p = self.root / champ
                 meta = self._load_model_meta(p)
                 if meta is not None:
-                    return meta
-        # Fallback: direkt fil per symbol/tf
+                    # Gammal struktur: direkt schema/buy/sell i roten
+                    if isinstance(meta, dict) and (
+                        "schema" in meta and "buy" in meta and "sell" in meta
+                    ):
+                        return meta
+                    # Ny struktur: modell innehåller timeframes, plocka rätt timeframe
+                    if isinstance(meta, dict) and timeframe in meta:
+                        return meta[timeframe]
+                    # Fallback till 1m om timeframe saknas
+                    if isinstance(meta, dict) and "1m" in meta:
+                        return meta["1m"]
+        # Fallback: direkt fil per symbol/tf (gammal struktur)
         cand = self._candidate_model_path(symbol, timeframe)
         if cand:
             return self._load_model_meta(cand)

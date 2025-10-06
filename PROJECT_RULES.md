@@ -57,13 +57,16 @@ Genesis-Core/
 - `/strategy/evaluate` - Run complete strategy pipeline
 - `/public/candles` - Fetch public market data
 - `/auth/check` - Verify API authentication
-- `/dev/overrides` - Development configuration overrides
 - `/paper/submit` - Submit paper trading orders (TEST symbols only)
 - `/debug/auth` - Debug authentication issues
 - `/health` - Service health check
 - `/metrics` - Prometheus metrics
-- `/config/validate` - Validate configuration
-- `/config/diff` - Compare configurations
+- `/account/wallets` - Exchange wallets (proxy)
+- `/account/positions` - Active positions (proxy, TEST)
+- `/account/orders` - Open orders (proxy, TEST)
+- `/config/runtime` - Get SSOT config
+- `/config/runtime/validate` - Validate SSOT config
+- `/config/runtime/propose` - Propose SSOT changes (Bearer)
 
 ## Development Workflow
 
@@ -86,7 +89,7 @@ Genesis-Core/
 2. Check formatting: `python -m black --check src`
 3. Check linting: `python -m ruff check src`
 4. Security scan: `python -m bandit -r src`
-5. Verify no secrets: `detect-secrets scan`
+5. Verify no secrets: `detect-secrets scan` <!-- pragma: allowlist secret (docs) -->
 
 ### Git Workflow
 1. **Never commit sensitive files**: .env, .nonce_tracker.json, dev.overrides.local.json

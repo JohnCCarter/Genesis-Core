@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from core.indicators.rsi import calculate_rsi
 from core.indicators.adx import calculate_adx
+from core.indicators.rsi import calculate_rsi
 
 
 def test_rsi_basic_monotone():

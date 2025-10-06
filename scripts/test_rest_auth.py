@@ -1,6 +1,7 @@
 import asyncio
-from core.io.bitfinex.rest_auth import post_auth
+
 from core.config.settings import get_settings
+from core.io.bitfinex.rest_auth import post_auth
 
 
 async def main():

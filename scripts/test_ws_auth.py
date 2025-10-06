@@ -1,6 +1,7 @@
 import asyncio
-from core.io.bitfinex.ws_auth import auth_ping
+
 from core.config.settings import get_settings
+from core.io.bitfinex.ws_auth import auth_ping
 
 
 async def main():

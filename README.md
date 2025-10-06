@@ -4,7 +4,7 @@ Denna kodbas är under aktiv utveckling (WIP).
 <!--
 >
 > - Paper only: boten körs enbart mot Bitfinex Paper‑account. Livehandel aktiveras först när utvecklaren uttryckligen beslutar det.
-> - Single‑user: endast repoägaren/utvecklaren utvecklar och använder boten.  
+> - Single‑user: endast repoägaren/utvecklaren utvecklar och använder boten.
 
 Minimal kärna med FastAPI, config-validering, observability och Bitfinex IO.
 
@@ -34,20 +34,29 @@ python scripts/test_ws_public.py
 
 ## Endpoints
 
-- `GET /health` – enkel hälsokontroll.
-- `GET /observability/dashboard` – counters/gauges/events.
-- `POST /config/validate` – body: JSON-config, svar: `{valid, errors}`.
-- `POST /config/diff` – body: `{old, new}`, svar: `{changes}`.
-- `POST /config/audit` – body: `{changes, user}`, append-only logg i `logs/config_audit.log`.
+- `GET /ui` – Minimal dashboard
+- `POST /strategy/evaluate` – Kör strategi‑pipeline
+- `GET /public/candles` – Publika candles (Bitfinex)
+- `GET /auth/check` – Snabb auth‑hälsokontroll
+- `POST /paper/submit` – Skicka paper‑order (TEST‑symboler)
+- `GET /debug/auth` – Maskerad vy av laddade nycklar
+- `GET /health` – Hälsa
+- `GET /observability/dashboard` – Counters/gauges/events
+- `GET /account/wallets` – Exchange‑wallets (proxy)
+- `GET /account/positions` – Aktiva positioner (proxy, TEST)
+- `GET /account/orders` – Öppna ordrar (proxy, TEST)
+- SSOT Config:
+  - `GET /config/runtime` → `{ cfg, version, hash }`
+  - `POST /config/runtime/validate` → `{ valid, errors, cfg? }`
+  - `POST /config/runtime/propose` (kräver Bearer)
 
 Exempel:
 
 ```bash
 curl -s http://127.0.0.1:8000/health
 curl -s http://127.0.0.1:8000/observability/dashboard
-curl -s -X POST http://127.0.0.1:8000/config/validate -H 'Content-Type: application/json' -d '{"dry_run":true}'
-curl -s -X POST http://127.0.0.1:8000/config/diff -H 'Content-Type: application/json' -d '{"old":{"x":1},"new":{"x":2}}'
-curl -s -X POST http://127.0.0.1:8000/config/audit -H 'Content-Type: application/json' -d '{"changes":[{"key":"x","old":1,"new":2}],"user":"local"}'
+curl -s http://127.0.0.1:8000/account/wallets
+curl -s http://127.0.0.1:8000/config/runtime
 ```
 
 ### NonceManager

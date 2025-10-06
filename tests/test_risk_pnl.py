@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from core.risk.pnl import daily_pnl_usd, breached_daily_loss
+from core.risk.pnl import breached_daily_loss, daily_pnl_usd
 
 
 def test_daily_pnl_usd():

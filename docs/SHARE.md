@@ -35,16 +35,17 @@ src/core/
 
 - GET `/health`
 - GET `/observability/dashboard`
-- POST `/config/validate` (body: JSON)
-- POST `/config/diff` (body: {old,new})
-- POST `/config/audit` (body: {changes,user})
+- GET `/account/wallets`
+- GET `/account/positions`
+- GET `/account/orders`
+- SSOT Config: GET `/config/runtime`, POST `/config/runtime/validate`, POST `/config/runtime/propose`
 
 Exempel:
 
 ```bash
 curl -s http://127.0.0.1:8000/health
 curl -s http://127.0.0.1:8000/observability/dashboard
-curl -s -X POST http://127.0.0.1:8000/config/validate -H 'Content-Type: application/json' -d '{"dry_run":true}'
+curl -s http://127.0.0.1:8000/account/wallets
 ```
 
 ## Test & Kvalitet

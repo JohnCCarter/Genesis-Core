@@ -24,7 +24,11 @@ def test_runtime_endpoints_e2e(monkeypatch):
     monkeypatch.setenv("BEARER_TOKEN", "test-secret")
     r = c.post(
         "/config/runtime/propose",
-        json={"patch": {"thresholds": {"entry_conf_overall": 0.6}}, "actor": "test", "expected_version": v0},
+        json={
+            "patch": {"thresholds": {"entry_conf_overall": 0.6}},
+            "actor": "test",
+            "expected_version": v0,
+        },
     )
     assert r.status_code == 401
 
@@ -32,10 +36,12 @@ def test_runtime_endpoints_e2e(monkeypatch):
     r = c.post(
         "/config/runtime/propose",
         headers={"Authorization": "Bearer test-secret"},
-        json={"patch": {"thresholds": {"entry_conf_overall": 0.6}}, "actor": "test", "expected_version": v0},
+        json={
+            "patch": {"thresholds": {"entry_conf_overall": 0.6}},
+            "actor": "test",
+            "expected_version": v0,
+        },
     )
     assert r.status_code == 200
     out = r.json()
     assert int(out.get("version", -1)) == v0 + 1
-
-

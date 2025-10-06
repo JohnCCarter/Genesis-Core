@@ -12,6 +12,14 @@ from core.observability.metrics import get_dashboard
 from core.server_config_api import router as config_router
 from core.strategy.evaluate import evaluate_pipeline
 
+# Enkla cache-behållare för /account/*
+_ACCOUNT_CACHE = {
+    "wallets": {"ts": 0.0, "data": {"items": []}},
+    "positions": {"ts": 0.0, "data": {"items": []}},
+    "orders": {"ts": 0.0, "data": {"items": []}},
+}
+_ACCOUNT_TTL = 5.0
+
 app = FastAPI()
 app.include_router(config_router)
 _AUTH = ConfigAuthority()
@@ -128,12 +136,27 @@ def ui_page() -> str:
   <div id="status" style="margin:6px 0; color:#374151; font-size:14px;">Config: <span id="cfg_ver">-</span> | <span id="cfg_hash">-</span></div>
   <div class="row">
     <label>Order‑symbol (TEST)</label>
-    <select id="symbol_select"></select>
+    <select id="symbol_select" disabled></select>
     <div style="display:flex; align-items:center; gap:8px; font-size:12px; color:#374151;">
       <input type="checkbox" id="auto_thresholds" checked />
       <label for="auto_thresholds">Auto‑trösklar per symbol</label>
+      <input type="checkbox" id="low_threshold_test" />
+      <label for="low_threshold_test">Låg tröskel (test)</label>
     </div>
     <div id="symbol_info" style="font-size:12px; color:#6b7280"></div>
+
+    <label>Timeframe</label>
+    <select id="timeframe_select">
+      <option value="1m">1m</option>
+      <option value="5m">5m</option>
+      <option value="15m">15m</option>
+      <option value="1h">1h</option>
+      <option value="4h">4h</option>
+      <option value="1D">1D</option>
+    </select>
+
+    <label>Policy‑symbol (real)</label>
+    <select id="policy_symbol_select"></select>
 
     <label>Bearer token (för /config/runtime/propose)</label>
     <div style="display:flex; gap:8px; align-items:center;">
@@ -141,44 +164,65 @@ def ui_page() -> str:
       <button id="save_bearer">Spara token</button>
     </div>
 
-    <label>Timeframe</label>
-    <select id=\"timeframe_select\">
-      <option value=\"1m\">1m</option>
-      <option value=\"5m\">5m</option>
-      <option value=\"15m\">15m</option>
-      <option value=\"1h\">1h</option>
-      <option value=\"4h\">4h</option>
-      <option value=\"1D\">1D</option>
-    </select>
-
     <label>Policy JSON</label>
-    <textarea id=\"policy\">{\n  \"symbol\": \"tBTCUSD\",\n  \"timeframe\": \"1m\"\n}</textarea>
-    <div id=\"policy_err\" style=\"color:#b91c1c\"></div>
+    <textarea id="policy">{\n  "symbol": "tBTCUSD",\n  "timeframe": "1m"\n}</textarea>
+    <div id="policy_err" style="color:#b91c1c"></div>
 
     <label>Configs JSON</label>
-    <textarea id=\"configs\">{\n  \"features\": {\n    \"percentiles\": {\"ema_delta_pct\": [-0.05, 0.05], \"rsi\": [-1, 1]},\n    \"versions\": {\"feature_set\": \"v1\"}\n  },\n  \"thresholds\": {\"entry_conf_overall\": 0.5, \"regime_proba\": {\"balanced\": 0.5}},\n  \"gates\": {\"hysteresis_steps\": 2, \"cooldown_bars\": 0},\n  \"risk\": {\"risk_map\": [[0.6, 0.005], [0.7, 0.01]]},\n  \"ev\": {\"R_default\": 1.5}\n}</textarea>
-    <div id=\"configs_err\" style=\"color:#b91c1c\"></div>
+    <textarea id="configs">{\n  "features": {\n    "percentiles": {\"ema_delta_pct\": [-0.05, 0.05], \"rsi\": [-1, 1]},\n    "versions": {\"feature_set\": \"v1\"}\n  },\n  "thresholds": {\"entry_conf_overall\": 0.5, \"regime_proba\": {\"balanced\": 0.5}},\n  "gates": {\"hysteresis_steps\": 2, \"cooldown_bars\": 0},\n  "risk": {\"risk_map\": [[0.6, 0.005], [0.7, 0.01]]},\n  "ev": {\"R_default\": 1.5}\n}</textarea>
+    <div id="configs_err" style="color:#b91c1c"></div>
 
     <label>Candles JSON</label>
-    <textarea id=\"candles\">{\n  \"open\": [1,2,3,4],\n  \"high\": [2,3,4,5],\n  \"low\": [0.5,1.5,2.5,3.5],\n  \"close\": [1.5,2.5,3.5,4.5],\n  \"volume\": [10,11,12,13]\n}</textarea>
-    <div id=\"candles_err\" style=\"color:#b91c1c\"></div>
+    <textarea id="candles">{\n  "symbol": "tETHUSD",\n  "open": [1,2,3,4],\n  "high": [2,3,4,5],\n  "low": [0.5,1.5,2.5,3.5],\n  "close": [1.5,2.5,3.5,4.5],\n  "volume": [10,11,12,13]\n}</textarea>
+    <div id="candles_err" style="color:#b91c1c"></div>
 
-    <div style=\"display:flex; gap:8px;\">
-      <button id=\"run\">Kör pipeline</button>
-      <button id=\"save\">Spara</button>
-      <button id=\"restore\">Återställ</button>
-      <button id=\"fetch_pub\">Hämta publika candles</button>
-      <button id=\"auth\">Auth‑check</button>
+    <div style="display:flex; gap:8px;">
+      <button id="run">Kör pipeline</button>
+
+      <button id="restore">Återställ</button>
+      <button id="fetch_pub">Hämta publika candles</button>
+      <button id="auth">Auth‑check</button>
       <!-- overrides inaktiveras när SSOT används -->
-      <button id=\"propose_cfg\">Föreslå ändring</button>
-      <button id=\"submit_paper\">Submit paper order</button>
-      <button id=\"reset_defaults\">Återställ defaults</button>
-      <button id=\"clear_cache\">Rensa cache</button>
+      <button id="propose_cfg">Föreslå ändring</button>
+      <button id="submit_paper">Submit paper order</button>
+      <button id="reset_defaults">Återställ defaults</button>
+      <button id="clear_cache">Rensa cache</button>
     </div>
+    <div id="symbol_mismatch_warning" style="display:none; color:#dc2626; font-size:14px; margin-top:8px; padding:8px; background:#fef2f2; border:1px solid #fecaca; border-radius:4px;">
+      ⚠️ Varning: Policy-symbol matchar inte Candles-data. Klicka "Hämta publika candles" för att uppdatera.
+    </div>
+    <div id="ui_status" style="display:none; color:#065f46; font-size:13px; margin-top:6px;"></div>
     <div>
       <h3>Result</h3>
-      <pre id=\"out\"></pre>
-      <div id=\"summary\"></div>
+      <pre id="out"></pre>
+      <div id="summary"></div>
+    </div>
+
+    <div style="margin-top:16px; border-top:1px solid #e5e7eb; padding-top:12px;">
+      <h3 style="margin:4px 0;">Wallets</h3>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button id="refresh_wallets">Uppdatera</button>
+        <label style="font-size:12px; color:#374151;"><input type="checkbox" id="auto_wallets" /> Auto‑refresh 5s</label>
+      </div>
+      <pre id="wallets_out"></pre>
+    </div>
+
+    <div style="margin-top:16px; border-top:1px solid #e5e7eb; padding-top:12px;">
+      <h3 style="margin:4px 0;">Positions</h3>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button id="refresh_positions">Uppdatera</button>
+        <label style="font-size:12px; color:#374151;"><input type="checkbox" id="auto_positions" /> Auto‑refresh 5s</label>
+      </div>
+      <pre id="positions_out"></pre>
+    </div>
+
+    <div style="margin-top:16px; border-top:1px solid #e5e7eb; padding-top:12px;">
+      <h3 style="margin:4px 0;">Orders</h3>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button id="refresh_orders">Uppdatera</button>
+        <label style="font-size:12px; color:#374151;"><input type="checkbox" id="auto_orders" /> Auto‑refresh 5s</label>
+      </div>
+      <pre id="orders_out"></pre>
     </div>
   </div>
   <script>
@@ -199,12 +243,48 @@ def ui_page() -> str:
           const opt = document.createElement('option');
           opt.value = s; opt.textContent = s; sel.appendChild(opt);
         }
+        // Fyll policy-symboler (real) från whitelist (map TEST->real)
+        const realSel = el('policy_symbol_select');
+        if (realSel) {
+          realSel.innerHTML = '';
+          const reals = symbols.map(s => testToReal(s));
+          const uniqueReals = Array.from(new Set(reals)).sort();
+          for (const rs of uniqueReals) {
+            const opt = document.createElement('option');
+            opt.value = rs; opt.textContent = rs; realSel.appendChild(opt);
+          }
+        }
         await refreshSymbolInfo();
+        syncInputsFromPolicy();
       } catch {
         sel.innerHTML = '';
         ['tTESTBTC:TESTUSD'].forEach(s => { const o = document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o); });
+        const realSel = el('policy_symbol_select');
+        if (realSel) { realSel.innerHTML = ''; ['tBTCUSD','tETHUSD'].forEach(rs=>{ const o=document.createElement('option'); o.value=rs; o.textContent=rs; realSel.appendChild(o); }); }
         await refreshSymbolInfo();
       }
+    }
+    function testToReal(sym) {
+      try {
+        const u = (sym||'').toUpperCase();
+        const core = u.replace(/^T/,'');
+        const [base,quoteRaw] = core.includes(':') ? core.split(':',1).concat(core.split(':').slice(1).join(':')) : [core,'USD'];
+        const quote = (quoteRaw||'USD').replace('TEST','');
+        const baseClean = base.replace('TEST','');
+        return 't'+baseClean+quote;
+      } catch { return 'tBTCUSD'; }
+    }
+    function realToTest(real) {
+      try {
+        const u = (real||'').toUpperCase();
+        const m = u.match(/^T?([A-Z]+)(USD|USDT)$/);
+        const base = (m && m[1]) ? m[1] : 'BTC';
+        const quote = (m && m[2]) ? m[2] : 'USD';
+        const candidate = 'tTEST'+base+':'+'TEST'+quote;
+        const sel = el('symbol_select');
+        if (sel && Array.from(sel.options).some(o=>o.value===candidate)) return candidate;
+        return 'tTESTBTC:TESTUSD';
+      } catch { return 'tTESTBTC:TESTUSD'; }
     }
     async function refreshSymbolInfo() {
       try {
@@ -219,17 +299,16 @@ def ui_page() -> str:
         const usd = Number(d.usd_available||0);
         const est = Number(d.est_max_size||0);
         el('symbol_info').textContent = `Min: ${min} | Min+margin: ${minm} | Pris: ${px} | USD: ${usd} | Max≈ ${est}`;
-        // Applicera presets om valt
         if (el('auto_thresholds')?.checked) {
           try {
             const cfg = getJSON('configs','configs_err');
             cfg.thresholds = cfg.thresholds || {};
-            cfg.thresholds.entry_conf_overall = 0.5;
+            // välj låg tröskel om aktiverad, annars normal 0.5
+            const low = !!el('low_threshold_test')?.checked;
+            cfg.thresholds.entry_conf_overall = low ? 0.20 : 0.5;
             cfg.thresholds.regime_proba = { balanced: 0.5 };
             cfg.risk = cfg.risk || {};
-            // Sätt risk_map till minst min+margin
-            const baseMap = [[0.5, minm]];
-            cfg.risk.risk_map = baseMap;
+            cfg.risk.risk_map = [[low ? 0.20 : 0.5, minm]];
             el('configs').value = JSON.stringify(cfg, null, 2);
             err('configs_err','');
           } catch {}
@@ -239,18 +318,40 @@ def ui_page() -> str:
     const syncPolicyFromInputs = () => {
       try {
         const pol = getJSON('policy','policy_err');
-        // Endast timeframe synkas in i policy; symbol hanteras separat för order
+        // timeframe
         pol.timeframe = el('timeframe_select')?.value || pol.timeframe || '1m';
+        // symbol från policy_symbol_select
+        const ps = el('policy_symbol_select');
+        if (ps && ps.value) pol.symbol = ps.value;
         el('policy').value = JSON.stringify(pol, null, 2);
+        // härled TEST-symbol och synka order-select
+        const derived = realToTest(pol.symbol||'tBTCUSD');
+        const symSel = el('symbol_select');
+        if (symSel) symSel.value = derived;
+        // validera symbol-match
+        validateSymbolMatch();
+      } catch {}
+    };
+    const validateSymbolMatch = () => {
+      try {
+        const pol = getJSON('policy','policy_err');
+        const candles = getJSON('candles','candles_err');
+        const policySymbol = pol.symbol || '';
+        const candlesSymbol = candles.symbol || '';
+        const mismatch = policySymbol && candlesSymbol && policySymbol !== candlesSymbol;
+        const warning = el('symbol_mismatch_warning');
+        const runBtn = el('run');
+        if (warning) warning.style.display = mismatch ? 'block' : 'none';
+        if (runBtn) runBtn.disabled = mismatch;
       } catch {}
     };
     const syncInputsFromPolicy = () => {
       try {
         const pol = getJSON('policy','policy_err');
         const symSel = el('symbol_select');
-        if (symSel && symSel.options && symSel.options.length) {
-          symSel.value = pol.symbol || symSel.value;
-        }
+        const psSel = el('policy_symbol_select');
+        if (psSel) psSel.value = pol.symbol || psSel.value || 'tBTCUSD';
+        if (symSel) symSel.value = realToTest(pol.symbol||'tBTCUSD');
         const tfSel = el('timeframe_select');
         if (tfSel) tfSel.value = pol.timeframe || '1m';
       } catch {}
@@ -271,10 +372,15 @@ def ui_page() -> str:
       localStorage.setItem('ui_configs', el('configs').value);
       localStorage.setItem('ui_candles', el('candles').value);
     };
+    // autosave på förändring
+    el('policy').addEventListener('input', save);
+    el('configs').addEventListener('input', save);
+    el('candles').addEventListener('input', save);
     const restore = () => {
       const p = localStorage.getItem('ui_policy'); if (p) el('policy').value = p;
       const c = localStorage.getItem('ui_configs'); if (c) el('configs').value = c;
       const d = localStorage.getItem('ui_candles'); if (d) el('candles').value = d;
+      const st = el('ui_status'); if (st) { st.textContent = 'Lokalt UI återställt'; st.style.display = 'block'; setTimeout(()=>{ st.style.display = 'none'; }, 1500); }
     };
     const clearCache = () => {
       try {
@@ -309,14 +415,15 @@ def ui_page() -> str:
     function loadBearer() {
       try { const b = localStorage.getItem('ui_bearer') || ''; if (el('bearer')) el('bearer').value = b; } catch {}
     }
-    el('save').addEventListener('click', save);
-    el('restore').addEventListener('click', restore);
+    el('restore').addEventListener('click', () => { restore(); syncInputsFromPolicy(); validateSymbolMatch(); });
     const sb = el('save_bearer'); if (sb) sb.addEventListener('click', () => { try { const v = el('bearer')?.value || ''; localStorage.setItem('ui_bearer', v); } catch {} });
     el('clear_cache').addEventListener('click', () => { clearCache(); el('configs').value=''; hydrateConfigsFromDefaultsIfEmpty(); });
     el('reset_defaults').addEventListener('click', async () => { clearCache(); el('configs').value=''; await hydrateConfigsFromDefaultsIfEmpty(); save(); });
     el('timeframe_select').addEventListener('change', syncPolicyFromInputs);
     const symSel = el('symbol_select'); if (symSel) symSel.addEventListener('change', refreshSymbolInfo);
     const at = el('auto_thresholds'); if (at) at.addEventListener('change', refreshSymbolInfo);
+    const lt = el('low_threshold_test'); if (lt) lt.addEventListener('change', refreshSymbolInfo);
+    const psSel = el('policy_symbol_select'); if (psSel) psSel.addEventListener('change', () => { syncPolicyFromInputs(); refreshSymbolInfo(); });
     el('fetch_pub').addEventListener('click', async () => {
       try {
         const pol = getJSON('policy','policy_err');
@@ -324,7 +431,11 @@ def ui_page() -> str:
         const sym = pol.symbol || 'tBTCUSD';
         const r = await fetch(`/public/candles?symbol=${encodeURIComponent(sym)}&timeframe=${encodeURIComponent(tf)}&limit=120`);
         const data = await r.json();
-        el('candles').value = JSON.stringify(data, null, 2);
+        // injicera symbol/timeframe för validering
+        const out = Object.assign({}, data, { symbol: sym, timeframe: tf });
+        el('candles').value = JSON.stringify(out, null, 2);
+        // validera efter uppdatering
+        validateSymbolMatch();
       } catch {}
     });
     el('auth').addEventListener('click', async () => {
@@ -370,7 +481,11 @@ def ui_page() -> str:
     // Autoload saved
     restore();
     hydrateConfigsFromDefaultsIfEmpty();
-    loadWhitelist().then(syncInputsFromPolicy);
+    loadWhitelist().then(() => {
+      syncInputsFromPolicy();
+      // validering efter att UI är laddat
+      validateSymbolMatch();
+    });
     loadHealth();
     loadBearer();
 
@@ -380,7 +495,7 @@ def ui_page() -> str:
         const pol = getJSON('policy','policy_err');
         const action = lastData?.result?.action;
         let size = Number(lastData?.meta?.decision?.size || 0);
-        const orderSymbol = el('symbol_select')?.value || 'tTESTBTC:TESTUSD';
+        const orderSymbol = el('symbol_select')?.value || realToTest(pol.symbol||'tBTCUSD');
         // Force min+margin om size <= 0: hämta estimate och sätt storlek därefter
         if (size <= 0 && action) {
           try {
@@ -399,6 +514,38 @@ def ui_page() -> str:
         const data = await r.json();
         el('out').textContent = JSON.stringify(data, null, 2);
       } catch { err('configs_err','Submit fel'); }
+    });
+
+    async function fetchJSON(url, fallback={}) {
+      try { const r = await fetch(url); if (!r.ok) return fallback; return await r.json(); } catch { return fallback; }
+    }
+    async function loadWallets() {
+      const d = await fetchJSON('/account/wallets', {items:[]});
+      el('wallets_out').textContent = JSON.stringify(d, null, 2);
+    }
+    async function loadPositions() {
+      const d = await fetchJSON('/account/positions', {items:[]});
+      el('positions_out').textContent = JSON.stringify(d, null, 2);
+    }
+    async function loadOrders() {
+      const d = await fetchJSON('/account/orders', {items:[]});
+      el('orders_out').textContent = JSON.stringify(d, null, 2);
+    }
+    let tW=null, tP=null, tO=null;
+    el('refresh_wallets').addEventListener('click', loadWallets);
+    el('refresh_positions').addEventListener('click', loadPositions);
+    el('refresh_orders').addEventListener('click', loadOrders);
+    el('auto_wallets').addEventListener('change', (e)=>{
+      if (e.target.checked) { loadWallets(); tW = setInterval(loadWallets, 5000); }
+      else { if (tW) clearInterval(tW); tW=null; }
+    });
+    el('auto_positions').addEventListener('change', (e)=>{
+      if (e.target.checked) { loadPositions(); tP = setInterval(loadPositions, 5000); }
+      else { if (tP) clearInterval(tP); tP=null; }
+    });
+    el('auto_orders').addEventListener('change', (e)=>{
+      if (e.target.checked) { loadOrders(); tO = setInterval(loadOrders, 5000); }
+      else { if (tO) clearInterval(tO); tO=null; }
     });
   </script>
 </body>
@@ -462,6 +609,98 @@ async def auth_check() -> dict:
     return {"ok": True, "wallets": w_count, "positions": p_count}
 
 
+@app.get("/account/wallets")
+async def account_wallets() -> dict:
+    import time
+
+    now = time.time()
+    if now - _ACCOUNT_CACHE["wallets"]["ts"] < _ACCOUNT_TTL:
+        return _ACCOUNT_CACHE["wallets"]["data"]
+    try:
+        data = await bfx_read.get_wallets()
+        items = []
+        if isinstance(data, list):
+            for w in data:
+                # v2 array-format: [type,currency,balance,unsettled,available,...]
+                if isinstance(w, list) and len(w) >= 5 and str(w[0]).lower() == "exchange":
+                    items.append(
+                        {
+                            "type": w[0],
+                            "currency": str(w[1]).upper(),
+                            "balance": float(w[2]),
+                            "available": float(w[4]) if w[4] is not None else None,
+                        }
+                    )
+        out = {"items": items}
+        _ACCOUNT_CACHE["wallets"] = {"ts": now, "data": out}
+        return out
+    except Exception as e:
+        return {"items": [], "error": str(e)}
+
+
+@app.get("/account/positions")
+async def account_positions() -> dict:
+    import time
+
+    now = time.time()
+    if now - _ACCOUNT_CACHE["positions"]["ts"] < _ACCOUNT_TTL:
+        return _ACCOUNT_CACHE["positions"]["data"]
+    try:
+        data = await bfx_read.get_positions()
+        items = []
+        if isinstance(data, list):
+            for p in data:
+                if isinstance(p, list) and len(p) >= 4:
+                    sym = str(p[0])
+                    # endast TEST-symboler
+                    if not (sym.startswith("tTEST") or ":TEST" in sym):
+                        continue
+                    items.append(
+                        {
+                            "symbol": sym,
+                            "status": p[1],
+                            "amount": float(p[2]),
+                            "base_price": float(p[3]) if p[3] is not None else None,
+                        }
+                    )
+        out = {"items": items}
+        _ACCOUNT_CACHE["positions"] = {"ts": now, "data": out}
+        return out
+    except Exception as e:
+        return {"items": [], "error": str(e)}
+
+
+@app.get("/account/orders")
+async def account_orders() -> dict:
+    import time
+
+    now = time.time()
+    if now - _ACCOUNT_CACHE["orders"]["ts"] < _ACCOUNT_TTL:
+        return _ACCOUNT_CACHE["orders"]["data"]
+    try:
+        data = await bfx_read.get_orders()
+        items = []
+        if isinstance(data, list):
+            for o in data:
+                # orders-array är längre; plocka symbol, amount, type, status
+                if isinstance(o, list) and len(o) >= 8:
+                    sym = str(o[3])  # SYMBOL index i v2 orders array
+                    if not (sym.startswith("tTEST") or ":TEST" in sym):
+                        continue
+                    items.append(
+                        {
+                            "symbol": sym,
+                            "amount": float(o[6]) if o[6] is not None else None,
+                            "type": o[8] if len(o) > 8 else None,
+                            "status": o[13] if len(o) > 13 else None,
+                        }
+                    )
+        out = {"items": items}
+        _ACCOUNT_CACHE["orders"] = {"ts": now, "data": out}
+        return out
+    except Exception as e:
+        return {"items": [], "error": str(e)}
+
 
 @app.post("/paper/submit")
 async def paper_submit(payload: dict = Body(...)) -> dict:
@@ -497,7 +736,11 @@ async def paper_submit(payload: dict = Body(...)) -> dict:
     # Wallet-medveten cap (opt-in): begränsa köp till tillgänglig USD och sälj till innehav av bas
     try:
         s = get_settings()
-        if int(getattr(s, "WALLET_CAP_ENABLED", 0) or 0) == 1 and s.BITFINEX_API_KEY and s.BITFINEX_API_SECRET:
+        if (
+            int(getattr(s, "WALLET_CAP_ENABLED", 0) or 0) == 1
+            and s.BITFINEX_API_KEY
+            and s.BITFINEX_API_SECRET
+        ):
             # Hämta wallets
             wallets = await bfx_read.get_wallets()
             avail_by_ccy: dict[str, float] = {}
@@ -518,6 +761,7 @@ async def paper_submit(payload: dict = Body(...)) -> dict:
                         avail = float(w.get("available") or 0.0)
                         if str(w.get("type") or "").lower() == "exchange" and ccy:
                             avail_by_ccy[ccy] = avail_by_ccy.get(ccy, 0.0) + max(0.0, avail)
+
             # Derivera real-symbol för pris (tTESTDOGE:TESTUSD -> tDOGEUSD)
             def _real_from_test(sym: str) -> str:
                 u = sym.upper().lstrip("T")  # ta bort ledande 't'
@@ -555,7 +799,11 @@ async def paper_submit(payload: dict = Body(...)) -> dict:
                         wallet_clamped = True
             # SHORT: begränsa efter innehav av bas
             elif side == "SHORT":
-                base_avail = avail_by_ccy.get(base_ccy, 0.0) or avail_by_ccy.get("TEST" + base_ccy, 0.0) or 0.0
+                base_avail = (
+                    avail_by_ccy.get(base_ccy, 0.0)
+                    or avail_by_ccy.get("TEST" + base_ccy, 0.0)
+                    or 0.0
+                )
                 if base_avail > 0 and abs(size) > base_avail:
                     size = base_avail
                     wallet_clamped = True
@@ -651,9 +899,9 @@ async def paper_estimate(symbol: str) -> dict:
                         avail = float(w.get("available") or 0.0)
                         if str(w.get("type") or "").lower() == "exchange" and ccy:
                             avail_by_ccy[ccy] = avail_by_ccy.get(ccy, 0.0) + max(0.0, avail)
-            usd_avail = (avail_by_ccy.get("USD") or avail_by_ccy.get("TESTUSD") or 0.0)
+            usd_avail = avail_by_ccy.get("USD") or avail_by_ccy.get("TESTUSD") or 0.0
             base = _base_ccy_from_test(sym)
-            base_avail = (avail_by_ccy.get(base) or avail_by_ccy.get("TEST" + base) or 0.0)
+            base_avail = avail_by_ccy.get(base) or avail_by_ccy.get("TEST" + base) or 0.0
     except Exception:
         pass
 

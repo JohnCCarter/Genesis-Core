@@ -10,10 +10,10 @@
 ## API-ytor
 
 - Observability: `GET /observability/dashboard` returnerar counters/gauges/events.
-- Config:
-  - `POST /config/validate` – validerar JSON mot `schema_v1.json`.
-  - `POST /config/diff` – diffar två config-objekt `{old,new}`.
-  - `POST /config/audit` – append-only audit till `logs/config_audit.log`.
+- Config (SSOT):
+  - `GET /config/runtime` → `{ cfg, version, hash }`
+  - `POST /config/runtime/validate` → `{ valid, errors, cfg? }`
+  - `POST /config/runtime/propose` (kräver Bearer) – föreslår och auditar ändringar i `logs/config_audit.jsonl`.
 
 ### NonceManager
 

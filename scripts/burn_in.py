@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+# ruff: noqa: E402
 import asyncio
 import contextlib
 import json
@@ -13,10 +14,10 @@ _SRC = _ROOT / "src"
 if str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
 
+# Imports som kräver sys.path injektion
 from core.config.settings import get_settings
+from core.io.bitfinex.read_helpers import get_positions, get_wallets
 from core.io.bitfinex.ws_public import one_message_ticker
-from core.io.bitfinex.read_helpers import get_wallets, get_positions
-from core.io.bitfinex.ws_reconnect import WSReconnectClient
 from core.observability.metrics import metrics
 
 
@@ -39,7 +40,6 @@ async def burn_in(
         _log = None
 
     async def ws_loop() -> None:
-        client = WSReconnectClient(enable_auth=False)
         # Kör enkel ticker-subscribe/cykel med ack/error/timeout-observation
         end = asyncio.get_running_loop().time() + duration_seconds
         while asyncio.get_running_loop().time() < end:
@@ -82,7 +82,6 @@ async def burn_in(
             "success": c.get("ws_public_success", 0),
             "error": c.get("ws_public_error", 0),
             "timeout": c.get("ws_public_timeout", 0),
-            "maintenance": c.get("ws_public_maintenance", 0),
         },
         "rest_auth": {
             "request": c.get("rest_auth_request", 0),

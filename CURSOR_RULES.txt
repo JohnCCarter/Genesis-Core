@@ -34,7 +34,8 @@ Genesis-Core is a Python 3.11+ FastAPI trading system with:
 ## FastAPI Endpoints
 /ui (dashboard), /strategy/evaluate (pipeline), /public/candles (market data),
 /auth/check (verify auth), /paper/submit (TEST orders only), /debug/auth,
-/health, /metrics, /config/validate, /dev/overrides
+/health, /metrics, /account/wallets, /account/positions, /account/orders,
+/config/runtime, /config/runtime/validate, /config/runtime/propose
 
 ## Common Issues
 - "invalid key": Check JSON serialization consistency

@@ -1,7 +1,7 @@
+import asyncio
+import json
 import os
 import sys
-import json
-import asyncio
 
 # Ensure we can import from src/
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))

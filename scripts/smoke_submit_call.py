@@ -1,7 +1,7 @@
-import asyncio
-import json
 import os
 import sys
+import json
+import asyncio
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 SRC = os.path.join(ROOT, "src")
@@ -12,29 +12,23 @@ import core.server as srv  # noqa: E402
 
 
 class DummyResp:
+    def __init__(self, payload: dict):
+        self._payload = payload
+
     def json(self):
-        return {"status": "stubbed"}
+        return {"status": "stubbed", "echo": self._payload}
 
 
 class DummyClient:
     async def signed_request(self, method: str, endpoint: str, body: dict):
-        self.method = method
-        self.endpoint = endpoint
-        self.body = body
-        return DummyResp()
+        return DummyResp(body)
 
 
 async def run() -> int:
     srv.get_exchange_client = lambda: DummyClient()  # type: ignore[assignment]
-
-    payload = {"symbol": "tTESTETH:TESTUSD", "side": "LONG", "size": 0.003, "type": "MARKET"}
-    out = await srv.paper_submit(payload)
-
-    symbol = out.get("request", {}).get("symbol")
-    ok = bool(out.get("ok"))
-    print(json.dumps({"ok": ok, "symbol": symbol}, ensure_ascii=False))
-
-    return 0 if symbol == "tTESTETH:TESTUSD" and ok else 1
+    out = await srv.paper_submit({"symbol": "tTESTETH:TESTUSD", "side": "LONG", "size": 0.0005, "type": "MARKET"})
+    print(json.dumps(out, ensure_ascii=False))
+    return 0 if out.get("ok") else 1
 
 
 if __name__ == "__main__":

@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 import asyncio
-import json
 
 import httpx
-
 
 SYMBOLS = [
     "tTESTBTC:TESTUSD",
@@ -35,5 +33,3 @@ async def main() -> None:
 
 if __name__ == "__main__":
     asyncio.run(main())
-
-

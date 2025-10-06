@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from fastapi.testclient import TestClient
+
 from core.server import app
-from pathlib import Path
 
 
 def test_ui_get_and_evaluate_post():
@@ -97,6 +97,7 @@ def test_auth_check_uses_helpers(monkeypatch):
 
 def test_runtime_endpoints_exist():
     from core.server import app
+
     c = TestClient(app)
     r = c.get("/config/runtime")
     assert r.status_code == 200

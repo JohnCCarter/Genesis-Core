@@ -19,7 +19,7 @@ repos:
     rev: 1.7.9
     hooks:
       - id: bandit
-        args: [-r, src, -f, json, -o, bandit-report.json]
+        args: [-r, src]
         files: ^src/.*\.py$
 
   # Prevent secrets from being committed
@@ -27,7 +27,6 @@ repos:
     rev: v1.5.0
     hooks:
       - id: detect-secrets
-        args: [--baseline, .secrets.baseline]
         exclude: \.secrets\.baseline$
 
   # Prevent large files

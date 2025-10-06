@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from core.strategy.validation import brier_score, log_loss, psi, ks_statistic
+from core.strategy.validation import brier_score, ks_statistic, log_loss, psi
 
 
 def test_brier_and_logloss_basic():

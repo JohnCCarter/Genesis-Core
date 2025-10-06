@@ -1,5 +1,6 @@
 import asyncio
 import json
+
 import websockets
 
 URI = "wss://api-pub.bitfinex.com/ws/2"

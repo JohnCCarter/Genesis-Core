@@ -6,9 +6,10 @@
 
   - GET `/health` – hälsokontroll
   - GET `/observability/dashboard` – counters/gauges/events
-  - POST `/config/validate` – validerar config mot schema v1
-  - POST `/config/diff` – diffar `{old,new}` och returnerar `changes`
-  - POST `/config/audit` – skriver append-only logg till `logs/config_audit.log`
+  - GET `/account/wallets` – Exchange wallets (proxy)
+  - GET `/account/positions` – Aktiva positioner (proxy, TEST)
+  - GET `/account/orders` – Öppna ordrar (proxy, TEST)
+  - SSOT: `GET /config/runtime`, `POST /config/runtime/validate`, `POST /config/runtime/propose`
 
 - Konfiguration
 

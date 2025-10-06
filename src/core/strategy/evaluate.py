@@ -8,6 +8,9 @@ from core.strategy.decision import decide
 from core.strategy.features import extract_features
 from core.strategy.prob_model import predict_proba_for
 from core.strategy.regime import classify_regime
+from core.utils.logging_redaction import get_logger
+
+_LOGGER = get_logger(__name__)
 
 
 def evaluate_pipeline(
@@ -42,16 +45,16 @@ def evaluate_pipeline(
     try:
         top = max(probas.values()) if isinstance(probas, dict) else 0.0
         metrics.set_gauge("proba_top", float(top))
-    except Exception:
-        pass
+    except (ValueError, TypeError) as e:  # nosec B110 - metrics are non-critical
+        _LOGGER.debug("Failed to set proba_top gauge: %s", e)
 
     conf, conf_meta = compute_confidence(probas, config=configs.get("quality"))
     metrics.event("confidence_ok", {})
     try:
         metrics.set_gauge("confidence_buy", float(conf.get("buy", 0.0)))
         metrics.set_gauge("confidence_sell", float(conf.get("sell", 0.0)))
-    except Exception:
-        pass
+    except (ValueError, TypeError, AttributeError) as e:  # nosec B110 - metrics are non-critical
+        _LOGGER.debug("Failed to set confidence gauges: %s", e)
 
     # HTF-features kan komma utifrån; här matar vi tomma för stub
     regime, regime_state = classify_regime({}, prev_state=state, config=configs)
@@ -71,8 +74,8 @@ def evaluate_pipeline(
     try:
         if action in ("LONG", "SHORT", "NONE"):
             metrics.inc(f"decision_{action.lower()}")
-    except Exception:
-        pass
+    except (ValueError, TypeError, AttributeError) as e:  # nosec B110 - metrics are non-critical
+        _LOGGER.debug("Failed to increment decision counter: %s", e)
     result: dict[str, Any] = {
         "features": feats,
         "probas": probas,

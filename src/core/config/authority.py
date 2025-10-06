@@ -96,8 +96,8 @@ class ConfigAuthority:
             dir_fd = os.open(self.path.parent, os.O_DIRECTORY)
             os.fsync(dir_fd)
             os.close(dir_fd)
-        except Exception:
-            pass
+        except Exception as e:  # nosec B110 - fsync is optional durability hint
+            _LOGGER.debug("Optional directory fsync failed: %s", e)
 
         # hash & audit
         h = self._hash_cfg(cfg_canon)
@@ -109,8 +109,8 @@ class ConfigAuthority:
                     if rotated.exists():
                         rotated.unlink(missing_ok=True)  # type: ignore[arg-type]
                     AUDIT_LOG.rename(rotated)
-            except Exception:
-                pass
+            except Exception as e:  # nosec B110 - log rotation is non-critical
+                _LOGGER.debug("Audit log rotation failed: %s", e)
             audit = {
                 "ts": time.time(),
                 "actor": actor,

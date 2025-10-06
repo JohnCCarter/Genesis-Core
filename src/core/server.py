@@ -11,6 +11,9 @@ from core.io.bitfinex.exchange_client import get_exchange_client
 from core.observability.metrics import get_dashboard
 from core.server_config_api import router as config_router
 from core.strategy.evaluate import evaluate_pipeline
+from core.utils.logging_redaction import get_logger
+
+_LOGGER = get_logger(__name__)
 
 # Enkla cache-behållare för /account/*
 _ACCOUNT_CACHE = {
@@ -751,7 +754,11 @@ async def paper_submit(payload: dict = Body(...)) -> dict:
                         ccy = str(w[1]).upper()
                         try:
                             avail = float(w[4])
-                        except Exception:
+                        except (
+                            ValueError,
+                            TypeError,
+                            IndexError,
+                        ):  # nosec B112 - skip invalid wallet data
                             continue
                         # endast exchange-wallet
                         if str(w[0]).lower() == "exchange":
@@ -807,9 +814,8 @@ async def paper_submit(payload: dict = Body(...)) -> dict:
                 if base_avail > 0 and abs(size) > base_avail:
                     size = base_avail
                     wallet_clamped = True
-    except Exception:
-        # Ignorera wallet-cap om något går fel
-        pass
+    except Exception as e:  # nosec B110 - wallet capping is non-critical
+        _LOGGER.debug("Wallet cap check failed: %s", e)
 
     amount = size if side == "LONG" else -size
 
@@ -890,7 +896,11 @@ async def paper_estimate(symbol: str) -> dict:
                         ccy = str(w[1]).upper()
                         try:
                             avail = float(w[4])
-                        except Exception:
+                        except (
+                            ValueError,
+                            TypeError,
+                            IndexError,
+                        ):  # nosec B112 - skip invalid wallet data
                             continue
                         if str(w[0]).lower() == "exchange":
                             avail_by_ccy[ccy] = avail_by_ccy.get(ccy, 0.0) + max(0.0, avail)
@@ -902,8 +912,8 @@ async def paper_estimate(symbol: str) -> dict:
             usd_avail = avail_by_ccy.get("USD") or avail_by_ccy.get("TESTUSD") or 0.0
             base = _base_ccy_from_test(sym)
             base_avail = avail_by_ccy.get(base) or avail_by_ccy.get("TEST" + base) or 0.0
-    except Exception:
-        pass
+    except Exception as e:  # nosec B110 - wallet fetch is non-critical
+        _LOGGER.debug("Failed to fetch available balances: %s", e)
 
     # Hämta senaste pris
     try:

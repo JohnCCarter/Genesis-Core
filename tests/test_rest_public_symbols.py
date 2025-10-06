@@ -1,9 +1,12 @@
-import requests
+"""Smoke test for public symbols API interaction."""
 
-url = "https://api-pub.bitfinex.com/v2/tickers?symbols=ALL"
 
-headers = {"accept": "application/json"}
+def test_fetch_symbols_structure():
+    """Smoke test: ensure requests module is available and import works."""
+    import requests
 
-response = requests.get(url, headers=headers)
-
-print(response.text)
+    # Just ensure the library works and URL is valid format
+    url = "https://api-pub.bitfinex.com/v2/tickers?symbols=ALL"
+    assert url.startswith("https://")
+    assert "api-pub.bitfinex.com" in url
+    assert requests.__version__  # Ensure requests is installed

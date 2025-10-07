@@ -13,7 +13,7 @@
 
 #### Features
 - Tidsrättning: endast stängda barer
-- Percentiler p10–p90 fryses via `config/strategy/defaults.json`
+- Percentiler p10–p90 fryses via `runtime.json` eller definieras i `schema.py`
 
 #### Probability (wrapper)
 - Läser vikter/kalibrering från ModelRegistry
@@ -156,10 +156,12 @@ Trösklar per regim (ex):
 - Cooldown: 120 sekunder (notera: implementeringen använder bars; mappa sekunder → bars via TF vid orkestrering)
 - Repo‑defaults är konservativa (prod‑lika). Använd lokala overrides för dev/snabbtest.
 
-Nycklar i `config/strategy/defaults.json`:
+Nycklar i `config/runtime.json` (SSOT):
 - `thresholds.regime_proba`
 - `gates.hysteresis_steps`
-- `gates.cooldown_bars` (optionellt även `gates.cooldown_seconds` för dokumentationssyfte)
+- `gates.cooldown_bars`
+
+Defaults definieras i `src/core/config/schema.py` (Pydantic models)
 
 ---
 
@@ -296,3 +298,4 @@ Policy:
 - Reasons (koder, ej fria texter):
   - R_EVENT_BLOCK, R_TREND_ONLY_LONG, R_TREND_ONLY_SHORT, P_TIE_BREAK, Q_SPREAD_BAD,
     Q_VOL_SPIKE, HYST_WAIT, COOLDOWN_ACTIVE, EV_NEG, FAIL_SAFE_NULL, FALLBACK_HTF
+ 

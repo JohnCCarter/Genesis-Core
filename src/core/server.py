@@ -345,6 +345,41 @@ def ui_page() -> str:
         if (runBtn) runBtn.disabled = mismatch;
       } catch {}
     };
+    async function fetchCandlesForPolicy() {
+      try {
+        const pol = getJSON('policy','policy_err');
+        const tf = pol.timeframe || '1m';
+        const sym = pol.symbol || 'tBTCUSD';
+        const r = await fetch(`/public/candles?symbol=${encodeURIComponent(sym)}&timeframe=${encodeURIComponent(tf)}&limit=120`);
+        if (!r.ok) return false;
+        const data = await r.json();
+        const out = Object.assign({}, data, { symbol: sym, timeframe: tf });
+        const has = Array.isArray(out.open) && out.open.length > 0;
+        el('candles').value = JSON.stringify(out, null, 2);
+        validateSymbolMatch();
+        const st = el('ui_status'); if (st) { st.textContent = has ? 'Candles uppdaterade' : 'Inga candles hittades'; st.style.display = 'block'; setTimeout(()=>{ st.style.display='none'; }, 1500); }
+        return has;
+      } catch { return false; }
+    }
+    async function autoUpdateAfterPolicyChange() {
+      try {
+        syncPolicyFromInputs();
+        const ok = await fetchCandlesForPolicy();
+        if (!ok) return;
+        // kör pipeline automatiskt
+        const payload = {
+          policy: getJSON('policy','policy_err'),
+          configs: getJSON('configs','configs_err'),
+          candles: getJSON('candles','candles_err'),
+          state: {}
+        };
+        const r = await fetch('/strategy/evaluate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+        const data = await r.json();
+        el('out').textContent = JSON.stringify(data, null, 2);
+        renderSummary(data);
+        const st = el('ui_status'); if (st) { st.textContent = 'Pipeline uppdaterad'; st.style.display = 'block'; setTimeout(()=>{ st.style.display='none'; }, 1200); }
+      } catch {}
+    }
     const syncInputsFromPolicy = () => {
       try {
         const pol = getJSON('policy','policy_err');
@@ -419,11 +454,11 @@ def ui_page() -> str:
     const sb = el('save_bearer'); if (sb) sb.addEventListener('click', () => { try { const v = el('bearer')?.value || ''; localStorage.setItem('ui_bearer', v); } catch {} });
     el('clear_cache').addEventListener('click', () => { clearCache(); el('configs').value=''; hydrateConfigsFromDefaultsIfEmpty(); });
     el('reset_defaults').addEventListener('click', async () => { clearCache(); el('configs').value=''; await hydrateConfigsFromDefaultsIfEmpty(); save(); });
-    el('timeframe_select').addEventListener('change', syncPolicyFromInputs);
+    el('timeframe_select').addEventListener('change', autoUpdateAfterPolicyChange);
     const symSel = el('symbol_select'); if (symSel) symSel.addEventListener('change', refreshSymbolInfo);
     const at = el('auto_thresholds'); if (at) at.addEventListener('change', refreshSymbolInfo);
     const lt = el('low_threshold_test'); if (lt) lt.addEventListener('change', refreshSymbolInfo);
-    const psSel = el('policy_symbol_select'); if (psSel) psSel.addEventListener('change', () => { syncPolicyFromInputs(); refreshSymbolInfo(); });
+    const psSel = el('policy_symbol_select'); if (psSel) psSel.addEventListener('change', autoUpdateAfterPolicyChange);
     el('fetch_pub').addEventListener('click', async () => {
       try {
         const pol = getJSON('policy','policy_err');
@@ -493,6 +528,9 @@ def ui_page() -> str:
       try {
         if (!lastData) { err('policy_err','Kör pipeline först'); return; }
         const pol = getJSON('policy','policy_err');
+        const candlesObj = getJSON('candles','candles_err');
+        const hasData = Array.isArray(candlesObj?.open) && candlesObj.open.length>0;
+        if (!hasData) { err('candles_err','Inga candles för vald symbol/timeframe'); return; }
         const action = lastData?.result?.action;
         let size = Number(lastData?.meta?.decision?.size || 0);
         const orderSymbol = el('symbol_select')?.value || realToTest(pol.symbol||'tBTCUSD');

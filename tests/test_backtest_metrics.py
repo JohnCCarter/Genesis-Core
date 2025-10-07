@@ -2,7 +2,6 @@
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from core.backtest.metrics import (
     _calculate_max_drawdown,
@@ -23,7 +22,7 @@ def test_calculate_sharpe_positive():
 
     # Should be positive with positive mean return
     # Just check it's a valid number
-    assert isinstance(sharpe, (int, float))
+    assert isinstance(sharpe, int | float)
     assert not np.isnan(sharpe)
 
 

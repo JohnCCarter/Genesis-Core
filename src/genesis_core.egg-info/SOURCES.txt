@@ -2,7 +2,15 @@ README.md
 pyproject.toml
 src/core/__init__.py
 src/core/server.py
+src/core/server_config_api.py
+src/core/backtest/__init__.py
+src/core/backtest/engine.py
+src/core/backtest/metrics.py
+src/core/backtest/position_tracker.py
+src/core/backtest/trade_logger.py
 src/core/config/__init__.py
+src/core/config/authority.py
+src/core/config/schema.py
 src/core/config/settings.py
 src/core/config/validator.py
 src/core/indicators/adx.py
@@ -34,6 +42,7 @@ src/core/strategy/model_registry.py
 src/core/strategy/prob_model.py
 src/core/strategy/regime.py
 src/core/strategy/validation.py
+src/core/symbols/symbols.py
 src/core/utils/backoff.py
 src/core/utils/logging_redaction.py
 src/core/utils/nonce_manager.py
@@ -42,9 +51,14 @@ src/genesis_core.egg-info/SOURCES.txt
 src/genesis_core.egg-info/dependency_links.txt
 src/genesis_core.egg-info/requires.txt
 src/genesis_core.egg-info/top_level.txt
+tests/test_account_endpoints.py
 tests/test_backoff_util.py
+tests/test_backtest_metrics.py
+tests/test_backtest_position_tracker.py
 tests/test_confidence.py
+tests/test_config_api_e2e.py
 tests/test_config_endpoints.py
+tests/test_config_ssot.py
 tests/test_decision.py
 tests/test_e2e_pipeline.py
 tests/test_exchange_client.py
@@ -64,6 +78,7 @@ tests/test_rest_public_symbols.py
 tests/test_risk_guards.py
 tests/test_risk_pnl.py
 tests/test_strategy_ema_cross.py
+tests/test_symbols.py
 tests/test_ui_endpoints.py
 tests/test_validation_min.py
 tests/test_ws_candles_min.py

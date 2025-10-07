@@ -4,7 +4,6 @@ Backtest engine for Genesis-Core.
 Replays historical candle data bar-by-bar through the existing strategy pipeline.
 """
 
-from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
@@ -166,8 +165,10 @@ class BacktestEngine:
         print(f"\n{'='*70}")
         print(f"Running Backtest: {self.symbol} {self.timeframe}")
         print(f"{'='*70}")
-        print(f"Period:  {self.candles_df['timestamp'].min()} to "
-              f"{self.candles_df['timestamp'].max()}")
+        print(
+            f"Period:  {self.candles_df['timestamp'].min()} to "
+            f"{self.candles_df['timestamp'].max()}"
+        )
         print(f"Bars:    {len(self.candles_df):,} (warmup: {self.warmup_bars})")
         print(f"Capital: ${self.position_tracker.initial_capital:,.2f}")
         print(f"{'='*70}\n")
@@ -218,9 +219,7 @@ class BacktestEngine:
                     )
 
                     if verbose and exec_result.get("executed"):
-                        print(
-                            f"\n[{timestamp}] {action} {size:.4f} @ ${close_price:.2f}"
-                        )
+                        print(f"\n[{timestamp}] {action} {size:.4f} @ ${close_price:.2f}")
 
                 # Update equity curve
                 self.position_tracker.update_equity(close_price, timestamp)
@@ -240,9 +239,7 @@ class BacktestEngine:
 
         # Close all positions at end
         final_bar = self.candles_df.iloc[-1]
-        self.position_tracker.close_all_positions(
-            final_bar["close"], final_bar["timestamp"]
-        )
+        self.position_tracker.close_all_positions(final_bar["close"], final_bar["timestamp"])
 
         print(f"\n[OK] Backtest complete - {self.bar_count} bars processed")
 

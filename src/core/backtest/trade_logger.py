@@ -31,9 +31,7 @@ class TradeLogger:
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
-    def save_results(
-        self, results: dict, filename_prefix: str | None = None
-    ) -> dict[str, Path]:
+    def save_results(self, results: dict, filename_prefix: str | None = None) -> dict[str, Path]:
         """
         Save full backtest results to JSON.
 
@@ -62,9 +60,7 @@ class TradeLogger:
 
         return {"json": json_file}
 
-    def save_trades_csv(
-        self, results: dict, filename_prefix: str | None = None
-    ) -> Path:
+    def save_trades_csv(self, results: dict, filename_prefix: str | None = None) -> Path:
         """
         Save trades to CSV.
 
@@ -89,9 +85,7 @@ class TradeLogger:
             filename_prefix = f"{symbol}_{timeframe}"
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        csv_file = (
-            self.output_dir.parent / "trades" / f"{filename_prefix}_trades_{timestamp}.csv"
-        )
+        csv_file = self.output_dir.parent / "trades" / f"{filename_prefix}_trades_{timestamp}.csv"
         csv_file.parent.mkdir(parents=True, exist_ok=True)
 
         # Convert to DataFrame and save
@@ -102,9 +96,7 @@ class TradeLogger:
 
         return csv_file
 
-    def save_equity_curve_csv(
-        self, results: dict, filename_prefix: str | None = None
-    ) -> Path:
+    def save_equity_curve_csv(self, results: dict, filename_prefix: str | None = None) -> Path:
         """
         Save equity curve to CSV.
 

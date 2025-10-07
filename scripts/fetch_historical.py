@@ -97,9 +97,7 @@ def fetch_candles_page(
         raise
 
 
-def fetch_historical_data(
-    symbol: str, timeframe: str, months: int = 1
-) -> pd.DataFrame:
+def fetch_historical_data(symbol: str, timeframe: str, months: int = 1) -> pd.DataFrame:
     """
     Fetch historical candle data for specified period.
 
@@ -113,8 +111,7 @@ def fetch_historical_data(
     """
     if timeframe not in SUPPORTED_TIMEFRAMES:
         raise ValueError(
-            f"Unsupported timeframe '{timeframe}'. "
-            f"Supported: {', '.join(SUPPORTED_TIMEFRAMES)}"
+            f"Unsupported timeframe '{timeframe}'. " f"Supported: {', '.join(SUPPORTED_TIMEFRAMES)}"
         )
 
     # Calculate date range
@@ -124,7 +121,7 @@ def fetch_historical_data(
     end_ms = int(end_date.timestamp() * 1000)
 
     print(f"\n{'='*60}")
-    print(f"Fetching Historical Data")
+    print("Fetching Historical Data")
     print(f"{'='*60}")
     print(f"Symbol:    {symbol}")
     print(f"Timeframe: {timeframe}")
@@ -219,9 +216,7 @@ def save_to_parquet(df: pd.DataFrame, symbol: str, timeframe: str) -> Path:
     return filepath
 
 
-def save_metadata(
-    symbol: str, timeframe: str, df: pd.DataFrame, months: int
-) -> None:
+def save_metadata(symbol: str, timeframe: str, df: pd.DataFrame, months: int) -> None:
     """Save metadata about fetched data."""
     metadata_dir = Path(__file__).parent.parent / "data" / "metadata"
     metadata_dir.mkdir(parents=True, exist_ok=True)
@@ -248,9 +243,7 @@ def save_metadata(
 
 def main():
     """CLI entry point."""
-    parser = argparse.ArgumentParser(
-        description="Fetch historical candle data from Bitfinex"
-    )
+    parser = argparse.ArgumentParser(description="Fetch historical candle data from Bitfinex")
     parser.add_argument(
         "--symbol",
         type=str,

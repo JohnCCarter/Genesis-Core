@@ -1,7 +1,6 @@
 """Tests for backtest trade logger."""
 
 import json
-from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -100,7 +99,7 @@ def test_save_results_json(tmp_path, sample_backtest_results):
     assert json_file.suffix == ".json"
 
     # Verify content
-    with open(json_file, "r") as f:
+    with open(json_file) as f:
         loaded_data = json.load(f)
 
     assert loaded_data["backtest_info"]["symbol"] == "tBTCUSD"
@@ -111,9 +110,7 @@ def test_save_results_with_custom_prefix(tmp_path, sample_backtest_results):
     """Test saving results with custom filename prefix."""
     logger = TradeLogger(output_dir=tmp_path)
 
-    saved_files = logger.save_results(
-        sample_backtest_results, filename_prefix="custom_test"
-    )
+    saved_files = logger.save_results(sample_backtest_results, filename_prefix="custom_test")
 
     json_file = saved_files["json"]
     assert "custom_test" in json_file.name
@@ -218,10 +215,11 @@ def test_multiple_saves_dont_overwrite(tmp_path, sample_backtest_results):
 
     # Save twice
     saved_files_1 = logger.save_results(sample_backtest_results)
-    
+
     import time
+
     time.sleep(1)  # Ensure different timestamp
-    
+
     saved_files_2 = logger.save_results(sample_backtest_results)
 
     # Should be different files
@@ -233,8 +231,8 @@ def test_multiple_saves_dont_overwrite(tmp_path, sample_backtest_results):
 def test_directory_creation_on_init(tmp_path):
     """Test that TradeLogger creates output directory if it doesn't exist."""
     output_dir = tmp_path / "nonexistent" / "results"
-    
-    logger = TradeLogger(output_dir=output_dir)
+
+    TradeLogger(output_dir=output_dir)
 
     assert output_dir.exists()
 

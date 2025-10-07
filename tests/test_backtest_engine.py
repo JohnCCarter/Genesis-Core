@@ -1,7 +1,5 @@
 """Tests for backtest engine."""
 
-from datetime import datetime
-from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -29,10 +27,10 @@ def temp_data_file(tmp_path, sample_candles_data):
     """Create temporary parquet file with sample data."""
     data_dir = tmp_path / "data" / "candles"
     data_dir.mkdir(parents=True, exist_ok=True)
-    
+
     file_path = data_dir / "tBTCUSD_15m.parquet"
     sample_candles_data.to_parquet(file_path, index=False)
-    
+
     return tmp_path
 
 
@@ -67,7 +65,7 @@ def test_engine_load_data_missing_file():
 def test_engine_load_data_success(temp_data_file):
     """Test engine successfully loads data."""
     engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m")
-    
+
     # Manually load data from temp file (simulating load_data())
     data_file = temp_data_file / "data" / "candles" / "tBTCUSD_15m.parquet"
     engine.candles_df = pd.read_parquet(data_file)
@@ -231,7 +229,7 @@ def test_engine_closes_positions_at_end(sample_candles_data):
         "risk": {"risk_map": [[0.1, 0.01]]},
     }
 
-    results = engine.run(configs=configs)
+    engine.run(configs=configs)
 
     # After backtest, no open position should remain
     assert engine.position_tracker.position is None
@@ -242,7 +240,7 @@ def test_engine_state_persistence(sample_candles_data):
     engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m", warmup_bars=10)
     engine.candles_df = sample_candles_data.head(50)  # Small dataset
 
-    results = engine.run()
+    engine.run()
 
     # State should be preserved (not empty after processing)
     # The engine's internal state should have been used

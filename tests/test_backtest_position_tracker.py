@@ -2,8 +2,6 @@
 
 from datetime import datetime
 
-import pytest
-
 from core.backtest.position_tracker import Position, PositionTracker
 
 
@@ -51,9 +49,7 @@ def test_position_update_pnl_short():
 
 def test_position_tracker_initialization():
     """Test PositionTracker initialization."""
-    tracker = PositionTracker(
-        initial_capital=10000.0, commission_rate=0.001, slippage_rate=0.0005
-    )
+    tracker = PositionTracker(initial_capital=10000.0, commission_rate=0.001, slippage_rate=0.0005)
 
     assert tracker.initial_capital == 10000.0
     assert tracker.capital == 10000.0
@@ -67,9 +63,7 @@ def test_position_tracker_initialization():
 def test_execute_action_none():
     """Test that NONE action does nothing."""
     tracker = PositionTracker()
-    result = tracker.execute_action(
-        action="NONE", size=0.1, price=100.0, timestamp=datetime.now()
-    )
+    result = tracker.execute_action(action="NONE", size=0.1, price=100.0, timestamp=datetime.now())
 
     assert result["action"] == "NONE"
     assert not result["executed"]
@@ -180,9 +174,7 @@ def test_losing_short_trade():
 
 def test_commission_deduction():
     """Test that commission is properly deducted."""
-    tracker = PositionTracker(
-        initial_capital=10000.0, commission_rate=0.001, slippage_rate=0.0
-    )
+    tracker = PositionTracker(initial_capital=10000.0, commission_rate=0.001, slippage_rate=0.0)
     timestamp = datetime.now()
 
     initial_capital = tracker.capital

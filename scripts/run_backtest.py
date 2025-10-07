@@ -8,7 +8,6 @@ Usage:
 """
 
 import argparse
-import json
 import sys
 from pathlib import Path
 
@@ -24,21 +23,15 @@ from core.config.authority import ConfigAuthority
 def main():
     """CLI entry point."""
     parser = argparse.ArgumentParser(description="Run backtest on historical data")
-    parser.add_argument(
-        "--symbol", type=str, required=True, help="Trading symbol (e.g., tBTCUSD)"
-    )
+    parser.add_argument("--symbol", type=str, required=True, help="Trading symbol (e.g., tBTCUSD)")
     parser.add_argument(
         "--timeframe",
         type=str,
         required=True,
         help="Candle timeframe (e.g., 15m, 1h)",
     )
-    parser.add_argument(
-        "--start", type=str, help="Start date (YYYY-MM-DD)", default=None
-    )
-    parser.add_argument(
-        "--end", type=str, help="End date (YYYY-MM-DD)", default=None
-    )
+    parser.add_argument("--start", type=str, help="Start date (YYYY-MM-DD)", default=None)
+    parser.add_argument("--end", type=str, help="End date (YYYY-MM-DD)", default=None)
     parser.add_argument(
         "--capital",
         type=float,
@@ -63,12 +56,8 @@ def main():
         default=120,
         help="Warmup bars for indicators (default: 120)",
     )
-    parser.add_argument(
-        "--verbose", "-v", action="store_true", help="Print trade details"
-    )
-    parser.add_argument(
-        "--no-save", action="store_true", help="Don't save results to files"
-    )
+    parser.add_argument("--verbose", "-v", action="store_true", help="Print trade details")
+    parser.add_argument("--no-save", action="store_true", help="Don't save results to files")
 
     args = parser.parse_args()
 
@@ -118,7 +107,7 @@ def main():
         if not args.no_save:
             logger = TradeLogger()
             saved_files = logger.save_all(results)
-            print(f"\n[OK] Results saved:")
+            print("\n[OK] Results saved:")
             for key, path in saved_files.items():
                 print(f"  {key}: {path}")
 

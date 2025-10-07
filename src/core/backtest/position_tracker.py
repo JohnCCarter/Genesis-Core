@@ -158,9 +158,7 @@ class PositionTracker:
 
         # Apply slippage
         effective_price = price * (
-            1 - self.slippage_rate
-            if self.position.side == "LONG"
-            else 1 + self.slippage_rate
+            1 - self.slippage_rate if self.position.side == "LONG" else 1 + self.slippage_rate
         )
 
         # Calculate PnL
@@ -231,26 +229,14 @@ class PositionTracker:
 
     def get_summary(self) -> dict:
         """Get backtest summary statistics."""
-        total_return = (
-            (self.capital - self.initial_capital) / self.initial_capital * 100
-        )
+        total_return = (self.capital - self.initial_capital) / self.initial_capital * 100
         num_trades = len(self.trades)
         winning_trades = [t for t in self.trades if t.pnl > 0]
         losing_trades = [t for t in self.trades if t.pnl < 0]
 
-        win_rate = (
-            len(winning_trades) / num_trades * 100 if num_trades > 0 else 0
-        )
-        avg_win = (
-            sum(t.pnl for t in winning_trades) / len(winning_trades)
-            if winning_trades
-            else 0
-        )
-        avg_loss = (
-            sum(t.pnl for t in losing_trades) / len(losing_trades)
-            if losing_trades
-            else 0
-        )
+        win_rate = len(winning_trades) / num_trades * 100 if num_trades > 0 else 0
+        avg_win = sum(t.pnl for t in winning_trades) / len(winning_trades) if winning_trades else 0
+        avg_loss = sum(t.pnl for t in losing_trades) / len(losing_trades) if losing_trades else 0
 
         return {
             "initial_capital": self.initial_capital,
@@ -264,9 +250,7 @@ class PositionTracker:
             "win_rate": win_rate,
             "avg_win": avg_win,
             "avg_loss": avg_loss,
-            "profit_factor": (
-                abs(avg_win / avg_loss) if avg_loss != 0 else float("inf")
-            ),
+            "profit_factor": (abs(avg_win / avg_loss) if avg_loss != 0 else float("inf")),
             "max_capital": self.max_capital,
             "min_capital": self.min_capital,
         }

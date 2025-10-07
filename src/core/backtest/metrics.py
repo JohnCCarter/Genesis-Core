@@ -68,9 +68,9 @@ def calculate_metrics(results: dict) -> dict:
         trades_df = pd.DataFrame(trades)
 
         # Average trade duration
-        trades_df["duration"] = pd.to_datetime(
-            trades_df["exit_time"]
-        ) - pd.to_datetime(trades_df["entry_time"])
+        trades_df["duration"] = pd.to_datetime(trades_df["exit_time"]) - pd.to_datetime(
+            trades_df["entry_time"]
+        )
         avg_duration = trades_df["duration"].mean()
         metrics["avg_trade_duration_hours"] = (
             avg_duration.total_seconds() / 3600 if avg_duration else 0
@@ -212,23 +212,27 @@ def print_metrics_report(metrics: dict, backtest_info: dict | None = None):
     if backtest_info:
         print(f"Symbol:       {backtest_info.get('symbol')}")
         print(f"Timeframe:    {backtest_info.get('timeframe')}")
-        print(f"Period:       {backtest_info.get('start_date')} to "
-              f"{backtest_info.get('end_date')}")
+        print(
+            f"Period:       {backtest_info.get('start_date')} to "
+            f"{backtest_info.get('end_date')}"
+        )
         print(f"Bars:         {backtest_info.get('bars_processed'):,}")
         print(f"{'='*70}")
 
-    print(f"\n[RETURNS]")
+    print("\n[RETURNS]")
     print(f"  Total Return:     {metrics.get('total_return_pct', 0):.2f}%")
     print(f"  Total Return USD: ${metrics.get('total_return_usd', 0):,.2f}")
 
-    print(f"\n[RISK METRICS]")
+    print("\n[RISK METRICS]")
     print(f"  Sharpe Ratio:     {metrics.get('sharpe_ratio', 0):.2f}")
     print(f"  Sortino Ratio:    {metrics.get('sortino_ratio', 0):.2f}")
     print(f"  Calmar Ratio:     {metrics.get('calmar_ratio', 0):.2f}")
-    print(f"  Max Drawdown:     {metrics.get('max_drawdown_pct', 0):.2f}% "
-          f"(${metrics.get('max_drawdown_usd', 0):,.2f})")
+    print(
+        f"  Max Drawdown:     {metrics.get('max_drawdown_pct', 0):.2f}% "
+        f"(${metrics.get('max_drawdown_usd', 0):,.2f})"
+    )
 
-    print(f"\n[TRADE STATISTICS]")
+    print("\n[TRADE STATISTICS]")
     print(f"  Total Trades:     {metrics.get('num_trades', 0)}")
     print(f"  Win Rate:         {metrics.get('win_rate', 0):.2f}%")
     print(f"  Profit Factor:    {metrics.get('profit_factor', 0):.2f}")

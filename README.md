@@ -39,12 +39,15 @@ python scripts/test_ws_public.py
 - `GET /public/candles` – Publika candles (Bitfinex)
 - `GET /auth/check` – Snabb auth‑hälsokontroll
 - `POST /paper/submit` – Skicka paper‑order (TEST‑symboler)
+- `GET /paper/estimate` – Beräkna min/max ordersize (wallet-aware)
 - `GET /debug/auth` – Maskerad vy av laddade nycklar
+- `POST /models/reload` – Force reload model cache (efter ML training)
 - `GET /health` – Hälsa
 - `GET /observability/dashboard` – Counters/gauges/events
 - `GET /account/wallets` – Exchange‑wallets (proxy)
 - `GET /account/positions` – Aktiva positioner (proxy, TEST)
 - `GET /account/orders` – Öppna ordrar (proxy, TEST)
+- `GET /paper/whitelist` – Lista TEST-symboler
 - SSOT Config:
   - `GET /config/runtime` → `{ cfg, version, hash }`
   - `POST /config/runtime/validate` → `{ valid, errors, cfg? }`

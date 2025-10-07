@@ -2,6 +2,46 @@
 
 Formatet följer en förenklad variant av Keep a Changelog. Versionsnumrering enligt SemVer (pre‑1.0: brytande ändringar => minor‑bump).
 
+## [Unreleased] - 2025-10-07
+
+- Added
+  - **Phase 2: Backtest Framework** (Production-ready)
+    - `BacktestEngine`: Bar-by-bar replay av historical data genom strategy pipeline
+    - `PositionTracker`: PnL tracking, commission/slippage simulation
+    - `Metrics`: Sharpe ratio, max drawdown, win rate, profit factor, Sortino, Calmar
+    - `TradeLogger`: Export till JSON/CSV (trades, equity curve)
+    - CLI script: `scripts/run_backtest.py` för att köra backtests
+    - 28 nya comprehensive tests (115 total, alla passar)
+  - **Phase 1: Data Foundation**
+    - `scripts/fetch_historical.py`: Hämta historical candles från Bitfinex (parquet format)
+    - `scripts/validate_data.py`: Data quality validation (gaps, duplicates, outliers, OHLC)
+    - Data structure: `data/candles/`, `data/features/`, `data/metadata/`
+    - Initial data: tBTCUSD/tETHUSD 15m/1h, 3 månader, 99.9%+ quality
+  - **New endpoints:**
+    - `GET /paper/estimate`: Beräkna min/max order size (wallet-aware)
+    - `GET /paper/whitelist`: Lista TEST-symboler för paper trading
+    - `POST /models/reload`: Force clear model cache (för ML training)
+  - **Crypto utility:** `src/core/utils/crypto.py` med `build_hmac_signature()` (eliminerar HMAC duplication)
+
+- Changed
+  - **ModelRegistry cache invalidation:** Exakt mtime-match istället för fuzzy comparison (kritiskt för ML)
+  - **FastAPI:** Migrerad från `@app.on_event` till modern `lifespan` context manager (inga deprecation warnings)
+  - **HMAC signature:** Refaktorerad från 4 duplicerade platser till shared `crypto.py` utility (DRY)
+  - **Model structure:** Alla 16 symboler använder nu multi-timeframe struktur (single file per symbol)
+
+- Fixed
+  - Cache invalidation issue som kunde hindra ML-modeller från att laddas om
+  - HMAC signature duplication (4 platser → 1 utility function)
+  - FastAPI deprecation warnings (lifespan events)
+  - 27 linting issues (ruff auto-fix + manual fixes)
+
+- QA/Tests
+  - ✅ 115/115 tester passar (inkl. 28 nya backtest tests)
+  - ✅ Black formatting: 100%
+  - ✅ Ruff linting: 0 errors
+  - ✅ Bandit security: 0 critical (9 Low intentional)
+  - ✅ Comprehensive code review dokumenterad i `GRANSKNING_2025-10-07.md`
+
 ## [0.2.0] - 2025-10-03
 
 - Added

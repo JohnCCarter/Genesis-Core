@@ -1,6 +1,12 @@
 ### TODO – Genesis‑Core (V1-spec, modulärt och testbart)
 
-Prioritet P1 (nästa session)
+**Status:** ✅ Phase 1 & 2 KLART | Phase 3 (ML Training) pågår
+
+---
+
+## Phase 1 & 2: Core System ✅ KLART
+
+Prioritet P1 (strategi-pipeline)
 
 - [x] Probability: `predict_proba_for(symbol, timeframe, features)` – koppla `model_registry` (ingen extra logik)
 - [x] Features: `extract_features(candles)` enligt definitionssektionen (tidsrättat, p10–p90‑klippning)

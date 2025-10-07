@@ -34,7 +34,8 @@ Health: http://127.0.0.1:8000/health
 ```
 
 #### Endpoints (REST)
-- `/ui`, `/strategy/evaluate`, `/public/candles`, `/paper/submit`, `/auth/check`, `/debug/auth`
+- `/ui`, `/strategy/evaluate`, `/public/candles`, `/paper/submit`, `/paper/estimate`, `/paper/whitelist`
+- `/auth/check`, `/debug/auth`, `/models/reload` (cache clear efter ML training)
 - Konto (proxy mot Bitfinex v2 REST‑auth):
   - `/account/wallets`, `/account/positions`, `/account/orders`
 - SSOT Config:
@@ -83,12 +84,16 @@ python -m pytest -q
 - TEST‑symboler bypassas (skickas oförändrade).
 
 #### Filstruktur (kärna)
+- `src/core/backtest` – BacktestEngine, PositionTracker, Metrics, TradeLogger (Phase 2 ✅)
 - `src/core/config` – config, schema, settings, validator
 - `src/core/indicators` – EMA/RSI/ADX/ATR
 - `src/core/io` – Bitfinex REST/WS-klienter
 - `src/core/observability` – metrics/dashboard
-- `src/core/risk` – sizing/guards
+- `src/core/risk` – sizing/guards/pnl
 - `src/core/strategy` – features/prob_model/decision/evaluate
-- `src/core/utils` – nonce/logging/backoff
+- `src/core/symbols` – SymbolMapper
+- `src/core/utils` – nonce/logging/backoff/crypto (HMAC signature)
 - `config/models` – modellfiler per symbol (alla timeframes i samma fil)
-- `scripts` – verktyg/CI
+- `data/` – historical candles (parquet), features, metadata (Phase 3)
+- `results/` – backtest outputs (JSON, CSV, plots)
+- `scripts/` – verktyg/CI/fetch_historical/validate_data/run_backtest

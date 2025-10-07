@@ -288,9 +288,11 @@ def ui_page() -> str:
     }
     async function refreshSymbolInfo() {
       try {
-        const symSel = el('symbol_select');
-        const sym = symSel?.value || 'tTESTBTC:TESTUSD';
-        const r = await fetch(`/paper/estimate?symbol=${encodeURIComponent(sym)}`);
+        // Läs från policy-symbol (real symbol) istället för order-symbol (TEST)
+        const pol = getJSON('policy','policy_err');
+        const realSym = pol.symbol || 'tBTCUSD';
+        const testSym = realToTest(realSym);
+        const r = await fetch(`/paper/estimate?symbol=${encodeURIComponent(testSym)}`);
         if (!r.ok) return;
         const d = await r.json();
         const min = Number(d.required_min||0);
@@ -366,6 +368,8 @@ def ui_page() -> str:
         syncPolicyFromInputs();
         const ok = await fetchCandlesForPolicy();
         if (!ok) return;
+        // Uppdatera symbol-info och configs om auto-thresholds är aktivt
+        await refreshSymbolInfo();
         // kör pipeline automatiskt
         const payload = {
           policy: getJSON('policy','policy_err'),

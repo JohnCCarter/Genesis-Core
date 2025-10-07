@@ -313,7 +313,7 @@ ml = [
 - [x] Phase-3 branch skapad
 
 **Nästa (Priority 1.1 - Historical Data Fetcher):**
-1. [ ] Installera ML dependencies: `pip install -e .[ml]`
+1. [x] Installera ML dependencies: `pip install -e .[ml]`
 2. [ ] Implementera `scripts/fetch_historical.py`
 3. [ ] Fetch 1 månad tBTCUSD 1m data (test)
 4. [ ] Validera data quality

@@ -182,8 +182,9 @@ Priority: HÖGT - Innan data fetch
 
 **Problem:**
 ```python
-# Bitfinex Public API limits:
-- 90 requests / minute
+# Bitfinex Candles API limits (VERIFIED):
+# Source: https://docs.bitfinex.com/reference/rest-public-candles
+- 30 requests / minute (candles endpoint specific)
 - Historical data: max 10,000 candles/request
 - 6 months @ 1m = ~262,800 candles → 27 requests
 ```
@@ -191,8 +192,8 @@ Priority: HÖGT - Innan data fetch
 **Påverkan:**
 ```
 Fetch 6 months × 5 timeframes × 2 symbols = 270 requests
-→ 3 minuter minimum (om perfekt timing)
-→ Risk för rate limit ban
+→ 9 minuter minimum (med 30 req/min)
+→ Managed med rate limiter
 ```
 
 **Lösning:**
@@ -204,7 +205,7 @@ Priority: MEDIUM - Innan mass fetch
    from ratelimit import limits, sleep_and_retry
    
    @sleep_and_retry
-   @limits(calls=80, period=60)  # 80/min (säkerhetsmarginal)
+   @limits(calls=27, period=60)  # 27/min (säkerhetsmarginal från 30)
    def fetch_candles_page(...):
        ...
    ```

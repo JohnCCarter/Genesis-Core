@@ -66,13 +66,23 @@ Se `TODO_PHASE3.md` för fullständig plan. Här är high-level översikt:
   - [x] Features: ema_delta_pct, rsi
   - [x] Model saved: results/models/tBTCUSD_15m_v2.json
 
-### Priority 3.4: Model Evaluation
-- [ ] Implementera `src/core/ml/evaluation.py`
-  - [ ] Log loss, Brier score
-  - [ ] ROC-AUC, Precision/Recall
-  - [ ] Reliability diagram
-  - [ ] Confusion matrix
-- [ ] Generate evaluation report (JSON/HTML)
+### Priority 3.4: Model Evaluation ✅ KLART
+- [x] Implementera `src/core/ml/evaluation.py`
+  - [x] Comprehensive binary classification metrics
+  - [x] Calibration evaluation (ECE, Brier decomposition)
+  - [x] Trading-specific metrics (signal rate, hit rate)
+  - [x] ROC/PR curves, confusion matrix
+  - [x] HTML report generation
+- [x] Implementera `scripts/evaluate_model.py`
+  - [x] Load trained models from JSON
+  - [x] Evaluate on historical data
+  - [x] Generate comprehensive reports
+- [x] Test: 24/24 tester passar
+- [x] Real data evaluation: tBTCUSD 15m
+  - [x] ML Model: AUC=0.517, Accuracy=0.500, ECE=0.012
+  - [x] Baseline Model: AUC=0.483, Accuracy=0.485 (SÄMRE än random!)
+  - [x] Random: AUC=0.496, Accuracy=0.496
+  - [x] ML > Baseline > Random (men alla nära 0.5)
 
 ### Priority 3.5: Calibration
 - [ ] Implementera `src/core/ml/calibration.py`

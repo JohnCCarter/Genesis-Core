@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, phase-3]
   pull_request:
 
 jobs:
@@ -20,14 +20,18 @@ jobs:
           python -m venv .venv
           . .venv/bin/activate
           pip install -e .[dev]
+      - name: Install ML dependencies
+        run: |
+          . .venv/bin/activate
+          pip install -e .[ml]
       - name: Lint & Test & Security
         run: |
           . .venv/bin/activate
           # Code formatting
-          python -m black --check src
+          python -m black --check src scripts tests
           # Linting
-          python -m ruff check src
+          python -m ruff check src scripts tests
           # Security scanning
           python -m bandit -r src -f json -o bandit-report.json
           # Run tests
-          python -m pytest
+          python -m pytest --tb=short -q

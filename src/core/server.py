@@ -1,4 +1,5 @@
 import asyncio
+from contextlib import asynccontextmanager
 
 import httpx
 from fastapi import Body, FastAPI
@@ -20,18 +21,26 @@ _ACCOUNT_CACHE = {
 }
 _ACCOUNT_TTL = 5.0
 
-app = FastAPI()
-app.include_router(config_router)
 _AUTH = ConfigAuthority()
 
 
-@app.on_event("startup")
-def _log_config_version() -> None:
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan event handler for startup/shutdown."""
+    # Startup
     try:
         _, h, v = _AUTH.get()
         print(f"CONFIG_VERSION={v} CONFIG_HASH={h[:12]}")
     except Exception as e:
         print(f"CONFIG_READ_FAILED: {e}")
+
+    yield
+
+    # Shutdown (cleanup if needed)
+
+
+app = FastAPI(lifespan=lifespan)
+app.include_router(config_router)
 
 
 # Whitelist av tillåtna TEST-spotpar för paper-trading
@@ -913,6 +922,16 @@ def debug_auth() -> dict:
         "suffix": k[-4:] if len(k) >= 4 else k,
     }
     return {"rest_api_key": masked}
+
+
+@app.post("/models/reload")
+def reload_models() -> dict:
+    """Force reload all model files by clearing cache. Useful after ML training."""
+    from core.strategy.model_registry import ModelRegistry
+
+    registry = ModelRegistry()
+    registry.clear_cache()
+    return {"ok": True, "message": "Model cache cleared"}
 
 
 @app.get("/paper/estimate")

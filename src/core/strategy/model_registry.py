@@ -48,7 +48,8 @@ class ModelRegistry:
             mtime = float(stat.st_mtime)
             key = str(path)
             cached = self._cache.get(key)
-            if cached and abs(cached[1] - mtime) < 1e-6:
+            # Improved cache invalidation: exact mtime match required
+            if cached and cached[1] == mtime:
                 return cached[0]
             meta = self._read_json(path)
             if meta is not None:
@@ -56,6 +57,10 @@ class ModelRegistry:
             return meta
         except Exception:
             return self._read_json(path)
+
+    def clear_cache(self) -> None:
+        """Clear model cache. Call after updating model files."""
+        self._cache.clear()
 
     def get_meta(self, symbol: str, timeframe: str) -> dict[str, Any] | None:
         key = f"{symbol}:{timeframe}"

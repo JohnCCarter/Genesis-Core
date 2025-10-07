@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import hashlib
-import hmac
 import json
 from typing import Any
 
@@ -9,6 +7,7 @@ import httpx
 
 from core.config.settings import get_settings
 from core.symbols.symbols import SymbolMapper, SymbolMode
+from core.utils.crypto import build_hmac_signature
 from core.utils.nonce_manager import bump_nonce, get_nonce
 
 BASE = "https://api.bitfinex.com"
@@ -21,7 +20,7 @@ def _sign_v2(endpoint: str, body: dict[str, Any] | None) -> dict[str, str]:
     nonce = get_nonce(api_key)
     payload_str = json.dumps(body or {}, separators=(",", ":"))
     message = f"/api/v2/{endpoint}{nonce}{payload_str}"
-    sig = hmac.new(api_secret.encode(), message.encode(), hashlib.sha384).hexdigest()
+    sig = build_hmac_signature(api_secret, message)
     return {
         "bfx-apikey": api_key,
         "bfx-nonce": nonce,

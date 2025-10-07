@@ -24,13 +24,16 @@ Allt från Phase 1 & 2 är komplett och testat. Se `docs/archive/TODO_2025-10-07
 
 Se `TODO_PHASE3.md` för fullständig plan. Här är high-level översikt:
 
-### Priority 3.1: Feature Engineering ⏳ NÄSTA
-- [ ] Implementera `scripts/precompute_features.py`
-  - [ ] Batch-process historical candles
-  - [ ] Extract EMA, RSI, ADX, ATR features
-  - [ ] Spara till `data/features/*.parquet`
-  - [ ] Cache med timestamp-check
-- [ ] Test: Verifiera feature output format
+### Priority 3.1: Feature Engineering ✅ KLART
+- [x] Implementera `scripts/precompute_features.py`
+  - [x] Batch-process historical candles
+  - [x] Extract EMA, RSI features (återanvänd extract_features())
+  - [x] Spara till `data/features/*.parquet`
+  - [x] Progress tracking med tqdm
+- [x] Test: Verifiera feature output format
+- [x] Processed: tBTCUSD 15m (8,632 rows), tBTCUSD 1h (2,160 rows)
+- [x] Processed: tETHUSD 15m (8,638 rows), tETHUSD 1h (2,160 rows)
+- [x] Total: ~604 KB features data
 
 ### Priority 3.2: Label Generation
 - [ ] Implementera `src/core/ml/labeling.py`
@@ -100,7 +103,6 @@ Se `TODO_PHASE3.md` för fullständig plan. Här är high-level översikt:
 
 ## 🔗 Relaterade Dokument
 
-- `TODO_PHASE3.md` - Detaljerad ML training plan
 - `PHASE3_CONFLICTS.md` - Potentiella konflikter & lösningar
 - `GRANSKNING_2025-10-07.md` - Code review rapport
 - `docs/archive/` - Arkiverad dokumentation (historik)

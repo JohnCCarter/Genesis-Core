@@ -107,5 +107,12 @@ data/metadata/*.json
 !data/DATA_FORMAT.md
 !data/**/README.md
 
-# Keep example files
+# Phase 3: Backtest results
+results/
+results/**/
+
+# Keep results README
+!results/README.md
+
+ # Keep example files
 !.env.example

@@ -498,9 +498,18 @@ def ui_page() -> str:
         const data = await r.json();
         el('configs').value = JSON.stringify(data.cfg, null, 2);
         save();
+        err('configs_err','');
         // refresh status panel
         loadHealth();
-      } catch { err('configs_err','Propose fel'); }
+        // Visa bekräftelse
+        const st = el('ui_status');
+        if (st) {
+          st.textContent = `✓ Config sparad (version ${data.version})`;
+          st.style.display = 'block';
+          st.style.color = '#065f46';
+          setTimeout(() => { st.style.display = 'none'; }, 2500);
+        }
+      } catch (e) { err('configs_err','Propose fel: ' + String(e)); }
     });
     el('run').addEventListener('click', async () => {
       let payload;

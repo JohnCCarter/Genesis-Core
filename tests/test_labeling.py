@@ -141,12 +141,16 @@ class TestGenerateMulticlassLabels:
     def test_threshold_validation(self):
         """Test that up_threshold must be > down_threshold."""
         with pytest.raises(ValueError, match="up_threshold_pct must be > down_threshold_pct"):
-            generate_multiclass_labels([100, 102], lookahead_bars=1, up_threshold_pct=-1.0, down_threshold_pct=1.0)
+            generate_multiclass_labels(
+                [100, 102], lookahead_bars=1, up_threshold_pct=-1.0, down_threshold_pct=1.0
+            )
 
     def test_equal_thresholds_raises(self):
         """Test that equal thresholds raise ValueError."""
         with pytest.raises(ValueError, match="up_threshold_pct must be > down_threshold_pct"):
-            generate_multiclass_labels([100, 102], lookahead_bars=1, up_threshold_pct=0.5, down_threshold_pct=0.5)
+            generate_multiclass_labels(
+                [100, 102], lookahead_bars=1, up_threshold_pct=0.5, down_threshold_pct=0.5
+            )
 
     def test_narrow_neutral_zone(self):
         """Test with very narrow neutral zone."""
@@ -239,9 +243,21 @@ class TestIntegrationWithRealData:
         """Test with realistic price series."""
         # Simulate BTC prices
         prices = [
-            50000, 50500, 51000, 50800, 51200,
-            51500, 51800, 51400, 51600, 52000,
-            51800, 51500, 51200, 51000, 50800
+            50000,
+            50500,
+            51000,
+            50800,
+            51200,
+            51500,
+            51800,
+            51400,
+            51600,
+            52000,
+            51800,
+            51500,
+            51200,
+            51000,
+            50800,
         ]
         labels = generate_labels(prices, lookahead_bars=5)
 
@@ -261,9 +277,9 @@ class TestIntegrationWithRealData:
         prices = [100 + (i % 2) * 2 for i in range(100)]
         labels = generate_labels(prices, lookahead_bars=1)
 
-        valid_labels = [l for l in labels if l is not None]
-        up_count = sum(1 for l in valid_labels if l == 1)
-        down_count = sum(1 for l in valid_labels if l == 0)
+        valid_labels = [label for label in labels if label is not None]
+        up_count = sum(1 for label in valid_labels if label == 1)
+        down_count = sum(1 for label in valid_labels if label == 0)
 
         # Should be roughly balanced
         assert up_count > 0

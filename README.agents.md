@@ -15,7 +15,28 @@ python -m venv .venv
 . .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 pip install -e .[dev]          # Core + dev tools
-pip install -e .[ml]           # ML dependencies (Phase 3: scikit-learn, pandas, etc.)
+pip install -e .[ml]           # ML dependencies (scikit-learn, pandas, pyarrow, matplotlib, seaborn, tqdm)
+```
+
+#### ML Pipeline (Phase 3 Complete)
+```powershell
+# Data collection
+python scripts/fetch_historical.py --symbol tBTCUSD --timeframe 15m --months 3
+
+# Feature engineering
+python scripts/precompute_features.py --symbol tBTCUSD --timeframe 15m
+
+# Model training
+python scripts/train_model.py --symbol tBTCUSD --timeframe 15m
+
+# Model evaluation
+python scripts/evaluate_model.py --model results/models/tBTCUSD_15m_v2.json
+
+# Model calibration
+python scripts/calibrate_model.py --model results/models/tBTCUSD_15m_v2.json
+
+# Champion selection
+python scripts/select_champion.py --symbol tBTCUSD --timeframe 15m --ml-model results/models/tBTCUSD_15m_v2.json
 ```
 
 #### CI lokalt
@@ -41,6 +62,11 @@ Health: http://127.0.0.1:8000/health
   - `/account/wallets`, `/account/positions`, `/account/orders`
 - SSOT Config:
   - `GET /config/runtime`, `POST /config/runtime/validate`, `POST /config/runtime/propose`
+
+#### Phase Status
+- **Phase 1 & 2:** ✅ Complete (Core trading system, UI, SSOT, account endpoints)
+- **Phase 3:** ✅ Complete (ML Pipeline: Data → Features → Training → Evaluation → Calibration → Champion Selection)
+- **Quality Status:** ✅ All tests passing (140+ tests), CI clean, production ready
 
 #### Strategy‑pipeline lokalt
 Se exempel i `README.md` (GitHub‑läsare) eller kör tester:

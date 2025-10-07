@@ -107,12 +107,13 @@ data/metadata/*.json
 !data/DATA_FORMAT.md
 !data/**/README.md
 
-# Phase 3: Backtest results
+# Phase 3: ML Results (models, evaluations, calibrations, champion reports)
 results/
 results/**/
 
-# Keep results README
+# Keep results documentation
 !results/README.md
+!results/**/README.md
 
  # Keep example files
 !.env.example

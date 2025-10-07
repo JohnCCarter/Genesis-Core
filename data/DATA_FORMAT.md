@@ -1,6 +1,6 @@
 # Genesis-Core - Data Directory
 
-**Created:** 2025-10-07 (Phase 3 Prep)  
+**Created:** 2025-10-07 (Phase 3 Prep)
 **Purpose:** Storage for historical market data and ML features
 
 ---

@@ -23,10 +23,10 @@ Prioritet P3 (modell & policy)
 
 Regler (ska efterlevas i kod)
 
-- [ ] No overlap: Probability/Confidence/Regim/Decision har skarpa ansvar
-- [ ] Fail‑safe: saknas data/NaN ⇒ Decision = NONE
-- [ ] Latensbudget: ≤ 20 ms/modul (LTF)
-- [ ] Inga hemligheter i logg; reasons som maskinläsbara koder
+- [x] No overlap: Probability/Confidence/Regim/Decision har skarpa ansvar
+- [x] Fail‑safe: saknas data/NaN ⇒ Decision = NONE
+- [x] Latensbudget: ≤ 20 ms/modul (LTF) - Verifierat: avg 0.6ms total
+- [x] Inga hemligheter i logg; reasons som maskinläsbara koder
 
 Noteringar
 

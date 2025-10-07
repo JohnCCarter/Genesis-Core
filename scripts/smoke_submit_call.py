@@ -1,7 +1,7 @@
+import asyncio
+import json
 import os
 import sys
-import json
-import asyncio
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 SRC = os.path.join(ROOT, "src")
@@ -26,7 +26,9 @@ class DummyClient:
 
 async def run() -> int:
     srv.get_exchange_client = lambda: DummyClient()  # type: ignore[assignment]
-    out = await srv.paper_submit({"symbol": "tTESTETH:TESTUSD", "side": "LONG", "size": 0.0005, "type": "MARKET"})
+    out = await srv.paper_submit(
+        {"symbol": "tTESTETH:TESTUSD", "side": "LONG", "size": 0.0005, "type": "MARKET"}
+    )
     print(json.dumps(out, ensure_ascii=False))
     return 0 if out.get("ok") else 1
 

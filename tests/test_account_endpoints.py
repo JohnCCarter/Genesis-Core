@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 from typing import Any
 
 from starlette.testclient import TestClient
@@ -55,7 +54,22 @@ def test_account_orders_filters_test(monkeypatch) -> None:
     async def _fake_orders() -> Any:
         # Minimal mock: plocka symbol på index 3, amount index 6, type index 8, status index 13
         real_order = [0, 0, 0, "tBTCUSD", 0, 0, 0.01, 0, "EXCHANGE MARKET", 0, 0, 0, 0, "ACTIVE"]
-        test_order = [0, 0, 0, "tTESTDOGE:TESTUSD", 0, 0, 25.0, 0, "EXCHANGE MARKET", 0, 0, 0, 0, "ACTIVE"]
+        test_order = [
+            0,
+            0,
+            0,
+            "tTESTDOGE:TESTUSD",
+            0,
+            0,
+            25.0,
+            0,
+            "EXCHANGE MARKET",
+            0,
+            0,
+            0,
+            0,
+            "ACTIVE",
+        ]
         return [real_order, test_order]
 
     import core.io.bitfinex.read_helpers as rh

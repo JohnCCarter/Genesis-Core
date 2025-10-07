@@ -8,7 +8,7 @@ def test_prob_model_integration_minimal():
     reg = ModelRegistry()
     meta = reg.get_meta("tBTCUSD", "1m")
     assert isinstance(meta, dict)
-    feats = {k: 0.0 for k in meta.get("schema", [])}
+    feats = dict.fromkeys(meta.get("schema", []), 0.0)
     # Wrapper kommer justeras senare; tills dess validerar vi basfunktionen
     out = predict_proba(
         feats,
@@ -32,7 +32,7 @@ def test_prob_model_integration_minimal():
 def test_prob_model_wrapper_applies_calibration_and_meta():
     reg = ModelRegistry()
     meta = reg.get_meta("tBTCUSD", "1m")
-    feats = {k: 0.0 for k in meta.get("schema", [])}
+    feats = dict.fromkeys(meta.get("schema", []), 0.0)
     probas, pmeta = predict_proba_for("tBTCUSD", "1m", feats, model_meta=meta)
     assert set(probas.keys()) == {"buy", "sell", "hold"}
     assert "versions" in pmeta and isinstance(pmeta["versions"], dict)

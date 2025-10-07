@@ -54,29 +54,29 @@ def is_flat_structure(data: dict) -> bool:
 
 def migrate_file(file_path: Path, dry_run: bool = False) -> bool:
     """Migrate a single model file from flat to multi-timeframe structure.
-    
+
     Returns True if migrated, False if skipped.
     """
     print(f"\n{'[DRY-RUN] ' if dry_run else ''}Processing: {file_path.name}")
-    
+
     # Read current content
     try:
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             data = json.load(f)
     except Exception as e:
         print(f"  [ERROR] Error reading file: {e}")
         return False
-    
+
     # Check if already migrated
     if not is_flat_structure(data):
-        print(f"  [SKIP] Already has multi-timeframe structure, skipping")
+        print("  [SKIP] Already has multi-timeframe structure, skipping")
         return False
-    
-    print(f"  [FLAT] Flat structure detected:")
+
+    print("  [FLAT] Flat structure detected:")
     print(f"     Schema: {data.get('schema', [])}")
     print(f"     Buy weights: {data.get('buy', {}).get('w', [])}")
     print(f"     Sell weights: {data.get('sell', {}).get('w', [])}")
-    
+
     # Create multi-timeframe structure
     migrated = {}
     for tf in TIMEFRAMES:
@@ -86,9 +86,9 @@ def migrate_file(file_path: Path, dry_run: bool = False) -> bool:
             "buy": data["buy"],
             "sell": data["sell"],
         }
-    
+
     print(f"  [OK] Created structure with {len(TIMEFRAMES)} timeframes")
-    
+
     if not dry_run:
         # Write back to file
         try:
@@ -100,17 +100,15 @@ def migrate_file(file_path: Path, dry_run: bool = False) -> bool:
             return False
     else:
         print(f"  [DRY-RUN] Would save to {file_path.name}")
-    
+
     return True
 
 
 def main():
     """Main migration function."""
     import argparse
-    
-    parser = argparse.ArgumentParser(
-        description="Migrate model files to multi-timeframe structure"
-    )
+
+    parser = argparse.ArgumentParser(description="Migrate model files to multi-timeframe structure")
     parser.add_argument(
         "--dry-run",
         action="store_true",
@@ -126,9 +124,9 @@ def main():
         type=str,
         help="Migrate specific symbol (e.g., tADAUSD)",
     )
-    
+
     args = parser.parse_args()
-    
+
     # Determine which symbols to process
     if args.symbol:
         symbols = [args.symbol]
@@ -138,7 +136,7 @@ def main():
         print("Error: Specify either --all or --symbol SYMBOL")
         parser.print_help()
         return 1
-    
+
     print("=" * 60)
     print("Genesis-Core Model Structure Migration")
     print("=" * 60)
@@ -146,32 +144,32 @@ def main():
         print("[DRY-RUN] MODE: No files will be modified")
     print(f"Symbols to process: {len(symbols)}")
     print(f"Timeframes per symbol: {len(TIMEFRAMES)}")
-    
+
     # Get models directory
     root = Path(__file__).resolve().parents[1]
     models_dir = root / "config" / "models"
-    
+
     if not models_dir.exists():
         print(f"\n[ERROR] Models directory not found: {models_dir}")
         return 1
-    
+
     # Process each symbol
     migrated_count = 0
     skipped_count = 0
-    
+
     for symbol in symbols:
         file_path = models_dir / f"{symbol}.json"
-        
+
         if not file_path.exists():
             print(f"\n[WARN] File not found: {file_path.name}")
             skipped_count += 1
             continue
-        
+
         if migrate_file(file_path, dry_run=args.dry_run):
             migrated_count += 1
         else:
             skipped_count += 1
-    
+
     # Summary
     print("\n" + "=" * 60)
     print("Migration Summary")
@@ -179,20 +177,22 @@ def main():
     print(f"[OK] Migrated: {migrated_count} files")
     print(f"[SKIP] Skipped: {skipped_count} files")
     print(f"Total processed: {len(symbols)} files")
-    
+
     if args.dry_run:
         print("\n[DRY-RUN] This was a DRY-RUN. Run without --dry-run to apply changes.")
         return 0
-    
+
     if migrated_count > 0:
         print("\n[SUCCESS] Migration complete!")
         print("\nNext steps:")
         print("   1. Run tests: pytest tests/")
         print("   2. Verify models load correctly")
-        print("   3. Git commit: git add config/models/ && git commit -m 'feat: migrate models to multi-timeframe structure'")
+        print(
+            "   3. Git commit: git add config/models/ && git commit -m 'feat: migrate models to multi-timeframe structure'"
+        )
     else:
         print("\n[OK] All files already migrated!")
-    
+
     return 0
 
 

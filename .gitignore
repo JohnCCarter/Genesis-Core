@@ -98,5 +98,14 @@ build/
 *.temp
 .agent-locks/
 
+# Phase 3: Data files (historical candles, features, metadata)
+data/candles/*.parquet
+data/features/*.parquet
+data/metadata/*.json
+
+# Keep README files in data directories
+!data/README.md
+!data/**/README.md
+
 # Keep example files
 !.env.example

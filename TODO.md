@@ -35,13 +35,20 @@ Se `TODO_PHASE3.md` för fullständig plan. Här är high-level översikt:
 - [x] Processed: tETHUSD 15m (8,638 rows), tETHUSD 1h (2,160 rows)
 - [x] Total: ~604 KB features data
 
-### Priority 3.2: Label Generation
-- [ ] Implementera `src/core/ml/labeling.py`
-  - [ ] Forward-looking returns (10/20/50 bars)
-  - [ ] Binary labels: price_up (1) vs price_down (0)
-  - [ ] Avoid lookahead bias
-  - [ ] Handle edge cases (nära slutet av data)
-- [ ] Test: Verifiera label alignment med features
+### Priority 3.2: Label Generation ✅ KLART
+- [x] Implementera `src/core/ml/labeling.py`
+  - [x] Binary labels: `generate_labels()` (1=up, 0=down/flat)
+  - [x] Multiclass labels: `generate_multiclass_labels()` (2=up, 1=neutral, 0=down)
+  - [x] Configurable lookahead_bars (10/20/50 bars)
+  - [x] Threshold filtering (avoid noise)
+  - [x] Zero/negative price handling
+  - [x] Avoid lookahead bias (only uses past/current data)
+  - [x] Handle edge cases (bars nära slutet → None labels)
+- [x] Test: 25/25 tester passar
+  - [x] Binary/multiclass label generation
+  - [x] Edge cases (empty, single price, invalid prices)
+  - [x] Alignment helper function
+  - [x] Realistic price series integration
 
 ### Priority 3.3: Training Script
 - [ ] Implementera `scripts/train_model.py`

@@ -14,8 +14,7 @@ Denna fil beskriver hur AI‑agenter ska arbeta lokalt med projektet.
 python -m venv .venv
 . .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-pip install -e .[dev]          # Core + dev tools
-pip install -e .[ml]           # ML dependencies (Phase 3: scikit-learn, pandas, etc.)
+pip install -e .[dev]
 ```
 
 #### CI lokalt
@@ -98,37 +97,3 @@ python -m pytest -q
 - `data/` – historical candles (parquet), features, metadata (Phase 3)
 - `results/` – backtest outputs (JSON, CSV, plots)
 - `scripts/` – verktyg/CI/fetch_historical/validate_data/run_backtest
-
----
-
-#### Phase Status (2025-10-07)
-- ✅ **Phase 1 & 2:** Core system + Backtest framework KLART
-- ⏳ **Phase 3:** ML Training Pipeline (se `TODO_PHASE3.md`)
-
-**Kvalitetsstatus:**
-- ✅ 115/115 tester passar
-- ✅ 0 linting errors (ruff)
-- ✅ 0 formatting issues (black)
-- ✅ 0 critical security warnings (bandit)
-
----
-
-#### Backtest Example
-```powershell
-# 1. Hämta historical data
-python scripts/fetch_historical.py tBTCUSD 15m --months 3
-
-# 2. Validera data quality
-python scripts/validate_data.py tBTCUSD 15m
-
-# 3. Kör backtest
-python scripts/run_backtest.py --symbol tBTCUSD --timeframe 15m --capital 10000
-
-# 4. Resultat sparas i results/backtests/ (JSON + CSV)
-```
-
-#### Models Cache Management
-```powershell
-# Efter ML training, rensa model cache:
-curl -X POST http://127.0.0.1:8000/models/reload
-```

@@ -1,6 +1,6 @@
 # TODO - Phase 3: ML & Backtest
 
-## Status: Phase 1 ✅ & Phase 2 ✅ KLART | Phase 3 → PÅBÖRJAS
+## Status: Phase 1 ✅ & Phase 2 ✅ KLART | Phase 3 → PÅBÖRJAD (Data Foundation)
 
 ---
 
@@ -23,7 +23,7 @@
   - [ ] Progress tracking (progressbar)
 
 ### 1.2 Data Storage
-- [ ] Skapa `data/` directory structure:
+- [x] Skapa `data/` directory structure:
   ```
   data/
   ├── candles/
@@ -36,9 +36,10 @@
   └── metadata/
       └── fetch_log.jsonl
   ```
-- [ ] Använd Parquet-format (pandas/pyarrow)
-- [ ] Schema: `[timestamp, open, high, low, close, volume]`
-- [ ] Indexering på timestamp för snabb lookup
+- [x] Använd Parquet-format (pandas/pyarrow)
+- [x] Schema: `[timestamp, open, high, low, close, volume]`
+- [x] Indexering på timestamp för snabb lookup
+- [x] Dokumenterad i `data/DATA_FORMAT.md`
 
 ### 1.3 Data Validation
 - [ ] Implementera `scripts/validate_data.py`
@@ -69,7 +70,7 @@
 - [ ] Fetch 6 månader för tBTCUSD: 1m, 5m, 15m, 1h, 4h
 - [ ] Fetch 6 månader för tETHUSD: 1m, 5m, 1h
 - [ ] Validera kvalitet > 99%
-- [ ] Dokumentera i `data/README.md`
+- [x] Dokumentera i `data/DATA_FORMAT.md`
 
 ---
 
@@ -238,8 +239,8 @@
 
 ## Dependencies & Nya Paket
 
+✅ **KLART:** ML dependencies redan tillagda i `pyproject.toml`
 ```toml
-# pyproject.toml - Lägg till:
 [project.optional-dependencies]
 ml = [
     "scikit-learn>=1.3.0",
@@ -250,6 +251,8 @@ ml = [
     "tqdm>=4.65.0",  # Progress bars
 ]
 ```
+
+**Installation:** `pip install -e .[ml]`
 
 ---
 
@@ -302,10 +305,18 @@ ml = [
 
 ## Nästa Konkreta Steg
 
+**Förberedelser (Klart):**
+- [x] ML dependencies i `pyproject.toml`
+- [x] Data directory structure skapad
+- [x] `.gitignore` uppdaterad
+- [x] Schema dokumenterad
+- [x] Phase-3 branch skapad
+
+**Nästa (Priority 1.1 - Historical Data Fetcher):**
 1. [ ] Installera ML dependencies: `pip install -e .[ml]`
-2. [ ] Implementera `scripts/fetch_historical.py` (Priority 1.1)
+2. [ ] Implementera `scripts/fetch_historical.py`
 3. [ ] Fetch 1 månad tBTCUSD 1m data (test)
 4. [ ] Validera data quality
 5. [ ] Expand till 6 månader alla timeframes
 
-**Status:** Redo att börja! 🚀
+**Status:** Data Foundation påbörjad - redo för Historical Fetcher! 🚀

@@ -84,12 +84,22 @@ Se `TODO_PHASE3.md` för fullständig plan. Här är high-level översikt:
   - [x] Random: AUC=0.496, Accuracy=0.496
   - [x] ML > Baseline > Random (men alla nära 0.5)
 
-### Priority 3.5: Calibration
-- [ ] Implementera `src/core/ml/calibration.py`
-  - [ ] Isotonic regression (sklearn)
-  - [ ] Platt scaling (logistic)
-  - [ ] Save calibration params
-  - [ ] Before/after reliability plots
+### Priority 3.5: Calibration ✅ KLART
+- [x] Implementera `src/core/ml/calibration.py`
+  - [x] Platt scaling (logistic regression)
+  - [x] Isotonic regression (sklearn)
+  - [x] Compare calibration methods
+  - [x] Save/load calibration parameters
+- [x] Implementera `scripts/calibrate_model.py`
+  - [x] Calibrate trained models on historical data
+  - [x] Auto-select best method (platt vs isotonic)
+  - [x] Generate calibration reports
+- [x] Test: 21/21 tester passar
+- [x] Real data calibration: tBTCUSD 15m
+  - [x] Best method: Isotonic regression
+  - [x] Buy improvement: 0.000168 Brier score
+  - [x] Sell improvement: 0.000168 Brier score
+  - [x] Calibration files saved to results/calibration/
 - [ ] Test: Verify calibrated probabilities
 
 ### Priority 3.6: Champion Selection

@@ -146,68 +146,25 @@ Se `TODO_PHASE3.md` för fullständig plan. Här är high-level översikt:
 
 ---
 
-## 🚀 **PHASE 3.5: ML IMPROVEMENTS** ✅ KLART
+## 🚀 **PHASE 3.5: ML IMPROVEMENTS** ✅ IMPLEMENTATION KLART | ⏳ VALIDATION ÅTERSTÅR
 
 **Syfte:** Förbättra ML model från AUC 0.517 → 0.65+ innan deployment
 
-### **Priority 3.5.1: Feature Expansion** ✅ KLART
-- [x] Bollinger Bands (`src/core/indicators/bollinger.py`)
-  - [x] BB Width (volatility indicator)
-  - [x] BB Position (support/resistance)
-  - [x] BB Squeeze detection
-  - [x] 23 tester (alla passar)
-- [x] Volume Metrics (`src/core/indicators/volume.py`)
-  - [x] Volume change vs average
-  - [x] Volume spikes (breakout confirmation)
-  - [x] Volume trend (fast/slow ratio)
-  - [x] OBV (On-Balance Volume)
-  - [x] Volume-price divergence
-  - [x] 36 tester (alla passar)
-- [x] Enhanced Regime Detection (`strategy/regime.py`)
-  - [x] Bull/Bear/Ranging/Balanced classification
-  - [x] ADX + EMA + Volatility based
-  - [x] `detect_regime_from_candles()` convenience function
-  - [x] 11 tester (alla passar)
-- [x] Feature Integration (`strategy/features.py`)
-  - [x] **2 features → 11 features** (550% expansion!)
-  - [x] Original: ema_delta_pct, rsi
-  - [x] Volatility: atr_pct, bb_width, bb_position
-  - [x] Trend: adx, ema_slope, price_vs_ema
-  - [x] Volume: vol_change, vol_trend, obv_normalized
-  - [x] Backward compatible
-  - [x] 2 tester uppdaterade
+**Implementation Status:**
+- ✅ **Features expanded:** 2 → 11 (550% ökning)
+- ✅ **Triple-barrier labeling:** Implementerat (profit/stop/time barriers)
+- ✅ **Confidence edge filter:** Implementerat (min_edge parameter)
+- ✅ **New indicators:** Bollinger Bands, Volume metrics, Enhanced regime
+- ✅ **Tests:** 270/270 passar (93 nya tester)
+- ✅ **Code quality:** Black, ruff, bandit - alla clean
 
-### **Priority 3.5.2: Triple-Barrier Labeling** ✅ KLART
-- [x] Fixed threshold method (`ml/labeling.py`)
-  - [x] Profit target: +0.3%
-  - [x] Stop loss: -0.2%
-  - [x] Time exit: 5 bars max
-  - [x] Filters noisy trades (small moves → None)
-  - [x] Asymmetric R:R ratios
-- [x] ATR-Adaptive method
-  - [x] Volatility-aware barriers
-  - [x] High vol → wider barriers
-  - [x] Low vol → tighter barriers
-- [x] 18 tester (alla passar)
+**Återstående Arbete:**
+- ⏳ Regenerate features med 11 features
+- ⏳ Retrain models med triple-barrier labels
+- ⏳ Backtest med confidence thresholds
+- ⏳ Validate AUC improvement (target: > 0.65)
 
-### **Priority 3.5.3: Confidence Thresholds** ✅ KLART
-- [x] Min Edge requirement (`strategy/decision.py`)
-  - [x] Require significant probability difference
-  - [x] Example: p_buy - p_sell > 0.20
-  - [x] Filters marginal predictions
-  - [x] Configurable via `min_edge` parameter
-- [x] Integration with existing confidence gate
-  - [x] Both high confidence AND edge required
-  - [x] Blocks low-quality trades
-- [x] 5 tester (alla passar)
-
-### **📊 Phase 3.5 Resultat:**
-- ✅ **Features:** 2 → 11 (550% expansion)
-- ✅ **Tests:** 177 → 270 (93 nya tester)
-- ✅ **Labeling:** Simple binary → Triple-barrier (realistic)
-- ✅ **Decision:** Confidence only → Confidence + Edge
-- ✅ **Code Quality:** Alla tester passar, 0 linting errors
-- ⏳ **Next:** Retrain models och validera förbättringar
+**📋 Se `TODO_PHASE3.5.md` för detaljerad work plan och quick start guide.**
 
 ---
 
@@ -236,31 +193,13 @@ Se `TODO_PHASE3.md` för fullständig plan. Här är high-level översikt:
 
 ## 📋 **NÄSTA STEG: PHASE 3.6 - RETRAIN & VALIDATE**
 
-**För att validera förbättringarna:**
+**Se `TODO_PHASE3.5.md` för detaljerad work plan.**
 
-### **Task 3.6.1: Uppdatera Feature Generation** ⏳
-- [ ] Kör `scripts/precompute_features.py` med 11 nya features
-- [ ] Verifiera parquet output innehåller alla features
-- [ ] Test på tBTCUSD 15m (snabb validation)
-
-### **Task 3.6.2: Retrain med Triple-Barrier Labels** ⏳
-- [ ] Uppdatera `scripts/train_model.py` att använda triple-barrier
-- [ ] Träna ny modell med 11 features + triple-barrier labels
-- [ ] Jämför: Old (2 feat, simple) vs New (11 feat, triple-barrier)
-- [ ] Mål: AUC > 0.65 på test set
-
-### **Task 3.6.3: Backtest med Confidence Thresholds** ⏳
-- [ ] Konfigurera min_edge=0.20 i config
-- [ ] Kör backtest med nya filters
-- [ ] Mät: Signal rate (target 30-40%), Win rate, Sharpe ratio
-- [ ] Mål: Sharpe > 1.5
-
-### **Task 3.6.4: Validation & Comparison** ⏳
-- [ ] Jämför AUC: 0.517 → ???
-- [ ] Jämför Signal rate: 100% → ???
-- [ ] Jämför Win rate: 50% → ???
-- [ ] Generera comparison report
-- [ ] Beslut: Deploy eller iterate mer?
+**Quick Summary:**
+1. ⏳ Regenerate features (11 features)
+2. ⏳ Retrain models (triple-barrier labels)
+3. ⏳ Backtest (confidence thresholds)
+4. ⏳ Validate (AUC > 0.65, Sharpe > 1.5)
 
 ---
 

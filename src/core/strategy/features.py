@@ -3,12 +3,12 @@ from __future__ import annotations
 from collections.abc import Iterable
 from typing import Any
 
-from core.indicators.adx import calculate_adx
-from core.indicators.atr import calculate_atr
 from core.indicators.bollinger import bollinger_bands
+from core.indicators.derived_features import (
+    calculate_trend_confluence,
+)
 from core.indicators.ema import calculate_ema
 from core.indicators.rsi import calculate_rsi
-from core.indicators.volume import obv, volume_change, volume_trend
 
 
 def extract_features(
@@ -72,61 +72,29 @@ def extract_features(
 
     # Slice data up to last_idx
     data_slice_close = closes[: last_idx + 1]
-    data_slice_high = highs[: last_idx + 1]
-    data_slice_low = lows[: last_idx + 1]
-    data_slice_volume = volumes[: last_idx + 1]
+    highs[: last_idx + 1]
+    lows[: last_idx + 1]
+    volumes[: last_idx + 1]
 
-    # === BASIC FEATURES (original) ===
-    ema_vals = calculate_ema(data_slice_close, period=12)
+    # === FEATURES FOR V10 (TOP 3) ===
+    closes[last_idx]
+
+    # 1. RSI (momentum)
     rsi_vals = calculate_rsi(data_slice_close, period=14)
-    ema_latest = ema_vals[-1] if ema_vals else 0.0
-    close_latest = closes[last_idx]
-    ema_delta_pct = 0.0 if close_latest == 0 else (ema_latest - close_latest) / close_latest
     rsi_latest = (rsi_vals[-1] - 50.0) / 50.0 if rsi_vals else 0.0  # Scale around 0
 
-    # === VOLATILITY FEATURES ===
-    # ATR - Average True Range
-    atr_vals = calculate_atr(data_slice_high, data_slice_low, data_slice_close, period=14)
-    atr_latest = atr_vals[-1] if atr_vals else 0.0
-    atr_pct = (atr_latest / close_latest) if close_latest > 0 else 0.0
-
-    # Bollinger Bands
+    # 2. Bollinger Position (mean reversion)
     bb = bollinger_bands(data_slice_close, period=20, std_dev=2.0)
-    bb_width = bb["width"][-1] if bb["width"] else 0.0
     bb_position = bb["position"][-1] if bb["position"] else 0.5
 
-    # === TREND STRENGTH FEATURES ===
-    # ADX - Average Directional Index
-    adx_vals = calculate_adx(data_slice_high, data_slice_low, data_slice_close, period=14)
-    adx_latest = adx_vals[-1] if adx_vals else 0.0
-    adx_normalized = adx_latest / 100.0  # Scale 0-100 to 0-1
+    # 3. Trend Confluence (multi-TF alignment - DERIVED from FVG concept)
+    ema20_vals = calculate_ema(data_slice_close, period=20)
+    ema100_vals = calculate_ema(data_slice_close, period=100)
+    trend_conf = calculate_trend_confluence(ema20_vals, ema100_vals, window=20)
+    trend_conf_latest = trend_conf[-1] if trend_conf else 0.0
 
-    # EMA slope (trend direction)
-    if len(ema_vals) >= 5:
-        ema_start = ema_vals[-5]
-        ema_end = ema_vals[-1]
-        ema_slope = (ema_end - ema_start) / ema_start if ema_start > 0 else 0.0
-    else:
-        ema_slope = 0.0
-
-    # Price vs EMA (position)
-    price_vs_ema = (close_latest - ema_latest) / ema_latest if ema_latest > 0 else 0.0
-
-    # === VOLUME FEATURES ===
-    # Volume change vs average
-    vol_change_list = volume_change(data_slice_volume, period=20)
-    vol_change_latest = vol_change_list[-1] if vol_change_list else 0.0
-
-    # Volume trend (fast/slow ratio)
-    vol_trend_list = volume_trend(data_slice_volume, fast_period=10, slow_period=50)
-    vol_trend_latest = vol_trend_list[-1] if vol_trend_list else 1.0
-
-    # OBV (On-Balance Volume)
-    obv_vals = obv(data_slice_close, data_slice_volume)
-    obv_latest = obv_vals[-1] if obv_vals else 0.0
-    # Normalize OBV by cumulative volume
-    total_volume = sum(data_slice_volume) if data_slice_volume else 1.0
-    obv_normalized = obv_latest / total_volume if total_volume > 0 else 0.0
+    # NOTE: FVG features removed after testing showed consistent AUC degradation
+    # FVG concepts preserved as pure statistical features above (derived_features)
 
     # === BUILD FEATURE DICT ===
     # Apply clipping from config
@@ -138,29 +106,19 @@ def extract_features(
     vol_c_lo, vol_c_hi = p_cfg.get("vol_change", (-1.0, 2.0))
 
     feats: dict[str, float] = {
-        # Original features
-        "ema_delta_pct": _clip(ema_delta_pct, float(ed_lo), float(ed_hi)),
-        "rsi": _clip(rsi_latest, float(rsi_lo), float(rsi_hi)),
-        # Volatility features
-        "atr_pct": _clip(atr_pct, float(atr_lo), float(atr_hi)),
-        "bb_width": _clip(bb_width, float(bb_w_lo), float(bb_w_hi)),
-        "bb_position": _clip(bb_position, 0.0, 1.0),
-        # Trend features
-        "adx": _clip(adx_normalized, 0.0, 1.0),
-        "ema_slope": _clip(ema_slope, -0.05, 0.05),
-        "price_vs_ema": _clip(price_vs_ema, -0.10, 0.10),
-        # Volume features
-        "vol_change": _clip(vol_change_latest, float(vol_c_lo), float(vol_c_hi)),
-        "vol_trend": _clip(vol_trend_latest, 0.5, 2.0),
-        "obv_normalized": _clip(obv_normalized, -1.0, 1.0),
+        # CLEAN: TOP 3 POSITIVE PERMUTATION IMPORTANCE (v10 - lookahead-free baseline)
+        # Remove NEGATIVE features: vol_trend (-2.21%), momentum_displacement_z (-1.15%)
+        "bb_position": _clip(bb_position, 0.0, 1.0),  # +2.02% (BEST!)
+        "trend_confluence": _clip(trend_conf_latest, -1.0, 1.0),  # +0.99% (DERIVED!)
+        "rsi": _clip(rsi_latest, float(rsi_lo), float(rsi_hi)),  # +0.33% (MOMENTUM)
     }
 
     meta: dict[str, Any] = {
         "versions": {
             **((cfg.get("features") or {}).get("versions") or {}),
-            "features_v2": True,  # Mark as enhanced feature set
+            "features_v10": True,  # v10: Lookahead-free + TOP 3 positive features
         },
         "reasons": [],
-        "feature_count": len(feats),
+        "feature_count": 3,  # bb_position, trend_confluence, rsi
     }
     return feats, meta

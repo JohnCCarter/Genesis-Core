@@ -114,6 +114,11 @@ results/**/
 # Keep results documentation
 !results/README.md
 !results/**/README.md
+!results/*.md
+
+# Label cache (temporary, regenerate on demand)
+cache/
+cache/**
 
  # Keep example files
 !.env.example

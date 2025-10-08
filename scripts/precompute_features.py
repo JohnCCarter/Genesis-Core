@@ -89,11 +89,16 @@ def precompute_features_for_symbol(symbol: str, timeframe: str, verbose: bool = 
     # Ensure features directory exists
     features_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Save to Parquet
+    # Save to Feather (2-5× faster read than Parquet)
+    feather_path = features_path.with_suffix(".feather")
+    features_df.to_feather(feather_path)
+
+    # Also save Parquet for backward compatibility
     features_df.to_parquet(features_path, index=False)
 
     if verbose:
-        print(f"[SAVED] {features_path} ({len(features_df)} rows)")
+        print(f"[SAVED] {feather_path} ({len(features_df)} rows, Feather)")
+        print(f"[SAVED] {features_path} ({len(features_df)} rows, Parquet - legacy)")
 
     return {
         "symbol": symbol,

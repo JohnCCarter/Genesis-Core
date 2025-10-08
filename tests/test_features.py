@@ -22,32 +22,29 @@ def test_extract_features_stub_shapes():
     assert isinstance(feats, dict) and isinstance(meta, dict)
     assert "versions" in meta and "reasons" in meta
 
-    # Should contain all 11 enhanced features
+    # Should contain TOP 7 features (coefficient importance - optimal balance)
     expected_features = {
-        "ema_delta_pct",
         "rsi",
-        "atr_pct",
-        "bb_width",
         "bb_position",
-        "adx",
-        "ema_slope",
-        "price_vs_ema",
-        "vol_change",
+        "trend_confluence",
         "vol_trend",
-        "obv_normalized",
+        "bb_width",
+        "momentum_displacement_z",
+        "adx",
     }
     assert set(feats.keys()) == expected_features
-    assert meta.get("feature_count") == 11
+    assert meta.get("feature_count") == 7
     assert meta.get("versions", {}).get("features_v2") is True
 
 
 def test_extract_features_time_alignment_uses_closed_bar():
+    # Need more bars for derived features (240 window)
     candles = {
-        "open": [1, 2, 3, 4],
-        "high": [2, 3, 4, 5],
-        "low": [0.5, 1.5, 2.5, 3.5],
-        "close": [1.5, 2.5, 3.5, 4.5],
-        "volume": [10, 11, 12, 13],
+        "open": [100.0 + i for i in range(300)],
+        "high": [102.0 + i for i in range(300)],
+        "low": [99.0 + i for i in range(300)],
+        "close": [101.0 + i * 0.5 for i in range(300)],
+        "volume": [1000.0 + i * 10 for i in range(300)],
     }
     cfg = {
         "features": {
@@ -55,7 +52,8 @@ def test_extract_features_time_alignment_uses_closed_bar():
             "versions": {"feature_set": "v1"},
         }
     }
-    feats_last, _ = extract_features(candles, config=cfg, now_index=3)
-    feats_prev, _ = extract_features(candles, config=cfg, now_index=2)
-    # now_index=3 ska använda stängd bar index 2; now_index=2 -> stängd bar 1
+    feats_last, _ = extract_features(candles, config=cfg, now_index=299)
+    feats_prev, _ = extract_features(candles, config=cfg, now_index=298)
+    # now_index=299 ska använda stängd bar index 298; now_index=298 -> stängd bar 297
+    # With 300 bars of trending data, features should differ
     assert feats_last != feats_prev

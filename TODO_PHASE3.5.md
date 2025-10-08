@@ -1,9 +1,10 @@
 # TODO - Phase 3.5: ML Improvement
 
 **Branch:** phase-4  
-**Status:** ✅ IMPLEMENTATION KLART | ⏳ VALIDATION ÅTERSTÅR  
+**Status:** ✅ IMPLEMENTATION KLART | ✅ TRAINING KLART | ⏳ BACKTEST ÅTERSTÅR  
 **Goal:** Förbättra ML model från AUC 0.517 → 0.65+ innan production deployment  
-**Senast uppdaterad:** 2025-10-08
+**Senast uppdaterad:** 2025-10-08 12:05  
+**Bästa Resultat:** AUC 0.5987 (Adaptive 6m) - +15.8% förbättring från baseline!
 
 ---
 
@@ -58,16 +59,19 @@
 
 **Nya Labeling Methods:**
 - `generate_triple_barrier_labels()` - Fixed thresholds
-  - Profit target: +0.3% (configurable)
-  - Stop loss: -0.2% (configurable)
-  - Max holding: 5 bars
+  - Profit target: +0.5% (tuned from 0.3%)
+  - Stop loss: -0.3% (tuned from 0.2%)
+  - Max holding: 10 bars (tuned from 5)
   - Filters noise: Small moves → None label
   - 18 comprehensive tests
 
-- `generate_adaptive_triple_barrier_labels()` - ATR-adaptive
+- `generate_adaptive_triple_barrier_labels()` - ATR-adaptive ⭐ **VINNARE**
   - Volatility-aware barriers
+  - Profit: 1.5x ATR
+  - Stop: 1.0x ATR
   - High vol → wider barriers
   - Low vol → tighter barriers
+  - **Resultat: AUC 0.5987 (+3.9% vs fixed)**
 
 ### **Priority 3: Confidence Thresholds** ✅ KLART
 **Resultat: Edge filtering implementerat**
@@ -85,31 +89,64 @@
 
 ---
 
+## ✅ **KLART - TRAINING & VALIDATION (2025-10-08)**
+
+### **Priority 4: Adaptive Triple-Barrier Training** ✅ KLART
+**Resultat: Adaptive > Fixed (+3.9% AUC)**
+
+**Implementation:**
+- ✅ `scripts/train_model.py` uppdaterad med:
+  - `--use-adaptive-triple-barrier` flag
+  - `--profit-multiplier` parameter (default 1.5)
+  - `--stop-multiplier` parameter (default 1.0)
+  - ATR-beräkning integration
+  - Code quality: black + ruff passed
+
+**Training Experiments (4 modeller):**
+
+1. **Fixed 6m (v3_1h):**
+   - AUC: 0.5761
+   - Data: 6 months
+   - Labeling: Fixed (0.5%/0.3%)
+   - Samples: 4,037
+   - Filtered: 6.5%
+
+2. **Fixed 1y (v3_1year):**
+   - AUC: 0.5092 ❌ (Regime shift!)
+   - Data: 1 year
+   - Labeling: Fixed (0.5%/0.3%)
+   - Samples: 4,948
+   - Filtered: 4.5%
+
+3. **Adaptive 1y (v3_adaptive_1year):**
+   - AUC: 0.4922 ❌ (Too aggressive!)
+   - Data: 1 year
+   - Labeling: Adaptive (1.5x/1.0x ATR)
+   - Samples: 4,522
+   - Filtered: 12.8%
+
+4. **Adaptive 6m (v3_adaptive_6m)** ⭐ **VINNARE:**
+   - **AUC: 0.5987** ✅✅ (+15.8% vs baseline!)
+   - Data: 6 months (recent only)
+   - Labeling: Adaptive (1.5x/1.0x ATR)
+   - Samples: 2,280 (high quality)
+   - Filtered: 12.0% (aggressive noise removal)
+
+**Key Findings:**
+- ✅ Adaptive > Fixed (+3.9% AUC)
+- ✅ Recent data (6m) >> Historical data (1y)
+- ✅ Quality > Quantity (2,280 samples enough)
+- ✅ Market non-stationarity confirmed
+- ❌ 1-year data causes -11.6% AUC drop
+
+**Results Logged:**
+- ✅ All models saved: `results/models/tBTCUSD_1h_*.json`
+- ✅ All metrics saved: `results/models/tBTCUSD_1h_*_metrics.json`
+- ✅ Comprehensive report: `results/TRAINING_RESULTS_2025-10-08.md`
+
+---
+
 ## ⏳ **ÅTERSTÅENDE ARBETE**
-
-### **Priority 5.1: Regenerate Features** ⏳ NÄSTA STEG
-- [ ] Update `scripts/precompute_features.py`
-  - [ ] Extract 11 features istället för 2
-  - [ ] Verify all indicators calculate correctly
-  - [ ] Handle NaN values från BB/Volume (require ~60 bars)
-- [ ] Kör på tBTCUSD 15m
-- [ ] Verify parquet output innehåller 11 columns
-- [ ] **Estimerad tid:** 5-10 min
-
-### **Priority 5.2: Retrain Models** ⏳ KRITISKT
-- [ ] Update `scripts/train_model.py`
-  - [ ] Option: Use triple-barrier labels (--use-triple-barrier flag?)
-  - [ ] Skip None labels (only train on clear signals)
-  - [ ] Report label distribution
-- [ ] Train ny model:
-  - [ ] Input: 11 features
-  - [ ] Labels: Triple-barrier (profit +0.3%, stop -0.2%)
-  - [ ] Split: 60/20/20 (train/val/test)
-- [ ] **Jämför resultat:**
-  - [ ] Old: 2 feat, simple labels, AUC 0.517
-  - [ ] New: 11 feat, triple-barrier, AUC ???
-- [ ] **Success target:** AUC > 0.65
-- [ ] **Estimerad tid:** 10-15 min
 
 ### **Priority 5.3: Backtest with Thresholds** ⏳ VALIDATION
 - [ ] Configure min_edge parameter
@@ -124,86 +161,99 @@
 - [ ] Generate comparison report
 - [ ] **Estimerad tid:** 15-20 min
 
-### **Priority 5.4: Validation & Decision** ⏳ FINAL
-- [ ] Out-of-sample testing (latest 20% data)
-- [ ] Compare old vs new champion
+### **Priority 5.4: Validation & Decision** ⏳ PÅGÅENDE
+- [x] Training validation (20% val data) ✅
+- [x] Compare models (4 experiments) ✅
+- [x] Generate results report (`results/TRAINING_RESULTS_2025-10-08.md`) ✅
+- [ ] Out-of-sample testing (test set)
+- [ ] Backtest with real-world scenarios
 - [ ] **Decision:**
-  - [ ] If AUC > 0.65 AND Sharpe > 1.5 → Deploy
-  - [ ] If insufficient → Iterate (regime models, more features)
-- [ ] Generate `docs/PHASE3.5_RESULTS.md`
+  - [ ] Current: AUC 0.5987 (need > 0.65 for deploy)
+  - [ ] Options: Feature importance, regime models, longer timeframes
+- [ ] Final deployment decision
 
 ---
 
 ## 📊 **IMPLEMENTATION STATUS**
 
-### **✅ KLART (2025-10-08):**
+### **✅ KLART (2025-10-08 12:05):**
 - ✅ Bollinger Bands indicator (23 tests)
 - ✅ Volume indicators (36 tests)
 - ✅ Enhanced regime detection (11 tests)
 - ✅ Triple-barrier labeling (18 tests)
 - ✅ Confidence edge filtering (5 tests)
 - ✅ Feature integration (11 features)
+- ✅ **Feature regeneration (11 features on 6m & 1y data)**
+- ✅ **Adaptive triple-barrier implementation**
+- ✅ **4 training experiments completed**
+- ✅ **Champion model: v3_adaptive_6m (AUC 0.5987)**
+- ✅ **Results report generated**
 - ✅ All 270 tests pass
 - ✅ Code quality (black, ruff, bandit)
 - ✅ Committed & pushed to phase-4
 
 ### **⏳ KVAR ATT GÖRA:**
-- ⏳ Regenerate features (11 features)
-- ⏳ Retrain models (triple-barrier labels)
-- ⏳ Backtest with thresholds
-- ⏳ Validate AUC improvement
-- ⏳ Generate results report
-- ⏳ **Total estimerad tid:** ~45-60 min
+- ⏳ **Backtest with thresholds (Priority 1)**
+- ⏳ Feature importance analysis (Priority 2)
+- ⏳ Out-of-sample validation (Priority 3)
+- ⏳ Production deployment decision (if AUC > 0.65)
+- ⏳ **Total estimerad tid:** ~30-45 min
 
 ---
 
 ## 🚀 **QUICK START GUIDE**
 
-### **För att fortsätta Phase 3.5 Validation:**
+### **Champion Model Usage:**
 
-**Steg 1: Regenerate Features**
-```bash
-python scripts/precompute_features.py --symbol tBTCUSD --timeframe 15m
-```
+**Model:** `results/models/tBTCUSD_1h_v3_adaptive_6m.json`
 
-**Steg 2: Retrain Model**
+**Retrain med samma config:**
 ```bash
+# Fetch 6 months data
+python scripts/fetch_historical.py --symbol tBTCUSD --timeframe 1h --months 6
+
+# Regenerate features (11 features)
+python scripts/precompute_features.py --symbol tBTCUSD --timeframe 1h
+
+# Train with adaptive triple-barrier
 python scripts/train_model.py \
   --symbol tBTCUSD \
-  --timeframe 15m \
-  --use-triple-barrier \
-  --profit-pct 0.3 \
-  --stop-pct 0.2
+  --timeframe 1h \
+  --use-adaptive-triple-barrier \
+  --profit-multiplier 1.5 \
+  --stop-multiplier 1.0 \
+  --max-holding 10 \
+  --version v3_adaptive_6m
 ```
 
-**Steg 3: Evaluate New Model**
+**Evaluate Model:**
 ```bash
 python scripts/evaluate_model.py \
-  --model results/models/tBTCUSD_15m_v3.json \
+  --model results/models/tBTCUSD_1h_v3_adaptive_6m.json \
   --symbol tBTCUSD \
-  --timeframe 15m
+  --timeframe 1h
 ```
 
-**Steg 4: Compare Results**
+**Backtest (TODO):**
 ```bash
-python scripts/select_champion.py \
-  --baseline baseline \
-  --ml-model v2 \
-  --ml-improved v3
+# Configure min_edge in config/strategy/defaults.json
+# Run backtest engine (script not created yet)
 ```
 
 ---
 
-## 📈 **EXPECTED IMPROVEMENTS**
+## 📈 **ACHIEVED IMPROVEMENTS**
 
-| Metric | Before | After (Target) | Method |
-|--------|--------|----------------|--------|
-| Features | 2 | **11** ✅ | Implemented |
-| AUC | 0.517 | **> 0.65** ⏳ | Need retraining |
-| Accuracy | 0.500 | **> 0.60** ⏳ | Need retraining |
-| Signal Rate | 100% | **30-40%** ⏳ | Config min_edge |
-| Win Rate | ~50% | **> 55%** ⏳ | Triple-barrier + edge |
-| Sharpe Ratio | ~0 | **> 1.5** ⏳ | Need backtest |
+| Metric | Baseline | Current (v3_adaptive_6m) | Target | Status |
+|--------|----------|--------------------------|--------|--------|
+| Features | 2 | **11** ✅ | 11 | ✅ KLART |
+| AUC | 0.517 | **0.5987** ✅ | > 0.65 | ⚠️ Close! (+15.8%) |
+| Accuracy | 0.500 | TBD | > 0.60 | ⏳ Need evaluation |
+| Signal Rate | 100% | TBD | 30-40% | ⏳ Config min_edge |
+| Win Rate | ~50% | TBD | > 55% | ⏳ Need backtest |
+| Sharpe Ratio | ~0 | TBD | > 1.5 | ⏳ Need backtest |
+
+**Progress:** 15.8% AUC improvement achieved! Need 8.7% more to reach 0.65 target.
 
 ---
 

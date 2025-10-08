@@ -20,27 +20,46 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import log_loss, roc_auc_score
 from sklearn.model_selection import GridSearchCV
 
-from core.ml.labeling import align_features_with_labels, generate_labels
+from core.ml.label_cache import load_cached_labels, save_labels_to_cache
+from core.ml.labeling import (
+    align_features_with_labels,
+    generate_adaptive_triple_barrier_labels,
+    generate_labels,
+    generate_triple_barrier_labels,
+)
+
+# Try to use fast Numba implementation if available
+try:
+    from core.ml.labeling_fast import generate_adaptive_triple_barrier_labels_fast
+
+    USE_NUMBA = True
+except ImportError:
+    USE_NUMBA = False
 
 
-def load_features_and_prices(symbol: str, timeframe: str) -> tuple[pd.DataFrame, list[float]]:
+def load_features_and_prices(
+    symbol: str, timeframe: str
+) -> tuple[pd.DataFrame, list[float], pd.DataFrame]:
     """
-    Load features and extract close prices for labeling.
+    Load features, close prices, and full candles for labeling.
 
     Args:
         symbol: Symbol (e.g., 'tBTCUSD')
         timeframe: Timeframe (e.g., '15m')
 
     Returns:
-        Tuple of (features_df, close_prices)
+        Tuple of (features_df, close_prices, candles_df)
     """
-    features_path = Path("data/features") / f"{symbol}_{timeframe}_features.parquet"
+    # Try Feather first (2-5× faster), fall back to Parquet
+    feather_path = Path("data/features") / f"{symbol}_{timeframe}_features.feather"
+    parquet_path = Path("data/features") / f"{symbol}_{timeframe}_features.parquet"
 
-    if not features_path.exists():
-        raise FileNotFoundError(f"Features file not found: {features_path}")
-
-    # Load features
-    features_df = pd.read_parquet(features_path)
+    if feather_path.exists():
+        features_df = pd.read_feather(feather_path)
+    elif parquet_path.exists():
+        features_df = pd.read_parquet(parquet_path)
+    else:
+        raise FileNotFoundError(f"Features file not found: {feather_path} or {parquet_path}")
 
     if features_df.empty:
         raise ValueError("Features dataframe is empty")
@@ -59,7 +78,7 @@ def load_features_and_prices(symbol: str, timeframe: str) -> tuple[pd.DataFrame,
             f"Features ({len(features_df)}) and candles ({len(close_prices)}) length mismatch"
         )
 
-    return features_df, close_prices
+    return features_df, close_prices, candles_df
 
 
 def generate_training_labels(
@@ -302,7 +321,38 @@ def main():
     parser.add_argument("--timeframe", type=str, required=True, help="Timeframe (e.g., 15m)")
     parser.add_argument("--lookahead", type=int, default=10, help="Lookahead bars for labeling")
     parser.add_argument("--threshold", type=float, default=0.0, help="Price change threshold %")
-    parser.add_argument("--version", type=str, default="v2", help="Model version")
+    parser.add_argument(
+        "--use-triple-barrier",
+        action="store_true",
+        help="Use triple-barrier labeling instead of simple binary",
+    )
+    parser.add_argument(
+        "--use-adaptive-triple-barrier",
+        action="store_true",
+        help="Use ATR-adaptive triple-barrier labeling (volatility-aware)",
+    )
+    parser.add_argument(
+        "--profit-pct", type=float, default=0.3, help="Profit target % for triple-barrier"
+    )
+    parser.add_argument(
+        "--stop-pct", type=float, default=0.2, help="Stop loss % for triple-barrier"
+    )
+    parser.add_argument(
+        "--profit-multiplier",
+        type=float,
+        default=1.5,
+        help="ATR multiplier for profit (adaptive mode)",
+    )
+    parser.add_argument(
+        "--stop-multiplier",
+        type=float,
+        default=1.0,
+        help="ATR multiplier for stop loss (adaptive mode)",
+    )
+    parser.add_argument(
+        "--max-holding", type=int, default=5, help="Max holding bars for triple-barrier"
+    )
+    parser.add_argument("--version", type=str, default="v3", help="Model version")
     parser.add_argument("--output-dir", type=str, default="results/models", help="Output directory")
     parser.add_argument("--quiet", action="store_true", help="Suppress progress output")
 
@@ -313,7 +363,9 @@ def main():
         if not args.quiet:
             print(f"[LOAD] Loading features and candles for {args.symbol} {args.timeframe}")
 
-        features_df, close_prices = load_features_and_prices(args.symbol, args.timeframe)
+        features_df, close_prices, candles_df = load_features_and_prices(
+            args.symbol, args.timeframe
+        )
 
         if not args.quiet:
             print(
@@ -321,12 +373,84 @@ def main():
             )
 
         # Generate labels
-        if not args.quiet:
-            print(
-                f"[LABELS] Generating labels (lookahead={args.lookahead}, threshold={args.threshold}%)"
+        if args.use_adaptive_triple_barrier:
+            # Try to load from cache first
+            labels = load_cached_labels(
+                args.symbol,
+                args.timeframe,
+                k_profit=args.profit_multiplier,
+                k_stop=args.stop_multiplier,
+                max_holding=args.max_holding,
+                atr_period=14,
+                version="v2",  # Point-in-time ATR version
             )
 
-        labels = generate_training_labels(close_prices, args.lookahead, args.threshold)
+            if labels is not None:
+                if not args.quiet:
+                    print("[CACHE HIT] Loaded labels from cache")
+            else:
+                # Cache miss - generate labels
+                implementation = "Numba (JIT)" if USE_NUMBA else "Pure Python"
+                if not args.quiet:
+                    print(
+                        f"[LABELS] Generating ADAPTIVE TRIPLE-BARRIER labels ({implementation}) (profit_mult={args.profit_multiplier}x ATR, stop_mult={args.stop_multiplier}x ATR, holding={args.max_holding} bars)"
+                    )
+
+                # Extract OHLC data for adaptive barriers (NO LOOKAHEAD)
+                highs = candles_df["high"].tolist()
+                lows = candles_df["low"].tolist()
+                closes = candles_df["close"].tolist()
+
+                # Use Numba if available (2000× faster!)
+                if USE_NUMBA:
+                    labels = generate_adaptive_triple_barrier_labels_fast(
+                        closes,
+                        highs,
+                        lows,
+                        profit_multiplier=args.profit_multiplier,
+                        stop_multiplier=args.stop_multiplier,
+                        max_holding_bars=args.max_holding,
+                        atr_period=14,
+                    )
+                else:
+                    labels = generate_adaptive_triple_barrier_labels(
+                        closes,
+                        highs,
+                        lows,
+                        profit_multiplier=args.profit_multiplier,
+                        stop_multiplier=args.stop_multiplier,
+                        max_holding_bars=args.max_holding,
+                        atr_period=14,
+                    )
+
+                # Save to cache for future runs
+                save_labels_to_cache(
+                    labels,
+                    args.symbol,
+                    args.timeframe,
+                    k_profit=args.profit_multiplier,
+                    k_stop=args.stop_multiplier,
+                    max_holding=args.max_holding,
+                    atr_period=14,
+                    version="v2",
+                )
+        elif args.use_triple_barrier:
+            if not args.quiet:
+                print(
+                    f"[LABELS] Generating TRIPLE-BARRIER labels (profit={args.profit_pct}%, stop={args.stop_pct}%, holding={args.max_holding} bars)"
+                )
+            labels = generate_triple_barrier_labels(
+                close_prices,
+                profit_threshold_pct=args.profit_pct,
+                stop_threshold_pct=args.stop_pct,
+                max_holding_bars=args.max_holding,
+            )
+        else:
+            if not args.quiet:
+                print(
+                    f"[LABELS] Generating simple binary labels (lookahead={args.lookahead}, threshold={args.threshold}%)"
+                )
+            labels = generate_training_labels(close_prices, args.lookahead, args.threshold)
 
         # Align features and labels
         start_idx, end_idx = align_features_with_labels(len(features_df), labels)
@@ -337,6 +461,21 @@ def main():
         # Extract aligned data
         aligned_features = features_df.iloc[start_idx:end_idx]
         aligned_labels = np.array(labels[start_idx:end_idx])
+
+        # Report label statistics
+        if not args.quiet:
+            total_labels = len(labels)
+            none_count = sum(1 for label in labels if label is None)
+            profitable_count = sum(1 for label in labels if label == 1)
+            loss_count = sum(1 for label in labels if label == 0)
+
+            print(f"[LABELS] Total: {total_labels}")
+            print(f"[LABELS] None (filtered): {none_count} ({100*none_count/total_labels:.1f}%)")
+            print(
+                f"[LABELS] Profitable (1): {profitable_count} ({100*profitable_count/total_labels:.1f}%)"
+            )
+            print(f"[LABELS] Loss (0): {loss_count} ({100*loss_count/total_labels:.1f}%)")
+            print(f"[LABELS] Training on: {len(aligned_labels)} samples (after alignment)")
 
         # Remove timestamp column for training
         feature_columns = [col for col in aligned_features.columns if col != "timestamp"]
@@ -350,9 +489,21 @@ def main():
             X = X[~nan_mask]
             aligned_labels = aligned_labels[~nan_mask]
 
+        # Filter None labels (from triple-barrier filtering)
+        valid_label_mask = np.array([label is not None for label in aligned_labels])
+        if not valid_label_mask.all():
+            none_in_aligned = (~valid_label_mask).sum()
+            if not args.quiet:
+                print(f"[CLEAN] Removing {none_in_aligned} rows with None labels (filtered trades)")
+            X = X[valid_label_mask]
+            aligned_labels = aligned_labels[valid_label_mask]
+
+        # Convert labels to int (might be mixed type after filtering)
+        aligned_labels = np.array([int(label) for label in aligned_labels], dtype=int)
+
         if not args.quiet:
             print(
-                f"[ALIGN] Using {len(X)} samples (removed {len(features_df) - len(X)} with invalid labels)"
+                f"[ALIGN] Using {len(X)} samples (removed {len(features_df) - len(X)} with invalid/filtered labels)"
             )
 
         # Split data
@@ -391,9 +542,21 @@ def main():
         print(f"Symbol: {args.symbol}")
         print(f"Timeframe: {args.timeframe}")
         print(f"Version: {args.version}")
-        print(f"Lookahead: {args.lookahead} bars")
-        print(f"Threshold: {args.threshold}%")
-        print(f"Features: {len(feature_names)} ({', '.join(feature_names)})")
+        if args.use_adaptive_triple_barrier:
+            print(
+                f"Labeling: Adaptive Triple-Barrier (profit={args.profit_multiplier}x ATR, stop={args.stop_multiplier}x ATR, holding={args.max_holding})"
+            )
+        elif args.use_triple_barrier:
+            print(
+                f"Labeling: Triple-Barrier (profit={args.profit_pct}%, stop={args.stop_pct}%, holding={args.max_holding})"
+            )
+        else:
+            print(
+                f"Labeling: Simple Binary (lookahead={args.lookahead}, threshold={args.threshold}%)"
+            )
+        print(
+            f"Features: {len(feature_names)} ({', '.join(feature_names[:3])}... +{len(feature_names)-3} more)"
+        )
         print(f"Training samples: {len(X_train)}")
         print(f"Validation samples: {len(X_val)}")
         print(f"Test samples: {len(X_test)}")

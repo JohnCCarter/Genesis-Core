@@ -313,52 +313,57 @@ def generate_triple_barrier_labels(
 
 
 def generate_adaptive_triple_barrier_labels(
-    prices: list[float],
-    atr: list[float],
+    closes: list[float],
+    highs: list[float],
+    lows: list[float],
     profit_multiplier: float = 1.5,
     stop_multiplier: float = 1.0,
     max_holding_bars: int = 5,
+    atr_period: int = 14,
 ) -> list[int | None]:
     """
-    Generate triple-barrier labels with ATR-adaptive thresholds.
+    Generate triple-barrier labels with ATR-adaptive thresholds (NO LOOKAHEAD).
 
-    Instead of fixed percentage thresholds, uses ATR (volatility) to set
-    realistic profit targets and stop losses based on market conditions.
+    **CRITICAL:** Calculates ATR point-in-time at each bar to prevent lookahead bias.
+    For bar i, ATR is computed ONLY from historical data (bars 0 to i).
 
-    profit_target = entry_price + (profit_multiplier × ATR)
-    stop_loss = entry_price - (stop_multiplier × ATR)
+    profit_target = entry_price + (profit_multiplier × ATR_at_i)
+    stop_loss = entry_price - (stop_multiplier × ATR_at_i)
 
     Args:
-        prices: List of close prices
-        atr: List of ATR values (aligned with prices)
+        closes: List of close prices
+        highs: List of high prices
+        lows: List of low prices
         profit_multiplier: ATR multiplier for profit target (e.g., 1.5)
         stop_multiplier: ATR multiplier for stop loss (e.g., 1.0)
         max_holding_bars: Maximum holding period
+        atr_period: ATR calculation period (default 14)
 
     Returns:
         List of labels (1=profitable, 0=loss, None=neutral)
 
     Example:
-        >>> from core.indicators.atr import calculate_atr
-        >>> prices = [100, 102, 101, 103, 104]
-        >>> high = [102, 104, 103, 105, 106]
-        >>> low = [99, 101, 100, 102, 103]
-        >>> atr = calculate_atr(high, low, prices, period=3)
+        >>> closes = [100, 102, 101, 103, 104]
+        >>> highs = [102, 104, 103, 105, 106]
+        >>> lows = [99, 101, 100, 102, 103]
         >>> labels = generate_adaptive_triple_barrier_labels(
-        ...     prices, atr, profit_multiplier=1.5, stop_multiplier=1.0
+        ...     closes, highs, lows, profit_multiplier=1.5, stop_multiplier=1.0
         ... )
 
     Notes:
+        - **NO LOOKAHEAD BIAS:** ATR at bar i uses ONLY bars 0:i+1
         - Adapts to market volatility
         - High volatility → wider barriers
         - Low volatility → tighter barriers
         - More realistic than fixed % thresholds
     """
-    if not prices or not atr:
+    from core.indicators.atr import calculate_atr
+
+    if not closes or not highs or not lows:
         return []
 
-    if len(prices) != len(atr):
-        raise ValueError("prices and atr must have same length")
+    if len(closes) != len(highs) or len(closes) != len(lows):
+        raise ValueError("closes, highs, lows must have same length")
 
     if profit_multiplier <= 0 or stop_multiplier <= 0:
         raise ValueError("Multipliers must be positive")
@@ -366,18 +371,44 @@ def generate_adaptive_triple_barrier_labels(
     if max_holding_bars <= 0:
         raise ValueError("max_holding_bars must be positive")
 
+    if atr_period <= 0:
+        raise ValueError("atr_period must be positive")
+
     labels: list[int | None] = []
 
-    for i in range(len(prices)):
-        entry_price = prices[i]
-        current_atr = atr[i]
+    for i in range(len(closes)):
+        entry_price = closes[i]
 
-        # Invalid or not enough data
-        if entry_price <= 0 or current_atr <= 0 or str(current_atr) == "nan":
+        # Invalid entry price
+        if entry_price <= 0:
             labels.append(None)
             continue
 
-        if i + max_holding_bars >= len(prices):
+        # Not enough future bars for holding period
+        if i + max_holding_bars >= len(closes):
+            labels.append(None)
+            continue
+
+        # **CRITICAL: Point-in-time ATR calculation (NO LOOKAHEAD)**
+        # Only use data available up to bar i (inclusive)
+        if i < atr_period:
+            # Not enough history for ATR, skip
+            labels.append(None)
+            continue
+
+        # Calculate ATR using ONLY historical data (bars 0 to i)
+        atr_values = calculate_atr(
+            highs[: i + 1], lows[: i + 1], closes[: i + 1], period=atr_period
+        )
+
+        if not atr_values:
+            labels.append(None)
+            continue
+
+        current_atr = atr_values[-1]  # Latest ATR value at bar i
+
+        # Invalid ATR
+        if current_atr <= 0 or str(current_atr) == "nan":
             labels.append(None)
             continue
 
@@ -387,26 +418,28 @@ def generate_adaptive_triple_barrier_labels(
 
         # Scan forward for barrier hits
         label = None
-        for j in range(i + 1, min(i + max_holding_bars + 1, len(prices))):
-            current_price = prices[j]
+        for j in range(i + 1, min(i + max_holding_bars + 1, len(closes))):
+            # Use highs/lows for intrabar price action
+            high_price = highs[j]
+            low_price = lows[j]
 
-            if current_price <= 0:
+            if high_price <= 0 or low_price <= 0:
                 continue
 
-            # Profit target hit
-            if current_price >= profit_target:
-                label = 1
+            # Check profit target hit FIRST (intrabar high)
+            if high_price >= profit_target:
+                label = 1  # Profitable trade
                 break
 
-            # Stop loss hit
-            if current_price <= stop_loss:
-                label = 0
+            # Check stop loss hit (intrabar low)
+            if low_price <= stop_loss:
+                label = 0  # Losing trade
                 break
 
         # Time exit logic
         if label is None:
-            exit_idx = min(i + max_holding_bars, len(prices) - 1)
-            exit_price = prices[exit_idx]
+            exit_idx = min(i + max_holding_bars, len(closes) - 1)
+            exit_price = closes[exit_idx]
 
             if exit_price <= 0:
                 labels.append(None)

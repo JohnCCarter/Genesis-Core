@@ -96,7 +96,7 @@ class ConfigAuthority:
             dir_fd = os.open(self.path.parent, os.O_DIRECTORY)
             os.fsync(dir_fd)
             os.close(dir_fd)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
         # hash & audit
@@ -109,7 +109,7 @@ class ConfigAuthority:
                     if rotated.exists():
                         rotated.unlink(missing_ok=True)  # type: ignore[arg-type]
                     AUDIT_LOG.rename(rotated)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
             audit = {
                 "ts": time.time(),

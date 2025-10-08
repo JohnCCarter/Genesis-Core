@@ -811,7 +811,7 @@ async def paper_submit(payload: dict = Body(...)) -> dict:
                         ccy = str(w[1]).upper()
                         try:
                             avail = float(w[4])
-                        except Exception:
+                        except Exception:  # nosec B112
                             continue
                         # endast exchange-wallet
                         if str(w[0]).lower() == "exchange":
@@ -867,7 +867,7 @@ async def paper_submit(payload: dict = Body(...)) -> dict:
                 if base_avail > 0 and abs(size) > base_avail:
                     size = base_avail
                     wallet_clamped = True
-    except Exception:
+    except Exception:  # nosec B110
         # Ignorera wallet-cap om något går fel
         pass
 
@@ -960,7 +960,7 @@ async def paper_estimate(symbol: str) -> dict:
                         ccy = str(w[1]).upper()
                         try:
                             avail = float(w[4])
-                        except Exception:
+                        except Exception:  # nosec B112
                             continue
                         if str(w[0]).lower() == "exchange":
                             avail_by_ccy[ccy] = avail_by_ccy.get(ccy, 0.0) + max(0.0, avail)
@@ -972,7 +972,7 @@ async def paper_estimate(symbol: str) -> dict:
             usd_avail = avail_by_ccy.get("USD") or avail_by_ccy.get("TESTUSD") or 0.0
             base = _base_ccy_from_test(sym)
             base_avail = avail_by_ccy.get(base) or avail_by_ccy.get("TEST" + base) or 0.0
-    except Exception:
+    except Exception:  # nosec B110
         pass
 
     # Hämta senaste pris

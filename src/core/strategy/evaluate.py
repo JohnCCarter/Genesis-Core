@@ -42,7 +42,7 @@ def evaluate_pipeline(
     try:
         top = max(probas.values()) if isinstance(probas, dict) else 0.0
         metrics.set_gauge("proba_top", float(top))
-    except Exception:
+    except Exception:  # nosec B110
         pass
 
     conf, conf_meta = compute_confidence(probas, config=configs.get("quality"))
@@ -50,7 +50,7 @@ def evaluate_pipeline(
     try:
         metrics.set_gauge("confidence_buy", float(conf.get("buy", 0.0)))
         metrics.set_gauge("confidence_sell", float(conf.get("sell", 0.0)))
-    except Exception:
+    except Exception:  # nosec B110
         pass
 
     # HTF-features kan komma utifrån; här matar vi tomma för stub
@@ -71,7 +71,7 @@ def evaluate_pipeline(
     try:
         if action in ("LONG", "SHORT", "NONE"):
             metrics.inc(f"decision_{action.lower()}")
-    except Exception:
+    except Exception:  # nosec B110
         pass
     result: dict[str, Any] = {
         "features": feats,

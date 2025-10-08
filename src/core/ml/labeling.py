@@ -2,6 +2,11 @@
 Label generation for ML training.
 
 Generates forward-looking labels from historical price data for supervised learning.
+
+Labeling strategies:
+- Binary: Simple up/down based on lookahead
+- Multiclass: Up/neutral/down with thresholds
+- Triple-Barrier: Realistic profit target, stop loss, and time exit
 """
 
 from __future__ import annotations
@@ -188,3 +193,237 @@ def align_features_with_labels(
             break
 
     return start_idx, end_idx
+
+
+def generate_triple_barrier_labels(
+    prices: list[float],
+    profit_threshold_pct: float = 0.3,
+    stop_threshold_pct: float = 0.2,
+    max_holding_bars: int = 5,
+) -> list[int | None]:
+    """
+    Generate triple-barrier labels for realistic trading scenarios.
+
+    Uses three barriers:
+    1. Profit target: Exit when price moves up by profit_threshold_pct%
+    2. Stop loss: Exit when price moves down by stop_threshold_pct%
+    3. Time exit: Exit after max_holding_bars if neither barrier hit
+
+    Label = 1 if profit target hit first (profitable trade)
+    Label = 0 if stop loss hit first (losing trade)
+    Label = None if time exit with small move (< min of thresholds)
+
+    Args:
+        prices: List of close prices (chronological order)
+        profit_threshold_pct: Profit target in % (e.g., 0.3 for +0.3%)
+        stop_threshold_pct: Stop loss in % (e.g., 0.2 for -0.2%)
+        max_holding_bars: Maximum bars to hold position
+
+    Returns:
+        List of labels (1=profitable, 0=loss, None=neutral/timeout)
+
+    Example:
+        >>> prices = [100, 100.5, 101, 100.3, 99.5, 99]
+        >>> labels = generate_triple_barrier_labels(
+        ...     prices, profit_threshold_pct=0.3, stop_threshold_pct=0.2,
+        ...     max_holding_bars=5
+        ... )
+
+    Notes:
+        - More realistic than simple binary labels
+        - Filters noisy trades (small moves → None)
+        - Asymmetric R:R ratio possible (profit != stop)
+        - No lookahead bias: evaluates bar-by-bar
+    """
+    if not prices:
+        return []
+
+    if profit_threshold_pct <= 0 or stop_threshold_pct <= 0:
+        raise ValueError("Thresholds must be positive")
+
+    if max_holding_bars <= 0:
+        raise ValueError("max_holding_bars must be positive")
+
+    labels: list[int | None] = []
+
+    for i in range(len(prices)):
+        entry_price = prices[i]
+
+        # Invalid entry price
+        if entry_price <= 0:
+            labels.append(None)
+            continue
+
+        # Not enough future bars for evaluation
+        if i + max_holding_bars >= len(prices):
+            labels.append(None)
+            continue
+
+        # Calculate barrier levels
+        profit_target = entry_price * (1 + profit_threshold_pct / 100)
+        stop_loss = entry_price * (1 - stop_threshold_pct / 100)
+
+        # Scan forward bars to find which barrier hit first
+        label = None
+        for j in range(i + 1, min(i + max_holding_bars + 1, len(prices))):
+            current_price = prices[j]
+
+            # Check if invalid price
+            if current_price <= 0:
+                continue
+
+            # Check profit target (hit first = profitable)
+            if current_price >= profit_target:
+                label = 1  # Profitable trade
+                break
+
+            # Check stop loss (hit first = loss)
+            if current_price <= stop_loss:
+                label = 0  # Losing trade
+                break
+
+        # If we reach here without hitting barriers, check time exit
+        if label is None:
+            # Get exit price at max holding period
+            exit_idx = min(i + max_holding_bars, len(prices) - 1)
+            exit_price = prices[exit_idx]
+
+            if exit_price <= 0:
+                labels.append(None)
+                continue
+
+            # Calculate final return
+            price_change_pct = ((exit_price - entry_price) / entry_price) * 100
+
+            # Significant move = use direction, else None
+            min_threshold = min(profit_threshold_pct, stop_threshold_pct)
+            if abs(price_change_pct) < min_threshold / 2:
+                # Too small move, label as None (not tradeable)
+                label = None
+            elif price_change_pct > 0:
+                # Positive but didn't hit target - weak profitable
+                label = 1
+            else:
+                # Negative but didn't hit stop - weak loss
+                label = 0
+
+        labels.append(label)
+
+    return labels
+
+
+def generate_adaptive_triple_barrier_labels(
+    prices: list[float],
+    atr: list[float],
+    profit_multiplier: float = 1.5,
+    stop_multiplier: float = 1.0,
+    max_holding_bars: int = 5,
+) -> list[int | None]:
+    """
+    Generate triple-barrier labels with ATR-adaptive thresholds.
+
+    Instead of fixed percentage thresholds, uses ATR (volatility) to set
+    realistic profit targets and stop losses based on market conditions.
+
+    profit_target = entry_price + (profit_multiplier × ATR)
+    stop_loss = entry_price - (stop_multiplier × ATR)
+
+    Args:
+        prices: List of close prices
+        atr: List of ATR values (aligned with prices)
+        profit_multiplier: ATR multiplier for profit target (e.g., 1.5)
+        stop_multiplier: ATR multiplier for stop loss (e.g., 1.0)
+        max_holding_bars: Maximum holding period
+
+    Returns:
+        List of labels (1=profitable, 0=loss, None=neutral)
+
+    Example:
+        >>> from core.indicators.atr import calculate_atr
+        >>> prices = [100, 102, 101, 103, 104]
+        >>> high = [102, 104, 103, 105, 106]
+        >>> low = [99, 101, 100, 102, 103]
+        >>> atr = calculate_atr(high, low, prices, period=3)
+        >>> labels = generate_adaptive_triple_barrier_labels(
+        ...     prices, atr, profit_multiplier=1.5, stop_multiplier=1.0
+        ... )
+
+    Notes:
+        - Adapts to market volatility
+        - High volatility → wider barriers
+        - Low volatility → tighter barriers
+        - More realistic than fixed % thresholds
+    """
+    if not prices or not atr:
+        return []
+
+    if len(prices) != len(atr):
+        raise ValueError("prices and atr must have same length")
+
+    if profit_multiplier <= 0 or stop_multiplier <= 0:
+        raise ValueError("Multipliers must be positive")
+
+    if max_holding_bars <= 0:
+        raise ValueError("max_holding_bars must be positive")
+
+    labels: list[int | None] = []
+
+    for i in range(len(prices)):
+        entry_price = prices[i]
+        current_atr = atr[i]
+
+        # Invalid or not enough data
+        if entry_price <= 0 or current_atr <= 0 or str(current_atr) == "nan":
+            labels.append(None)
+            continue
+
+        if i + max_holding_bars >= len(prices):
+            labels.append(None)
+            continue
+
+        # Calculate ATR-based barriers
+        profit_target = entry_price + (profit_multiplier * current_atr)
+        stop_loss = entry_price - (stop_multiplier * current_atr)
+
+        # Scan forward for barrier hits
+        label = None
+        for j in range(i + 1, min(i + max_holding_bars + 1, len(prices))):
+            current_price = prices[j]
+
+            if current_price <= 0:
+                continue
+
+            # Profit target hit
+            if current_price >= profit_target:
+                label = 1
+                break
+
+            # Stop loss hit
+            if current_price <= stop_loss:
+                label = 0
+                break
+
+        # Time exit logic
+        if label is None:
+            exit_idx = min(i + max_holding_bars, len(prices) - 1)
+            exit_price = prices[exit_idx]
+
+            if exit_price <= 0:
+                labels.append(None)
+                continue
+
+            # Compare to half of stop distance
+            half_stop_distance = (stop_multiplier * current_atr) / 2
+
+            price_change = exit_price - entry_price
+
+            if abs(price_change) < half_stop_distance:
+                label = None  # Too small
+            elif price_change > 0:
+                label = 1  # Weak profit
+            else:
+                label = 0  # Weak loss
+
+        labels.append(label)
+
+    return labels

@@ -130,6 +130,8 @@ def decide(
     c_buy = float(confidence.get("buy", 0.0))
     c_sell = float(confidence.get("sell", 0.0))
     conf_thr = default_thr
+
+    # Check confidence threshold
     if candidate == "LONG" and c_buy < conf_thr:
         reasons.append("CONF_TOO_LOW")
         return "NONE", {
@@ -144,6 +146,29 @@ def decide(
             "reasons": reasons,
             "state_out": state_out,
         }
+
+    # 7b) Edge requirement (probability difference must be significant)
+    # Only trade when there's clear directional edge, not just marginal difference
+    min_edge = float((cfg.get("thresholds") or {}).get("min_edge", 0.0))
+    if min_edge > 0:
+        if candidate == "LONG":
+            edge = p_buy - p_sell
+            if edge < min_edge:
+                reasons.append("EDGE_TOO_SMALL")
+                return "NONE", {
+                    "versions": versions,
+                    "reasons": reasons,
+                    "state_out": state_out,
+                }
+        elif candidate == "SHORT":
+            edge = p_sell - p_buy
+            if edge < min_edge:
+                reasons.append("EDGE_TOO_SMALL")
+                return "NONE", {
+                    "versions": versions,
+                    "reasons": reasons,
+                    "state_out": state_out,
+                }
 
     # 8) Hysteresis (håll kvar föregående riktning tills N steg bekräftar byte)
     hysteresis_steps = int((cfg.get("gates") or {}).get("hysteresis_steps") or 2)

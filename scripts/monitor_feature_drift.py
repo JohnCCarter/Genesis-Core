@@ -51,7 +51,7 @@ def ks_drift_test(training_dist, production_dist, alpha=0.05):
     return {
         "statistic": float(statistic),
         "p_value": float(p_value),
-        "drifted": p_value < alpha,
+        "drifted": bool(p_value < alpha),
         "interpretation": "DRIFT" if p_value < alpha else "NO_DRIFT",
     }
 

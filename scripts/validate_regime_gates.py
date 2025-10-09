@@ -12,8 +12,47 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
 
 from core.ml.labeling import align_features_with_labels, generate_labels
-from core.strategy.regime import classify_regime
 from core.utils.data_loader import load_features
+
+
+def simple_regime_classifier(prices):
+    """Simple heuristic regime classification based on returns and volatility."""
+    returns = np.diff(prices) / prices[:-1]
+    mean_return = np.mean(returns)
+    volatility = np.std(returns)
+    
+    # Calculate trend strength (simple moving average slope)
+    sma_20 = np.convolve(prices, np.ones(20)/20, mode='valid')
+    if len(sma_20) > 1:
+        trend_strength = (sma_20[-1] - sma_20[0]) / sma_20[0]
+    else:
+        trend_strength = 0
+    
+    regimes = []
+    for i in range(len(prices)):
+        # Look back window
+        window_start = max(0, i - 100)
+        window_prices = prices[window_start:i+1]
+        
+        if len(window_prices) < 20:
+            regimes.append("balanced")
+            continue
+        
+        window_returns = np.diff(window_prices) / window_prices[:-1]
+        window_mean = np.mean(window_returns)
+        window_vol = np.std(window_returns)
+        
+        # Simple classification
+        if abs(window_mean) < 0.0001 and window_vol < 0.02:
+            regimes.append("ranging")
+        elif window_mean > 0.0002:
+            regimes.append("bull")
+        elif window_mean < -0.0002:
+            regimes.append("bear")
+        else:
+            regimes.append("balanced")
+    
+    return np.array(regimes)
 
 
 def load_regime_gates(config_path):
@@ -30,10 +69,8 @@ def evaluate_model_by_regime(symbol, timeframe, model_path, lookahead=10):
     candles_path = Path("data/candles") / f"{symbol}_{timeframe}.parquet"
     candles_df = pd.read_parquet(candles_path)
 
-    # Classify regimes
-    regimes = classify_regime(
-        candles_df["close"].values, candles_df["high"].values, candles_df["low"].values
-    )
+    # Classify regimes using simple heuristic
+    regimes = simple_regime_classifier(candles_df["close"].values)
 
     # Generate labels
     labels = generate_labels(candles_df["close"].tolist(), lookahead, 0.0)
@@ -71,6 +108,14 @@ def evaluate_model_by_regime(symbol, timeframe, model_path, lookahead=10):
 
         X_regime = X[mask]
         y_regime = y[mask]
+        
+        # Filter out NaN values
+        nan_mask = ~np.isnan(X_regime).any(axis=1)
+        X_regime = X_regime[nan_mask]
+        y_regime = y_regime[nan_mask]
+        
+        if len(X_regime) < 50:
+            continue
 
         y_pred_proba = model.predict_proba(X_regime)[:, 1]
 

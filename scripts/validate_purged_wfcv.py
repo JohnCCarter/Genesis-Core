@@ -229,7 +229,7 @@ def main():
                 "symbol": args.symbol,
                 "stability_metrics": stability,
                 "results": results,
-                "production_ready": production_ready,
+                "production_ready": bool(production_ready),
             },
             f,
             indent=2,

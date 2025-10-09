@@ -15,7 +15,7 @@ def calculate_ema_vectorized(series: pd.Series, period: int = 50) -> pd.Series:
 
 
 def calculate_rsi_vectorized(series: pd.Series, period: int = 14) -> pd.Series:
-    """Calculate RSI on entire series at once."""
+    """Calculate RSI on entire series at once. Returns raw RSI [0, 100]."""
     delta = series.diff()
     gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
     loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
@@ -23,8 +23,7 @@ def calculate_rsi_vectorized(series: pd.Series, period: int = 14) -> pd.Series:
     rs = gain / loss.replace(0, np.nan)
     rsi = 100 - (100 / (1 + rs))
 
-    # Normalize to [-1, 1]
-    return (rsi - 50) / 50
+    return rsi  # Return raw [0, 100] to match calculate_rsi()
 
 
 def calculate_adx_vectorized(
@@ -164,33 +163,40 @@ def calculate_all_features_vectorized(df: pd.DataFrame) -> pd.DataFrame:
     price_vs_ema = calculate_price_vs_ema_vectorized(df["close"], period=50)
     volatility_shift = calculate_volatility_shift_vectorized(df["close"], 10, 50)
 
-    # === BASE INDICATORS ===
-    rsi_raw = pd.Series(-rsi, index=df.index)
-    bb_pos_inv = (1.0 - bb_position).clip(0.0, 1.0)
+    # === NORMALIZE & PREPARE BASE INDICATORS ===
+    # Match exact logic from extract_features()
+    
+    # RSI: Normalize from [0, 100] to [-1, 1], then lag by 1
+    rsi_normalized = (rsi - 50.0) / 50.0
+    
+    # BB: Invert position then smooth
+    bb_pos_inv = 1.0 - bb_position
+    
+    # Vol shift: Already good range
     vol_shift = volatility_shift.clip(0.5, 2.0)
-
-    # === TOP 5 NON-REDUNDANT FEATURES (HighVol IC-tested, low correlation) ===
-
-    # Feature 1: rsi_inv_lag1 (IC +0.0583, Spread +0.157%)
-    # Best standalone IC, low correlation with vol features
-    features["rsi_inv_lag1"] = rsi_raw.shift(1).clip(-1.0, 1.0)
-
-    # Feature 2: volatility_shift_ma3 (IC +0.0520, Spread +0.248%)
-    # Best Q5-Q1 spread, smoothed for stability
-    features["volatility_shift_ma3"] = vol_shift.rolling(3).mean()
-
-    # Feature 3: bb_position_inv_ma3 (IC +0.0555, Spread +0.145%)
-    # Independent BB signal, orthogonal to RSI/vol
-    features["bb_position_inv_ma3"] = pd.Series(bb_pos_inv, index=df.index).rolling(3).mean()
-
-    # Feature 4: rsi_vol_interaction (IC +0.0513, Spread +0.123%)
-    # Cross-product captures regime-dependent RSI behavior
-    features["rsi_vol_interaction"] = (rsi_raw * vol_shift).clip(-2.0, 2.0)
-
-    # Feature 5: vol_regime (IC +0.0462, binary indicator)
-    # Explicit HighVol flag - helps model focus on right regime
-    vol_regime_binary = (vol_shift > 1.0).astype(float)
-    features["vol_regime"] = vol_regime_binary
+    
+    # === TOP 5 NON-REDUNDANT FEATURES (matching extract_features() logic EXACTLY) ===
+    
+    # Feature 1: rsi_inv_lag1 - Use PREVIOUS bar's RSI
+    # Per-sample does: rsi_vals[-2] which is 1-bar lag
+    features["rsi_inv_lag1"] = rsi_normalized.shift(1).clip(-1.0, 1.0)
+    
+    # Feature 2: volatility_shift_ma3 - 3-bar moving average
+    # Per-sample does: sum(last_3_values) / 3
+    features["volatility_shift_ma3"] = vol_shift.rolling(window=3, min_periods=1).mean()
+    
+    # Feature 3: bb_position_inv_ma3 - 3-bar MA of inverted BB position
+    # Per-sample does: sum([1.0 - pos for pos in last_3]) / 3
+    features["bb_position_inv_ma3"] = bb_pos_inv.rolling(window=3, min_periods=1).mean().clip(0.0, 1.0)
+    
+    # Feature 4: rsi_vol_interaction - CURRENT bar RSI × vol
+    # Per-sample does: rsi_inv_current * vol_shift_current
+    # NOTE: Uses CURRENT bar, not lagged!
+    features["rsi_vol_interaction"] = (rsi_normalized * vol_shift).clip(-2.0, 2.0)
+    
+    # Feature 5: vol_regime - Binary indicator
+    # Per-sample does: 1.0 if vol_shift_current > 1.0 else 0.0
+    features["vol_regime"] = (vol_shift > 1.0).astype(float)
 
     # Fill NaN with 0.0 (from lookback periods)
     features = features.fillna(0.0)

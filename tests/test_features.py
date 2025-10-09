@@ -22,18 +22,17 @@ def test_extract_features_stub_shapes():
     assert isinstance(feats, dict) and isinstance(meta, dict)
     assert "versions" in meta and "reasons" in meta
 
-    # Should contain IC-selected features (v12 - top 6 with positive IC)
+    # Should contain v15 features (HighVol optimized, 5 non-redundant)
     expected_features = {
-        "volatility_shift",
-        "ema_slope_inv",
-        "bb_position_inv",
-        "macd_histogram_inv",
-        "price_vs_ema_inv",
-        "rsi_inv",
+        "rsi_inv_lag1",
+        "volatility_shift_ma3",
+        "bb_position_inv_ma3",
+        "rsi_vol_interaction",
+        "vol_regime",
     }
     assert set(feats.keys()) == expected_features
-    assert meta.get("feature_count") == 6
-    assert meta.get("versions", {}).get("features_v12_ic_selected") is True
+    assert meta.get("feature_count") == 5
+    assert meta.get("versions", {}).get("features_v15_highvol_optimized") is True
 
 
 def test_extract_features_time_alignment_uses_closed_bar():

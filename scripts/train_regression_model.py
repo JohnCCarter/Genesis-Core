@@ -50,11 +50,11 @@ def calculate_atr_scaled_targets(candles_df, horizon: int = 10, atr_period: int 
     # Calculate forward returns
     close_series = candles_df["close"]
     forward_returns = close_series.pct_change(horizon).shift(-horizon).values
-    
+
     # ATR percentage (ATR / price)
     close_array = candles_df["close"].values
     atr_pct = atr_values / close_array
-    
+
     # Scale returns by ATR (target = how many ATRs did price move?)
     atr_scaled_targets = forward_returns / np.where(atr_pct > 0, atr_pct, np.nan)
 

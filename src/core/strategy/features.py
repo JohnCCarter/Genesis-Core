@@ -181,23 +181,44 @@ def extract_features(
     else:
         price_vs_ema_clipped = 0.0
 
+    # === CALCULATE SMOOTHED & LAGGED FEATURES (matching vectorized.py) ===
+    
+    # Get 3-bar window for smoothing
+    rsi_last_3 = rsi_vals[-3:] if len(rsi_vals) >= 3 else [0.0] * 3
+    bb_last_3 = bb["position"][-3:] if len(bb["position"]) >= 3 else [0.5] * 3
+    vol_shift_last_3 = vol_shift[-3:] if len(vol_shift) >= 3 else [1.0] * 3
+    
+    # Smoothed (MA3)
+    rsi_inv_ma3 = sum([(r - 50.0) / 50.0 for r in rsi_last_3]) / len(rsi_last_3)
+    bb_inv_ma3 = sum([1.0 - pos for pos in bb_last_3]) / len(bb_last_3)
+    vol_shift_ma3 = sum(vol_shift_last_3) / len(vol_shift_last_3)
+    
+    # Lagged (1-bar)
+    rsi_inv_lag1 = (rsi_vals[-2] - 50.0) / 50.0 if len(rsi_vals) >= 2 else 0.0
+    
+    # Interaction (RSI × Vol)
+    rsi_inv_current = -rsi_latest
+    vol_shift_current = _clip(vol_shift_latest, 0.5, 2.0)
+    rsi_vol_interaction = rsi_inv_current * vol_shift_current
+    
+    # Regime binary (HighVol = 1, LowVol = 0)
+    vol_regime = 1.0 if vol_shift_current > 1.0 else 0.0
+    
     feats: dict[str, float] = {
-        # === TOP 6 IC-SELECTED FEATURES (FDR p < 0.05) ===
-        # Inverted features for positive IC correlation (mean reversion logic)
-        "volatility_shift": _clip(vol_shift_latest, 0.5, 2.0),  # +0.0447 IC ✅
-        "ema_slope_inv": _clip(-ema_slope_clipped, -0.05, 0.05),  # -0.0497 → +0.0497
-        "bb_position_inv": _clip(1.0 - bb_position, 0.0, 1.0),  # -0.0489 → +0.0489
-        "macd_histogram_inv": _clip(-macd_histogram_norm, -0.01, 0.01),  # -0.0485 → +0.0485
-        "price_vs_ema_inv": _clip(-price_vs_ema_clipped, -0.10, 0.10),  # -0.0445 → +0.0445
-        "rsi_inv": _clip(-rsi_latest, -1.0, 1.0),  # -0.0375 → +0.0375
+        # === TOP 5 NON-REDUNDANT FEATURES (HighVol regime tested, IC-validated) ===
+        "rsi_inv_lag1": _clip(rsi_inv_lag1, -1.0, 1.0),  # IC +0.0583, Spread +0.157%
+        "volatility_shift_ma3": _clip(vol_shift_ma3, 0.5, 2.0),  # IC +0.0520, Spread +0.248%
+        "bb_position_inv_ma3": _clip(bb_inv_ma3, 0.0, 1.0),  # IC +0.0555, Spread +0.145%
+        "rsi_vol_interaction": _clip(rsi_vol_interaction, -2.0, 2.0),  # IC +0.0513, Spread +0.123%
+        "vol_regime": vol_regime,  # IC +0.0462, binary indicator
     }
 
     meta: dict[str, Any] = {
         "versions": {
             **((cfg.get("features") or {}).get("versions") or {}),
-            "features_v12_ic_selected": True,  # v12: IC-selected + inverted for positive correlation
+            "features_v15_highvol_optimized": True,  # v15: HighVol regime-tested, Partial-IC selected
         },
         "reasons": [],
-        "feature_count": len(feats),  # 6 IC-selected features (all positive IC)
+        "feature_count": len(feats),  # 5 non-redundant features
     }
     return feats, meta

@@ -22,19 +22,15 @@ def test_extract_features_stub_shapes():
     assert isinstance(feats, dict) and isinstance(meta, dict)
     assert "versions" in meta and "reasons" in meta
 
-    # Should contain TOP 7 features (coefficient importance - optimal balance)
+    # Should contain TOP 3 features (v10 - positive permutation importance only)
     expected_features = {
-        "rsi",
         "bb_position",
         "trend_confluence",
-        "vol_trend",
-        "bb_width",
-        "momentum_displacement_z",
-        "adx",
+        "rsi",
     }
     assert set(feats.keys()) == expected_features
-    assert meta.get("feature_count") == 7
-    assert meta.get("versions", {}).get("features_v2") is True
+    assert meta.get("feature_count") == 3
+    assert meta.get("versions", {}).get("features_v10") is True
 
 
 def test_extract_features_time_alignment_uses_closed_bar():

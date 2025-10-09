@@ -76,10 +76,11 @@ class TestLoadFeaturesAndPrices:
 
                 mock_path.side_effect = path_side_effect
 
-                features, prices = load_features_and_prices("tBTCUSD", "15m")
+                features, prices, candles = load_features_and_prices("tBTCUSD", "15m")
 
                 assert len(features) == 10
                 assert len(prices) == 10
+                assert len(candles) == 10
                 assert "ema_delta_pct" in features.columns
                 assert "rsi" in features.columns
                 assert all(isinstance(p, int | float) for p in prices)
@@ -536,7 +537,7 @@ class TestIntegration:
                 mock_path.side_effect = path_side_effect
 
                 # Load data
-                features_df, close_prices = load_features_and_prices("tBTCUSD", "15m")
+                features_df, close_prices, candles_df = load_features_and_prices("tBTCUSD", "15m")
 
                 # Generate labels
                 labels = generate_training_labels(close_prices, lookahead_bars=5)

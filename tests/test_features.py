@@ -22,15 +22,30 @@ def test_extract_features_stub_shapes():
     assert isinstance(feats, dict) and isinstance(meta, dict)
     assert "versions" in meta and "reasons" in meta
 
-    # Should contain TOP 3 features (v10 - positive permutation importance only)
+    # Should contain expanded feature set (v11 - IC testing)
     expected_features = {
+        # Original 3
         "bb_position",
         "trend_confluence",
         "rsi",
+        # FVG-derived
+        "momentum_displacement_z",
+        "price_stretch_z",
+        "volatility_shift",
+        "volume_anomaly_z",
+        "regime_persistence",
+        "price_reversion_potential",
+        # New classical
+        "ema_slope",
+        "adx",
+        "atr_pct",
+        "macd_histogram",
+        "volume_ratio",
+        "price_vs_ema",
     }
     assert set(feats.keys()) == expected_features
-    assert meta.get("feature_count") == 3
-    assert meta.get("versions", {}).get("features_v10") is True
+    assert meta.get("feature_count") == 15
+    assert meta.get("versions", {}).get("features_v11") is True
 
 
 def test_extract_features_time_alignment_uses_closed_bar():

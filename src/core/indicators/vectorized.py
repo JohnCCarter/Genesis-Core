@@ -17,30 +17,30 @@ def calculate_ema_vectorized(series: pd.Series, period: int = 50) -> pd.Series:
 def calculate_rsi_vectorized(series: pd.Series, period: int = 14) -> pd.Series:
     """
     Calculate RSI using Wilder's smoothing (matching calculate_rsi()).
-    
+
     Returns raw RSI [0, 100].
-    
+
     Note: Uses EWM with alpha=1/period to match Wilder's smoothing formula:
     avg_new = (avg_old * (n-1) + value) / n = avg_old + (1/n) * (value - avg_old)
     """
     delta = series.diff()
-    
+
     # Separate gains and losses
     gain = delta.where(delta > 0, 0)
     loss = -delta.where(delta < 0, 0)
-    
+
     # Wilder's smoothing = EMA with alpha = 1/period
     # pandas ewm with alpha expects alpha directly
-    avg_gain = gain.ewm(alpha=1/period, adjust=False).mean()
-    avg_loss = loss.ewm(alpha=1/period, adjust=False).mean()
-    
+    avg_gain = gain.ewm(alpha=1 / period, adjust=False).mean()
+    avg_loss = loss.ewm(alpha=1 / period, adjust=False).mean()
+
     # Calculate RS and RSI
     rs = avg_gain / avg_loss.replace(0, np.nan)
     rsi = 100 - (100 / (1 + rs))
-    
+
     # Fill initial NaN values with 50.0 (neutral) to match calculate_rsi()
     rsi = rsi.fillna(50.0)
-    
+
     return rsi  # Return raw [0, 100]
 
 
@@ -79,7 +79,7 @@ def calculate_atr_vectorized(
 ) -> pd.Series:
     """
     Calculate ATR using Wilder's smoothing (matching calculate_atr()).
-    
+
     Note: Uses EWM with alpha=1/period to match Wilder's formula.
     """
     # Calculate True Range
@@ -87,10 +87,10 @@ def calculate_atr_vectorized(
     tr2 = abs(high - close.shift(1))
     tr3 = abs(low - close.shift(1))
     tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
-    
+
     # Wilder's smoothing = EMA with alpha = 1/period
-    atr = tr.ewm(alpha=1/period, adjust=False).mean()
-    
+    atr = tr.ewm(alpha=1 / period, adjust=False).mean()
+
     return atr
 
 
@@ -152,20 +152,19 @@ def calculate_price_vs_ema_vectorized(close: pd.Series, period: int = 50) -> pd.
 
 
 def calculate_volatility_shift_vectorized(
-    high: pd.Series, low: pd.Series, close: pd.Series,
-    short_period: int = 14, long_period: int = 50
+    high: pd.Series, low: pd.Series, close: pd.Series, short_period: int = 14, long_period: int = 50
 ) -> pd.Series:
     """
     Calculate ratio of short-term to long-term ATR (matching calculate_volatility_shift()).
-    
+
     Returns ATR(short) / ATR(long) ratio.
     """
     atr_short = calculate_atr_vectorized(high, low, close, period=short_period)
     atr_long = calculate_atr_vectorized(high, low, close, period=long_period)
-    
+
     # Calculate ratio
     vol_shift = atr_short / atr_long.replace(0, np.nan)
-    
+
     # Fill NaN with 1.0 (neutral)
     return vol_shift.fillna(1.0)
 
@@ -197,35 +196,37 @@ def calculate_all_features_vectorized(df: pd.DataFrame) -> pd.DataFrame:
 
     # === NORMALIZE & PREPARE BASE INDICATORS ===
     # Match exact logic from extract_features()
-    
+
     # RSI: Normalize from [0, 100] to [-1, 1], then lag by 1
     rsi_normalized = (rsi - 50.0) / 50.0
-    
+
     # BB: Invert position then smooth
     bb_pos_inv = 1.0 - bb_position
-    
+
     # Vol shift: Already good range
     vol_shift = volatility_shift.clip(0.5, 2.0)
-    
+
     # === TOP 5 NON-REDUNDANT FEATURES (matching extract_features() logic EXACTLY) ===
-    
+
     # Feature 1: rsi_inv_lag1 - Use PREVIOUS bar's RSI
     # Per-sample does: rsi_vals[-2] which is 1-bar lag
     features["rsi_inv_lag1"] = rsi_normalized.shift(1).clip(-1.0, 1.0)
-    
+
     # Feature 2: volatility_shift_ma3 - 3-bar moving average
     # Per-sample does: sum(last_3_values) / 3
     features["volatility_shift_ma3"] = vol_shift.rolling(window=3, min_periods=1).mean()
-    
+
     # Feature 3: bb_position_inv_ma3 - 3-bar MA of inverted BB position
     # Per-sample does: sum([1.0 - pos for pos in last_3]) / 3
-    features["bb_position_inv_ma3"] = bb_pos_inv.rolling(window=3, min_periods=1).mean().clip(0.0, 1.0)
-    
+    features["bb_position_inv_ma3"] = (
+        bb_pos_inv.rolling(window=3, min_periods=1).mean().clip(0.0, 1.0)
+    )
+
     # Feature 4: rsi_vol_interaction - CURRENT bar RSI × vol
     # Per-sample does: rsi_inv_current * vol_shift_current
     # NOTE: Uses CURRENT bar, not lagged!
     features["rsi_vol_interaction"] = (rsi_normalized * vol_shift).clip(-2.0, 2.0)
-    
+
     # Feature 5: vol_regime - Binary indicator
     # Per-sample does: 1.0 if vol_shift_current > 1.0 else 0.0
     features["vol_regime"] = (vol_shift > 1.0).astype(float)

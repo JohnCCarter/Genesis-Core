@@ -126,7 +126,7 @@ def analyze_feature_pairs(
 
     results = {}
 
-    for i, feat_a_name in enumerate(feature_cols):
+    for feat_a_name in feature_cols:
         results[feat_a_name] = {}
 
         for feat_b_name in feature_cols:
@@ -165,7 +165,7 @@ def find_best_feature_set(partial_ic_results: dict, max_features: int = 7) -> li
     individual_ics = {}
     for feat_a, pairs in partial_ic_results.items():
         # Use any pair to get baseline_ic (should be same for all)
-        for feat_b, stats in pairs.items():
+        for _feat_b, stats in pairs.items():
             if stats.get("baseline_ic"):
                 individual_ics[feat_a] = stats["baseline_ic"]
                 break
@@ -235,7 +235,7 @@ def main():
         print(f"Max Features: {args.max_features}")
 
         # Load data
-        print(f"\n[LOAD] Loading features...")
+        print("\n[LOAD] Loading features...")
         features_df = load_features(args.symbol, args.timeframe)
 
         candles_path = Path(f"data/candles/{args.symbol}_{args.timeframe}.parquet")
@@ -254,7 +254,7 @@ def main():
         print(f"[REGIME] {args.regime} samples: {regime_mask.sum():,}/{len(regime_mask):,}")
 
         # Analyze feature pairs
-        print(f"\n[ANALYZE] Calculating Partial-IC for all feature pairs...")
+        print("\n[ANALYZE] Calculating Partial-IC for all feature pairs...")
         feature_cols = [col for col in features_df.columns if col != "timestamp"]
         total_pairs = len(feature_cols) * (len(feature_cols) - 1)
         print(f"[ANALYZE] Testing {total_pairs} feature pairs...")

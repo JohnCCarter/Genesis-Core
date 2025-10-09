@@ -18,7 +18,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import GridSearchCV
@@ -220,7 +219,7 @@ def main():
         )
         print(f"Training samples: {len(X_train)}")
 
-        print(f"\nRegression Metrics:")
+        print("\nRegression Metrics:")
         print(f"  Train R²:  {metrics['train_r2']:.4f}")
         print(f"  Val R²:    {metrics['val_r2']:.4f}")
         print(f"  Train MAE: {metrics['train_mae']:.4f} ATR")

@@ -187,7 +187,7 @@ def print_regime_results(regime_results: dict, regime_name: str):
 
         # Show quintile returns
         if stats["quintile_returns"]:
-            print(f"  Quintiles:      ", end="")
+            print("  Quintiles:      ", end="")
             for i, qret in enumerate(stats["quintile_returns"], 1):
                 if qret is not None:
                     print(f"Q{i}:{qret:+.3%} ", end="")
@@ -218,8 +218,6 @@ def main():
 
         # Load model and data
         print(f"\n[LOAD] Loading model: {args.model}")
-        with open(args.model) as f:
-            model_data = json.load(f)
 
         print(f"[LOAD] Loading features for {args.symbol} {args.timeframe}")
         features_df = load_features(args.symbol, args.timeframe)

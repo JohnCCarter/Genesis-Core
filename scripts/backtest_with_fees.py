@@ -197,36 +197,36 @@ def print_results(results: dict):
     print("FEES-AWARE BACKTEST RESULTS")
     print("=" * 80)
 
-    print(f"\n📊 OVERVIEW:")
+    print("\n📊 OVERVIEW:")
     print(f"  Total Samples:    {results['total_samples']:,}")
     print(f"  Trades Taken:     {results['trades_taken']:,} ({results['trade_rate']:.1%})")
 
-    print(f"\n💸 TRANSACTION COSTS:")
+    print("\n💸 TRANSACTION COSTS:")
     costs = results["costs"]
     print(f"  Fees:             {costs['fees_pct']:.2f}%")
     print(f"  Slippage:         {costs['slippage_pct']:.2f}%")
     print(f"  Round-trip:       {costs['round_trip_pct']:.2f}%")
     print(f"  Total Cost:       {costs['total_cost']:.4f}")
 
-    print(f"\n📈 GROSS PERFORMANCE (before fees):")
+    print("\n📈 GROSS PERFORMANCE (before fees):")
     gross = results["gross"]
     print(f"  Mean Return:      {gross['mean_return']:.4%}")
     print(f"  Cum Return:       {gross['cum_return']:.4%}")
     print(f"  Sharpe Ratio:     {gross['sharpe']:.2f}")
 
-    print(f"\n💰 NET PERFORMANCE (after fees):")
+    print("\n💰 NET PERFORMANCE (after fees):")
     net = results["net"]
     print(f"  Mean Return:      {net['mean_return']:.4%}")
     print(f"  Cum Return:       {net['cum_return']:.4%}")
     print(f"  Sharpe Ratio:     {net['sharpe']:.2f}")
 
-    print(f"\n⚡ COST IMPACT:")
+    print("\n⚡ COST IMPACT:")
     impact = results["impact"]
     print(f"  Cost per Trade:   {impact['cost_per_trade']:.2%}")
     print(f"  Total Drag:       {impact['total_drag']:.4%}")
     print(f"  Drag %:           {impact['drag_pct']:.1f}%")
 
-    print(f"\n📊 QUINTILE ANALYSIS (fees-aware):")
+    print("\n📊 QUINTILE ANALYSIS (fees-aware):")
     print(f"  {'Q':>3} | {'Count':>6} | {'Gross':>8} | {'Net':>8} | {'Profit?'}")
     print(f"  {'-'*3}-+-{'-'*6}-+-{'-'*8}-+-{'-'*8}-+-{'-'*8}")
     for q_stat in results["quintiles"]:

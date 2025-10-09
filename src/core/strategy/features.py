@@ -182,28 +182,28 @@ def extract_features(
         price_vs_ema_clipped = 0.0
 
     # === CALCULATE SMOOTHED & LAGGED FEATURES (matching vectorized.py) ===
-    
+
     # Get 3-bar window for smoothing
     rsi_last_3 = rsi_vals[-3:] if len(rsi_vals) >= 3 else [0.0] * 3
     bb_last_3 = bb["position"][-3:] if len(bb["position"]) >= 3 else [0.5] * 3
     vol_shift_last_3 = vol_shift[-3:] if len(vol_shift) >= 3 else [1.0] * 3
-    
+
     # Smoothed (MA3)
     rsi_inv_ma3 = sum([(r - 50.0) / 50.0 for r in rsi_last_3]) / len(rsi_last_3)
     bb_inv_ma3 = sum([1.0 - pos for pos in bb_last_3]) / len(bb_last_3)
     vol_shift_ma3 = sum(vol_shift_last_3) / len(vol_shift_last_3)
-    
+
     # Lagged (1-bar)
     rsi_inv_lag1 = (rsi_vals[-2] - 50.0) / 50.0 if len(rsi_vals) >= 2 else 0.0
-    
+
     # Interaction (RSI × Vol)
     rsi_inv_current = -rsi_latest
     vol_shift_current = _clip(vol_shift_latest, 0.5, 2.0)
     rsi_vol_interaction = rsi_inv_current * vol_shift_current
-    
+
     # Regime binary (HighVol = 1, LowVol = 0)
     vol_regime = 1.0 if vol_shift_current > 1.0 else 0.0
-    
+
     feats: dict[str, float] = {
         # === TOP 5 NON-REDUNDANT FEATURES (HighVol regime tested, IC-validated) ===
         "rsi_inv_lag1": _clip(rsi_inv_lag1, -1.0, 1.0),  # IC +0.0583, Spread +0.157%

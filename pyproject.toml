@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "genesis-core"
-version = "0.5.0"
-description = "Genesis-Core Trading Bot with Enterprise ML Pipeline & Champion Selection"
+version = "0.6.0"
+description = "Regime-conditional trading strategy with validated vectorized features (Phase-6)"
 requires-python = ">=3.11"
 dependencies = [
   "fastapi>=0.116,<0.117",

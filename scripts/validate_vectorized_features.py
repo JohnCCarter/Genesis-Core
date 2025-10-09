@@ -205,7 +205,7 @@ def main():
         print(f"Tolerance: {args.tolerance:.2e}")
 
         # Load candles
-        print(f"\n[LOAD] Loading candles...")
+        print("\n[LOAD] Loading candles...")
         candles_path = Path(f"data/candles/{args.symbol}_{args.timeframe}.parquet")
         candles_df = pd.read_parquet(candles_path)
 
@@ -213,7 +213,7 @@ def main():
         per_sample_df = compute_per_sample_features(candles_df, args.samples)
 
         # Method 2: Vectorized (FAST)
-        print(f"\n[VECTORIZED] Computing features (fast method)...")
+        print("\n[VECTORIZED] Computing features (fast method)...")
         vectorized_df = calculate_all_features_vectorized(candles_df)
         vectorized_df.insert(0, "timestamp", candles_df["timestamp"])
 
@@ -223,7 +223,7 @@ def main():
         print(f"[VECTORIZED] Computed {len(vectorized_df)} samples")
 
         # Compare
-        print(f"\n[VALIDATE] Comparing methods...")
+        print("\n[VALIDATE] Comparing methods...")
         results = compare_features(per_sample_df, vectorized_df, args.tolerance)
 
         # Print summary

@@ -19,6 +19,7 @@ import pandas as pd
 from sklearn.linear_model import LogisticRegression
 
 from core.ml.calibration import apply_calibration_from_params, load_calibration_params
+from core.ml.decision_matrix import ChampionDecisionMatrix, ModelMetrics
 from core.ml.evaluation import generate_evaluation_report
 from core.ml.labeling import align_features_with_labels, generate_labels
 from core.strategy.prob_model import predict_proba_for
@@ -184,6 +185,90 @@ def evaluate_model(
     }
 
 
+def extract_metrics_from_results(result: dict) -> ModelMetrics:
+    """Extract ModelMetrics from evaluation results."""
+    eval_data = result["evaluation"]
+    basic = eval_data["classification"]["basic_metrics"]
+
+    # Default values for trading metrics (to be computed from backtest)
+    profit_factor = 1.0  # Placeholder
+    sharpe_ratio = 0.0  # Placeholder
+    max_drawdown = -0.15  # Placeholder
+    win_rate = 0.5  # Placeholder
+    avg_trade_duration = 10.0  # Placeholder
+    num_trades = 100  # Placeholder
+    consistency = 0.7  # Placeholder
+
+    return ModelMetrics(
+        auc=basic["roc_auc"],
+        accuracy=basic["accuracy"],
+        log_loss=basic["log_loss"],
+        profit_factor=profit_factor,
+        sharpe_ratio=sharpe_ratio,
+        max_drawdown=max_drawdown,
+        win_rate=win_rate,
+        avg_trade_duration=avg_trade_duration,
+        num_trades=num_trades,
+        consistency=consistency,
+    )
+
+
+def compare_models_with_matrix(model_results: list[dict], weights: dict[str, float]) -> dict:
+    """
+    Compare models using weighted decision matrix.
+
+    Args:
+        model_results: List of model evaluation results
+        weights: Dict of metric weights
+
+    Returns:
+        Dict with comparison results and champion
+    """
+    # Create decision matrix
+    matrix = ChampionDecisionMatrix(weights)
+
+    # Extract metrics for each model
+    models_metrics = {}
+    for result in model_results:
+        model_name = result["model_info"]["name"]
+        metrics = extract_metrics_from_results(result)
+        models_metrics[model_name] = metrics
+
+    # Get champion and ranking
+    champion_name, champion_score, ranking = matrix.get_champion(models_metrics)
+
+    # Build comparison data with full results
+    comparison_data = []
+    for _, row in ranking.iterrows():
+        model_name = row["model"]
+        # Find matching result
+        model_result = next(
+            (r for r in model_results if r["model_info"]["name"] == model_name), None
+        )
+
+        comparison_data.append(
+            {
+                "name": model_name,
+                "type": model_result["model_info"]["type"] if model_result else "unknown",
+                "score": row["total_score"],
+                "metrics": models_metrics[model_name],
+                "result": model_result,
+            }
+        )
+
+    best_model = comparison_data[0]
+
+    return {
+        "method": "decision_matrix",
+        "weights": weights,
+        "best_model": best_model,
+        "all_models": comparison_data,
+        "ranking_df": ranking,
+        "champion_name": champion_name,
+        "champion_score": champion_score,
+    }
+
+
 def compare_models(
     model_results: list[dict],
     metric: str = "roc_auc",
@@ -288,11 +373,24 @@ def main():
         "--calibration-dir", type=str, default="results/calibration", help="Calibration directory"
     )
     parser.add_argument(
+        "--profile",
+        type=str,
+        default="balanced",
+        choices=["balanced", "conservative", "aggressive", "quality"],
+        help="Weight profile for decision matrix",
+    )
+    parser.add_argument(
+        "--weights-config",
+        type=str,
+        default="config/champion_weights.json",
+        help="Path to weights configuration file",
+    )
+    parser.add_argument(
         "--metric",
         type=str,
-        default="roc_auc",
-        choices=["roc_auc", "accuracy", "log_loss", "brier_score", "f1_score"],
-        help="Metric for comparison",
+        default="decision_matrix",
+        choices=["decision_matrix", "roc_auc", "accuracy", "log_loss", "brier_score", "f1_score"],
+        help="Selection method: decision_matrix (recommended) or single metric",
     )
     parser.add_argument("--lookahead", type=int, default=10, help="Lookahead bars for evaluation")
     parser.add_argument("--threshold", type=float, default=0.0, help="Price change threshold %")
@@ -369,8 +467,23 @@ def main():
             model_results.append(result)
 
         # Compare models
-        print(f"[COMPARE] Comparing models using {args.metric}...")
-        comparison_results = compare_models(model_results, args.metric)
+        if args.metric == "decision_matrix":
+            # Load weights from config
+            print(f"[COMPARE] Using decision matrix with profile: {args.profile}")
+            weights_path = Path(args.weights_config)
+            if not weights_path.exists():
+                raise FileNotFoundError(f"Weights config not found: {weights_path}")
+
+            with open(weights_path) as f:
+                weights_config = json.load(f)
+
+            profile_weights = weights_config["profiles"][args.profile]["weights"]
+            print(f"[WEIGHTS] {profile_weights}")
+
+            comparison_results = compare_models_with_matrix(model_results, profile_weights)
+        else:
+            print(f"[COMPARE] Comparing models using single metric: {args.metric}...")
+            comparison_results = compare_models(model_results, args.metric)
 
         # Generate report
         output_dir = Path(args.output)
@@ -378,18 +491,23 @@ def main():
         generate_champion_report(comparison_results, report_path)
 
         # Print summary
-        print("\n" + "=" * 60)
+        print("\n" + "=" * 80)
         print("CHAMPION SELECTION COMPLETE")
-        print("=" * 60)
+        print("=" * 80)
         print(f"Symbol: {symbol}")
         print(f"Timeframe: {timeframe}")
-        print(f"Metric: {args.metric}")
+        print(f"Method: {args.metric}")
+        if args.metric == "decision_matrix":
+            print(f"Profile: {args.profile}")
         print(f"Samples: {model_results[0]['data_info']['n_samples']}")
 
         best_model = comparison_results["best_model"]
-        print(f"\n[CHAMPION] WINNER: {best_model['name']}")
+        print(f"\n🏆 CHAMPION: {best_model['name']}")
         print(f"   Type: {best_model['type']}")
-        print(f"   Score: {best_model['score']:.6f}")
+        if args.metric == "decision_matrix":
+            print(f"   Total Score: {best_model['score']:.2f}/10.0")
+        else:
+            print(f"   {args.metric}: {best_model['score']:.6f}")
 
         print("\n[RESULTS] ALL MODELS:")
         for i, model in enumerate(comparison_results["all_models"], 1):

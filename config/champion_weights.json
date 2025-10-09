@@ -1,0 +1,55 @@
+{
+  "description": "Champion model selection weights - defines criteria importance",
+  "profiles": {
+    "balanced": {
+      "description": "Balanced profile - equal focus on performance and risk",
+      "weights": {
+        "auc": 0.25,
+        "sharpe_ratio": 0.25,
+        "profit_factor": 0.20,
+        "max_drawdown": 0.20,
+        "win_rate": 0.10
+      }
+    },
+    "conservative": {
+      "description": "Conservative profile - prioritizes risk management",
+      "weights": {
+        "max_drawdown": 0.35,
+        "sharpe_ratio": 0.30,
+        "auc": 0.20,
+        "profit_factor": 0.10,
+        "win_rate": 0.05
+      }
+    },
+    "aggressive": {
+      "description": "Aggressive profile - prioritizes profit generation",
+      "weights": {
+        "profit_factor": 0.40,
+        "auc": 0.25,
+        "sharpe_ratio": 0.20,
+        "win_rate": 0.10,
+        "max_drawdown": 0.05
+      }
+    },
+    "quality": {
+      "description": "Quality profile - prioritizes model accuracy and consistency",
+      "weights": {
+        "auc": 0.35,
+        "consistency": 0.25,
+        "sharpe_ratio": 0.20,
+        "max_drawdown": 0.15,
+        "profit_factor": 0.05
+      }
+    }
+  },
+  "default_profile": "balanced",
+  "notes": [
+    "All weights within a profile must sum to 1.0",
+    "Metrics are normalized to 0-1 scale before weighting",
+    "max_drawdown is negative (closer to 0 is better)",
+    "Use conservative profile for risk-averse strategies",
+    "Use aggressive profile for growth-focused strategies",
+    "Use quality profile when model reliability is critical"
+  ]
+}
+

@@ -28,6 +28,7 @@ from core.ml.labeling import (
     generate_triple_barrier_labels,
 )
 from core.utils.data_loader import load_features
+from core.utils.provenance import create_provenance_record
 
 # Try to use fast Numba implementation if available
 try:
@@ -96,20 +97,40 @@ def split_data_chronological(
     labels: np.ndarray,
     train_ratio: float = 0.6,
     val_ratio: float = 0.2,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    use_holdout: bool = False,
+) -> tuple[
+    np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, list[int] | None
+]:
     """
     Split data chronologically (no random shuffling for time series).
+
+    If use_holdout=True, reserves the last 20% as a holdout set that is
+    completely isolated from training and validation.
 
     Args:
         features: Feature matrix
         labels: Label array
         train_ratio: Training set ratio
         val_ratio: Validation set ratio (test = 1 - train - val)
+        use_holdout: If True, reserve last 20% as holdout
 
     Returns:
-        Tuple of (X_train, X_val, X_test, y_train, y_val, y_test)
+        Tuple of (X_train, X_val, X_test, y_train, y_val, y_test, holdout_indices)
+        holdout_indices: List of indices for holdout set (None if not used)
     """
     n_samples = len(features)
+    holdout_indices = None
+
+    if use_holdout:
+        # Reserve last 20% as holdout (NEVER used in training/validation)
+        holdout_size = int(n_samples * 0.2)
+        holdout_start = n_samples - holdout_size
+        holdout_indices = list(range(holdout_start, n_samples))
+
+        # Work with remaining 80% for train/val/test
+        n_samples = n_samples - holdout_size
+        features = features[:n_samples]
+        labels = labels[:n_samples]
 
     train_end = int(n_samples * train_ratio)
     val_end = int(n_samples * (train_ratio + val_ratio))
@@ -122,7 +143,7 @@ def split_data_chronological(
     y_val = labels[train_end:val_end]
     y_test = labels[val_end:]
 
-    return X_train, X_val, X_test, y_train, y_val, y_test
+    return X_train, X_val, X_test, y_train, y_val, y_test, holdout_indices
 
 
 def train_buy_sell_models(
@@ -345,6 +366,14 @@ def main():
     parser.add_argument("--version", type=str, default="v3", help="Model version")
     parser.add_argument("--output-dir", type=str, default="results/models", help="Output directory")
     parser.add_argument("--quiet", action="store_true", help="Suppress progress output")
+    parser.add_argument(
+        "--use-holdout",
+        action="store_true",
+        help="Reserve 20%% holdout set (untouched during training)",
+    )
+    parser.add_argument(
+        "--save-provenance", action="store_true", help="Save provenance record for reproducibility"
+    )
 
     args = parser.parse_args()
 
@@ -497,13 +526,25 @@ def main():
             )
 
         # Split data
-        if not args.quiet:
-            print("[SPLIT] Splitting data chronologically (60/20/20)")
+        if args.use_holdout:
+            if not args.quiet:
+                print(
+                    "[SPLIT] Splitting with 20% holdout (untouched) + 60/20/20 for train/val/test"
+                )
+        else:
+            if not args.quiet:
+                print("[SPLIT] Splitting data chronologically (60/20/20)")
 
-        X_train, X_val, X_test, y_train, y_val, y_test = split_data_chronological(X, aligned_labels)
+        X_train, X_val, X_test, y_train, y_val, y_test, holdout_indices = split_data_chronological(
+            X, aligned_labels, use_holdout=args.use_holdout
+        )
 
         if not args.quiet:
             print(f"[SPLIT] Train: {len(X_train)}, Val: {len(X_val)}, Test: {len(X_test)}")
+            if holdout_indices:
+                print(
+                    f"[SPLIT] Holdout: {len(holdout_indices)} samples (reserved for final validation)"
+                )
 
         # Train models
         if not args.quiet:
@@ -524,6 +565,61 @@ def main():
         file_paths = save_model_and_metrics(
             model_json, metrics, args.symbol, args.timeframe, args.version, output_dir
         )
+
+        # Save provenance if requested
+        if args.save_provenance:
+            model_path = Path(file_paths["model_path"])
+            training_config = {
+                "symbol": args.symbol,
+                "timeframe": args.timeframe,
+                "version": args.version,
+                "lookahead": args.lookahead,
+                "threshold": args.threshold,
+                "use_triple_barrier": args.use_triple_barrier,
+                "use_adaptive_triple_barrier": args.use_adaptive_triple_barrier,
+                "profit_pct": args.profit_pct,
+                "stop_pct": args.stop_pct,
+                "profit_multiplier": args.profit_multiplier,
+                "stop_multiplier": args.stop_multiplier,
+                "max_holding": args.max_holding,
+                "train_ratio": 0.6,
+                "val_ratio": 0.2,
+                "use_holdout": args.use_holdout,
+            }
+
+            provenance = create_provenance_record(
+                features_df=aligned_features,
+                labels=[int(label) for label in aligned_labels],
+                config=training_config,
+                model_path=model_path,
+            )
+
+            provenance_path = model_path.parent / f"{model_path.stem}_provenance.json"
+            with open(provenance_path, "w") as f:
+                json.dump(provenance, f, indent=2)
+
+            if not args.quiet:
+                print(f"[PROVENANCE] Saved to {provenance_path}")
+                print(f"[PROVENANCE] Data hash: {provenance['data_hash']}")
+                print(f"[PROVENANCE] Config hash: {provenance['config_hash']}")
+
+        # Save holdout indices if used
+        if holdout_indices:
+            model_path = Path(file_paths["model_path"])
+            holdout_path = model_path.parent / f"{model_path.stem}_holdout_indices.json"
+            with open(holdout_path, "w") as f:
+                json.dump(
+                    {
+                        "holdout_indices": holdout_indices,
+                        "holdout_size": len(holdout_indices),
+                        "total_samples": len(X) + len(holdout_indices),
+                        "description": "Indices for holdout set (20% of data, untouched during training)",
+                    },
+                    f,
+                    indent=2,
+                )
+            if not args.quiet:
+                print(f"[HOLDOUT] Saved indices to {holdout_path}")
 
         # Print summary
         print("\n" + "=" * 60)

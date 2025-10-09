@@ -2,13 +2,13 @@
 
 ## File Structure
 
-### `project-rules.mdc` (Active Rules)
+### `cursor-active-rules.mdc` (Active Rules)
 - **Purpose**: Active rules loaded by Cursor AI (`alwaysApply: true`)
 - **Content**: Core principles, workflow, and essential guidelines
 - **Usage**: Automatically applied in every Cursor session
 - **Size**: Concise (~85 lines) for quick reference
 
-### `PROJECT_RULES.md` (Reference Documentation)
+### `reference-guide.md` (Reference Documentation)
 - **Purpose**: Comprehensive project documentation and guidelines
 - **Content**: Detailed rules, architecture, standards, and examples
 - **Usage**: Reference when detailed information is needed
@@ -17,9 +17,9 @@
 ## Rule Hierarchy
 
 ```
-project-rules.mdc          ← Active rules (Cursor loads this)
+cursor-active-rules.mdc    ← Active rules (Cursor loads this)
     ↓
-PROJECT_RULES.md          ← Full documentation (reference)
+reference-guide.md         ← Full documentation (reference)
 ```
 
 ## When to Update
@@ -30,7 +30,7 @@ PROJECT_RULES.md          ← Full documentation (reference)
 - Development workflow changes
 - Critical patterns are established
 
-### Update ONLY PROJECT_RULES.md when:
+### Update ONLY reference-guide.md when:
 - Adding detailed examples
 - Expanding troubleshooting sections
 - Adding architectural details
@@ -38,7 +38,11 @@ PROJECT_RULES.md          ← Full documentation (reference)
 
 ## Syncing Rules
 
-When updating common sections, ensure consistency between files:
+When updating common sections, ensure consistency between:
+- cursor-active-rules.mdc (concise)
+- reference-guide.md (detailed)
+
+Common sections to sync:
 - Core Principles
 - Security Rules
 - Development Workflow

@@ -44,7 +44,7 @@ def _extract_asof(
     """
     # Validate inputs
     lengths = [len(candles[k]) for k in ["open", "high", "low", "close", "volume"]]
-    if not all(l == lengths[0] for l in lengths):
+    if not all(length == lengths[0] for length in lengths):
         raise ValueError("All OHLCV lists must have same length")
     
     total_bars = lengths[0]
@@ -65,11 +65,9 @@ def _extract_asof(
         }
     
     # Extract data AS OF asof_bar (inclusive)
-    opens = [float(x) for x in candles["open"][: asof_bar + 1]]
     highs = [float(x) for x in candles["high"][: asof_bar + 1]]
     lows = [float(x) for x in candles["low"][: asof_bar + 1]]
     closes = [float(x) for x in candles["close"][: asof_bar + 1]]
-    volumes = [float(x) for x in candles["volume"][: asof_bar + 1]]
     
     # Invariant check
     assert len(closes) == asof_bar + 1, f"Expected {asof_bar + 1} bars, got {len(closes)}"
@@ -260,5 +258,4 @@ def extract_features(
         if asof_bar >= total_bars:
             asof_bar = total_bars - 1
             
-        return _extract_asof(candles_dict, asof_bar)
-
+        return _extract_asof(candles_dict, aso

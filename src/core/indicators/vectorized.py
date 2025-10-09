@@ -15,15 +15,33 @@ def calculate_ema_vectorized(series: pd.Series, period: int = 50) -> pd.Series:
 
 
 def calculate_rsi_vectorized(series: pd.Series, period: int = 14) -> pd.Series:
-    """Calculate RSI on entire series at once. Returns raw RSI [0, 100]."""
+    """
+    Calculate RSI using Wilder's smoothing (matching calculate_rsi()).
+    
+    Returns raw RSI [0, 100].
+    
+    Note: Uses EWM with alpha=1/period to match Wilder's smoothing formula:
+    avg_new = (avg_old * (n-1) + value) / n = avg_old + (1/n) * (value - avg_old)
+    """
     delta = series.diff()
-    gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
-    loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
-
-    rs = gain / loss.replace(0, np.nan)
+    
+    # Separate gains and losses
+    gain = delta.where(delta > 0, 0)
+    loss = -delta.where(delta < 0, 0)
+    
+    # Wilder's smoothing = EMA with alpha = 1/period
+    # pandas ewm with alpha expects alpha directly
+    avg_gain = gain.ewm(alpha=1/period, adjust=False).mean()
+    avg_loss = loss.ewm(alpha=1/period, adjust=False).mean()
+    
+    # Calculate RS and RSI
+    rs = avg_gain / avg_loss.replace(0, np.nan)
     rsi = 100 - (100 / (1 + rs))
-
-    return rsi  # Return raw [0, 100] to match calculate_rsi()
+    
+    # Fill initial NaN values with 50.0 (neutral) to match calculate_rsi()
+    rsi = rsi.fillna(50.0)
+    
+    return rsi  # Return raw [0, 100]
 
 
 def calculate_adx_vectorized(
@@ -59,13 +77,21 @@ def calculate_adx_vectorized(
 def calculate_atr_vectorized(
     high: pd.Series, low: pd.Series, close: pd.Series, period: int = 14
 ) -> pd.Series:
-    """Calculate ATR on entire series."""
+    """
+    Calculate ATR using Wilder's smoothing (matching calculate_atr()).
+    
+    Note: Uses EWM with alpha=1/period to match Wilder's formula.
+    """
+    # Calculate True Range
     tr1 = high - low
     tr2 = abs(high - close.shift(1))
     tr3 = abs(low - close.shift(1))
     tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
-
-    return tr.rolling(window=period).mean()
+    
+    # Wilder's smoothing = EMA with alpha = 1/period
+    atr = tr.ewm(alpha=1/period, adjust=False).mean()
+    
+    return atr
 
 
 def calculate_bollinger_bands_vectorized(
@@ -126,13 +152,22 @@ def calculate_price_vs_ema_vectorized(close: pd.Series, period: int = 50) -> pd.
 
 
 def calculate_volatility_shift_vectorized(
-    close: pd.Series, short_period: int = 10, long_period: int = 50
+    high: pd.Series, low: pd.Series, close: pd.Series,
+    short_period: int = 14, long_period: int = 50
 ) -> pd.Series:
-    """Calculate ratio of short-term to long-term volatility."""
-    vol_short = close.pct_change().rolling(window=short_period).std()
-    vol_long = close.pct_change().rolling(window=long_period).std()
-
-    return (vol_short / vol_long.replace(0, np.nan)).fillna(1.0)
+    """
+    Calculate ratio of short-term to long-term ATR (matching calculate_volatility_shift()).
+    
+    Returns ATR(short) / ATR(long) ratio.
+    """
+    atr_short = calculate_atr_vectorized(high, low, close, period=short_period)
+    atr_long = calculate_atr_vectorized(high, low, close, period=long_period)
+    
+    # Calculate ratio
+    vol_shift = atr_short / atr_long.replace(0, np.nan)
+    
+    # Fill NaN with 1.0 (neutral)
+    return vol_shift.fillna(1.0)
 
 
 def calculate_all_features_vectorized(df: pd.DataFrame) -> pd.DataFrame:
@@ -155,13 +190,10 @@ def calculate_all_features_vectorized(df: pd.DataFrame) -> pd.DataFrame:
     # === MACD ===
     _, _, macd_histogram = calculate_macd_vectorized(df["close"], fast=12, slow=26, signal=9)
 
-    # Normalize MACD histogram
-    macd_histogram_norm = macd_histogram / df["close"]
-
-    # === DERIVED FEATURES ===
-    ema_slope = calculate_ema_slope_vectorized(df["close"], period=50)
-    price_vs_ema = calculate_price_vs_ema_vectorized(df["close"], period=50)
-    volatility_shift = calculate_volatility_shift_vectorized(df["close"], 10, 50)
+    # === VOLATILITY SHIFT ===
+    volatility_shift = calculate_volatility_shift_vectorized(
+        df["high"], df["low"], df["close"], short_period=14, long_period=50
+    )
 
     # === NORMALIZE & PREPARE BASE INDICATORS ===
     # Match exact logic from extract_features()

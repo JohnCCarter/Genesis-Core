@@ -51,7 +51,9 @@ def calculate_pbo(is_sharpes, oos_sharpes):
     if len(is_sharpes) != len(oos_sharpes):
         raise ValueError("IS and OOS must have same length")
 
-    n_overfit = sum(1 for is_sr, oos_sr in zip(is_sharpes, oos_sharpes, strict=True) if is_sr > oos_sr)
+    n_overfit = sum(
+        1 for is_sr, oos_sr in zip(is_sharpes, oos_sharpes, strict=True) if is_sr > oos_sr
+    )
 
     pbo = n_overfit / len(is_sharpes)
 

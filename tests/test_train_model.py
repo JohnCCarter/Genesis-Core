@@ -222,7 +222,9 @@ class TestSplitDataChronological:
         features = np.random.randn(100, 2)
         labels = np.random.randint(0, 2, 100)
 
-        X_train, X_val, X_test, y_train, y_val, y_test = split_data_chronological(features, labels)
+        X_train, X_val, X_test, y_train, y_val, y_test, holdout_indices = split_data_chronological(
+            features, labels
+        )
 
         # Check sizes (60/20/20 split)
         assert len(X_train) == 60
@@ -232,6 +234,9 @@ class TestSplitDataChronological:
         assert len(y_train) == 60
         assert len(y_val) == 20
         assert len(y_test) == 20
+
+        # No holdout when use_holdout=False (default)
+        assert holdout_indices is None
 
         # Check chronological order (no shuffling)
         assert np.array_equal(X_train, features[:60])
@@ -247,7 +252,7 @@ class TestSplitDataChronological:
         features = np.random.randn(100, 2)
         labels = np.random.randint(0, 2, 100)
 
-        X_train, X_val, X_test, y_train, y_val, y_test = split_data_chronological(
+        X_train, X_val, X_test, y_train, y_val, y_test, holdout_indices = split_data_chronological(
             features, labels, train_ratio=0.5, val_ratio=0.3
         )
 
@@ -261,12 +266,15 @@ class TestSplitDataChronological:
         features = np.random.randn(10, 2)
         labels = np.random.randint(0, 2, 10)
 
-        X_train, X_val, X_test, y_train, y_val, y_test = split_data_chronological(features, labels)
+        X_train, X_val, X_test, y_train, y_val, y_test, holdout_indices = split_data_chronological(
+            features, labels
+        )
 
         # Should still work with small data
         assert len(X_train) == 6
         assert len(X_val) == 2
         assert len(X_test) == 2
+        assert holdout_indices is None
 
 
 class TestTrainBuySellModels:
@@ -554,8 +562,8 @@ class TestIntegration:
                     X = aligned_features[feature_columns].values
 
                     # Split data
-                    X_train, X_val, X_test, y_train, y_val, y_test = split_data_chronological(
-                        X, aligned_labels
+                    X_train, X_val, X_test, y_train, y_val, y_test, holdout_indices = (
+                        split_data_chronological(X, aligned_labels)
                     )
 
                     # Train models

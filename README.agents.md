@@ -2,6 +2,15 @@
 
 Denna fil beskriver hur AI‑agenter ska arbeta lokalt med projektet.
 
+## 🔒 Deployment Model
+
+**Single-User Bot:**
+- Genesis-Core är designad för en enskild utvecklare/trader
+- Ingen multi-user support eller access control
+- Full access till alla funktioner och konfigurationer
+- API keys och secrets hanteras via `.env` (single instance)
+- Production deployment: Personal VPS/cloud instance
+
 #### Regler
 - Följ Separation of concerns: `core/strategy/*` är rena, deterministiska funktioner.
 - Inga hemligheter i loggar; använd `core.utils.logging_redaction` vid behov.

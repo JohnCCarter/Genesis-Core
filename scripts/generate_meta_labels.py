@@ -165,7 +165,7 @@ def main():
         sys.exit(1)
 
     from core.utils.data_loader import load_features
-    
+
     print(f"[LOAD] Loading features...")
     features_df = load_features(args.symbol, args.timeframe)
 

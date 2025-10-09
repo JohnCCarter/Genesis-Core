@@ -36,7 +36,7 @@ def load_model(model_path: str) -> dict:
 def load_features(symbol: str, timeframe: str) -> pd.DataFrame:
     """Load features."""
     from core.utils.data_loader import load_features as load_features_base
-    
+
     features_df = load_features_base(symbol, timeframe)
 
     # Remove timestamp

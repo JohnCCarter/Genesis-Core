@@ -46,7 +46,7 @@ def load_data(symbol: str, timeframe: str):
     """Load features and candles."""
     # Load features with smart format selection (Feather > Parquet)
     features_df = load_features(symbol, timeframe)
-    
+
     candles_path = Path(f"data/candles/{symbol}_{timeframe}.parquet")
     candles_df = pd.read_parquet(candles_path)
 

@@ -27,7 +27,7 @@ def load_features_and_prices(symbol: str, timeframe: str):
     """Load features and price data (duplicated from train_model.py)."""
     # Load features with smart format selection (Feather > Parquet)
     features_df = load_features(symbol, timeframe)
-    
+
     candles_path = Path(f"data/candles/{symbol}_{timeframe}.parquet")
     if not candles_path.exists():
         raise FileNotFoundError(f"Candles not found: {candles_path}")

@@ -58,7 +58,7 @@ def main():
 
     # Load features with smart format selection (Feather > Parquet)
     from core.utils.data_loader import load_features
-    
+
     features_df = load_features(args.symbol, args.timeframe)
     print(f"[LOAD] Features: {len(features_df)} samples")
 

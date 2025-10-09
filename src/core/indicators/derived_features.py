@@ -14,7 +14,6 @@ without the non-stationary visual pattern recognition:
 """
 
 
-
 def calculate_momentum_displacement_z(
     closes: list[float],
     atr_values: list[float],

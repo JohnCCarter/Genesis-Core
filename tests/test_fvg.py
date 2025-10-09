@@ -1,6 +1,5 @@
 """Tests for Fair Value Gap (FVG) detection."""
 
-
 from core.indicators.fvg import detect_fvg, extract_fvg_features, get_nearest_unfilled_fvg
 
 

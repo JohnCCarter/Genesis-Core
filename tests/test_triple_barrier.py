@@ -133,11 +133,11 @@ class TestAdaptiveTripleBarrierLabeling:
         # Need enough bars: atr_period (14) + max_holding (3) = 17
         n_bars = 20
         closes = [100.0 + i * 0.5 for i in range(n_bars)]
-        
+
         # High volatility: wider highs/lows (ATR ~ 2.0)
         highs_high = [close + 2.0 for close in closes]
         lows_high = [close - 2.0 for close in closes]
-        
+
         # Low volatility: tighter highs/lows (ATR ~ 0.5)
         highs_low = [close + 0.5 for close in closes]
         lows_low = [close - 0.5 for close in closes]
@@ -176,7 +176,13 @@ class TestAdaptiveTripleBarrierLabeling:
         lows = [close - 1.0 for close in closes]
 
         labels = generate_adaptive_triple_barrier_labels(
-            closes, highs, lows, profit_multiplier=1.5, stop_multiplier=1.0, max_holding_bars=3, atr_period=14
+            closes,
+            highs,
+            lows,
+            profit_multiplier=1.5,
+            stop_multiplier=1.0,
+            max_holding_bars=3,
+            atr_period=14,
         )
         # Target = entry + 1.5*ATR, with strong uptrend should hit profit
         assert labels[14] == 1  # First valid label after ATR period
@@ -190,7 +196,13 @@ class TestAdaptiveTripleBarrierLabeling:
         lows = [close - 1.0 for close in closes]
 
         labels = generate_adaptive_triple_barrier_labels(
-            closes, highs, lows, profit_multiplier=1.5, stop_multiplier=1.0, max_holding_bars=3, atr_period=14
+            closes,
+            highs,
+            lows,
+            profit_multiplier=1.5,
+            stop_multiplier=1.0,
+            max_holding_bars=3,
+            atr_period=14,
         )
         # Stop = entry - 1.0*ATR, with strong downtrend should hit stop
         assert labels[14] == 0  # First valid label after ATR period
@@ -198,16 +210,24 @@ class TestAdaptiveTripleBarrierLabeling:
     def test_mismatched_lengths(self):
         """Test validation of input lengths."""
         with pytest.raises(ValueError):
-            generate_adaptive_triple_barrier_labels([100, 101], [101, 102], [99], max_holding_bars=2)
+            generate_adaptive_triple_barrier_labels(
+                [100, 101], [101, 102], [99], max_holding_bars=2
+            )
 
     def test_invalid_atr(self):
         """Test handling of invalid ATR values (invalid highs/lows)."""
         closes = [100.0, 101.0, 102.0]
         highs = [0.0, -1.0, float("nan")]  # Invalid highs
-        lows = [0.0, -1.0, float("nan")]   # Invalid lows
+        lows = [0.0, -1.0, float("nan")]  # Invalid lows
 
         labels = generate_adaptive_triple_barrier_labels(
-            closes, highs, lows, profit_multiplier=1.5, stop_multiplier=1.0, max_holding_bars=1, atr_period=2
+            closes,
+            highs,
+            lows,
+            profit_multiplier=1.5,
+            stop_multiplier=1.0,
+            max_holding_bars=1,
+            atr_period=2,
         )
         assert all(label is None for label in labels)  # All invalid
 
@@ -231,7 +251,13 @@ class TestAdaptiveTripleBarrierLabeling:
         lows = [close - (1.0 + i * 0.1) for i, close in enumerate(closes)]
 
         labels = generate_adaptive_triple_barrier_labels(
-            closes, highs, lows, profit_multiplier=1.5, stop_multiplier=1.0, max_holding_bars=3, atr_period=14
+            closes,
+            highs,
+            lows,
+            profit_multiplier=1.5,
+            stop_multiplier=1.0,
+            max_holding_bars=3,
+            atr_period=14,
         )
         # With uptrend and reasonable barriers, should hit profit target
         assert labels[14] == 1  # First valid label after ATR period

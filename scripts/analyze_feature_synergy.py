@@ -28,7 +28,7 @@ def load_features_and_labels(symbol: str, timeframe: str) -> tuple[pd.DataFrame,
         raise FileNotFoundError(f"Candles not found: {candles_path}")
 
     from core.utils.data_loader import load_features
-    
+
     features_df = load_features(symbol, timeframe)
     candles_df = pd.read_parquet(candles_path)
 

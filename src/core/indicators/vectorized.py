@@ -164,13 +164,44 @@ def calculate_all_features_vectorized(df: pd.DataFrame) -> pd.DataFrame:
     price_vs_ema = calculate_price_vs_ema_vectorized(df["close"], period=50)
     volatility_shift = calculate_volatility_shift_vectorized(df["close"], 10, 50)
 
-    # === ASSIGN TO DATAFRAME (with inversions for IC-positive correlation) ===
-    features["volatility_shift"] = volatility_shift.clip(0.5, 2.0)
+    # === TOP 12 IC-SELECTED FEATURES (HighVol regime tested) ===
+    # Rank 1: rsi_inv_ma3 (IC +0.0598, Spread +0.149%)
+    features["rsi_inv_ma3"] = pd.Series(-rsi, index=df.index).rolling(3).mean().clip(-1.0, 1.0)
+    
+    # Rank 2: rsi_inv_lag1 (IC +0.0583, Spread +0.157%)
+    features["rsi_inv_lag1"] = pd.Series(-rsi, index=df.index).shift(1).clip(-1.0, 1.0)
+    
+    # Rank 3: ema_slope_inv (IC +0.0574, Spread +0.236%)
     features["ema_slope_inv"] = (-ema_slope).clip(-0.05, 0.05)
-    features["bb_position_inv"] = (1.0 - bb_position).clip(0.0, 1.0)
-    features["macd_histogram_inv"] = (-macd_histogram_norm).clip(-0.01, 0.01)
+    
+    # Rank 4: price_vs_ema_inv (IC +0.0574, Spread +0.236%)
     features["price_vs_ema_inv"] = (-price_vs_ema).clip(-0.10, 0.10)
+    
+    # Rank 5: ema_slope_inv_ma3 (IC +0.0561, Spread +0.193%)
+    features["ema_slope_inv_ma3"] = features["ema_slope_inv"].rolling(3).mean()
+    
+    # Rank 6: bb_position_inv_ma3 (IC +0.0555, Spread +0.145%)
+    bb_pos_inv = (1.0 - bb_position).clip(0.0, 1.0)
+    features["bb_position_inv_ma3"] = pd.Series(bb_pos_inv, index=df.index).rolling(3).mean()
+    
+    # Rank 7: ema_slope_inv_lag1 (IC +0.0547, Spread +0.192%)
+    features["ema_slope_inv_lag1"] = features["ema_slope_inv"].shift(1)
+    
+    # Rank 8: volatility_shift_ma3 (IC +0.0520, Spread +0.248%) 🔥 BEST SPREAD!
+    vol_shift = volatility_shift.clip(0.5, 2.0)
+    features["volatility_shift_ma3"] = pd.Series(vol_shift, index=df.index).rolling(3).mean()
+    
+    # Rank 9: rsi_inv (IC +0.0512, Spread +0.144%)
     features["rsi_inv"] = (-rsi).clip(-1.0, 1.0)
+    
+    # Rank 10: volatility_shift_lag1 (IC +0.0508, Spread +0.182%)
+    features["volatility_shift_lag1"] = pd.Series(vol_shift, index=df.index).shift(1)
+    
+    # Rank 11: bb_position_inv (IC +0.0486, Spread +0.148%)
+    features["bb_position_inv"] = bb_pos_inv
+    
+    # Rank 12: volatility_shift (IC +0.0459, Spread +0.138%)
+    features["volatility_shift"] = vol_shift
 
     # Fill NaN with 0.0 (from lookback periods)
     features = features.fillna(0.0)

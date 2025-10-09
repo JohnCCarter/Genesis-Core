@@ -1,6 +1,31 @@
 {
   "description": "Validation configuration for production-grade model selection",
-  "version": "1.0.0",
+  "version": "2.0.0",
+  "last_updated": "2025-10-09",
+  "ic_metrics": {
+    "min_ic": 0.03,
+    "min_icir": 0.5,
+    "min_worst_case_ic": 0.01,
+    "min_pct_positive_periods": 60.0,
+    "max_rolling_std": 0.1,
+    "min_t_stat": 2.0,
+    "description": "Information Coefficient requirements (industry standard)"
+  },
+  "quintile_analysis": {
+    "min_q5_minus_q1_spread": 0.005,
+    "min_q5_minus_q1_annualized": 0.5,
+    "require_monotonic": true,
+    "min_rank_correlation": 0.7,
+    "max_p_value": 0.05,
+    "description": "Quintile performance requirements"
+  },
+  "multiple_testing": {
+    "fdr_method": "benjamini-hochberg",
+    "fdr_alpha": 0.05,
+    "max_features_tested": 50,
+    "bonferroni_for_final_selection": true,
+    "description": "False Discovery Rate control for feature selection"
+  },
   "purged_wfcv": {
     "n_splits": 6,
     "train_ratio": 0.6,

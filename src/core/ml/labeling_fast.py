@@ -201,6 +201,6 @@ def generate_adaptive_triple_barrier_labels_fast(
     )
 
     # Convert back to list with None
-    labels = [None if l == -1 else int(l) for l in labels_np]
+    labels = [None if label == -1 else int(label) for label in labels_np]
 
     return labels

@@ -122,9 +122,9 @@ def main():
     X = aligned_features[feature_cols].values
 
     # Filter None labels
-    valid_mask = np.array([l is not None for l in aligned_labels])
+    valid_mask = np.array([label is not None for label in aligned_labels])
     X = X[valid_mask]
-    y_true = np.array([int(l) for l in aligned_labels if l is not None])
+    y_true = np.array([int(label) for label in aligned_labels if label is not None])
     regimes_valid = aligned_regimes[valid_mask]
 
     # Split train/val/test (same as training: 60/20/20)
@@ -174,7 +174,7 @@ def main():
         # Calculate metrics
         try:
             auc = roc_auc_score(y_regime, proba_regime)
-        except:
+        except Exception:
             auc = 0.5  # Single class
 
         acc = accuracy_score(y_regime, (proba_regime > 0.5).astype(int))

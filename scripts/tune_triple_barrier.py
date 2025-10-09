@@ -124,7 +124,7 @@ def evaluate_barrier_config(
 
     # Calculate coverage
     total = len(labels)
-    valid = sum(1 for l in labels if l is not None)
+    valid = sum(1 for label in labels if label is not None)
     coverage = valid / total if total > 0 else 0.0
 
     # Align and filter
@@ -133,12 +133,12 @@ def evaluate_barrier_config(
     y = np.array(labels[start_idx:end_idx])
 
     nan_mask = X.isna().any(axis=1)
-    valid_label_mask = np.array([l is not None for l in y])
+    valid_label_mask = np.array([label is not None for label in y])
     combined_mask = ~nan_mask & valid_label_mask
 
     X = X[combined_mask]
     y = y[combined_mask]
-    y = np.array([int(l) for l in y], dtype=int)
+    y = np.array([int(label) for label in y], dtype=int)
 
     if len(X) < 100:
         return {"error": "insufficient_data"}

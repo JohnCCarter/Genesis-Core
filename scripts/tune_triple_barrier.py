@@ -31,6 +31,7 @@ from core.ml.labeling import (
     align_features_with_labels,
     generate_adaptive_triple_barrier_labels,
 )
+from core.utils.data_loader import load_features
 
 # Try Numba for 2000× speedup
 try:
@@ -43,10 +44,10 @@ except ImportError:
 
 def load_data(symbol: str, timeframe: str):
     """Load features and candles."""
-    features_path = Path(f"data/features/{symbol}_{timeframe}_features.parquet")
+    # Load features with smart format selection (Feather > Parquet)
+    features_df = load_features(symbol, timeframe)
+    
     candles_path = Path(f"data/candles/{symbol}_{timeframe}.parquet")
-
-    features_df = pd.read_parquet(features_path)
     candles_df = pd.read_parquet(candles_path)
 
     # Remove timestamp

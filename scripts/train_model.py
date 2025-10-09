@@ -27,6 +27,7 @@ from core.ml.labeling import (
     generate_labels,
     generate_triple_barrier_labels,
 )
+from core.utils.data_loader import load_features
 
 # Try to use fast Numba implementation if available
 try:
@@ -50,19 +51,8 @@ def load_features_and_prices(
     Returns:
         Tuple of (features_df, close_prices, candles_df)
     """
-    # Try Feather first (2-5× faster), fall back to Parquet
-    feather_path = Path("data/features") / f"{symbol}_{timeframe}_features.feather"
-    parquet_path = Path("data/features") / f"{symbol}_{timeframe}_features.parquet"
-
-    if feather_path.exists():
-        features_df = pd.read_feather(feather_path)
-    elif parquet_path.exists():
-        features_df = pd.read_parquet(parquet_path)
-    else:
-        raise FileNotFoundError(f"Features file not found: {feather_path} or {parquet_path}")
-
-    if features_df.empty:
-        raise ValueError("Features dataframe is empty")
+    # Load features with smart format selection (Feather > Parquet)
+    features_df = load_features(symbol, timeframe)
 
     # Extract close prices from candles (needed for labeling)
     candles_path = Path("data/candles") / f"{symbol}_{timeframe}.parquet"

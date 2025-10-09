@@ -189,7 +189,9 @@ def main():
         if not candles_path.exists():
             raise FileNotFoundError(f"Candles file not found: {candles_path}")
 
-        features_df = pd.read_parquet(features_path)
+        from core.utils.data_loader import load_features
+        
+        features_df = load_features(symbol, timeframe)
         candles_df = pd.read_parquet(candles_path)
         close_prices = candles_df["close"].tolist()
 

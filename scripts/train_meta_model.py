@@ -165,8 +165,10 @@ def main():
         print("[HINT] Run: python scripts/generate_meta_labels.py first")
         sys.exit(1)
 
-    print(f"[LOAD] {features_path}")
-    features_df = pd.read_parquet(features_path)
+    from core.utils.data_loader import load_features
+    
+    print(f"[LOAD] Loading features...")
+    features_df = load_features(args.symbol, args.timeframe)
 
     print(f"[LOAD] {meta_labels_path}")
     meta_labels_df = pd.read_parquet(meta_labels_path)

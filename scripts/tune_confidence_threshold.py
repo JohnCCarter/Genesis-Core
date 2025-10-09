@@ -35,8 +35,9 @@ def load_model(model_path: str) -> dict:
 
 def load_features(symbol: str, timeframe: str) -> pd.DataFrame:
     """Load features."""
-    features_path = Path(f"data/features/{symbol}_{timeframe}_features.parquet")
-    features_df = pd.read_parquet(features_path)
+    from core.utils.data_loader import load_features as load_features_base
+    
+    features_df = load_features_base(symbol, timeframe)
 
     # Remove timestamp
     numeric_cols = features_df.select_dtypes(include=[np.number]).columns

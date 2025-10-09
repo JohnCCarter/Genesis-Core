@@ -56,18 +56,10 @@ def main():
     print(f"\n[LOAD] Model: {args.model}")
     model = load_model(Path(args.model))
 
-    # Load features
-    feather_path = Path(f"data/features/{args.symbol}_{args.timeframe}_features.feather")
-    parquet_path = Path(f"data/features/{args.symbol}_{args.timeframe}_features.parquet")
-
-    if feather_path.exists():
-        features_df = pd.read_feather(feather_path)
-    elif parquet_path.exists():
-        features_df = pd.read_parquet(parquet_path)
-    else:
-        print("[ERROR] Features not found")
-        sys.exit(1)
-
+    # Load features with smart format selection (Feather > Parquet)
+    from core.utils.data_loader import load_features
+    
+    features_df = load_features(args.symbol, args.timeframe)
     print(f"[LOAD] Features: {len(features_df)} samples")
 
     # Load candles for regime detection

@@ -20,18 +20,18 @@ from sklearn.linear_model import LogisticRegression
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+from core.utils.data_loader import load_features
+
 
 def load_features_and_prices(symbol: str, timeframe: str):
     """Load features and price data (duplicated from train_model.py)."""
-    features_path = Path(f"data/features/{symbol}_{timeframe}_features.parquet")
+    # Load features with smart format selection (Feather > Parquet)
+    features_df = load_features(symbol, timeframe)
+    
     candles_path = Path(f"data/candles/{symbol}_{timeframe}.parquet")
-
-    if not features_path.exists():
-        raise FileNotFoundError(f"Features not found: {features_path}")
     if not candles_path.exists():
         raise FileNotFoundError(f"Candles not found: {candles_path}")
 
-    features_df = pd.read_parquet(features_path)
     candles_df = pd.read_parquet(candles_path)
     close_prices = candles_df["close"].tolist()
 

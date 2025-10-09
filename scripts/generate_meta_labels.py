@@ -164,8 +164,10 @@ def main():
         print("[HINT] Run: python scripts/fetch_historical.py first")
         sys.exit(1)
 
-    print(f"[LOAD] Loading {features_path}")
-    features_df = pd.read_parquet(features_path)
+    from core.utils.data_loader import load_features
+    
+    print(f"[LOAD] Loading features...")
+    features_df = load_features(args.symbol, args.timeframe)
 
     print(f"[LOAD] Loading {candles_path}")
     candles_df = pd.read_parquet(candles_path)

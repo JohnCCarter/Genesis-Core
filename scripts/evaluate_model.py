@@ -149,15 +149,13 @@ def main():
         model_json = load_trained_model(model_path)
 
         print(f"[DATA] Loading features and candles for {symbol} {timeframe}")
-        features_path = Path("data/features") / f"{symbol}_{timeframe}_features.parquet"
+        from core.utils.data_loader import load_features
+
+        features_df = load_features(symbol, timeframe)
         candles_path = Path("data/candles") / f"{symbol}_{timeframe}.parquet"
 
-        if not features_path.exists():
-            raise FileNotFoundError(f"Features file not found: {features_path}")
         if not candles_path.exists():
             raise FileNotFoundError(f"Candles file not found: {candles_path}")
-
-        features_df = pd.read_parquet(features_path)
         candles_df = pd.read_parquet(candles_path)
         close_prices = candles_df["close"].tolist()
 

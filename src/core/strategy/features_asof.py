@@ -258,4 +258,5 @@ def extract_features(
         if asof_bar >= total_bars:
             asof_bar = total_bars - 1
             
-        return _extract_asof(candles_dict, aso
+        return _extract_asof(candles_dict, asof_bar)
+

@@ -22,6 +22,7 @@ from core.ml.calibration import apply_calibration_from_params, load_calibration_
 from core.ml.decision_matrix import ChampionDecisionMatrix, ModelMetrics
 from core.ml.evaluation import generate_evaluation_report
 from core.ml.labeling import align_features_with_labels, generate_labels
+from core.ml.visualization import create_champion_summary, create_radar_chart
 from core.strategy.prob_model import predict_proba_for
 
 
@@ -395,6 +396,15 @@ def main():
     parser.add_argument("--lookahead", type=int, default=10, help="Lookahead bars for evaluation")
     parser.add_argument("--threshold", type=float, default=0.0, help="Price change threshold %")
     parser.add_argument("--output", type=str, default="results/champion", help="Output directory")
+    parser.add_argument(
+        "--visualize",
+        action="store_true",
+        default=True,
+        help="Generate visualization charts (default: True)",
+    )
+    parser.add_argument(
+        "--no-visualize", dest="visualize", action="store_false", help="Skip visualization"
+    )
 
     args = parser.parse_args()
 
@@ -489,6 +499,43 @@ def main():
         output_dir = Path(args.output)
         report_path = output_dir / f"{symbol}_{timeframe}_champion_report.json"
         generate_champion_report(comparison_results, report_path)
+
+        # Generate visualizations
+        if args.visualize and args.metric == "decision_matrix":
+            print("\n[VIZ] Generating visualizations...")
+            try:
+                # Extract normalized metrics for visualization
+                models_normalized = {}
+                for _, row in comparison_results["ranking_df"].iterrows():
+                    model_name = row["model"]
+                    # Get normalized values for key metrics
+                    models_normalized[model_name] = {
+                        metric: row[metric] for metric in profile_weights.keys() if metric in row
+                    }
+
+                # 1. Radar chart
+                radar_path = output_dir / f"{symbol}_{timeframe}_radar_comparison.png"
+                create_radar_chart(
+                    models_normalized,
+                    list(profile_weights.keys()),
+                    radar_path,
+                    title=f"Model Comparison - {symbol} {timeframe} ({args.profile} profile)",
+                )
+                print(f"   ✓ Radar chart: {radar_path}")
+
+                # 2. Champion summary (comprehensive)
+                summary_path = output_dir / f"{symbol}_{timeframe}_champion_summary.png"
+                create_champion_summary(
+                    comparison_results["ranking_df"],
+                    profile_weights,
+                    comparison_results["champion_name"],
+                    summary_path,
+                )
+                print(f"   ✓ Champion summary: {summary_path}")
+
+            except Exception as e:
+                print(f"   ⚠ Visualization failed: {e}")
+                print("   (Report still saved successfully)")
 
         # Print summary
         print("\n" + "=" * 80)

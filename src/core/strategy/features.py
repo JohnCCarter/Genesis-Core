@@ -182,32 +182,22 @@ def extract_features(
         price_vs_ema_clipped = 0.0
 
     feats: dict[str, float] = {
-        # === ORIGINAL 3 ===
-        "bb_position": _clip(bb_position, 0.0, 1.0),
-        "rsi": _clip(rsi_latest, -1.0, 1.0),
-        "trend_confluence": _clip(trend_conf_latest, -1.0, 1.0),
-        # === FVG-DERIVED (Testing with IC) ===
-        "momentum_displacement_z": _clip(mom_disp, -3.0, 3.0),
-        "price_stretch_z": _clip(price_stretch, -3.0, 3.0),
-        "volatility_shift": _clip(vol_shift_latest, 0.5, 2.0),
-        "volume_anomaly_z": _clip(vol_anomaly, -3.0, 3.0),
-        "regime_persistence": _clip(regime_persist_latest, -1.0, 1.0),
-        "price_reversion_potential": _clip(price_reversion_latest, -3.0, 0.0),
-        # === NEW CLASSICAL INDICATORS ===
-        "ema_slope": ema_slope_clipped,
-        "adx": _clip(adx_latest, 0.0, 1.0),
-        "atr_pct": _clip(atr_pct, 0.0, 0.10),
-        "macd_histogram": _clip(macd_histogram_norm, -0.01, 0.01),
-        "volume_ratio": _clip(volume_ratio_clipped, 0.1, 5.0),
-        "price_vs_ema": price_vs_ema_clipped,
+        # === TOP 6 IC-SELECTED FEATURES (FDR p < 0.05) ===
+        # Inverted features for positive IC correlation (mean reversion logic)
+        "volatility_shift": _clip(vol_shift_latest, 0.5, 2.0),  # +0.0447 IC ✅
+        "ema_slope_inv": _clip(-ema_slope_clipped, -0.05, 0.05),  # -0.0497 → +0.0497
+        "bb_position_inv": _clip(1.0 - bb_position, 0.0, 1.0),  # -0.0489 → +0.0489
+        "macd_histogram_inv": _clip(-macd_histogram_norm, -0.01, 0.01),  # -0.0485 → +0.0485
+        "price_vs_ema_inv": _clip(-price_vs_ema_clipped, -0.10, 0.10),  # -0.0445 → +0.0445
+        "rsi_inv": _clip(-rsi_latest, -1.0, 1.0),  # -0.0375 → +0.0375
     }
 
     meta: dict[str, Any] = {
         "versions": {
             **((cfg.get("features") or {}).get("versions") or {}),
-            "features_v11": True,  # v11: Expanded feature set för IC testing
+            "features_v12_ic_selected": True,  # v12: IC-selected + inverted for positive correlation
         },
         "reasons": [],
-        "feature_count": len(feats),  # 15 features total
+        "feature_count": len(feats),  # 6 IC-selected features (all positive IC)
     }
     return feats, meta

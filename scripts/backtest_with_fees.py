@@ -62,9 +62,7 @@ def simulate_predictions(features_df: pd.DataFrame, model_data: dict) -> np.ndar
     return predictions
 
 
-def calculate_forward_returns(
-    close_prices: pd.Series, horizon: int = 10
-) -> np.ndarray:
+def calculate_forward_returns(close_prices: pd.Series, horizon: int = 10) -> np.ndarray:
     """Calculate forward returns for given horizon."""
     returns = close_prices.pct_change(horizon).shift(-horizon)
     return returns.values
@@ -138,13 +136,15 @@ def backtest_with_fees(
         q_net_ret = q_gross_ret - round_trip_cost  # Assume all trades executed
         q_count = q_mask.sum()
 
-        quintile_stats.append({
-            "quintile": q + 1,
-            "count": int(q_count),
-            "gross_return": float(q_gross_ret),
-            "net_return": float(q_net_ret),
-            "profitable": q_net_ret > 0,
-        })
+        quintile_stats.append(
+            {
+                "quintile": q + 1,
+                "count": int(q_count),
+                "gross_return": float(q_gross_ret),
+                "net_return": float(q_net_ret),
+                "profitable": q_net_ret > 0,
+            }
+        )
 
     # Q5-Q1 spread (fees-aware)
     if len(quintile_stats) >= 5:
@@ -177,7 +177,11 @@ def backtest_with_fees(
         "impact": {
             "cost_per_trade": float(round_trip_cost),
             "total_drag": float(gross_cum_ret - net_cum_ret),
-            "drag_pct": float((gross_cum_ret - net_cum_ret) / gross_cum_ret * 100) if gross_cum_ret != 0 else 0,
+            "drag_pct": (
+                float((gross_cum_ret - net_cum_ret) / gross_cum_ret * 100)
+                if gross_cum_ret != 0
+                else 0
+            ),
         },
         "quintiles": quintile_stats,
         "q5_q1_spread_net": float(q5_q1_spread_net),
@@ -284,9 +288,7 @@ def main():
 
     try:
         # Load model and data
-        model_data, features_df = load_model_and_data(
-            args.model, args.symbol, args.timeframe
-        )
+        model_data, features_df = load_model_and_data(args.model, args.symbol, args.timeframe)
 
         # Get predictions
         predictions = simulate_predictions(features_df, model_data)
@@ -332,10 +334,10 @@ def main():
     except Exception as e:
         print(f"\n[ERROR] {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 
 
 if __name__ == "__main__":
     sys.exit(main())
-

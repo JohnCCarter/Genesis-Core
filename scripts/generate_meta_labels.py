@@ -166,7 +166,7 @@ def main():
 
     from core.utils.data_loader import load_features
 
-    print(f"[LOAD] Loading features...")
+    print("[LOAD] Loading features...")
     features_df = load_features(args.symbol, args.timeframe)
 
     print(f"[LOAD] Loading {candles_path}")

@@ -175,4 +175,3 @@ class TestMetricHeatmap:
 
         with pytest.raises(ValueError, match="Empty"):
             create_metric_heatmap(df, ["auc"])
-

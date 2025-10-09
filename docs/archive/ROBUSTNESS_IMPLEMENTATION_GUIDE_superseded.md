@@ -1,4 +1,5 @@
 # ROBUSTNESS IMPLEMENTATION GUIDE
+
 ## Eliminera Falska Champions & Säkerställ Stabil Production
 
 **Skapad:** 2025-10-09  
@@ -10,6 +11,7 @@
 ## 📋 Executive Summary
 
 Nuvarande champion selection saknar **kritiska robustness-checks** som kan leda till:
+
 - Falska champions (overfit på träningsdata)
 - Instabila modeller (fungerar en månad, failar nästa)
 - Dålig live-prestanda (backtest ≠ production)
@@ -22,6 +24,7 @@ Nuvarande champion selection saknar **kritiska robustness-checks** som kan leda 
 ## ⚠️ PROBLEM: Nuvarande Gaps
 
 ### 1. Träning och Evaluation på Samma Data
+
 ```python
 # NUVARANDE PROBLEM:
 train_model.py → använder ALL data för training
@@ -30,6 +33,7 @@ select_champion.py → evaluerar på SAMMA data
 ```
 
 ### 2. Ingen Temporal Validation
+
 ```python
 # Modell tränad på Q1 2024 data
 # Används i Q2 2024 → prestanda okänd
@@ -37,6 +41,7 @@ select_champion.py → evaluerar på SAMMA data
 ```
 
 ### 3. Ingen Stability Check
+
 ```python
 # Modell kan vara "lucky" på just denna data
 # Inga checks för konsistent prestanda över tid
@@ -44,6 +49,7 @@ select_champion.py → evaluerar på SAMMA data
 ```
 
 ### 4. Ingen Production Feedback Loop
+
 ```python
 # Ingen jämförelse backtest vs live
 # Ingen drift detection
@@ -59,6 +65,7 @@ select_champion.py → evaluerar på SAMMA data
 ## LÖSNING 1: Walk-Forward Validation
 
 ### Koncept
+
 Träna på period N, testa på period N+1. Upprepa framåt i tiden för att säkerställa temporal robustness.
 
 ### Implementation
@@ -93,18 +100,18 @@ from core.utils.data_loader import load_features
 def create_temporal_splits(n_samples, n_splits=5, train_ratio=0.6):
     """
     Skapa överlappande tränings- och testfönster över tid.
-    
+
     Args:
         n_samples: Total antal samples
         n_splits: Antal valideringsperioder
         train_ratio: Andel av varje window för training
-        
+
     Returns:
         List of (train_start, train_end, test_start, test_end) tuples
-        
+
     Example:
         n_samples=1000, n_splits=5, train_ratio=0.6
-        
+
         Split 1: Train [0:120],    Test [120:200]
         Split 2: Train [100:220],  Test [220:300]
         Split 3: Train [200:320],  Test [320:400]
@@ -112,23 +119,23 @@ def create_temporal_splits(n_samples, n_splits=5, train_ratio=0.6):
     """
     window_size = n_samples // n_splits
     overlap = window_size // 2
-    
+
     splits = []
     for i in range(n_splits):
         start = i * overlap
         end = start + window_size
-        
+
         if end > n_samples:
             break
-        
+
         train_size = int(window_size * train_ratio)
         train_end = start + train_size
-        
+
         if train_end >= end:
             continue
-            
+
         splits.append((start, train_end, train_end, end))
-    
+
     return splits
 
 
@@ -138,26 +145,26 @@ def train_and_evaluate_split(X, y, train_idx, test_idx, feature_names):
     y_train = y[train_idx[0]:train_idx[1]]
     X_test = X[test_idx[0]:test_idx[1]]
     y_test = y[test_idx[0]:test_idx[1]]
-    
+
     # Handle NaN
     train_mask = ~np.isnan(X_train).any(axis=1) & ~np.isnan(y_train)
     test_mask = ~np.isnan(X_test).any(axis=1) & ~np.isnan(y_test)
-    
+
     X_train = X_train[train_mask]
     y_train = y_train[train_mask]
     X_test = X_test[test_mask]
     y_test = y_test[test_mask]
-    
+
     if len(X_train) < 50 or len(X_test) < 20:
         return None
-    
+
     # Train buy model
     buy_model = LogisticRegression(max_iter=1000, random_state=42)
     buy_model.fit(X_train, y_train)
-    
+
     # Evaluate
     y_pred_proba = buy_model.predict_proba(X_test)[:, 1]
-    
+
     return {
         "auc": roc_auc_score(y_test, y_pred_proba),
         "accuracy": accuracy_score(y_test, y_pred_proba > 0.5),
@@ -170,10 +177,10 @@ def calculate_stability_metrics(results):
     """Beräkna stability metrics från walk-forward results."""
     if not results:
         return None
-        
+
     aucs = [r["auc"] for r in results]
     accs = [r["accuracy"] for r in results]
-    
+
     return {
         "mean_auc": np.mean(aucs),
         "std_auc": np.std(aucs),
@@ -194,53 +201,53 @@ def main():
     parser.add_argument("--n-splits", type=int, default=5, help="Number of temporal splits")
     parser.add_argument("--lookahead", type=int, default=10, help="Lookahead bars")
     parser.add_argument("--output", type=str, default="results/validation", help="Output dir")
-    
+
     args = parser.parse_args()
-    
+
     print(f"[WALK-FORWARD] Validating {args.symbol} {args.timeframe}")
     print(f"[CONFIG] {args.n_splits} splits, lookahead={args.lookahead}")
-    
+
     # Load data
     print("\n[DATA] Loading features and candles...")
     features_df = load_features(args.symbol, args.timeframe)
-    
+
     candles_path = Path("data/candles") / f"{args.symbol}_{args.timeframe}.parquet"
     candles_df = pd.read_parquet(candles_path)
     close_prices = candles_df["close"].tolist()
-    
+
     # Generate labels
     print("[LABELS] Generating labels...")
     labels = generate_labels(close_prices, args.lookahead, threshold_pct=0.0)
-    
+
     # Align
     start_idx, end_idx = align_features_with_labels(len(features_df), labels)
     features_aligned = features_df.iloc[start_idx:end_idx]
     labels_aligned = np.array(labels[start_idx:end_idx])
-    
+
     # Extract features
     feature_cols = [c for c in features_aligned.columns if c != "timestamp"]
     X = features_aligned[feature_cols].values
     y = labels_aligned
-    
+
     print(f"[DATA] Total samples: {len(X)}")
-    
+
     # Create temporal splits
     splits = create_temporal_splits(len(X), n_splits=args.n_splits)
     print(f"\n[SPLITS] Created {len(splits)} temporal splits")
-    
+
     # Walk-forward validation
     results = []
     for i, (train_start, train_end, test_start, test_end) in enumerate(splits, 1):
         print(f"\n[SPLIT {i}/{len(splits)}] Train: [{train_start}:{train_end}], "
               f"Test: [{test_start}:{test_end}]")
-        
+
         result = train_and_evaluate_split(
             X, y,
             (train_start, train_end),
             (test_start, test_end),
             feature_cols
         )
-        
+
         if result:
             print(f"  AUC: {result['auc']:.4f}, "
                   f"Accuracy: {result['accuracy']:.4f}, "
@@ -248,15 +255,15 @@ def main():
             results.append(result)
         else:
             print("  SKIPPED (insufficient data)")
-    
+
     # Calculate stability metrics
     print("\n" + "=" * 80)
     print("WALK-FORWARD VALIDATION RESULTS")
     print("=" * 80)
-    
+
     if results:
         stability = calculate_stability_metrics(results)
-        
+
         print(f"\nPerformance Metrics:")
         print(f"  Mean AUC:       {stability['mean_auc']:.4f}")
         print(f"  Std AUC:        {stability['std_auc']:.4f}")
@@ -265,12 +272,12 @@ def main():
         print(f"\nStability Metrics:")
         print(f"  Stability Score: {stability['stability_score']:.4f} (higher is better)")
         print(f"  Consistency:     {stability['consistency']:.4f}")
-        
+
         # Assessment
         print(f"\n{'='*80}")
         print("ASSESSMENT:")
         print(f"{'='*80}")
-        
+
         if stability['stability_score'] > 0.85:
             print("✓ EXCELLENT: Model is highly stable across time periods")
         elif stability['stability_score'] > 0.70:
@@ -279,18 +286,18 @@ def main():
             print("⚠ WARNING: Model stability is marginal")
         else:
             print("✗ FAIL: Model is too unstable for production")
-        
+
         if stability['worst_case_auc'] < 0.55:
             print("✗ FAIL: Worst case performance is too poor")
         elif stability['worst_case_auc'] < 0.65:
             print("⚠ WARNING: Worst case performance is concerning")
         else:
             print("✓ PASS: Worst case performance is acceptable")
-        
+
         # Save results
         output_dir = Path(args.output)
         output_dir.mkdir(parents=True, exist_ok=True)
-        
+
         output_path = output_dir / f"{args.symbol}_{args.timeframe}_walk_forward.json"
         with open(output_path, "w") as f:
             json.dump({
@@ -300,7 +307,7 @@ def main():
                 "stability_metrics": stability,
                 "per_split_results": results,
             }, f, indent=2)
-        
+
         print(f"\n[SAVED] Results saved to: {output_path}")
     else:
         print("✗ FAIL: No valid results obtained")
@@ -369,6 +376,7 @@ ASSESSMENT:
 ## LÖSNING 2: Holdout Test Set
 
 ### Koncept
+
 Reservera 20% av data som "holdout" som ALDRIG används i training. Final champion evaluation görs ENDAST på denna data.
 
 ### Implementation
@@ -387,35 +395,35 @@ def split_data_chronological_with_holdout(
 ) -> tuple:
     """
     Dela data kronologiskt i train/val/holdout.
-    
+
     VIKTIGT: Holdout data RÜHRS INTE under training!
     Används ENDAST för final champion evaluation.
-    
+
     Args:
         features: Feature matrix
         labels: Label array
         train_ratio: Andel för training (default 0.6)
         val_ratio: Andel för validation (default 0.2)
-        
+
     Returns:
         X_train, X_val, X_holdout, y_train, y_val, y_holdout
     """
     n = len(features)
     train_end = int(n * train_ratio)
     val_end = int(n * (train_ratio + val_ratio))
-    
+
     X_train = features[:train_end]
     X_val = features[train_end:val_end]
     X_holdout = features[val_end:]  # HOLY GRAIL - DO NOT TOUCH!
-    
+
     y_train = labels[:train_end]
     y_val = labels[train_end:val_end]
     y_holdout = labels[val_end:]
-    
+
     print(f"[SPLIT] Train: {len(X_train)} samples")
     print(f"[SPLIT] Validation: {len(X_val)} samples")
     print(f"[SPLIT] Holdout: {len(X_holdout)} samples (UNTOUCHED)")
-    
+
     return X_train, X_val, X_holdout, y_train, y_val, y_holdout
 
 
@@ -457,13 +465,13 @@ def load_holdout_indices(model_path: Path):
     """Ladda holdout indices från model training."""
     # Holdout indices sparas vid training
     holdout_file = model_path.parent / f"{model_path.stem}_holdout_indices.json"
-    
+
     if not holdout_file.exists():
         raise FileNotFoundError(
             f"Holdout indices not found: {holdout_file}\n"
             "Model must be trained with holdout split!"
         )
-    
+
     with open(holdout_file) as f:
         return json.load(f)
 
@@ -471,41 +479,41 @@ def load_holdout_indices(model_path: Path):
 def evaluate_on_holdout(symbol, timeframe, model_path):
     """Evaluera modell på holdout data."""
     print(f"[HOLDOUT] Evaluating {model_path.name} on UNSEEN holdout data")
-    
+
     # Load model
     with open(model_path) as f:
         model_json = json.load(f)
-    
+
     # Recreate sklearn model
     buy_model = LogisticRegression()
     buy_model.coef_ = np.array([model_json["buy"]["w"]])
     buy_model.intercept_ = np.array([model_json["buy"]["b"]])
     buy_model.classes_ = np.array([0, 1])
-    
+
     # Load holdout data
     holdout_info = load_holdout_indices(model_path)
     start_idx = holdout_info["start"]
     end_idx = holdout_info["end"]
-    
+
     # Load features
     features_df = load_features(symbol, timeframe)
     feature_cols = model_json["schema"]
-    
+
     X_holdout = features_df.iloc[start_idx:end_idx][feature_cols].values
-    
+
     # Load labels (måste regenereras med samma params)
     # ... (load candles and generate labels)
-    
+
     # Evaluate
     y_pred_proba = buy_model.predict_proba(X_holdout)[:, 1]
-    
+
     results = {
         "auc": roc_auc_score(y_holdout, y_pred_proba),
         "accuracy": accuracy_score(y_holdout, y_pred_proba > 0.5),
         "log_loss": log_loss(y_holdout, y_pred_proba),
         "n_samples": len(X_holdout),
     }
-    
+
     print("\n" + "=" * 80)
     print("HOLDOUT EVALUATION (TRUE PERFORMANCE)")
     print("=" * 80)
@@ -513,7 +521,7 @@ def evaluate_on_holdout(symbol, timeframe, model_path):
     print(f"Accuracy: {results['accuracy']:.4f}")
     print(f"Log Loss: {results['log_loss']:.4f}")
     print(f"Samples:  {results['n_samples']}")
-    
+
     return results
 
 
@@ -522,17 +530,17 @@ def main():
     parser.add_argument("--symbol", required=True)
     parser.add_argument("--timeframe", required=True)
     parser.add_argument("--model", required=True, help="Path to model JSON")
-    
+
     args = parser.parse_args()
-    
+
     model_path = Path(args.model)
     results = evaluate_on_holdout(args.symbol, args.timeframe, model_path)
-    
+
     # Save
     output_path = model_path.parent / f"{model_path.stem}_holdout_results.json"
     with open(output_path, "w") as f:
         json.dump(results, f, indent=2)
-    
+
     print(f"\n[SAVED] {output_path}")
 
 
@@ -552,7 +560,7 @@ if __name__ == "__main__":
 @dataclass
 class ModelMetrics:
     """Container for all model evaluation metrics."""
-    
+
     # Existing metrics
     auc: float
     accuracy: float
@@ -564,7 +572,7 @@ class ModelMetrics:
     avg_trade_duration: float
     num_trades: int
     consistency: float
-    
+
     # NYA STABILITY METRICS
     performance_std: float = 0.0  # Varians över walk-forward splits
     worst_case_auc: float = 0.5  # Värsta perioden
@@ -582,21 +590,21 @@ class ModelMetrics:
       "weights": {
         "auc": 0.15,
         "sharpe_ratio": 0.15,
-        "profit_factor": 0.10,
-        "max_drawdown": 0.20,
+        "profit_factor": 0.1,
+        "max_drawdown": 0.2,
         "stability_score": 0.25,
-        "worst_case_auc": 0.10,
+        "worst_case_auc": 0.1,
         "consistency": 0.05
       }
     },
     "ultra_conservative": {
       "description": "Maximum safety - prioritizes stability above all",
       "weights": {
-        "max_drawdown": 0.30,
+        "max_drawdown": 0.3,
         "stability_score": 0.25,
-        "worst_case_auc": 0.20,
+        "worst_case_auc": 0.2,
         "sharpe_ratio": 0.15,
-        "auc": 0.10
+        "auc": 0.1
       }
     }
   }
@@ -631,74 +639,74 @@ def calculate_live_sharpe(trades_file: Path, window_days=30):
     # Load trades
     with open(trades_file) as f:
         trades = json.load(f)
-    
+
     # Filter recent trades
     cutoff = datetime.now() - timedelta(days=window_days)
     recent_trades = [
-        t for t in trades 
+        t for t in trades
         if datetime.fromisoformat(t["timestamp"]) > cutoff
     ]
-    
+
     if len(recent_trades) < 10:
         return None
-    
+
     # Calculate returns
     returns = [t["pnl"] / t["capital"] for t in recent_trades]
-    
+
     # Sharpe ratio (annualized)
     mean_return = np.mean(returns)
     std_return = np.std(returns)
-    
+
     if std_return == 0:
         return 0
-    
+
     # Assuming daily trading
     sharpe = (mean_return / std_return) * np.sqrt(252)
-    
+
     return sharpe
 
 
 def detect_drift(expected_metrics, live_metrics, threshold=0.30):
     """
     Detektera om modellen har drifted.
-    
+
     Args:
         expected_metrics: Metrics från backtest
         live_metrics: Metrics från live trading
         threshold: Max tillåten degradation (30% default)
-        
+
     Returns:
         dict med drift info
     """
     drift_info = {}
-    
+
     for metric_name in ["sharpe_ratio", "win_rate", "profit_factor"]:
         expected = expected_metrics.get(metric_name, 0)
         live = live_metrics.get(metric_name, 0)
-        
+
         if expected == 0:
             continue
-        
+
         degradation = abs(expected - live) / expected
-        
+
         drift_info[metric_name] = {
             "expected": expected,
             "live": live,
             "degradation": degradation,
             "drifted": degradation > threshold,
         }
-    
+
     # Overall drift assessment
     max_degradation = max(
         d["degradation"] for d in drift_info.values()
     )
-    
+
     drift_info["overall"] = {
         "max_degradation": max_degradation,
         "status": "DRIFTED" if max_degradation > threshold else "OK",
         "threshold": threshold,
     }
-    
+
     return drift_info
 
 
@@ -707,56 +715,56 @@ def main():
     parser.add_argument("--model", required=True, help="Path to model JSON")
     parser.add_argument("--trades", required=True, help="Path to live trades JSON")
     parser.add_argument("--threshold", type=float, default=0.30, help="Drift threshold")
-    
+
     args = parser.parse_args()
-    
+
     # Load expected metrics från backtest
     model_path = Path(args.model)
     metrics_path = model_path.parent / f"{model_path.stem}_metrics.json"
-    
+
     with open(metrics_path) as f:
         expected_metrics = json.load(f)
-    
+
     # Calculate live metrics
     print("[MONITOR] Calculating live performance...")
     live_sharpe = calculate_live_sharpe(Path(args.trades))
-    
+
     if live_sharpe is None:
         print("⚠ Insufficient live trades for analysis")
         return
-    
+
     live_metrics = {
         "sharpe_ratio": live_sharpe,
         # ... other live metrics
     }
-    
+
     # Detect drift
     drift_info = detect_drift(expected_metrics, live_metrics, args.threshold)
-    
+
     # Report
     print("\n" + "=" * 80)
     print("PRODUCTION DRIFT MONITORING")
     print("=" * 80)
-    
+
     for metric, info in drift_info.items():
         if metric == "overall":
             continue
-        
+
         print(f"\n{metric.replace('_', ' ').title()}:")
         print(f"  Expected (backtest): {info['expected']:.4f}")
         print(f"  Live (30d):          {info['live']:.4f}")
         print(f"  Degradation:         {info['degradation']:.2%}")
-        
+
         if info["drifted"]:
             print(f"  ⚠ WARNING: DRIFT DETECTED!")
-    
+
     # Overall assessment
     print("\n" + "=" * 80)
     print(f"OVERALL STATUS: {drift_info['overall']['status']}")
     print(f"Max Degradation: {drift_info['overall']['max_degradation']:.2%}")
     print(f"Threshold: {drift_info['overall']['threshold']:.2%}")
     print("=" * 80)
-    
+
     if drift_info['overall']['status'] == "DRIFTED":
         print("\n🚨 ALERT: MODEL DRIFT DETECTED!")
         print("Recommended actions:")
@@ -818,49 +826,49 @@ from core.utils.data_loader import load_features
 def validate_by_regime(symbol, timeframe, model_path):
     """Evaluera modell per regime."""
     print(f"[REGIME] Validating {model_path.name} across market regimes")
-    
+
     # Load data
     features_df = load_features(symbol, timeframe)
     candles_path = Path("data/candles") / f"{symbol}_{timeframe}.parquet"
     candles_df = pd.read_parquet(candles_path)
-    
+
     # Classify regimes
     regimes = classify_regime(
         candles_df["close"].values,
         candles_df["high"].values,
         candles_df["low"].values,
     )
-    
+
     # Load model and evaluate per regime
     with open(model_path) as f:
         model_json = json.load(f)
-    
+
     results = {}
-    
+
     for regime_name in ["bull", "bear", "ranging", "balanced"]:
         mask = regimes == regime_name
         n_samples = mask.sum()
-        
+
         if n_samples < 50:
             print(f"  {regime_name}: SKIPPED (only {n_samples} samples)")
             continue
-        
+
         # Evaluate on regime data
         # ... (evaluation logic)
-        
+
         results[regime_name] = {
             "auc": auc,
             "sharpe": sharpe,
             "n_samples": n_samples,
         }
-        
+
         print(f"  {regime_name}: AUC={auc:.4f}, Sharpe={sharpe:.2f}, N={n_samples}")
-    
+
     # Assessment
     print("\n" + "=" * 80)
     print("REGIME ROBUSTNESS ASSESSMENT")
     print("=" * 80)
-    
+
     if results["bear"]["sharpe"] < 0:
         print("✗ FAIL: Model loses money in bear markets!")
         print("  → NOT suitable for production")
@@ -868,12 +876,12 @@ def validate_by_regime(symbol, timeframe, model_path):
         print("⚠ WARNING: Weak bear market performance")
     else:
         print("✓ PASS: Model protects capital in bear markets")
-    
+
     if results["bull"]["sharpe"] < 1.0:
         print("⚠ WARNING: Model doesn't capitalize well on bull markets")
     else:
         print("✓ PASS: Model captures bull market opportunities")
-    
+
     return results
 
 
@@ -882,20 +890,20 @@ def main():
     parser.add_argument("--symbol", required=True)
     parser.add_argument("--timeframe", required=True)
     parser.add_argument("--model", required=True)
-    
+
     args = parser.parse_args()
-    
+
     results = validate_by_regime(
         args.symbol,
         args.timeframe,
         Path(args.model)
     )
-    
+
     # Save
     output_path = Path(args.model).parent / f"{Path(args.model).stem}_regime_validation.json"
     with open(output_path, "w") as f:
         json.dump(results, f, indent=2)
-    
+
     print(f"\n[SAVED] {output_path}")
 
 
@@ -927,6 +935,7 @@ python scripts/validate_walk_forward.py --symbol tBTCUSD --timeframe 1h
 ```
 
 **Acceptanskriterier:**
+
 - [ ] Walk-forward validation script fungerar
 - [ ] Holdout split implementerad i training
 - [ ] Minst en modell validerad med stability_score > 0.70
@@ -956,6 +965,7 @@ python scripts/validate_champion_complete.py \
 ```
 
 **Acceptanskriterier:**
+
 - [ ] Production monitoring kör varje dag
 - [ ] Drift alerts fungerar
 - [ ] Stability metrics i champion selection
@@ -995,6 +1005,7 @@ python scripts/validate_walk_forward.py \
 ```
 
 **Krav för att gå vidare:**
+
 - Stability score > 0.70
 - Worst case AUC > 0.60
 - Std AUC < 0.10
@@ -1008,6 +1019,7 @@ python scripts/validate_by_regime.py \
 ```
 
 **Krav för att gå vidare:**
+
 - Bear market Sharpe > 0 (minst break-even)
 - Bull market Sharpe > 1.0
 - Range market Sharpe > 0.3
@@ -1021,6 +1033,7 @@ python scripts/evaluate_on_holdout.py \
 ```
 
 **Krav för production:**
+
 - Holdout AUC within 10% of validation AUC
 - Holdout Sharpe > 0.8
 
@@ -1044,6 +1057,7 @@ python scripts/monitor_production_drift.py \
 ```
 
 **Alert triggers:**
+
 - Sharpe degradation > 25%
 - Win rate degradation > 20%
 - Consecutive losses > 5
@@ -1055,21 +1069,25 @@ python scripts/monitor_production_drift.py \
 ### Innan Production Launch
 
 - [ ] **Walk-forward validation genomförd**
+
   - [ ] Minst 5 splits
   - [ ] Stability score > 0.70
   - [ ] Worst case performance acceptabel
 
 - [ ] **Holdout evaluation genomförd**
+
   - [ ] Holdout performance inom 10% av validation
   - [ ] AUC > 0.65 på holdout
   - [ ] Sharpe > 0.8 på holdout
 
 - [ ] **Regime validation genomförd**
+
   - [ ] Bear market Sharpe > 0
   - [ ] Bull market kapitalisering OK
   - [ ] Range market överlevnad OK
 
 - [ ] **Production monitoring setup**
+
   - [ ] Drift detection script deployed
   - [ ] Alerts konfigurerade
   - [ ] Backup model identifierad
@@ -1082,11 +1100,13 @@ python scripts/monitor_production_drift.py \
 ### Under Production
 
 - [ ] **Daglig monitoring**
+
   - [ ] Kör drift detection
   - [ ] Review live metrics
   - [ ] Jämför mot backtest
 
 - [ ] **Veckovis review**
+
   - [ ] Analyze trade log
   - [ ] Check for regime changes
   - [ ] Validate model performance
@@ -1118,6 +1138,7 @@ python scripts/monitor_production_drift.py \
 ## 🚨 KRITISKA VARNINGAR
 
 ### 1. ALDRIG Deploy utan Validation
+
 ```
 ❌ WRONG:
 train_model.py → select_champion.py → deploy
@@ -1198,4 +1219,3 @@ Production-ready model måste ha:
 **Version:** 1.0  
 **Senast uppdaterad:** 2025-10-09  
 **Nästa review:** Vid production launch
-

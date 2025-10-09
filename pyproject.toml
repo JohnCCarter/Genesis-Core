@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "genesis-core"
-version = "0.2.0"
-description = "Genesis-Core Trading Bot with ML Pipeline"
+version = "0.5.0"
+description = "Genesis-Core Trading Bot with Enterprise ML Pipeline & Champion Selection"
 requires-python = ">=3.11"
 dependencies = [
   "fastapi>=0.116,<0.117",
@@ -35,7 +35,8 @@ ml = [
   "matplotlib>=3.7.0",
   "seaborn>=0.12.0",
   "tqdm>=4.65.0",
-  "numba>=0.62.0"
+  "numba>=0.62.0",
+  "scipy>=1.11.0"
 ]
 
 [tool.setuptools]

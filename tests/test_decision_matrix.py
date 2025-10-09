@@ -326,4 +326,3 @@ class TestEdgeCases:
         assert len(ranking) == 1
         assert ranking.iloc[0]["rank"] == 1
         assert ranking.iloc[0]["model"] == "only_model"
-

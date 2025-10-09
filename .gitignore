@@ -82,6 +82,16 @@ dev.overrides.local.json
 .secrets.baseline
 bandit-report.json
 
+# Model provenance & validation (generated, don't commit)
+**/*_provenance.json
+**/*_holdout_indices.json
+**/*_walk_forward.json
+**/*_regime_validation.json
+**/*_holdout_results.json
+
+# Championship tickets (track in results/, gitignored)
+championship_tickets/
+
 # Runtime config (SSOT) - environment specific
 config/runtime.json
 
@@ -98,27 +108,36 @@ build/
 *.temp
 .agent-locks/
 
-# Phase 3: Data files (historical candles, features, metadata)
+# Phase 3-5: Data files (historical candles, features, metadata)
 data/candles/*.parquet
 data/features/*.parquet
+data/features/*.feather
 data/metadata/*.json
+data/meta_labels/*.parquet
 
 # Keep documentation in data directories
 !data/DATA_FORMAT.md
 !data/**/README.md
 
-# Phase 3: ML Results (models, evaluations, calibrations, champion reports)
+# Phase 3-5: ML Results (models, evaluations, calibrations, champion reports)
 results/
 results/**/
 
-# Keep results documentation
+# Keep results documentation and archives
 !results/README.md
 !results/**/README.md
 !results/*.md
+!results/archive_*/
 
 # Label cache (temporary, regenerate on demand)
 cache/
 cache/**
+
+# Visualization outputs (regenerate on demand)
+**/*_radar_comparison.png
+**/*_champion_summary.png
+**/*_heatmap.png
+**/*_comparison_bars.png
 
  # Keep example files
 !.env.example

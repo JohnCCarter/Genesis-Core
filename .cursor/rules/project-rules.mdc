@@ -51,11 +51,16 @@ Genesis-Core is a Python 3.11+ FastAPI trading system with:
 2. Making changes: Use edit tools (never output code), prefer editing over creating
 3. Testing: pytest → black --check → ruff check → bandit
 4. Git: Descriptive commits (feat:/fix:/security:), update .gitignore first
+5. Documentation: ALWAYS check if README.md/TODO.md exists before creating new ones
+   - Use glob_file_search to find existing docs: **/README.md, **/TODO*.md
+   - Read existing file first, then update or create only if truly needed
+   - Prevents duplicate/conflicting documentation
 
 ## FastAPI Endpoints
 /ui (dashboard), /strategy/evaluate (pipeline), /public/candles (market data),
 /auth/check (verify auth), /paper/submit (TEST orders only), /debug/auth,
-/health, /metrics, /config/validate, /dev/overrides
+/health, /metrics, /account/wallets, /account/positions, /account/orders,
+/config/runtime, /config/runtime/validate, /config/runtime/propose
 
 ## Common Issues
 - "invalid key": Check JSON serialization consistency

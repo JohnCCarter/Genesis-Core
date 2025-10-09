@@ -83,6 +83,10 @@ Genesis-Core/
 4. **Add all necessary imports** for code to run immediately
 5. **Fix linter errors** if introduced (max 3 attempts)
 6. **Backup files** if you are not sure about the changes
+7. **Documentation: ALWAYS check if README.md/TODO.md exists before creating new ones**
+   - Use glob_file_search to find existing docs: **/README.md, **/TODO*.md
+   - Read existing file first, then update or create only if truly needed
+   - Prevents duplicate/conflicting documentation
 
 ### Testing & Validation
 1. Run tests before committing: `python -m pytest`

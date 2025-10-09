@@ -119,19 +119,17 @@ class TestLoadFeaturesAndPrices:
             features_path = data_dir / "tBTCUSD_15m_features.parquet"
             features_df.to_parquet(features_path)
 
-            with patch("scripts.train_model.Path") as mock_path:
-
-                def path_side_effect(x):
-                    if isinstance(x, str):
-                        if x.startswith("data/"):
-                            return temp_path / x
-                        return Path(x)
+            def path_side_effect(x):
+                if isinstance(x, str):
+                    if x.startswith("data/"):
+                        return temp_path / x
                     return Path(x)
+                return Path(x)
 
-                mock_path.side_effect = path_side_effect
-
-                with pytest.raises(FileNotFoundError, match="Candles file not found"):
-                    load_features_and_prices("tBTCUSD", "15m")
+            with patch("scripts.train_model.Path", side_effect=path_side_effect):
+                with patch("core.utils.data_loader.Path", side_effect=path_side_effect):
+                    with pytest.raises(FileNotFoundError, match="Candles file not found"):
+                        load_features_and_prices("tBTCUSD", "15m")
 
     def test_load_length_mismatch(self):
         """Test error when features and candles have different lengths."""
@@ -174,19 +172,17 @@ class TestLoadFeaturesAndPrices:
             features_df.to_parquet(features_path)
             candles_df.to_parquet(candles_path)
 
-            with patch("scripts.train_model.Path") as mock_path:
-
-                def path_side_effect(x):
-                    if isinstance(x, str):
-                        if x.startswith("data/"):
-                            return temp_path / x
-                        return Path(x)
+            def path_side_effect(x):
+                if isinstance(x, str):
+                    if x.startswith("data/"):
+                        return temp_path / x
                     return Path(x)
+                return Path(x)
 
-                mock_path.side_effect = path_side_effect
-
-                with pytest.raises(ValueError, match="length mismatch"):
-                    load_features_and_prices("tBTCUSD", "15m")
+            with patch("scripts.train_model.Path", side_effect=path_side_effect):
+                with patch("core.utils.data_loader.Path", side_effect=path_side_effect):
+                    with pytest.raises(ValueError, match="length mismatch"):
+                        load_features_and_prices("tBTCUSD", "15m")
 
 
 class TestGenerateTrainingLabels:

@@ -210,6 +210,24 @@ python -m pytest -q
     - Volatility Shift: 2.66e-15 (machine precision)
   - **CONCLUSION:** BB bug was ISOLATED - no other systematic errors found
   - **FRAMEWORK:** Permanent quality gate, can be rerun anytime
+- ✅ **Phase-6c:** REGIME-AWARE CALIBRATION (ML-Regime Synchronization)
+  - **PROBLEM:** ML trained on mixed regimes → mis-calibrated probabilities per regime
+    - Bear: Calibration error 0.0590 (WORST), under-confident by ~18%
+    - Bull: IC +0.0124 (p=0.66, NOT significant) - no predictive power
+  - **SOLUTION:** Regime-specific calibration (Platt scaling per regime)
+    - Bear: a=4.1452 (strong boost) → P(buy) 0.53 → 0.63 (+18%!)
+    - Bull: a=1.2429 (mild) → minimal boost
+    - Ranging: a=1.9756 (moderate) → moderate boost
+  - **IMPLEMENTATION:**
+    - Created `regime_unified.py` - EMA-based regime detection (matches analysis)
+    - Updated `evaluate_pipeline()` - detect regime BEFORE ML prediction
+    - Updated `predict_proba_for()` - apply regime-specific calibration
+    - Config: Regime-specific thresholds (bear: 0.30, bull: 0.90, ranging: 0.50)
+  - **VALIDATION:** Tested with real data across all regimes
+    - Bear: P(buy)=0.6312, Passes threshold 0.30 → TRADE EXECUTED ✅
+    - Bull: P(buy)=0.5156, Fails threshold 0.90 → BLOCKED 🚫
+    - Ranging: P(buy)=0.4793, Fails threshold 0.50 → BLOCKED 🚫
+  - **RESULT:** System now trades ONLY when (ML signal) AND (regime edge) both align!
 
 **Kvalitetsstatus:**
 - ✅ All tests passing (334 passed)

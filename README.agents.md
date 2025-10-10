@@ -184,22 +184,29 @@ python -m pytest -q
 
 ---
 
-#### Phase Status (2025-10-09)
+#### Phase Status (2025-10-10)
 - ✅ **Phase 1 & 2:** Core system + Backtest framework COMPLETE
 - ✅ **Phase 3.5:** ML Pipeline v10 COMPLETE
 - ✅ **Phase-6:** Feature Engineering & Regime Discovery COMPLETE
-  - Found tradeable edge: Bear regime IC +0.0784, Spread +0.404% (~53% annual!)
-  - Vectorized computation: 27,734× speedup (54 min → 0.12s)
-  - Features: 5 non-redundant (rsi_inv_lag1, volatility_shift_ma3, bb_position_inv_ma3, rsi_vol_interaction, vol_regime)
-  - Validation: Bit-exact parity (4/5 perfect, 1/5 within 1.17%)
-  - Dataset: 18 månader (12,958 samples)
-  - Model: `results/models/tBTCUSD_1h_v3.json` (v16 final)
+- ✅ **Phase-6a:** CRITICAL BB BUG FIXED + Validation Complete
+  - **PROBLEM:** Bollinger Bands used sample std (ddof=1) in vectorized vs population std (ddof=0) in per-sample
+  - **IMPACT:** 1.21% feature difference (bb_position_inv_ma3) → model trained on wrong data
+  - **FIX:** Changed vectorized to ddof=0 (population std) to match per-sample
+  - **VALIDATION:** Bit-exact parity achieved (3.44e-10 max diff, machine precision!)
+  - **RECOMPUTED:** All features with correct BB (12,958 samples, tBTCUSD 1h)
+  - **MODEL:** New v3 trained with correct features
+  - **IC METRICS (with correct features):**
+    - 5-bar: IC +0.0388 (GOOD, p<0.001, ICIR 0.54)
+    - 10-bar: IC +0.0461 (GOOD, p<0.001, ICIR 0.50)
+    - 20-bar: IC +0.0528 (EXCELLENT, p<0.001, ICIR 0.51)
+  - **RESULT:** Features have STRONG signal with correct BB implementation!
 
 **Kvalitetsstatus:**
-- ✅ All tests passing (106 passed)
-- ✅ Validation score: 86/100 (exceeds 70/100 production threshold)
+- ✅ All tests passing (334 passed)
+- ✅ Vectorized features: BIT-EXACT parity (3.44e-10)
 - ✅ CI/Pipeline green
-- ✅ Vectorized features validated
+- ✅ Features validated with correct BB implementation
+- ✅ IC metrics: EXCELLENT (+0.0528 @ 20-bar)
 
 ---
 

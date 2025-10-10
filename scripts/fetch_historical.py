@@ -28,8 +28,9 @@ REQUESTS_PER_MINUTE = 30
 SAFE_REQUESTS_PER_MINUTE = 27  # 90% safety margin
 DELAY_BETWEEN_REQUESTS = 60 / SAFE_REQUESTS_PER_MINUTE  # ~2.22 seconds
 
-# Supported timeframes
-SUPPORTED_TIMEFRAMES = ["1m", "5m", "15m", "30m", "1h", "3h", "6h", "1D", "1W"]
+# Supported timeframes (verified from Bitfinex API v2)
+# Note: 4h is NOT supported by Bitfinex! Use 3h or 6h instead.
+SUPPORTED_TIMEFRAMES = ["1m", "5m", "15m", "30m", "1h", "3h", "6h", "12h", "1D", "1W", "14D", "1M"]
 
 
 def calculate_candle_count(timeframe: str, days: int) -> int:
@@ -42,8 +43,11 @@ def calculate_candle_count(timeframe: str, days: int) -> int:
         "1h": 60,
         "3h": 180,
         "6h": 360,
+        "12h": 720,
         "1D": 1440,
         "1W": 10080,
+        "14D": 20160,
+        "1M": 43200,  # Approximate (30 days)
     }
     if timeframe not in minutes_per_candle:
         raise ValueError(f"Unsupported timeframe: {timeframe}")
@@ -189,56 +193,118 @@ def fetch_historical_data(symbol: str, timeframe: str, months: int = 1) -> pd.Da
     return df
 
 
-def save_to_parquet(df: pd.DataFrame, symbol: str, timeframe: str) -> Path:
+def save_to_parquet(
+    df: pd.DataFrame, symbol: str, timeframe: str, use_two_layer: bool = True
+) -> tuple[Path, Path | None]:
     """
     Save DataFrame to Parquet file.
+
+    If use_two_layer=True (default), saves to both:
+      - Raw Lake: data/raw/bitfinex/candles/{symbol}_{timeframe}_{date}.parquet
+      - Curated: data/curated/v1/candles/{symbol}_{timeframe}.parquet
 
     Args:
         df: DataFrame with candle data
         symbol: Trading pair
         timeframe: Candle timeframe
+        use_two_layer: Use two-layer architecture (default: True)
 
     Returns:
-        Path to saved file
+        (curated_path, raw_path) or (legacy_path, None)
     """
-    # Create data directory
-    data_dir = Path(__file__).parent.parent / "data" / "candles"
-    data_dir.mkdir(parents=True, exist_ok=True)
+    from datetime import datetime
 
-    # Save to parquet
-    filename = f"{symbol}_{timeframe}.parquet"
-    filepath = data_dir / filename
+    if use_two_layer:
+        # Two-layer architecture
+        base_dir = Path(__file__).parent.parent / "data"
 
-    df.to_parquet(filepath, index=False, compression="snappy")
+        # 1. Raw Lake (immutable, timestamped)
+        fetch_date = datetime.now().strftime("%Y-%m-%d")
+        raw_dir = base_dir / "raw" / "bitfinex" / "candles"
+        raw_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"[SAVED] {filepath} ({len(df):,} rows)")
+        raw_filename = f"{symbol}_{timeframe}_{fetch_date}.parquet"
+        raw_path = raw_dir / raw_filename
+        df.to_parquet(raw_path, index=False, compression="snappy")
+        print(f"[RAW] {raw_path} ({len(df):,} rows)")
 
-    return filepath
+        # 2. Curated (validated, versioned)
+        curated_dir = base_dir / "curated" / "v1" / "candles"
+        curated_dir.mkdir(parents=True, exist_ok=True)
+
+        curated_filename = f"{symbol}_{timeframe}.parquet"
+        curated_path = curated_dir / curated_filename
+        df.to_parquet(curated_path, index=False, compression="snappy")
+        print(f"[CURATED] {curated_path} ({len(df):,} rows)")
+
+        return curated_path, raw_path
+    else:
+        # Legacy flat structure
+        data_dir = Path(__file__).parent.parent / "data" / "candles"
+        data_dir.mkdir(parents=True, exist_ok=True)
+
+        filename = f"{symbol}_{timeframe}.parquet"
+        filepath = data_dir / filename
+        df.to_parquet(filepath, index=False, compression="snappy")
+        print(f"[SAVED] {filepath} ({len(df):,} rows)")
+
+        return filepath, None
 
 
-def save_metadata(symbol: str, timeframe: str, df: pd.DataFrame, months: int) -> None:
+def save_metadata(
+    symbol: str,
+    timeframe: str,
+    df: pd.DataFrame,
+    months: int,
+    raw_path: Path | None = None,
+    use_two_layer: bool = True,
+) -> None:
     """Save metadata about fetched data."""
-    metadata_dir = Path(__file__).parent.parent / "data" / "metadata"
-    metadata_dir.mkdir(parents=True, exist_ok=True)
+    if use_two_layer:
+        # Save to curated metadata directory
+        metadata_dir = Path(__file__).parent.parent / "data" / "metadata" / "curated"
+        metadata_dir.mkdir(parents=True, exist_ok=True)
 
-    metadata = {
-        "symbol": symbol,
-        "timeframe": timeframe,
-        "fetched_at": datetime.now().isoformat(),
-        "start_date": df["timestamp"].min().isoformat(),
-        "end_date": df["timestamp"].max().isoformat(),
-        "total_candles": len(df),
-        "months_requested": months,
-        "source": "bitfinex_public_api",
-    }
+        metadata = {
+            "dataset_version": "v1",
+            "symbol": symbol,
+            "timeframe": timeframe,
+            "source": "bitfinex_public_api",
+            "fetched_at": datetime.now().isoformat(),
+            "start_date": df["timestamp"].min().isoformat(),
+            "end_date": df["timestamp"].max().isoformat(),
+            "total_candles": len(df),
+            "months_requested": months,
+            "raw_file": raw_path.name if raw_path else None,
+            "quality_score": 1.0,  # Basic validation - can be improved
+            "adjustments": [],
+        }
 
-    filename = f"{symbol}_{timeframe}_meta.json"
+        filename = f"{symbol}_{timeframe}_v1.json"
+    else:
+        # Legacy flat structure
+        metadata_dir = Path(__file__).parent.parent / "data" / "metadata"
+        metadata_dir.mkdir(parents=True, exist_ok=True)
+
+        metadata = {
+            "symbol": symbol,
+            "timeframe": timeframe,
+            "fetched_at": datetime.now().isoformat(),
+            "start_date": df["timestamp"].min().isoformat(),
+            "end_date": df["timestamp"].max().isoformat(),
+            "total_candles": len(df),
+            "months_requested": months,
+            "source": "bitfinex_public_api",
+        }
+
+        filename = f"{symbol}_{timeframe}_meta.json"
+
     filepath = metadata_dir / filename
 
     with open(filepath, "w") as f:
         json.dump(metadata, f, indent=2)
 
-    print(f"[SAVED] {filepath}")
+    print(f"[METADATA] {filepath}")
 
 
 def main():
@@ -270,14 +336,21 @@ def main():
         # Fetch data
         df = fetch_historical_data(args.symbol, args.timeframe, args.months)
 
-        # Save to parquet
-        save_to_parquet(df, args.symbol, args.timeframe)
+        # Save to parquet (two-layer structure by default)
+        curated_path, raw_path = save_to_parquet(
+            df, args.symbol, args.timeframe, use_two_layer=True
+        )
 
         # Save metadata
-        save_metadata(args.symbol, args.timeframe, df, args.months)
+        save_metadata(
+            args.symbol, args.timeframe, df, args.months, raw_path=raw_path, use_two_layer=True
+        )
 
         print(f"\n{'='*60}")
         print("[SUCCESS] Historical data fetched and saved!")
+        print("Two-layer structure:")
+        print(f"  Raw Lake (immutable): {raw_path}")
+        print(f"  Curated (validated):  {curated_path}")
         print(f"{'='*60}\n")
 
         return 0

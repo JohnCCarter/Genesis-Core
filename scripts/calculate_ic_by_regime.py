@@ -222,8 +222,19 @@ def main():
         print(f"[LOAD] Loading features for {args.symbol} {args.timeframe}")
         features_df = load_features(args.symbol, args.timeframe)
 
-        # Load candles for regime classification
-        candles_path = Path(f"data/candles/{args.symbol}_{args.timeframe}.parquet")
+        # Load candles for regime classification (two-layer structure support)
+        candles_path_curated = Path(
+            f"data/curated/v1/candles/{args.symbol}_{args.timeframe}.parquet"
+        )
+        candles_path_legacy = Path(f"data/candles/{args.symbol}_{args.timeframe}.parquet")
+
+        if candles_path_curated.exists():
+            candles_path = candles_path_curated
+        elif candles_path_legacy.exists():
+            candles_path = candles_path_legacy
+        else:
+            raise FileNotFoundError("Candles not found in curated or legacy location")
+
         candles_df = pd.read_parquet(candles_path)
 
         # Generate predictions

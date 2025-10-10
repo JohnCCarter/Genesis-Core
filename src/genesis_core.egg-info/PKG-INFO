@@ -1,6 +1,7 @@
 Metadata-Version: 2.4
 Name: genesis-core
-Version: 0.1.0
+Version: 0.6.0
+Summary: Regime-conditional trading strategy with validated vectorized features (Phase-6)
 Requires-Python: >=3.11
 Requires-Dist: fastapi<0.117,>=0.116
 Requires-Dist: uvicorn<0.25,>=0.24
@@ -25,3 +26,5 @@ Requires-Dist: pyarrow>=13.0.0; extra == "ml"
 Requires-Dist: matplotlib>=3.7.0; extra == "ml"
 Requires-Dist: seaborn>=0.12.0; extra == "ml"
 Requires-Dist: tqdm>=4.65.0; extra == "ml"
+Requires-Dist: numba>=0.62.0; extra == "ml"
+Requires-Dist: scipy>=1.11.0; extra == "ml"

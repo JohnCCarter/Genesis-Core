@@ -16,7 +16,16 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from core.strategy.evaluate import evaluate_pipeline
 
 # Load candles
-candles_df = pd.read_parquet("data/candles/tBTCUSD_1h.parquet")
+# Try two-layer structure first
+from pathlib import Path
+candles_path_curated = Path("data/curated/v1/candles/tBTCUSD_1h.parquet")
+candles_path_legacy = Path("data/candles/tBTCUSD_1h.parquet")
+if candles_path_curated.exists():
+    candles_df = pd.read_parquet(candles_path_curated)
+elif candles_path_legacy.exists():
+    candles_df = pd.read_parquet(candles_path_legacy)
+else:
+    raise FileNotFoundError("tBTCUSD_1h.parquet not found in curated or legacy location")
 
 
 # Classify regimes for all data

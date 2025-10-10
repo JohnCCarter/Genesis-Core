@@ -70,21 +70,26 @@ class BacktestEngine:
 
     def load_data(self) -> bool:
         """
-        Load historical candle data from Parquet.
+        Load historical candle data from Parquet (two-layer structure support).
 
         Returns:
             True if data loaded successfully, False otherwise
         """
-        # Find data file
-        data_file = (
-            Path(__file__).parent.parent.parent.parent
-            / "data"
-            / "candles"
-            / f"{self.symbol}_{self.timeframe}.parquet"
+        # Find data file (try two-layer structure first, fallback to legacy)
+        base_dir = Path(__file__).parent.parent.parent.parent / "data"
+        data_file_curated = (
+            base_dir / "curated" / "v1" / "candles" / f"{self.symbol}_{self.timeframe}.parquet"
         )
+        data_file_legacy = base_dir / "candles" / f"{self.symbol}_{self.timeframe}.parquet"
 
-        if not data_file.exists():
-            print(f"[ERROR] Data file not found: {data_file}")
+        if data_file_curated.exists():
+            data_file = data_file_curated
+        elif data_file_legacy.exists():
+            data_file = data_file_legacy
+        else:
+            print("[ERROR] Data file not found:")
+            print(f"  Tried curated: {data_file_curated}")
+            print(f"  Tried legacy: {data_file_legacy}")
             return False
 
         # Load data

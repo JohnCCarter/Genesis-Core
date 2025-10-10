@@ -56,9 +56,20 @@ def load_features_and_prices(
     features_df = load_features(symbol, timeframe)
 
     # Extract close prices from candles (needed for labeling)
-    candles_path = Path("data/candles") / f"{symbol}_{timeframe}.parquet"
-    if not candles_path.exists():
-        raise FileNotFoundError(f"Candles file not found: {candles_path}")
+    # Try two-layer structure first, fallback to legacy
+    candles_path_curated = Path(f"data/curated/v1/candles/{symbol}_{timeframe}.parquet")
+    candles_path_legacy = Path(f"data/candles/{symbol}_{timeframe}.parquet")
+
+    if candles_path_curated.exists():
+        candles_path = candles_path_curated
+    elif candles_path_legacy.exists():
+        candles_path = candles_path_legacy
+    else:
+        raise FileNotFoundError(
+            f"Candles file not found:\n"
+            f"  Tried curated: {candles_path_curated}\n"
+            f"  Tried legacy: {candles_path_legacy}"
+        )
 
     candles_df = pd.read_parquet(candles_path)
     close_prices = candles_df["close"].tolist()

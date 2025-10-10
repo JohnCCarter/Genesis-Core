@@ -34,11 +34,21 @@ def precompute_features_v17(symbol: str, timeframe: str, verbose: bool = True) -
     """
     start_time = time.time()
 
-    # Load candle data
-    candles_path = Path(f"data/candles/{symbol}_{timeframe}.parquet")
+    # Load candle data (try two-layer structure first, fallback to legacy)
+    candles_path_curated = Path(f"data/curated/v1/candles/{symbol}_{timeframe}.parquet")
+    candles_path_legacy = Path(f"data/candles/{symbol}_{timeframe}.parquet")
 
-    if not candles_path.exists():
-        raise FileNotFoundError(f"Candles not found: {candles_path}")
+    if candles_path_curated.exists():
+        candles_path = candles_path_curated
+    elif candles_path_legacy.exists():
+        candles_path = candles_path_legacy
+    else:
+        raise FileNotFoundError(
+            f"Candles not found:\n"
+            f"  Tried curated: {candles_path_curated}\n"
+            f"  Tried legacy: {candles_path_legacy}\n"
+            f"Run: python scripts/fetch_historical.py --symbol {symbol} --timeframe {timeframe}"
+        )
 
     if verbose:
         print(f"[LOAD] {candles_path}")

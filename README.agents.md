@@ -200,6 +200,16 @@ python -m pytest -q
     - 10-bar: IC +0.0461 (GOOD, p<0.001, ICIR 0.50)
     - 20-bar: IC +0.0528 (EXCELLENT, p<0.001, ICIR 0.51)
   - **RESULT:** Features have STRONG signal with correct BB implementation!
+- ✅ **Phase-6b:** SYSTEMATIC INDICATOR VALIDATION (Quality Gate)
+  - **FRAMEWORK:** Created `scripts/validate_all_indicators.py` - automated validation tool
+  - **TESTED:** All 4 core indicators (EMA, RSI, ATR, Volatility Shift)
+  - **RESULTS:** ALL PASSED with machine precision!
+    - EMA (20): 0.00e+00 (PERFECT, bit-exact!)
+    - RSI (14): 3.55e-14 (machine precision)
+    - ATR (14): 6.82e-13 (machine precision)
+    - Volatility Shift: 2.66e-15 (machine precision)
+  - **CONCLUSION:** BB bug was ISOLATED - no other systematic errors found
+  - **FRAMEWORK:** Permanent quality gate, can be rerun anytime
 
 **Kvalitetsstatus:**
 - ✅ All tests passing (334 passed)

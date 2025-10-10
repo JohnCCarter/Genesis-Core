@@ -9,7 +9,7 @@
     "champion": "config/models/tBTCUSD.json"
   },
   "tBTCUSD:1h": {
-    "champion": "config/models/tBTCUSD.json"
+    "champion": "config/models/tBTCUSD_1h.json"
   },
   "tBTCUSD:4h": {
     "champion": "config/models/tBTCUSD.json"

@@ -64,8 +64,16 @@ def predict_proba_for(
     features: dict[str, float],
     *,
     model_meta: dict[str, Any] | None = None,
+    regime: str | None = None,
 ) -> tuple[dict[str, float], dict[str, Any]]:
     """Wrapper som hämtar vikter/kalibrering från ModelRegistry och applicerar kalibrering.
+
+    Args:
+        symbol: Trading symbol
+        timeframe: Timeframe
+        features: Feature dict
+        model_meta: Optional model metadata (for testing)
+        regime: Current market regime for regime-aware calibration
 
     Returnerar (probas, meta) där meta innehåller versions (prob_model/calibration) och schema.
     Inga sidoeffekter/loggning här.
@@ -80,14 +88,48 @@ def predict_proba_for(
     schema = tuple(meta.get("schema", ()))
     buy = meta.get("buy", {})
     sell = meta.get("sell", {})
-    calib_buy = (
-        buy.get("calib", {}).get("a", 1.0),
-        buy.get("calib", {}).get("b", 0.0),
-    )
-    calib_sell = (
-        sell.get("calib", {}).get("a", 1.0),
-        sell.get("calib", {}).get("b", 0.0),
-    )
+
+    # Check for regime-specific calibration
+    regime_calib = meta.get("calibration_by_regime", {})
+
+    if regime and regime_calib:
+        # Use regime-specific calibration if available
+        regime_buy_calib = regime_calib.get("buy", {}).get(regime, {})
+        regime_sell_calib = regime_calib.get("sell", {}).get(regime, {})
+
+        if regime_buy_calib:
+            calib_buy = (
+                regime_buy_calib.get("a", 1.0),
+                regime_buy_calib.get("b", 0.0),
+            )
+        else:
+            # Fallback to default calibration
+            calib_buy = (
+                buy.get("calib", {}).get("a", 1.0),
+                buy.get("calib", {}).get("b", 0.0),
+            )
+
+        if regime_sell_calib:
+            calib_sell = (
+                regime_sell_calib.get("a", 1.0),
+                regime_sell_calib.get("b", 0.0),
+            )
+        else:
+            # Fallback to default calibration
+            calib_sell = (
+                sell.get("calib", {}).get("a", 1.0),
+                sell.get("calib", {}).get("b", 0.0),
+            )
+    else:
+        # Use default calibration
+        calib_buy = (
+            buy.get("calib", {}).get("a", 1.0),
+            buy.get("calib", {}).get("b", 0.0),
+        )
+        calib_sell = (
+            sell.get("calib", {}).get("a", 1.0),
+            sell.get("calib", {}).get("b", 0.0),
+        )
 
     probas = predict_proba(
         features,
@@ -103,7 +145,13 @@ def predict_proba_for(
         "versions": {
             "prob_model_version": meta.get("version", "v1"),
             "calibration_version": meta.get("calibration_version", "v1"),
+            "regime_aware_calibration": bool(regime and regime_calib),
         },
         "schema": list(schema),
+        "calibration_used": {
+            "regime": regime if regime else "none",
+            "buy_calib": {"a": calib_buy[0], "b": calib_buy[1]},
+            "sell_calib": {"a": calib_sell[0], "b": calib_sell[1]},
+        },
     }
     return probas, meta_out

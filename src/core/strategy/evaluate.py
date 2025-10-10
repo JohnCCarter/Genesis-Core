@@ -7,7 +7,6 @@ from core.strategy.confidence import compute_confidence
 from core.strategy.decision import decide
 from core.strategy.features import extract_features
 from core.strategy.prob_model import predict_proba_for
-from core.strategy.regime import classify_regime
 
 
 def evaluate_pipeline(
@@ -30,10 +29,16 @@ def evaluate_pipeline(
     feats, feats_meta = extract_features(candles, config=configs)
     metrics.event("features_ok", {"keys": list(feats.keys())})
 
+    # Detect regime BEFORE prediction (needed for regime-aware calibration)
+    # Use unified regime detection (EMA-based, matches calibration analysis)
+    from core.strategy.regime_unified import detect_regime_unified
+
+    current_regime = detect_regime_unified(candles, ema_period=50)
+
     # symbol/timeframe kan plockas från configs eller policy; defaulta till tBTCUSD/1m
     symbol = policy.get("symbol", "tBTCUSD")
     timeframe = policy.get("timeframe", "1m")
-    probas, pmeta = predict_proba_for(symbol, timeframe, feats)
+    probas, pmeta = predict_proba_for(symbol, timeframe, feats, regime=current_regime)
     metrics.event(
         "proba_ok",
         {"schema": pmeta.get("schema", []), "versions": pmeta.get("versions", {})},
@@ -53,8 +58,10 @@ def evaluate_pipeline(
     except Exception:  # nosec B110
         pass
 
-    # HTF-features kan komma utifrån; här matar vi tomma för stub
-    regime, regime_state = classify_regime({}, prev_state=state, config=configs)
+    # Use already detected regime (from candles-based detection)
+    # Note: classify_regime with hysteresis could be added later for stability
+    regime = current_regime
+    regime_state = {"regime": regime, "steps": 0, "candidate": regime}
     metrics.event("regime_ok", {"regime": regime})
 
     action, action_meta = decide(

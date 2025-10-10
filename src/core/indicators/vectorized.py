@@ -99,7 +99,7 @@ def calculate_bollinger_bands_vectorized(
 ) -> tuple[pd.Series, pd.Series, pd.Series]:
     """
     Calculate Bollinger Bands on entire series.
-    
+
     Note: Uses ddof=0 (population std) to match per-sample bollinger.py implementation.
     """
     middle = series.rolling(window=period).mean()

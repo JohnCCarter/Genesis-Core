@@ -27,7 +27,6 @@ from sklearn.metrics import roc_auc_score
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from core.ml.prob_model import ProbModel
-
 from core.utils.data_loader import load_features
 
 

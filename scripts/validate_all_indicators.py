@@ -29,13 +29,11 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 # Our implementations
 from core.indicators.atr import calculate_atr
-from core.indicators.bollinger import bollinger_bands
 from core.indicators.derived_features import calculate_volatility_shift
 from core.indicators.ema import calculate_ema
 from core.indicators.rsi import calculate_rsi
 from core.indicators.vectorized import (
     calculate_atr_vectorized,
-    calculate_bb_position_vectorized,
     calculate_ema_vectorized,
     calculate_rsi_vectorized,
     calculate_volatility_shift_vectorized,
@@ -118,7 +116,7 @@ class IndicatorValidator:
 
             if not within_tolerance:
                 result["status"] = "FAILED"
-                print(f"    ⚠️  DIFFERENCE EXCEEDS TOLERANCE!")
+                print("    ⚠️  DIFFERENCE EXCEEDS TOLERANCE!")
             else:
                 result["status"] = "PASSED"
 
@@ -154,7 +152,7 @@ class IndicatorValidator:
 
                 if not within_tolerance and result["status"] == "PASSED":
                     result["status"] = "EXTERNAL_DIFF"
-                    print(f"    ⚠️  Differs from TA-Lib (may be OK if formula differs)")
+                    print("    ⚠️  Differs from TA-Lib (may be OK if formula differs)")
 
             except Exception as e:
                 print(f"  Vectorized vs TA-Lib: [SKIP] {e}")
@@ -276,9 +274,7 @@ def ps_rsi(window, period=14):
 
 def ps_atr(window, period=14):
     """Per-sample ATR wrapper."""
-    return calculate_atr(
-        window["high"], window["low"], window["close"], period=period
-    )
+    return calculate_atr(window["high"], window["low"], window["close"], period=period)
 
 
 def ps_volatility_shift(window, short=14, long=50):
@@ -329,9 +325,7 @@ def ext_atr(df, period=14):
 
 def main():
     """CLI entry point."""
-    parser = argparse.ArgumentParser(
-        description="Validate all indicators systematically"
-    )
+    parser = argparse.ArgumentParser(description="Validate all indicators systematically")
     parser.add_argument("--symbol", required=True, help="Trading symbol")
     parser.add_argument("--timeframe", required=True, help="Timeframe")
     parser.add_argument(
@@ -343,9 +337,7 @@ def main():
         default=1e-8,
         help="Numerical tolerance (default: 1e-8)",
     )
-    parser.add_argument(
-        "--output", type=str, help="Output JSON file for detailed results"
-    )
+    parser.add_argument("--output", type=str, help="Output JSON file for detailed results")
 
     args = parser.parse_args()
 
@@ -432,4 +424,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

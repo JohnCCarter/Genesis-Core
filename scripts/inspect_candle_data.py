@@ -34,4 +34,3 @@ print(f"  Non-zero volume: {(df['volume'] > 0).sum()} / {len(df)}")
 print(f"  Mean volume: {df['volume'].mean():.2f}")
 
 print("=" * 80)
-

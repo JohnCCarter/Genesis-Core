@@ -151,8 +151,92 @@ class PositionTracker:
             entry_time=timestamp,
         )
 
+    def close_position_with_reason(
+        self, price: float, timestamp: datetime, reason: str = "MANUAL"
+    ) -> Trade | None:
+        """
+        Close the current position with a specific reason.
+
+        Args:
+            price: Exit price
+            timestamp: Exit timestamp
+            reason: Reason for exit (e.g., "SL", "TP", "TIME", "CONF_DROP", "REGIME_CHANGE")
+
+        Returns:
+            Completed Trade object or None if no position
+        """
+        if self.position is None:
+            return None
+
+        # Apply slippage
+        effective_price = price * (
+            1 - self.slippage_rate if self.position.side == "LONG" else 1 + self.slippage_rate
+        )
+
+        # Calculate PnL
+        if self.position.side == "LONG":
+            pnl = (effective_price - self.position.entry_price) * self.position.size
+        else:  # SHORT
+            pnl = (self.position.entry_price - effective_price) * self.position.size
+
+        # Calculate commission
+        notional = self.position.size * effective_price
+        commission = notional * self.commission_rate
+        self.total_commission += commission
+
+        # Update capital
+        self.capital += pnl - commission
+
+        # Calculate PnL percentage
+        entry_notional = self.position.size * self.position.entry_price
+        pnl_pct = (pnl / entry_notional) * 100 if entry_notional > 0 else 0.0
+
+        # Record trade
+        trade = Trade(
+            symbol=self.position.symbol,
+            side=self.position.side,
+            size=self.position.size,
+            entry_price=self.position.entry_price,
+            entry_time=self.position.entry_time,
+            exit_price=effective_price,
+            exit_time=timestamp,
+            pnl=pnl,
+            pnl_pct=pnl_pct,
+            commission=commission,
+        )
+        self.trades.append(trade)
+
+        # Clear position
+        self.position = None
+
+        return trade
+
     def _close_position(self, price: float, timestamp: datetime):
-        """Close the current position."""
+        """Close the current position (internal use)."""
+        self.close_position_with_reason(price, timestamp, reason="OPPOSITE_SIGNAL")
+
+    def get_unrealized_pnl_pct(self, current_price: float) -> float:
+        """Get unrealized PnL percentage for open position."""
+        if self.position is None:
+            return 0.0
+
+        if self.position.side == "LONG":
+            pnl = (current_price - self.position.entry_price) * self.position.size
+        else:  # SHORT
+            pnl = (self.position.entry_price - current_price) * self.position.size
+
+        entry_notional = self.position.size * self.position.entry_price
+        return (pnl / entry_notional) * 100 if entry_notional > 0 else 0.0
+
+    def get_bars_held(self, current_timestamp: datetime) -> int:
+        """Get number of bars position has been held (approximate, assumes 1 bar per update)."""
+        if self.position is None:
+            return 0
+        # Note: This is approximate - actual bars held tracked by BacktestEngine
+        return 0  # BacktestEngine will track this
+
+    def _close_position_legacy(self, price: float, timestamp: datetime):
+        """LEGACY: Close the current position (kept for compatibility)."""
         if self.position is None:
             return
 

@@ -46,8 +46,14 @@ def decide(
     p_buy = float(probas.get("buy", 0.0))
     p_sell = float(probas.get("sell", 0.0))
     R = float((cfg.get("ev") or {}).get("R_default") or 1.0)
-    ev = p_buy * R - p_sell
-    if ev <= 0.0:
+
+    # EV check: Must have positive EV for EITHER long or short
+    # (Don't block shorts just because long EV is negative!)
+    ev_long = p_buy * R - p_sell
+    ev_short = p_sell * R - p_buy
+    max_ev = max(ev_long, ev_short)
+
+    if max_ev <= 0.0:
         reasons.append("EV_NEG")
         return "NONE", {
             "versions": versions,

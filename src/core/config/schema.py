@@ -42,11 +42,31 @@ class EV(BaseModel):
     R_default: float = Field(default=1.8)
 
 
+class ExitLogic(BaseModel):
+    """Exit configuration for backtest and live trading."""
+
+    enabled: bool = Field(default=True, description="Enable exit logic")
+    max_hold_bars: int = Field(default=20, ge=1, description="Max bars to hold position")
+    stop_loss_pct: float = Field(default=0.02, ge=0.0, le=1.0, description="Stop loss %")
+    take_profit_pct: float = Field(default=0.05, ge=0.0, le=1.0, description="Take profit %")
+    exit_conf_threshold: float = Field(
+        default=0.45, ge=0.0, le=1.0, description="Close if confidence drops below"
+    )
+    regime_aware_exits: bool = Field(
+        default=True, description="Close on regime change (e.g., SHORT in BULL)"
+    )
+    trailing_stop_enabled: bool = Field(default=False, description="Enable trailing stop-loss")
+    trailing_stop_pct: float = Field(
+        default=0.015, ge=0.0, le=1.0, description="Trailing stop distance %"
+    )
+
+
 class RuntimeConfig(BaseModel):
     thresholds: Thresholds = Field(default_factory=Thresholds)
     gates: Gates = Field(default_factory=Gates)
     risk: Risk = Field(default_factory=Risk)
     ev: EV = Field(default_factory=EV)
+    exit: ExitLogic = Field(default_factory=ExitLogic)
 
     def model_dump_canonical(self) -> dict[str, Any]:
         """Dump in a stable, hash-friendly form (tuples → lists)."""

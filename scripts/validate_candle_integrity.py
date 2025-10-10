@@ -71,9 +71,7 @@ def validate_candles(df: pd.DataFrame) -> dict:
 
     # 4. Static bars (open==high==low==close)
     static_bars = (
-        (df["open"] == df["high"])
-        & (df["high"] == df["low"])
-        & (df["low"] == df["close"])
+        (df["open"] == df["high"]) & (df["high"] == df["low"]) & (df["low"] == df["close"])
     ).sum()
     issues["static_bars"] = {
         "count": int(static_bars),
@@ -97,9 +95,7 @@ def validate_candles(df: pd.DataFrame) -> dict:
     # 6. ATR analysis (unrealistic if too low)
     from core.indicators.atr import calculate_atr
 
-    atr = calculate_atr(
-        df["high"].tolist(), df["low"].tolist(), df["close"].tolist(), period=14
-    )
+    atr = calculate_atr(df["high"].tolist(), df["low"].tolist(), df["close"].tolist(), period=14)
     atr_arr = np.array(atr)
     atr_pct = atr_arr / df["close"].values
 
@@ -262,4 +258,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

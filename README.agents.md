@@ -189,6 +189,7 @@ python -m pytest -q
 - ✅ **Phase 3.5:** ML Pipeline v10 COMPLETE
 - ✅ **Phase-6:** Feature Engineering & Regime Discovery COMPLETE
 - ✅ **Phase-6a:** CRITICAL BB BUG FIXED + Validation Complete
+- ✅ **Exit Logic & Threshold Optimization:** Backtest infrastructure complete with fraktal-aware exits planned
   - **PROBLEM:** Bollinger Bands used sample std (ddof=1) in vectorized vs population std (ddof=0) in per-sample
   - **IMPACT:** 1.21% feature difference (bb_position_inv_ma3) → model trained on wrong data
   - **FIX:** Changed vectorized to ddof=0 (population std) to match per-sample
@@ -230,26 +231,99 @@ python -m pytest -q
   - **RESULT:** System now trades ONLY when (ML signal) AND (regime edge) both align!
 
 **Kvalitetsstatus:**
-- ✅ All tests passing (334 passed)
+- ✅ All tests passing (141 passed, 2025-10-10)
 - ✅ Vectorized features: BIT-EXACT parity (3.44e-10)
-- ✅ CI/Pipeline green
+- ✅ CI/Pipeline green (black, ruff, bandit, pytest)
 - ✅ Features validated with correct BB implementation
 - ✅ IC metrics: EXCELLENT (+0.0528 @ 20-bar)
 
 ---
 
+#### Latest Updates (2025-10-10) - Exit Logic & Threshold Optimization
+
+**CRITICAL FIXES:**
+- 🐛 **Bug #1 FIXED**: BacktestEngine size extraction (`result.get("size")` → `meta["decision"]["size"]`)
+  - Impact: ALL backtests were broken (0 trades)
+  - Status: ✅ FIXED & VALIDATED
+  
+- 🐛 **Bug #2 FIXED**: EV filter LONG-only bias (blocked ALL short trades)
+  - Impact: Strategy could never profit from downtrends
+  - Status: ✅ FIXED (now calculates ev_long AND ev_short, uses max)
+
+**EXIT LOGIC IMPLEMENTATION:**
+- ✅ **5 Exit Conditions**: SL (2%), TP (5%), TIME (20 bars), CONF_DROP (<0.45), REGIME_CHANGE
+- ✅ **Config Schema**: New `ExitLogic` model in runtime config
+- ✅ **Infrastructure**: `close_position_with_reason()`, exit tracking, reason logging
+- ✅ **Documentation**: 1800+ lines across 6 docs
+
+**THRESHOLD OPTIMIZATION:**
+- ✅ **Raised threshold**: 0.55 → 0.65 (entry_conf_overall)
+- ✅ **Result 30m**: -41.88% → -12.21% (70% improvement, 789 → 123 trades)
+- 🎉 **Result 1h**: -8.42% → **+4.89% PROFITABLE!** (508 → 8 trades, 75% win rate)
+- ❌ **Result 6h**: -43.21% unchanged (deeper model issues, not threshold-related)
+
+**KEY DISCOVERIES:**
+- 💡 **Overtrading was the problem**: 789 trades @ 0.3% cost = 237% capital lost to fees!
+- 💡 **1h is sweet spot**: High quality + reasonable frequency = profitable edge
+- 💡 **Fixed exits kill winners**: Need fraktal-aware, Fibonacci-driven exits (planned)
+- 💡 **6h has separate issue**: High validation IC (+0.308) but backtest fails → investigate
+
+**NEXT PHASE: Fibonacci Fraktal Exits**
+- 📋 **Plan created**: `docs/FIBONACCI_FRAKTAL_EXITS_IMPLEMENTATION_PLAN.md` (1245 lines)
+- 🎯 **Goal**: Replace fixed TP/SL with structure-aware exits respecting Fibonacci geometry
+- 📈 **Expected**: 1h from +4.89% (8 trades) → +15-25% (20-30 trades)
+- ⏳ **Status**: PLANNING PHASE (pre-requisites: HTF mapping, partial exits)
+
+---
+
+#### Current Runtime Config (2025-10-10)
+
+```json
+{
+  "cfg": {
+    "thresholds": {
+      "entry_conf_overall": 0.65,  // Raised from 0.55 to reduce overtrading
+      "regime_proba": {
+        "balanced": 0.60,
+        "ranging": 0.60,
+        "bear": 0.60,
+        "bull": 0.60,
+        "highvol": 0.60
+      }
+    },
+    "exit": {
+      "enabled": true,
+      "max_hold_bars": 20,
+      "stop_loss_pct": 0.02,
+      "take_profit_pct": 0.05,
+      "exit_conf_threshold": 0.45,
+      "regime_aware_exits": true,
+      "trailing_stop_enabled": false,
+      "trailing_stop_pct": 0.015
+    },
+    "risk": {
+      "risk_map": [[0.55, 0.02], [0.6, 0.03], [0.7, 0.04], [0.8, 0.05], [0.9, 0.06]]
+    },
+    "ev": {"R_default": 1.8},
+    "gates": {"hysteresis_steps": 2, "cooldown_bars": 0}
+  },
+  "version": 61
+}
+```
+
 #### Backtest Example
 ```powershell
 # 1. Hämta historical data
-python scripts/fetch_historical.py tBTCUSD 15m --months 3
+python scripts/fetch_historical.py tBTCUSD 1h --months 18
 
-# 2. Validera data quality
-python scripts/validate_data.py tBTCUSD 15m
+# 2. Precompute features v17 (with Fibonacci)
+python scripts/precompute_features_v17.py --symbol tBTCUSD --timeframe 1h
 
-# 3. Kör backtest
-python scripts/run_backtest.py --symbol tBTCUSD --timeframe 15m --capital 10000
+# 3. Kör backtest with exit logic
+python scripts/run_backtest.py --symbol tBTCUSD --timeframe 1h --capital 10000
 
-# 4. Resultat sparas i results/backtests/ (JSON + CSV)
+# 4. Resultat: +4.89% (8 trades, 75% win rate)
+# Trades CSV: results/trades/tBTCUSD_1h_trades_YYYYMMDD_HHMMSS.csv
 ```
 
 #### Models Cache Management
@@ -291,6 +365,12 @@ python scripts/precompute_features_fast.py --symbol tBTCUSD --timeframe 1h
 **IMPORTANT NOTES:**
 - 🎯 **Use vectorized for testing/research** (27,734× faster)
 - 🎯 **Use features_asof for production** (bit-exact, verified)
-- 🎯 **Bear regime has BEST edge** (IC +0.0784, Spread +0.404%)
-- 🎯 **Data is in data/candles/** (12,958 samples, 18 months)
+- 🎯 **1h timeframe is PROFITABLE** (+4.89%, 75% win rate @ threshold 0.65)
+- 🎯 **Exit logic implemented** (SL/TP/TIME/CONF/REGIME aware)
+- 🎯 **Data is in data/candles/** (tBTCUSD 1h, 18 months)
+- 🎯 **Current features:** v17 (14 features including Fibonacci combinations)
 - 🎯 **Current model:** results/models/tBTCUSD_1h_v3.json (v16)
+- 🎯 **Key docs:** 
+  - `docs/EXIT_LOGIC_IMPLEMENTATION.md` (exit logic guide)
+  - `docs/THRESHOLD_OPTIMIZATION_RESULTS.md` (optimization results)
+  - `docs/FIBONACCI_FRAKTAL_EXITS_IMPLEMENTATION_PLAN.md` (next phase)

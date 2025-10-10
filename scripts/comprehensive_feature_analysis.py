@@ -26,14 +26,10 @@ from core.indicators.adx import calculate_adx
 from core.indicators.atr import calculate_atr
 from core.indicators.bollinger import bollinger_bands
 from core.indicators.derived_features import (
-    calculate_momentum_displacement_z,
-    calculate_price_stretch_z,
-    calculate_regime_persistence,
-    calculate_trend_confluence,
     calculate_volatility_shift,
-    calculate_volume_anomaly_z,
 )
 from core.indicators.ema import calculate_ema
+from core.indicators.fibonacci import FibonacciConfig, calculate_fibonacci_features_vectorized
 from core.indicators.macd import calculate_macd
 from core.indicators.rsi import calculate_rsi
 from core.indicators.volume import calculate_volume_sma
@@ -119,10 +115,21 @@ def calculate_all_possible_features(candles_df: pd.DataFrame) -> pd.DataFrame:
 
     # === INTERACTION FEATURES ===
     features["rsi_vol_interaction"] = features["rsi_inv"] * features["volatility_shift"]
-    features["rsi_vol_directional"] = features["rsi"] * features["volatility_shift"]  # NON-inverted!
+    features["rsi_vol_directional"] = (
+        features["rsi"] * features["volatility_shift"]
+    )  # NON-inverted!
 
     # === VOLUME FEATURES ===
     features["volume_ratio"] = df["volume"].values / vol_sma_arr
+
+    # === FIBONACCI FEATURES ===
+    # Calculate Fibonacci features using vectorized approach
+    fib_config = FibonacciConfig(atr_depth=3.0, max_swings=8, min_swings=1)
+    fib_features_df = calculate_fibonacci_features_vectorized(df, fib_config)
+
+    # Add Fibonacci features to main features DataFrame
+    for col in fib_features_df.columns:
+        features[col] = fib_features_df[col]
 
     # Add timestamp
     features.insert(0, "timestamp", df["timestamp"])
@@ -224,9 +231,7 @@ def main():
     all_results = []
 
     for feat in feature_cols:
-        result = test_feature_ic_by_regime(
-            features_df[feat], forward_returns, regimes, feat
-        )
+        result = test_feature_ic_by_regime(features_df[feat], forward_returns, regimes, feat)
         all_results.append(result)
 
         # Print summary
@@ -246,7 +251,9 @@ def main():
                 print(f"  {regime:>8}: IC {ic:+.4f} (p={p:.4f}) {sig}")
 
     # Sort by overall IC (absolute value)
-    all_results_sorted = sorted(all_results, key=lambda x: abs(x["overall"].get("ic", 0)), reverse=True)
+    all_results_sorted = sorted(
+        all_results, key=lambda x: abs(x["overall"].get("ic", 0)), reverse=True
+    )
 
     print("\n" + "=" * 80)
     print("TOP 20 FEATURES (by absolute IC)")
@@ -299,9 +306,7 @@ def main():
         print(f"  {feat:<30} Overall: {overall:+.4f}, Bear: {bear:+.4f}, Bull: {bull:+.4f}")
 
     print("\nMEAN REVERSION FEATURES (Buy dips in bear, Sell rallies in bull):")
-    for feat, overall, bear, bull in sorted(
-        mean_reversion, key=lambda x: abs(x[1]), reverse=True
-    ):
+    for feat, overall, bear, bull in sorted(mean_reversion, key=lambda x: abs(x[1]), reverse=True):
         print(f"  {feat:<30} Overall: {overall:+.4f}, Bear: {bear:+.4f}, Bull: {bull:+.4f}")
 
     # Save results
@@ -346,4 +351,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

@@ -229,8 +229,12 @@ def main():
             continue
 
         print(f"\n  {regime_name} ({calib_buy.get('n_samples', 0)} samples):")
-        print(f"    BUY:  a={calib_buy['a']:.4f}, b={calib_buy['b']:.4f}, improvement={calib_buy.get('improvement', 0):.4f}")
-        print(f"    SELL: a={calib_sell['a']:.4f}, b={calib_sell['b']:.4f}, improvement={calib_sell.get('improvement', 0):.4f}")
+        print(
+            f"    BUY:  a={calib_buy['a']:.4f}, b={calib_buy['b']:.4f}, improvement={calib_buy.get('improvement', 0):.4f}"
+        )
+        print(
+            f"    SELL: a={calib_sell['a']:.4f}, b={calib_sell['b']:.4f}, improvement={calib_sell.get('improvement', 0):.4f}"
+        )
 
     # Update model config
     print("\n[UPDATE] Updating model configuration...")

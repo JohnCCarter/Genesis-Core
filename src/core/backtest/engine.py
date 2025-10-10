@@ -181,6 +181,9 @@ class BacktestEngine:
             bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]",
         )
 
+        # Track bars held for current position
+        position_entry_bar = None
+
         # Replay bars
         for i in range(len(self.candles_df)):
             bar = self.candles_df.iloc[i]
@@ -204,11 +207,49 @@ class BacktestEngine:
                     state=self.state,
                 )
 
-                # Extract action and size
+                # Extract action, size, confidence, regime
                 action = result.get("action", "NONE")
-                size = result.get("size", 0.0)
+                size = meta.get("decision", {}).get("size", 0.0)
 
-                # Execute action
+                # Extract confidence (can be dict or float)
+                conf_val = result.get("confidence", 0.5)
+                if isinstance(conf_val, dict):
+                    conf = conf_val.get("overall", 0.5)
+                else:
+                    conf = float(conf_val) if conf_val else 0.5
+
+                # Extract regime (can be dict or string)
+                regime_val = result.get("regime", "BALANCED")
+                if isinstance(regime_val, dict):
+                    regime = regime_val.get("name", "BALANCED")
+                else:
+                    regime = str(regime_val) if regime_val else "BALANCED"
+
+                # === EXIT LOGIC (check BEFORE new entry) ===
+                if self.position_tracker.has_position():
+                    exit_reason = self._check_exit_conditions(
+                        current_price=close_price,
+                        current_bar=i,
+                        entry_bar=position_entry_bar or i,
+                        confidence=conf,
+                        regime=regime,
+                        configs=configs,
+                    )
+
+                    if exit_reason:
+                        trade = self.position_tracker.close_position_with_reason(
+                            price=close_price, timestamp=timestamp, reason=exit_reason
+                        )
+                        if verbose and trade:
+                            pnl_sign = "+" if trade.pnl > 0 else ""
+                            print(
+                                f"\n[{timestamp}] EXIT ({exit_reason}): "
+                                f"{trade.side} closed @ ${close_price:.2f} | "
+                                f"PnL: {pnl_sign}{trade.pnl_pct:.2f}%"
+                            )
+                        position_entry_bar = None  # Reset
+
+                # === ENTRY LOGIC ===
                 if action != "NONE" and size > 0:
                     exec_result = self.position_tracker.execute_action(
                         action=action,
@@ -218,8 +259,12 @@ class BacktestEngine:
                         symbol=self.symbol,
                     )
 
-                    if verbose and exec_result.get("executed"):
-                        print(f"\n[{timestamp}] {action} {size:.4f} @ ${close_price:.2f}")
+                    if exec_result.get("executed"):
+                        position_entry_bar = i  # Track when position opened
+                        if verbose:
+                            print(
+                                f"\n[{timestamp}] ENTRY: {action} {size:.4f} @ ${close_price:.2f}"
+                            )
 
                 # Update equity curve
                 self.position_tracker.update_equity(close_price, timestamp)
@@ -244,6 +289,67 @@ class BacktestEngine:
         print(f"\n[OK] Backtest complete - {self.bar_count} bars processed")
 
         return self._build_results()
+
+    def _check_exit_conditions(
+        self,
+        current_price: float,
+        current_bar: int,
+        entry_bar: int,
+        confidence: float,
+        regime: str,
+        configs: dict,
+    ) -> str | None:
+        """
+        Check if any exit conditions are met.
+
+        Returns:
+            Exit reason string if should exit, None otherwise
+        """
+        if not self.position_tracker.has_position():
+            return None
+
+        position = self.position_tracker.position
+
+        # Get exit config (default values if not in configs)
+        exit_cfg = configs.get("cfg", {}).get("exit", {})
+        enabled = exit_cfg.get("enabled", True)
+
+        if not enabled:
+            return None
+
+        max_hold_bars = exit_cfg.get("max_hold_bars", 20)
+        stop_loss_pct = exit_cfg.get("stop_loss_pct", 0.02)
+        take_profit_pct = exit_cfg.get("take_profit_pct", 0.05)
+        exit_conf_threshold = exit_cfg.get("exit_conf_threshold", 0.45)
+        regime_aware = exit_cfg.get("regime_aware_exits", True)
+
+        # 1. Stop-Loss / Take-Profit
+        pnl_pct = (
+            self.position_tracker.get_unrealized_pnl_pct(current_price) / 100.0
+        )  # Convert to decimal
+        if pnl_pct <= -stop_loss_pct:
+            return "SL"
+        if pnl_pct >= take_profit_pct:
+            return "TP"
+
+        # 2. Time-Based Exit
+        bars_held = current_bar - entry_bar
+        if bars_held >= max_hold_bars:
+            return "TIME"
+
+        # 3. Confidence Drop
+        if confidence < exit_conf_threshold:
+            return "CONF_DROP"
+
+        # 4. Regime-Aware Exit
+        if regime_aware:
+            # Close SHORT in BULL or close LONG in BEAR
+            if position.side == "SHORT" and regime == "BULL":
+                return "REGIME_CHANGE"
+            if position.side == "LONG" and regime == "BEAR":
+                return "REGIME_CHANGE"
+
+        return None
 
     def _build_results(self) -> dict:
         """Build final backtest results."""

@@ -22,17 +22,36 @@ def test_extract_features_stub_shapes():
     assert isinstance(feats, dict) and isinstance(meta, dict)
     assert "versions" in meta and "reasons" in meta
 
-    # Should contain v15 features (HighVol optimized, 5 non-redundant)
-    expected_features = {
+    # Should contain v17 features (5 original + 6 Fibonacci + 3 combinations = 14 total)
+    expected_original_features = {
         "rsi_inv_lag1",
         "volatility_shift_ma3",
         "bb_position_inv_ma3",
         "rsi_vol_interaction",
         "vol_regime",
     }
+    expected_fibonacci_features = {
+        "fib_dist_min_atr",
+        "fib_dist_signed_atr",
+        "fib_prox_score",
+        "fib0618_prox_atr",
+        "fib05_prox_atr",
+        "swing_retrace_depth",
+    }
+    expected_combination_features = {
+        "fib05_x_ema_slope",
+        "fib_prox_x_adx",
+        "fib05_x_rsi_inv",
+    }
+    expected_features = (
+        expected_original_features | expected_fibonacci_features | expected_combination_features
+    )
+
     assert set(feats.keys()) == expected_features
-    assert meta.get("feature_count") == 5
-    assert meta.get("versions", {}).get("features_v15_highvol_optimized") is True
+    assert len(feats) == 14  # 5 original + 6 Fibonacci + 3 combinations
+
+    assert meta.get("feature_count") == 14
+    assert meta.get("versions", {}).get("features_v17_fibonacci_combinations") is True
 
 
 def test_extract_features_time_alignment_uses_closed_bar():

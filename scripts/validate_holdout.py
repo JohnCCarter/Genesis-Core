@@ -26,8 +26,8 @@ from sklearn.metrics import roc_auc_score
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from core.ml.prob_model import ProbModel
-from core.utils.data_loader import load_features
+from core.ml.prob_model import ProbModel  # noqa: I001
+from core.utils.data_loader import load_features  # noqa: I001
 
 
 def calculate_forward_returns(close_prices: pd.Series, horizon: int) -> pd.Series:

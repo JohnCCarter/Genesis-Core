@@ -65,6 +65,35 @@
         "n_samples": 10724
       }
     },
+    "sell": {
+      "bear": {
+        "method": "platt",
+        "a": 2.792164583392896,
+        "b": 0.28828286412864296,
+        "brier_before": 0.24241658212287068,
+        "brier_after": 0.240866773265606,
+        "improvement": 0.0015498088572646895,
+        "n_samples": 970
+      },
+      "bull": {
+        "method": "platt",
+        "a": 0.7254672583677596,
+        "b": 0.13367963516248377,
+        "brier_before": 0.25077272009036883,
+        "brier_after": 0.24936343273118994,
+        "improvement": 0.0014092873591788901,
+        "n_samples": 1264
+      },
+      "ranging": {
+        "method": "platt",
+        "a": 1.025879191958136,
+        "b": 0.027000282000388818,
+        "brier_before": 0.2489662823921005,
+        "brier_after": 0.24893072608894162,
+        "improvement": 3.555630315887903e-05,
+        "n_samples": 10724
+      }
+    },
     "method": "isotonic",
     "note": "Regime-specific calibration to handle varying data distributions"
   }

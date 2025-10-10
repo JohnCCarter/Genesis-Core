@@ -186,9 +186,25 @@ def main():
     labels = labels[valid_mask]
     regimes = regimes[valid_mask]
 
-    # Calibrate per regime
-    print("\n[CALIBRATE] Calibrating per regime...")
-    regime_calibrations = {}
+    # Get SELL predictions too
+    print("[PREDICT] Generating SELL predictions...")
+    sell_w = model_config.get("sell", {}).get("w")
+    sell_b = model_config.get("sell", {}).get("b", 0.0)
+
+    predictions_sell_raw = []
+    for i in range(len(X)):
+        feats_dict = {col: X[i, j] for j, col in enumerate(feature_cols)}
+        probas = predict_proba(
+            feats_dict, schema=schema, sell_w=sell_w, sell_b=sell_b, calib_sell=(1.0, 0.0)
+        )
+        predictions_sell_raw.append(probas["sell"])
+
+    predictions_sell_raw = np.array(predictions_sell_raw)[:min_len][valid_mask]
+
+    # Calibrate per regime (BOTH buy and sell!)
+    print("\n[CALIBRATE] Calibrating BUY model per regime...")
+    regime_calibrations_buy = {}
+    regime_calibrations_sell = {}
 
     for regime_name in ["bear", "bull", "ranging"]:
         mask = (regimes == regime_name).values
@@ -196,32 +212,33 @@ def main():
             print(f"  {regime_name}: SKIP (only {mask.sum()} samples)")
             continue
 
-        regime_preds = predictions_raw[mask]
+        regime_preds_buy = predictions_raw[mask]
+        regime_preds_sell = predictions_sell_raw[mask]
         regime_labels = labels[mask]
 
-        calib_result = calibrate_for_regime(regime_preds, regime_labels, method=args.method)
+        # Calibrate BUY
+        calib_buy = calibrate_for_regime(regime_preds_buy, regime_labels, method=args.method)
+        regime_calibrations_buy[regime_name] = calib_buy
 
-        regime_calibrations[regime_name] = calib_result
+        # Calibrate SELL (with INVERTED labels: sell wants label=0)
+        calib_sell = calibrate_for_regime(regime_preds_sell, 1 - regime_labels, method=args.method)
+        regime_calibrations_sell[regime_name] = calib_sell
 
-        if "error" in calib_result:
-            print(f"\n  {regime_name}: ERROR - {calib_result['error']}")
+        if "error" in calib_buy:
+            print(f"\n  {regime_name}: ERROR - {calib_buy['error']}")
             continue
 
-        print(f"\n  {regime_name} ({calib_result.get('n_samples', 0)} samples):")
-        print(f"    Method: {calib_result['method']}")
-        print(f"    a (slope): {calib_result['a']:.4f}")
-        print(f"    b (intercept): {calib_result['b']:.4f}")
-        if "improvement" in calib_result:
-            print(f"    Brier before: {calib_result['brier_before']:.4f}")
-            print(f"    Brier after:  {calib_result['brier_after']:.4f}")
-            print(f"    Improvement:  {calib_result['improvement']:.4f}")
+        print(f"\n  {regime_name} ({calib_buy.get('n_samples', 0)} samples):")
+        print(f"    BUY:  a={calib_buy['a']:.4f}, b={calib_buy['b']:.4f}, improvement={calib_buy.get('improvement', 0):.4f}")
+        print(f"    SELL: a={calib_sell['a']:.4f}, b={calib_sell['b']:.4f}, improvement={calib_sell.get('improvement', 0):.4f}")
 
     # Update model config
     print("\n[UPDATE] Updating model configuration...")
 
-    # Store regime-specific calibration
+    # Store regime-specific calibration for BOTH buy and sell
     model_config["calibration_by_regime"] = {
-        "buy": regime_calibrations,
+        "buy": regime_calibrations_buy,
+        "sell": regime_calibrations_sell,
         "method": args.method,
         "note": "Regime-specific calibration to handle varying data distributions",
     }

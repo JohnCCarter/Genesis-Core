@@ -10,6 +10,46 @@
 - **Context**: Communicate when context is insufficient.
 - **Language**: Always respond in Swedish, unless otherwise specified.
 
+## Stabilization Phase Policy
+
+**Genesis-Core is in STABILIZATION PHASE** - Code stability > New features
+
+Every line of code must either:
+- ✅ Solve a concrete problem, OR
+- ✅ Increase reliability, performance, or readability
+
+### Change Policy
+
+| Type of Change | Status | Comment |
+|----------------|--------|---------|
+| Bug fix / logical adjustment | ✅ Always | Write test immediately after |
+| Refactoring without behavior change | ✅ OK | Small, documented steps |
+| New feature / module | ⚠️ Specification required | Must have clear justification |
+| Experimental code | 🚫 No | Separate branch / notebook only |
+| Magic optimizations | 🚫 No | Measure first, implement after |
+
+### Green-Light Checklist
+
+Before any code is approved, it MUST pass all:
+1. ✅ Solves a defined need/problem
+2. ✅ Does not unexpectedly affect other parts
+3. ✅ Has unit tests or validated measurement point
+4. ✅ Is documented (docstring with purpose & usage)
+5. ✅ Passes Ruff + pytest without warnings
+
+### Focus Areas (Current Phase)
+- **Robustness**: Test extreme inputs, edge cases
+- **Performance profiling**: Identify bottlenecks with timing
+- **Minimized complexity**: Fewer code paths
+- **Documentation & validation**: README + flow diagram per module
+- **Small diffs**: Keep changes < 100 lines for easier validation
+
+### Systematic Review Routine
+1. Every diff < 100 lines → easier to validate
+2. Run Ruff + pytest + sanity checks before merge
+3. No code without test or at minimum docstring with purpose & usage
+4. When in doubt: make it measurable, not magical
+
 ## Code Standards
 
 ### Python Version & Style
@@ -210,9 +250,34 @@ Genesis-Core/
 - Prometheus metrics format
 - JSON configuration with schema validation
 
+## Plan Mode Usage
+
+### When to Suggest Plan Mode
+Proactively recommend Plan Mode activation for:
+1. **New Features**: Architectural decisions, new modules, API design
+2. **Large Refactorings**: 3+ files with dependencies, structural changes
+3. **ML/Model Work**: Feature engineering, new indicators, training pipelines, validation methods
+4. **Multiple Paths**: When there are several valid implementation approaches
+
+**Suggestion Format**: "💡 Tips: Vill du att jag aktiverar Plan Mode för detta? Det är en större/komplex uppgift där du kanske vill se planen först."
+
+### When to Stay in Normal Mode
+- Bug fixes and quick iterations
+- Code quality tasks (black, ruff, pytest, bandit)
+- Documentation updates
+- Known TODO items with clear implementation path
+- Testing and validation scripts
+
+### Benefits of Plan Mode
+- User reviews approach before execution
+- Clear visibility of file changes and architecture
+- Opportunity to adjust strategy early
+- Educational value - shows implementation thinking
+
 ## Remember
 - **Quality over speed**: Take time to do things right
 - **Security first**: Never compromise on security
 - **Test everything**: Untested code is broken code
 - **Document decisions**: Explain why, not just what
 - **Stay systematic**: Follow the workflow consistently
+- **Suggest Plan Mode proactively**: Help user make informed decisions on complex tasks

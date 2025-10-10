@@ -97,9 +97,13 @@ def calculate_atr_vectorized(
 def calculate_bollinger_bands_vectorized(
     series: pd.Series, period: int = 20, std_dev: float = 2.0
 ) -> tuple[pd.Series, pd.Series, pd.Series]:
-    """Calculate Bollinger Bands on entire series."""
+    """
+    Calculate Bollinger Bands on entire series.
+    
+    Note: Uses ddof=0 (population std) to match per-sample bollinger.py implementation.
+    """
     middle = series.rolling(window=period).mean()
-    std = series.rolling(window=period).std()
+    std = series.rolling(window=period).std(ddof=0)  # Population std (divide by N, not N-1)
 
     upper = middle + (std * std_dev)
     lower = middle - (std * std_dev)

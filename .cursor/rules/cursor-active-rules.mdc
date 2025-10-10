@@ -27,6 +27,31 @@ If the current chat approaches context limits (you notice reasoning or earlier d
 - Continue until task is complete. Reflect on root cause vs symptom.
 - Respond in Swedish unless specified. Use clear headings and ✅ markers.
 
+## Stabilization Phase Policy
+**Code stability > New features**. Every line of code must either:
+✅ Solve a concrete problem OR ✅ Increase reliability, performance, or readability
+
+### Change Policy
+- **Bug fixes**: ✅ Always allowed - Write test immediately after
+- **Refactoring**: ✅ Small, documented steps without behavior change
+- **New features/modules**: ⚠️ Only after clear specification and justification
+- **Experimental code**: 🚫 Separate branch only
+- **Magic optimizations**: 🚫 Measure first, implement after
+
+### Green-Light Checklist (before any merge)
+✅ Solves a defined need/problem
+✅ Does not unexpectedly affect other parts
+✅ Has unit tests or validated measurement
+✅ Is documented (docstring with purpose & usage)
+✅ Passes Ruff + pytest without warnings
+
+### Focus Areas
+- Robustness: Test extreme inputs, edge cases
+- Performance profiling: Identify bottlenecks with timing
+- Minimized complexity: Fewer code paths
+- Documentation & validation: README + flow diagram per module
+- Keep diffs < 100 lines for easier validation
+
 ## Project Context
 Genesis-Core is a Python 3.11+ FastAPI trading system with:
 - P1-P3: Feature extraction (EMA+RSI), probability model with calibration, confidence/regime/decision
@@ -74,6 +99,21 @@ Genesis-Core is a Python 3.11+ FastAPI trading system with:
 - src/core/io/bitfinex/exchange_client.py: API integration
 - config/models/: Model configurations and registry
 - .env: API keys (BITFINEX_API_KEY, BITFINEX_API_SECRET)
+
+## Plan Mode Recommendations
+Proactively suggest activating Plan Mode when user requests:
+- New features or architectural decisions (e.g., "Implementera X funktionalitet")
+- Large refactorings spanning multiple files (3+ files with dependencies)
+- ML/Model changes (feature engineering, new indicators, training pipelines)
+- Multiple possible implementation paths requiring user input
+
+Suggestion format: "💡 Tips: Vill du att jag aktiverar Plan Mode för detta? Det är en större/komplex uppgift där du kanske vill se planen först."
+
+Continue in Normal Mode for:
+- Bug fixes and quick iterations
+- Code quality tasks (black, ruff, pytest)
+- Documentation updates
+- Known TODO items with clear implementation path
 
 ## Response Format
 - Swedish language with clear structure

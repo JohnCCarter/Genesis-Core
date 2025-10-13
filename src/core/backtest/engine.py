@@ -4,12 +4,15 @@ Backtest engine for Genesis-Core.
 Replays historical candle data bar-by-bar through the existing strategy pipeline.
 """
 
+from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
 from tqdm import tqdm
 
+from core.backtest.htf_exit_engine import HTFFibonacciExitEngine
 from core.backtest.position_tracker import PositionTracker
+from core.indicators.exit_fibonacci import calculate_exit_fibonacci_levels
 from core.strategy.evaluate import evaluate_pipeline
 
 
@@ -38,6 +41,7 @@ class BacktestEngine:
         commission_rate: float = 0.001,
         slippage_rate: float = 0.0005,
         warmup_bars: int = 120,  # Bars needed for indicators (EMA, RSI, etc.)
+        htf_exit_config: dict | None = None,  # HTF Exit Engine configuration
     ):
         """
         Initialize backtest engine.
@@ -67,6 +71,19 @@ class BacktestEngine:
 
         self.state: dict = {}
         self.bar_count = 0
+
+        # Initialize HTF Exit Engine
+        default_htf_config = {
+            "partial_1_pct": 0.40,
+            "partial_2_pct": 0.30,
+            "fib_threshold_atr": 0.3,
+            "trail_atr_multiplier": 1.3,
+            "enable_partials": True,
+            "enable_trailing": True,
+            "enable_structure_breaks": True,
+        }
+        self.htf_exit_config = {**default_htf_config, **(htf_exit_config or {})}
+        self.htf_exit_engine = HTFFibonacciExitEngine(self.htf_exit_config)
 
     def load_data(self) -> bool:
         """
@@ -187,7 +204,6 @@ class BacktestEngine:
         )
 
         # Track bars held for current position
-        position_entry_bar = None
 
         # Replay bars
         for i in range(len(self.candles_df)):
@@ -219,25 +235,35 @@ class BacktestEngine:
                 # Extract confidence (can be dict or float)
                 conf_val = result.get("confidence", 0.5)
                 if isinstance(conf_val, dict):
-                    conf = conf_val.get("overall", 0.5)
+                    conf_val.get("overall", 0.5)
                 else:
-                    conf = float(conf_val) if conf_val else 0.5
+                    float(conf_val) if conf_val else 0.5
 
                 # Extract regime (can be dict or string)
                 regime_val = result.get("regime", "BALANCED")
                 if isinstance(regime_val, dict):
-                    regime = regime_val.get("name", "BALANCED")
+                    regime_val.get("name", "BALANCED")
                 else:
-                    regime = str(regime_val) if regime_val else "BALANCED"
+                    str(regime_val) if regime_val else "BALANCED"
 
                 # === EXIT LOGIC (check BEFORE new entry) ===
                 if self.position_tracker.has_position():
-                    exit_reason = self._check_exit_conditions(
+                    # Prepare bar data for exit engine
+                    bar_data = {
+                        "timestamp": timestamp,
+                        "open": bar["open"],
+                        "high": bar["high"],
+                        "low": bar["low"],
+                        "close": close_price,
+                        "volume": bar.get("volume", 0.0),
+                    }
+
+                    exit_reason = self._check_htf_exit_conditions(
                         current_price=close_price,
-                        current_bar=i,
-                        entry_bar=position_entry_bar or i,
-                        confidence=conf,
-                        regime=regime,
+                        timestamp=timestamp,
+                        bar_data=bar_data,
+                        result=result,
+                        meta=meta,
                         configs=configs,
                     )
 
@@ -252,7 +278,6 @@ class BacktestEngine:
                                 f"{trade.side} closed @ ${close_price:.2f} | "
                                 f"PnL: {pnl_sign}{trade.pnl_pct:.2f}%"
                             )
-                        position_entry_bar = None  # Reset
 
                 # === ENTRY LOGIC ===
                 if action != "NONE" and size > 0:
@@ -265,7 +290,10 @@ class BacktestEngine:
                     )
 
                     if exec_result.get("executed"):
-                        position_entry_bar = i  # Track when position opened
+
+                        # Initialize exit context for new position
+                        self._initialize_position_exit_context(result, meta, close_price, timestamp)
+
                         if verbose:
                             print(
                                 f"\n[{timestamp}] ENTRY: {action} {size:.4f} @ ${close_price:.2f}"
@@ -295,17 +323,17 @@ class BacktestEngine:
 
         return self._build_results()
 
-    def _check_exit_conditions(
+    def _check_htf_exit_conditions(
         self,
         current_price: float,
-        current_bar: int,
-        entry_bar: int,
-        confidence: float,
-        regime: str,
+        timestamp: datetime,
+        bar_data: dict,
+        result: dict,
+        meta: dict,
         configs: dict,
     ) -> str | None:
         """
-        Check if any exit conditions are met.
+        Check HTF Fibonacci exit conditions.
 
         Returns:
             Exit reason string if should exit, None otherwise
@@ -315,44 +343,120 @@ class BacktestEngine:
 
         position = self.position_tracker.position
 
-        # Get exit config (default values if not in configs)
+        # Get exit config
         exit_cfg = configs.get("cfg", {}).get("exit", {})
         enabled = exit_cfg.get("enabled", True)
 
         if not enabled:
             return None
 
-        max_hold_bars = exit_cfg.get("max_hold_bars", 20)
+        # Get HTF Fibonacci context from meta
+        # HTF context is in meta['features']['htf_fibonacci']
+        features_meta = meta.get("features", {})
+        htf_fib_context = features_meta.get("htf_fibonacci", {})
+
+        # Calculate ATR for exit logic (use last 14 bars)
+        from core.indicators.atr import calculate_atr
+
+        window_size = min(14, len(self.candles_df))
+        if window_size >= 2:
+            recent_highs = self.candles_df["high"].iloc[-window_size:].values
+            recent_lows = self.candles_df["low"].iloc[-window_size:].values
+            recent_closes = self.candles_df["close"].iloc[-window_size:].values
+            atr_values = calculate_atr(recent_highs, recent_lows, recent_closes, period=14)
+            current_atr = float(atr_values[-1]) if len(atr_values) > 0 else 100.0
+        else:
+            current_atr = 100.0
+
+        # Prepare indicators for exit engine
+        features = result.get("features", {})
+        indicators = {
+            "atr": current_atr,
+            "ema50": features.get("ema", current_price),  # Use ema feature (EMA50)
+            "ema_slope50_z": features.get("ema_slope50_z", 0.0),
+        }
+
+        # Check HTF exit conditions
+        exit_actions = self.htf_exit_engine.check_exits(
+            position, bar_data, htf_fib_context, indicators
+        )
+
+        # Execute exit actions
+        for action in exit_actions:
+            if action.action == "PARTIAL":
+                # Execute partial exit
+                trade = self.position_tracker.partial_close(
+                    close_size=action.size,
+                    price=current_price,
+                    timestamp=timestamp,
+                    reason=action.reason,
+                )
+                if trade:  # Always log partial exits
+                    print(
+                        f"  [PARTIAL] {action.reason}: {trade.size:.3f} @ ${trade.exit_price:,.0f} = ${trade.pnl:,.2f}"
+                    )
+
+            elif action.action == "TRAIL_UPDATE":
+                # Update trailing stop (store in position for next bar)
+                if hasattr(position, "trail_stop"):
+                    position.trail_stop = action.stop_price
+                else:
+                    # Add trail_stop attribute if not exists
+                    position.trail_stop = action.stop_price
+
+            elif action.action == "FULL_EXIT":
+                # Full exit - return reason to trigger standard exit logic
+                return action.reason
+
+        # Check if trail stop hit (from previous bars)
+        if (
+            hasattr(position, "trail_stop")
+            and position.trail_stop
+            and (
+                (position.side == "LONG" and current_price <= position.trail_stop)
+                or (position.side == "SHORT" and current_price >= position.trail_stop)
+            )
+        ):
+            return "TRAIL_STOP"
+
+        # Fallback to traditional exit conditions for safety
+        return self._check_traditional_exit_conditions(current_price, result, configs)
+
+    def _check_traditional_exit_conditions(
+        self,
+        current_price: float,
+        result: dict,
+        configs: dict,
+    ) -> str | None:
+        """Fallback traditional exit conditions."""
+        position = self.position_tracker.position
+
+        # Get exit config
+        exit_cfg = configs.get("cfg", {}).get("exit", {})
         stop_loss_pct = exit_cfg.get("stop_loss_pct", 0.02)
         take_profit_pct = exit_cfg.get("take_profit_pct", 0.05)
         exit_conf_threshold = exit_cfg.get("exit_conf_threshold", 0.45)
-        regime_aware = exit_cfg.get("regime_aware_exits", True)
 
-        # 1. Stop-Loss / Take-Profit
-        pnl_pct = (
-            self.position_tracker.get_unrealized_pnl_pct(current_price) / 100.0
-        )  # Convert to decimal
+        # Emergency stop-loss
+        pnl_pct = self.position_tracker.get_unrealized_pnl_pct(current_price) / 100.0
         if pnl_pct <= -stop_loss_pct:
-            return "SL"
-        if pnl_pct >= take_profit_pct:
-            return "TP"
+            return "EMERGENCY_SL"
 
-        # 2. Time-Based Exit
-        bars_held = current_bar - entry_bar
-        if bars_held >= max_hold_bars:
-            return "TIME"
+        # Emergency take-profit (for very large moves)
+        if pnl_pct >= take_profit_pct * 2:  # 2x normal TP
+            return "EMERGENCY_TP"
 
-        # 3. Confidence Drop
+        # Confidence drop
+        confidence = result.get("confidence", 1.0)
         if confidence < exit_conf_threshold:
             return "CONF_DROP"
 
-        # 4. Regime-Aware Exit
-        if regime_aware:
-            # Close SHORT in BULL or close LONG in BEAR
-            if position.side == "SHORT" and regime == "BULL":
-                return "REGIME_CHANGE"
-            if position.side == "LONG" and regime == "BEAR":
-                return "REGIME_CHANGE"
+        # Regime change
+        regime = result.get("regime", "NEUTRAL")
+        if position.side == "SHORT" and regime == "BULL":
+            return "REGIME_CHANGE"
+        if position.side == "LONG" and regime == "BEAR":
+            return "REGIME_CHANGE"
 
         return None
 
@@ -383,8 +487,77 @@ class BacktestEngine:
                     "pnl": t.pnl,
                     "pnl_pct": t.pnl_pct,
                     "commission": t.commission,
+                    "exit_reason": t.exit_reason,
+                    "is_partial": t.is_partial,
+                    "remaining_size": t.remaining_size,
+                    "position_id": t.position_id,
                 }
                 for t in self.position_tracker.trades
             ],
             "equity_curve": self.position_tracker.equity_curve,
         }
+
+    def _initialize_position_exit_context(
+        self, result: dict, meta: dict, entry_price: float, timestamp: datetime
+    ) -> None:
+        """
+        Initialize exit context for a newly opened position.
+
+        Args:
+            result: Pipeline result with features and indicators
+            meta: Meta data including HTF Fibonacci context
+            entry_price: Entry price of the position
+            timestamp: Entry timestamp
+        """
+        if not self.position_tracker.position:
+            return
+
+        position = self.position_tracker.position
+
+        # Try to get HTF Fibonacci context
+        features_meta = meta.get("features", {})
+        htf_fib_context = features_meta.get("htf_fibonacci", {})
+
+        if not htf_fib_context.get("available"):
+            # No HTF data available - position will use fallback exits
+            print(f"[DEBUG] HTF not available: {htf_fib_context}")
+            return
+
+        # Extract swing from HTF context
+        swing_high = htf_fib_context.get("swing_high", 0.0)
+        swing_low = htf_fib_context.get("swing_low", 0.0)
+
+        if swing_high <= swing_low or swing_high <= 0 or swing_low <= 0:
+            # Invalid swing - position will use fallback exits
+            print(f"[DEBUG] Invalid swing: high={swing_high}, low={swing_low}")
+            return
+
+        # Get indicators for validation
+        features = result.get("features", {})
+        features.get("atr", 100.0)
+
+        # Skip swing validation at entry - we'll use frozen context approach
+        # The swing will be validated when actually used for exits
+
+        # Calculate exit Fibonacci levels using symmetric logic
+        exit_levels = calculate_exit_fibonacci_levels(
+            side=position.side,
+            swing_high=swing_high,
+            swing_low=swing_low,
+            levels=[0.382, 0.5, 0.618, 0.786],
+        )
+
+        # Store in position for exit engine
+        position.exit_swing_high = swing_high
+        position.exit_swing_low = swing_low
+        position.exit_fib_levels = exit_levels
+        position.exit_swing_timestamp = timestamp
+
+        # Arm exit context with frozen HTF data
+        htf_context_for_arm = {
+            "swing_id": f"swing_{timestamp.isoformat()}_{swing_high}_{swing_low}",
+            "levels": exit_levels,
+            "swing_low": swing_low,
+            "swing_high": swing_high,
+        }
+        position.arm_exit_context(htf_context_for_arm)

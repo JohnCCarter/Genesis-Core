@@ -161,6 +161,7 @@ Genesis-Core/
 - check-added-large-files (prevent large files)
 - check-merge-conflict (prevent conflict markers)
 - check-yaml/json (validate configs)
+- Emojis: Do not use emojis as they cause syntax errors.
 
 ## Error Handling
 

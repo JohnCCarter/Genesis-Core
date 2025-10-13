@@ -10,7 +10,8 @@ def test_position_update_pnl_long():
     pos = Position(
         symbol="tBTCUSD",
         side="LONG",
-        size=0.1,
+        initial_size=0.1,
+        current_size=0.1,
         entry_price=100.0,
         entry_time=datetime.now(),
     )
@@ -31,7 +32,8 @@ def test_position_update_pnl_short():
     pos = Position(
         symbol="tBTCUSD",
         side="SHORT",
-        size=0.1,
+        initial_size=0.1,
+        current_size=0.1,
         entry_price=100.0,
         entry_time=datetime.now(),
     )

@@ -4,35 +4,86 @@ Position tracker for backtest.
 Tracks open positions, calculates PnL, and manages trade lifecycle.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 
 
 @dataclass
 class Position:
-    """Represents an open position."""
+    """Represents an open position with partial exit support."""
 
     symbol: str
     side: str  # "LONG" or "SHORT"
-    size: float
+    initial_size: float  # Original position size
+    current_size: float  # Remaining size after partials
     entry_price: float
     entry_time: datetime
     unrealized_pnl: float = 0.0
+    partial_exits: list = field(default_factory=list)  # [(size, price, reason, time)]
+
+    # Exit-specific fields (för symmetrisk Fibonacci exit logic)
+    exit_swing_high: float = 0.0  # Swing high för denna position's exits
+    exit_swing_low: float = 0.0  # Swing low för denna position's exits
+    exit_fib_levels: dict = field(default_factory=dict)  # {0.382: price, 0.5: price, ...}
+    exit_swing_timestamp: datetime | None = None  # När swing fastställdes
+    exit_swing_updated: int = 0  # Antal gånger swing uppdaterats
+
+    # Frozen exit context (en referens per trade)
+    exit_ctx: dict | None = (
+        None  # {"swing_id": str, "fib": {"0.382":..., "0.5":..., "0.618":...}, "swing_bounds": (low, high)}
+    )
+
+    @property
+    def size(self) -> float:
+        """Backward compatibility: return current size."""
+        return self.current_size
+
+    def get_realized_pnl(self) -> float:
+        """Calculate PnL from partial exits."""
+        realized = 0.0
+        for exit_size, exit_price, _reason, _exit_time in self.partial_exits:
+            if self.side == "LONG":
+                realized += exit_size * (exit_price - self.entry_price)
+            else:  # SHORT
+                realized += exit_size * (self.entry_price - exit_price)
+        return realized
+
+    def get_total_exits_size(self) -> float:
+        """Get total size of partial exits."""
+        return sum(exit_size for exit_size, _, _, _ in self.partial_exits)
+
+    def get_remaining_pct(self) -> float:
+        """Get percentage of position remaining."""
+        return self.current_size / self.initial_size if self.initial_size > 0 else 0.0
 
     def update_pnl(self, current_price: float) -> float:
-        """Update and return unrealized PnL."""
+        """Update and return unrealized PnL (for remaining position only)."""
         if self.side == "LONG":
-            self.unrealized_pnl = (current_price - self.entry_price) * self.size
+            self.unrealized_pnl = (current_price - self.entry_price) * self.current_size
         elif self.side == "SHORT":
-            self.unrealized_pnl = (self.entry_price - current_price) * self.size
+            self.unrealized_pnl = (self.entry_price - current_price) * self.current_size
         else:
             self.unrealized_pnl = 0.0
         return self.unrealized_pnl
 
+    def arm_exit_context(self, htf_ctx: dict) -> None:
+        """
+        Freeze HTF swing and Fibonacci levels for this position.
+
+        Args:
+            htf_ctx: HTF Fibonacci context with swing_id, levels, swing_bounds
+        """
+        self.exit_ctx = {
+            "swing_id": htf_ctx.get("swing_id", "unknown"),
+            "fib": dict(htf_ctx.get("levels", {})),  # freeze copy
+            "swing_bounds": (htf_ctx.get("swing_low", 0.0), htf_ctx.get("swing_high", 0.0)),
+            "armed_at": self.entry_time,
+        }
+
 
 @dataclass
 class Trade:
-    """Represents a completed trade."""
+    """Represents a completed trade (full or partial)."""
 
     symbol: str
     side: str
@@ -44,6 +95,10 @@ class Trade:
     pnl: float
     pnl_pct: float
     commission: float = 0.0
+    exit_reason: str = "MANUAL"  # Why was this trade closed
+    is_partial: bool = False  # True if partial exit, False if full
+    remaining_size: float = 0.0  # Size remaining after this exit (for partials)
+    position_id: str = ""  # Link partial exits to same position
 
 
 class PositionTracker:
@@ -142,11 +197,12 @@ class PositionTracker:
         self.total_commission += commission
         self.capital -= commission
 
-        # Create position
+        # Create position with partial exit support
         self.position = Position(
             symbol=symbol,
             side=side,
-            size=size,
+            initial_size=size,
+            current_size=size,
             entry_price=effective_price,
             entry_time=timestamp,
         )
@@ -173,36 +229,47 @@ class PositionTracker:
             1 - self.slippage_rate if self.position.side == "LONG" else 1 + self.slippage_rate
         )
 
-        # Calculate PnL
+        # Calculate PnL (for remaining position only)
         if self.position.side == "LONG":
-            pnl = (effective_price - self.position.entry_price) * self.position.size
+            pnl = (effective_price - self.position.entry_price) * self.position.current_size
         else:  # SHORT
-            pnl = (self.position.entry_price - effective_price) * self.position.size
+            pnl = (self.position.entry_price - effective_price) * self.position.current_size
 
-        # Calculate commission
-        notional = self.position.size * effective_price
+        # Add realized PnL from partial exits
+        realized_pnl = self.position.get_realized_pnl()
+        total_pnl = pnl + realized_pnl
+
+        # Calculate commission (for remaining position only)
+        notional = self.position.current_size * effective_price
         commission = notional * self.commission_rate
         self.total_commission += commission
 
-        # Update capital
+        # Update capital (only from remaining position - partials already accounted for)
         self.capital += pnl - commission
 
-        # Calculate PnL percentage
-        entry_notional = self.position.size * self.position.entry_price
-        pnl_pct = (pnl / entry_notional) * 100 if entry_notional > 0 else 0.0
+        # Calculate PnL percentage (total PnL vs original position size)
+        original_notional = self.position.initial_size * self.position.entry_price
+        total_pnl_pct = (total_pnl / original_notional) * 100 if original_notional > 0 else 0.0
 
-        # Record trade
+        # Generate position ID for linking
+        position_id = f"{self.position.symbol}_{self.position.entry_time.isoformat()}"
+
+        # Record trade (final close of remaining position)
         trade = Trade(
             symbol=self.position.symbol,
-            side=self.position.side,
-            size=self.position.size,
+            side=f"CLOSE_{self.position.side}",  # "CLOSE_LONG" or "CLOSE_SHORT"
+            size=self.position.current_size,  # Remaining size being closed
             entry_price=self.position.entry_price,
             entry_time=self.position.entry_time,
             exit_price=effective_price,
             exit_time=timestamp,
-            pnl=pnl,
-            pnl_pct=pnl_pct,
+            pnl=total_pnl,  # Total PnL including partials
+            pnl_pct=total_pnl_pct,  # Based on original position
             commission=commission,
+            exit_reason=reason,
+            is_partial=False,  # Final close
+            remaining_size=0.0,  # Nothing left
+            position_id=position_id,
         )
         self.trades.append(trade)
 
@@ -211,22 +278,122 @@ class PositionTracker:
 
         return trade
 
+    def partial_close(
+        self, close_size: float, price: float, timestamp: datetime, reason: str = "PARTIAL"
+    ) -> Trade | None:
+        """
+        Close part of the current position.
+
+        Args:
+            close_size: Size to close (must be <= current_size)
+            price: Exit price
+            timestamp: Exit timestamp
+            reason: Reason for partial exit (e.g., "TP1_0382", "TP2_05")
+
+        Returns:
+            Trade object for the partial exit, or None if no position
+        """
+        if self.position is None:
+            return None
+
+        # Validate close size
+        if close_size <= 0:
+            return None
+
+        # Limit to available size
+        actual_close_size = min(close_size, self.position.current_size)
+
+        # Apply slippage
+        effective_price = price * (
+            1 - self.slippage_rate if self.position.side == "LONG" else 1 + self.slippage_rate
+        )
+
+        # Calculate PnL for this partial exit
+        if self.position.side == "LONG":
+            pnl = (effective_price - self.position.entry_price) * actual_close_size
+        else:  # SHORT
+            pnl = (self.position.entry_price - effective_price) * actual_close_size
+
+        # Calculate commission
+        notional = actual_close_size * effective_price
+        commission = notional * self.commission_rate
+        self.total_commission += commission
+
+        # Update capital
+        self.capital += pnl - commission
+
+        # Calculate PnL percentage (based on original position size)
+        entry_notional = actual_close_size * self.position.entry_price
+        pnl_pct = (pnl / entry_notional) * 100 if entry_notional > 0 else 0.0
+
+        # Update position
+        self.position.current_size -= actual_close_size
+        remaining_size = self.position.current_size
+
+        # Record partial exit in position
+        self.position.partial_exits.append((actual_close_size, effective_price, reason, timestamp))
+
+        # Generate position ID for linking partial exits
+        position_id = f"{self.position.symbol}_{self.position.entry_time.isoformat()}"
+
+        # Create trade record
+        trade = Trade(
+            symbol=self.position.symbol,
+            side=f"CLOSE_{self.position.side}",  # "CLOSE_LONG" or "CLOSE_SHORT"
+            size=actual_close_size,
+            entry_price=self.position.entry_price,
+            entry_time=self.position.entry_time,
+            exit_price=effective_price,
+            exit_time=timestamp,
+            pnl=pnl,
+            pnl_pct=pnl_pct,
+            commission=commission,
+            exit_reason=reason,
+            is_partial=True,
+            remaining_size=remaining_size,
+            position_id=position_id,
+        )
+
+        self.trades.append(trade)
+
+        # If position fully closed, remove it
+        if self.position.current_size <= 1e-8:  # Essentially zero
+            self.position = None
+            # Mark the last trade as full close
+            trade.is_partial = False
+
+        # Update statistics
+        self.max_capital = max(self.max_capital, self.capital)
+        self.min_capital = min(self.min_capital, self.capital)
+
+        return trade
+
     def _close_position(self, price: float, timestamp: datetime):
         """Close the current position (internal use)."""
         self.close_position_with_reason(price, timestamp, reason="OPPOSITE_SIGNAL")
 
     def get_unrealized_pnl_pct(self, current_price: float) -> float:
-        """Get unrealized PnL percentage for open position."""
+        """Get total PnL percentage for open position (realized + unrealized)."""
         if self.position is None:
             return 0.0
 
+        # Unrealized PnL from remaining position
         if self.position.side == "LONG":
-            pnl = (current_price - self.position.entry_price) * self.position.size
+            unrealized_pnl = (
+                current_price - self.position.entry_price
+            ) * self.position.current_size
         else:  # SHORT
-            pnl = (self.position.entry_price - current_price) * self.position.size
+            unrealized_pnl = (
+                self.position.entry_price - current_price
+            ) * self.position.current_size
 
-        entry_notional = self.position.size * self.position.entry_price
-        return (pnl / entry_notional) * 100 if entry_notional > 0 else 0.0
+        # Realized PnL from partial exits
+        realized_pnl = self.position.get_realized_pnl()
+
+        # Total PnL vs original position size
+        total_pnl = unrealized_pnl + realized_pnl
+        original_notional = self.position.initial_size * self.position.entry_price
+        return (total_pnl / original_notional) * 100 if original_notional > 0 else 0.0
 
     def get_bars_held(self, current_timestamp: datetime) -> int:
         """Get number of bars position has been held (approximate, assumes 1 bar per update)."""

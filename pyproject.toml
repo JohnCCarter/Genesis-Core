@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "genesis-core"
-version = "0.6.0"
-description = "Regime-conditional trading strategy with validated vectorized features (Phase-6)"
+version = "0.7.0"
+description = "Fibonacci Fraktal Exits implementation with symmetric exit logic and frozen context support"
 requires-python = ">=3.11"
 dependencies = [
   "fastapi>=0.116,<0.117",

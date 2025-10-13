@@ -13,11 +13,12 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from core.strategy.evaluate import evaluate_pipeline
-
 # Load candles
 # Try two-layer structure first
 from pathlib import Path
+
+from core.strategy.evaluate import evaluate_pipeline
+
 candles_path_curated = Path("data/curated/v1/candles/tBTCUSD_1h.parquet")
 candles_path_legacy = Path("data/candles/tBTCUSD_1h.parquet")
 if candles_path_curated.exists():

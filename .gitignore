@@ -142,5 +142,10 @@ cache/**
 **/*_heatmap.png
 **/*_comparison_bars.png
 
+# Fibonacci Exit Implementation Results
+results/fibonacci_exits_*.json
+results/fibonacci_exits_*.csv
+results/fibonacci_exits_*.png
+
  # Keep example files
 !.env.example

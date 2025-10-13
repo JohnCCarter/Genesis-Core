@@ -64,6 +64,7 @@ Genesis-Core is a Python 3.11+ FastAPI trading system with:
 - Line length: 100 chars, black formatting, ruff linting
 - Structure: src/core/{config,indicators,io,observability,risk,strategy,utils}
 - Testing: pytest with comprehensive coverage
+- Emojis: Do not use emojis as they cause syntax errors.
 
 ## Critical Security Rules
 - NEVER commit: .env, .nonce_tracker.json, dev.overrides.local.json

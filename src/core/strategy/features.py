@@ -16,6 +16,7 @@ from core.indicators.fibonacci import (
     calculate_fibonacci_levels,
     detect_swing_points,
 )
+from core.indicators.htf_fibonacci import get_htf_fibonacci_context
 from core.indicators.rsi import calculate_rsi
 
 
@@ -218,15 +219,33 @@ def extract_features(
         "fib05_x_rsi_inv": _clip(fib05_x_rsi_inv, -1.0, 1.0),  # Mean reversion: +23% (1W)
     }
 
+    # === ADD HTF FIBONACCI CONTEXT FOR EXITS ===
+    # Only for LTF timeframes that can benefit from HTF structure
+    htf_fibonacci_context = {}
+    if timeframe in ["1h", "30m", "6h", "15m"]:
+        try:
+            htf_fibonacci_context = get_htf_fibonacci_context(
+                candles, timeframe=timeframe, symbol="tBTCUSD"
+            )
+        except Exception as e:
+            # Don't fail feature extraction if HTF context unavailable
+            htf_fibonacci_context = {
+                "available": False,
+                "reason": "HTF_CONTEXT_ERROR",
+                "error": str(e),
+            }
+
     meta: dict[str, Any] = {
         "versions": {
             **((cfg.get("features") or {}).get("versions") or {}),
             "features_v17_fibonacci_combinations": True,  # v17: Added Fibonacci × Context combinations
+            "htf_fibonacci_mapping": True,  # NEW: HTF Fibonacci mapping for exits
         },
         "reasons": [],
         "feature_count": len(feats),  # 14 features: 5 original + 6 Fibonacci + 3 combinations
         "ema_slope_params": (
             params if timeframe else {"ema_period": 20, "lookback": 5}
         ),  # Track which params were used
+        "htf_fibonacci": htf_fibonacci_context,  # NEW: HTF context for exit logic
     }
     return feats, meta

@@ -8,6 +8,69 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 
 ## [Unreleased]
 
+### Added - HTF Fibonacci Exit System (2025-10-13)
+
+**Major Feature: Dynamic Exit Strategy**
+- Implemented HTF (Higher Timeframe) Fibonacci-based exit logic
+- Replaces fixed TP/SL with market structure-aware exits
+- Uses 1D swings projected to 1h timeframe decisions
+
+**New Modules:**
+- `src/core/indicators/htf_fibonacci.py` - HTF Fibonacci calculation with AS-OF semantics
+- `src/core/backtest/htf_exit_engine.py` - Core exit engine with partial/trail/structure logic
+
+**Enhanced Modules:**
+- `src/core/backtest/position_tracker.py` - Partial exit infrastructure
+  - Added `Position.current_size`, `initial_size`, `partial_exits` tracking
+  - Added `Trade.is_partial`, `exit_reason`, `remaining_size`, `position_id`
+  - New `partial_close()` method for fractional position closing
+  
+- `src/core/backtest/engine.py` - HTF exit integration
+  - Integrated `HTFFibonacciExitEngine` with configurable thresholds
+  - Added HTF context extraction from feature pipeline
+  - Fixed trade serialization (added exit metadata)
+
+- `src/core/strategy/features.py` - HTF context in feature extraction
+  - Added `get_htf_fibonacci_context()` call
+  - HTF levels available in `meta['htf_fibonacci']`
+
+**Exit Logic Features:**
+1. **Partial Exits:** TP1 @ 0.382 Fib (40%), TP2 @ 0.5 Fib (30%)
+2. **Trailing Stop:** EMA-based with HTF promotion (locks at 0.5 Fib)
+3. **Structure Break:** Full exit on 0.618 break + momentum loss
+4. **Adaptive Thresholds:** Dynamic ATR+% proximity calculation
+5. **Reachability Check:** 8 ATR envelope prevents stale swing usage
+6. **Fallback Logic:** EMA-trail when HTF unavailable
+
+**Verification Results (tBTCUSD 1h, 2025-08-01 to 2025-10-13):**
+- 7 total trades, 2 partial exits (28.6%), 5 full exits
+- Partial exits correctly triggered at HTF Fibonacci levels
+- Fallback logic engaged when HTF swings out of reach
+- All integration tests passing
+
+**Data Updates:**
+- Fresh data fetched: tBTCUSD 1D (6 months), 1h (3 months)
+- Stored in curated + legacy structures for compatibility
+
+**Bug Fixes:**
+- Fixed dict vs float ATR extraction error
+- Removed null bytes causing SyntaxError
+- Corrected HTF context nesting in pipeline
+- Added missing trade fields to results serialization
+
+**Documentation:**
+- `docs/FIBONACCI_FRAKTAL_EXITS_IMPLEMENTATION_PLAN.md` - Complete implementation guide
+
+**Test Coverage:**
+- `scripts/test_htf_fibonacci_mapping.py` - HTF mapping tests
+- `scripts/test_partial_exit_infrastructure.py` - Partial exit tests
+- `scripts/test_htf_exit_engine.py` - Integration tests
+- `scripts/debug_htf_exit_usage.py` - Debug verification
+
+**Status:** ✅ Production ready, ablation study pending
+
+---
+
 ### Strategic Decision Needed
 - Bitcoin 1h timeframe shows mean reversion behavior (trend features have NEGATIVE IC)
 - System is production-ready, but strategy direction needs confirmation

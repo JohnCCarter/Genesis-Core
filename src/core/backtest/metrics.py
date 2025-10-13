@@ -1,244 +1,278 @@
 """
-Performance metrics for backtest results.
+Backtest Metrics Calculations for Genesis-Core
 
-Calculates trading performance metrics like Sharpe ratio, max drawdown, etc.
+Comprehensive metrics for evaluating trading strategy performance.
 """
+
+from typing import Any
 
 import numpy as np
 import pandas as pd
 
 
-def calculate_metrics(results: dict) -> dict:
+def calculate_backtest_metrics(
+    trades: list[dict[str, Any]], initial_capital: float = 10000.0, risk_free_rate: float = 0.02
+) -> dict[str, float]:
     """
-    Calculate performance metrics from backtest results.
+    Calculate comprehensive backtest metrics.
 
     Args:
-        results: Backtest results dict from BacktestEngine.run()
+        trades: List of trade dictionaries
+        initial_capital: Starting capital
+        risk_free_rate: Risk-free rate for Sharpe calculation
 
     Returns:
-        Dict with calculated metrics
+        Dictionary of calculated metrics
     """
-    summary = results.get("summary", {})
-    equity_curve = results.get("equity_curve", [])
-    trades = results.get("trades", [])
+    if not trades:
+        return _empty_metrics()
 
-    # Basic metrics from summary
-    metrics = {
-        "total_return_pct": summary.get("total_return", 0.0),
-        "total_return_usd": summary.get("total_return_usd", 0.0),
-        "num_trades": summary.get("num_trades", 0),
-        "win_rate": summary.get("win_rate", 0.0),
-        "profit_factor": summary.get("profit_factor", 0.0),
+    # Extract trade data
+    pnls = [trade.get("pnl", 0) for trade in trades]
+    returns_pct = [(pnl / initial_capital) * 100 for pnl in pnls]
+
+    # Basic metrics
+    total_trades = len(trades)
+    winning_trades = [pnl for pnl in pnls if pnl > 0]
+    losing_trades = [pnl for pnl in pnls if pnl < 0]
+
+    total_pnl = sum(pnls)
+    total_return_pct = (total_pnl / initial_capital) * 100
+
+    win_rate = len(winning_trades) / total_trades * 100 if total_trades > 0 else 0.0
+
+    # Profit metrics
+    gross_profit = sum(winning_trades) if winning_trades else 0
+    gross_loss = abs(sum(losing_trades)) if losing_trades else 1
+    profit_factor = gross_profit / gross_loss if gross_loss > 0 else float("inf")
+
+    avg_win = np.mean(winning_trades) if winning_trades else 0.0
+    avg_loss = np.mean(losing_trades) if losing_trades else 0.0
+    expectancy = np.mean(pnls) if pnls else 0.0
+
+    # Risk metrics
+    if len(returns_pct) > 1:
+        returns_std = np.std(returns_pct, ddof=1)
+        sharpe_ratio = (
+            (np.mean(returns_pct) - risk_free_rate / 12) / returns_std if returns_std > 0 else 0.0
+        )
+    else:
+        sharpe_ratio = 0.0
+        returns_std = 0.0
+
+    # Drawdown (simplified - based on cumulative returns)
+    cumulative_returns = np.cumsum(returns_pct)
+    running_max = np.maximum.accumulate(cumulative_returns) if len(cumulative_returns) > 0 else [0]
+    drawdowns = running_max - cumulative_returns
+    max_drawdown = np.max(drawdowns) if len(drawdowns) > 0 else 0.0
+
+    # Trade duration (if available)
+    durations = []
+    for trade in trades:
+        if "entry_time" in trade and "exit_time" in trade:
+            entry_time = pd.to_datetime(trade["entry_time"])
+            exit_time = pd.to_datetime(trade["exit_time"])
+            duration_hours = (exit_time - entry_time).total_seconds() / 3600
+            durations.append(duration_hours)
+
+    avg_duration_hours = np.mean(durations) if durations else 0.0
+
+    return {
+        "total_return": total_return_pct,
+        "total_pnl": total_pnl,
+        "total_trades": total_trades,
+        "winning_trades": len(winning_trades),
+        "losing_trades": len(losing_trades),
+        "win_rate": win_rate,
+        "profit_factor": profit_factor,
+        "gross_profit": gross_profit,
+        "gross_loss": gross_loss,
+        "avg_win": avg_win,
+        "avg_loss": avg_loss,
+        "expectancy": expectancy,
+        "sharpe_ratio": sharpe_ratio,
+        "max_drawdown": max_drawdown,
+        "returns_std": returns_std,
+        "avg_duration_hours": avg_duration_hours,
+        "trade_returns": returns_pct,
     }
 
-    # Calculate advanced metrics if data available
-    if equity_curve:
-        equity_df = pd.DataFrame(equity_curve)
-        equity_series = equity_df["total_equity"]
 
-        # Sharpe ratio (annualized)
-        returns = equity_series.pct_change().dropna()
-        if len(returns) > 0:
-            sharpe = _calculate_sharpe(returns)
-            metrics["sharpe_ratio"] = sharpe
-        else:
-            metrics["sharpe_ratio"] = 0.0
+def _empty_metrics() -> dict[str, float]:
+    """Return empty metrics for cases with no trades."""
+    return {
+        "total_return": 0.0,
+        "total_pnl": 0.0,
+        "total_trades": 0,
+        "winning_trades": 0,
+        "losing_trades": 0,
+        "win_rate": 0.0,
+        "profit_factor": 0.0,
+        "gross_profit": 0.0,
+        "gross_loss": 0.0,
+        "avg_win": 0.0,
+        "avg_loss": 0.0,
+        "expectancy": 0.0,
+        "sharpe_ratio": 0.0,
+        "max_drawdown": 0.0,
+        "returns_std": 0.0,
+        "avg_duration_hours": 0.0,
+        "trade_returns": [],
+    }
 
-        # Max drawdown
-        max_dd, max_dd_pct = _calculate_max_drawdown(equity_series)
-        metrics["max_drawdown_usd"] = max_dd
-        metrics["max_drawdown_pct"] = max_dd_pct
 
-        # Sortino ratio (downside deviation)
-        if len(returns) > 0:
-            sortino = _calculate_sortino(returns)
-            metrics["sortino_ratio"] = sortino
-        else:
-            metrics["sortino_ratio"] = 0.0
+def compare_strategies(
+    strategy_results: dict[str, dict[str, float]], baseline_name: str = "BASELINE"
+) -> dict[str, dict[str, float]]:
+    """
+    Compare multiple strategy results against a baseline.
 
-        # Calmar ratio (return / max drawdown)
-        if max_dd_pct != 0:
-            calmar = summary.get("total_return", 0.0) / abs(max_dd_pct)
-            metrics["calmar_ratio"] = calmar
-        else:
-            metrics["calmar_ratio"] = 0.0
+    Args:
+        strategy_results: Dict of strategy_name -> metrics
+        baseline_name: Name of baseline strategy
 
-    # Trade statistics
-    if trades:
-        trades_df = pd.DataFrame(trades)
+    Returns:
+        Dict of comparisons with improvement metrics
+    """
+    if baseline_name not in strategy_results:
+        raise ValueError(f"Baseline strategy '{baseline_name}' not found in results")
 
-        # Average trade duration
-        trades_df["duration"] = pd.to_datetime(trades_df["exit_time"]) - pd.to_datetime(
-            trades_df["entry_time"]
+    baseline = strategy_results[baseline_name]
+    comparisons = {}
+
+    for strategy_name, metrics in strategy_results.items():
+        if strategy_name == baseline_name:
+            continue
+
+        comparison = {}
+
+        # Calculate improvements
+        comparison["return_improvement"] = metrics["total_return"] - baseline["total_return"]
+        comparison["return_improvement_pct"] = (
+            (metrics["total_return"] / baseline["total_return"] - 1) * 100
+            if baseline["total_return"] != 0
+            else 0.0
         )
-        avg_duration = trades_df["duration"].mean()
-        metrics["avg_trade_duration_hours"] = (
-            avg_duration.total_seconds() / 3600 if avg_duration else 0
+
+        comparison["sharpe_improvement"] = metrics["sharpe_ratio"] - baseline["sharpe_ratio"]
+        comparison["drawdown_improvement"] = (
+            baseline["max_drawdown"] - metrics["max_drawdown"]
+        )  # Lower is better
+
+        comparison["win_rate_improvement"] = metrics["win_rate"] - baseline["win_rate"]
+        comparison["trade_count_change"] = metrics["total_trades"] - baseline["total_trades"]
+
+        # Relative metrics
+        comparison["profit_factor_ratio"] = (
+            metrics["profit_factor"] / baseline["profit_factor"]
+            if baseline["profit_factor"] > 0
+            else float("inf")
         )
 
-        # Consecutive wins/losses
-        win_streak, loss_streak = _calculate_streaks(trades_df["pnl"].tolist())
-        metrics["max_consecutive_wins"] = win_streak
-        metrics["max_consecutive_losses"] = loss_streak
+        comparisons[strategy_name] = comparison
 
-        # Expectancy (average profit per trade)
-        metrics["expectancy"] = trades_df["pnl"].mean() if len(trades_df) > 0 else 0
-
-    return metrics
+    return comparisons
 
 
-def _calculate_sharpe(returns: pd.Series, risk_free_rate: float = 0.0) -> float:
-    """
-    Calculate annualized Sharpe ratio.
+# Backward compatibility alias
+def calculate_metrics(
+    results: dict | list[dict[str, Any]], initial_capital: float = 10000.0
+) -> dict[str, float]:
+    """Backward compatibility wrapper for calculate_backtest_metrics."""
+    # Handle both old API (full results dict) and new API (trades list)
+    if isinstance(results, dict):
+        # Old API: results dict with "trades" key
+        trades = results.get("trades", [])
+        summary = results.get("summary", {})
+        initial_capital = summary.get("initial_capital", initial_capital)
+    else:
+        # New API: trades list directly
+        trades = results
 
-    Args:
-        returns: Series of returns
-        risk_free_rate: Risk-free rate (annual)
-
-    Returns:
-        Sharpe ratio
-    """
-    if len(returns) == 0 or returns.std() == 0:
-        return 0.0
-
-    excess_returns = returns - risk_free_rate / 252  # Daily risk-free rate
-    sharpe = excess_returns.mean() / returns.std()
-
-    # Annualize (assuming daily data, adjust if needed)
-    sharpe_annual = sharpe * np.sqrt(252)
-
-    return float(sharpe_annual)
+    return calculate_backtest_metrics(trades, initial_capital)
 
 
-def _calculate_sortino(returns: pd.Series, risk_free_rate: float = 0.0) -> float:
-    """
-    Calculate annualized Sortino ratio (uses downside deviation).
-
-    Args:
-        returns: Series of returns
-        risk_free_rate: Risk-free rate (annual)
-
-    Returns:
-        Sortino ratio
-    """
-    if len(returns) == 0:
-        return 0.0
-
-    excess_returns = returns - risk_free_rate / 252
-    downside_returns = returns[returns < 0]
-
-    if len(downside_returns) == 0 or downside_returns.std() == 0:
-        return 0.0
-
-    sortino = excess_returns.mean() / downside_returns.std()
-    sortino_annual = sortino * np.sqrt(252)
-
-    return float(sortino_annual)
-
-
-def _calculate_max_drawdown(equity: pd.Series) -> tuple[float, float]:
-    """
-    Calculate maximum drawdown (absolute and percentage).
-
-    Args:
-        equity: Series of equity values
-
-    Returns:
-        Tuple of (max_drawdown_usd, max_drawdown_pct)
-    """
-    if len(equity) == 0:
-        return 0.0, 0.0
-
-    # Calculate running maximum
-    running_max = equity.expanding().max()
-
-    # Calculate drawdown
-    drawdown = equity - running_max
-    drawdown_pct = (drawdown / running_max) * 100
-
-    max_dd = float(drawdown.min())
-    max_dd_pct = float(drawdown_pct.min())
-
-    return max_dd, max_dd_pct
-
-
-def _calculate_streaks(pnl_list: list[float]) -> tuple[int, int]:
-    """
-    Calculate maximum consecutive wins and losses.
-
-    Args:
-        pnl_list: List of PnL values
-
-    Returns:
-        Tuple of (max_win_streak, max_loss_streak)
-    """
-    if not pnl_list:
-        return 0, 0
-
-    max_win_streak = 0
-    max_loss_streak = 0
-    current_win_streak = 0
-    current_loss_streak = 0
-
-    for pnl in pnl_list:
-        if pnl > 0:
-            current_win_streak += 1
-            current_loss_streak = 0
-            max_win_streak = max(max_win_streak, current_win_streak)
-        elif pnl < 0:
-            current_loss_streak += 1
-            current_win_streak = 0
-            max_loss_streak = max(max_loss_streak, current_loss_streak)
-        else:
-            # Break-even trade
-            current_win_streak = 0
-            current_loss_streak = 0
-
-    return max_win_streak, max_loss_streak
-
-
-def print_metrics_report(metrics: dict, backtest_info: dict | None = None):
-    """
-    Print formatted metrics report.
-
-    Args:
-        metrics: Metrics dict from calculate_metrics()
-        backtest_info: Optional backtest info for header
-    """
-    print(f"\n{'='*70}")
-    print("BACKTEST PERFORMANCE METRICS")
-    print(f"{'='*70}")
-
+def print_metrics_report(metrics: dict[str, float], backtest_info: dict = None):
+    """Print metrics report (backward compatibility)."""
+    print("\n=== Backtest Metrics ===")
     if backtest_info:
-        print(f"Symbol:       {backtest_info.get('symbol')}")
-        print(f"Timeframe:    {backtest_info.get('timeframe')}")
+        print(f"Symbol: {backtest_info.get('symbol', 'N/A')}")
+        print(f"Timeframe: {backtest_info.get('timeframe', 'N/A')}")
         print(
-            f"Period:       {backtest_info.get('start_date')} to "
-            f"{backtest_info.get('end_date')}"
+            f"Period: {backtest_info.get('start_date', 'N/A')} to {backtest_info.get('end_date', 'N/A')}"
         )
-        print(f"Bars:         {backtest_info.get('bars_processed'):,}")
-        print(f"{'='*70}")
+        print()
+    print(f"Total Return: {metrics.get('total_return', 0):.2f}%")
+    print(f"Total Trades: {metrics.get('total_trades', 0)}")
+    print(f"Win Rate: {metrics.get('win_rate', 0):.1f}%")
+    print(f"Sharpe Ratio: {metrics.get('sharpe_ratio', 0):.3f}")
+    print(f"Max Drawdown: {metrics.get('max_drawdown', 0):.2f}%")
+    print(f"Profit Factor: {metrics.get('profit_factor', 0):.2f}")
 
-    print("\n[RETURNS]")
-    print(f"  Total Return:     {metrics.get('total_return_pct', 0):.2f}%")
-    print(f"  Total Return USD: ${metrics.get('total_return_usd', 0):,.2f}")
 
-    print("\n[RISK METRICS]")
-    print(f"  Sharpe Ratio:     {metrics.get('sharpe_ratio', 0):.2f}")
-    print(f"  Sortino Ratio:    {metrics.get('sortino_ratio', 0):.2f}")
-    print(f"  Calmar Ratio:     {metrics.get('calmar_ratio', 0):.2f}")
-    print(
-        f"  Max Drawdown:     {metrics.get('max_drawdown_pct', 0):.2f}% "
-        f"(${metrics.get('max_drawdown_usd', 0):,.2f})"
-    )
+def calculate_statistical_significance(
+    returns_a: list[float], returns_b: list[float], alpha: float = 0.05
+) -> dict[str, Any]:
+    """
+    Calculate statistical significance between two return series.
 
-    print("\n[TRADE STATISTICS]")
-    print(f"  Total Trades:     {metrics.get('num_trades', 0)}")
-    print(f"  Win Rate:         {metrics.get('win_rate', 0):.2f}%")
-    print(f"  Profit Factor:    {metrics.get('profit_factor', 0):.2f}")
-    print(f"  Expectancy:       ${metrics.get('expectancy', 0):.2f}")
-    print(f"  Avg Duration:     {metrics.get('avg_trade_duration_hours', 0):.1f}h")
-    print(f"  Max Win Streak:   {metrics.get('max_consecutive_wins', 0)}")
-    print(f"  Max Loss Streak:  {metrics.get('max_consecutive_losses', 0)}")
+    Args:
+        returns_a: Returns from strategy A
+        returns_b: Returns from strategy B
+        alpha: Significance level
 
-    print(f"{'='*70}\n")
+    Returns:
+        Statistical test results
+    """
+    from scipy import stats
+
+    if len(returns_a) == 0 or len(returns_b) == 0:
+        return {
+            "test_type": "insufficient_data",
+            "statistic": 0.0,
+            "p_value": 1.0,
+            "significant": False,
+            "effect_size": 0.0,
+        }
+
+    # Choose appropriate test
+    if len(returns_a) == len(returns_b):
+        # Paired t-test (assumes same trades)
+        if len(returns_a) > 1:
+            statistic, p_value = stats.ttest_rel(returns_a, returns_b)
+            test_type = "paired_ttest"
+        else:
+            statistic, p_value = 0.0, 1.0
+            test_type = "single_observation"
+    else:
+        # Independent t-test
+        if len(returns_a) > 1 and len(returns_b) > 1:
+            statistic, p_value = stats.ttest_ind(returns_a, returns_b)
+            test_type = "independent_ttest"
+        else:
+            statistic, p_value = 0.0, 1.0
+            test_type = "insufficient_data"
+
+    # Effect size (Cohen's d)
+    if len(returns_a) > 0 and len(returns_b) > 0:
+        pooled_std = np.sqrt(
+            (
+                (len(returns_a) - 1) * np.var(returns_a, ddof=1)
+                + (len(returns_b) - 1) * np.var(returns_b, ddof=1)
+            )
+            / (len(returns_a) + len(returns_b) - 2)
+        )
+        effect_size = (
+            (np.mean(returns_a) - np.mean(returns_b)) / pooled_std if pooled_std > 0 else 0.0
+        )
+    else:
+        effect_size = 0.0
+
+    return {
+        "test_type": test_type,
+        "statistic": statistic,
+        "p_value": p_value,
+        "significant": p_value < alpha,
+        "effect_size": effect_size,
+        "alpha": alpha,
+    }

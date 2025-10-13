@@ -26,7 +26,9 @@ def evaluate_pipeline(
 
     metrics.inc("pipeline_eval_invocations")
 
-    feats, feats_meta = extract_features(candles, config=configs)
+    # Extract timeframe from policy for HTF Fibonacci context
+    timeframe = policy.get("timeframe", None)
+    feats, feats_meta = extract_features(candles, config=configs, timeframe=timeframe)
     metrics.event("features_ok", {"keys": list(feats.keys())})
 
     # Detect regime BEFORE prediction (needed for regime-aware calibration)

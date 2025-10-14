@@ -31,6 +31,7 @@ from scipy.stats import spearmanr
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+from core.utils import get_candles_path
 from core.utils.data_loader import load_features
 
 
@@ -202,7 +203,7 @@ def test_model_predictions(model_path, symbol, timeframe, horizons=None):
     features_df = load_features(symbol, timeframe)
 
     # Load candles for returns
-    candles_path = Path("data/candles") / f"{symbol}_{timeframe}.parquet"
+    candles_path = get_candles_path(symbol, timeframe)
     candles_df = pd.read_parquet(candles_path)
     close_prices = candles_df["close"].values
 
@@ -257,7 +258,7 @@ def test_individual_features(symbol, timeframe, horizons=None):
     features_df = load_features(symbol, timeframe)
 
     # Load candles for returns
-    candles_path = Path("data/candles") / f"{symbol}_{timeframe}.parquet"
+    candles_path = get_candles_path(symbol, timeframe)
     candles_df = pd.read_parquet(candles_path)
     close_prices = candles_df["close"].values
 

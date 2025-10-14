@@ -12,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from core.ml.labeling import generate_adaptive_triple_barrier_labels
 from core.ml.labeling_fast import generate_adaptive_triple_barrier_labels_fast
+from src.core.utils import get_candles_path
 
 
 def main():
@@ -22,16 +23,11 @@ def main():
     # Load data
     symbol = "tBTCUSD"
     timeframe = "1h"
-    candles_path = Path(f"data/candles/{symbol}_{timeframe}.parquet")
-
-    if not candles_path.exists():
-        print(f"[ERROR] Candles not found: {candles_path}")
-        return
-
-    df = pd.read_parquet(candles_path)
-    closes = df["close"].tolist()
-    highs = df["high"].tolist()
-    lows = df["low"].tolist()
+    candles_path = get_candles_path(symbol, timeframe)
+    candles_df = pd.read_parquet(candles_path)
+    closes = candles_df["close"].tolist()
+    highs = candles_df["high"].tolist()
+    lows = candles_df["low"].tolist()
 
     print(f"[LOAD] {len(closes)} bars from {candles_path}")
 

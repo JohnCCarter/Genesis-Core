@@ -24,6 +24,7 @@ from core.ml.evaluation import generate_evaluation_report
 from core.ml.labeling import align_features_with_labels, generate_labels
 from core.ml.visualization import create_champion_summary, create_radar_chart
 from core.strategy.prob_model import predict_proba_for
+from src.core.utils import get_candles_path
 
 
 def load_baseline_model(symbol: str, timeframe: str) -> dict:
@@ -417,18 +418,26 @@ def main():
         # Load data
         print("[DATA] Loading features and candles...")
         features_path = Path("data/features") / f"{symbol}_{timeframe}_features.parquet"
-        candles_path = Path("data/candles") / f"{symbol}_{timeframe}.parquet"
 
         if not features_path.exists():
             raise FileNotFoundError(f"Features file not found: {features_path}")
-        if not candles_path.exists():
-            raise FileNotFoundError(f"Candles file not found: {candles_path}")
 
         from core.utils.data_loader import load_features
 
         features_df = load_features(symbol, timeframe)
-        candles_df = pd.read_parquet(candles_path)
-        close_prices = candles_df["close"].tolist()
+
+        try:
+            candles_path = get_candles_path(symbol, timeframe)
+        except FileNotFoundError as e:
+            print(f"[WARN] Missing candles for {symbol} {timeframe}: {e}")
+            return {
+                "symbol": symbol,
+                "timeframe": timeframe,
+                "status": "missing_candles",
+            }
+
+        candles = pd.read_parquet(candles_path)
+        close_prices = candles["close"].tolist()
 
         # Load models
         models_to_evaluate = []

@@ -39,7 +39,7 @@ repos:
         args: [--maxkb=1000]
       - id: check-merge-conflict
       - id: check-yaml
-        exclude: ^\.github/
+        exclude: ^\.github/.*\.md$
       - id: end-of-file-fixer
       - id: trailing-whitespace
       - id: check-json

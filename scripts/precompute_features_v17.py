@@ -35,20 +35,18 @@ def precompute_features_v17(symbol: str, timeframe: str, verbose: bool = True) -
     start_time = time.time()
 
     # Load candle data (try two-layer structure first, fallback to legacy)
-    candles_path_curated = Path(f"data/curated/v1/candles/{symbol}_{timeframe}.parquet")
-    candles_path_legacy = Path(f"data/candles/{symbol}_{timeframe}.parquet")
+    candles_path = Path(f"data/curated/v1/candles/{symbol}_{timeframe}.parquet")
 
-    if candles_path_curated.exists():
-        candles_path = candles_path_curated
-    elif candles_path_legacy.exists():
-        candles_path = candles_path_legacy
-    else:
-        raise FileNotFoundError(
-            f"Candles not found:\n"
-            f"  Tried curated: {candles_path_curated}\n"
-            f"  Tried legacy: {candles_path_legacy}\n"
-            f"Run: python scripts/fetch_historical.py --symbol {symbol} --timeframe {timeframe}"
-        )
+    if not candles_path.exists():
+        legacy_path = Path(f"data/candles/{symbol}_{timeframe}.parquet")
+        if legacy_path.exists():
+            candles_path = legacy_path
+        else:
+            raise FileNotFoundError(
+                f"Candles not found:\n"
+                f"  Expected curated: {candles_path}\n"
+                f"Run: python scripts/fetch_historical.py --symbol {symbol} --timeframe {timeframe}"
+            )
 
     if verbose:
         print(f"[LOAD] {candles_path}")
@@ -169,15 +167,17 @@ def precompute_features_v17(symbol: str, timeframe: str, verbose: bool = True) -
     # === SAVE FEATURES ===
 
     # Save as Feather (fast, for ML training)
-    feather_path = Path(f"data/features/{symbol}_{timeframe}_features_v17.feather")
-    feather_path.parent.mkdir(parents=True, exist_ok=True)
+    # Save features under archive/features/ (keep curated directory clean)
+    features_dir = Path("data/archive/features")
+    features_dir.mkdir(parents=True, exist_ok=True)
+
+    feather_path = features_dir / f"{symbol}_{timeframe}_features_v17.feather"
     features_df.reset_index(drop=True).to_feather(feather_path)
 
     if verbose:
         print(f"[SAVED] Feather: {feather_path}")
 
-    # Also save as Parquet (backup, compressed)
-    parquet_path = Path(f"data/features/{symbol}_{timeframe}_features_v17.parquet")
+    parquet_path = features_dir / f"{symbol}_{timeframe}_features_v17.parquet"
     features_df.to_parquet(parquet_path, index=False, compression="snappy")
 
     if verbose:

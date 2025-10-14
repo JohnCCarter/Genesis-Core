@@ -26,6 +26,7 @@ from sklearn.model_selection import GridSearchCV
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from core.indicators.atr import calculate_atr
+from core.utils import get_candles_path
 from core.utils.data_loader import load_features
 
 
@@ -173,7 +174,7 @@ def main():
         print(f"[DATA] Loaded {len(features_df)} samples with {len(feature_cols)} features")
 
         # Load candles
-        candles_path = Path(f"data/candles/{args.symbol}_{args.timeframe}.parquet")
+        candles_path = get_candles_path(args.symbol, args.timeframe)
         candles_df = pd.read_parquet(candles_path)
 
         # Calculate ATR-scaled targets

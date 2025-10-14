@@ -178,11 +178,11 @@ python scripts/comprehensive_feature_analysis.py --symbol tBTCUSD --timeframe 1h
 
 ## ⚠️ Important Notes
 
-1. **Data is cached** - Once fetched, data is stored in `data/candles/*.parquet`
-2. **No need to re-fetch** unless updating with new recent data
-3. **Idempotent** - Safe to re-run, will overwrite existing files
-4. **Internet required** - Fetches from Bitfinex public API
-5. **No API keys needed** - Uses public endpoints only
+1. **Curated datasets** - Efter hämtning, konsolidera till `data/curated/v1/candles/`
+2. **Raw-cache** - Individuella hämtningar sparas i `data/raw/bitfinex/`
+3. **Metadata** - Validerad metadata gick till `data/metadata/curated/*_v1.json`
+4. **Idempotent fetch** - Skriptet kan köras om; äldre filer skrivs över
+5. **Internet required** - Hämtar via Bitfinex public API (inga API-nycklar)
 
 ---
 

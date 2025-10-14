@@ -20,6 +20,7 @@ from sklearn.linear_model import LogisticRegression
 
 from core.ml.evaluation import generate_evaluation_report, save_evaluation_report
 from core.ml.labeling import align_features_with_labels, generate_labels
+from src.core.utils import get_candles_path
 
 
 def load_trained_model(model_path: Path) -> dict:
@@ -152,10 +153,7 @@ def main():
         from core.utils.data_loader import load_features
 
         features_df = load_features(symbol, timeframe)
-        candles_path = Path("data/candles") / f"{symbol}_{timeframe}.parquet"
-
-        if not candles_path.exists():
-            raise FileNotFoundError(f"Candles file not found: {candles_path}")
+        candles_path = get_candles_path(symbol, timeframe)
         candles_df = pd.read_parquet(candles_path)
         close_prices = candles_df["close"].tolist()
 

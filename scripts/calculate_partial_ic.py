@@ -27,6 +27,7 @@ from sklearn.linear_model import LinearRegression
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+from core.utils import get_candles_path
 from core.utils.data_loader import load_features
 
 
@@ -238,7 +239,12 @@ def main():
         print("\n[LOAD] Loading features...")
         features_df = load_features(args.symbol, args.timeframe)
 
-        candles_path = Path(f"data/candles/{args.symbol}_{args.timeframe}.parquet")
+        try:
+            candles_path = get_candles_path(args.symbol, args.timeframe)
+        except FileNotFoundError as e:
+            print(f"[ERROR] {e}")
+            return 1
+
         candles_df = pd.read_parquet(candles_path)
 
         # Calculate forward returns

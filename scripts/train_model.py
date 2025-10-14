@@ -27,6 +27,7 @@ from core.ml.labeling import (
     generate_labels,
     generate_triple_barrier_labels,
 )
+from core.utils import get_candles_path
 from core.utils.data_loader import load_features
 from core.utils.provenance import create_provenance_record
 
@@ -55,21 +56,14 @@ def load_features_and_prices(
     # Load features with smart format selection (Feather > Parquet)
     features_df = load_features(symbol, timeframe)
 
-    # Extract close prices from candles (needed for labeling)
-    # Try two-layer structure first, fallback to legacy
-    candles_path_curated = Path(f"data/curated/v1/candles/{symbol}_{timeframe}.parquet")
-    candles_path_legacy = Path(f"data/candles/{symbol}_{timeframe}.parquet")
-
-    if candles_path_curated.exists():
-        candles_path = candles_path_curated
-    elif candles_path_legacy.exists():
-        candles_path = candles_path_legacy
-    else:
-        raise FileNotFoundError(
-            f"Candles file not found:\n"
-            f"  Tried curated: {candles_path_curated}\n"
-            f"  Tried legacy: {candles_path_legacy}"
-        )
+    try:
+        candles_path = get_candles_path(symbol, timeframe)
+    except FileNotFoundError as err:
+        fallback_candles_path = Path("data/candles") / f"{symbol}_{timeframe}.parquet"
+        if fallback_candles_path.exists():
+            candles_path = fallback_candles_path
+        else:
+            raise FileNotFoundError(f"Candles file not found: {fallback_candles_path}") from err
 
     candles_df = pd.read_parquet(candles_path)
     close_prices = candles_df["close"].tolist()

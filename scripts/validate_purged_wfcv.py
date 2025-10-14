@@ -25,6 +25,7 @@ from sklearn.metrics import accuracy_score, log_loss, roc_auc_score
 
 from core.ml.labeling import align_features_with_labels, generate_labels
 from core.utils.data_loader import load_features
+from src.core.utils import get_candles_path
 
 
 def create_purged_splits(
@@ -174,7 +175,12 @@ def main():
 
     # Load data
     features_df = load_features(args.symbol, args.timeframe)
-    candles_path = Path("data/candles") / f"{args.symbol}_{args.timeframe}.parquet"
+    try:
+        candles_path = get_candles_path(args.symbol, args.timeframe)
+    except FileNotFoundError as e:
+        print(f"[ERROR] {e}")
+        return 1
+
     candles_df = pd.read_parquet(candles_path)
     close_prices = candles_df["close"].tolist()
 

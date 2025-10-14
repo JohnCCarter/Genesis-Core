@@ -18,6 +18,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from core.ml.label_cache import load_cached_labels
 from core.ml.labeling import align_features_with_labels
 from core.strategy.regime import detect_regime_from_candles
+from src.core.utils import get_candles_path
 
 
 def load_model(model_path: Path) -> dict:
@@ -63,7 +64,12 @@ def main():
     print(f"[LOAD] Features: {len(features_df)} samples")
 
     # Load candles for regime detection
-    candles_path = Path(f"data/candles/{args.symbol}_{args.timeframe}.parquet")
+    try:
+        candles_path = get_candles_path(args.symbol, args.timeframe)
+    except FileNotFoundError as e:
+        print(f"[ERROR] {e}")
+        return 1
+
     candles_df = pd.read_parquet(candles_path)
 
     # Detect regime for each bar

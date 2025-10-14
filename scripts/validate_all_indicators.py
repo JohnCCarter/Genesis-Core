@@ -352,9 +352,12 @@ def main():
     print("=" * 80)
 
     # Load candles
-    candles_path = Path(f"data/candles/{args.symbol}_{args.timeframe}.parquet")
-    if not candles_path.exists():
-        print(f"Error: Candles file not found: {candles_path}")
+    from core.utils import get_candles_path
+
+    try:
+        candles_path = get_candles_path(args.symbol, args.timeframe)
+    except FileNotFoundError as e:
+        print(f"Error: {e}")
         sys.exit(1)
 
     candles_df = pd.read_parquet(candles_path)

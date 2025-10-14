@@ -17,6 +17,7 @@ import pandas as pd
 from tqdm import tqdm
 
 from core.strategy.features import extract_features
+from core.utils import curated_candles_path
 
 
 def precompute_features_for_symbol(symbol: str, timeframe: str, verbose: bool = True) -> dict:
@@ -31,15 +32,22 @@ def precompute_features_for_symbol(symbol: str, timeframe: str, verbose: bool = 
     Returns:
         dict with metadata about the process
     """
-    candles_path = Path("data/candles") / f"{symbol}_{timeframe}.parquet"
-    features_path = Path("data/features") / f"{symbol}_{timeframe}_features.parquet"
+    curated_path = curated_candles_path(symbol, timeframe)
+    legacy_path = Path("data/candles") / f"{symbol}_{timeframe}.parquet"
 
-    if not candles_path.exists():
+    if curated_path.exists():
+        candles_path = curated_path
+    elif legacy_path.exists():
+        candles_path = legacy_path
+    else:
         return {
             "symbol": symbol,
             "timeframe": timeframe,
             "status": "error",
-            "message": f"Candles file not found: {candles_path}",
+            "message": (
+                "Candles file not found. Expected curated dataset at "
+                f"{curated_path}. Run fetch_historical.py först."
+            ),
         }
 
     # Load candles
@@ -86,19 +94,19 @@ def precompute_features_for_symbol(symbol: str, timeframe: str, verbose: bool = 
     # Convert to DataFrame
     features_df = pd.DataFrame(features_list)
 
-    # Ensure features directory exists
-    features_path.parent.mkdir(parents=True, exist_ok=True)
+    # Save features under archive
+    features_dir = Path("data/archive/features")
+    features_dir.mkdir(parents=True, exist_ok=True)
 
-    # Save to Feather (2-5× faster read than Parquet)
-    feather_path = features_path.with_suffix(".feather")
+    feather_path = features_dir / f"{symbol}_{timeframe}_features.feather"
     features_df.to_feather(feather_path)
 
-    # Also save Parquet for backward compatibility
-    features_df.to_parquet(features_path, index=False)
+    parquet_path = features_dir / f"{symbol}_{timeframe}_features.parquet"
+    features_df.to_parquet(parquet_path, index=False)
 
     if verbose:
         print(f"[SAVED] {feather_path} ({len(features_df)} rows, Feather)")
-        print(f"[SAVED] {features_path} ({len(features_df)} rows, Parquet - legacy)")
+        print(f"[SAVED] {parquet_path} ({len(features_df)} rows, Parquet)")
 
     return {
         "symbol": symbol,
@@ -106,7 +114,7 @@ def precompute_features_for_symbol(symbol: str, timeframe: str, verbose: bool = 
         "status": "success",
         "candles_count": len(df),
         "features_count": len(features_df),
-        "output_path": str(features_path),
+        "output_path": str(parquet_path),
     }
 
 
@@ -120,15 +128,19 @@ def main():
     args = parser.parse_args()
 
     if args.all:
-        # Find all parquet files in data/candles/
-        candles_dir = Path("data/candles")
-        if not candles_dir.exists():
-            print("[ERROR] data/candles/ directory not found")
-            sys.exit(1)
+        curated_dir = Path("data/curated/v1/candles")
+        legacy_dir = Path("data/candles")
 
-        parquet_files = list(candles_dir.glob("*.parquet"))
+        if curated_dir.exists():
+            parquet_files = list(curated_dir.glob("*.parquet"))
+        else:
+            parquet_files = []
+
+        if not parquet_files and legacy_dir.exists():
+            parquet_files = list(legacy_dir.glob("*.parquet"))
+
         if not parquet_files:
-            print("[ERROR] No parquet files found in data/candles/")
+            print("[ERROR] No parquet files found in curated or legacy directories")
             sys.exit(1)
 
         results = []

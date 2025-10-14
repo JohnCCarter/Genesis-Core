@@ -26,6 +26,8 @@ import pandas as pd
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+from src.core.utils import get_candles_path
+
 
 def load_model(model_path: str) -> dict:
     """Load trained model."""
@@ -72,10 +74,10 @@ def load_future_returns(symbol: str, timeframe: str, horizon: int = 36) -> np.nd
     Returns:
         Array of returns (close[i+H] - close[i]) / close[i]
     """
-    candles_path = Path(f"data/candles/{symbol}_{timeframe}.parquet")
-    candles_df = pd.read_parquet(candles_path)
+    candles_path = get_candles_path(symbol, timeframe)
+    candles = pd.read_parquet(candles_path)
 
-    close = candles_df["close"].values
+    close = candles["close"].values
 
     # Calculate forward returns
     future_returns = np.full(len(close), np.nan)

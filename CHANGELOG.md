@@ -399,10 +399,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 - 28 comprehensive tests
 
 **Data Foundation:**
-- `scripts/fetch_historical.py` - Historical candles from Bitfinex (Parquet)
-- `scripts/validate_data.py` - Data quality validation
-- Data structure: `data/candles/`, `data/features/`, `data/metadata/`
-- Initial data: tBTCUSD/tETHUSD 15m/1h, 3 months, 99.9%+ quality
+- `scripts/fetch_historical.py` - Historiska candles från Bitfinex (Parquet)
+- `scripts/validate_data.py` - Datakvalitetsvalidering
+- Kuraterad struktur: `data/curated/v1/candles/` (aktiva datasets), `data/raw/bitfinex/`, `data/metadata/curated/`
+- Äldre data hålls i `data/archive/`
+- Initial data: tBTCUSD/tETHUSD 15m/1h, 3 månader, 99.9%+ kvalitet
 
 **API Improvements:**
 - `GET /paper/estimate` - Calculate min/max order size (wallet-aware)

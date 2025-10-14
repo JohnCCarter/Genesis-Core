@@ -32,6 +32,7 @@ from core.ml.labeling import (
     generate_adaptive_triple_barrier_labels,
 )
 from core.utils.data_loader import load_features
+from src.core.utils import get_candles_path
 
 # Try Numba for 2000× speedup
 try:
@@ -47,7 +48,7 @@ def load_data(symbol: str, timeframe: str):
     # Load features with smart format selection (Feather > Parquet)
     features_df = load_features(symbol, timeframe)
 
-    candles_path = Path(f"data/candles/{symbol}_{timeframe}.parquet")
+    candles_path = get_candles_path(symbol, timeframe)
     candles_df = pd.read_parquet(candles_path)
 
     # Remove timestamp

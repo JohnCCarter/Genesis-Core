@@ -115,6 +115,7 @@ data/curated/**/*.parquet
 data/candles/*.parquet
 data/features/*.parquet
 data/features/*.feather
+data/archive/**
 data/metadata/**/*.json
 data/meta_labels/*.parquet
 

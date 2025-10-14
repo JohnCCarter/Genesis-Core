@@ -56,7 +56,9 @@ def main():
     print(f"[LOAD] Loaded {len(features_df):,} samples with {len(features_df.columns)-1} features")
 
     # Load candles for returns
-    candles_path = Path(f"data/candles/{args.symbol}_{args.timeframe}.parquet")
+    from core.utils import get_candles_path
+
+    candles_path = get_candles_path(args.symbol, args.timeframe)
     candles_df = pd.read_parquet(candles_path)
 
     # Calculate forward returns

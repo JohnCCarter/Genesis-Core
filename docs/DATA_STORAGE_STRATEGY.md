@@ -17,12 +17,15 @@
 
 ```
 data/
-├── candles/                    # ❌ OLD: Flat structure
-│   └── {symbol}_{timeframe}.parquet
-│
-└── features/                   # ✅ GOOD: Hybrid format
-    ├── {symbol}_{timeframe}_features_v17.feather  # Primary (fast)
-    └── {symbol}_{timeframe}_features_v17.parquet  # Backup
+├── curated/
+│   └── v1/
+│       └── candles/             # ✅ Aktiva datasets (t.ex. tBTCUSD_6h.parquet)
+├── raw/bitfinex/                # ✅ Råhämtningar (timestamped parquet)
+├── metadata/
+│   ├── curated/                 # ✅ Versionerad metadata (t.ex. tBTCUSD_6h_v1.json)
+│   └── ...                      # Legacy fetch-/valideringsloggar
+├── features/                    # (Tom) reserverad för genererade features
+└── archive/                     # Legacy candles/features
 ```
 
 ### Smart loader (src/core/utils/data_loader.py):

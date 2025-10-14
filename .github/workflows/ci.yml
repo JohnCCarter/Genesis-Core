@@ -28,9 +28,9 @@ jobs:
         run: |
           . .venv/bin/activate
           # Code formatting
-          python -m black --check src scripts tests
+          python -m black --check src scripts tests --exclude "scripts/archive"
           # Linting
-          python -m ruff check src scripts tests
+          python -m ruff check src scripts tests --exclude scripts/archive
           # Security scanning
           python -m bandit -r src -f json -o bandit-report.json
           # Run tests

@@ -20,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from core.indicators.vectorized import calculate_all_features_vectorized
 from core.strategy.features_asof import extract_features_backtest
+from src.core.utils import get_candles_path
 
 
 def compute_per_sample_features(df: pd.DataFrame, max_samples: int = 100) -> pd.DataFrame:
@@ -206,7 +207,12 @@ def main():
 
         # Load candles
         print("\n[LOAD] Loading candles...")
-        candles_path = Path(f"data/candles/{args.symbol}_{args.timeframe}.parquet")
+        try:
+            candles_path = get_candles_path(args.symbol, args.timeframe)
+        except FileNotFoundError as e:
+            print(f"[ERROR] {e}")
+            return 1
+
         candles_df = pd.read_parquet(candles_path)
 
         # Method 1: Per-sample (GROUND TRUTH)

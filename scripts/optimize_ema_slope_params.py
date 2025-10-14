@@ -19,6 +19,7 @@ from src.core.indicators.fibonacci import (
     calculate_fibonacci_features_vectorized,
 )
 from src.core.indicators.vectorized import calculate_ema_vectorized
+from src.core.utils import get_candles_path
 
 
 def calculate_forward_returns(close_prices: pd.Series, horizon: int = 10) -> pd.Series:
@@ -153,9 +154,10 @@ def main():
     print("=" * 80)
 
     # Load candles
-    candles_path = Path(f"data/candles/{args.symbol}_{args.timeframe}.parquet")
-    if not candles_path.exists():
-        print(f"[ERROR] Candles not found at {candles_path}")
+    try:
+        candles_path = get_candles_path(args.symbol, args.timeframe)
+    except FileNotFoundError as e:
+        print(f"[ERROR] {e}")
         return 1
 
     candles_df = pd.read_parquet(candles_path)

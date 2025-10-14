@@ -24,6 +24,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from core.utils.data_loader import load_features
+from src.core.utils import get_candles_path
 
 
 def load_model_and_data(model_path: str, symbol: str, timeframe: str):
@@ -295,13 +296,14 @@ def main():
 
         # Calculate forward returns
         # Need close prices - assume they're in the candles file
-        candles_path = Path(f"data/candles/{args.symbol}_{args.timeframe}.parquet")
-        if not candles_path.exists():
-            print(f"[ERROR] Candles file not found: {candles_path}")
+        try:
+            candles_path = get_candles_path(args.symbol, args.timeframe)
+        except FileNotFoundError as e:
+            print(f"[ERROR] {e}")
             return 1
 
-        candles_df = pd.read_parquet(candles_path)
-        forward_returns = calculate_forward_returns(candles_df["close"], args.horizon)
+        candles = pd.read_parquet(candles_path)
+        forward_returns = calculate_forward_returns(candles["close"], args.horizon)
 
         # Align predictions and returns
         min_len = min(len(predictions), len(forward_returns))

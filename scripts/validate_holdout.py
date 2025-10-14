@@ -27,6 +27,7 @@ from sklearn.metrics import roc_auc_score
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from core.ml.prob_model import ProbModel  # noqa: I001
+from core.utils import get_candles_path
 from core.utils.data_loader import load_features  # noqa: I001
 
 
@@ -124,10 +125,7 @@ def validate_holdout(model_path: Path, verbose: bool = True) -> dict:
     predictions = model.predict_proba(X_holdout)
 
     # Load candles for forward returns calculation
-    candles_path = Path(f"data/candles/{symbol}_{timeframe}.parquet")
-    if not candles_path.exists():
-        raise FileNotFoundError(f"Candles file not found: {candles_path}")
-
+    candles_path = get_candles_path(symbol, timeframe)
     candles_df = pd.read_parquet(candles_path)
     close_prices = candles_df["close"]
 

@@ -21,6 +21,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from core.indicators.vectorized import calculate_all_features_vectorized, validate_features
+from core.utils import curated_candles_path
 
 
 def precompute_features_vectorized(symbol: str, timeframe: str, verbose: bool = True) -> dict:
@@ -32,9 +33,16 @@ def precompute_features_vectorized(symbol: str, timeframe: str, verbose: bool = 
     start_time = time.time()
 
     # Load candles
-    candles_path = Path(f"data/candles/{symbol}_{timeframe}.parquet")
+    candles_path = curated_candles_path(symbol, timeframe)
     if not candles_path.exists():
-        raise FileNotFoundError(f"Candles not found: {candles_path}")
+        legacy_path = Path(f"data/candles/{symbol}_{timeframe}.parquet")
+        if legacy_path.exists():
+            candles_path = legacy_path
+        else:
+            raise FileNotFoundError(
+                "Candles not found. Expected curated dataset at "
+                f"{candles_path}\nRun fetch_historical.py först."
+            )
 
     if verbose:
         print(f"[LOAD] {candles_path}")
@@ -70,7 +78,7 @@ def precompute_features_vectorized(symbol: str, timeframe: str, verbose: bool = 
             print(f"[WARNING] {validation['inf_count']} Inf values found")
 
     # Save to disk
-    features_dir = Path("data/features")
+    features_dir = Path("data/archive/features")
     features_dir.mkdir(parents=True, exist_ok=True)
 
     # Save to Feather (fast read)
@@ -116,14 +124,19 @@ def main():
     try:
         if args.all:
             # Process all parquet files
-            candles_dir = Path("data/candles")
-            if not candles_dir.exists():
-                print("[ERROR] data/candles/ directory not found")
-                return 1
+            curated_dir = Path("data/curated/v1/candles")
+            legacy_dir = Path("data/candles")
 
-            parquet_files = list(candles_dir.glob("*.parquet"))
+            if curated_dir.exists():
+                parquet_files = list(curated_dir.glob("*.parquet"))
+            else:
+                parquet_files = []
+
+            if not parquet_files and legacy_dir.exists():
+                parquet_files = list(legacy_dir.glob("*.parquet"))
+
             if not parquet_files:
-                print("[ERROR] No parquet files found in data/candles/")
+                print("[ERROR] No parquet files found in curated or legacy directories")
                 return 1
 
             results = []

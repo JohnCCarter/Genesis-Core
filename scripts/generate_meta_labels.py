@@ -22,6 +22,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from core.indicators.atr import calculate_atr
 from core.ml.labeling import generate_adaptive_triple_barrier_labels
 from core.strategy.fvg_filter import generate_fvg_opportunities
+from src.core.utils import get_candles_path
 
 
 def generate_meta_labels(
@@ -152,24 +153,20 @@ def main():
 
     # Load features
     features_path = Path(f"data/features/{args.symbol}_{args.timeframe}_features.parquet")
-    candles_path = Path(f"data/candles/{args.symbol}_{args.timeframe}.parquet")
 
     if not features_path.exists():
         print(f"[ERROR] Features not found: {features_path}")
         print("[HINT] Run: python scripts/precompute_features.py first")
         sys.exit(1)
 
-    if not candles_path.exists():
-        print(f"[ERROR] Candles not found: {candles_path}")
-        print("[HINT] Run: python scripts/fetch_historical.py first")
-        sys.exit(1)
+    features_df = pd.read_parquet(features_path)
 
-    from core.utils.data_loader import load_features
+    try:
+        candles_path = get_candles_path(args.symbol, args.timeframe)
+    except FileNotFoundError as e:
+        print(f"[ERROR] {e}")
+        return 1
 
-    print("[LOAD] Loading features...")
-    features_df = load_features(args.symbol, args.timeframe)
-
-    print(f"[LOAD] Loading {candles_path}")
     candles_df = pd.read_parquet(candles_path)
 
     # Generate meta-labels

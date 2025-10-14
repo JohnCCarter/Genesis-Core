@@ -9,10 +9,17 @@
 
 ```
 data/
-├── candles/          # Historical OHLCV data (Parquet format)
-├── features/         # Pre-computed features (Parquet format)
-├── metadata/         # Data quality reports and fetch logs (JSON)
-└── README.md         # This file
+├── curated/
+│   └── v1/
+│       └── candles/   # Versionerade datasets som används av pipeline
+├── raw/
+│   └── bitfinex/
+│       └── candles/   # Senaste råhämtningar (parquet)
+├── metadata/
+│   └── curated/       # Metadata för v1-datasets
+├── features/          # (Tom) reserverad för framtida feature dumps
+├── archive/           # Legacy candles/features flyttas hit
+└── DATA_FORMAT.md
 ```
 
 ---
@@ -32,9 +39,9 @@ Ignored by `.gitignore`:
 
 **File naming:** `{SYMBOL}_{TIMEFRAME}.parquet`
 
-**Examples:**
-- `tBTCUSD_1m.parquet` - Bitcoin 1-minute candles
-- `tETHUSD_1h.parquet` - Ethereum 1-hour candles
+**Examples (curated v1):**
+- `tBTCUSD_6h.parquet` - Bitcoin 6-hour candles
+- `tETHUSD_15m.parquet` - Ethereum 15-minute candles
 
 **Schema:**
 ```python
@@ -52,21 +59,7 @@ Ignored by `.gitignore`:
 
 ## 🧬 Features Format
 
-**File naming:** `{SYMBOL}_{TIMEFRAME}_features.parquet`
-
-**Examples:**
-- `tBTCUSD_1m_features.parquet`
-- `tETHUSD_1h_features.parquet`
-
-**Schema:**
-```python
-{
-    "timestamp": int64,          # Unix timestamp (ms)
-    "ema_delta_pct": float64,    # EMA delta percentage
-    "rsi": float64,              # RSI indicator
-    # ... additional features as needed
-}
-```
+**Status:** Mappen är tom just nu. Äldre features ligger i `data/archive/features/`.
 
 ---
 
@@ -75,8 +68,9 @@ Ignored by `.gitignore`:
 **File naming:** `{SYMBOL}_{TIMEFRAME}_meta.json`
 
 **Examples:**
-- `tBTCUSD_1m_meta.json`
-- `tETHUSD_1h_meta.json`
+**Examples:**
+- `tBTCUSD_6h_v1.json`
+- `tETHUSD_1h_v1.json`
 
 **Schema:**
 ```json
@@ -133,11 +127,11 @@ python scripts/validate_data.py --symbol tBTCUSD --timeframe 1m
 
 ## 🔄 Data Lifecycle
 
-1. **Fetch** - Download from Bitfinex API → `candles/*.parquet`
-2. **Validate** - Check quality → `metadata/*_meta.json`
-3. **Feature Engineering** - Compute indicators → `features/*.parquet`
-4. **Training** - Use features to train ML models
-5. **Refresh** - Periodic updates (weekly/monthly)
+1. **Fetch** - Download from Bitfinex API → `raw/bitfinex/candles/*.parquet`
+2. **Curate** - Consolidate + validate → `curated/v1/candles/*.parquet`
+3. **Metadata** - Versioned metadata → `metadata/curated/*_v1.json`
+4. **Feature Engineering** - (Efter behov) exporteras till `features/`
+5. **Archive** - Flytta gamla datasets till `archive/`
 
 ---
 

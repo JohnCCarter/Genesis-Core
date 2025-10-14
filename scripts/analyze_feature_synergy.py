@@ -16,11 +16,13 @@ import seaborn as sns
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
 
+from core.utils import get_candles_path
+
 
 def load_features_and_labels(symbol: str, timeframe: str) -> tuple[pd.DataFrame, list]:
     """Load preprocessed features and generate labels for analysis."""
     features_path = Path("data/features") / f"{symbol}_{timeframe}_features.parquet"
-    candles_path = Path("data/candles") / f"{symbol}_{timeframe}.parquet"
+    candles_path = get_candles_path(symbol, timeframe)
 
     if not features_path.exists():
         raise FileNotFoundError(f"Features not found: {features_path}")

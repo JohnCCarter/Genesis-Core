@@ -367,7 +367,7 @@ python scripts/precompute_features_fast.py --symbol tBTCUSD --timeframe 1h
 - 🎯 **Use features_asof for production** (bit-exact, verified)
 - 🎯 **1h timeframe is PROFITABLE** (+4.89%, 75% win rate @ threshold 0.65)
 - 🎯 **Exit logic implemented** (SL/TP/TIME/CONF/REGIME aware)
-- 🎯 **Data is in data/candles/** (tBTCUSD 1h, 18 months)
+- 🎯 **Data:** Curated datasets ligger i `data/curated/v1/candles/`; råfiler i `data/raw/bitfinex/`
 - 🎯 **Current features:** v17 (14 features including Fibonacci combinations)
 - 🎯 **Current model:** results/models/tBTCUSD_1h_v3.json (v16)
 - 🎯 **Key docs:** 

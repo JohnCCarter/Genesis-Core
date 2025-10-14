@@ -20,6 +20,7 @@ from sklearn.linear_model import LogisticRegression
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+from core.utils import get_candles_path
 from core.utils.data_loader import load_features
 
 
@@ -28,10 +29,7 @@ def load_features_and_prices(symbol: str, timeframe: str):
     # Load features with smart format selection (Feather > Parquet)
     features_df = load_features(symbol, timeframe)
 
-    candles_path = Path(f"data/candles/{symbol}_{timeframe}.parquet")
-    if not candles_path.exists():
-        raise FileNotFoundError(f"Candles not found: {candles_path}")
-
+    candles_path = get_candles_path(symbol, timeframe)
     candles_df = pd.read_parquet(candles_path)
     close_prices = candles_df["close"].tolist()
 

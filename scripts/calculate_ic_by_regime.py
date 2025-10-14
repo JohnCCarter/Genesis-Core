@@ -24,6 +24,7 @@ from scipy.stats import spearmanr
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+from core.utils import get_candles_path
 from core.utils.data_loader import load_features
 
 
@@ -223,17 +224,7 @@ def main():
         features_df = load_features(args.symbol, args.timeframe)
 
         # Load candles for regime classification (two-layer structure support)
-        candles_path_curated = Path(
-            f"data/curated/v1/candles/{args.symbol}_{args.timeframe}.parquet"
-        )
-        candles_path_legacy = Path(f"data/candles/{args.symbol}_{args.timeframe}.parquet")
-
-        if candles_path_curated.exists():
-            candles_path = candles_path_curated
-        elif candles_path_legacy.exists():
-            candles_path = candles_path_legacy
-        else:
-            raise FileNotFoundError("Candles not found in curated or legacy location")
+        candles_path = get_candles_path(args.symbol, args.timeframe)
 
         candles_df = pd.read_parquet(candles_path)
 

@@ -34,6 +34,13 @@ def test_e2e_pipeline_stub():
 
 
 def test_e2e_none_on_missing_data():
-    # Saknad data => features fail-safe => beslut NONE
-    result, meta = evaluate_pipeline({}, policy={}, configs={}, state={})
+    # Minimal data => features fail-safe => beslut NONE
+    minimal_candles = {
+        "open": [1, 2],
+        "high": [2, 3],
+        "low": [0.5, 1.5],
+        "close": [1.5, 2.5],
+        "volume": [10, 11],
+    }
+    result, meta = evaluate_pipeline(minimal_candles, policy={}, configs={}, state={})
     assert result["action"] in ("NONE",)

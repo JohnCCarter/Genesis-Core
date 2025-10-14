@@ -29,7 +29,9 @@ def evaluate_pipeline(
     # Extract timeframe and symbol from policy for HTF Fibonacci context
     timeframe = policy.get("timeframe", None)
     symbol = policy.get("symbol", "tBTCUSD")
-    feats, feats_meta = extract_features(candles, config=configs, timeframe=timeframe, symbol=symbol)
+    feats, feats_meta = extract_features(
+        candles, config=configs, timeframe=timeframe, symbol=symbol
+    )
     metrics.event("features_ok", {"keys": list(feats.keys())})
 
     # Detect regime BEFORE prediction (needed for regime-aware calibration)

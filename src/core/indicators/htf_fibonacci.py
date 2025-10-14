@@ -311,10 +311,10 @@ def get_htf_fibonacci_context(
             "htf_timeframe": htf_timeframe,
             "last_update": last_htf_timestamp,
         }
-        
+
         # Cache the result for future use
         _htf_context_cache[cache_key] = htf_context
-        
+
         return htf_context
 
     except FileNotFoundError as e:

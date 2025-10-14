@@ -45,16 +45,14 @@ def test_htf_exit_engine_basic():
         entry_price=100000.0,
         entry_time=datetime(2025, 1, 1, 12, 0),
     )
-    
+
     # Add exit context for HTF exit engine
     from core.indicators.exit_fibonacci import calculate_exit_fibonacci_levels
+
     exit_levels = calculate_exit_fibonacci_levels(
-        side="LONG",
-        swing_high=108000.0,
-        swing_low=97000.0,
-        levels=[0.786, 0.618, 0.5, 0.382]
+        side="LONG", swing_high=108000.0, swing_low=97000.0, levels=[0.786, 0.618, 0.5, 0.382]
     )
-    
+
     position.exit_ctx = {
         "fib": exit_levels,
         "swing_bounds": (97000.0, 108000.0),
@@ -175,16 +173,14 @@ def test_structure_break_detection():
         entry_price=100000.0,
         entry_time=datetime(2025, 1, 1, 12, 0),
     )
-    
+
     # Add exit context for structure break detection
     from core.indicators.exit_fibonacci import calculate_exit_fibonacci_levels
+
     exit_levels = calculate_exit_fibonacci_levels(
-        side="LONG",
-        swing_high=108000.0,
-        swing_low=97000.0,
-        levels=[0.786, 0.618, 0.5, 0.382]
+        side="LONG", swing_high=108000.0, swing_low=97000.0, levels=[0.786, 0.618, 0.5, 0.382]
     )
-    
+
     position.exit_ctx = {
         "fib": exit_levels,
         "swing_bounds": (97000.0, 108000.0),

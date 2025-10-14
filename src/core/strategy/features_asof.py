@@ -70,7 +70,9 @@ def _extract_asof(
     closes = [float(x) for x in candles["close"][: asof_bar + 1]]
 
     # Invariant check
-    assert len(closes) == asof_bar + 1, f"Expected {asof_bar + 1} bars, got {len(closes)}"
+    assert (
+        len(closes) == asof_bar + 1
+    ), f"Expected {asof_bar + 1} bars, got {len(closes)}"  # nosec B101
 
     # Helper for clipping
     def _clip(x: float, lo: float, hi: float) -> float:
@@ -178,7 +180,7 @@ def extract_features_live(
     asof_bar = total_bars - 2
 
     # Invariant: asof_bar points to last CLOSED bar
-    assert asof_bar == total_bars - 2, "Live mode invariant failed"
+    assert asof_bar == total_bars - 2, "Live mode invariant failed"  # nosec B101
 
     return _extract_asof(candles, asof_bar)
 

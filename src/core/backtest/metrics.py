@@ -62,7 +62,9 @@ def calculate_backtest_metrics(
 
     # Drawdown (simplified - based on cumulative returns)
     cumulative_returns = np.cumsum(returns_pct)
-    running_max = np.maximum.accumulate(cumulative_returns) if len(cumulative_returns) > 0 else [0]
+    running_max = (
+        np.maximum.accumulate(cumulative_returns) if len(cumulative_returns) > 0 else np.array([0])
+    )
     drawdowns = running_max - cumulative_returns
     max_drawdown = np.max(drawdowns) if len(drawdowns) > 0 else 0.0
 
@@ -77,10 +79,47 @@ def calculate_backtest_metrics(
 
     avg_duration_hours = np.mean(durations) if durations else 0.0
 
+    # Sortino ratio (Sharpe but only for downside deviation)
+    downside_returns = [r for r in returns_pct if r < 0]
+    if len(downside_returns) > 1:
+        downside_std = np.std(downside_returns, ddof=1)
+        sortino_ratio = (
+            (np.mean(returns_pct) - risk_free_rate / 12) / downside_std if downside_std > 0 else 0.0
+        )
+    else:
+        sortino_ratio = 0.0
+
+    # Win/loss streaks
+    max_winning_streak = 0
+    max_losing_streak = 0
+    current_win_streak = 0
+    current_loss_streak = 0
+
+    for pnl in pnls:
+        if pnl > 0:
+            current_win_streak += 1
+            current_loss_streak = 0
+            max_winning_streak = max(max_winning_streak, current_win_streak)
+        elif pnl < 0:
+            current_loss_streak += 1
+            current_win_streak = 0
+            max_losing_streak = max(max_losing_streak, current_loss_streak)
+        else:
+            current_win_streak = 0
+            current_loss_streak = 0
+
+    # Calmar ratio (return / max drawdown)
+    calmar_ratio = total_return_pct / max_drawdown if max_drawdown > 0 else 0.0
+
+    # Calculate max drawdown in USD
+    max_drawdown_usd = (max_drawdown / 100) * initial_capital
+
     return {
         "total_return": total_return_pct,
+        "total_return_pct": total_return_pct,  # Alias for backward compatibility
         "total_pnl": total_pnl,
         "total_trades": total_trades,
+        "num_trades": total_trades,  # Alias for backward compatibility
         "winning_trades": len(winning_trades),
         "losing_trades": len(losing_trades),
         "win_rate": win_rate,
@@ -91,9 +130,16 @@ def calculate_backtest_metrics(
         "avg_loss": avg_loss,
         "expectancy": expectancy,
         "sharpe_ratio": sharpe_ratio,
+        "sortino_ratio": sortino_ratio,
         "max_drawdown": max_drawdown,
+        "max_drawdown_pct": max_drawdown,  # Alias for backward compatibility
+        "max_drawdown_usd": max_drawdown_usd,
         "returns_std": returns_std,
         "avg_duration_hours": avg_duration_hours,
+        "avg_trade_duration_hours": avg_duration_hours,  # Alias for backward compatibility
+        "max_winning_streak": max_winning_streak,
+        "max_losing_streak": max_losing_streak,
+        "calmar_ratio": calmar_ratio,
         "trade_returns": returns_pct,
     }
 
@@ -102,8 +148,10 @@ def _empty_metrics() -> dict[str, float]:
     """Return empty metrics for cases with no trades."""
     return {
         "total_return": 0.0,
+        "total_return_pct": 0.0,
         "total_pnl": 0.0,
         "total_trades": 0,
+        "num_trades": 0,
         "winning_trades": 0,
         "losing_trades": 0,
         "win_rate": 0.0,
@@ -114,9 +162,16 @@ def _empty_metrics() -> dict[str, float]:
         "avg_loss": 0.0,
         "expectancy": 0.0,
         "sharpe_ratio": 0.0,
+        "sortino_ratio": 0.0,
         "max_drawdown": 0.0,
+        "max_drawdown_pct": 0.0,
+        "max_drawdown_usd": 0.0,
         "returns_std": 0.0,
         "avg_duration_hours": 0.0,
+        "avg_trade_duration_hours": 0.0,
+        "max_winning_streak": 0,
+        "max_losing_streak": 0,
+        "calmar_ratio": 0.0,
         "trade_returns": [],
     }
 
@@ -184,12 +239,48 @@ def calculate_metrics(
         # Old API: results dict with "trades" key
         trades = results.get("trades", [])
         summary = results.get("summary", {})
+        equity_curve = results.get("equity_curve", [])
         initial_capital = summary.get("initial_capital", initial_capital)
+
+        # Calculate metrics from trades
+        metrics = calculate_backtest_metrics(trades, initial_capital)
+
+        # If no trades but we have equity curve, calculate drawdown from equity curve
+        if not trades and equity_curve:
+            equity_values = [point.get("total_equity", initial_capital) for point in equity_curve]
+            if len(equity_values) > 1:
+                # Calculate drawdown from equity curve (peak-to-trough)
+                running_max = np.maximum.accumulate(equity_values)
+                drawdowns = (running_max - equity_values) / running_max * 100
+                max_drawdown = np.max(drawdowns) if len(drawdowns) > 0 else 0.0
+
+                # Update drawdown metrics
+                metrics["max_drawdown"] = max_drawdown
+                metrics["max_drawdown_pct"] = max_drawdown
+                metrics["max_drawdown_usd"] = (max_drawdown / 100) * initial_capital
+
+                # Recalculate calmar ratio
+                total_return_pct = summary.get("total_return", 0.0)
+                metrics["calmar_ratio"] = (
+                    total_return_pct / max_drawdown if max_drawdown > 0 else 0.0
+                )
+
+        # Override with summary data if available (for backward compatibility)
+        if summary:
+            metrics.update(
+                {
+                    "total_return_pct": summary.get("total_return", metrics["total_return_pct"]),
+                    "num_trades": summary.get("num_trades", metrics["num_trades"]),
+                    "win_rate": summary.get("win_rate", metrics["win_rate"]),
+                    "profit_factor": summary.get("profit_factor", metrics["profit_factor"]),
+                }
+            )
+
+        return metrics
     else:
         # New API: trades list directly
         trades = results
-
-    return calculate_backtest_metrics(trades, initial_capital)
+        return calculate_backtest_metrics(trades, initial_capital)
 
 
 def print_metrics_report(metrics: dict[str, float], backtest_info: dict = None):

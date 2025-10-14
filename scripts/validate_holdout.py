@@ -26,7 +26,7 @@ from sklearn.metrics import roc_auc_score
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from core.ml.prob_model import ProbModel  # noqa: I001
+from core.strategy.prob_model import predict_proba_for  # noqa: I001
 from core.utils import get_candles_path
 from core.utils.data_loader import load_features  # noqa: I001
 
@@ -74,71 +74,65 @@ def calculate_quintile_spread(predictions: np.ndarray, returns: np.ndarray) -> d
     }
 
 
-def validate_holdout(model_path: Path, verbose: bool = True) -> dict:
-    """
-    Validate model on reserved holdout set.
+def validate_holdout(
+    model_path: Path,
+    *,
+    symbol: str | None = None,
+    timeframe: str | None = None,
+    verbose: bool = True,
+) -> dict:
+    """Validate model on holdout dataset."""
 
-    Returns:
-        dict: Validation metrics including IC, AUC, and Q5-Q1 spread
-    """
-    # Load model and metadata
-    with open(model_path) as f:
+    with model_path.open() as f:
         model_config = json.load(f)
 
-    symbol = model_config["symbol"]
-    timeframe = model_config["timeframe"]
+    symbol = symbol or model_config.get("symbol")
+    timeframe = timeframe or model_config.get("timeframe")
 
-    # Load holdout indices
-    holdout_path = model_path.parent / f"{model_path.stem}_holdout_indices.json"
-    if not holdout_path.exists():
-        raise FileNotFoundError(
-            f"Holdout indices not found: {holdout_path}\n"
-            "This model was not trained with --use-holdout flag."
-        )
-
-    with open(holdout_path) as f:
-        holdout_data = json.load(f)
-        holdout_indices = holdout_data["holdout_indices"]
-
-    if verbose:
-        print(f"\n{'='*60}")
-        print("HOLDOUT VALIDATION")
-        print(f"{'='*60}")
-        print(f"Model: {model_path.name}")
-        print(f"Symbol: {symbol}")
-        print(f"Timeframe: {timeframe}")
-        print(f"Holdout size: {len(holdout_indices)} samples")
-        print(f"{'='*60}\n")
+    if not symbol or not timeframe:
+        raise KeyError("Model metadata missing symbol/timeframe; specify via arguments.")
 
     # Load features and candles
     features_df = load_features(symbol, timeframe)
 
+    # Load holdout indices
+    holdout_indices = load_holdout_indices(model_path, len(features_df))
+
+    if verbose:
+        print("\n" + "=" * 60)
+        print("HOLDOUT VALIDATION")
+        print("=" * 60)
+        print(f"Model: {model_path.name}")
+        print(f"Symbol: {symbol}")
+        print(f"Timeframe: {timeframe}")
+        print(f"Holdout size: {len(holdout_indices)} samples")
+        print("=" * 60)
+
     # Extract holdout set
+    filtered_indices = [idx for idx in holdout_indices if 0 <= idx < len(features_df)]
+    if len(filtered_indices) != len(holdout_indices):
+        print(
+            f"[WARN] {len(holdout_indices) - len(filtered_indices)} holdout indices out of range; "
+            "they will be ignored."
+        )
+        holdout_indices = filtered_indices
+
     holdout_features = features_df.iloc[holdout_indices].copy()
+    holdout_features = holdout_features.drop(columns=["timestamp"], errors="ignore")
 
-    # Load model
-    model = ProbModel()
-    model.load(str(model_path))
+    predictions = []
+    metas = None
+    for _, row in holdout_features.iterrows():
+        probas, metas = predict_proba_for(symbol, timeframe, row.to_dict(), model_meta=metas)
+        predictions.append(probas["buy"])
 
-    # Get predictions
-    X_holdout = holdout_features.drop(columns=["timestamp"], errors="ignore").values
-    predictions = model.predict_proba(X_holdout)
-
-    # Load candles for forward returns calculation
     candles_path = get_candles_path(symbol, timeframe)
     candles_df = pd.read_parquet(candles_path)
-    close_prices = candles_df["close"]
-
-    # Calculate forward returns (10-bar horizon)
-    horizon = 10
-    forward_returns = calculate_forward_returns(close_prices, horizon)
-
-    # Extract returns for holdout indices
+    forward_returns = calculate_forward_returns(candles_df["close"], horizon=10)
     holdout_returns = forward_returns.iloc[holdout_indices].values
 
-    # Calculate metrics
-    ic_metrics = calculate_ic(predictions, holdout_returns)
-    quintile_metrics = calculate_quintile_spread(predictions, holdout_returns)
+    ic_metrics = calculate_ic(np.array(predictions), holdout_returns)
+    quintile_metrics = calculate_quintile_spread(np.array(predictions), holdout_returns)
 
     # Calculate AUC (for binary labels if available)
     auc = None
@@ -185,22 +179,35 @@ def validate_holdout(model_path: Path, verbose: bool = True) -> dict:
         # Interpretation
         print("\nINTERPRETATION:")
         if results["ic"] > 0.02 and results["ic_p_value"] < 0.05:
-            print("  [SIG] IC > 0.02 and significant → Strong predictive power")
+            print("  [SIG] IC > 0.02 and significant -> Strong predictive power")
         elif results["ic"] > 0.01:
-            print("  Weak IC → Marginal predictive power")
+            print("  Weak IC -> Marginal predictive power")
         else:
-            print("  [WARN] IC < 0.01 → No predictive power")
+            print("  [WARN] IC < 0.01 -> No predictive power")
 
         if results["q5_q1_spread"] > 0.002:
-            print("  [SIG] Q5-Q1 > 0.2% → Economically significant")
+            print("  [SIG] Q5-Q1 > 0.2% -> Economically significant")
         elif results["q5_q1_spread"] > 0.001:
-            print("  Weak spread → Marginal economic value")
+            print("  Weak spread -> Marginal economic value")
         else:
-            print("  [WARN] Spread < 0.1% → No economic value")
+            print("  [WARN] Spread < 0.1% -> No economic value")
 
         print(f"{'='*60}\n")
 
     return results
+
+
+def load_holdout_indices(model_path: Path, total_samples: int) -> list[int]:
+    holdout_path = model_path.with_name(f"{model_path.stem}_holdout_indices.json")
+    if not holdout_path.exists():
+        print("[WARN] Holdout indices missing; using entire dataset as holdout.")
+        return list(range(total_samples))
+    with holdout_path.open() as f:
+        data = json.load(f)
+    if not data.get("holdout_indices"):
+        print("[WARN] Holdout indices empty; using entire dataset.")
+        return list(range(total_samples))
+    return data.get("holdout_indices", [])
 
 
 def main():
@@ -208,6 +215,8 @@ def main():
     parser.add_argument("--model", type=str, required=True, help="Path to model JSON file")
     parser.add_argument("--output", type=str, help="Path to save results JSON")
     parser.add_argument("--quiet", action="store_true", help="Suppress output")
+    parser.add_argument("--symbol", help="Symbol (override model metadata)")
+    parser.add_argument("--timeframe", help="Timeframe (override model metadata)")
 
     args = parser.parse_args()
 
@@ -216,7 +225,12 @@ def main():
         print(f"Error: Model file not found: {model_path}")
         sys.exit(1)
 
-    results = validate_holdout(model_path, verbose=not args.quiet)
+    results = validate_holdout(
+        model_path,
+        symbol=args.symbol,
+        timeframe=args.timeframe,
+        verbose=not args.quiet,
+    )
 
     # Save results
     if args.output:

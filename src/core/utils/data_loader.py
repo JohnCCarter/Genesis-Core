@@ -5,49 +5,80 @@ from pathlib import Path
 import pandas as pd
 
 
-def load_features(symbol: str, timeframe: str, version: str = "v17") -> pd.DataFrame:
+def load_features(symbol: str, timeframe: str, version: str | None = "v17") -> pd.DataFrame:
     """
     Load features with smart format selection.
 
-    Tries Feather first (2× faster reads), falls back to Parquet.
-    Automatically tries versioned features (v17, v16) then falls back to unversioned.
-
-    Args:
-        symbol: Trading symbol (e.g., 'tBTCUSD')
-        timeframe: Timeframe (e.g., '1h', '15m')
-        version: Feature version to load (default: 'v17')
-
-    Returns:
-        DataFrame with features (timestamp + feature columns)
-
-    Raises:
-        FileNotFoundError: If neither Feather nor Parquet exists
-        ValueError: If loaded DataFrame is empty
-
-    Example:
-        >>> features = load_features('tBTCUSD', '1h')
-        >>> print(features.columns)
-        Index(['timestamp', 'bb_position', 'trend_confluence', 'rsi'], dtype='object')
+    Tries curated (v18/v17) first, then archive, then legacy. Supports timestamped files.
     """
-    # Try versioned features first (v17, v16), then unversioned
-    versions_to_try = [f"_{version}", "_v16", ""] if version == "v17" else [f"_{version}", ""]
+    if version:
+        version = version.lower()
 
-    for ver_suffix in versions_to_try:
-        feather_path = Path(f"data/features/{symbol}_{timeframe}_features{ver_suffix}.feather")
-        parquet_path = Path(f"data/features/{symbol}_{timeframe}_features{ver_suffix}.parquet")
+    if version in (None, "auto"):
+        versions_to_try = ["_v18", "_v17", "_v16", ""]
+    elif version == "v17":
+        versions_to_try = ["_v17", "_v16", ""]
+    else:
+        versions_to_try = [f"_{version}"]
 
-        # Try Feather first (faster: ~20ms vs ~40ms for Parquet)
-        if feather_path.exists():
-            features_df = pd.read_feather(feather_path)
-            return features_df
-        # Fallback to Parquet (slower but always available)
-        elif parquet_path.exists():
-            features_df = pd.read_parquet(parquet_path)
-            return features_df
+    base_paths = [
+        Path("data/curated/v1/features"),
+        Path("data/archive/features"),
+        Path("data/features"),
+    ]
 
-    # No version found - error with helpful message
+    def _curated_candidates(base: Path, suffix: str, ext: str) -> list[Path]:
+        curated_dir = base / symbol / timeframe
+        if not curated_dir.exists():
+            return []
+        candidates: list[Path] = []
+        if suffix:
+            exact_name = curated_dir / f"{symbol}_{timeframe}_features{suffix}{ext}"
+            candidates.append(exact_name)
+            candidates.extend(
+                sorted(
+                    curated_dir.glob(f"**/{symbol}_{timeframe}_features{suffix}_*{ext}"),
+                    reverse=True,
+                )
+            )
+        else:
+            exact_name = curated_dir / f"{symbol}_{timeframe}_features{ext}"
+            candidates.append(exact_name)
+            candidates.extend(
+                sorted(curated_dir.glob(f"**/{symbol}_{timeframe}_features_*{ext}"), reverse=True)
+            )
+        return candidates
+
+    def _flat_candidates(base: Path, suffix: str, ext: str) -> list[Path]:
+        name = f"{symbol}_{timeframe}_features{suffix}{ext}"
+        candidates = [base / name]
+        if suffix:
+            candidates.extend(
+                sorted(base.glob(f"{symbol}_{timeframe}_features{suffix}_*{ext}"), reverse=True)
+            )
+        return candidates
+
+    for base in base_paths:
+        is_curated = "curated" in base.parts
+        for suffix in versions_to_try:
+            feather_candidates = (
+                _curated_candidates(base, suffix, ".feather")
+                if is_curated
+                else _flat_candidates(base, suffix, ".feather")
+            )
+            for path in feather_candidates:
+                if path.exists():
+                    return pd.read_feather(path)
+
+            parquet_candidates = (
+                _curated_candidates(base, suffix, ".parquet")
+                if is_curated
+                else _flat_candidates(base, suffix, ".parquet")
+            )
+            for path in parquet_candidates:
+                if path.exists():
+                    return pd.read_parquet(path)
+
     raise FileNotFoundError(
-        f"Features not found for {symbol} {timeframe}:\n"
-        f"  Tried versions: {versions_to_try}\n"
-        f"Run: python scripts/precompute_features_v17.py --symbol {symbol} --timeframe {timeframe}"
+        f"Features not found for {symbol} {timeframe}. Tried versions {versions_to_try}"
     )

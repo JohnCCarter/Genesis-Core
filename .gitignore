@@ -112,6 +112,8 @@ build/
 # Two-layer architecture: Raw Lake + Curated
 data/raw/**/*.parquet
 data/curated/**/*.parquet
+data/curated/**/*.feather
+data/curated/**/*.json
 data/candles/*.parquet
 data/features/*.parquet
 data/features/*.feather
@@ -131,7 +133,7 @@ results/**/
 !results/README.md
 !results/**/README.md
 !results/*.md
-!results/archive_*/
+!results/archive/**
 
 # Label cache (temporary, regenerate on demand)
 cache/

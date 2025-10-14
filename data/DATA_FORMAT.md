@@ -145,3 +145,14 @@ python scripts/validate_data.py --symbol tBTCUSD --timeframe 1m
 ---
 
 **For more details, see:** `TODO_PHASE3.md`
+
+## Curated Layer
+
+- `curated/v1/candles/`: Versionerade, validerade Parquet-filer (standardkälla för modellpipeline).
+- `curated/v1/features/`: Validerade feature-filer (Feather/Parquet) per version
+  - `.../<symbol>/<timeframe>/v17/` 14-feature set (base + Fibonacci + combos)
+  - `.../<symbol>/<timeframe>/v18/` Kompakt 8-feature set (5 bas + 3 combos)
+
+## Metadata
+
+- `metadata/curated/`: JSON metadata, samt `.json` filer bredvid varje feature-feather (version, skapad tid, source).

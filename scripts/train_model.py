@@ -40,8 +40,65 @@ except ImportError:
     USE_NUMBA = False
 
 
+V17_COLUMNS = [
+    "rsi_inv_lag1",
+    "volatility_shift_ma3",
+    "bb_position_inv_ma3",
+    "rsi_vol_interaction",
+    "vol_regime",
+    "fib05_x_ema_slope",
+    "fib_prox_x_adx",
+    "fib05_x_rsi_inv",
+]
+
+V18_COLUMNS = [
+    "rsi_inv_lag1",
+    "volatility_shift_ma3",
+    "bb_position_inv_ma3",
+    "rsi_vol_interaction",
+    "vol_regime",
+    "fib05_x_ema_slope",
+    "fib_prox_x_adx",
+    "fib05_x_rsi_inv",
+]
+
+STD_COLUMNS = ["timestamp"]
+
+
+def select_feature_columns(
+    df: pd.DataFrame, version: str, feature_version: str | None
+) -> tuple[pd.DataFrame, list[str]]:
+    if feature_version == "v18":
+        columns = [
+            "rsi_inv_lag1",
+            "volatility_shift_ma3",
+            "bb_position_inv_ma3",
+            "rsi_vol_interaction",
+            "vol_regime",
+            "fib05_x_ema_slope",
+            "fib_prox_x_adx",
+            "fib05_x_rsi_inv",
+        ]
+        missing = [col for col in columns if col not in df.columns]
+        if missing:
+            raise KeyError(f"Missing v18 columns: {missing}")
+        return df[["timestamp", *columns]], columns
+
+    if version.startswith("v17"):
+        missing = [col for col in V17_COLUMNS if col not in df.columns]
+        if missing:
+            raise KeyError(f"Missing v17 columns: {missing}")
+        return df[STD_COLUMNS + V17_COLUMNS], STD_COLUMNS + V17_COLUMNS
+
+    # Default to v17 if version is not specified or not handled
+    missing = [col for col in V17_COLUMNS if col not in df.columns]
+    if missing:
+        raise KeyError(f"Missing v17 columns: {missing}")
+    return df[STD_COLUMNS + V17_COLUMNS], STD_COLUMNS + V17_COLUMNS
+
+
 def load_features_and_prices(
-    symbol: str, timeframe: str
+    symbol: str, timeframe: str, feature_version: str = "v17"
 ) -> tuple[pd.DataFrame, list[float], pd.DataFrame]:
     """
     Load features, close prices, and full candles for labeling.
@@ -54,7 +111,7 @@ def load_features_and_prices(
         Tuple of (features_df, close_prices, candles_df)
     """
     # Load features with smart format selection (Feather > Parquet)
-    features_df = load_features(symbol, timeframe)
+    features_df = load_features(symbol, timeframe, version=feature_version)
 
     try:
         candles_path = get_candles_path(symbol, timeframe)
@@ -369,6 +426,9 @@ def main():
         "--max-holding", type=int, default=5, help="Max holding bars for triple-barrier"
     )
     parser.add_argument("--version", type=str, default="v3", help="Model version")
+    parser.add_argument(
+        "--feature-version", type=str, default="v17", help="Feature version to use (v17 or v18)"
+    )
     parser.add_argument("--output-dir", type=str, default="results/models", help="Output directory")
     parser.add_argument("--quiet", action="store_true", help="Suppress progress output")
     parser.add_argument(
@@ -388,7 +448,7 @@ def main():
             print(f"[LOAD] Loading features and candles for {args.symbol} {args.timeframe}")
 
         features_df, close_prices, candles_df = load_features_and_prices(
-            args.symbol, args.timeframe
+            args.symbol, args.timeframe, feature_version=args.feature_version
         )
 
         if not args.quiet:
@@ -609,7 +669,7 @@ def main():
                 print(f"[PROVENANCE] Config hash: {provenance['config_hash']}")
 
         # Save holdout indices if used
-        if holdout_indices:
+        if args.use_holdout and holdout_indices:
             model_path = Path(file_paths["model_path"])
             holdout_path = model_path.parent / f"{model_path.stem}_holdout_indices.json"
             with open(holdout_path, "w") as f:
@@ -659,6 +719,8 @@ def main():
         )
         print(f"\nModel saved: {file_paths['model_path']}")
         print(f"Metrics saved: {file_paths['metrics_path']}")
+
+        return True, file_paths
 
     except Exception as e:
         print(f"\n[ERROR] Training failed: {e}")

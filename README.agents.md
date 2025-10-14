@@ -2,6 +2,11 @@
 
 Denna fil beskriver hur AI‑agenter ska arbeta lokalt med projektet.
 
+**TODO – Nästa agent:**
+- [ ] Kör `train_model.py` med `--use-holdout` och verifiera att valideringen fungerar end-to-end med v18-features
+- [ ] Dokumentera resultatet (när IC/Q5-Q1 inte längre är `nan`) i `README.agents.md` och relevanta rapporter
+- [ ] Utvärdera om fler symboler/timeframes ska köras via `sync_precompute_and_train.py --all --feature-version v18`
+
 ## 🔒 Deployment Model
 
 **Single-User Bot:**
@@ -180,6 +185,8 @@ python -m pytest -q
 - `data/` – candles (parquet), features (feather/parquet), metadata
 - `results/` – models, ic_metrics, regime_analysis, feature_analysis, partial_ic (Phase-6)
 - `scripts/` – fetch, precompute, train, analyze, validate (50+ scripts)
+- `scripts/sync_precompute_and_train.py`: Kör precompute → curate → train → validate i en pipeline
+  - Ex: `python scripts/sync_precompute_and_train.py --symbol tBTCUSD --timeframe 1h --feature-version v18`
 - `docs/` – ADVANCED_VALIDATION_PRODUCTION.md, VALIDATION_CHECKLIST.md, INDICATORS_REFERENCE.md, FEATURE_COMPUTATION_MODES.md (Phase-5/6)
 
 ---

@@ -539,7 +539,7 @@ class HTFFibonacciExitEngine:
             side=position.side,
             swing_high=swing_high,
             swing_low=swing_low,
-            levels=[0.382, 0.5, 0.618],
+            levels=[0.786, 0.618, 0.5, 0.382],  # Inverterade nivåer för exit
         )
 
         # Validate swing for exit

@@ -17,12 +17,16 @@ from typing import Any
 from core.indicators.atr import calculate_atr
 from core.indicators.bollinger import bollinger_bands
 from core.indicators.derived_features import calculate_volatility_shift
+from core.indicators.htf_fibonacci import get_htf_fibonacci_context
 from core.indicators.rsi import calculate_rsi
 
 
 def _extract_asof(
     candles: dict[str, list[float]],
     asof_bar: int,
+    *,
+    timeframe: str | None = None,
+    symbol: str | None = None,
 ) -> tuple[dict[str, float], dict[str, Any]]:
     """
     Core feature extraction AS OF specified bar (inclusive).
@@ -139,13 +143,33 @@ def _extract_asof(
         "vol_regime": vol_regime,
     }
 
+    # === ADD HTF FIBONACCI CONTEXT FOR SYMMETRIC CHAMOUN MODEL ===
+    # Only for LTF timeframes that can benefit from HTF structure
+    htf_fibonacci_context = {}
+    if timeframe in ["1h", "30m", "6h", "15m"]:
+        try:
+            htf_fibonacci_context = get_htf_fibonacci_context(
+                candles, timeframe=timeframe, symbol=symbol or "tBTCUSD"
+            )
+        except Exception as e:
+            # Don't fail feature extraction if HTF context unavailable
+            htf_fibonacci_context = {
+                "available": False,
+                "reason": "HTF_CONTEXT_ERROR",
+                "error": str(e),
+            }
+
     meta = {
-        "versions": {"features_v15_highvol_optimized": True},
+        "versions": {
+            "features_v15_highvol_optimized": True,
+            "htf_fibonacci_symmetric_chamoun": True,  # NEW: HTF context for symmetric exits
+        },
         "reasons": [],
         "feature_count": len(features),
         "asof_bar": asof_bar,
         "uses_bars": [0, asof_bar],
         "total_bars_available": total_bars,
+        "htf_fibonacci": htf_fibonacci_context,  # NEW: HTF context for exit logic
     }
 
     return features, meta
@@ -153,6 +177,9 @@ def _extract_asof(
 
 def extract_features_live(
     candles: dict[str, list[float]],
+    *,
+    timeframe: str | None = None,
+    symbol: str | None = None,
 ) -> tuple[dict[str, float], dict[str, Any]]:
     """
     Extract features for LIVE TRADING.
@@ -182,12 +209,15 @@ def extract_features_live(
     # Invariant: asof_bar points to last CLOSED bar
     assert asof_bar == total_bars - 2, "Live mode invariant failed"  # nosec B101
 
-    return _extract_asof(candles, asof_bar)
+    return _extract_asof(candles, asof_bar, timeframe=timeframe, symbol=symbol)
 
 
 def extract_features_backtest(
     candles: dict[str, list[float]],
     asof_bar: int,
+    *,
+    timeframe: str | None = None,
+    symbol: str | None = None,
 ) -> tuple[dict[str, float], dict[str, Any]]:
     """
     Extract features for BACKTESTING.
@@ -214,7 +244,7 @@ def extract_features_backtest(
     if asof_bar >= total_bars:
         raise ValueError(f"asof_bar={asof_bar} >= total_bars={total_bars}")
 
-    return _extract_asof(candles, asof_bar)
+    return _extract_asof(candles, asof_bar, timeframe=timeframe, symbol=symbol)
 
 
 # Backward compatibility wrapper
@@ -223,6 +253,8 @@ def extract_features(
     *,
     config: dict[str, Any] | None = None,
     now_index: int | None = None,
+    timeframe: str | None = None,
+    symbol: str | None = None,
 ) -> tuple[dict[str, float], dict[str, Any]]:
     """
     DEPRECATED: Use extract_features_live() or extract_features_backtest() instead!
@@ -250,7 +282,7 @@ def extract_features(
 
     if now_index is None:
         # LIVE mode
-        return extract_features_live(candles_dict)
+        return extract_features_live(candles_dict, timeframe=timeframe, symbol=symbol)
     else:
         # BACKTEST mode with legacy offset
         # Old behavior: now_index=i used bars [0:i-1]
@@ -262,4 +294,4 @@ def extract_features(
         if asof_bar >= total_bars:
             asof_bar = total_bars - 1
 
-        return _extract_asof(candles_dict, asof_bar)
+        return _extract_asof(candles_dict, asof_bar, timeframe=timeframe, symbol=symbol)

@@ -1,0 +1,281 @@
+{
+  "tBTCUSD:1m": {
+    "champion": "config/models/tBTCUSD.json"
+  },
+  "tBTCUSD:5m": {
+    "champion": "config/models/tBTCUSD.json"
+  },
+  "tBTCUSD:15m": {
+    "champion": "config/models/tBTCUSD.json"
+  },
+  "tBTCUSD:1h": {
+    "champion": "config/models/tBTCUSD_1h.json"
+  },
+  "tBTCUSD:3h": {
+    "champion": "config/models/tBTCUSD.json"
+  },
+  "tBTCUSD:6h": {
+    "champion": "config/models/tBTCUSD_6h.json"
+  },
+  "tBTCUSD:30m": {
+    "champion": "config/models/tBTCUSD_30m.json"
+  },
+  "tBTCUSD:1W": {
+    "champion": "config/models/tBTCUSD.json"
+  },
+  "tBTCUSD:1D": {
+    "champion": "config/models/tBTCUSD_1D.json"
+  },
+  "tETHUSD:1m": {
+    "champion": "config/models/tETHUSD.json"
+  },
+  "tETHUSD:5m": {
+    "champion": "config/models/tETHUSD.json"
+  },
+  "tETHUSD:15m": {
+    "champion": "config/models/tETHUSD.json"
+  },
+  "tETHUSD:1h": {
+    "champion": "config/models/tETHUSD.json"
+  },
+  "tETHUSD:4h": {
+    "champion": "config/models/tETHUSD.json"
+  },
+  "tETHUSD:1D": {
+    "champion": "config/models/tETHUSD.json"
+  },
+  "tALGOUSD:1m": {
+    "champion": "config/models/tALGOUSD.json"
+  },
+  "tALGOUSD:5m": {
+    "champion": "config/models/tALGOUSD.json"
+  },
+  "tALGOUSD:15m": {
+    "champion": "config/models/tALGOUSD.json"
+  },
+  "tALGOUSD:1h": {
+    "champion": "config/models/tALGOUSD.json"
+  },
+  "tALGOUSD:4h": {
+    "champion": "config/models/tALGOUSD.json"
+  },
+  "tALGOUSD:1D": {
+    "champion": "config/models/tALGOUSD.json"
+  },
+  "tDOGEUSD:1m": {
+    "champion": "config/models/tDOGEUSD.json"
+  },
+  "tDOGEUSD:5m": {
+    "champion": "config/models/tDOGEUSD.json"
+  },
+  "tDOGEUSD:15m": {
+    "champion": "config/models/tDOGEUSD.json"
+  },
+  "tDOGEUSD:1h": {
+    "champion": "config/models/tDOGEUSD.json"
+  },
+  "tDOGEUSD:4h": {
+    "champion": "config/models/tDOGEUSD.json"
+  },
+  "tDOGEUSD:1D": {
+    "champion": "config/models/tDOGEUSD.json"
+  },
+  "tSOLUSD:1m": {
+    "champion": "config/models/tSOLUSD.json"
+  },
+  "tSOLUSD:5m": {
+    "champion": "config/models/tSOLUSD.json"
+  },
+  "tSOLUSD:15m": {
+    "champion": "config/models/tSOLUSD.json"
+  },
+  "tSOLUSD:1h": {
+    "champion": "config/models/tSOLUSD.json"
+  },
+  "tSOLUSD:4h": {
+    "champion": "config/models/tSOLUSD.json"
+  },
+  "tSOLUSD:1D": {
+    "champion": "config/models/tSOLUSD.json"
+  },
+  "tADAUSD:1m": {
+    "champion": "config/models/tADAUSD.json"
+  },
+  "tADAUSD:5m": {
+    "champion": "config/models/tADAUSD.json"
+  },
+  "tADAUSD:15m": {
+    "champion": "config/models/tADAUSD.json"
+  },
+  "tADAUSD:1h": {
+    "champion": "config/models/tADAUSD.json"
+  },
+  "tADAUSD:4h": {
+    "champion": "config/models/tADAUSD.json"
+  },
+  "tADAUSD:1D": {
+    "champion": "config/models/tADAUSD.json"
+  },
+  "tAVAXUSD:1m": {
+    "champion": "config/models/tAVAXUSD.json"
+  },
+  "tAVAXUSD:5m": {
+    "champion": "config/models/tAVAXUSD.json"
+  },
+  "tAVAXUSD:15m": {
+    "champion": "config/models/tAVAXUSD.json"
+  },
+  "tAVAXUSD:1h": {
+    "champion": "config/models/tAVAXUSD.json"
+  },
+  "tAVAXUSD:4h": {
+    "champion": "config/models/tAVAXUSD.json"
+  },
+  "tAVAXUSD:1D": {
+    "champion": "config/models/tAVAXUSD.json"
+  },
+  "tDOTUSD:1m": {
+    "champion": "config/models/tDOTUSD.json"
+  },
+  "tDOTUSD:5m": {
+    "champion": "config/models/tDOTUSD.json"
+  },
+  "tDOTUSD:15m": {
+    "champion": "config/models/tDOTUSD.json"
+  },
+  "tDOTUSD:1h": {
+    "champion": "config/models/tDOTUSD.json"
+  },
+  "tDOTUSD:4h": {
+    "champion": "config/models/tDOTUSD.json"
+  },
+  "tDOTUSD:1D": {
+    "champion": "config/models/tDOTUSD.json"
+  },
+  "tLTCUSD:1m": {
+    "champion": "config/models/tLTCUSD.json"
+  },
+  "tLTCUSD:5m": {
+    "champion": "config/models/tLTCUSD.json"
+  },
+  "tLTCUSD:15m": {
+    "champion": "config/models/tLTCUSD.json"
+  },
+  "tLTCUSD:1h": {
+    "champion": "config/models/tLTCUSD.json"
+  },
+  "tLTCUSD:4h": {
+    "champion": "config/models/tLTCUSD.json"
+  },
+  "tLTCUSD:1D": {
+    "champion": "config/models/tLTCUSD.json"
+  },
+  "tAPTUSD:1m": {
+    "champion": "config/models/tAPTUSD.json"
+  },
+  "tAPTUSD:5m": {
+    "champion": "config/models/tAPTUSD.json"
+  },
+  "tAPTUSD:15m": {
+    "champion": "config/models/tAPTUSD.json"
+  },
+  "tAPTUSD:1h": {
+    "champion": "config/models/tAPTUSD.json"
+  },
+  "tAPTUSD:4h": {
+    "champion": "config/models/tAPTUSD.json"
+  },
+  "tAPTUSD:1D": {
+    "champion": "config/models/tAPTUSD.json"
+  },
+  "tEOSUSD:1m": {
+    "champion": "config/models/tEOSUSD.json"
+  },
+  "tEOSUSD:5m": {
+    "champion": "config/models/tEOSUSD.json"
+  },
+  "tEOSUSD:15m": {
+    "champion": "config/models/tEOSUSD.json"
+  },
+  "tEOSUSD:1h": {
+    "champion": "config/models/tEOSUSD.json"
+  },
+  "tEOSUSD:4h": {
+    "champion": "config/models/tEOSUSD.json"
+  },
+  "tEOSUSD:1D": {
+    "champion": "config/models/tEOSUSD.json"
+  },
+  "tFILUSD:1m": {
+    "champion": "config/models/tFILUSD.json"
+  },
+  "tFILUSD:5m": {
+    "champion": "config/models/tFILUSD.json"
+  },
+  "tFILUSD:15m": {
+    "champion": "config/models/tFILUSD.json"
+  },
+  "tFILUSD:1h": {
+    "champion": "config/models/tFILUSD.json"
+  },
+  "tFILUSD:4h": {
+    "champion": "config/models/tFILUSD.json"
+  },
+  "tFILUSD:1D": {
+    "champion": "config/models/tFILUSD.json"
+  },
+  "tNEARUSD:1m": {
+    "champion": "config/models/tNEARUSD.json"
+  },
+  "tNEARUSD:5m": {
+    "champion": "config/models/tNEARUSD.json"
+  },
+  "tNEARUSD:15m": {
+    "champion": "config/models/tNEARUSD.json"
+  },
+  "tNEARUSD:1h": {
+    "champion": "config/models/tNEARUSD.json"
+  },
+  "tNEARUSD:4h": {
+    "champion": "config/models/tNEARUSD.json"
+  },
+  "tNEARUSD:1D": {
+    "champion": "config/models/tNEARUSD.json"
+  },
+  "tXAUTUSD:1m": {
+    "champion": "config/models/tXAUTUSD.json"
+  },
+  "tXAUTUSD:5m": {
+    "champion": "config/models/tXAUTUSD.json"
+  },
+  "tXAUTUSD:15m": {
+    "champion": "config/models/tXAUTUSD.json"
+  },
+  "tXAUTUSD:1h": {
+    "champion": "config/models/tXAUTUSD.json"
+  },
+  "tXAUTUSD:4h": {
+    "champion": "config/models/tXAUTUSD.json"
+  },
+  "tXAUTUSD:1D": {
+    "champion": "config/models/tXAUTUSD.json"
+  },
+  "tXTZUSD:1m": {
+    "champion": "config/models/tXTZUSD.json"
+  },
+  "tXTZUSD:5m": {
+    "champion": "config/models/tXTZUSD.json"
+  },
+  "tXTZUSD:15m": {
+    "champion": "config/models/tXTZUSD.json"
+  },
+  "tXTZUSD:1h": {
+    "champion": "config/models/tXTZUSD.json"
+  },
+  "tXTZUSD:4h": {
+    "champion": "config/models/tXTZUSD.json"
+  },
+  "tXTZUSD:1D": {
+    "champion": "config/models/tXTZUSD.json"
+  }
+}

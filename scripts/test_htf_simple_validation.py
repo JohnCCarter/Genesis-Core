@@ -24,8 +24,8 @@ def test_htf_vs_baseline():
     test_config = {
         "symbol": "tBTCUSD",
         "timeframe": "1h",  # Use 1h (known profitable at +4.89%)
-        "start_date": "2024-06-01",
-        "end_date": "2024-12-31",
+        "start_date": "2025-07-01",
+        "end_date": "2025-10-13",
         "initial_capital": 10000.0,
         "commission_rate": 0.003,
         "slippage_rate": 0.0005,
@@ -164,8 +164,8 @@ def test_partial_exit_functionality():
         config = {
             "symbol": "tBTCUSD",
             "timeframe": "1h",
-            "start_date": "2024-11-01",
-            "end_date": "2024-11-30",
+            "start_date": "2025-09-01",
+            "end_date": "2025-10-13",
             "initial_capital": 10000.0,
             "htf_exit_config": {
                 "enable_partials": True,

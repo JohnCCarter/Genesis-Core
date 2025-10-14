@@ -32,20 +32,25 @@ Fibonacci Fraktal Exits har implementerats framgångsrikt med symmetrisk exit-lo
    - `_initialize_position_exit_context()` - Initiera exit context
    - Integration med HTF Exit Engine
 
-## 🔄 **Symmetrisk Exit-Logik**
+## 🔄 **Symmetrisk Exit-Logik (Chamoun's Approach)**
 
 ### **Koncept**
-Exit-logiken speglar entry-logiken exakt:
+Exit-logiken är **symmetrisk** med entry-logiken enligt Chamoun's Fibonacci-principer:
 
-**Entry (Long)**:
-- Swing Low → Swing High
-- Fibonacci retracements (0.382, 0.5, 0.618) för entry-pullbacks
-- Proximity to fib below price
+**ENTRY (Long)**:
+- Retracement down (from swing_low → swing_high)
+- Fibonacci retracements (0.382, 0.5, 0.618, 0.786) för entry-pullbacks
+- Ordning: 0.382 → 0.5 → 0.618 → 0.786 (från lägsta till högsta)
 
-**Exit (Long)**:
-- Swing High → Swing Low (ny swing eller projicerad)
-- Fibonacci retracements (0.382, 0.5, 0.618) för profit-targets
-- Proximity to fib above price
+**EXIT (Long)**:
+- Retracement up (from swing_high → swing_low) - INVERTERADE nivåer
+- Fibonacci retracements (0.786, 0.618, 0.5, 0.382) för profit-targets
+- Ordning: 0.786 → 0.618 → 0.5 → 0.382 (från lägsta till högsta)
+
+### **Symmetri**:
+- **ENTRY**: `swing_low + (range * level)` - bygger UPPÅT från swing low
+- **EXIT**: `swing_high - (range * level)` - bygger NEDÅT från swing high
+- **Båda använder samma Fibonacci-nivåer** men i olika riktningar
 
 ### **Implementation**
 ```python

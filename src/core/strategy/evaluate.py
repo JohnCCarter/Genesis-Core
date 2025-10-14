@@ -5,7 +5,7 @@ from typing import Any
 from core.observability.metrics import metrics
 from core.strategy.confidence import compute_confidence
 from core.strategy.decision import decide
-from core.strategy.features import extract_features
+from core.strategy.features_asof import extract_features
 from core.strategy.prob_model import predict_proba_for
 
 
@@ -26,9 +26,10 @@ def evaluate_pipeline(
 
     metrics.inc("pipeline_eval_invocations")
 
-    # Extract timeframe from policy for HTF Fibonacci context
+    # Extract timeframe and symbol from policy for HTF Fibonacci context
     timeframe = policy.get("timeframe", None)
-    feats, feats_meta = extract_features(candles, config=configs, timeframe=timeframe)
+    symbol = policy.get("symbol", "tBTCUSD")
+    feats, feats_meta = extract_features(candles, config=configs, timeframe=timeframe, symbol=symbol)
     metrics.event("features_ok", {"keys": list(feats.keys())})
 
     # Detect regime BEFORE prediction (needed for regime-aware calibration)

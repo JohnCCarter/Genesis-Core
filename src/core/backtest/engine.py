@@ -544,7 +544,7 @@ class BacktestEngine:
             side=position.side,
             swing_high=swing_high,
             swing_low=swing_low,
-            levels=[0.382, 0.5, 0.618, 0.786],
+            levels=[0.786, 0.618, 0.5, 0.382],  # Inverterade nivåer för exit
         )
 
         # Store in position for exit engine

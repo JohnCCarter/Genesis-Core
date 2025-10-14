@@ -36,7 +36,7 @@ def test_htf_exit_engine_basic():
     exit_engine = HTFFibonacciExitEngine(config)
     print(f"[OK] Created HTF Exit Engine with config: {len(config)} parameters")
 
-    # Create test position
+    # Create test position with exit context
     position = Position(
         symbol="tBTCUSD",
         side="LONG",
@@ -45,6 +45,22 @@ def test_htf_exit_engine_basic():
         entry_price=100000.0,
         entry_time=datetime(2025, 1, 1, 12, 0),
     )
+    
+    # Add exit context for HTF exit engine
+    from core.indicators.exit_fibonacci import calculate_exit_fibonacci_levels
+    exit_levels = calculate_exit_fibonacci_levels(
+        side="LONG",
+        swing_high=108000.0,
+        swing_low=97000.0,
+        levels=[0.786, 0.618, 0.5, 0.382]
+    )
+    
+    position.exit_ctx = {
+        "fib": exit_levels,
+        "swing_bounds": (97000.0, 108000.0),
+        "swing_id": "test_swing_001",
+        "frozen_at": datetime(2025, 1, 1, 12, 0),
+    }
 
     # Test current bar data
     current_bar = {
@@ -150,7 +166,7 @@ def test_structure_break_detection():
     config = {"enable_structure_breaks": True}
     exit_engine = HTFFibonacciExitEngine(config)
 
-    # Create LONG position
+    # Create LONG position with exit context
     position = Position(
         symbol="tBTCUSD",
         side="LONG",
@@ -159,8 +175,32 @@ def test_structure_break_detection():
         entry_price=100000.0,
         entry_time=datetime(2025, 1, 1, 12, 0),
     )
+    
+    # Add exit context for structure break detection
+    from core.indicators.exit_fibonacci import calculate_exit_fibonacci_levels
+    exit_levels = calculate_exit_fibonacci_levels(
+        side="LONG",
+        swing_high=108000.0,
+        swing_low=97000.0,
+        levels=[0.786, 0.618, 0.5, 0.382]
+    )
+    
+    position.exit_ctx = {
+        "fib": exit_levels,
+        "swing_bounds": (97000.0, 108000.0),
+        "swing_id": "test_swing_002",
+        "frozen_at": datetime(2025, 1, 1, 12, 0),
+    }
 
-    current_bar = {"close": 100500.0, "atr": 1000.0}  # Below 0.618 Fib level
+    current_bar = {
+        "timestamp": datetime(2025, 1, 1, 16, 0),
+        "open": 100800.0,
+        "high": 100900.0,
+        "low": 100200.0,
+        "close": 100500.0,  # Below 0.618 Fib level (101000)
+        "volume": 1000.0,
+        "atr": 1000.0,
+    }
 
     htf_fib_context = {
         "available": True,

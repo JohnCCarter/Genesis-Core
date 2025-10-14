@@ -33,37 +33,53 @@ def calculate_exit_fibonacci_levels(
     """
     Beräkna exit Fibonacci-nivåer baserat på aktuell swing.
 
-    SYMMETRISK LOGIK:
-    - Entry: Retracement från swing (för att hitta entry)
-    - Exit: Retracement från swing (för att ta vinster)
+    SYMMETRISK LOGIK (Chamoun-modellen)
+    -----------------------------------
+    Entry- och exit-logiken använder samma Fibonacci-psykologi (0.382, 0.5, 0.618, 0.786)
+    men tillämpas i motsatt riktning beroende på handels-sida.
 
-    För LONG exit:
-        Pris rör sig NEDÅT från swing high
-        0.382 = swing_high - 0.382 * range  (första profit-taking)
-        0.5   = swing_high - 0.5 * range    (50% retracement)
-        0.618 = swing_high - 0.618 * range  (djup retracement)
+    ▣ ENTRY (LONG)
+        - Retracement NEDÅT från swing_low → swing_high (pullback)
+        - Entry sker när priset rekylerar ned mot 0.5–0.618-zonen ("golden zone")
 
-    För SHORT exit:
-        Pris rör sig UPPÅT från swing low
-        0.382 = swing_low + 0.382 * range  (första profit-taking)
-        0.5   = swing_low + 0.5 * range    (50% retracement)
-        0.618 = swing_low + 0.618 * range  (djup retracement)
+    ▣ EXIT (LONG)
+        - Retracement NEDÅT från swing_high (profit-taking)
+        - Pris rör sig nedåt från high, och nivåerna beräknas som:
+            0.786 = swing_high - 0.786 * range   (tidig profit-taking)
+            0.618 = swing_high - 0.618 * range   (golden zone – typisk TP)
+            0.5   = swing_high - 0.5   * range   (50% retracement)
+            0.382 = swing_high - 0.382 * range   (djup retracement)
+
+    ▣ EXIT (SHORT)
+        - Retracement UPPÅT från swing_low (profit-taking)
+        - Pris rör sig uppåt från low, och nivåerna beräknas som:
+            0.786 = swing_low + 0.786 * range    (tidig profit-taking)
+            0.618 = swing_low + 0.618 * range    (golden zone – typisk TP)
+            0.5   = swing_low + 0.5   * range    (50% retracement)
+            0.382 = swing_low + 0.382 * range    (djup retracement)
+
+    ▣ Sammanfattning
+        LONG EXIT  → retracement DOWN från high (nivåer under high)
+        SHORT EXIT → retracement UP från low  (nivåer över low)
+        Samma formler används, men riktningen och referenspunkten skiljer sig.
 
     Args:
-        side: "LONG" or "SHORT"
-        swing_high: Aktuell swing high (toppen)
-        swing_low: Aktuell swing low (botten)
-        levels: Fibonacci-nivåer att beräkna (default: [0.382, 0.5, 0.618])
+        side: "LONG" eller "SHORT"
+        swing_high: högsta pris i swingen (måste vara > swing_low)
+        swing_low: lägsta pris i swingen
+        levels: lista av Fibonacci-nivåer (default: [0.786, 0.618, 0.5, 0.382])
 
     Returns:
-        Dictionary med {level: price}
-        Exempel: {0.382: 108500.0, 0.5: 106500.0, 0.618: 104500.0}
+        dict[float, float]: {nivå: pris}
+        Exempel (LONG):
+            {0.786: 102_140.0, 0.618: 103_820.0, 0.5: 105_000.0, 0.382: 106_180.0}
 
     Raises:
-        ValueError: Om swing_high <= swing_low eller invalid side
+        ValueError: Om swing_high <= swing_low eller ogiltig 'side'
     """
     if levels is None:
-        levels = [0.382, 0.5, 0.618]
+        # INVERTERADE nivåer för exit (0.786 → 0.382)
+        levels = [0.786, 0.618, 0.5, 0.382]
 
     # Validate inputs
     if swing_high <= swing_low:

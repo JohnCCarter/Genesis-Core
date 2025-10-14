@@ -6,6 +6,7 @@ Maps 1D Fibonacci levels to LTF bars (1h/30m) for structure-aware exits.
 """
 
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 
@@ -14,6 +15,9 @@ from core.indicators.fibonacci import (
     calculate_fibonacci_levels,
     detect_swing_points,
 )
+
+# Simple cache for HTF context to avoid repeated computation
+_htf_context_cache: dict[str, dict[str, Any]] = {}
 
 
 def load_candles_data(symbol: str, timeframe: str) -> pd.DataFrame:
@@ -252,6 +256,16 @@ def get_htf_fibonacci_context(
     if timeframe not in ["1h", "30m", "6h", "15m"]:
         return {"available": False, "reason": "HTF_NOT_APPLICABLE"}
 
+    # Check cache first (simple cache key based on symbol + timeframe)
+    cache_key = f"{symbol}_{htf_timeframe}"
+    if cache_key in _htf_context_cache:
+        cached_context = _htf_context_cache[cache_key]
+        # Check if cache is still valid (not too old)
+        if cached_context.get("available", False):
+            data_age_hours = cached_context.get("data_age_hours", 999)
+            if data_age_hours < 24:  # Cache valid for 24 hours
+                return cached_context
+
     try:
         # Load HTF candles
         htf_candles = load_candles_data(symbol, htf_timeframe)
@@ -282,7 +296,7 @@ def get_htf_fibonacci_context(
             return {"available": False, "reason": "HTF_DATA_STALE"}
 
         # Return HTF context
-        return {
+        htf_context = {
             "available": True,
             "levels": {
                 0.382: float(latest_htf["htf_fib_0382"]),
@@ -297,6 +311,11 @@ def get_htf_fibonacci_context(
             "htf_timeframe": htf_timeframe,
             "last_update": last_htf_timestamp,
         }
+        
+        # Cache the result for future use
+        _htf_context_cache[cache_key] = htf_context
+        
+        return htf_context
 
     except FileNotFoundError as e:
         # HTF data not available (expected in some cases)

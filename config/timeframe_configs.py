@@ -92,49 +92,48 @@ def get_1h_config():
     }
 
 def get_1d_config():
-    """1D timeframe config - NO TRADES, anpassa för att få trades."""
+    """1D timeframe config - OPTIMIZED based on 6h and 1h learnings."""
     return {
         "thresholds": {
-            "entry_conf_overall": 0.01,  # EXTREMT SÄNKT: Fler trades
+            "entry_conf_overall": 0.30,
             "regime_proba": {
-                "ranging": 0.05,  # EXTREMT SÄNKT: Mer permisivt
-                "bull": 0.05, 
-                "bear": 0.05,
-                "balanced": 0.05
+                "ranging": 0.6,
+                "bull": 0.5,
+                "bear": 0.5,
+                "balanced": 0.6
             },
         },
         "risk": {
             "risk_map": [
-                [0.05, 0.25],  # STÖRRE size för 1D
-                [0.15, 0.30],
-                [0.25, 0.35],
-                [0.35, 0.40],
-                [0.45, 0.45],
+                [0.30, 0.15],
+                [0.40, 0.20],
+                [0.50, 0.25],
+                [0.60, 0.30],
+                [0.70, 0.35],
             ]
         },
         "exit": {
             "enabled": True,
-            "exit_conf_threshold": 0.05,  # EXTREMT SÄNKT: Längre holds
-            "max_hold_bars": 50,  # MYCKET LÄNGRE: Mer tid för macro moves
+            "exit_conf_threshold": 0.25,
+            "max_hold_bars": 30,
             "regime_aware_exits": True,
         },
         "gates": {
-            "cooldown_bars": 0,
-            "hysteresis_steps": 1,  # MINSKAD: Mer responsiv
+            "cooldown_bars": 1,
+            "hysteresis_steps": 2,
         },
         "htf_exit_config": {
             "enable_partials": True,
             "enable_trailing": True,
             "enable_structure_breaks": True,
-            "partial_1_pct": 0.15,  # MYCKET MINDRE: Längre holds
-            "partial_2_pct": 0.05,  # MYCKET MINDRE: Längre holds
-            "fib_threshold_atr": 0.05,  # EXTREMT MINDRE: Mer känslig
-            "trail_atr_multiplier": 0.3,  # MYCKET MINDRE: Mindre trailing
+            "partial_1_pct": 0.35,
+            "partial_2_pct": 0.25,
+            "fib_threshold_atr": 0.4,
+            "trail_atr_multiplier": 1.5,
             "swing_update_strategy": "fixed",
         },
-        "warmup_bars": 10,  # MINSKAD: Mer data för trading
+        "warmup_bars": 30,
     }
-
 def get_timeframe_config(timeframe: str) -> dict:
     """
     Get optimized configuration for specific timeframe.

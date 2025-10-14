@@ -1,0 +1,42 @@
+{
+  "timestamp": "2025-10-14T13:56:05.768659",
+  "all_results": [
+    {
+      "name": "Conservative Entry",
+      "config_name": "conservative_entry",
+      "success": false,
+      "error": "'close'"
+    },
+    {
+      "name": "Moderate Entry",
+      "config_name": "moderate_entry",
+      "success": false,
+      "error": "'close'"
+    },
+    {
+      "name": "Aggressive Entry",
+      "config_name": "aggressive_entry",
+      "success": false,
+      "error": "'close'"
+    },
+    {
+      "name": "Long Hold Strategy",
+      "config_name": "long_hold_strategy",
+      "success": false,
+      "error": "'close'"
+    },
+    {
+      "name": "Short Hold Strategy",
+      "config_name": "short_hold_strategy",
+      "success": false,
+      "error": "'close'"
+    }
+  ],
+  "best_result": null,
+  "summary": {
+    "total_configs": 5,
+    "successful_configs": 0,
+    "failed_configs": 5,
+    "best_config": null
+  }
+}

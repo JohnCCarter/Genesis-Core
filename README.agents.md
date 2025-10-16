@@ -3,6 +3,7 @@
 Denna fil beskriver hur AI‑agenter ska arbeta lokalt med projektet.
 
 **TODO – Nästa agent:**
+- Skriv enhets- och integrationstester för HTF-kontextflödet
 - [ ] Kör `train_model.py` med `--use-holdout` och verifiera att valideringen fungerar end-to-end med v18-features
 - [ ] Dokumentera resultatet (när IC/Q5-Q1 inte längre är `nan`) i `README.agents.md` och relevanta rapporter
 - [ ] Utvärdera om fler symboler/timeframes ska köras via `sync_precompute_and_train.py --all --feature-version v18`

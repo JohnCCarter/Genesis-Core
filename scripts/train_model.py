@@ -130,9 +130,7 @@ def load_features_and_prices(
             if fallback_candles_path.exists():
                 candles_path = fallback_candles_path
             else:
-                raise FileNotFoundError(
-                    f"Candles file not found: {fallback_candles_path}"
-                ) from err
+                raise FileNotFoundError(f"Candles file not found: {fallback_candles_path}") from err
 
     candles_df = pd.read_parquet(candles_path)
 

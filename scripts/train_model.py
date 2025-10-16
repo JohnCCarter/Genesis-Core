@@ -27,7 +27,7 @@ from core.ml.labeling import (
     generate_labels,
     generate_triple_barrier_labels,
 )
-from core.utils import get_candles_path
+from core.utils import get_candles_path, timeframe_filename_suffix
 from core.utils.data_loader import load_features
 from core.utils.provenance import create_provenance_record
 
@@ -113,20 +113,59 @@ def load_features_and_prices(
     # Load features with smart format selection (Feather > Parquet)
     features_df = load_features(symbol, timeframe, version=feature_version)
 
-    try:
-        candles_path = get_candles_path(symbol, timeframe)
-    except FileNotFoundError as err:
-        fallback_candles_path = Path("data/candles") / f"{symbol}_{timeframe}.parquet"
-        if fallback_candles_path.exists():
-            candles_path = fallback_candles_path
-        else:
-            raise FileNotFoundError(f"Candles file not found: {fallback_candles_path}") from err
+    suffix = timeframe_filename_suffix(timeframe)
+
+    search_paths = [
+        Path("data/curated/v1/candles") / f"{symbol}_{suffix}.parquet",
+        Path("data/candles") / f"{symbol}_{suffix}.parquet",
+    ]
+
+    candles_path = next((path for path in search_paths if path.exists()), None)
+
+    if candles_path is None:
+        try:
+            candles_path = get_candles_path(symbol, timeframe)
+        except FileNotFoundError as err:
+            fallback_candles_path = Path("data/candles") / f"{symbol}_{suffix}.parquet"
+            if fallback_candles_path.exists():
+                candles_path = fallback_candles_path
+            else:
+                raise FileNotFoundError(
+                    f"Candles file not found: {fallback_candles_path}"
+                ) from err
 
     candles_df = pd.read_parquet(candles_path)
+
+    def align_by_timestamp(candles: pd.DataFrame, features: pd.DataFrame) -> pd.DataFrame:
+        if "timestamp" not in candles.columns or "timestamp" not in features.columns:
+            return candles
+
+        aligned = candles.set_index("timestamp").reindex(features["timestamp"]).reset_index()
+        return aligned
+
+    candles_df = align_by_timestamp(candles_df, features_df)
     close_prices = candles_df["close"].tolist()
 
-    # Verify alignment
-    if len(features_df) != len(close_prices):
+    def fallback_to_legacy() -> tuple[pd.DataFrame, list[float]]:
+        legacy_path = Path("data/candles") / f"{symbol}_{suffix}.parquet"
+        if candles_path != legacy_path and legacy_path.exists():
+            legacy_df = align_by_timestamp(pd.read_parquet(legacy_path), features_df)
+            return legacy_df, legacy_df["close"].tolist()
+        return candles_df, close_prices
+
+    # If everything is NaN, treat as missing candles
+    if pd.isna(close_prices).all():
+        candles_df, close_prices = fallback_to_legacy()
+        if pd.isna(close_prices).all():
+            missing_path = Path("data/candles") / f"{symbol}_{suffix}.parquet"
+            raise FileNotFoundError(f"Candles file not found: {missing_path}")
+
+    # If mismatch remains, attempt legacy fallback once
+    if len(features_df) != len(close_prices) or pd.isna(close_prices).any():
+        candles_df, close_prices = fallback_to_legacy()
+
+    # Verify alignment one last time
+    if len(features_df) != len(close_prices) or pd.isna(close_prices).any():
         raise ValueError(
             f"Features ({len(features_df)}) and candles ({len(close_prices)}) length mismatch"
         )

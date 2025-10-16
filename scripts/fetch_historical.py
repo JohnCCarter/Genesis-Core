@@ -33,6 +33,16 @@ DELAY_BETWEEN_REQUESTS = 60 / SAFE_REQUESTS_PER_MINUTE  # ~2.22 seconds
 SUPPORTED_TIMEFRAMES = ["1m", "5m", "15m", "30m", "1h", "3h", "6h", "12h", "1D", "1W", "14D", "1M"]
 
 
+def timeframe_filename_suffix(timeframe: str) -> str:
+    """Return a filesystem-safe suffix for timeframe-specific files."""
+
+    # Windows-filsystem är inte skiftlägeskänsligt. Se till att 1M != 1m.
+    if timeframe == "1M":
+        return "1mo"
+
+    return timeframe
+
+
 def calculate_candle_count(timeframe: str, days: int) -> int:
     """Calculate expected number of candles for given timeframe and days."""
     minutes_per_candle = {
@@ -223,7 +233,10 @@ def save_to_parquet(
         raw_dir = base_dir / "raw" / "bitfinex" / "candles"
         raw_dir.mkdir(parents=True, exist_ok=True)
 
-        raw_filename = f"{symbol}_{timeframe}_{fetch_date}.parquet"
+        from core.utils import timeframe_filename_suffix
+
+        suffix = timeframe_filename_suffix(timeframe)
+        raw_filename = f"{symbol}_{suffix}_{fetch_date}.parquet"
         raw_path = raw_dir / raw_filename
         df.to_parquet(raw_path, index=False, compression="snappy")
         print(f"[RAW] {raw_path} ({len(df):,} rows)")
@@ -232,7 +245,7 @@ def save_to_parquet(
         curated_dir = base_dir / "curated" / "v1" / "candles"
         curated_dir.mkdir(parents=True, exist_ok=True)
 
-        curated_filename = f"{symbol}_{timeframe}.parquet"
+        curated_filename = f"{symbol}_{suffix}.parquet"
         curated_path = curated_dir / curated_filename
         df.to_parquet(curated_path, index=False, compression="snappy")
         print(f"[CURATED] {curated_path} ({len(df):,} rows)")
@@ -243,7 +256,7 @@ def save_to_parquet(
         data_dir = Path(__file__).parent.parent / "data" / "candles"
         data_dir.mkdir(parents=True, exist_ok=True)
 
-        filename = f"{symbol}_{timeframe}.parquet"
+        filename = f"{symbol}_{suffix}.parquet"
         filepath = data_dir / filename
         df.to_parquet(filepath, index=False, compression="snappy")
         print(f"[SAVED] {filepath} ({len(df):,} rows)")
@@ -265,10 +278,13 @@ def save_metadata(
         metadata_dir = Path(__file__).parent.parent / "data" / "metadata" / "curated"
         metadata_dir.mkdir(parents=True, exist_ok=True)
 
+        suffix = timeframe_filename_suffix(timeframe)
+
         metadata = {
             "dataset_version": "v1",
             "symbol": symbol,
             "timeframe": timeframe,
+            "file_suffix": suffix,
             "source": "bitfinex_public_api",
             "fetched_at": datetime.now().isoformat(),
             "start_date": df["timestamp"].min().isoformat(),
@@ -280,15 +296,18 @@ def save_metadata(
             "adjustments": [],
         }
 
-        filename = f"{symbol}_{timeframe}_v1.json"
+        filename = f"{symbol}_{suffix}_v1.json"
     else:
         # Legacy flat structure
         metadata_dir = Path(__file__).parent.parent / "data" / "metadata"
         metadata_dir.mkdir(parents=True, exist_ok=True)
 
+        suffix = timeframe_filename_suffix(timeframe)
+
         metadata = {
             "symbol": symbol,
             "timeframe": timeframe,
+            "file_suffix": suffix,
             "fetched_at": datetime.now().isoformat(),
             "start_date": df["timestamp"].min().isoformat(),
             "end_date": df["timestamp"].max().isoformat(),
@@ -297,7 +316,7 @@ def save_metadata(
             "source": "bitfinex_public_api",
         }
 
-        filename = f"{symbol}_{timeframe}_meta.json"
+        filename = f"{symbol}_{suffix}_meta.json"
 
     filepath = metadata_dir / filename
 
@@ -343,7 +362,12 @@ def main():
 
         # Save metadata
         save_metadata(
-            args.symbol, args.timeframe, df, args.months, raw_path=raw_path, use_two_layer=True
+            args.symbol,
+            args.timeframe,
+            df,
+            args.months,
+            raw_path=raw_path,
+            use_two_layer=True,
         )
 
         print(f"\n{'='*60}")

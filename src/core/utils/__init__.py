@@ -1,14 +1,24 @@
 from pathlib import Path
 
 
+def timeframe_filename_suffix(timeframe: str) -> str:
+    """Return filename-safe suffix (handles case collisions like 1m vs 1M)."""
+
+    return "1mo" if timeframe == "1M" else timeframe
+
+
 def curated_candles_path(symbol: str, timeframe: str) -> Path:
     """Return path for curated candle parquet."""
-    return Path("data/curated/v1/candles") / f"{symbol}_{timeframe}.parquet"
+
+    suffix = timeframe_filename_suffix(timeframe)
+    return Path("data/curated/v1/candles") / f"{symbol}_{suffix}.parquet"
 
 
 def legacy_candles_path(symbol: str, timeframe: str) -> Path:
     """Legacy path for candle parquet (deprecated)."""
-    return Path("data/candles") / f"{symbol}_{timeframe}.parquet"
+
+    suffix = timeframe_filename_suffix(timeframe)
+    return Path("data/candles") / f"{symbol}_{suffix}.parquet"
 
 
 def raw_candles_dir() -> Path:

@@ -51,7 +51,7 @@
 - Result: Bear regime boost a=4.15 (+18% probability!)
 
 **📚 Complete details:** `docs/PHASE-6_LEARNINGS.md`
-
+di
 ---
 
 ## 🎯 CURRENT SYSTEM STATUS

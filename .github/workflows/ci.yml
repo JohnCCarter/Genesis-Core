@@ -2,9 +2,17 @@ name: CI
 
 on:
   push:
-    branches: ["master, Phase-2, phase-3, phase-4, phase-5, Phase-6, phase-7"]
+    branches:
+      - '**'
+    branches-ignore:
+      - 'archive/**'
+      - 'Archive/**'
   pull_request:
-    branches: ["master, Phase-2, phase-3, phase-4, phase-5, Phase-6, phase-7"]
+    branches:
+      - '**'
+    branches-ignore:
+      - 'archive/**'
+      - 'Archive/**'
 
 jobs:
   lint-test:
@@ -48,40 +56,3 @@ jobs:
         with:
           name: bandit-report
           path: bandit-report.txt
-name: CI
-
-on:
-  push:
-    branches: [master, Phase-2, phase-3, phase-4, phase-5, Phase-6, phase-7]
-  pull_request:
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    env:
-      SYMBOL_MODE: synthetic
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-      - name: Install
-        run: |
-          python -m venv .venv
-          . .venv/bin/activate
-          pip install -e .[dev]
-      - name: Install ML dependencies
-        run: |
-          . .venv/bin/activate
-          pip install -e .[ml]
-      - name: Lint & Test & Security
-        run: |
-          . .venv/bin/activate
-          # Code formatting
-          python -m black --check src scripts tests --exclude "scripts/archive"
-          # Linting
-          python -m ruff check src scripts tests --exclude scripts/archive
-          # Security scanning
-          python -m bandit -r src -f json -o bandit-report.json
-          # Run tests
-          python -m pytest --tb=short -q

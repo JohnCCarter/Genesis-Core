@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: ["**"]
+    branches: ["master, Phase-2, phase-3, phase-4, phase-5, Phase-6, phase-7"]
   pull_request:
-    branches: ["**"]
+    branches: ["master, Phase-2, phase-3, phase-4, phase-5, Phase-6, phase-7"]
 
 jobs:
   lint-test:

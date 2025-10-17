@@ -24,7 +24,8 @@ If the current chat approaches context limits (you notice reasoning or earlier d
 - Pause on uncertainty. Verify with codebase_search + grep. No assumptions.
 - Plan steps before acting. Work systematically and methodically.
 - Ask for a new chat session if the current chat becomes context-constrained.
-- Continue until task is complete. Reflect on root cause vs symptom.
+- Ask the user if you should continue until the task is complete. 
+- Reflect on root cause vs symptom.
 - Respond in Swedish unless specified. Use clear headings and ✅ markers.
 
 ## Stabilization Phase Policy

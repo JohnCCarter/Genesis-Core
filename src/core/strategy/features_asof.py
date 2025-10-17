@@ -14,9 +14,19 @@ from __future__ import annotations
 
 from typing import Any
 
+import pandas as pd
+
+from core.indicators.adx import calculate_adx
 from core.indicators.atr import calculate_atr
 from core.indicators.bollinger import bollinger_bands
 from core.indicators.derived_features import calculate_volatility_shift
+from core.indicators.ema import calculate_ema
+from core.indicators.fibonacci import (
+    FibonacciConfig,
+    calculate_fibonacci_features,
+    calculate_fibonacci_levels,
+    detect_swing_points,
+)
 from core.indicators.htf_fibonacci import get_htf_fibonacci_context
 from core.indicators.rsi import calculate_rsi
 
@@ -143,6 +153,85 @@ def _extract_asof(
         "vol_regime": vol_regime,
     }
 
+    # === FIBONACCI FEATURES (levels + distances/proximity) ===
+    # Beräkna endast om vi har tillräckligt med data (kräver ATR, swing-detektion)
+    try:
+        fib_config = FibonacciConfig(atr_depth=3.0, max_swings=8, min_swings=1)
+        current_price = closes[-1] if closes else 0.0
+        current_atr = atr_vals[-1] if atr_vals else 1.0
+
+        swing_high_indices, swing_low_indices, swing_high_prices, swing_low_prices = (
+            detect_swing_points(pd.Series(highs), pd.Series(lows), pd.Series(closes), fib_config)
+        )
+        fib_levels = calculate_fibonacci_levels(
+            swing_high_prices, swing_low_prices, fib_config.levels
+        )
+
+        current_swing_high = swing_high_prices[-1] if swing_high_prices else current_price * 1.05
+        current_swing_low = swing_low_prices[-1] if swing_low_prices else current_price * 0.95
+
+        fib_feats = calculate_fibonacci_features(
+            current_price,
+            fib_levels,
+            current_atr,
+            fib_config,
+            current_swing_high,
+            current_swing_low,
+        )
+
+        # Lägg till fib-features (klampade)
+        features.update(
+            {
+                "fib_dist_min_atr": _clip(fib_feats.get("fib_dist_min_atr", 0.0), 0.0, 10.0),
+                "fib_dist_signed_atr": _clip(
+                    fib_feats.get("fib_dist_signed_atr", 0.0), -10.0, 10.0
+                ),
+                "fib_prox_score": _clip(fib_feats.get("fib_prox_score", 0.0), 0.0, 1.0),
+                "fib0618_prox_atr": _clip(fib_feats.get("fib0618_prox_atr", 0.0), 0.0, 1.0),
+                "fib05_prox_atr": _clip(fib_feats.get("fib05_prox_atr", 0.0), 0.0, 1.0),
+                "swing_retrace_depth": _clip(fib_feats.get("swing_retrace_depth", 0.0), 0.0, 1.0),
+            }
+        )
+
+        # === FIBONACCI-KOMBINATIONER (kontext × signal) ===
+        # EMA-slope parametrar per timeframe
+        EMA_SLOPE_PARAMS = {
+            "30m": {"ema_period": 50, "lookback": 20},
+            "1h": {"ema_period": 20, "lookback": 5},
+            "3h": {"ema_period": 20, "lookback": 5},
+        }
+        par = EMA_SLOPE_PARAMS.get(str(timeframe or "").lower(), {"ema_period": 20, "lookback": 5})
+        ema_period = par["ema_period"]
+        ema_lookback = par["lookback"]
+        ema_values = calculate_ema(closes, period=ema_period)
+        if len(ema_values) >= ema_lookback + 1:
+            ema_slope_raw = (ema_values[-1] - ema_values[-1 - ema_lookback]) / ema_values[
+                -1 - ema_lookback
+            ]
+        else:
+            ema_slope_raw = 0.0
+        ema_slope = _clip(ema_slope_raw, -0.10, 0.10)
+
+        adx_values = calculate_adx(highs, lows, closes, period=14)
+        adx_latest = adx_values[-1] if adx_values else 25.0
+        adx_normalized = adx_latest / 100.0
+
+        fib05_x_ema_slope = features.get("fib05_prox_atr", 0.0) * ema_slope
+        fib_prox_x_adx = features.get("fib_prox_score", 0.0) * adx_normalized
+        # rsi_inv = -rsi_current
+        fib05_x_rsi_inv = features.get("fib05_prox_atr", 0.0) * (-rsi_current)
+
+        features.update(
+            {
+                "fib05_x_ema_slope": _clip(fib05_x_ema_slope, -0.10, 0.10),
+                "fib_prox_x_adx": _clip(fib_prox_x_adx, 0.0, 1.0),
+                "fib05_x_rsi_inv": _clip(fib05_x_rsi_inv, -1.0, 1.0),
+            }
+        )
+    except Exception:
+        # Om något går fel i fib-beräkning, behåll bas-features och fortsätt
+        pass
+
     # === ADD HTF FIBONACCI CONTEXT FOR SYMMETRIC CHAMOUN MODEL ===
     # Only for LTF timeframes that can benefit from HTF structure
     htf_fibonacci_context = {}
@@ -162,6 +251,8 @@ def _extract_asof(
     meta = {
         "versions": {
             "features_v15_highvol_optimized": True,
+            "features_v16_fibonacci": True,
+            "features_v17_fibonacci_combinations": True,
             "htf_fibonacci_symmetric_chamoun": True,  # NEW: HTF context for symmetric exits
         },
         "reasons": [],

@@ -126,8 +126,15 @@ data/meta_labels/*.parquet
 !data/**/README.md
 
 # Phase 3-5: ML Results (models, evaluations, calibrations, champion reports)
+# Results (allow docs/archives)
 results/
 results/**/
+!results/*.md
+!results/**/README.md
+!results/archive/**
+
+# CI artifacts
+bandit-report.txt
 
 # Keep results documentation and archives
 !results/README.md

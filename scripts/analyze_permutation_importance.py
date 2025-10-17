@@ -27,7 +27,7 @@ from core.utils.data_loader import load_features
 def load_features_and_prices(symbol: str, timeframe: str):
     """Load features and price data (duplicated from train_model.py)."""
     # Load features with smart format selection (Feather > Parquet)
-    features_df = load_features(symbol, timeframe)
+    features_df = load_features(symbol, timeframe, version="v18")
 
     candles_path = get_candles_path(symbol, timeframe)
     candles_df = pd.read_parquet(candles_path)
@@ -73,11 +73,12 @@ def analyze_permutation_importance(
     highs = candles_df["high"].tolist()
     lows = candles_df["low"].tolist()
     closes = candles_df["close"].tolist()
-    atr_values = calculate_atr(highs, lows, closes, period=14)
+    _ = calculate_atr(highs, lows, closes, period=14)
 
     labels = generate_adaptive_triple_barrier_labels(
         close_prices,
-        atr_values,
+        highs,
+        lows,
         profit_multiplier=1.5,
         stop_multiplier=1.0,
         max_holding_bars=10,
@@ -117,25 +118,33 @@ def analyze_permutation_importance(
             print(f"  Extra in data: {extra}")
         print("[FIX] Using only features present in model...")
         # Use only features that exist in model
-        X = X[[f for f in model_features if f in X.columns]]
+        selected = [f for f in model_features if f in X.columns]
+        X = X[selected]
     else:
         # Reorder to match model schema
         X = X[model_features]
 
-    # Use 80/20 split (same as training)
+    # Train/test split (80/20) AFTER aligning X to schema
     split_idx = int(len(X) * 0.8)
     _X_train, X_test = X.iloc[:split_idx], X.iloc[split_idx:]
     _y_train, y_test = y[:split_idx], y[split_idx:]
 
-    print(f"[DATA] Test samples: {len(X_test)}, Features: {len(X.columns)}")
-
-    # Reconstruct sklearn model from Genesis-Core format
+    # Reconstruct sklearn model from Genesis-Core format, aligned to X columns
     buy_model = LogisticRegression()
-    buy_model.coef_ = np.array([model_dict["buy"]["w"]])
+
+    # Align weights to the selected/reordered columns
+    selected_features = list(X.columns)
+    feature_index_map = {f: i for i, f in enumerate(model_features)}
+    selected_indices = [feature_index_map[f] for f in selected_features]
+
+    full_w = np.array(model_dict["buy"]["w"], dtype=float)
+    aligned_w = full_w[selected_indices]
+
+    buy_model.coef_ = np.array([aligned_w])
     buy_model.intercept_ = np.array([model_dict["buy"]["b"]])
     buy_model.classes_ = np.array([0, 1])
-    buy_model.n_features_in_ = len(model_features)
-    buy_model.feature_names_in_ = np.array(model_features)
+    buy_model.n_features_in_ = len(selected_features)
+    buy_model.feature_names_in_ = np.array(selected_features)
 
     # Calculate permutation importance
     # PERFORMANCE OPTIMIZATION: Sample for faster computation

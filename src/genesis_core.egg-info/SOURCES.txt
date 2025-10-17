@@ -5,6 +5,8 @@ src/core/server.py
 src/core/server_config_api.py
 src/core/backtest/__init__.py
 src/core/backtest/engine.py
+src/core/backtest/exit_strategies.py
+src/core/backtest/htf_exit_engine.py
 src/core/backtest/metrics.py
 src/core/backtest/position_tracker.py
 src/core/backtest/trade_logger.py
@@ -18,8 +20,10 @@ src/core/indicators/atr.py
 src/core/indicators/bollinger.py
 src/core/indicators/derived_features.py
 src/core/indicators/ema.py
+src/core/indicators/exit_fibonacci.py
 src/core/indicators/fibonacci.py
 src/core/indicators/fvg.py
+src/core/indicators/htf_fibonacci.py
 src/core/indicators/macd.py
 src/core/indicators/rsi.py
 src/core/indicators/vectorized.py
@@ -60,8 +64,10 @@ src/core/strategy/model_registry.py
 src/core/strategy/prob_model.py
 src/core/strategy/regime.py
 src/core/strategy/regime_unified.py
+src/core/strategy/schemas.py
 src/core/strategy/validation.py
 src/core/symbols/symbols.py
+src/core/utils/__init__.py
 src/core/utils/backoff.py
 src/core/utils/crypto.py
 src/core/utils/data_loader.py
@@ -91,6 +97,7 @@ tests/test_decision_matrix.py
 tests/test_e2e_pipeline.py
 tests/test_evaluation.py
 tests/test_exchange_client.py
+tests/test_exit_fibonacci.py
 tests/test_features.py
 tests/test_fibonacci.py
 tests/test_fvg.py

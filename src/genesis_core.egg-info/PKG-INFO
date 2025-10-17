@@ -1,7 +1,7 @@
 Metadata-Version: 2.4
 Name: genesis-core
-Version: 0.6.0
-Summary: Regime-conditional trading strategy with validated vectorized features (Phase-6)
+Version: 0.7.0
+Summary: Fibonacci Fraktal Exits implementation with symmetric exit logic and frozen context support
 Requires-Python: >=3.11
 Requires-Dist: fastapi<0.117,>=0.116
 Requires-Dist: uvicorn<0.25,>=0.24

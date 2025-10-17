@@ -74,6 +74,8 @@ class HTFFibonacciExitEngine:
             config: Exit configuration with parameters:
                 - partial_1_pct: Percentage to close at TP1 (default: 0.40)
                 - partial_2_pct: Percentage to close at TP2 (default: 0.30)
+                - partial_3_pct: Percentage to close at TP3 (default: 0.20)
+                - partial_4_pct: Percentage to close at TP4 (default: 0.10)
                 - fib_threshold_atr: ATR threshold for Fib proximity (default: 0.3)
                 - trail_atr_multiplier: ATR multiplier for trailing stop (default: 1.3)
                 - enable_partials: Enable partial exits (default: True)
@@ -84,6 +86,8 @@ class HTFFibonacciExitEngine:
         """
         self.partial_1_pct = config.get("partial_1_pct", 0.40)  # 40% @ TP1
         self.partial_2_pct = config.get("partial_2_pct", 0.30)  # 30% @ TP2
+        self.partial_3_pct = config.get("partial_3_pct", 0.20)  # 20% @ TP3
+        self.partial_4_pct = config.get("partial_4_pct", 0.10)  # 10% @ TP4
         self.fib_threshold_atr = config.get("fib_threshold_atr", 0.3)  # 30% ATR
         self.trail_atr_multiplier = config.get("trail_atr_multiplier", 1.3)  # 1.3x ATR
 
@@ -252,6 +256,42 @@ class HTFFibonacciExitEngine:
                 )
                 self.triggered_exits[position_id].add("TP2_05")
 
+            # TP3: Near 0.618 (HTF)?
+            if (
+                htf_levels.get(0.618)
+                and self._near_with_adaptive(
+                    current_price, htf_levels[0.618], atr, pct_thr, atr_thr
+                )
+                and "TP3_0618" not in self.triggered_exits[position_id]
+            ):
+
+                actions.append(
+                    ExitAction(
+                        action="PARTIAL",
+                        size=position.current_size * self.partial_3_pct,
+                        reason="TP3_0618",
+                    )
+                )
+                self.triggered_exits[position_id].add("TP3_0618")
+
+            # TP4: Near 0.786 (HTF)?
+            if (
+                htf_levels.get(0.786)
+                and self._near_with_adaptive(
+                    current_price, htf_levels[0.786], atr, pct_thr, atr_thr
+                )
+                and "TP4_0786" not in self.triggered_exits[position_id]
+            ):
+
+                actions.append(
+                    ExitAction(
+                        action="PARTIAL",
+                        size=position.current_size * self.partial_4_pct,
+                        reason="TP4_0786",
+                    )
+                )
+                self.triggered_exits[position_id].add("TP4_0786")
+
         else:  # SHORT position
             # TP1: Near 0.618 (HTF)? (SHORT targets lower Fib levels)
             if (
@@ -286,6 +326,42 @@ class HTFFibonacciExitEngine:
                     )
                 )
                 self.triggered_exits[position_id].add("TP2_05")
+
+            # TP3: Near 0.382 (HTF)?
+            if (
+                htf_levels.get(0.382)
+                and self._near_with_adaptive(
+                    current_price, htf_levels[0.382], atr, pct_thr, atr_thr
+                )
+                and "TP3_0382" not in self.triggered_exits[position_id]
+            ):
+
+                actions.append(
+                    ExitAction(
+                        action="PARTIAL",
+                        size=position.current_size * self.partial_3_pct,
+                        reason="TP3_0382",
+                    )
+                )
+                self.triggered_exits[position_id].add("TP3_0382")
+
+            # TP4: Near 0.786 (HTF)?
+            if (
+                htf_levels.get(0.786)
+                and self._near_with_adaptive(
+                    current_price, htf_levels[0.786], atr, pct_thr, atr_thr
+                )
+                and "TP4_0786" not in self.triggered_exits[position_id]
+            ):
+
+                actions.append(
+                    ExitAction(
+                        action="PARTIAL",
+                        size=position.current_size * self.partial_4_pct,
+                        reason="TP4_0786",
+                    )
+                )
+                self.triggered_exits[position_id].add("TP4_0786")
 
         return actions
 

@@ -4,6 +4,12 @@
 - Frys datasetet med ett `data_snapshot_id` (tidsintervall + källfil) och logga det per försök.
 - Förbered enkel feature-cache (valfritt) för återanvändning av indikatorer inom samma snapshot.
 - När snapshoten är låst: verifiera att `evaluate_pipeline` kan köras fristående med valbara configs.
+- **Snapshot (2025-10-20):**
+  - `data_snapshot_id`: `tBTCUSD_1h_2024-10-22_2025-10-01_v1`
+  - Källa: `data/curated/v1/candles/tBTCUSD_1h.parquet`
+  - Period i datafil: `2024-10-22 → 2025-10-01`, warmup `150`
+  - Baseline-run: `python scripts/run_backtest.py --symbol tBTCUSD --timeframe 1h --start 2024-10-22 --end 2025-10-01 --warmup 150`
+  - Resultatfil: `results/backtests/tBTCUSD_1h_20251020_155245.json`
 
 ## 2. Sökrymder & scoring
 - Beskriv parametrar i en YAML/JSON (listor eller intervall för thresholds, risk, osv.).

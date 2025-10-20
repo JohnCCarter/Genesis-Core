@@ -12,7 +12,6 @@ class ConstraintResult:
 
 def enforce_constraints(score_obj: dict[str, Any], config: dict[str, Any]) -> ConstraintResult:
     reasons: list[str] = []
-    metrics = score_obj.get("metrics") or {}
     hard_failures = score_obj.get("hard_failures") or []
 
     if hard_failures:

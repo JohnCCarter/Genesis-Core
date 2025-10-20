@@ -90,6 +90,10 @@ class TradeLogger:
 
         # Convert to DataFrame and save
         trades_df = pd.DataFrame(trades)
+        if "entry_reasons" in trades_df.columns:
+            trades_df["entry_reasons"] = trades_df["entry_reasons"].apply(
+                lambda reasons: ";".join(reasons) if isinstance(reasons, list) else reasons
+            )
         trades_df.to_csv(csv_file, index=False)
 
         print(f"[SAVED] Trades CSV: {csv_file}")

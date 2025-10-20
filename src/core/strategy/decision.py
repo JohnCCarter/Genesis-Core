@@ -91,8 +91,59 @@ def decide(
             long_allowed = False
 
     # 5) Proba‑tröskel (regim‑specifik)
-    thresholds = (cfg.get("thresholds") or {}).get("regime_proba", {})
-    default_thr = float((cfg.get("thresholds") or {}).get("entry_conf_overall", 0.7))
+    thresholds_cfg = cfg.get("thresholds") or {}
+
+    # Determine ATR-adapted thresholds if available
+    adaptation_cfg = thresholds_cfg.get("signal_adaptation") or {}
+    default_thr = float(thresholds_cfg.get("entry_conf_overall", 0.7))
+
+    atr = state_in.get("current_atr") if adaptation_cfg else None
+    atr_percentiles = state_in.get("atr_percentiles") if adaptation_cfg else None
+
+    zone_name = None
+    zone_debug: dict[str, Any] = {}
+    if adaptation_cfg and atr_percentiles:
+        zones = adaptation_cfg.get("zones", {})
+        atr_period = int(adaptation_cfg.get("atr_period", 14))
+        # Zone determination: use percentiles thresholds stored in state
+        if atr is not None:
+            atr_p = atr_percentiles.get(str(atr_period)) or atr_percentiles.get(atr_period) or {}
+            p40 = float(atr_p.get("p40", atr))
+            p80 = float(atr_p.get("p80", atr))
+            if atr <= p40:
+                zone_name = "low"
+            elif atr <= p80:
+                zone_name = "mid"
+            else:
+                zone_name = "high"
+
+        zone_cfg = zones.get(zone_name or "") or {}
+        zone_entry = zone_cfg.get("entry_conf_overall")
+        if zone_entry is not None:
+            default_thr = float(zone_entry)
+        zone_regime = zone_cfg.get("regime_proba") or {}
+
+        zone_meta = atr_percentiles.get(str(atr_period)) or atr_percentiles.get(atr_period) or {}
+        zone_debug = {
+            "atr": atr,
+            "zone": zone_name or "base",
+            "thr": default_thr,
+            "p40": zone_meta.get("p40"),
+            "p80": zone_meta.get("p80"),
+            "period": atr_period,
+        }
+    else:
+        zone_regime = {}
+        zone_debug = {
+            "atr": atr,
+            "zone": zone_name or "base",
+            "thr": default_thr,
+        }
+
+    zone_label = f"ZONE:{zone_name or 'base'}@{default_thr:.3f}"
+    reasons.append(zone_label)
+
+    thresholds = zone_regime or thresholds_cfg.get("regime_proba", {})
     thr = float(thresholds.get(regime_str, default_thr))
 
     buy_pass = p_buy >= thr and long_allowed
@@ -222,6 +273,10 @@ def decide(
     cooldown_bars = int((cfg.get("gates") or {}).get("cooldown_bars") or 0)
     if cooldown_bars > 0:
         state_out["cooldown_remaining"] = cooldown_bars
+
+    state_out["zone_debug"] = zone_debug
+
+    reasons.append("ENTRY_LONG" if candidate == "LONG" else "ENTRY_SHORT")
 
     meta: dict[str, Any] = {
         "versions": versions,

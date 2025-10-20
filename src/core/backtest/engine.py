@@ -74,10 +74,10 @@ class BacktestEngine:
 
         # Initialize HTF Exit Engine
         default_htf_config = {
-            "partial_1_pct": 0.40,
+            "partial_1_pct": 0.50,
             "partial_2_pct": 0.30,
             "fib_threshold_atr": 0.3,
-            "trail_atr_multiplier": 1.3,
+            "trail_atr_multiplier": 1.6,
             "enable_partials": True,
             "enable_trailing": True,
             "enable_structure_breaks": True,
@@ -303,7 +303,12 @@ class BacktestEngine:
                 self.position_tracker.update_equity(close_price, timestamp)
 
                 # Update state
-                self.state = result.get("state", {})
+                decision_meta = meta.get("decision", {}) or {}
+                reasons = decision_meta.get("reasons") or []
+                state_out = decision_meta.get("state_out", {}) or {}
+                if hasattr(self.position_tracker, "set_pending_reasons"):
+                    self.position_tracker.set_pending_reasons(reasons or [])
+                self.state = state_out
                 self.bar_count += 1
 
             except Exception as e:
@@ -380,8 +385,16 @@ class BacktestEngine:
         exit_actions = self.htf_exit_engine.check_exits(
             position, bar_data, htf_fib_context, indicators
         )
+        meta.setdefault("signal", {})
+        meta["signal"]["current_atr"] = current_atr
 
         # Execute exit actions
+        exit_cfg = configs.get("cfg", {}).get("exit", {})
+        break_even_trigger = exit_cfg.get("break_even_trigger")
+        break_even_offset = exit_cfg.get("break_even_offset", 0.0)
+        partial_break_even = exit_cfg.get("partial_break_even", False)
+        partial_break_even_offset = exit_cfg.get("partial_break_even_offset", break_even_offset)
+
         for action in exit_actions:
             if action.action == "PARTIAL":
                 # Execute partial exit
@@ -395,6 +408,15 @@ class BacktestEngine:
                     print(
                         f"  [PARTIAL] {action.reason}: {trade.size:.3f} @ ${trade.exit_price:,.0f} = ${trade.pnl:,.2f}"
                     )
+                    if partial_break_even and trade.remaining_size > 0:
+                        if position.side == "LONG":
+                            be_price = position.entry_price * (1 + partial_break_even_offset)
+                            position.trail_stop = max(
+                                position.trail_stop or -float("inf"), be_price
+                            )
+                        else:
+                            be_price = position.entry_price * (1 - partial_break_even_offset)
+                            position.trail_stop = min(position.trail_stop or float("inf"), be_price)
 
             elif action.action == "TRAIL_UPDATE":
                 # Update trailing stop (store in position for next bar)
@@ -403,6 +425,16 @@ class BacktestEngine:
                 else:
                     # Add trail_stop attribute if not exists
                     position.trail_stop = action.stop_price
+                # Break-even promotion if configured
+                if break_even_trigger is not None:
+                    pnl_pct = self.position_tracker.get_unrealized_pnl_pct(current_price) / 100.0
+                    if pnl_pct >= break_even_trigger:
+                        if position.side == "LONG":
+                            be_price = position.entry_price * (1 + break_even_offset)
+                            position.trail_stop = max(position.trail_stop, be_price)
+                        else:
+                            be_price = position.entry_price * (1 - break_even_offset)
+                            position.trail_stop = min(position.trail_stop, be_price)
 
             elif action.action == "FULL_EXIT":
                 # Full exit - return reason to trigger standard exit logic
@@ -491,6 +523,7 @@ class BacktestEngine:
                     "is_partial": t.is_partial,
                     "remaining_size": t.remaining_size,
                     "position_id": t.position_id,
+                    "entry_reasons": t.entry_reasons,
                 }
                 for t in self.position_tracker.trades
             ],

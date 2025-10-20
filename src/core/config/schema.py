@@ -5,9 +5,29 @@ from typing import Any
 from pydantic import BaseModel, Field, field_validator
 
 
+class SignalAdaptationZone(BaseModel):
+    entry_conf_overall: float
+    regime_proba: dict[str, float]
+    pct: float | None = None
+
+    @field_validator("regime_proba")
+    @classmethod
+    def _validate_regime(cls, v: dict[str, float]) -> dict[str, float]:
+        out: dict[str, float] = {}
+        for k, val in (v or {}).items():
+            out[str(k)] = float(val)
+        return out
+
+
+class SignalAdaptationConfig(BaseModel):
+    atr_period: int = Field(default=14, ge=1, le=200)
+    zones: dict[str, SignalAdaptationZone]
+
+
 class Thresholds(BaseModel):
     entry_conf_overall: float = Field(ge=0.0, le=1.0, default=0.7)
     regime_proba: dict[str, float] = Field(default_factory=lambda: {"balanced": 0.58})
+    signal_adaptation: SignalAdaptationConfig | None = None
 
     @field_validator("regime_proba")
     @classmethod

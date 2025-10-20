@@ -18,6 +18,7 @@ class Position:
     current_size: float  # Remaining size after partials
     entry_price: float
     entry_time: datetime
+    entry_reasons: list[str] = field(default_factory=list)
     unrealized_pnl: float = 0.0
     partial_exits: list = field(default_factory=list)  # [(size, price, reason, time)]
 
@@ -99,19 +100,11 @@ class Trade:
     is_partial: bool = False  # True if partial exit, False if full
     remaining_size: float = 0.0  # Size remaining after this exit (for partials)
     position_id: str = ""  # Link partial exits to same position
+    entry_reasons: list[str] = field(default_factory=list)
 
 
 class PositionTracker:
-    """
-    Tracks positions and calculates PnL during backtest.
-
-    Features:
-    - Track open positions
-    - Calculate unrealized/realized PnL
-    - Handle LONG/SHORT entries/exits
-    - Commission simulation
-    - Trade history
-    """
+    """Tracks positions och tradelogik under backtest."""
 
     def __init__(
         self,
@@ -127,11 +120,24 @@ class PositionTracker:
         self.position: Position | None = None
         self.trades: list[Trade] = []
         self.equity_curve: list[dict] = []
+        self._pending_reasons: list[str] = []
 
         # Statistics
         self.total_commission = 0.0
         self.max_capital = initial_capital
         self.min_capital = initial_capital
+
+    def set_pending_reasons(self, reasons: list[str]) -> None:
+        """Spara senaste beslutsorsaker innan eventuell entry."""
+        self._pending_reasons = list(reasons)
+
+    def pending_reasons(self) -> list[str]:
+        """Hämta sparade beslutsorsaker för nästkommande entry."""
+        return list(self._pending_reasons)
+
+    def clear_pending_reasons(self) -> None:
+        """Nollställ sparade orsaker efter att entry har skett."""
+        self._pending_reasons.clear()
 
     def has_position(self) -> bool:
         """Check if there's an open position."""
@@ -183,7 +189,13 @@ class PositionTracker:
         return result
 
     def _open_position(
-        self, side: str, size: float, price: float, timestamp: datetime, symbol: str
+        self,
+        side: str,
+        size: float,
+        price: float,
+        timestamp: datetime,
+        symbol: str,
+        meta: dict | None = None,
     ):
         """Open a new position."""
         # Apply slippage
@@ -198,6 +210,8 @@ class PositionTracker:
         self.capital -= commission
 
         # Create position with partial exit support
+        state_reasons = self.pending_reasons()
+        self.clear_pending_reasons()
         self.position = Position(
             symbol=symbol,
             side=side,
@@ -205,6 +219,7 @@ class PositionTracker:
             current_size=size,
             entry_price=effective_price,
             entry_time=timestamp,
+            entry_reasons=state_reasons,
         )
 
     def close_position_with_reason(
@@ -270,6 +285,7 @@ class PositionTracker:
             is_partial=False,  # Final close
             remaining_size=0.0,  # Nothing left
             position_id=position_id,
+            entry_reasons=list(self.position.entry_reasons or []),
         )
         self.trades.append(trade)
 
@@ -352,6 +368,7 @@ class PositionTracker:
             is_partial=True,
             remaining_size=remaining_size,
             position_id=position_id,
+            entry_reasons=list(self.position.entry_reasons or []),
         )
 
         self.trades.append(trade)

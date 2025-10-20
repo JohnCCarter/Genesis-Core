@@ -69,6 +69,12 @@ def evaluate_pipeline(
     regime_state = {"regime": regime, "steps": 0, "candidate": regime}
     metrics.event("regime_ok", {"regime": regime})
 
+    state = {
+        **state,
+        "current_atr": feats.get("atr_14"),
+        "atr_percentiles": feats_meta.get("atr_percentiles"),
+    }
+
     action, action_meta = decide(
         policy,
         probas=probas,

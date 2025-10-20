@@ -14,6 +14,7 @@ from __future__ import annotations
 
 from typing import Any
 
+import numpy as np
 import pandas as pd
 
 from core.indicators.adx import calculate_adx
@@ -29,6 +30,10 @@ from core.indicators.fibonacci import (
 )
 from core.indicators.htf_fibonacci import get_htf_fibonacci_context
 from core.indicators.rsi import calculate_rsi
+from core.observability.metrics import metrics
+from core.utils.logging_redaction import get_logger
+
+_log = get_logger(__name__)
 
 
 def _extract_asof(
@@ -145,12 +150,24 @@ def _extract_asof(
     vol_regime = 1.0 if vol_shift_current > 1.0 else 0.0
 
     # === BUILD FEATURES DICT ===
+    atr_series = pd.Series(atr_vals) if atr_vals else pd.Series(dtype=float)
+    atr_percentiles: dict[str, dict[str, float]] = {}
+    if not atr_series.empty:
+        for period in (14, 28, 56):
+            if len(atr_series) >= period:
+                window = atr_series.iloc[-period:]
+                atr_percentiles[str(period)] = {
+                    "p40": float(np.percentile(window, 40)),
+                    "p80": float(np.percentile(window, 80)),
+                }
+
     features = {
         "rsi_inv_lag1": _clip(rsi_inv_lag1, -1.0, 1.0),
         "volatility_shift_ma3": _clip(vol_shift_ma3, 0.5, 2.0),
         "bb_position_inv_ma3": _clip(bb_position_inv_ma3, 0.0, 1.0),
         "rsi_vol_interaction": _clip(rsi_vol_interaction, -2.0, 2.0),
         "vol_regime": vol_regime,
+        "atr_14": float(atr_vals[-1]) if atr_vals else 0.0,
     }
 
     # === FIBONACCI FEATURES (levels + distances/proximity) ===
@@ -228,9 +245,11 @@ def _extract_asof(
                 "fib05_x_rsi_inv": _clip(fib05_x_rsi_inv, -1.0, 1.0),
             }
         )
-    except Exception:
+    except Exception as exc:
         # Om något går fel i fib-beräkning, behåll bas-features och fortsätt
-        pass
+        metrics.increment("feature_fib_errors")
+        if _log:
+            _log.warning("fib feature combination failed: %s", exc)
 
     # === ADD HTF FIBONACCI CONTEXT FOR SYMMETRIC CHAMOUN MODEL ===
     # Only for LTF timeframes that can benefit from HTF structure
@@ -261,6 +280,8 @@ def _extract_asof(
         "uses_bars": [0, asof_bar],
         "total_bars_available": total_bars,
         "htf_fibonacci": htf_fibonacci_context,  # NEW: HTF context for exit logic
+        "current_atr": float(atr_vals[-1]) if atr_vals else None,
+        "atr_percentiles": atr_percentiles,
     }
 
     return features, meta

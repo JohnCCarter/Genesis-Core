@@ -37,8 +37,11 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install .[dev,ml]
 
+      - name: Run pre-commit
+        run: pre-commit run --all-files
+
       - name: Ruff
-        run: ruff check .
+        run: ruff check . --exclude scripts/archive/
 
       - name: Black (check)
         run: black --check .

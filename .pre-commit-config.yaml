@@ -21,8 +21,8 @@ repos:
     rev: 1.7.9
     hooks:
       - id: bandit
-        args: [-r, src]
-        files: ^src/.*\.py$
+        args: [-r, src, scripts]
+        files: ^(src|scripts)/.*\.py$
 
   # Prevent secrets from being committed
   - repo: https://github.com/Yelp/detect-secrets

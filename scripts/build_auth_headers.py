@@ -15,6 +15,8 @@ def build_headers(endpoint: str, body: dict | None) -> dict[str, str]:
     s = get_settings()
     api_key = (s.BITFINEX_API_KEY or "").strip()
     api_secret = (s.BITFINEX_API_SECRET or "").strip()
+    if not api_key or not api_secret:
+        raise RuntimeError("BITFINEX API credentials saknas i settings")
     nonce = get_nonce(api_key)
     payload_str = json.dumps(body or {}, separators=(",", ":"))
     message = f"/api/v2/{endpoint}{nonce}{payload_str}"
@@ -56,12 +58,12 @@ def main(argv: list[str] | None = None) -> int:
 
     headers = build_headers(args.endpoint, body)
 
-    out = dict(headers)
+    out = {
+        key: ("***" if key in {"bfx-apikey", "bfx-signature"} else value)
+        for key, value in headers.items()
+    }
     if args.mask:
-        if out.get("bfx-apikey"):
-            out["bfx-apikey"] = "***"
-        if out.get("bfx-signature"):
-            out["bfx-signature"] = out["bfx-signature"][:6] + "..."
+        out["warning"] = "values masked by default"
 
     print(json.dumps(out, indent=2 if args.pretty else None))
     return 0

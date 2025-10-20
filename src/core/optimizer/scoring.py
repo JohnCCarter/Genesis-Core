@@ -21,7 +21,9 @@ def _extract_metric(name: str, container: dict[str, Any], default: float | None 
     return float(value)
 
 
-def score_backtest(result: dict[str, Any], *, thresholds: MetricThresholds | None = None) -> dict[str, Any]:
+def score_backtest(
+    result: dict[str, Any], *, thresholds: MetricThresholds | None = None
+) -> dict[str, Any]:
     thresholds = thresholds or MetricThresholds()
     summary = result.get("summary") or {}
     trades: Iterable[dict[str, Any]] = result.get("trades") or []

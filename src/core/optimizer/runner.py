@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import itertools
 import json
-import subprocess
+import subprocess  # nosec B404 - subprocess usage reviewed for controlled command execution
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
@@ -54,10 +54,18 @@ def expand_parameters(spec: dict[str, Any]) -> Iterable[dict[str, Any]]:
 
 
 def run_trial(trial: TrialConfig, *, run_id: str, index: int) -> dict[str, Any]:
-    output_dir = RESULTS_DIR / run_id
+    if not trial.snapshot_id:
+        raise ValueError("trial snapshot_id saknas")
+    snapshot_parts = trial.snapshot_id.split("_")
+    if len(snapshot_parts) < 4:
+        raise ValueError("snapshot_id saknar start/end datum")
+    start_date = snapshot_parts[2]
+    end_date = snapshot_parts[3]
+    output_dir = (RESULTS_DIR / run_id).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
     trial_id = f"trial_{index:03d}"
     trial_file = output_dir / f"{trial_id}.json"
+    log_file = output_dir / f"{trial_id}.log"
     cmd = [
         "python",
         "scripts/run_backtest.py",
@@ -66,17 +74,26 @@ def run_trial(trial: TrialConfig, *, run_id: str, index: int) -> dict[str, Any]:
         "--timeframe",
         trial.timeframe,
         "--start",
-        trial.snapshot_id.split("_")[2],
+        start_date,
         "--end",
-        trial.snapshot_id.split("_")[3],
+        end_date,
         "--warmup",
         str(trial.warmup_bars),
     ]
-    with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True) as proc:
+    # nosec B603: controlled command built from static arguments
+    with subprocess.Popen(  # nosec B603
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+    ) as proc:
         log = proc.communicate()[0]
         if proc.returncode != 0:
+            log_file.write_text(log, encoding="utf-8")
             return {"error": "backtest_failed", "log": log, "trial": trial.parameters}
-    results_path = sorted((ROOT / "results" / "backtests").glob(f"{trial.symbol}_{trial.timeframe}_*.json"))[-1]
+    results_path = sorted(
+        (ROOT / "results" / "backtests").glob(f"{trial.symbol}_{trial.timeframe}_*.json")
+    )[-1]
     results = json.loads(results_path.read_text())
     score = score_backtest(results, thresholds=MetricThresholds())
     enforcement = enforce_constraints(score, trial.parameters)
@@ -86,9 +103,9 @@ def run_trial(trial: TrialConfig, *, run_id: str, index: int) -> dict[str, Any]:
         "results_path": results_path.name,
         "score": score,
         "constraints": enforcement.__dict__,
-        "log": output_dir.joinpath(f"{trial_id}.log").name,
+        "log": log_file.name,
     }
-    (output_dir / f"{trial_id}.log").write_text(log, encoding="utf-8")
+    log_file.write_text(log, encoding="utf-8")
     trial_file.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     return payload
 

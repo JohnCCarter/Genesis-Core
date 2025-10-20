@@ -2,31 +2,28 @@
 
 Denna fil beskriver hur AI‑agenter ska arbeta lokalt med projektet.
 
+**Fokus 2025-10-20 – Phase-7a Engångsoptimering**
+- ✅ Snapshot låst: `tBTCUSD_1h_2024-10-22_2025-10-01_v1`
+- ✅ Baseline backtest loggad (`results/backtests/tBTCUSD_1h_20251020_155245.json`)
+- ✅ Grid-sökrymd: `config/optimizer/tBTCUSD_1h_search.yaml`
+- ✅ Scoring & constraints: `src/core/optimizer/scoring.py`, `constraints.py`
+- ✅ Runner (grid/serial): `src/core/optimizer/runner.py`
+- Nästa steg:
+  1. Lägg till resume/skip-logik + run-id metadata i runnern
+  2. Designa robusthetslager (timeouts, concurrency, cleanup)
+  3. Implementera champion-hantering & rapportering (Plan steg 5–6)
+  4. Dokumentera/workflow i `docs/optimizer.md`
+  5. Enhetstester för scoring + runner mini-sök
+
 **TODO – Nästa agent:**
-- HTF‑repro 6h (dokument):
-  - [ ] Avaktivera TP3/TP4 via konfig (0.0) och återskapa perioden 2025‑07‑01–2025‑10‑13 med warmup 50
-  - [ ] FIX: `get_htf_fibonacci_context` använder nuvarande tid för `data_age_hours`; gör backtest‑säkert genom att mäta ålder relativt LTF‑bar (eller passera `asof_timestamp`) och lägg till enhetstest
-  - [ ] Säkerställ 1D‑candles finns för perioden och att mapping 6h→1D används (inga `[DEBUG] HTF not available`)
-  - [ ] Uppdatera `docs/6H_TIMEFRAME_OPTIMIZATION_RESULTS.md` med reproducerbara siffror + konfigsnapshot
-- CLI‑overrides för backtest:
-  - [ ] Lägg till flaggor i `scripts/run_backtest.py`: `--config-override <json>`, `--htf-partials a,b,c,d`, `--warmup`, `--start`, `--end`
-  - [ ] Spara `configs`‑snapshot (hash + innehåll) i results JSON för reproducerbarhet
-- Kalibrering & modeller:
-  - [ ] Lägg till `calibration_by_regime` för 3h/6h, träna om med v18 och dokumentera resultat
-  - [ ] Kör backtests 1h/3h/6h och uppdatera respektive docs (kort sammanfattning + diff mot föregående)
-- Tester (kvalitet/stabilitet):
-  - [ ] Enhetstester: HTF staleness‑gate, partial‑triggers (TP1/TP2/TP3/TP4), trail‑promotion, structure‑break
-  - [ ] Integrationstest: End‑to‑end 6h backtest med HTF aktiv (verifiera att `position.exit_fib_levels` armeras)
-- CI & pre‑commit:
-  - [ ] Aktivera hooks lokalt: `pre-commit install` (svartlistade filer ignoreras redan i `.pre-commit-config.yaml`)
-  - [ ] Verifiera GitHub Actions (ruff/black/pytest/bandit) kör på PR och push
-  - [ ] Bandit lokalt (PowerShell): `bandit -r src scripts -f txt -o bandit-report.txt`
-- Data & pipeline:
-  - [ ] Säkerställ att `scripts/fetch_historical.py` täcker 1D för alla perioder som testas
-  - [ ] Dokumentera standardflöde för v18 (IC, permutation, Partial‑IC) i `docs/FEATURE_COMPUTATION_MODES.md`
-- Dokumentation:
-  - [ ] Uppdatera denna fil med checklista och kommandon för exakt repro av 6h/1h/3h
-  - [ ] Lägg in kort “Known pitfalls”: HTF‑staleness i backtest, skillnad mellan live vs backtest
+- Phase-7a fortsättning:
+  - [ ] Runner: resume/skip, concurrency-flagga, tydlig loggstruktur (`results/hparam_search/<run_id>/`)
+  - [ ] Champion manager: skriv `config/strategy/champions/tBTCUSD_1h.json` med backup
+  - [ ] Rapport CLI (`scripts/optimizer.py summarize --run <id>`)
+  - [ ] Unit-/integrationstest (scoring, runner)
+  - [ ] Dokumentation i `docs/optimizer.md`
+- HTF‑repro 6h (dokument) – SE tidigare lista om 6h fortfarande behövs
+- CLI‑overrides, Kalibrering & modeller, Tester, CI, Data & pipeline, Dokumentation (se tidigare punkter)
 
 ## 🔒 Deployment Model
 

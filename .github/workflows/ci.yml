@@ -2,14 +2,10 @@ name: CI
 
 on:
   push:
-    branches:
-      - '**'
     branches-ignore:
       - 'archive/**'
       - 'Archive/**'
   pull_request:
-    branches:
-      - '**'
     branches-ignore:
       - 'archive/**'
       - 'Archive/**'

@@ -58,3 +58,14 @@ Best trial:
 - Utökning av CLI med topp N-lista och statistik (percentiler, medelvärden).
 - Integrera CLI-rapport i README och eventuellt automatiserade rapporter.
 - Walk-forward och rapportering för validering (Plan steg 6).
+
+## 6. Champion auto-reload
+
+Auto-reload via `ChampionLoader` (`src/core/strategy/champion_loader.py`):
+- Läser `config/strategy/champions/<symbol_tf>.json` om fil finns, annars fallback till baseline (`config/timeframe_configs.py`).
+- Validerar att `parameters` finns innan användning. Korrupt fil => fallback.
+- `ChampionConfig` innehåller metadata (`source`, `version`, `checksum`, `loaded_at`).
+- `ChampionLoader.load_cached()` används för att undvika upprepade disk-läsningar.
+- `evaluate_pipeline` injicerar `champion_source` i `meta`, så run-logg visar vilken champion som användes.
+
+Nästa steg: koppla reload till server/backteststart (läsa om vid schema/cron) och beskriva aktivering i README. När det är klart, uppdatera dokumentation och tester.

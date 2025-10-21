@@ -8,16 +8,15 @@ Denna fil beskriver hur AI‑agenter ska arbeta lokalt med projektet.
 - ✅ Grid-sökrymd + constraints + scoring (se `config/optimizer/*.yaml`, `src/core/optimizer/`)
 - ✅ Runner: resume/skip, run metadata, concurrency (`runs.max_concurrent`), retries (`runs.max_attempts`)
 - ✅ Champion manager: `ChampionManager` + runner integration + tester
+- ✅ Rapport-CLI: `scripts/optimizer.py summarize` (visar counts + bästa trial)
 - Nästa steg:
-  1. Rapport CLI (`scripts/optimizer.py summarize --run <id>`) – inklusive skip/statistik
-  2. Dokumentera i `docs/optimizer.md` + uppdatera Phase-7a status
-  3. Enhets-/integrationstester för rapportering
+  1. Dokumentera i `docs/optimizer.md` + uppdatera Phase-7a status
+  2. Enhets-/integrationstester för rapportflöde (vid ev. utökad funktionalitet)
 
 **TODO – Nästa agent:**
 - Phase-7a fortsättning:
-  - [ ] Rapport-CLI: sammanfattning, toppresultat, skip-rapport
   - [ ] Dokumentation (`docs/optimizer.md`, README efter CLI)
-  - [ ] Ytterligare tester (rapportflöde, integration)
+  - [ ] Ytterligare tester vid utökning (topp N, percentiler, resume-info)
 - HTF‑repro 6h (dokument) – se tidigare lista om 6h fortfarande behövs
 - CLI‑overrides, Kalibrering & modeller, Tester, CI, Data & pipeline, Dokumentation (se tidigare punkter)
 

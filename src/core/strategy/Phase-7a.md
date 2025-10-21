@@ -48,11 +48,14 @@
   - Tester: `tests/test_optimizer_champion.py`, `tests/test_optimizer_runner.py`.
 - **Kvar:** rapportering/CLI samt dokumentation (steg 6 & 8).
 
-## 6. Validering & rapport
+## 6. Validering & rapport (pågår)
 - Planera walk-forward/valideringsflöde (antal fönster, hur champion utses).
-- Efter körning: generera rapport (topp 5 + metrics) och CLI-översikt (`python scripts/optimizer.py summarize --run <timestamp>`).
+- Efter körning: generera rapport (topp 5 + metrics) och CLI-översikt (`python scripts/optimizer.py summarize --run <id>`).
 - Dokumentera tydligt hur man manuellt kan sätta champion vid behov.
-- **Status:** ej påbörjat.
+- **Implementation:**
+  - CLI `scripts/optimizer.py summarize` visar counts, bästa trial, metadata.
+  - Tester: `tests/test_optimizer_cli.py`.
+- **Kvar:** dokumentation (`docs/optimizer.md`), CLI-utökning för topp N, percentiler.
 
 ## 7. Auto-reload (steg 2)
 - Lägg till hook i live/backtestmotor för att läsa champion vid start/rollover.

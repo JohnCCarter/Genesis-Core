@@ -188,9 +188,12 @@ class BacktestEngine:
         configs = configs or {}
 
         champion_cfg = self.champion_loader.load_cached(self.symbol, self.timeframe)
-        merged_configs = {**champion_cfg.config, **configs}
-        merged_configs.setdefault("meta", {})["champion_source"] = champion_cfg.source
-        configs = merged_configs
+        configs = {**champion_cfg.config, **configs}
+        meta = configs.setdefault("meta", {})
+        meta.setdefault("champion_source", champion_cfg.source)
+        meta.setdefault("champion_version", champion_cfg.version)
+        meta.setdefault("champion_checksum", champion_cfg.checksum)
+        meta.setdefault("champion_loaded_at", champion_cfg.loaded_at)
 
         print(f"\n{'='*70}")
         print(f"Running Backtest: {self.symbol} {self.timeframe}")

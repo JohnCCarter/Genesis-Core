@@ -6,7 +6,9 @@ from core.strategy.evaluate import evaluate_pipeline
 
 
 def test_evaluate_pipeline_returns_meta(
-    sample_policy: dict[str, Any], sample_configs: dict[str, Any], small_candle_history: dict[str, Any]
+    sample_policy: dict[str, Any],
+    sample_configs: dict[str, Any],
+    small_candle_history: dict[str, Any],
 ) -> None:
     result, meta = evaluate_pipeline(
         small_candle_history, policy=sample_policy, configs=sample_configs

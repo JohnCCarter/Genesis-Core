@@ -65,8 +65,11 @@ def run_walk_forward(
             "end": end,
             "champion_source": champion.source,
         }
-        results.append(res)
-        (run_dir / f"period_{idx:02d}.json").write_text(json.dumps(res, indent=2), encoding="utf-8")
+        res_serializable = json.loads(json.dumps(res, default=str))
+        (run_dir / f"period_{idx:02d}.json").write_text(
+            json.dumps(res_serializable, indent=2), encoding="utf-8"
+        )
+        results.append(res_serializable)
 
     summary = {
         "run_id": run_id,
@@ -85,5 +88,7 @@ def run_walk_forward(
             for res in results
         ],
     }
-    (run_dir / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    (run_dir / "summary.json").write_text(
+        json.dumps(summary, indent=2, default=str), encoding="utf-8"
+    )
     return summary

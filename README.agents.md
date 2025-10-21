@@ -10,6 +10,13 @@ Denna fil beskriver hur AI‑agenter ska arbeta lokalt med projektet.
 - ✅ Champion manager & auto-reload (`ChampionManager`, `ChampionLoader`, pipeline/backtest integration)
 - ✅ Rapport-CLI: `scripts/optimizer.py summarize --top N`
 - ✅ Tester/dokumentation: `docs/optimizer.md`, `tests/optimizer_*`, `tests/champion_loader.py`
+- ✅ Auto-reload: `ChampionLoader` integrerad i `evaluate_pipeline` och `BacktestEngine`
+- ✅ Tester & Dokumentation: Omfattande tester och `docs/optimizer.md` färdigställd
+- ✅ Walk-forward validering: `wf_tBTCUSD_1h_20251021_090446`
+  - Ny körning med ATR-zoner: `wf_tBTCUSD_1h_20251021_094334`
+    - champion `config/strategy/champions/tBTCUSD_1h.json` har nu `signal_adaptation`
+    - Zonfördelning: P1=low 3 / mid 1, P2=low 2 / mid 1, P3=low 1 / mid 1, P4=low 1, P5–P6 inga trades (ännu)
+    - Nästa steg: finjustera zontrösklar (höj mid/high) och analysera P3–P4-förluster.
 
 **TODO – Nästa agent:**
 - Walk-forward validering (steg 6 uppföljning) – planera om fortsatt behövs

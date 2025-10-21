@@ -3,15 +3,19 @@
 from __future__ import annotations
 
 import json
+import sys
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from hashlib import sha256
 from pathlib import Path
 from typing import Any
 
+ROOT = Path(__file__).resolve().parents[3]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 from config import timeframe_configs
 
-ROOT = Path(__file__).resolve().parents[3]
 CHAMPIONS_DIR = ROOT / "config" / "strategy" / "champions"
 
 

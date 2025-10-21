@@ -72,12 +72,15 @@ def test_run_optimizer_updates_champion(tmp_path: Path, search_config_tmp: Path)
 
     def fake_run_trial(*args: Any, **kwargs: Any) -> dict[str, Any]:
         index = kwargs.get("index")
-        return trial_queue.get(index, {
-            "trial_id": f"trial_extra_{index}",
-            "parameters": {},
-            "score": {"score": 0.0, "metrics": {}, "hard_failures": []},
-            "constraints": {"ok": False},
-        })
+        return trial_queue.get(
+            index,
+            {
+                "trial_id": f"trial_extra_{index}",
+                "parameters": {},
+                "score": {"score": 0.0, "metrics": {}, "hard_failures": []},
+                "constraints": {"ok": False},
+            },
+        )
 
     def fake_ensure(run_dir: Path, *_args: Any, **_kwargs: Any) -> None:
         run_dir.mkdir(parents=True, exist_ok=True)
@@ -85,10 +88,13 @@ def test_run_optimizer_updates_champion(tmp_path: Path, search_config_tmp: Path)
 
     with (
         patch("core.optimizer.runner.RESULTS_DIR", results_root),
-        patch("core.optimizer.runner.expand_parameters", return_value=[
-            {"thresholds": {"entry_conf_overall": 0.4}},
-            {"thresholds": {"entry_conf_overall": 0.5}},
-        ]),
+        patch(
+            "core.optimizer.runner.expand_parameters",
+            return_value=[
+                {"thresholds": {"entry_conf_overall": 0.4}},
+                {"thresholds": {"entry_conf_overall": 0.5}},
+            ],
+        ),
         patch("core.optimizer.runner.run_trial", side_effect=fake_run_trial),
         patch("core.optimizer.runner._ensure_run_metadata", side_effect=fake_ensure),
         patch("core.optimizer.runner.ChampionManager") as manager_cls,

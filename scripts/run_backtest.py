@@ -8,16 +8,40 @@ Usage:
 """
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+ROOT_DIR = Path(__file__).resolve().parents[1]
+SRC_DIR = ROOT_DIR / "src"
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
+
+# Ensure config package resolvable
+CONFIG_DIR = ROOT_DIR / "config"
+CONFIG_DIR.mkdir(exist_ok=True)
+(CONFIG_DIR / "__init__.py").touch(exist_ok=True)
 
 from core.backtest.engine import BacktestEngine
 from core.backtest.metrics import calculate_metrics, print_metrics_report
 from core.backtest.trade_logger import TradeLogger
 from core.config.authority import ConfigAuthority
+
+
+def _deep_merge(base: dict, override: dict) -> dict:
+    merged = dict(base)
+    for key, value in (override or {}).items():
+        if (
+            key in merged
+            and isinstance(merged[key], dict)
+            and isinstance(value, dict)
+        ):
+            merged[key] = _deep_merge(merged[key], value)
+        else:
+            merged[key] = value
+    return merged
 
 
 def main():
@@ -58,6 +82,11 @@ def main():
     )
     parser.add_argument("--verbose", "-v", action="store_true", help="Print trade details")
     parser.add_argument("--no-save", action="store_true", help="Don't save results to files")
+    parser.add_argument(
+        "--config-file",
+        type=Path,
+        help="Optional JSON-fil med override av runtime-config",
+    )
 
     args = parser.parse_args()
 
@@ -86,6 +115,19 @@ def main():
         authority = ConfigAuthority()
         cfg_obj, _, _ = authority.get()
         cfg = cfg_obj.model_dump()
+
+        if args.config_file:
+            override_payload = json.loads(args.config_file.read_text(encoding="utf-8"))
+            override_cfg = override_payload.get("cfg") if isinstance(override_payload, dict) else None
+            if override_cfg is None:
+                raise ValueError("config-file must contain a 'cfg' dictionary")
+            merged_cfg = _deep_merge(cfg, override_cfg)
+            try:
+                cfg_obj = authority.validate(merged_cfg)
+            except Exception as exc:  # ValidationError from Pydantic
+                print(f"\n[FAILED] Ogiltig override-config: {exc}")
+                return 1
+            cfg = cfg_obj.model_dump()
 
         # Prepare policy
         policy = {"symbol": args.symbol, "timeframe": args.timeframe}

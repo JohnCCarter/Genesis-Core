@@ -5,6 +5,7 @@ import json
 import subprocess  # nosec B404 - subprocess usage reviewed for controlled command execution
 import time
 from collections.abc import Iterable
+import copy
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -17,8 +18,9 @@ from core.optimizer.champion import ChampionCandidate, ChampionManager
 from core.optimizer.constraints import enforce_constraints
 from core.optimizer.scoring import MetricThresholds, score_backtest
 
-ROOT = Path(__file__).resolve().parents[2]
-RESULTS_DIR = ROOT / "results" / "hparam_search"
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+SRC_ROOT = PROJECT_ROOT / "src"
+RESULTS_DIR = PROJECT_ROOT / "results" / "hparam_search"
 
 
 @dataclass(slots=True)
@@ -62,14 +64,18 @@ def _ensure_run_metadata(
         return
     commit = "unknown"
     try:
-        commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT).decode().strip()
+        commit = (
+            subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=PROJECT_ROOT).decode().strip()
+        )
     except (subprocess.SubprocessError, OSError):
         commit = "unknown"
+    try:
+        config_rel = str(config_path.relative_to(PROJECT_ROOT))
+    except ValueError:
+        config_rel = str(config_path)
     meta_payload = {
         "run_id": run_id,
-        "config_path": (
-            str(config_path.relative_to(ROOT)) if config_path.is_absolute() else str(config_path)
-        ),
+        "config_path": config_rel,
         "snapshot_id": meta.get("snapshot_id"),
         "symbol": meta.get("symbol"),
         "timeframe": meta.get("timeframe"),
@@ -80,24 +86,42 @@ def _ensure_run_metadata(
     meta_path.write_text(json.dumps(meta_payload, indent=2), encoding="utf-8")
 
 
+def _expand_value(node: Any) -> list[Any]:
+    if isinstance(node, dict):
+        node_type = node.get("type")
+        if node_type == "grid":
+            values = node.get("values") or []
+            return [copy.deepcopy(v) for v in values]
+        if node_type == "fixed":
+            return [copy.deepcopy(node.get("value"))]
+        # Nested dict without explicit type – expand recursively
+        return list(_expand_dict(node))
+    if isinstance(node, list):
+        return [copy.deepcopy(node)]
+    return [copy.deepcopy(node)]
+
+
+def _expand_dict(spec: dict[str, Any]) -> Iterable[dict[str, Any]]:
+    items = [(key, _expand_value(value)) for key, value in spec.items()]
+
+    def _recurse(idx: int, current: dict[str, Any]) -> Iterable[dict[str, Any]]:
+        if idx >= len(items):
+            yield current
+            return
+        key, values = items[idx]
+        for value in values:
+            next_config = dict(current)
+            next_config[key] = value
+            yield from _recurse(idx + 1, next_config)
+
+    yield from _recurse(0, {})
+
+
 def expand_parameters(spec: dict[str, Any]) -> Iterable[dict[str, Any]]:
-    base: dict[str, Any] = {}
-    grids: list[tuple[str, list[Any]]] = []
-    for key, sub in spec.items():
-        if isinstance(sub, dict) and sub.get("type") == "grid":
-            grids.append((key, list(sub.get("values") or [])))
-        elif isinstance(sub, dict) and sub.get("type") == "fixed":
-            base[key] = sub.get("value")
-        else:
-            base[key] = sub
-    if not grids:
-        yield base
+    if not spec:
+        yield {}
         return
-    keys, values = zip(*grids, strict=True)
-    for combo in itertools.product(*values):
-        config = dict(base)
-        config.update(dict(zip(keys, combo, strict=True)))
-        yield config
+    yield from _expand_dict(spec)
 
 
 def _derive_dates(snapshot_id: str) -> tuple[str, str]:
@@ -109,13 +133,16 @@ def _derive_dates(snapshot_id: str) -> tuple[str, str]:
     return parts[2], parts[3]
 
 
-def _exec_backtest(cmd: list[str]) -> tuple[int, str]:
+def _exec_backtest(
+    cmd: list[str], *, cwd: Path, env: dict[str, str] | None = None
+) -> tuple[int, str]:
     with subprocess.Popen(  # nosec B603
         cmd,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,
-        cwd=ROOT,
+        cwd=str(cwd),
+        env=env,
     ) as proc:
         log = proc.communicate()[0]
         return proc.returncode, log
@@ -155,6 +182,7 @@ def run_trial(
     allow_resume: bool,
     existing_trials: dict[str, dict[str, Any]],
     max_attempts: int = 2,
+    constraints_cfg: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     key = _trial_key(trial.parameters)
     if allow_resume and key in existing_trials:
@@ -173,9 +201,15 @@ def run_trial(
     trial_id = f"trial_{index:03d}"
     trial_file = output_dir / f"{trial_id}.json"
     log_file = output_dir / f"{trial_id}.log"
+    config_file: Path | None = None
+    if trial.parameters:
+        config_file = output_dir / f"{trial_id}_config.json"
+        config_payload = {"cfg": trial.parameters}
+        config_file.write_text(json.dumps(config_payload, indent=2), encoding="utf-8")
     cmd = [
         "python",
-        "scripts/run_backtest.py",
+        "-m",
+        "scripts.run_backtest",
         "--symbol",
         trial.symbol,
         "--timeframe",
@@ -187,28 +221,46 @@ def run_trial(
         "--warmup",
         str(trial.warmup_bars),
     ]
+    if config_file is not None:
+        cmd.extend(["--config-file", str(config_file)])
 
     attempts_remaining = max(1, max_attempts)
     final_payload: dict[str, Any] | None = None
     while attempts_remaining > 0:
         attempts_remaining -= 1
-        returncode, log = _exec_backtest(cmd)
+        returncode, log = _exec_backtest(cmd, cwd=PROJECT_ROOT)
         if returncode == 0:
             results_path = sorted(
-                (ROOT / "results" / "backtests").glob(f"{trial.symbol}_{trial.timeframe}_*.json")
+                (PROJECT_ROOT / "results" / "backtests").glob(
+                    f"{trial.symbol}_{trial.timeframe}_*.json"
+                )
             )[-1]
             results = json.loads(results_path.read_text())
             score = score_backtest(results, thresholds=MetricThresholds())
-            enforcement = enforce_constraints(score, trial.parameters)
+            enforcement = enforce_constraints(
+                score,
+                trial.parameters,
+                constraints_cfg=constraints_cfg,
+            )
+            score_serializable = {
+                "score": score.get("score"),
+                "metrics": score.get("metrics"),
+                "hard_failures": list(score.get("hard_failures") or []),
+            }
             final_payload = {
                 "trial_id": trial_id,
                 "parameters": trial.parameters,
                 "results_path": results_path.name,
-                "score": score,
-                "constraints": enforcement.__dict__,
+                "score": score_serializable,
+                "constraints": {
+                    "ok": enforcement.ok,
+                    "reasons": enforcement.reasons,
+                },
                 "log": log_file.name,
                 "attempts": max_attempts - attempts_remaining,
             }
+            if config_file is not None:
+                final_payload["config_path"] = config_file.name
             break
         final_payload = {
             "trial_id": trial_id,
@@ -217,6 +269,8 @@ def run_trial(
             "log_path": log_file.name,
             "attempts": max_attempts - attempts_remaining,
         }
+        if config_file is not None:
+            final_payload["config_path"] = config_file.name
         retry_wait = min(5 * (max_attempts - attempts_remaining), 60)
         if attempts_remaining > 0:
             print(f"[Runner] Backtest fail, retry om {retry_wait}s")
@@ -290,6 +344,7 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
             allow_resume=allow_resume,
             existing_trials=existing_trials,
             max_attempts=max_attempts,
+            constraints_cfg=config.get("constraints"),
         )
 
     results: list[dict[str, Any]] = []

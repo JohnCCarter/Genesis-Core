@@ -13,6 +13,7 @@ from typing import Any
 
 import yaml
 
+from core.optimizer.champion import ChampionCandidate, ChampionManager
 from core.optimizer.constraints import enforce_constraints
 from core.optimizer.scoring import MetricThresholds, score_backtest
 
@@ -118,6 +119,31 @@ def _exec_backtest(cmd: list[str]) -> tuple[int, str]:
     ) as proc:
         log = proc.communicate()[0]
         return proc.returncode, log
+
+
+def _candidate_from_result(result: dict[str, Any]) -> ChampionCandidate | None:
+    if result.get("error") or result.get("skipped"):
+        return None
+    score_block = result.get("score") or {}
+    constraints_block = result.get("constraints") or {}
+    hard_failures = list(score_block.get("hard_failures") or [])
+    constraints_ok = bool(constraints_block.get("ok"))
+    if not constraints_ok or hard_failures:
+        return None
+    try:
+        score_value = float(score_block.get("score"))
+    except (TypeError, ValueError):
+        return None
+    return ChampionCandidate(
+        parameters=dict(result.get("parameters") or {}),
+        score=score_value,
+        metrics=dict(score_block.get("metrics") or {}),
+        constraints_ok=constraints_ok,
+        constraints=dict(constraints_block),
+        hard_failures=hard_failures,
+        trial_id=str(result.get("trial_id", "")),
+        results_path=str(result.get("results_path", "")),
+    )
 
 
 def run_trial(
@@ -245,11 +271,14 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
     if max_trials is not None:
         params_list = params_list[:max_trials]
 
+    symbol = str(meta.get("symbol", "tBTCUSD"))
+    timeframe = str(meta.get("timeframe", "1h"))
+
     def make_trial(idx: int, params: dict[str, Any]) -> dict[str, Any]:
         trial_cfg = TrialConfig(
             snapshot_id=meta.get("snapshot_id", ""),
-            symbol=meta.get("symbol", "tBTCUSD"),
-            timeframe=meta.get("timeframe", "1h"),
+            symbol=symbol,
+            timeframe=timeframe,
             warmup_bars=int(meta.get("warmup_bars", 150)),
             parameters=params,
         )
@@ -272,4 +301,54 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
             futures = _submit_trials(executor, params_list, make_trial)
             for future in as_completed(futures):
                 results.append(future.result())
+
+    run_meta_path = run_dir / "run_meta.json"
+    try:
+        run_meta = json.loads(run_meta_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        run_meta = {}
+
+    best_candidate: ChampionCandidate | None = None
+    best_result: dict[str, Any] | None = None
+    for result in results:
+        candidate = _candidate_from_result(result)
+        if candidate is None:
+            continue
+        if best_candidate is None or candidate.score > best_candidate.score:
+            best_candidate = candidate
+            best_result = result
+
+    if best_candidate is not None:
+        manager = ChampionManager()
+        current = manager.load_current(symbol, timeframe)
+        if manager.should_replace(current, best_candidate):
+            metadata_extra: dict[str, Any] = {
+                "run_dir": str(run_dir),
+                "config_path": str(config_path),
+                "raw_run_meta": run_meta,
+            }
+            if best_result is not None:
+                metadata_extra.update(
+                    {
+                        "constraints": best_result.get("constraints"),
+                        "score_block": best_result.get("score"),
+                    }
+                )
+            manager.write_champion(
+                symbol=symbol,
+                timeframe=timeframe,
+                candidate=best_candidate,
+                run_id=run_id_resolved,
+                git_commit=str(run_meta.get("git_commit", "unknown")),
+                snapshot_id=str(run_meta.get("snapshot_id") or meta.get("snapshot_id", "")),
+                run_meta=metadata_extra,
+            )
+            print(
+                f"[Champion] Uppdaterad champion för {symbol} {timeframe} (score {best_candidate.score:.2f})"
+            )
+        else:
+            print(
+                f"[Champion] Ingen uppdatering: befintlig champion bättre eller constraints fel ({symbol} {timeframe})"
+            )
+
     return results

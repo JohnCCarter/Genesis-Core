@@ -38,11 +38,15 @@
   - `trial_x.json` fylls med `attempts`, `skipped` och `error` vid misslyckande.
 - **Kvar:** CLI-wrapper för resume/skip-rapport (ingår i steg 6).
 
-## 5. Champion-hantering
+## 5. Champion-hantering ✅ (klar 2025-10-21)
 - Jämför försök mot minimikraven och håll koll på bästa konfigurationen.
 - Skriv champion till `config/strategy/champions/<symbol_tf>.json` med metadata (parametrar, metrics, data-id, git-sha) och ta backup på tidigare champion.
 - Om ingen uppfyller kraven: behåll befintlig champion.
-- **Status:** ej påbörjat. Beroende på att robusthetslogik + rapportering finns.
+- **Implementation:**
+  - `ChampionManager` (`src/core/optimizer/champion.py`) hanterar backup + skrivning.
+  - Runner plockar bästa trial (utan hard failures) och uppdaterar champion med metadata.
+  - Tester: `tests/test_optimizer_champion.py`, `tests/test_optimizer_runner.py`.
+- **Kvar:** rapportering/CLI samt dokumentation (steg 6 & 8).
 
 ## 6. Validering & rapport
 - Planera walk-forward/valideringsflöde (antal fönster, hur champion utses).

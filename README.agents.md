@@ -7,18 +7,17 @@ Denna fil beskriver hur AI‑agenter ska arbeta lokalt med projektet.
 - ✅ Baseline backtest loggad (`results/backtests/tBTCUSD_1h_20251020_155245.json`)
 - ✅ Grid-sökrymd + constraints + scoring (se `config/optimizer/*.yaml`, `src/core/optimizer/`)
 - ✅ Runner: resume/skip, run metadata, concurrency (`runs.max_concurrent`), retries (`runs.max_attempts`)
+- ✅ Champion manager: `ChampionManager` + runner integration + tester
 - Nästa steg:
-  1. Champion manager (`config/strategy/champions/tBTCUSD_1h.json` + backup)
-  2. Rapport CLI (`scripts/optimizer.py summarize --run <id>`) – inklusive skip/statistik
-  3. Dokumentera i `docs/optimizer.md` + uppdatera Phase-7a status
-  4. Enhets-/integrationstester (scoring, runner mini-sök)
+  1. Rapport CLI (`scripts/optimizer.py summarize --run <id>`) – inklusive skip/statistik
+  2. Dokumentera i `docs/optimizer.md` + uppdatera Phase-7a status
+  3. Enhets-/integrationstester för rapportering
 
 **TODO – Nästa agent:**
 - Phase-7a fortsättning:
-  - [ ] Champion manager: skriv/rotera champion + metadata
-  - [ ] Rapporterings-CLI med sammanfattning (inkluderar skip/tidsåtgång)
-  - [ ] Dokumentation (`docs/optimizer.md`, README uppdateras efter CLI)
-  - [ ] Tester: scoring, runner (inkl. retry/concurrency)
+  - [ ] Rapport-CLI: sammanfattning, toppresultat, skip-rapport
+  - [ ] Dokumentation (`docs/optimizer.md`, README efter CLI)
+  - [ ] Ytterligare tester (rapportflöde, integration)
 - HTF‑repro 6h (dokument) – se tidigare lista om 6h fortfarande behövs
 - CLI‑overrides, Kalibrering & modeller, Tester, CI, Data & pipeline, Dokumentation (se tidigare punkter)
 

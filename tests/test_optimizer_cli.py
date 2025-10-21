@@ -26,7 +26,7 @@ def run_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
         ),
         encoding="utf-8",
     )
-    payload = {
+    valid_payload = {
         "trial_id": "trial_001",
         "parameters": {"thresholds": {"entry_conf_overall": 0.4}},
         "score": {
@@ -40,14 +40,43 @@ def run_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
             "hard_failures": [],
         },
         "constraints": {"ok": True},
-        "results_path": "test.json",
+        "results_path": "test_001.json",
     }
-    (root / "trial_001.json").write_text(json.dumps(payload), encoding="utf-8")
+    (root / "trial_001.json").write_text(json.dumps(valid_payload), encoding="utf-8")
+    skipped_payload = {
+        "trial_id": "trial_002",
+        "skipped": True,
+        "parameters": {},
+        "score": {},
+        "constraints": {"ok": False},
+        "results_path": "test_002.json",
+    }
+    (root / "trial_002.json").write_text(json.dumps(skipped_payload), encoding="utf-8")
+    better_payload = {
+        "trial_id": "trial_003",
+        "parameters": {"thresholds": {"entry_conf_overall": 0.45}},
+        "score": {
+            "score": 140.0,
+            "metrics": {
+                "sharpe_ratio": 0.7,
+                "total_return": 15.0,
+                "profit_factor": 2.0,
+                "num_trades": 60,
+            },
+            "hard_failures": [],
+        },
+        "constraints": {"ok": True},
+        "results_path": "test_003.json",
+    }
+    (root / "trial_003.json").write_text(json.dumps(better_payload), encoding="utf-8")
     return root
 
 
 def test_summarize_run(run_dir: Path) -> None:
     summary = summarize_run("run_test")
     assert summary["meta"]["symbol"] == "tTEST"
-    assert summary["counts"]["total"] == 1
-    assert summary["best_trial"]["trial_id"] == "trial_001"
+    assert summary["counts"]["total"] == 3
+    assert summary["counts"]["valid"] == 2
+    assert summary["counts"]["skipped"] == 1
+    assert summary["best_trial"]["trial_id"] == "trial_003"
+    assert summary["valid_trials"][1]["trial_id"] == "trial_001"

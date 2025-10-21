@@ -27,32 +27,46 @@ def summarize_run(run_id: str) -> dict[str, Any]:
     trials: list[dict[str, Any]] = []
     for path in sorted(run_dir.glob("trial_*.json")):
         try:
-            t = json.loads(path.read_text(encoding="utf-8"))
+            trial = json.loads(path.read_text(encoding="utf-8"))
         except json.JSONDecodeError:
             continue
-        if isinstance(t, dict):
-            t["trial_file"] = path.name
-            trials.append(t)
+        if isinstance(trial, dict):
+            trial = dict(trial)
+            trial["trial_file"] = path.name
+            trials.append(trial)
 
     total = len(trials)
     skipped = sum(1 for t in trials if t.get("skipped"))
     failed = sum(1 for t in trials if t.get("error"))
     completed = total - skipped
-    best_score = None
-    best_trial = None
-    for t in trials:
-        score_block = t.get("score") or {}
-        hard_failures = score_block.get("hard_failures") or []
-        constraints_ok = (t.get("constraints") or {}).get("ok", False)
+
+    valid_trials: list[dict[str, Any]] = []
+    for trial in trials:
+        score_block = trial.get("score") or {}
+        constraints_block = trial.get("constraints") or {}
+        hard_failures = list(score_block.get("hard_failures") or [])
+        constraints_ok = bool(constraints_block.get("ok"))
         if hard_failures or not constraints_ok:
             continue
         try:
             score_value = float(score_block.get("score"))
         except (TypeError, ValueError):
             continue
-        if best_score is None or score_value > best_score:
-            best_score = score_value
-            best_trial = t
+        metrics = dict(score_block.get("metrics") or {})
+        valid_trials.append(
+            {
+                "trial_id": trial.get("trial_id"),
+                "trial_file": trial.get("trial_file"),
+                "results_path": trial.get("results_path"),
+                "score": score_value,
+                "metrics": metrics,
+                "parameters": trial.get("parameters") or {},
+                "raw": trial,
+            }
+        )
+
+    valid_trials.sort(key=lambda item: item["score"], reverse=True)
+    best_trial = valid_trials[0] if valid_trials else None
 
     return {
         "meta": meta,
@@ -62,15 +76,19 @@ def summarize_run(run_id: str) -> dict[str, Any]:
             "skipped": skipped,
             "failed": failed,
             "completed": completed,
+            "valid": len(valid_trials),
         },
         "best_trial": best_trial,
+        "valid_trials": valid_trials,
         "trials": trials,
     }
 
 
-def _print_summary(data: dict[str, Any]) -> None:
+def _print_summary(data: dict[str, Any], *, top_n: int) -> None:
     meta = data.get("meta") or {}
     counts = data.get("counts") or {}
+    valid_trials = data.get("valid_trials") or []
+
     print("== Optimizer Summary ==")
     print(f"Run dir: {data.get('run_dir')}")
     if meta:
@@ -81,23 +99,38 @@ def _print_summary(data: dict[str, Any]) -> None:
     print("Counts:")
     print(
         f"  total={counts.get('total', 0)} completed={counts.get('completed', 0)} "
-        f"skipped={counts.get('skipped', 0)} failed={counts.get('failed', 0)}"
+        f"skipped={counts.get('skipped', 0)} failed={counts.get('failed', 0)} "
+        f"valid={counts.get('valid', 0)}"
     )
-    best = data.get("best_trial")
-    if best:
-        print("Best trial:")
-        print(f"  id: {best.get('trial_id')}")
-        print(f"  file: {best.get('trial_file')}")
-        score = best.get("score") or {}
-        metrics = score.get("metrics") or {}
-        print(f"  score: {score.get('score')}")
-        if metrics:
-            print(f"  num_trades: {metrics.get('num_trades')}")
-            print(f"  sharpe_ratio: {metrics.get('sharpe_ratio')}")
-            print(f"  total_return: {metrics.get('total_return')}%")
-            print(f"  profit_factor: {metrics.get('profit_factor')}")
-    else:
+
+    if not valid_trials:
         print("Ingen giltig trial utan constraint-fel hittades.")
+        return
+
+    best = valid_trials[0]
+    print("Best trial:")
+    print(f"  id: {best.get('trial_id')}")
+    print(f"  file: {best.get('trial_file')}")
+    print(f"  score: {best.get('score')}")
+    metrics = best.get("metrics") or {}
+    if metrics:
+        print(f"  num_trades: {metrics.get('num_trades')}")
+        print(f"  sharpe_ratio: {metrics.get('sharpe_ratio')}")
+        print(f"  total_return: {metrics.get('total_return')}%")
+        print(f"  profit_factor: {metrics.get('profit_factor')}")
+
+    if top_n > 1:
+        print(f"Top {min(top_n, len(valid_trials))} trials (score desc):")
+        for idx, entry in enumerate(valid_trials[:top_n], start=1):
+            metrics = entry.get("metrics") or {}
+            sharpe = metrics.get("sharpe_ratio")
+            trades = metrics.get("num_trades")
+            print(
+                f"  {idx}. {entry.get('trial_id')} | score={entry.get('score')} "
+                f"sharpe={sharpe} trades={trades}"
+            )
+        if top_n < len(valid_trials):
+            print(f"  ... {len(valid_trials) - top_n} fler")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -106,11 +139,18 @@ def main(argv: list[str] | None = None) -> int:
 
     summarize_parser = subparsers.add_parser("summarize", help="Sammanfatta run")
     summarize_parser.add_argument("run_id", type=str, help="Run-id (katalognamn)")
+    summarize_parser.add_argument(
+        "--top",
+        type=int,
+        default=1,
+        help="Antal topp-trials att lista (default: 1)",
+    )
 
     args = parser.parse_args(argv)
     if args.command == "summarize":
         data = summarize_run(args.run_id)
-        _print_summary(data)
+        top_n = max(1, int(args.top))
+        _print_summary(data, top_n=top_n)
         return 0
 
     parser.print_help()

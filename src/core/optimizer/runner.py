@@ -5,6 +5,7 @@ import json
 import subprocess  # nosec B404 - subprocess usage reviewed for controlled command execution
 from collections.abc import Iterable
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -33,6 +34,49 @@ def load_search_config(path: Path) -> dict[str, Any]:
     return data
 
 
+def _trial_key(params: dict[str, Any]) -> str:
+    return json.dumps(params, sort_keys=True, separators=(",", ":"))
+
+
+def _load_existing_trials(run_dir: Path) -> dict[str, dict[str, Any]]:
+    existing: dict[str, dict[str, Any]] = {}
+    for trial_path in sorted(run_dir.glob("trial_*.json")):
+        try:
+            trial_data = json.loads(trial_path.read_text())
+            params = trial_data.get("parameters") or {}
+            key = _trial_key(params)
+            existing[key] = trial_data
+        except (json.JSONDecodeError, OSError):
+            continue
+    return existing
+
+
+def _ensure_run_metadata(
+    run_dir: Path, config_path: Path, meta: dict[str, Any], run_id: str
+) -> None:
+    meta_path = run_dir / "run_meta.json"
+    if meta_path.exists():
+        return
+    commit = "unknown"
+    try:
+        commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT).decode().strip()
+    except (subprocess.SubprocessError, OSError):
+        commit = "unknown"
+    meta_payload = {
+        "run_id": run_id,
+        "config_path": (
+            str(config_path.relative_to(ROOT)) if config_path.is_absolute() else str(config_path)
+        ),
+        "snapshot_id": meta.get("snapshot_id"),
+        "symbol": meta.get("symbol"),
+        "timeframe": meta.get("timeframe"),
+        "started_at": datetime.now(UTC).isoformat(),
+        "git_commit": commit,
+        "raw_meta": meta,
+    }
+    meta_path.write_text(json.dumps(meta_payload, indent=2), encoding="utf-8")
+
+
 def expand_parameters(spec: dict[str, Any]) -> Iterable[dict[str, Any]]:
     base: dict[str, Any] = {}
     grids: list[tuple[str, list[Any]]] = []
@@ -53,15 +97,37 @@ def expand_parameters(spec: dict[str, Any]) -> Iterable[dict[str, Any]]:
         yield config
 
 
-def run_trial(trial: TrialConfig, *, run_id: str, index: int) -> dict[str, Any]:
-    if not trial.snapshot_id:
+def _derive_dates(snapshot_id: str) -> tuple[str, str]:
+    if not snapshot_id:
         raise ValueError("trial snapshot_id saknas")
-    snapshot_parts = trial.snapshot_id.split("_")
-    if len(snapshot_parts) < 4:
+    parts = snapshot_id.split("_")
+    if len(parts) < 4:
         raise ValueError("snapshot_id saknar start/end datum")
-    start_date = snapshot_parts[2]
-    end_date = snapshot_parts[3]
-    output_dir = (RESULTS_DIR / run_id).resolve()
+    return parts[2], parts[3]
+
+
+def run_trial(
+    trial: TrialConfig,
+    *,
+    run_id: str,
+    index: int,
+    run_dir: Path,
+    allow_resume: bool,
+    existing_trials: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    key = _trial_key(trial.parameters)
+    if allow_resume and key in existing_trials:
+        existing = existing_trials[key]
+        return {
+            "trial_id": existing.get("trial_id"),
+            "parameters": trial.parameters,
+            "skipped": True,
+            "reason": "already_completed",
+            "results_path": existing.get("results_path"),
+        }
+
+    start_date, end_date = _derive_dates(trial.snapshot_id)
+    output_dir = run_dir
     output_dir.mkdir(parents=True, exist_ok=True)
     trial_id = f"trial_{index:03d}"
     trial_file = output_dir / f"{trial_id}.json"
@@ -80,17 +146,22 @@ def run_trial(trial: TrialConfig, *, run_id: str, index: int) -> dict[str, Any]:
         "--warmup",
         str(trial.warmup_bars),
     ]
-    # nosec B603: controlled command built from static arguments
     with subprocess.Popen(  # nosec B603
         cmd,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,
+        cwd=ROOT,
     ) as proc:
         log = proc.communicate()[0]
         if proc.returncode != 0:
             log_file.write_text(log, encoding="utf-8")
-            return {"error": "backtest_failed", "log": log, "trial": trial.parameters}
+            return {
+                "trial_id": trial_id,
+                "parameters": trial.parameters,
+                "error": "backtest_failed",
+                "log_path": log_file.name,
+            }
     results_path = sorted(
         (ROOT / "results" / "backtests").glob(f"{trial.symbol}_{trial.timeframe}_*.json")
     )[-1]
@@ -110,13 +181,29 @@ def run_trial(trial: TrialConfig, *, run_id: str, index: int) -> dict[str, Any]:
     return payload
 
 
+def _create_run_id(proposed: str | None = None) -> str:
+    if proposed:
+        return proposed
+    return datetime.now(UTC).strftime("run_%Y%m%d_%H%M%S")
+
+
 def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[str, Any]]:
     config = load_search_config(config_path)
     meta = config.get("meta") or {}
     parameters = config.get("parameters") or {}
-    run_id = run_id or config_path.stem
-    trials: list[dict[str, Any]] = []
+    runs_cfg = meta.get("runs") or {}
+    max_trials = int(runs_cfg.get("max_trials", 0)) or None
+    allow_resume = bool(runs_cfg.get("resume", True))
+    run_id_resolved = _create_run_id(run_id)
+    run_dir = (RESULTS_DIR / run_id_resolved).resolve()
+    existing_trials = _load_existing_trials(run_dir) if allow_resume and run_dir.exists() else {}
+    run_dir.mkdir(parents=True, exist_ok=True)
+    _ensure_run_metadata(run_dir, config_path.resolve(), meta, run_id_resolved)
+
+    results: list[dict[str, Any]] = []
     for index, params in enumerate(expand_parameters(parameters), start=1):
+        if max_trials is not None and index > max_trials:
+            break
         trial_cfg = TrialConfig(
             snapshot_id=meta.get("snapshot_id", ""),
             symbol=meta.get("symbol", "tBTCUSD"),
@@ -124,5 +211,13 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
             warmup_bars=int(meta.get("warmup_bars", 150)),
             parameters=params,
         )
-        trials.append(run_trial(trial_cfg, run_id=run_id, index=index))
-    return trials
+        result = run_trial(
+            trial_cfg,
+            run_id=run_id_resolved,
+            index=index,
+            run_dir=run_dir,
+            allow_resume=allow_resume,
+            existing_trials=existing_trials,
+        )
+        results.append(result)
+    return results

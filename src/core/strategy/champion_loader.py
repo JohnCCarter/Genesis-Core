@@ -24,13 +24,20 @@ class ChampionConfig:
     loaded_at: str
 
 
+@dataclass(slots=True)
+class _CacheEntry:
+    config: ChampionConfig
+    mtime: float | None
+    exists: bool
+
+
 class ChampionLoader:
     """Hantera laddning av champion-konfig med validering och fallback."""
 
     def __init__(self, *, champions_dir: Path | None = None) -> None:
         self.champions_dir = champions_dir or CHAMPIONS_DIR
         self.champions_dir.mkdir(parents=True, exist_ok=True)
-        self._cache: dict[str, ChampionConfig] = {}
+        self._cache: dict[str, _CacheEntry] = {}
 
     def _champion_path(self, symbol: str, timeframe: str) -> Path:
         return self.champions_dir / f"{symbol}_{timeframe}.json"
@@ -51,12 +58,32 @@ class ChampionLoader:
             return None
         return config
 
-    def load(self, symbol: str, timeframe: str) -> ChampionConfig:
-        key = f"{symbol}:{timeframe}"
+    def _build_config(
+        self,
+        *,
+        symbol: str,
+        timeframe: str,
+        config_data: dict[str, Any],
+        source: str,
+        version: str,
+    ) -> ChampionConfig:
+        checksum = self._compute_checksum(config_data)
+        return ChampionConfig(
+            config=config_data,
+            source=source,
+            version=version,
+            checksum=checksum,
+            loaded_at=datetime.now(UTC).isoformat(),
+        )
+
+    def _load_from_disk(self, symbol: str, timeframe: str) -> _CacheEntry:
         champion_path = self._champion_path(symbol, timeframe)
         config_data: dict[str, Any] | None = None
         source = "baseline"
         version = "baseline"
+        mtime: float | None = None
+        exists = False
+
         if champion_path.exists():
             payload = self._load_json(champion_path)
             if payload:
@@ -68,24 +95,51 @@ class ChampionLoader:
                     except ValueError:
                         source = str(champion_path)
                     version = str(payload.get("created_at", "unknown"))
+                    exists = True
+                    try:
+                        mtime = champion_path.stat().st_mtime
+                    except OSError:
+                        mtime = None
         if config_data is None:
             config_data = timeframe_configs.get_timeframe_config(timeframe)
             version = "baseline"
             source = f"baseline:{timeframe}"
-        checksum = self._compute_checksum(config_data)
-        result = ChampionConfig(
-            config=config_data,
+            exists = False
+            mtime = None
+        config = self._build_config(
+            symbol=symbol,
+            timeframe=timeframe,
+            config_data=config_data,
             source=source,
             version=version,
-            checksum=checksum,
-            loaded_at=datetime.now(UTC).isoformat(),
         )
-        self._cache[key] = result
-        return result
+        entry = _CacheEntry(config=config, mtime=mtime, exists=exists)
+        return entry
+
+    def load(self, symbol: str, timeframe: str) -> ChampionConfig:
+        entry = self._load_from_disk(symbol, timeframe)
+        key = f"{symbol}:{timeframe}"
+        self._cache[key] = entry
+        return entry.config
+
+    def _needs_reload(self, symbol: str, timeframe: str, entry: _CacheEntry) -> bool:
+        path = self._champion_path(symbol, timeframe)
+        exists = path.exists()
+        try:
+            mtime = path.stat().st_mtime if exists else None
+        except OSError:
+            mtime = None
+        if entry.exists != exists:
+            return True
+        if exists and entry.mtime != mtime:
+            return True
+        return False
 
     def load_cached(self, symbol: str, timeframe: str) -> ChampionConfig:
         key = f"{symbol}:{timeframe}"
-        cached = self._cache.get(key)
-        if cached:
-            return cached
-        return self.load(symbol, timeframe)
+        entry = self._cache.get(key)
+        if entry is None:
+            return self.load(symbol, timeframe)
+        if self._needs_reload(symbol, timeframe, entry):
+            return self.load(symbol, timeframe)
+        return entry.config

@@ -27,7 +27,7 @@ def build_sample_candles() -> dict[str, Any]:
     return {
         "symbol": "tBTCUSD",
         "timeframe": "1h",
-        "candles": list(zip(timestamps, opens, highs, lows, closes, volumes)),
+        "candles": list(zip(timestamps, opens, highs, lows, closes, volumes, strict=True)),
         "open": opens,
         "high": highs,
         "low": lows,

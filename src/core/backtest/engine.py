@@ -13,6 +13,7 @@ from tqdm import tqdm
 from core.backtest.htf_exit_engine import HTFFibonacciExitEngine
 from core.backtest.position_tracker import PositionTracker
 from core.indicators.exit_fibonacci import calculate_exit_fibonacci_levels
+from core.strategy.champion_loader import ChampionLoader
 from core.strategy.evaluate import evaluate_pipeline
 
 
@@ -71,6 +72,8 @@ class BacktestEngine:
 
         self.state: dict = {}
         self.bar_count = 0
+
+        self.champion_loader = ChampionLoader()
 
         # Initialize HTF Exit Engine
         default_htf_config = {
@@ -183,6 +186,11 @@ class BacktestEngine:
         policy.setdefault("timeframe", self.timeframe)
 
         configs = configs or {}
+
+        champion_cfg = self.champion_loader.load_cached(self.symbol, self.timeframe)
+        merged_configs = {**champion_cfg.config, **configs}
+        merged_configs.setdefault("meta", {})["champion_source"] = champion_cfg.source
+        configs = merged_configs
 
         print(f"\n{'='*70}")
         print(f"Running Backtest: {self.symbol} {self.timeframe}")

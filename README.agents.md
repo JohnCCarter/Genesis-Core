@@ -2,27 +2,24 @@
 
 Denna fil beskriver hur AI‑agenter ska arbeta lokalt med projektet.
 
-**Fokus 2025-10-20 – Phase-7a Engångsoptimering**
+**Fokus 2025-10-21 – Phase-7a Engångsoptimering**
 - ✅ Snapshot låst: `tBTCUSD_1h_2024-10-22_2025-10-01_v1`
 - ✅ Baseline backtest loggad (`results/backtests/tBTCUSD_1h_20251020_155245.json`)
-- ✅ Grid-sökrymd: `config/optimizer/tBTCUSD_1h_search.yaml`
-- ✅ Scoring & constraints: `src/core/optimizer/scoring.py`, `constraints.py`
-- ✅ Runner (grid/serial): `src/core/optimizer/runner.py`
+- ✅ Grid-sökrymd + constraints + scoring (se `config/optimizer/*.yaml`, `src/core/optimizer/`)
+- ✅ Runner: resume/skip, run metadata, concurrency (`runs.max_concurrent`), retries (`runs.max_attempts`)
 - Nästa steg:
-  1. Lägg till resume/skip-logik + run-id metadata i runnern
-  2. Designa robusthetslager (timeouts, concurrency, cleanup)
-  3. Implementera champion-hantering & rapportering (Plan steg 5–6)
-  4. Dokumentera/workflow i `docs/optimizer.md`
-  5. Enhetstester för scoring + runner mini-sök
+  1. Champion manager (`config/strategy/champions/tBTCUSD_1h.json` + backup)
+  2. Rapport CLI (`scripts/optimizer.py summarize --run <id>`) – inklusive skip/statistik
+  3. Dokumentera i `docs/optimizer.md` + uppdatera Phase-7a status
+  4. Enhets-/integrationstester (scoring, runner mini-sök)
 
 **TODO – Nästa agent:**
 - Phase-7a fortsättning:
-  - [ ] Runner: resume/skip, concurrency-flagga, tydlig loggstruktur (`results/hparam_search/<run_id>/`)
-  - [ ] Champion manager: skriv `config/strategy/champions/tBTCUSD_1h.json` med backup
-  - [ ] Rapport CLI (`scripts/optimizer.py summarize --run <id>`)
-  - [ ] Unit-/integrationstest (scoring, runner)
-  - [ ] Dokumentation i `docs/optimizer.md`
-- HTF‑repro 6h (dokument) – SE tidigare lista om 6h fortfarande behövs
+  - [ ] Champion manager: skriv/rotera champion + metadata
+  - [ ] Rapporterings-CLI med sammanfattning (inkluderar skip/tidsåtgång)
+  - [ ] Dokumentation (`docs/optimizer.md`, README uppdateras efter CLI)
+  - [ ] Tester: scoring, runner (inkl. retry/concurrency)
+- HTF‑repro 6h (dokument) – se tidigare lista om 6h fortfarande behövs
 - CLI‑overrides, Kalibrering & modeller, Tester, CI, Data & pipeline, Dokumentation (se tidigare punkter)
 
 ## 🔒 Deployment Model

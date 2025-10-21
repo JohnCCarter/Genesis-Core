@@ -27,15 +27,16 @@
 - **Runner:** `src/core/optimizer/runner.py` (grid-expansion, backtest launch, scoring, logging).
 - **Kvar:** resume/skip-logik, concurrency och CLI-wrapper (ingår i robusthetssteget nedan).
 
-## 4. Robusthet & resurser
+## 4. Robusthet & resurser ✅ (klar 2025-10-21)
 - Hantera fel (exceptions, timeouts) och fortsätt med nästa försök.
 - Planera max antal samtidiga backtester, CPU/RAM-budget och logga körtid per försök.
 - Upprätta rutin för att städa gamla resultatmappar vid behov.
-- **Nästa agent:**
-  - Lägg till resume/skip för redan körda trial-filer.
-  - Inför tidsstämplad `run_id` + metadata (git commit, snapshot).
-  - CPU-budget: enkel serial körning fungerar men analysera behov av `--max-concurrent`.
-  - Maskeringspolicy: `scripts/build_auth_headers.py` maskerar nu alltid API-nycklar/signaturer (kräver env-variabler, skrivs aldrig i klartext).
+- **Implementation:**
+  - `runs.max_concurrent` styr ThreadPoolExecutor (default 1).
+  - `runs.max_attempts` ger retry med backoff (5s-60s) + logg i `trial_x.log`.
+  - `run_meta.json` innehåller snapshot-id, git-commit, starttid, config-path.
+  - `trial_x.json` fylls med `attempts`, `skipped` och `error` vid misslyckande.
+- **Kvar:** CLI-wrapper för resume/skip-rapport (ingår i steg 6).
 
 ## 5. Champion-hantering
 - Jämför försök mot minimikraven och håll koll på bästa konfigurationen.

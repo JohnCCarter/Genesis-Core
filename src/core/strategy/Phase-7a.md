@@ -48,22 +48,25 @@
   - Tester: `tests/test_optimizer_champion.py`, `tests/test_optimizer_runner.py`.
 - **Kvar:** rapportering/CLI samt dokumentation (steg 6 & 8).
 
-## 6. Validering & rapport (pågår)
+## 6. Validering & rapport ✅ (klar 2025-10-21)
 - Planera walk-forward/valideringsflöde (antal fönster, hur champion utses).
 - Efter körning: generera rapport (topp 5 + metrics) och CLI-översikt (`python scripts/optimizer.py summarize --run <id>`).
 - Dokumentera tydligt hur man manuellt kan sätta champion vid behov.
 - **Implementation:**
-  - CLI `scripts/optimizer.py summarize` visar counts, bästa trial, metadata.
-  - Tester: `tests/test_optimizer_cli.py`.
-- **Kvar:** dokumentation (`docs/optimizer.md`), CLI-utökning för topp N, percentiler.
+  - CLI `scripts/optimizer.py summarize` visar counts, bästa trial, top N (`--top`).
+  - Tester: `tests/test_optimizer_cli.py`, `tests/test_optimizer_runner.py` (mini-run), `tests/conftest.py` fixtures.
+- **Kvar:** Walk-forward validering (framtida steg).
 
-## 7. Auto-reload (steg 2)
+## 7. Auto-reload ✅ (klar 2025-10-21)
 - Lägg till hook i live/backtestmotor för att läsa champion vid start/rollover.
 - Inför schema/signaturkontroll innan auto-reload aktiveras; fallback vid ogiltig fil.
-- **Status:** ej påbörjat.
+- **Implementation:**
+  - `ChampionLoader` (`src/core/strategy/champion_loader.py`) laddar champion med mtime-koll och fallback.
+  - `evaluate_pipeline` och `BacktestEngine` använder loadern och injicerar `meta.champion.source`.
+  - Tester: `tests/test_champion_loader.py`, `tests/test_evaluate_pipeline.py` (champion-meta), `tests/test_optimizer_runner.py` (Patchad expand_parameters).
 
-## 8. Test & dokumentation
+## 8. Test & dokumentation ✅ (klar 2025-10-21)
 - Unit-/integrationstester för scoring, championwriter och minst ett mini-sök.
 - Dokumentera processen i `docs/optimizer.md` (sökrymder, körning, fallback, cleanup).
-- **Status:** ej påbörjat. När runner stabiliserats ska tests + docs fyllas på.
+- **Implementation:** Full testsvit + dokumentation uppdaterad (`README.agents.md`, `docs/optimizer.md`).
 

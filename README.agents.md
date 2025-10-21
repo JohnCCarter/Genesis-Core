@@ -2,23 +2,20 @@
 
 Denna fil beskriver hur AI‑agenter ska arbeta lokalt med projektet.
 
-**Fokus 2025-10-21 – Phase-7a Engångsoptimering**
+**Fokus 2025-10-21 – Phase-7a Engångsoptimering (✅ slutförd)**
 - ✅ Snapshot låst: `tBTCUSD_1h_2024-10-22_2025-10-01_v1`
 - ✅ Baseline backtest loggad (`results/backtests/tBTCUSD_1h_20251020_155245.json`)
 - ✅ Grid-sökrymd + constraints + scoring (se `config/optimizer/*.yaml`, `src/core/optimizer/`)
 - ✅ Runner: resume/skip, run metadata, concurrency (`runs.max_concurrent`), retries (`runs.max_attempts`)
-- ✅ Champion manager: `ChampionManager` + runner integration + tester
-- ✅ Rapport-CLI: `scripts/optimizer.py summarize` (visar counts + bästa trial)
-- Nästa steg:
-  1. Dokumentera i `docs/optimizer.md` + uppdatera Phase-7a status
-  2. Enhets-/integrationstester för rapportflöde (vid ev. utökad funktionalitet)
+- ✅ Champion manager & auto-reload (`ChampionManager`, `ChampionLoader`, pipeline/backtest integration)
+- ✅ Rapport-CLI: `scripts/optimizer.py summarize --top N`
+- ✅ Tester/dokumentation: `docs/optimizer.md`, `tests/optimizer_*`, `tests/champion_loader.py`
 
 **TODO – Nästa agent:**
-- Phase-7a fortsättning:
-  - [ ] Dokumentation (`docs/optimizer.md`, README efter CLI)
-  - [ ] Ytterligare tester vid utökning (topp N, percentiler, resume-info)
+- Walk-forward validering (steg 6 uppföljning) – planera om fortsatt behövs
+- Live/CI-stöd: auto-reload i server (schemalagd refresh) om efterfrågat
 - HTF‑repro 6h (dokument) – se tidigare lista om 6h fortfarande behövs
-- CLI‑overrides, Kalibrering & modeller, Tester, CI, Data & pipeline, Dokumentation (se tidigare punkter)
+- CLI‑overrides, kalibrering & modeller, tester, CI, data-pipeline, dokumentation (tidigare backlog)
 
 ## 🔒 Deployment Model
 

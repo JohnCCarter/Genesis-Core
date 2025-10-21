@@ -5,9 +5,9 @@ meta:
   baseline_config: config/timeframe_configs.py:get_1h_config
   warmup_bars: 150
   runs:
-    max_trials: 5
+    max_trials: 2
     strategy: grid
-    max_concurrent: 2
+    max_concurrent: 1
     resume: true
 parameters:
   thresholds:

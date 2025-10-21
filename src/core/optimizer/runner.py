@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import copy
 import json
-import subprocess  # nosec B404 - subprocess usage reviewed for controlled command execution
+import shutil
 import time
 from collections.abc import Iterable
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
@@ -62,12 +62,19 @@ def _ensure_run_metadata(
     if meta_path.exists():
         return
     commit = "unknown"
-    try:
-        commit = (
-            subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=PROJECT_ROOT).decode().strip()
-        )
-    except (subprocess.SubprocessError, OSError):
-        commit = "unknown"
+    git_executable = shutil.which("git")
+    if git_executable:
+        try:
+            completed = subprocess.run(  # nosec B603
+                [git_executable, "rev-parse", "HEAD"],
+                cwd=PROJECT_ROOT,
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            commit = completed.stdout.strip()
+        except subprocess.SubprocessError:
+            commit = "unknown"
     try:
         config_rel = str(config_path.relative_to(PROJECT_ROOT))
     except ValueError:

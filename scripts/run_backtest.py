@@ -24,10 +24,10 @@ CONFIG_DIR = ROOT_DIR / "config"
 CONFIG_DIR.mkdir(exist_ok=True)
 (CONFIG_DIR / "__init__.py").touch(exist_ok=True)
 
-from core.backtest.engine import BacktestEngine
-from core.backtest.metrics import calculate_metrics, print_metrics_report
-from core.backtest.trade_logger import TradeLogger
-from core.config.authority import ConfigAuthority
+from core.backtest.engine import BacktestEngine  # noqa: E402
+from core.backtest.metrics import calculate_metrics, print_metrics_report  # noqa: E402
+from core.backtest.trade_logger import TradeLogger  # noqa: E402
+from core.config.authority import ConfigAuthority  # noqa: E402
 
 
 def _deep_merge(base: dict, override: dict) -> dict:

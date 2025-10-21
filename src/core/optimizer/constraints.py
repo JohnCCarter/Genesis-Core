@@ -25,19 +25,19 @@ def enforce_constraints(
     cfg = constraints_cfg if constraints_cfg is not None else config.get("constraints") or {}
 
     min_trades = cfg.get("min_trades")
-    if isinstance(min_trades, (int, float)):
+    if isinstance(min_trades, (int | float)):
         trades = float(score_obj.get("metrics", {}).get("num_trades", 0))
         if trades < float(min_trades):
             reasons.append(f"min_trades:{trades}<{min_trades}")
 
     min_profit_factor = cfg.get("min_profit_factor")
-    if isinstance(min_profit_factor, (int, float)):
+    if isinstance(min_profit_factor, (int | float)):
         pf = float(score_obj.get("metrics", {}).get("profit_factor", 0))
         if pf < float(min_profit_factor):
             reasons.append(f"min_profit_factor:{pf}<{min_profit_factor}")
 
     max_max_dd = cfg.get("max_max_dd")
-    if isinstance(max_max_dd, (int, float)):
+    if isinstance(max_max_dd, (int | float)):
         dd = float(score_obj.get("metrics", {}).get("max_drawdown", 0))
         if dd > float(max_max_dd):
             reasons.append(f"max_max_dd:{dd}>{max_max_dd}")

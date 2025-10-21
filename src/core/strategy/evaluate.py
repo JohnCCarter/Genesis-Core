@@ -31,16 +31,15 @@ def evaluate_pipeline(
 
     timeframe = policy.get("timeframe", "1m")
     symbol = policy.get("symbol", "tBTCUSD")
+    champion = champion_loader.load_cached(symbol, timeframe)
+    champion_cfg = dict(champion.config or {})
     if configs:
-        champion = champion_loader.load_cached(symbol, timeframe)
-        champion_cfg = champion.config or {}
-        merged_cfg = {**champion_cfg, **configs}
-        merged_cfg.setdefault("meta", {})["champion_source"] = champion.source
+        merged_cfg = champion_cfg
+        merged_cfg.update(configs)
         configs = merged_cfg
     else:
-        champion = champion_loader.load_cached(symbol, timeframe)
-        configs = dict(champion.config or {})
-        configs.setdefault("meta", {})["champion_source"] = champion.source
+        configs = champion_cfg
+    configs.setdefault("meta", {})["champion_source"] = champion.source
 
     feats, feats_meta = extract_features(
         candles, config=configs, timeframe=timeframe, symbol=symbol

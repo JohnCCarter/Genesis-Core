@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[3]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from config import timeframe_configs
+from config import timeframe_configs  # noqa: E402
 
 CHAMPIONS_DIR = ROOT / "config" / "strategy" / "champions"
 
@@ -105,9 +105,14 @@ class ChampionLoader:
                     except OSError:
                         mtime = None
         if config_data is None:
-            config_data = timeframe_configs.get_timeframe_config(timeframe)
+            fallback_source = timeframe
+            try:
+                config_data = timeframe_configs.get_timeframe_config(timeframe)
+            except ValueError:
+                config_data = timeframe_configs.get_timeframe_config("1h")
+                fallback_source = "fallback_1h"
             version = "baseline"
-            source = f"baseline:{timeframe}"
+            source = f"baseline:{fallback_source}"
             exists = False
             mtime = None
         config = self._build_config(

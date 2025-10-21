@@ -42,3 +42,20 @@ def test_load_cached(champions_dir: Path) -> None:
     cfg1 = loader.load("tTEST", "1h")
     cfg2 = loader.load_cached("tTEST", "1h")
     assert cfg1.checksum == cfg2.checksum
+
+
+def test_load_reload_on_change(champions_dir: Path, tmp_path: Path) -> None:
+    loader = ChampionLoader(champions_dir=champions_dir)
+    champions_dir.mkdir(parents=True, exist_ok=True)
+    path = champions_dir / "tTEST_1h.json"
+    path.write_text(
+        json.dumps({"parameters": {"thresholds": {"entry_conf_overall": 0.5}}}),
+        encoding="utf-8",
+    )
+    loader.load("tTEST", "1h")
+    path.write_text(
+        json.dumps({"parameters": {"thresholds": {"entry_conf_overall": 0.6}}}),
+        encoding="utf-8",
+    )
+    reloaded = loader.load_cached("tTEST", "1h")
+    assert reloaded.config["thresholds"]["entry_conf_overall"] == 0.6

@@ -45,43 +45,39 @@ def test_run_optimizer_updates_champion(tmp_path: Path, search_config_tmp: Path)
         "snapshot_id": "tTEST_1h_20240101_20240201_v1",
     }
 
-    trial_results = iter(
-        [
-            {
-                "trial_id": "trial_001",
-                "parameters": {"thresholds": {"entry_conf_overall": 0.4}},
-                "score": {
-                    "score": 120.0,
-                    "metrics": {"sharpe_ratio": 0.5},
-                    "hard_failures": [],
-                },
-                "constraints": {"ok": True, "reasons": []},
-                "results_path": "test_results.json",
+    trial_queue = {
+        1: {
+            "trial_id": "trial_001",
+            "parameters": {"thresholds": {"entry_conf_overall": 0.4}},
+            "score": {
+                "score": 120.0,
+                "metrics": {"sharpe_ratio": 0.5},
+                "hard_failures": [],
             },
-            {
-                "trial_id": "trial_002",
-                "parameters": {"thresholds": {"entry_conf_overall": 0.5}},
-                "score": {
-                    "score": 80.0,
-                    "metrics": {"sharpe_ratio": 0.2},
-                    "hard_failures": ["MAX_DD_TOO_HIGH"],
-                },
-                "constraints": {"ok": False, "reasons": ["MAX_DD_TOO_HIGH"]},
-                "results_path": "test_results_bad.json",
+            "constraints": {"ok": True, "reasons": []},
+            "results_path": "test_results.json",
+        },
+        2: {
+            "trial_id": "trial_002",
+            "parameters": {"thresholds": {"entry_conf_overall": 0.5}},
+            "score": {
+                "score": 80.0,
+                "metrics": {"sharpe_ratio": 0.2},
+                "hard_failures": ["MAX_DD_TOO_HIGH"],
             },
-        ]
-    )
+            "constraints": {"ok": False, "reasons": ["MAX_DD_TOO_HIGH"]},
+            "results_path": "test_results_bad.json",
+        },
+    }
 
-    def fake_run_trial(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
-        try:
-            return next(trial_results)
-        except StopIteration:
-            return {
-                "trial_id": "trial_extra",
-                "parameters": {},
-                "score": {"score": 0.0, "metrics": {}, "hard_failures": []},
-                "constraints": {"ok": False},
-            }
+    def fake_run_trial(*args: Any, **kwargs: Any) -> dict[str, Any]:
+        index = kwargs.get("index")
+        return trial_queue.get(index, {
+            "trial_id": f"trial_extra_{index}",
+            "parameters": {},
+            "score": {"score": 0.0, "metrics": {}, "hard_failures": []},
+            "constraints": {"ok": False},
+        })
 
     def fake_ensure(run_dir: Path, *_args: Any, **_kwargs: Any) -> None:
         run_dir.mkdir(parents=True, exist_ok=True)
@@ -89,10 +85,14 @@ def test_run_optimizer_updates_champion(tmp_path: Path, search_config_tmp: Path)
 
     with (
         patch("core.optimizer.runner.RESULTS_DIR", results_root),
+        patch("core.optimizer.runner.expand_parameters", return_value=[
+            {"thresholds": {"entry_conf_overall": 0.4}},
+            {"thresholds": {"entry_conf_overall": 0.5}},
+        ]),
         patch("core.optimizer.runner.run_trial", side_effect=fake_run_trial),
         patch("core.optimizer.runner._ensure_run_metadata", side_effect=fake_ensure),
-        patch("core.optimizer.runner.expand_parameters", return_value=[{"p": 1}, {"p": 2}]),
         patch("core.optimizer.runner.ChampionManager") as manager_cls,
+        patch("core.strategy.champion_loader.CHAMPIONS_DIR", tmp_path / "champions"),
     ):
         manager_instance = manager_cls.return_value
         manager_instance.load_current.return_value = None

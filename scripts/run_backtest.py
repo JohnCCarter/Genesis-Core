@@ -33,11 +33,7 @@ from core.config.authority import ConfigAuthority
 def _deep_merge(base: dict, override: dict) -> dict:
     merged = dict(base)
     for key, value in (override or {}).items():
-        if (
-            key in merged
-            and isinstance(merged[key], dict)
-            and isinstance(value, dict)
-        ):
+        if key in merged and isinstance(merged[key], dict) and isinstance(value, dict):
             merged[key] = _deep_merge(merged[key], value)
         else:
             merged[key] = value
@@ -118,7 +114,9 @@ def main():
 
         if args.config_file:
             override_payload = json.loads(args.config_file.read_text(encoding="utf-8"))
-            override_cfg = override_payload.get("cfg") if isinstance(override_payload, dict) else None
+            override_cfg = (
+                override_payload.get("cfg") if isinstance(override_payload, dict) else None
+            )
             if override_cfg is None:
                 raise ValueError("config-file must contain a 'cfg' dictionary")
             merged_cfg = _deep_merge(cfg, override_cfg)

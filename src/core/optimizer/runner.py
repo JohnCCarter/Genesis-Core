@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-import itertools
+import copy
 import json
 import subprocess  # nosec B404 - subprocess usage reviewed for controlled command execution
 import time
 from collections.abc import Iterable
-import copy
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import UTC, datetime

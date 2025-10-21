@@ -3,10 +3,13 @@ from __future__ import annotations
 from typing import Any
 
 from core.observability.metrics import metrics
+from core.strategy.champion_loader import ChampionLoader
 from core.strategy.confidence import compute_confidence
 from core.strategy.decision import decide
 from core.strategy.features_asof import extract_features
 from core.strategy.prob_model import predict_proba_for
+
+champion_loader = ChampionLoader()
 
 
 def evaluate_pipeline(
@@ -26,9 +29,19 @@ def evaluate_pipeline(
 
     metrics.inc("pipeline_eval_invocations")
 
-    # Extract timeframe and symbol from policy for HTF Fibonacci context
-    timeframe = policy.get("timeframe", None)
+    timeframe = policy.get("timeframe", "1m")
     symbol = policy.get("symbol", "tBTCUSD")
+    if configs:
+        champion = champion_loader.load_cached(symbol, timeframe)
+        champion_cfg = champion.config or {}
+        merged_cfg = {**champion_cfg, **configs}
+        merged_cfg.setdefault("meta", {})["champion_source"] = champion.source
+        configs = merged_cfg
+    else:
+        champion = champion_loader.load_cached(symbol, timeframe)
+        configs = dict(champion.config or {})
+        configs.setdefault("meta", {})["champion_source"] = champion.source
+
     feats, feats_meta = extract_features(
         candles, config=configs, timeframe=timeframe, symbol=symbol
     )
@@ -104,5 +117,8 @@ def evaluate_pipeline(
         "confidence": conf_meta,
         "regime": regime_state,
         "decision": action_meta,
+        "champion": {
+            "source": configs.get("meta", {}).get("champion_source"),
+        },
     }
     return result, meta

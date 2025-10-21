@@ -3,7 +3,9 @@ from __future__ import annotations
 import itertools
 import json
 import subprocess  # nosec B404 - subprocess usage reviewed for controlled command execution
+import time
 from collections.abc import Iterable
+from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -106,6 +108,18 @@ def _derive_dates(snapshot_id: str) -> tuple[str, str]:
     return parts[2], parts[3]
 
 
+def _exec_backtest(cmd: list[str]) -> tuple[int, str]:
+    with subprocess.Popen(  # nosec B603
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        cwd=ROOT,
+    ) as proc:
+        log = proc.communicate()[0]
+        return proc.returncode, log
+
+
 def run_trial(
     trial: TrialConfig,
     *,
@@ -114,6 +128,7 @@ def run_trial(
     run_dir: Path,
     allow_resume: bool,
     existing_trials: dict[str, dict[str, Any]],
+    max_attempts: int = 2,
 ) -> dict[str, Any]:
     key = _trial_key(trial.parameters)
     if allow_resume and key in existing_trials:
@@ -146,45 +161,69 @@ def run_trial(
         "--warmup",
         str(trial.warmup_bars),
     ]
-    with subprocess.Popen(  # nosec B603
-        cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        cwd=ROOT,
-    ) as proc:
-        log = proc.communicate()[0]
-        if proc.returncode != 0:
-            log_file.write_text(log, encoding="utf-8")
-            return {
+
+    attempts_remaining = max(1, max_attempts)
+    final_payload: dict[str, Any] | None = None
+    while attempts_remaining > 0:
+        attempts_remaining -= 1
+        returncode, log = _exec_backtest(cmd)
+        if returncode == 0:
+            results_path = sorted(
+                (ROOT / "results" / "backtests").glob(f"{trial.symbol}_{trial.timeframe}_*.json")
+            )[-1]
+            results = json.loads(results_path.read_text())
+            score = score_backtest(results, thresholds=MetricThresholds())
+            enforcement = enforce_constraints(score, trial.parameters)
+            final_payload = {
                 "trial_id": trial_id,
                 "parameters": trial.parameters,
-                "error": "backtest_failed",
-                "log_path": log_file.name,
+                "results_path": results_path.name,
+                "score": score,
+                "constraints": enforcement.__dict__,
+                "log": log_file.name,
+                "attempts": max_attempts - attempts_remaining,
             }
-    results_path = sorted(
-        (ROOT / "results" / "backtests").glob(f"{trial.symbol}_{trial.timeframe}_*.json")
-    )[-1]
-    results = json.loads(results_path.read_text())
-    score = score_backtest(results, thresholds=MetricThresholds())
-    enforcement = enforce_constraints(score, trial.parameters)
-    payload = {
-        "trial_id": trial_id,
-        "parameters": trial.parameters,
-        "results_path": results_path.name,
-        "score": score,
-        "constraints": enforcement.__dict__,
-        "log": log_file.name,
-    }
-    log_file.write_text(log, encoding="utf-8")
-    trial_file.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-    return payload
+            break
+        final_payload = {
+            "trial_id": trial_id,
+            "parameters": trial.parameters,
+            "error": "backtest_failed",
+            "log_path": log_file.name,
+            "attempts": max_attempts - attempts_remaining,
+        }
+        retry_wait = min(5 * (max_attempts - attempts_remaining), 60)
+        if attempts_remaining > 0:
+            print(f"[Runner] Backtest fail, retry om {retry_wait}s")
+            time.sleep(retry_wait)
+
+    log_file.write_text(log if "log" in locals() else "", encoding="utf-8")
+    if final_payload is None:
+        final_payload = {
+            "trial_id": trial_id,
+            "parameters": trial.parameters,
+            "error": "unknown",
+            "log_path": log_file.name,
+            "attempts": max_attempts,
+        }
+    trial_file.write_text(json.dumps(final_payload, indent=2), encoding="utf-8")
+    return final_payload
 
 
 def _create_run_id(proposed: str | None = None) -> str:
     if proposed:
         return proposed
     return datetime.now(UTC).strftime("run_%Y%m%d_%H%M%S")
+
+
+def _submit_trials(
+    executor: ThreadPoolExecutor,
+    params_list: list[dict[str, Any]],
+    trial_cfg_builder,
+) -> list[Future]:
+    futures: list[Future] = []
+    for idx, params in enumerate(params_list, start=1):
+        futures.append(executor.submit(trial_cfg_builder, idx, params))
+    return futures
 
 
 def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[str, Any]]:
@@ -194,16 +233,19 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
     runs_cfg = meta.get("runs") or {}
     max_trials = int(runs_cfg.get("max_trials", 0)) or None
     allow_resume = bool(runs_cfg.get("resume", True))
+    concurrency = max(1, int(runs_cfg.get("max_concurrent", 1)))
+    max_attempts = max(1, int(runs_cfg.get("max_attempts", 2)))
     run_id_resolved = _create_run_id(run_id)
     run_dir = (RESULTS_DIR / run_id_resolved).resolve()
     existing_trials = _load_existing_trials(run_dir) if allow_resume and run_dir.exists() else {}
     run_dir.mkdir(parents=True, exist_ok=True)
     _ensure_run_metadata(run_dir, config_path.resolve(), meta, run_id_resolved)
 
-    results: list[dict[str, Any]] = []
-    for index, params in enumerate(expand_parameters(parameters), start=1):
-        if max_trials is not None and index > max_trials:
-            break
+    params_list = list(expand_parameters(parameters))
+    if max_trials is not None:
+        params_list = params_list[:max_trials]
+
+    def make_trial(idx: int, params: dict[str, Any]) -> dict[str, Any]:
         trial_cfg = TrialConfig(
             snapshot_id=meta.get("snapshot_id", ""),
             symbol=meta.get("symbol", "tBTCUSD"),
@@ -211,13 +253,23 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
             warmup_bars=int(meta.get("warmup_bars", 150)),
             parameters=params,
         )
-        result = run_trial(
+        return run_trial(
             trial_cfg,
             run_id=run_id_resolved,
-            index=index,
+            index=idx,
             run_dir=run_dir,
             allow_resume=allow_resume,
             existing_trials=existing_trials,
+            max_attempts=max_attempts,
         )
-        results.append(result)
+
+    results: list[dict[str, Any]] = []
+    with ThreadPoolExecutor(max_workers=concurrency) as executor:
+        if concurrency == 1:
+            for idx, params in enumerate(params_list, start=1):
+                results.append(make_trial(idx, params))
+        else:
+            futures = _submit_trials(executor, params_list, make_trial)
+            for future in as_completed(futures):
+                results.append(future.result())
     return results

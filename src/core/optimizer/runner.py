@@ -83,6 +83,11 @@ def _as_bool(value: Any) -> bool:
     return bool(value)
 
 
+def _validate_date_range(start: str, end: str, *, message: str | None = None) -> None:
+    if start > end:
+        raise ValueError(message or "start_date måste vara mindre än eller lika med end_date")
+
+
 def _normalize_date(value: Any, field_name: str) -> str:
     if not isinstance(value, str):
         raise TypeError(f"{field_name} måste vara sträng, fick {type(value).__name__}")
@@ -99,12 +104,19 @@ def _normalize_date(value: Any, field_name: str) -> str:
 def _resolve_sample_range(snapshot_id: str, runs_cfg: dict[str, Any]) -> tuple[str, str]:
     start_raw = runs_cfg.get("sample_start")
     end_raw = runs_cfg.get("sample_end")
+    if start_raw is None and end_raw is None:
+        start, end = _derive_dates(snapshot_id)
+        _validate_date_range(start, end)
+        return start, end
     if start_raw is None or end_raw is None:
-        return _derive_dates(snapshot_id)
+        raise ValueError("Både sample_start och sample_end måste anges om någon av dem är satt")
     start = _normalize_date(start_raw, "sample_start")
     end = _normalize_date(end_raw, "sample_end")
-    if start > end:
-        raise ValueError("sample_start måste vara mindre än eller lika med sample_end")
+    _validate_date_range(
+        start,
+        end,
+        message="sample_start måste vara mindre än eller lika med sample_end",
+    )
     return start, end
 
 
@@ -279,11 +291,14 @@ def run_trial(
         config_file.write_text(json.dumps(config_payload, indent=2), encoding="utf-8")
 
     if trial.start_date and trial.end_date:
-        if trial.start_date > trial.end_date:
-            raise ValueError("start_date måste vara mindre än eller lika med end_date")
         start_date, end_date = trial.start_date, trial.end_date
     else:
         start_date, end_date = _derive_dates(trial.snapshot_id)
+    _validate_date_range(
+        start_date,
+        end_date,
+        message="start_date måste vara mindre än eller lika med end_date",
+    )
 
     cmd = [
         "python",
@@ -629,7 +644,7 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
 
     sample_start: str | None = None
     sample_end: str | None = None
-    if runs_cfg.get("sample_start") or runs_cfg.get("sample_end"):
+    if _as_bool(runs_cfg.get("use_sample_range")):
         sample_start, sample_end = _resolve_sample_range(meta.get("snapshot_id", ""), runs_cfg)
 
     max_trials = int(runs_cfg.get("max_trials", 0)) or None

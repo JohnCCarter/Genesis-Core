@@ -11,6 +11,35 @@ ROOT = Path(__file__).resolve().parents[1]
 RESULTS_DIR = ROOT / "results" / "hparam_search"
 
 
+def _coerce_trial_fields(trial: dict[str, Any]) -> dict[str, Any]:
+    for key, caster in (("duration_seconds", float), ("attempts", int)):
+        value = trial.get(key)
+        if value is None:
+            continue
+        try:
+            trial[key] = caster(value)
+        except (TypeError, ValueError):
+            trial.pop(key, None)
+    return trial
+
+
+def _format_trial_summary(idx: int, entry: dict[str, Any]) -> str:
+    metrics = entry.get("metrics") or {}
+    parts = [
+        f"{idx}. {entry.get('trial_id')}",
+        f"score={entry.get('score')}",
+        f"sharpe={metrics.get('sharpe_ratio')}",
+        f"trades={metrics.get('num_trades')}",
+    ]
+    duration = entry.get("duration_seconds")
+    attempts = entry.get("attempts")
+    if duration is not None:
+        parts.append(f"duration={duration:.1f}s")
+    if attempts is not None:
+        parts.append(f"attempts={attempts}")
+    return "  " + " ".join(parts)
+
+
 def summarize_run(run_id: str) -> dict[str, Any]:
     run_dir = (RESULTS_DIR / run_id).resolve()
     if not run_dir.exists():
@@ -27,25 +56,13 @@ def summarize_run(run_id: str) -> dict[str, Any]:
     trials: list[dict[str, Any]] = []
     for path in sorted(run_dir.glob("trial_*.json")):
         try:
-            trial = json.loads(path.read_text(encoding="utf-8"))
+            raw = json.loads(path.read_text(encoding="utf-8"))
         except json.JSONDecodeError:
             continue
-        if isinstance(trial, dict):
-            trial = dict(trial)
+        if isinstance(raw, dict):
+            trial = dict(raw)
             trial["trial_file"] = path.name
-            duration = trial.get("duration_seconds")
-            attempts = trial.get("attempts")
-            if duration is not None:
-                try:
-                    trial["duration_seconds"] = float(duration)
-                except (TypeError, ValueError):
-                    trial.pop("duration_seconds", None)
-            if attempts is not None:
-                try:
-                    trial["attempts"] = int(attempts)
-                except (TypeError, ValueError):
-                    trial.pop("attempts", None)
-            trials.append(trial)
+            trials.append(_coerce_trial_fields(trial))
 
     total = len(trials)
     skipped = sum(1 for t in trials if t.get("skipped"))
@@ -144,20 +161,7 @@ def _print_summary(data: dict[str, Any], *, top_n: int) -> None:
     if top_n > 1:
         print(f"Top {min(top_n, len(valid_trials))} trials (score desc):")
         for idx, entry in enumerate(valid_trials[:top_n], start=1):
-            metrics = entry.get("metrics") or {}
-            sharpe = metrics.get("sharpe_ratio")
-            trades = metrics.get("num_trades")
-            duration = entry.get("duration_seconds")
-            attempts = entry.get("attempts")
-            line = (
-                f"  {idx}. {entry.get('trial_id')} | score={entry.get('score')} "
-                f"sharpe={sharpe} trades={trades}"
-            )
-            if duration is not None:
-                line += f" duration={duration:.1f}s"
-            if attempts is not None:
-                line += f" attempts={attempts}"
-            print(line)
+            print(_format_trial_summary(idx, entry))
         if top_n < len(valid_trials):
             print(f"  ... {len(valid_trials) - top_n} fler")
 

@@ -17,8 +17,29 @@ from core.strategy.champion_loader import ChampionLoader
 from core.strategy.evaluate import evaluate_pipeline
 
 
+class CandleCache:
+    def __init__(self, max_size: int = 4):
+        self._max_size = max_size
+        self._store: dict[tuple[str, str], pd.DataFrame] = {}
+
+    def get(self, key: tuple[str, str]) -> pd.DataFrame | None:
+        return self._store.get(key)
+
+    def put(self, key: tuple[str, str], value: pd.DataFrame) -> None:
+        if key in self._store:
+            self._store[key] = value
+            return
+        if len(self._store) >= self._max_size:
+            oldest_key = next(iter(self._store))
+            del self._store[oldest_key]
+        self._store[key] = value
+
+    def clear(self) -> None:
+        self._store.clear()
+
+
 class BacktestEngine:
-    _base_candles_cache: dict[tuple[str, str], pd.DataFrame] = {}
+    _candles_cache = CandleCache(max_size=4)
 
     """
     Core backtest engine.
@@ -115,10 +136,10 @@ class BacktestEngine:
             return False
 
         cache_key = (self.symbol, self.timeframe)
-        base_df = self._base_candles_cache.get(cache_key)
+        base_df = self._candles_cache.get(cache_key)
         if base_df is None:
             base_df = pd.read_parquet(data_file)
-            self._base_candles_cache[cache_key] = base_df
+            self._candles_cache.put(cache_key, base_df)
             print(f"[OK] Loaded {len(base_df):,} candles from {data_file.name}")
         else:
             print(f"[CACHE] Reusing {len(base_df):,} candles for {self.symbol} {self.timeframe}")

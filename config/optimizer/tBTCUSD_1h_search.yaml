@@ -5,10 +5,13 @@ meta:
   baseline_config: config/timeframe_configs.py:get_1h_config
   warmup_bars: 150
   runs:
-    max_trials: 2
+    max_trials: 12
     strategy: grid
-    max_concurrent: 1
+    max_concurrent: 3
     resume: true
+    use_sample_range: true
+    sample_start: 2025-01-01
+    sample_end: 2025-06-30
 parameters:
   thresholds:
     entry_conf_overall:

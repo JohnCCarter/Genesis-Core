@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import json
 import shutil
+import subprocess  # nosec B404
 import time
 from collections.abc import Iterable
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
@@ -29,6 +30,8 @@ class TrialConfig:
     timeframe: str
     warmup_bars: int
     parameters: dict[str, Any]
+    start_date: str | None = None
+    end_date: str | None = None
 
 
 def load_search_config(path: Path) -> dict[str, Any]:
@@ -201,7 +204,6 @@ def run_trial(
             "results_path": existing.get("results_path"),
         }
 
-    start_date, end_date = _derive_dates(trial.snapshot_id)
     output_dir = run_dir
     output_dir.mkdir(parents=True, exist_ok=True)
     trial_id = f"trial_{index:03d}"
@@ -212,6 +214,8 @@ def run_trial(
         config_file = output_dir / f"{trial_id}_config.json"
         config_payload = {"cfg": trial.parameters}
         config_file.write_text(json.dumps(config_payload, indent=2), encoding="utf-8")
+    start_date = trial.start_date or _derive_dates(trial.snapshot_id)[0]
+    end_date = trial.end_date or _derive_dates(trial.snapshot_id)[1]
     cmd = [
         "python",
         "-m",
@@ -232,9 +236,14 @@ def run_trial(
 
     attempts_remaining = max(1, max_attempts)
     final_payload: dict[str, Any] | None = None
+    trial_started = time.perf_counter()
+    attempt_durations: list[float] = []
     while attempts_remaining > 0:
+        attempt_started = time.perf_counter()
         attempts_remaining -= 1
         returncode, log = _exec_backtest(cmd, cwd=PROJECT_ROOT)
+        attempt_duration = time.perf_counter() - attempt_started
+        attempt_durations.append(attempt_duration)
         if returncode == 0:
             results_path = sorted(
                 (PROJECT_ROOT / "results" / "backtests").glob(
@@ -248,11 +257,13 @@ def run_trial(
                 trial.parameters,
                 constraints_cfg=constraints_cfg,
             )
+            score_value = score.get("score")
             score_serializable = {
-                "score": score.get("score"),
+                "score": score_value,
                 "metrics": score.get("metrics"),
                 "hard_failures": list(score.get("hard_failures") or []),
             }
+            total_duration = time.perf_counter() - trial_started
             final_payload = {
                 "trial_id": trial_id,
                 "parameters": trial.parameters,
@@ -264,9 +275,14 @@ def run_trial(
                 },
                 "log": log_file.name,
                 "attempts": max_attempts - attempts_remaining,
+                "duration_seconds": total_duration,
+                "attempt_durations": attempt_durations,
             }
             if config_file is not None:
                 final_payload["config_path"] = config_file.name
+            print(
+                f"[Runner] Trial {trial_id} klar på {total_duration:.1f}s" f" (score={score_value})"
+            )
             break
         final_payload = {
             "trial_id": trial_id,
@@ -274,6 +290,8 @@ def run_trial(
             "error": "backtest_failed",
             "log_path": log_file.name,
             "attempts": max_attempts - attempts_remaining,
+            "duration_seconds": time.perf_counter() - trial_started,
+            "attempt_durations": attempt_durations,
         }
         if config_file is not None:
             final_payload["config_path"] = config_file.name
@@ -341,6 +359,8 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
             timeframe=timeframe,
             warmup_bars=int(meta.get("warmup_bars", 150)),
             parameters=params,
+            start_date=runs_cfg.get("sample_start"),
+            end_date=runs_cfg.get("sample_end"),
         )
         return run_trial(
             trial_cfg,

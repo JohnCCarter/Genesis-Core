@@ -10,6 +10,7 @@ src/core/backtest/htf_exit_engine.py
 src/core/backtest/metrics.py
 src/core/backtest/position_tracker.py
 src/core/backtest/trade_logger.py
+src/core/backtest/walk_forward.py
 src/core/config/__init__.py
 src/core/config/authority.py
 src/core/config/schema.py
@@ -47,10 +48,16 @@ src/core/ml/labeling_fast.py
 src/core/ml/overfit_detection.py
 src/core/ml/visualization.py
 src/core/observability/metrics.py
+src/core/optimizer/__init__.py
+src/core/optimizer/champion.py
+src/core/optimizer/constraints.py
+src/core/optimizer/runner.py
+src/core/optimizer/scoring.py
 src/core/risk/__init__.py
 src/core/risk/guards.py
 src/core/risk/pnl.py
 src/core/risk/sizing.py
+src/core/strategy/champion_loader.py
 src/core/strategy/confidence.py
 src/core/strategy/decision.py
 src/core/strategy/e2e.py
@@ -87,6 +94,7 @@ tests/test_backtest_position_tracker.py
 tests/test_backtest_trade_logger.py
 tests/test_bollinger.py
 tests/test_calibration.py
+tests/test_champion_loader.py
 tests/test_confidence.py
 tests/test_config_api_e2e.py
 tests/test_config_endpoints.py
@@ -95,6 +103,7 @@ tests/test_decision.py
 tests/test_decision_edge.py
 tests/test_decision_matrix.py
 tests/test_e2e_pipeline.py
+tests/test_evaluate_pipeline.py
 tests/test_evaluation.py
 tests/test_exchange_client.py
 tests/test_exit_fibonacci.py
@@ -109,6 +118,9 @@ tests/test_logging_redaction.py
 tests/test_model_registry_min.py
 tests/test_nonce.py
 tests/test_observability.py
+tests/test_optimizer_champion.py
+tests/test_optimizer_cli.py
+tests/test_optimizer_runner.py
 tests/test_prob_model_integration.py
 tests/test_prob_model_min.py
 tests/test_read_helpers.py
@@ -124,6 +136,7 @@ tests/test_ui_endpoints.py
 tests/test_validation_min.py
 tests/test_visualization.py
 tests/test_volume.py
+tests/test_walk_forward.py
 tests/test_ws_candles_min.py
 tests/test_ws_public_min.py
 tests/test_ws_public_symbols.py

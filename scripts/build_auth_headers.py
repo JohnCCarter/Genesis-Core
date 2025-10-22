@@ -58,12 +58,13 @@ def main(argv: list[str] | None = None) -> int:
 
     headers = build_headers(args.endpoint, body)
 
-    out = {
-        key: ("***" if key in {"bfx-apikey", "bfx-signature"} else value)
-        for key, value in headers.items()
-    }
     if args.mask:
-        out["warning"] = "values masked by default"
+        out = {
+            key: ("***" if key in {"bfx-apikey", "bfx-signature"} else value)
+            for key, value in headers.items()
+        }
+    else:
+        out = headers
 
     print(json.dumps(out, indent=2 if args.pretty else None))
     return 0

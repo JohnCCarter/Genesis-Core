@@ -33,6 +33,18 @@ def summarize_run(run_id: str) -> dict[str, Any]:
         if isinstance(trial, dict):
             trial = dict(trial)
             trial["trial_file"] = path.name
+            duration = trial.get("duration_seconds")
+            attempts = trial.get("attempts")
+            if duration is not None:
+                try:
+                    trial["duration_seconds"] = float(duration)
+                except (TypeError, ValueError):
+                    trial.pop("duration_seconds", None)
+            if attempts is not None:
+                try:
+                    trial["attempts"] = int(attempts)
+                except (TypeError, ValueError):
+                    trial.pop("attempts", None)
             trials.append(trial)
 
     total = len(trials)
@@ -61,6 +73,8 @@ def summarize_run(run_id: str) -> dict[str, Any]:
                 "score": score_value,
                 "metrics": metrics,
                 "parameters": trial.get("parameters") or {},
+                "duration_seconds": trial.get("duration_seconds"),
+                "attempts": trial.get("attempts"),
                 "raw": trial,
             }
         )
@@ -88,6 +102,12 @@ def _print_summary(data: dict[str, Any], *, top_n: int) -> None:
     meta = data.get("meta") or {}
     counts = data.get("counts") or {}
     valid_trials = data.get("valid_trials") or []
+    all_trials = data.get("trials") or []
+    total_duration = sum(float(trial.get("duration_seconds") or 0.0) for trial in all_trials)
+    completed_trials = [
+        trial for trial in all_trials if not trial.get("skipped") and trial.get("duration_seconds")
+    ]
+    avg_duration = total_duration / len(completed_trials) if completed_trials else 0.0
 
     print("== Optimizer Summary ==")
     print(f"Run dir: {data.get('run_dir')}")
@@ -102,6 +122,8 @@ def _print_summary(data: dict[str, Any], *, top_n: int) -> None:
         f"skipped={counts.get('skipped', 0)} failed={counts.get('failed', 0)} "
         f"valid={counts.get('valid', 0)}"
     )
+    if total_duration:
+        print(f"  total_duration={total_duration:.1f}s avg_duration={avg_duration:.1f}s")
 
     if not valid_trials:
         print("Ingen giltig trial utan constraint-fel hittades.")
@@ -125,10 +147,17 @@ def _print_summary(data: dict[str, Any], *, top_n: int) -> None:
             metrics = entry.get("metrics") or {}
             sharpe = metrics.get("sharpe_ratio")
             trades = metrics.get("num_trades")
-            print(
+            duration = entry.get("duration_seconds")
+            attempts = entry.get("attempts")
+            line = (
                 f"  {idx}. {entry.get('trial_id')} | score={entry.get('score')} "
                 f"sharpe={sharpe} trades={trades}"
             )
+            if duration is not None:
+                line += f" duration={duration:.1f}s"
+            if attempts is not None:
+                line += f" attempts={attempts}"
+            print(line)
         if top_n < len(valid_trials):
             print(f"  ... {len(valid_trials) - top_n} fler")
 

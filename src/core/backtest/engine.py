@@ -18,6 +18,8 @@ from core.strategy.evaluate import evaluate_pipeline
 
 
 class BacktestEngine:
+    _base_candles_cache: dict[tuple[str, str], pd.DataFrame] = {}
+
     """
     Core backtest engine.
 
@@ -112,9 +114,17 @@ class BacktestEngine:
             print(f"  Tried legacy: {data_file_legacy}")
             return False
 
-        # Load data
-        self.candles_df = pd.read_parquet(data_file)
-        print(f"[OK] Loaded {len(self.candles_df):,} candles from {data_file.name}")
+        cache_key = (self.symbol, self.timeframe)
+        base_df = self._base_candles_cache.get(cache_key)
+        if base_df is None:
+            base_df = pd.read_parquet(data_file)
+            self._base_candles_cache[cache_key] = base_df
+            print(f"[OK] Loaded {len(base_df):,} candles from {data_file.name}")
+        else:
+            print(f"[CACHE] Reusing {len(base_df):,} candles for {self.symbol} {self.timeframe}")
+
+        # Always work on a copy to avoid mutating cached DataFrame
+        self.candles_df = base_df.copy()
 
         # Filter by date range if specified
         if self.start_date:

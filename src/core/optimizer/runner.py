@@ -45,6 +45,44 @@ def _trial_key(params: dict[str, Any]) -> str:
     return json.dumps(params, sort_keys=True, separators=(",", ":"))
 
 
+def _as_bool(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    if value is None:
+        return False
+    if isinstance(value, (int, float)):
+        return value != 0
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "y", "on"}
+    return bool(value)
+
+
+def _normalize_date(value: Any, field_name: str) -> str:
+    if not isinstance(value, str):
+        raise TypeError(f"{field_name} måste vara sträng, fick {type(value).__name__}")
+    candidate = value.strip()
+    if not candidate:
+        raise ValueError(f"{field_name} får inte vara tom")
+    try:
+        parsed = datetime.fromisoformat(candidate)
+    except ValueError as exc:
+        raise ValueError(f"Ogiltigt datumformat för {field_name}: {value}") from exc
+    return parsed.date().isoformat()
+
+
+def _resolve_sample_range(snapshot_id: str, runs_cfg: dict[str, Any]) -> tuple[str, str]:
+    _as_bool(runs_cfg.get("use_sample_range"))  # preserved behaviour, bool conversion
+    start_raw = runs_cfg.get("sample_start")
+    end_raw = runs_cfg.get("sample_end")
+    if start_raw is None or end_raw is None:
+        return _derive_dates(snapshot_id)
+    start = _normalize_date(start_raw, "sample_start")
+    end = _normalize_date(end_raw, "sample_end")
+    if start > end:
+        raise ValueError("sample_start måste vara mindre än eller lika med sample_end")
+    return start, end
+
+
 def _load_existing_trials(run_dir: Path) -> dict[str, dict[str, Any]]:
     existing: dict[str, dict[str, Any]] = {}
     for trial_path in sorted(run_dir.glob("trial_*.json")):
@@ -214,8 +252,12 @@ def run_trial(
         config_file = output_dir / f"{trial_id}_config.json"
         config_payload = {"cfg": trial.parameters}
         config_file.write_text(json.dumps(config_payload, indent=2), encoding="utf-8")
-    start_date = trial.start_date or _derive_dates(trial.snapshot_id)[0]
-    end_date = trial.end_date or _derive_dates(trial.snapshot_id)[1]
+    if trial.start_date and trial.end_date:
+        start_date, end_date = trial.start_date, trial.end_date
+        if start_date > end_date:
+            raise ValueError("start_date måste vara mindre än eller lika med end_date")
+    else:
+        start_date, end_date = _derive_dates(trial.snapshot_id)
     cmd = [
         "python",
         "-m",
@@ -335,6 +377,20 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
     meta = config.get("meta") or {}
     parameters = config.get("parameters") or {}
     runs_cfg = meta.get("runs") or {}
+    sample_start: str | None = None
+    sample_end: str | None = None
+    if runs_cfg:
+        if runs_cfg.get("sample_start") or runs_cfg.get("sample_end"):
+            start_candidate = runs_cfg.get("sample_start")
+            end_candidate = runs_cfg.get("sample_end")
+            if start_candidate is None or end_candidate is None:
+                raise ValueError(
+                    "Både sample_start och sample_end måste anges om någon av dem är satt"
+                )
+            sample_start = _normalize_date(start_candidate, "sample_start")
+            sample_end = _normalize_date(end_candidate, "sample_end")
+            if sample_start > sample_end:
+                raise ValueError("sample_start måste vara mindre än eller lika med sample_end")
     max_trials = int(runs_cfg.get("max_trials", 0)) or None
     allow_resume = bool(runs_cfg.get("resume", True))
     concurrency = max(1, int(runs_cfg.get("max_concurrent", 1)))
@@ -359,8 +415,8 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
             timeframe=timeframe,
             warmup_bars=int(meta.get("warmup_bars", 150)),
             parameters=params,
-            start_date=runs_cfg.get("sample_start"),
-            end_date=runs_cfg.get("sample_end"),
+            start_date=sample_start,
+            end_date=sample_end,
         )
         return run_trial(
             trial_cfg,

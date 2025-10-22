@@ -57,9 +57,9 @@ async def burn_in(
             try:
                 await get_wallets()
                 await get_positions()
-            except Exception:
-                # metrics i underliggande lager fångar counters
-                pass
+            except Exception as e:
+                # metrics in lower layers capture counters, but log for visibility
+                print(f"REST call exception: {e}")
             await asyncio.sleep(30.0)
 
     ws_task = asyncio.create_task(ws_loop())
@@ -108,8 +108,8 @@ async def burn_in(
                 report["rest_auth"]["request"],
                 report["rest_auth"]["success"],
             )
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"Logging error: {e}")
     return report
 
 
@@ -118,8 +118,8 @@ async def main(argv: list[str]) -> int:
     if len(argv) >= 2:
         try:
             duration = int(argv[1])
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"Invalid duration argument: {e}")
     # CLI: valfri kommaseparerad lista på symboler som tredje argument
     sym_list: list[str] | None = None
     if len(argv) >= 3 and isinstance(argv[2], str) and argv[2].strip():
@@ -143,8 +143,9 @@ async def main(argv: list[str]) -> int:
             _P(out_path).write_text(text, encoding="utf-8")
             print(text)
             return 0
-        except Exception:
+        except Exception as e:
             # Faller tillbaka till stdout
+            print(f"Failed to write output file: {e}")
             pass
     print(text)
     return 0

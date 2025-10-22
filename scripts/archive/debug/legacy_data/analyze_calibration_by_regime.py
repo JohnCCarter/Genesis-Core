@@ -167,8 +167,8 @@ def main():
         if len(parts) >= 2:
             symbol = parts[0]
             timeframe = parts[1]
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"Failed to parse symbol/timeframe from filename: {e}")
 
     print("=" * 80)
     print("ML CALIBRATION ANALYSIS BY REGIME")

@@ -10,7 +10,6 @@ import sys
 from core.config.settings import get_settings
 from core.utils.nonce_manager import get_nonce
 
-
 def build_headers(endpoint: str, body: dict | None) -> dict[str, str]:
     s = get_settings()
     api_key = (s.BITFINEX_API_KEY or "").strip()
@@ -28,7 +27,6 @@ def build_headers(endpoint: str, body: dict | None) -> dict[str, str]:
         "Content-Type": "application/json",
     }
 
-
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Build Bitfinex v2 auth headers")
     parser.add_argument("endpoint", help="Endpoint utan /v2/, t.ex. auth/r/alerts")
@@ -40,7 +38,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--mask",
         action="store_true",
-        help="Maskera api-key/signature i utskrift",
+        help="(Föråldrad) Känsliga värden maskeras alltid; flaggan påverkar inte maskering.",
     )
     parser.add_argument(
         "--pretty",
@@ -58,16 +56,14 @@ def main(argv: list[str] | None = None) -> int:
 
     headers = build_headers(args.endpoint, body)
 
-    out = dict(headers)
-    if args.mask:
-        if out.get("bfx-apikey"):
-            out["bfx-apikey"] = "***"
-        if out.get("bfx-signature"):
-            out["bfx-signature"] = out["bfx-signature"][:6] + "..."
+    # Always mask sensitive fields to avoid clear-text logging (resolves CodeQL alert)
+    out = {
+        key: ("***" if key in {"bfx-apikey", "bfx-signature"} else value)
+        for key, value in headers.items()
+    }
 
     print(json.dumps(out, indent=2 if args.pretty else None))
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())

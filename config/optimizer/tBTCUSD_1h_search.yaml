@@ -6,12 +6,25 @@ meta:
   warmup_bars: 150
   runs:
     max_trials: 12
-    strategy: grid
+    strategy: optuna
     max_concurrent: 3
     resume: true
     use_sample_range: true
     sample_start: 2025-01-01
     sample_end: 2025-06-30
+    optuna:
+      storage: sqlite:///optimizer_phase7b.db
+      study_name: tBTCUSD_1h_phase7b
+      sampler:
+        name: tpe
+        kwargs:
+          multivariate: true
+      pruner:
+        name: median
+        kwargs:
+          n_startup_trials: 10
+          n_warmup_steps: 50
+      timeout_seconds: 3600
 parameters:
   thresholds:
     entry_conf_overall:
@@ -94,7 +107,13 @@ parameters:
       type: grid
       values:
         - [[0.50, 0.03], [0.60, 0.05], [0.70, 0.08], [0.80, 0.11], [0.90, 0.14]]
-        - [[0.48, 0.025], [0.58, 0.045], [0.68, 0.07], [0.78, 0.095], [0.88, 0.12]]
+        - [
+            [0.48, 0.025],
+            [0.58, 0.045],
+            [0.68, 0.07],
+            [0.78, 0.095],
+            [0.88, 0.12],
+          ]
     exit:
       exit_conf_threshold:
         type: grid

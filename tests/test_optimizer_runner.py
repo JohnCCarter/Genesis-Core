@@ -3,11 +3,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Any
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 import yaml
 
+import core.optimizer.runner as runner
 from core.optimizer.runner import run_optimizer
 
 
@@ -112,3 +113,78 @@ def test_run_optimizer_updates_champion(tmp_path: Path, search_config_tmp: Path)
         assert call_kwargs["run_id"] == "run_test"
         assert call_kwargs["candidate"].score == pytest.approx(120.0)
         assert call_kwargs["snapshot_id"] == run_meta_payload["snapshot_id"]
+
+
+@pytest.mark.skipif(not runner.OPTUNA_AVAILABLE, reason="Optuna ej installerat")
+def test_run_optimizer_optuna_strategy(tmp_path: Path) -> None:
+    config = {
+        "meta": {
+            "symbol": "tTEST",
+            "timeframe": "1h",
+            "snapshot_id": "tTEST_1h_20240101_20240201_v1",
+            "runs": {
+                "strategy": "optuna",
+                "max_trials": 2,
+                "max_concurrent": 1,
+                "resume": False,
+                "optuna": {"storage": None, "study_name": "test-study"},
+            },
+        },
+        "parameters": {
+            "thresholds": {
+                "entry_conf_overall": {
+                    "type": "grid",
+                    "values": [0.4, 0.5],
+                }
+            }
+        },
+    }
+    config_path = tmp_path / "optuna.yaml"
+    config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
+
+    run_meta_payload = {
+        "git_commit": "abc123",
+        "snapshot_id": "tTEST_1h_20240101_20240201_v1",
+    }
+
+    def fake_make_trial(idx: int, params: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "trial_id": f"trial_{idx:03d}",
+            "parameters": params,
+            "results_path": "dummy.json",
+            "score": {"score": 1.0, "metrics": {}, "hard_failures": []},
+            "constraints": {"ok": True, "reasons": []},
+        }
+
+    with (
+        patch("core.optimizer.runner.RESULTS_DIR", tmp_path / "results"),
+        patch("core.optimizer.runner._ensure_run_metadata") as ensure_meta,
+        patch("core.optimizer.runner._create_optuna_study") as create_study,
+    ):
+        ensure_meta.side_effect = lambda run_dir, *_: (
+            run_dir.mkdir(parents=True, exist_ok=True),
+            (run_dir / "run_meta.json").write_text(json.dumps(run_meta_payload), encoding="utf-8"),
+        )
+
+        study_mock = MagicMock()
+        trial_mock = MagicMock()
+        trial_mock.number = 0
+        trial_mock.user_attrs = {
+            "result_payload": fake_make_trial(1, {"thresholds": {"entry_conf_overall": 0.4}})
+        }
+        study_mock.best_trial = trial_mock
+        study_mock.study_name = "test-study"
+        study_mock.trials = [trial_mock]
+        study_mock.best_value = 1.0
+
+        def optuna_objective_side_effect(objective, **kwargs):
+            objective(trial_mock)
+
+        study_mock.optimize.side_effect = optuna_objective_side_effect
+        create_study.return_value = study_mock
+
+        results = runner.run_optimizer(config_path, run_id="run_optuna")
+
+    assert len(results) == 1
+    assert results[0]["constraints"]["ok"] is True
+    create_study.assert_called_once()

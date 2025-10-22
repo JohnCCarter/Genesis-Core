@@ -3,6 +3,7 @@
 Denna fil beskriver hur AI‑agenter ska arbeta lokalt med projektet.
 
 **Fokus 2025-10-21 – Phase-7a Engångsoptimering (✅ slutförd)**
+
 - ✅ Snapshot låst: `tBTCUSD_1h_2024-10-22_2025-10-01_v1`
 - ✅ Baseline backtest loggad (`results/backtests/tBTCUSD_1h_20251020_155245.json`)
 - ✅ Grid-sökrymd + constraints + scoring (se `config/optimizer/*.yaml`, `src/core/optimizer/`)
@@ -19,14 +20,50 @@ Denna fil beskriver hur AI‑agenter ska arbeta lokalt med projektet.
     - Nästa steg: finjustera zontrösklar (höj mid/high) och analysera P3–P4-förluster.
 
 **TODO – Nästa agent:**
+
 - Walk-forward validering (steg 6 uppföljning) – planera om fortsatt behövs
 - Live/CI-stöd: auto-reload i server (schemalagd refresh) om efterfrågat
 - HTF‑repro 6h (dokument) – se tidigare lista om 6h fortfarande behövs
 - CLI‑overrides, kalibrering & modeller, tester, CI, data-pipeline, dokumentation (tidigare backlog)
+- Optuna-integration (Phase-7b): se konfig-exempel nedan
+
+### Phase-7b – Optimeringsförbättringar
+
+- ✅ Sample-range-stöd i optimizer-runner (`runs.use_sample_range`, `sample_start`, `sample_end`)
+- ✅ Tidsprofilering: varje trial loggar `duration_seconds` & `attempt_durations`
+- ✅ CLI-sammanfattning visar total/medel-durationer + per-trial (duration/attempts)
+- ✅ `BacktestEngine` cache: återanvänder candles per symbol/timeframe → snabbare backtests
+- ✅ Optuna-stöd (ny strategi `runs.strategy: optuna`)
+  - Konfiguration i YAML:
+    ```yaml
+    runs:
+      strategy: optuna
+      max_trials: 100
+      max_concurrent: 4
+      resume: true
+      optuna:
+        storage: sqlite:///optimizer_phase7b.db
+        study_name: tBTCUSD_1h_phase7b
+        sampler:
+          name: tpe
+          kwargs:
+            multivariate: true
+        pruner:
+          name: median
+          kwargs:
+            n_startup_trials: 10
+            n_warmup_steps: 50
+        timeout_seconds: 3600
+    ```
+  - Installera beroende: `pip install optuna`
+  - Miljövariabler (valfria): `OPTUNA_STORAGE`, `OPTUNA_STUDY_NAME`
+- ✅ Tester uppdaterade (`tests/test_optimizer_runner.py` inkluderar optuna-path)
+- ✅ Dokumentation och TODO-lister uppdaterade (denna fil + `docs/TODO.md`)
 
 ## 🔒 Deployment Model
 
 **Single-User Bot:**
+
 - Genesis-Core är designad för en enskild utvecklare/trader
 - Ingen multi-user support eller access control
 - Full access till alla funktioner och konfigurationer
@@ -34,6 +71,7 @@ Denna fil beskriver hur AI‑agenter ska arbeta lokalt med projektet.
 - Production deployment: Personal VPS/cloud instance
 
 #### Regler
+
 - Följ Separation of concerns: `core/strategy/*` är rena, deterministiska funktioner.
 - Inga hemligheter i loggar; använd `core.utils.logging_redaction` vid behov.
 - Pausa vid osäkerhet, verifiera med tester innan du fortsätter.
@@ -41,6 +79,7 @@ Denna fil beskriver hur AI‑agenter ska arbeta lokalt med projektet.
 - Använd `metrics` endast i orkestreringslager (`core/strategy/evaluate.py`), inte i pure‑moduler.
 
 #### Setup (Windows PowerShell)
+
 ```powershell
 python -m venv .venv
 . .\.venv\Scripts\Activate.ps1
@@ -59,7 +98,7 @@ python scripts/fetch_historical.py --symbol tBTCUSD --timeframe 1h --months 18
 
 # 2. Feature Engineering (VECTORIZED - 27,734× faster!)
 python scripts/precompute_features_fast.py --symbol tBTCUSD --timeframe 1h
-# Features: rsi_inv_lag1, volatility_shift_ma3, bb_position_inv_ma3, 
+# Features: rsi_inv_lag1, volatility_shift_ma3, bb_position_inv_ma3,
 #           rsi_vol_interaction, vol_regime
 
 # 3. Model Training (with holdout + provenance)
@@ -95,6 +134,7 @@ python scripts/validate_vectorized_features.py \
 ```
 
 **KEY FINDINGS (Phase-6):**
+
 ```
 Best Regime: Bear Market
   IC:          +0.0784 (EXCELLENT)
@@ -103,12 +143,13 @@ Best Regime: Bear Market
   Samples:     5,916 (45.6% of data)
 
 Alternative: HighVol
-  IC:          +0.0326 (GOOD)  
+  IC:          +0.0326 (GOOD)
   Spread:      +0.158% per 10 bars
   Samples:     6,452 (49.8% of data)
 ```
 
 **DEPRECATED (use Phase-6 workflow above):**
+
 ```
 # Phase 3.5 scripts (triple-barrier labeling)
 # python scripts/train_model.py --use-adaptive-triple-barrier
@@ -116,22 +157,26 @@ Alternative: HighVol
 ```
 
 #### CI lokalt
+
 ```powershell
 pwsh -File scripts/ci.ps1
 ```
 
 #### Kör FastAPI lokalt
+
 ```powershell
 uvicorn core.server:app --reload --app-dir src
 ```
 
 #### URL:er
+
 ```
 UI: http://127.0.0.1:8000/ui
 Health: http://127.0.0.1:8000/health
 ```
 
 #### Endpoints (REST)
+
 - `/ui`, `/strategy/evaluate`, `/public/candles`, `/paper/submit`, `/paper/estimate`, `/paper/whitelist`
 - `/auth/check`, `/debug/auth`, `/models/reload` (cache clear efter ML training)
 - Konto (proxy mot Bitfinex v2 REST‑auth):
@@ -140,17 +185,21 @@ Health: http://127.0.0.1:8000/health
   - `GET /config/runtime`, `POST /config/runtime/validate`, `POST /config/runtime/propose`
 
 #### Phase Status
+
 - **Phase 1 & 2:** ✅ Complete (Core trading system, UI, SSOT, account endpoints)
 - **Phase 3:** ✅ Complete (ML Pipeline: Data → Features → Training → Evaluation → Calibration → Champion Selection)
 - **Quality Status:** ✅ All tests passing (140+ tests), CI clean, production ready
 
 #### Strategy‑pipeline lokalt
+
 Se exempel i `README.md` (GitHub‑läsare) eller kör tester:
+
 ```powershell
 python -m pytest -q
 ```
 
 #### Konfiguration (SSOT)
+
 - Runtime: `config/runtime.json` är SSOT; seedas från `config/runtime.seed.json` om saknas. Filen är git‑ignorerad.
 - API:
   - `GET /config/runtime` → `{ cfg, version, hash }`
@@ -162,31 +211,36 @@ python -m pytest -q
 - Audit: ändringar loggas i `logs/config_audit.jsonl` (rotation ~5 MB) med `actor`, `paths`, `hash_before/after`.
 
 #### Modellstruktur (per symbol)
+
 - En fil per symbol, alla timeframes i samma JSON:
   - Ex: `config/models/tBTCUSD.json` innehåller nycklarna `1m`, `5m`, `15m`, `1h`, `4h`, `1D` med `{schema, buy, sell, calib}`.
   - `config/models/registry.json` mappar alla timeframes till samma fil (champion).
   - Registret och `ModelRegistry` stödjer även gamla “platta” filer (fallback): om rot har `{schema,buy,sell}` används den direkt; annars plockas vald timeframe, med fallback till `1m`.
 - Lägga till symbol snabbt:
-  1) Kopiera en befintlig JSON (t.ex. `tETHUSD.json`) till `tSYMBOLUSD.json`.
-  2) Justera vikter under respektive timeframe vid behov.
-  3) Lägg till `tSYMBOLUSD:{tf}` → filen i `registry.json` (alla timeframes pekar på samma fil).
+  1. Kopiera en befintlig JSON (t.ex. `tETHUSD.json`) till `tSYMBOLUSD.json`.
+  2. Justera vikter under respektive timeframe vid behov.
+  3. Lägg till `tSYMBOLUSD:{tf}` → filen i `registry.json` (alla timeframes pekar på samma fil).
 
 #### UI‑säkerhet & dataflöde
+
 - “Hämta publika candles” hämtar OHLCV och UI injicerar `symbol`/`timeframe` i Candles JSON.
 - Validering: om `policy.symbol` ≠ `candles.symbol` visas röd varning under knappraden och “Kör pipeline” inaktiveras tills candles matchar.
 - “Auto‑trösklar per symbol”: skriver minsta orderstorlek + 5% i `risk.risk_map` för vald symbol.
 - “Låg tröskel (test)”: sätter `thresholds.entry_conf_overall = 0.20` (för snabb validering i test).
 
 #### Orderstorlek & säkerhet
+
 - Servern tvingar minsta orderstorlek per TEST‑symbol med 5% marginal (auto‑clamp).
 - Valfritt wallet‑cap (env `WALLET_CAP_ENABLED=1`): begränsar LONG av USD‑saldo och SHORT av basvaluta i Exchange‑wallet.
 
 #### SymbolMapper
+
 - `SYMBOL_MODE=realistic|synthetic` (CI sätter `synthetic`).
 - Strategi använder mänskliga symboler (`BTCUSD`); I/O mappar till Bitfinex (`tBTCUSD`) eller TEST (`tTESTBTC:TESTUSD`).
 - TEST‑symboler bypassas (skickas oförändrade).
 
 #### Filstruktur (kärna)
+
 - `src/core/backtest` – BacktestEngine, PositionTracker, Metrics, TradeLogger
 - `src/core/config` – config, schema, settings, validator
 - `src/core/indicators` – EMA/RSI/ADX/ATR + vectorized.py (Phase-6)
@@ -209,6 +263,7 @@ python -m pytest -q
 ---
 
 #### Phase Status (2025-10-10)
+
 - ✅ **Phase 1 & 2:** Core system + Backtest framework COMPLETE
 - ✅ **Phase 3.5:** ML Pipeline v10 COMPLETE
 - ✅ **Phase-6:** Feature Engineering & Regime Discovery COMPLETE
@@ -255,6 +310,7 @@ python -m pytest -q
   - **RESULT:** System now trades ONLY when (ML signal) AND (regime edge) both align!
 
 **Kvalitetsstatus:**
+
 - ✅ All tests passing (141 passed, 2025-10-10)
 - ✅ Vectorized features: BIT-EXACT parity (3.44e-10)
 - ✅ CI/Pipeline green (black, ruff, bandit, pytest)
@@ -266,33 +322,37 @@ python -m pytest -q
 #### Latest Updates (2025-10-10) - Exit Logic & Threshold Optimization
 
 **CRITICAL FIXES:**
+
 - 🐛 **Bug #1 FIXED**: BacktestEngine size extraction (`result.get("size")` → `meta["decision"]["size"]`)
   - Impact: ALL backtests were broken (0 trades)
   - Status: ✅ FIXED & VALIDATED
-  
 - 🐛 **Bug #2 FIXED**: EV filter LONG-only bias (blocked ALL short trades)
   - Impact: Strategy could never profit from downtrends
   - Status: ✅ FIXED (now calculates ev_long AND ev_short, uses max)
 
 **EXIT LOGIC IMPLEMENTATION:**
+
 - ✅ **5 Exit Conditions**: SL (2%), TP (5%), TIME (20 bars), CONF_DROP (<0.45), REGIME_CHANGE
 - ✅ **Config Schema**: New `ExitLogic` model in runtime config
 - ✅ **Infrastructure**: `close_position_with_reason()`, exit tracking, reason logging
 - ✅ **Documentation**: 1800+ lines across 6 docs
 
 **THRESHOLD OPTIMIZATION:**
+
 - ✅ **Raised threshold**: 0.55 → 0.65 (entry_conf_overall)
 - ✅ **Result 30m**: -41.88% → -12.21% (70% improvement, 789 → 123 trades)
 - 🎉 **Result 1h**: -8.42% → **+4.89% PROFITABLE!** (508 → 8 trades, 75% win rate)
 - ❌ **Result 6h**: -43.21% unchanged (deeper model issues, not threshold-related)
 
 **KEY DISCOVERIES:**
+
 - 💡 **Overtrading was the problem**: 789 trades @ 0.3% cost = 237% capital lost to fees!
 - 💡 **1h is sweet spot**: High quality + reasonable frequency = profitable edge
 - 💡 **Fixed exits kill winners**: Need fraktal-aware, Fibonacci-driven exits (planned)
 - 💡 **6h has separate issue**: High validation IC (+0.308) but backtest fails → investigate
 
 **NEXT PHASE: Fibonacci Fraktal Exits**
+
 - 📋 **Plan created**: `docs/FIBONACCI_FRAKTAL_EXITS_IMPLEMENTATION_PLAN.md` (1245 lines)
 - 🎯 **Goal**: Replace fixed TP/SL with structure-aware exits respecting Fibonacci geometry
 - 📈 **Expected**: 1h from +4.89% (8 trades) → +15-25% (20-30 trades)
@@ -306,13 +366,13 @@ python -m pytest -q
 {
   "cfg": {
     "thresholds": {
-      "entry_conf_overall": 0.65,  // Raised from 0.55 to reduce overtrading
+      "entry_conf_overall": 0.65, // Raised from 0.55 to reduce overtrading
       "regime_proba": {
-        "balanced": 0.60,
-        "ranging": 0.60,
-        "bear": 0.60,
-        "bull": 0.60,
-        "highvol": 0.60
+        "balanced": 0.6,
+        "ranging": 0.6,
+        "bear": 0.6,
+        "bull": 0.6,
+        "highvol": 0.6
       }
     },
     "exit": {
@@ -326,16 +386,23 @@ python -m pytest -q
       "trailing_stop_pct": 0.015
     },
     "risk": {
-      "risk_map": [[0.55, 0.02], [0.6, 0.03], [0.7, 0.04], [0.8, 0.05], [0.9, 0.06]]
+      "risk_map": [
+        [0.55, 0.02],
+        [0.6, 0.03],
+        [0.7, 0.04],
+        [0.8, 0.05],
+        [0.9, 0.06]
+      ]
     },
-    "ev": {"R_default": 1.8},
-    "gates": {"hysteresis_steps": 2, "cooldown_bars": 0}
+    "ev": { "R_default": 1.8 },
+    "gates": { "hysteresis_steps": 2, "cooldown_bars": 0 }
   },
   "version": 61
 }
 ```
 
 #### Backtest Example
+
 ```powershell
 # 1. Hämta historical data
 python scripts/fetch_historical.py tBTCUSD 1h --months 18
@@ -351,6 +418,7 @@ python scripts/run_backtest.py --symbol tBTCUSD --timeframe 1h --capital 10000
 ```
 
 #### Models Cache Management
+
 ```powershell
 # Efter ML training, rensa model cache:
 curl -X POST http://127.0.0.1:8000/models/reload
@@ -387,6 +455,7 @@ python scripts/precompute_features_fast.py --symbol tBTCUSD --timeframe 1h
 ```
 
 **IMPORTANT NOTES:**
+
 - 🎯 **Use vectorized for testing/research** (27,734× faster)
 - 🎯 **Use features_asof for production** (bit-exact, verified)
 - 🎯 **1h timeframe is PROFITABLE** (+4.89%, 75% win rate @ threshold 0.65)
@@ -394,7 +463,7 @@ python scripts/precompute_features_fast.py --symbol tBTCUSD --timeframe 1h
 - 🎯 **Data:** Curated datasets ligger i `data/curated/v1/candles/`; råfiler i `data/raw/bitfinex/`
 - 🎯 **Current features:** v17 (14 features including Fibonacci combinations)
 - 🎯 **Current model:** results/models/tBTCUSD_1h_v3.json (v16)
-- 🎯 **Key docs:** 
+- 🎯 **Key docs:**
   - `docs/EXIT_LOGIC_IMPLEMENTATION.md` (exit logic guide)
   - `docs/THRESHOLD_OPTIMIZATION_RESULTS.md` (optimization results)
   - `docs/FIBONACCI_FRAKTAL_EXITS_IMPLEMENTATION_PLAN.md` (next phase)

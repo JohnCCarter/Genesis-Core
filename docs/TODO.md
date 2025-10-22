@@ -10,6 +10,7 @@
 ## ✅ PHASE 1-6c: COMPLETE
 
 ### **Phase 1-2: Foundation** ✅
+
 - Strategy pipeline (features, probability, confidence, regime, decision)
 - Observability (metrics, dashboard, audit logging)
 - SSOT Config API
@@ -17,6 +18,7 @@
 - Data Foundation
 
 ### **Phase 3-4: ML Pipeline** ✅
+
 - Feature Engineering (precompute features)
 - Label Generation (triple-barrier)
 - Model Training (Logistic Regression)
@@ -24,6 +26,7 @@
 - Champion Selection
 
 ### **Phase 5: Advanced Validation** ✅
+
 - Centralized feature loading
 - Champion Decision Matrix
 - Visualization (radar charts, summary plots)
@@ -33,17 +36,20 @@
 - Model Cards & Championship Tickets
 
 ### **Phase 6a: BB Bug Fix** ✅ **CRITICAL**
+
 - **Found:** ddof=1 vs ddof=0 (1.21% systematic error in BB)
 - **Fixed:** src/core/indicators/vectorized.py
 - **Validated:** Bit-exact parity (3.44e-10 max diff)
 - **Impact:** ALL previous features & models were INVALID
 
 ### **Phase 6b: Systematic Indicator Validation** ✅
+
 - Created validation framework (validate_all_indicators.py)
 - Tested ALL 4 core indicators
 - Result: Machine precision (no other bugs found)
 
 ### **Phase 6c: Regime-Aware Calibration** ✅
+
 - Analyzed ML calibration per regime
 - Implemented regime-specific Platt scaling
 - Unified regime detection (regime_unified.py)
@@ -52,11 +58,13 @@
 
 **📚 Complete details:** `docs/PHASE-6_LEARNINGS.md`
 di
+
 ---
 
 ## 🎯 CURRENT SYSTEM STATUS
 
 ### **✅ Technical Health: 10/10**
+
 ```
 ✅ 334/334 tests passing
 ✅ All indicators validated (machine precision)
@@ -67,6 +75,7 @@ di
 ```
 
 ### **⚠️ Strategy Clarity: 5/10**
+
 ```
 Model: tBTCUSD_1h_v3.json
 IC: +0.0528 @ 20-bar (EXCELLENT)
@@ -75,6 +84,7 @@ Issue: Bitcoin 1h is MEAN REVERSION market, NOT trend-following!
 ```
 
 **Key Discovery:**
+
 - ❌ ALL trend features have NEGATIVE IC (ema_slope: -0.0318)
 - ✅ Volatility features have POSITIVE IC (atr_pct: +0.058, Bear: +0.25!)
 - 🎯 Model learned: "Buy oversold dips in high volatility"
@@ -86,6 +96,7 @@ Issue: Bitcoin 1h is MEAN REVERSION market, NOT trend-following!
 ### **The Technical System Works Perfectly. The Question Is:**
 
 **Option A: Test Higher Timeframes** ⏰ **RECOMMENDED**
+
 ```
 Hypothesis: Trend-following may work on 4h/1D?
 
@@ -111,6 +122,7 @@ Reward: Clarity on trend vs mean-reversion
 ```
 
 **Option B: Optimize Mean Reversion** 🔄
+
 ```
 Accept: Bitcoin 1h is mean reversion market
 
@@ -126,6 +138,7 @@ Reward: Optimized system for what works
 ```
 
 **Option C: Research New Approach** 🧪
+
 ```
 Explore: Order flow, market microstructure, etc.
 
@@ -146,7 +159,8 @@ Reward: Potentially discover better edge
 ### **Model: tBTCUSD_1h_v3.json**
 
 **IC Metrics:**
-- 5-bar:  IC +0.0388 (p<0.001, ICIR 0.54)
+
+- 5-bar: IC +0.0388 (p<0.001, ICIR 0.54)
 - 10-bar: IC +0.0461 (p<0.001, ICIR 0.50)
 - 20-bar: IC +0.0528 (p<0.001, ICIR 0.51) ✅ EXCELLENT
 
@@ -158,6 +172,7 @@ Reward: Potentially discover better edge
 | Ranging | +0.0456 | 52.4% | a=1.98 (mod) | 0.50 (normal) |
 
 **Features (v15 - Mean Reversion Optimized):**
+
 1. rsi_inv_lag1 (lagged inverted RSI)
 2. volatility_shift_ma3 (smoothed volatility)
 3. bb_position_inv_ma3 (inverted BB position)
@@ -169,16 +184,19 @@ Reward: Potentially discover better edge
 ## 📁 KEY FILES
 
 ### **Active Models:**
+
 - `config/models/tBTCUSD_1h.json` - Current model with regime calibration
 - `results/models/tBTCUSD_1h_v3*.json` - Model + provenance + metrics
 
 ### **Validation Results:**
+
 - `results/validation/CALIBRATION_ANALYSIS.md` - Regime calibration analysis
 - `results/validation/candle_integrity.json` - Data quality (93.75%)
 - `results/validation/indicator_validation.json` - All indicators validated
 - `results/feature_analysis/comprehensive_ic_analysis.json` - 25 features tested
 
 ### **Documentation:**
+
 - `README.agents.md` - Agent workflow & Phase status
 - `docs/PHASE-6_LEARNINGS.md` - Complete Phase-6 discoveries
 - `docs/ADVANCED_VALIDATION_PRODUCTION.md` - Production ML guide
@@ -186,6 +204,7 @@ Reward: Potentially discover better edge
 - `docs/FEATURE_COMPUTATION_MODES.md` - AS-OF semantics (CRITICAL!)
 
 ### **Key Scripts:**
+
 - `scripts/comprehensive_feature_analysis.py` - Test 25 features across regimes
 - `scripts/validate_all_indicators.py` - Systematic indicator validation
 - `scripts/calibrate_by_regime.py` - Regime-aware calibration
@@ -259,6 +278,7 @@ python scripts/validate_all_indicators.py
 ## 📚 REFERENCE
 
 ### **Archived Documentation:**
+
 - `docs/archive/TODO_PHASE3.5_superseded.md` - Old Phase 3.5 plan (BB bug era)
 - `docs/archive/TODO_PROJECT_superseded.md` - Old project TODO (BB bug era)
 - `docs/archive/CHANGELOG_pre-phase6.md` - Old changelog (pre-Phase 6)
@@ -266,6 +286,7 @@ python scripts/validate_all_indicators.py
 - `results/archive_2025-10-09/` - Phase-6 experiments before BB fix
 
 ### **Why Archived?**
+
 ALL models and features from before 2025-10-10 were trained/computed with INCORRECT Bollinger Bands (ddof=1 bug). They are INVALID and must NOT be used!
 
 ---
@@ -275,6 +296,7 @@ ALL models and features from before 2025-10-10 were trained/computed with INCORR
 **Start with Option A (Test 4h Timeframe):**
 
 **Why:**
+
 - ✅ Quick (1-2 hours)
 - ✅ Low risk (just analysis)
 - ✅ Gives clarity (trend works or not?)
@@ -282,11 +304,13 @@ ALL models and features from before 2025-10-10 were trained/computed with INCORR
 - ✅ Uses our validated framework
 
 **If 4h shows POSITIVE IC for trend features:**
+
 - Build trend-following model on 4h
 - Keep mean-reversion model on 1h
 - Use both (multi-timeframe strategy!)
 
 **If 4h ALSO shows NEGATIVE IC for trend:**
+
 - Accept mean reversion is reality
 - Optimize mean-reversion strategy
 - Focus on HighVol regime edge
@@ -300,10 +324,12 @@ ALL models and features from before 2025-10-10 were trained/computed with INCORR
 **Code Stability > New Features**
 
 Every code change must either:
+
 - ✅ Solve a concrete problem, OR
 - ✅ Increase reliability, performance, or readability
 
 **Green-Light Checklist:**
+
 1. ✅ Solves a defined need/problem
 2. ✅ Does not unexpectedly affect other parts
 3. ✅ Has unit tests or validated measurement
@@ -314,3 +340,10 @@ Every code change must either:
 
 **Status:** ✅ **SYSTEM READY. AWAITING STRATEGIC DIRECTION.** 🚀
 
+- Dokumentera Optuna-konfig + miljö (README.agents.md uppdaterad)
+- Optuna integration (Phase-7b)
+  - `runs.strategy: optuna` i optimizer YAML
+  - Se exempel: `config/optimizer/tBTCUSD_1h_search.yaml`
+  - Installera beroende: `pip install optuna`
+  - Miljövariabler: `OPTUNA_STORAGE`, `OPTUNA_STUDY_NAME`
+  - Testkommando: `python -m pytest tests/test_optimizer_runner.py::test_run_optimizer_optuna_strategy`

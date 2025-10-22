@@ -79,7 +79,7 @@ Live mode:   extract_features(candles, now_index=99)
              → Motsvarar bar 98's features
 
 Backtest mode: vectorized(df.iloc[:100]).iloc[-1]
-               → Features från bars 0-99  
+               → Features från bars 0-99
                → Motsvarar bar 99's features
 
 RESULT: 1-BAR OFFSET! 🚨
@@ -107,17 +107,17 @@ feats, meta = extract_features(candles, now_index=99)
 for i in range(len(df)):
     # For bar i, we have bars 0-i (all closed)
     # Want features AS OF bar i
-    
+
     # WRONG:
-    extract_features(candles, now_index=i)  
+    extract_features(candles, now_index=i)
     # → Uses bars 0-(i-1) ❌ Loses 1 bar!
-    
+
     # CORRECT:
     extract_features(candles, now_index=i+1)
     # → Uses bars 0-i ✅ But confusing!
-    
+
     # BEST:
-    vectorized_features.iloc[i]  
+    vectorized_features.iloc[i]
     # → Precomputed for all bars ✅
 ```
 
@@ -129,17 +129,17 @@ for i in range(len(df)):
 
 **Keep BOTH methods but use them CORRECTLY:**
 
-1. **Live Trading:** Use `extract_features()` 
+1. **Live Trading:** Use `extract_features()`
    - Call with `now_index = len(candles) - 1`
    - Gets features from last CLOSED bar
-   
+
 2. **Backtesting:** Use `calculate_all_features_vectorized()`
    - Precompute ALL features at once
    - 27,734× faster
    - All bars are closed historical data
 
-3. **Validation:** 
-   - Compare: `extract_features(candles, now_index=i+1)` 
+3. **Validation:**
+   - Compare: `extract_features(candles, now_index=i+1)`
    - vs: `vectorized(df).iloc[i]`
    - Should match!
 
@@ -171,4 +171,3 @@ extract_features_backtest(candles, bar_index)  # Uses all up to bar_index
 ```
 
 **TODO:** Fix validation script to compare correctly!
-

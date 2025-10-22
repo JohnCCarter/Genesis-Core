@@ -5,7 +5,7 @@ Låt oss ta det analytiskt och sen praktiskt 👇
 
 🧠 1️⃣ Grundskillnaden i logik
 
-	            FVG	
+	            FVG
 Natur	        Dynamisk, event-baserad gap-detektion
 Beräkning	    Identifierar obalanser mellan candles (t.ex. high[1] < low[3])
 Informationstyp	Likviditetsförskjutning, aggressiv order flow
@@ -93,7 +93,7 @@ FVG i ML: använd derivat (momentum_z, displacement_z) istället för pattern-fl
 Fibonacci i ML: använd avstånd / ratio-features, inte kategorier (t.ex. “nära 0.618”).
 
 🚀 5️⃣ Slutsats
-Syfte	
+Syfte
 Trading-logik (diskretionärt)	FVG + Fib = mycket stark “confluence map” för entries/exits
 ML-features (algoritmiskt)	Konvertera båda till statistiska avstånds- och z-score features
 Edge-projekt	distance_to_fib, fvg_strength, fib_zone_confidence fungerar bättre än “pattern presence”

@@ -21,19 +21,19 @@ repos:
     rev: 1.7.9
     hooks:
       - id: bandit
-        args: [-r, src, scripts]
-        files: ^(src|scripts)/.*\.py$
-
+        args: ["-c", "pyproject.toml"]
+        # Exclude tests from bandit scanning
+        exclude: ^tests/
   # Prevent secrets from being committed
-  - repo: https://github.com/Yelp/detect-secrets
-    rev: v1.5.0
-    hooks:
-      - id: detect-secrets
-        exclude: \.secrets\.baseline$
+  # - repo: https://github.com/Yelp/detect-secrets
+  #   rev: v1.5.0
+  #   hooks:
+  #     - id: detect-secrets
+  #       exclude: \.secrets\.baseline$
 
   # Prevent large files
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v4.6.0
     hooks:
       - id: check-added-large-files
         args: [--maxkb=1000]

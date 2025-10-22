@@ -1,6 +1,6 @@
 # Validation vs Backtest - Varför Ser Resultaten Olika Ut?
 
-**Date**: 2025-10-10  
+**Date**: 2025-10-10
 **Question**: "Så våra tidigare resultat som var jättebra, blev plötsligt dåliga efter full backtest?"
 
 ---
@@ -40,7 +40,7 @@ for each bar in holdout_data:
     features = extract_features(bar)
     prediction = model.predict(features)
     actual_return = calculate_forward_return(bar, horizon=10)
-    
+
 # Calculate metrics:
 ic = spearman_corr(predictions, actual_returns)  # ✅ VALIDATION METRIC
 auc = roc_auc(predictions > 0.5, actual_returns > 0)
@@ -87,35 +87,35 @@ q5_q1 = mean(returns[top_quintile]) - mean(returns[bottom_quintile])
 for each bar in test_data:
     # 1. Extract features
     features = extract_features(bar)
-    
+
     # 2. Model prediction
     probas = model.predict_proba(features)
-    
+
     # 3. Calibrate probabilities
     probas_calib = calibrate(probas, regime)
-    
+
     # 4. Calculate confidence
     conf = calculate_confidence(probas_calib)
-    
+
     # 5. CHECK THRESHOLDS ⚠️ FILTERING HAPPENS HERE!
     if conf < 0.55:
         continue  # ❌ NO TRADE
-    
+
     # 6. Check regime requirements
     if regime_proba < 0.55:
         continue  # ❌ NO TRADE
-    
+
     # 7. Check EV filter
     if max(ev_long, ev_short) <= 0:
         continue  # ❌ NO TRADE
-    
+
     # 8. Check hysteresis
     if not hysteresis_allows_trade():
         continue  # ❌ NO TRADE
-    
+
     # 9. Map confidence to position size
     size = risk_map(conf)  # e.g., 0.55 → 2%
-    
+
     # 10. EXECUTE TRADE (if we got here!)
     execute(action, size, price)  # ✅ TRADE!
 ```

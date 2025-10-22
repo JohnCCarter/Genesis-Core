@@ -1,8 +1,8 @@
 # Backtest Critical Bugs - Fixed (2025-10-10)
 
-**Date**: 2025-10-10  
-**Severity**: CRITICAL  
-**Status**: ✅ FIXED  
+**Date**: 2025-10-10
+**Severity**: CRITICAL
+**Status**: ✅ FIXED
 **Impact**: All backtests were broken - 0 trades executed
 
 ---
@@ -328,7 +328,7 @@ if max_ev <= 0.0:
 
 ### Issue #2: 6h Backtest Fails Despite Strong Validation
 
-**Symptom**: 
+**Symptom**:
 - Holdout IC: +0.308 (best of all timeframes)
 - Backtest return: -19.64% (worst of all timeframes)
 
@@ -434,7 +434,7 @@ if max_ev <= 0.0:
 for i in range(len(candles)):
     # 1. Build candles window
     candles_window = self._build_candles_window(i)
-    
+
     # 2. Run pipeline
     result, meta = evaluate_pipeline(
         candles=candles_window,
@@ -442,11 +442,11 @@ for i in range(len(candles)):
         configs=configs,
         state=self.state,
     )
-    
+
     # 3. Extract action and size (FIXED!)
     action = result.get("action", "NONE")
     size = meta.get("decision", {}).get("size", 0.0)  # ✅ CORRECT
-    
+
     # 4. Execute trade
     if action != "NONE" and size > 0:
         self.position_tracker.execute_action(
@@ -455,7 +455,7 @@ for i in range(len(candles)):
             price=close_price,
             timestamp=timestamp,
         )
-    
+
     # 5. Update state
     self.state = meta.get("decision", {}).get("state_out", {})
 ```
@@ -598,9 +598,8 @@ def test_ev_filter_allows_shorts():
 
 ---
 
-**Fixed by**: AI Agent (Cursor)  
-**Discovered during**: Features v17 validation  
-**Date**: 2025-10-10  
-**Files affected**: 2 files, 5 lines changed  
+**Fixed by**: AI Agent (Cursor)
+**Discovered during**: Features v17 validation
+**Date**: 2025-10-10
+**Files affected**: 2 files, 5 lines changed
 **Impact**: CRITICAL - All backtests now functional
-

@@ -9,9 +9,9 @@ import numpy as np
 
 @dataclass(slots=True)
 class MetricThresholds:
-    min_trades: int = 30
-    min_profit_factor: float = 1.2
-    max_max_dd: float = 0.15
+    min_trades: int = 10  # Sänkt för korta perioder
+    min_profit_factor: float = 1.0  # Sänkt för korta perioder
+    max_max_dd: float = 0.20  # Ökat för korta perioder
 
 
 def _extract_metric(name: str, container: dict[str, Any], default: float | None = None) -> float:

@@ -1,8 +1,8 @@
 # TECHNICAL INDICATORS REFERENCE GUIDE
 ## Trading Indicators Cheat Sheet för Feature Engineering
 
-**Skapad:** 2025-10-09  
-**Syfte:** Referensguide för att välja och förstå indikatorer vid model training  
+**Skapad:** 2025-10-09
+**Syfte:** Referensguide för att välja och förstå indikatorer vid model training
 **Target:** Single-user trading bot (Genesis-Core)
 
 ---
@@ -25,7 +25,7 @@
 
 ### 📈 EMA (Exponential Moving Average)
 
-**Syfte:** Identifiera trend direction och trend strength  
+**Syfte:** Identifiera trend direction och trend strength
 **Best för:** Trend-following strategies, smoothing price action
 
 **Parametrar:**
@@ -54,8 +54,8 @@ ema_fast_above_slow = (ema(close, 9) > ema(close, 20)).astype(int)
 
 # Multiple EMA alignment (trend confirmation)
 ema_alignment = (
-    (ema_9 > ema_20) & 
-    (ema_20 > ema_50) & 
+    (ema_9 > ema_20) &
+    (ema_20 > ema_50) &
     (ema_50 > ema_200)
 ).astype(int)
 ```
@@ -72,7 +72,7 @@ ema_alignment = (
 
 ### 📊 MACD (Moving Average Convergence Divergence)
 
-**Syfte:** Identifiera momentum shifts och trend changes  
+**Syfte:** Identifiera momentum shifts och trend changes
 **Best för:** Divergence trading, momentum confirmation
 
 **Parametrar:**
@@ -110,7 +110,7 @@ macd_divergence = detect_divergence(close, macd_line)  # Custom function
 
 ### 🎯 ADX (Average Directional Index)
 
-**Syfte:** Mäta trend STRENGTH (inte direction!)  
+**Syfte:** Mäta trend STRENGTH (inte direction!)
 **Best för:** Filter för trend vs ranging markets
 
 **Parametrar:**
@@ -157,7 +157,7 @@ trend_direction = (plus_di > minus_di).astype(int)
 
 ### ⚡ RSI (Relative Strength Index)
 
-**Syfte:** Identifiera overbought/oversold conditions  
+**Syfte:** Identifiera overbought/oversold conditions
 **Best för:** Mean reversion, divergence trading
 
 **Parametrar:**
@@ -206,7 +206,7 @@ rsi_momentum = rsi_14 - rsi_14.shift(3)
 
 ### 🌊 Stochastic Oscillator
 
-**Syfte:** Compare current close to recent range  
+**Syfte:** Compare current close to recent range
 **Best för:** Overbought/oversold, momentum shifts
 
 **Parametrar:**
@@ -247,7 +247,7 @@ stoch_cross = (k_line > d_line).astype(int)
 
 ### 📉 Rate of Change (ROC)
 
-**Syfte:** Mäta percentage change over time  
+**Syfte:** Mäta percentage change over time
 **Best för:** Momentum strength, velocity
 
 **Parametrar:**
@@ -281,7 +281,7 @@ roc_acceleration = roc - roc.shift(3)
 
 ### 📏 ATR (Average True Range)
 
-**Syfte:** Mäta market volatility  
+**Syfte:** Mäta market volatility
 **Best för:** Position sizing, stop-loss placement, volatility filtering
 
 **Parametrar:**
@@ -322,7 +322,7 @@ atr_change = (atr_14 - atr_14.shift(5)) / atr_14.shift(5)
 
 ### 📊 Bollinger Bands
 
-**Syfte:** Dynamic support/resistance baserat på volatility  
+**Syfte:** Dynamic support/resistance baserat på volatility
 **Best för:** Mean reversion, breakout detection
 
 **Parametrar:**
@@ -369,7 +369,7 @@ bb_touch_lower = (close <= bb_lower * 1.01).astype(int)
 
 ### 🎲 Historical Volatility
 
-**Syfte:** Mäta realized volatility  
+**Syfte:** Mäta realized volatility
 **Best för:** Regime classification, risk adjustment
 
 **Parametrar:**
@@ -400,7 +400,7 @@ vol_regime = pd.cut(
 
 ### 📊 Volume
 
-**Syfte:** Konfirmera price movements  
+**Syfte:** Konfirmera price movements
 **Best för:** Breakout confirmation, divergence
 
 **Feature Ideas:**
@@ -418,7 +418,7 @@ volume_trend = volume_sma.diff(5) / volume_sma.shift(5)
 
 # Price-volume divergence
 pv_divergence = (
-    (close > close.shift(5)) & 
+    (close > close.shift(5)) &
     (volume < volume.shift(5))
 ).astype(int)
 ```
@@ -431,7 +431,7 @@ pv_divergence = (
 
 ### 📈 OBV (On-Balance Volume)
 
-**Syfte:** Cumulative volume flow  
+**Syfte:** Cumulative volume flow
 **Best för:** Trend confirmation, divergence
 
 **Feature Ideas:**
@@ -450,7 +450,7 @@ obv_divergence = detect_divergence(close, obv)
 
 ### 💰 VWAP (Volume Weighted Average Price)
 
-**Syfte:** Average price weighted by volume  
+**Syfte:** Average price weighted by volume
 **Best för:** Intraday support/resistance, institutional levels
 
 **Timeframe Guidance:**
@@ -484,7 +484,7 @@ vwap_lower = vwap - vwap_std
 
 ### 🎯 Pivot Points
 
-**Syfte:** Calculate potential support/resistance levels  
+**Syfte:** Calculate potential support/resistance levels
 **Best för:** Intraday trading, target levels
 
 **Parametrar:**
@@ -509,7 +509,7 @@ dist_to_s1 = (close - s1) / close
 
 ### 📍 Support/Resistance Zones
 
-**Syfte:** Identify price levels with historical significance  
+**Syfte:** Identify price levels with historical significance
 **Best för:** Entry/exit points, breakout trading
 
 **Feature Ideas:**
@@ -532,7 +532,7 @@ resistance_strength = count_touches(close, swing_high, tolerance=0.01)
 
 ### 🔄 Higher Timeframe Trend
 
-**Syfte:** Align med larger trend (trade in direction of HTF)  
+**Syfte:** Align med larger trend (trade in direction of HTF)
 **Best för:** Trend filtering, confluence
 
 **Example (Trading 1h, using 4h HTF):**
@@ -561,7 +561,7 @@ htf_trend_aligned = (
 
 ### 🎯 Trend Confluence
 
-**Syfte:** Count how many indicators agree on direction  
+**Syfte:** Count how many indicators agree on direction
 **Best för:** High-confidence signals
 
 **Feature (redan i Genesis-Core!):**
@@ -629,12 +629,12 @@ features = [
     'rsi',
     'adx',
     'atr_pct',
-    
+
     # Higher TF
     'htf_ema_trend',
     'htf_rsi',
     'htf_adx',
-    
+
     # Confluence
     'trend_confluence',
     'price_vs_htf_ema',
@@ -651,28 +651,28 @@ features = [
     'ema_slope',
     'price_vs_ema',
     'ema_alignment',
-    
+
     # Momentum
     'rsi', 'rsi_divergence',
     'macd_histogram',
     'stoch_k', 'stoch_d',
     'roc',
-    
+
     # Volatility
     'atr_pct',
     'bb_position', 'bb_width', 'bb_squeeze',
     'hist_vol', 'vol_percentile',
-    
+
     # Volume
     'volume_ratio',
     'obv_trend',
     'price_vs_vwap',
-    
+
     # HTF
     'htf_ema_trend',
     'htf_rsi',
     'htf_adx',
-    
+
     # Meta
     'trend_confluence',
     'regime_classification'
@@ -802,12 +802,12 @@ Add 4-7 more features från "Robust Multi-Timeframe Set"
 
 ## 📚 REFERENSER
 
-- **Technical Analysis Basics:** 
+- **Technical Analysis Basics:**
   - Murphy, John J. "Technical Analysis of the Financial Markets"
-  
+
 - **ML for Trading:**
   - López de Prado, Marcos. "Advances in Financial Machine Learning"
-  
+
 - **Indicator Implementations:**
   - TA-Lib: https://ta-lib.org/
   - Pandas-TA: https://github.com/twopirllc/pandas-ta
@@ -842,5 +842,3 @@ Add 4-7 more features från "Robust Multi-Timeframe Set"
    - Validate med Purged WFCV
 
 **Lycka till med champion hunting! 🏆**
-
-

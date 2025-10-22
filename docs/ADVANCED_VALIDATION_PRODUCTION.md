@@ -1,9 +1,9 @@
 # ADVANCED VALIDATION & PRODUCTION ML GUIDE
 ## Production-Grade Model Validation för Trading Systems
 
-**Skapad:** 2025-10-09  
-**Senast uppdaterad:** 2025-10-09  
-**Status:** Enterprise Production Standards  
+**Skapad:** 2025-10-09
+**Senast uppdaterad:** 2025-10-09
+**Status:** Enterprise Production Standards
 **Prioritet:** P0 - KRITISK för production deployment
 
 ---
@@ -79,84 +79,84 @@ def create_purged_splits(
 ):
     """
     Purged Walk-Forward CV med embargo period.
-    
+
     Embargo = H (holding period) för att eliminera overlap.
     För 1h timeframe med avg holding 36h → embargo = 36 bars
-    
+
     Args:
         n_samples: Total samples
         n_splits: Number of splits
         train_ratio: Training window size
         embargo_pct: Embargo as % of total data (default 2%)
-        
+
     Returns:
         List of (train_indices, test_indices, embargo_indices)
     """
     window_size = n_samples // n_splits
     embargo_size = int(n_samples * embargo_pct)
-    
+
     splits = []
     for i in range(n_splits):
         # Window start
         start = i * (window_size // 2)
         end = start + window_size
-        
+
         if end > n_samples:
             break
-        
+
         # Train window
         train_size = int(window_size * train_ratio)
         train_end = start + train_size
-        
+
         # EMBARGO PERIOD (kritiskt!)
         # Ingen data används mellan train och test
         embargo_start = train_end
         embargo_end = train_end + embargo_size
-        
+
         # Test window (efter embargo)
         test_start = embargo_end
         test_end = min(end, n_samples)
-        
+
         if test_start >= test_end:
             continue
-        
+
         # PURGE overlapping samples
         # Ta bort samples från train som överlappar med test
         # (om features/labels beror på framtida data)
-        
+
         train_indices = list(range(start, train_end))
         test_indices = list(range(test_start, test_end))
         embargo_indices = list(range(embargo_start, embargo_end))
-        
+
         splits.append({
             'train': train_indices,
             'test': test_indices,
             'embargo': embargo_indices,
             'embargo_size': embargo_size
         })
-    
+
     return splits
 
 
 def purge_overlapping_labels(train_indices, test_indices, label_dependency_window):
     """
     Purge train samples vars labels beror på test data.
-    
+
     Om lookahead = 10 bars, ta bort sista 10 samples från train
     om de överlappar med test period.
     """
     # Identify train samples too close to test
     max_train_idx = max(train_indices)
     min_test_idx = min(test_indices)
-    
+
     # Purge window
     purge_threshold = min_test_idx - label_dependency_window
-    
+
     purged_train = [
-        idx for idx in train_indices 
+        idx for idx in train_indices
         if idx < purge_threshold
     ]
-    
+
     return purged_train
 
 
@@ -166,14 +166,14 @@ splits = create_purged_splits(10000, n_splits=6, embargo_pct=0.02)
 for split in splits:
     # Purge train data
     purged_train = purge_overlapping_labels(
-        split['train'], 
-        split['test'], 
+        split['train'],
+        split['test'],
         label_dependency_window=10  # lookahead bars
     )
-    
+
     # Train on purged data
     model.fit(X[purged_train], y[purged_train])
-    
+
     # Test on test data (efter embargo)
     score = model.score(X[split['test']], y[split['test']])
 ```
@@ -203,18 +203,18 @@ for split in splits:
 def calculate_deflated_sharpe(returns, n_trials, skewness, kurtosis):
     """
     Bailey & López de Prado (2014) Deflated Sharpe Ratio.
-    
+
     Justerar Sharpe för:
     - Antal testade strategier (multiple testing)
     - Non-normala returns (skewness, kurtosis)
     - Variance inflation från trials
-    
+
     Args:
         returns: Array av returns
         n_trials: Antal strategier testade innan denna
         skewness: Skewness av returns
         kurtosis: Excess kurtosis av returns
-        
+
     Returns:
         Deflated Sharpe Ratio
     """
@@ -222,29 +222,29 @@ def calculate_deflated_sharpe(returns, n_trials, skewness, kurtosis):
     mean_ret = np.mean(returns)
     std_ret = np.std(returns)
     sharpe = mean_ret / std_ret * np.sqrt(252)
-    
+
     # Variance inflation från multiple trials
     n = len(returns)
     V_sharpe = (1 / (n - 1)) * (
-        1 + 
-        (1/2) * sharpe**2 - 
-        skewness * sharpe + 
+        1 +
+        (1/2) * sharpe**2 -
+        skewness * sharpe +
         (kurtosis - 1) / 4 * sharpe**2
     )
-    
+
     # Deflation factor
     # Baserat på antal trials (Bonferroni correction)
     z_score = (sharpe - 0) / np.sqrt(V_sharpe)
-    
+
     # Expected maximum Sharpe från n_trials random strategies
     expected_max_sharpe = (
-        (1 - np.euler_gamma) * norm.ppf(1 - 1/n_trials) + 
+        (1 - np.euler_gamma) * norm.ppf(1 - 1/n_trials) +
         np.euler_gamma * norm.ppf(1 - 1/(n_trials * np.e))
     )
-    
+
     # Deflated Sharpe
     deflated_sharpe = (sharpe - expected_max_sharpe) / np.sqrt(V_sharpe)
-    
+
     return {
         'sharpe': sharpe,
         'deflated_sharpe': deflated_sharpe,
@@ -274,17 +274,17 @@ if result['deflated_sharpe'] < 1.0:
 def calculate_pbo(backtest_results, n_splits=16):
     """
     Bailey et al. (2015) - Probability of Backtest Overfitting.
-    
+
     Mäter sannolikheten att IS (in-sample) performance
     är bättre än OOS (out-of-sample) performance.
-    
+
     PBO > 0.5 → Risk för overfit!
     PBO < 0.3 → Robust strategi
-    
+
     Args:
         backtest_results: Results från combinatorial split
         n_splits: Antal sätt att dela data (default 16)
-        
+
     Returns:
         PBO score (0-1)
     """
@@ -292,27 +292,27 @@ def calculate_pbo(backtest_results, n_splits=16):
     # För varje split:
     #   - Optimera på IS
     #   - Testa på OOS
-    
+
     is_sharpes = []
     oos_sharpes = []
-    
+
     for split in generate_combinatorial_splits(data, n_splits):
         # Optimize på IS
         optimal_params = optimize_on_data(split['is_data'])
         is_sharpe = evaluate(split['is_data'], optimal_params)
-        
+
         # Test på OOS
         oos_sharpe = evaluate(split['oos_data'], optimal_params)
-        
+
         is_sharpes.append(is_sharpe)
         oos_sharpes.append(oos_sharpe)
-    
+
     # Count hur många gånger IS > OOS
     n_overfit = sum(1 for is_sr, oos_sr in zip(is_sharpes, oos_sharpes) if is_sr > oos_sr)
-    
+
     # PBO = probability that IS > OOS
     pbo = n_overfit / n_splits
-    
+
     return {
         'pbo': pbo,
         'is_sharpes': is_sharpes,
@@ -353,7 +353,7 @@ from core.ml.calibration import calibrate_model
 # - Flexibel (fångar icke-linjära patterns)
 
 calibrated = calibrate_model(
-    y_true, 
+    y_true,
     y_pred_proba,
     method='isotonic'  # eller 'platt', 'beta'
 )
@@ -367,7 +367,7 @@ calibrated = calibrate_model(
 def temperature_scaling(logits, temperature=1.5):
     """
     Skala logits med temperature för bättre kalibrering.
-    
+
     T > 1: Mjukare probabilities (mer osäkerhet)
     T < 1: Hårdare probabilities (mer säker)
     T = 1: Ingen scaling
@@ -379,11 +379,11 @@ def temperature_scaling(logits, temperature=1.5):
 # Find optimal temperature på validation set
 def find_optimal_temperature(val_logits, val_labels):
     from scipy.optimize import minimize
-    
+
     def nll_loss(T):
         probs = temperature_scaling(val_logits, T[0])
         return -np.mean(np.log(probs[np.arange(len(val_labels)), val_labels]))
-    
+
     result = minimize(nll_loss, x0=[1.5], bounds=[(0.1, 10.0)])
     return result.x[0]
 ```
@@ -401,50 +401,50 @@ def find_optimal_temperature(val_logits, val_labels):
 def calculate_psi(expected, actual, bins=10):
     """
     Population Stability Index - detektera feature distribution drift.
-    
+
     PSI < 0.1:  No significant shift
     PSI 0.1-0.25: Moderate shift
     PSI > 0.25: Significant shift → RETRAIN!
-    
+
     Args:
         expected: Feature distribution från training
         actual: Feature distribution från production
         bins: Number of bins for discretization
-        
+
     Returns:
         PSI score
     """
     # Discretize into bins
     expected_percents, bin_edges = np.histogram(expected, bins=bins)
     expected_percents = expected_percents / len(expected)
-    
+
     actual_percents, _ = np.histogram(actual, bins=bin_edges)
     actual_percents = actual_percents / len(actual)
-    
+
     # Add small epsilon to avoid log(0)
     epsilon = 1e-6
     expected_percents = np.maximum(expected_percents, epsilon)
     actual_percents = np.maximum(actual_percents, epsilon)
-    
+
     # PSI calculation
     psi = np.sum(
-        (actual_percents - expected_percents) * 
+        (actual_percents - expected_percents) *
         np.log(actual_percents / expected_percents)
     )
-    
+
     return psi
 
 
 def monitor_all_features(training_features, production_features):
     """Monitor PSI för alla features."""
     psi_results = {}
-    
+
     for feature_name in training_features.columns:
         psi = calculate_psi(
             training_features[feature_name].values,
             production_features[feature_name].values
         )
-        
+
         psi_results[feature_name] = {
             'psi': psi,
             'status': (
@@ -453,7 +453,7 @@ def monitor_all_features(training_features, production_features):
                 'CRITICAL'
             )
         }
-    
+
     return psi_results
 
 
@@ -473,17 +473,17 @@ from scipy.stats import ks_2samp
 def ks_drift_test(training_dist, production_dist, alpha=0.05):
     """
     K-S test för distribution drift.
-    
+
     Args:
         training_dist: Distribution från training
         production_dist: Distribution från production
         alpha: Significance level (default 5%)
-        
+
     Returns:
         Dict med test results
     """
     statistic, p_value = ks_2samp(training_dist, production_dist)
-    
+
     return {
         'statistic': statistic,
         'p_value': p_value,
@@ -529,7 +529,7 @@ if ks_result['drifted']:
 
 class ChampionSelector:
     """Champion selection med hysteresis och cooldown."""
-    
+
     def __init__(
         self,
         hysteresis_threshold: float = 0.5,  # Minst 0.5 poäng bättre
@@ -541,7 +541,7 @@ class ChampionSelector:
         self.min_confidence = min_confidence
         self.current_champion = None
         self.last_change_date = None
-    
+
     def should_switch_champion(
         self,
         current_score: float,
@@ -550,7 +550,7 @@ class ChampionSelector:
     ) -> dict:
         """
         Besluta om champion ska bytas.
-        
+
         Returns:
             Dict med decision info
         """
@@ -563,22 +563,22 @@ class ChampionSelector:
                     'reason': f'COOLDOWN ({days_since_change}/{self.cooldown_days} days)',
                     'score_diff': challenger_score - current_score
                 }
-        
+
         # 2. Check hysteresis threshold
         score_improvement = challenger_score - current_score
-        
+
         if score_improvement < self.hysteresis_threshold:
             return {
                 'switch': False,
                 'reason': f'INSUFFICIENT_IMPROVEMENT ({score_improvement:.2f} < {self.hysteresis_threshold})',
                 'score_diff': score_improvement
             }
-        
+
         # 3. Check confidence (baserat på validation)
         # Beräkna confidence i att challenger är verkligen bättre
         # Använd bootstrap eller t-test
         confidence = self._calculate_switch_confidence(current_score, challenger_score)
-        
+
         if confidence < self.min_confidence:
             return {
                 'switch': False,
@@ -586,7 +586,7 @@ class ChampionSelector:
                 'score_diff': score_improvement,
                 'confidence': confidence
             }
-        
+
         # ALL CHECKS PASSED → SWITCH!
         return {
             'switch': True,
@@ -594,11 +594,11 @@ class ChampionSelector:
             'score_diff': score_improvement,
             'confidence': confidence
         }
-    
+
     def _calculate_switch_confidence(self, current_score, challenger_score):
         """
         Bootstrap confidence att challenger är bättre.
-        
+
         Använd bootstrap sampling av validation results för att
         beräkna sannolikheten att challenger verkligen är bättre.
         """
@@ -670,7 +670,7 @@ else:
 
 class RegimeGates:
     """Hårda requirements per regime - modell måste passa ALLA."""
-    
+
     GATES = {
         'bull': {
             'min_sharpe': 1.0,
@@ -701,65 +701,65 @@ class RegimeGates:
             'description': 'Baseline performance in neutral conditions'
         }
     }
-    
+
     @classmethod
     def validate_model(cls, model_metrics_by_regime):
         """
         Validera modell mot alla regime gates.
-        
+
         Args:
             model_metrics_by_regime: Dict med metrics per regime
-            
+
         Returns:
             Dict med pass/fail per gate
         """
         results = {}
         all_passed = True
-        
+
         for regime, gates in cls.GATES.items():
             if regime not in model_metrics_by_regime:
                 results[regime] = {'status': 'NO_DATA', 'passed': False}
                 all_passed = False
                 continue
-            
+
             metrics = model_metrics_by_regime[regime]
             regime_results = {}
             regime_passed = True
-            
+
             # Check varje gate
             if metrics['sharpe'] < gates['min_sharpe']:
                 regime_results['sharpe'] = f"FAIL ({metrics['sharpe']:.2f} < {gates['min_sharpe']})"
                 regime_passed = False
             else:
                 regime_results['sharpe'] = f"PASS ({metrics['sharpe']:.2f})"
-            
+
             if metrics['win_rate'] < gates['min_win_rate']:
                 regime_results['win_rate'] = f"FAIL ({metrics['win_rate']:.2%} < {gates['min_win_rate']:.2%})"
                 regime_passed = False
             else:
                 regime_results['win_rate'] = f"PASS ({metrics['win_rate']:.2%})"
-            
+
             if metrics['drawdown'] < gates['max_drawdown']:
                 regime_results['drawdown'] = f"FAIL ({metrics['drawdown']:.1%} < {gates['max_drawdown']:.1%})"
                 regime_passed = False
             else:
                 regime_results['drawdown'] = f"PASS ({metrics['drawdown']:.1%})"
-            
+
             if metrics['profit_factor'] < gates['min_profit_factor']:
                 regime_results['profit_factor'] = f"FAIL ({metrics['profit_factor']:.2f} < {gates['min_profit_factor']})"
                 regime_passed = False
             else:
                 regime_results['profit_factor'] = f"PASS ({metrics['profit_factor']:.2f})"
-            
+
             results[regime] = {
                 'status': 'PASS' if regime_passed else 'FAIL',
                 'passed': regime_passed,
                 'details': regime_results
             }
-            
+
             if not regime_passed:
                 all_passed = False
-        
+
         return {
             'all_gates_passed': all_passed,
             'per_regime': results,
@@ -777,7 +777,7 @@ if not gate_results['production_ready']:
             print(f"\n{regime.upper()} REGIME:")
             for gate, status in result['details'].items():
                 print(f"  {gate}: {status}")
-    
+
     REJECT_MODEL()
 else:
     print("✓ ALL REGIME GATES PASSED - Production ready")
@@ -796,22 +796,22 @@ else:
 @dataclass
 class TransactionCosts:
     """Realistiska trading costs."""
-    
+
     # Bitfinex maker/taker fees
     maker_fee: float = 0.0010  # 0.10% (maker)
     taker_fee: float = 0.0020  # 0.20% (taker)
-    
+
     # Slippage model
     base_slippage_bps: float = 2.0  # 2 basis points base
     volume_impact_factor: float = 0.5  # Ökar med order size
-    
+
     # Latency
     execution_delay_bars: int = 1  # 1 bar delay för execution
-    
+
     # Partial fills
     fill_probability: float = 0.95  # 95% fill rate
     partial_fill_factor: float = 0.7  # Genomsnitt 70% av order fylls
-    
+
     def calculate_total_cost(
         self,
         order_size_usd: float,
@@ -820,21 +820,21 @@ class TransactionCosts:
     ) -> float:
         """
         Beräkna total transaction cost.
-        
+
         Returns:
             Total cost as % of order size
         """
         # Fee
         fee = self.maker_fee if is_maker else self.taker_fee
-        
+
         # Slippage (ökar med order size / volume)
         volume_ratio = order_size_usd / avg_daily_volume
         slippage = self.base_slippage_bps * (1 + self.volume_impact_factor * volume_ratio)
         slippage_pct = slippage / 10000
-        
+
         # Total cost
         total_cost = fee + slippage_pct
-        
+
         return total_cost
 
 
@@ -846,7 +846,7 @@ def simulate_trade_with_costs(
     costs: TransactionCosts
 ):
     """Simulera trade med realistiska costs."""
-    
+
     # Entry cost
     entry_cost_pct = costs.calculate_total_cost(
         position_size_usd,
@@ -854,13 +854,13 @@ def simulate_trade_with_costs(
         is_maker=True  # Assume limit orders
     )
     effective_entry = entry_price * (1 + entry_cost_pct)
-    
+
     # Execution delay (pris kan ha rört sig)
     # Simulera 1-bar delay
     slippage_bars = 1
     price_movement = calculate_price_movement(entry_price, slippage_bars)
     effective_entry += price_movement
-    
+
     # Exit cost
     exit_cost_pct = costs.calculate_total_cost(
         position_size_usd,
@@ -868,7 +868,7 @@ def simulate_trade_with_costs(
         is_maker=False  # Assume market orders vid exit
     )
     effective_exit = exit_price * (1 - exit_cost_pct)
-    
+
     # Partial fill simulation
     if np.random.random() > costs.fill_probability:
         # Partial fill
@@ -876,11 +876,11 @@ def simulate_trade_with_costs(
         actual_size = position_size_usd * fill_ratio
     else:
         actual_size = position_size_usd
-    
+
     # PnL calculation
     pnl_pct = (effective_exit - effective_entry) / effective_entry
     pnl_usd = actual_size * pnl_pct
-    
+
     return {
         'pnl_usd': pnl_usd,
         'pnl_pct': pnl_pct,
@@ -898,7 +898,7 @@ def simulate_trade_with_costs(
 def simulate_signal_to_execution_latency():
     """
     Simulera real-world latency.
-    
+
     Signal generated → Order sent → Order filled
     """
     # Component latencies (milliseconds)
@@ -908,14 +908,14 @@ def simulate_signal_to_execution_latency():
         'network_to_exchange': np.random.normal(100, 30),
         'exchange_matching': np.random.normal(50, 20),
     }
-    
+
     total_latency_ms = sum(latencies.values())
-    
+
     # Convert to bars (för 1h bar = 3600000 ms)
     # För 1 min bar = 60000 ms
     bars_timeframe_ms = 60000  # 1min
     latency_bars = total_latency_ms / bars_timeframe_ms
-    
+
     return {
         'total_ms': total_latency_ms,
         'latency_bars': latency_bars,
@@ -955,10 +955,10 @@ def hash_dataframe(df: pd.DataFrame) -> str:
     """Skapa deterministisk hash av DataFrame."""
     # Sort columns and rows för konsistens
     df_sorted = df.sort_index(axis=1).sort_index(axis=0)
-    
+
     # Convert to bytes
     data_bytes = df_sorted.to_csv(index=False).encode('utf-8')
-    
+
     # SHA256 hash
     return hashlib.sha256(data_bytes).hexdigest()[:16]
 
@@ -978,7 +978,7 @@ def create_provenance_record(
 ) -> dict:
     """
     Skapa komplett provenance record för reproducerbarhet.
-    
+
     Returns:
         Provenance dict med all information för att reproducera
     """
@@ -1028,20 +1028,20 @@ def verify_reproducibility(model_path):
     provenance_path = model_path.parent / f"{model_path.stem}_provenance.json"
     with open(provenance_path) as f:
         original_provenance = json.load(f)
-    
+
     # Load current data
     features_df = load_features(symbol, timeframe)
-    
+
     # Verify data hash
     current_hash = hash_dataframe(features_df)
-    
+
     if current_hash != original_provenance['data_hash']:
         print("⚠️ WARNING: Data has changed since training!")
         print(f"Original hash: {original_provenance['data_hash']}")
         print(f"Current hash:  {current_hash}")
         print("Results may not be reproducible")
         return False
-    
+
     print("✓ Data verified - identical to training data")
     return True
 ```
@@ -1059,7 +1059,7 @@ def verify_reproducibility(model_path):
 def generate_model_card(model_path, validation_results):
     """
     Generera standardiserad Model Card enligt Google/Microsoft standard.
-    
+
     https://arxiv.org/abs/1810.03993
     """
     card = {
@@ -1076,7 +1076,7 @@ def generate_model_card(model_path, validation_results):
                 "features": ["bb_position", "trend_confluence", "rsi"]
             }
         },
-        
+
         "intended_use": {
             "primary": "Paper trading signal generation for BTC/USD 1h",
             "out_of_scope": [
@@ -1085,7 +1085,7 @@ def generate_model_card(model_path, validation_results):
                 "Timeframes other than 1h"
             ]
         },
-        
+
         "performance": {
             "validation_auc": 0.75,
             "holdout_auc": 0.73,
@@ -1094,13 +1094,13 @@ def generate_model_card(model_path, validation_results):
             "deflated_sharpe": 1.2,
             "pbo_score": 0.28  # < 0.3 = robust
         },
-        
+
         "regime_performance": {
             "bull": {"sharpe": 1.4, "status": "PASS"},
             "bear": {"sharpe": 0.3, "status": "PASS"},
             "ranging": {"sharpe": 0.5, "status": "PASS"}
         },
-        
+
         "risks_and_limitations": [
             "Model trained only on 6 months data",
             "Performance may degrade in unprecedented market conditions",
@@ -1108,13 +1108,13 @@ def generate_model_card(model_path, validation_results):
             "Not tested on black swan events",
             "Assumes liquid market (may fail in low volume)"
         ],
-        
+
         "ethical_considerations": {
             "fairness": "N/A - financial model",
             "privacy": "No personal data used",
             "safety": "Paper trading only, risk limits enforced"
         },
-        
+
         "maintenance": {
             "monitoring_frequency": "Daily drift check",
             "retraining_trigger": [
@@ -1124,7 +1124,7 @@ def generate_model_card(model_path, validation_results):
             ],
             "expected_lifetime": "1-3 months before retraining"
         },
-        
+
         "provenance": {
             "data_hash": "a3f5c9d2e1b4f7a8",
             "config_hash": "b2e4d1c8f9a3e5b7",
@@ -1132,7 +1132,7 @@ def generate_model_card(model_path, validation_results):
             "reproducible": True
         }
     }
-    
+
     return card
 
 
@@ -1163,7 +1163,7 @@ def create_championship_ticket(
 ):
     """
     Generera Championship Ticket - formell godkännande för production.
-    
+
     Fungerar som en "checklist" som måste godkännas innan deploy.
     """
     ticket = {
@@ -1171,7 +1171,7 @@ def create_championship_ticket(
         "model": str(model_path),
         "status": "PENDING_APPROVAL",
         "created_at": datetime.now().isoformat(),
-        
+
         "validation_checklist": {
             "walk_forward": {
                 "completed": True,
@@ -1188,7 +1188,7 @@ def create_championship_ticket(
                 "completed": True,
                 "all_passed": gate_results['all_gates_passed'],
                 "failed_regimes": [
-                    r for r, res in gate_results['per_regime'].items() 
+                    r for r, res in gate_results['per_regime'].items()
                     if not res['passed']
                 ],
                 "status": "PASS" if gate_results['all_gates_passed'] else "FAIL"
@@ -1205,7 +1205,7 @@ def create_championship_ticket(
                 "status": "PASS"
             }
         },
-        
+
         "approval_criteria": {
             "required_passes": [
                 "walk_forward",
@@ -1216,7 +1216,7 @@ def create_championship_ticket(
             "approved_by": None,
             "approved_at": None
         },
-        
+
         "deployment_plan": {
             "phase_1_canary": {
                 "duration": "3 days",
@@ -1234,7 +1234,7 @@ def create_championship_ticket(
                 "success_criteria": "Continuous monitoring"
             }
         },
-        
+
         "rollback_plan": {
             "trigger_conditions": [
                 "Live Sharpe < 0 for 3 consecutive days",
@@ -1246,17 +1246,17 @@ def create_championship_ticket(
             "notification": ["team@email.com", "risk@email.com"]
         }
     }
-    
+
     # Calculate overall approval
     checklist = ticket['validation_checklist']
     all_passed = all(
         checklist[check]['status'] == 'PASS'
         for check in ticket['approval_criteria']['required_passes']
     )
-    
+
     ticket['approval_criteria']['all_passed'] = all_passed
     ticket['status'] = 'APPROVED' if all_passed else 'REJECTED'
-    
+
     return ticket
 
 
@@ -1306,12 +1306,12 @@ else:
 class CanaryDeployment:
     """
     Staged deployment med gradvis capital allocation.
-    
+
     Phase 1: Canary (10% capital, 3 days)
     Phase 2: Paper-Live (50% capital, 7 days)
     Phase 3: Full Deploy (100% capital, ongoing)
     """
-    
+
     PHASES = {
         'canary': {
             'duration_days': 3,
@@ -1341,45 +1341,45 @@ class CanaryDeployment:
             'monitoring': 'continuous'
         }
     }
-    
+
     def __init__(self, model_path, championship_ticket):
         self.model_path = model_path
         self.ticket = championship_ticket
         self.current_phase = None
         self.phase_start_date = None
-    
+
     def start_canary(self):
         """Start canary deployment phase."""
         if self.ticket['status'] != 'APPROVED':
             raise ValueError("Cannot deploy unapproved model!")
-        
+
         self.current_phase = 'canary'
         self.phase_start_date = datetime.now()
-        
+
         print(f"🐤 CANARY DEPLOYMENT STARTED")
         print(f"Capital allocation: {self.PHASES['canary']['capital_allocation']:.0%}")
         print(f"Duration: {self.PHASES['canary']['duration_days']} days")
         print(f"Min trades required: {self.PHASES['canary']['min_trades']}")
-        
+
         # Log deployment event
         self._log_deployment_event('canary_started')
-    
+
     def evaluate_canary_phase(self, live_trades):
         """Evaluera om canary phase var successful."""
         phase_config = self.PHASES['canary']
-        
+
         # Calculate metrics från live trades under canary
         sharpe = calculate_sharpe(live_trades)
         drawdown = calculate_max_drawdown(live_trades)
         win_rate = calculate_win_rate(live_trades)
-        
+
         # Check minimum trades
         if len(live_trades) < phase_config['min_trades']:
             return {
                 'passed': False,
                 'reason': f'Insufficient trades ({len(live_trades)} < {phase_config["min_trades"]})'
             }
-        
+
         # Check success criteria
         criteria = phase_config['success_criteria']
         checks = {
@@ -1387,9 +1387,9 @@ class CanaryDeployment:
             'drawdown': drawdown >= criteria['max_drawdown'],
             'win_rate': win_rate >= criteria['min_win_rate'],
         }
-        
+
         all_passed = all(checks.values())
-        
+
         return {
             'passed': all_passed,
             'metrics': {
@@ -1401,32 +1401,32 @@ class CanaryDeployment:
             'checks': checks,
             'ready_for_next_phase': all_passed
         }
-    
+
     def promote_to_paper_live(self):
         """Promote från canary till paper-live."""
         print(f"📈 PROMOTING TO PAPER-LIVE")
         print(f"Capital allocation: {self.PHASES['paper_live']['capital_allocation']:.0%}")
-        
+
         self.current_phase = 'paper_live'
         self.phase_start_date = datetime.now()
-        
+
         self._log_deployment_event('promoted_to_paper_live')
-    
+
     def rollback(self, reason):
         """Rollback deployment och revert till backup."""
         print(f"🚨 ROLLBACK TRIGGERED: {reason}")
-        
+
         # Switch to backup model
         backup_model = self.ticket['rollback_plan']['rollback_model']
-        
+
         print(f"→ Reverting to backup: {backup_model}")
-        
+
         # Notify team
         self._send_alert(
             f"Model rollback: {reason}",
             self.ticket['rollback_plan']['notification']
         )
-        
+
         self._log_deployment_event('rollback', {'reason': reason})
 
 
@@ -1443,7 +1443,7 @@ if canary_results['passed']:
     canary.promote_to_paper_live()
     # ... wait 7 days ...
     paper_results = canary.evaluate_paper_live_phase(live_trades)
-    
+
     if paper_results['passed']:
         # Phase 3: Full Deploy
         canary.promote_to_full()
@@ -1460,29 +1460,29 @@ else:
 
 def generate_canary_report(canary_deployment, current_trades):
     """Generera daglig rapport för canary phase."""
-    
+
     days_running = (datetime.now() - canary_deployment.phase_start_date).days
     phase_config = canary_deployment.PHASES[canary_deployment.current_phase]
-    
+
     print(f"\n{'='*80}")
     print(f"CANARY DEPLOYMENT REPORT - Day {days_running}/{phase_config['duration_days']}")
     print(f"{'='*80}")
-    
+
     # Current metrics
     metrics = calculate_current_metrics(current_trades)
     criteria = phase_config['success_criteria']
-    
+
     print(f"\nCurrent Performance:")
     print(f"  Sharpe:    {metrics['sharpe']:.2f} (need: ≥{criteria['min_sharpe']})")
     print(f"  Drawdown:  {metrics['drawdown']:.1%} (need: ≥{criteria['max_drawdown']:.1%})")
     print(f"  Win Rate:  {metrics['win_rate']:.1%} (need: ≥{criteria['min_win_rate']:.1%})")
     print(f"  Trades:    {len(current_trades)} (need: ≥{phase_config['min_trades']})")
-    
+
     # Progress
     print(f"\nProgress:")
     print(f"  Days:   {days_running}/{phase_config['duration_days']}")
     print(f"  Trades: {len(current_trades)}/{phase_config['min_trades']}")
-    
+
     # Status
     if all([
         metrics['sharpe'] >= criteria['min_sharpe'],
@@ -1517,34 +1517,34 @@ from pathlib import Path
 def complete_validation_pipeline(symbol, timeframe, model_path, config):
     """
     Kör ALLA validation checks i korrekt ordning.
-    
+
     Returns:
         Championship ticket (approved eller rejected)
     """
     print("="*80)
     print("COMPLETE CHAMPION VALIDATION PIPELINE")
     print("="*80)
-    
+
     results = {}
-    
+
     # 1. Purged WFCV
     print("\n[1/8] Running Purged Walk-Forward CV...")
     wfcv_results = run_purged_wfcv(symbol, timeframe, model_path)
     results['wfcv'] = wfcv_results
-    
+
     if wfcv_results['stability_score'] < 0.70:
         return reject_model("Failed WFCV stability check")
     print("  ✓ PASS")
-    
+
     # 2. Holdout Evaluation
     print("\n[2/8] Evaluating on Holdout Set...")
     holdout_results = evaluate_on_holdout(symbol, timeframe, model_path)
     results['holdout'] = holdout_results
-    
+
     if holdout_results['performance_degradation'] > 0.10:
         return reject_model("Holdout performance degradation > 10%")
     print("  ✓ PASS")
-    
+
     # 3. Deflated Sharpe
     print("\n[3/8] Calculating Deflated Sharpe...")
     deflated = calculate_deflated_sharpe(
@@ -1554,61 +1554,61 @@ def complete_validation_pipeline(symbol, timeframe, model_path, config):
         kurtosis=stats.kurtosis(holdout_results['returns'])
     )
     results['deflated_sharpe'] = deflated
-    
+
     if deflated['deflated_sharpe'] < 1.0:
         return reject_model("Deflated Sharpe < 1.0 (statistically insignificant)")
     print("  ✓ PASS")
-    
+
     # 4. PBO Check
     print("\n[4/8] Calculating Probability of Backtest Overfitting...")
     pbo = calculate_pbo(symbol, timeframe, model_path)
     results['pbo'] = pbo
-    
+
     if pbo['pbo'] > 0.50:
         return reject_model(f"High overfit risk (PBO={pbo['pbo']:.2%})")
     print("  ✓ PASS")
-    
+
     # 5. Regime Gates
     print("\n[5/8] Validating Regime Robustness Gates...")
     regime_results = validate_regime_gates(symbol, timeframe, model_path)
     results['regime_gates'] = regime_results
-    
+
     if not regime_results['all_gates_passed']:
         failed = regime_results['failed_regimes']
         return reject_model(f"Failed regime gates: {failed}")
     print("  ✓ PASS")
-    
+
     # 6. Feature Drift Check
     print("\n[6/8] Checking Feature Drift (PSI)...")
     psi_results = check_feature_drift(symbol, timeframe)
     results['feature_drift'] = psi_results
-    
+
     max_psi = max(r['psi'] for r in psi_results.values())
     if max_psi > 0.25:
         return reject_model(f"Feature drift detected (PSI={max_psi:.3f})")
     print("  ✓ PASS")
-    
+
     # 7. Probability Calibration
     print("\n[7/8] Verifying Probability Calibration...")
     calibration = verify_calibration(symbol, timeframe, model_path)
     results['calibration'] = calibration
-    
+
     if calibration['ece'] > 0.15:  # Expected Calibration Error
         print("  ⚠ WARNING: Poor calibration (consider recalibration)")
     else:
         print("  ✓ PASS")
-    
+
     # 8. Provenance & Reproducibility
     print("\n[8/8] Creating Provenance Record...")
     provenance = create_provenance_record(model_path, results)
     results['provenance'] = provenance
     print("  ✓ PASS")
-    
+
     # Generate Championship Ticket
     print("\n" + "="*80)
     print("GENERATING CHAMPIONSHIP TICKET")
     print("="*80)
-    
+
     ticket = create_championship_ticket(
         model_path,
         results['wfcv'],
@@ -1616,13 +1616,13 @@ def complete_validation_pipeline(symbol, timeframe, model_path, config):
         results['pbo'],
         results['deflated_sharpe']['deflated_sharpe']
     )
-    
+
     # Generate Model Card
     model_card = generate_model_card(model_path, results)
-    
+
     # Save everything
     save_validation_results(model_path, results, ticket, model_card)
-    
+
     # Final verdict
     print("\n" + "="*80)
     if ticket['status'] == 'APPROVED':
@@ -1637,7 +1637,7 @@ def complete_validation_pipeline(symbol, timeframe, model_path, config):
         print("="*80)
         print("\nReason: Model failed critical validation checks")
         print("→ Review failed checks and retrain")
-    
+
     return ticket
 
 
@@ -1649,13 +1649,13 @@ def main():
     parser.add_argument("--timeframe", required=True)
     parser.add_argument("--model", required=True)
     parser.add_argument("--config", default="config/validation_config.json")
-    
+
     args = parser.parse_args()
-    
+
     # Load validation config
     with open(args.config) as f:
         config = json.load(f)
-    
+
     # Run complete pipeline
     ticket = complete_validation_pipeline(
         args.symbol,
@@ -1663,7 +1663,7 @@ def main():
         Path(args.model),
         config
     )
-    
+
     # Exit code baserat på approval
     sys.exit(0 if ticket['status'] == 'APPROVED' else 1)
 
@@ -1704,37 +1704,37 @@ python scripts/monitor_canary.py \
     "min_stability_score": 0.70,
     "min_worst_case_auc": 0.60
   },
-  
+
   "holdout": {
     "size_pct": 0.20,
     "max_performance_degradation": 0.10
   },
-  
+
   "overfit_detection": {
     "deflated_sharpe_threshold": 1.0,
     "pbo_threshold": 0.50,
     "n_trials_tested": 50
   },
-  
+
   "drift_monitoring": {
     "psi_threshold": 0.25,
     "psi_warning": 0.10,
     "ks_alpha": 0.05,
     "monitoring_frequency_days": 1
   },
-  
+
   "regime_gates": {
     "bull": {"min_sharpe": 1.0, "max_drawdown": -0.20},
     "bear": {"min_sharpe": 0.0, "max_drawdown": -0.15},
     "ranging": {"min_sharpe": 0.3, "max_drawdown": -0.18}
   },
-  
+
   "hysteresis": {
     "score_improvement_threshold": 0.5,
     "cooldown_days": 7,
     "min_switch_confidence": 0.80
   },
-  
+
   "transaction_costs": {
     "maker_fee": 0.0010,
     "taker_fee": 0.0020,
@@ -1742,7 +1742,7 @@ python scripts/monitor_canary.py \
     "latency_bars": 1,
     "fill_probability": 0.95
   },
-  
+
   "canary_deployment": {
     "phase_1_days": 3,
     "phase_1_capital": 0.10,
@@ -1978,7 +1978,7 @@ IMMEDIATE stop trading if:
 ## 📚 ACADEMIC REFERENCES
 
 1. **Bailey & López de Prado (2014)**: "The Deflated Sharpe Ratio"
-2. **Bailey et al. (2015)**: "The Probability of Backtest Overfitting"  
+2. **Bailey et al. (2015)**: "The Probability of Backtest Overfitting"
 3. **López de Prado (2018)**: "Advances in Financial Machine Learning" - Chapter 7 (Cross-Validation), Chapter 11 (Backtesting)
 4. **Niculescu-Mizil & Caruana (2005)**: "Predicting Good Probabilities With Supervised Learning"
 5. **Guo et al. (2017)**: "On Calibration of Modern Neural Networks"
@@ -2003,7 +2003,7 @@ IMMEDIATE stop trading if:
 9. 📝 **Model Card + Ticket** - Production documentation (Dokumenterad)
 10. 📝 **Canary Deployment** - Phased rollout (Dokumenterad)
 
-**Phase-5: SOLID FOUNDATION för Production ML! 🚀**  
+**Phase-5: SOLID FOUNDATION för Production ML! 🚀**
 **Phase-6: Complete end-to-end production pipeline! 🎯**
 
 ---
@@ -2037,8 +2037,6 @@ IMMEDIATE stop trading if:
 
 ---
 
-**Phase-5 Status:** ✅ COMPLETE - Core validation infrastructure ready!  
-**Phase-6 Impact:** 🎯 COMPLETE production deployment pipeline  
+**Phase-5 Status:** ✅ COMPLETE - Core validation infrastructure ready!
+**Phase-6 Impact:** 🎯 COMPLETE production deployment pipeline
 **ROI:** 🚀 MASSIVE - enterprise-grade ML operations
-
-

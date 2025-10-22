@@ -1,7 +1,7 @@
 # HTF Fibonacci Exits - Implementation Summary
 
-**Date**: 2025-10-13  
-**Status**: ✅ IMPLEMENTED AND VERIFIED  
+**Date**: 2025-10-13
+**Status**: ✅ IMPLEMENTED AND VERIFIED
 **System**: Production Ready
 
 ---
@@ -12,7 +12,7 @@
 
 **Why:** Replace fixed TP/SL (5%, 2%) with market structure-aware exits that let winners run and protect profits dynamically.
 
-**Result:** 
+**Result:**
 - Partial exits work (2 of 7 trades, 28.6%)
 - HTF context integrated into pipeline
 - Fallback logic when HTF unavailable
@@ -194,11 +194,11 @@ Total Trades: 7
 - Reason: HTF swings out of 8 ATR reach (correct behavior)
 
 **System Health:**
-✅ Partial exits triggered at HTF Fib levels  
-✅ Fallback logic engaged appropriately  
-✅ No dict vs float errors  
-✅ No null byte corruption  
-✅ Complete trade serialization  
+✅ Partial exits triggered at HTF Fib levels
+✅ Fallback logic engaged appropriately
+✅ No dict vs float errors
+✅ No null byte corruption
+✅ Complete trade serialization
 ✅ All integration tests passing
 
 ---
@@ -206,27 +206,27 @@ Total Trades: 7
 ## Bug Fixes Applied
 
 ### 1. Dict vs Float ATR Error
-**Problem:** ATR extracted from `current_bar` dict instead of `indicators` float  
-**Location:** `src/core/backtest/htf_exit_engine.py` lines 99, 117  
+**Problem:** ATR extracted from `current_bar` dict instead of `indicators` float
+**Location:** `src/core/backtest/htf_exit_engine.py` lines 99, 117
 **Fix:** Always use `indicators.get("atr", 100.0)`
 
 ### 2. Null Bytes in File
-**Problem:** 9 null bytes caused `SyntaxError: source code string cannot contain null bytes`  
+**Problem:** 9 null bytes caused `SyntaxError: source code string cannot contain null bytes`
 **Fix:** Created temporary cleaner script, removed corruption
 
 ### 3. Missing Trade Fields
-**Problem:** `is_partial`, `exit_reason`, `remaining_size`, `position_id` not serialized  
-**Location:** `src/core/backtest/engine.py` `_build_results()`  
+**Problem:** `is_partial`, `exit_reason`, `remaining_size`, `position_id` not serialized
+**Location:** `src/core/backtest/engine.py` `_build_results()`
 **Fix:** Added missing fields to trade dict
 
 ### 4. Timeframe Not Passed
-**Problem:** HTF context unavailable because `timeframe` not passed to `extract_features()`  
-**Location:** `src/core/strategy/evaluate.py`  
+**Problem:** HTF context unavailable because `timeframe` not passed to `extract_features()`
+**Location:** `src/core/strategy/evaluate.py`
 **Fix:** Added `timeframe` parameter
 
 ### 5. HTF Context Nesting
-**Problem:** Context looked for in `meta['htf_fibonacci']` but stored in `meta['features']['htf_fibonacci']`  
-**Location:** `src/core/backtest/engine.py` `_check_htf_exit_conditions()`  
+**Problem:** Context looked for in `meta['htf_fibonacci']` but stored in `meta['features']['htf_fibonacci']`
+**Location:** `src/core/backtest/engine.py` `_check_htf_exit_conditions()`
 **Fix:** Corrected extraction path
 
 ---
@@ -396,14 +396,14 @@ for trade in results["trades"]:
 ## Troubleshooting
 
 ### HTF Context Not Available
-**Symptom:** All exits use fallback logic  
+**Symptom:** All exits use fallback logic
 **Check:**
 1. Is `timeframe` passed to `extract_features()`?
 2. Is HTF data loaded? (`data/curated/v1/candles/tBTCUSD_1D.parquet`)
 3. Is LTF timeframe supported? (1h, 30m, 6h, 15m only)
 
 ### Partial Exits Not Triggering
-**Symptom:** 0 partial exits in backtest  
+**Symptom:** 0 partial exits in backtest
 **Check:**
 1. Are HTF Fib levels within 8 ATR of current price?
 2. Is `enable_partials=True` in config?
@@ -411,7 +411,7 @@ for trade in results["trades"]:
 4. Verify `partial_1_pct` and `partial_2_pct` > 0
 
 ### Dict vs Float Errors
-**Symptom:** `'<' not supported between instances of 'dict' and 'float'`  
+**Symptom:** `'<' not supported between instances of 'dict' and 'float'`
 **Fix:** Ensure ATR always from `indicators.get("atr", 100.0)`, never from `current_bar`
 
 ---
@@ -453,8 +453,8 @@ for trade in results["trades"]:
 
 ---
 
-**Last Updated:** 2025-10-13  
-**Version:** 1.0  
+**Last Updated:** 2025-10-13
+**Version:** 1.0
 **Status:** ✅ PRODUCTION READY
 
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     

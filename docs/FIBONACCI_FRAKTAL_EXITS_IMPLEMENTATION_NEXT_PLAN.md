@@ -60,7 +60,7 @@ def calculate_exit_fibonacci_levels(side, swing_high, swing_low, levels=None):
         # Exit → från high ner mot low
         levels = {k: swing_high - (swing_high - swing_low)*v for k,v in base.items()}
     else:  # SHORT
-        # Exit → från low upp mot high  
+        # Exit → från low upp mot high
         levels = {k: swing_low + (swing_high - swing_low)*v for k,v in base.items()}
     return levels
 ```
@@ -103,7 +103,7 @@ def arm_exit_context(self, htf_ctx):
 
 ### **Partial Exits**
 - **TP1 (0.382)**: 40% av position
-- **TP2 (0.5)**: 30% av position  
+- **TP2 (0.5)**: 30% av position
 - **TP3 (0.618)**: 20% av position
 - **TP4 (0.786)**: 10% av position
 
@@ -155,7 +155,7 @@ swing_update_params = {
 
 ### **Integration Tests**
 - `test_static_frozen_exits_optimized.py` - Statisk strategi
-- `test_dynamic_exits_optimized.py` - Dynamisk strategi  
+- `test_dynamic_exits_optimized.py` - Dynamisk strategi
 - `test_fibonacci_exits_real_backtest.py` - Full backtest
 
 ### **Performance Tests**
@@ -234,6 +234,6 @@ python scripts/test_frozen_exit_context.py
 
 ---
 
-**Implementation Complete**: 2025-10-13  
-**Status**: ✅ Production Ready  
+**Implementation Complete**: 2025-10-13
+**Status**: ✅ Production Ready
 **Next**: Live trading deployment

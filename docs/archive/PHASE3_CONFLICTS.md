@@ -1,7 +1,7 @@
 # Phase 3 - Potentiella Konflikter & Lösningar
 
-**Skapad:** 2025-10-07  
-**Status:** Granskning innan Phase 3 påbörjas  
+**Skapad:** 2025-10-07
+**Status:** Granskning innan Phase 3 påbörjas
 **Syfte:** Identifiera och planera för alla potentiella konflikter mellan befintlig infrastruktur och Phase 3-implementation
 
 ---
@@ -153,7 +153,7 @@ Priority: HÖGT - Innan data fetch
    data/candles/*.parquet
    data/features/*.parquet
    data/metadata/*.json
-   
+
    # Behåll README
    !data/README.md
    !data/**/README.md
@@ -162,12 +162,12 @@ Priority: HÖGT - Innan data fetch
 3. Skapa data/README.md:
    ```markdown
    # Genesis-Core - Data Directory
-   
+
    ## Structure
    - candles/: Historical OHLCV data (Parquet)
    - features/: Pre-computed features (Parquet)
    - metadata/: Data quality reports (JSON)
-   
+
    ## NOT IN GIT
    Data files are not version controlled due to size.
    Use scripts/fetch_historical.py to download.
@@ -203,7 +203,7 @@ Priority: MEDIUM - Innan mass fetch
 1. Implementera rate limiter i fetch_historical.py:
    ```python
    from ratelimit import limits, sleep_and_retry
-   
+
    @sleep_and_retry
    @limits(calls=27, period=60)  # 27/min (säkerhetsmarginal från 30)
    def fetch_candles_page(...):
@@ -213,7 +213,7 @@ Priority: MEDIUM - Innan mass fetch
 2. Progress tracking:
    ```python
    from tqdm import tqdm
-   
+
    for symbol in tqdm(symbols):
        for tf in tqdm(timeframes):
            fetch_with_retry(symbol, tf)
@@ -276,7 +276,7 @@ Priority: MEDIUM - Innan första träning
      --baseline config/models/tBTCUSD.json \
      --candidate config/models/tBTCUSD_v2.json \
      --backtest-period 2024-09-01:2024-10-01
-   
+
    # Om bättre → deploy
    # Om sämre → behåll baseline
    ```
@@ -428,8 +428,8 @@ import os
 
 def save_model_atomic(path, data):
     with tempfile.NamedTemporaryFile(
-        mode='w', 
-        dir=path.parent, 
+        mode='w',
+        dir=path.parent,
         delete=False
     ) as f:
         json.dump(data, f)
@@ -498,10 +498,10 @@ def save_model_atomic(path, data):
 
 ## 🎯 SAMMANFATTNING
 
-**Totalt identifierade konflikter:** 10  
-**Kritiska:** 3  
-**Medel:** 3  
-**Mindre:** 4  
+**Totalt identifierade konflikter:** 10
+**Kritiska:** 3
+**Medel:** 3
+**Mindre:** 4
 
 **Estimated resolution time:**
 - Kritiska: 4-6 timmar

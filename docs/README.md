@@ -89,8 +89,7 @@ Check `archive/` for how the system evolved through Phase 1-4.
 ## 🔄 DOCUMENT LIFECYCLE
 
 **Active** → Used daily, frequently updated
-**Archived** → Historical reference, no longer updated  
+**Archived** → Historical reference, no longer updated
 **Ideas** → Future experiments, not yet implemented
 
 **Maintainer:** Keep this README updated when documents are added/archived.
-

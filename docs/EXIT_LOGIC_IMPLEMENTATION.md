@@ -17,7 +17,7 @@ Implemented comprehensive exit logic for backtest engine and future live trading
 ```python
 class ExitLogic(BaseModel):
     """Exit configuration for backtest and live trading."""
-    
+
     enabled: bool = Field(default=True, description="Enable exit logic")
     max_hold_bars: int = Field(default=20, ge=1, description="Max bars to hold position")
     stop_loss_pct: float = Field(default=0.02, ge=0.0, le=1.0, description="Stop loss %")
@@ -116,7 +116,7 @@ def _check_exit_conditions(
 ) -> str | None:
     """
     Check if any exit conditions are met.
-    
+
     Returns:
         Exit reason string if should exit, None otherwise
     """
@@ -126,23 +126,23 @@ def _check_exit_conditions(
         return "SL"
     if pnl_pct >= take_profit_pct:
         return "TP"
-    
+
     # 2. Time-Based Exit
     bars_held = current_bar - entry_bar
     if bars_held >= max_hold_bars:
         return "TIME"
-    
+
     # 3. Confidence Drop
     if confidence < exit_conf_threshold:
         return "CONF_DROP"
-    
+
     # 4. Regime-Aware Exit
     if regime_aware:
         if position.side == "SHORT" and regime == "BULL":
             return "REGIME_CHANGE"
         if position.side == "LONG" and regime == "BEAR":
             return "REGIME_CHANGE"
-    
+
     return None
 ```
 
@@ -151,11 +151,11 @@ def _check_exit_conditions(
 ```python
 for i in range(len(self.candles_df)):
     # ... get bar data ...
-    
+
     # === EXIT LOGIC (check BEFORE new entry) ===
     if self.position_tracker.has_position():
         exit_reason = self._check_exit_conditions(...)
-        
+
         if exit_reason:
             trade = self.position_tracker.close_position_with_reason(
                 price=close_price, timestamp=timestamp, reason=exit_reason
@@ -163,7 +163,7 @@ for i in range(len(self.candles_df)):
             if verbose and trade:
                 print(f"\n[{timestamp}] EXIT ({exit_reason}): {trade.side} ...")
             position_entry_bar = None
-    
+
     # === ENTRY LOGIC ===
     if action != "NONE" and size > 0:
         exec_result = self.position_tracker.execute_action(...)
@@ -463,7 +463,6 @@ Exit logic implementation is **complete** and represents a **critical fix** to t
 
 ---
 
-**Implemented by**: AI Agent (Cursor)  
-**Date**: 2025-10-10  
+**Implemented by**: AI Agent (Cursor)
+**Date**: 2025-10-10
 **Related Docs**: `docs/6H_BACKTEST_MYSTERY_SOLVED.md`, `docs/BACKTEST_CRITICAL_BUGS_FIXED.md`
-

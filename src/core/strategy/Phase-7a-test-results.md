@@ -34,4 +34,3 @@
   - P4: –0.74 % (1 trade)
   - P5–P6: 0 % (inga triggers)
 - Observationer: Zonlogiken ger fler trades men kräver vidare tuning (höj mid/high trösklar, utvärdera filter för att minska förluster i P3–P4).
-

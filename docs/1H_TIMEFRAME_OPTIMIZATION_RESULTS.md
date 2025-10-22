@@ -193,7 +193,7 @@ Denna dokumentation sammanfattar alla tester vi genomfört för att optimera 1h 
 
 **Completed:**
 - ✅ Confidence optimization
-- ✅ Risk map optimization  
+- ✅ Risk map optimization
 - ✅ Regime proba optimization
 
 **Pending:**
@@ -203,6 +203,6 @@ Denna dokumentation sammanfattar alla tester vi genomfört för att optimera 1h 
 
 ---
 
-**Dokumentation skapad:** 2025-10-14  
-**Status:** ✅ Conservative Approach är optimal för 1h timeframe  
+**Dokumentation skapad:** 2025-10-14
+**Status:** ✅ Conservative Approach är optimal för 1h timeframe
 **Nästa steg:** Optimera andra parametrar eller testa andra timeframes

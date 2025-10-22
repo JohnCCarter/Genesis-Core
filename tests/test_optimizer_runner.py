@@ -8,6 +8,11 @@ from unittest.mock import MagicMock, patch
 import pytest
 import yaml
 
+try:
+    import optuna
+except ImportError:
+    optuna = None
+
 import core.optimizer.runner as runner
 from core.optimizer.runner import run_optimizer
 
@@ -160,7 +165,11 @@ def test_run_optimizer_optuna_strategy(tmp_path: Path) -> None:
         patch("core.optimizer.runner.RESULTS_DIR", tmp_path / "results"),
         patch("core.optimizer.runner._ensure_run_metadata") as ensure_meta,
         patch("core.optimizer.runner._create_optuna_study") as create_study,
+        patch("core.optimizer.runner.run_trial") as mock_run_trial,
     ):
+        mock_run_trial.return_value = fake_make_trial(
+            1, {"thresholds": {"entry_conf_overall": 0.4}}
+        )
         ensure_meta.side_effect = lambda run_dir, *_: (
             run_dir.mkdir(parents=True, exist_ok=True),
             (run_dir / "run_meta.json").write_text(json.dumps(run_meta_payload), encoding="utf-8"),
@@ -169,16 +178,22 @@ def test_run_optimizer_optuna_strategy(tmp_path: Path) -> None:
         study_mock = MagicMock()
         trial_mock = MagicMock()
         trial_mock.number = 0
-        trial_mock.user_attrs = {
-            "result_payload": fake_make_trial(1, {"thresholds": {"entry_conf_overall": 0.4}})
-        }
+        trial_mock.suggest_categorical.return_value = 0.4  # Return a real value
+        trial_mock.user_attrs = {}
+
         study_mock.best_trial = trial_mock
         study_mock.study_name = "test-study"
         study_mock.trials = [trial_mock]
         study_mock.best_value = 1.0
 
         def optuna_objective_side_effect(objective, **kwargs):
-            objective(trial_mock)
+            # Simulate Optuna calling the objective with the mocked trial
+            score = objective(trial_mock)
+            # Manually update trial state as Optuna would
+            trial_mock.user_attrs["result_payload"] = mock_run_trial.return_value
+            trial_mock.state = optuna.trial.TrialState.COMPLETE
+            trial_mock.value = score
+            return score
 
         study_mock.optimize.side_effect = optuna_objective_side_effect
         create_study.return_value = study_mock

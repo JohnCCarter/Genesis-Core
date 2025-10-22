@@ -1,7 +1,7 @@
 # Fibonacci Combination Feature Analysis
 
-**Date**: 2025-10-10  
-**Analysis Type**: Feature Synergy Testing  
+**Date**: 2025-10-10
+**Analysis Type**: Feature Synergy Testing
 **Purpose**: Validate if Fibonacci features gain predictive power when combined with existing context features
 
 ---
@@ -211,7 +211,7 @@ volatility_shift = ATR(14) / ATR(14).shift(20)  # Short-term vol expansion
 volatility_shift_ma3 = volatility_shift.rolling(3).mean()  # Smoothed vol expansion
 vol_regime = (ATR > ATR.rolling(50).quantile(0.75)).astype(float)  # High vol flag
 
-# Trend Features  
+# Trend Features
 adx = calculate_adx(high, low, close, period=14)  # Trend strength (0-100)
 ema_slope_20 = EMA(20).diff(5) / EMA(20).shift(5)  # Trend direction
 price_vs_ema20 = (close - EMA20) / EMA20  # Price deviation from EMA
@@ -448,8 +448,7 @@ On shorter timeframes (1h), Fibonacci alone is **useless**, but when combined wi
 
 ---
 
-**Analysis Date**: 2025-10-10  
-**Data Period**: 18 months (tBTCUSD)  
-**Validation Method**: Out-of-sample IC testing with statistical significance  
+**Analysis Date**: 2025-10-10
+**Data Period**: 18 months (tBTCUSD)
+**Validation Method**: Out-of-sample IC testing with statistical significance
 **Status**: ✅ VALIDATED - Ready for implementation
-

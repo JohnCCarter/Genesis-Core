@@ -52,21 +52,21 @@ $results = @()
 foreach ($symbol in $symbolList) {
     foreach ($timeframe in $timeframeList) {
         $currentJob++
-        
+
         Write-Host "[$currentJob/$totalJobs] Fetching $symbol $timeframe..." -ForegroundColor Yellow
-        
+
         $jobStart = Get-Date
-        
+
         try {
             # Run fetch script
             python scripts/fetch_historical.py `
                 --symbol $symbol `
                 --timeframe $timeframe `
                 --months $Months
-            
+
             $jobEnd = Get-Date
             $duration = ($jobEnd - $jobStart).TotalSeconds
-            
+
             if ($LASTEXITCODE -eq 0) {
                 Write-Host "  ✅ Success ($([math]::Round($duration, 1))s)`n" -ForegroundColor Green
                 $results += [PSCustomObject]@{
@@ -130,4 +130,3 @@ if ($results | Where-Object { $_.Status -ne '✅ Success' }) {
 } else {
     exit 0
 }
-

@@ -26,7 +26,7 @@ Denna dokumentation sammanfattar alla tester och resultat för 6h timeframe. 6h 
         "entry_conf_overall": 0.35,  # Fungerar bra
         "regime_proba": {
             "ranging": 0.5,
-            "bull": 0.5, 
+            "bull": 0.5,
             "bear": 0.5,
             "balanced": 0.5
         },
@@ -239,6 +239,6 @@ Denna dokumentation sammanfattar alla tester och resultat för 6h timeframe. 6h 
 
 ---
 
-**Dokumentation skapad:** 2025-10-14  
-**Status:** ✅ 6h Timeframe är optimal och redo för production  
+**Dokumentation skapad:** 2025-10-14
+**Status:** ✅ 6h Timeframe är optimal och redo för production
 **Nästa steg:** Production deployment eller testa andra symbols

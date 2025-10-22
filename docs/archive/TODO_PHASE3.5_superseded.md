@@ -1,9 +1,9 @@
 # TODO - Phase 3.5: ML Improvement
 
-**Branch:** phase-4  
-**Status:** ✅ IMPLEMENTATION KLART | ✅ TRAINING KLART | ⏳ BACKTEST ÅTERSTÅR  
-**Goal:** Förbättra ML model från AUC 0.517 → 0.65+ innan production deployment  
-**Senast uppdaterad:** 2025-10-08 12:05  
+**Branch:** phase-4
+**Status:** ✅ IMPLEMENTATION KLART | ✅ TRAINING KLART | ⏳ BACKTEST ÅTERSTÅR
+**Goal:** Förbättra ML model från AUC 0.517 → 0.65+ innan production deployment
+**Senast uppdaterad:** 2025-10-08 12:05
 **Bästa Resultat:** AUC 0.5987 (Adaptive 6m) - +15.8% förbättring från baseline!
 
 ---

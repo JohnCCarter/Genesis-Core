@@ -1,6 +1,6 @@
 # 6H Backtest Mystery - SOLVED! 🚨
 
-**Date**: 2025-10-10  
+**Date**: 2025-10-10
 **Question**: Varför -19.64% på 6h trots +0.308 IC?
 
 ---
@@ -52,7 +52,7 @@ for i in range(len(candles)):
     result, meta = evaluate_pipeline(...)
     action = result.get("action", "NONE")
     size = meta.get("decision", {}).get("size", 0.0)
-    
+
     if action != "NONE" and size > 0:
         self.position_tracker.execute_action(action, size, price, timestamp)
         # ❌ NO EXIT LOGIC!
@@ -105,7 +105,7 @@ for i in range(len(candles)):
 for each bar:
     prediction = model.predict(bar)
     actual_return_10_bars = data[i+10].close - data[i].close
-    
+
 ic = spearman_corr(predictions, actual_returns)  # ✅ +0.308
 ```
 
@@ -177,7 +177,7 @@ for i in range(len(candles)):
     # Check if we have open position
     if self.position_tracker.has_position():
         current_pnl_pct = self.position_tracker.unrealized_pnl_pct(current_price)
-        
+
         # Exit conditions:
         if current_pnl_pct >= 0.05:  # Take-profit
             self.position_tracker.close_position(current_price, "TP")
@@ -187,7 +187,7 @@ for i in range(len(candles)):
             self.position_tracker.close_position(current_price, "TIME")
         elif conf < 0.45:  # Confidence drop
             self.position_tracker.close_position(current_price, "LOW_CONF")
-    
+
     # Then check for new entry signal...
 ```
 
@@ -408,8 +408,7 @@ if exit_reasons:
 
 ---
 
-**Discovered by**: AI Agent (Cursor)  
-**Root cause**: Missing exit logic in BacktestEngine  
-**Impact**: CRITICAL - All backtests with long-holding positions are invalid  
+**Discovered by**: AI Agent (Cursor)
+**Root cause**: Missing exit logic in BacktestEngine
+**Impact**: CRITICAL - All backtests with long-holding positions are invalid
 **Status**: Documented, awaiting fix
-

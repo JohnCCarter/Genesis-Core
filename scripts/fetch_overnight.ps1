@@ -7,7 +7,7 @@
     Fetches 18 months of data for:
     - Primary: tBTCUSD (all timeframes)
     - Secondary: tETHUSD (all timeframes)
-    
+
     Total time: ~10-15 minutes
 #>
 
@@ -40,4 +40,3 @@ Write-Host "`nYou can now proceed with feature precomputation!" -ForegroundColor
 Write-Host "See: README.agents.md for next steps" -ForegroundColor Cyan
 
 exit $LASTEXITCODE
-

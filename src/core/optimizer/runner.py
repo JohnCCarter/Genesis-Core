@@ -4,13 +4,13 @@ import copy
 import json
 import os
 import shutil
-import subprocess  # nosec B404
+import subprocess
 import threading
 import time
 from collections.abc import Iterable
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -76,7 +76,7 @@ def _as_bool(value: Any) -> bool:
         return value
     if value is None:
         return False
-    if isinstance(value, (int, float)):
+    if isinstance(value, int | float):
         return value != 0
     if isinstance(value, str):
         return value.strip().lower() in {"1", "true", "yes", "y", "on"}
@@ -89,6 +89,8 @@ def _validate_date_range(start: str, end: str, *, message: str | None = None) ->
 
 
 def _normalize_date(value: Any, field_name: str) -> str:
+    if isinstance(value, date):
+        return value.isoformat()
     if not isinstance(value, str):
         raise TypeError(f"{field_name} måste vara sträng, fick {type(value).__name__}")
     candidate = value.strip()
@@ -167,7 +169,32 @@ def _ensure_run_metadata(
         "git_commit": commit,
         "raw_meta": meta,
     }
-    meta_path.write_text(json.dumps(meta_payload, indent=2), encoding="utf-8")
+    meta_path.write_text(json.dumps(_serialize_meta(meta_payload), indent=2), encoding="utf-8")
+
+
+def _serialize_meta(meta_payload: dict[str, Any]) -> dict[str, Any]:
+    serialized = {}
+    for key, value in meta_payload.items():
+        if isinstance(value, dict):
+            serialized[key] = _serialize_meta(value)
+        elif isinstance(value, list):
+            serialized[key] = [_serialize_meta(v) if isinstance(v, dict) else v for v in value]
+        elif isinstance(value, datetime | date):
+            serialized[key] = value.isoformat()
+        else:
+            serialized[key] = value
+    return serialized
+
+
+def _deep_merge(base: dict, override: dict) -> dict:
+    """Deep merge override dict into base dict."""
+    merged = dict(base)
+    for key, value in (override or {}).items():
+        if key in merged and isinstance(merged[key], dict) and isinstance(value, dict):
+            merged[key] = _deep_merge(merged[key], value)
+        else:
+            merged[key] = value
+    return merged
 
 
 def _expand_value(node: Any) -> list[Any]:
@@ -287,7 +314,17 @@ def run_trial(
     config_file: Path | None = None
     if trial.parameters:
         config_file = output_dir / f"{trial_id}_config.json"
-        config_payload = {"cfg": trial.parameters}
+
+        # Load default config and merge with trial parameters
+        from core.config.authority import ConfigAuthority
+
+        authority = ConfigAuthority()
+        default_cfg_obj, _, _ = authority.get()
+        default_cfg = default_cfg_obj.model_dump()
+
+        # Deep merge trial parameters into default config
+        merged_cfg = _deep_merge(default_cfg, trial.parameters)
+        config_payload = {"cfg": merged_cfg}
         config_file.write_text(json.dumps(config_payload, indent=2), encoding="utf-8")
 
     if trial.start_date and trial.end_date:
@@ -589,14 +626,16 @@ def _run_optuna(
         gc_after_trial=True,
     )
 
-    try:
-        best_trial = study.best_trial
-        best_payload = best_trial.user_attrs.get("result_payload")
-        if best_payload is not None:
-            best_json_path = run_dir / "best_trial.json"
-            best_json_path.write_text(json.dumps(best_payload, indent=2), encoding="utf-8")
-    except ValueError:
-        pass
+    best_payload: dict[str, Any] | None = None
+    if study.best_trials:  # finns åtminstone en icke-prunad trial
+        try:
+            best_trial = study.best_trial
+            best_payload = best_trial.user_attrs.get("result_payload")
+            if best_payload is not None:
+                best_json_path = run_dir / "best_trial.json"
+                best_json_path.write_text(json.dumps(best_payload, indent=2), encoding="utf-8")
+        except ValueError:
+            best_payload = None
 
     run_meta_path = run_dir / "run_meta.json"
     try:
@@ -609,11 +648,11 @@ def _run_optuna(
         "storage": storage,
         "direction": direction,
         "n_trials": len(study.trials),
-        "best_value": getattr(study, "best_value", None),
-        "best_trial_number": getattr(getattr(study, "best_trial", None), "number", None),
+        "best_value": getattr(study, "best_value", None) if study.best_trials else None,
+        "best_trial_number": best_payload.get("trial_id") if best_payload else None,
     }
     run_meta.setdefault("optuna", {}).update(optuna_meta)
-    run_meta_path.write_text(json.dumps(run_meta, indent=2), encoding="utf-8")
+    run_meta_path.write_text(json.dumps(_serialize_meta(run_meta), indent=2), encoding="utf-8")
 
     return results
 

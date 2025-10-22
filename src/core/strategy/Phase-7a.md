@@ -69,4 +69,3 @@
 - Unit-/integrationstester för scoring, championwriter och minst ett mini-sök.
 - Dokumentera processen i `docs/optimizer.md` (sökrymder, körning, fallback, cleanup).
 - **Implementation:** Full testsvit + dokumentation uppdaterad (`README.agents.md`, `docs/optimizer.md`).
-

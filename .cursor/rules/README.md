@@ -51,4 +51,3 @@ Common sections to sync:
 
 ---
 **Last Updated**: 2025-10-09
-

@@ -1,14 +1,14 @@
 # Features v17 Validation Report
 
-**Date**: 2025-10-10  
-**Version**: Features v17 (Fibonacci Combinations)  
+**Date**: 2025-10-10
+**Version**: Features v17 (Fibonacci Combinations)
 **Status**: ✅ VALIDATED FOR PRODUCTION (with caveats)
 
 ---
 
 ## Executive Summary
 
-**Features v17** introduces **3 new Fibonacci combination features** that combine Fibonacci geometry with existing context features (EMA slope, ADX, RSI). 
+**Features v17** introduces **3 new Fibonacci combination features** that combine Fibonacci geometry with existing context features (EMA slope, ADX, RSI).
 
 **Key Results:**
 - ✅ **30m timeframe**: EXCELLENT validation (IC +0.058, AUC 0.539, low degradation 13%)
@@ -144,7 +144,7 @@
 4. `fib_prox_score` (-0.35)
 5. `volatility_shift_ma3` (+0.32)
 
-**Analysis**: 
+**Analysis**:
 - ⚠️ 46% IC degradation suggests overfitting on training set
 - ✅ BUT holdout still has strong edge (IC +0.24, p<0.05)
 - ⚠️ Smaller sample size (324 samples) contributes to variance
@@ -532,8 +532,7 @@ Strategy: Quick reversals at Fib levels with momentum context
 
 ---
 
-**Validation Date**: 2025-10-10  
-**Data Period**: 18 months (varies by timeframe)  
-**Validation Method**: IC analysis + Holdout (70/30 split) + Logistic Regression  
+**Validation Date**: 2025-10-10
+**Data Period**: 18 months (varies by timeframe)
+**Validation Method**: IC analysis + Holdout (70/30 split) + Logistic Regression
 **Status**: ✅ **VALIDATED** - Ready for paper trading
-

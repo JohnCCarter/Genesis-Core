@@ -224,7 +224,6 @@ data/curated/v1/  (merged, normalized, validated)
 
 ---
 
-**Updated:** 2025-10-10  
-**Author:** Genesis-Core Team  
+**Updated:** 2025-10-10
+**Author:** Genesis-Core Team
 **Status:** Proposed → Pending Review
-

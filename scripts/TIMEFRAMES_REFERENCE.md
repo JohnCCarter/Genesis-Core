@@ -70,7 +70,7 @@ SUPPORTED_TIMEFRAMES = [
 ### **För multi-timeframe:**
 ```
 HTF: 1D  - Trend direction
-MTF: 1h  - Entry timing  
+MTF: 1h  - Entry timing
 LTF: 15m - Precision entry
 ```
 
@@ -91,7 +91,7 @@ LTF: 15m - Precision entry
 | 1D | ~5 KB |
 | 1W | ~1 KB |
 
-**Total för 2 symbols × 6 timeframes:** ~10 MB  
+**Total för 2 symbols × 6 timeframes:** ~10 MB
 **Total för 16 symbols × 6 timeframes:** ~80 MB
 
 ---
@@ -164,6 +164,5 @@ Exempel:
 
 ---
 
-**Uppdaterad:** 2025-10-10  
+**Uppdaterad:** 2025-10-10
 **Källa:** Bitfinex API v2 + Genesis-Core testing
-

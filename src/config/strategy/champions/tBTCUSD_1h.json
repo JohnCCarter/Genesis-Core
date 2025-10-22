@@ -1,7 +1,8 @@
 {
   "created_at": "2025-10-21T10:55:50.120526+00:00",
-  "run_id": "run_20251021_zones_final",
-  "git_commit": "1f71a88d821fa808e62c5a91cc62c7ed9df43814",
+  "champion_id": "bf017088-7557-5b65-8b63-83863a34a365",
+  "run_id": "run_20251021_091703",
+  "git_commit": "e3c323f",
   "snapshot_id": "tBTCUSD_1h_2024-10-22_2025-10-01_v1",
   "symbol": "tBTCUSD",
   "timeframe": "1h",

@@ -38,9 +38,9 @@ def main(argv: list[str] | None = None) -> int:
         default="{}",
     )
     parser.add_argument(
-        "--mask",
+        "--reveal",
         action="store_true",
-        help="Maskera api-key/signature i utskrift",
+        help="Visa api-key/signature i klartext (VARNING: osäkert)",
     )
     parser.add_argument(
         "--pretty",
@@ -58,12 +58,14 @@ def main(argv: list[str] | None = None) -> int:
 
     headers = build_headers(args.endpoint, body)
 
-    out = {
-        key: ("***" if key in {"bfx-apikey", "bfx-signature"} else value)
-        for key, value in headers.items()
-    }
-    if args.mask:
-        out["warning"] = "values masked by default"
+    if args.reveal:
+        out = headers
+    else:
+        out = {
+            key: ("***" if key in {"bfx-apikey", "bfx-signature"} else value)
+            for key, value in headers.items()
+        }
+        out["info"] = "Hemligheter maskeras som standard. Använd --reveal för att visa."
 
     print(json.dumps(out, indent=2 if args.pretty else None))
     return 0

@@ -9,4 +9,3 @@ Write-Host "Fetching top 3 crypto (BTC, ETH, SOL) on 1h..." -ForegroundColor Cya
 
 Write-Host "`nNext: Train models for each asset!" -ForegroundColor Green
 Write-Host "python scripts/train_model.py --symbol tETHUSD --timeframe 1h --use-holdout" -ForegroundColor Yellow
-

@@ -24,7 +24,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
   - Added `Position.current_size`, `initial_size`, `partial_exits` tracking
   - Added `Trade.is_partial`, `exit_reason`, `remaining_size`, `position_id`
   - New `partial_close()` method for fractional position closing
-  
+
 - `src/core/backtest/engine.py` - HTF exit integration
   - Integrated `HTFFibonacciExitEngine` with configurable thresholds
   - Added HTF context extraction from feature pipeline
@@ -503,4 +503,3 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 ---
 
 **Current Status:** ✅ Production-ready system | ⚠️ Strategy decision needed (trend vs mean reversion)
-

@@ -1,7 +1,7 @@
 # Symmetrisk Chamoun-modell - Timeframe Analysis
 
-**Date**: 2025-10-14  
-**Version**: Symmetrisk Chamoun Exit Logic  
+**Date**: 2025-10-14
+**Version**: Symmetrisk Chamoun Exit Logic
 **Status**: ✅ COMPREHENSIVE TESTING COMPLETED
 
 ---
@@ -229,7 +229,7 @@ strategy_config = {
 
 ---
 
-**Test Date**: 2025-10-14  
-**Data Period**: 3-4 months (varies by timeframe)  
-**Test Method**: Comprehensive backtest med symmetrisk Chamoun-modell  
+**Test Date**: 2025-10-14
+**Data Period**: 3-4 months (varies by timeframe)
+**Test Method**: Comprehensive backtest med symmetrisk Chamoun-modell
 **Status**: ✅ **COMPLETED** - Ready for standard TP/SL comparison

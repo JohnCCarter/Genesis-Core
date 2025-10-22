@@ -1,8 +1,8 @@
 # TODO - Genesis-Core
 
-**Current Phase:** Phase-6c ✅ COMPLETE  
-**Status:** Production-Ready System | Strategy Decision Needed  
-**Last Updated:** 2025-10-10  
+**Current Phase:** Phase-6c ✅ COMPLETE
+**Status:** Production-Ready System | Strategy Decision Needed
+**Last Updated:** 2025-10-10
 **Branch:** phase-5
 
 ---

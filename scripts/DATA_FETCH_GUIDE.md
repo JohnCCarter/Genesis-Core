@@ -132,7 +132,7 @@ python scripts/train_model.py --symbol tBTCUSD --timeframe 1h --use-holdout
 | 6h | ~20 KB |
 | 1D | ~5 KB |
 
-**Total for 2 symbols × 6 timeframes:** ~10 MB  
+**Total for 2 symbols × 6 timeframes:** ~10 MB
 **Total for 16 symbols × 6 timeframes:** ~80 MB
 
 ---
@@ -220,4 +220,3 @@ Solution: This is OK! Script overwrites existing files.
 ---
 
 **Rekommendation:** Börja med `fetch_quick_start.ps1` → träna din första modell → utöka sedan till fler timeframes/symboler baserat på resultat!
-

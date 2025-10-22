@@ -1,8 +1,8 @@
 # Fibonacci Fraktal Exits - Implementation Plan (CORRECTED)
 
-**Date**: 2025-10-13  
-**Author**: AI Agent (Cursor) + User Concept  
-**Status**: ✅ IMPLEMENTED AND VERIFIED (2025-10-13)  
+**Date**: 2025-10-13
+**Author**: AI Agent (Cursor) + User Concept
+**Status**: ✅ IMPLEMENTED AND VERIFIED (2025-10-13)
 **Goal**: Replace fixed TP/SL with HTF-structured, Fibonacci-driven exit logic
 
 ---
@@ -12,7 +12,7 @@
 **Current Problem**: Fixed exits (TP 5%, SL 2%, TIME 20 bars) ignore market structure and kill winners early.
 
 **Solution**: **HTF-Fibonacci-driven exits** that respect market geometry:
-- Base exits on **HTF swing structures** (1D), not "entry→current" 
+- Base exits on **HTF swing structures** (1D), not "entry→current"
 - Use **fraktal hierarchy**: 1D > 6h > 1h (global beats local)
 - **Partial exits** at Fibonacci confluence zones (0.382, 0.5)
 - **Structure-aware trailing** with promotion at 0.618 breaks
@@ -50,7 +50,7 @@ htf_fib = calculate_fib(htf_swing_low, htf_swing_high)  # ✅ MARKNADSSTRUKTUR!
 # Exit regler baserat på HTF-geometri
 if current_price >= htf_fib[0.382]:  # Nära HTF resistance
     partial_exit(33%)  # TP1
-if current_price >= htf_fib[0.5]:    # Starkare HTF resistance  
+if current_price >= htf_fib[0.5]:    # Starkare HTF resistance
     partial_exit(25%)  # TP2
 ```
 
@@ -66,7 +66,7 @@ if current_price >= htf_fib[0.5]:    # Starkare HTF resistance
      ↓              ↓              ↓            ↓               ↓
   BTCUSD 1D    95k→110k Swing   [100.7k,     1h/30m bars   TP1/TP2/Trail
   @ 00:00      Validated        102.5k,      with HTF       Execution
-               AS-OF            104.3k]      context        
+               AS-OF            104.3k]      context
 ```
 
 ### Fraktal Hierarki (Konflikter):
@@ -75,9 +75,9 @@ if current_price >= htf_fib[0.5]:    # Starkare HTF resistance
 def resolve_exit_conflict(signals_1d, signals_6h, signals_1h):
     """
     Fraktal-regel: 1D > 6h > 1h vid konflikter.
-    
+
     Example:
-        1h säger: "FULL_EXIT" (lokal rejection)  
+        1h säger: "FULL_EXIT" (lokal rejection)
         1D säger: "PARTIAL_ONLY" (pullback mot 0.618, struktur intakt)
         → Action: Partial + Trail (respektera 1D)
     """
@@ -118,13 +118,13 @@ def resolve_exit_conflict(signals_1d, signals_6h, signals_1h):
 def is_near_fib_level(price, fib_level, atr, threshold=0.3):
     """
     Check if price is "near" a Fibonacci level.
-    
+
     Args:
         price: Current price
-        fib_level: Target Fibonacci price level  
+        fib_level: Target Fibonacci price level
         atr: Current ATR (LTF for stability)
         threshold: Threshold in ATR units (0.3 = ~30% of daily range)
-    
+
     Returns:
         bool: True if within threshold
     """
@@ -146,16 +146,16 @@ def is_near_fib_level(price, fib_level, atr, threshold=0.3):
 # NEW FILE: src/core/indicators/htf_fibonacci.py
 
 def compute_htf_fibonacci_mapping(
-    htf_candles: pd.DataFrame,    # 1D candles  
+    htf_candles: pd.DataFrame,    # 1D candles
     ltf_candles: pd.DataFrame,    # 1h/30m candles
     config: FibonacciConfig
 ) -> pd.DataFrame:
     """
     Compute 1D Fibonacci levels and project to LTF timestamps.
-    
-    AS-OF SEMANTICS: Each LTF bar gets the latest 1D Fib levels 
+
+    AS-OF SEMANTICS: Each LTF bar gets the latest 1D Fib levels
     that were available BEFORE that bar (no lookahead).
-    
+
     Returns DataFrame:
         - timestamp (LTF)
         - htf_fib_0382, htf_fib_05, htf_fib_0618, htf_fib_0786
@@ -166,33 +166,33 @@ def compute_htf_fibonacci_mapping(
     swing_highs, swing_lows, swing_high_prices, swing_low_prices = detect_swing_points(
         htf_candles["high"], htf_candles["low"], htf_candles["close"], config
     )
-    
+
     htf_results = []
     for i, htf_row in htf_candles.iterrows():
         htf_time = htf_row['timestamp']
-        
+
         # Get swing context up to this point (AS-OF)
         current_swings = get_swings_as_of(swing_highs, swing_lows, i)
         fib_levels = calculate_fibonacci_levels(
             current_swings['highs'], current_swings['lows'], config.levels
         )
-        
+
         htf_results.append({
             'htf_timestamp': htf_time,
             'htf_fib_0382': fib_levels.get(0.382, None),
-            'htf_fib_05': fib_levels.get(0.5, None), 
+            'htf_fib_05': fib_levels.get(0.5, None),
             'htf_fib_0618': fib_levels.get(0.618, None),
             'htf_swing_high': current_swings['current_high'],
             'htf_swing_low': current_swings['current_low'],
         })
-    
+
     # 2. Project to LTF bars (forward-fill, lag=1)
     htf_df = pd.DataFrame(htf_results)
     ltf_results = []
-    
+
     for _, ltf_row in ltf_candles.iterrows():
         ltf_time = ltf_row['timestamp']
-        
+
         # Find latest HTF data BEFORE this LTF bar
         valid_htf = htf_df[htf_df['htf_timestamp'] < ltf_time]
         if len(valid_htf) > 0:
@@ -208,41 +208,41 @@ def compute_htf_fibonacci_mapping(
                 'htf_fib_0382': None, 'htf_fib_05': None, 'htf_fib_0618': None,
                 'htf_swing_high': None, 'htf_swing_low': None,
             })
-    
+
     return pd.DataFrame(ltf_results)
 
 # Integration into feature extraction
 def extract_features_with_htf_fib(candles, config=None, timeframe=None):
     """Enhanced feature extraction with HTF Fibonacci context."""
-    
+
     # Standard features (existing)
     features, meta = extract_features(candles, config=config, timeframe=timeframe)
-    
+
     # Add HTF Fibonacci context
     if timeframe in ['1h', '30m', '6h']:  # LTF timeframes get HTF context
         htf_data = load_htf_candles('1D')  # Load 1D data
         htf_fib_df = compute_htf_fibonacci_mapping(htf_data, candles, FibonacciConfig())
-        
+
         # Get current bar's HTF context
         current_htf = htf_fib_df.iloc[-1] if len(htf_fib_df) > 0 else {}
-        
+
         # Add to meta for exit logic
         meta['htf_fibonacci'] = {
             'levels': {
                 0.382: current_htf.get('htf_fib_0382'),
-                0.5: current_htf.get('htf_fib_05'), 
+                0.5: current_htf.get('htf_fib_05'),
                 0.618: current_htf.get('htf_fib_0618'),
             },
             'swing_high': current_htf.get('htf_swing_high'),
             'swing_low': current_htf.get('htf_swing_low'),
         }
-    
+
     return features, meta
 ```
 
 **Estimated Work**: 4-6 hours (careful AS-OF logic + testing)
 
-#### B) Partial Exit Infrastructure  
+#### B) Partial Exit Infrastructure
 **Missing Component**: Position size management for partial closes.
 
 **Files to Modify**:
@@ -259,7 +259,7 @@ class Position:
     entry_price: float
     entry_time: datetime
     partial_exits: list = field(default_factory=list)  # NEW: [(size, price, reason)]
-    
+
     def get_realized_pnl(self) -> float:
         """Calculate PnL from partial exits."""
         realized = 0.0
@@ -269,12 +269,12 @@ class Position:
             else:  # SHORT
                 realized += exit_size * (self.entry_price - exit_price)
         return realized
-    
+
     def get_unrealized_pnl(self, current_price: float) -> float:
         """Calculate PnL from remaining position."""
         if self.current_size <= 0:
             return 0.0
-        
+
         if self.side == "LONG":
             return self.current_size * (current_price - self.entry_price)
         else:  # SHORT
@@ -282,27 +282,27 @@ class Position:
 
 class PositionTracker:
     def partial_close(
-        self, 
-        symbol: str, 
+        self,
+        symbol: str,
         close_size: float,
-        close_price: float, 
+        close_price: float,
         reason: str,
         timestamp: datetime
     ) -> bool:
         """Close part of a position."""
         if symbol not in self.positions:
             return False
-            
+
         position = self.positions[symbol]
-        
+
         # Validate close size
         if close_size > position.current_size:
             close_size = position.current_size  # Close max available
-        
+
         # Record partial exit
         position.partial_exits.append((close_size, close_price, reason))
         position.current_size -= close_size
-        
+
         # Create trade record for partial
         trade = Trade(
             symbol=symbol,
@@ -316,13 +316,13 @@ class PositionTracker:
             exit_reason=f"PARTIAL_{reason}",
             bars_held=self._calculate_bars_held(position.entry_time, timestamp)
         )
-        
+
         self.closed_trades.append(trade)
-        
+
         # Remove position if fully closed
         if position.current_size <= 1e-8:  # Essentially zero
             del self.positions[symbol]
-            
+
         return True
 ```
 
@@ -339,20 +339,20 @@ class PositionTracker:
 class HTFFibonacciExitEngine:
     """
     HTF-strukturbaserad exit logik.
-    
+
     Principles:
     1. HTF-swing drives exits (1D → 6h → 1h)
-    2. Partial exits at Fib confluence 
+    2. Partial exits at Fib confluence
     3. Trail promotion vid strukturbrott
     4. AS-OF semantics (no lookahead)
     """
-    
+
     def __init__(self, config: dict):
         self.partial_1_pct = config.get("partial_1_pct", 0.40)  # 40% @ TP1
-        self.partial_2_pct = config.get("partial_2_pct", 0.30)  # 30% @ TP2  
+        self.partial_2_pct = config.get("partial_2_pct", 0.30)  # 30% @ TP2
         self.fib_threshold_atr = config.get("fib_threshold_atr", 0.3)  # 30% ATR
         self.trail_atr_multiplier = config.get("trail_atr_multiplier", 1.3)
-        
+
     def check_exits(
         self,
         position: Position,
@@ -362,7 +362,7 @@ class HTFFibonacciExitEngine:
     ) -> list[dict]:
         """
         Check all exit conditions for a position.
-        
+
         Returns list of exit actions:
         [
             {"action": "PARTIAL", "size": 0.4, "reason": "TP1_0382"},
@@ -371,21 +371,21 @@ class HTFFibonacciExitEngine:
         ]
         """
         actions = []
-        
+
         if not htf_fib_context or not htf_fib_context.get('levels'):
             return actions  # No HTF context available
-            
+
         current_price = current_bar['close']
         atr = indicators.get('atr', current_bar.get('atr', 100))  # Fallback ATR
         ema50 = indicators.get('ema50', current_price)
         ema_slope50_z = indicators.get('ema_slope50_z', 0.0)
-        
+
         htf_levels = htf_fib_context['levels']
-        
+
         # === PARTIAL EXITS ===
         if position.side == "LONG":
             # TP1: Near 0.382 (HTF)?
-            if (htf_levels.get(0.382) and 
+            if (htf_levels.get(0.382) and
                 self._is_near_level(current_price, htf_levels[0.382], atr)):
                 if not self._already_triggered(position, "TP1_0382"):
                     actions.append({
@@ -393,20 +393,20 @@ class HTFFibonacciExitEngine:
                         "size": position.current_size * self.partial_1_pct,
                         "reason": "TP1_0382"
                     })
-            
+
             # TP2: Near 0.5 (HTF)?
-            if (htf_levels.get(0.5) and 
+            if (htf_levels.get(0.5) and
                 self._is_near_level(current_price, htf_levels[0.5], atr)):
                 if not self._already_triggered(position, "TP2_05"):
                     actions.append({
-                        "action": "PARTIAL", 
+                        "action": "PARTIAL",
                         "size": position.current_size * self.partial_2_pct,
                         "reason": "TP2_05"
                     })
-        
+
         else:  # SHORT position
             # TP1: Near 0.618 (HTF)? (SHORT targets lower Fib levels)
-            if (htf_levels.get(0.618) and 
+            if (htf_levels.get(0.618) and
                 self._is_near_level(current_price, htf_levels[0.618], atr)):
                 if not self._already_triggered(position, "TP1_0618"):
                     actions.append({
@@ -414,62 +414,62 @@ class HTFFibonacciExitEngine:
                         "size": position.current_size * self.partial_1_pct,
                         "reason": "TP1_0618"
                     })
-            
+
             # TP2: Near 0.5 (HTF)?
-            if (htf_levels.get(0.5) and 
+            if (htf_levels.get(0.5) and
                 self._is_near_level(current_price, htf_levels[0.5], atr)):
                 if not self._already_triggered(position, "TP2_05"):
                     actions.append({
                         "action": "PARTIAL",
-                        "size": position.current_size * self.partial_2_pct, 
+                        "size": position.current_size * self.partial_2_pct,
                         "reason": "TP2_05"
                     })
-        
+
         # === TRAILING STOP ===
         trail_stop = self._calculate_trail_stop(
             position, current_price, ema50, atr, htf_levels
         )
-        
+
         if trail_stop:
             actions.append({
                 "action": "TRAIL_UPDATE",
                 "stop_price": trail_stop
             })
-        
+
         # === STRUCTURE BREAK (Full Exit) ===
         structure_break = self._check_structure_break(
             position, current_price, htf_levels, ema_slope50_z
         )
-        
+
         if structure_break:
             actions.append({
                 "action": "FULL_EXIT",
                 "reason": structure_break
             })
-        
+
         return actions
-    
+
     def _is_near_level(self, price: float, level: float, atr: float) -> bool:
         """Check if price is near Fib level (ATR-normalized)."""
         if not level or atr <= 0:
             return False
         distance_atr = abs(price - level) / atr
         return distance_atr <= self.fib_threshold_atr
-    
+
     def _calculate_trail_stop(
-        self, 
-        position: Position, 
+        self,
+        position: Position,
     current_price: float,
         ema50: float,
-        atr: float, 
+        atr: float,
         htf_levels: dict
 ) -> float:
         """Calculate dynamic trailing stop with HTF promotion."""
-        
+
         if position.side == "LONG":
             # Base trail
             base_trail = ema50 - (self.trail_atr_multiplier * atr)
-            
+
             # Promotion: if price > 0.618 (HTF), lock against 0.5
             fib_05 = htf_levels.get(0.5)
             if fib_05 and current_price > htf_levels.get(0.618, float('inf')):
@@ -477,19 +477,19 @@ class HTFFibonacciExitEngine:
                 return max(base_trail, promoted_trail)
             else:
                 return base_trail
-                
+
     else:  # SHORT
-            # Base trail  
+            # Base trail
             base_trail = ema50 + (self.trail_atr_multiplier * atr)
-            
+
             # Promotion: if price < 0.382 (HTF), lock against 0.5
-            fib_05 = htf_levels.get(0.5)  
+            fib_05 = htf_levels.get(0.5)
             if fib_05 and current_price < htf_levels.get(0.382, 0):
                 promoted_trail = fib_05  # Lock against 0.5 as resistance
                 return min(base_trail, promoted_trail)
             else:
                 return base_trail
-    
+
     def _check_structure_break(
         self,
         position: Position,
@@ -498,67 +498,67 @@ class HTFFibonacciExitEngine:
         ema_slope50_z: float
     ) -> str | None:
         """Check for structure break → full exit."""
-        
+
         if position.side == "LONG":
             # Long structure break: price < 0.618 AND downward momentum
             fib_0618 = htf_levels.get(0.618)
-            if (fib_0618 and 
-                current_price < fib_0618 and 
+            if (fib_0618 and
+                current_price < fib_0618 and
                 ema_slope50_z < 0):
                 return "STRUCTURE_BREAK_DOWN"
-    
+
     else:  # SHORT
-            # Short structure break: price > 0.382 AND upward momentum  
+            # Short structure break: price > 0.382 AND upward momentum
             fib_0382 = htf_levels.get(0.382)
-            if (fib_0382 and 
+            if (fib_0382 and
                 current_price > fib_0382 and
                 ema_slope50_z > 0):
                 return "STRUCTURE_BREAK_UP"
-        
+
         return None
-    
+
     def _already_triggered(self, position: Position, reason: str) -> bool:
         """Check if exit reason already triggered (avoid double-triggers)."""
         return any(exit_reason == reason for _, _, exit_reason in position.partial_exits)
 ```
 
-#### Integration into BacktestEngine  
+#### Integration into BacktestEngine
 **Modify**: `src/core/backtest/engine.py`
 
 ```python
 # Add to BacktestEngine class
 
 def _check_htf_fib_exits(
-    self, 
-    symbol: str, 
-    bar: dict, 
+    self,
+    symbol: str,
+    bar: dict,
     features: dict,
     meta: dict
 ) -> bool:
     """Check HTF Fibonacci exits for active position."""
-    
+
     if symbol not in self.position_tracker.positions:
         return False  # No position to exit
-        
+
     position = self.position_tracker.positions[symbol]
-    
+
     # Get HTF Fibonacci context from meta
     htf_fib_context = meta.get('htf_fibonacci', {})
-    
+
     # Get indicators for exit logic
     indicators = {
         'atr': bar.get('atr', 100),
         'ema50': features.get('ema50', bar['close']),  # Fallback
         'ema_slope50_z': features.get('ema_slope50_z', 0.0),
     }
-    
+
     # Check all exit conditions
     exit_actions = self.htf_exit_engine.check_exits(
         position, bar, htf_fib_context, indicators
     )
-    
+
     position_closed = False
-    
+
     for action in exit_actions:
         if action['action'] == 'PARTIAL':
             # Execute partial exit
@@ -569,21 +569,21 @@ def _check_htf_fib_exits(
                 reason=action['reason'],
                 timestamp=bar['timestamp']
             )
-            
+
         elif action['action'] == 'TRAIL_UPDATE':
             # Update trailing stop (store in position metadata)
             position.trail_stop = action['stop_price']
-            
+
         elif action['action'] == 'FULL_EXIT':
             # Full exit
             self.position_tracker.close_position(
                 symbol=symbol,
-                close_price=bar['close'], 
+                close_price=bar['close'],
                 timestamp=bar['timestamp'],
                 reason=action['reason']
             )
             position_closed = True
-            
+
         # Check trail stop trigger
         if hasattr(position, 'trail_stop') and position.trail_stop:
             if ((position.side == "LONG" and bar['close'] <= position.trail_stop) or
@@ -591,23 +591,23 @@ def _check_htf_fib_exits(
                 self.position_tracker.close_position(
                     symbol=symbol,
                     close_price=bar['close'],
-                    timestamp=bar['timestamp'], 
+                    timestamp=bar['timestamp'],
                     reason="TRAIL_STOP"
                 )
                 position_closed = True
-    
+
     return position_closed
 
 # Modify main run loop to use HTF exits
 def _process_bar(self, symbol: str, bar: dict, features: dict, meta: dict):
     """Process single bar with HTF exit logic."""
-    
+
     # 1. Check exits FIRST (if position exists)
     position_exited = self._check_htf_fib_exits(symbol, bar, features, meta)
-    
+
     if position_exited:
         return  # Position closed, no new entries
-    
+
     # 2. Check entries (existing logic)
     self._check_entry_conditions(symbol, bar, features, meta)
 ```
@@ -628,7 +628,7 @@ Test impact of each HTF Fibonacci exit component.
 Test 4 configurations:
 1. BASELINE: Current fixed exits (TP/SL/TIME)
 2. PARTIAL_ONLY: Only TP1/TP2, no trailing
-3. TRAIL_ONLY: Only HTF trailing, no partials  
+3. TRAIL_ONLY: Only HTF trailing, no partials
 4. FULL_HTF: All HTF components (TP1+TP2+trail+structure)
 
 Measure:
@@ -640,12 +640,12 @@ Measure:
 
 def run_ablation_study(symbol: str, timeframe: str):
     """Run ablation study comparing exit strategies."""
-    
+
 configs = {
         "BASELINE": {
             "exit_type": "fixed",
             "take_profit_pct": 0.05,
-            "stop_loss_pct": 0.02, 
+            "stop_loss_pct": 0.02,
             "max_hold_bars": 20
         },
         "PARTIAL_ONLY": {
@@ -655,7 +655,7 @@ configs = {
             "enable_structure_breaks": False
         },
         "TRAIL_ONLY": {
-            "exit_type": "htf_fib", 
+            "exit_type": "htf_fib",
             "enable_partials": False,
             "enable_trailing": True,
             "enable_structure_breaks": False
@@ -663,27 +663,27 @@ configs = {
         "FULL_HTF": {
             "exit_type": "htf_fib",
             "enable_partials": True,
-            "enable_trailing": True, 
+            "enable_trailing": True,
             "enable_structure_breaks": True
         }
     }
-    
+
 results = {}
-    
+
     for config_name, exit_config in configs.items():
         print(f"\n=== Testing {config_name} ===")
-        
+
         # Load data
         candles_df = load_candles(symbol, timeframe)
-        
+
         # Run backtest with this exit config
         engine = BacktestEngine(exit_config=exit_config)
         trades = engine.run(candles_df)
-        
+
         # Calculate metrics
         metrics = calculate_comprehensive_metrics(trades)
         results[config_name] = metrics
-        
+
         print(f"Return: {metrics['total_return']:.2f}%")
         print(f"Sharpe: {metrics['sharpe_ratio']:.3f}")
         print(f"Win Rate: {metrics['win_rate']:.1f}%")
@@ -693,14 +693,14 @@ results = {}
     comparison_df = pd.DataFrame(results).T
     print("\n=== ABLATION RESULTS ===")
     print(comparison_df)
-    
+
     # Statistical significance test
     baseline_returns = results["BASELINE"]["trade_returns"]
     for config in ["PARTIAL_ONLY", "TRAIL_ONLY", "FULL_HTF"]:
         test_returns = results[config]["trade_returns"]
         t_stat, p_value = stats.ttest_rel(test_returns, baseline_returns)
         print(f"{config} vs BASELINE: t={t_stat:.3f}, p={p_value:.3f}")
-    
+
     return results
 
 if __name__ == "__main__":
@@ -714,7 +714,7 @@ if __name__ == "__main__":
 - Component analysis shows which parts contribute most
 - OOS validation on different time period
 
-**If Phase 2 fails**: Stop implementation, investigate why.  
+**If Phase 2 fails**: Stop implementation, investigate why.
 **If Phase 2 succeeds**: Proceed to production deployment.
 
 ---
@@ -725,7 +725,7 @@ if __name__ == "__main__":
 ```python
 def handle_missing_htf_data(ltf_bar, htf_fib_context):
     """Fallback when HTF Fibonacci data unavailable."""
-    
+
     if not htf_fib_context or not htf_fib_context.get('levels'):
         # Fallback to simple exits
         return {
@@ -734,12 +734,12 @@ def handle_missing_htf_data(ltf_bar, htf_fib_context):
             "stop_loss_pct": 0.015,
             "reason": "HTF_DATA_MISSING"
         }
-    
+
     # Check data freshness (don't use stale HTF data)
     htf_age = calculate_data_age(htf_fib_context.get('last_update'))
     if htf_age > MAX_HTF_AGE_HOURS:
         return {"use_fixed_exits": True, "reason": "HTF_DATA_STALE"}
-    
+
     return {"use_htf_exits": True}
 ```
 
@@ -747,18 +747,18 @@ def handle_missing_htf_data(ltf_bar, htf_fib_context):
 ```python
 def validate_partial_size(position, requested_size):
     """Ensure partial exit sizes are valid."""
-    
+
     MIN_POSITION_SIZE = 0.001  # Minimum tradeable size
-    
+
     # Can't close more than available
     max_close = position.current_size
     actual_close = min(requested_size, max_close)
-    
+
     # Don't leave dust positions
     remaining = position.current_size - actual_close
     if 0 < remaining < MIN_POSITION_SIZE:
         actual_close = position.current_size  # Close all instead
-    
+
     return actual_close
 ```
 
@@ -767,12 +767,12 @@ def validate_partial_size(position, requested_size):
 def handle_swing_rebase(position, old_htf_context, new_htf_context):
     """
     Handle när 1D swing ändras medan vi har position.
-    
+
     Scenario: Vi är long baserat på gamla 95k→110k swing.
              1D stänger och upptäcker ny swing 100k→115k.
              Hur ska vi hantera nya Fib-nivåer?
     """
-    
+
     # Conservative approach: Don't rebase mid-trade
     # Use original HTF context for consistency
     if position.entry_time < new_htf_context.get('swing_update_time'):
@@ -786,17 +786,17 @@ def handle_swing_rebase(position, old_htf_context, new_htf_context):
 def adjust_for_volatility_spike(trail_stop, current_atr, historical_atr):
     """
     Adjust trail stops during vol spikes to avoid stop hunting.
-    
+
     Example: Normal ATR = 1000, Current ATR = 3000 (3x spike)
     → Give extra room: trail_stop -= 1.0 * current_atr
     """
     vol_ratio = current_atr / historical_atr if historical_atr > 0 else 1.0
-    
+
     if vol_ratio > 2.0:  # 2x+ vol spike
         # Give more room during high vol
         adjustment = (vol_ratio - 1.0) * current_atr * 0.5
         return trail_stop - adjustment  # Wider stop for LONG
-    
+
     return trail_stop  # Normal conditions
 ```
 
@@ -813,7 +813,7 @@ def adjust_for_volatility_spike(trail_stop, current_atr, historical_atr):
 
 **Expected** (HTF Fib Exits):
 - Return: **-5% to +5%** (+7-17% improvement)
-- Sharpe: **0.0 to +0.2** (+0.3-0.5 improvement)  
+- Sharpe: **0.0 to +0.2** (+0.3-0.5 improvement)
 - Win Rate: **48-55%** (+5-10% improvement)
 - Max DD: **-8% to -10%** (+3-5% improvement)
 
@@ -840,18 +840,18 @@ def adjust_for_volatility_spike(trail_stop, current_atr, historical_atr):
 
 ### Week 1 (Phase 0 + 1):
 - **Day 1-2**: HTF Fibonacci mapping infrastructure
-- **Day 3**: Partial exit infrastructure  
+- **Day 3**: Partial exit infrastructure
 - **Day 4-5**: Core HTF exit engine
 - **Day 6-7**: BacktestEngine integration + basic testing
 
 ### Week 2 (Phase 2):
 - **Day 1-2**: Comprehensive ablation study
-- **Day 3**: Statistical validation + OOS testing  
+- **Day 3**: Statistical validation + OOS testing
 - **Day 4**: Edge case handling + robustness
 - **Day 5**: Documentation + code review
 
 ### Deployment Decision (End Week 2):
-If ablation study passes → Deploy to paper trading  
+If ablation study passes → Deploy to paper trading
 If ablation study fails → Investigate & iterate
 
 ---
@@ -898,7 +898,7 @@ If ablation study fails → Investigate & iterate
 ### If Phase 2 Shows Excellent Results (>10% improvement):
 1. **Expand to other timeframes**: 6h, 15m
 2. **Add complexity**: Vol-adaptive, confluence filters
-3. **Multi-symbol validation**: Test on tETHUSD  
+3. **Multi-symbol validation**: Test on tETHUSD
 4. **Production deployment**: Paper → Live trading
 
 ---
@@ -907,15 +907,15 @@ If ablation study fails → Investigate & iterate
 
 Detta är en **strukturerad, systematisk approach** till HTF Fibonacci exits som:
 
-✅ **Respekterar marknadsgeometri** (HTF-swing baserat)  
-✅ **Behåller användning av er beprövade Fib-proximity metodik**  
-✅ **Implementerar fraktal hierarki** (1D > 6h > 1h)  
-✅ **Garanterar AS-OF semantik** (ingen lookahead bias)  
-✅ **Inkluderar rigorös validering** (ablation study + statistical tests)  
-✅ **Hanterar edge cases** (missing data, vol spikes, swing rebases)  
+✅ **Respekterar marknadsgeometri** (HTF-swing baserat)
+✅ **Behåller användning av er beprövade Fib-proximity metodik**
+✅ **Implementerar fraktal hierarki** (1D > 6h > 1h)
+✅ **Garanterar AS-OF semantik** (ingen lookahead bias)
+✅ **Inkluderar rigorös validering** (ablation study + statistical tests)
+✅ **Hanterar edge cases** (missing data, vol spikes, swing rebases)
 
-**Total Implementation Time**: 2-3 veckor  
-**Risk Level**: Medium (väl planerad med fallbacks)  
+**Total Implementation Time**: 2-3 veckor
+**Risk Level**: Medium (väl planerad med fallbacks)
 **Expected Reward**: High (baserat på nuvarande profitable 1h + förbättring av 30m)
 
 **Redo att börja när du ger grönt ljus!** 🚀
@@ -1003,9 +1003,9 @@ Total Trades: 7
 ```
 
 **System Behavior:**
-✅ Partial exits triggered at HTF Fib levels  
-✅ Fallback logic when HTF swings out of reach  
-✅ All technical errors resolved  
+✅ Partial exits triggered at HTF Fib levels
+✅ Fallback logic when HTF swings out of reach
+✅ All technical errors resolved
 ✅ Complete trade serialization
 
 ---
@@ -1065,6 +1065,6 @@ Stored in:
 
 ---
 
-**Session End**: 2025-10-13  
-**Document Version**: 1.2 (IMPLEMENTATION COMPLETE)  
+**Session End**: 2025-10-13
+**Document Version**: 1.2 (IMPLEMENTATION COMPLETE)
 **Status**: ✅ PRODUCTION READY

@@ -11,4 +11,3 @@ Write-Host "Note: 4h is NOT supported by Bitfinex. Using 3h and 6h instead." -Fo
 
 Write-Host "`nNext: Run feature analysis to check if trend features have positive IC!" -ForegroundColor Green
 Write-Host "python scripts/comprehensive_feature_analysis.py --symbol tBTCUSD --timeframe 6h" -ForegroundColor Yellow
-

@@ -7,7 +7,7 @@ New Modules:
 - src/core/indicators/htf_fibonacci.py (234 lines)
   * HTF Fibonacci calculation with AS-OF semantics
   * Swing detection, Fib level projection, timezone handling
-  
+
 - src/core/backtest/htf_exit_engine.py (467 lines)
   * Core exit engine with partial/trail/structure logic
   * Adaptive thresholds, reachability checks, fallback logic
@@ -17,16 +17,16 @@ Enhanced Modules:
 - src/core/backtest/position_tracker.py
   * Partial exit infrastructure (partial_close method)
   * Enhanced Position/Trade dataclasses with tracking fields
-  
+
 - src/core/backtest/engine.py
   * Integrated HTFFibonacciExitEngine
   * HTF context extraction from feature pipeline
   * Fixed trade serialization (added exit metadata)
-  
+
 - src/core/strategy/features.py
   * Added get_htf_fibonacci_context() integration
   * HTF levels available in meta['htf_fibonacci']
-  
+
 - src/core/strategy/evaluate.py
   * Pass timeframe parameter to extract_features()
 
@@ -76,4 +76,3 @@ Files Changed:
   3 documentation files
 
 Breaking Changes: None (backward compatible)
-

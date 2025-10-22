@@ -58,7 +58,10 @@ def main(argv: list[str] | None = None) -> int:
 
     # Always mask sensitive fields to avoid clear-text logging (resolves CodeQL alert)
     out = {
-        key: ("***" if key in {"bfx-apikey", "bfx-signature"} else value)
+        key: (
+            "***" if key == "bfx-apikey"
+            else (value[:6] + "..." if key == "bfx-signature" else value)
+        )
         for key, value in headers.items()
     }
 

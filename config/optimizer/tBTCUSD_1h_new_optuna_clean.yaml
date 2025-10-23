@@ -51,4 +51,3 @@ parameters:
     max_hold_bars:
       type: grid
       values: [10, 15, 20, 25, 30]
-

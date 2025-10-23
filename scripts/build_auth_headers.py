@@ -76,11 +76,10 @@ def main(argv: list[str] | None = None) -> int:
     headers = build_headers(args.endpoint, body)
 
     # Maskera känsliga fält
+    # Mask all sensitive headers before logging
+    SENSITIVE_KEYS = {"bfx-apikey", "bfx-signature"}
     out = {
-        key: (
-            "***" if key == "bfx-apikey"
-            else (value[:6] + "..." if key == "bfx-signature" else value)
-        )
+        key: ("***" if key in SENSITIVE_KEYS else value)
         for key, value in headers.items()
     }
 

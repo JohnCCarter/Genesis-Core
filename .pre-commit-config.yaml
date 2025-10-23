@@ -41,5 +41,6 @@ repos:
       - id: check-yaml
         exclude: ^\.github/.*\.md$
       - id: end-of-file-fixer
+        exclude: ^src/genesis_core\.egg-info/
       - id: trailing-whitespace
       - id: check-json

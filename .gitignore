@@ -66,6 +66,9 @@ logs/
 *.db
 *.sqlite
 *.sqlite3
+# Optuna databases
+test_optuna*.db
+optuna_*.db
 
 # Security & Sensitive files
 .env
@@ -135,6 +138,7 @@ results/**/
 
 # CI artifacts
 bandit-report.txt
+bandit-report.json
 
 # Keep results documentation and archives
 !results/README.md

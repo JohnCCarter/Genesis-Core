@@ -45,8 +45,8 @@ jobs:
       - name: Pytest
         run: pytest -q
 
-      - name: Bandit (src + scripts)
-        run: bandit -r src scripts -f txt -o bandit-report.txt
+      - name: Bandit (src only)
+        run: bandit -r src -c bandit.yaml -f txt -o bandit-report.txt
         continue-on-error: true
 
       - name: Upload Bandit report

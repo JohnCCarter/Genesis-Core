@@ -1,0 +1,54 @@
+meta:
+  symbol: tBTCUSD
+  timeframe: 1h
+  snapshot_id: tBTCUSD_1h_2024-10-22_2025-10-01_v1
+  warmup_bars: 50
+  runs:
+    max_trials: 10
+    strategy: optuna
+    max_concurrent: 2
+    resume: true
+    optuna:
+      storage: sqlite:///optuna_tBTCUSD_1h_fine.db
+      study_name: tBTCUSD_1h_fine
+      sampler:
+        name: tpe
+        kwargs: {}
+      pruner:
+        name: hyperband
+        kwargs:
+          min_resource: 200
+          reduction_factor: 3
+      timeout_seconds: 900
+  use_sample_range: true
+  sample_start: 2025-04-01
+  sample_end: 2025-10-01
+
+parameters:
+  thresholds:
+    entry_conf_overall:
+      type: float
+      low: 0.35
+      high: 0.55
+      step: 0.05
+    regime_proba:
+      balanced:
+        type: float
+        low: 0.6
+        high: 0.8
+        step: 0.05
+  risk:
+    risk_map:
+      type: grid
+      values:
+        - [[0.4, 0.01], [0.5, 0.02], [0.6, 0.03]]
+        - [[0.45, 0.015], [0.55, 0.025], [0.65, 0.035]]
+  exit:
+    exit_conf_threshold:
+      type: float
+      low: 0.3
+      high: 0.55
+      step: 0.05
+    max_hold_bars:
+      type: grid
+      values: [15, 20]

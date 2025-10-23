@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import os
 import shutil
@@ -42,6 +43,8 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 RESULTS_DIR = PROJECT_ROOT / "results" / "hparam_search"
 
 _OPTUNA_LOCK = threading.Lock()
+_SIMPLE_CATEGORICAL_TYPES = (type(None), bool, int, float, str)
+_COMPLEX_CHOICE_PREFIX = "__optuna_complex__"
 
 
 class OptimizerStrategy:
@@ -294,6 +297,7 @@ def run_trial(
     existing_trials: dict[str, dict[str, Any]],
     max_attempts: int = 2,
     constraints_cfg: dict[str, Any | None] | None = None,
+    cache_enabled: bool = False,
 ) -> dict[str, Any]:
     key = _trial_key(trial.parameters)
     if allow_resume and key in existing_trials:
@@ -326,6 +330,33 @@ def run_trial(
         merged_cfg = _deep_merge(default_cfg, trial.parameters)
         config_payload = {"cfg": merged_cfg}
         config_file.write_text(json.dumps(config_payload, indent=2), encoding="utf-8")
+
+    cache_dir = run_dir / "_cache"
+    cache_key = hashlib.sha1(key.encode("utf-8")).hexdigest()
+    cache_path = cache_dir / f"{cache_key}.json"
+    cached_payload: dict[str, Any] | None = None
+    if cache_enabled:
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        if cache_path.exists():
+            try:
+                cached_payload = json.loads(cache_path.read_text(encoding="utf-8"))
+            except json.JSONDecodeError:
+                cached_payload = None
+    if cached_payload is not None:
+        payload = dict(cached_payload)
+        payload.update(
+            {
+                "trial_id": trial_id,
+                "parameters": trial.parameters,
+                "from_cache": True,
+            }
+        )
+        if config_file is not None:
+            payload.setdefault("config_path", config_file.name)
+        if not payload.get("parameters"):
+            payload["parameters"] = trial.parameters
+        trial_file.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        return payload
 
     if trial.start_date and trial.end_date:
         start_date, end_date = trial.start_date, trial.end_date
@@ -430,6 +461,12 @@ def run_trial(
             "log_path": log_file.name,
             "attempts": max_attempts,
         }
+    if cache_enabled and final_payload is not None and not final_payload.get("error"):
+        cache_snapshot = dict(final_payload)
+        cache_snapshot.pop("trial_id", None)
+        cache_snapshot.pop("from_cache", None)
+        cache_snapshot["parameters"] = trial.parameters
+        cache_path.write_text(json.dumps(cache_snapshot, indent=2), encoding="utf-8")
     trial_file.write_text(json.dumps(final_payload, indent=2), encoding="utf-8")
     return final_payload
 
@@ -510,10 +547,27 @@ def _create_optuna_study(
 
 
 def _suggest_parameters(trial, spec: dict[str, Any]) -> dict[str, Any]:
+    def _prepare_categorical_options(options: Iterable[Any]) -> tuple[list[Any], dict[str, Any]]:
+        normalized: list[Any] = []
+        decoder: dict[str, Any] = {}
+        for idx, option in enumerate(options):
+            if isinstance(option, _SIMPLE_CATEGORICAL_TYPES):
+                normalized.append(option)
+                continue
+            encoded = (
+                f"{_COMPLEX_CHOICE_PREFIX}{idx}__"
+                f"{json.dumps(option, sort_keys=True, separators=(',', ':'))}"
+            )
+            normalized.append(encoded)
+            decoder[encoded] = option
+        return normalized, decoder
+
     def _recurse(node: dict[str, Any], prefix: str = "") -> dict[str, Any]:
         resolved: dict[str, Any] = {}
         for key, value in (node or {}).items():
             path = f"{prefix}.{key}" if prefix else key
+            if value is None:
+                raise ValueError(f"parameter {path} saknar definition i YAML")
             if isinstance(value, dict) and "type" not in value:
                 resolved[key] = _recurse(value, path)
                 continue
@@ -524,7 +578,10 @@ def _suggest_parameters(trial, spec: dict[str, Any]) -> dict[str, Any]:
                 options = value.get("values")
                 if not options:
                     raise ValueError(f"grid-parameter {path} saknar values")
-                resolved[key] = trial.suggest_categorical(path, options)
+                normalized, decoder = _prepare_categorical_options(list(options))
+                suggest_name = path if not decoder else f"{path}__encoded"
+                raw_choice = trial.suggest_categorical(suggest_name, normalized)
+                resolved[key] = decoder.get(raw_choice, raw_choice)
             elif node_type == "float":
                 low = float(value.get("low"))
                 high = float(value.get("high"))
@@ -720,6 +777,7 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
             existing_trials=existing_trials,
             max_attempts=max_attempts,
             constraints_cfg=config.get("constraints"),
+            cache_enabled=True,
         )
 
     results: list[dict[str, Any]] = []

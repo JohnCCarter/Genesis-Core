@@ -42,8 +42,8 @@ def test_build_headers(mock_settings, mock_nonce):
     assert len(headers["bfx-signature"]) > 0  # Signature should be generated
 
 
-def test_main_without_mask(mock_settings, mock_nonce, capsys):
-    """Test main function without --mask flag shows actual values."""
+def test_main_without_reveal(mock_settings, mock_nonce, capsys):
+    """Test main function without --reveal flag masks sensitive values by default."""
     result = main(["auth/r/alerts"])
 
     assert result == 0
@@ -51,25 +51,26 @@ def test_main_without_mask(mock_settings, mock_nonce, capsys):
     captured = capsys.readouterr()
     output = json.loads(captured.out)
 
-    # Without --mask, actual values should be shown
-    assert output["bfx-apikey"] == "test_api_key"
-    assert output["bfx-signature"] != "***"
+    # Without --reveal, sensitive values should be masked by default
+    assert output["bfx-apikey"] == "***"
+    assert output["bfx-signature"] == "***"
     assert output["bfx-nonce"] == "1234567890000000"
     assert output["Content-Type"] == "application/json"
+    assert "info" in output
 
 
-def test_main_with_mask(mock_settings, mock_nonce, capsys):
-    """Test main function with --mask flag masks sensitive values."""
-    result = main(["auth/r/alerts", "--mask"])
+def test_main_with_reveal(mock_settings, mock_nonce, capsys):
+    """Test main function with --reveal flag shows actual values."""
+    result = main(["auth/r/alerts", "--reveal"])
 
     assert result == 0
 
     captured = capsys.readouterr()
     output = json.loads(captured.out)
 
-    # With --mask, sensitive values should be masked
-    assert output["bfx-apikey"] == "***"
-    assert output["bfx-signature"] == "***"
+    # With --reveal, actual values should be shown
+    assert output["bfx-apikey"] == "test_api_key"
+    assert output["bfx-signature"] != "***"
     # Non-sensitive values should not be masked
     assert output["bfx-nonce"] == "1234567890000000"
     assert output["Content-Type"] == "application/json"
@@ -85,12 +86,13 @@ def test_main_with_pretty(mock_settings, mock_nonce, capsys):
     # Pretty-printed JSON should have indentation (newlines)
     assert "\n" in captured.out
     output = json.loads(captured.out)
-    assert output["bfx-apikey"] == "test_api_key"
+    # Without --reveal, values should be masked
+    assert output["bfx-apikey"] == "***"
 
 
-def test_main_with_mask_and_pretty(mock_settings, mock_nonce, capsys):
-    """Test main function with both --mask and --pretty flags."""
-    result = main(["auth/r/alerts", "--mask", "--pretty"])
+def test_main_with_reveal_and_pretty(mock_settings, mock_nonce, capsys):
+    """Test main function with both --reveal and --pretty flags."""
+    result = main(["auth/r/alerts", "--reveal", "--pretty"])
 
     assert result == 0
 
@@ -99,9 +101,9 @@ def test_main_with_mask_and_pretty(mock_settings, mock_nonce, capsys):
     assert "\n" in captured.out
     output = json.loads(captured.out)
 
-    # Should be masked
-    assert output["bfx-apikey"] == "***"
-    assert output["bfx-signature"] == "***"
+    # Should show actual values with --reveal
+    assert output["bfx-apikey"] == "test_api_key"
+    assert output["bfx-signature"] != "***"
 
 
 def test_main_with_body(mock_settings, mock_nonce, capsys):

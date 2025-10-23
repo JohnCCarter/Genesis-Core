@@ -50,6 +50,7 @@ src/core/ml/visualization.py
 src/core/observability/metrics.py
 src/core/optimizer/__init__.py
 src/core/optimizer/champion.py
+src/core/optimizer/check_trials.py
 src/core/optimizer/constraints.py
 src/core/optimizer/runner.py
 src/core/optimizer/scoring.py
@@ -93,6 +94,7 @@ tests/test_backtest_metrics.py
 tests/test_backtest_position_tracker.py
 tests/test_backtest_trade_logger.py
 tests/test_bollinger.py
+tests/test_build_auth_headers.py
 tests/test_calibration.py
 tests/test_champion_loader.py
 tests/test_confidence.py

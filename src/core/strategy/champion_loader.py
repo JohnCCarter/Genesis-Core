@@ -138,6 +138,12 @@ class ChampionLoader:
             mtime = path.stat().st_mtime if exists else None
         except OSError:
             mtime = None
+
+        # Debug: Always reload if file exists and we have a cached entry
+        # This ensures we pick up file changes
+        if exists and entry.exists:
+            return True
+
         if entry.exists != exists:
             return True
         if exists and entry.mtime != mtime:
@@ -150,5 +156,8 @@ class ChampionLoader:
         if entry is None:
             return self.load(symbol, timeframe)
         if self._needs_reload(symbol, timeframe, entry):
-            return self.load(symbol, timeframe)
+            # Reload from disk and update cache
+            new_entry = self._load_from_disk(symbol, timeframe)
+            self._cache[key] = new_entry
+            return new_entry.config
         return entry.config

@@ -114,6 +114,16 @@ def main(argv: list[str] | None = None) -> int:
     #    Om du MÅSTE skriva ut ofiltrerat till ett rör: skriv till fil/pipe utan att visa i konsol.
     # Här väljer vi att inte skriva ut headers ofiltrerat för att undvika falska positiva i CodeQL.
     # Vill du ändå exponera dem till ett annat steg: använd en fil med restriktioner.
+
+    # CLI output contract:
+    # ------------------------------------------------------------
+    # För downstream consumers (t.ex. scripts som använder detta CLI):
+    # Headers skrivs INTE ut till stdout av säkerhetsskäl.
+    # Om du förlitar dig på CLI-utdata i ett script, var medveten om att headers
+    # är maskerade/utelämnade från stdout och måste hämtas via fil eller pipe
+    # med restriktioner om du behöver dem ofiltrerade.
+    # ------------------------------------------------------------
+
     return 0
 
 

@@ -18,8 +18,7 @@ from core.utils.nonce_manager import get_nonce
 def make_message_path(endpoint: str) -> str:
     """Normalisera endpoint och bygg /api/v2/…-sökvägen."""
     ep = endpoint.strip().lstrip("/")
-    if ep.startswith("v2/"):
-        ep = ep[3:]
+    ep = ep.removeprefix("v2/")
     return f"/api/v2/{ep}"
 
 

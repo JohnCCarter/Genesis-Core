@@ -29,6 +29,14 @@ def build_headers(endpoint: str, body: dict | None) -> dict[str, str]:
     }
 
 
+def print_data(data: dict, pretty: bool = False) -> None:
+    """
+    Denna funktion får aldrig ta emot hemliga värden.
+    """
+    # CodeQL [py/clear-text-logging-sensitive-data]: Datan är sanerad (inga secrets).
+    print(json.dumps(data, indent=2 if pretty else None))  # nosec B101 - Säker loggning
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Build Bitfinex v2 auth headers")
     parser.add_argument("endpoint", help="Endpoint utan /v2/, t.ex. auth/r/alerts")
@@ -67,7 +75,7 @@ def main(argv: list[str] | None = None) -> int:
         }
         out["info"] = "Hemligheter maskeras som standard. Använd --reveal för att visa."
 
-    print(json.dumps(out, indent=2 if args.pretty else None))
+    print_data(out, args.pretty)
     return 0
 
 

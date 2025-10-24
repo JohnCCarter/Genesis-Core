@@ -81,10 +81,20 @@ def evaluate_pipeline(
     regime_state = {"regime": regime, "steps": 0, "candidate": regime}
     metrics.event("regime_ok", {"regime": regime})
 
+    close_list = candles.get("close") if isinstance(candles, dict) else None
+    last_close = None
+    if close_list:
+        try:
+            last_close = float(close_list[-1])
+        except (TypeError, ValueError):
+            last_close = None
+
     state = {
         **state,
         "current_atr": feats.get("atr_14"),
         "atr_percentiles": feats_meta.get("atr_percentiles"),
+        "ltf_fib": feats_meta.get("ltf_fibonacci"),
+        "last_close": last_close,
     }
 
     action, action_meta = decide(

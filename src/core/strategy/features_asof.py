@@ -28,7 +28,7 @@ from core.indicators.fibonacci import (
     calculate_fibonacci_levels,
     detect_swing_points,
 )
-from core.indicators.htf_fibonacci import get_htf_fibonacci_context
+from core.indicators.htf_fibonacci import get_htf_fibonacci_context, get_ltf_fibonacci_context
 from core.indicators.rsi import calculate_rsi
 from core.observability.metrics import metrics
 from core.utils.logging_redaction import get_logger
@@ -267,6 +267,26 @@ def _extract_asof(
                 "error": str(e),
             }
 
+    # === Same timeframe Fibonacci context for entry/exit logic ===
+    ltf_fibonacci_context = {}
+    if timeframe in ["1h", "30m", "6h", "15m"]:
+        try:
+            ltf_fibonacci_context = get_ltf_fibonacci_context(
+                {
+                    "high": highs,
+                    "low": lows,
+                    "close": closes,
+                    "timestamp": candles.get("timestamp") if isinstance(candles, dict) else None,
+                },
+                timeframe=timeframe,
+            )
+        except Exception as e:  # pragma: no cover - defensive
+            ltf_fibonacci_context = {
+                "available": False,
+                "reason": "LTF_CONTEXT_ERROR",
+                "error": str(e),
+            }
+
     meta = {
         "versions": {
             "features_v15_highvol_optimized": True,
@@ -280,6 +300,7 @@ def _extract_asof(
         "uses_bars": [0, asof_bar],
         "total_bars_available": total_bars,
         "htf_fibonacci": htf_fibonacci_context,  # NEW: HTF context for exit logic
+        "ltf_fibonacci": ltf_fibonacci_context,
         "current_atr": float(atr_vals[-1]) if atr_vals else None,
         "atr_percentiles": atr_percentiles,
     }

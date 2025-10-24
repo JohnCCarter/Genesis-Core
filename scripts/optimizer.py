@@ -1,4 +1,4 @@
-"""CLI-verktyg för optimizer (Phase-7a)."""
+"""Optimizer CLI helpers (Phase-7)."""
 
 from __future__ import annotations
 
@@ -43,7 +43,7 @@ def _format_trial_summary(idx: int, entry: dict[str, Any]) -> str:
 def summarize_run(run_id: str) -> dict[str, Any]:
     run_dir = (RESULTS_DIR / run_id).resolve()
     if not run_dir.exists():
-        raise FileNotFoundError(f"Run directory saknas: {run_dir}")
+        raise FileNotFoundError(f"Run directory not found: {run_dir}")
 
     meta_path = run_dir / "run_meta.json"
     meta: dict[str, Any] = {}
@@ -51,7 +51,7 @@ def summarize_run(run_id: str) -> dict[str, Any]:
         try:
             meta = json.loads(meta_path.read_text(encoding="utf-8"))
         except json.JSONDecodeError as exc:
-            raise ValueError(f"Ogiltig JSON i {meta_path}") from exc
+            raise ValueError(f"Invalid JSON in {meta_path}") from exc
 
     trials: list[dict[str, Any]] = []
     for path in sorted(run_dir.glob("trial_*.json")):
@@ -97,7 +97,6 @@ def summarize_run(run_id: str) -> dict[str, Any]:
         )
 
     valid_trials.sort(key=lambda item: item["score"], reverse=True)
-    best_trial = valid_trials[0] if valid_trials else None
 
     return {
         "meta": meta,
@@ -109,7 +108,7 @@ def summarize_run(run_id: str) -> dict[str, Any]:
             "completed": completed,
             "valid": len(valid_trials),
         },
-        "best_trial": best_trial,
+        "best_trial": valid_trials[0] if valid_trials else None,
         "valid_trials": valid_trials,
         "trials": trials,
     }
@@ -143,7 +142,7 @@ def _print_summary(data: dict[str, Any], *, top_n: int) -> None:
         print(f"  total_duration={total_duration:.1f}s avg_duration={avg_duration:.1f}s")
 
     if not valid_trials:
-        print("Ingen giltig trial utan constraint-fel hittades.")
+        print("No trial satisfied the constraints.")
         return
 
     best = valid_trials[0]
@@ -155,7 +154,7 @@ def _print_summary(data: dict[str, Any], *, top_n: int) -> None:
     if metrics:
         print(f"  num_trades: {metrics.get('num_trades')}")
         print(f"  sharpe_ratio: {metrics.get('sharpe_ratio')}")
-        print(f"  total_return: {metrics.get('total_return')}%")
+        print(f"  total_return: {metrics.get('total_return')}")
         print(f"  profit_factor: {metrics.get('profit_factor')}")
 
     if top_n > 1:
@@ -163,20 +162,20 @@ def _print_summary(data: dict[str, Any], *, top_n: int) -> None:
         for idx, entry in enumerate(valid_trials[:top_n], start=1):
             print(_format_trial_summary(idx, entry))
         if top_n < len(valid_trials):
-            print(f"  ... {len(valid_trials) - top_n} fler")
+            print(f"  ... {len(valid_trials) - top_n} more")
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Optimizer CLI")
     subparsers = parser.add_subparsers(dest="command")
 
-    summarize_parser = subparsers.add_parser("summarize", help="Sammanfatta run")
-    summarize_parser.add_argument("run_id", type=str, help="Run-id (katalognamn)")
+    summarize_parser = subparsers.add_parser("summarize", help="Summarise a run")
+    summarize_parser.add_argument("run_id", type=str, help="Run id (directory name)")
     summarize_parser.add_argument(
         "--top",
         type=int,
         default=1,
-        help="Antal topp-trials att lista (default: 1)",
+        help="Number of top trials to list (default: 1)",
     )
 
     args = parser.parse_args(argv)

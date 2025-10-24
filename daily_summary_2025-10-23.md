@@ -43,7 +43,7 @@
 2. **Micro‑finjustering** – om vi vill pressa vidare: kör en ännu snävare Optuna (t.ex. entry 0.33–0.38, risk_map små variationer) eller öppna fler rattar (Fibonacci, features).
 3. **Automatisera pipeline** – sätt upp sekvensen “coarse → proxy → fine” som standardflöde, eventuellt med tidig stopp och parallellkörning som nästa förbättring.
 
-_Notering_: Alla backtestfiler ligger under `results/backtests/`; Optuna-databaser:  
+_Notering_: Alla backtestfiler ligger under `results/backtests/`; Optuna-databaser:
 `optuna_tBTCUSD_1h_proxy.db` (proxy), `optuna_tBTCUSD_1h_fine.db` (fine), `optuna_tBTCUSD_1h_6m.db` (fullperiod).
 
 Vi fortsätter arbetet i morgon med champion‑uppdatering och plan för nästa optimeringsfas.

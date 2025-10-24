@@ -1,20 +1,28 @@
 {
-  "created_at": "2025-10-21T09:30:00Z",
-  "run_id": "manual_baseline",
-  "git_commit": "manual",
-  "snapshot_id": "manual",
+  "created_at": "2025-10-23T16:38:00Z",
+  "run_id": "run_20251023_141747",
+  "git_commit": "unknown",
+  "snapshot_id": "tBTCUSD_1h_2024-10-22_2025-10-01_v1",
   "symbol": "tBTCUSD",
   "timeframe": "1h",
-  "score": 0.0,
-  "metrics": {},
+  "score": 260.731541541794,
+  "metrics": {
+    "total_return": 0.10427224105362948,
+    "profit_factor": 3.304063859475257,
+    "max_drawdown": 0.0,
+    "win_rate": 0.34666666666666673,
+    "num_trades": 75,
+    "sharpe_ratio": 0.0,
+    "return_to_dd": 1042.7224105362948
+  },
   "parameters": {
     "thresholds": {
-      "entry_conf_overall": 0.4,
+      "entry_conf_overall": 0.35,
       "regime_proba": {
         "ranging": 0.8,
         "bull": 0.7,
         "bear": 0.7,
-        "balanced": 0.8
+        "balanced": 0.7
       },
       "signal_adaptation": {
         "atr_period": 14,
@@ -52,31 +60,23 @@
     "risk": {
       "risk_map": [
         [
-          0.5,
-          0.03
+          0.45,
+          0.015
         ],
         [
-          0.6,
-          0.05
+          0.55,
+          0.025
         ],
         [
-          0.7,
-          0.08
-        ],
-        [
-          0.8,
-          0.1
-        ],
-        [
-          0.9,
-          0.12
+          0.65,
+          0.035
         ]
       ]
     },
     "exit": {
       "enabled": true,
-      "exit_conf_threshold": 0.5,
-      "max_hold_bars": 25,
+      "exit_conf_threshold": 0.4,
+      "max_hold_bars": 20,
       "regime_aware_exits": true
     },
     "gates": {
@@ -93,17 +93,26 @@
       "trail_atr_multiplier": 2.5,
       "swing_update_strategy": "fixed"
     },
-    "warmup_bars": 150
+    "warmup_bars": 150,
+    "ltf_fib": {
+      "entry": {
+        "enabled": true,
+        "tolerance_atr": 0.5,
+        "long_max_level": 0.618,
+        "short_min_level": 0.382
+      }
+    }
   },
   "constraints": {
     "hard_failures": [],
-    "raw": {}
+    "raw": {},
+    "ok": true
   },
   "metadata": {
-    "trial_id": "manual",
-    "results_path": "",
-    "run_meta": {
-      "notes": "Signal adaptation zones added manually 2025-10-21"
-    }
+    "trial_id": "trial_002",
+    "results_path": "results/backtests/tBTCUSD_1h_20251023_162506.json",
+    "log": "results/hparam_search/run_20251023_141747/trial_002.log",
+    "config_path": "results/hparam_search/run_20251023_141747/trial_002_config.json",
+    "run_metadata": "results/hparam_search/run_20251023_141747/run_meta.json"
   }
 }

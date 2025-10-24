@@ -176,6 +176,75 @@ def decide(
         else:
             candidate = "LONG" if p_buy > p_sell else "SHORT"
 
+    # LTF Fibonacci entry gating (same-timeframe fib context)
+    ltf_entry_cfg = (cfg.get("ltf_fib") or {}).get("entry") or {}
+    if ltf_entry_cfg.get("enabled"):
+        ltf_ctx = state_in.get("ltf_fib") or {}
+        price_now = state_in.get("last_close")
+        atr_now = float(state_in.get("current_atr") or 0.0)
+        tol_atr = float(ltf_entry_cfg.get("tolerance_atr", 0.5))
+        tolerance = tol_atr * atr_now if atr_now > 0 else 0.0
+
+        if not ltf_ctx.get("available"):
+            reasons.append("LTF_FIB_UNAVAILABLE")
+            return "NONE", {
+                "versions": versions,
+                "reasons": reasons,
+                "state_out": state_out,
+            }
+        levels_dict = ltf_ctx.get("levels") or {}
+        try:
+            levels = {float(k): float(v) for k, v in levels_dict.items()}
+        except Exception:
+            levels = {}
+
+        def _level_price(target: float | None) -> float | None:
+            if target is None or not levels:
+                return None
+            if target in levels:
+                return levels[target]
+            # allow fuzzy match
+            best_key = min(levels.keys(), key=lambda k: abs(k - float(target)))
+            if abs(best_key - float(target)) <= 1e-6:
+                return levels[best_key]
+            return levels.get(best_key)
+
+        if price_now is None:
+            reasons.append("LTF_FIB_NO_PRICE")
+            return "NONE", {
+                "versions": versions,
+                "reasons": reasons,
+                "state_out": state_out,
+            }
+
+        if candidate == "LONG":
+            max_level = ltf_entry_cfg.get("long_max_level")
+            level_price = _level_price(float(max_level) if max_level is not None else None)
+            if level_price is not None and price_now > level_price + tolerance:
+                reasons.append("LTF_FIB_LONG_BLOCK")
+                return "NONE", {
+                    "versions": versions,
+                    "reasons": reasons,
+                    "state_out": state_out,
+                }
+        elif candidate == "SHORT":
+            min_level = ltf_entry_cfg.get("short_min_level")
+            level_price = _level_price(float(min_level) if min_level is not None else None)
+            if level_price is not None and price_now < level_price - tolerance:
+                reasons.append("LTF_FIB_SHORT_BLOCK")
+                return "NONE", {
+                    "versions": versions,
+                    "reasons": reasons,
+                    "state_out": state_out,
+                }
+
+        state_out["ltf_fib_entry_debug"] = {
+            "price": price_now,
+            "atr": atr_now,
+            "tolerance": tolerance,
+            "levels": {str(k): levels[k] for k in levels},
+        }
+
     # 7) Confidence‑gate (kräv över entry_conf_overall för vald riktning)
     if not confidence or not isinstance(confidence, dict):
         reasons.append("FAIL_SAFE_NULL")

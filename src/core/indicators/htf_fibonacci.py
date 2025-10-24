@@ -20,6 +20,32 @@ from core.indicators.fibonacci import (
 _htf_context_cache: dict[str, dict[str, Any]] = {}
 
 
+def _to_series(
+    data: dict[str, list[float]] | list[tuple],
+) -> tuple[pd.Series, pd.Series, pd.Series, pd.Series | None]:
+    """
+    Normalize candle input (dict or list of tuples) into pandas Series.
+    Returns (highs, lows, closes, timestamps)
+    """
+    if isinstance(data, dict):
+        highs = pd.Series([float(x) for x in data.get("high", [])])
+        lows = pd.Series([float(x) for x in data.get("low", [])])
+        closes = pd.Series([float(x) for x in data.get("close", [])])
+        timestamps_raw = data.get("timestamp")
+        timestamps = pd.Series(timestamps_raw) if timestamps_raw is not None else None
+        return highs, lows, closes, timestamps
+
+    if isinstance(data, list):
+        # Assume list of tuples (timestamp, open, high, low, close, volume)
+        highs = pd.Series([float(item[2]) for item in data])
+        lows = pd.Series([float(item[3]) for item in data])
+        closes = pd.Series([float(item[4]) for item in data])
+        timestamps = pd.Series([item[0] for item in data]) if data and len(data[0]) > 0 else None
+        return highs, lows, closes, timestamps
+
+    raise TypeError(f"Unsupported candle format: {type(data)!r}")
+
+
 def load_candles_data(symbol: str, timeframe: str) -> pd.DataFrame:
     """
     Load candle data from Parquet files (same logic as BacktestEngine).
@@ -335,3 +361,82 @@ def get_1d_fibonacci_context(ltf_candles: dict | list, **kwargs) -> dict:
 def get_4h_fibonacci_context(ltf_candles: dict | list, **kwargs) -> dict:
     """Get 4h Fibonacci context (alternative HTF)."""
     return get_htf_fibonacci_context(ltf_candles, htf_timeframe="4h", **kwargs)
+
+
+def get_ltf_fibonacci_context(
+    ltf_candles: dict | list,
+    *,
+    timeframe: str | None = None,
+    config: FibonacciConfig | None = None,
+) -> dict:
+    """
+    Calculate Fibonacci context on the same timeframe as the candles (LTF).
+
+    Useful when entries/exits should key off intraday swings while still allowing
+    HTF context to act as trend filter.
+    """
+    try:
+        highs, lows, closes, timestamps = _to_series(ltf_candles)
+    except Exception as exc:  # pragma: no cover - defensive
+        return {"available": False, "reason": "LTF_INVALID_INPUT", "error": str(exc)}
+
+    if highs.empty or lows.empty or closes.empty:
+        return {"available": False, "reason": "LTF_NO_DATA"}
+
+    # Use a dedicated config that exposes full spectrum levels (0.0 → 1.0)
+    base_cfg = config or FibonacciConfig()
+    fib_cfg = FibonacciConfig(
+        levels=[0.0, 0.382, 0.5, 0.618, 0.786, 1.0],
+        weights={
+            0.0: 0.3,
+            0.382: 0.6,
+            0.5: 1.0,
+            0.618: 1.0,
+            0.786: 0.7,
+            1.0: 0.3,
+        },
+        atr_depth=base_cfg.atr_depth,
+        max_swings=base_cfg.max_swings,
+        min_swings=base_cfg.min_swings,
+        max_lookback=base_cfg.max_lookback,
+    )
+
+    try:
+        swing_high_idx, swing_low_idx, swing_high_prices, swing_low_prices = detect_swing_points(
+            highs, lows, closes, fib_cfg
+        )
+    except Exception as exc:  # pragma: no cover - defensive
+        return {"available": False, "reason": "LTF_SWING_ERROR", "error": str(exc)}
+
+    if not swing_high_prices or not swing_low_prices:
+        return {"available": False, "reason": "LTF_NO_SWINGS"}
+
+    fib_prices = calculate_fibonacci_levels(swing_high_prices, swing_low_prices, fib_cfg.levels)
+    if len(fib_prices) != len(fib_cfg.levels):
+        return {"available": False, "reason": "LTF_LEVELS_INCOMPLETE"}
+
+    levels = {level: float(price) for level, price in zip(fib_cfg.levels, fib_prices, strict=False)}
+    swing_high = float(swing_high_prices[-1])
+    swing_low = float(swing_low_prices[-1])
+    swing_range = swing_high - swing_low
+    if swing_range == 0:
+        return {"available": False, "reason": "LTF_INVALID_SWING"}
+
+    last_timestamp = None
+    if timestamps is not None and not timestamps.empty:
+        last_timestamp = timestamps.iloc[-1]
+
+    trend = "bullish" if swing_high > swing_low else "bearish"
+
+    return {
+        "available": True,
+        "levels": levels,
+        "swing_high": swing_high,
+        "swing_low": swing_low,
+        "swing_range": swing_range,
+        "trend": trend,
+        "timeframe": timeframe,
+        "timestamp": last_timestamp,
+        "num_swing_highs": len(swing_high_prices),
+        "num_swing_lows": len(swing_low_prices),
+    }

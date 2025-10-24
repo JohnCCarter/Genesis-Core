@@ -101,6 +101,14 @@
         "long_max_level": 0.618,
         "short_min_level": 0.382
       }
+    },
+    "htf_fib": {
+      "entry": {
+        "enabled": true,
+        "tolerance_atr": 0.5,
+        "long_min_level": 0.382,
+        "short_max_level": 0.618
+      }
     }
   },
   "constraints": {

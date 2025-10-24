@@ -95,3 +95,10 @@ pip install -e .[dev,ml]
 ---
 
 > **Remember:** follow the _coarse -> proxy -> fine_ flow, leverage the cache, and log outcomes in `docs/daily_summary_YYYY-MM-DD.md`. The next agent starts by promoting the winner and updating the documentation.
+
+
+```powershell
+python -m venv .venv
+. .\.venv\Scripts\Activate.ps1
+pip install -e .[dev]
+uvicorn core.server:app --reload --app-dir src

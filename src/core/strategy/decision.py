@@ -176,6 +176,86 @@ def decide(
         else:
             candidate = "LONG" if p_buy > p_sell else "SHORT"
 
+    # Helper utilities for Fibonacci-based gating
+    def _levels_to_lookup(levels_dict: Any | None) -> dict[float, float]:
+        if not isinstance(levels_dict, dict):
+            return {}
+        lookup: dict[float, float] = {}
+        for key, value in levels_dict.items():
+            try:
+                lookup[float(key)] = float(value)
+            except (TypeError, ValueError):
+                continue
+        return lookup
+
+    def _level_price(levels: dict[float, float], target: float | None) -> float | None:
+        if target is None or not levels:
+            return None
+        if target in levels:
+            return levels[target]
+        nearest = min(levels.keys(), key=lambda k: abs(k - target))
+        if abs(nearest - target) <= 1e-6:
+            return levels[nearest]
+        return None
+
+    # HTF Fibonacci confirmation (trend filter)
+    htf_entry_cfg = (cfg.get("htf_fib") or {}).get("entry") or {}
+    if htf_entry_cfg.get("enabled"):
+        htf_ctx = state_in.get("htf_fib") or {}
+        price_now = state_in.get("last_close")
+        atr_now = float(state_in.get("current_atr") or 0.0)
+        tolerance = float(htf_entry_cfg.get("tolerance_atr", 0.5)) * atr_now if atr_now > 0 else 0.0
+
+        if not htf_ctx.get("available"):
+            reasons.append("HTF_FIB_UNAVAILABLE")
+            return "NONE", {
+                "versions": versions,
+                "reasons": reasons,
+                "state_out": state_out,
+            }
+
+        if price_now is None:
+            reasons.append("HTF_FIB_NO_PRICE")
+            return "NONE", {
+                "versions": versions,
+                "reasons": reasons,
+                "state_out": state_out,
+            }
+
+        htf_levels = _levels_to_lookup(htf_ctx.get("levels"))
+
+        if candidate == "LONG":
+            min_level = htf_entry_cfg.get("long_min_level")
+            level_price = _level_price(
+                htf_levels, float(min_level) if min_level is not None else None
+            )
+            if level_price is not None and price_now < level_price - tolerance:
+                reasons.append("HTF_FIB_LONG_BLOCK")
+                return "NONE", {
+                    "versions": versions,
+                    "reasons": reasons,
+                    "state_out": state_out,
+                }
+        elif candidate == "SHORT":
+            max_level = htf_entry_cfg.get("short_max_level")
+            level_price = _level_price(
+                htf_levels, float(max_level) if max_level is not None else None
+            )
+            if level_price is not None and price_now > level_price + tolerance:
+                reasons.append("HTF_FIB_SHORT_BLOCK")
+                return "NONE", {
+                    "versions": versions,
+                    "reasons": reasons,
+                    "state_out": state_out,
+                }
+
+        state_out["htf_fib_entry_debug"] = {
+            "price": price_now,
+            "atr": atr_now,
+            "tolerance": tolerance,
+            "levels": {str(k): htf_levels[k] for k in htf_levels},
+        }
+
     # LTF Fibonacci entry gating (same-timeframe fib context)
     ltf_entry_cfg = (cfg.get("ltf_fib") or {}).get("entry") or {}
     if ltf_entry_cfg.get("enabled"):
@@ -192,22 +272,7 @@ def decide(
                 "reasons": reasons,
                 "state_out": state_out,
             }
-        levels_dict = ltf_ctx.get("levels") or {}
-        try:
-            levels = {float(k): float(v) for k, v in levels_dict.items()}
-        except Exception:
-            levels = {}
-
-        def _level_price(target: float | None) -> float | None:
-            if target is None or not levels:
-                return None
-            if target in levels:
-                return levels[target]
-            # allow fuzzy match
-            best_key = min(levels.keys(), key=lambda k: abs(k - float(target)))
-            if abs(best_key - float(target)) <= 1e-6:
-                return levels[best_key]
-            return levels.get(best_key)
+        levels = _levels_to_lookup(ltf_ctx.get("levels"))
 
         if price_now is None:
             reasons.append("LTF_FIB_NO_PRICE")
@@ -219,7 +284,7 @@ def decide(
 
         if candidate == "LONG":
             max_level = ltf_entry_cfg.get("long_max_level")
-            level_price = _level_price(float(max_level) if max_level is not None else None)
+            level_price = _level_price(levels, float(max_level) if max_level is not None else None)
             if level_price is not None and price_now > level_price + tolerance:
                 reasons.append("LTF_FIB_LONG_BLOCK")
                 return "NONE", {
@@ -229,7 +294,7 @@ def decide(
                 }
         elif candidate == "SHORT":
             min_level = ltf_entry_cfg.get("short_min_level")
-            level_price = _level_price(float(min_level) if min_level is not None else None)
+            level_price = _level_price(levels, float(min_level) if min_level is not None else None)
             if level_price is not None and price_now < level_price - tolerance:
                 reasons.append("LTF_FIB_SHORT_BLOCK")
                 return "NONE", {

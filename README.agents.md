@@ -1,72 +1,105 @@
 # README for AI Agents (Local Development)
-_Last update: 2025-10-23_
+_Last update: 2025-10-24_
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
 
-## 1. Deliverables on 23 Oct 2025
-- Added result caching in `src/core/optimizer/runner.py` (`results/hparam_search/<run>/_cache/<hash>.json`) to skip duplicate backtests.
-- Introduced a three-step optimisation pipeline:
-  1. `config/optimizer/tBTCUSD_1h_coarse_grid.yaml` - coarse sweep (27 combinations).
-  2. `config/optimizer/tBTCUSD_1h_proxy_optuna.yaml` - 2-month Optuna run with Hyperband for fast feedback.
-  3. `config/optimizer/tBTCUSD_1h_fine_optuna.yaml` - 6-month fine-tuning around the winning region.
-- New summary helper: `python -m scripts.summarize_hparam_results --run-dir <results/hparam_search/run_...>`.
-- Winning configuration (trial_002, run_20251023_141747):
-  - `entry_conf_overall = 0.35`
-  - `regime_proba.balanced = 0.70`
-  - `risk_map = [[0.45, 0.015], [0.55, 0.025], [0.65, 0.035]]`
-  - `exit_conf_threshold = 0.40`, `max_hold_bars = 20`
-  - Backtest: `results/backtests/tBTCUSD_1h_20251023_162506.json` -> net +10.43 %, PF 3.30, 75 trades.
+## 1. Deliverables on 24 Oct 2025
+- Added intraday Fibonacci support via `get_ltf_fibonacci_context` in `src/core/indicators/htf_fibonacci.py` (symmetric helper for 1h/30m/6h timeframes).
+- `src/core/strategy/features_asof.py` now emits both HTF and LTF Fibonacci context; `evaluate_pipeline` persists ATR/Fibonacci metadata in the decision state.
+- Refactored `src/core/strategy/decision.py` to use shared level lookup helpers and optional HTF/LTF entry gates with ATR-based tolerances (debug info persisted in `state_out`).
+- Added `config/optimizer/tBTCUSD_1h_fib_grid_v2.yaml` for fast grids over HTF exit parameters (partials/trailing toggles, ATR thresholds).
+- Captured the latest grid outcomes under `results/hparam_search/run_20251024_*` with matching backtests in `results/backtests/tBTCUSD_1h_20251024_*.json` (champion is unchanged).
 
-## 2. Optimisation workflow (coarse -> proxy -> fine)
-1. Run coarse sweep: `python -m core.optimizer.runner config/optimizer/tBTCUSD_1h_coarse_grid.yaml`.
-2. Run proxy Optuna: `python test_optuna_new_1_3months.py --config config/optimizer/tBTCUSD_1h_proxy_optuna.yaml` (study `optuna_tBTCUSD_1h_proxy.db` resumes automatically).
-3. Run fine Optuna: `python test_optuna_new_1_3months.py --config config/optimizer/tBTCUSD_1h_fine_optuna.yaml`.
-4. Summarise each run with `scripts/summarize_hparam_results`.
-5. If required, run the full 6-month config `config/optimizer/tBTCUSD_1h_new_optuna.yaml` for validation.
-6. Check the `_cache` directory before launching new backtests to reuse existing results.
+## 2. 24 Oct experiments (Fibonacci focus)
+- `run_20251024_094342` (micro sweep without HTF gating): best `trial_001`, score 184.71, +7.39 % net (`results/backtests/tBTCUSD_1h_20251024_115054.json`), PF 4.47 across 62 trades.
+- `run_20251024_100716` (HTF exit grid, ATR threshold 0.60-0.75, trailing 2.4-2.8): best `trial_008`, score 190.35, +7.62 % net (`results/backtests/tBTCUSD_1h_20251024_121459.json`), PF 4.59, 62 trades.
+- `run_20251024_102710` (partials/trailing variants): best `trial_001`, same metrics as above (`results/backtests/tBTCUSD_1h_20251024_123436.json`).
+- None of the new trials beat the reigning champion `run_20251023_141747/trial_002` (score 260.73, +10.43 %, 75 trades). Entry fib gating reduces trade count; calibration is still needed before promoting any new configuration.
 
-### Quick commands
-```powershell
-python -m scripts.summarize_hparam_results --run-dir results/hparam_search/run_YYYYMMDD_HHMMSS
-python test_optuna_new_1_3months.py --config config/optimizer/tBTCUSD_1h_proxy_optuna.yaml
-python test_optuna_new_1_3months.py --config config/optimizer/tBTCUSD_1h_fine_optuna.yaml
-```
+## 3. Optimisation workflow (coarse -> proxy -> fine)
+1. **Coarse grid** - `config/optimizer/tBTCUSD_1h_coarse_grid.yaml`
+   ```powershell
+   python -m core.optimizer.runner config/optimizer/tBTCUSD_1h_coarse_grid.yaml
+   ```
+2. **Proxy Optuna (fast 2m)** - `config/optimizer/tBTCUSD_1h_proxy_optuna.yaml`
+   ```powershell
+   python test_optuna_new_1_3months.py --config config/optimizer/tBTCUSD_1h_proxy_optuna.yaml
+   ```
+   Study file: `optuna_tBTCUSD_1h_proxy.db` (resumable).
+3. **Fine Optuna (6m)** - `config/optimizer/tBTCUSD_1h_fine_optuna.yaml`
+   ```powershell
+   python test_optuna_new_1_3months.py --config config/optimizer/tBTCUSD_1h_fine_optuna.yaml
+   ```
+   Study file: `optuna_tBTCUSD_1h_fine.db`.
+4. **Optional Fibonacci grid** - warm up HTF exit combinations quickly:
+   ```powershell
+   python -m core.optimizer.runner config/optimizer/tBTCUSD_1h_fib_grid_v2.yaml
+   ```
+   Use this before launching long Optuna runs when iterating on fib gating.
+5. **Summaries**
+   ```powershell
+   python -m scripts.summarize_hparam_results --run-dir results/hparam_search/<run_id>
+   python scripts/optimizer.py summarize <run_id> --top 5
+   ```
+6. **Full validation (optional)** - `config/optimizer/tBTCUSD_1h_new_optuna.yaml` (`optuna_tBTCUSD_1h_6m.db`).
+7. **Champion update** - update `config/strategy/champions/<symbol>_<tf>.json` once a winner is validated.
+8. **Documentation** - log outcomes in `docs/daily_summary_YYYY-MM-DD.md` and this file.
 
-## 3. Champion candidate to verify next
-| Parameter | Value |
-|-----------|-------|
-| `entry_conf_overall` | 0.35 |
-| `regime_proba.balanced` | 0.70 |
-| `risk_map` | `[[0.45, 0.015], [0.55, 0.025], [0.65, 0.035]]` |
-| `exit_conf_threshold` | 0.40 |
-| `max_hold_bars` | 20 |
+## 4. Champion status (unchanged)
+Champion file: `config/strategy/champions/tBTCUSD_1h.json`
+- Source run: `run_20251023_141747`, `trial_002`.
+- Key parameters: `entry_conf_overall = 0.35`, `regime_proba.balanced = 0.70`, risk map `[[0.45, 0.015], [0.55, 0.025], [0.65, 0.035]]`, `exit_conf_threshold = 0.40`, `max_hold_bars = 20`.
+- Exits: HTF fib trailing enabled (`fib_threshold_atr = 0.7`, `trail_atr_multiplier = 2.5`, partials 0.6/0.5).
+- Entry fib gates are enabled in the champion config; ensure the runtime state supplies both `htf_fib` and `ltf_fib` metadata before activating in production.
+- Backtest reference: `results/backtests/tBTCUSD_1h_20251023_162506.json` -> net +10.43 %, PF 3.30, 75 trades.
 
-- Source: `results/hparam_search/run_20251023_141747/trial_002.json`.
-- The next agent should update `config/strategy/champions/tBTCUSD_1h.json` after sanity checks.
-- The proxy winner (`results/backtests/tBTCUSD_1h_20251023_152720.json`) remains a reference (net +8.98 %, PF 3.03).
+## 5. Result caching
+- Parameter hashes stored per run in `_cache/<hash>.json` (under each `results/hparam_search/run_*` directory).
+- Re-running an identical configuration reuses cached payloads and skips redundant backtests.
+- Cached entries include backtest paths, scores and metrics for quick reuse.
 
-## 4. Next steps (to continue tomorrow)
-1. Promote the winning configuration to champion and update the runtime config.
-2. Consider micro-tuning (even tighter ranges or additional parameters such as Fibonacci controls).
-3. Automate the entire coarse -> proxy -> fine flow and plan for early-stopping support.
-4. Update `docs/optimizer.md` once the champion is changed.
-5. Plan which feature or exit parameters should be exposed for future autotune iterations.
+## 6. CLI usage (`scripts/optimizer.py`)
+- `summarize <run_id> [--top N]` prints meta, counts, durations, best trials.
+  ```bash
+  python scripts/optimizer.py summarize run_20251023_141747 --top 5
+  ```
 
-## 5. Recent history (Phase-7a/7b, 21 Oct 2025)
+## 7. Test & QA status
+- Targeted tests that previously failed due to `Settings` validation now pass:
+  ```powershell
+  python -m pytest tests/test_config_api_e2e.py::test_runtime_endpoints_e2e -q
+  python -m pytest tests/test_exchange_client.py::test_build_and_request_smoke -q
+  python -m pytest tests/test_ui_endpoints.py::test_debug_auth_masked -q
+  ```
+  They rely on the local `.env`; keep placeholder secrets or inject fixtures before running in CI.
+- Bandit run touched the full `.venv`, producing 1,100+ third-party findings. Prefer:
+  ```powershell
+  bandit -r src -ll --skip B101,B102,B110
+  ```
+  Adjust the ignore list as needed to keep focus on first-party code.
+
+## 8. Next steps for hand-off (25 Oct 2025)
+1. Wire `feats_meta["htf_fibonacci"]` into the decision state (`evaluate_pipeline`) so the new HTF entry gate can operate (currently only `ltf_fib` is forwarded).
+2. Tune the fib gates: rerun `config/optimizer/tBTCUSD_1h_fib_grid_v2.yaml` with tighter `fib_threshold_atr` / tolerance ranges and compare against the champion (target >= 260 score).
+3. Decide between grid-first vs Optuna-first for fib parameters; if Optuna is chosen, script a warm-start study that seeds the current champion values.
+4. Add regression tests around the new decision gates (HTF/LTF) covering missing context, ATR=0, and tolerance handling.
+5. Re-run Bandit with the scoped command and capture a clean report for future reference.
+
+## 9. Recent history (Phase-7a/7b, 21 Oct 2025)
 - Locked snapshot: `tBTCUSD_1h_2024-10-22_2025-10-01_v1`.
-- Baseline backtest recorded (`results/backtests/tBTCUSD_1h_20251020_155245.json`).
+- Baseline backtest: `results/backtests/tBTCUSD_1h_20251020_155245.json`.
 - Runner enhancements: resume/skip, metadata, concurrency, retries.
 - ChampionManager & ChampionLoader integrated into pipeline/backtest flows.
 - Walk-forward runs (`wf_tBTCUSD_1h_20251021_090446`, ATR zone tweak `wf_tBTCUSD_1h_20251021_094334`).
 - Optuna integration (median pruner), CLI summary (`scripts/optimizer.py summarize --top N`), documentation in `docs/optimizer.md` and `docs/TODO.md`.
 - Exit improvement plan documented in `docs/FIBONACCI_FRAKTAL_EXITS_IMPLEMENTATION_PLAN.md`.
 
-## 6. Deployment and operations
+## 10. Deployment and operations
 - Designed for single-user operation; secrets live in `.env`.
 - Production deployment: personal VPS or equivalent.
 - Champion configs in `config/strategy/champions/`, loaded by `ChampionLoader`.
 
-## 7. Agent rules
+## 11. Agent rules
 - Keep `core/strategy/*` deterministic and side-effect free.
 - Do not log secrets; use `core.utils.logging_redaction` if needed.
 - Pause when uncertain and verify with tests.
@@ -74,7 +107,7 @@ python test_optuna_new_1_3months.py --config config/optimizer/tBTCUSD_1h_fine_op
 - Use `metrics` only in orchestration (`core/strategy/evaluate.py`).
 - Respect cached results and always save backtests under `results/backtests/`.
 
-## 8. Setup (Windows PowerShell)
+## 12. Setup (Windows PowerShell)
 ```powershell
 python -m venv .venv
 . .\.venv\Scripts\Activate.ps1
@@ -82,7 +115,7 @@ python -m pip install --upgrade pip
 pip install -e .[dev,ml]
 ```
 
-## 9. Quick start and key references
+## 13. Quick start and key references
 - Feature pipeline: `src/core/strategy/features_asof.py`, `scripts/precompute_features_v17.py`.
 - Backtesting: `scripts/run_backtest.py --symbol tBTCUSD --timeframe 1h --capital 10000`.
 - Model training: `scripts/train_model.py` (see `docs/FEATURE_COMPUTATION_MODES.md`).
@@ -94,11 +127,4 @@ pip install -e .[dev,ml]
 
 ---
 
-> **Remember:** follow the _coarse -> proxy -> fine_ flow, leverage the cache, and log outcomes in `docs/daily_summary_YYYY-MM-DD.md`. The next agent starts by promoting the winner and updating the documentation.
-
-
-```powershell
-python -m venv .venv
-. .\.venv\Scripts\Activate.ps1
-pip install -e .[dev]
-uvicorn core.server:app --reload --app-dir src
+> **Kom ihag:** folj flodet _coarse -> proxy -> fine_, utnyttja cache-filerna och dokumentera resultaten i `docs/daily_summary_YYYY-MM-DD.md`. Nasta agent borjar med att aktivera HTF-filtret i beslutslogiken, kalibrera fib-parametrarna och uppdatera dokumentationen darefter.

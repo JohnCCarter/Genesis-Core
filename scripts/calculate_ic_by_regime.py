@@ -142,20 +142,54 @@ def calculate_ic_by_regime(
 
 def load_model_predictions(model_path: str, features_df: pd.DataFrame) -> np.ndarray:
     """
-    Load model and generate predictions.
+    Load model and generate predictions using Genesis-Core model format.
 
-    For now, use placeholder. TODO: Load actual sklearn model.
+    Args:
+        model_path: Path to model JSON file
+        features_df: DataFrame with features
+
+    Returns:
+        Array of buy probabilities
     """
-    # Placeholder: Use weighted average of features
-    # In production, this should load the actual model and predict
+    # Load model from JSON
+    with open(model_path) as f:
+        model_data = json.load(f)
 
-    feature_cols = [col for col in features_df.columns if col != "timestamp"]
+    # Get model schema (feature names)
+    schema = model_data.get("schema", [])
 
-    if not feature_cols:
-        raise ValueError("No feature columns found!")
+    if not schema:
+        raise ValueError("Model missing schema!")
 
-    # Simple weighted average (placeholder)
-    predictions = features_df[feature_cols].mean(axis=1).values
+    # Get buy model parameters
+    buy_model = model_data.get("buy", {})
+    buy_weights = np.array(buy_model.get("w", []))
+    buy_bias = buy_model.get("b", 0.0)
+
+    if len(buy_weights) == 0:
+        raise ValueError("Model missing buy weights!")
+
+    # Get calibration parameters
+    calib = buy_model.get("calib", {})
+    calib_a = calib.get("a", 1.0)
+    calib_b = calib.get("b", 0.0)
+
+    # Extract features in the correct order
+    feature_matrix = np.zeros((len(features_df), len(schema)))
+    for i, feature_name in enumerate(schema):
+        if feature_name in features_df.columns:
+            feature_matrix[:, i] = features_df[feature_name].fillna(0.0).values
+        else:
+            print(f"[WARNING] Feature '{feature_name}' not found in features_df, using zeros")
+
+    # Compute logits: z = w^T * x + b
+    logits = np.dot(feature_matrix, buy_weights) + buy_bias
+
+    # Apply calibration: z' = a * z + b
+    calibrated_logits = calib_a * logits + calib_b
+
+    # Apply sigmoid to get probabilities
+    predictions = 1.0 / (1.0 + np.exp(-calibrated_logits))
 
     return predictions
 

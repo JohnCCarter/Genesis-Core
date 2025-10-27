@@ -1,0 +1,9 @@
+{
+  "cfg": {
+    "htf_fib": {
+      "entry": {
+        "enabled": false
+      }
+    }
+  }
+}

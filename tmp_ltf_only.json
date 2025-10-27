@@ -1,0 +1,17 @@
+{
+  "cfg": {
+    "htf_fib": {
+      "entry": {
+        "enabled": false
+      }
+    },
+    "ltf_fib": {
+      "entry": {
+        "enabled": true,
+        "long_max_level": 0.618,
+        "short_min_level": 0.382,
+        "tolerance_atr": 0.75
+      }
+    }
+  }
+}

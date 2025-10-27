@@ -19,6 +19,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from scipy.special import expit
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
@@ -79,8 +80,8 @@ def simulate_predictions(features_df: pd.DataFrame, model_data: dict) -> np.ndar
     # Apply calibration: z' = a * z + b
     calibrated_logits = calib_a * logits + calib_b
 
-    # Apply sigmoid to get probabilities
-    predictions = 1.0 / (1.0 + np.exp(-calibrated_logits))
+    # Apply sigmoid to get probabilities (using scipy.special.expit for numerical stability)
+    predictions = expit(calibrated_logits)
 
     return predictions
 

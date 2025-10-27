@@ -19,6 +19,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from scipy.special import expit
 from scipy.stats import spearmanr
 
 # Add src to path
@@ -188,8 +189,8 @@ def load_model_predictions(model_path: str, features_df: pd.DataFrame) -> np.nda
     # Apply calibration: z' = a * z + b
     calibrated_logits = calib_a * logits + calib_b
 
-    # Apply sigmoid to get probabilities
-    predictions = 1.0 / (1.0 + np.exp(-calibrated_logits))
+    # Apply sigmoid to get probabilities (using scipy.special.expit for numerical stability)
+    predictions = expit(calibrated_logits)
 
     return predictions
 

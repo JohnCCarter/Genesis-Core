@@ -110,7 +110,9 @@ def test_build_candles_window(sample_candles_data):
     assert "high" in window
     assert "low" in window
     assert "volume" in window
+    assert "timestamp" in window
     assert len(window["close"]) == 50  # Correct window size
+    assert len(window["timestamp"]) == 50
 
 
 def test_build_candles_window_at_start(sample_candles_data):
@@ -122,6 +124,7 @@ def test_build_candles_window_at_start(sample_candles_data):
     window = engine._build_candles_window(end_idx=10, window_size=50)
 
     assert len(window["close"]) == 11  # 0 to 10 inclusive
+    assert len(window["timestamp"]) == 11
 
 
 def test_engine_run_no_data():

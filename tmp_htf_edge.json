@@ -3,9 +3,18 @@
         "htf_fib": {
             "entry": {
                 "enabled": true,
-                "long_min_level": 0.5,
-                "short_max_level": 0.5,
-                "tolerance_atr": 0.75
+                "long_target_levels": [
+                    0.618,
+                    0.786,
+                    0.5
+                ],
+                "short_target_levels": [
+                    0.382,
+                    0.5,
+                    0.618
+                ],
+                "tolerance_atr": 5.0,
+                "missing_policy": "pass"
             }
         }
     }

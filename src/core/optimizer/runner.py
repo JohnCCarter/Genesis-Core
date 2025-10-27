@@ -332,7 +332,7 @@ def run_trial(
         config_file.write_text(json.dumps(config_payload, indent=2), encoding="utf-8")
 
     cache_dir = run_dir / "_cache"
-    cache_key = hashlib.sha1(key.encode("utf-8")).hexdigest()
+    cache_key = hashlib.sha256(key.encode("utf-8")).hexdigest()
     cache_path = cache_dir / f"{cache_key}.json"
     cached_payload: dict[str, Any] | None = None
     if cache_enabled:

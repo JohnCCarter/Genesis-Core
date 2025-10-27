@@ -1,0 +1,20 @@
+{
+  "cfg": {
+    "thresholds": {
+      "entry_conf_overall": 0.5,
+      "signal_adaptation": {
+        "zones": {
+          "low": {
+            "entry_conf_overall": 0.52
+          },
+          "mid": {
+            "entry_conf_overall": 0.5
+          },
+          "high": {
+            "entry_conf_overall": 0.48
+          }
+        }
+      }
+    }
+  }
+}

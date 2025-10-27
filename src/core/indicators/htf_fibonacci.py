@@ -119,16 +119,34 @@ def compute_htf_fibonacci_levels(
         # Get swing context AS-OF this bar (no lookahead!)
         # Only use swings that were "known" by bar i
         current_swing_highs = []
+        current_swing_high_indices = []
         current_swing_lows = []
+        current_swing_low_indices = []
 
         # Filter swings: only those with index <= i
         for swing_idx, swing_price in zip(swing_high_indices, swing_high_prices, strict=False):
             if swing_idx <= i:  # AS-OF: swing was known by bar i
                 current_swing_highs.append(swing_price)
+                current_swing_high_indices.append(swing_idx)
 
         for swing_idx, swing_price in zip(swing_low_indices, swing_low_prices, strict=False):
             if swing_idx <= i:  # AS-OF: swing was known by bar i
                 current_swing_lows.append(swing_price)
+                current_swing_low_indices.append(swing_idx)
+
+        if not current_swing_highs:
+            prefix_high = htf_candles["high"].iloc[: i + 1]
+            if len(prefix_high) > 0:
+                fallback_idx = int(prefix_high.idxmax())
+                current_swing_highs.append(float(prefix_high.max()))
+                current_swing_high_indices.append(fallback_idx)
+
+        if not current_swing_lows:
+            prefix_low = htf_candles["low"].iloc[: i + 1]
+            if len(prefix_low) > 0:
+                fallback_idx = int(prefix_low.idxmin())
+                current_swing_lows.append(float(prefix_low.min()))
+                current_swing_low_indices.append(fallback_idx)
 
         # Calculate Fibonacci levels from AS-OF swings
         fib_levels_list = calculate_fibonacci_levels(
@@ -147,12 +165,13 @@ def compute_htf_fibonacci_levels(
 
         # Calculate swing age (bars since last swing)
         swing_age = 0
-        if swing_high_indices or swing_low_indices:
-            last_swing_idx = max(
-                swing_high_indices[-1] if swing_high_indices else -1,
-                swing_low_indices[-1] if swing_low_indices else -1,
-            )
-            swing_age = i - last_swing_idx
+        last_known_idx = -1
+        if current_swing_high_indices:
+            last_known_idx = max(last_known_idx, current_swing_high_indices[-1])
+        if current_swing_low_indices:
+            last_known_idx = max(last_known_idx, current_swing_low_indices[-1])
+        if last_known_idx >= 0:
+            swing_age = i - last_known_idx
 
         htf_results.append(
             {
@@ -278,46 +297,85 @@ def get_htf_fibonacci_context(
             'available': bool  # Whether HTF data is available
         }
     """
+    MAX_HTF_AGE_HOURS = 168  # 7 dagar
+
+    def _normalize_timestamp(value: Any) -> pd.Timestamp | None:
+        if value is None:
+            return None
+        try:
+            ts = pd.to_datetime(value)
+        except Exception:
+            return None
+        if not isinstance(ts, pd.Timestamp):
+            return None
+        return ts
+
+    def _reference_timestamp() -> pd.Timestamp | None:
+        if isinstance(ltf_candles, dict):
+            timestamps = ltf_candles.get("timestamp")
+            if timestamps:
+                ts = _normalize_timestamp(timestamps[-1])
+                if ts is not None:
+                    return ts
+        elif isinstance(ltf_candles, list) and ltf_candles:
+            raw = ltf_candles[-1][0] if len(ltf_candles[-1]) > 0 else None
+            ts = _normalize_timestamp(raw)
+            if ts is not None:
+                return ts
+        return None
+
+    def _compute_age_hours(last_update: pd.Timestamp | None, ref: pd.Timestamp | None) -> float:
+        if last_update is None:
+            return float("inf")
+        ref_ts = ref or pd.Timestamp.now(tz=last_update.tz)
+        try:
+            delta_hours = (ref_ts - last_update).total_seconds() / 3600.0
+        except Exception:
+            return float("inf")
+        if delta_hours < 0:
+            return 0.0
+        return float(delta_hours)
+
+    reference_ts = _reference_timestamp()
+
+    cache_key = f"{symbol}_{htf_timeframe}"
+    cache_entry = _htf_context_cache.setdefault(cache_key, {})
+    fib_df = cache_entry.get("fib_df")
+
     # Only provide HTF context for LTF timeframes
     if timeframe not in ["1h", "30m", "6h", "15m"]:
         return {"available": False, "reason": "HTF_NOT_APPLICABLE"}
 
-    # Check cache first (simple cache key based on symbol + timeframe)
-    cache_key = f"{symbol}_{htf_timeframe}"
-    if cache_key in _htf_context_cache:
-        cached_context = _htf_context_cache[cache_key]
-        # Check if cache is still valid (not too old)
-        if cached_context.get("available", False):
-            data_age_hours = cached_context.get("data_age_hours", 999)
-            if data_age_hours < 24:  # Cache valid for 24 hours
-                return cached_context
+    # Load or reuse cached HTF fib dataframe
+    if fib_df is None:
+        try:
+            htf_candles = load_candles_data(symbol, htf_timeframe)
+            fib_df = compute_htf_fibonacci_levels(htf_candles, config)
+            cache_entry["fib_df"] = fib_df
+        except FileNotFoundError as e:
+            return {"available": False, "reason": "HTF_DATA_NOT_FOUND", "error": str(e)}
+        except Exception as e:
+            return {"available": False, "reason": "HTF_ERROR", "error": str(e)}
+
+    if fib_df is None or fib_df.empty:
+        return {"available": False, "reason": "NO_HTF_SWINGS"}
 
     try:
-        # Load HTF candles
-        htf_candles = load_candles_data(symbol, htf_timeframe)
-
-        # Simplified approach: Just compute HTF Fibonacci levels from most recent data
-        # Skip complex timestamp mapping for dict format (used in extract_features)
-        htf_fib_result = compute_htf_fibonacci_levels(htf_candles, config)
-
-        if htf_fib_result.empty:
-            return {"available": False, "reason": "NO_HTF_SWINGS"}
-
-        # Get most recent HTF context
-        latest_htf = htf_fib_result.iloc[-1]
+        if reference_ts is not None:
+            ref_rows = fib_df[fib_df["timestamp"] <= reference_ts]
+            if ref_rows.empty:
+                return {"available": False, "reason": "HTF_NO_HISTORY"}
+            latest_htf = ref_rows.iloc[-1]
+        else:
+            latest_htf = fib_df.iloc[-1]
 
         # Check if levels are valid
         if pd.isna(latest_htf["htf_fib_0618"]):
             return {"available": False, "reason": "NO_HTF_DATA"}
 
-        # Calculate data age in hours (time since last HTF bar)
-        last_htf_timestamp = latest_htf["timestamp"]
-        if isinstance(last_htf_timestamp, int | float):
-            last_htf_timestamp = pd.Timestamp(last_htf_timestamp, unit="ms")
-        data_age_hours = (pd.Timestamp.now() - last_htf_timestamp).total_seconds() / 3600
+        last_htf_timestamp = _normalize_timestamp(latest_htf["timestamp"])
+        data_age_hours = _compute_age_hours(last_htf_timestamp, reference_ts)
 
-        # Check data freshness (don't use stale HTF data)
-        MAX_HTF_AGE_HOURS = 168  # Max 7 days old for 1D data (more lenient for testing)
         if data_age_hours > MAX_HTF_AGE_HOURS:
             return {"available": False, "reason": "HTF_DATA_STALE"}
 
@@ -338,17 +396,9 @@ def get_htf_fibonacci_context(
             "last_update": last_htf_timestamp,
         }
 
-        # Cache the result for future use
-        _htf_context_cache[cache_key] = htf_context
-
         return htf_context
 
-    except FileNotFoundError as e:
-        # HTF data not available (expected in some cases)
-        return {"available": False, "reason": "HTF_DATA_NOT_FOUND", "error": str(e)}
-
     except Exception as e:
-        # Unexpected error - log but don't crash
         return {"available": False, "reason": "HTF_ERROR", "error": str(e)}
 
 

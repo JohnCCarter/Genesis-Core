@@ -19,12 +19,20 @@ class FibonacciConfig:
     max_swings: int = 8
     min_swings: int = 3
     max_lookback: int = 250
+    swing_threshold_multiple: float = 1.1  # Base ATR multiple required for a swing
+    swing_threshold_min: float = 0.45  # Lowest ATR multiple when relaxing detection
+    swing_threshold_step: float = 0.2  # Step to relax threshold when no swings
 
     def __post_init__(self):
         if self.levels is None:
             self.levels = [0.382, 0.5, 0.618, 0.786]
         if self.weights is None:
             self.weights = {0.382: 0.6, 0.5: 1.0, 0.618: 1.0, 0.786: 0.7}
+        # Clamp swing detection parameters to sensible ranges
+        if self.swing_threshold_step <= 0:
+            self.swing_threshold_step = 0.0
+        if self.swing_threshold_min > self.swing_threshold_multiple:
+            self.swing_threshold_min = self.swing_threshold_multiple
 
 
 def calculate_atr(high: pd.Series, low: pd.Series, close: pd.Series, period: int = 14) -> pd.Series:
@@ -52,42 +60,87 @@ def detect_swing_points(
     """
     atr = calculate_atr(high, low, close)
 
-    swing_highs = []
-    swing_lows = []
+    atr_depth_int = max(1, int(config.atr_depth))
 
-    # Find potential pivots
-    atr_depth_int = int(config.atr_depth)
-    for i in range(atr_depth_int, len(close) - atr_depth_int):
-        # Check for swing high
-        is_swing_high = True
-        for j in range(i - atr_depth_int, i + atr_depth_int + 1):
-            if j != i and high.iloc[j] >= high.iloc[i]:
-                is_swing_high = False
+    def _detect(
+        threshold_multiple: float,
+    ) -> tuple[list[tuple[int, float]], list[tuple[int, float]]]:
+        candidate_highs: list[tuple[int, float]] = []
+        candidate_lows: list[tuple[int, float]] = []
+
+        for i in range(atr_depth_int, len(close) - atr_depth_int):
+            window_high = high.iloc[i]
+            window_low = low.iloc[i]
+
+            is_swing_high = True
+            for j in range(i - atr_depth_int, i + atr_depth_int + 1):
+                if j != i and high.iloc[j] >= window_high:
+                    is_swing_high = False
+                    break
+
+            is_swing_low = True
+            for j in range(i - atr_depth_int, i + atr_depth_int + 1):
+                if j != i and low.iloc[j] <= window_low:
+                    is_swing_low = False
+                    break
+
+            atr_value = atr.iloc[i]
+            threshold_value = float(atr_value) * threshold_multiple if pd.notna(atr_value) else 0.0
+            range_ok = (high.iloc[i] - low.iloc[i]) >= threshold_value
+
+            if is_swing_high and range_ok:
+                candidate_highs.append((i, window_high))
+
+            if is_swing_low and range_ok:
+                candidate_lows.append((i, window_low))
+
+        cleaned_highs = _clean_swing_points(candidate_highs, config.max_lookback)
+        cleaned_lows = _clean_swing_points(candidate_lows, config.max_lookback)
+
+        cleaned_highs = cleaned_highs[-config.max_swings :] if cleaned_highs else []
+        cleaned_lows = cleaned_lows[-config.max_swings :] if cleaned_lows else []
+
+        return cleaned_highs, cleaned_lows
+
+    threshold_multiple = max(config.swing_threshold_multiple, 0.0)
+    min_threshold = max(0.0, config.swing_threshold_min)
+    step = config.swing_threshold_step if config.swing_threshold_step >= 0 else 0.0
+
+    swing_highs: list[tuple[int, float]] = []
+    swing_lows: list[tuple[int, float]] = []
+    attempted_min = False
+
+    while threshold_multiple >= min_threshold - 1e-9:
+        swing_highs, swing_lows = _detect(threshold_multiple)
+
+        if swing_highs and swing_lows:
+            # Found at least one of each, acceptable for Fibonacci projection
+            break
+
+        if step == 0:
+            break
+
+        if threshold_multiple <= min_threshold:
+            if attempted_min:
                 break
+            attempted_min = True
 
-        # Use a more reasonable threshold for swing detection (1.5x ATR instead of atr_depth)
-        reasonable_threshold = atr.iloc[i] * 1.5
+        next_threshold = max(min_threshold, threshold_multiple - step)
 
-        if is_swing_high and high.iloc[i] - low.iloc[i] >= reasonable_threshold:
-            swing_highs.append((i, high.iloc[i]))
+        if next_threshold == threshold_multiple:
+            break
 
-        # Check for swing low
-        is_swing_low = True
-        for j in range(i - atr_depth_int, i + atr_depth_int + 1):
-            if j != i and low.iloc[j] <= low.iloc[i]:
-                is_swing_low = False
-                break
+        threshold_multiple = next_threshold
 
-        if is_swing_low and high.iloc[i] - low.iloc[i] >= reasonable_threshold:
-            swing_lows.append((i, low.iloc[i]))
+    if not swing_highs and len(high) > 0:
+        fallback_idx = int(high.idxmax())
+        fallback_price = float(high.iloc[fallback_idx])
+        swing_highs = [(fallback_idx, fallback_price)]
 
-    # Remove duplicates and overlaps, keep most recent
-    swing_highs = _clean_swing_points(swing_highs, config.max_lookback)
-    swing_lows = _clean_swing_points(swing_lows, config.max_lookback)
-
-    # Limit to max swings, but keep what we have even if below min_swings
-    swing_highs = swing_highs[-config.max_swings :] if swing_highs else []
-    swing_lows = swing_lows[-config.max_swings :] if swing_lows else []
+    if not swing_lows and len(low) > 0:
+        fallback_idx = int(low.idxmin())
+        fallback_price = float(low.iloc[fallback_idx])
+        swing_lows = [(fallback_idx, fallback_price)]
 
     # Extract indices and prices
     high_indices = [idx for idx, _ in swing_highs]

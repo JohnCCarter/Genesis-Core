@@ -206,15 +206,29 @@ def decide(
         atr_now = float(state_in.get("current_atr") or 0.0)
         tolerance = float(htf_entry_cfg.get("tolerance_atr", 0.5)) * atr_now if atr_now > 0 else 0.0
 
+        missing_allowed = False
         if not htf_ctx.get("available"):
-            reasons.append("HTF_FIB_UNAVAILABLE")
-            return "NONE", {
-                "versions": versions,
-                "reasons": reasons,
-                "state_out": state_out,
+            missing_policy = str(htf_entry_cfg.get("missing_policy", "block")).lower()
+            state_out["htf_fib_entry_debug"] = {
+                "reason": "UNAVAILABLE",
+                "raw": htf_ctx,
+                "policy": missing_policy,
             }
+            if missing_policy != "pass":
+                reasons.append("HTF_FIB_UNAVAILABLE")
+                return "NONE", {
+                    "versions": versions,
+                    "reasons": reasons,
+                    "state_out": state_out,
+                }
+            missing_allowed = True
+            state_out["htf_fib_entry_debug"]["reason"] = "UNAVAILABLE_PASS"
 
         if price_now is None:
+            state_out["htf_fib_entry_debug"] = {
+                "reason": "NO_PRICE",
+                "raw": htf_ctx,
+            }
             reasons.append("HTF_FIB_NO_PRICE")
             return "NONE", {
                 "versions": versions,
@@ -223,38 +237,137 @@ def decide(
             }
 
         htf_levels = _levels_to_lookup(htf_ctx.get("levels"))
-
-        if candidate == "LONG":
-            min_level = htf_entry_cfg.get("long_min_level")
-            level_price = _level_price(
-                htf_levels, float(min_level) if min_level is not None else None
-            )
-            if level_price is not None and price_now < level_price - tolerance:
-                reasons.append("HTF_FIB_LONG_BLOCK")
-                return "NONE", {
-                    "versions": versions,
-                    "reasons": reasons,
-                    "state_out": state_out,
-                }
-        elif candidate == "SHORT":
-            max_level = htf_entry_cfg.get("short_max_level")
-            level_price = _level_price(
-                htf_levels, float(max_level) if max_level is not None else None
-            )
-            if level_price is not None and price_now > level_price + tolerance:
-                reasons.append("HTF_FIB_SHORT_BLOCK")
-                return "NONE", {
-                    "versions": versions,
-                    "reasons": reasons,
-                    "state_out": state_out,
-                }
-
-        state_out["htf_fib_entry_debug"] = {
+        base_debug = {
             "price": price_now,
             "atr": atr_now,
             "tolerance": tolerance,
             "levels": {str(k): htf_levels[k] for k in htf_levels},
+            "config": {
+                "long_min_level": htf_entry_cfg.get("long_min_level"),
+                "short_max_level": htf_entry_cfg.get("short_max_level"),
+                "long_target_levels": htf_entry_cfg.get("long_target_levels"),
+                "short_target_levels": htf_entry_cfg.get("short_target_levels"),
+            },
+            "targets": [],
         }
+
+        if not missing_allowed:
+            if candidate == "LONG":
+                target_levels = htf_entry_cfg.get("long_target_levels")
+                matched = False
+                target_debug: list[dict[str, float]] = []
+                if isinstance(target_levels, list | tuple):
+                    for lvl in target_levels:
+                        try:
+                            target = float(lvl)
+                        except (TypeError, ValueError):
+                            continue
+                        lvl_price = _level_price(htf_levels, target)
+                        if lvl_price is None:
+                            continue
+                        distance = abs(price_now - lvl_price)
+                        target_debug.append(
+                            {
+                                "level": target,
+                                "level_price": lvl_price,
+                                "distance": distance,
+                            }
+                        )
+                        if distance <= tolerance:
+                            matched = True
+                            break
+                    base_debug["targets"] = target_debug
+                if matched:
+                    state_out["htf_fib_entry_debug"] = {**base_debug, "reason": "TARGET_MATCH"}
+                else:
+                    min_level = htf_entry_cfg.get("long_min_level")
+                    level_price = _level_price(
+                        htf_levels, float(min_level) if min_level is not None else None
+                    )
+                    if level_price is not None and price_now < level_price - tolerance:
+                        state_out["htf_fib_entry_debug"] = {
+                            **base_debug,
+                            "reason": "LONG_BELOW_LEVEL",
+                            "level_price": level_price,
+                        }
+                        reasons.append("HTF_FIB_LONG_BLOCK")
+                        return "NONE", {
+                            "versions": versions,
+                            "reasons": reasons,
+                            "state_out": state_out,
+                        }
+                    if target_debug and not matched:
+                        state_out["htf_fib_entry_debug"] = {
+                            **base_debug,
+                            "reason": "LONG_OFF_TARGET",
+                        }
+                        reasons.append("HTF_FIB_LONG_BLOCK")
+                        return "NONE", {
+                            "versions": versions,
+                            "reasons": reasons,
+                            "state_out": state_out,
+                        }
+            elif candidate == "SHORT":
+                target_levels = htf_entry_cfg.get("short_target_levels")
+                matched = False
+                target_debug = []
+                if isinstance(target_levels, list | tuple):
+                    for lvl in target_levels:
+                        try:
+                            target = float(lvl)
+                        except (TypeError, ValueError):
+                            continue
+                        lvl_price = _level_price(htf_levels, target)
+                        if lvl_price is None:
+                            continue
+                        distance = abs(price_now - lvl_price)
+                        target_debug.append(
+                            {
+                                "level": target,
+                                "level_price": lvl_price,
+                                "distance": distance,
+                            }
+                        )
+                        if distance <= tolerance:
+                            matched = True
+                            break
+                    base_debug["targets"] = target_debug
+                if matched:
+                    state_out["htf_fib_entry_debug"] = {**base_debug, "reason": "TARGET_MATCH"}
+                else:
+                    max_level = htf_entry_cfg.get("short_max_level")
+                    level_price = _level_price(
+                        htf_levels, float(max_level) if max_level is not None else None
+                    )
+                    if level_price is not None and price_now > level_price + tolerance:
+                        state_out["htf_fib_entry_debug"] = {
+                            **base_debug,
+                            "reason": "SHORT_ABOVE_LEVEL",
+                            "level_price": level_price,
+                        }
+                        reasons.append("HTF_FIB_SHORT_BLOCK")
+                        return "NONE", {
+                            "versions": versions,
+                            "reasons": reasons,
+                            "state_out": state_out,
+                        }
+                    if target_debug and not matched:
+                        state_out["htf_fib_entry_debug"] = {
+                            **base_debug,
+                            "reason": "SHORT_OFF_TARGET",
+                        }
+                        reasons.append("HTF_FIB_SHORT_BLOCK")
+                        return "NONE", {
+                            "versions": versions,
+                            "reasons": reasons,
+                            "state_out": state_out,
+                        }
+
+        if "htf_fib_entry_debug" not in state_out:
+            state_out["htf_fib_entry_debug"] = {
+                **base_debug,
+                "reason": "PASS",
+            }
 
     # LTF Fibonacci entry gating (same-timeframe fib context)
     ltf_entry_cfg = (cfg.get("ltf_fib") or {}).get("entry") or {}
@@ -265,16 +378,30 @@ def decide(
         tol_atr = float(ltf_entry_cfg.get("tolerance_atr", 0.5))
         tolerance = tol_atr * atr_now if atr_now > 0 else 0.0
 
+        missing_allowed_ltf = False
         if not ltf_ctx.get("available"):
-            reasons.append("LTF_FIB_UNAVAILABLE")
-            return "NONE", {
-                "versions": versions,
-                "reasons": reasons,
-                "state_out": state_out,
+            missing_policy = str(ltf_entry_cfg.get("missing_policy", "block")).lower()
+            state_out["ltf_fib_entry_debug"] = {
+                "reason": "UNAVAILABLE",
+                "raw": ltf_ctx,
+                "policy": missing_policy,
             }
+            if missing_policy != "pass":
+                reasons.append("LTF_FIB_UNAVAILABLE")
+                return "NONE", {
+                    "versions": versions,
+                    "reasons": reasons,
+                    "state_out": state_out,
+                }
+            missing_allowed_ltf = True
+            state_out["ltf_fib_entry_debug"]["reason"] = "UNAVAILABLE_PASS"
         levels = _levels_to_lookup(ltf_ctx.get("levels"))
 
         if price_now is None:
+            state_out["ltf_fib_entry_debug"] = {
+                "reason": "NO_PRICE",
+                "raw": ltf_ctx,
+            }
             reasons.append("LTF_FIB_NO_PRICE")
             return "NONE", {
                 "versions": versions,
@@ -282,32 +409,56 @@ def decide(
                 "state_out": state_out,
             }
 
-        if candidate == "LONG":
-            max_level = ltf_entry_cfg.get("long_max_level")
-            level_price = _level_price(levels, float(max_level) if max_level is not None else None)
-            if level_price is not None and price_now > level_price + tolerance:
-                reasons.append("LTF_FIB_LONG_BLOCK")
-                return "NONE", {
-                    "versions": versions,
-                    "reasons": reasons,
-                    "state_out": state_out,
-                }
-        elif candidate == "SHORT":
-            min_level = ltf_entry_cfg.get("short_min_level")
-            level_price = _level_price(levels, float(min_level) if min_level is not None else None)
-            if level_price is not None and price_now < level_price - tolerance:
-                reasons.append("LTF_FIB_SHORT_BLOCK")
-                return "NONE", {
-                    "versions": versions,
-                    "reasons": reasons,
-                    "state_out": state_out,
-                }
-
-        state_out["ltf_fib_entry_debug"] = {
+        ltf_base_debug = {
             "price": price_now,
             "atr": atr_now,
             "tolerance": tolerance,
             "levels": {str(k): levels[k] for k in levels},
+            "config": {
+                "long_max_level": ltf_entry_cfg.get("long_max_level"),
+                "short_min_level": ltf_entry_cfg.get("short_min_level"),
+            },
+        }
+
+        if not missing_allowed_ltf:
+            if candidate == "LONG":
+                max_level = ltf_entry_cfg.get("long_max_level")
+                level_price = _level_price(
+                    levels, float(max_level) if max_level is not None else None
+                )
+                if level_price is not None and price_now > level_price + tolerance:
+                    state_out["ltf_fib_entry_debug"] = {
+                        **ltf_base_debug,
+                        "reason": "LONG_ABOVE_LEVEL",
+                        "level_price": level_price,
+                    }
+                    reasons.append("LTF_FIB_LONG_BLOCK")
+                    return "NONE", {
+                        "versions": versions,
+                        "reasons": reasons,
+                        "state_out": state_out,
+                    }
+            elif candidate == "SHORT":
+                min_level = ltf_entry_cfg.get("short_min_level")
+                level_price = _level_price(
+                    levels, float(min_level) if min_level is not None else None
+                )
+                if level_price is not None and price_now < level_price - tolerance:
+                    state_out["ltf_fib_entry_debug"] = {
+                        **ltf_base_debug,
+                        "reason": "SHORT_BELOW_LEVEL",
+                        "level_price": level_price,
+                    }
+                    reasons.append("LTF_FIB_SHORT_BLOCK")
+                    return "NONE", {
+                        "versions": versions,
+                        "reasons": reasons,
+                        "state_out": state_out,
+                    }
+
+        state_out["ltf_fib_entry_debug"] = {
+            **ltf_base_debug,
+            "reason": "PASS",
         }
 
     # 7) Confidence‑gate (kräv över entry_conf_overall för vald riktning)

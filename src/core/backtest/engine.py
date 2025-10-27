@@ -188,6 +188,7 @@ class BacktestEngine:
             "low": window["low"].tolist(),
             "close": window["close"].tolist(),
             "volume": window["volume"].tolist(),
+            "timestamp": window["timestamp"].tolist(),
         }
 
     def run(

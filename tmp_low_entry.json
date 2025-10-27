@@ -1,0 +1,81 @@
+{
+  "cfg": {
+    "thresholds": {
+      "entry_conf_overall": 0.35,
+      "regime_proba": {
+        "balanced": 0.7,
+        "ranging": 0.8,
+        "bull": 0.7,
+        "bear": 0.7
+      },
+      "signal_adaptation": {
+        "atr_period": 14,
+        "zones": {
+          "low": {
+            "entry_conf_overall": 0.36,
+            "regime_proba": {
+              "ranging": 0.7,
+              "bull": 0.6,
+              "bear": 0.6,
+              "balanced": 0.7
+            }
+          },
+          "mid": {
+            "entry_conf_overall": 0.42,
+            "regime_proba": {
+              "ranging": 0.8,
+              "bull": 0.7,
+              "bear": 0.7,
+              "balanced": 0.8
+            }
+          },
+          "high": {
+            "entry_conf_overall": 0.48,
+            "regime_proba": {
+              "ranging": 0.88,
+              "bull": 0.78,
+              "bear": 0.78,
+              "balanced": 0.88
+            }
+          }
+        }
+      }
+    },
+    "gates": {
+      "hysteresis_steps": 2,
+      "cooldown_bars": 0
+    },
+    "risk": {
+      "risk_map": [
+        [0.45, 0.015],
+        [0.55, 0.025],
+        [0.65, 0.035]
+      ]
+    },
+    "ev": {
+      "R_default": 1.8
+    },
+    "exit": {
+      "enabled": true,
+      "max_hold_bars": 36,
+      "stop_loss_pct": 0.02,
+      "take_profit_pct": 0.05,
+      "exit_conf_threshold": 0.4,
+      "regime_aware_exits": true,
+      "trailing_stop_enabled": false,
+      "trailing_stop_pct": 0.015
+    },
+    "htf_exit_config": {
+      "partial_1_pct": 0.3,
+      "partial_2_pct": 0.25,
+      "partial_3_pct": 0.25,
+      "partial_4_pct": 0.2,
+      "fib_threshold_atr": 0.7,
+      "trail_atr_multiplier": 1.8,
+      "enable_partials": true,
+      "enable_trailing": true,
+      "enable_structure_breaks": true,
+      "swing_update_strategy": "fixed"
+    }
+  }
+}

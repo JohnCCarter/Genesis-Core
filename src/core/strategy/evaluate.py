@@ -94,6 +94,7 @@ def evaluate_pipeline(
         "current_atr": feats.get("atr_14"),
         "atr_percentiles": feats_meta.get("atr_percentiles"),
         "ltf_fib": feats_meta.get("ltf_fibonacci"),
+        "htf_fib": feats_meta.get("htf_fibonacci"),
         "last_close": last_close,
     }
 

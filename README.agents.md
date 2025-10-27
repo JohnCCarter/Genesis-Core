@@ -1,9 +1,19 @@
 # README for AI Agents (Local Development)
-_Last update: 2025-10-24_
+_Last update: 2025-10-27_
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
 
-## 1. Deliverables on 24 Oct 2025
+## 1. Deliverables (senast först)
+### 27 Oct 2025
+- Körde `config/optimizer/tBTCUSD_1h_elite_seeds.yaml` (run `run_20251026_194233`); alla åtta frön gav `trades<10` och score `-100.2`, inga champions uppdaterades.
+- Bekräftade noll-trade-läget med kort backtest (`scripts/run_backtest.py ... --start 2025-04-01 --end 2025-05-31`) både med elit-seed-parametrarna och med champion-trösklar; fib-gate + höga entry-thresholds blockerar fortfarande.
+- Rensade scratch-filen `tmp_low_entry.json` efter tester (ingen commitpåverkan).
+
+### 26 Oct 2025
+- `src/core/strategy/evaluate.py` skickar nu vidare både LTF- och HTF-fibkontext i beslutsstate så att `htf_fib.entry` kan triggas.
+- Lagt till frö-konfiguration `config/optimizer/tBTCUSD_1h_elite_seeds.yaml` med åtta warm-start-profiler (elit-seeds) och uppdaterat optimizer-runnern så `parameter_sets` körs före generiska grids (verifierat med `pytest tests/test_optimizer_runner.py::test_run_optimizer_parameter_sets`).
+
+### 24 Oct 2025
 - Added intraday Fibonacci support via `get_ltf_fibonacci_context` in `src/core/indicators/htf_fibonacci.py` (symmetric helper for 1h/30m/6h timeframes).
 - `src/core/strategy/features_asof.py` now emits both HTF and LTF Fibonacci context; `evaluate_pipeline` persists ATR/Fibonacci metadata in the decision state.
 - Refactored `src/core/strategy/decision.py` to use shared level lookup helpers and optional HTF/LTF entry gates with ATR-based tolerances (debug info persisted in `state_out`).
@@ -78,12 +88,11 @@ Champion file: `config/strategy/champions/tBTCUSD_1h.json`
   ```
   Adjust the ignore list as needed to keep focus on first-party code.
 
-## 8. Next steps for hand-off (25 Oct 2025)
-1. Wire `feats_meta["htf_fibonacci"]` into the decision state (`evaluate_pipeline`) so the new HTF entry gate can operate (currently only `ltf_fib` is forwarded).
-2. Tune the fib gates: rerun `config/optimizer/tBTCUSD_1h_fib_grid_v2.yaml` with tighter `fib_threshold_atr` / tolerance ranges and compare against the champion (target >= 260 score).
-3. Decide between grid-first vs Optuna-first for fib parameters; if Optuna is chosen, script a warm-start study that seeds the current champion values.
-4. Add regression tests around the new decision gates (HTF/LTF) covering missing context, ATR=0, and tolerance handling.
-5. Re-run Bandit with the scoped command and capture a clean report for future reference.
+## 8. Next steps för hand-off (27 Oct 2025)
+1. Extrahera `decision.reasons` från `results/hparam_search/run_20251026_194233/trial_00*.log` (skriv snabb Python-snurra) för att kvantifiera vilka gates som stoppar (EV_NEG, CONF_TOO_LOW, LTF/HTF-fib-block etc.).
+2. Jämför med champion-runnen (`run_20251023_141747/trial_002`) och identifiera vilka thresholds/fib-parametrar som behöver mjukas upp.
+3. A/B-testa justeringarna via korta backtester (`scripts/run_backtest.py --start 2025-04-01 --end 2025-05-31 --no-save`) tills minst 10+ trades genereras.
+4. När trades återkommer: kör om `config/optimizer/tBTCUSD_1h_elite_seeds.yaml` och därefter nästa Optuna-pass. Avstå från nattliga långkörningar tills gatingproblemet är löst.
 
 ## 9. Recent history (Phase-7a/7b, 21 Oct 2025)
 - Locked snapshot: `tBTCUSD_1h_2024-10-22_2025-10-01_v1`.

@@ -735,6 +735,12 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
     config = load_search_config(config_path)
     meta = config.get("meta") or {}
     parameters = config.get("parameters") or {}
+    parameter_sets_raw = config.get("parameter_sets") or []
+    parameter_sets: list[dict[str, Any]] = []
+    for idx, item in enumerate(parameter_sets_raw, start=1):
+        if not isinstance(item, dict):
+            raise TypeError(f"parameter_sets[{idx}] måste vara en dict, fick {type(item).__name__}")
+        parameter_sets.append(copy.deepcopy(item))
     runs_cfg = meta.get("runs") or {}
     strategy = (runs_cfg.get("strategy") or OptimizerStrategy.GRID).lower()
 
@@ -783,7 +789,14 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
     results: list[dict[str, Any]] = []
 
     if strategy == OptimizerStrategy.GRID:
-        params_list = list(expand_parameters(parameters))
+        params_list: list[dict[str, Any]] = []
+        if parameter_sets:
+            params_list.extend(parameter_sets)
+        grid_params = list(expand_parameters(parameters)) if parameters else []
+        if grid_params:
+            params_list.extend(grid_params)
+        if not params_list:
+            params_list = [{}]
         if max_trials is not None:
             params_list = params_list[:max_trials]
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import json
 from pathlib import Path
 from typing import Any
@@ -118,6 +119,85 @@ def test_run_optimizer_updates_champion(tmp_path: Path, search_config_tmp: Path)
         assert call_kwargs["run_id"] == "run_test"
         assert call_kwargs["candidate"].score == pytest.approx(120.0)
         assert call_kwargs["snapshot_id"] == run_meta_payload["snapshot_id"]
+
+
+def test_run_optimizer_parameter_sets(tmp_path: Path) -> None:
+    config_path = tmp_path / "seeds.yaml"
+    config = {
+        "meta": {
+            "symbol": "tTEST",
+            "timeframe": "1h",
+            "snapshot_id": "tTEST_1h_20240101_20240201_v1",
+            "warmup_bars": 50,
+            "runs": {
+                "strategy": "grid",
+                "max_trials": 4,
+                "resume": False,
+            },
+        },
+        "parameter_sets": [
+            {
+                "thresholds": {
+                    "entry_conf_overall": 0.55,
+                    "regime_proba": {
+                        "ranging": 0.40,
+                        "bull": 0.70,
+                        "bear": 0.70,
+                        "balanced": 0.55,
+                    },
+                },
+                "exit": {"max_hold_bars": 30},
+            },
+            {
+                "thresholds": {
+                    "entry_conf_overall": 0.60,
+                    "regime_proba": {
+                        "ranging": 0.38,
+                        "bull": 0.72,
+                        "bear": 0.72,
+                        "balanced": 0.55,
+                    },
+                },
+                "exit": {"max_hold_bars": 40},
+            },
+        ],
+    }
+    config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
+
+    captured: list[dict[str, Any]] = []
+
+    def fake_run_trial(trial_cfg: runner.TrialConfig, **kwargs: Any) -> dict[str, Any]:
+        captured.append(copy.deepcopy(trial_cfg.parameters))
+        return {
+            "trial_id": f"trial_{kwargs.get('index', 0):03d}",
+            "parameters": copy.deepcopy(trial_cfg.parameters),
+            "score": {
+                "score": 100.0,
+                "metrics": {},
+                "hard_failures": [],
+            },
+            "constraints": {"ok": True, "reasons": []},
+            "results_path": "dummy.json",
+        }
+
+    def fake_ensure(run_dir: Path, *_args: Any, **_kwargs: Any) -> None:
+        run_dir.mkdir(parents=True, exist_ok=True)
+        (run_dir / "run_meta.json").write_text(json.dumps({}, ensure_ascii=False), encoding="utf-8")
+
+    with (
+        patch("core.optimizer.runner.RESULTS_DIR", tmp_path / "results"),
+        patch("core.optimizer.runner.run_trial", side_effect=fake_run_trial),
+        patch("core.optimizer.runner._ensure_run_metadata", side_effect=fake_ensure),
+        patch("core.optimizer.runner.ChampionManager") as manager_cls,
+    ):
+        manager_instance = manager_cls.return_value
+        manager_instance.load_current.return_value = None
+        manager_instance.should_replace.return_value = False
+
+        results = run_optimizer(config_path, run_id="run_seeds")
+
+    assert len(results) == 2
+    assert captured == config["parameter_sets"]
 
 
 @pytest.mark.skipif(not runner.OPTUNA_AVAILABLE, reason="Optuna ej installerat")

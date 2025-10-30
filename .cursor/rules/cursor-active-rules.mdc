@@ -1,124 +1,50 @@
 ---
+description: Basisinstruktioner för Genesis-Core agentsessioner
 alwaysApply: true
 ---
-# Master Rule
-If the current chat approaches context limits (you notice reasoning or earlier details are at risk of being lost), stop and request a new chat session. Include a short summary of where we are in the project and the next steps before continuing.
 
-# Working Principles
-- Always work step by step, systematically and methodically.
-- Provide clear, concise commands and examples that can be executed directly in terminal (PowerShell, bash, Python).
-- Separate “Discussion” (hypotheses, risks, architecture) from “Code/Commands” (exact implementations).
-- Always be transparent about uncertainties or potential pitfalls.
-- Confirm when something is completed and stable (e.g., ✅ REST auth fixed).
-- Prefer Swedish responses unless specified otherwise.
+# Masterregel
+- Övervaka kontextlängd; om chatten riskerar tappa sammanhang, pausa, summera läget och be om ny session.
 
-# Efficient Context Usage
-- Refer to files/modules with full paths (e.g., `core/io/bitfinex/exchange_client.py`).
-- Summarize decisions before moving to the next major block.
-- After completing a task, encapsulate it in a mini-log (e.g., ✅ REST auth fixed).
-- Keep code examples small and precise; split larger implementations into sections.
+# Arbetsprinciper
+- Arbeta stegvis, systematiskt och metodiskt.
+- Svara på svenska om inget annat anges.
+- Håll diskussion och exakta kommandon åtskilda.
+- Var tydlig med osäkerheter och bekräfta stabil status (t.ex. ✅ REST auth fixad).
+- Sammanfatta beslut före nästa huvudmoment och avsluta block med mini-logg.
+- Fråga användaren om fortsatt arbete innan längre sekvenser.
 
-# Genesis-Core Trading System Rules
+# Effektiv kontexthantering
+- Referera filer med fulla sökvägar.
+- Håll kodexempel korta; dela upp längre i sektioner.
+- Använd TODO-lista (`todo_write`) för uppgifter med flera steg.
+- Uppdatera användaren när arbetsmoment är klara.
 
-## Core Principles
-- Pause on uncertainty. Verify with codebase_search + grep. No assumptions.
-- Plan steps before acting. Work systematically and methodically.
-- Ask for a new chat session if the current chat becomes context-constrained.
-- Ask the user if you should continue until the task is complete.
-- Reflect on root cause vs symptom.
-- Respond in Swedish unless specified. Use clear headings and ✅ markers.
+# Stabiliseringsfas
+- Varje kodrad ska lösa ett konkret problem eller höja tillförlitlighet, prestanda eller läsbarhet.
+- Följ Change Policy, Green-Light-checklistan och fokusområdena i `reference-guide.md`.
+- Håll diffar < 100 rader och skriv tester direkt för ny logik.
 
-## Stabilization Phase Policy
-**Code stability > New features**. Every line of code must either:
-✅ Solve a concrete problem OR ✅ Increase reliability, performance, or readability
+# Workflow (sammandrag)
+1. Före ändringar: `read_file` → `codebase_search` → `grep` → `todo_write`.
+2. Utförande: använd edit-verktyg, föredra att uppdatera befintliga filer, lägg till docstrings och imports.
+3. Validering: kör `pytest`, `black --check`, `ruff check`, `bandit`.
+4. Git: undvik känsliga filer, använd beskrivande commit-prefix, uppdatera `.gitignore` vid behov.
+5. Dokumentation: kontrollera befintliga README/TODO innan nya skapas.
 
-### Change Policy
-- **Bug fixes**: ✅ Always allowed - Write test immediately after
-- **Refactoring**: ✅ Small, documented steps without behavior change
-- **New features/modules**: ⚠️ Only after clear specification and justification
-- **Experimental code**: 🚫 Separate branch only
-- **Magic optimizations**: 🚫 Measure first, implement after
+# Säkerhet
+- API-nycklar endast via miljövariabler.
+- Paper trading måste använda TEST-symboler.
+- Signering: `json.dumps(body, separators=(",", ":"))`.
+- Lägg aldrig till `.env`, `.nonce_tracker.json`, `dev.overrides.local.json` i git.
 
-### Green-Light Checklist (before any merge)
-✅ Solves a defined need/problem
-✅ Does not unexpectedly affect other parts
-✅ Has unit tests or validated measurement
-✅ Is documented (docstring with purpose & usage)
-✅ Passes Ruff + pytest without warnings
+# Planläge
+- Föreslå Plan Mode för nya features, större refactorings, ML/indikatorarbete eller flera möjliga implementationer.
+- För bugfixar, code quality och dokumentation stanna i Normal Mode.
 
-### Focus Areas
-- Robustness: Test extreme inputs, edge cases
-- Performance profiling: Identify bottlenecks with timing
-- Minimized complexity: Fewer code paths
-- Documentation & validation: README + flow diagram per module
-- Keep diffs < 100 lines for easier validation
+# Svarsstil
+- Strukturera svaret med rubriker och ✅ status.
+- Lista risker/problem före översikter och avsluta med nästa steg (tester/validering).
+- Ange vad som är osäkert eller återstår att verifiera.
 
-## Project Context
-Genesis-Core is a Python 3.11+ FastAPI trading system with:
-- P1-P3: Feature extraction (EMA+RSI), probability model with calibration, confidence/regime/decision
-- P4: E2E pipeline with observability
-- Bitfinex integration (REST + WebSocket)
-- Paper trading only with TEST symbols (tTESTBTC:TESTUSD whitelist)
-
-## Code Standards
-- Python 3.11+: Use modern syntax (dict not Dict, X|None not Optional[X])
-- Line length: 100 chars, black formatting, ruff linting
-- Structure: src/core/{config,indicators,io,observability,risk,strategy,utils}
-- Testing: pytest with comprehensive coverage
-- Emojis: Do not use emojis as they cause syntax errors.
-
-## Critical Security Rules
-- NEVER commit: .env, .nonce_tracker.json, dev.overrides.local.json
-- API keys only from environment variables
-- Force TEST symbols for paper trading
-- Use compact JSON for signing: json.dumps(body, separators=(",",":"))
-
-## Development Workflow
-1. Before changes: read_file → codebase_search → grep → todo_write
-2. Making changes: Use edit tools (never output code), prefer editing over creating
-3. Testing: pytest → black --check → ruff check → bandit
-4. Git: Descriptive commits (feat:/fix:/security:), update .gitignore first
-5. Documentation: ALWAYS check if README.md/TODO.md exists before creating new ones
-   - Use glob_file_search to find existing docs: **/README.md, **/TODO*.md
-   - Read existing file first, then update or create only if truly needed
-   - Prevents duplicate/conflicting documentation
-
-## FastAPI Endpoints
-/ui (dashboard), /strategy/evaluate (pipeline), /public/candles (market data),
-/auth/check (verify auth), /paper/submit (TEST orders only), /debug/auth,
-/health, /metrics, /account/wallets, /account/positions, /account/orders,
-/config/runtime, /config/runtime/validate, /config/runtime/propose
-
-## Common Issues
-- "invalid key": Check JSON serialization consistency
-- "Ingen giltig order": Verify model exists, check risk config
-- Nonce errors: Use bump_nonce() for retry
-- WebSocket timeout: Implement exponential backoff
-
-## Key Files
-- src/core/server.py: FastAPI application and endpoints
-- src/core/strategy/evaluate.py: E2E pipeline orchestration
-- src/core/io/bitfinex/exchange_client.py: API integration
-- config/models/: Model configurations and registry
-- .env: API keys (BITFINEX_API_KEY, BITFINEX_API_SECRET)
-
-## Plan Mode Recommendations
-Proactively suggest activating Plan Mode when user requests:
-- New features or architectural decisions (e.g., "Implementera X funktionalitet")
-- Large refactorings spanning multiple files (3+ files with dependencies)
-- ML/Model changes (feature engineering, new indicators, training pipelines)
-- Multiple possible implementation paths requiring user input
-
-Suggestion format: "💡 Tips: Vill du att jag aktiverar Plan Mode för detta? Det är en större/komplex uppgift där du kanske vill se planen först."
-
-Continue in Normal Mode for:
-- Bug fixes and quick iterations
-- Code quality tasks (black, ruff, pytest)
-- Documentation updates
-- Known TODO items with clear implementation path
-
-## Response Format
-- Swedish language with clear structure
-- Show progress with ✅ checkmarks
-- Explain problems with solutions
-- Quality over speed, security first
+För detaljerade regler, se `reference-guide.md`.

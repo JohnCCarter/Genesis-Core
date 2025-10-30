@@ -3,16 +3,23 @@
 ## File Structure
 
 ### `cursor-active-rules.mdc` (Active Rules)
-- **Purpose**: Active rules loaded by Cursor AI (`alwaysApply: true`)
-- **Content**: Core principles, workflow, and essential guidelines
-- **Usage**: Automatically applied in every Cursor session
-- **Size**: Concise (~85 lines) for quick reference
+- **Purpose**: Active rules loaded av Cursor AI (`alwaysApply: true`)
+- **Content**: Komprimerade basinstruktioner + hänvisningar till referensguiden
+- **Metadata**: Inkluderar `description` för tydlig identifiering
+- **Usage**: Automatisk kontext i varje session
+- **Size**: Kompakt (~50 rader) för snabb läsning
 
 ### `reference-guide.md` (Reference Documentation)
-- **Purpose**: Comprehensive project documentation and guidelines
-- **Content**: Detailed rules, architecture, standards, and examples
-- **Usage**: Reference when detailed information is needed
-- **Size**: Extensive (~220 lines) with full context
+- **Purpose**: Omfattande projektregler och riktlinjer
+- **Content**: Detaljerade regler, arkitektur, standarder och exempel
+- **Usage**: Slå upp när mer kontext behövs
+- **Size**: Utförlig (~280 rader) med full kontext
+
+### `AGENTS.md` (Handoff & status)
+- **Purpose**: Snabb översikt för nästa agent
+- **Content**: Senaste leveranser, experiment, arbetsflöde och nästa steg
+- **Usage**: Läs vid handoff eller när projektläget behöver uppdateras
+- **Size**: Beror på aktuell status (uppdateras vid handoff)
 
 ## Rule Hierarchy
 
@@ -39,8 +46,8 @@ reference-guide.md         ← Full documentation (reference)
 ## Syncing Rules
 
 When updating common sections, ensure consistency between:
-- cursor-active-rules.mdc (concise)
-- reference-guide.md (detailed)
+- cursor-active-rules.mdc (sammandrag)
+- reference-guide.md (detaljer)
 
 Common sections to sync:
 - Core Principles
@@ -50,4 +57,4 @@ Common sections to sync:
 - Common Issues
 
 ---
-**Last Updated**: 2025-10-09
+**Last Updated**: 2025-10-30

@@ -25,6 +25,15 @@ alwaysApply: true
 - Följ Change Policy, Green-Light-checklistan och fokusområdena i `reference-guide.md`.
 - Håll diffar < 100 rader och skriv tester direkt för ny logik.
 
+# Optuna/optimizer-körningar - KRITISK VALIDERING
+Innan NÅGON Optuna-körning som tar >30 minuter MÅSTE följande valideras:
+1. Kör `python scripts/validate_optimizer_config.py <config.yaml>` - MÅSTE returnera 0
+2. Championens kritiska parametrar (partial_1_pct, partial_2_pct, signal_adaptation, etc.) MÅSTE finnas i sökrymden
+3. Fixerade värden MÅSTE matcha championens värden (eller vara medvetna avvikelser med motivering)
+4. Championens parametrar MÅSTE kunna reproduceras i sökrymden
+5. Testa championens exakta parametrar på samma tidsperiod först (snabbtest) för att verifiera baseline
+6. Om validering misslyckas: FIXA konfigurationen först, kör ALDRIG innan validering passerar
+
 # Workflow (sammandrag)
 1. Före ändringar: `read_file` → `codebase_search` → `grep` → `todo_write`.
 2. Utförande: använd edit-verktyg, föredra att uppdatera befintliga filer, lägg till docstrings och imports.

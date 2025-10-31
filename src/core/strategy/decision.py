@@ -1,8 +1,31 @@
 from __future__ import annotations
 
+import math
 from typing import Any, Literal
 
+from core.utils.logging_redaction import get_logger
+
 Action = Literal["LONG", "SHORT", "NONE"]
+
+_LOG = get_logger(__name__)
+
+
+def _compute_percentile(values: list[float], q: float) -> float:
+    if not values:
+        raise ValueError("values in percentile computation must not be empty")
+    if q <= 0:
+        return min(values)
+    if q >= 1:
+        return max(values)
+    sorted_vals = sorted(values)
+    k = (len(sorted_vals) - 1) * q
+    f = math.floor(k)
+    c = math.ceil(k)
+    if f == c:
+        return float(sorted_vals[int(k)])
+    d0 = sorted_vals[f] * (c - k)
+    d1 = sorted_vals[c] * (k - f)
+    return float(d0 + d1)
 
 
 def decide(
@@ -32,8 +55,25 @@ def decide(
     reasons: list[str] = []
     versions: dict[str, Any] = {"decision": "v1"}
     cfg = dict(cfg or {})
+    mtf_cfg = dict(cfg.get("multi_timeframe") or {})
+    policy_symbol = str(policy.get("symbol") or "UNKNOWN")
+    policy_timeframe = str(policy.get("timeframe") or "UNKNOWN")
+    use_htf_block = bool(mtf_cfg.get("use_htf_block", True))
+    allow_ltf_override_cfg = bool(mtf_cfg.get("allow_ltf_override"))
+    ltf_override_threshold = float(mtf_cfg.get("ltf_override_threshold", 0.85))
+    adaptive_cfg = dict(mtf_cfg.get("ltf_override_adaptive") or {})
     state_in = dict(state or {})
     state_out: dict[str, Any] = dict(state_in)
+    override_state_in = state_in.get("ltf_override_state")
+    override_state: dict[str, Any] = {}
+    if isinstance(override_state_in, dict):
+        for key, value in override_state_in.items():
+            if isinstance(value, list):
+                override_state[key] = list(value)
+            else:
+                override_state[key] = value
+    state_out["ltf_override_state"] = override_state
+    override_context_ref: dict[str, Any | None] = {"data": None}
 
     # 1) Fail‑safe & EV‑filter
     if not probas or not isinstance(probas, dict):
@@ -198,9 +238,165 @@ def decide(
             return levels[nearest]
         return None
 
+    ltf_entry_cfg = (cfg.get("ltf_fib") or {}).get("entry") or {}
+
+    def _prepare_override_context() -> dict[str, Any]:
+        if not ltf_entry_cfg.get("enabled"):
+            return {}
+        if not confidence or not isinstance(confidence, dict):
+            return {}
+        conf_key = "buy" if candidate == "LONG" else "sell"
+        conf_val = float(confidence.get(conf_key, 0.0))
+        history_window = max(1, int(adaptive_cfg.get("window", 120)))
+        history_key = f"{conf_key.lower()}_history"
+        history = list(override_state.get(history_key) or [])
+        history.append(conf_val)
+        if len(history) > history_window:
+            history = history[-history_window:]
+        override_state[history_key] = history
+
+        effective_threshold = ltf_override_threshold
+        adaptive_debug: dict[str, Any] | None = None
+        if allow_ltf_override_cfg and adaptive_cfg.get("enabled"):
+            min_history = max(1, int(adaptive_cfg.get("min_history", min(history_window, 30))))
+            percentile_q = float(adaptive_cfg.get("percentile", 0.85))
+            percentile_q = max(0.0, min(1.0, percentile_q))
+            raw_threshold = (
+                _compute_percentile(history, percentile_q) if len(history) >= min_history else None
+            )
+            fallback = adaptive_cfg.get("fallback_threshold")
+            base_threshold = float(
+                raw_threshold
+                if raw_threshold is not None
+                else (fallback if fallback is not None else ltf_override_threshold)
+            )
+            multiplier = float((adaptive_cfg.get("regime_multipliers") or {}).get(regime_str, 1.0))
+            effective_threshold = base_threshold * multiplier
+            min_floor = adaptive_cfg.get("min_floor")
+            max_ceiling = adaptive_cfg.get("max_ceiling")
+            if min_floor is not None:
+                effective_threshold = max(effective_threshold, float(min_floor))
+            if max_ceiling is not None:
+                effective_threshold = min(effective_threshold, float(max_ceiling))
+            effective_threshold = min(max(effective_threshold, 0.0), 1.0)
+            adaptive_debug = {
+                "window": history_window,
+                "history_len": len(history),
+                "min_history": min_history,
+                "percentile": percentile_q,
+                "raw_threshold": raw_threshold,
+                "fallback": float(fallback if fallback is not None else ltf_override_threshold),
+                "multiplier": multiplier,
+                "min_floor": min_floor,
+                "max_ceiling": max_ceiling,
+                "effective_threshold": effective_threshold,
+            }
+        else:
+            effective_threshold = min(max(effective_threshold, 0.0), 1.0)
+
+        return {
+            "conf_key": conf_key,
+            "conf_val": conf_val,
+            "history_key": history_key,
+            "history_window": history_window,
+            "history_len": len(history),
+            "effective_threshold": effective_threshold,
+            "adaptive_debug": adaptive_debug,
+        }
+
+    def _try_override_htf_block(payload: dict[str, Any]) -> bool:
+        if not ltf_entry_cfg.get("enabled"):
+            return False
+        if not confidence or not isinstance(confidence, dict):
+            return False
+
+        context = override_context_ref.get("data")
+        if not isinstance(context, dict):
+            return False
+
+        conf_val = float(context.get("conf_val", 0.0))
+        reason_label = str(payload.get("reason", "HTF_BLOCK"))
+
+        def _apply_override(source: str, extra: dict[str, Any]) -> bool:
+            payload_override = dict(payload)
+            payload_override["override"] = {
+                "source": source,
+                "confidence": conf_val,
+                **extra,
+            }
+            payload_override["reason"] = f"{reason_label}_OVERRIDE"
+            state_out["htf_fib_entry_debug"] = payload_override
+            reasons.append("HTF_OVERRIDE_LTF_CONF")
+            _LOG.info(
+                "[OVERRIDE] LTF override triggered source=%s symbol=%s timeframe=%s direction=%s confidence=%.3f details=%s",
+                source,
+                policy_symbol,
+                policy_timeframe,
+                candidate,
+                conf_val,
+                extra,
+            )
+            return True
+
+        effective_threshold = float(context.get("effective_threshold", ltf_override_threshold))
+        adaptive_debug = context.get("adaptive_debug")
+
+        if allow_ltf_override_cfg and conf_val >= effective_threshold:
+            return _apply_override(
+                "multi_timeframe_threshold",
+                {
+                    "threshold": effective_threshold,
+                    "baseline": ltf_override_threshold,
+                    "adaptive": adaptive_debug,
+                },
+            )
+
+        override_cfg = ltf_entry_cfg.get("override_confidence") or {}
+        if override_cfg.get("enabled"):
+            min_conf = float(override_cfg.get("min", 0.0))
+            max_conf = float(override_cfg.get("max", 1.0))
+            if min_conf <= conf_val <= max_conf:
+                return _apply_override(
+                    "ltf_entry_range",
+                    {"min": min_conf, "max": max_conf},
+                )
+        return False
+
+    override_context = _prepare_override_context()
+    override_context_ref["data"] = override_context if override_context else {}
+    if override_context:
+        state_out["ltf_override_debug"] = {
+            "candidate": candidate,
+            "confidence": override_context["conf_val"],
+            "history_key": override_context["history_key"],
+            "history_len": override_context["history_len"],
+            "history_window": override_context["history_window"],
+            "baseline_threshold": ltf_override_threshold,
+            "effective_threshold": override_context["effective_threshold"],
+            "adaptive_enabled": bool(adaptive_cfg.get("enabled")),
+            "regime": regime_str,
+            "details": override_context.get("adaptive_debug"),
+        }
+    else:
+        fallback_conf = None
+        if confidence and isinstance(confidence, dict):
+            fallback_conf = float(confidence.get("buy" if candidate == "LONG" else "sell", 0.0))
+        state_out["ltf_override_debug"] = {
+            "candidate": candidate,
+            "confidence": fallback_conf,
+            "history_key": None,
+            "history_len": 0,
+            "history_window": int(adaptive_cfg.get("window", 120)),
+            "baseline_threshold": ltf_override_threshold,
+            "effective_threshold": ltf_override_threshold,
+            "adaptive_enabled": bool(adaptive_cfg.get("enabled")),
+            "regime": regime_str,
+            "details": None,
+        }
+
     # HTF Fibonacci confirmation (trend filter)
     htf_entry_cfg = (cfg.get("htf_fib") or {}).get("entry") or {}
-    if htf_entry_cfg.get("enabled"):
+    if use_htf_block and htf_entry_cfg.get("enabled"):
         htf_ctx = state_in.get("htf_fib") or {}
         price_now = state_in.get("last_close")
         atr_now = float(state_in.get("current_atr") or 0.0)
@@ -285,28 +481,32 @@ def decide(
                         htf_levels, float(min_level) if min_level is not None else None
                     )
                     if level_price is not None and price_now < level_price - tolerance:
-                        state_out["htf_fib_entry_debug"] = {
+                        payload = {
                             **base_debug,
                             "reason": "LONG_BELOW_LEVEL",
                             "level_price": level_price,
                         }
-                        reasons.append("HTF_FIB_LONG_BLOCK")
-                        return "NONE", {
-                            "versions": versions,
-                            "reasons": reasons,
-                            "state_out": state_out,
-                        }
-                    if target_debug and not matched:
-                        state_out["htf_fib_entry_debug"] = {
+                        if not _try_override_htf_block(payload):
+                            state_out["htf_fib_entry_debug"] = payload
+                            reasons.append("HTF_FIB_LONG_BLOCK")
+                            return "NONE", {
+                                "versions": versions,
+                                "reasons": reasons,
+                                "state_out": state_out,
+                            }
+                    elif target_debug and not matched:
+                        payload = {
                             **base_debug,
                             "reason": "LONG_OFF_TARGET",
                         }
-                        reasons.append("HTF_FIB_LONG_BLOCK")
-                        return "NONE", {
-                            "versions": versions,
-                            "reasons": reasons,
-                            "state_out": state_out,
-                        }
+                        if not _try_override_htf_block(payload):
+                            state_out["htf_fib_entry_debug"] = payload
+                            reasons.append("HTF_FIB_LONG_BLOCK")
+                            return "NONE", {
+                                "versions": versions,
+                                "reasons": reasons,
+                                "state_out": state_out,
+                            }
             elif candidate == "SHORT":
                 target_levels = htf_entry_cfg.get("short_target_levels")
                 matched = False
@@ -340,37 +540,48 @@ def decide(
                         htf_levels, float(max_level) if max_level is not None else None
                     )
                     if level_price is not None and price_now > level_price + tolerance:
-                        state_out["htf_fib_entry_debug"] = {
+                        payload = {
                             **base_debug,
                             "reason": "SHORT_ABOVE_LEVEL",
                             "level_price": level_price,
                         }
-                        reasons.append("HTF_FIB_SHORT_BLOCK")
-                        return "NONE", {
-                            "versions": versions,
-                            "reasons": reasons,
-                            "state_out": state_out,
-                        }
-                    if target_debug and not matched:
-                        state_out["htf_fib_entry_debug"] = {
+                        if not _try_override_htf_block(payload):
+                            state_out["htf_fib_entry_debug"] = payload
+                            reasons.append("HTF_FIB_SHORT_BLOCK")
+                            return "NONE", {
+                                "versions": versions,
+                                "reasons": reasons,
+                                "state_out": state_out,
+                            }
+                    elif target_debug and not matched:
+                        payload = {
                             **base_debug,
                             "reason": "SHORT_OFF_TARGET",
                         }
-                        reasons.append("HTF_FIB_SHORT_BLOCK")
-                        return "NONE", {
-                            "versions": versions,
-                            "reasons": reasons,
-                            "state_out": state_out,
-                        }
+                        if not _try_override_htf_block(payload):
+                            state_out["htf_fib_entry_debug"] = payload
+                            reasons.append("HTF_FIB_SHORT_BLOCK")
+                            return "NONE", {
+                                "versions": versions,
+                                "reasons": reasons,
+                                "state_out": state_out,
+                            }
 
         if "htf_fib_entry_debug" not in state_out:
             state_out["htf_fib_entry_debug"] = {
                 **base_debug,
                 "reason": "PASS",
             }
+    elif not use_htf_block:
+        state_out.setdefault(
+            "htf_fib_entry_debug",
+            {
+                "reason": "DISABLED_BY_CONFIG",
+                "config": {"use_htf_block": use_htf_block},
+            },
+        )
 
     # LTF Fibonacci entry gating (same-timeframe fib context)
-    ltf_entry_cfg = (cfg.get("ltf_fib") or {}).get("entry") or {}
     if ltf_entry_cfg.get("enabled"):
         ltf_ctx = state_in.get("ltf_fib") or {}
         price_now = state_in.get("last_close")

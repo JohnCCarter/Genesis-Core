@@ -1,0 +1,101 @@
+{
+  "cfg": {
+    "thresholds": {
+      "entry_conf_overall": 0.45,
+      "signal_adaptation": {
+        "atr_period": 14,
+        "zones": {
+          "low": {
+            "entry_conf_overall": 0.36,
+            "regime_proba": {
+              "ranging": 0.7,
+              "bull": 0.6,
+              "bear": 0.6,
+              "balanced": 0.7
+            }
+          },
+          "mid": {
+            "entry_conf_overall": 0.42,
+            "regime_proba": {
+              "ranging": 0.8,
+              "bull": 0.7,
+              "bear": 0.7,
+              "balanced": 0.8
+            }
+          },
+          "high": {
+            "entry_conf_overall": 0.48,
+            "regime_proba": {
+              "ranging": 0.88,
+              "bull": 0.78,
+              "bear": 0.78,
+              "balanced": 0.88
+            }
+          }
+        }
+      }
+    },
+    "risk": {
+      "risk_map": [
+        [0.45, 0.015],
+        [0.55, 0.025],
+        [0.65, 0.035]
+      ]
+    },
+    "exit": {
+      "exit_conf_threshold": 0.4,
+      "max_hold_bars": 18
+    },
+    "multi_timeframe": {
+      "use_htf_block": true,
+      "allow_ltf_override": true,
+      "ltf_override_threshold": 0.85,
+      "ltf_override_adaptive": {
+        "enabled": true,
+        "window": 240,
+        "percentile": 0.9,
+        "min_history": 80,
+        "min_floor": 0.6,
+        "max_ceiling": 0.95,
+        "fallback_threshold": 0.8,
+        "regime_multipliers": {
+          "bull": 0.95,
+          "bear": 1.05
+        }
+      }
+    },
+    "htf_exit_config": {
+      "fib_threshold_atr": 0.7,
+      "trail_atr_multiplier": 2.5,
+      "enable_partials": true,
+      "enable_trailing": true,
+      "enable_structure_breaks": true,
+      "partial_1_pct": 0.6,
+      "partial_2_pct": 0.5,
+      "swing_update_strategy": "fixed"
+    },
+    "htf_fib": {
+      "entry": {
+        "enabled": true,
+        "missing_policy": "pass",
+        "tolerance_atr": 0.35,
+        "long_min_level": 0.382,
+        "short_max_level": 0.618
+      }
+    },
+    "ltf_fib": {
+      "entry": {
+        "enabled": true,
+        "missing_policy": "pass",
+        "tolerance_atr": 0.35,
+        "long_max_level": 0.786,
+        "short_min_level": 0.382,
+        "override_confidence": {
+          "enabled": true,
+          "min": 0.35,
+          "max": 0.7
+        }
+      }
+    }
+  }
+}

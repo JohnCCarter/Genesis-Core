@@ -133,7 +133,7 @@ class ConfigAuthority:
         # whitelist enforcement (path-based)
         def _enforce_whitelist(p: dict[str, Any]) -> None:
             for k, v in (p or {}).items():
-                if k not in {"thresholds", "gates", "risk", "ev"}:
+                if k not in {"thresholds", "gates", "risk", "ev", "multi_timeframe"}:
                     raise ValueError("non_whitelisted_field")
                 if k == "risk":
                     if not isinstance(v, dict) or any(subk != "risk_map" for subk in v.keys()):
@@ -141,6 +141,41 @@ class ConfigAuthority:
                 if k == "ev":
                     if not isinstance(v, dict) or any(subk != "R_default" for subk in v.keys()):
                         raise ValueError("non_whitelisted_field:ev")
+                if k == "multi_timeframe":
+                    if not isinstance(v, dict):
+                        raise ValueError("non_whitelisted_field:multi_timeframe")
+                    allowed = {
+                        "use_htf_block",
+                        "allow_ltf_override",
+                        "ltf_override_threshold",
+                        "ltf_override_adaptive",
+                    }
+                    if any(subk not in allowed for subk in v.keys()):
+                        raise ValueError("non_whitelisted_field:multi_timeframe")
+                    adaptive_cfg = v.get("ltf_override_adaptive")
+                    if adaptive_cfg is not None:
+                        if not isinstance(adaptive_cfg, dict):
+                            raise ValueError("non_whitelisted_field:ltf_override_adaptive")
+                        allowed_adaptive = {
+                            "enabled",
+                            "window",
+                            "percentile",
+                            "min_history",
+                            "min_floor",
+                            "max_ceiling",
+                            "fallback_threshold",
+                            "regime_multipliers",
+                        }
+                        if any(subk not in allowed_adaptive for subk in adaptive_cfg.keys()):
+                            raise ValueError("non_whitelisted_field:ltf_override_adaptive")
+                        if "regime_multipliers" in adaptive_cfg:
+                            multipliers = adaptive_cfg["regime_multipliers"]
+                            if not isinstance(multipliers, dict) or any(
+                                not isinstance(key, str) for key in multipliers.keys()
+                            ):
+                                raise ValueError(
+                                    "non_whitelisted_field:ltf_override_adaptive.regime_multipliers"
+                                )
 
         _enforce_whitelist(patch)
 

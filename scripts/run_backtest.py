@@ -9,8 +9,20 @@ Usage:
 
 import argparse
 import json
+import os
+import random
 import sys
 from pathlib import Path
+
+try:
+    import numpy as np
+except ImportError:  # pragma: no cover - numpy optional in some envs
+    np = None
+
+try:  # pragma: no cover - torch optional
+    import torch
+except ImportError:
+    torch = None
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 SRC_DIR = ROOT_DIR / "src"
@@ -38,6 +50,18 @@ def _deep_merge(base: dict, override: dict) -> dict:
         else:
             merged[key] = value
     return merged
+
+
+def _seed_all(seed: int) -> None:
+    """Sätt deterministiska seeds för alla relevanta bibliotek."""
+
+    random.seed(seed)
+    if np is not None:
+        np.random.seed(seed)
+    if torch is not None:
+        torch.manual_seed(seed)
+        if torch.cuda.is_available():  # pragma: no cover - CUDA inte i testmiljö
+            torch.cuda.manual_seed_all(seed)
 
 
 def main():
@@ -89,6 +113,14 @@ def main():
     print("=" * 70)
     print("Genesis-Core Backtest Runner")
     print("=" * 70)
+
+    try:
+        seed_value = int(os.environ.get("GENESIS_RANDOM_SEED", "42"))
+    except ValueError:
+        seed_value = 42
+
+    _seed_all(seed_value)
+    print(f"[SEED] Deterministisk seed satt till {seed_value}")
 
     try:
         # Initialize engine

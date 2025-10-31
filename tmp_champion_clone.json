@@ -72,15 +72,10 @@
         "htf_fib": {
             "entry": {
                 "enabled": true,
-                "tolerance_atr": 0.3,
-                "long_min_level": 0.382,
-                "short_max_level": 0.618,
-                "long_target_levels": [
-                    0.5,
-                    0.618,
-                    0.786
-                ],
-                "missing_policy": "pass"
+                "tolerance_atr": 0.45,
+                "long_max_level": 0.618,
+                "short_min_level": 0.382,
+                "missing_policy": "gate"
             }
         },
         "exit": {
@@ -103,9 +98,10 @@
         "ltf_fib": {
             "entry": {
                 "enabled": true,
-                "tolerance_atr": 0.3,
-                "long_max_level": 0.786,
-                "missing_policy": "pass"
+                "tolerance_atr": 0.45,
+                "long_max_level": 0.618,
+                "short_min_level": 0.382,
+                "missing_policy": "gate"
             }
         }
     }

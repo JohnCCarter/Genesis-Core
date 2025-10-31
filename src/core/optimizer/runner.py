@@ -6,6 +6,7 @@ import json
 import os
 import shutil
 import subprocess
+import tempfile
 import threading
 import time
 from collections.abc import Iterable
@@ -31,6 +32,7 @@ try:
         SuccessiveHalvingPruner,
     )
     from optuna.samplers import CmaEsSampler, RandomSampler, TPESampler
+    from optuna.storages import RDBStorage
 
     OPTUNA_AVAILABLE = True
 except ModuleNotFoundError:  # pragma: no cover - handled at runtime
@@ -45,6 +47,13 @@ RESULTS_DIR = PROJECT_ROOT / "results" / "hparam_search"
 _OPTUNA_LOCK = threading.Lock()
 _SIMPLE_CATEGORICAL_TYPES = (type(None), bool, int, float, str)
 _COMPLEX_CHOICE_PREFIX = "__optuna_complex__"
+
+
+def _atomic_write_text(path: Path, payload: str, *, encoding: str = "utf-8") -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile("w", encoding=encoding, delete=False, dir=path.parent) as tmp:
+        tmp.write(payload)
+    Path(tmp.name).replace(path)
 
 
 class OptimizerStrategy:
@@ -172,7 +181,7 @@ def _ensure_run_metadata(
         "git_commit": commit,
         "raw_meta": meta,
     }
-    meta_path.write_text(json.dumps(_serialize_meta(meta_payload), indent=2), encoding="utf-8")
+    _atomic_write_text(meta_path, json.dumps(_serialize_meta(meta_payload), indent=2))
 
 
 def _serialize_meta(meta_payload: dict[str, Any]) -> dict[str, Any]:
@@ -329,7 +338,7 @@ def run_trial(
         # Deep merge trial parameters into default config
         merged_cfg = _deep_merge(default_cfg, trial.parameters)
         config_payload = {"cfg": merged_cfg}
-        config_file.write_text(json.dumps(config_payload, indent=2), encoding="utf-8")
+        _atomic_write_text(config_file, json.dumps(config_payload, indent=2))
 
     cache_dir = run_dir / "_cache"
     cache_key = hashlib.sha256(key.encode("utf-8")).hexdigest()
@@ -355,7 +364,7 @@ def run_trial(
             payload.setdefault("config_path", config_file.name)
         if not payload.get("parameters"):
             payload["parameters"] = trial.parameters
-        trial_file.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        _atomic_write_text(trial_file, json.dumps(payload, indent=2))
         return payload
 
     if trial.start_date and trial.end_date:
@@ -390,10 +399,12 @@ def run_trial(
     final_payload: dict[str, Any] | None = None
     trial_started = time.perf_counter()
     attempt_durations: list[float] = []
+    last_log_output = ""
     while attempts_remaining > 0:
         attempt_started = time.perf_counter()
         attempts_remaining -= 1
         returncode, log = _exec_backtest(cmd, cwd=Path(__file__).resolve().parents[3])
+        last_log_output = log
         attempt_duration = time.perf_counter() - attempt_started
         attempt_durations.append(attempt_duration)
         if returncode == 0:
@@ -436,15 +447,15 @@ def run_trial(
                 f"[Runner] Trial {trial_id} klar på {total_duration:.1f}s" f" (score={score_value})"
             )
             break
-        final_payload = {
-            "trial_id": trial_id,
-            "parameters": trial.parameters,
-            "error": "backtest_failed",
-            "log_path": log_file.name,
-            "attempts": max_attempts - attempts_remaining,
-            "duration_seconds": time.perf_counter() - trial_started,
-            "attempt_durations": attempt_durations,
-        }
+            final_payload = {
+                "trial_id": trial_id,
+                "parameters": trial.parameters,
+                "error": "backtest_failed",
+                "log_path": log_file.name,
+                "attempts": max_attempts - attempts_remaining,
+                "duration_seconds": time.perf_counter() - trial_started,
+                "attempt_durations": attempt_durations,
+            }
         if config_file is not None:
             final_payload["config_path"] = config_file.name
         retry_wait = min(5 * (max_attempts - attempts_remaining), 60)
@@ -452,7 +463,7 @@ def run_trial(
             print(f"[Runner] Backtest fail, retry om {retry_wait}s")
             time.sleep(retry_wait)
 
-    log_file.write_text(locals().get("log", ""), encoding="utf-8")
+    _atomic_write_text(log_file, last_log_output)
     if final_payload is None:
         final_payload = {
             "trial_id": trial_id,
@@ -466,8 +477,8 @@ def run_trial(
         cache_snapshot.pop("trial_id", None)
         cache_snapshot.pop("from_cache", None)
         cache_snapshot["parameters"] = trial.parameters
-        cache_path.write_text(json.dumps(cache_snapshot, indent=2), encoding="utf-8")
-    trial_file.write_text(json.dumps(final_payload, indent=2), encoding="utf-8")
+        _atomic_write_text(cache_path, json.dumps(cache_snapshot, indent=2))
+    _atomic_write_text(trial_file, json.dumps(final_payload, indent=2))
     return final_payload
 
 
@@ -515,6 +526,9 @@ def _create_optuna_study(
     pruner_cfg: dict[str, Any] | None,
     direction: str | None,
     allow_resume: bool,
+    *,
+    heartbeat_interval: int | None = None,
+    heartbeat_grace_period: int | None = None,
 ):
     if not OPTUNA_AVAILABLE:
         raise RuntimeError("Optuna är inte installerat")
@@ -534,10 +548,18 @@ def _create_optuna_study(
     )
     sampler = _select_optuna_sampler(sampler_name, sampler_cfg.get("kwargs"))
     pruner = _select_optuna_pruner(pruner_name, pruner_cfg.get("kwargs"))
+    storage_obj: Any | None = storage
+    if storage and heartbeat_interval:
+        storage_obj = RDBStorage(
+            storage,
+            heartbeat_interval=heartbeat_interval,
+            grace_period=heartbeat_grace_period,
+        )
+
     with _OPTUNA_LOCK:
         study = optuna.create_study(
             study_name=study_name or f"optimizer_{run_id}",
-            storage=storage,
+            storage=storage_obj,
             sampler=sampler,
             pruner=pruner,
             direction=(direction or "maximize"),
@@ -588,7 +610,17 @@ def _suggest_parameters(trial, spec: dict[str, Any]) -> dict[str, Any]:
                 step = value.get("step")
                 log = bool(value.get("log"))
                 if step is not None:
-                    resolved[key] = trial.suggest_float(path, low, high, step=float(step), log=log)
+                    step_float = float(step)
+                    raw_value = trial.suggest_float(path, low, high, step=step_float, log=log)
+                    # Normalisera till exakt step-multipel för att undvika precision-problem i cache-nycklar
+                    # Beräkna antal decimaler från step (t.ex. 0.05 -> 2 decimaler, 0.1 -> 1 decimal)
+                    step_str = str(step_float)
+                    if "." in step_str:
+                        decimals = len(step_str.split(".")[1])
+                    else:
+                        decimals = 0
+                    # Round till rätt antal decimaler baserat på step
+                    resolved[key] = round(round(raw_value / step_float) * step_float, decimals)
                 else:
                     resolved[key] = trial.suggest_float(path, low, high, log=log)
             elif node_type == "int":
@@ -631,6 +663,11 @@ def _run_optuna(
     if isinstance(pruner_cfg, str):
         pruner_cfg = {"name": pruner_cfg}
 
+    heartbeat_interval = study_config.get("heartbeat_interval")
+    heartbeat_grace = study_config.get("heartbeat_grace_period")
+    heartbeat_interval = int(heartbeat_interval) if heartbeat_interval else None
+    heartbeat_grace = int(heartbeat_grace) if heartbeat_grace else None
+
     study = _create_optuna_study(
         run_id=run_id,
         storage=storage,
@@ -639,6 +676,8 @@ def _run_optuna(
         pruner_cfg=pruner_cfg,
         direction=direction,
         allow_resume=allow_resume,
+        heartbeat_interval=heartbeat_interval,
+        heartbeat_grace_period=heartbeat_grace,
     )
 
     results: list[dict[str, Any]] = []
@@ -690,7 +729,7 @@ def _run_optuna(
             best_payload = best_trial.user_attrs.get("result_payload")
             if best_payload is not None:
                 best_json_path = run_dir / "best_trial.json"
-                best_json_path.write_text(json.dumps(best_payload, indent=2), encoding="utf-8")
+                _atomic_write_text(best_json_path, json.dumps(best_payload, indent=2))
         except ValueError:
             best_payload = None
 
@@ -709,7 +748,7 @@ def _run_optuna(
         "best_trial_number": best_payload.get("trial_id") if best_payload else None,
     }
     run_meta.setdefault("optuna", {}).update(optuna_meta)
-    run_meta_path.write_text(json.dumps(_serialize_meta(run_meta), indent=2), encoding="utf-8")
+    _atomic_write_text(run_meta_path, json.dumps(_serialize_meta(run_meta), indent=2))
 
     return results
 
@@ -743,7 +782,12 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
     if _as_bool(runs_cfg.get("use_sample_range")):
         sample_start, sample_end = _resolve_sample_range(meta.get("snapshot_id", ""), runs_cfg)
 
-    max_trials = int(runs_cfg.get("max_trials", 0)) or None
+    # Hantera max_trials: null (None) för att köra tills timeout
+    max_trials_raw = runs_cfg.get("max_trials")
+    if max_trials_raw is None:
+        max_trials = None  # Kör tills timeout
+    else:
+        max_trials = int(max_trials_raw) or None  # 0 blir None
     allow_resume = bool(runs_cfg.get("resume", True))
     concurrency = max(1, int(runs_cfg.get("max_concurrent", 1)))
     max_attempts = max(1, int(runs_cfg.get("max_attempts", 2)))

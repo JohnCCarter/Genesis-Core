@@ -1,0 +1,158 @@
+meta:
+  symbol: tBTCUSD
+  timeframe: 1h
+  snapshot_id: tBTCUSD_1h_2024-10-22_2025-10-01_v1
+  warmup_bars: 150
+  runs:
+    strategy: grid
+    max_trials: 10
+    max_concurrent: 1
+    resume: false
+  use_sample_range: true
+  sample_start: 2025-06-01
+  sample_end: 2025-07-15
+
+parameters:
+  thresholds:
+    entry_conf_overall:
+      type: grid
+      values: [0.45, 0.5]
+    signal_adaptation:
+      type: fixed
+      value:
+        atr_period: 14
+        zones:
+          low:
+            entry_conf_overall: 0.36
+            regime_proba:
+              ranging: 0.7
+              bull: 0.6
+              bear: 0.6
+              balanced: 0.7
+          mid:
+            entry_conf_overall: 0.42
+            regime_proba:
+              ranging: 0.8
+              bull: 0.7
+              bear: 0.7
+              balanced: 0.8
+          high:
+            entry_conf_overall: 0.48
+            regime_proba:
+              ranging: 0.88
+              bull: 0.78
+              bear: 0.78
+              balanced: 0.88
+  risk:
+    risk_map:
+      type: fixed
+      value: [[0.45, 0.015], [0.55, 0.025], [0.65, 0.035]]
+  exit:
+    exit_conf_threshold:
+      type: fixed
+      value: 0.4
+    max_hold_bars:
+      type: fixed
+      value: 18
+  htf_exit_config:
+    fib_threshold_atr:
+      type: fixed
+      value: 0.7
+    trail_atr_multiplier:
+      type: fixed
+      value: 2.5
+    enable_partials:
+      type: fixed
+      value: true
+    enable_trailing:
+      type: fixed
+      value: true
+    enable_structure_breaks:
+      type: fixed
+      value: true
+    partial_1_pct:
+      type: fixed
+      value: 0.6
+    partial_2_pct:
+      type: fixed
+      value: 0.5
+    swing_update_strategy:
+      type: fixed
+      value: fixed
+  htf_fib:
+    entry:
+      enabled:
+        type: grid
+        values: [true, false]
+      missing_policy:
+        type: fixed
+        value: pass
+      tolerance_atr:
+        type: grid
+        values: [0.35, 0.6]
+      long_min_level:
+        type: fixed
+        value: 0.382
+      short_max_level:
+        type: fixed
+        value: 0.618
+  ltf_fib:
+    entry:
+      enabled:
+        type: fixed
+        value: true
+      missing_policy:
+        type: fixed
+        value: pass
+      tolerance_atr:
+        type: grid
+        values: [0.35, 0.55]
+      long_max_level:
+        type: grid
+        values: [0.786, 0.854]
+      short_min_level:
+        type: grid
+        values: [0.382, 0.276]
+      override_confidence:
+        type: fixed
+        value:
+          enabled: true
+          min: 0.4
+          max: 0.6
+  multi_timeframe:
+    use_htf_block:
+      type: fixed
+      value: true
+    allow_ltf_override:
+      type: grid
+      values: [false, true]
+    ltf_override_threshold:
+      type: grid
+      values: [0.8, 0.85, 0.9]
+    ltf_override_adaptive:
+      enabled:
+        type: grid
+        values: [false, true]
+      window:
+        type: grid
+        values: [120, 240]
+      percentile:
+        type: grid
+        values: [0.85, 0.9]
+      min_history:
+        type: fixed
+        value: 80
+      min_floor:
+        type: fixed
+        value: 0.6
+      max_ceiling:
+        type: fixed
+        value: 0.95
+      fallback_threshold:
+        type: fixed
+        value: 0.8
+      regime_multipliers:
+        type: fixed
+        value:
+          bull: 0.95
+          bear: 1.05

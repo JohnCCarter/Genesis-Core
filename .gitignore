@@ -135,6 +135,8 @@ results/**/
 !results/*.md
 !results/**/README.md
 !results/archive/**
+!results/evaluation/
+!results/evaluation/**/*.json
 
 # CI artifacts
 bandit-report.txt

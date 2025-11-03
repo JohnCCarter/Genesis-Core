@@ -1,32 +1,28 @@
 import json
-import os
+import sys
 from pathlib import Path
-from typing import Dict, List
 
 import numpy as np
 import pandas as pd
 from sklearn.metrics import roc_auc_score
 
+from core.ml.labeling import align_features_with_labels, generate_labels
+from core.utils import get_candles_path
+from core.utils.data_loader import load_features
+from scripts.evaluate_model import create_model_from_json, load_trained_model
+
 # Ensure project paths
 ROOT = Path(__file__).resolve().parents[1]
 SRC_DIR = ROOT / "src"
-if str(SRC_DIR) not in os.sys.path:
-    os.sys.path.insert(0, str(SRC_DIR))
-if str(ROOT) not in os.sys.path:
-    os.sys.path.insert(0, str(ROOT))
-
-from core.utils import get_candles_path  # type: ignore
-from core.utils.data_loader import load_features  # type: ignore
-from scripts.evaluate_model import (  # type: ignore
-    create_model_from_json,
-    load_trained_model,
-)
-from core.ml.labeling import align_features_with_labels, generate_labels  # type: ignore
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 
-def evaluate_model(model_path: Path) -> Dict[str, float]:
+def evaluate_model(model_path: Path) -> dict[str, float]:
     model_json = load_trained_model(model_path)
-    schema: List[str] = model_json.get("schema", [])
+    schema: list[str] = model_json.get("schema", [])
     if not schema:
         raise ValueError(f"Model {model_path.name} saknar schema")
 
@@ -95,10 +91,12 @@ def main() -> None:
     model_paths = [
         p
         for p in models_dir.glob("*.json")
-        if all(pattern not in p.stem for pattern in ["holdout", "metrics", "calibrated", "provenance"])
+        if all(
+            pattern not in p.stem for pattern in ["holdout", "metrics", "calibrated", "provenance"]
+        )
     ]
 
-    results: Dict[str, Dict[str, float]] = {}
+    results: dict[str, dict[str, float]] = {}
     for model_path in sorted(model_paths):
         print(f"[EVAL] {model_path.name}")
         metrics = evaluate_model(model_path)
@@ -106,7 +104,9 @@ def main() -> None:
 
         out_path = evaluation_dir / f"{model_path.stem}_evaluation.json"
         with open(out_path, "w", encoding="utf-8") as f:
-            json.dump({"model": model_path.name, "metrics": metrics}, f, indent=2, ensure_ascii=False)
+            json.dump(
+                {"model": model_path.name, "metrics": metrics}, f, indent=2, ensure_ascii=False
+            )
 
     scoreboard_path = evaluation_dir / "model_scoreboard.json"
     with open(scoreboard_path, "w", encoding="utf-8") as f:

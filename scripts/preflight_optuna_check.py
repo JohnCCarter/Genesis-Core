@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -135,6 +136,24 @@ def check_sampler_settings(optuna_cfg: dict[str, Any]) -> tuple[bool, str]:
         messages.append("[WARN] n_ei_candidates saknas – använder Optunas default")
 
     return True, " | ".join(messages)
+
+
+def check_duplicate_guard() -> tuple[bool, str]:
+    env_value = os.getenv("OPTUNA_MAX_DUPLICATE_STREAK")
+    if env_value is None:
+        return True, "[OK] OPTUNA_MAX_DUPLICATE_STREAK ej satt (default 10)"
+    try:
+        streak = int(env_value)
+    except ValueError:
+        return False, f"[FAIL] OPTUNA_MAX_DUPLICATE_STREAK='{env_value}' är inte ett heltal"
+    if streak <= 0:
+        return False, f"[FAIL] OPTUNA_MAX_DUPLICATE_STREAK={streak} måste vara > 0"
+    if streak < 5:
+        return (
+            True,
+            f"[WARN] OPTUNA_MAX_DUPLICATE_STREAK={streak} är lågt – risk för tidigt avbrott",
+        )
+    return True, f"[OK] OPTUNA_MAX_DUPLICATE_STREAK={streak}"
 
 
 def check_parameters_valid(parameters: dict[str, Any]) -> tuple[bool, str]:
@@ -284,32 +303,39 @@ def main() -> int:
     print(f"4. Sampler: {msg}")
     print()
 
-    # 5. Timeout/max_trials
-    max_trials = runs_cfg.get("max_trials")
-    timeout_seconds = optuna_cfg.get("timeout_seconds")
-    ok, msg = check_timeout_config(max_trials, timeout_seconds)
-    print(f"5. Timeout/max_trials: {msg}")
-    print()
-
-    # 6. Parametrar
-    ok, msg = check_parameters_valid(parameters)
-    print(f"6. Parametrar: {msg}")
+    # 5. Duplicate guard (miljövariabel)
+    ok, msg = check_duplicate_guard()
+    print(f"5. Duplicate guard: {msg}")
     if not ok:
         all_ok = False
     print()
 
-    # 7. Snapshot & Data
+    # 6. Timeout/max_trials
+    max_trials = runs_cfg.get("max_trials")
+    timeout_seconds = optuna_cfg.get("timeout_seconds")
+    ok, msg = check_timeout_config(max_trials, timeout_seconds)
+    print(f"6. Timeout/max_trials: {msg}")
+    print()
+
+    # 7. Parametrar
+    ok, msg = check_parameters_valid(parameters)
+    print(f"7. Parametrar: {msg}")
+    if not ok:
+        all_ok = False
+    print()
+
+    # 8. Snapshot & Data
     snapshot_id = meta.get("snapshot_id")
     symbol = meta.get("symbol", "tBTCUSD")
     timeframe = meta.get("timeframe", "1h")
     ok, msg = check_snapshot_exists(snapshot_id, symbol, timeframe)
-    print(f"7. Snapshot & Data: {msg}")
+    print(f"8. Snapshot & Data: {msg}")
     if not ok:
         all_ok = False
     print()
 
-    # 8. Validering mot champion
-    print("8. Champion-validering:")
+    # 9. Validering mot champion
+    print("9. Champion-validering:")
     try:
         from scripts.validate_optimizer_config import validate_config
 

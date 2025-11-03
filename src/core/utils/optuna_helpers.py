@@ -43,6 +43,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import os
 import random
 import sqlite3
@@ -62,6 +63,8 @@ try:
 except Exception as e:  # pragma: no cover
     raise RuntimeError("optuna must be installed to use this module") from e
 
+LOGGER = logging.getLogger(__name__)
+
 # --- Seeds & determinism ----------------------------------------------------
 
 
@@ -78,8 +81,8 @@ def set_global_seeds(seed: int = 42) -> None:
         torch.cuda.manual_seed_all(seed)
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False
-    except Exception:
-        pass
+    except ImportError:
+        LOGGER.debug("PyTorch not installed; skipping torch seed setup")
 
 
 # --- Storage ----------------------------------------------------------------
@@ -119,7 +122,7 @@ def make_sampler(mode: str = "qmc", seed: int = 42) -> optuna.samplers.BaseSampl
 def _normalize_for_sig(x: Any, precision: int = 10) -> Any:
     if isinstance(x, float):
         return round(x, precision)
-    if isinstance(x, (list, tuple)):
+    if isinstance(x, list | tuple):
         return [_normalize_for_sig(v, precision) for v in x]
     if isinstance(x, dict):
         return {k: _normalize_for_sig(x[k], precision) for k in sorted(x)}
@@ -159,8 +162,8 @@ class NoDupeGuard:
                 # Test connection
                 self._redis.ping()
                 self._use_redis = True
-            except Exception:
-                # Fallback to SQLite if Redis not available
+            except Exception as exc:
+                LOGGER.warning("Redis unavailable for NoDupeGuard: %s", exc)
                 self._use_redis = False
         if not self._use_redis:
             assert self.sqlite_path is not None
@@ -214,8 +217,8 @@ class NoDupeGuard:
         if self._use_redis:  # pragma: no cover
             try:
                 self._redis.srem("optuna:dedup", sig)
-            except Exception:
-                pass
+            except Exception as exc:  # pragma: no cover
+                LOGGER.debug("Failed to remove Redis signature %s: %s", sig, exc)
             return
         if not self.sqlite_path:
             return
@@ -245,8 +248,8 @@ def no_dupe_callback(
             # Mark as pruned duplicate for visibility in UI
             try:
                 trial.set_user_attr("duplicate_of", sig)
-            except Exception:
-                pass
+            except Exception as exc:
+                LOGGER.debug("Failed to attach duplicate metadata: %s", exc)
             raise optuna.TrialPruned("Duplicate parameter set (post-hoc)")
 
     return _cb
@@ -279,15 +282,16 @@ def ask_tell_optimize(
             study.tell(trial, value)
             if show_progress:
                 print(f"[{i+1}/{n_trials}] value={value:.6f}")
-        except optuna.TrialPruned as e:
+        except optuna.TrialPruned as exc:
             study.tell(trial, state=optuna.trial.TrialState.PRUNED)
             if show_progress:
-                print(f"[{i+1}/{n_trials}] PRUNED: {e}")
-        except Exception as e:  # keep going on failures
+                print(f"[{i+1}/{n_trials}] PRUNED: {exc}")
+        except Exception as exc:  # keep going on failures
             study.tell(trial, state=optuna.trial.TrialState.FAIL)
             guard.remove(sig)
+            LOGGER.warning("Optuna trial failed (%s): %s", sig, exc)
             if show_progress:
-                print(f"[{i+1}/{n_trials}] FAIL: {e}", file=sys.stderr)
+                print(f"[{i+1}/{n_trials}] FAIL: {exc}", file=sys.stderr)
 
 
 # --- Reproducibility helpers -------------------------------------------------
@@ -302,14 +306,17 @@ def env_fingerprint(extra: dict[str, Any] | None = None) -> dict[str, Any]:
         "platform": platform.platform(),
     }
     # Optional libs
-    for name in ("numpy", "pandas", "ta", "ccxt", "torch"):
-        try:
-            mod = __import__(name)
-            ver = getattr(mod, "__version__", None)
-            if ver:
-                fp[name] = ver
-        except Exception:
-            pass
+    try:
+        import pkg_resources
+
+        for dist in pkg_resources.working_set:  # pragma: no cover
+            name = dist.project_name.lower()
+            if name in ("numpy", "pandas", "ta", "ccxt", "torch"):
+                ver = dist.version
+                if ver:
+                    fp[name] = ver
+    except Exception as exc:
+        LOGGER.debug("Failed to collect package versions: %s", exc)
     if extra:
         fp.update(extra)
     return fp
@@ -340,13 +347,13 @@ def attach_repro_meta(
 ) -> None:
     """Attach reproducibility metadata to the trial for later debugging."""
     try:
-        trial.set_user_attr("env", env_fingerprint())
+        trial.set_user_attr("env_fingerprint", env_fingerprint())
         if data_hash:
             trial.set_user_attr("data_hash", data_hash)
         if notes:
             trial.set_user_attr("notes", notes)
-    except Exception:
-        pass
+    except Exception as exc:
+        LOGGER.debug("Failed to attach repro meta: %s", exc)
 
 
 # --- Example objective (remove in prod) -------------------------------------

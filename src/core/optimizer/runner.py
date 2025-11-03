@@ -307,9 +307,18 @@ def run_trial(
     max_attempts: int = 2,
     constraints_cfg: dict[str, Any | None] | None = None,
     cache_enabled: bool = False,
+    seen_param_keys: set[str] | None = None,
+    seen_param_lock: threading.Lock | None = None,
 ) -> dict[str, Any]:
     key = _trial_key(trial.parameters)
+
     if allow_resume and key in existing_trials:
+        if seen_param_keys is not None:
+            if seen_param_lock:
+                with seen_param_lock:
+                    seen_param_keys.add(key)
+            else:
+                seen_param_keys.add(key)
         existing = existing_trials[key]
         return {
             "trial_id": existing.get("trial_id"),
@@ -319,9 +328,31 @@ def run_trial(
             "results_path": existing.get("results_path"),
         }
 
+    duplicate_detected = False
+    if seen_param_keys is not None:
+        if seen_param_lock:
+            with seen_param_lock:
+                if key in seen_param_keys:
+                    duplicate_detected = True
+                else:
+                    seen_param_keys.add(key)
+        else:
+            if key in seen_param_keys:
+                duplicate_detected = True
+            else:
+                seen_param_keys.add(key)
+
+    trial_id = f"trial_{index:03d}"
+    if duplicate_detected:
+        return {
+            "trial_id": trial_id,
+            "parameters": trial.parameters,
+            "skipped": True,
+            "reason": "duplicate_within_run",
+        }
+
     output_dir = run_dir
     output_dir.mkdir(parents=True, exist_ok=True)
-    trial_id = f"trial_{index:03d}"
     trial_file = output_dir / f"{trial_id}.json"
     log_file = output_dir / f"{trial_id}.log"
     config_file: Path | None = None
@@ -681,14 +712,21 @@ def _run_optuna(
     )
 
     results: list[dict[str, Any]] = []
+    duplicate_streak = 0
+    max_duplicate_streak = int(os.getenv("OPTUNA_MAX_DUPLICATE_STREAK", "10"))
 
     def objective(trial):
+        nonlocal duplicate_streak
         parameters = _suggest_parameters(trial, parameters_spec)
         trial_number = trial.number + 1
         key = _trial_key(parameters)
         if key in existing_trials:
             cached = existing_trials[key]
             trial.set_user_attr("skipped", True)
+            trial.set_user_attr("duplicate", True)
+            duplicate_streak += 1
+            if duplicate_streak >= max_duplicate_streak:
+                raise optuna.exceptions.OptunaError("Duplicate parameter suggestions limit reached")
             results.append({**cached, "skipped": True})
             return float(cached.get("score", {}).get("score", 0.0) or 0.0)
 
@@ -696,8 +734,20 @@ def _run_optuna(
         results.append(payload)
 
         if payload.get("skipped"):
+            reason = payload.get("reason")
+            if reason == "duplicate_within_run":
+                duplicate_streak += 1
+                trial.set_user_attr("duplicate", True)
+                if duplicate_streak >= max_duplicate_streak:
+                    raise optuna.exceptions.OptunaError(
+                        "Duplicate parameter suggestions limit reached"
+                    )
+            else:
+                duplicate_streak = 0
             trial.set_user_attr("skipped", True)
             return float(payload.get("score", {}).get("score", 0.0) or 0.0)
+
+        duplicate_streak = 0
 
         if payload.get("error"):
             trial.set_user_attr("error", payload.get("error"))
@@ -796,6 +846,8 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
         Path(__file__).resolve().parents[3] / "results" / "hparam_search" / run_id_resolved
     ).resolve()
     existing_trials = _load_existing_trials(run_dir) if allow_resume and run_dir.exists() else {}
+    seen_param_keys: set[str] = set()
+    seen_param_lock = threading.Lock()
     run_dir.mkdir(parents=True, exist_ok=True)
     _ensure_run_metadata(run_dir, config_path.resolve(), meta, run_id_resolved)
 
@@ -822,6 +874,8 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
             max_attempts=max_attempts,
             constraints_cfg=config.get("constraints"),
             cache_enabled=True,
+            seen_param_keys=seen_param_keys,
+            seen_param_lock=seen_param_lock,
         )
 
     results: list[dict[str, Any]] = []

@@ -180,4 +180,3 @@ parameters:
       short_min_level:
         type: fixed
         value: 0.382
-

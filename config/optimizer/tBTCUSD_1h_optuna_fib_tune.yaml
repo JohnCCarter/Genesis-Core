@@ -5,7 +5,7 @@ meta:
   warmup_bars: 150
   runs:
     strategy: optuna
-    max_trials: null  # Ingen gräns - kör tills timeout nås
+    max_trials: null # Ingen gräns - kör tills timeout nås
     max_concurrent: 1
     resume: true
     optuna:
@@ -19,7 +19,7 @@ meta:
         kwargs: {}
       heartbeat_interval: 60
       heartbeat_grace_period: 180
-      timeout_seconds: 43200  # 12h budget - kommer köra tills denna tid nås
+      timeout_seconds: 230400 # ~64h budget (slut senast runt måndag 3 nov 08:20)
   use_sample_range: true
   sample_start: 2024-10-22
   sample_end: 2025-10-01
@@ -139,4 +139,3 @@ parameters:
       short_min_level:
         type: fixed
         value: 0.382
-

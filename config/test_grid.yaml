@@ -1,7 +1,0 @@
-{
-  "cfg":
-    {
-      "thresholds":
-        { "entry_conf_overall": { "type": "grid", "values": [0.4, 0.6] } },
-    },
-}

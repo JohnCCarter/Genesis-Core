@@ -1,0 +1,246 @@
+{
+  "tBTCUSD_1h_v3": {
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "buy_auc": 0.5318783630928161,
+    "sell_auc": 0.5318783630928161,
+    "score": 0.5318783630928161,
+    "samples": 8630,
+    "features": [
+      "rsi_inv_lag1",
+      "volatility_shift_ma3",
+      "bb_position_inv_ma3",
+      "rsi_vol_interaction",
+      "vol_regime",
+      "fib05_prox_atr",
+      "fib_prox_score",
+      "fib05_x_ema_slope",
+      "fib_prox_x_adx",
+      "fib05_x_rsi_inv"
+    ]
+  },
+  "tBTCUSD_1h_v3_top6_v18": {
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "buy_auc": 0.5215218295052688,
+    "sell_auc": 0.5215215603932566,
+    "score": 0.5215216949492627,
+    "samples": 8630,
+    "features": [
+      "volatility_shift_ma3",
+      "fib05_prox_atr",
+      "fib_prox_x_adx",
+      "fib_prox_score",
+      "fib05_x_rsi_inv",
+      "vol_regime"
+    ]
+  },
+  "tBTCUSD_1h_v3_top_v18": {
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "buy_auc": 0.5288963328859615,
+    "sell_auc": 0.5288963328859615,
+    "score": 0.5288963328859615,
+    "samples": 8630,
+    "features": [
+      "rsi_inv_lag1",
+      "volatility_shift_ma3",
+      "bb_position_inv_ma3",
+      "rsi_vol_interaction",
+      "vol_regime",
+      "fib05_prox_atr",
+      "fib_prox_score",
+      "fib05_x_ema_slope",
+      "fib_prox_x_adx",
+      "fib05_x_rsi_inv"
+    ]
+  },
+  "tBTCUSD_1h_v4": {
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "buy_auc": 0.5308620884900578,
+    "sell_auc": 0.5308620884900577,
+    "score": 0.5308620884900577,
+    "samples": 8630,
+    "features": [
+      "rsi_inv_lag1",
+      "volatility_shift_ma3",
+      "bb_position_inv_ma3",
+      "rsi_vol_interaction",
+      "vol_regime",
+      "fib05_prox_atr",
+      "fib_prox_score",
+      "fib05_x_ema_slope",
+      "fib_prox_x_adx",
+      "fib05_x_rsi_inv"
+    ]
+  },
+  "tBTCUSD_1h_v5": {
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "buy_auc": 0.5318783630928161,
+    "sell_auc": 0.5318783630928161,
+    "score": 0.5318783630928161,
+    "samples": 8630,
+    "features": [
+      "rsi_inv_lag1",
+      "volatility_shift_ma3",
+      "bb_position_inv_ma3",
+      "rsi_vol_interaction",
+      "vol_regime",
+      "fib05_prox_atr",
+      "fib_prox_score",
+      "fib05_x_ema_slope",
+      "fib_prox_x_adx",
+      "fib05_x_rsi_inv"
+    ]
+  },
+  "tBTCUSD_3h_v3_top6_v18": {
+    "symbol": "tBTCUSD",
+    "timeframe": "3h",
+    "buy_auc": 0.5124088988087828,
+    "sell_auc": 0.5124088988087828,
+    "score": 0.5124088988087828,
+    "samples": 2870,
+    "features": [
+      "fib_prox_x_adx",
+      "fib05_prox_atr",
+      "fib_prox_score",
+      "fib05_x_rsi_inv",
+      "fib05_x_ema_slope",
+      "volatility_shift_ma3"
+    ]
+  },
+  "tBTCUSD_3h_v3_top8_v18": {
+    "symbol": "tBTCUSD",
+    "timeframe": "3h",
+    "buy_auc": 0.4988276267093144,
+    "sell_auc": 0.4988276267093144,
+    "score": 0.4988276267093144,
+    "samples": 2870,
+    "features": [
+      "fib_prox_x_adx",
+      "fib05_prox_atr",
+      "fib_prox_score",
+      "fib05_x_rsi_inv",
+      "fib05_x_ema_slope",
+      "volatility_shift_ma3",
+      "vol_regime",
+      "bb_position_inv_ma3"
+    ]
+  },
+  "tBTCUSD_3h_v3_top_v18": {
+    "symbol": "tBTCUSD",
+    "timeframe": "3h",
+    "buy_auc": 0.5010630201292808,
+    "sell_auc": 0.5010630201292808,
+    "score": 0.5010630201292808,
+    "samples": 2870,
+    "features": [
+      "rsi_inv_lag1",
+      "volatility_shift_ma3",
+      "bb_position_inv_ma3",
+      "rsi_vol_interaction",
+      "vol_regime",
+      "fib05_prox_atr",
+      "fib_prox_score",
+      "fib05_x_ema_slope",
+      "fib_prox_x_adx",
+      "fib05_x_rsi_inv"
+    ]
+  },
+  "tBTCUSD_3h_v4": {
+    "symbol": "tBTCUSD",
+    "timeframe": "3h",
+    "buy_auc": 0.5135873743964218,
+    "sell_auc": 0.5135873743964218,
+    "score": 0.5135873743964218,
+    "samples": 2870,
+    "features": [
+      "rsi_inv_lag1",
+      "volatility_shift_ma3",
+      "bb_position_inv_ma3",
+      "rsi_vol_interaction",
+      "vol_regime",
+      "fib05_prox_atr",
+      "fib_prox_score",
+      "fib05_x_ema_slope",
+      "fib_prox_x_adx",
+      "fib05_x_rsi_inv"
+    ]
+  },
+  "tBTCUSD_6h_v3_top6_v18": {
+    "symbol": "tBTCUSD",
+    "timeframe": "6h",
+    "buy_auc": 0.4656140641256029,
+    "sell_auc": 0.4656140641256029,
+    "score": 0.4656140641256029,
+    "samples": 1430,
+    "features": [
+      "fib_prox_score",
+      "fib05_prox_atr",
+      "fib_prox_x_adx",
+      "fib05_x_rsi_inv",
+      "fib05_x_ema_slope",
+      "bb_position_inv_ma3"
+    ]
+  },
+  "tBTCUSD_6h_v3_top8_v18": {
+    "symbol": "tBTCUSD",
+    "timeframe": "6h",
+    "buy_auc": 0.46325940288155365,
+    "sell_auc": 0.46325940288155365,
+    "score": 0.46325940288155365,
+    "samples": 1430,
+    "features": [
+      "fib_prox_score",
+      "fib05_prox_atr",
+      "fib_prox_x_adx",
+      "fib05_x_rsi_inv",
+      "rsi_inv_lag1",
+      "rsi_vol_interaction",
+      "bb_position_inv_ma3",
+      "fib05_x_ema_slope"
+    ]
+  },
+  "tBTCUSD_6h_v3_top_v18": {
+    "symbol": "tBTCUSD",
+    "timeframe": "6h",
+    "buy_auc": 0.48107995207919546,
+    "sell_auc": 0.4810799520791955,
+    "score": 0.4810799520791955,
+    "samples": 1430,
+    "features": [
+      "rsi_inv_lag1",
+      "volatility_shift_ma3",
+      "bb_position_inv_ma3",
+      "rsi_vol_interaction",
+      "vol_regime",
+      "fib05_prox_atr",
+      "fib_prox_score",
+      "fib05_x_ema_slope",
+      "fib_prox_x_adx",
+      "fib05_x_rsi_inv"
+    ]
+  },
+  "tBTCUSD_6h_v4": {
+    "symbol": "tBTCUSD",
+    "timeframe": "6h",
+    "buy_auc": 0.5200491030612567,
+    "sell_auc": 0.5200491030612566,
+    "score": 0.5200491030612566,
+    "samples": 1430,
+    "features": [
+      "rsi_inv_lag1",
+      "volatility_shift_ma3",
+      "bb_position_inv_ma3",
+      "rsi_vol_interaction",
+      "vol_regime",
+      "fib05_prox_atr",
+      "fib_prox_score",
+      "fib05_x_ema_slope",
+      "fib_prox_x_adx",
+      "fib05_x_rsi_inv"
+    ]
+  }
+}

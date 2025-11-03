@@ -45,35 +45,65 @@ def get_6h_config():
 
 
 def get_1h_config():
-    """1h timeframe config - POOR performance, anpassa för bättre resultat."""
+    """1h timeframe config – champion baseline."""
     return {
         "thresholds": {
-            "entry_conf_overall": 0.40,  # OPTIMAL: Bästa resultat
+            "entry_conf_overall": 0.35,
             "regime_proba": {
-                "ranging": 0.8,  # MYCKET HÖJD: Undvik ranging
-                "bull": 0.7,  # HÖJD: Mer selektiv
-                "bear": 0.7,  # HÖJD: Mer selektiv
-                "balanced": 0.8,  # HÖJD: Mer selektiv
+                "ranging": 0.8,
+                "bull": 0.7,
+                "bear": 0.7,
+                "balanced": 0.7,
+            },
+            "signal_adaptation": {
+                "atr_period": 14,
+                "zones": {
+                    "low": {
+                        "entry_conf_overall": 0.36,
+                        "regime_proba": {
+                            "ranging": 0.7,
+                            "bull": 0.6,
+                            "bear": 0.6,
+                            "balanced": 0.7,
+                        },
+                    },
+                    "mid": {
+                        "entry_conf_overall": 0.42,
+                        "regime_proba": {
+                            "ranging": 0.8,
+                            "bull": 0.7,
+                            "bear": 0.7,
+                            "balanced": 0.8,
+                        },
+                    },
+                    "high": {
+                        "entry_conf_overall": 0.48,
+                        "regime_proba": {
+                            "ranging": 0.88,
+                            "bull": 0.78,
+                            "bear": 0.78,
+                            "balanced": 0.88,
+                        },
+                    },
+                },
             },
         },
         "risk": {
             "risk_map": [
-                [0.50, 0.03],  # OPTIMAL: Bästa resultat
-                [0.60, 0.05],
-                [0.70, 0.08],
-                [0.80, 0.10],
-                [0.90, 0.12],
+                [0.45, 0.015],
+                [0.55, 0.025],
+                [0.65, 0.035],
             ]
         },
         "exit": {
             "enabled": True,
-            "exit_conf_threshold": 0.5,  # HÖJD: Snabbare exits
-            "max_hold_bars": 25,  # KORTAD: Snabbare exits
+            "exit_conf_threshold": 0.4,
+            "max_hold_bars": 20,
             "regime_aware_exits": True,
         },
         "gates": {
-            "cooldown_bars": 2,  # BALANSERAD: Minska övertrading
-            "hysteresis_steps": 3,  # BALANSERAD: Mer stabil
+            "cooldown_bars": 2,
+            "hysteresis_steps": 3,
         },
         "htf_exit_config": {
             "enable_partials": True,
@@ -84,6 +114,22 @@ def get_1h_config():
             "fib_threshold_atr": 0.7,  # STÖRRE: Mindre känslig
             "trail_atr_multiplier": 2.5,  # STÖRRE: Bättre trailing
             "swing_update_strategy": "fixed",
+        },
+        "htf_fib": {
+            "entry": {
+                "enabled": True,
+                "tolerance_atr": 0.5,
+                "long_max_level": 0.618,
+                "short_min_level": 0.382,
+            }
+        },
+        "ltf_fib": {
+            "entry": {
+                "enabled": True,
+                "tolerance_atr": 0.5,
+                "long_max_level": 0.618,
+                "short_min_level": 0.382,
+            }
         },
         "warmup_bars": 150,  # ÖKAD: Mer data för bättre signals
     }

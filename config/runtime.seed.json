@@ -2,11 +2,84 @@
   "version": 0,
   "cfg": {
     "thresholds": {
-      "entry_conf_overall": 0.7,
-      "regime_proba": {"balanced": 0.58}
+      "entry_conf_overall": 0.35,
+      "regime_proba": {
+        "ranging": 0.8,
+        "bull": 0.7,
+        "bear": 0.7,
+        "balanced": 0.7
+      },
+      "signal_adaptation": {
+        "atr_period": 14,
+        "zones": {
+          "low": {
+            "entry_conf_overall": 0.36,
+            "regime_proba": {
+              "ranging": 0.7,
+              "bull": 0.6,
+              "bear": 0.6,
+              "balanced": 0.7
+            }
+          },
+          "mid": {
+            "entry_conf_overall": 0.42,
+            "regime_proba": {
+              "ranging": 0.8,
+              "bull": 0.7,
+              "bear": 0.7,
+              "balanced": 0.8
+            }
+          },
+          "high": {
+            "entry_conf_overall": 0.48,
+            "regime_proba": {
+              "ranging": 0.88,
+              "bull": 0.78,
+              "bear": 0.78,
+              "balanced": 0.88
+            }
+          }
+        }
+      }
     },
-    "gates": {"hysteresis_steps": 2, "cooldown_bars": 0},
-    "risk": {"risk_map": [[0.6, 0.02], [0.7, 0.03], [0.8, 0.04], [0.9, 0.05]]},
-    "ev": {"R_default": 1.8}
+    "gates": {
+      "hysteresis_steps": 3,
+      "cooldown_bars": 2
+    },
+    "risk": {
+      "risk_map": [
+        [0.45, 0.015],
+        [0.55, 0.025],
+        [0.65, 0.035]
+      ]
+    },
+    "exit": {
+      "enabled": true,
+      "exit_conf_threshold": 0.4,
+      "max_hold_bars": 20,
+      "regime_aware_exits": true,
+      "stop_loss_pct": 0.02,
+      "take_profit_pct": 0.05,
+      "trailing_stop_enabled": false,
+      "trailing_stop_pct": 0.015
+    },
+    "multi_timeframe": {
+      "use_htf_block": true,
+      "allow_ltf_override": false,
+      "ltf_override_threshold": 0.85,
+      "ltf_override_adaptive": {
+        "enabled": false,
+        "window": 120,
+        "percentile": 0.85,
+        "min_history": 30,
+        "min_floor": null,
+        "max_ceiling": null,
+        "fallback_threshold": null,
+        "regime_multipliers": {}
+      }
+    },
+    "ev": {
+      "R_default": 1.8
+    }
   }
 }

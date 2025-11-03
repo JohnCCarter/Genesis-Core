@@ -57,6 +57,14 @@ def check_study_resume(
         return True, "[WARN] Storage eller study_name saknas"
 
     if not allow_resume:
+        if storage and storage.startswith("sqlite:///"):
+            db_path = Path(storage.replace("sqlite:///", ""))
+            if db_path.exists():
+                return (
+                    False,
+                    f"[FAIL] Resume=false men storage-fil finns redan: {db_path}. "
+                    "Byt filnamn eller ta bort den för att undvika återanvändning.",
+                )
         return True, "[OK] Resume=false - ny study kommer skapas"
 
     try:
@@ -102,6 +110,31 @@ def check_timeout_config(max_trials: Any, timeout_seconds: Any) -> tuple[bool, s
             )
 
     return True, " | ".join(issues)
+
+
+def check_sampler_settings(optuna_cfg: dict[str, Any]) -> tuple[bool, str]:
+    sampler = optuna_cfg.get("sampler") or {}
+    kwargs = sampler.get("kwargs") or {}
+    messages = []
+
+    n_startup = kwargs.get("n_startup_trials")
+    if n_startup is None:
+        messages.append(
+            "[WARN] n_startup_trials saknas i sampler.kwargs – TPE kan exploatera för tidigt"
+        )
+    elif int(n_startup) < 15:
+        messages.append(
+            f"[WARN] n_startup_trials={n_startup} är lågt – överväg >=15 för bättre exploration"
+        )
+    else:
+        messages.append(f"[OK] n_startup_trials={n_startup}")
+
+    if "n_ei_candidates" in kwargs:
+        messages.append(f"[OK] n_ei_candidates={kwargs['n_ei_candidates']}")
+    else:
+        messages.append("[WARN] n_ei_candidates saknas – använder Optunas default")
+
+    return True, " | ".join(messages)
 
 
 def check_parameters_valid(parameters: dict[str, Any]) -> tuple[bool, str]:
@@ -246,32 +279,37 @@ def main() -> int:
         all_ok = False
     print()
 
-    # 4. Timeout/max_trials
+    # 4. Sampler-inställningar
+    ok, msg = check_sampler_settings(optuna_cfg)
+    print(f"4. Sampler: {msg}")
+    print()
+
+    # 5. Timeout/max_trials
     max_trials = runs_cfg.get("max_trials")
     timeout_seconds = optuna_cfg.get("timeout_seconds")
     ok, msg = check_timeout_config(max_trials, timeout_seconds)
-    print(f"4. Timeout/max_trials: {msg}")
+    print(f"5. Timeout/max_trials: {msg}")
     print()
 
-    # 5. Parametrar
+    # 6. Parametrar
     ok, msg = check_parameters_valid(parameters)
-    print(f"5. Parametrar: {msg}")
+    print(f"6. Parametrar: {msg}")
     if not ok:
         all_ok = False
     print()
 
-    # 6. Snapshot & Data
+    # 7. Snapshot & Data
     snapshot_id = meta.get("snapshot_id")
     symbol = meta.get("symbol", "tBTCUSD")
     timeframe = meta.get("timeframe", "1h")
     ok, msg = check_snapshot_exists(snapshot_id, symbol, timeframe)
-    print(f"6. Snapshot & Data: {msg}")
+    print(f"7. Snapshot & Data: {msg}")
     if not ok:
         all_ok = False
     print()
 
-    # 7. Validering mot champion
-    print("7. Champion-validering:")
+    # 8. Validering mot champion
+    print("8. Champion-validering:")
     try:
         from scripts.validate_optimizer_config import validate_config
 

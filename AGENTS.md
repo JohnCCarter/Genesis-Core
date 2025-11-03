@@ -40,10 +40,12 @@ python scripts/validate_optimizer_config.py config/optimizer/<config>.yaml
 
 - [ ] **Preflight-check**: Kör `preflight_optuna_check.py` → måste returnera 0
   - Optuna installerat
-  - Storage skrivbart
+  - Storage skrivbart och **ingen** tidigare DB-fil när `resume=false`
   - Study resume fungerar (om resume=true)
+  - Sampler har `n_startup_trials ≥ 15` + `n_ei_candidates` satt
   - Timeout/max_trials korrekt konfigurerat
   - Parametrar valid
+  - Gamla run-cacher flyttade/arkiverade innan start (töm `_cache/`)
 - [ ] **Champion-validering**: Kör `validate_optimizer_config.py` → måste returnera 0
   - Championens partial_1_pct och partial_2_pct finns i sökrymden eller är fixerade korrekt
   - Championens signal_adaptation hanteras (antingen i sökrymden eller medvetet utelämnad)
@@ -251,3 +253,7 @@ pip install -e .[dev,ml]
 - 2025-10-31 16:20: Timeout i `config/optimizer/tBTCUSD_1h_optuna_fib_tune.yaml` justerad till 230400s (~64h) så att körningen stannar senast runt måndag 3 nov 08:20; preflight och champion-validering körda igen (endast väntad timeout-varning).
 - 2025-10-31 16:45: Samtliga `trial_*.log` flyttade till `results/hparam_search/_log_archive/20251031_preweekend/` för ren loggmiljö inför helgkörningen.
 - 2025-11-03 08:05: Helgkörningen `run_20251101_weekend` avbruten p.g.a. cache-/resume-loop (identiska -80.29-score). Katalogen och `optuna_tBTCUSD_1h_fib_tune.db` arkiverade under `results/hparam_search/_archive/20251103_failed_resume/` för forensik.
+- 2025-11-03 10:45: Phase-7d förberedelse – `config/optimizer/tBTCUSD_1h_optuna_fib_tune.yaml` uppdaterad med ny DB (`results/hparam_search/storage/optuna_tBTCUSD_1h_fib_tune_phase7d.db`), `resume=false`, bredare fib-/override-intervall samt TPE `n_startup_trials=25`, `n_ei_candidates=48`.
+- 2025-11-03 10:50: Samtliga `results/hparam_search/run_*/_cache` flyttade till `results/hparam_search/_archive/20251103_trimmed_runs/cache_backup_phase7d/` för att undvika att nästa Optuna-run återanvänder gamla backtester.
+- 2025-11-03 10:55: `scripts/preflight_optuna_check.py` utökad – varnar om DB-fil redan finns när `resume=false` samt kontrollerar sampler-kwargs. Ny preflight inkluderar kontroll av cachetömning och `n_startup_trials`.
+- 2025-11-03 11:00: Dedikerad storage-mapp `results/hparam_search/storage/` skapad så kommande DB-filer isoleras per kampanj.

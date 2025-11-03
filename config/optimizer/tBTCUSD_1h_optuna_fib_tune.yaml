@@ -7,13 +7,15 @@ meta:
     strategy: optuna
     max_trials: null # Ingen gräns - kör tills timeout nås
     max_concurrent: 1
-    resume: true
+    resume: false
     optuna:
-      storage: sqlite:///optuna_tBTCUSD_1h_fib_tune.db
-      study_name: tBTCUSD_1h_fib_tune
+      storage: sqlite:///results/hparam_search/storage/optuna_tBTCUSD_1h_fib_tune_phase7d.db
+      study_name: tBTCUSD_1h_fib_tune_phase7d
       sampler:
         name: tpe
-        kwargs: {}
+        kwargs:
+          n_startup_trials: 25
+          n_ei_candidates: 48
       pruner:
         name: median
         kwargs: {}
@@ -28,9 +30,9 @@ parameters:
   thresholds:
     entry_conf_overall:
       type: float
-      low: 0.35
-      high: 0.55
-      step: 0.05
+      low: 0.3
+      high: 0.65
+      step: 0.025
     signal_adaptation:
       type: fixed
       value:
@@ -66,23 +68,23 @@ parameters:
   exit:
     exit_conf_threshold:
       type: float
-      low: 0.35
-      high: 0.5
-      step: 0.05
+      low: 0.32
+      high: 0.52
+      step: 0.02
     max_hold_bars:
       type: grid
       values: [18, 20]
   htf_exit_config:
     fib_threshold_atr:
       type: float
-      low: 0.6
-      high: 0.75
+      low: 0.55
+      high: 0.8
       step: 0.05
     trail_atr_multiplier:
       type: float
-      low: 1.8
-      high: 2.6
-      step: 0.1
+      low: 1.7
+      high: 2.8
+      step: 0.05
     enable_partials:
       type: fixed
       value: true
@@ -111,8 +113,8 @@ parameters:
         value: pass
       tolerance_atr:
         type: float
-        low: 0.3
-        high: 0.7
+        low: 0.25
+        high: 0.75
         step: 0.05
       long_min_level:
         type: fixed
@@ -130,12 +132,79 @@ parameters:
         value: pass
       tolerance_atr:
         type: float
-        low: 0.3
-        high: 0.7
+        low: 0.25
+        high: 0.75
         step: 0.05
       long_max_level:
-        type: fixed
-        value: 0.786
+        type: float
+        low: 0.764
+        high: 0.872
+        step: 0.012
       short_min_level:
+        type: float
+        low: 0.276
+        high: 0.382
+        step: 0.02
+      override_confidence:
+        enabled:
+          type: fixed
+          value: true
+        min:
+          type: float
+          low: 0.3
+          high: 0.55
+          step: 0.025
+        max:
+          type: float
+          low: 0.6
+          high: 0.85
+          step: 0.025
+  multi_timeframe:
+    use_htf_block:
+      type: fixed
+      value: true
+    allow_ltf_override:
+      type: grid
+      values: [false, true]
+    ltf_override_threshold:
+      type: float
+      low: 0.7
+      high: 0.9
+      step: 0.025
+    ltf_override_adaptive:
+      enabled:
+        type: grid
+        values: [false, true]
+      window:
+        type: int
+        low: 160
+        high: 320
+        step: 20
+      percentile:
+        type: float
+        low: 0.85
+        high: 0.95
+        step: 0.02
+      min_history:
         type: fixed
-        value: 0.382
+        value: 120
+      min_floor:
+        type: float
+        low: 0.55
+        high: 0.7
+        step: 0.05
+      max_ceiling:
+        type: float
+        low: 0.9
+        high: 0.98
+        step: 0.02
+      fallback_threshold:
+        type: float
+        low: 0.75
+        high: 0.85
+        step: 0.02
+      regime_multipliers:
+        type: fixed
+        value:
+          bull: 0.95
+          bear: 1.05

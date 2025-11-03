@@ -40,6 +40,8 @@
 - Deduplicering av trials (2025-11-03): 15 duplicerade trials raderade från `run_20251030_155323` (identiska parametrar och score 114.42). Totalt 136 unika trials kvar i nyckelrunnarna (ner från 151). Varje trial representerar nu unika parametrar.
 - `run_20251030_155323` (Optuna fib-grid): trimmas ytterligare till 10 topp-trials + best-trial (`trial_008`), resterande 94 trials + configs + `_cache/` flyttade till `results/hparam_search/_archive/20251103_trimmed_runs/run_20251030_155323_trimmed/`.
 - Övriga resultatkataloger (trades, walk_forward, models) ej ändrade.
+- 2025-11-03 10:50: Samtliga `results/hparam_search/run_*/_cache` flyttade till `results/hparam_search/_archive/20251103_trimmed_runs/cache_backup_phase7d/` för att förhindra oavsiktlig cache-återanvändning i kommande Optuna-runner.
+- 2025-11-03 11:00: Ny storage-mapp `results/hparam_search/storage/` skapad för framtida Optuna-databaser (`optuna_tBTCUSD_1h_fib_tune_phase7d.db` m.fl.).
 
 (Se `archive/2025-11-03/` för full katalogstruktur.)
 

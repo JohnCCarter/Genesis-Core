@@ -10,6 +10,28 @@ Action = Literal["LONG", "SHORT", "NONE"]
 _LOG = get_logger(__name__)
 
 
+def _summarize_fib_debug(data: Any) -> dict[str, Any]:
+    if not isinstance(data, dict):
+        return {"status": "missing"}
+    summary = {
+        "reason": data.get("reason"),
+        "tolerance": data.get("tolerance"),
+        "level_price": data.get("level_price"),
+        "config": data.get("config"),
+    }
+    override = data.get("override")
+    if isinstance(override, dict):
+        summary["override"] = {
+            "source": override.get("source"),
+            "confidence": override.get("confidence"),
+            "threshold": override.get("threshold"),
+        }
+    targets = data.get("targets")
+    if isinstance(targets, list):
+        summary["targets"] = targets
+    return summary
+
+
 def _compute_percentile(values: list[float], q: float) -> float:
     if not values:
         raise ValueError("values in percentile computation must not be empty")
@@ -671,6 +693,12 @@ def decide(
             **ltf_base_debug,
             "reason": "PASS",
         }
+
+    state_out["fib_gate_summary"] = {
+        "candidate": candidate,
+        "htf": _summarize_fib_debug(state_out.get("htf_fib_entry_debug")),
+        "ltf": _summarize_fib_debug(state_out.get("ltf_fib_entry_debug")),
+    }
 
     # 7) Confidence‑gate (kräv över entry_conf_overall för vald riktning)
     if not confidence or not isinstance(confidence, dict):

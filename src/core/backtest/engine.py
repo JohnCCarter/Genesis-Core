@@ -336,6 +336,16 @@ class BacktestEngine:
 
                         # Initialize exit context for new position
                         self._initialize_position_exit_context(result, meta, close_price, timestamp)
+                        decision_meta = meta.get("decision") or {}
+                        state_out = decision_meta.get("state_out") or {}
+                        entry_debug = {
+                            "timestamp": timestamp.isoformat(),
+                            "summary": state_out.get("fib_gate_summary"),
+                            "htf": state_out.get("htf_fib_entry_debug"),
+                            "ltf": state_out.get("ltf_fib_entry_debug"),
+                            "reasons": decision_meta.get("reasons"),
+                        }
+                        self.position_tracker.log_entry_fib_debug(entry_debug)
 
                         if verbose:
                             print(
@@ -390,6 +400,7 @@ class BacktestEngine:
             return None
 
         position = self.position_tracker.position
+        decision_state = (meta.get("decision") or {}).get("state_out") or {}
 
         # Get exit config
         exit_cfg = configs.get("cfg", {}).get("exit", {})
@@ -438,6 +449,34 @@ class BacktestEngine:
         partial_break_even = exit_cfg.get("partial_break_even", False)
         partial_break_even_offset = exit_cfg.get("partial_break_even_offset", break_even_offset)
 
+        if exit_actions:
+            meaningful_actions = [
+                {
+                    "action": action.action,
+                    "size": action.size,
+                    "stop_price": action.stop_price,
+                    "reason": action.reason,
+                }
+                for action in exit_actions
+                if action.action not in {"DEBUG", "TRAIL_UPDATE"}
+            ]
+            if meaningful_actions:
+                exit_debug = {
+                    "timestamp": timestamp.isoformat(),
+                    "price": current_price,
+                    "actions": meaningful_actions,
+                    "position_side": position.side,
+                    "current_atr": current_atr,
+                    "fib_gate_summary": decision_state.get("fib_gate_summary"),
+                    "htf_entry_debug": decision_state.get("htf_fib_entry_debug"),
+                    "ltf_entry_debug": decision_state.get("ltf_fib_entry_debug"),
+                    "htf_exit_config": {
+                        "fib_threshold_atr": self.htf_exit_config.get("fib_threshold_atr"),
+                        "trail_atr_multiplier": self.htf_exit_config.get("trail_atr_multiplier"),
+                    },
+                }
+                self.position_tracker.append_exit_fib_debug(exit_debug)
+
         for action in exit_actions:
             if action.action == "PARTIAL":
                 # Execute partial exit
@@ -481,6 +520,15 @@ class BacktestEngine:
 
             elif action.action == "FULL_EXIT":
                 # Full exit - return reason to trigger standard exit logic
+                self.position_tracker.append_exit_fib_debug(
+                    {
+                        "timestamp": timestamp.isoformat(),
+                        "price": current_price,
+                        "reason": action.reason,
+                        "source": "HTF_FULL_EXIT",
+                        "fib_gate_summary": decision_state.get("fib_gate_summary"),
+                    }
+                )
                 return action.reason
 
         # Check if trail stop hit (from previous bars)
@@ -492,10 +540,30 @@ class BacktestEngine:
                 or (position.side == "SHORT" and current_price >= position.trail_stop)
             )
         ):
+            self.position_tracker.append_exit_fib_debug(
+                {
+                    "timestamp": timestamp.isoformat(),
+                    "price": current_price,
+                    "reason": "TRAIL_STOP",
+                    "source": "TRAIL_STOP",
+                    "fib_gate_summary": decision_state.get("fib_gate_summary"),
+                }
+            )
             return "TRAIL_STOP"
 
         # Fallback to traditional exit conditions for safety
-        return self._check_traditional_exit_conditions(current_price, result, configs)
+        fallback_reason = self._check_traditional_exit_conditions(current_price, result, configs)
+        if fallback_reason:
+            self.position_tracker.append_exit_fib_debug(
+                {
+                    "timestamp": timestamp.isoformat(),
+                    "price": current_price,
+                    "reason": fallback_reason,
+                    "source": "TRADITIONAL_EXIT",
+                    "fib_gate_summary": decision_state.get("fib_gate_summary"),
+                }
+            )
+        return fallback_reason
 
     def _check_traditional_exit_conditions(
         self,
@@ -567,6 +635,8 @@ class BacktestEngine:
                     "remaining_size": t.remaining_size,
                     "position_id": t.position_id,
                     "entry_reasons": t.entry_reasons,
+                    "entry_fib_debug": t.entry_fib_debug,
+                    "exit_fib_debug": t.exit_fib_debug,
                 }
                 for t in self.position_tracker.trades
             ],

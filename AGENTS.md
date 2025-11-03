@@ -258,3 +258,10 @@ pip install -e .[dev,ml]
 - 2025-11-03 10:55: `scripts/preflight_optuna_check.py` utökad – varnar om DB-fil redan finns när `resume=false` samt kontrollerar sampler-kwargs. Ny preflight inkluderar kontroll av cachetömning och `n_startup_trials`.
 - 2025-11-03 11:00: Dedikerad storage-mapp `results/hparam_search/storage/` skapad så kommande DB-filer isoleras per kampanj.
 - 2025-11-03 11:05: `src/core/optimizer/runner.py` spårar nu param-signaturer per körning och hoppar över Optuna-förslag som upprepas fler än 10 gånger i rad (stoppar med fel om gränsen nås).
+
+## 19. HTF-exit tuning 3 nov 2025
+
+- Nya temp-profilen `config/tmp/balanced_htf_tune.json` höjde `fib_threshold_atr` till 0.85 och sänkte `trail_atr_multiplier` till 1.6. Backtest (`tBTCUSD_1h_20251103_161008.json`) gav +5.42 %, PF 1.24 med 3/6 rena HTF-exits (endast 2 fallback).
+- Baseline (`config/tmp/champion_base.json`) loggade 10 HTF, 8 HTF+fallback och 4 fallback-exits på +3.10 % netto – fallback används fortfarande för slutstängningar.
+- Aggressiv profil (`config/tmp/aggressive.json`) gav 22 rena fallback-closer och max DD 10.9 % → aggressiva toleranser överlastar fallback-logiken.
+- Rekommendation: öppna nästa grid/Optuna över `fib_threshold_atr` 0.80–0.90, `trail_atr_multiplier` 1.4–1.8 samt HTF/LTF toleranser, och tracka fallback-andelen (<40 %) som guardrail.

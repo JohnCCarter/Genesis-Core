@@ -6,6 +6,7 @@ Tracks open positions, calculates PnL, and manages trade lifecycle.
 
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any
 
 
 @dataclass
@@ -33,6 +34,8 @@ class Position:
     exit_ctx: dict | None = (
         None  # {"swing_id": str, "fib": {"0.382":..., "0.5":..., "0.618":...}, "swing_bounds": (low, high)}
     )
+    entry_fib_debug: dict[str, Any] = field(default_factory=dict)
+    exit_fib_log: list[dict[str, Any]] = field(default_factory=list)
 
     @property
     def size(self) -> float:
@@ -101,6 +104,8 @@ class Trade:
     remaining_size: float = 0.0  # Size remaining after this exit (for partials)
     position_id: str = ""  # Link partial exits to same position
     entry_reasons: list[str] = field(default_factory=list)
+    entry_fib_debug: dict[str, Any] | None = None
+    exit_fib_debug: list[dict[str, Any]] = field(default_factory=list)
 
 
 class PositionTracker:
@@ -287,6 +292,17 @@ class PositionTracker:
             position_id=position_id,
             entry_reasons=list(self.position.entry_reasons or []),
         )
+        final_debug = {
+            "timestamp": timestamp.isoformat(),
+            "reason": reason,
+            "pnl_pct": total_pnl_pct,
+            "remaining_size": 0.0,
+        }
+        self.position.exit_fib_log.append(final_debug)
+        if self.position.entry_fib_debug:
+            trade.entry_fib_debug = dict(self.position.entry_fib_debug)
+        if self.position.exit_fib_log:
+            trade.exit_fib_debug = list(self.position.exit_fib_log)
         self.trades.append(trade)
 
         # Clear position
@@ -349,6 +365,16 @@ class PositionTracker:
         # Record partial exit in position
         self.position.partial_exits.append((actual_close_size, effective_price, reason, timestamp))
 
+        self.position.exit_fib_log.append(
+            {
+                "timestamp": timestamp.isoformat(),
+                "reason": reason,
+                "action": "PARTIAL",
+                "close_size": actual_close_size,
+                "remaining_size": remaining_size,
+            }
+        )
+
         # Generate position ID for linking partial exits
         position_id = f"{self.position.symbol}_{self.position.entry_time.isoformat()}"
 
@@ -370,6 +396,10 @@ class PositionTracker:
             position_id=position_id,
             entry_reasons=list(self.position.entry_reasons or []),
         )
+        if self.position.entry_fib_debug:
+            trade.entry_fib_debug = dict(self.position.entry_fib_debug)
+        if self.position.exit_fib_log:
+            trade.exit_fib_debug = list(self.position.exit_fib_log)
 
         self.trades.append(trade)
 
@@ -522,3 +552,22 @@ class PositionTracker:
             "max_capital": self.max_capital,
             "min_capital": self.min_capital,
         }
+
+    def log_entry_fib_debug(self, debug: dict[str, Any] | None) -> None:
+        if self.position is None:
+            return
+        self.position.entry_fib_debug = dict(debug or {})
+
+    def append_exit_fib_debug(self, debug: dict[str, Any] | None) -> None:
+        if self.position is None or debug is None:
+            return
+        payload = dict(debug)
+        last = self.position.exit_fib_log[-1] if self.position.exit_fib_log else None
+        if last is not None:
+            last_actions = last.get("actions") if isinstance(last, dict) else None
+            new_actions = payload.get("actions") if isinstance(payload, dict) else None
+            if new_actions and new_actions == last_actions:
+                return
+        if last == payload:
+            return
+        self.position.exit_fib_log.append(payload)

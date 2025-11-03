@@ -39,11 +39,20 @@
 - `results/walk_forward/` äldre körningar flyttade till `results/walk_forward/archive/` (tom katalog efter rensning 2025-11-03).
 - Deduplicering av trials (2025-11-03): 15 duplicerade trials raderade från `run_20251030_155323` (identiska parametrar och score 114.42). Totalt 136 unika trials kvar i nyckelrunnarna (ner från 151). Varje trial representerar nu unika parametrar.
 - `run_20251030_155323` (Optuna fib-grid): trimmas ytterligare till 10 topp-trials + best-trial (`trial_008`), resterande 94 trials + configs + `_cache/` flyttade till `results/hparam_search/_archive/20251103_trimmed_runs/run_20251030_155323_trimmed/`.
+- `config/tmp/` omstrukturerad: fyra profiler (`conservative.json`, `balanced.json`, `trend_follow.json`, `aggressive.json`) baserade på championen med justerade trösklar/riskkartor för snabb A/B-test utan koddiffar; `champion_base.json` speglar nu ren championkonfig.
 - Övriga resultatkataloger (trades, walk_forward, models) ej ändrade.
 - 2025-11-03 10:50: Samtliga `results/hparam_search/run_*/_cache` flyttade till `results/hparam_search/_archive/20251103_trimmed_runs/cache_backup_phase7d/` för att förhindra oavsiktlig cache-återanvändning i kommande Optuna-runner.
 - 2025-11-03 11:00: Ny storage-mapp `results/hparam_search/storage/` skapad för framtida Optuna-databaser (`optuna_tBTCUSD_1h_fib_tune_phase7d.db` m.fl.).
+- 2025-11-03 13:20: Champion-parametrarna körda om i nuvarande kodbas (`results/backtests/tBTCUSD_1h_20251103_131131.json`, `results/backtests/tBTCUSD_1h_20251103_131922.json`) för jämförelsestandard; notera att utfallet skiljer sig från 2025-10-23 p.g.a. nya strategimoduler.
 
 (Se `archive/2025-11-03/` för full katalogstruktur.)
+
+## HTF-exit analys 2025-11-03 (balanserad vs champion vs aggressiv)
+
+- `config/tmp/balanced_htf_tune.json` (`results/backtests/tBTCUSD_1h_20251103_161008.json`): total return +5.42 %, PF 1.24, 6 trades. HTF träffade 3 av 6 trades (1 kombinerad med fallback), endast 2 rena fallback-exits – höjt `fib_threshold_atr` 0.85 och `trail_atr_multiplier` 1.6 gav fler nivåträffar.
+- `config/tmp/champion_base.json` (`results/backtests/tBTCUSD_1h_20251103_161554.json`): total return +3.10 %, PF 1.49, 22 trades. Exit-mix 10 HTF, 8 HTF+fallback, 4 fallback – baseline lutar fortfarande på fallback för slutlig stängning.
+- `config/tmp/aggressive.json` (`results/backtests/tBTCUSD_1h_20251103_162010.json`): total return +1.52 %, PF 1.46, 42 trades. 22 rena fallback-exits och 9 HTF+fallback → aggressiv tolerans driver fallback-beroende och max drawdown 10.9 %.
+- Rekommendation: ta med `fib_threshold_atr`, `trail_atr_multiplier` samt HTF/LTF toleranser i nästa grid/Optuna-run och tracka andel fallback-exits (< 40 % mål) innan promotion.
 
 ## Raderade artefakter
 

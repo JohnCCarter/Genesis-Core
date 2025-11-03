@@ -130,10 +130,10 @@ def _normalize_for_sig(x: Any, precision: int = 10) -> Any:
 
 
 def param_signature(params: dict[str, Any], precision: int = 10) -> str:
-    """Create a stable SHA1 signature for a parameter dict (nested ok)."""
+    """Create a stable SHA256 signature for a parameter dict (nested ok)."""
     norm = _normalize_for_sig(params, precision)
     blob = json.dumps(norm, sort_keys=True, separators=(",", ":"))
-    return hashlib.sha1(blob.encode()).hexdigest()
+    return hashlib.sha256(blob.encode()).hexdigest()
 
 
 # --- Persistent dedup backend -----------------------------------------------
@@ -323,7 +323,7 @@ def env_fingerprint(extra: dict[str, Any] | None = None) -> dict[str, Any]:
 
 
 def dataframe_sha1(df) -> str:
-    """Compute a quick SHA1 over a pandas DataFrame index+values (float-safe)."""
+    """Compute a quick SHA256 over a pandas DataFrame index+values (float-safe)."""
     # Lazy import to avoid pandas hard dep
     import pandas as pd  # type: ignore
 
@@ -331,7 +331,7 @@ def dataframe_sha1(df) -> str:
         raise TypeError("dataframe_sha1 expects a pandas.DataFrame")
     # Ensure stable bytes: use numpy view
     arr = np.ascontiguousarray(df.to_numpy(dtype=float))
-    h = hashlib.sha1()
+    h = hashlib.sha256()
     h.update(arr.tobytes())
     # Index and columns add to identity
     h.update(pd.util.hash_pandas_object(df.index, index=True).values.tobytes())

@@ -7,12 +7,13 @@ import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
-from core.optimizer.runner import run_optimizer
-from scripts.optimizer import summarize_run
-
 ROOT = Path(__file__).resolve().parents[1]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+SRC = ROOT / "src"
+
+for path in (ROOT, SRC):
+    candidate = str(path)
+    if candidate not in sys.path:
+        sys.path.insert(0, candidate)
 
 
 def _default_run_id() -> str:
@@ -21,6 +22,9 @@ def _default_run_id() -> str:
 
 
 def main() -> int:
+    from core.optimizer.runner import run_optimizer
+    from scripts.optimizer import summarize_run
+
     parser = argparse.ArgumentParser(
         description="Snabb grid för att analysera LTF-confidence vs HTF-gate"
     )

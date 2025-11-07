@@ -1,41 +1,41 @@
 {
   "cfg": {
     "thresholds": {
-      "entry_conf_overall": 0.3,
+      "entry_conf_overall": 0.36,
       "regime_proba": {
-        "ranging": 0.72,
-        "bull": 0.65,
-        "bear": 0.65,
-        "balanced": 0.68
+        "ranging": 0.79,
+        "bull": 0.7,
+        "bear": 0.7,
+        "balanced": 0.74
       },
       "signal_adaptation": {
         "atr_period": 14,
         "zones": {
           "low": {
-            "entry_conf_overall": 0.32,
+            "entry_conf_overall": 0.35,
             "regime_proba": {
-              "ranging": 0.64,
-              "bull": 0.6,
-              "bear": 0.6,
-              "balanced": 0.7
+              "ranging": 0.71,
+              "bull": 0.63,
+              "bear": 0.63,
+              "balanced": 0.71
             }
           },
           "mid": {
-            "entry_conf_overall": 0.38,
+            "entry_conf_overall": 0.41,
             "regime_proba": {
-              "ranging": 0.72,
-              "bull": 0.64,
-              "bear": 0.64,
-              "balanced": 0.72
+              "ranging": 0.79,
+              "bull": 0.69,
+              "bear": 0.69,
+              "balanced": 0.79
             }
           },
           "high": {
-            "entry_conf_overall": 0.44,
+            "entry_conf_overall": 0.47,
             "regime_proba": {
-              "ranging": 0.8,
-              "bull": 0.72,
-              "bear": 0.72,
-              "balanced": 0.8
+              "ranging": 0.87,
+              "bull": 0.77,
+              "bear": 0.77,
+              "balanced": 0.87
             }
           }
         }
@@ -43,24 +43,15 @@
     },
     "risk": {
       "risk_map": [
-        [
-          0.4,
-          0.02
-        ],
-        [
-          0.5,
-          0.03
-        ],
-        [
-          0.6,
-          0.04
-        ]
+        [0.45, 0.015],
+        [0.55, 0.025],
+        [0.65, 0.035]
       ]
     },
     "exit": {
       "enabled": true,
-      "exit_conf_threshold": 0.35,
-      "max_hold_bars": 24,
+      "exit_conf_threshold": 0.41,
+      "max_hold_bars": 20,
       "regime_aware_exits": true
     },
     "gates": {
@@ -73,15 +64,15 @@
       "enable_structure_breaks": true,
       "partial_1_pct": 0.6,
       "partial_2_pct": 0.5,
-      "fib_threshold_atr": 0.65,
-      "trail_atr_multiplier": 2.2,
+      "fib_threshold_atr": 0.82,
+      "trail_atr_multiplier": 1.5,
       "swing_update_strategy": "fixed"
     },
-    "warmup_bars": 120,
+    "warmup_bars": 150,
     "ltf_fib": {
       "entry": {
         "enabled": true,
-        "tolerance_atr": 0.5,
+        "tolerance_atr": 0.48,
         "long_max_level": 0.618,
         "short_min_level": 0.382
       }
@@ -89,7 +80,7 @@
     "htf_fib": {
       "entry": {
         "enabled": true,
-        "tolerance_atr": 0.5,
+        "tolerance_atr": 0.53,
         "long_max_level": 0.618,
         "short_min_level": 0.382
       }

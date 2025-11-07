@@ -13,6 +13,7 @@
 **Why:** Replace fixed TP/SL (5%, 2%) with market structure-aware exits that let winners run and protect profits dynamically.
 
 **Result:**
+
 - Partial exits work (2 of 7 trades, 28.6%)
 - HTF context integrated into pipeline
 - Fallback logic when HTF unavailable
@@ -45,6 +46,7 @@
 | Fallback | HTF unavailable | EMA-based trail |
 
 **Proximity Detection:**
+
 - Adaptive thresholds (ATR + % combined)
 - Dynamic widening if far from all levels
 - 8 ATR reachability envelope
@@ -54,14 +56,17 @@
 ## Key Components
 
 ### 1. HTF Fibonacci Mapping
+
 **File:** `src/core/indicators/htf_fibonacci.py`
 
 **Functions:**
+
 - `load_candles_data(symbol, timeframe)` - Load historical data
 - `compute_htf_fibonacci_levels(htf_candles)` - Calculate Fib levels (AS-OF)
 - `get_htf_fibonacci_context(ltf_candles, timeframe)` - Main interface
 
 **Features:**
+
 - Swing detection (3-bar pivot)
 - AS-OF semantics (no lookahead)
 - Timezone-aware timestamps
@@ -70,11 +75,13 @@
 ---
 
 ### 2. Exit Engine
+
 **File:** `src/core/backtest/htf_exit_engine.py`
 
 **Class:** `HTFFibonacciExitEngine`
 
 **Methods:**
+
 - `check_exits()` - Main orchestrator
 - `_check_partial_exits()` - TP1/TP2 logic
 - `_check_trailing_stop()` - Trail calculation + promotion
@@ -85,6 +92,7 @@
 - `_adaptive_thresholds()` - Dynamic proximity thresholds
 
 **Configuration:**
+
 ```python
 htf_exit_config = {
     "enable_partials": True,
@@ -100,14 +108,17 @@ htf_exit_config = {
 ---
 
 ### 3. Partial Exit Infrastructure
+
 **File:** `src/core/backtest/position_tracker.py`
 
 **Enhanced:**
+
 - `Position` - Added `current_size`, `initial_size`, `partial_exits`
 - `Trade` - Added `is_partial`, `exit_reason`, `remaining_size`, `position_id`
 - `PositionTracker.partial_close()` - New method
 
 **Tracking:**
+
 - Initial position size preserved
 - Current size updated after each partial
 - Realized PnL accumulated
@@ -116,13 +127,16 @@ htf_exit_config = {
 ---
 
 ### 4. Integration
+
 **Files Modified:**
+
 - `src/core/backtest/engine.py` - HTF exit engine integrated
 - `src/core/strategy/features.py` - HTF context added to features
 - `src/core/strategy/evaluate.py` - Timeframe parameter passed
 - `src/core/backtest/metrics.py` - Backward compatibility
 
 **Pipeline Flow:**
+
 1. `BacktestEngine.run()` calls `evaluate_pipeline()`
 2. `extract_features()` calls `get_htf_fibonacci_context()`
 3. HTF context stored in `meta['features']['htf_fibonacci']`
@@ -171,6 +185,7 @@ htf_exit_config = {
 ### Backtest: tBTCUSD 1h (2025-08-01 to 2025-10-13)
 
 **Configuration:**
+
 - Symbol: tBTCUSD
 - LTF: 1h
 - HTF: 1D
@@ -178,6 +193,7 @@ htf_exit_config = {
 - Bars: 1,753 processed
 
 **Results:**
+
 ```
 Total Trades: 7
 ├─ Partial Exits: 2 (28.6%)
@@ -189,6 +205,7 @@ Total Trades: 7
 ```
 
 **HTF Context Usage:**
+
 - HTF Available: ~21% of bars (326/1553)
 - Fallback Used: ~79% of bars (1224/1553)
 - Reason: HTF swings out of 8 ATR reach (correct behavior)
@@ -206,25 +223,30 @@ Total Trades: 7
 ## Bug Fixes Applied
 
 ### 1. Dict vs Float ATR Error
+
 **Problem:** ATR extracted from `current_bar` dict instead of `indicators` float
 **Location:** `src/core/backtest/htf_exit_engine.py` lines 99, 117
 **Fix:** Always use `indicators.get("atr", 100.0)`
 
 ### 2. Null Bytes in File
+
 **Problem:** 9 null bytes caused `SyntaxError: source code string cannot contain null bytes`
 **Fix:** Created temporary cleaner script, removed corruption
 
 ### 3. Missing Trade Fields
+
 **Problem:** `is_partial`, `exit_reason`, `remaining_size`, `position_id` not serialized
 **Location:** `src/core/backtest/engine.py` `_build_results()`
 **Fix:** Added missing fields to trade dict
 
 ### 4. Timeframe Not Passed
+
 **Problem:** HTF context unavailable because `timeframe` not passed to `extract_features()`
 **Location:** `src/core/strategy/evaluate.py`
 **Fix:** Added `timeframe` parameter
 
 ### 5. HTF Context Nesting
+
 **Problem:** Context looked for in `meta['htf_fibonacci']` but stored in `meta['features']['htf_fibonacci']`
 **Location:** `src/core/backtest/engine.py` `_check_htf_exit_conditions()`
 **Fix:** Corrected extraction path
@@ -246,6 +268,7 @@ Storage Structure:
 ```
 
 **Why Fresh Data?**
+
 - Old data from October 7-10 (3+ days stale)
 - HTF swings need recent price action to be relevant
 - 6 months of 1D provides sufficient swing context
@@ -255,6 +278,7 @@ Storage Structure:
 ## Test Coverage
 
 ### Unit Tests
+
 1. **`scripts/test_htf_fibonacci_mapping.py`**
    - HTF Fibonacci calculation
    - AS-OF semantics verification
@@ -271,6 +295,7 @@ Storage Structure:
    - Fallback behavior
 
 ### Debug Scripts
+
 4. **`scripts/debug_htf_exit_usage.py`**
    - Real backtest with HTF exits
    - Verification of partial exits
@@ -286,6 +311,7 @@ Storage Structure:
 ## Files Created/Modified
 
 ### New Files (7)
+
 ```
 src/core/indicators/htf_fibonacci.py          (234 lines)
 src/core/backtest/htf_exit_engine.py          (467 lines)
@@ -297,6 +323,7 @@ scripts/test_htf_simple_validation.py         (ablation study)
 ```
 
 ### Modified Files (6)
+
 ```
 src/core/backtest/position_tracker.py         (+80 lines)
 src/core/backtest/engine.py                   (+120 lines)
@@ -307,6 +334,7 @@ src/core/backtest/__init__.py                 (+2 lines)
 ```
 
 ### Documentation
+
 ```
 docs/FIBONACCI_FRAKTAL_EXITS_IMPLEMENTATION_PLAN.md  (1070 lines)
 docs/HTF_FIBONACCI_EXITS_SUMMARY.md                  (this file)
@@ -361,6 +389,7 @@ for trade in results["trades"]:
 ## Next Steps
 
 ### Immediate
+
 1. **Run Full Ablation Study**
    - Compare HTF_FULL vs baseline
    - Test HTF_PARTIAL_ONLY and HTF_TRAIL_ONLY
@@ -372,6 +401,7 @@ for trade in results["trades"]:
    - Tune `partial_2_pct` (20%, 30%, 40%)
 
 ### Short-Term
+
 3. **Multi-Symbol Validation**
    - Test on tETHUSD
    - Compare behavior across instruments
@@ -381,6 +411,7 @@ for trade in results["trades"]:
    - Test 1D HTF with 6h LTF
 
 ### Long-Term
+
 5. **Advanced Features**
    - Volume-adaptive thresholds
    - Confluence filters (multiple HTF agreement)
@@ -396,21 +427,26 @@ for trade in results["trades"]:
 ## Troubleshooting
 
 ### HTF Context Not Available
+
 **Symptom:** All exits use fallback logic
 **Check:**
+
 1. Is `timeframe` passed to `extract_features()`?
 2. Is HTF data loaded? (`data/curated/v1/candles/tBTCUSD_1D.parquet`)
 3. Is LTF timeframe supported? (1h, 30m, 6h, 15m only)
 
 ### Partial Exits Not Triggering
+
 **Symptom:** 0 partial exits in backtest
 **Check:**
+
 1. Are HTF Fib levels within 8 ATR of current price?
 2. Is `enable_partials=True` in config?
 3. Check debug output: "REACHABILITY" flag
 4. Verify `partial_1_pct` and `partial_2_pct` > 0
 
 ### Dict vs Float Errors
+
 **Symptom:** `'<' not supported between instances of 'dict' and 'float'`
 **Fix:** Ensure ATR always from `indicators.get("atr", 100.0)`, never from `current_bar`
 
@@ -419,15 +455,18 @@ for trade in results["trades"]:
 ## Performance Notes
 
 **Computational Cost:**
+
 - HTF Fibonacci calculation: ~0.5ms per bar (negligible)
 - Exit engine overhead: ~0.2ms per bar (negligible)
 - Total backtest: ~53 seconds for 1,753 bars (normal)
 
 **Memory Usage:**
+
 - HTF data: ~1-2 MB for 6 months
 - Exit engine state: ~1 KB per open position
 
 **Scalability:**
+
 - Supports multiple concurrent positions
 - Thread-safe (no shared mutable state)
 - Ready for real-time trading
@@ -437,15 +476,18 @@ for trade in results["trades"]:
 ## References
 
 **Documentation:**
+
 - [Implementation Plan](FIBONACCI_FRAKTAL_EXITS_IMPLEMENTATION_PLAN.md) - Full 1070-line spec
 - [CHANGELOG.md](../CHANGELOG.md) - Version history
 
 **Code:**
+
 - `src/core/indicators/htf_fibonacci.py` - HTF calculation
 - `src/core/backtest/htf_exit_engine.py` - Exit logic
 - `src/core/backtest/position_tracker.py` - Position management
 
 **Tests:**
+
 - `scripts/test_htf_fibonacci_mapping.py`
 - `scripts/test_partial_exit_infrastructure.py`
 - `scripts/test_htf_exit_engine.py`
@@ -457,4 +499,3 @@ for trade in results["trades"]:
 **Version:** 1.0
 **Status:** ✅ PRODUCTION READY
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    

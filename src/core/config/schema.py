@@ -101,6 +101,12 @@ class MultiTimeframeConfig(BaseModel):
     )
 
 
+class VectorizedConfig(BaseModel):
+    use_cache: bool = Field(default=False)
+    version: str | None = Field(default="v17")
+    path: str | None = None
+
+
 class RuntimeConfig(BaseModel):
     thresholds: Thresholds = Field(default_factory=Thresholds)
     gates: Gates = Field(default_factory=Gates)
@@ -108,6 +114,7 @@ class RuntimeConfig(BaseModel):
     ev: EV = Field(default_factory=EV)
     exit: ExitLogic = Field(default_factory=ExitLogic)
     multi_timeframe: MultiTimeframeConfig = Field(default_factory=MultiTimeframeConfig)
+    vectorized: VectorizedConfig = Field(default_factory=VectorizedConfig)
 
     def model_dump_canonical(self) -> dict[str, Any]:
         """Dump in a stable, hash-friendly form (tuples → lists)."""

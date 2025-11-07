@@ -133,7 +133,7 @@ class ConfigAuthority:
         # whitelist enforcement (path-based)
         def _enforce_whitelist(p: dict[str, Any]) -> None:
             for k, v in (p or {}).items():
-                if k not in {"thresholds", "gates", "risk", "ev", "multi_timeframe"}:
+                if k not in {"thresholds", "gates", "risk", "ev", "multi_timeframe", "vectorized"}:
                     raise ValueError("non_whitelisted_field")
                 if k == "risk":
                     if not isinstance(v, dict) or any(subk != "risk_map" for subk in v.keys()):
@@ -176,6 +176,12 @@ class ConfigAuthority:
                                 raise ValueError(
                                     "non_whitelisted_field:ltf_override_adaptive.regime_multipliers"
                                 )
+                if k == "vectorized":
+                    if not isinstance(v, dict):
+                        raise ValueError("non_whitelisted_field:vectorized")
+                    allowed = {"use_cache", "version", "path"}
+                    if any(subk not in allowed for subk in v.keys()):
+                        raise ValueError("non_whitelisted_field:vectorized")
 
         _enforce_whitelist(patch)
 

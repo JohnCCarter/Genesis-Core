@@ -53,7 +53,7 @@ def precompute_features_vectorized(symbol: str, timeframe: str, verbose: bool = 
         print(f"[VECTORIZE] Computing features for {len(df):,} samples...")
 
     # === VECTORIZED COMPUTATION (O(n) complexity!) ===
-    features_df = calculate_all_features_vectorized(df)
+    features_df = calculate_all_features_vectorized(df, timeframe=timeframe)
 
     # Add timestamp column
     features_df.insert(0, "timestamp", df["timestamp"])

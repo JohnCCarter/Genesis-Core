@@ -84,3 +84,6 @@ addopts = "-q"
 pythonpath = ["src"]
 testpaths = ["tests"]
 norecursedirs = ["scripts", "cache", "data", "results", "logs"]
+markers = [
+    "slow: marks tests that validate long-running vectorized parity",
+]

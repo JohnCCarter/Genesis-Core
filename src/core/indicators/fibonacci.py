@@ -3,7 +3,7 @@ Fibonacci Retracement Features for Genesis-Core
 Implements professional-grade Fibonacci analysis with adaptive swing detection.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 import numpy as np
 import pandas as pd
@@ -285,7 +285,7 @@ def calculate_fibonacci_features(
 
 
 def calculate_fibonacci_features_vectorized(
-    df: pd.DataFrame, config: FibonacciConfig = None
+    df: pd.DataFrame, config: FibonacciConfig | None = None
 ) -> pd.DataFrame:
     """
     Calculate Fibonacci features for entire DataFrame (vectorized).
@@ -298,17 +298,26 @@ def calculate_fibonacci_features_vectorized(
         DataFrame with Fibonacci features
     """
     if config is None:
-        config = FibonacciConfig()
+        config = FibonacciConfig(atr_depth=3.0, max_swings=8, min_swings=1)
 
     features_df = pd.DataFrame(index=df.index)
 
     # Calculate ATR
     atr = calculate_atr(df["high"], df["low"], df["close"])
 
-    # Detect swing points
-    swing_high_indices, swing_low_indices, swing_high_prices, swing_low_prices = (
-        detect_swing_points(df["high"], df["low"], df["close"], config)
+    # Detect swing points once (will filter per row)
+    max_swings_for_detection = max(len(df), max(config.max_swings, 1) * 50)
+    max_lookback_for_detection = max(len(df), config.max_lookback)
+    detect_config = replace(
+        config,
+        max_swings=max_swings_for_detection,
+        max_lookback=max_lookback_for_detection,
     )
+
+    swing_high_indices, swing_low_indices, swing_high_prices, swing_low_prices = (
+        detect_swing_points(df["high"], df["low"], df["close"], detect_config)
+    )
+    atr_depth_int = max(1, int(config.atr_depth))
 
     # Initialize feature columns
     feature_names = [
@@ -325,18 +334,39 @@ def calculate_fibonacci_features_vectorized(
 
     # Calculate features for each row
     for i in range(len(df)):
-        # Get current swing context
-        current_swing_high = swing_high_prices[-1] if swing_high_prices else None
-        current_swing_low = swing_low_prices[-1] if swing_low_prices else None
+        # Filter swing points up to current index
+        cutoff = i - atr_depth_int
 
-        # Calculate Fibonacci levels
-        fib_levels = calculate_fibonacci_levels(swing_high_prices, swing_low_prices, config.levels)
+        filtered_high_pairs = [
+            (idx, price)
+            for idx, price in zip(swing_high_indices, swing_high_prices, strict=False)
+            if idx <= cutoff
+        ]
+        filtered_low_pairs = [
+            (idx, price)
+            for idx, price in zip(swing_low_indices, swing_low_prices, strict=False)
+            if idx <= cutoff
+        ]
 
-        # Calculate features
+        if config.max_swings:
+            filtered_high_pairs = filtered_high_pairs[-config.max_swings :]
+            filtered_low_pairs = filtered_low_pairs[-config.max_swings :]
+
+        filtered_highs = [price for _, price in filtered_high_pairs]
+        filtered_lows = [price for _, price in filtered_low_pairs]
+
+        price = float(df["close"].iloc[i])
+        current_swing_high = filtered_highs[-1] if filtered_highs else price * 1.05
+        current_swing_low = filtered_lows[-1] if filtered_lows else price * 0.95
+
+        fib_levels = calculate_fibonacci_levels(filtered_highs, filtered_lows, config.levels)
+
+        current_atr = float(atr.iloc[i]) if not pd.isna(atr.iloc[i]) else 1.0
+
         features = calculate_fibonacci_features(
-            df["close"].iloc[i],
+            price,
             fib_levels,
-            atr.iloc[i],
+            current_atr,
             config,
             current_swing_high,
             current_swing_low,

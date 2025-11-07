@@ -3,6 +3,9 @@ meta:
   timeframe: 1h
   snapshot_id: tBTCUSD_1h_2024-10-22_2025-10-01_v1
   warmup_bars: 50
+  vectorized:
+    use_cache: true
+    version: v17
   runs:
     strategy: grid
     max_trials: 16

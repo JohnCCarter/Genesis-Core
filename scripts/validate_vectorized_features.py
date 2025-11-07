@@ -20,7 +20,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from core.indicators.vectorized import calculate_all_features_vectorized
 from core.strategy.features_asof import extract_features_backtest
-from src.core.utils import get_candles_path
+from core.utils import get_candles_path
 
 
 def compute_per_sample_features(df: pd.DataFrame, max_samples: int = 100) -> pd.DataFrame:
@@ -52,12 +52,19 @@ def compute_per_sample_features(df: pd.DataFrame, max_samples: int = 100) -> pd.
         # Invariant check
         assert meta["asof_bar"] == i, f"Expected asof_bar={i}, got {meta['asof_bar']}"
 
-        features_list.append(
-            {
-                "timestamp": df["timestamp"].iloc[i],
-                **feats,
-            }
-        )
+        row = {
+            "timestamp": df["timestamp"].iloc[i],
+            **feats,
+        }
+
+        atr_percentiles = meta.get("atr_percentiles") or {}
+        for period, values in atr_percentiles.items():
+            row[f"meta_atr{period}_p40"] = float(values.get("p40", 0.0))
+            row[f"meta_atr{period}_p80"] = float(values.get("p80", 0.0))
+
+        row["meta_current_atr"] = float(meta.get("current_atr") or 0.0)
+
+        features_list.append(row)
 
     return pd.DataFrame(features_list)
 
@@ -220,7 +227,7 @@ def main():
 
         # Method 2: Vectorized (FAST)
         print("\n[VECTORIZED] Computing features (fast method)...")
-        vectorized_df = calculate_all_features_vectorized(candles_df)
+        vectorized_df = calculate_all_features_vectorized(candles_df, timeframe=args.timeframe)
         vectorized_df.insert(0, "timestamp", candles_df["timestamp"])
 
         # Take only last N samples for comparison

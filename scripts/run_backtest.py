@@ -107,6 +107,21 @@ def main():
         type=Path,
         help="Optional JSON-fil med override av runtime-config",
     )
+    parser.add_argument(
+        "--use-vectorized",
+        action="store_true",
+        help="Aktivera vectorized-funktioner via cache istället för per-bar.",
+    )
+    parser.add_argument(
+        "--vectorized-cache",
+        type=Path,
+        help="Specifik fil (Feather/Parquet) med förberäknade vectorized-features.",
+    )
+    parser.add_argument(
+        "--vectorized-version",
+        type=str,
+        help="Feature-cacheversion (t.ex. v17) när standardkatalogen används.",
+    )
 
     args = parser.parse_args()
 
@@ -158,6 +173,23 @@ def main():
                 print(f"\n[FAILED] Ogiltig override-config: {exc}")
                 return 1
             cfg = cfg_obj.model_dump()
+
+        vectorized_cfg = cfg.setdefault("vectorized", {})
+        if args.vectorized_cache:
+            if not args.vectorized_cache.exists():
+                print(f"\n[FAILED] Vectorized-cache saknas: {args.vectorized_cache}")
+                return 1
+            vectorized_cfg["path"] = str(args.vectorized_cache)
+            vectorized_cfg["use_cache"] = True
+        if args.vectorized_version:
+            vectorized_cfg["version"] = args.vectorized_version
+            vectorized_cfg["use_cache"] = True
+        if args.use_vectorized:
+            vectorized_cfg["use_cache"] = True
+
+        if vectorized_cfg.get("use_cache"):
+            cache_info = vectorized_cfg.get("path") or vectorized_cfg.get("version") or "default"
+            print(f"[VECTORIZED] Feature-cache aktiverad ({cache_info}).")
 
         # Prepare policy
         policy = {"symbol": args.symbol, "timeframe": args.timeframe}

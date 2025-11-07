@@ -192,11 +192,24 @@ pip install -e .[dev,ml]
 - Next exits phase (Fibonacci): `docs/FIBONACCI_FRAKTAL_EXITS_IMPLEMENTATION_PLAN.md`.
 - Model cache reset: `curl -X POST http://127.0.0.1:8000/models/reload` after retraining.
 
+## 14. Vectorized mode (snabbplan) 2025-11-07
+
+- Dokumentationsnav: `docs/vectorized/`
+  - `overview.md` – syfte, flaggor, nyckelskript
+  - `parity_checklist.md` – steg för paritetstester
+  - `cache_workflow.md` – hur precompute/cachen integreras i pipeline/Optuna
+- Feature-flaggar (förslag): `cfg["vectorized"].get("use_cache", false)` + CLI `--use-vectorized`
+- CLI-stöd finns nu i `scripts/run_backtest.py` (`--use-vectorized`, `--vectorized-cache`, `--vectorized-version`)
+- Optuna/grid: ange `meta.vectorized` i optimizer-konfigen så att runnern automatiskt mergear cache-flaggan per trial
+- Paritet: kör `scripts/validate_vectorized_features.py` innan vectorized aktiveras i backtest/Optuna.
+- Regressionstester: jämför `_extract_asof()` mot vectorized-cache för `state_out` i pytest.
+- Efter verifiering: aktivera flaggan i runner/backtest och logga tidsvinster per körning.
+
 ---
 
 > **Kom ihag:** folj flodet _coarse -> proxy -> fine_, utnyttja cache-filerna och dokumentera resultaten i `docs/daily_summary_YYYY-MM-DD.md`. Nasta agent borjar med att aktivera HTF-filtret i beslutslogiken, kalibrera fib-parametrarna och uppdatera dokumentationen darefter.
 
-## 14. Uppdateringar 30 okt 2025
+## 15. Uppdateringar 30 okt 2025
 
 - Upstream-merge lade till `.github/copilot-instructions.md` (kort agentguide), förfinade beslutslogiken (`src/core/strategy/decision.py`, `evaluate.py`) samt indikatorerna (`src/core/indicators/fibonacci.py`, `htf_fibonacci.py`).
 - Nya referensdokument: `docs/FIB_GATING_DEBUG_20251027.md`, `docs/RISK_MAP_CONFIDENCE_TUNING.md` – använd dem när fib-toleranser eller riskkartor justeras.
@@ -204,7 +217,7 @@ pip install -e .[dev,ml]
 - Champion-filen `config/strategy/champions/tBTCUSD_1h.json` uppdaterades med finjusterade fibparametrar. Stäm av mot nya `state_out`-fält och säkerställ att HTF/LTF-konteksten nu flödar hela vägen från `features_asof` -> `evaluate_pipeline` -> `decision`.
 - `cursor-active-rules.mdc` är nedtrimmad (~50 rader) och `AGENTS.md` ersätter tidigare `README.agents.md`; håll båda synkade med de här noteringarna inför nästa handoff.
 
-## 15. Roller för parallella agenter
+## 16. Roller för parallella agenter
 
 - **Agent A – Optimering & körningar**
   - Starta `python -m core.optimizer.runner ...` / Optuna-jobb enligt plan (coarse → proxy → fine → fib-grid).
@@ -218,7 +231,7 @@ pip install -e .[dev,ml]
   - Följ `.cursor/rules/cursor-active-rules.mdc` (svenska svar, stegvis arbete, stabiliseringspolicy).
   - Koordinera via mini-loggar i chatten; vid osäkerhet, pausa och bekräfta innan nästa steg.
 
-## 16. Fib-grid körning 2025-10-30 (run_20251030_110227)
+## 17. Fib-grid körning 2025-10-30 (run_20251030_110227)
 
 - Körning utförd med aktiverad `.venv` och nytt konfigpaket `config/optimizer/tBTCUSD_1h_fib_grid_v3.yaml` (snävare `fib_threshold_atr` 0.6–0.7 och `trail_atr_multiplier` 2.3–2.7, trailing alltid aktiv).
 - `python -m core.optimizer.runner ... --run-id run_20251030_110227` genererade 31 försök (15 giltiga). Bästa trial (`trial_001`, `tBTCUSD_1h_20251030_120515.json`) gav score 46.89, total_return +1.87 %, PF 1.91, 91 trades – långt under championmålet (260+).
@@ -226,13 +239,13 @@ pip install -e .[dev,ml]
 - Observera att tidigare körningar utan aktiv venv hamnade under `.venv/Lib/results/...` och misslyckades p.g.a. `ModuleNotFoundError: scripts`. Lämna dem som referens men blanda inte ihop med projektets run-logg.
 - Nästa steg: antingen justera grid-intervallet (t.ex. `fib_threshold_atr` ≥ 0.7 med toleranser) eller gå vidare till warm-startad Optuna baserat på championens parametrar. Dokumentera jämförelser och uppdatera fib-debuggares anteckningar.
 
-## 17. Entry-grid snabbkörning 2025-10-30 (run_20251030_115454)
+## 18. Entry-grid snabbkörning 2025-10-30 (run_20251030_115454)
 
 - Snabb testkörning med `config/optimizer/tBTCUSD_1h_fib_entry_grid_quick.yaml` (8 kombinationer: HTF tolerance 0.45/0.55, LTF tolerance 0.4/0.5, fib-nivåer enligt champion, entry missing_policy=pass).
 - `python -m core.optimizer.runner ... --run-id run_20251030_fibentry_quick` skapade `results/hparam_search/run_20251030_115454` (5 försök, 2 giltiga). Bästa trial (`trial_001`) gav score 46.89, +1.87 %, PF 1.91, 91 trades – identiskt med exit-griden, ingen förbättring vs champion.
 - Slutsats: Behöver öppna upp targetlistor/toleranser bredare (eller optimera entry_conf/signal_adaptation) innan nästa större körning; planera nattkörning med `tBTCUSD_1h_fib_entry_grid.yaml` (64 kombinationer) eller warm-startad Optuna.
 
-## 18. Optuna-preflight 31 okt 2025
+## 19. Optuna-preflight 31 okt 2025
 
 - Konfiguration `config/optimizer/tBTCUSD_1h_optuna_fib_tune.yaml` uppdaterades med championens partialer (0.6/0.5), `signal_adaptation` och heartbeat-parametrar (60s/180s).
 - Seedning inför backtest körs nu deterministiskt (`GENESIS_RANDOM_SEED`, fallback 42) via `scripts/run_backtest.py`.
@@ -259,7 +272,7 @@ pip install -e .[dev,ml]
 - 2025-11-03 11:00: Dedikerad storage-mapp `results/hparam_search/storage/` skapad så kommande DB-filer isoleras per kampanj.
 - 2025-11-03 11:05: `src/core/optimizer/runner.py` spårar nu param-signaturer per körning och hoppar över Optuna-förslag som upprepas fler än 10 gånger i rad (stoppar med fel om gränsen nås).
 
-## 19. HTF-exit tuning 3 nov 2025
+## 20. HTF-exit tuning 3 nov 2025
 
 - Nya temp-profilen `config/tmp/balanced_htf_tune.json` höjde `fib_threshold_atr` till 0.85 och sänkte `trail_atr_multiplier` till 1.6. Backtest (`tBTCUSD_1h_20251103_161008.json`) gav +5.42 %, PF 1.24 med 3/6 rena HTF-exits (endast 2 fallback).
 - Baseline (`config/tmp/champion_base.json`) loggade 10 HTF, 8 HTF+fallback och 4 fallback-exits på +3.10 % netto – fallback används fortfarande för slutstängningar.

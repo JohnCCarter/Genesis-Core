@@ -8,6 +8,11 @@ Used by precompute_features.py for efficient batch processing.
 import numpy as np
 import pandas as pd
 
+from core.indicators.fibonacci import (
+    FibonacciConfig,
+    calculate_fibonacci_features_vectorized,
+)
+
 
 def calculate_ema_vectorized(series: pd.Series, period: int = 50) -> pd.Series:
     """Calculate EMA on entire series at once."""
@@ -42,36 +47,6 @@ def calculate_rsi_vectorized(series: pd.Series, period: int = 14) -> pd.Series:
     rsi = rsi.fillna(50.0)
 
     return rsi  # Return raw [0, 100]
-
-
-def calculate_adx_vectorized(
-    high: pd.Series, low: pd.Series, close: pd.Series, period: int = 14
-) -> pd.Series:
-    """Calculate ADX on entire series."""
-    # True Range
-    tr1 = high - low
-    tr2 = abs(high - close.shift(1))
-    tr3 = abs(low - close.shift(1))
-    tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
-
-    # Directional Movement
-    up_move = high - high.shift(1)
-    down_move = low.shift(1) - low
-
-    plus_dm = np.where((up_move > down_move) & (up_move > 0), up_move, 0)
-    minus_dm = np.where((down_move > up_move) & (down_move > 0), down_move, 0)
-
-    # Smoothed indicators
-    atr = tr.rolling(window=period).mean()
-    plus_di = 100 * pd.Series(plus_dm).rolling(window=period).mean() / atr
-    minus_di = 100 * pd.Series(minus_dm).rolling(window=period).mean() / atr
-
-    # ADX
-    dx = 100 * abs(plus_di - minus_di) / (plus_di + minus_di).replace(0, np.nan)
-    adx = dx.rolling(window=period).mean()
-
-    # Normalize to [0, 1]
-    return adx / 100
 
 
 def calculate_atr_vectorized(
@@ -173,7 +148,70 @@ def calculate_volatility_shift_vectorized(
     return vol_shift.fillna(1.0)
 
 
-def calculate_all_features_vectorized(df: pd.DataFrame) -> pd.DataFrame:
+def calculate_adx_vectorized(
+    high: pd.Series, low: pd.Series, close: pd.Series, period: int = 14
+) -> pd.Series:
+    """Vectorized ADX implementation matching calculate_adx()."""
+
+    high = high.astype(float)
+    low = low.astype(float)
+    close = close.astype(float)
+
+    up_move = high.diff()
+    down_move = low.shift(1) - low
+
+    plus_dm = np.where((up_move > down_move) & (up_move > 0), up_move, 0.0)
+    minus_dm = np.where((down_move > up_move) & (down_move > 0), down_move, 0.0)
+
+    tr_components = pd.concat(
+        [(high - low), (high - close.shift(1)).abs(), (low - close.shift(1)).abs()], axis=1
+    )
+    true_range = tr_components.max(axis=1)
+
+    # Wilder smoothing via EMA with alpha = 1/period
+    alpha = 1.0 / period
+    atr = true_range.ewm(alpha=alpha, adjust=False).mean()
+    plus_dm_smoothed = pd.Series(plus_dm, index=high.index).ewm(alpha=alpha, adjust=False).mean()
+    minus_dm_smoothed = pd.Series(minus_dm, index=high.index).ewm(alpha=alpha, adjust=False).mean()
+
+    plus_di = 100.0 * plus_dm_smoothed / atr.replace(0, np.nan)
+    minus_di = 100.0 * minus_dm_smoothed / atr.replace(0, np.nan)
+
+    dx = 100.0 * (plus_di - minus_di).abs() / (plus_di + minus_di).replace(0, np.nan)
+    dx = dx.fillna(0.0)
+
+    adx = dx.ewm(alpha=alpha, adjust=False).mean()
+
+    return (adx / 100.0).fillna(0.0)
+
+
+def _get_ema_params_for_timeframe(timeframe: str | None) -> tuple[int, int]:
+    params = {
+        "30m": (50, 20),
+        "1h": (20, 5),
+        "3h": (20, 5),
+        "6h": (20, 5),
+    }
+    return params.get((timeframe or "").lower(), (20, 5))
+
+
+def _compute_atr_percentiles(atr: pd.Series) -> pd.DataFrame:
+    result = pd.DataFrame(index=atr.index)
+    windows = [14, 28, 56]
+    percentiles = [("p40", 0.40), ("p80", 0.80)]
+
+    for window in windows:
+        rolling = atr.rolling(window=window, min_periods=window)
+        for label, value in percentiles:
+            col_name = f"meta_atr{window}_{label}"
+            result[col_name] = rolling.quantile(value)
+
+    return result.fillna(0.0)
+
+
+def calculate_all_features_vectorized(
+    df: pd.DataFrame, *, timeframe: str | None = None
+) -> pd.DataFrame:
     """
     Calculate ALL features at once on entire DataFrame.
 
@@ -190,13 +228,12 @@ def calculate_all_features_vectorized(df: pd.DataFrame) -> pd.DataFrame:
     # === BOLLINGER BANDS ===
     bb_position = calculate_bb_position_vectorized(df["close"], period=20, std_dev=2.0)
 
-    # === MACD ===
-    _, _, macd_histogram = calculate_macd_vectorized(df["close"], fast=12, slow=26, signal=9)
-
     # === VOLATILITY SHIFT ===
     volatility_shift = calculate_volatility_shift_vectorized(
         df["high"], df["low"], df["close"], short_period=14, long_period=50
     )
+
+    atr_14 = calculate_atr_vectorized(df["high"], df["low"], df["close"], period=14)
 
     # === NORMALIZE & PREPARE BASE INDICATORS ===
     # Match exact logic from extract_features()
@@ -235,10 +272,42 @@ def calculate_all_features_vectorized(df: pd.DataFrame) -> pd.DataFrame:
     # Per-sample does: 1.0 if vol_shift_current > 1.0 else 0.0
     features["vol_regime"] = (vol_shift > 1.0).astype(float)
 
+    features["atr_14"] = atr_14.fillna(0.0)
+
+    # === Fibonacci features & combinations ===
+    ema_period, ema_lookback = _get_ema_params_for_timeframe(timeframe)
+    ema_values = calculate_ema_vectorized(df["close"], period=ema_period)
+    ema_prev = ema_values.shift(ema_lookback)
+    ema_slope_raw = (ema_values - ema_prev) / ema_prev.replace(0, np.nan)
+    ema_slope = ema_slope_raw.clip(-0.10, 0.10).fillna(0.0)
+
+    adx = calculate_adx_vectorized(df["high"], df["low"], df["close"], period=14)
+
+    rsi_current = rsi_normalized.clip(-1.0, 1.0)
+
+    fib_config = FibonacciConfig(atr_depth=3.0, max_swings=8, min_swings=1)
+    fib_df = calculate_fibonacci_features_vectorized(df, config=fib_config)
+
+    features["fib_dist_min_atr"] = fib_df["fib_dist_min_atr"].clip(0.0, 10.0)
+    features["fib_dist_signed_atr"] = fib_df["fib_dist_signed_atr"].clip(-10.0, 10.0)
+    features["fib_prox_score"] = fib_df["fib_prox_score"].clip(0.0, 1.0)
+    features["fib0618_prox_atr"] = fib_df["fib0618_prox_atr"].clip(0.0, 1.0)
+    features["fib05_prox_atr"] = fib_df["fib05_prox_atr"].clip(0.0, 1.0)
+    features["swing_retrace_depth"] = fib_df["swing_retrace_depth"].clip(0.0, 1.0)
+
+    features["fib05_x_ema_slope"] = (features["fib05_prox_atr"] * ema_slope).clip(-0.10, 0.10)
+    features["fib_prox_x_adx"] = (features["fib_prox_score"] * adx.clip(0.0, 1.0)).clip(0.0, 1.0)
+    features["fib05_x_rsi_inv"] = (features["fib05_prox_atr"] * (-rsi_current)).clip(-1.0, 1.0)
+
+    # === Metadata columns ===
+    meta_df = _compute_atr_percentiles(atr_14)
+    meta_df["meta_current_atr"] = atr_14.fillna(0.0)
+
     # Fill NaN with 0.0 (from lookback periods)
     features = features.fillna(0.0)
+    meta_df = meta_df.fillna(0.0)
 
-    return features
+    return pd.concat([features, meta_df], axis=1)
 
 
 def validate_features(features_df: pd.DataFrame) -> dict:

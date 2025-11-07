@@ -825,6 +825,11 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
     meta = config.get("meta") or {}
     parameters = config.get("parameters") or {}
     runs_cfg = meta.get("runs") or {}
+    vectorized_meta = meta.get("vectorized")
+
+    base_parameter_overrides: dict[str, Any] = {}
+    if isinstance(vectorized_meta, dict) and vectorized_meta:
+        base_parameter_overrides["vectorized"] = dict(vectorized_meta)
     strategy = (runs_cfg.get("strategy") or OptimizerStrategy.GRID).lower()
 
     sample_start: str | None = None
@@ -855,12 +860,15 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
     timeframe = str(meta.get("timeframe", "1h"))
 
     def make_trial(idx: int, params: dict[str, Any]) -> dict[str, Any]:
+        trial_params = params
+        if base_parameter_overrides:
+            trial_params = _deep_merge(base_parameter_overrides, params)
         trial_cfg = TrialConfig(
             snapshot_id=meta.get("snapshot_id", ""),
             symbol=symbol,
             timeframe=timeframe,
             warmup_bars=int(meta.get("warmup_bars", 150)),
-            parameters=params,
+            parameters=trial_params,
             start_date=sample_start,
             end_date=sample_end,
         )

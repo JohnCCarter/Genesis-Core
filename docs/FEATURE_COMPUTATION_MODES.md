@@ -13,6 +13,7 @@ Genesis-Core har **TVÅ** feature computation modes med **OLIKA** semantik:
 **Purpose:** Real-time feature extraction för live trading
 
 **Behavior:**
+
 ```python
 extract_features(candles, now_index=99)
 → Använder bars 0-98 (EXKLUDERAR bar 99)
@@ -20,12 +21,14 @@ extract_features(candles, now_index=99)
 ```
 
 **Rationale:**
+
 - I live trading är "current bar" inte stängd ännu
 - Vi kan bara använda STÄNGDA bars för features
 - `now_index` = index för current FORMING bar
 - Features beräknas från `now_index - 1` (senaste STÄNGDA)
 
 **Example:**
+
 ```
 Time: 14:30
 Bars: [0, 1, 2, ... 98, 99]
@@ -45,6 +48,7 @@ extract_features(candles, now_index=99)
 **Purpose:** Batch precomputation för backtesting/research
 
 **Behavior:**
+
 ```python
 calculate_all_features_vectorized(df.iloc[:100])
 → Använder bars 0-99 (INKLUDERAR alla)
@@ -52,12 +56,14 @@ calculate_all_features_vectorized(df.iloc[:100])
 ```
 
 **Rationale:**
+
 - I backtesting är ALL data historisk (stängd)
 - Ingen "forming bar" concept
 - Vi vill features för VARJE bar inklusive sista
 - Används för precompute, IC testing, feature engineering
 
 **Example:**
+
 ```
 Historical data: [0, 1, 2, ... 98, 99]
                   └────── alla stängda ─────┘
@@ -90,6 +96,7 @@ RESULT: 1-BAR OFFSET! 🚨
 ## ✅ **SOLUTION: DIFFERENT USE CASES**
 
 ### **Use Case 1: Live Trading**
+
 ```python
 # Server receives NEW candle (bar N is forming)
 # Want features from LAST CLOSED bar (N-1)
@@ -100,6 +107,7 @@ feats, meta = extract_features(candles, now_index=99)
 ```
 
 ### **Use Case 2: Backtesting**
+
 ```python
 # We have HISTORICAL data (all bars closed)
 # Want features for EACH bar
@@ -146,6 +154,7 @@ for i in range(len(df)):
 ### **For Production (FUTURE):**
 
 **Option A:** Add `mode` parameter
+
 ```python
 def extract_features(candles, now_index=None, mode="live"):
     if mode == "live":
@@ -155,6 +164,7 @@ def extract_features(candles, now_index=None, mode="live"):
 ```
 
 **Option B:** Separate functions
+
 ```python
 extract_features_live(candles)  # Always skips last bar
 extract_features_backtest(candles, bar_index)  # Uses all up to bar_index
@@ -171,3 +181,11 @@ extract_features_backtest(candles, bar_index)  # Uses all up to bar_index
 ```
 
 **TODO:** Fix validation script to compare correctly!
+
+## Vectorized cache-läge
+
+- Runtime-config (`RuntimeConfig.vectorized`) innehåller nu flaggan `use_cache` samt fälten `version`/`path` för cachekälla.
+- `scripts/run_backtest.py` tar `--use-vectorized`, `--vectorized-cache` och `--vectorized-version` som injicerar dessa värden i runtime-config före körning.
+- Optimizer-runner (`core.optimizer.runner`) läser `meta.vectorized` i `config/optimizer/*.yaml` och mergear automatiskt över flaggan till varje trial.
+- När flaggan är aktiv använder `extract_features()` `_extract_vectorized()` och faller tillbaka till `_extract_asof()` vid cache-miss.
+- Håll parity-testet (`tests/test_vectorized_features.py`) grönt innan flaggan aktiveras i längre körningar.

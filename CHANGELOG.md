@@ -8,18 +8,30 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 
 ## [Unreleased]
 
+### Added - Vectorized documentation (2025-11-07)
+
+- Skapat dedikerad dokumentationsmapp `docs/vectorized/` med:
+  - `README.md` – nav och filöversikt
+  - `overview.md` – mål, flaggor och nyckelskript för vectorized-läget
+  - `parity_checklist.md` – checklista för att verifiera parity mot `_extract_asof()`
+  - `cache_workflow.md` – hur precomputade features laddas in i pipeline och Optuna
+- Uppdaterat `AGENTS.md` med snabbplan för vectorized-mode (flagga, tester, dokumentlänkar).
+
 ### Added - HTF Fibonacci Exit System (2025-10-13)
 
 **Major Feature: Dynamic Exit Strategy**
+
 - Implemented HTF (Higher Timeframe) Fibonacci-based exit logic
 - Replaces fixed TP/SL with market structure-aware exits
 - Uses 1D swings projected to 1h timeframe decisions
 
 **New Modules:**
+
 - `src/core/indicators/htf_fibonacci.py` - HTF Fibonacci calculation with AS-OF semantics
 - `src/core/backtest/htf_exit_engine.py` - Core exit engine with partial/trail/structure logic
 
 **Enhanced Modules:**
+
 - `src/core/backtest/position_tracker.py` - Partial exit infrastructure
   - Added `Position.current_size`, `initial_size`, `partial_exits` tracking
   - Added `Trade.is_partial`, `exit_reason`, `remaining_size`, `position_id`
@@ -35,6 +47,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
   - HTF levels available in `meta['htf_fibonacci']`
 
 **Exit Logic Features:**
+
 1. **Partial Exits:** TP1 @ 0.382 Fib (40%), TP2 @ 0.5 Fib (30%)
 2. **Trailing Stop:** EMA-based with HTF promotion (locks at 0.5 Fib)
 3. **Structure Break:** Full exit on 0.618 break + momentum loss
@@ -43,25 +56,30 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 6. **Fallback Logic:** EMA-trail when HTF unavailable
 
 **Verification Results (tBTCUSD 1h, 2025-08-01 to 2025-10-13):**
+
 - 7 total trades, 2 partial exits (28.6%), 5 full exits
 - Partial exits correctly triggered at HTF Fibonacci levels
 - Fallback logic engaged when HTF swings out of reach
 - All integration tests passing
 
 **Data Updates:**
+
 - Fresh data fetched: tBTCUSD 1D (6 months), 1h (3 months)
 - Stored in curated + legacy structures for compatibility
 
 **Bug Fixes:**
+
 - Fixed dict vs float ATR extraction error
 - Removed null bytes causing SyntaxError
 - Corrected HTF context nesting in pipeline
 - Added missing trade fields to results serialization
 
 **Documentation:**
+
 - `docs/FIBONACCI_FRAKTAL_EXITS_IMPLEMENTATION_PLAN.md` - Complete implementation guide
 
 **Test Coverage:**
+
 - `scripts/test_htf_fibonacci_mapping.py` - HTF mapping tests
 - `scripts/test_partial_exit_infrastructure.py` - Partial exit tests
 - `scripts/test_htf_exit_engine.py` - Integration tests
@@ -72,17 +90,26 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 ---
 
 ### Strategic Decision Needed
+
 - Bitcoin 1h timeframe shows mean reversion behavior (trend features have NEGATIVE IC)
 - System is production-ready, but strategy direction needs confirmation
 - Options: Test 4h/1D timeframes, optimize mean reversion, or research new approaches
 
 ---
 
+## [Unreleased]
+
+- Added vectorized documentation structure (`docs/vectorized/`) and parity checklist.
+- Added CLI flags (`--use-vectorized`, `--vectorized-cache`, `--vectorized-version`) hooking up RuntimeConfig.vectorized.
+- Added support for `meta.vectorized` in optimizer configs; runner merges cache-overrides per trial.
+- Added pytest parity regression (`tests/test_vectorized_features.py`).
+
 ## [0.6.0] - 2025-10-10 (Phase-6c COMPLETE)
 
 ### 🚨 CRITICAL BUG FIX - Phase-6a
 
 **Bollinger Bands Standard Deviation Bug:**
+
 - **Problem:** Vectorized BB calculation used `ddof=1` (sample std), per-sample used `ddof=0` (population std)
 - **Impact:** 1.21% systematic error in `bb_position_inv_ma3` feature
 - **Result:** ALL features and models from before 2025-10-10 were INVALID
@@ -162,18 +189,21 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 ### Performance - Phase-6c
 
 **Model: tBTCUSD_1h_v3.json**
+
 - IC @ 20-bar: +0.0528 (EXCELLENT, p<0.001, ICIR 0.51)
 - Bear regime: IC +0.0946, 58.6% win rate, calib boost a=4.15
 - Bull regime: IC +0.0124 (NOT significant), blocked by high threshold (0.90)
 - Ranging: IC +0.0456, normal behavior, threshold 0.50
 
 **Data Quality:**
+
 - Candle integrity: 93.75% (GOOD)
 - Source: Bitfinex REST API v2 (authentic market data)
 - ATR: 0.57% median (realistic for BTC)
 - Zero flat bars, minimal gaps
 
 **System Health:**
+
 - 334/334 tests passing
 - All indicators validated (machine precision)
 - Clean codebase (Ruff + Black + Bandit)
@@ -276,6 +306,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 ### Added - Phase-4
 
 **E2E Strategy Pipeline:**
+
 - `src/core/strategy/evaluate.py` - Complete orchestration pipeline
   - Feature extraction → ML prediction → Confidence → Regime → Decision
   - Comprehensive metadata tracking
@@ -284,6 +315,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
   - FastAPI endpoint: `POST /strategy/evaluate`
 
 **Observability & Monitoring:**
+
 - `src/core/observability/` - Complete observability framework
   - `metrics.py` - Prometheus metrics (30+ metrics)
   - `health.py` - Health checks (6 checks: API, features, model, config, regime, decision)
@@ -291,6 +323,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
   - FastAPI endpoints: `/health`, `/metrics`
 
 **Dashboard:**
+
 - `ui/index.html` - Real-time trading dashboard
   - Live strategy evaluation
   - Candlestick charts (lightweight-charts)
@@ -300,6 +333,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
   - Performance metrics
 
 **Paper Trading:**
+
 - `src/core/paper/` - Paper trading simulation
   - Virtual wallet management
   - Order submission (TEST symbols only)
@@ -308,6 +342,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
   - FastAPI endpoints: `/paper/submit`, `/paper/estimate`, `/paper/whitelist`
 
 **Account & Market Data:**
+
 - FastAPI endpoints for account info:
   - `GET /account/wallets` - Wallet balances
   - `GET /account/positions` - Active positions
@@ -316,6 +351,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
   - `GET /public/candles` - Historical OHLCV data
 
 **Development Tools:**
+
 - `GET /debug/auth` - Test REST authentication
 - `POST /models/reload` - Force clear model cache
 
@@ -347,6 +383,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 ### Added - Phase-3
 
 **ML Training Pipeline:**
+
 - `scripts/precompute_features.py` - Batch feature extraction
 - `src/core/ml/labeling.py` - Binary and multiclass label generation
 - `scripts/train_model.py` - Logistic Regression training with GridSearchCV
@@ -355,23 +392,27 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 - `scripts/select_champion.py` - Automated model selection
 
 **Feature Engineering:**
+
 - `src/core/indicators/bollinger.py` - Bollinger Bands (23 tests)
 - `src/core/indicators/volume.py` - Volume analysis (36 tests)
 - Enhanced regime detection (Bull/Bear/Ranging/Balanced)
 - 11-feature extraction (EMA, RSI, ATR, BB, ADX, Volume, OBV)
 
 **Triple-Barrier Labeling:**
+
 - Fixed threshold labels (profit/stop/time barriers)
 - Adaptive ATR-based labels (volatility-aware)
 - Noise filtering (small moves → None labels)
 
 **Confidence & Edge Filtering:**
+
 - Min edge requirement in decision logic
 - Configurable via `cfg["thresholds"]["min_edge"]`
 
 ### Results - Phase-3
 
 **Champion Model: v3_adaptive_6m**
+
 - AUC: 0.5987 (+15.8% vs baseline 0.517)
 - Features: 11
 - Labeling: Adaptive triple-barrier (1.5x/1.0x ATR)
@@ -391,6 +432,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 ### Added - Phase-2
 
 **Backtest Framework:**
+
 - `BacktestEngine` - Bar-by-bar historical replay
 - `PositionTracker` - PnL tracking with commission/slippage
 - `Metrics` - Sharpe, max DD, win rate, profit factor, Sortino, Calmar
@@ -399,6 +441,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 - 28 comprehensive tests
 
 **Data Foundation:**
+
 - `scripts/fetch_historical.py` - Historiska candles från Bitfinex (Parquet)
 - `scripts/validate_data.py` - Datakvalitetsvalidering
 - Kuraterad struktur: `data/curated/v1/candles/` (aktiva datasets), `data/raw/bitfinex/`, `data/metadata/curated/`
@@ -406,11 +449,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 - Initial data: tBTCUSD/tETHUSD 15m/1h, 3 månader, 99.9%+ kvalitet
 
 **API Improvements:**
+
 - `GET /paper/estimate` - Calculate min/max order size (wallet-aware)
 - `GET /paper/whitelist` - List TEST symbols for paper trading
 - `POST /models/reload` - Force clear model cache
 
 **Utilities:**
+
 - `src/core/utils/crypto.py` - Shared HMAC signature building (DRY)
 
 ### Changed - Phase-2
@@ -439,6 +484,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 ### Added - Phase-1
 
 **SSOT Runtime Config API:**
+
 - `GET /config/runtime` - Read current config
 - `POST /config/runtime/validate` - Validate config changes
 - `POST /config/runtime/propose` - Propose changes (optimistic locking)
@@ -447,6 +493,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 - Config seeding from `config/runtime.seed.json` on first start
 
 **Strategy Pipeline:**
+
 - Feature extraction (EMA, RSI)
 - Probability model (buy/sell predictions)
 - Confidence scoring
@@ -454,11 +501,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 - Decision logic (EV-based, gates, hysteresis)
 
 **UI Improvements:**
+
 - Config version/hash display in status panel
 - Bearer token input for config proposals
 - `localStorage.ui_bearer` token persistence
 
 **Symbol Mapping:**
+
 - `SymbolMapper` - Normalize between human (`BTCUSD`) and Bitfinex (`tBTCUSD`)
 - Supports `SYMBOL_MODE=realistic|synthetic` via env var
 
@@ -470,6 +519,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 ### Migration - Phase-1
 
 **Config API Migration:**
+
 - Read: `GET /config/runtime` → `{ cfg, version, hash }`
 - Validate: `POST /config/runtime/validate` with full config
 - Propose: `POST /config/runtime/propose` with `{ patch, actor, expected_version }` and `Authorization: Bearer <token>`

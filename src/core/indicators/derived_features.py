@@ -13,7 +13,6 @@ without the non-stationary visual pattern recognition:
 7. price_reversion_potential: Inverted stretch signal
 """
 
-import numpy as np
 import pandas as pd
 
 
@@ -44,20 +43,20 @@ def calculate_momentum_displacement_z(
     # OPTIMIZED: Vectorized calculation using pandas
     close_series = pd.Series(closes)
     atr_series = pd.Series(atr_values) if atr_values else pd.Series([1.0] * len(closes))
-    
+
     # Extend ATR if shorter than closes
     if len(atr_series) < len(close_series):
         atr_series = atr_series.reindex(close_series.index, fill_value=1.0)
-    
+
     # Calculate displacement: (close[i] - close[i-period]) / ATR[i]
     delta_close = close_series.diff(period)
     displacement = delta_close / atr_series.where(atr_series > 0, 1.0)
-    
+
     # Rolling z-score
     rolling_mean = displacement.rolling(window=window, min_periods=10).mean()
     rolling_std = displacement.rolling(window=window, min_periods=10).std()
     z_score = (displacement - rolling_mean) / rolling_std.where(rolling_std > 0, 1.0)
-    
+
     return z_score.fillna(0.0).tolist()
 
 
@@ -89,19 +88,19 @@ def calculate_price_stretch_z(
     close_series = pd.Series(closes)
     ema_series = pd.Series(ema_values)
     atr_series = pd.Series(atr_values) if atr_values else pd.Series([1.0] * len(closes))
-    
+
     # Extend ATR if needed
     if len(atr_series) < len(close_series):
         atr_series = atr_series.reindex(close_series.index, fill_value=1.0)
-    
+
     # Calculate stretch: (close - EMA) / ATR
     stretch = (close_series - ema_series) / atr_series.where(atr_series > 0, 1.0)
-    
+
     # Rolling z-score
     rolling_mean = stretch.rolling(window=window, min_periods=10).mean()
     rolling_std = stretch.rolling(window=window, min_periods=10).std()
     z_score = (stretch - rolling_mean) / rolling_std.where(rolling_std > 0, 1.0)
-    
+
     return z_score.fillna(0.0).tolist()
 
 
@@ -213,12 +212,12 @@ def calculate_volume_anomaly_z(
     """
     # OPTIMIZED: Vectorized calculation
     vol_series = pd.Series(volumes)
-    
+
     # Rolling z-score
     rolling_mean = vol_series.rolling(window=window, min_periods=10).mean()
     rolling_std = vol_series.rolling(window=window, min_periods=10).std()
     z_score = (vol_series - rolling_mean) / rolling_std.where(rolling_std > 0, 1.0)
-    
+
     return z_score.fillna(0.0).tolist()
 
 
@@ -243,16 +242,16 @@ def calculate_regime_persistence(
 
     # OPTIMIZED: Vectorized calculation
     ema_series = pd.Series(ema_values)
-    
+
     # Calculate slope and sign
     slope = ema_series.pct_change()
     signs = pd.Series(0.0, index=ema_series.index)
     signs[slope > 0] = 1.0
     signs[slope < 0] = -1.0
-    
+
     # Rolling mean of signs
     persistence = signs.rolling(window=window, min_periods=window).mean()
-    
+
     return persistence.fillna(0.0).tolist()
 
 

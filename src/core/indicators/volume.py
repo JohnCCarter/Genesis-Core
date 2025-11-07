@@ -164,10 +164,10 @@ def calculate_volume_ema(volume: list[float], period: int) -> list[float]:
     # OPTIMIZED: Use pandas ewm (exponentially weighted mean)
     vol_series = pd.Series(volume)
     ema_series = vol_series.ewm(span=period, adjust=False).mean()
-    
+
     # Mark first period-1 values as NaN (not fully initialized)
-    ema_series.iloc[:period-1] = float("nan")
-    
+    ema_series.iloc[: period - 1] = float("nan")
+
     return ema_series.tolist()
 
 
@@ -209,31 +209,31 @@ def volume_price_divergence(
     # OPTIMIZED: Vectorized calculation using pandas
     price_series = pd.Series(close)
     vol_series = pd.Series(volume)
-    
+
     # Calculate rolling trends (vectorized)
     price_start = price_series.shift(lookback - 1)
     price_trend = (price_series - price_start) / price_start.where(price_start != 0, 1)
-    
+
     vol_start = vol_series.shift(lookback - 1)
     vol_trend = (vol_series - vol_start) / vol_start.where(vol_start != 0, 1)
-    
+
     # Detect divergence: opposite signs
     opposite_signs = price_trend * vol_trend < 0
-    
+
     # Calculate divergence score
     divergence = pd.Series(0.0, index=price_series.index)
-    
+
     # Bullish divergence: price down, volume up
     bullish_mask = opposite_signs & (price_trend < 0) & (vol_trend > 0)
     divergence[bullish_mask] = abs(price_trend * vol_trend)[bullish_mask]
-    
+
     # Bearish divergence: price up, volume down
     bearish_mask = opposite_signs & (price_trend > 0) & (vol_trend < 0)
     divergence[bearish_mask] = -abs(price_trend * vol_trend)[bearish_mask]
-    
+
     # Mark insufficient data as NaN
-    divergence.iloc[:lookback-1] = float("nan")
-    
+    divergence.iloc[: lookback - 1] = float("nan")
+
     return divergence.tolist()
 
 
@@ -266,18 +266,18 @@ def obv(close: list[float], volume: list[float]) -> list[float]:
     # OPTIMIZED: Vectorized OBV calculation
     close_series = pd.Series(close)
     vol_series = pd.Series(volume)
-    
+
     # Calculate price direction: 1 (up), -1 (down), 0 (unchanged)
     price_diff = close_series.diff()
     direction = pd.Series(0, index=close_series.index, dtype=int)
     direction[price_diff > 0] = 1
     direction[price_diff < 0] = -1
-    
+
     # OBV = cumulative sum of (volume * direction)
     # First bar: direction is 0, so we need to handle separately
     signed_volume = vol_series * direction
     signed_volume.iloc[0] = vol_series.iloc[0]  # First value is just volume
-    
+
     obv_series = signed_volume.cumsum()
-    
+
     return obv_series.tolist()

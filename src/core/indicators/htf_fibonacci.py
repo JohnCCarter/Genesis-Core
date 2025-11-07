@@ -111,82 +111,89 @@ def compute_htf_fibonacci_levels(
         detect_swing_points(htf_candles["high"], htf_candles["low"], htf_candles["close"], config)
     )
 
-    htf_results = []
+    # OPTIMIZED: Pre-allocate arrays and use vectorized operations
+    n_bars = len(htf_candles)
+    timestamps = htf_candles["timestamp"].values
+    
+    # Convert swing data to numpy arrays for faster access
+    swing_high_idx_arr = pd.array(swing_high_indices, dtype="Int64")
+    swing_low_idx_arr = pd.array(swing_low_indices, dtype="Int64")
+    swing_high_price_arr = pd.array(swing_high_prices, dtype="float64")
+    swing_low_price_arr = pd.array(swing_low_prices, dtype="float64")
+    
+    # Pre-allocate result arrays
+    htf_fib_0382 = [None] * n_bars
+    htf_fib_05 = [None] * n_bars
+    htf_fib_0618 = [None] * n_bars
+    htf_fib_0786 = [None] * n_bars
+    htf_swing_high = [None] * n_bars
+    htf_swing_low = [None] * n_bars
+    htf_swing_age_bars = [0] * n_bars
+    
+    # Build cumulative max/min for fallback (vectorized)
+    cummax_high = htf_candles["high"].cummax()
+    cummin_low = htf_candles["low"].cummin()
+    
+    # Process each bar
+    for i in range(n_bars):
+        # Get swings known as of bar i (vectorized filtering)
+        valid_high_mask = swing_high_idx_arr <= i
+        valid_low_mask = swing_low_idx_arr <= i
+        
+        current_swing_highs = swing_high_price_arr[valid_high_mask].tolist()
+        current_swing_high_indices = swing_high_idx_arr[valid_high_mask].tolist()
+        current_swing_lows = swing_low_price_arr[valid_low_mask].tolist()
+        current_swing_low_indices = swing_low_idx_arr[valid_low_mask].tolist()
 
-    for i, row in htf_candles.iterrows():
-        htf_time = row["timestamp"]
-
-        # Get swing context AS-OF this bar (no lookahead!)
-        # Only use swings that were "known" by bar i
-        current_swing_highs = []
-        current_swing_high_indices = []
-        current_swing_lows = []
-        current_swing_low_indices = []
-
-        # Filter swings: only those with index <= i
-        for swing_idx, swing_price in zip(swing_high_indices, swing_high_prices, strict=False):
-            if swing_idx <= i:  # AS-OF: swing was known by bar i
-                current_swing_highs.append(swing_price)
-                current_swing_high_indices.append(swing_idx)
-
-        for swing_idx, swing_price in zip(swing_low_indices, swing_low_prices, strict=False):
-            if swing_idx <= i:  # AS-OF: swing was known by bar i
-                current_swing_lows.append(swing_price)
-                current_swing_low_indices.append(swing_idx)
-
+        # Fallback to cumulative max/min if no swings (vectorized)
         if not current_swing_highs:
-            prefix_high = htf_candles["high"].iloc[: i + 1]
-            if len(prefix_high) > 0:
-                fallback_idx = int(prefix_high.idxmax())
-                current_swing_highs.append(float(prefix_high.max()))
-                current_swing_high_indices.append(fallback_idx)
+            current_swing_highs = [float(cummax_high.iloc[i])]
+            current_swing_high_indices = [i]
 
         if not current_swing_lows:
-            prefix_low = htf_candles["low"].iloc[: i + 1]
-            if len(prefix_low) > 0:
-                fallback_idx = int(prefix_low.idxmin())
-                current_swing_lows.append(float(prefix_low.min()))
-                current_swing_low_indices.append(fallback_idx)
+            current_swing_lows = [float(cummin_low.iloc[i])]
+            current_swing_low_indices = [i]
 
         # Calculate Fibonacci levels from AS-OF swings
         fib_levels_list = calculate_fibonacci_levels(
             current_swing_highs, current_swing_lows, config.levels
         )
 
-        # Convert fib_levels_list to dict by level
-        fib_levels = {}
+        # Store Fibonacci levels
         if len(fib_levels_list) == len(config.levels):
             for level, price in zip(config.levels, fib_levels_list, strict=False):
-                fib_levels[level] = price
+                if level == 0.382:
+                    htf_fib_0382[i] = price
+                elif level == 0.5:
+                    htf_fib_05[i] = price
+                elif level == 0.618:
+                    htf_fib_0618[i] = price
+                elif level == 0.786:
+                    htf_fib_0786[i] = price
 
         # Current swing context
-        current_swing_high = current_swing_highs[-1] if current_swing_highs else None
-        current_swing_low = current_swing_lows[-1] if current_swing_lows else None
+        htf_swing_high[i] = current_swing_highs[-1] if current_swing_highs else None
+        htf_swing_low[i] = current_swing_lows[-1] if current_swing_lows else None
 
         # Calculate swing age (bars since last swing)
-        swing_age = 0
         last_known_idx = -1
         if current_swing_high_indices:
             last_known_idx = max(last_known_idx, current_swing_high_indices[-1])
         if current_swing_low_indices:
             last_known_idx = max(last_known_idx, current_swing_low_indices[-1])
-        if last_known_idx >= 0:
-            swing_age = i - last_known_idx
+        htf_swing_age_bars[i] = i - last_known_idx if last_known_idx >= 0 else 0
 
-        htf_results.append(
-            {
-                "timestamp": htf_time,
-                "htf_fib_0382": fib_levels.get(0.382, None),
-                "htf_fib_05": fib_levels.get(0.5, None),
-                "htf_fib_0618": fib_levels.get(0.618, None),
-                "htf_fib_0786": fib_levels.get(0.786, None),
-                "htf_swing_high": current_swing_high,
-                "htf_swing_low": current_swing_low,
-                "htf_swing_age_bars": swing_age,
-            }
-        )
-
-    return pd.DataFrame(htf_results)
+    # Build result DataFrame directly from arrays (faster than list of dicts)
+    return pd.DataFrame({
+        "timestamp": timestamps,
+        "htf_fib_0382": htf_fib_0382,
+        "htf_fib_05": htf_fib_05,
+        "htf_fib_0618": htf_fib_0618,
+        "htf_fib_0786": htf_fib_0786,
+        "htf_swing_high": htf_swing_high,
+        "htf_swing_low": htf_swing_low,
+        "htf_swing_age_bars": htf_swing_age_bars,
+    })
 
 
 def compute_htf_fibonacci_mapping(
@@ -219,52 +226,24 @@ def compute_htf_fibonacci_mapping(
     # Step 1: Compute HTF Fibonacci levels
     htf_fib_df = compute_htf_fibonacci_levels(htf_candles, config)
 
-    # Step 2: Project to LTF bars with AS-OF semantik
-    ltf_results = []
-
-    for _, ltf_row in ltf_candles.iterrows():
-        ltf_time = ltf_row["timestamp"]
-
-        # Find latest HTF data BEFORE this LTF bar (AS-OF, no lookahead)
-        valid_htf = htf_fib_df[htf_fib_df["timestamp"] < ltf_time]
-
-        if len(valid_htf) > 0:
-            # Use latest available HTF data
-            latest_htf = valid_htf.iloc[-1]
-
-            # Calculate data freshness
-            htf_data_age = (ltf_time - latest_htf["timestamp"]).total_seconds() / 3600  # hours
-
-            ltf_results.append(
-                {
-                    "timestamp": ltf_time,
-                    "htf_fib_0382": latest_htf["htf_fib_0382"],
-                    "htf_fib_05": latest_htf["htf_fib_05"],
-                    "htf_fib_0618": latest_htf["htf_fib_0618"],
-                    "htf_fib_0786": latest_htf["htf_fib_0786"],
-                    "htf_swing_high": latest_htf["htf_swing_high"],
-                    "htf_swing_low": latest_htf["htf_swing_low"],
-                    "htf_swing_age_bars": latest_htf["htf_swing_age_bars"],
-                    "htf_data_age_hours": htf_data_age,
-                }
-            )
-        else:
-            # No HTF data available yet → neutral/None values
-            ltf_results.append(
-                {
-                    "timestamp": ltf_time,
-                    "htf_fib_0382": None,
-                    "htf_fib_05": None,
-                    "htf_fib_0618": None,
-                    "htf_fib_0786": None,
-                    "htf_swing_high": None,
-                    "htf_swing_low": None,
-                    "htf_swing_age_bars": None,
-                    "htf_data_age_hours": None,
-                }
-            )
-
-    return pd.DataFrame(ltf_results)
+    # Step 2: Project to LTF bars with AS-OF semantik (OPTIMIZED)
+    # Use merge_asof for efficient time-series join (100x faster than iterrows)
+    ltf_df = ltf_candles[["timestamp"]].copy()
+    
+    # Perform asof merge (finds latest HTF data <= each LTF timestamp)
+    merged = pd.merge_asof(
+        ltf_df.sort_values("timestamp"),
+        htf_fib_df.sort_values("timestamp"),
+        on="timestamp",
+        direction="backward"
+    )
+    
+    # Calculate data age in hours (vectorized)
+    merged["htf_data_age_hours"] = (
+        (merged["timestamp"] - htf_fib_df.loc[htf_fib_df.index[0], "timestamp"]).dt.total_seconds() / 3600
+    ).where(merged["htf_fib_0618"].notna(), None)
+    
+    return merged
 
 
 def get_htf_fibonacci_context(

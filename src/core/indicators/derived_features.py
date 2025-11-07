@@ -13,6 +13,9 @@ without the non-stationary visual pattern recognition:
 7. price_reversion_potential: Inverted stretch signal
 """
 
+import numpy as np
+import pandas as pd
+
 
 def calculate_momentum_displacement_z(
     closes: list[float],
@@ -38,39 +41,24 @@ def calculate_momentum_displacement_z(
     if len(closes) < period + 1:
         return [0.0] * len(closes)
 
-    # Calculate raw displacement
-    displacement = []
-    for i in range(len(closes)):
-        if i < period:
-            displacement.append(0.0)
-            continue
-
-        delta_close = closes[i] - closes[i - period]
-        atr = atr_values[i] if i < len(atr_values) else 1.0
-
-        if atr > 0:
-            displacement.append(delta_close / atr)
-        else:
-            displacement.append(0.0)
-
+    # OPTIMIZED: Vectorized calculation using pandas
+    close_series = pd.Series(closes)
+    atr_series = pd.Series(atr_values) if atr_values else pd.Series([1.0] * len(closes))
+    
+    # Extend ATR if shorter than closes
+    if len(atr_series) < len(close_series):
+        atr_series = atr_series.reindex(close_series.index, fill_value=1.0)
+    
+    # Calculate displacement: (close[i] - close[i-period]) / ATR[i]
+    delta_close = close_series.diff(period)
+    displacement = delta_close / atr_series.where(atr_series > 0, 1.0)
+    
     # Rolling z-score
-    result = []
-    for i in range(len(displacement)):
-        if i < 10:  # Minimum data
-            result.append(0.0)
-            continue
-
-        window_data = displacement[max(0, i - window + 1) : i + 1]
-        mean = sum(window_data) / len(window_data)
-        variance = sum((x - mean) ** 2 for x in window_data) / len(window_data)
-        std = variance**0.5
-
-        if std > 0:
-            result.append((displacement[i] - mean) / std)
-        else:
-            result.append(0.0)
-
-    return result
+    rolling_mean = displacement.rolling(window=window, min_periods=10).mean()
+    rolling_std = displacement.rolling(window=window, min_periods=10).std()
+    z_score = (displacement - rolling_mean) / rolling_std.where(rolling_std > 0, 1.0)
+    
+    return z_score.fillna(0.0).tolist()
 
 
 def calculate_price_stretch_z(
@@ -97,36 +85,24 @@ def calculate_price_stretch_z(
     if len(closes) != len(ema_values):
         return [0.0] * len(closes)
 
-    # Calculate raw stretch
-    stretch = []
-    for i in range(len(closes)):
-        if i >= len(ema_values) or i >= len(atr_values):
-            stretch.append(0.0)
-            continue
-
-        price_diff = closes[i] - ema_values[i]
-        atr = atr_values[i] if atr_values[i] > 0 else 1.0
-
-        stretch.append(price_diff / atr)
-
+    # OPTIMIZED: Vectorized calculation
+    close_series = pd.Series(closes)
+    ema_series = pd.Series(ema_values)
+    atr_series = pd.Series(atr_values) if atr_values else pd.Series([1.0] * len(closes))
+    
+    # Extend ATR if needed
+    if len(atr_series) < len(close_series):
+        atr_series = atr_series.reindex(close_series.index, fill_value=1.0)
+    
+    # Calculate stretch: (close - EMA) / ATR
+    stretch = (close_series - ema_series) / atr_series.where(atr_series > 0, 1.0)
+    
     # Rolling z-score
-    result = []
-    for i in range(len(stretch)):
-        if i < 10:
-            result.append(0.0)
-            continue
-
-        window_data = stretch[max(0, i - window + 1) : i + 1]
-        mean = sum(window_data) / len(window_data)
-        variance = sum((x - mean) ** 2 for x in window_data) / len(window_data)
-        std = variance**0.5
-
-        if std > 0:
-            result.append((stretch[i] - mean) / std)
-        else:
-            result.append(0.0)
-
-    return result
+    rolling_mean = stretch.rolling(window=window, min_periods=10).mean()
+    rolling_std = stretch.rolling(window=window, min_periods=10).std()
+    z_score = (stretch - rolling_mean) / rolling_std.where(rolling_std > 0, 1.0)
+    
+    return z_score.fillna(0.0).tolist()
 
 
 def calculate_trend_confluence(
@@ -235,24 +211,15 @@ def calculate_volume_anomaly_z(
     Returns:
         Z-scored volume
     """
-    result = []
-
-    for i in range(len(volumes)):
-        if i < 10:
-            result.append(0.0)
-            continue
-
-        window_data = volumes[max(0, i - window + 1) : i + 1]
-        mean = sum(window_data) / len(window_data)
-        variance = sum((x - mean) ** 2 for x in window_data) / len(window_data)
-        std = variance**0.5
-
-        if std > 0:
-            result.append((volumes[i] - mean) / std)
-        else:
-            result.append(0.0)
-
-    return result
+    # OPTIMIZED: Vectorized calculation
+    vol_series = pd.Series(volumes)
+    
+    # Rolling z-score
+    rolling_mean = vol_series.rolling(window=window, min_periods=10).mean()
+    rolling_std = vol_series.rolling(window=window, min_periods=10).std()
+    z_score = (vol_series - rolling_mean) / rolling_std.where(rolling_std > 0, 1.0)
+    
+    return z_score.fillna(0.0).tolist()
 
 
 def calculate_regime_persistence(
@@ -274,27 +241,19 @@ def calculate_regime_persistence(
     if len(ema_values) < window + 1:
         return [0.0] * len(ema_values)
 
-    # Calculate slope signs
-    signs = [0.0]  # First bar has no slope
-    for i in range(1, len(ema_values)):
-        if ema_values[i - 1] != 0:
-            slope = (ema_values[i] - ema_values[i - 1]) / ema_values[i - 1]
-            signs.append(1.0 if slope > 0 else -1.0 if slope < 0 else 0.0)
-        else:
-            signs.append(0.0)
-
+    # OPTIMIZED: Vectorized calculation
+    ema_series = pd.Series(ema_values)
+    
+    # Calculate slope and sign
+    slope = ema_series.pct_change()
+    signs = pd.Series(0.0, index=ema_series.index)
+    signs[slope > 0] = 1.0
+    signs[slope < 0] = -1.0
+    
     # Rolling mean of signs
-    result = []
-    for i in range(len(signs)):
-        if i < window:
-            result.append(0.0)
-            continue
-
-        window_signs = signs[i - window + 1 : i + 1]
-        persistence = sum(window_signs) / len(window_signs)
-        result.append(persistence)
-
-    return result
+    persistence = signs.rolling(window=window, min_periods=window).mean()
+    
+    return persistence.fillna(0.0).tolist()
 
 
 def calculate_price_reversion_potential(

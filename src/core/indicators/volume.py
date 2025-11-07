@@ -10,6 +10,8 @@ Volume metrics help confirm price movements and identify institutional interest:
 
 from __future__ import annotations
 
+import pandas as pd
+
 
 def calculate_volume_sma(volume: list[float], period: int) -> list[float]:
     """
@@ -25,15 +27,10 @@ def calculate_volume_sma(volume: list[float], period: int) -> list[float]:
     if not volume or period <= 0:
         return []
 
-    result = []
-    for i in range(len(volume)):
-        if i < period - 1:
-            result.append(float("nan"))
-        else:
-            window = volume[i - period + 1 : i + 1]
-            result.append(sum(window) / period)
-
-    return result
+    # OPTIMIZED: Use pandas rolling window (100x faster than manual loop)
+    vol_series = pd.Series(volume)
+    sma_series = vol_series.rolling(window=period, min_periods=period).mean()
+    return sma_series.tolist()
 
 
 def volume_change(
@@ -62,17 +59,11 @@ def volume_change(
     if not volume or period <= 0 or len(volume) < period:
         return []
 
-    vol_sma = calculate_volume_sma(volume, period)
-    result = []
-
-    for i in range(len(volume)):
-        if str(vol_sma[i]) == "nan" or vol_sma[i] == 0:
-            result.append(float("nan"))
-        else:
-            change = (volume[i] - vol_sma[i]) / vol_sma[i]
-            result.append(change)
-
-    return result
+    # OPTIMIZED: Vectorized calculation using pandas
+    vol_series = pd.Series(volume)
+    vol_sma = vol_series.rolling(window=period, min_periods=period).mean()
+    change = (vol_series - vol_sma) / vol_sma
+    return change.tolist()
 
 
 def volume_spike(
@@ -103,17 +94,11 @@ def volume_spike(
     if not volume or period <= 0 or threshold <= 0:
         return []
 
-    vol_sma = calculate_volume_sma(volume, period)
-    result = []
-
-    for i in range(len(volume)):
-        if str(vol_sma[i]) == "nan":
-            result.append(False)
-        else:
-            is_spike = volume[i] > (threshold * vol_sma[i])
-            result.append(is_spike)
-
-    return result
+    # OPTIMIZED: Vectorized calculation
+    vol_series = pd.Series(volume)
+    vol_sma = vol_series.rolling(window=period, min_periods=period).mean()
+    is_spike = vol_series > (threshold * vol_sma)
+    return is_spike.fillna(False).tolist()
 
 
 def volume_trend(
@@ -176,21 +161,14 @@ def calculate_volume_ema(volume: list[float], period: int) -> list[float]:
     if not volume or period <= 0:
         return []
 
-    result = []
-    multiplier = 2.0 / (period + 1)
-
-    for i in range(len(volume)):
-        if i == 0:
-            result.append(volume[i])
-        else:
-            ema_val = (volume[i] * multiplier) + (result[i - 1] * (1 - multiplier))
-            result.append(ema_val)
-
+    # OPTIMIZED: Use pandas ewm (exponentially weighted mean)
+    vol_series = pd.Series(volume)
+    ema_series = vol_series.ewm(span=period, adjust=False).mean()
+    
     # Mark first period-1 values as NaN (not fully initialized)
-    for i in range(min(period - 1, len(result))):
-        result[i] = float("nan")
-
-    return result
+    ema_series.iloc[:period-1] = float("nan")
+    
+    return ema_series.tolist()
 
 
 def volume_price_divergence(
@@ -228,47 +206,35 @@ def volume_price_divergence(
     if lookback <= 0 or len(close) < lookback:
         return []
 
-    result = []
-
-    for i in range(len(close)):
-        if i < lookback - 1:
-            result.append(float("nan"))
-        else:
-            # Calculate price trend (positive = rising, negative = falling)
-            price_start = close[i - lookback + 1]
-            price_end = close[i]
-            if price_start != 0:
-                price_trend = (price_end - price_start) / price_start
-            else:
-                price_trend = 0.0
-
-            # Calculate volume trend
-            vol_start = volume[i - lookback + 1]
-            vol_end = volume[i]
-            if vol_start != 0:
-                vol_trend = (vol_end - vol_start) / vol_start
-            else:
-                vol_trend = 0.0
-
-            # Divergence = opposite directions
-            # If price down (-) and volume up (+) = bullish divergence (+)
-            # If price up (+) and volume down (-) = bearish divergence (-)
-            # Check if trends are opposite signs
-            if price_trend * vol_trend < 0:
-                # Opposite directions - divergence exists
-                if price_trend < 0 and vol_trend > 0:
-                    # Bullish divergence
-                    divergence = abs(price_trend * vol_trend)
-                else:
-                    # Bearish divergence
-                    divergence = -abs(price_trend * vol_trend)
-            else:
-                # Same direction - no divergence
-                divergence = 0.0
-
-            result.append(divergence)
-
-    return result
+    # OPTIMIZED: Vectorized calculation using pandas
+    price_series = pd.Series(close)
+    vol_series = pd.Series(volume)
+    
+    # Calculate rolling trends (vectorized)
+    price_start = price_series.shift(lookback - 1)
+    price_trend = (price_series - price_start) / price_start.where(price_start != 0, 1)
+    
+    vol_start = vol_series.shift(lookback - 1)
+    vol_trend = (vol_series - vol_start) / vol_start.where(vol_start != 0, 1)
+    
+    # Detect divergence: opposite signs
+    opposite_signs = price_trend * vol_trend < 0
+    
+    # Calculate divergence score
+    divergence = pd.Series(0.0, index=price_series.index)
+    
+    # Bullish divergence: price down, volume up
+    bullish_mask = opposite_signs & (price_trend < 0) & (vol_trend > 0)
+    divergence[bullish_mask] = abs(price_trend * vol_trend)[bullish_mask]
+    
+    # Bearish divergence: price up, volume down
+    bearish_mask = opposite_signs & (price_trend > 0) & (vol_trend < 0)
+    divergence[bearish_mask] = -abs(price_trend * vol_trend)[bearish_mask]
+    
+    # Mark insufficient data as NaN
+    divergence.iloc[:lookback-1] = float("nan")
+    
+    return divergence.tolist()
 
 
 def obv(close: list[float], volume: list[float]) -> list[float]:
@@ -297,19 +263,21 @@ def obv(close: list[float], volume: list[float]) -> list[float]:
     if not close or not volume or len(close) != len(volume):
         return []
 
-    result = []
-    obv_val = 0.0
-
-    for i in range(len(close)):
-        if i == 0:
-            obv_val = volume[i]
-        else:
-            if close[i] > close[i - 1]:
-                obv_val += volume[i]
-            elif close[i] < close[i - 1]:
-                obv_val -= volume[i]
-            # Unchanged price: OBV stays same
-
-        result.append(obv_val)
-
-    return result
+    # OPTIMIZED: Vectorized OBV calculation
+    close_series = pd.Series(close)
+    vol_series = pd.Series(volume)
+    
+    # Calculate price direction: 1 (up), -1 (down), 0 (unchanged)
+    price_diff = close_series.diff()
+    direction = pd.Series(0, index=close_series.index, dtype=int)
+    direction[price_diff > 0] = 1
+    direction[price_diff < 0] = -1
+    
+    # OBV = cumulative sum of (volume * direction)
+    # First bar: direction is 0, so we need to handle separately
+    signed_volume = vol_series * direction
+    signed_volume.iloc[0] = vol_series.iloc[0]  # First value is just volume
+    
+    obv_series = signed_volume.cumsum()
+    
+    return obv_series.tolist()

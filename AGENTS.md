@@ -4,20 +4,44 @@
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
 
-## 1. Deliverables on 24 Oct 2025
+## 1. Deliverables (latest highlights: 2025-11-10)
 
-- Added intraday Fibonacci support via `get_ltf_fibonacci_context` in `src/core/indicators/htf_fibonacci.py` (symmetric helper for 1h/30m/6h timeframes).
-- `src/core/strategy/features_asof.py` now emits both HTF and LTF Fibonacci context; `evaluate_pipeline` persists ATR/Fibonacci metadata in the decision state.
-- Refactored `src/core/strategy/decision.py` to use shared level lookup helpers and optional HTF/LTF entry gates with ATR-based tolerances (debug info persisted in `state_out`).
-- Added `config/optimizer/tBTCUSD_1h_fib_grid_v2.yaml` for fast grids over HTF exit parameters (partials/trailing toggles, ATR thresholds).
-- Captured the latest grid outcomes under `results/hparam_search/run_20251024_*` with matching backtests in `results/backtests/tBTCUSD_1h_20251024_*.json` (champion is unchanged).
+- Robust scoring: PF/DD från trades/equity via `core.backtest.metrics.calculate_metrics` (inte summary). Skyddat `return_to_dd`.
+- `PositionTracker.get_summary()` rapporterar korrekt `profit_factor` (gross_profit/gross_loss) och `max_drawdown` från equity‑kurva.
+- Constraints separerade från scoringens “hard_failures” och styrs via YAML (`include_scoring_failures`).
+- Determinism: runner sätter `GENESIS_RANDOM_SEED=42` om inte redan satt.
+- Performance‑läge: `GENESIS_FAST_WINDOW=1`, `GENESIS_PRECOMPUTE_FEATURES=1` (se `docs/FEATURE_COMPUTATION_MODES.md`).
+- YAML‑schema: bladnoder MÅSTE ha `type: fixed|grid|float|int|loguniform` (annars values/value‑fel).
 
-## 2. 24 Oct experiments (Fibonacci focus)
+## 2. Snabbguide (Optuna körflöde, uppdaterad)
 
-- `run_20251024_094342` (micro sweep without HTF gating): best `trial_001`, score 184.71, +7.39 % net (`results/backtests/tBTCUSD_1h_20251024_115054.json`), PF 4.47 across 62 trades.
-- `run_20251024_100716` (HTF exit grid, ATR threshold 0.60-0.75, trailing 2.4-2.8): best `trial_008`, score 190.35, +7.62 % net (`results/backtests/tBTCUSD_1h_20251024_121459.json`), PF 4.59, 62 trades.
-- `run_20251024_102710` (partials/trailing variants): best `trial_001`, same metrics as above (`results/backtests/tBTCUSD_1h_20251024_123436.json`).
-- None of the new trials beat the reigning champion `run_20251023_141747/trial_002` (score 260.73, +10.43 %, 75 trades). Entry fib gating reduces trade count; calibration is still needed before promoting any new configuration.
+1) Preflight & Validate
+
+```powershell
+python scripts/preflight_optuna_check.py config/optimizer/<config>.yaml
+python scripts/validate_optimizer_config.py config/optimizer/<config>.yaml
+```
+
+2) Miljö (snabbkörning)
+
+```powershell
+$Env:GENESIS_FAST_WINDOW='1'
+$Env:GENESIS_PRECOMPUTE_FEATURES='1'
+$Env:GENESIS_MAX_CONCURRENT='2'
+$Env:GENESIS_RANDOM_SEED='42'
+```
+
+3) Start
+
+```powershell
+python -c "from core.optimizer.runner import run_optimizer; from pathlib import Path; run_optimizer(Path('config/optimizer/<config>.yaml'))"
+```
+
+4) Summera
+
+```powershell
+python scripts/optimizer.py summarize run_<YYYYMMDD_HHMMSS> --top 10
+```
 
 ## 3. Optimisation workflow (coarse -> proxy -> fine)
 
@@ -258,6 +282,55 @@ pip install -e .[dev,ml]
 - 2025-11-03 10:55: `scripts/preflight_optuna_check.py` utökad – varnar om DB-fil redan finns när `resume=false` samt kontrollerar sampler-kwargs. Ny preflight inkluderar kontroll av cachetömning och `n_startup_trials`.
 - 2025-11-03 11:00: Dedikerad storage-mapp `results/hparam_search/storage/` skapad så kommande DB-filer isoleras per kampanj.
 - 2025-11-03 11:05: `src/core/optimizer/runner.py` spårar nu param-signaturer per körning och hoppar över Optuna-förslag som upprepas fler än 10 gånger i rad (stoppar med fel om gränsen nås).
+
+## 20. Optuna-duplicat – detektion och åtgärder (2025-11-10)
+
+### Symptom
+
+- Loggar likt: “Trial N finished with value: 0.0 … Best is trial M with value: 0.0”.
+- Endast 1–2 `trial_*.json` trots många rapporterade trialnummer.
+- Runner‑logg: `[Runner] Trial trial_001 … (score=-100.2)` och sedan inga fler lokala resultatfiler.
+
+### Orsaker
+
+- Skippade försök p.g.a. identiska parametrar inom run: runner markerar `duplicate_within_run` och hoppar över backtest för performance.
+- Objective returnerar 0.0 för skippade trials → TPE får dålig signal och fortsätter föreslå liknande set.
+- För strikt gating/constraints i uppstartsfasen (0 trades) ger ingen feedback till samplern.
+- YAML‑blad utan `type:` kan tysta kollapsa sökrymden (schemafel → allt blir “fixed”).
+
+### Omgående mitigering (utan kodändring)
+
+1) Bredda sökrymden initialt (fler trades):
+   - `thresholds.entry_conf_overall.low: 0.25`
+   - `htf_fib.entry.tolerance_atr: 0.20–0.80`
+   - `ltf_fib.entry.tolerance_atr: 0.20–0.80`
+   - Tillåt `multi_timeframe.allow_ltf_override: true` i grid och sänk `ltf_override_threshold: 0.65–0.85`.
+2) Mildra constraints tidigt:
+   - `constraints.min_trades: 1–3`, `min_profit_factor: 0.8`, `max_max_dd: 0.35`
+   - Låt `include_scoring_failures: false` så scoringens hårda fel inte kortsluter utforskning.
+3) Sampler‑inställningar:
+   - `tpe` med `constant_liar: true`, `multivariate: true`, höj `n_ei_candidates` (128–512).
+   - `OPTUNA_MAX_DUPLICATE_STREAK` högt (t.ex. 2000) så studien inte avbryts för tidigt.
+4) Unika `study_name`/`storage` per körning (timestamp) och tom `_cache/` per kampanj.
+
+### Rekommenderad kodförbättring (nästa agent)
+
+1) Straffa duplicat i objective:
+   - I `src/core/optimizer/runner.py::_run_optuna.objective`: om payload markerats `skipped` eller `duplicate`, returnera en stor negativ poäng (t.ex. `-1e6`) i stället för `0.0`. Detta bryter TPE‑degenerering mot samma parametrar.
+   - Tips: Säkerställ noll‑straff för legitima cache‑träffar endast om du vill återrapportera verklig poäng; för duplicat inom run använd hårt straff.
+2) Telemetri/varning:
+   - Räkna andel skippade trials; varna om `skipped_ratio > 0.5` (“hög duplicatfrekvens – bredda sökrymden eller sänk constraints”).
+3) Pre‑random boost:
+   - Överväg 20–30 initiala `RandomSampler`‑trials innan TPE (eller `tpe` med hög `n_startup_trials`) för att sprida förslag bättre.
+
+### Checklista – innan långkörning
+
+- [ ] YAML‑blad har `type:` (`fixed|grid|float|int|loguniform`).
+- [ ] `study_name`/`storage` unika vid `resume=false`.
+- [ ] `GENESIS_FAST_WINDOW` + `GENESIS_PRECOMPUTE_FEATURES` aktiva vid stora körningar.
+- [ ] `GENESIS_RANDOM_SEED` satt (runner sätter 42 om saknas) – reproducera 2×.
+- [ ] `OPTUNA_MAX_DUPLICATE_STREAK` satt till högt värde (≥200).
+- [ ] Sökrymden ger trades i smoke (2–5 trials) innan långkörning.
 
 ## 19. HTF-exit tuning 3 nov 2025
 

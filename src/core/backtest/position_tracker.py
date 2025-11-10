@@ -527,6 +527,9 @@ class PositionTracker:
 
     def get_summary(self) -> dict:
         """Get backtest summary statistics."""
+        # Local import to avoid global dependency if numpy isn't needed elsewhere
+        import numpy as _np
+
         total_return = (self.capital - self.initial_capital) / self.initial_capital * 100
         num_trades = len(self.trades)
         winning_trades = [t for t in self.trades if t.pnl > 0]
@@ -535,6 +538,23 @@ class PositionTracker:
         win_rate = len(winning_trades) / num_trades * 100 if num_trades > 0 else 0
         avg_win = sum(t.pnl for t in winning_trades) / len(winning_trades) if winning_trades else 0
         avg_loss = sum(t.pnl for t in losing_trades) / len(losing_trades) if losing_trades else 0
+
+        # Compute profit factor using gross profit/loss (industry standard)
+        gross_profit = sum(t.pnl for t in winning_trades) if winning_trades else 0.0
+        gross_loss = abs(sum(t.pnl for t in losing_trades)) if losing_trades else 0.0
+        profit_factor = (gross_profit / gross_loss) if gross_loss > 0 else float("inf")
+
+        # Compute max drawdown (%) from equity curve when available
+        if self.equity_curve:
+            equity_values = [p.get("total_equity", self.capital) for p in self.equity_curve]
+            if len(equity_values) > 1:
+                running_max = _np.maximum.accumulate(equity_values)
+                drawdowns = (running_max - _np.asarray(equity_values)) / running_max * 100.0
+                max_drawdown = float(_np.max(drawdowns)) if drawdowns.size > 0 else 0.0
+            else:
+                max_drawdown = 0.0
+        else:
+            max_drawdown = 0.0
 
         return {
             "initial_capital": self.initial_capital,
@@ -548,9 +568,10 @@ class PositionTracker:
             "win_rate": win_rate,
             "avg_win": avg_win,
             "avg_loss": avg_loss,
-            "profit_factor": (abs(avg_win / avg_loss) if avg_loss != 0 else float("inf")),
+            "profit_factor": profit_factor,
             "max_capital": self.max_capital,
             "min_capital": self.min_capital,
+            "max_drawdown": max_drawdown,
         }
 
     def log_entry_fib_debug(self, debug: dict[str, Any] | None) -> None:

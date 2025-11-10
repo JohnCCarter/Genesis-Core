@@ -17,12 +17,14 @@ def enforce_constraints(
     constraints_cfg: dict[str, Any] | None = None,
 ) -> ConstraintResult:
     reasons: list[str] = []
-    hard_failures = score_obj.get("hard_failures") or []
-
-    if hard_failures:
-        reasons.extend([f"hard_fail:{failure}" for failure in hard_failures])
-
     cfg = constraints_cfg if constraints_cfg is not None else config.get("constraints") or {}
+
+    # Optional: include scoring-level hard failures as constraint reasons
+    include_scoring_failures = bool(cfg.get("include_scoring_failures", False))
+    if include_scoring_failures:
+        hard_failures = score_obj.get("hard_failures") or []
+        if hard_failures:
+            reasons.extend([f"hard_fail:{failure}" for failure in hard_failures])
 
     min_trades = cfg.get("min_trades")
     if isinstance(min_trades, (int | float)):

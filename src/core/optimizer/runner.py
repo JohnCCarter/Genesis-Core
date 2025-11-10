@@ -18,6 +18,18 @@ from typing import Any
 
 import yaml
 
+try:  # optional faster JSON
+    import orjson as _orjson  # type: ignore
+
+    def _json_dumps(obj: Any) -> str:
+        return _orjson.dumps(obj).decode("utf-8")
+
+except Exception:  # pragma: no cover
+
+    def _json_dumps(obj: Any) -> str:
+        return json.dumps(obj, indent=2)
+
+
 from core.optimizer.champion import ChampionCandidate, ChampionManager
 from core.optimizer.constraints import enforce_constraints
 from core.optimizer.scoring import MetricThresholds, score_backtest
@@ -77,7 +89,12 @@ class TrialConfig:
 
 
 def load_search_config(path: Path) -> dict[str, Any]:
-    data = yaml.safe_load(path.read_text())
+    # Läs alltid som UTF-8 (matchar preflight/validator) för att undvika Windows default-encoding-problem.
+    try:
+        text = path.read_text(encoding="utf-8")
+    except Exception as exc:
+        raise ValueError(f"Kunde inte läsa config-filen: {path} ({exc})") from exc
+    data = yaml.safe_load(text)
     if not isinstance(data, dict):
         raise ValueError("search config måste vara YAML-mapp")
     return data
@@ -302,8 +319,28 @@ def _derive_dates(snapshot_id: str) -> tuple[str, str]:
 
 
 def _exec_backtest(
-    cmd: list[str], *, cwd: Path, env: dict[str, str] | None = None
+    cmd: list[str], *, cwd: Path, env: dict[str, str] | None = None, log_path: Path | None = None
 ) -> tuple[int, str]:
+    """
+    Execute backtest as subprocess.
+
+    If log_path is provided, stream stdout/stderr directly to file to minimize memory usage.
+    Returns (returncode, log_text). When log_path is used, log_text will be an empty string.
+    """
+    if log_path is not None:
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(log_path, "w", encoding="utf-8") as log_file:
+            with subprocess.Popen(  # nosec B603
+                cmd,
+                stdout=log_file,
+                stderr=subprocess.STDOUT,
+                text=True,
+                cwd=str(cwd),
+                env=env,
+            ) as proc:
+                proc.wait()
+                return proc.returncode, ""
+    # Fallback: capture to memory
     with subprocess.Popen(  # nosec B603
         cmd,
         stdout=subprocess.PIPE,
@@ -414,7 +451,7 @@ def run_trial(
         # Deep merge trial parameters into default config
         merged_cfg = _deep_merge(default_cfg, trial.parameters)
         config_payload = {"cfg": merged_cfg}
-        _atomic_write_text(config_file, json.dumps(config_payload, indent=2))
+        _atomic_write_text(config_file, _json_dumps(config_payload))
 
     cache_dir = run_dir / "_cache"
     cache_key = hashlib.sha256(key.encode("utf-8")).hexdigest()
@@ -440,7 +477,7 @@ def run_trial(
             payload.setdefault("config_path", config_file.name)
         if not payload.get("parameters"):
             payload["parameters"] = trial.parameters
-        _atomic_write_text(trial_file, json.dumps(payload, indent=2))
+        _atomic_write_text(trial_file, _json_dumps(payload))
         return payload
 
     if trial.start_date and trial.end_date:
@@ -468,6 +505,11 @@ def run_trial(
         "--warmup",
         str(trial.warmup_bars),
     ]
+    # Opt-in performance flags via environment variables
+    if os.environ.get("GENESIS_FAST_WINDOW"):
+        cmd.append("--fast-window")
+    if os.environ.get("GENESIS_PRECOMPUTE_FEATURES"):
+        cmd.append("--precompute-features")
     if config_file is not None:
         cmd.extend(["--config-file", str(config_file)])
 
@@ -476,10 +518,18 @@ def run_trial(
     trial_started = time.perf_counter()
     attempt_durations: list[float] = []
     last_log_output = ""
+
+    # Deterministic seed for subprocess backtests unless explicitly overridden
+    base_env = dict(os.environ)
+    if "GENESIS_RANDOM_SEED" not in base_env or not str(base_env["GENESIS_RANDOM_SEED"]).strip():
+        base_env["GENESIS_RANDOM_SEED"] = "42"
+
     while attempts_remaining > 0:
         attempt_started = time.perf_counter()
         attempts_remaining -= 1
-        returncode, log = _exec_backtest(cmd, cwd=Path(__file__).resolve().parents[3])
+        returncode, log = _exec_backtest(
+            cmd, cwd=Path(__file__).resolve().parents[3], env=base_env, log_path=log_file
+        )
         last_log_output = log
         attempt_duration = time.perf_counter() - attempt_started
         attempt_durations.append(attempt_duration)
@@ -489,7 +539,7 @@ def run_trial(
                     f"{trial.symbol}_{trial.timeframe}_*.json"
                 )
             )[-1]
-            results = json.loads(results_path.read_text())
+            results = json.loads(results_path.read_text(encoding="utf-8"))
             score = score_backtest(results, thresholds=MetricThresholds())
             enforcement = enforce_constraints(
                 score,
@@ -539,7 +589,9 @@ def run_trial(
             print(f"[Runner] Backtest fail, retry om {retry_wait}s")
             time.sleep(retry_wait)
 
-    _atomic_write_text(log_file, last_log_output)
+    # If we didn't stream, persist the captured log
+    if last_log_output:
+        _atomic_write_text(log_file, last_log_output)
     if final_payload is None:
         final_payload = {
             "trial_id": trial_id,
@@ -808,12 +860,16 @@ def _run_optuna(
             raise optuna.TrialPruned()
 
         constraints = payload.get("constraints") or {}
-        if not constraints.get("ok", True):
-            trial.set_user_attr("constraints", constraints)
-            raise optuna.TrialPruned()
-
         score_block = payload.get("score") or {}
         score_value = float(score_block.get("score", 0.0) or 0.0)
+        # Mjuk constraints: returnera straffad poäng istället för att pruna,
+        # så att Optuna kan ranka försök och fortsätta utforskning.
+        if not constraints.get("ok", True):
+            trial.set_user_attr("constraints", constraints)
+            trial.set_user_attr("constraints_soft_fail", True)
+            # Stor negativ straff för att hamna långt under giltiga försök
+            return score_value - 1e6
+
         trial.set_user_attr("score_block", score_block)
         trial.set_user_attr("result_payload", payload)
         return score_value
@@ -875,9 +931,9 @@ def _run_optuna(
     # Performance: Write best trial and metadata in sequence to avoid conflicts
     if best_payload is not None:
         best_json_path = run_dir / "best_trial.json"
-        _atomic_write_text(best_json_path, json.dumps(best_payload, indent=2))
+        _atomic_write_text(best_json_path, _json_dumps(best_payload))
 
-    _atomic_write_text(run_meta_path, json.dumps(_serialize_meta(run_meta), indent=2))
+    _atomic_write_text(run_meta_path, _json_dumps(_serialize_meta(run_meta)))
 
     return results
 
@@ -918,7 +974,15 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
     else:
         max_trials = int(max_trials_raw) or None  # 0 blir None
     allow_resume = bool(runs_cfg.get("resume", True))
-    concurrency = max(1, int(runs_cfg.get("max_concurrent", 1)))
+    # Concurrency: allow env override for quick tuning without YAML edits
+    env_conc = os.environ.get("GENESIS_MAX_CONCURRENT")
+    if env_conc is not None:
+        try:
+            concurrency = max(1, int(env_conc))
+        except ValueError:
+            concurrency = max(1, int(runs_cfg.get("max_concurrent", 1)))
+    else:
+        concurrency = max(1, int(runs_cfg.get("max_concurrent", 1)))
     max_attempts = max(1, int(runs_cfg.get("max_attempts", 2)))
     run_id_resolved = _create_run_id(run_id)
     run_dir = (

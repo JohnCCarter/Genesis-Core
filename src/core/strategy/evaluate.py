@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from typing import Any
 
 from core.observability.metrics import metrics
@@ -27,7 +28,9 @@ def evaluate_pipeline(
     configs = dict(configs or {})
     state = dict(state or {})
 
-    metrics.inc("pipeline_eval_invocations")
+    metrics_enabled = not bool(os.environ.get("GENESIS_DISABLE_METRICS"))
+    if metrics_enabled:
+        metrics.inc("pipeline_eval_invocations")
 
     timeframe = policy.get("timeframe", "1m")
     symbol = policy.get("symbol", "tBTCUSD")
@@ -44,46 +47,76 @@ def evaluate_pipeline(
     feats, feats_meta = extract_features(
         candles, config=configs, timeframe=timeframe, symbol=symbol
     )
-    metrics.event("features_ok", {"keys": list(feats.keys())})
+    if metrics_enabled:
+        metrics.event("features_ok", {"keys": list(feats.keys())})
 
     # Detect regime BEFORE prediction (needed for regime-aware calibration)
     # Use unified regime detection (EMA-based, matches calibration analysis)
     from core.strategy.regime_unified import detect_regime_unified
 
-    current_regime = detect_regime_unified(candles, ema_period=50)
+    # Fast-path: use precomputed EMA50 if present
+    pre = dict(configs.get("precomputed_features") or {})
+    ema50 = pre.get("ema_50")
+    closes = candles.get("close") if isinstance(candles, dict) else None
+    if isinstance(ema50, list | tuple) and (closes is not None) and len(ema50) >= len(closes):
+        current_price = float(closes[-1])
+        current_ema = float(ema50[len(closes) - 1])
+        if current_ema != 0:
+            trend = (current_price - current_ema) / current_ema
+            if trend > 0.02:
+                current_regime = "bull"
+            elif trend < -0.02:
+                current_regime = "bear"
+            else:
+                current_regime = "ranging"
+        else:
+            current_regime = "balanced"
+    else:
+        current_regime = detect_regime_unified(candles, ema_period=50)
 
     # symbol/timeframe kan plockas från configs eller policy; defaulta till tBTCUSD/1m
     symbol = policy.get("symbol", "tBTCUSD")
     timeframe = policy.get("timeframe", "1m")
     probas, pmeta = predict_proba_for(symbol, timeframe, feats, regime=current_regime)
-    metrics.event(
-        "proba_ok",
-        {"schema": pmeta.get("schema", []), "versions": pmeta.get("versions", {})},
-    )
+    if metrics_enabled:
+        metrics.event(
+            "proba_ok",
+            {"schema": pmeta.get("schema", []), "versions": pmeta.get("versions", {})},
+        )
     # Gauges för topproba
-    try:
-        top = max(probas.values()) if isinstance(probas, dict) else 0.0
-        metrics.set_gauge("proba_top", float(top))
-    except Exception:  # nosec B110
-        pass
+    if metrics_enabled:
+        try:
+            top = max(probas.values()) if isinstance(probas, dict) else 0.0
+            metrics.set_gauge("proba_top", float(top))
+        except Exception:  # nosec B110
+            pass
 
     conf, conf_meta = compute_confidence(probas, config=configs.get("quality"))
-    metrics.event("confidence_ok", {})
-    try:
-        metrics.set_gauge("confidence_buy", float(conf.get("buy", 0.0)))
-        metrics.set_gauge("confidence_sell", float(conf.get("sell", 0.0)))
-    except Exception:  # nosec B110
-        pass
+    if metrics_enabled:
+        metrics.event("confidence_ok", {})
+        try:
+            metrics.set_gauge("confidence_buy", float(conf.get("buy", 0.0)))
+            metrics.set_gauge("confidence_sell", float(conf.get("sell", 0.0)))
+        except Exception:  # nosec B110
+            pass
 
     # Use already detected regime (from candles-based detection)
     # Note: classify_regime with hysteresis could be added later for stability
     regime = current_regime
     regime_state = {"regime": regime, "steps": 0, "candidate": regime}
-    metrics.event("regime_ok", {"regime": regime})
+    if metrics_enabled:
+        metrics.event("regime_ok", {"regime": regime})
 
     close_list = candles.get("close") if isinstance(candles, dict) else None
     last_close = None
-    if close_list:
+    if close_list is not None:
+        try:
+            length = len(close_list)
+        except Exception:
+            length = 0
+    else:
+        length = 0
+    if length > 0:
         try:
             last_close = float(close_list[-1])
         except (TypeError, ValueError):
@@ -107,13 +140,15 @@ def evaluate_pipeline(
         risk_ctx=configs.get("risk"),
         cfg=configs,
     )
-    metrics.event("decision_done", {"action": action, "size": action_meta.get("size", 0.0)})
+    if metrics_enabled:
+        metrics.event("decision_done", {"action": action, "size": action_meta.get("size", 0.0)})
     # Counters per action
-    try:
-        if action in ("LONG", "SHORT", "NONE"):
-            metrics.inc(f"decision_{action.lower()}")
-    except Exception:  # nosec B110
-        pass
+    if metrics_enabled:
+        try:
+            if action in ("LONG", "SHORT", "NONE"):
+                metrics.inc(f"decision_{action.lower()}")
+        except Exception:  # nosec B110
+            pass
     result: dict[str, Any] = {
         "features": feats,
         "probas": probas,

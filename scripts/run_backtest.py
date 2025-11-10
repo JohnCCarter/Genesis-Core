@@ -107,6 +107,16 @@ def main():
         type=Path,
         help="Optional JSON-fil med override av runtime-config",
     )
+    parser.add_argument(
+        "--fast-window",
+        action="store_true",
+        help="Use precomputed column arrays for faster window building",
+    )
+    parser.add_argument(
+        "--precompute-features",
+        action="store_true",
+        help="Precompute common features (ATR/EMA) for performance",
+    )
 
     args = parser.parse_args()
 
@@ -133,7 +143,11 @@ def main():
             commission_rate=args.commission,
             slippage_rate=args.slippage,
             warmup_bars=args.warmup,
+            fast_window=bool(args.fast_window or os.environ.get("GENESIS_FAST_WINDOW")),
         )
+        # Set optional precompute flag on engine instance if requested
+        if args.precompute_features or os.environ.get("GENESIS_PRECOMPUTE_FEATURES"):
+            engine.precompute_features = True
 
         # Load data
         if not engine.load_data():

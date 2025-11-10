@@ -37,9 +37,10 @@ def detect_regime_unified(
     """
     from core.indicators.ema import calculate_ema
 
-    close = candles.get("close", [])
+    close = candles.get("close")
 
-    if not close or len(close) < ema_period:
+    # Avoid NumPy truth-value ambiguity: check None/length explicitly
+    if close is None or len(close) < ema_period:
         return "balanced"
 
     # Calculate EMA
@@ -86,9 +87,10 @@ def detect_volatility_regime(
 
     high = candles.get("high", [])
     low = candles.get("low", [])
-    close = candles.get("close", [])
+    close = candles.get("close")
 
-    if not close or len(close) < atr_period + 50:
+    # Avoid NumPy truth-value ambiguity
+    if close is None or len(close) < atr_period + 50:
         return "lowvol"
 
     # Calculate ATR

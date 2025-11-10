@@ -1,36 +1,44 @@
-meta:
+﻿meta:
   symbol: tBTCUSD
   timeframe: 1h
   snapshot_id: tBTCUSD_1h_2024-10-22_2025-10-01_v1
   warmup_bars: 150
   runs:
     strategy: optuna
-    max_trials: null # Ingen gräns - kör tills timeout nås
-    max_concurrent: 1
-    resume: false
+    max_trials: 1000
+    max_concurrent: 2
+    resume: true
+    use_sample_range: true
+    sample_start: 2024-10-22
+    sample_end: 2025-10-01
     optuna:
-      storage: sqlite:///results/hparam_search/storage/optuna_tBTCUSD_1h_fib_tune_phase7d.db
-      study_name: tBTCUSD_1h_fib_tune_phase7d
+      storage: sqlite:///results/hparam_search/storage/optuna_tBTCUSD_1h_fib_tune_20251110_163853.db
+      study_name: tBTCUSD_1h_fib_tune_20251110_163853
       sampler:
         name: tpe
         kwargs:
           n_startup_trials: 25
-          n_ei_candidates: 48
+          n_ei_candidates: 512
+          constant_liar: true
+          multivariate: true
       pruner:
         name: median
         kwargs: {}
       heartbeat_interval: 60
       heartbeat_grace_period: 180
-      timeout_seconds: 230400 # ~64h budget (slut senast runt måndag 3 nov 08:20)
-  use_sample_range: true
-  sample_start: 2024-10-22
-  sample_end: 2025-10-01
+      timeout_seconds: 230400
 
+# Mildare constraints för bredare utforskning (soft-penalty triggas endast om explicit aktiverat)
+constraints:
+  min_trades: 3
+  min_profit_factor: 0.8
+  max_max_dd: 0.35
+  include_scoring_failures: false
 parameters:
   thresholds:
     entry_conf_overall:
       type: float
-      low: 0.3
+      low: 0.25
       high: 0.65
       step: 0.025
     signal_adaptation:
@@ -63,8 +71,18 @@ parameters:
     risk_map:
       type: grid
       values:
-        - [[0.45, 0.015], [0.55, 0.025], [0.65, 0.035]]
-        - [[0.45, 0.02], [0.55, 0.035], [0.65, 0.05]]
+        - - - 0.45
+            - 0.015
+          - - 0.55
+            - 0.025
+          - - 0.65
+            - 0.035
+        - - - 0.45
+            - 0.02
+          - - 0.55
+            - 0.035
+          - - 0.65
+            - 0.05
   exit:
     exit_conf_threshold:
       type: float
@@ -73,7 +91,9 @@ parameters:
       step: 0.02
     max_hold_bars:
       type: grid
-      values: [18, 20]
+      values:
+        - 18
+        - 20
   htf_exit_config:
     fib_threshold_atr:
       type: float
@@ -113,8 +133,8 @@ parameters:
         value: pass
       tolerance_atr:
         type: float
-        low: 0.25
-        high: 0.75
+        low: 0.2
+        high: 0.8
         step: 0.05
       long_min_level:
         type: fixed
@@ -132,8 +152,8 @@ parameters:
         value: pass
       tolerance_atr:
         type: float
-        low: 0.25
-        high: 0.75
+        low: 0.2
+        high: 0.8
         step: 0.05
       long_max_level:
         type: float
@@ -143,7 +163,7 @@ parameters:
       short_min_level:
         type: float
         low: 0.276
-        high: 0.382
+        high: 0.376
         step: 0.02
       override_confidence:
         enabled:
@@ -165,16 +185,20 @@ parameters:
       value: true
     allow_ltf_override:
       type: grid
-      values: [false, true]
+      values:
+        - false
+        - true
     ltf_override_threshold:
       type: float
-      low: 0.7
-      high: 0.9
-      step: 0.025
+      low: 0.65
+      high: 0.85
+      step: 0.02
     ltf_override_adaptive:
       enabled:
         type: grid
-        values: [false, true]
+        values:
+          - false
+          - true
       window:
         type: int
         low: 160

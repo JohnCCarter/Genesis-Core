@@ -13,6 +13,7 @@ Genesis-Core har **TVÅ** feature computation modes med **OLIKA** semantik:
 **Purpose:** Real-time feature extraction för live trading
 
 **Behavior:**
+
 ```python
 extract_features(candles, now_index=99)
 → Använder bars 0-98 (EXKLUDERAR bar 99)
@@ -20,12 +21,14 @@ extract_features(candles, now_index=99)
 ```
 
 **Rationale:**
+
 - I live trading är "current bar" inte stängd ännu
 - Vi kan bara använda STÄNGDA bars för features
 - `now_index` = index för current FORMING bar
 - Features beräknas från `now_index - 1` (senaste STÄNGDA)
 
 **Example:**
+
 ```
 Time: 14:30
 Bars: [0, 1, 2, ... 98, 99]
@@ -45,6 +48,7 @@ extract_features(candles, now_index=99)
 **Purpose:** Batch precomputation för backtesting/research
 
 **Behavior:**
+
 ```python
 calculate_all_features_vectorized(df.iloc[:100])
 → Använder bars 0-99 (INKLUDERAR alla)
@@ -52,12 +56,14 @@ calculate_all_features_vectorized(df.iloc[:100])
 ```
 
 **Rationale:**
+
 - I backtesting är ALL data historisk (stängd)
 - Ingen "forming bar" concept
 - Vi vill features för VARJE bar inklusive sista
 - Används för precompute, IC testing, feature engineering
 
 **Example:**
+
 ```
 Historical data: [0, 1, 2, ... 98, 99]
                   └────── alla stängda ─────┘
@@ -90,6 +96,7 @@ RESULT: 1-BAR OFFSET! 🚨
 ## ✅ **SOLUTION: DIFFERENT USE CASES**
 
 ### **Use Case 1: Live Trading**
+
 ```python
 # Server receives NEW candle (bar N is forming)
 # Want features from LAST CLOSED bar (N-1)
@@ -100,6 +107,7 @@ feats, meta = extract_features(candles, now_index=99)
 ```
 
 ### **Use Case 2: Backtesting**
+
 ```python
 # We have HISTORICAL data (all bars closed)
 # Want features for EACH bar
@@ -146,6 +154,7 @@ for i in range(len(df)):
 ### **For Production (FUTURE):**
 
 **Option A:** Add `mode` parameter
+
 ```python
 def extract_features(candles, now_index=None, mode="live"):
     if mode == "live":
@@ -155,6 +164,7 @@ def extract_features(candles, now_index=None, mode="live"):
 ```
 
 **Option B:** Separate functions
+
 ```python
 extract_features_live(candles)  # Always skips last bar
 extract_features_backtest(candles, bar_index)  # Uses all up to bar_index
@@ -171,3 +181,41 @@ extract_features_backtest(candles, bar_index)  # Uses all up to bar_index
 ```
 
 **TODO:** Fix validation script to compare correctly!
+
+---
+
+## ⚡ Fast Window & Precompute (Performance Mode 2025-11-10)
+
+För att accelerera backtests och Optuna‑körningar finns två växlar:
+
+### 1) Fast Window (NumPy views)
+
+- Miljövariabel: `GENESIS_FAST_WINDOW=1`
+- CLI‑flagga i backtest: `--fast-window`
+- Effekt: OHLCV matas som NumPy‑views för att minska Python‑overhead.
+- Caveat: Enstaka indikatorer som förväntar sig listor konverteras lokalt (t.ex. Bollinger). Detta hanteras i `features_asof.py`.
+
+### 2) Precompute Features (on‑disk cache)
+
+- Miljövariabel: `GENESIS_PRECOMPUTE_FEATURES=1`
+- CLI‑flagga i backtest: `--precompute-features`
+- Effekt: EMA50, swing points m.fl. förberäknas och cachas på disk (`cache/precomputed/*.npz`), vilket accelererar efterföljande körningar.
+- Semantik: Backtestläget förblir deterministiskt och använder stängda bars (ingen lookahead).
+
+### Determinism
+
+- Runner sätter `GENESIS_RANDOM_SEED=42` för backtest‑subprocesser om inte redan satt.
+- Sätt explicit i shell om du vill ändra:
+
+  ```powershell
+  $Env:GENESIS_RANDOM_SEED='123'
+  ```
+
+### Snabbstart (PowerShell)
+
+```powershell
+# Snabb backtest med fast window + precompute
+$Env:GENESIS_FAST_WINDOW='1'
+$Env:GENESIS_PRECOMPUTE_FEATURES='1'
+python scripts/run_backtest.py --symbol tBTCUSD --timeframe 1h --start 2024-10-22 --end 2025-10-01 --fast-window --precompute-features
+```

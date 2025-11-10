@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import os
 import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -198,17 +199,17 @@ def check_snapshot_exists(snapshot_id: str, symbol: str, timeframe: str) -> tupl
 
     # Extrahera datum från snapshot_id (format: SYMBOL_TF_START_END_V)
     parts = snapshot_id.split("_")
-    if len(parts) >= 5:
+    if len(parts) >= 4:
         try:
-            start_date_str = parts[-3]  # 2024-10-22
-            end_date_str = parts[-2]  # 2025-10-01
-            # Validera datumformat
-            from datetime import datetime
-
+            # Vanlig konvention i projektet: ..._START_END[_V]
+            start_date_str = parts[-3]
+            end_date_str = parts[-2]
             datetime.strptime(start_date_str, "%Y-%m-%d")
             datetime.strptime(end_date_str, "%Y-%m-%d")
         except (ValueError, IndexError):
-            pass  # Ignorera om parsing misslyckas
+            return False, f"[FAIL] snapshot_id saknar giltiga datumdelar: {snapshot_id}"
+    else:
+        return False, f"[FAIL] snapshot_id ogiltigt format: {snapshot_id}"
 
     # Kontrollera att datafilen finns
     from pathlib import Path
@@ -250,6 +251,65 @@ def check_snapshot_exists(snapshot_id: str, symbol: str, timeframe: str) -> tupl
             False,
             f"[FAIL] Datafil saknas för {symbol} {timeframe}:\n  Försökte: {data_file_curated}\n  Försökte: {data_file_legacy}",
         )
+
+
+def check_date_source(meta: dict[str, Any], runs_cfg: dict[str, Any]) -> tuple[bool, str]:
+    """
+    Validera hur datumkälla bestäms i runnern:
+    - Runnern läser use_sample_range från meta.runs (inte från meta).
+    - Om use_sample_range=true i runs: krävs sample_start och sample_end i runs.
+    - Om use_sample_range inte är true: krävs giltigt meta.snapshot_id som går att parsas.
+    """
+    issues: list[str] = []
+    ok = True
+
+    meta_usr = meta.get("use_sample_range", None)
+    runs_usr = runs_cfg.get("use_sample_range", None)
+
+    # Felplacering: flagga när use_sample_range ligger under meta istället för meta.runs
+    if meta_usr is not None and runs_usr is None:
+        ok = False
+        issues.append(
+            "[FAIL] use_sample_range är definierad under meta, men runner läser meta.runs.use_sample_range. "
+            "Flytta den till meta.runs.use_sample_range."
+        )
+
+    # När runnern ska använda sample-range måste båda fält finnas i runs
+    if runs_usr is True or (
+        isinstance(runs_usr, str) and runs_usr.strip().lower() in {"1", "true", "yes", "y", "on"}
+    ):
+        start_raw = runs_cfg.get("sample_start")
+        end_raw = runs_cfg.get("sample_end")
+        if not start_raw or not end_raw:
+            ok = False
+            issues.append(
+                "[FAIL] use_sample_range=true men runs.sample_start eller runs.sample_end saknas. "
+                "Lägg till båda under meta.runs."
+            )
+        else:
+            # Validera datumformat
+            try:
+                datetime.fromisoformat(str(start_raw).strip())
+                datetime.fromisoformat(str(end_raw).strip())
+                issues.append(f"[OK] sample_range: {start_raw} -> {end_raw}")
+            except Exception:
+                ok = False
+                issues.append(
+                    f"[FAIL] sample_start/sample_end har ogiltigt datumformat: {start_raw} / {end_raw}"
+                )
+    else:
+        # Då måste snapshot_id vara giltig
+        snap = meta.get("snapshot_id", "")
+        if not isinstance(snap, str) or not snap.strip():
+            ok = False
+            issues.append(
+                "[FAIL] use_sample_range=false (eller ej satt) och meta.snapshot_id saknas. "
+                "Runner kommer krascha med 'trial snapshot_id saknas'."
+            )
+
+    if not issues:
+        issues.append("[OK] Datumkälla validerad")
+    return ok, " | ".join(issues)
 
 
 def main() -> int:
@@ -334,8 +394,15 @@ def main() -> int:
         all_ok = False
     print()
 
-    # 9. Validering mot champion
-    print("9. Champion-validering:")
+    # 9. Datumkälla (runner-semantik)
+    ok, msg = check_date_source(meta, runs_cfg)
+    print(f"9. Datumkälla: {msg}")
+    if not ok:
+        all_ok = False
+    print()
+
+    # 10. Validering mot champion
+    print("10. Champion-validering:")
     try:
         from scripts.validate_optimizer_config import validate_config
 

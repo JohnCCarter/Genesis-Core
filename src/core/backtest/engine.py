@@ -4,6 +4,7 @@ Backtest engine for Genesis-Core.
 Replays historical candle data bar-by-bar through the existing strategy pipeline.
 """
 
+import os
 from datetime import datetime
 from pathlib import Path
 
@@ -66,6 +67,7 @@ class BacktestEngine:
         slippage_rate: float = 0.0005,
         warmup_bars: int = 120,  # Bars needed for indicators (EMA, RSI, etc.)
         htf_exit_config: dict | None = None,  # HTF Exit Engine configuration
+        fast_window: bool = False,  # Use precomputed NumPy arrays for window building
     ):
         """
         Initialize backtest engine.
@@ -85,8 +87,16 @@ class BacktestEngine:
         self.start_date = start_date
         self.end_date = end_date
         self.warmup_bars = warmup_bars
+        self.fast_window = bool(fast_window)
 
         self.candles_df: pd.DataFrame | None = None
+        # Precomputed column arrays (initialized on demand when fast_window=True)
+        self._col_open = None
+        self._col_high = None
+        self._col_low = None
+        self._col_close = None
+        self._col_volume = None
+        self._col_timestamp = None
         self.position_tracker = PositionTracker(
             initial_capital=initial_capital,
             commission_rate=commission_rate,
@@ -138,14 +148,22 @@ class BacktestEngine:
         cache_key = (self.symbol, self.timeframe)
         base_df = self._candles_cache.get(cache_key)
         if base_df is None:
-            base_df = pd.read_parquet(data_file)
+            # Read only required columns, prefer pyarrow engine and memory-mapped IO for speed
+            read_columns = ["timestamp", "open", "high", "low", "close", "volume"]
+            try:
+                base_df = pd.read_parquet(
+                    data_file, columns=read_columns, engine="pyarrow", memory_map=True
+                )
+            except Exception:
+                # Fallback to default engine if pyarrow not available
+                base_df = pd.read_parquet(data_file, columns=read_columns)
             self._candles_cache.put(cache_key, base_df)
             print(f"[OK] Loaded {len(base_df):,} candles from {data_file.name}")
         else:
             print(f"[CACHE] Reusing {len(base_df):,} candles for {self.symbol} {self.timeframe}")
 
-        # Always work on a copy to avoid mutating cached DataFrame
-        self.candles_df = base_df.copy()
+        # Work off cached DataFrame (avoid eager copy); filters below create sliced views/frames
+        self.candles_df = base_df
 
         # Filter by date range if specified
         if self.start_date:
@@ -159,6 +177,119 @@ class BacktestEngine:
             print(f"[FILTER] End date: {self.end_date}")
 
         print(f"[OK] Filtered to {len(self.candles_df):,} candles")
+
+        # Initialize fast-window column arrays if enabled
+        if self.fast_window:
+            df = self.candles_df
+            self._col_open = df["open"].to_numpy(copy=False)
+            self._col_high = df["high"].to_numpy(copy=False)
+            self._col_low = df["low"].to_numpy(copy=False)
+            self._col_close = df["close"].to_numpy(copy=False)
+            self._col_volume = df["volume"].to_numpy(copy=False)
+            # timestamps kept as Python list for downstream expectations
+            self._col_timestamp = df["timestamp"].tolist()
+
+        # Optional: precompute common features for speed (consumed by features_asof via config)
+        self._precomputed_features: dict[str, list[float]] | None = None
+        if getattr(self, "precompute_features", False):
+            try:
+                closes_all = self.candles_df["close"].tolist()
+                highs_all = self.candles_df["high"].tolist()
+                lows_all = self.candles_df["low"].tolist()
+                import numpy as _np
+
+                from core.indicators.adx import calculate_adx as _calc_adx
+                from core.indicators.atr import calculate_atr as _calc_atr
+                from core.indicators.bollinger import bollinger_bands as _bb
+                from core.indicators.ema import calculate_ema as _calc_ema
+                from core.indicators.fibonacci import (
+                    FibonacciConfig as _FibCfg,
+                )
+                from core.indicators.fibonacci import (
+                    detect_swing_points as _detect_swings,
+                )
+                from core.indicators.rsi import calculate_rsi as _calc_rsi
+
+                # Try on-disk cache first
+                cache_dir = Path(__file__).resolve().parents[3] / "cache" / "precomputed"
+                cache_dir.mkdir(parents=True, exist_ok=True)
+                key = f"{self.symbol}_{self.timeframe}_{len(closes_all)}"
+                cache_path = cache_dir / f"{key}.npz"
+                loaded = False
+                pre: dict[str, list[float]] = {}
+                if cache_path.exists():
+                    try:
+                        npz = _np.load(cache_path, allow_pickle=False)
+                        for name in npz.files:
+                            pre[name] = npz[name].astype(float).tolist()
+                        # Load swings if present (stored as float but indices are integers originally)
+                        for swing_key in ("fib_high_idx", "fib_low_idx"):
+                            if swing_key in npz.files:
+                                pre[swing_key] = npz[swing_key].astype(int).tolist()
+                        loaded = True
+                        print(f"[CACHE] Loaded precomputed features from {cache_path.name}")
+                    except Exception:
+                        loaded = False
+
+                if not loaded:
+                    atr_14 = _calc_atr(highs_all, lows_all, closes_all, period=14)
+                    atr_50 = _calc_atr(highs_all, lows_all, closes_all, period=50)
+                    # Precompute two common EMA periods used by features
+                    ema_20 = _calc_ema(closes_all, period=20)
+                    ema_50 = _calc_ema(closes_all, period=50)
+                    rsi_14 = _calc_rsi(closes_all, period=14)
+                    bb_all = _bb(closes_all, period=20, std_dev=2.0)
+                    bb_pos = list(bb_all.get("position") or [])
+                    adx_14 = _calc_adx(highs_all, lows_all, closes_all, period=14)
+
+                    # Precompute Fibonacci swings (LTF) for reuse in feature calculation
+                    fib_cfg = _FibCfg(atr_depth=3.0, max_swings=8, min_swings=1)
+                    # Use pandas only for Series conversion inside detect function to keep parity
+                    import pandas as _pd
+
+                    sh_idx, sl_idx, sh_px, sl_px = _detect_swings(
+                        _pd.Series(highs_all), _pd.Series(lows_all), _pd.Series(closes_all), fib_cfg
+                    )
+
+                    # Optional on-disk cache for reuse between runs
+                    try:
+                        _np.savez_compressed(
+                            cache_path,
+                            atr_14=_np.asarray(atr_14, dtype=float),
+                            atr_50=_np.asarray(atr_50, dtype=float),
+                            ema_20=_np.asarray(ema_20, dtype=float),
+                            ema_50=_np.asarray(ema_50, dtype=float),
+                            rsi_14=_np.asarray(rsi_14, dtype=float),
+                            bb_position_20_2=_np.asarray(bb_pos, dtype=float),
+                            adx_14=_np.asarray(adx_14, dtype=float),
+                            fib_high_idx=_np.asarray(sh_idx, dtype=int),
+                            fib_low_idx=_np.asarray(sl_idx, dtype=int),
+                            fib_high_px=_np.asarray(sh_px, dtype=float),
+                            fib_low_px=_np.asarray(sl_px, dtype=float),
+                        )
+                        print(f"[OK] Precomputed features cached: {cache_path.name}")
+                    except Exception:
+                        pass
+
+                    pre = {
+                        "atr_14": atr_14,
+                        "atr_50": atr_50,
+                        "ema_20": ema_20,
+                        "ema_50": ema_50,
+                        "rsi_14": rsi_14,
+                        "bb_position_20_2": bb_pos,
+                        "adx_14": adx_14,
+                        "fib_high_idx": list(sh_idx),
+                        "fib_low_idx": list(sl_idx),
+                        "fib_high_px": list(sh_px),
+                        "fib_low_px": list(sl_px),
+                    }
+
+                self._precomputed_features = pre
+                print("[OK] Precomputed features ready")
+            except Exception as _:
+                # Non-fatal: skip precompute if indicators unavailable
+                self._precomputed_features = None
 
         if len(self.candles_df) < self.warmup_bars:
             print(
@@ -180,8 +311,22 @@ class BacktestEngine:
             Candles dict with OHLCV lists
         """
         start_idx = max(0, end_idx - window_size + 1)
-        window = self.candles_df.iloc[start_idx : end_idx + 1]
 
+        if self.fast_window and self._col_close is not None:
+            # Slice precomputed arrays (fast path) - return NumPy views
+            i0 = start_idx
+            i1 = end_idx + 1
+            return {
+                "open": self._col_open[i0:i1],
+                "high": self._col_high[i0:i1],
+                "low": self._col_low[i0:i1],
+                "close": self._col_close[i0:i1],
+                "volume": self._col_volume[i0:i1],
+                "timestamp": self._col_timestamp[i0:i1],
+            }
+
+        # Fallback: slice DataFrame window
+        window = self.candles_df.iloc[start_idx : end_idx + 1]
         return {
             "open": window["open"].tolist(),
             "high": window["high"].tolist(),
@@ -218,6 +363,13 @@ class BacktestEngine:
         policy.setdefault("timeframe", self.timeframe)
 
         configs = configs or {}
+        # Inject precomputed features for vectorized path
+        if getattr(self, "precompute_features", False) and getattr(
+            self, "_precomputed_features", None
+        ):
+            cfg_pre = dict(configs)
+            cfg_pre["precomputed_features"] = dict(self._precomputed_features)
+            configs = cfg_pre
 
         champion_cfg = self.champion_loader.load_cached(self.symbol, self.timeframe)
         configs = {**champion_cfg.config, **configs}
@@ -365,7 +517,7 @@ class BacktestEngine:
                 self.bar_count += 1
 
             except Exception as e:
-                if verbose:
+                if verbose or os.environ.get("GENESIS_DEBUG_BACKTEST"):
                     print(f"\n[ERROR] Bar {i}: {e}")
                 # Continue on error (robust backtest)
 

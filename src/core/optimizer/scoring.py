@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
+
+from core.backtest.metrics import calculate_metrics
 
 
 @dataclass(slots=True)
@@ -25,19 +26,20 @@ def score_backtest(
     result: dict[str, Any], *, thresholds: MetricThresholds | None = None
 ) -> dict[str, Any]:
     thresholds = thresholds or MetricThresholds()
-    summary = result.get("summary") or {}
-    trades: Iterable[dict[str, Any]] = result.get("trades") or []
 
-    total_return = _extract_metric("total_return", summary, 0.0) / 100.0
-    profit_factor = _extract_metric("profit_factor", summary, 0.0)
-    max_drawdown = max(
-        float(summary.get("max_drawdown", 0.0)) / 100.0,
-        float(summary.get("max_dd", 0.0)),
-    )
-    win_rate = _extract_metric("win_rate", summary, 0.0) / 100.0
-    num_trades = int(summary.get("num_trades", len(list(trades))))
+    # Robust metrics: compute from trades/equity (with equity fallback) instead of trusting summary
+    mt = calculate_metrics(result)
 
-    sharpe = float(summary.get("sharpe_ratio", 0.0))
+    # Metrics from calculate_metrics() are in percent where applicable
+    total_return = float(mt.get("total_return", 0.0)) / 100.0
+    profit_factor = float(mt.get("profit_factor", 0.0))
+    max_drawdown_pct = float(mt.get("max_drawdown", 0.0))  # percent
+    max_drawdown = max_drawdown_pct / 100.0
+    win_rate = float(mt.get("win_rate", 0.0)) / 100.0
+    num_trades = int(mt.get("num_trades", 0))
+    sharpe = float(mt.get("sharpe_ratio", 0.0))
+
+    # Guard against zero-DD cases to avoid exploding return_to_dd
     ret_ratio = total_return / max(0.0001, max_drawdown if max_drawdown > 0 else 0.0001)
 
     hard_failures: list[str] = []

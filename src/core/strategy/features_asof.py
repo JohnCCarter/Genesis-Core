@@ -42,6 +42,7 @@ def _extract_asof(
     *,
     timeframe: str | None = None,
     symbol: str | None = None,
+    config: dict[str, Any] | None = None,
 ) -> tuple[dict[str, float], dict[str, Any]]:
     """
     Core feature extraction AS OF specified bar (inclusive).
@@ -83,10 +84,13 @@ def _extract_asof(
             "uses_bars": [0, asof_bar],
         }
 
-    # Extract data AS OF asof_bar (inclusive)
-    highs = [float(x) for x in candles["high"][: asof_bar + 1]]
-    lows = [float(x) for x in candles["low"][: asof_bar + 1]]
-    closes = [float(x) for x in candles["close"][: asof_bar + 1]]
+    # Extract data AS OF asof_bar (inclusive) using NumPy views (no copy)
+    highs_arr = np.asarray(candles["high"], dtype=float)
+    lows_arr = np.asarray(candles["low"], dtype=float)
+    closes_arr = np.asarray(candles["close"], dtype=float)
+    highs = highs_arr[: asof_bar + 1]
+    lows = lows_arr[: asof_bar + 1]
+    closes = closes_arr[: asof_bar + 1]
 
     # Invariant check
     assert (
@@ -101,15 +105,34 @@ def _extract_asof(
 
     # === CALCULATE INDICATORS ===
 
-    # RSI (returns [0, 100])
-    rsi_vals = calculate_rsi(closes, period=14)
+    # RSI (returns [0, 100]) - use precomputed if available
+    pre = dict((config or {}).get("precomputed_features") or {})
+    pre_rsi = pre.get("rsi_14")
+    if isinstance(pre_rsi, list | tuple) and len(pre_rsi) >= asof_bar + 1:
+        rsi_vals = list(pre_rsi[: asof_bar + 1])
+    else:
+        rsi_vals = calculate_rsi(closes, period=14)
 
     # Bollinger Bands
-    bb = bollinger_bands(closes, period=20, std_dev=2.0)
+    pre_bb_pos = pre.get("bb_position_20_2")
+    if isinstance(pre_bb_pos, list | tuple) and len(pre_bb_pos) >= asof_bar + 1:
+        bb = {"position": list(pre_bb_pos[: asof_bar + 1])}
+    else:
+        _cl = closes.tolist() if isinstance(closes, np.ndarray) else closes
+        bb = bollinger_bands(_cl, period=20, std_dev=2.0)
 
-    # ATR
-    atr_vals = calculate_atr(highs, lows, closes, period=14)
-    atr_long = calculate_atr(highs, lows, closes, period=50)
+    # ATR (use precomputed if available)
+    pre = dict((config or {}).get("precomputed_features") or {})
+    pre_atr_full = pre.get("atr_14")
+    if isinstance(pre_atr_full, list | tuple) and len(pre_atr_full) >= asof_bar + 1:
+        atr_vals = list(pre_atr_full[: asof_bar + 1])
+    else:
+        atr_vals = calculate_atr(highs, lows, closes, period=14)
+    pre_atr50_full = pre.get("atr_50")
+    if isinstance(pre_atr50_full, list | tuple) and len(pre_atr50_full) >= asof_bar + 1:
+        atr_long = list(pre_atr50_full[: asof_bar + 1])
+    else:
+        atr_long = calculate_atr(highs, lows, closes, period=50)
 
     # Volatility shift
     vol_shift = calculate_volatility_shift(atr_vals, atr_long)
@@ -174,12 +197,41 @@ def _extract_asof(
     # Beräkna endast om vi har tillräckligt med data (kräver ATR, swing-detektion)
     try:
         fib_config = FibonacciConfig(atr_depth=3.0, max_swings=8, min_swings=1)
-        current_price = closes[-1] if closes else 0.0
+        # Avoid NumPy truth-value ambiguity on array slices
+        current_price = closes[-1] if len(closes) > 0 else 0.0
         current_atr = atr_vals[-1] if atr_vals else 1.0
 
-        swing_high_indices, swing_low_indices, swing_high_prices, swing_low_prices = (
-            detect_swing_points(pd.Series(highs), pd.Series(lows), pd.Series(closes), fib_config)
-        )
+        # Use precomputed swings if available, otherwise detect
+        pre_sw_hi_idx = pre.get("fib_high_idx")
+        pre_sw_lo_idx = pre.get("fib_low_idx")
+        pre_sw_hi_px = pre.get("fib_high_px")
+        pre_sw_lo_px = pre.get("fib_low_px")
+        if (
+            isinstance(pre_sw_hi_idx, list | tuple)
+            and isinstance(pre_sw_lo_idx, list | tuple)
+            and isinstance(pre_sw_hi_px, list | tuple)
+            and isinstance(pre_sw_lo_px, list | tuple)
+        ):
+            # Filter swings AS-OF current bar
+            swing_high_indices = [int(i) for i in pre_sw_hi_idx if int(i) <= asof_bar]
+            swing_low_indices = [int(i) for i in pre_sw_lo_idx if int(i) <= asof_bar]
+            # Align prices by keeping same positions from original arrays that satisfy index<=asof_bar
+            swing_high_prices = [
+                float(pre_sw_hi_px[idx])
+                for idx, si in enumerate(pre_sw_hi_idx)
+                if int(si) <= asof_bar
+            ]
+            swing_low_prices = [
+                float(pre_sw_lo_px[idx])
+                for idx, si in enumerate(pre_sw_lo_idx)
+                if int(si) <= asof_bar
+            ]
+        else:
+            swing_high_indices, swing_low_indices, swing_high_prices, swing_low_prices = (
+                detect_swing_points(
+                    pd.Series(highs), pd.Series(lows), pd.Series(closes), fib_config
+                )
+            )
         fib_levels = calculate_fibonacci_levels(
             swing_high_prices, swing_low_prices, fib_config.levels
         )
@@ -220,7 +272,13 @@ def _extract_asof(
         par = EMA_SLOPE_PARAMS.get(str(timeframe or "").lower(), {"ema_period": 20, "lookback": 5})
         ema_period = par["ema_period"]
         ema_lookback = par["lookback"]
-        ema_values = calculate_ema(closes, period=ema_period)
+        # EMA (use precomputed if exact period available)
+        pre_ema_key = f"ema_{ema_period}"
+        pre_ema_full = pre.get(pre_ema_key)
+        if isinstance(pre_ema_full, list | tuple) and len(pre_ema_full) >= asof_bar + 1:
+            ema_values = list(pre_ema_full[: asof_bar + 1])
+        else:
+            ema_values = calculate_ema(closes, period=ema_period)
         if len(ema_values) >= ema_lookback + 1:
             ema_slope_raw = (ema_values[-1] - ema_values[-1 - ema_lookback]) / ema_values[
                 -1 - ema_lookback
@@ -229,7 +287,11 @@ def _extract_asof(
             ema_slope_raw = 0.0
         ema_slope = _clip(ema_slope_raw, -0.10, 0.10)
 
-        adx_values = calculate_adx(highs, lows, closes, period=14)
+        pre_adx_full = pre.get("adx_14")
+        if isinstance(pre_adx_full, list | tuple) and len(pre_adx_full) >= asof_bar + 1:
+            adx_values = list(pre_adx_full[: asof_bar + 1])
+        else:
+            adx_values = calculate_adx(highs, lows, closes, period=14)
         adx_latest = adx_values[-1] if adx_values else 25.0
         adx_normalized = adx_latest / 100.0
 
@@ -247,7 +309,10 @@ def _extract_asof(
         )
     except Exception as exc:
         # Om något går fel i fib-beräkning, behåll bas-features och fortsätt
-        metrics.increment("feature_fib_errors")
+        try:
+            metrics.inc("feature_fib_errors")
+        except Exception:
+            pass
         if _log:
             _log.warning("fib feature combination failed: %s", exc)
 
@@ -256,8 +321,14 @@ def _extract_asof(
     htf_fibonacci_context = {}
     if timeframe in ["1h", "30m", "6h", "15m"]:
         try:
+            _candles_for_htf = {
+                "high": highs.tolist() if isinstance(highs, np.ndarray) else highs,
+                "low": lows.tolist() if isinstance(lows, np.ndarray) else lows,
+                "close": closes.tolist() if isinstance(closes, np.ndarray) else closes,
+                "timestamp": candles.get("timestamp") if isinstance(candles, dict) else None,
+            }
             htf_fibonacci_context = get_htf_fibonacci_context(
-                candles, timeframe=timeframe, symbol=symbol or "tBTCUSD"
+                _candles_for_htf, timeframe=timeframe, symbol=symbol or "tBTCUSD"
             )
         except Exception as e:
             # Don't fail feature extraction if HTF context unavailable
@@ -273,9 +344,9 @@ def _extract_asof(
         try:
             ltf_fibonacci_context = get_ltf_fibonacci_context(
                 {
-                    "high": highs,
-                    "low": lows,
-                    "close": closes,
+                    "high": highs.tolist() if isinstance(highs, np.ndarray) else highs,
+                    "low": lows.tolist() if isinstance(lows, np.ndarray) else lows,
+                    "close": closes.tolist() if isinstance(closes, np.ndarray) else closes,
                     "timestamp": candles.get("timestamp") if isinstance(candles, dict) else None,
                 },
                 timeframe=timeframe,
@@ -313,6 +384,7 @@ def extract_features_live(
     *,
     timeframe: str | None = None,
     symbol: str | None = None,
+    config: dict[str, Any] | None = None,
 ) -> tuple[dict[str, float], dict[str, Any]]:
     """
     Extract features for LIVE TRADING.
@@ -342,7 +414,7 @@ def extract_features_live(
     # Invariant: asof_bar points to last CLOSED bar
     assert asof_bar == total_bars - 2, "Live mode invariant failed"  # nosec B101
 
-    return _extract_asof(candles, asof_bar, timeframe=timeframe, symbol=symbol)
+    return _extract_asof(candles, asof_bar, timeframe=timeframe, symbol=symbol, config=config)
 
 
 def extract_features_backtest(
@@ -351,6 +423,7 @@ def extract_features_backtest(
     *,
     timeframe: str | None = None,
     symbol: str | None = None,
+    config: dict[str, Any] | None = None,
 ) -> tuple[dict[str, float], dict[str, Any]]:
     """
     Extract features for BACKTESTING.
@@ -377,7 +450,7 @@ def extract_features_backtest(
     if asof_bar >= total_bars:
         raise ValueError(f"asof_bar={asof_bar} >= total_bars={total_bars}")
 
-    return _extract_asof(candles, asof_bar, timeframe=timeframe, symbol=symbol)
+    return _extract_asof(candles, asof_bar, timeframe=timeframe, symbol=symbol, config=config)
 
 
 # Backward compatibility wrapper
@@ -415,7 +488,9 @@ def extract_features(
 
     if now_index is None:
         # LIVE mode
-        return extract_features_live(candles_dict, timeframe=timeframe, symbol=symbol)
+        return extract_features_live(
+            candles_dict, timeframe=timeframe, symbol=symbol, config=config
+        )
     else:
         # BACKTEST mode with legacy offset
         # Old behavior: now_index=i used bars [0:i-1]
@@ -427,4 +502,6 @@ def extract_features(
         if asof_bar >= total_bars:
             asof_bar = total_bars - 1
 
-        return _extract_asof(candles_dict, asof_bar, timeframe=timeframe, symbol=symbol)
+        return _extract_asof(
+            candles_dict, asof_bar, timeframe=timeframe, symbol=symbol, config=config
+        )

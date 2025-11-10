@@ -357,7 +357,7 @@ def main():
     # Generate test data
     print("\nGenerating test data...")
     data = generate_test_data(args.bars)
-    print(f"✓ Generated {data['n_bars']} bars of synthetic data")
+    print(f"[OK] Generated {data['n_bars']} bars of synthetic data")
 
     # Run benchmarks
     all_results = {
@@ -382,7 +382,7 @@ def main():
         }
         export_path = Path(args.export)
         export_path.write_text(json.dumps(output, indent=2))
-        print(f"\n✓ Results exported to {export_path}")
+        print(f"\n[OK] Results exported to {export_path}")
 
     print("\n" + "=" * 70)
     print("BENCHMARK COMPLETE")

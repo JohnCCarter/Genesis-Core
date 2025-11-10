@@ -72,14 +72,22 @@ Check `archive/` for how the system evolved through Phase 1-4.
 
 ---
 
+## 🧪 Benchmarkskript
+
+- `scripts/benchmark_performance.py` kan köras direkt i Windows-terminalen utan att sätta `PYTHONIOENCODING`; all utdata är ASCII efter uppdatering 2025-11-10.
+
+---
+
 ## 🎯 CURRENT PHASE STATUS
 
 **Phase-6c:** REGIME-AWARE CALIBRATION (Complete)
+
 - ML-Regime synchronization implemented
 - All indicators validated
 - System production-ready
 
 **Key Files:**
+
 - `src/core/strategy/regime_unified.py` - Regime detection
 - `src/core/strategy/prob_model.py` - Regime-aware ML inference
 - `config/models/tBTCUSD_1h.json` - Model with regime calibration

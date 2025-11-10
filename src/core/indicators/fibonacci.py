@@ -90,7 +90,9 @@ def detect_swing_points(
                     break
 
             atr_value = atr_arr[i]
-            threshold_value = float(atr_value) * threshold_multiple if not np.isnan(atr_value) else 0.0
+            threshold_value = (
+                float(atr_value) * threshold_multiple if not np.isnan(atr_value) else 0.0
+            )
             range_ok = (high_arr[i] - low_arr[i]) >= threshold_value
 
             if is_swing_high and range_ok:

@@ -85,20 +85,20 @@ def load_search_config(path: Path) -> dict[str, Any]:
 
 def _trial_key(params: dict[str, Any]) -> str:
     """Generate a unique key for trial parameters with caching for performance.
-    
+
     Performance optimization: Cache keys using hash of params to avoid
     repeated JSON serialization for the same parameter set.
     """
     # Use hash as cache key - fast to compute
     params_hash = hash(frozenset(json.dumps(params, sort_keys=True).encode()))
-    
+
     with _TRIAL_KEY_CACHE_LOCK:
         if params_hash in _TRIAL_KEY_CACHE:
             return _TRIAL_KEY_CACHE[params_hash]
-    
+
     # Generate key with optimized separators (no spaces)
     key = json.dumps(params, sort_keys=True, separators=(",", ":"))
-    
+
     with _TRIAL_KEY_CACHE_LOCK:
         # Limit cache size to prevent memory issues (keep 10k most recent)
         if len(_TRIAL_KEY_CACHE) > 10000:
@@ -107,7 +107,7 @@ def _trial_key(params: dict[str, Any]) -> str:
             _TRIAL_KEY_CACHE.clear()
             _TRIAL_KEY_CACHE.update(items[-8000:])
         _TRIAL_KEY_CACHE[params_hash] = key
-    
+
     return key
 
 
@@ -164,18 +164,18 @@ def _resolve_sample_range(snapshot_id: str, runs_cfg: dict[str, Any]) -> tuple[s
 
 def _load_existing_trials(run_dir: Path) -> dict[str, dict[str, Any]]:
     """Load existing trials with optimized file I/O.
-    
+
     Performance optimization: Batch read operations and use more efficient
     JSON parsing with pre-allocated dictionary.
     """
     existing: dict[str, dict[str, Any]] = {}
     trial_paths = sorted(run_dir.glob("trial_*.json"))
-    
+
     # Performance: Pre-allocate dictionary size hint if we know count
     if trial_paths:
         existing = dict.fromkeys(range(len(trial_paths)))
         existing.clear()  # Keep capacity but clear keys
-    
+
     for trial_path in trial_paths:
         try:
             # Performance: Read file once, parse once
@@ -188,7 +188,7 @@ def _load_existing_trials(run_dir: Path) -> dict[str, dict[str, Any]]:
         except (json.JSONDecodeError, OSError):
             # Skip corrupted files silently
             continue
-    
+
     return existing
 
 
@@ -647,7 +647,7 @@ def _create_optuna_study(
 def _suggest_parameters(trial, spec: dict[str, Any]) -> dict[str, Any]:
     # Performance: Cache for decimal calculation to avoid repeated string operations
     _step_decimals_cache: dict[float, int] = {}
-    
+
     def _prepare_categorical_options(options: Iterable[Any]) -> tuple[list[Any], dict[str, Any]]:
         normalized: list[Any] = []
         decoder: dict[str, Any] = {}
@@ -662,7 +662,7 @@ def _suggest_parameters(trial, spec: dict[str, Any]) -> dict[str, Any]:
             normalized.append(encoded)
             decoder[encoded] = option
         return normalized, decoder
-    
+
     def _get_step_decimals(step_float: float) -> int:
         """Get number of decimals for a step value with caching."""
         if step_float not in _step_decimals_cache:
@@ -830,7 +830,7 @@ def _run_optuna(
     # Performance: Batch metadata updates to reduce file I/O
     best_payload: dict[str, Any] | None = None
     optuna_meta: dict[str, Any] = {}
-    
+
     if study.best_trials:  # finns åtminstone en icke-prunad trial
         try:
             best_trial = study.best_trial
@@ -869,14 +869,14 @@ def _run_optuna(
         run_meta = json.loads(run_meta_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         run_meta = {}
-    
+
     run_meta.setdefault("optuna", {}).update(optuna_meta)
-    
+
     # Performance: Write best trial and metadata in sequence to avoid conflicts
     if best_payload is not None:
         best_json_path = run_dir / "best_trial.json"
         _atomic_write_text(best_json_path, json.dumps(best_payload, indent=2))
-    
+
     _atomic_write_text(run_meta_path, json.dumps(_serialize_meta(run_meta), indent=2))
 
     return results

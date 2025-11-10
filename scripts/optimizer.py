@@ -42,7 +42,7 @@ def _format_trial_summary(idx: int, entry: dict[str, Any]) -> str:
 
 def summarize_run(run_id: str) -> dict[str, Any]:
     """Summarize an optimizer run with performance optimizations.
-    
+
     Performance improvements:
     - Lazy loading of trial data
     - Early filtering to reduce memory usage
@@ -64,26 +64,26 @@ def summarize_run(run_id: str) -> dict[str, Any]:
     trial_paths = sorted(run_dir.glob("trial_*.json"))
     trials: list[dict[str, Any]] = []
     valid_trials: list[dict[str, Any]] = []
-    
+
     # Performance: Single pass through trials with early filtering
     skipped_count = 0
     failed_count = 0
-    
+
     for path in trial_paths:
         try:
             content = path.read_text(encoding="utf-8")
             raw = json.loads(content)
         except (json.JSONDecodeError, OSError):
             continue
-            
+
         if not isinstance(raw, dict):
             continue
-            
+
         trial = dict(raw)
         trial["trial_file"] = path.name
         trial = _coerce_trial_fields(trial)
         trials.append(trial)
-        
+
         # Early counting
         if trial.get("skipped"):
             skipped_count += 1
@@ -91,21 +91,21 @@ def summarize_run(run_id: str) -> dict[str, Any]:
         if trial.get("error"):
             failed_count += 1
             continue
-        
+
         # Performance: Validate and extract in one pass
         score_block = trial.get("score") or {}
         constraints_block = trial.get("constraints") or {}
         hard_failures = list(score_block.get("hard_failures") or [])
         constraints_ok = bool(constraints_block.get("ok"))
-        
+
         if hard_failures or not constraints_ok:
             continue
-            
+
         try:
             score_value = float(score_block.get("score"))
         except (TypeError, ValueError):
             continue
-            
+
         metrics = dict(score_block.get("metrics") or {})
         valid_trials.append(
             {
@@ -123,7 +123,7 @@ def summarize_run(run_id: str) -> dict[str, Any]:
 
     # Performance: Sort once at the end
     valid_trials.sort(key=lambda item: item["score"], reverse=True)
-    
+
     total = len(trials)
     completed = total - skipped_count
 

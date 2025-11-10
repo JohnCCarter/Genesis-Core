@@ -278,23 +278,27 @@ def train_buy_sell_models(
     if fast_mode:
         # Fast path: skip expensive GridSearchCV
         print("Training buy model (fast mode)...")
-        buy_model = LogisticRegression(C=1.0, penalty="l2", solver="lbfgs", max_iter=1000, random_state=42)
+        buy_model = LogisticRegression(
+            C=1.0, penalty="l2", solver="lbfgs", max_iter=1000, random_state=42
+        )
         buy_model.fit(X_train, buy_y_train)
-        
+
         print("Training sell model (fast mode)...")
-        sell_model = LogisticRegression(C=1.0, penalty="l2", solver="lbfgs", max_iter=1000, random_state=42)
+        sell_model = LogisticRegression(
+            C=1.0, penalty="l2", solver="lbfgs", max_iter=1000, random_state=42
+        )
         sell_model.fit(X_train, sell_y_train)
-        
+
         # Calculate metrics
         buy_pred_proba = buy_model.predict_proba(X_val)[:, 1]
         sell_pred_proba = sell_model.predict_proba(X_val)[:, 1]
-        
+
         buy_log_loss_val = log_loss(buy_y_val, buy_pred_proba)
         sell_log_loss_val = log_loss(sell_y_val, sell_pred_proba)
-        
+
         buy_auc = roc_auc_score(buy_y_val, buy_pred_proba)
         sell_auc = roc_auc_score(sell_y_val, sell_pred_proba)
-        
+
         metrics = {
             "buy_model": {
                 "best_params": {"C": 1.0, "penalty": "l2", "solver": "lbfgs", "max_iter": 1000},
@@ -313,7 +317,7 @@ def train_buy_sell_models(
             "n_train": len(X_train),
             "n_val": len(X_val),
         }
-        
+
         return buy_model, sell_model, metrics
 
     # Hyperparameter grid

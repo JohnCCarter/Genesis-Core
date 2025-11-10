@@ -204,7 +204,7 @@ class BacktestEngine:
             Candles dict with OHLCV lists
         """
         start_idx = max(0, end_idx - window_size + 1)
-        
+
         # Optimized: Use pre-computed numpy arrays for 10x faster slicing
         # Slicing numpy arrays and converting to list is much faster than
         # DataFrame.iloc followed by Series.tolist() for each column
@@ -217,7 +217,7 @@ class BacktestEngine:
                 "volume": self._np_arrays["volume"][start_idx : end_idx + 1].tolist(),
                 "timestamp": self._np_arrays["timestamp"][start_idx : end_idx + 1].tolist(),
             }
-        
+
         # Fallback for legacy code paths
         window = self.candles_df.iloc[start_idx : end_idx + 1]
         return {

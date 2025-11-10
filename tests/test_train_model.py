@@ -342,6 +342,7 @@ class TestTrainBuySellModels:
         sell_pred = sell_model.predict_proba(X_val)[1, 1]  # Second sample (negative feature)
         assert sell_pred > 0.4  # Lower threshold for test data
 
+
 class TestConvertToModelJson:
     """Tests for converting models to JSON format."""
 

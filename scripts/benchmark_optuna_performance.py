@@ -31,13 +31,15 @@ def benchmark_trial_key_generation(n: int = 1000) -> dict[str, float]:
 
     # First pass - cold cache
     start = time.perf_counter()
-    keys_cold = [runner._trial_key(p) for p in params_list]
+    for param in params_list:
+        runner._trial_key(param)
     time_cold = time.perf_counter() - start
 
     # Second pass - warm cache (50% duplicate)
     duplicate_params = params_list[: n // 2] + params_list[: n // 2]
     start = time.perf_counter()
-    keys_warm = [runner._trial_key(p) for p in duplicate_params]
+    for param in duplicate_params:
+        runner._trial_key(param)
     time_warm = time.perf_counter() - start
 
     return {
@@ -59,13 +61,15 @@ def benchmark_param_signature(n: int = 1000) -> dict[str, float]:
 
     # Cold cache
     start = time.perf_counter()
-    sigs_cold = [optuna_helpers.param_signature(p) for p in params_list]
+    for params in params_list:
+        optuna_helpers.param_signature(params)
     time_cold = time.perf_counter() - start
 
     # Warm cache (50% duplicate)
     duplicate_params = params_list[: n // 2] + params_list[: n // 2]
     start = time.perf_counter()
-    sigs_warm = [optuna_helpers.param_signature(p) for p in duplicate_params]
+    for params in duplicate_params:
+        optuna_helpers.param_signature(params)
     time_warm = time.perf_counter() - start
 
     return {
@@ -116,6 +120,7 @@ def benchmark_sqlite_dedup(n: int = 1000, tmp_dir: Path | None = None) -> dict[s
         "ops_per_sec_batch": n / time_batch,
         "lookup_100_ms": time_lookup * 1000,
         "lookup_per_sec": 100 / time_lookup,
+        "batch_inserted": count,
     }
 
 

@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 import time
 from pathlib import Path
-from typing import Any
 
 import pytest
 
@@ -44,8 +43,8 @@ class TestTrialKeyPerformance:
         time2 = time.perf_counter() - start
 
         assert key1 == key2
-        # Cached call should be faster (though this is not guaranteed on all systems)
-        # Just verify it doesn't fail
+        # Cached call should generally be faster; allow small tolerance for jitter
+        assert time2 <= time1 * 1.5
 
     def test_trial_key_cache_limit(self) -> None:
         """Test that cache doesn't grow unbounded."""
@@ -226,7 +225,9 @@ class TestSuggestParametersPerformance:
 
         # Mock trial object
         class MockTrial:
-            def suggest_float(self, name: str, low: float, high: float, step: float = None, log: bool = False) -> float:
+            def suggest_float(
+                self, name: str, low: float, high: float, step: float = None, log: bool = False
+            ) -> float:
                 return low + step if step else low
 
         trial = MockTrial()

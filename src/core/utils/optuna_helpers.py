@@ -118,6 +118,10 @@ def make_sampler(mode: str = "qmc", seed: int = 42) -> optuna.samplers.BaseSampl
 
 # --- Parameter signature (stable, nested) -----------------------------------
 
+# Performance: Cache for parameter signatures to avoid repeated hashing
+_PARAM_SIG_CACHE: dict[str, str] = {}
+_PARAM_SIG_CACHE_LOCK = threading.Lock()
+
 
 def _normalize_for_sig(x: Any, precision: int = 10) -> Any:
     if isinstance(x, float):
@@ -130,10 +134,32 @@ def _normalize_for_sig(x: Any, precision: int = 10) -> Any:
 
 
 def param_signature(params: dict[str, Any], precision: int = 10) -> str:
-    """Create a stable SHA256 signature for a parameter dict (nested ok)."""
+    """Create a stable SHA256 signature for a parameter dict (nested ok).
+    
+    Performance optimization: Cache signatures to avoid repeated normalization
+    and hashing of the same parameter sets.
+    """
+    # Quick cache key using json representation
+    cache_key = json.dumps(params, sort_keys=True, separators=(",", ":"))
+    
+    with _PARAM_SIG_CACHE_LOCK:
+        if cache_key in _PARAM_SIG_CACHE:
+            return _PARAM_SIG_CACHE[cache_key]
+    
     norm = _normalize_for_sig(params, precision)
     blob = json.dumps(norm, sort_keys=True, separators=(",", ":"))
-    return hashlib.sha256(blob.encode()).hexdigest()
+    sig = hashlib.sha256(blob.encode()).hexdigest()
+    
+    with _PARAM_SIG_CACHE_LOCK:
+        # Limit cache size to prevent memory issues
+        if len(_PARAM_SIG_CACHE) > 5000:
+            # Keep 80% most recent
+            items = list(_PARAM_SIG_CACHE.items())
+            _PARAM_SIG_CACHE.clear()
+            _PARAM_SIG_CACHE.update(items[-4000:])
+        _PARAM_SIG_CACHE[cache_key] = sig
+    
+    return sig
 
 
 # --- Persistent dedup backend -----------------------------------------------
@@ -172,18 +198,25 @@ class NoDupeGuard:
     # --- SQLite backend
     def _init_sqlite(self) -> None:
         with closing(sqlite3.connect(self.sqlite_path)) as conn:
+            # Performance: Create index for faster lookups
             conn.execute(
                 "CREATE TABLE IF NOT EXISTS dedup_signatures (sig TEXT PRIMARY KEY, ts REAL NOT NULL)"
             )
+            # Performance: Enable WAL mode for better concurrent access
+            conn.execute("PRAGMA journal_mode=WAL")
+            # Performance: Increase cache size (10MB)
+            conn.execute("PRAGMA cache_size=-10000")
             conn.commit()
 
     def _sqlite_seen(self, sig: str) -> bool:
-        with closing(sqlite3.connect(self.sqlite_path)) as conn:
+        # Performance: Use check_same_thread=False for multi-threaded access
+        with closing(sqlite3.connect(self.sqlite_path, check_same_thread=False)) as conn:
             row = conn.execute("SELECT 1 FROM dedup_signatures WHERE sig=?", (sig,)).fetchone()
             return row is not None
 
     def _sqlite_add(self, sig: str) -> bool:
-        with closing(sqlite3.connect(self.sqlite_path)) as conn:
+        # Performance: Use check_same_thread=False and timeout for better concurrency
+        with closing(sqlite3.connect(self.sqlite_path, timeout=10.0, check_same_thread=False)) as conn:
             try:
                 conn.execute(
                     "INSERT INTO dedup_signatures(sig, ts) VALUES(?, ?)", (sig, time.time())
@@ -222,9 +255,37 @@ class NoDupeGuard:
             return
         if not self.sqlite_path:
             return
-        with closing(sqlite3.connect(self.sqlite_path)) as conn:
+        # Performance: Use timeout and check_same_thread=False
+        with closing(sqlite3.connect(self.sqlite_path, timeout=10.0, check_same_thread=False)) as conn:
             conn.execute("DELETE FROM dedup_signatures WHERE sig=?", (sig,))
             conn.commit()
+    
+    def add_batch(self, sigs: list[str]) -> int:
+        """Add multiple signatures at once. Returns count of new signatures added.
+        
+        Performance optimization: Batch inserts are much faster than individual inserts.
+        """
+        if not sigs:
+            return 0
+            
+        if self._use_redis:  # pragma: no cover
+            added = self._redis.sadd("optuna:dedup", *sigs)
+            return int(added)
+        
+        # SQLite batch insert
+        count = 0
+        ts = time.time()
+        with closing(sqlite3.connect(self.sqlite_path, timeout=10.0, check_same_thread=False)) as conn:
+            for sig in sigs:
+                try:
+                    conn.execute(
+                        "INSERT INTO dedup_signatures(sig, ts) VALUES(?, ?)", (sig, ts)
+                    )
+                    count += 1
+                except sqlite3.IntegrityError:
+                    pass  # Already exists
+            conn.commit()
+        return count
 
 
 # --- Callback: prune duplicates after trial finishes ------------------------

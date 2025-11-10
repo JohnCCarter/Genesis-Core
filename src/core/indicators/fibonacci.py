@@ -142,13 +142,13 @@ def detect_swing_points(
         threshold_multiple = next_threshold
 
     if not swing_highs and len(high) > 0:
-        fallback_idx = int(high.idxmax())
-        fallback_price = float(high.iloc[fallback_idx])
+        fallback_idx = high.values.argmax()
+        fallback_price = float(high_arr[fallback_idx])
         swing_highs = [(fallback_idx, fallback_price)]
 
     if not swing_lows and len(low) > 0:
-        fallback_idx = int(low.idxmin())
-        fallback_price = float(low.iloc[fallback_idx])
+        fallback_idx = low.values.argmin()
+        fallback_price = float(low_arr[fallback_idx])
         swing_lows = [(fallback_idx, fallback_price)]
 
     # Extract indices and prices

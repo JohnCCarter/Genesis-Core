@@ -81,7 +81,10 @@ def predict_proba_for(
     from core.strategy.model_registry import ModelRegistry
 
     if model_meta is None:
-        meta = ModelRegistry().get_meta(symbol, timeframe) or {}
+        # OPTIMIZATION: Use module-level singleton to reuse cache across calls
+        if not hasattr(predict_proba_for, "_registry"):
+            predict_proba_for._registry = ModelRegistry()
+        meta = predict_proba_for._registry.get_meta(symbol, timeframe) or {}
     else:
         meta = model_meta
 

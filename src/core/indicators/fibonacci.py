@@ -62,6 +62,11 @@ def detect_swing_points(
 
     atr_depth_int = max(1, int(config.atr_depth))
 
+    # OPTIMIZATION: Convert to numpy arrays once to avoid repeated .iloc[] overhead
+    high_arr = high.values
+    low_arr = low.values
+    atr_arr = atr.values
+
     def _detect(
         threshold_multiple: float,
     ) -> tuple[list[tuple[int, float]], list[tuple[int, float]]]:
@@ -69,30 +74,30 @@ def detect_swing_points(
         candidate_lows: list[tuple[int, float]] = []
 
         for i in range(atr_depth_int, len(close) - atr_depth_int):
-            window_high = high.iloc[i]
-            window_low = low.iloc[i]
+            window_high = high_arr[i]
+            window_low = low_arr[i]
 
             is_swing_high = True
             for j in range(i - atr_depth_int, i + atr_depth_int + 1):
-                if j != i and high.iloc[j] >= window_high:
+                if j != i and high_arr[j] >= window_high:
                     is_swing_high = False
                     break
 
             is_swing_low = True
             for j in range(i - atr_depth_int, i + atr_depth_int + 1):
-                if j != i and low.iloc[j] <= window_low:
+                if j != i and low_arr[j] <= window_low:
                     is_swing_low = False
                     break
 
-            atr_value = atr.iloc[i]
-            threshold_value = float(atr_value) * threshold_multiple if pd.notna(atr_value) else 0.0
-            range_ok = (high.iloc[i] - low.iloc[i]) >= threshold_value
+            atr_value = atr_arr[i]
+            threshold_value = float(atr_value) * threshold_multiple if not np.isnan(atr_value) else 0.0
+            range_ok = (high_arr[i] - low_arr[i]) >= threshold_value
 
             if is_swing_high and range_ok:
-                candidate_highs.append((i, window_high))
+                candidate_highs.append((i, float(window_high)))
 
             if is_swing_low and range_ok:
-                candidate_lows.append((i, window_low))
+                candidate_lows.append((i, float(window_low)))
 
         cleaned_highs = _clean_swing_points(candidate_highs, config.max_lookback)
         cleaned_lows = _clean_swing_points(candidate_lows, config.max_lookback)

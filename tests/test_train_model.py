@@ -291,7 +291,7 @@ class TestTrainBuySellModels:
         feature_names = ["ema_delta_pct", "rsi"]
 
         buy_model, sell_model, metrics = train_buy_sell_models(
-            X_train, y_train, X_val, y_val, feature_names
+            X_train, y_train, X_val, y_val, feature_names, fast_mode=True
         )
 
         # Check models are trained
@@ -331,7 +331,7 @@ class TestTrainBuySellModels:
         feature_names = ["feature1"]
 
         buy_model, sell_model, metrics = train_buy_sell_models(
-            X_train, y_train, X_val, y_val, feature_names
+            X_train, y_train, X_val, y_val, feature_names, fast_mode=True
         )
 
         # Buy model should predict high probability for positive features
@@ -568,7 +568,7 @@ class TestIntegration:
 
                     # Train models
                     buy_model, sell_model, metrics = train_buy_sell_models(
-                        X_train, y_train, X_val, y_val, feature_columns
+                        X_train, y_train, X_val, y_val, feature_columns, fast_mode=True
                     )
 
                     # Convert to JSON

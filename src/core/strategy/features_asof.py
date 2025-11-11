@@ -12,6 +12,7 @@ This eliminates all ambiguity between live and backtest modes.
 
 from __future__ import annotations
 
+import hashlib
 from typing import Any
 
 import numpy as np
@@ -34,6 +35,24 @@ from core.observability.metrics import metrics
 from core.utils.logging_redaction import get_logger
 
 _log = get_logger(__name__)
+
+# Cache for feature extraction to avoid recomputing features for same data
+_feature_cache: dict[str, tuple[dict[str, float], dict[str, Any]]] = {}
+_MAX_CACHE_SIZE = 100  # Limit cache size to prevent memory issues
+
+
+def _compute_candles_hash(candles: dict[str, list[float]], asof_bar: int) -> str:
+    """Compute a hash of candles data up to asof_bar for caching."""
+    # Use only the data up to asof_bar for hash computation
+    data_str = f"{asof_bar}"
+    for key in ["open", "high", "low", "close", "volume"]:
+        if key in candles:
+            # Hash last 100 bars or less to keep hash computation fast
+            start_idx = max(0, asof_bar - 99)
+            data = candles[key][start_idx : asof_bar + 1]
+            # Create a compact representation
+            data_str += f"|{key}:{len(data)}:{sum(data):.2f}:{data[-1] if data else 0:.2f}"
+    return hashlib.md5(data_str.encode()).hexdigest()
 
 
 def _extract_asof(
@@ -62,6 +81,14 @@ def _extract_asof(
         - asof_bar < len(candles) (validated)
         - No lookahead: never uses bars > asof_bar
     """
+    # Check cache first (optimization: avoid recomputing features for same data)
+    cache_key = _compute_candles_hash(candles, asof_bar)
+    if cache_key in _feature_cache:
+        metrics.inc("feature_cache_hit")
+        return _feature_cache[cache_key]
+
+    metrics.inc("feature_cache_miss")
+
     # Validate inputs
     lengths = [len(candles[k]) for k in ["open", "high", "low", "close", "volume"]]
     if not all(length == lengths[0] for length in lengths):
@@ -77,12 +104,19 @@ def _extract_asof(
 
     min_lookback = 50  # Need at least 50 bars for EMA/indicators
     if asof_bar < min_lookback:
-        return {}, {
-            "versions": {},
-            "reasons": [f"INSUFFICIENT_DATA: asof_bar={asof_bar} < min_lookback={min_lookback}"],
-            "asof_bar": asof_bar,
-            "uses_bars": [0, asof_bar],
-        }
+        result = (
+            {},
+            {
+                "versions": {},
+                "reasons": [
+                    f"INSUFFICIENT_DATA: asof_bar={asof_bar} < min_lookback={min_lookback}"
+                ],
+                "asof_bar": asof_bar,
+                "uses_bars": [0, asof_bar],
+            },
+        )
+        # Don't cache error results
+        return result
 
     # Extract data AS OF asof_bar (inclusive) using NumPy views (no copy)
     highs_arr = np.asarray(candles["high"], dtype=float)
@@ -376,7 +410,15 @@ def _extract_asof(
         "atr_percentiles": atr_percentiles,
     }
 
-    return features, meta
+    result = (features, meta)
+
+    # Cache the result (with size limit to prevent memory issues)
+    if len(_feature_cache) >= _MAX_CACHE_SIZE:
+        # Evict oldest entry (simple FIFO eviction)
+        _feature_cache.pop(next(iter(_feature_cache)))
+    _feature_cache[cache_key] = result
+
+    return result
 
 
 def extract_features_live(

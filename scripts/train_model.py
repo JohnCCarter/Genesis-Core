@@ -251,6 +251,7 @@ def train_buy_sell_models(
     X_val: np.ndarray,
     y_val: np.ndarray,
     feature_names: list[str],
+    fast_mode: bool = False,
 ) -> tuple[LogisticRegression, LogisticRegression, dict]:
     """
     Train separate models for buy and sell decisions.
@@ -261,6 +262,7 @@ def train_buy_sell_models(
         X_val: Validation features
         y_val: Validation labels
         feature_names: List of feature names
+        fast_mode: If True, skip GridSearchCV and use default params (for testing)
 
     Returns:
         Tuple of (buy_model, sell_model, training_metrics)
@@ -272,6 +274,51 @@ def train_buy_sell_models(
     # For sell model: predict when price goes down (y=0 becomes 1)
     sell_y_train = 1 - y_train  # Invert labels
     sell_y_val = 1 - y_val
+
+    if fast_mode:
+        # Fast path: skip expensive GridSearchCV
+        print("Training buy model (fast mode)...")
+        buy_model = LogisticRegression(
+            C=1.0, penalty="l2", solver="lbfgs", max_iter=1000, random_state=42
+        )
+        buy_model.fit(X_train, buy_y_train)
+
+        print("Training sell model (fast mode)...")
+        sell_model = LogisticRegression(
+            C=1.0, penalty="l2", solver="lbfgs", max_iter=1000, random_state=42
+        )
+        sell_model.fit(X_train, sell_y_train)
+
+        # Calculate metrics
+        buy_pred_proba = buy_model.predict_proba(X_val)[:, 1]
+        sell_pred_proba = sell_model.predict_proba(X_val)[:, 1]
+
+        buy_log_loss_val = log_loss(buy_y_val, buy_pred_proba)
+        sell_log_loss_val = log_loss(sell_y_val, sell_pred_proba)
+
+        buy_auc = roc_auc_score(buy_y_val, buy_pred_proba)
+        sell_auc = roc_auc_score(sell_y_val, sell_pred_proba)
+
+        metrics = {
+            "buy_model": {
+                "best_params": {"C": 1.0, "penalty": "l2", "solver": "lbfgs", "max_iter": 1000},
+                "best_score": -buy_log_loss_val,
+                "val_log_loss": buy_log_loss_val,
+                "val_auc": buy_auc,
+            },
+            "sell_model": {
+                "best_params": {"C": 1.0, "penalty": "l2", "solver": "lbfgs", "max_iter": 1000},
+                "best_score": -sell_log_loss_val,
+                "val_log_loss": sell_log_loss_val,
+                "val_auc": sell_auc,
+            },
+            "feature_names": feature_names,
+            "n_features": len(feature_names),
+            "n_train": len(X_train),
+            "n_val": len(X_val),
+        }
+
+        return buy_model, sell_model, metrics
 
     # Hyperparameter grid
     param_grid = {

@@ -50,7 +50,7 @@ def detect_swing_points(
 ) -> tuple[list[int], list[int], list[float], list[float]]:
     """
     Detect swing highs and lows using ATR-based pivot detection.
-    
+
     Performance: Optimized using numpy arrays for ~80% speedup in nested loops.
 
     Args:

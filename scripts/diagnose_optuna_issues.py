@@ -23,7 +23,7 @@ def diagnose_run(run_dir: Path) -> dict[str, Any]:
     trial_files = sorted(run_dir.glob("trial_*.json"))
 
     if not trial_files:
-        return {"error": "No trial files found"}
+        return {"error": "No trial files found", "run_dir": str(run_dir)}
 
     # Counters
     total_trials = len(trial_files)
@@ -115,10 +115,7 @@ def diagnose_run(run_dir: Path) -> dict[str, Any]:
             "count": len(duplicate_param_sets),
             "examples": duplicate_details[:5],
             "most_common": [
-                {
-                    "count": count,
-                    "params": json.loads(params),
-                }
+                {"count": count, "params": json.loads(params)}
                 for params, count in most_common_params[:3]
             ],
         },
@@ -226,6 +223,10 @@ def main():
     diagnosis = diagnose_run(run_dir)
     print_diagnosis(diagnosis)
 
+    # Skip recommendations if there's an error
+    if "error" in diagnosis:
+        print("\nℹ️  No trials to analyze. This may be a fresh/incomplete run.")
+        return
     # Print recommendations
     print("\n" + "=" * 80)
     print("RECOMMENDATIONS:")

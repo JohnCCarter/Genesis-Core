@@ -21,13 +21,20 @@ from typing import Any
 
 import yaml
 
+BASE_RISK_MAP = [
+    (0.45, 0.015),
+    (0.55, 0.025),
+    (0.65, 0.035),
+]
+
 
 def load_champion(symbol: str, timeframe: str) -> dict[str, Any]:
     """Ladda champion-konfiguration."""
     champ_path = Path(f"config/strategy/champions/{symbol}_{timeframe}.json")
     if not champ_path.exists():
         raise FileNotFoundError(f"Champion not found: {champ_path}")
-    return json.loads(champ_path.read_text(encoding="utf-8"))
+    data = json.loads(champ_path.read_text(encoding="utf-8"))
+    return data.get("cfg", data)
 
 
 def load_optimizer_config(config_path: Path) -> dict[str, Any]:
@@ -134,6 +141,72 @@ def check_champion_in_range(
     return errors
 
 
+def validate_risk_map_deltas(
+    opt_cfg: dict[str, Any], champ_params: dict[str, Any]
+) -> tuple[list[str], list[str]]:
+    """Validate that risk map deltas allow reproducing the champion risk map."""
+    errors: list[str] = []
+    warnings: list[str] = []
+
+    risk_spec = opt_cfg.get("parameters", {}).get("risk", {})
+    deltas_spec = risk_spec.get("risk_map_deltas")
+    if not isinstance(deltas_spec, dict):
+        warnings.append(
+            "[WARN] risk.risk_map_deltas saknas - risk map kommer inte justeras av Optuna."
+        )
+        return errors, warnings
+
+    champ_risk_map = champ_params.get("risk", {}).get("risk_map", [])
+    if champ_risk_map and len(champ_risk_map) != len(BASE_RISK_MAP):
+        warnings.append(
+            "[WARN] Championens risk_map har annat antal punkter än baseline - kontrollera manuell reproducerbarhet."
+        )
+
+    for idx, (base_conf, base_size) in enumerate(BASE_RISK_MAP):
+        conf_spec = deltas_spec.get(f"conf_{idx}")
+        size_spec = deltas_spec.get(f"size_{idx}")
+
+        if not isinstance(conf_spec, dict) or conf_spec.get("type") != "float":
+            errors.append(f"[ERROR] risk.risk_map_deltas.conf_{idx} måste vara type=float")
+        else:
+            low = float(conf_spec.get("low", 0.0))
+            high = float(conf_spec.get("high", 0.0))
+            if low > 0 or high < 0:
+                errors.append(
+                    f"[ERROR] risk_map_deltas.conf_{idx} ({low}, {high}) måste inkludera 0 för att champion ska vara möjlig"
+                )
+            champ_conf = base_conf
+            champ_low = base_conf + low
+            champ_high = base_conf + high
+            if champ_conf < champ_low or champ_conf > champ_high:
+                errors.append(
+                    f"[ERROR] Championens risk_map[{idx}].confidence={champ_conf} ligger utanför intervallet [{champ_low}, {champ_high}]"
+                )
+
+        if not isinstance(size_spec, dict) or size_spec.get("type") != "float":
+            errors.append(f"[ERROR] risk.risk_map_deltas.size_{idx} måste vara type=float")
+        else:
+            low = float(size_spec.get("low", 0.0))
+            high = float(size_spec.get("high", 0.0))
+            if low > 0 or high < 0:
+                errors.append(
+                    f"[ERROR] risk_map_deltas.size_{idx} ({low}, {high}) måste inkludera 0 för att champion ska vara möjlig"
+                )
+            champ_size = base_size
+            champ_low = base_size + low
+            champ_high = base_size + high
+            if champ_size < champ_low or champ_size > champ_high:
+                errors.append(
+                    f"[ERROR] Championens risk_map[{idx}].size={champ_size} ligger utanför intervallet [{champ_low}, {champ_high}]"
+                )
+            if champ_low < 0:
+                warnings.append(
+                    f"[WARN] risk_map_deltas.size_{idx} tillåter negativa storlekar (min {champ_low}) - kontrollera att position size inte blir negativ."
+                )
+
+    return errors, warnings
+
+
 def validate_config(opt_config_path: Path) -> int:
     """Validera optimizer-konfiguration mot champion."""
     print(f"[VAL] Validerar {opt_config_path.name} mot champion...\n")
@@ -176,9 +249,12 @@ def validate_config(opt_config_path: Path) -> int:
         ("htf_exit_config.fib_threshold_atr", "HTF Fib threshold ATR"),
         ("htf_exit_config.trail_atr_multiplier", "Trail ATR multiplier"),
         ("thresholds.entry_conf_overall", "Entry conf overall"),
+        ("thresholds.regime_proba.balanced", "Regime proba balanced"),
+        ("thresholds.regime_proba.bull", "Regime proba bull"),
+        ("thresholds.regime_proba.bear", "Regime proba bear"),
+        ("thresholds.regime_proba.ranging", "Regime proba ranging"),
         ("exit.exit_conf_threshold", "Exit conf threshold"),
         ("exit.max_hold_bars", "Max hold bars"),
-        ("risk.risk_map", "Risk map"),
     ]
 
     print("=== Fixerade parametrar ===")
@@ -198,6 +274,11 @@ def validate_config(opt_config_path: Path) -> int:
                 errors.append(result)
             else:
                 warnings.append(result)
+
+    # Special validation for risk map deltas
+    risk_errors, risk_warnings = validate_risk_map_deltas(opt_cfg, champ_params)
+    errors.extend(risk_errors)
+    warnings.extend(risk_warnings)
 
     # Kontrollera att championens parametrar kan reproduceras
     print("\n=== Champion-reproduktibilitet ===")

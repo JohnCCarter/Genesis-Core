@@ -1,10 +1,10 @@
 # README for AI Agents (Local Development)
 
-## Last update: 2025-10-24
+## Last update: 2025-11-11
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
 
-## 1. Deliverables (latest highlights: 2025-11-10)
+## 1. Deliverables (latest highlights: 2025-11-11)
 
 - Robust scoring: PF/DD från trades/equity via `core.backtest.metrics.calculate_metrics` (inte summary). Skyddat `return_to_dd`.
 - `PositionTracker.get_summary()` rapporterar korrekt `profit_factor` (gross_profit/gross_loss) och `max_drawdown` från equity‑kurva.
@@ -12,6 +12,8 @@ This document explains the current workflow for Genesis-Core, highlights today's
 - Determinism: runner sätter `GENESIS_RANDOM_SEED=42` om inte redan satt.
 - Performance‑läge: `GENESIS_FAST_WINDOW=1`, `GENESIS_PRECOMPUTE_FEATURES=1` (se `docs/FEATURE_COMPUTATION_MODES.md`).
 - YAML‑schema: bladnoder MÅSTE ha `type: fixed|grid|float|int|loguniform` (annars values/value‑fel).
+- Optuna-sökrymden breddad: fler kontinuerliga noder (entry/regime/hysteresis/max hold/risk map/HTF+LTF flippar) och `bootstrap_random_trials` (32 RandomSampler-trials sekventiellt) innan TPE.
+- Soft constraints returnerar nu `score - 1e3` (tidigare -1e6) för bättre signal till samplern utan att belöna felaktiga försök.
 
 ## 2. Snabbguide (Optuna körflöde, uppdaterad)
 
@@ -27,9 +29,11 @@ python scripts/validate_optimizer_config.py config/optimizer/<config>.yaml
 ```powershell
 $Env:GENESIS_FAST_WINDOW='1'
 $Env:GENESIS_PRECOMPUTE_FEATURES='1'
-$Env:GENESIS_MAX_CONCURRENT='2'
+$Env:GENESIS_MAX_CONCURRENT='4'
 $Env:GENESIS_RANDOM_SEED='42'
 ```
+
+> Tip: Ange även `OPTUNA_MAX_DUPLICATE_STREAK=2000` och kontrollera att konfigen har `bootstrap_random_trials` (32–40) för att tvinga fram en deterministisk RandomSampler-uppstartsfas innan TPE tar över.
 
 3) Start
 
@@ -331,6 +335,13 @@ pip install -e .[dev,ml]
 - [ ] `GENESIS_RANDOM_SEED` satt (runner sätter 42 om saknas) – reproducera 2×.
 - [ ] `OPTUNA_MAX_DUPLICATE_STREAK` satt till högt värde (≥200).
 - [ ] Sökrymden ger trades i smoke (2–5 trials) innan långkörning.
+
+#### Status 2025-11-11
+
+- `config/optimizer/tBTCUSD_1h_optuna_smoke_loose.yaml` har nu bredare intervall (entry/regime/hysteresis/max_hold/risk_map) och boolska gridar för HTF/LTF‑gates & overrides. Championens risk map ligger kvar som separat grid-alternativ.
+- Nytt fält `bootstrap_random_trials: 32` kör en sekventiell RandomSampler-fas innan TPE (`bootstrap_seed=42` för reproducerbarhet). Runnern väljer automatiskt `allow_resume=True` för andra fasen.
+- Soft constraints returnerar `score - 1e3` istället för `-1e6` vilket håller dåliga försök långt under giltiga men ger TPE lite gradient.
+- Smoke-run (`run_20251111_134030`, 32 bootstrap + 48 TPE, `max_concurrent=4`) gav 1 giltigt backtest (score 0.847, 99 trades). TPE-fasen producerade fortfarande hög duplicatfrekvens (~98.8%) → fortsätt öppna upp toleranser/risk_map och testa lägre `ltf_override_threshold` / mer varierade `signal_adaptation`.
 
 ## 19. HTF-exit tuning 3 nov 2025
 

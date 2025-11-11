@@ -44,6 +44,81 @@ def get_6h_config():
     }
 
 
+def get_3h_config():
+    """3h timeframe config – mellanläge mellan 6h och 1h."""
+    return {
+        "thresholds": {
+            "entry_conf_overall": 0.34,
+            "regime_proba": {
+                "ranging": 0.7,
+                "bull": 0.65,
+                "bear": 0.65,
+                "balanced": 0.7,
+            },
+            "signal_adaptation": {
+                "atr_period": 14,
+                "zones": {
+                    "low": {
+                        "entry_conf_overall": 0.35,
+                        "regime_proba": {
+                            "ranging": 0.65,
+                            "bull": 0.55,
+                            "bear": 0.55,
+                            "balanced": 0.65,
+                        },
+                    },
+                    "mid": {
+                        "entry_conf_overall": 0.40,
+                        "regime_proba": {
+                            "ranging": 0.75,
+                            "bull": 0.65,
+                            "bear": 0.65,
+                            "balanced": 0.75,
+                        },
+                    },
+                    "high": {
+                        "entry_conf_overall": 0.46,
+                        "regime_proba": {
+                            "ranging": 0.85,
+                            "bull": 0.75,
+                            "bear": 0.75,
+                            "balanced": 0.85,
+                        },
+                    },
+                },
+            },
+        },
+        "risk": {
+            "risk_map": [
+                [0.40, 0.02],
+                [0.50, 0.03],
+                [0.60, 0.04],
+            ]
+        },
+        "exit": {
+            "enabled": True,
+            "exit_conf_threshold": 0.35,
+            "max_hold_bars": 25,
+            "regime_aware_exits": True,
+        },
+        "gates": {
+            "cooldown_bars": 2,
+            "hysteresis_steps": 3,
+        },
+        "htf_exit_config": {
+            "enable_partials": True,
+            "enable_trailing": True,
+            "enable_structure_breaks": True,
+            "partial_1_pct": 0.50,
+            "partial_2_pct": 0.40,
+            "fib_threshold_atr": 0.6,
+            "trail_atr_multiplier": 2.0,
+            "swing_update_strategy": "fixed",
+        },
+        "warmup_bars": 100,
+    }
+
+
 def get_1h_config():
     """1h timeframe config – champion baseline."""
     return {
@@ -188,6 +263,7 @@ def get_timeframe_config(timeframe: str) -> dict:
     configs = {
         "1D": get_1d_config,
         "6h": get_6h_config,
+        "3h": get_3h_config,
         "1h": get_1h_config,
     }
 
@@ -228,13 +304,17 @@ def get_timeframe_backtest_config(timeframe: str) -> dict:
             "end_date": "2025-10-13",
             "warmup_bars": 50,
         },
+        "3h": {  # 🆕 Ny block
+            "start_date": "2025-08-01",
+            "end_date": "2025-10-14",
+            "warmup_bars": 80,
+        },
         "1h": {
             "start_date": "2025-09-14",
             "end_date": "2025-10-14",
             "warmup_bars": 120,
         },
     }
-
     if timeframe not in timeframe_configs:
         raise ValueError(f"Unsupported timeframe: {timeframe}")
 

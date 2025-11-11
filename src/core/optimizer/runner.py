@@ -32,6 +32,7 @@ except Exception:  # pragma: no cover
 
 from core.optimizer.champion import ChampionCandidate, ChampionManager
 from core.optimizer.constraints import enforce_constraints
+from core.optimizer.param_transforms import transform_parameters
 from core.optimizer.scoring import MetricThresholds, score_backtest
 
 try:
@@ -45,11 +46,13 @@ try:
     )
     from optuna.samplers import CmaEsSampler, RandomSampler, TPESampler
     from optuna.storages import RDBStorage
+    from optuna.trial import TrialState
 
     OPTUNA_AVAILABLE = True
 except ModuleNotFoundError:  # pragma: no cover - handled at runtime
     optuna = None
     Trial = Any
+    TrialState = Any
     OPTUNA_AVAILABLE = False
 
 
@@ -106,24 +109,19 @@ def _trial_key(params: dict[str, Any]) -> str:
     Performance optimization: Cache keys using hash of params to avoid
     repeated JSON serialization for the same parameter set.
     """
-    # Use hash as cache key - fast to compute
-    params_hash = hash(frozenset(json.dumps(params, sort_keys=True).encode()))
-
-    with _TRIAL_KEY_CACHE_LOCK:
-        if params_hash in _TRIAL_KEY_CACHE:
-            return _TRIAL_KEY_CACHE[params_hash]
-
-    # Generate key with optimized separators (no spaces)
+    # Generate canonical JSON string (no spaces, sorted keys)
     key = json.dumps(params, sort_keys=True, separators=(",", ":"))
+    digest = hashlib.sha256(key.encode("utf-8")).hexdigest()
 
     with _TRIAL_KEY_CACHE_LOCK:
-        # Limit cache size to prevent memory issues (keep 10k most recent)
+        cached = _TRIAL_KEY_CACHE.get(digest)
+        if cached is not None:
+            return cached
         if len(_TRIAL_KEY_CACHE) > 10000:
-            # Remove oldest 20% of entries
             items = list(_TRIAL_KEY_CACHE.items())
             _TRIAL_KEY_CACHE.clear()
             _TRIAL_KEY_CACHE.update(items[-8000:])
-        _TRIAL_KEY_CACHE[params_hash] = key
+        _TRIAL_KEY_CACHE[digest] = key
 
     return key
 
@@ -501,6 +499,7 @@ def run_trial(
     trial_file = output_dir / f"{trial_id}.json"
     log_file = output_dir / f"{trial_id}.log"
     config_file: Path | None = None
+    derived_values: dict[str, Any] = {}
     if trial.parameters:
         config_file = output_dir / f"{trial_id}_config.json"
 
@@ -512,7 +511,8 @@ def run_trial(
         default_cfg = default_cfg_obj.model_dump()
 
         # Deep merge trial parameters into default config
-        merged_cfg = _deep_merge(default_cfg, trial.parameters)
+        transformed_params, derived_values = transform_parameters(trial.parameters)
+        merged_cfg = _deep_merge(default_cfg, transformed_params)
         config_payload = {"cfg": merged_cfg}
         _atomic_write_text(config_file, _json_dumps(config_payload))
 
@@ -630,6 +630,8 @@ def run_trial(
                 "duration_seconds": total_duration,
                 "attempt_durations": attempt_durations,
             }
+            if derived_values:
+                final_payload.setdefault("derived", derived_values)
             if config_file is not None:
                 final_payload["config_path"] = config_file.name
             print(
@@ -663,6 +665,8 @@ def run_trial(
             "log_path": log_file.name,
             "attempts": max_attempts,
         }
+    elif derived_values and "derived" not in final_payload:
+        final_payload["derived"] = derived_values
     if cache_enabled and final_payload is not None and not final_payload.get("error"):
         cache_snapshot = dict(final_payload)
         cache_snapshot.pop("trial_id", None)
@@ -901,19 +905,6 @@ def _run_optuna(
     heartbeat_interval = int(heartbeat_interval) if heartbeat_interval else None
     heartbeat_grace = int(heartbeat_grace) if heartbeat_grace else None
 
-    study = _create_optuna_study(
-        run_id=run_id,
-        storage=storage,
-        study_name=study_name,
-        sampler_cfg=sampler_cfg,
-        pruner_cfg=pruner_cfg,
-        direction=direction,
-        allow_resume=allow_resume,
-        concurrency=concurrency,
-        heartbeat_interval=heartbeat_interval,
-        heartbeat_grace_period=heartbeat_grace,
-    )
-
     results: list[dict[str, Any]] = []
     duplicate_streak = 0
     max_duplicate_streak = int(os.getenv("OPTUNA_MAX_DUPLICATE_STREAK", "10"))
@@ -985,8 +976,8 @@ def _run_optuna(
         if not constraints.get("ok", True):
             trial.set_user_attr("constraints", constraints)
             trial.set_user_attr("constraints_soft_fail", True)
-            # Stor negativ straff för att hamna långt under giltiga försök
-            return score_value - 1e6
+            # Stor negativ straff men lämna utrymme för rankning
+            return score_value - 1e3
 
         # Only reset duplicate streak on successful, non-zero-trade trials
         if num_trades > 0:
@@ -996,9 +987,67 @@ def _run_optuna(
         trial.set_user_attr("result_payload", payload)
         return score_value
 
+    remaining_trials = None if max_trials is None else max(0, max_trials)
+    bootstrap_requested_raw = study_config.get("bootstrap_random_trials")
+    bootstrap_requested = int(bootstrap_requested_raw) if bootstrap_requested_raw else 0
+    bootstrap_seed_raw = study_config.get("bootstrap_seed")
+    random_kwargs: dict[str, Any] = {}
+    if bootstrap_seed_raw is not None:
+        try:
+            random_kwargs["seed"] = int(bootstrap_seed_raw)
+        except (TypeError, ValueError):
+            pass
+    if bootstrap_requested > 0:
+        bootstrap_to_run = bootstrap_requested
+        if remaining_trials is not None:
+            bootstrap_to_run = min(bootstrap_to_run, remaining_trials)
+        if bootstrap_to_run > 0:
+            print(
+                f"[Optuna] Bootstrapper {bootstrap_to_run} random-trials (RandomSampler) innan "
+                f"huvudsamplern (temporär concurrency=1)"
+            )
+            bootstrap_sampler_cfg = {"name": "random", "kwargs": random_kwargs}
+            bootstrap_study = _create_optuna_study(
+                run_id=run_id,
+                storage=storage,
+                study_name=study_name,
+                sampler_cfg=bootstrap_sampler_cfg,
+                pruner_cfg=pruner_cfg,
+                direction=direction,
+                allow_resume=True,
+                concurrency=1,
+                heartbeat_interval=heartbeat_interval,
+                heartbeat_grace_period=heartbeat_grace,
+            )
+            bootstrap_study.optimize(
+                objective,
+                n_trials=bootstrap_to_run,
+                timeout=None,
+                n_jobs=1,
+                gc_after_trial=True,
+                show_progress_bar=False,
+            )
+            if remaining_trials is not None:
+                remaining_trials = max(0, remaining_trials - bootstrap_to_run)
+    if remaining_trials is not None and remaining_trials == 0:
+        return results
+
+    study = _create_optuna_study(
+        run_id=run_id,
+        storage=storage,
+        study_name=study_name,
+        sampler_cfg=sampler_cfg,
+        pruner_cfg=pruner_cfg,
+        direction=direction,
+        allow_resume=allow_resume or bootstrap_requested > 0,
+        concurrency=concurrency,
+        heartbeat_interval=heartbeat_interval,
+        heartbeat_grace_period=heartbeat_grace,
+    )
+
     study.optimize(
         objective,
-        n_trials=max_trials,
+        n_trials=remaining_trials,
         timeout=timeout,
         n_jobs=concurrency,
         gc_after_trial=True,

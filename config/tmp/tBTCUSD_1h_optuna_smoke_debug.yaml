@@ -5,15 +5,15 @@
   warmup_bars: 150
   runs:
     strategy: optuna
-    max_trials: 1000
+    max_trials: 80
     max_concurrent: 4
     resume: false
     use_sample_range: true
     sample_start: 2024-10-22
     sample_end: 2025-10-01
     optuna:
-      storage: sqlite:///results/hparam_search/storage/optuna_smoke_loose_20251111_143429.db
-      study_name: smoke_loose_20251111_143429
+      storage: sqlite:///results/hparam_search/storage/optuna_smoke_debug_20251111_151702.db
+      study_name: smoke_debug_20251111_151702
       bootstrap_random_trials: 32
       bootstrap_seed: 42
       sampler:
@@ -297,3 +297,4 @@ parameters:
         value:
           bull: 0.95
           bear: 1.05
+

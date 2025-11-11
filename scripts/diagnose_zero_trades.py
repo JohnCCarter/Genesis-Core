@@ -9,11 +9,9 @@ from __future__ import annotations
 
 import json
 import sys
-from collections import Counter, defaultdict
+from collections import Counter
 from pathlib import Path
 from typing import Any
-
-import yaml
 
 
 def analyze_trial_log(log_path: Path) -> dict[str, Any]:
@@ -177,9 +175,7 @@ def diagnose_zero_trade_trial(run_dir: Path, trial_id: str) -> dict[str, Any]:
     # Get results path
     results_path = trial_data.get("results_path")
     if results_path:
-        results_full_path = (
-            Path(__file__).parent.parent / "results" / "backtests" / results_path
-        )
+        results_full_path = Path(__file__).parent.parent / "results" / "backtests" / results_path
     else:
         results_full_path = None
 
@@ -323,9 +319,7 @@ def print_diagnosis(diagnosis: dict[str, Any]) -> None:
         if any("TIGHT_LTF" in issue for issue in config_analysis.get("potential_issues", [])):
             print("   - Increase ltf_fib.entry.tolerance_atr to 0.4-0.8 range")
 
-        if any(
-            "HTF_BLOCK" in issue for issue in config_analysis.get("potential_issues", [])
-        ):
+        if any("HTF_BLOCK" in issue for issue in config_analysis.get("potential_issues", [])):
             print("   - Enable multi_timeframe.allow_ltf_override = true")
             print("   - Set multi_timeframe.ltf_override_threshold = 0.70-0.85")
 

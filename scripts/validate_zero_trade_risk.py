@@ -16,44 +16,44 @@ import yaml
 
 def estimate_pass_rate(param_spec: dict[str, Any]) -> tuple[float, str]:
     """Estimate pass rate for a parameter gate.
-    
+
     Returns: (pass_rate, description)
     """
     param_type = param_spec.get("type", "fixed")
-    
+
     if param_type == "fixed":
         value = param_spec.get("value")
         return _estimate_fixed_pass_rate(value)
-    
+
     elif param_type == "grid":
         values = param_spec.get("values", [])
         # Average pass rate across grid values
         rates = [_estimate_fixed_pass_rate(v)[0] for v in values]
         avg_rate = sum(rates) / len(rates) if rates else 0.0
         return avg_rate, f"grid avg across {len(values)} values"
-    
+
     elif param_type == "float":
         low = float(param_spec.get("low", 0))
         high = float(param_spec.get("high", 1))
         mid = (low + high) / 2
         return _estimate_fixed_pass_rate(mid)
-    
+
     elif param_type == "int":
         low = int(param_spec.get("low", 0))
         high = int(param_spec.get("high", 1))
         mid = (low + high) // 2
         return _estimate_fixed_pass_rate(mid)
-    
+
     return 0.5, "unknown"
 
 
 def _estimate_fixed_pass_rate(value: Any) -> tuple[float, str]:
     """Estimate pass rate for a fixed value based on empirical data."""
-    if not isinstance(value, (int, float)):
+    if not isinstance(value, int | float):
         return 0.5, "non-numeric"
-    
+
     val = float(value)
-    
+
     # Entry confidence threshold (most critical)
     # Based on empirical observation of signal distributions
     if val < 0.30:
@@ -89,40 +89,43 @@ def estimate_fib_pass_rate(tolerance: float) -> tuple[float, str]:
 def analyze_config(config: dict[str, Any]) -> dict[str, Any]:
     """Analyze configuration for zero-trade risk."""
     parameters = config.get("parameters", {})
-    
+
     # Extract key gating parameters
     thresholds = parameters.get("thresholds", {})
     htf_fib = parameters.get("htf_fib", {})
     ltf_fib = parameters.get("ltf_fib", {})
     multi_tf = parameters.get("multi_timeframe", {})
-    
+
     # Analyze entry confidence
     entry_conf = thresholds.get("entry_conf_overall", {})
     entry_rate, entry_desc = estimate_pass_rate(entry_conf)
-    
+
     # Analyze HTF fibonacci
-    htf_enabled = True  # Assume enabled if in config
     htf_entry = htf_fib.get("entry", {}) if isinstance(htf_fib, dict) else {}
     htf_tolerance = htf_entry.get("tolerance_atr", {}) if isinstance(htf_entry, dict) else {}
-    
+
     if isinstance(htf_tolerance, dict):
-        htf_tol_val = (float(htf_tolerance.get("low", 0.3)) + float(htf_tolerance.get("high", 0.5))) / 2
+        htf_tol_val = (
+            float(htf_tolerance.get("low", 0.3)) + float(htf_tolerance.get("high", 0.5))
+        ) / 2
     else:
         htf_tol_val = float(htf_tolerance) if htf_tolerance else 0.5
-    
+
     htf_rate, htf_desc = estimate_fib_pass_rate(htf_tol_val)
-    
+
     # Analyze LTF fibonacci
     ltf_entry = ltf_fib.get("entry", {}) if isinstance(ltf_fib, dict) else {}
     ltf_tolerance = ltf_entry.get("tolerance_atr", {}) if isinstance(ltf_entry, dict) else {}
-    
+
     if isinstance(ltf_tolerance, dict):
-        ltf_tol_val = (float(ltf_tolerance.get("low", 0.3)) + float(ltf_tolerance.get("high", 0.5))) / 2
+        ltf_tol_val = (
+            float(ltf_tolerance.get("low", 0.3)) + float(ltf_tolerance.get("high", 0.5))
+        ) / 2
     else:
         ltf_tol_val = float(ltf_tolerance) if ltf_tolerance else 0.5
-    
+
     ltf_rate, ltf_desc = estimate_fib_pass_rate(ltf_tol_val)
-    
+
     # Check for overrides
     has_override = False
     if isinstance(multi_tf, dict):
@@ -132,40 +135,34 @@ def analyze_config(config: dict[str, Any]) -> dict[str, Any]:
             has_override = True in allow_override.get("values", [])
         else:
             has_override = bool(allow_override)
-    
+
     # Estimate other gates (conservative estimates)
     confidence_rate = 0.30  # Confidence gate
     edge_rate = 0.40  # Edge requirement
     hysteresis_rate = 0.50  # Hysteresis delay
     ev_rate = 0.80  # EV filter
-    
+
     # Combined pass rate (multiplicative)
     combined_rate = (
-        entry_rate * 
-        htf_rate * 
-        ltf_rate * 
-        confidence_rate * 
-        edge_rate * 
-        hysteresis_rate * 
-        ev_rate
+        entry_rate * htf_rate * ltf_rate * confidence_rate * edge_rate * hysteresis_rate * ev_rate
     )
-    
+
     # Adjust if override enabled (reduces HTF blocking impact)
     if has_override:
         # Override provides escape valve - estimate 30% of HTF blocks can override
         effective_htf_rate = htf_rate + (1 - htf_rate) * 0.30
         combined_rate_with_override = (
-            entry_rate * 
-            effective_htf_rate * 
-            ltf_rate * 
-            confidence_rate * 
-            edge_rate * 
-            hysteresis_rate * 
-            ev_rate
+            entry_rate
+            * effective_htf_rate
+            * ltf_rate
+            * confidence_rate
+            * edge_rate
+            * hysteresis_rate
+            * ev_rate
         )
     else:
         combined_rate_with_override = combined_rate
-    
+
     return {
         "gate_analysis": {
             "entry_confidence": {
@@ -199,25 +196,27 @@ def analyze_config(config: dict[str, Any]) -> dict[str, Any]:
         "combined_pass_rate": combined_rate,
         "combined_with_override": combined_rate_with_override if has_override else None,
         "has_ltf_override": has_override,
-        "estimated_trades_per_1000_bars": combined_rate_with_override * 1000 if has_override else combined_rate * 1000,
+        "estimated_trades_per_1000_bars": (
+            combined_rate_with_override * 1000 if has_override else combined_rate * 1000
+        ),
     }
 
 
 def print_analysis(analysis: dict[str, Any]) -> None:
     """Pretty print configuration analysis."""
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("ZERO-TRADE RISK ANALYSIS")
-    print("="*80)
-    
+    print("=" * 80)
+
     gates = analysis["gate_analysis"]
-    
+
     print("\nINDIVIDUAL GATE PASS RATES:")
     print("-" * 80)
-    
+
     for gate_name, gate_info in gates.items():
         rate = gate_info["pass_rate"]
         desc = gate_info["description"]
-        
+
         # Color coding based on severity
         if rate < 0.10:
             symbol = "🔴 CRITICAL"
@@ -225,30 +224,30 @@ def print_analysis(analysis: dict[str, Any]) -> None:
             symbol = "🟡 WARNING"
         else:
             symbol = "🟢 OK"
-        
+
         print(f"{symbol} {gate_name:20s}: {rate:6.1%} ({desc})")
-    
-    print("\n" + "="*80)
+
+    print("\n" + "=" * 80)
     print("COMBINED ANALYSIS:")
-    print("="*80)
-    
+    print("=" * 80)
+
     combined = analysis["combined_pass_rate"]
     estimated_trades = analysis["estimated_trades_per_1000_bars"]
-    
+
     print(f"\nCombined pass rate: {combined:.4%}")
     print(f"Estimated trades per 1000 bars: {estimated_trades:.1f}")
-    
+
     if analysis["has_ltf_override"]:
         combined_override = analysis["combined_with_override"]
         estimated_override = combined_override * 1000
-        print(f"\nWith LTF override enabled:")
+        print("\nWith LTF override enabled:")
         print(f"  Adjusted pass rate: {combined_override:.4%}")
         print(f"  Estimated trades per 1000 bars: {estimated_override:.1f}")
-    
-    print("\n" + "="*80)
+
+    print("\n" + "=" * 80)
     print("RISK ASSESSMENT:")
-    print("="*80)
-    
+    print("=" * 80)
+
     if estimated_trades < 1:
         print("\n🔴 CRITICAL: Very high zero-trade risk!")
         print("   This configuration will likely produce 0 trades.")
@@ -257,7 +256,7 @@ def print_analysis(analysis: dict[str, Any]) -> None:
         print("   2. Increase fibonacci tolerances to 0.5-0.8")
         print("   3. Enable LTF override with threshold 0.70-0.85")
         print("   4. Run smoke test (2-5 trials) before long runs")
-    
+
     elif estimated_trades < 5:
         print("\n🟡 WARNING: Moderate zero-trade risk")
         print("   Configuration may produce very few trades.")
@@ -266,14 +265,14 @@ def print_analysis(analysis: dict[str, Any]) -> None:
         print("   2. Consider widening fibonacci tolerances")
         print("   3. Enable LTF override if not already enabled")
         print("   4. Monitor first 10-20 trials for zero-trade patterns")
-    
+
     elif estimated_trades < 20:
         print("\n🟢 ACCEPTABLE: Low zero-trade risk")
         print("   Configuration should produce trades, but may be selective.")
         print("\n   RECOMMENDATIONS:")
         print("   - Monitor early trials to confirm trades are generated")
         print("   - May want to widen ranges slightly for more exploration")
-    
+
     else:
         print("\n🟢 GOOD: Very low zero-trade risk")
         print("   Configuration should reliably produce trades.")
@@ -289,20 +288,20 @@ def main():
         print("\nExample:")
         print("  python validate_zero_trade_risk.py config/optimizer/tBTCUSD_1h_optuna.yaml")
         sys.exit(1)
-    
+
     config_path = Path(sys.argv[1])
-    
+
     if not config_path.exists():
         print(f"ERROR: Config file not found: {config_path}")
         sys.exit(1)
-    
+
     try:
         config_text = config_path.read_text(encoding="utf-8")
         config = yaml.safe_load(config_text)
     except Exception as e:
         print(f"ERROR: Failed to parse config: {e}")
         sys.exit(1)
-    
+
     analysis = analyze_config(config)
     print_analysis(analysis)
 

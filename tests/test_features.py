@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import numpy as np
+
 from core.strategy.features import extract_features
+from core.strategy.features_asof import _compute_candles_hash
 
 
 def test_extract_features_stub_shapes():
@@ -74,3 +77,24 @@ def test_extract_features_time_alignment_uses_closed_bar():
     # now_index=299 ska använda stängd bar index 298; now_index=298 -> stängd bar 297
     # With 300 bars of trending data, features should differ
     assert feats_last != feats_prev
+
+
+def test_compute_candles_hash_accepts_numpy_arrays():
+    # Arrange: numpy-slices ska fungera utan sanningsvärdeskrasch
+    arr = np.linspace(100.0, 109.0, num=10, dtype=float)
+    candles_np = {
+        "open": arr + 1.0,
+        "high": arr + 2.0,
+        "low": arr - 1.0,
+        "close": arr,
+        "volume": arr * 10.0,
+    }
+    candles_list = {k: v.tolist() for k, v in candles_np.items()}
+    asof = len(arr) - 1
+
+    # Act: hashen ska vara densamma och ingen exception ska uppstå
+    hash_np = _compute_candles_hash(candles_np, asof)
+    hash_list = _compute_candles_hash(candles_list, asof)
+
+    # Assert
+    assert hash_np == hash_list

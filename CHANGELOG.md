@@ -42,6 +42,26 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 
 - Eliminering av NumPy “truth value is ambiguous” i fast‑window path (säker sanningskontroll för arrayer i features/regime).
 
+### Changed - Phase-7d (2025-11-11)
+
+**Optuna Search Space & Bootstrap**
+
+- `config/optimizer/tBTCUSD_1h_optuna_smoke_loose.yaml` breddad: större intervall för `entry_conf_overall`, `regime_proba`, `min_edge`, `exit_conf_threshold`, `max_hold_bars`, fler `risk_map`-alternativ (inkl. championens exakta map), samt gridade boolska flippar för HTF/LTF-gates och overrides.
+- Tillagt `bootstrap_random_trials: 32` + `bootstrap_seed: 42` för en deterministisk RandomSampler-fas innan TPE (korrelerad med `GENESIS_MAX_CONCURRENT=4`).
+
+**Runner Logic**
+
+- `_run_optuna()` kör nu bootstrap-fasen via separat studie (RandomSampler) innan huvudstudien laddas med TPE. Soft-constraint-straff ändrat från `score - 1e6` till `score - 1e3` for bättre rankningssignal.
+
+**Validation & Smoke Run**
+
+- Preflight/validator uppdaterad (nytt `study_name`/`storage`-timestamp) och champion risk-map kontrolleras mot nya grid-listan.
+- Smoke-run `run_20251111_134030` (32 bootstrap + 48 TPE) gav score `0.8473`, 99 trades. TPE-fasen har fortfarande hög duplicatfrekvens (~98.8%) → fortsätt öppna upp toleranser, sänk `ltf_override_threshold` och bevaka zero-trade ratio.
+
+**Documentation**
+
+- `AGENTS.md`: uppdaterade deliverables, snabbguide (concurrency 4 + bootstrap-tip), och statusrapport för duplicat-åtgärder.
+
 ### Added - HTF Fibonacci Exit System (2025-10-13)
 
 **Major Feature: Dynamic Exit Strategy**

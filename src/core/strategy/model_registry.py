@@ -23,6 +23,8 @@ class ModelRegistry:
         self.root = root or Path(__file__).resolve().parents[3]
         self.registry_path = registry_path or (self.root / "config" / "models" / "registry.json")
         self._cache: dict[str, tuple[dict[str, Any], float]] = {}
+        self._registry_cache: dict[str, Any] | None = None
+        self._registry_mtime: float | None = None
 
     def _read_json(self, p: Path) -> dict[str, Any] | None:
         try:
@@ -32,8 +34,17 @@ class ModelRegistry:
             return None
 
     def _get_registry(self) -> dict[str, Any]:
+        """Get registry with caching based on file mtime."""
         try:
-            return self._read_json(self.registry_path) or {}
+            if self.registry_path.exists():
+                mtime = self.registry_path.stat().st_mtime
+                if self._registry_cache is not None and self._registry_mtime == mtime:
+                    return self._registry_cache
+                registry = self._read_json(self.registry_path) or {}
+                self._registry_cache = registry
+                self._registry_mtime = mtime
+                return registry
+            return {}
         except Exception:
             return {}
 
@@ -61,6 +72,8 @@ class ModelRegistry:
     def clear_cache(self) -> None:
         """Clear model cache. Call after updating model files."""
         self._cache.clear()
+        self._registry_cache = None
+        self._registry_mtime = None
 
     def get_meta(self, symbol: str, timeframe: str) -> dict[str, Any] | None:
         key = f"{symbol}:{timeframe}"

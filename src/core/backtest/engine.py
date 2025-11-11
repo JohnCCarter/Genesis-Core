@@ -97,6 +97,8 @@ class BacktestEngine:
         self._col_close = None
         self._col_volume = None
         self._col_timestamp = None
+        # Numpy arrays for fast window extraction (populated in load_data/_prepare_numpy_arrays)
+        self._np_arrays: dict | None = None
         self.position_tracker = PositionTracker(
             initial_capital=initial_capital,
             commission_rate=commission_rate,
@@ -297,7 +299,29 @@ class BacktestEngine:
                 f"({len(self.candles_df)} < {self.warmup_bars})"
             )
 
+        # Pre-convert DataFrame columns to numpy arrays for fast slicing
+        self._np_arrays = {
+            "open": self.candles_df["open"].values,
+            "high": self.candles_df["high"].values,
+            "low": self.candles_df["low"].values,
+            "close": self.candles_df["close"].values,
+            "volume": self.candles_df["volume"].values,
+            "timestamp": self.candles_df["timestamp"].values,
+        }
+
         return True
+
+    def _prepare_numpy_arrays(self) -> None:
+        """Prepare numpy arrays from candles_df for fast window extraction."""
+        if self.candles_df is not None:
+            self._np_arrays = {
+                "open": self.candles_df["open"].values,
+                "high": self.candles_df["high"].values,
+                "low": self.candles_df["low"].values,
+                "close": self.candles_df["close"].values,
+                "volume": self.candles_df["volume"].values,
+                "timestamp": self.candles_df["timestamp"].values,
+            }
 
     def _build_candles_window(self, end_idx: int, window_size: int = 200) -> dict:
         """
@@ -325,15 +349,26 @@ class BacktestEngine:
                 "timestamp": self._col_timestamp[i0:i1],
             }
 
+        # Optimized fallback: use pre-computed numpy arrays
+        if self._np_arrays is not None:
+            return {
+                "open": self._np_arrays["open"][start_idx : end_idx + 1].tolist(),
+                "high": self._np_arrays["high"][start_idx : end_idx + 1].tolist(),
+                "low": self._np_arrays["low"][start_idx : end_idx + 1].tolist(),
+                "close": self._np_arrays["close"][start_idx : end_idx + 1].tolist(),
+                "volume": self._np_arrays["volume"][start_idx : end_idx + 1].tolist(),
+                "timestamp": self._np_arrays["timestamp"][start_idx : end_idx + 1].tolist(),
+            }
+
         # Fallback: slice DataFrame window
         window = self.candles_df.iloc[start_idx : end_idx + 1]
         return {
-            "open": window["open"].tolist(),
-            "high": window["high"].tolist(),
-            "low": window["low"].tolist(),
-            "close": window["close"].tolist(),
-            "volume": window["volume"].tolist(),
-            "timestamp": window["timestamp"].tolist(),
+            "open": window["open"].values.tolist(),
+            "high": window["high"].values.tolist(),
+            "low": window["low"].values.tolist(),
+            "close": window["close"].values.tolist(),
+            "volume": window["volume"].values.tolist(),
+            "timestamp": window["timestamp"].values.tolist(),
         }
 
     def run(
@@ -356,6 +391,10 @@ class BacktestEngine:
         if self.candles_df is None:
             print("[ERROR] No data loaded. Call load_data() first.")
             return {"error": "no_data"}
+
+        # Ensure numpy arrays are prepared for fast window extraction
+        if self._np_arrays is None:
+            self._prepare_numpy_arrays()
 
         # Default policy/configs
         policy = policy or {}

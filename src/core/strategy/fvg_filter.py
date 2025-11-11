@@ -126,32 +126,40 @@ def generate_fvg_opportunities(
     """
     opportunities = []
 
-    for idx, row in features_df.iterrows():
-        # Handle NaN values
+    # Optimized: Use itertuples() instead of iterrows() for ~10x speedup
+    # itertuples() is much faster as it returns namedtuples instead of Series objects
+    for row in features_df.itertuples():
+        # Handle NaN values - use getattr with defaults for missing columns
         fvg_features = {
             "fvg_present": (
-                float(row.get("fvg_present", 0.0)) if not pd.isna(row.get("fvg_present")) else 0.0
+                float(getattr(row, "fvg_present", 0.0))
+                if not pd.isna(getattr(row, "fvg_present", 0.0))
+                else 0.0
             ),
             "fvg_size_atr": (
-                float(row.get("fvg_size_atr", 0.0)) if not pd.isna(row.get("fvg_size_atr")) else 0.0
+                float(getattr(row, "fvg_size_atr", 0.0))
+                if not pd.isna(getattr(row, "fvg_size_atr", 0.0))
+                else 0.0
             ),
             "displacement_strength": (
-                float(row.get("displacement_strength", 0.0))
-                if not pd.isna(row.get("displacement_strength"))
+                float(getattr(row, "displacement_strength", 0.0))
+                if not pd.isna(getattr(row, "displacement_strength", 0.0))
                 else 0.0
             ),
             "trend_confluence": (
-                float(row.get("trend_confluence", 0.0))
-                if not pd.isna(row.get("trend_confluence"))
+                float(getattr(row, "trend_confluence", 0.0))
+                if not pd.isna(getattr(row, "trend_confluence", 0.0))
                 else 0.0
             ),
             "distance_to_midline_norm": (
-                float(row.get("distance_to_midline_norm", 999.0))
-                if not pd.isna(row.get("distance_to_midline_norm"))
+                float(getattr(row, "distance_to_midline_norm", 999.0))
+                if not pd.isna(getattr(row, "distance_to_midline_norm", 999.0))
                 else 999.0
             ),
             "fvg_bullish": (
-                float(row.get("fvg_bullish", 0.0)) if not pd.isna(row.get("fvg_bullish")) else 0.0
+                float(getattr(row, "fvg_bullish", 0.0))
+                if not pd.isna(getattr(row, "fvg_bullish", 0.0))
+                else 0.0
             ),
         }
 
@@ -166,7 +174,7 @@ def generate_fvg_opportunities(
         if signal != "NONE":
             opportunities.append(
                 {
-                    "index": idx,
+                    "index": row.Index,  # itertuples provides Index attribute
                     "signal": signal,
                     "metadata": metadata,
                 }

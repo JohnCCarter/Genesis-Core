@@ -52,7 +52,8 @@ def _compute_candles_hash(candles: dict[str, list[float]], asof_bar: int) -> str
             data = candles[key][start_idx : asof_bar + 1]
             # Create a compact representation
             data_str += f"|{key}:{len(data)}:{sum(data):.2f}:{data[-1] if data else 0:.2f}"
-    return hashlib.md5(data_str.encode()).hexdigest()
+    # Non-security hash: use SHA256 to satisfy linters and avoid weak-hash warnings
+    return hashlib.sha256(data_str.encode()).hexdigest()
 
 
 def _extract_asof(

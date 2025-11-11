@@ -311,9 +311,10 @@ def expand_parameters(spec: dict[str, Any]) -> Iterable[dict[str, Any]]:
 
 def _estimate_optuna_search_space(spec: dict[str, Any]) -> dict[str, Any]:
     """Estimate the size and diversity of the Optuna search space.
-    
+
     Returns diagnostics about potential degeneracy issues.
     """
+
     def _count_choices(node: dict[str, Any], prefix: str = "") -> dict[str, int]:
         counts = {}
         for key, value in (node or {}).items():
@@ -342,26 +343,26 @@ def _estimate_optuna_search_space(spec: dict[str, Any]) -> dict[str, Any]:
             elif node_type == "loguniform":
                 counts[path] = -1  # continuous
         return counts
-    
+
     param_counts = _count_choices(spec)
-    
+
     # Calculate total combinations (only for discrete params)
     discrete_params = {k: v for k, v in param_counts.items() if v > 0}
     continuous_params = {k: v for k, v in param_counts.items() if v < 0}
-    
+
     total_combinations = 1
     for count in discrete_params.values():
         total_combinations *= count
-    
+
     # Detect potential issues
     issues = []
     if total_combinations < 10 and not continuous_params:
         issues.append("Search space very small (<10 combinations)")
-    
+
     narrow_params = [k for k, v in discrete_params.items() if v <= 2]
     if len(narrow_params) > len(discrete_params) * 0.7:
         issues.append(f"Many parameters have ≤2 choices: {narrow_params[:3]}")
-    
+
     return {
         "total_discrete_combinations": total_combinations if not continuous_params else None,
         "discrete_params": len(discrete_params),
@@ -862,7 +863,7 @@ def _run_optuna(
 ) -> list[dict[str, Any]]:
     if not OPTUNA_AVAILABLE:
         raise RuntimeError("Optuna-strategi vald men optuna är inte installerat")
-    
+
     # Validate search space before starting
     space_diagnostics = _estimate_optuna_search_space(parameters_spec)
     if space_diagnostics["potential_issues"]:
@@ -872,9 +873,11 @@ def _run_optuna(
         print(f"   Discrete params: {space_diagnostics['discrete_params']}")
         print(f"   Continuous params: {space_diagnostics['continuous_params']}")
         if space_diagnostics["total_discrete_combinations"]:
-            print(f"   Total discrete combinations: {space_diagnostics['total_discrete_combinations']}")
+            print(
+                f"   Total discrete combinations: {space_diagnostics['total_discrete_combinations']}"
+            )
         print()
-    
+
     storage = study_config.get("storage") or os.getenv("OPTUNA_STORAGE")
     study_name = study_config.get("study_name") or os.getenv("OPTUNA_STUDY_NAME")
     direction = study_config.get("direction") or "maximize"
@@ -961,14 +964,14 @@ def _run_optuna(
         constraints = payload.get("constraints") or {}
         score_block = payload.get("score") or {}
         score_value = float(score_block.get("score", 0.0) or 0.0)
-        
+
         # Check for zero trades to track this issue
         metrics = score_block.get("metrics", {})
         num_trades = int(metrics.get("num_trades", 0))
         if num_trades == 0:
             zero_trade_count += 1
             trial.set_user_attr("zero_trades", True)
-        
+
         # Mjuk constraints: returnera straffad poäng istället för att pruna,
         # så att Optuna kan ranka försök och fortsätta utforskning.
         if not constraints.get("ok", True):
@@ -998,7 +1001,7 @@ def _run_optuna(
     if total_trials_attempted > 0:
         duplicate_ratio = duplicate_count / total_trials_attempted
         zero_trade_ratio = zero_trade_count / total_trials_attempted
-        
+
         if duplicate_ratio > 0.5:
             print(
                 f"\n⚠️  WARNING: High duplicate rate ({duplicate_ratio*100:.1f}%)\n"
@@ -1013,7 +1016,7 @@ def _run_optuna(
                 f"   - Use multivariate=true in TPE sampler\n"
                 f"   - Consider removing or loosening step sizes\n"
             )
-        
+
         if zero_trade_ratio > 0.5:
             print(
                 f"\n⚠️  WARNING: High zero-trade rate ({zero_trade_ratio*100:.1f}%)\n"

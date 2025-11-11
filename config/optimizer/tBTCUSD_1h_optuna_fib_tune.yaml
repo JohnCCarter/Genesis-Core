@@ -12,8 +12,8 @@
     sample_start: 2024-10-22
     sample_end: 2025-10-01
     optuna:
-      storage: sqlite:///results/hparam_search/storage/optuna_tBTCUSD_1h_fib_tune_20251110_163853.db
-      study_name: tBTCUSD_1h_fib_tune_20251110_163853
+      storage: sqlite:///results/hparam_search/storage/optuna_tBTCUSD_1h_fib_tune_20251111_083228.db
+      study_name: tBTCUSD_1h_fib_tune_20251111_083228
       sampler:
         name: tpe
         kwargs:
@@ -232,3 +232,4 @@ parameters:
         value:
           bull: 0.95
           bear: 1.05
+

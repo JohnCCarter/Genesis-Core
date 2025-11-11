@@ -51,7 +51,10 @@ def _compute_candles_hash(candles: dict[str, list[float]], asof_bar: int) -> str
             start_idx = max(0, asof_bar - 99)
             data = candles[key][start_idx : asof_bar + 1]
             # Create a compact representation
-            data_str += f"|{key}:{len(data)}:{sum(data):.2f}:{data[-1] if data else 0:.2f}"
+            length = len(data)
+            data_sum = float(np.sum(data)) if length else 0.0
+            last_val = float(data[-1]) if length else 0.0
+            data_str += f"|{key}:{length}:{data_sum:.2f}:{last_val:.2f}"
     # Non-security hash: use SHA256 to satisfy linters and avoid weak-hash warnings
     return hashlib.sha256(data_str.encode()).hexdigest()
 

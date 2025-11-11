@@ -229,12 +229,18 @@ def decide(
             if last_action in ("LONG", "SHORT"):
                 candidate = last_action  # type: ignore[assignment]
             else:
-                reasons.append("P_TIE_BREAK")
-                return "NONE", {
-                    "versions": versions,
-                    "reasons": reasons,
-                    "state_out": state_out,
-                }
+                # Regime-based fallback to avoid permanent no-trade degeneracy when model defaults to 0.5/0.5
+                if regime_str in ("bull", "trend"):
+                    candidate = "LONG"
+                elif regime_str == "bear":
+                    candidate = "SHORT"
+                else:
+                    reasons.append("P_TIE_BREAK")
+                    return "NONE", {
+                        "versions": versions,
+                        "reasons": reasons,
+                        "state_out": state_out,
+                    }
         else:
             candidate = "LONG" if p_buy > p_sell else "SHORT"
 

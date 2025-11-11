@@ -4,6 +4,7 @@ Backtest engine for Genesis-Core.
 Replays historical candle data bar-by-bar through the existing strategy pipeline.
 """
 
+from collections import Counter
 from datetime import datetime
 from pathlib import Path
 
@@ -97,6 +98,7 @@ class BacktestEngine:
         self.bar_count = 0
 
         self.champion_loader = ChampionLoader()
+        self.debug_stats: dict[str, object] = {}
 
         # Initialize HTF Exit Engine
         default_htf_config = {
@@ -246,6 +248,10 @@ class BacktestEngine:
             bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]",
         )
 
+        htf_fib_stats = Counter()
+        ltf_fib_stats = Counter()
+        bar_errors: list[dict[str, object]] = []
+
         # Track bars held for current position
 
         # Replay bars
@@ -354,10 +360,37 @@ class BacktestEngine:
                 self.state = state_out
                 self.bar_count += 1
 
+                features_meta = meta.get("features") if isinstance(meta, dict) else None
+                if isinstance(features_meta, dict):
+                    htf_ctx = features_meta.get("htf_fibonacci")
+                    if isinstance(htf_ctx, dict):
+                        htf_reason = (
+                            "available"
+                            if htf_ctx.get("available")
+                            else str(htf_ctx.get("reason", "unavailable"))
+                        )
+                    else:
+                        htf_reason = "missing"
+                    htf_fib_stats[htf_reason] += 1
+
+                    ltf_ctx = features_meta.get("ltf_fibonacci")
+                    if isinstance(ltf_ctx, dict):
+                        ltf_reason = (
+                            "available"
+                            if ltf_ctx.get("available")
+                            else str(ltf_ctx.get("reason", "unavailable"))
+                        )
+                    else:
+                        ltf_reason = "missing"
+                    ltf_fib_stats[ltf_reason] += 1
+                else:
+                    htf_fib_stats["features_meta_missing"] += 1
+                    ltf_fib_stats["features_meta_missing"] += 1
+
             except Exception as e:
                 if verbose:
                     print(f"\n[ERROR] Bar {i}: {e}")
-                # Continue on error (robust backtest)
+                bar_errors.append({"bar_index": i, "timestamp": str(timestamp), "error": str(e)})
 
             pbar.update(1)
 
@@ -368,6 +401,25 @@ class BacktestEngine:
         self.position_tracker.close_all_positions(final_bar["close"], final_bar["timestamp"])
 
         print(f"\n[OK] Backtest complete - {self.bar_count} bars processed")
+
+        if htf_fib_stats:
+            print("[STATS] HTF Fibonacci availability:")
+            for reason, count in sorted(htf_fib_stats.items()):
+                print(f"  - {reason}: {count}")
+        if ltf_fib_stats:
+            print("[STATS] LTF Fibonacci availability:")
+            for reason, count in sorted(ltf_fib_stats.items()):
+                print(f"  - {reason}: {count}")
+        if bar_errors:
+            print(f"[WARN] {len(bar_errors)} bars raised errors (showing up to 5):")
+            for entry in bar_errors[:5]:
+                print(f"  - bar {entry['bar_index']} @ {entry['timestamp']}: {entry['error']}")
+
+        self.debug_stats = {
+            "htf_fibonacci": dict(htf_fib_stats),
+            "ltf_fibonacci": dict(ltf_fib_stats),
+            "bar_errors": bar_errors,
+        }
 
         return self._build_results()
 
@@ -571,6 +623,7 @@ class BacktestEngine:
                 for t in self.position_tracker.trades
             ],
             "equity_curve": self.position_tracker.equity_curve,
+            "debug": self.debug_stats,
         }
 
     def _initialize_position_exit_context(

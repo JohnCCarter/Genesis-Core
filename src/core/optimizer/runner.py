@@ -676,6 +676,7 @@ def run_trial(
 def _select_optuna_sampler(
     name: str | None,
     kwargs: dict[str, Any] | None,
+    concurrency: int = 1,
 ):
     if not OPTUNA_AVAILABLE:
         raise RuntimeError("Optuna är inte installerat")
@@ -688,8 +689,11 @@ def _select_optuna_sampler(
         if "constant_liar" not in kwargs:
             kwargs["constant_liar"] = True
         if "n_startup_trials" not in kwargs:
-            # Higher startup trials help explore space before TPE modeling
-            kwargs["n_startup_trials"] = 25
+            # Scale startup trials with concurrency to reduce duplicates
+            # More workers = more simultaneous samples = need more random exploration
+            base_startup = 25
+            adaptive_startup = max(base_startup, 5 * concurrency)
+            kwargs["n_startup_trials"] = adaptive_startup
         if "n_ei_candidates" not in kwargs:
             # More candidates for better exploration
             kwargs["n_ei_candidates"] = 48
@@ -728,6 +732,7 @@ def _create_optuna_study(
     pruner_cfg: dict[str, Any] | None,
     direction: str | None,
     allow_resume: bool,
+    concurrency: int = 1,
     *,
     heartbeat_interval: int | None = None,
     heartbeat_grace_period: int | None = None,
@@ -748,7 +753,9 @@ def _create_optuna_study(
         or pruner_cfg.get("pruner")
         or pruner_cfg.get("kind")
     )
-    sampler = _select_optuna_sampler(sampler_name, sampler_cfg.get("kwargs"))
+    sampler = _select_optuna_sampler(
+        sampler_name, sampler_cfg.get("kwargs"), concurrency=concurrency
+    )
     pruner = _select_optuna_pruner(pruner_name, pruner_cfg.get("kwargs"))
     storage_obj: Any | None = storage
     if storage and heartbeat_interval:
@@ -902,6 +909,7 @@ def _run_optuna(
         pruner_cfg=pruner_cfg,
         direction=direction,
         allow_resume=allow_resume,
+        concurrency=concurrency,
         heartbeat_interval=heartbeat_interval,
         heartbeat_grace_period=heartbeat_grace,
     )
@@ -1010,11 +1018,24 @@ def _run_optuna(
                 f"   - Search space may be too narrow\n"
                 f"   - Float step sizes causing parameter collapse\n"
                 f"   - TPE sampler degenerating\n"
+            )
+            if concurrency > 4:
+                print(
+                    f"   - High concurrency (n_jobs={concurrency}) increases duplicates\n"
+                    f"     This is normal with parallel optimization + discrete spaces\n"
+                )
+            print(
                 f"   Recommendations:\n"
                 f"   - Widen parameter ranges\n"
-                f"   - Increase n_startup_trials (try 25+)\n"
-                f"   - Use multivariate=true in TPE sampler\n"
-                f"   - Consider removing or loosening step sizes\n"
+                f"   - Increase n_startup_trials (try {max(25, 5 * concurrency)}+)\n"
+            )
+            if concurrency > 4:
+                print(
+                    f"   - Reduce max_concurrent to {max(2, concurrency // 2)} for discrete spaces\n"
+                )
+            print(
+                "   - Use multivariate=true in TPE sampler\n"
+                "   - Consider removing or loosening step sizes\n"
             )
 
         if zero_trade_ratio > 0.5:

@@ -834,7 +834,9 @@ def _run_optuna(
             if duplicate_streak >= max_duplicate_streak:
                 raise optuna.exceptions.OptunaError("Duplicate parameter suggestions limit reached")
             results.append({**cached, "skipped": True})
-            return float(cached.get("score", {}).get("score", 0.0) or 0.0)
+            # Penalize duplicates heavily so sampler moves away from same params
+            trial.set_user_attr("penalized_duplicate", True)
+            return -1e6
 
         payload = make_trial(trial_number, parameters)
         results.append(payload)
@@ -851,6 +853,11 @@ def _run_optuna(
             else:
                 duplicate_streak = 0
             trial.set_user_attr("skipped", True)
+            # Penalize in-run duplicates to avoid degeneracy
+            if reason == "duplicate_within_run":
+                trial.set_user_attr("penalized_duplicate", True)
+                return -1e6
+            # Other skip reasons (e.g., already_completed) can report neutral score
             return float(payload.get("score", {}).get("score", 0.0) or 0.0)
 
         duplicate_streak = 0

@@ -24,7 +24,7 @@ def diagnose_run(run_dir: Path) -> dict[str, Any]:
     trial_files = sorted(run_dir.glob("trial_*.json"))
     
     if not trial_files:
-        return {"error": "No trial files found"}
+        return {"error": "No trial files found", "run_dir": str(run_dir)}
     
     # Counters
     total_trials = len(trial_files)
@@ -220,6 +220,11 @@ def main():
     
     diagnosis = diagnose_run(run_dir)
     print_diagnosis(diagnosis)
+    
+    # Skip recommendations if there's an error
+    if "error" in diagnosis:
+        print("\nℹ️  No trials to analyze. This may be a fresh/incomplete run.")
+        return
     
     # Print recommendations
     print("\n" + "="*80)

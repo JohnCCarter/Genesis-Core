@@ -309,6 +309,68 @@ def expand_parameters(spec: dict[str, Any]) -> Iterable[dict[str, Any]]:
     yield from _expand_dict(spec)
 
 
+def _estimate_optuna_search_space(spec: dict[str, Any]) -> dict[str, Any]:
+    """Estimate the size and diversity of the Optuna search space.
+    
+    Returns diagnostics about potential degeneracy issues.
+    """
+    def _count_choices(node: dict[str, Any], prefix: str = "") -> dict[str, int]:
+        counts = {}
+        for key, value in (node or {}).items():
+            path = f"{prefix}.{key}" if prefix else key
+            if value is None:
+                continue
+            if isinstance(value, dict) and "type" not in value:
+                counts.update(_count_choices(value, path))
+                continue
+            node_type = (value or {}).get("type", "grid")
+            if node_type == "fixed":
+                counts[path] = 1
+            elif node_type == "grid":
+                options = value.get("values") or []
+                counts[path] = len(options)
+            elif node_type in ("float", "int"):
+                low = float(value.get("low", 0))
+                high = float(value.get("high", 1))
+                step = value.get("step")
+                if step:
+                    # Discretized space
+                    counts[path] = int((high - low) / float(step)) + 1
+                else:
+                    # Continuous space - mark as "infinite"
+                    counts[path] = -1  # continuous
+            elif node_type == "loguniform":
+                counts[path] = -1  # continuous
+        return counts
+    
+    param_counts = _count_choices(spec)
+    
+    # Calculate total combinations (only for discrete params)
+    discrete_params = {k: v for k, v in param_counts.items() if v > 0}
+    continuous_params = {k: v for k, v in param_counts.items() if v < 0}
+    
+    total_combinations = 1
+    for count in discrete_params.values():
+        total_combinations *= count
+    
+    # Detect potential issues
+    issues = []
+    if total_combinations < 10 and not continuous_params:
+        issues.append("Search space very small (<10 combinations)")
+    
+    narrow_params = [k for k, v in discrete_params.items() if v <= 2]
+    if len(narrow_params) > len(discrete_params) * 0.7:
+        issues.append(f"Many parameters have ≤2 choices: {narrow_params[:3]}")
+    
+    return {
+        "total_discrete_combinations": total_combinations if not continuous_params else None,
+        "discrete_params": len(discrete_params),
+        "continuous_params": len(continuous_params),
+        "param_choice_counts": param_counts,
+        "potential_issues": issues,
+    }
+
+
 def _derive_dates(snapshot_id: str) -> tuple[str, str]:
     if not snapshot_id:
         raise ValueError("trial snapshot_id saknas")
@@ -619,6 +681,17 @@ def _select_optuna_sampler(
     kwargs = (kwargs or {}).copy()
     name = (name or kwargs.pop("name", None) or kwargs.pop("type", None) or "tpe").lower()
     if name == "tpe":
+        # Apply better defaults for TPE to avoid degeneracy
+        if "multivariate" not in kwargs:
+            kwargs["multivariate"] = True
+        if "constant_liar" not in kwargs:
+            kwargs["constant_liar"] = True
+        if "n_startup_trials" not in kwargs:
+            # Higher startup trials help explore space before TPE modeling
+            kwargs["n_startup_trials"] = 25
+        if "n_ei_candidates" not in kwargs:
+            # More candidates for better exploration
+            kwargs["n_ei_candidates"] = 48
         return TPESampler(**kwargs)
     if name == "random":
         return RandomSampler(**kwargs)
@@ -789,6 +862,19 @@ def _run_optuna(
 ) -> list[dict[str, Any]]:
     if not OPTUNA_AVAILABLE:
         raise RuntimeError("Optuna-strategi vald men optuna är inte installerat")
+    
+    # Validate search space before starting
+    space_diagnostics = _estimate_optuna_search_space(parameters_spec)
+    if space_diagnostics["potential_issues"]:
+        print("\n⚠️  Search space warnings:")
+        for issue in space_diagnostics["potential_issues"]:
+            print(f"   - {issue}")
+        print(f"   Discrete params: {space_diagnostics['discrete_params']}")
+        print(f"   Continuous params: {space_diagnostics['continuous_params']}")
+        if space_diagnostics["total_discrete_combinations"]:
+            print(f"   Total discrete combinations: {space_diagnostics['total_discrete_combinations']}")
+        print()
+    
     storage = study_config.get("storage") or os.getenv("OPTUNA_STORAGE")
     study_name = study_config.get("study_name") or os.getenv("OPTUNA_STUDY_NAME")
     direction = study_config.get("direction") or "maximize"
@@ -820,9 +906,13 @@ def _run_optuna(
     results: list[dict[str, Any]] = []
     duplicate_streak = 0
     max_duplicate_streak = int(os.getenv("OPTUNA_MAX_DUPLICATE_STREAK", "10"))
+    total_trials_attempted = 0
+    duplicate_count = 0
+    zero_trade_count = 0
 
     def objective(trial):
-        nonlocal duplicate_streak
+        nonlocal duplicate_streak, total_trials_attempted, duplicate_count, zero_trade_count
+        total_trials_attempted += 1
         parameters = _suggest_parameters(trial, parameters_spec)
         trial_number = trial.number + 1
         key = _trial_key(parameters)
@@ -831,6 +921,7 @@ def _run_optuna(
             trial.set_user_attr("skipped", True)
             trial.set_user_attr("duplicate", True)
             duplicate_streak += 1
+            duplicate_count += 1
             if duplicate_streak >= max_duplicate_streak:
                 raise optuna.exceptions.OptunaError("Duplicate parameter suggestions limit reached")
             results.append({**cached, "skipped": True})
@@ -845,12 +936,14 @@ def _run_optuna(
             reason = payload.get("reason")
             if reason == "duplicate_within_run":
                 duplicate_streak += 1
+                duplicate_count += 1
                 trial.set_user_attr("duplicate", True)
                 if duplicate_streak >= max_duplicate_streak:
                     raise optuna.exceptions.OptunaError(
                         "Duplicate parameter suggestions limit reached"
                     )
             else:
+                # Only reset streak for non-duplicate skips
                 duplicate_streak = 0
             trial.set_user_attr("skipped", True)
             # Penalize in-run duplicates to avoid degeneracy
@@ -860,15 +953,22 @@ def _run_optuna(
             # Other skip reasons (e.g., already_completed) can report neutral score
             return float(payload.get("score", {}).get("score", 0.0) or 0.0)
 
-        duplicate_streak = 0
-
         if payload.get("error"):
             trial.set_user_attr("error", payload.get("error"))
+            # Don't reset duplicate streak on errors
             raise optuna.TrialPruned()
 
         constraints = payload.get("constraints") or {}
         score_block = payload.get("score") or {}
         score_value = float(score_block.get("score", 0.0) or 0.0)
+        
+        # Check for zero trades to track this issue
+        metrics = score_block.get("metrics", {})
+        num_trades = int(metrics.get("num_trades", 0))
+        if num_trades == 0:
+            zero_trade_count += 1
+            trial.set_user_attr("zero_trades", True)
+        
         # Mjuk constraints: returnera straffad poäng istället för att pruna,
         # så att Optuna kan ranka försök och fortsätta utforskning.
         if not constraints.get("ok", True):
@@ -876,6 +976,10 @@ def _run_optuna(
             trial.set_user_attr("constraints_soft_fail", True)
             # Stor negativ straff för att hamna långt under giltiga försök
             return score_value - 1e6
+
+        # Only reset duplicate streak on successful, non-zero-trade trials
+        if num_trades > 0:
+            duplicate_streak = 0
 
         trial.set_user_attr("score_block", score_block)
         trial.set_user_attr("result_payload", payload)
@@ -889,6 +993,41 @@ def _run_optuna(
         gc_after_trial=True,
         show_progress_bar=False,  # Performance: Disable progress bar for batch runs
     )
+
+    # Diagnostic warnings for duplicate and zero-trade issues
+    if total_trials_attempted > 0:
+        duplicate_ratio = duplicate_count / total_trials_attempted
+        zero_trade_ratio = zero_trade_count / total_trials_attempted
+        
+        if duplicate_ratio > 0.5:
+            print(
+                f"\n⚠️  WARNING: High duplicate rate ({duplicate_ratio*100:.1f}%)\n"
+                f"   {duplicate_count}/{total_trials_attempted} trials were duplicates.\n"
+                f"   This suggests:\n"
+                f"   - Search space may be too narrow\n"
+                f"   - Float step sizes causing parameter collapse\n"
+                f"   - TPE sampler degenerating\n"
+                f"   Recommendations:\n"
+                f"   - Widen parameter ranges\n"
+                f"   - Increase n_startup_trials (try 25+)\n"
+                f"   - Use multivariate=true in TPE sampler\n"
+                f"   - Consider removing or loosening step sizes\n"
+            )
+        
+        if zero_trade_ratio > 0.5:
+            print(
+                f"\n⚠️  WARNING: High zero-trade rate ({zero_trade_ratio*100:.1f}%)\n"
+                f"   {zero_trade_count}/{total_trials_attempted} trials produced 0 trades.\n"
+                f"   This suggests:\n"
+                f"   - Entry confidence thresholds too high\n"
+                f"   - Fibonacci gates too strict\n"
+                f"   - Multi-timeframe filtering too aggressive\n"
+                f"   Recommendations:\n"
+                f"   - Lower entry_conf_overall (try 0.25-0.35)\n"
+                f"   - Widen fibonacci tolerance_atr ranges\n"
+                f"   - Enable LTF override when HTF blocks\n"
+                f"   - Run smoke test (2-5 trials) before long runs\n"
+            )
 
     # Performance: Batch metadata updates to reduce file I/O
     best_payload: dict[str, Any] | None = None
@@ -905,6 +1044,13 @@ def _run_optuna(
                 "n_trials": len(study.trials),
                 "best_value": study.best_value,
                 "best_trial_number": best_payload.get("trial_id") if best_payload else None,
+                "diagnostics": {
+                    "total_trials_attempted": total_trials_attempted,
+                    "duplicate_count": duplicate_count,
+                    "zero_trade_count": zero_trade_count,
+                    "duplicate_ratio": duplicate_count / max(1, total_trials_attempted),
+                    "zero_trade_ratio": zero_trade_count / max(1, total_trials_attempted),
+                },
             }
         except ValueError:
             best_payload = None
@@ -915,6 +1061,13 @@ def _run_optuna(
                 "n_trials": len(study.trials),
                 "best_value": None,
                 "best_trial_number": None,
+                "diagnostics": {
+                    "total_trials_attempted": total_trials_attempted,
+                    "duplicate_count": duplicate_count,
+                    "zero_trade_count": zero_trade_count,
+                    "duplicate_ratio": duplicate_count / max(1, total_trials_attempted),
+                    "zero_trade_ratio": zero_trade_count / max(1, total_trials_attempted),
+                },
             }
     else:
         optuna_meta = {
@@ -924,6 +1077,13 @@ def _run_optuna(
             "n_trials": len(study.trials),
             "best_value": None,
             "best_trial_number": None,
+            "diagnostics": {
+                "total_trials_attempted": total_trials_attempted,
+                "duplicate_count": duplicate_count,
+                "zero_trade_count": zero_trade_count,
+                "duplicate_ratio": duplicate_count / max(1, total_trials_attempted),
+                "zero_trade_ratio": zero_trade_count / max(1, total_trials_attempted),
+            },
         }
 
     # Performance: Single file read/write for metadata

@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+from collections import OrderedDict
 from typing import Any
 
 import numpy as np
@@ -39,8 +40,12 @@ from core.utils.logging_redaction import get_logger
 _log = get_logger(__name__)
 
 # Cache for feature extraction to avoid recomputing features for same data
-_feature_cache: dict[str, tuple[dict[str, float], dict[str, Any]]] = {}
-_MAX_CACHE_SIZE = 100  # Limit cache size to prevent memory issues
+_feature_cache: OrderedDict[str, tuple[dict[str, float], dict[str, Any]]] = OrderedDict()
+# Allow overriding via env; default larger LRU cache for speed
+try:
+    _MAX_CACHE_SIZE = int(os.environ.get("GENESIS_FEATURE_CACHE_SIZE", "500"))
+except Exception:
+    _MAX_CACHE_SIZE = 500
 _indicator_cache = IndicatorCache(max_size=2048)
 _INDICATOR_CACHE_ENABLED = not bool(os.environ.get("GENESIS_DISABLE_INDICATOR_CACHE"))
 
@@ -57,15 +62,25 @@ def _indicator_cache_store(key, value):
 
 
 def _compute_candles_hash(candles: dict[str, list[float]], asof_bar: int) -> str:
-    """Compute a hash of candles data up to asof_bar for caching."""
-    # Use only the data up to asof_bar for hash computation
+    """Compute a cache key for candles up to asof_bar.
+
+    Fast path (opt-in): GENESIS_FAST_HASH=1 → simple f-string on asof_bar:last_close
+    Default: compact digest summarized over last up to 100 bars, hashed by SHA256.
+    """
+    # Optional ultra-fast key for tight loops
+    if os.environ.get("GENESIS_FAST_HASH") in {"1", "true", "True"}:
+        try:
+            last_close = float(candles["close"][asof_bar])
+        except Exception:
+            last_close = 0.0
+        return f"{asof_bar}:{last_close:.4f}"
+
+    # Default compact SHA256 key
     data_str = f"{asof_bar}"
     for key in ["open", "high", "low", "close", "volume"]:
         if key in candles:
-            # Hash last 100 bars or less to keep hash computation fast
             start_idx = max(0, asof_bar - 99)
             data = candles[key][start_idx : asof_bar + 1]
-            # Create a compact representation
             length = len(data)
             data_sum = float(np.sum(data)) if length else 0.0
             last_val = float(data[-1]) if length else 0.0
@@ -104,7 +119,12 @@ def _extract_asof(
     cache_key = _compute_candles_hash(candles, asof_bar)
     if cache_key in _feature_cache:
         metrics.inc("feature_cache_hit")
-        return _feature_cache[cache_key]
+        value = _feature_cache[cache_key]
+        try:
+            _feature_cache.move_to_end(cache_key)  # LRU
+        except Exception:
+            pass
+        return value
 
     metrics.inc("feature_cache_miss")
 
@@ -531,10 +551,15 @@ def _extract_asof(
     result = (features, meta)
 
     # Cache the result (with size limit to prevent memory issues)
-    if len(_feature_cache) >= _MAX_CACHE_SIZE:
-        # Evict oldest entry (simple FIFO eviction)
-        _feature_cache.pop(next(iter(_feature_cache)))
     _feature_cache[cache_key] = result
+    # Enforce LRU size
+    try:
+        while len(_feature_cache) > _MAX_CACHE_SIZE:
+            _feature_cache.popitem(last=False)
+    except Exception:
+        # Fallback: simple FIFO eviction if OrderedDict semantics unavailable
+        if len(_feature_cache) > _MAX_CACHE_SIZE:
+            _feature_cache.pop(next(iter(_feature_cache)))
 
     return result
 

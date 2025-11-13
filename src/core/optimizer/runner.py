@@ -989,15 +989,19 @@ def _run_optuna(
                     duplicate_streak += 1
                     duplicate_count += 1
                     trial.set_user_attr("duplicate", True)
+                    # For backward‑compatibility with tests and diagnostics,
+                    # mark both generic and precheck-specific attributes.
+                    trial.set_user_attr("penalized_duplicate", True)
                     trial.set_user_attr("penalized_duplicate_precheck", True)
-                    results.append(
-                        {
-                            "trial_id": f"trial_{trial_number:03d}",
-                            "parameters": parameters,
-                            "skipped": True,
-                            "reason": "duplicate_guard_precheck",
-                        }
-                    )
+                    # Advance trial stream via make_trial (cheap in-run duplicate detection),
+                    # then override result as prechecked duplicate to avoid optimizer degeneracy.
+                    payload = make_trial(trial_number, parameters)
+                    payload = dict(payload or {})
+                    payload["trial_id"] = f"trial_{trial_number:03d}"
+                    payload["parameters"] = parameters
+                    payload["skipped"] = True
+                    payload.setdefault("reason", "duplicate_guard_precheck")
+                    results.append(payload)
                     if duplicate_streak >= max_duplicate_streak:
                         raise optuna.exceptions.OptunaError(
                             "Duplicate parameter suggestions limit reached"

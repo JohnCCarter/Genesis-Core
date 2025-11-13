@@ -558,7 +558,8 @@ class BacktestEngine:
             except Exception as e:
                 if verbose or os.environ.get("GENESIS_DEBUG_BACKTEST"):
                     try:
-                        import traceback, sys  # noqa: PLC0415
+                        import sys  # noqa: PLC0415
+                        import traceback  # noqa: PLC0415
 
                         tb = traceback.extract_tb(sys.exc_info()[2])
                         where = ""

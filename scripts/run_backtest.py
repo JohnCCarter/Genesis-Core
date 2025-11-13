@@ -40,6 +40,7 @@ from core.backtest.engine import BacktestEngine  # noqa: E402
 from core.backtest.metrics import calculate_metrics, print_metrics_report  # noqa: E402
 from core.backtest.trade_logger import TradeLogger  # noqa: E402
 from core.config.authority import ConfigAuthority  # noqa: E402
+from core.utils.diffing import diff_metrics, summarize_metric_deltas  # noqa: E402
 
 
 def _deep_merge(base: dict, override: dict) -> dict:
@@ -117,6 +118,11 @@ def main():
         action="store_true",
         help="Precompute common features (ATR/EMA) for performance",
     )
+    parser.add_argument(
+        "--compare",
+        type=Path,
+        help="Path to baseline backtest JSON to compare against",
+    )
 
     args = parser.parse_args()
 
@@ -190,12 +196,41 @@ def main():
         print_metrics_report(metrics, results.get("backtest_info"))
 
         # Save results
+        saved_files: dict[str, Path] | None = None
         if not args.no_save:
             logger = TradeLogger()
             saved_files = logger.save_all(results)
             print("\n[OK] Results saved:")
             for key, path in saved_files.items():
                 print(f"  {key}: {path}")
+
+        # Diff mot baseline om begärt
+        if args.compare:
+            comparison_path = args.compare
+            if not comparison_path.exists():
+                print(f"\n[WARN] Compare file saknas: {comparison_path}")
+            else:
+                try:
+                    baseline = json.loads(comparison_path.read_text(encoding="utf-8"))
+                    baseline_metrics = (
+                        (baseline.get("summary") or {}).get("metrics")
+                        or baseline.get("metrics")
+                        or {}
+                    )
+                    result_metrics = (
+                        (results.get("summary") or {}).get("metrics")
+                        or results.get("metrics")
+                        or {}
+                    )
+                    metrics_diff = diff_metrics(baseline_metrics, result_metrics)
+                    trades_old = len(baseline.get("trades") or [])
+                    trades_new = len(results.get("trades") or [])
+                    print("\n[DIFF] Metrics delta:")
+                    print(summarize_metric_deltas(metrics_diff) or "  (no differences)")
+                    trade_delta = trades_new - trades_old
+                    print(f"[DIFF] Trades: old={trades_old} new={trades_new} delta={trade_delta:+}")
+                except json.JSONDecodeError as exc:
+                    print(f"\n[WARN] Kunde inte läsa compare-fil ({comparison_path}): {exc}")
 
         print("\n[SUCCESS] Backtest complete!")
         return 0

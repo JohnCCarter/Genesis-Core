@@ -443,7 +443,7 @@ class BacktestEngine:
         for i in range(len(self.candles_df)):
             # Fast-path: pull values from numpy buffers if available
             if self._np_arrays is not None:
-                timestamp = self._np_arrays["timestamp"][i]
+                timestamp = pd.Timestamp(self._np_arrays["timestamp"][i])
                 close_price = float(self._np_arrays["close"][i])
                 open_price = float(self._np_arrays["open"][i])
                 high_price = float(self._np_arrays["high"][i])
@@ -593,7 +593,7 @@ class BacktestEngine:
         # Close all positions at end
         if self._np_arrays is not None:
             final_close = float(self._np_arrays["close"][-1])
-            final_ts = self._np_arrays["timestamp"][-1]
+            final_ts = pd.Timestamp(self._np_arrays["timestamp"][-1])
         else:
             final_bar = self.candles_df.iloc[-1]
             final_close = final_bar["close"]
@@ -625,8 +625,8 @@ class BacktestEngine:
         position = self.position_tracker.position
         decision_state = (meta.get("decision") or {}).get("state_out") or {}
 
-        # Get exit config
-        exit_cfg = configs.get("cfg", {}).get("exit", {})
+        # Get exit config (top-level in merged configs)
+        exit_cfg = configs.get("exit", {})
         enabled = exit_cfg.get("enabled", True)
 
         if not enabled:
@@ -666,7 +666,7 @@ class BacktestEngine:
         meta["signal"]["current_atr"] = current_atr
 
         # Execute exit actions
-        exit_cfg = configs.get("cfg", {}).get("exit", {})
+        exit_cfg = configs.get("exit", {})
         break_even_trigger = exit_cfg.get("break_even_trigger")
         break_even_offset = exit_cfg.get("break_even_offset", 0.0)
         partial_break_even = exit_cfg.get("partial_break_even", False)
@@ -797,8 +797,8 @@ class BacktestEngine:
         """Fallback traditional exit conditions."""
         position = self.position_tracker.position
 
-        # Get exit config
-        exit_cfg = configs.get("cfg", {}).get("exit", {})
+        # Get exit config (top-level in merged configs)
+        exit_cfg = configs.get("exit", {})
         stop_loss_pct = float(exit_cfg.get("stop_loss_pct", 0.02))
         take_profit_pct = float(exit_cfg.get("take_profit_pct", 0.05))
         exit_conf_threshold = float(exit_cfg.get("exit_conf_threshold", 0.45))

@@ -1,7 +1,7 @@
 {
   "cfg": {
     "thresholds": {
-      "entry_conf_overall": 0.45,
+      "entry_conf_overall": 0.28,
       "signal_adaptation": {
         "atr_period": 14,
         "zones": {
@@ -37,27 +37,27 @@
     },
     "risk": {
       "risk_map": [
-        [0.45, 0.015],
-        [0.55, 0.025],
-        [0.65, 0.035]
+        [0.42, 0.02],
+        [0.55, 0.03],
+        [0.68, 0.04]
       ]
     },
     "exit": {
-      "exit_conf_threshold": 0.4,
-      "max_hold_bars": 18
+      "exit_conf_threshold": 0.33,
+      "max_hold_bars": 22
     },
     "multi_timeframe": {
       "use_htf_block": true,
       "allow_ltf_override": true,
-      "ltf_override_threshold": 0.85,
+      "ltf_override_threshold": 0.65,
       "ltf_override_adaptive": {
         "enabled": true,
-        "window": 240,
-        "percentile": 0.9,
-        "min_history": 80,
-        "min_floor": 0.6,
+        "window": 180,
+        "percentile": 0.85,
+        "min_history": 120,
+        "min_floor": 0.5,
         "max_ceiling": 0.95,
-        "fallback_threshold": 0.8,
+        "fallback_threshold": 0.9,
         "regime_multipliers": {
           "bull": 0.95,
           "bear": 1.05
@@ -65,8 +65,8 @@
       }
     },
     "htf_exit_config": {
-      "fib_threshold_atr": 0.7,
-      "trail_atr_multiplier": 2.5,
+      "fib_threshold_atr": 0.75,
+      "trail_atr_multiplier": 2.0,
       "enable_partials": true,
       "enable_trailing": true,
       "enable_structure_breaks": true,
@@ -78,7 +78,7 @@
       "entry": {
         "enabled": true,
         "missing_policy": "pass",
-        "tolerance_atr": 0.35,
+        "tolerance_atr": 0.65,
         "long_min_level": 0.382,
         "short_max_level": 0.618
       }
@@ -87,13 +87,13 @@
       "entry": {
         "enabled": true,
         "missing_policy": "pass",
-        "tolerance_atr": 0.35,
-        "long_max_level": 0.786,
+        "tolerance_atr": 0.65,
+        "long_max_level": 0.618,
         "short_min_level": 0.382,
         "override_confidence": {
           "enabled": true,
-          "min": 0.35,
-          "max": 0.7
+          "min": 0.45,
+          "max": 0.75
         }
       }
     }

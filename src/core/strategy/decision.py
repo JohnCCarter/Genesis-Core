@@ -50,6 +50,14 @@ def _compute_percentile(values: list[float], q: float) -> float:
     return float(d0 + d1)
 
 
+def _as_float(value: Any) -> float | None:
+    """Best‑effort conversion; returns None if not convertible."""
+    try:
+        return float(value)  # type: ignore[arg-type]
+    except Exception:
+        return None
+
+
 def decide(
     policy: dict[str, Any],
     *,
@@ -508,11 +516,19 @@ def decide(
                     level_price = _level_price(
                         htf_levels, float(min_level) if min_level is not None else None
                     )
-                    if level_price is not None and price_now < level_price - tolerance:
+                    p_val = _as_float(price_now)
+                    lp_val = _as_float(level_price) if level_price is not None else None
+                    tol_val = _as_float(tolerance)
+                    if (
+                        lp_val is not None
+                        and p_val is not None
+                        and tol_val is not None
+                        and p_val < (lp_val - tol_val)
+                    ):
                         payload = {
                             **base_debug,
                             "reason": "LONG_BELOW_LEVEL",
-                            "level_price": level_price,
+                            "level_price": lp_val,
                         }
                         if not _try_override_htf_block(payload):
                             state_out["htf_fib_entry_debug"] = payload
@@ -567,11 +583,19 @@ def decide(
                     level_price = _level_price(
                         htf_levels, float(max_level) if max_level is not None else None
                     )
-                    if level_price is not None and price_now > level_price + tolerance:
+                    p_val = _as_float(price_now)
+                    lp_val = _as_float(level_price) if level_price is not None else None
+                    tol_val = _as_float(tolerance)
+                    if (
+                        lp_val is not None
+                        and p_val is not None
+                        and tol_val is not None
+                        and p_val > (lp_val + tol_val)
+                    ):
                         payload = {
                             **base_debug,
                             "reason": "SHORT_ABOVE_LEVEL",
-                            "level_price": level_price,
+                            "level_price": lp_val,
                         }
                         if not _try_override_htf_block(payload):
                             state_out["htf_fib_entry_debug"] = payload
@@ -665,11 +689,19 @@ def decide(
                 level_price = _level_price(
                     levels, float(max_level) if max_level is not None else None
                 )
-                if level_price is not None and price_now > level_price + tolerance:
+                p_val = _as_float(price_now)
+                lp_val = _as_float(level_price) if level_price is not None else None
+                tol_val = _as_float(tolerance)
+                if (
+                    lp_val is not None
+                    and p_val is not None
+                    and tol_val is not None
+                    and p_val > (lp_val + tol_val)
+                ):
                     state_out["ltf_fib_entry_debug"] = {
                         **ltf_base_debug,
                         "reason": "LONG_ABOVE_LEVEL",
-                        "level_price": level_price,
+                        "level_price": lp_val,
                     }
                     reasons.append("LTF_FIB_LONG_BLOCK")
                     return "NONE", {
@@ -682,11 +714,19 @@ def decide(
                 level_price = _level_price(
                     levels, float(min_level) if min_level is not None else None
                 )
-                if level_price is not None and price_now < level_price - tolerance:
+                p_val = _as_float(price_now)
+                lp_val = _as_float(level_price) if level_price is not None else None
+                tol_val = _as_float(tolerance)
+                if (
+                    lp_val is not None
+                    and p_val is not None
+                    and tol_val is not None
+                    and p_val < (lp_val - tol_val)
+                ):
                     state_out["ltf_fib_entry_debug"] = {
                         **ltf_base_debug,
                         "reason": "SHORT_BELOW_LEVEL",
-                        "level_price": level_price,
+                        "level_price": lp_val,
                     }
                     reasons.append("LTF_FIB_SHORT_BLOCK")
                     return "NONE", {

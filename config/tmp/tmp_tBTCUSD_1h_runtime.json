@@ -1,18 +1,27 @@
 {
   "cfg": {
     "thresholds": {
-      "entry_conf_overall": 0.35,
+      "entry_conf_overall": 0.32,
       "regime_proba": {
-        "ranging": 0.8,
-        "bull": 0.7,
-        "bear": 0.7,
-        "balanced": 0.7
+        "ranging": 0.68,
+        "bull": 0.6,
+        "bear": 0.6,
+        "balanced": 0.65
       },
       "signal_adaptation": {
         "atr_period": 14,
         "zones": {
           "low": {
-            "entry_conf_overall": 0.36,
+            "entry_conf_overall": 0.32,
+            "regime_proba": {
+              "ranging": 0.65,
+              "bull": 0.55,
+              "bear": 0.55,
+              "balanced": 0.65
+            }
+          },
+          "mid": {
+            "entry_conf_overall": 0.38,
             "regime_proba": {
               "ranging": 0.7,
               "bull": 0.6,
@@ -20,22 +29,13 @@
               "balanced": 0.7
             }
           },
-          "mid": {
-            "entry_conf_overall": 0.42,
-            "regime_proba": {
-              "ranging": 0.8,
-              "bull": 0.7,
-              "bear": 0.7,
-              "balanced": 0.8
-            }
-          },
           "high": {
-            "entry_conf_overall": 0.48,
+            "entry_conf_overall": 0.44,
             "regime_proba": {
-              "ranging": 0.88,
-              "bull": 0.78,
-              "bear": 0.78,
-              "balanced": 0.88
+              "ranging": 0.78,
+              "bull": 0.68,
+              "bear": 0.68,
+              "balanced": 0.78
             }
           }
         }
@@ -64,15 +64,15 @@
       "enable_structure_breaks": true,
       "partial_1_pct": 0.6,
       "partial_2_pct": 0.5,
-      "fib_threshold_atr": 0.7,
-      "trail_atr_multiplier": 2.5,
+      "fib_threshold_atr": 0.8,
+      "trail_atr_multiplier": 2.3,
       "swing_update_strategy": "fixed"
     },
     "warmup_bars": 150,
     "ltf_fib": {
       "entry": {
         "enabled": true,
-        "tolerance_atr": 0.5,
+        "tolerance_atr": 0.55,
         "long_max_level": 0.618,
         "short_min_level": 0.382
       }
@@ -80,9 +80,26 @@
     "htf_fib": {
       "entry": {
         "enabled": true,
-        "tolerance_atr": 0.5,
+        "tolerance_atr": 0.55,
         "long_max_level": 0.618,
         "short_min_level": 0.382
+      }
+    },
+    "multi_timeframe": {
+      "use_htf_block": true,
+      "allow_ltf_override": false,
+      "ltf_override_adaptive": {
+        "enabled": true,
+        "window": 180,
+        "percentile": 0.85,
+        "min_history": 120,
+        "min_floor": 0.5,
+        "max_ceiling": 0.95,
+        "fallback_threshold": 0.9,
+        "regime_multipliers": {
+          "bull": 0.95,
+          "bear": 1.05
+        }
       }
     }
   }

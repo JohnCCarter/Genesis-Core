@@ -201,10 +201,12 @@ class TestBacktestLoopPerformance:
         """Verify numpy array access is faster than pandas iloc in loops."""
         # Create test DataFrame with typical backtest size
         n_bars = 1000
-        df = pd.DataFrame({
-            "timestamp": pd.date_range("2025-01-01", periods=n_bars, freq="1h"),
-            "close": np.random.randn(n_bars).cumsum() + 100,
-        })
+        df = pd.DataFrame(
+            {
+                "timestamp": pd.date_range("2025-01-01", periods=n_bars, freq="1h"),
+                "close": np.random.randn(n_bars).cumsum() + 100,
+            }
+        )
 
         # Measure pandas iloc access pattern (old way)
         start = time.time()
@@ -245,14 +247,16 @@ class TestBacktestLoopPerformance:
         """Test that extracting columns as arrays is efficient."""
         # Create large DataFrame
         n_bars = 5000
-        df = pd.DataFrame({
-            "timestamp": pd.date_range("2025-01-01", periods=n_bars, freq="15min"),
-            "open": np.random.randn(n_bars).cumsum() + 100,
-            "high": np.random.randn(n_bars).cumsum() + 102,
-            "low": np.random.randn(n_bars).cumsum() + 98,
-            "close": np.random.randn(n_bars).cumsum() + 100,
-            "volume": np.random.randint(100, 1000, n_bars),
-        })
+        df = pd.DataFrame(
+            {
+                "timestamp": pd.date_range("2025-01-01", periods=n_bars, freq="15min"),
+                "open": np.random.randn(n_bars).cumsum() + 100,
+                "high": np.random.randn(n_bars).cumsum() + 102,
+                "low": np.random.randn(n_bars).cumsum() + 98,
+                "close": np.random.randn(n_bars).cumsum() + 100,
+                "volume": np.random.randint(100, 1000, n_bars),
+            }
+        )
 
         # Measure column extraction time
         start = time.time()
@@ -261,9 +265,9 @@ class TestBacktestLoopPerformance:
         extraction_time = time.time() - start
 
         # Should be very fast (sub-millisecond for 5000 bars)
-        assert extraction_time < 0.01, (
-            f"Column extraction too slow: {extraction_time:.6f}s for {n_bars} bars"
-        )
+        assert (
+            extraction_time < 0.01
+        ), f"Column extraction too slow: {extraction_time:.6f}s for {n_bars} bars"
 
         # Verify extracted data
         assert len(timestamps) == n_bars
@@ -285,13 +289,13 @@ class TestCopyOptimizations:
         # Measure deepcopy
         start = time.time()
         for _ in range(100):
-            copied = [copy.deepcopy(v) for v in primitives]
+            _ = [copy.deepcopy(v) for v in primitives]
         deepcopy_time = time.time() - start
 
         # Measure list()
         start = time.time()
         for _ in range(100):
-            copied = list(primitives)
+            _ = list(primitives)
         list_time = time.time() - start
 
         # list() should be much faster

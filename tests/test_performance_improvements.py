@@ -1,14 +1,13 @@
 """Test performance improvements for model-training pipeline optimizations."""
 
+# Add src to path
+import sys
 import time
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import pytest
-
-# Add src to path
-import sys
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
@@ -63,7 +62,6 @@ def test_cache_hit_rate(sample_candles):
 
     # Second pass: should hit cache (sequential access with same data)
     _feature_cache.clear()  # Clear to test fresh
-    hits_before = 0
     for i in range(100, 200):
         extract_features_backtest(sample_candles, i, timeframe="1h")
 

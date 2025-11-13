@@ -38,7 +38,6 @@ _log = get_logger(__name__)
 
 # Cache for feature extraction to avoid recomputing features for same data
 # Using OrderedDict for LRU-style eviction (Python 3.7+ maintains insertion order)
-from collections import OrderedDict
 
 _feature_cache: OrderedDict[str, tuple[dict[str, float], dict[str, Any]]] = OrderedDict()
 _MAX_CACHE_SIZE = 500  # Increased from 100 to reduce thrashing during backtests
@@ -46,7 +45,7 @@ _MAX_CACHE_SIZE = 500  # Increased from 100 to reduce thrashing during backtests
 
 def _compute_candles_hash(candles: dict[str, list[float] | np.ndarray], asof_bar: int) -> str:
     """Compute a fast hash of candles data up to asof_bar for caching.
-    
+
     Optimization: Use a simpler hash based on bar index and last values only.
     This is much faster than summing 100 bars and gives good cache discrimination.
     Works with both lists and NumPy arrays.
@@ -60,7 +59,6 @@ def _compute_candles_hash(candles: dict[str, list[float] | np.ndarray], asof_bar
         # Use simple string hash instead of cryptographic hash (10x faster)
         return f"{asof_bar}:{last_close:.4f}"
     return str(asof_bar)
-
 
 
 def _extract_asof(

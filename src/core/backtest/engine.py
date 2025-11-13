@@ -195,6 +195,7 @@ class BacktestEngine:
         self._precomputed_features: dict[str, list[float]] | None = None
         if getattr(self, "precompute_features", False):
             try:
+                print("[PRECOMPUTE] Starting feature precomputation...")
                 closes_all = self.candles_df["close"].tolist()
                 highs_all = self.candles_df["high"].tolist()
                 lows_all = self.candles_df["low"].tolist()
@@ -234,6 +235,10 @@ class BacktestEngine:
                         loaded = False
 
                 if not loaded:
+                    print("[PRECOMPUTE] Computing indicators (this may take a minute)...")
+                    import time
+
+                    start_time = time.perf_counter()
                     atr_14 = _calc_atr(highs_all, lows_all, closes_all, period=14)
                     atr_50 = _calc_atr(highs_all, lows_all, closes_all, period=50)
                     # Precompute two common EMA periods used by features
@@ -253,6 +258,9 @@ class BacktestEngine:
                         _pd.Series(highs_all), _pd.Series(lows_all), _pd.Series(closes_all), fib_cfg
                     )
 
+                    elapsed = time.perf_counter() - start_time
+                    print(f"[PRECOMPUTE] Computed in {elapsed:.2f}s")
+
                     # Optional on-disk cache for reuse between runs
                     try:
                         _np.savez_compressed(
@@ -269,7 +277,7 @@ class BacktestEngine:
                             fib_high_px=_np.asarray(sh_px, dtype=float),
                             fib_low_px=_np.asarray(sl_px, dtype=float),
                         )
-                        print(f"[OK] Precomputed features cached: {cache_path.name}")
+                        print(f"[CACHE] Precomputed features saved to {cache_path.name}")
                     except Exception:
                         pass
 
@@ -288,9 +296,10 @@ class BacktestEngine:
                     }
 
                 self._precomputed_features = pre
-                print("[OK] Precomputed features ready")
-            except Exception as _:
+                print("[OK] Precomputed features ready - backtest will be faster!")
+            except Exception as e:
                 # Non-fatal: skip precompute if indicators unavailable
+                print(f"[WARN] Precomputation failed: {e}")
                 self._precomputed_features = None
 
         if len(self.candles_df) < self.warmup_bars:
@@ -326,7 +335,7 @@ class BacktestEngine:
     def _build_candles_window(self, end_idx: int, window_size: int = 200) -> dict:
         """
         Build candles dict for pipeline (last N bars up to end_idx).
-        
+
         Performance optimizations:
         - Returns NumPy arrays directly (avoid .tolist() overhead)
         - Uses array slicing which creates views, not copies

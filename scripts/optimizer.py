@@ -52,7 +52,7 @@ def summarize_run(run_id: str, use_cache: bool = True) -> dict[str, Any]:
     - Early filtering to reduce memory usage
     - Single-pass validation and sorting
     - Optional caching to avoid repeated file reads
-    
+
     Args:
         run_id: The run identifier
         use_cache: If True, use cached summary if available (default: True)
@@ -68,7 +68,7 @@ def summarize_run(run_id: str, use_cache: bool = True) -> dict[str, Any]:
             current_mtime = os.path.getmtime(run_dir)
             if cached_mtime and cached_mtime >= current_mtime:
                 return cached
-    
+
     run_dir = (RESULTS_DIR / run_id).resolve()
     if not run_dir.exists():
         raise FileNotFoundError(f"Run directory not found: {run_dir}")
@@ -163,11 +163,11 @@ def summarize_run(run_id: str, use_cache: bool = True) -> dict[str, Any]:
         "trials": trials,
         "_cache_mtime": os.path.getmtime(run_dir) if run_dir.exists() else 0,
     }
-    
+
     # Cache result for future calls
     if use_cache:
         _SUMMARY_CACHE[cache_key] = result
-    
+
     return result
 
 

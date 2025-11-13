@@ -439,11 +439,17 @@ class BacktestEngine:
 
         # Track bars held for current position
 
+        # Performance optimization: Pre-extract numpy arrays to avoid repeated iloc calls
+        # This significantly speeds up the main backtest loop
+        timestamps_array = self.candles_df["timestamp"].values
+        close_prices_array = self.candles_df["close"].values
+        num_bars = len(self.candles_df)
+
         # Replay bars
-        for i in range(len(self.candles_df)):
-            bar = self.candles_df.iloc[i]
-            timestamp = bar["timestamp"]
-            close_price = bar["close"]
+        for i in range(num_bars):
+            # Performance: Direct array access is ~10x faster than iloc
+            timestamp = timestamps_array[i]
+            close_price = close_prices_array[i]
 
             # Skip warmup period
             if i < self.warmup_bars:

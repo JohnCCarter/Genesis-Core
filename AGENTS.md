@@ -349,3 +349,69 @@ pip install -e .[dev,ml]
 - Baseline (`config/tmp/champion_base.json`) loggade 10 HTF, 8 HTF+fallback och 4 fallback-exits på +3.10 % netto – fallback används fortfarande för slutstängningar.
 - Aggressiv profil (`config/tmp/aggressive.json`) gav 22 rena fallback-closer och max DD 10.9 % → aggressiva toleranser överlastar fallback-logiken.
 - Rekommendation: öppna nästa grid/Optuna över `fib_threshold_atr` 0.80–0.90, `trail_atr_multiplier` 1.4–1.8 samt HTF/LTF toleranser, och tracka fallback-andelen (<40 %) som guardrail.
+
+## 21. GENOMBROTT – signal_adaptation flaskhalsen identifierad (2025-11-13)
+
+### Problem
+
+Backtester gav konsekvent 34 trades, PF 0.92, -0.10% return oavsett ändringar i `entry_conf_overall`, `regime_proba`, HTF/LTF-gates eller exit-inställningar.
+
+### Systematisk isoleringstestning
+
+1. **Test: entry_conf_overall (0.32→0.28)** → 34 trades (oförändrat)
+2. **Test: regime_proba (alla→0.50)** → 34 trades (oförändrat)
+3. **Test: HTF/LTF-gates (disabled)** → 34 trades (oförändrat)
+4. **Test: signal_adaptation ATR-zoner (sänkta)** → **176 trades (+5×), PF 1.31, +4.95%** ✅
+
+### Genombrott-konfiguration
+
+```yaml
+signal_adaptation:
+  zones:
+    low:  {entry: 0.25, regime: 0.45}  # från 0.33/0.60-0.70
+    mid:  {entry: 0.28, regime: 0.50}  # från 0.39/0.60-0.75
+    high: {entry: 0.32, regime: 0.55}  # från 0.45/0.60-0.80
+```
+
+**Slutresultat med alla optimeringar:**
+
+- **176 trades** (från 34), **PF 1.32** (från 0.92), **Return +8.41%** (från -0.10%)
+- Positionsstorlek 3× högre (`risk_map` 0.015–0.045)
+- Exit-threshold sänkt till 0.35
+- HTF/LTF-gates återaktiverade med `tolerance_atr: 0.60`
+
+### Optuna-problemet upptäckt
+
+Alla Optuna-konfigurationer hade `signal_adaptation` **fixerat till 44–60% högre trösklar** än genombrott-värdena:
+
+- Original Optuna: low 0.36, mid 0.42, high 0.48 (regime 0.60–0.88)
+- Genombrott: low 0.25, mid 0.28, high 0.32 (regime 0.45–0.55)
+
+**Konsekvens:** Optuna optimerade allt annat (fib-gates, exits, risk) medan ATR-zonerna garanterade få trades → därför identiska dåliga resultat.
+
+**Åtgärd:** `config/optimizer/tBTCUSD_1h_optuna_smoke_loose.yaml` uppdaterad med 5 grid-varianter runt genombrott-värdena (entry 0.20–0.34, regime 0.38–0.58).
+
+### Bugfix
+
+- `src/core/backtest/engine.py` – fixade exit-konfigladdning från `configs['cfg']['exit']` → `configs['exit']` så att exit-inställningar faktiskt respekteras.
+
+### Filer
+
+- Analys: `docs/BREAKTHROUGH_CONFIG_20251113.md`
+- Optuna-fix: `docs/OPTUNA_FIX_20251113.md`
+- Konfig: `config/tmp/tmp_user_test.json`
+- Backtest: `results/backtests/tBTCUSD_1h_20251113_163809.json`
+- Uppdaterad Optuna: `config/optimizer/tBTCUSD_1h_optuna_smoke_loose.yaml`
+
+### Nyckelinsikter
+
+1. **signal_adaptation ATR-zoner är den primära entry-kontrollen** – toppnivå-trösklar används inte när zoner är definierade
+2. **Systematisk isoleringstestning är kritisk** – ändra en parameter i taget för att identifiera verkliga flaskhalsar
+3. **Optuna kan optimera fel sökrymd** – verifiera alltid att kritiska parametrar inte är fixerade till suboptimala värden
+4. **Exit-konfigladdning måste vara korrekt** – bug i engine.py gjorde att exit-inställningar ignorerades
+
+### Nästa steg
+
+- Köra ny Optuna-session (80 trials) med uppdaterad `signal_adaptation`-grid
+- Validera på längre tidsperioder (6–12 månader)
+- Walk-forward-validering med rullande fönster

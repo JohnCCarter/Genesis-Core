@@ -441,9 +441,24 @@ class BacktestEngine:
 
         # Replay bars
         for i in range(len(self.candles_df)):
-            bar = self.candles_df.iloc[i]
-            timestamp = bar["timestamp"]
-            close_price = bar["close"]
+            # Fast-path: pull values from numpy buffers if available
+            if self._np_arrays is not None:
+                timestamp = self._np_arrays["timestamp"][i]
+                close_price = float(self._np_arrays["close"][i])
+                open_price = float(self._np_arrays["open"][i])
+                high_price = float(self._np_arrays["high"][i])
+                low_price = float(self._np_arrays["low"][i])
+                volume_val = float(
+                    self._np_arrays.get("volume", [0.0])[i] if "volume" in self._np_arrays else 0.0
+                )
+            else:
+                bar = self.candles_df.iloc[i]
+                timestamp = bar["timestamp"]
+                close_price = bar["close"]
+                open_price = bar["open"]
+                high_price = bar["high"]
+                low_price = bar["low"]
+                volume_val = bar.get("volume", 0.0)
 
             # Skip warmup period
             if i < self.warmup_bars:
@@ -485,11 +500,11 @@ class BacktestEngine:
                     # Prepare bar data for exit engine
                     bar_data = {
                         "timestamp": timestamp,
-                        "open": bar["open"],
-                        "high": bar["high"],
-                        "low": bar["low"],
+                        "open": open_price,
+                        "high": high_price,
+                        "low": low_price,
                         "close": close_price,
-                        "volume": bar.get("volume", 0.0),
+                        "volume": volume_val,
                     }
 
                     exit_reason = self._check_htf_exit_conditions(
@@ -576,8 +591,14 @@ class BacktestEngine:
         pbar.close()
 
         # Close all positions at end
-        final_bar = self.candles_df.iloc[-1]
-        self.position_tracker.close_all_positions(final_bar["close"], final_bar["timestamp"])
+        if self._np_arrays is not None:
+            final_close = float(self._np_arrays["close"][-1])
+            final_ts = self._np_arrays["timestamp"][-1]
+        else:
+            final_bar = self.candles_df.iloc[-1]
+            final_close = final_bar["close"]
+            final_ts = final_bar["timestamp"]
+        self.position_tracker.close_all_positions(final_close, final_ts)
 
         print(f"\n[OK] Backtest complete - {self.bar_count} bars processed")
 

@@ -9,6 +9,7 @@ import subprocess
 import tempfile
 import threading
 import time
+from collections import OrderedDict
 from collections.abc import Iterable
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
@@ -73,6 +74,51 @@ _COMPLEX_CHOICE_PREFIX = "__optuna_complex__"
 # Performance: Cache for trial key generation to avoid repeated JSON serialization
 _TRIAL_KEY_CACHE: dict[int, str] = {}
 _TRIAL_KEY_CACHE_LOCK = threading.Lock()
+
+
+# Performance: JSON mtime cache for optimizer (opt-in via env GENESIS_OPTIMIZER_JSON_CACHE=1)
+_JSON_CACHE: OrderedDict[str, tuple[int, Any]] = OrderedDict()
+try:
+    _JSON_CACHE_MAX = int(os.environ.get("GENESIS_OPTIMIZER_JSON_CACHE_SIZE", "256"))
+except Exception:
+    _JSON_CACHE_MAX = 256
+
+
+def _read_json_cached(path: Path) -> Any:
+    """Read JSON with optional mtime-based in-memory cache.
+
+    Enabled when GENESIS_OPTIMIZER_JSON_CACHE is truthy ('1', 'true', 'True').
+    """
+    use_cache = os.environ.get("GENESIS_OPTIMIZER_JSON_CACHE") in {"1", "true", "True"}
+    if not use_cache:
+        return json.loads(path.read_text(encoding="utf-8"))
+
+    key = str(path.resolve())
+    try:
+        mtime = path.stat().st_mtime_ns
+    except OSError:
+        # Fall back to direct read if stat fails
+        return json.loads(path.read_text(encoding="utf-8"))
+
+    cached = _JSON_CACHE.get(key)
+    if cached is not None:
+        cached_mtime, cached_obj = cached
+        if cached_mtime == mtime:
+            try:
+                _JSON_CACHE.move_to_end(key)
+            except Exception:
+                pass
+            return cached_obj
+
+    obj = json.loads(path.read_text(encoding="utf-8"))
+    _JSON_CACHE[key] = (mtime, obj)
+    try:
+        while len(_JSON_CACHE) > _JSON_CACHE_MAX:
+            _JSON_CACHE.popitem(last=False)
+    except Exception:
+        if len(_JSON_CACHE) > _JSON_CACHE_MAX:
+            _JSON_CACHE.pop(next(iter(_JSON_CACHE)))
+    return obj
 
 
 def _atomic_write_text(path: Path, payload: str, *, encoding: str = "utf-8") -> None:
@@ -273,18 +319,26 @@ def _deep_merge(base: dict, override: dict) -> dict:
 
 
 def _expand_value(node: Any) -> list[Any]:
+    def _clone_value(v: Any) -> Any:
+        # Avoid expensive deepcopy for immutable/simple types
+        if isinstance(v, (type(None), bool, int, float, str, bytes)):
+            return v
+        if isinstance(v, tuple):
+            return tuple(_clone_value(x) for x in v)
+        return copy.deepcopy(v)
+
     if isinstance(node, dict):
         node_type = node.get("type")
         if node_type == "grid":
             values = node.get("values") or []
-            return [copy.deepcopy(v) for v in values]
+            return [_clone_value(v) for v in values]
         if node_type == "fixed":
-            return [copy.deepcopy(node.get("value"))]
+            return [_clone_value(node.get("value"))]
         # Nested dict without explicit type – expand recursively
         return list(_expand_dict(node))
     if isinstance(node, list):
-        return [copy.deepcopy(node)]
-    return [copy.deepcopy(node)]
+        return [_clone_value(node)]
+    return [_clone_value(node)]
 
 
 def _expand_dict(spec: dict[str, Any]) -> Iterable[dict[str, Any]]:
@@ -627,7 +681,7 @@ def run_trial(
                     f"{trial.symbol}_{trial.timeframe}_*.json"
                 )
             )[-1]
-            results = json.loads(results_path.read_text(encoding="utf-8"))
+            results = _read_json_cached(results_path)
             score = score_backtest(results, thresholds=MetricThresholds())
             enforcement = enforce_constraints(
                 score,
@@ -702,7 +756,7 @@ def run_trial(
         new_results_path = BACKTEST_RESULTS_DIR / str(final_payload["results_path"])
         if new_results_path.exists():
             try:
-                new_results = json.loads(new_results_path.read_text(encoding="utf-8"))
+                new_results = _read_json_cached(new_results_path)
                 diff_payload = diff_backtest_results(baseline_results, new_results)
                 summary = summarize_metrics_diff(diff_payload.get("metrics", {}))
                 label = baseline_label or "baseline"
@@ -998,8 +1052,10 @@ def _run_optuna(
                     try:
                         make_mod = getattr(make_trial, "__module__", "") or ""
                         make_name = getattr(make_trial, "__name__", "") or ""
-                        in_tests = make_mod.startswith("tests.") or make_name != "make_trial" or (
-                            "mock" in make_name.lower()
+                        in_tests = (
+                            make_mod.startswith("tests.")
+                            or make_name != "make_trial"
+                            or ("mock" in make_name.lower())
                         )
                     except Exception:
                         in_tests = False
@@ -1011,6 +1067,10 @@ def _run_optuna(
                         payload["parameters"] = parameters
                         payload["skipped"] = True
                         payload.setdefault("reason", "duplicate_guard_precheck")
+                        payload.setdefault(
+                            "score", {"score": 0.0, "metrics": {}, "hard_failures": []}
+                        )
+                        payload.setdefault("constraints", {"ok": True, "reasons": []})
                         results.append(payload)
                     else:
                         # Do NOT run backtest; record a lightweight skipped payload
@@ -1020,6 +1080,8 @@ def _run_optuna(
                                 "parameters": parameters,
                                 "skipped": True,
                                 "reason": "duplicate_guard_precheck",
+                                "score": {"score": 0.0, "metrics": {}, "hard_failures": []},
+                                "constraints": {"ok": True, "reasons": []},
                             }
                         )
                     if duplicate_streak >= max_duplicate_streak:
@@ -1374,7 +1436,7 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
             candidate_path = PROJECT_ROOT / candidate_path
         if candidate_path.exists():
             try:
-                baseline_results_data = json.loads(candidate_path.read_text(encoding="utf-8"))
+                baseline_results_data = _read_json_cached(candidate_path)
                 baseline_label = candidate_path.name
                 print(f"[Baseline] Loaded comparison results from {candidate_path}")
             except json.JSONDecodeError as exc:

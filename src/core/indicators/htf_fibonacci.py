@@ -133,6 +133,8 @@ def compute_htf_fibonacci_levels(
     # Build cumulative max/min for fallback (vectorized)
     cummax_high = htf_candles["high"].cummax()
     cummin_low = htf_candles["low"].cummin()
+    cummax_high_arr = cummax_high.to_numpy(copy=False)
+    cummin_low_arr = cummin_low.to_numpy(copy=False)
 
     # Process each bar
     for i in range(n_bars):
@@ -147,11 +149,11 @@ def compute_htf_fibonacci_levels(
 
         # Fallback to cumulative max/min if no swings (vectorized)
         if not current_swing_highs:
-            current_swing_highs = [float(cummax_high.iloc[i])]
+            current_swing_highs = [float(cummax_high_arr[i])]
             current_swing_high_indices = [i]
 
         if not current_swing_lows:
-            current_swing_lows = [float(cummin_low.iloc[i])]
+            current_swing_lows = [float(cummin_low_arr[i])]
             current_swing_low_indices = [i]
 
         # Calculate Fibonacci levels from AS-OF swings

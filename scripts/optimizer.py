@@ -4,11 +4,15 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 RESULTS_DIR = ROOT / "results" / "hparam_search"
+
+# Cache for trial summaries to avoid repeated file I/O
+_SUMMARY_CACHE: dict[str, dict[str, Any]] = {}
 
 
 def _coerce_trial_fields(trial: dict[str, Any]) -> dict[str, Any]:
@@ -40,14 +44,31 @@ def _format_trial_summary(idx: int, entry: dict[str, Any]) -> str:
     return "  " + " ".join(parts)
 
 
-def summarize_run(run_id: str) -> dict[str, Any]:
+def summarize_run(run_id: str, use_cache: bool = True) -> dict[str, Any]:
     """Summarize an optimizer run with performance optimizations.
 
     Performance improvements:
     - Lazy loading of trial data
     - Early filtering to reduce memory usage
     - Single-pass validation and sorting
+    - Optional caching to avoid repeated file reads
+    
+    Args:
+        run_id: The run identifier
+        use_cache: If True, use cached summary if available (default: True)
     """
+    # Check cache first
+    cache_key = f"{run_id}"
+    if use_cache and cache_key in _SUMMARY_CACHE:
+        # Validate cache is still fresh by checking run directory mtime
+        run_dir = (RESULTS_DIR / run_id).resolve()
+        if run_dir.exists():
+            cached = _SUMMARY_CACHE[cache_key]
+            cached_mtime = cached.get("_cache_mtime")
+            current_mtime = os.path.getmtime(run_dir)
+            if cached_mtime and cached_mtime >= current_mtime:
+                return cached
+    
     run_dir = (RESULTS_DIR / run_id).resolve()
     if not run_dir.exists():
         raise FileNotFoundError(f"Run directory not found: {run_dir}")
@@ -127,7 +148,7 @@ def summarize_run(run_id: str) -> dict[str, Any]:
     total = len(trials)
     completed = total - skipped_count
 
-    return {
+    result = {
         "meta": meta,
         "run_dir": str(run_dir),
         "counts": {
@@ -140,7 +161,14 @@ def summarize_run(run_id: str) -> dict[str, Any]:
         "best_trial": valid_trials[0] if valid_trials else None,
         "valid_trials": valid_trials,
         "trials": trials,
+        "_cache_mtime": os.path.getmtime(run_dir) if run_dir.exists() else 0,
     }
+    
+    # Cache result for future calls
+    if use_cache:
+        _SUMMARY_CACHE[cache_key] = result
+    
+    return result
 
 
 def _print_summary(data: dict[str, Any], *, top_n: int) -> None:

@@ -326,18 +326,23 @@ class BacktestEngine:
     def _build_candles_window(self, end_idx: int, window_size: int = 200) -> dict:
         """
         Build candles dict for pipeline (last N bars up to end_idx).
+        
+        Performance optimizations:
+        - Returns NumPy arrays directly (avoid .tolist() overhead)
+        - Uses array slicing which creates views, not copies
+        - Timestamp list only created when needed
 
         Args:
             end_idx: Current bar index (inclusive)
             window_size: Number of bars to include in window
 
         Returns:
-            Candles dict with OHLCV lists
+            Candles dict with OHLCV as NumPy arrays or lists
         """
         start_idx = max(0, end_idx - window_size + 1)
 
         if self.fast_window and self._col_close is not None:
-            # Slice precomputed arrays (fast path) - return NumPy views
+            # Slice precomputed arrays (fast path) - return NumPy views (zero-copy)
             i0 = start_idx
             i1 = end_idx + 1
             return {
@@ -349,25 +354,26 @@ class BacktestEngine:
                 "timestamp": self._col_timestamp[i0:i1],
             }
 
-        # Optimized fallback: use pre-computed numpy arrays
+        # Optimized: use pre-computed numpy arrays WITHOUT converting to lists
+        # NumPy arrays work directly with indicator functions and are much faster
         if self._np_arrays is not None:
             return {
-                "open": self._np_arrays["open"][start_idx : end_idx + 1].tolist(),
-                "high": self._np_arrays["high"][start_idx : end_idx + 1].tolist(),
-                "low": self._np_arrays["low"][start_idx : end_idx + 1].tolist(),
-                "close": self._np_arrays["close"][start_idx : end_idx + 1].tolist(),
-                "volume": self._np_arrays["volume"][start_idx : end_idx + 1].tolist(),
+                "open": self._np_arrays["open"][start_idx : end_idx + 1],
+                "high": self._np_arrays["high"][start_idx : end_idx + 1],
+                "low": self._np_arrays["low"][start_idx : end_idx + 1],
+                "close": self._np_arrays["close"][start_idx : end_idx + 1],
+                "volume": self._np_arrays["volume"][start_idx : end_idx + 1],
                 "timestamp": self._np_arrays["timestamp"][start_idx : end_idx + 1].tolist(),
             }
 
-        # Fallback: slice DataFrame window
+        # Fallback: slice DataFrame window (slowest path)
         window = self.candles_df.iloc[start_idx : end_idx + 1]
         return {
-            "open": window["open"].values.tolist(),
-            "high": window["high"].values.tolist(),
-            "low": window["low"].values.tolist(),
-            "close": window["close"].values.tolist(),
-            "volume": window["volume"].values.tolist(),
+            "open": window["open"].values,
+            "high": window["high"].values,
+            "low": window["low"].values,
+            "close": window["close"].values,
+            "volume": window["volume"].values,
             "timestamp": window["timestamp"].values.tolist(),
         }
 

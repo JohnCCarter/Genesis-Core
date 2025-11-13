@@ -557,7 +557,17 @@ class BacktestEngine:
 
             except Exception as e:
                 if verbose or os.environ.get("GENESIS_DEBUG_BACKTEST"):
-                    print(f"\n[ERROR] Bar {i}: {e}")
+                    try:
+                        import traceback, sys  # noqa: PLC0415
+
+                        tb = traceback.extract_tb(sys.exc_info()[2])
+                        where = ""
+                        if tb:
+                            last = tb[-1]
+                            where = f" ({last.filename}:{last.lineno} in {last.name})"
+                        print(f"\n[ERROR] Bar {i}: {e}{where}")
+                    except Exception:
+                        print(f"\n[ERROR] Bar {i}: {e}")
                 # Continue on error (robust backtest)
 
             pbar.update(1)
@@ -767,9 +777,9 @@ class BacktestEngine:
 
         # Get exit config
         exit_cfg = configs.get("cfg", {}).get("exit", {})
-        stop_loss_pct = exit_cfg.get("stop_loss_pct", 0.02)
-        take_profit_pct = exit_cfg.get("take_profit_pct", 0.05)
-        exit_conf_threshold = exit_cfg.get("exit_conf_threshold", 0.45)
+        stop_loss_pct = float(exit_cfg.get("stop_loss_pct", 0.02))
+        take_profit_pct = float(exit_cfg.get("take_profit_pct", 0.05))
+        exit_conf_threshold = float(exit_cfg.get("exit_conf_threshold", 0.45))
 
         # Emergency stop-loss
         pnl_pct = self.position_tracker.get_unrealized_pnl_pct(current_price) / 100.0
@@ -780,9 +790,20 @@ class BacktestEngine:
         if pnl_pct >= take_profit_pct * 2:  # 2x normal TP
             return "EMERGENCY_TP"
 
-        # Confidence drop
-        confidence = result.get("confidence", 1.0)
-        if confidence < exit_conf_threshold:
+        # Confidence drop (use direction-aware confidence if dict)
+        conf_block = result.get("confidence", 1.0)
+        if isinstance(conf_block, dict):
+            # Prefer confidence in the direction of the open position
+            if position.side == "LONG":
+                conf_value = float(conf_block.get("buy", conf_block.get("overall", 1.0) or 1.0))
+            else:
+                conf_value = float(conf_block.get("sell", conf_block.get("overall", 1.0) or 1.0))
+        else:
+            try:
+                conf_value = float(conf_block)
+            except Exception:
+                conf_value = 1.0
+        if conf_value < exit_conf_threshold:
             return "CONF_DROP"
 
         # Regime change

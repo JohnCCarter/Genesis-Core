@@ -34,6 +34,12 @@ from core.optimizer.champion import ChampionCandidate, ChampionManager
 from core.optimizer.constraints import enforce_constraints
 from core.optimizer.param_transforms import transform_parameters
 from core.optimizer.scoring import MetricThresholds, score_backtest
+from core.utils.diffing import summarize_metrics_diff
+from core.utils.diffing.canonical import canonicalize_config
+from core.utils.diffing.optuna_guard import estimate_zero_trade
+from core.utils.diffing.results_diff import diff_backtest_results
+from core.utils.diffing.trial_cache import TrialResultCache
+from core.utils.optuna_helpers import NoDupeGuard, param_signature
 
 try:
     import optuna
@@ -58,6 +64,7 @@ except ModuleNotFoundError:  # pragma: no cover - handled at runtime
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 RESULTS_DIR = PROJECT_ROOT / "results" / "hparam_search"
+BACKTEST_RESULTS_DIR = PROJECT_ROOT / "results" / "backtests"
 
 _OPTUNA_LOCK = threading.Lock()
 _SIMPLE_CATEGORICAL_TYPES = (type(None), bool, int, float, str)
@@ -104,13 +111,9 @@ def load_search_config(path: Path) -> dict[str, Any]:
 
 
 def _trial_key(params: dict[str, Any]) -> str:
-    """Generate a unique key for trial parameters with caching for performance.
-
-    Performance optimization: Cache keys using hash of params to avoid
-    repeated JSON serialization for the same parameter set.
-    """
-    # Generate canonical JSON string (no spaces, sorted keys)
-    key = json.dumps(params, sort_keys=True, separators=(",", ":"))
+    """Generate canonical key for trial parameters with caching."""
+    canonical = canonicalize_config(params or {})
+    key = json.dumps(canonical, sort_keys=True, separators=(",", ":"))
     digest = hashlib.sha256(key.encode("utf-8")).hexdigest()
 
     with _TRIAL_KEY_CACHE_LOCK:
@@ -452,8 +455,11 @@ def run_trial(
     cache_enabled: bool = False,
     seen_param_keys: set[str] | None = None,
     seen_param_lock: threading.Lock | None = None,
+    baseline_results: dict[str, Any] | None = None,
+    baseline_label: str | None = None,
 ) -> dict[str, Any]:
     key = _trial_key(trial.parameters)
+    fingerprint_digest = hashlib.sha256(key.encode("utf-8")).hexdigest()
 
     if allow_resume and key in existing_trials:
         if seen_param_keys is not None:
@@ -498,6 +504,23 @@ def run_trial(
     output_dir.mkdir(parents=True, exist_ok=True)
     trial_file = output_dir / f"{trial_id}.json"
     log_file = output_dir / f"{trial_id}.log"
+
+    zero_trade_estimate = estimate_zero_trade(trial.parameters or {})
+    if not zero_trade_estimate.ok:
+        payload = {
+            "trial_id": trial_id,
+            "parameters": trial.parameters,
+            "skipped": True,
+            "reason": "zero_trade_preflight",
+            "details": zero_trade_estimate.reason,
+            "score": {"score": -1e5},
+        }
+        print(
+            "[Runner] Trial "
+            f"{trial_id} pruned by zero-trade preflight: {zero_trade_estimate.reason}"
+        )
+        _atomic_write_text(trial_file, _json_dumps(payload))
+        return payload
     config_file: Path | None = None
     derived_values: dict[str, Any] = {}
     if trial.parameters:
@@ -516,32 +539,34 @@ def run_trial(
         config_payload = {"cfg": merged_cfg}
         _atomic_write_text(config_file, _json_dumps(config_payload))
 
-    cache_dir = run_dir / "_cache"
-    cache_key = hashlib.sha256(key.encode("utf-8")).hexdigest()
-    cache_path = cache_dir / f"{cache_key}.json"
+    cache: TrialResultCache | None = None
     cached_payload: dict[str, Any] | None = None
     if cache_enabled:
-        cache_dir.mkdir(parents=True, exist_ok=True)
-        if cache_path.exists():
-            try:
-                cached_payload = json.loads(cache_path.read_text(encoding="utf-8"))
-            except json.JSONDecodeError:
-                cached_payload = None
-    if cached_payload is not None:
-        payload = dict(cached_payload)
-        payload.update(
-            {
-                "trial_id": trial_id,
-                "parameters": trial.parameters,
-                "from_cache": True,
-            }
-        )
-        if config_file is not None:
-            payload.setdefault("config_path", config_file.name)
-        if not payload.get("parameters"):
-            payload["parameters"] = trial.parameters
-        _atomic_write_text(trial_file, _json_dumps(payload))
-        return payload
+        cache = TrialResultCache(run_dir / "_cache")
+        cached_payload = cache.lookup(fingerprint_digest)
+        if cached_payload is not None:
+            payload = dict(cached_payload)
+            payload.update(
+                {
+                    "trial_id": trial_id,
+                    "parameters": trial.parameters,
+                    "from_cache": True,
+                }
+            )
+            if config_file is not None:
+                payload.setdefault("config_path", config_file.name)
+            if not payload.get("parameters"):
+                payload["parameters"] = trial.parameters
+            diff_payload = payload.get("diff_vs_baseline")
+            if diff_payload:
+                summary = diff_payload.get("summary")
+                label = diff_payload.get("label", "baseline")
+                if summary:
+                    print(f"[Diff/Cache] Trial {trial_id} vs {label}:\n{summary}")
+                else:
+                    print(f"[Diff/Cache] Trial {trial_id} vs {label}: no metric deltas")
+            _atomic_write_text(trial_file, _json_dumps(payload))
+            return payload
 
     if trial.start_date and trial.end_date:
         start_date, end_date = trial.start_date, trial.end_date
@@ -667,12 +692,42 @@ def run_trial(
         }
     elif derived_values and "derived" not in final_payload:
         final_payload["derived"] = derived_values
-    if cache_enabled and final_payload is not None and not final_payload.get("error"):
+
+    if (
+        baseline_results is not None
+        and final_payload is not None
+        and not final_payload.get("error")
+        and final_payload.get("results_path")
+    ):
+        new_results_path = BACKTEST_RESULTS_DIR / str(final_payload["results_path"])
+        if new_results_path.exists():
+            try:
+                new_results = json.loads(new_results_path.read_text(encoding="utf-8"))
+                diff_payload = diff_backtest_results(baseline_results, new_results)
+                summary = summarize_metrics_diff(diff_payload.get("metrics", {}))
+                label = baseline_label or "baseline"
+                final_payload["diff_vs_baseline"] = {
+                    "label": label,
+                    "metrics": diff_payload.get("metrics"),
+                    "trades": diff_payload.get("trades"),
+                    "summary": summary,
+                }
+                if summary:
+                    print(f"[Diff] Trial {trial_id} vs {label}:\n{summary}")
+                else:
+                    print(f"[Diff] Trial {trial_id} vs {label}: no metric deltas")
+            except (OSError, json.JSONDecodeError) as exc:
+                print(
+                    f"[WARN] Kunde inte diff:a mot baseline ({baseline_label or 'baseline'}): {exc}"
+                )
+        else:
+            print(f"[WARN] Kunde inte hitta resultatfil för diff: {new_results_path}")
+    if cache_enabled and cache is not None and final_payload and not final_payload.get("error"):
         cache_snapshot = dict(final_payload)
         cache_snapshot.pop("trial_id", None)
         cache_snapshot.pop("from_cache", None)
         cache_snapshot["parameters"] = trial.parameters
-        _atomic_write_text(cache_path, json.dumps(cache_snapshot, indent=2))
+        cache.store(fingerprint_digest, cache_snapshot)
     _atomic_write_text(trial_file, json.dumps(final_payload, indent=2))
     return final_payload
 
@@ -912,12 +967,47 @@ def _run_optuna(
     duplicate_count = 0
     zero_trade_count = 0
 
+    # Fast duplicate precheck using persistent guard (SQLite WAL-backed)
+    dedup_guard_enabled = bool(study_config.get("dedup_guard_enabled", True))
+    guard: NoDupeGuard | None = (
+        NoDupeGuard(sqlite_path=str(run_dir / "_dedup.db")) if dedup_guard_enabled else None
+    )
+
     def objective(trial):
         nonlocal duplicate_streak, total_trials_attempted, duplicate_count, zero_trade_count
         total_trials_attempted += 1
         parameters = _suggest_parameters(trial, parameters_spec)
         trial_number = trial.number + 1
         key = _trial_key(parameters)
+
+        # Pre-check duplicates across workers/runs using stable param signature
+        sig: str | None = None
+        if guard is not None:
+            try:
+                sig = param_signature(parameters)
+                if guard.seen(sig):
+                    duplicate_streak += 1
+                    duplicate_count += 1
+                    trial.set_user_attr("duplicate", True)
+                    trial.set_user_attr("penalized_duplicate_precheck", True)
+                    results.append(
+                        {
+                            "trial_id": f"trial_{trial_number:03d}",
+                            "parameters": parameters,
+                            "skipped": True,
+                            "reason": "duplicate_guard_precheck",
+                        }
+                    )
+                    if duplicate_streak >= max_duplicate_streak:
+                        raise optuna.exceptions.OptunaError(
+                            "Duplicate parameter suggestions limit reached"
+                        )
+                    return -1e6
+                # Reserve signature to avoid concurrent duplicates
+                guard.add(sig)
+            except Exception:
+                # Best-effort guard; continue without precheck on guard failure
+                sig = None
         if key in existing_trials:
             cached = existing_trials[key]
             trial.set_user_attr("skipped", True)
@@ -936,6 +1026,7 @@ def _run_optuna(
 
         if payload.get("skipped"):
             reason = payload.get("reason")
+            trial.set_user_attr("skipped", True)
             if reason == "duplicate_within_run":
                 duplicate_streak += 1
                 duplicate_count += 1
@@ -944,10 +1035,15 @@ def _run_optuna(
                     raise optuna.exceptions.OptunaError(
                         "Duplicate parameter suggestions limit reached"
                     )
+            elif reason == "zero_trade_preflight":
+                zero_trade_count += 1
+                duplicate_streak = 0
+                trial.set_user_attr("zero_trade_preflight", True)
+                penalty = float(payload.get("score", {}).get("score", -1e5) or -1e5)
+                return penalty
             else:
                 # Only reset streak for non-duplicate skips
                 duplicate_streak = 0
-            trial.set_user_attr("skipped", True)
             # Penalize in-run duplicates to avoid degeneracy
             if reason == "duplicate_within_run":
                 trial.set_user_attr("penalized_duplicate", True)
@@ -957,6 +1053,12 @@ def _run_optuna(
 
         if payload.get("error"):
             trial.set_user_attr("error", payload.get("error"))
+            # Release reserved signature to allow future attempts if run failed
+            if guard is not None and sig:
+                try:
+                    guard.remove(sig)
+                except Exception:
+                    pass
             # Don't reset duplicate streak on errors
             raise optuna.TrialPruned()
 
@@ -1237,6 +1339,25 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
     symbol = str(meta.get("symbol", "tBTCUSD"))
     timeframe = str(meta.get("timeframe", "1h"))
 
+    baseline_results_path_cfg = meta.get("baseline_results_path") or runs_cfg.get(
+        "baseline_results_path"
+    )
+    baseline_results_data: dict[str, Any] | None = None
+    baseline_label: str | None = None
+    if baseline_results_path_cfg:
+        candidate_path = Path(baseline_results_path_cfg)
+        if not candidate_path.is_absolute():
+            candidate_path = PROJECT_ROOT / candidate_path
+        if candidate_path.exists():
+            try:
+                baseline_results_data = json.loads(candidate_path.read_text(encoding="utf-8"))
+                baseline_label = candidate_path.name
+                print(f"[Baseline] Loaded comparison results from {candidate_path}")
+            except json.JSONDecodeError as exc:
+                print(f"[WARN] baseline_results_path ogiltig JSON ({candidate_path}): {exc}")
+        else:
+            print(f"[WARN] baseline_results_path hittades inte: {candidate_path}")
+
     def make_trial(idx: int, params: dict[str, Any]) -> dict[str, Any]:
         trial_cfg = TrialConfig(
             snapshot_id=meta.get("snapshot_id", ""),
@@ -1259,6 +1380,8 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
             cache_enabled=True,
             seen_param_keys=seen_param_keys,
             seen_param_lock=seen_param_lock,
+            baseline_results=baseline_results_data,
+            baseline_label=baseline_label,
         )
 
     results: list[dict[str, Any]] = []

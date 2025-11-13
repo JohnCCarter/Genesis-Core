@@ -12,15 +12,15 @@
     sample_start: 2024-10-22
     sample_end: 2025-10-01
     optuna:
-      storage: sqlite:///results/hparam_search/storage/optuna_tBTCUSD_1h_smoke_loose.db
-      study_name: smoke_loose
+      storage: sqlite:///results/hparam_search/storage/optuna_tBTCUSD_1h_smoke_loose_20251113b.db
+      study_name: smoke_loose_20251113b
       bootstrap_random_trials: 32
       bootstrap_seed: 42
       sampler:
         name: tpe
         kwargs:
-          n_startup_trials: 75
-          n_ei_candidates: 768
+          n_startup_trials: 100
+          n_ei_candidates: 1024
           constant_liar: true
           multivariate: true
       pruner:
@@ -41,7 +41,7 @@ parameters:
   thresholds:
     entry_conf_overall:
       type: float
-      low: 0.14
+      low: 0.25
       high: 0.50
     regime_proba:
       balanced:
@@ -214,8 +214,8 @@ parameters:
         value: pass
       tolerance_atr:
         type: float
-        low: 0.25
-        high: 1.00
+        low: 0.20
+        high: 0.80
       long_min_level:
         type: fixed
         value: 0.382
@@ -232,8 +232,8 @@ parameters:
         value: pass
       tolerance_atr:
         type: float
-        low: 0.25
-        high: 1.00
+        low: 0.20
+        high: 0.80
       long_max_level:
         type: float
         low: 0.700

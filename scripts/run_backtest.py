@@ -3,7 +3,7 @@
 Run backtest on historical data.
 
 Usage:
-    python scripts/run_backtest.py --symbol tBTCUSD --timeframe 15m
+    python scripts/run_backtest.py --symbol tBTCUSD --timeframe 1h --config-file config\\strategy\\champions\tBTCUSD_1h.json
     python scripts/run_backtest.py --symbol tETHUSD --timeframe 1h --capital 20000
 """
 

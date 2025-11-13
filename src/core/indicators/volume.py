@@ -10,6 +10,7 @@ Volume metrics help confirm price movements and identify institutional interest:
 
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 
 
@@ -165,9 +166,10 @@ def calculate_volume_ema(volume: list[float], period: int) -> list[float]:
     vol_series = pd.Series(volume)
     ema_series = vol_series.ewm(span=period, adjust=False).mean()
 
-    # Mark first period-1 values as NaN (not fully initialized)
-    ema_series.iloc[: period - 1] = float("nan")
-
+    # Mark first period-1 values as NaN (not fully initialized) using numpy view
+    if period > 1:
+        ema_values = ema_series.to_numpy(copy=False)
+        ema_values[: period - 1] = np.nan
     return ema_series.tolist()
 
 
@@ -231,8 +233,10 @@ def volume_price_divergence(
     bearish_mask = opposite_signs & (price_trend > 0) & (vol_trend < 0)
     divergence[bearish_mask] = -abs(price_trend * vol_trend)[bearish_mask]
 
-    # Mark insufficient data as NaN
-    divergence.iloc[: lookback - 1] = float("nan")
+    # Mark insufficient data as NaN (numpy view for speed)
+    if lookback > 1:
+        div_values = divergence.to_numpy(copy=False)
+        div_values[: lookback - 1] = np.nan
 
     return divergence.tolist()
 
@@ -275,9 +279,11 @@ def obv(close: list[float], volume: list[float]) -> list[float]:
 
     # OBV = cumulative sum of (volume * direction)
     # First bar: direction is 0, so we need to handle separately
-    signed_volume = vol_series * direction
-    signed_volume.iloc[0] = vol_series.iloc[0]  # First value is just volume
-
-    obv_series = signed_volume.cumsum()
+    vol_arr = vol_series.to_numpy(copy=False)
+    dir_arr = direction.to_numpy(copy=False)
+    signed_arr = vol_arr * dir_arr
+    if signed_arr.size > 0:
+        signed_arr[0] = vol_arr[0]  # First value is just volume
+    obv_series = pd.Series(signed_arr, index=close_series.index).cumsum()
 
     return obv_series.tolist()

@@ -40,5 +40,5 @@ Uppdaterad `config/optimizer/tBTCUSD_1h_optuna_smoke_loose.yaml` med 5 grid-vari
 ## Relaterade filer
 
 - Fix: `config/optimizer/tBTCUSD_1h_optuna_smoke_loose.yaml`
-- Genombrott-analys: `docs/BREAKTHROUGH_CONFIG_20251113.md`
+- Genombrott-analys: `BREAKTHROUGH_CONFIG_20251113.md`
 - Backtest-konfig: `config/tmp/tmp_user_test.json`

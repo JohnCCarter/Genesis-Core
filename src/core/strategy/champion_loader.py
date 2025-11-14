@@ -57,7 +57,15 @@ class ChampionLoader:
             return None
 
     def _validate_champion(self, payload: dict[str, Any]) -> dict[str, Any] | None:
+        # Support multiple formats:
+        # 1. {"parameters": {...}} or {"config": {...}} (top-level)
+        # 2. {"cfg": {"parameters": {...}}} (wrapped format)
         config = payload.get("parameters") or payload.get("config")
+        if not isinstance(config, dict):
+            # Try wrapped format
+            cfg_wrapper = payload.get("cfg", {})
+            if isinstance(cfg_wrapper, dict):
+                config = cfg_wrapper.get("parameters") or cfg_wrapper.get("config")
         if not isinstance(config, dict):
             return None
         return config

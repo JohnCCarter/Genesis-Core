@@ -5,14 +5,14 @@ meta:
   warmup_bars: 150
   runs:
     strategy: optuna
-    max_trials: 120
+    max_trials: null
     max_concurrent: 4
     resume: false
     use_sample_range: true
     sample_start: 2024-10-22
     sample_end: 2025-10-01
     optuna:
-      storage: sqlite:///results/hparam_search/storage/optuna_tBTCUSD_1h_remodel_v1.db
+      storage: sqlite:///results/hparam_search/storage/optuna_tBTCUSD_1h_remodel_long.db
       study_name: optuna_remodel_v1
       bootstrap_random_trials: 32
       bootstrap_seed: 42
@@ -48,19 +48,19 @@ parameters:
       balanced:
         type: float
         low: 0.42
-        high: 0.70
+        high: 0.85
       bull:
         type: float
         low: 0.40
-        high: 0.68
+        high: 0.85
       bear:
         type: float
         low: 0.40
-        high: 0.68
+        high: 0.85
       ranging:
         type: float
         low: 0.42
-        high: 0.72
+        high: 0.90
     min_edge:
       type: float
       low: 0.0

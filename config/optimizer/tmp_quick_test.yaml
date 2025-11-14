@@ -5,7 +5,7 @@
   warmup_bars: 150
   runs:
     strategy: optuna
-    max_trials: 10
+    max_trials: 5
     max_concurrent: 4
     resume: false
     use_sample_range: true
@@ -14,7 +14,7 @@
     optuna:
       storage: sqlite:///results/hparam_search/storage/optuna_tBTCUSD_1h_smoke_loose_20251113b.db
       study_name: smoke_loose_20251113b
-      bootstrap_random_trials: 32
+      bootstrap_random_trials: 5
       bootstrap_seed: 42
       sampler:
         name: tpe
@@ -303,3 +303,4 @@ parameters:
         value:
           bull: 0.95
           bear: 1.05
+

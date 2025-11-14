@@ -165,6 +165,7 @@ Reward: Potentially discover better edge
 - 20-bar: IC +0.0528 (p<0.001, ICIR 0.51) ✅ EXCELLENT
 
 **Regime Performance:**
+
 | Regime | IC | Win Rate | Calibration | Threshold |
 |--------|-----|----------|-------------|-----------|
 | Bear | +0.0946 | 58.6% | a=4.15 (boost) | 0.30 (low) |
@@ -201,7 +202,7 @@ Reward: Potentially discover better edge
 - `docs/PHASE-6_LEARNINGS.md` - Complete Phase-6 discoveries
 - `docs/ADVANCED_VALIDATION_PRODUCTION.md` - Production ML guide
 - `docs/INDICATORS_REFERENCE.md` - Indicator cheat sheet
-- `docs/FEATURE_COMPUTATION_MODES.md` - AS-OF semantics (CRITICAL!)
+- `docs/features/FEATURE_COMPUTATION_MODES.md` - AS-OF semantics (CRITICAL!)
 
 ### **Key Scripts:**
 

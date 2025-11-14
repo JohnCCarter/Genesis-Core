@@ -34,8 +34,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 **Documentation**
 
 - `docs/optimizer.md`: ny sektion om robust scoring, constraints‑separation, YAML‑schema för bladnoder, prestandaflaggor, determinism.
-- `docs/FEATURE_COMPUTATION_MODES.md`: ny sektion om fast‑window och precompute.
-- `docs/daily_summary_2025-11-10.md`: dagens summering.
+- `docs/features/FEATURE_COMPUTATION_MODES.md`: ny sektion om fast‑window och precompute.
+- `docs/daily_summaries/daily_summary_2025-11-10.md`: dagens summering.
 - `AGENTS.md`: uppdaterad snabbguide och deliverables.
 
 **Fixes**
@@ -121,7 +121,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 
 **Documentation:**
 
-- `docs/FIBONACCI_FRAKTAL_EXITS_IMPLEMENTATION_PLAN.md` - Complete implementation guide
+- `docs/fibonacci/FIBONACCI_FRAKTAL_EXITS_IMPLEMENTATION_PLAN.md` - Complete implementation guide
 
 **Test Coverage:**
 

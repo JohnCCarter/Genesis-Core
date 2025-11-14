@@ -40,6 +40,7 @@ from core.backtest.engine import BacktestEngine  # noqa: E402
 from core.backtest.metrics import calculate_metrics, print_metrics_report  # noqa: E402
 from core.backtest.trade_logger import TradeLogger  # noqa: E402
 from core.config.authority import ConfigAuthority  # noqa: E402
+from core.optimizer.scoring import score_backtest  # noqa: E402
 from core.utils.diffing import diff_metrics, summarize_metric_deltas  # noqa: E402
 
 
@@ -192,8 +193,21 @@ def main():
         # Calculate metrics
         metrics = calculate_metrics(results)
 
+        # Calculate score (same as Optuna uses)
+        score_result = score_backtest(results)
+        score_value = score_result.get("score", 0.0)
+        score_metrics = score_result.get("metrics", {})
+
+        # Add score to results for saving
+        results["score"] = {
+            "score": score_value,
+            "metrics": score_metrics,
+            "hard_failures": score_result.get("hard_failures", []),
+        }
+
         # Print report
         print_metrics_report(metrics, results.get("backtest_info"))
+        print(f"\nScore: {score_value:.4f}")
 
         # Save results
         saved_files: dict[str, Path] | None = None

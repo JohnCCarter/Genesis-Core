@@ -15,6 +15,7 @@ from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from pathlib import Path
+from types import NoneType
 from typing import Any
 
 import yaml
@@ -337,7 +338,7 @@ def _deep_merge(base: dict, override: dict) -> dict:
 def _expand_value(node: Any) -> list[Any]:
     def _clone_value(v: Any) -> Any:
         # Avoid expensive deepcopy for immutable/simple types
-        if isinstance(v, (type(None), bool, int, float, str, bytes)):
+        if isinstance(v, NoneType | bool | int | float | str | bytes):
             return v
         if isinstance(v, tuple):
             return tuple(_clone_value(x) for x in v)

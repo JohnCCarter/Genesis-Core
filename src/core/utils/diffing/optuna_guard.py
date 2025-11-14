@@ -63,7 +63,7 @@ def estimate_zero_trade(
     risk_cfg = transformed.get("risk") or {}
     risk_map = risk_cfg.get("risk_map")
     if isinstance(risk_map, list) and risk_map:
-        total_size = sum(float(point[1]) for point in risk_map if isinstance(point, (list, tuple)))
+        total_size = sum(float(point[1]) for point in risk_map if isinstance(point, list | tuple))
         if total_size <= 0:
             return ZeroTradeEstimate(ok=False, reason="risk_map total size <= 0")
 

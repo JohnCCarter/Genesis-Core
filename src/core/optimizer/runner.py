@@ -84,6 +84,22 @@ except Exception:
     _JSON_CACHE_MAX = 256
 
 
+def _load_json_with_retries(path: Path, retries: int = 3, delay: float = 0.1) -> Any:
+    """Read JSON from disk with small retry loop to handle partial writes."""
+    last_error: json.JSONDecodeError | None = None
+    for attempt in range(retries):
+        text = path.read_text(encoding="utf-8")
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError as exc:  # pragma: no cover - only hit on IO races
+            last_error = exc
+            if attempt + 1 < retries:
+                time.sleep(delay)
+            else:
+                raise
+    raise last_error  # pragma: no cover
+
+
 def _read_json_cached(path: Path) -> Any:
     """Read JSON with optional mtime-based in-memory cache.
 
@@ -91,7 +107,7 @@ def _read_json_cached(path: Path) -> Any:
     """
     use_cache = os.environ.get("GENESIS_OPTIMIZER_JSON_CACHE") in {"1", "true", "True"}
     if not use_cache:
-        return json.loads(path.read_text(encoding="utf-8"))
+        return _load_json_with_retries(path)
 
     key = str(path.resolve())
     try:
@@ -110,7 +126,7 @@ def _read_json_cached(path: Path) -> Any:
                 pass
             return cached_obj
 
-    obj = json.loads(path.read_text(encoding="utf-8"))
+    obj = _load_json_with_retries(path)
     _JSON_CACHE[key] = (mtime, obj)
     try:
         while len(_JSON_CACHE) > _JSON_CACHE_MAX:
@@ -713,8 +729,20 @@ def run_trial(
                 final_payload.setdefault("derived", derived_values)
             if config_file is not None:
                 final_payload["config_path"] = config_file.name
+
+            # Print trial result with metrics
+            metrics = score_serializable.get("metrics", {})
+            num_trades = metrics.get("num_trades", 0)
+            total_return_pct = metrics.get("total_return", 0.0) * 100.0
+            profit_factor = metrics.get("profit_factor", 0.0)
+            max_dd_pct = metrics.get("max_drawdown", 0.0) * 100.0
+            sharpe = metrics.get("sharpe_ratio", 0.0)
+            win_rate_pct = metrics.get("win_rate", 0.0) * 100.0
+
             print(
-                f"[Runner] Trial {trial_id} klar på {total_duration:.1f}s" f" (score={score_value})"
+                f"[Runner] Trial {trial_id} klar på {total_duration:.1f}s"
+                f" (score={score_value:.4f}, trades={num_trades}, return={total_return_pct:.2f}%,"
+                f" PF={profit_factor:.2f}, DD={max_dd_pct:.2f}%, Sharpe={sharpe:.3f}, WR={win_rate_pct:.1f}%)"
             )
             break
             final_payload = {

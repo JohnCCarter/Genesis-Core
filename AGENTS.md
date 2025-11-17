@@ -176,6 +176,17 @@ Champion file: `config/strategy/champions/tBTCUSD_1h.json`
 4. Lägg till regressionstester runt fib-gates/MTF-override (missing context, ATR=0, tolerance handling) för att undvika framtida noll-trade-regressioner.
 5. Re-run Bandit med den scoped kommandot och spara rapport för framtida handoff.
 
+### Runtime patch workflow (2025-11-17)
+
+- `config/runtime.json` är den enda källan som backtester/servrar laddar via `ConfigAuthority`.
+- Använd `scripts/apply_runtime_patch.py` för att applicera profiler (tmp eller champion). Workflow:
+  1. `python scripts/apply_runtime_patch.py --dry-run <path>.json` för att se diff.
+  2. `python scripts/apply_runtime_patch.py <path>.json` för att skriva.
+- Skriptet unwrappar automatiskt `cfg.parameters` och filtrerar bort otillåtna fält (endast `thresholds`, `gates`, `risk.risk_map`, `ev`, `multi_timeframe`).
+- `ConfigAuthority` gör nu en deep merge, så partiella patchar tappar inte syskonfält.
+- `scripts/run_backtest.py` loggar `[CONFIG:runtime] …` efter laddning → verifiera att entry/zoner/MTF matchar förväntan innan långa körningar.
+- För detaljer, se `docs/runtime/RUNTIME_PATCH_WORKFLOW.md`.
+
 ## 9. Recent history (Phase-7a/7b, 21 Oct 2025)
 
 - Locked snapshot: `tBTCUSD_1h_2024-10-22_2025-10-01_v1`.

@@ -109,8 +109,21 @@ class BacktestEngine:
         self.bar_count = 0
 
         self.champion_loader = ChampionLoader()
+        # Initialize HTF exit engine configuration (moved out of _deep_merge)
+        self._init_htf_exit_engine(htf_exit_config)
 
-        # Initialize HTF Exit Engine
+    def _deep_merge(self, base: dict, override: dict) -> dict:
+        """Deep merge override dict into base dict, preserving nested structures."""
+        merged = dict(base)
+        for key, value in (override or {}).items():
+            if key in merged and isinstance(merged[key], dict) and isinstance(value, dict):
+                merged[key] = self._deep_merge(merged[key], value)
+            else:
+                merged[key] = value
+        return merged
+
+    def _init_htf_exit_engine(self, htf_exit_config: dict | None) -> None:
+        """Initialize HTF Fibonacci Exit Engine with defaults + optional override."""
         default_htf_config = {
             "partial_1_pct": 0.50,
             "partial_2_pct": 0.30,
@@ -411,7 +424,8 @@ class BacktestEngine:
             configs = cfg_pre
 
         champion_cfg = self.champion_loader.load_cached(self.symbol, self.timeframe)
-        configs = {**champion_cfg.config, **configs}
+        # Deep merge configs to preserve nested overrides
+        configs = self._deep_merge(champion_cfg.config, configs)
         meta = configs.setdefault("meta", {})
         meta.setdefault("champion_source", champion_cfg.source)
         meta.setdefault("champion_version", champion_cfg.version)

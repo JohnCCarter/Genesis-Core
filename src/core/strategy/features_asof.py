@@ -502,6 +502,12 @@ def _extract_asof(
             htf_fibonacci_context = get_htf_fibonacci_context(
                 _candles_for_htf, timeframe=timeframe, symbol=symbol or "tBTCUSD"
             )
+            _log.info(
+                "[FIB-FLOW] HTF fibonacci context created: symbol=%s timeframe=%s available=%s",
+                symbol or "tBTCUSD",
+                timeframe,
+                htf_fibonacci_context.get("available", False),
+            )
         except Exception as e:
             # Don't fail feature extraction if HTF context unavailable
             htf_fibonacci_context = {
@@ -509,6 +515,12 @@ def _extract_asof(
                 "reason": "HTF_CONTEXT_ERROR",
                 "error": str(e),
             }
+            _log.info(
+                "[FIB-FLOW] HTF fibonacci context failed: symbol=%s timeframe=%s error=%s",
+                symbol or "tBTCUSD",
+                timeframe,
+                str(e),
+            )
 
     # === Same timeframe Fibonacci context for entry/exit logic ===
     ltf_fibonacci_context = {}
@@ -523,12 +535,24 @@ def _extract_asof(
                 },
                 timeframe=timeframe,
             )
+            _log.info(
+                "[FIB-FLOW] LTF fibonacci context created: symbol=%s timeframe=%s available=%s",
+                symbol or "tBTCUSD",
+                timeframe,
+                ltf_fibonacci_context.get("available", False),
+            )
         except Exception as e:  # pragma: no cover - defensive
             ltf_fibonacci_context = {
                 "available": False,
                 "reason": "LTF_CONTEXT_ERROR",
                 "error": str(e),
             }
+            _log.info(
+                "[FIB-FLOW] LTF fibonacci context failed: symbol=%s timeframe=%s error=%s",
+                symbol or "tBTCUSD",
+                timeframe,
+                str(e),
+            )
 
     meta = {
         "versions": {

@@ -54,6 +54,25 @@ def _deep_merge(base: dict, override: dict) -> dict:
     return merged
 
 
+def _summarize_runtime(label: str, cfg: dict) -> None:
+    thresholds = cfg.get("thresholds", {})
+    entry_conf = thresholds.get("entry_conf_overall")
+    adaptation = (thresholds.get("signal_adaptation") or {}).get("zones") or {}
+    zones = {
+        name: (zone or {}).get("entry_conf_overall")
+        for name, zone in adaptation.items()
+        if isinstance(zone, dict)
+    }
+    mtf = cfg.get("multi_timeframe", {})
+    allow_override = mtf.get("allow_ltf_override")
+    override_thr = mtf.get("ltf_override_threshold")
+    print(
+        f"[CONFIG:{label}] entry_conf={entry_conf} "
+        f"zones(low/mid/high)={zones.get('low')}/{zones.get('mid')}/{zones.get('high')} "
+        f"allow_ltf_override={allow_override} override_thr={override_thr}"
+    )
+
+
 def _seed_all(seed: int) -> None:
     """Sätt deterministiska seeds för alla relevanta bibliotek."""
 
@@ -164,6 +183,7 @@ def main():
         authority = ConfigAuthority()
         cfg_obj, _, _ = authority.get()
         cfg = cfg_obj.model_dump()
+        _summarize_runtime("runtime", cfg)
 
         if args.config_file:
             override_payload = json.loads(args.config_file.read_text(encoding="utf-8"))
@@ -179,6 +199,7 @@ def main():
                 print(f"\n[FAILED] Ogiltig override-config: {exc}")
                 return 1
             cfg = cfg_obj.model_dump()
+            _summarize_runtime("runtime+override", cfg)
 
         # Prepare policy
         policy = {"symbol": args.symbol, "timeframe": args.timeframe}

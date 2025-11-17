@@ -1,0 +1,24 @@
+{
+  "cfg": {
+    "thresholds": {
+      "regime_proba": {
+        "ranging": 0.42,
+        "bull": 0.32,
+        "bear": 0.32,
+        "balanced": 0.37
+      }
+    },
+    "htf_fib": {
+      "entry": {
+        "enabled": false
+      }
+    },
+    "ltf_fib": {
+      "entry": {
+        "enabled": true,
+        "tolerance_atr": 0.8,
+        "missing_policy": "pass"
+      }
+    }
+  }
+}

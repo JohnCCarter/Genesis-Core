@@ -40,6 +40,8 @@ from core.backtest.engine import BacktestEngine  # noqa: E402
 from core.backtest.metrics import calculate_metrics, print_metrics_report  # noqa: E402
 from core.backtest.trade_logger import TradeLogger  # noqa: E402
 from core.config.authority import ConfigAuthority  # noqa: E402
+from core.optimizer.scoring import score_backtest  # noqa: E402
+from core.utils.diffing import diff_metrics, summarize_metric_deltas  # noqa: E402
 
 
 def _deep_merge(base: dict, override: dict) -> dict:
@@ -50,6 +52,25 @@ def _deep_merge(base: dict, override: dict) -> dict:
         else:
             merged[key] = value
     return merged
+
+
+def _summarize_runtime(label: str, cfg: dict) -> None:
+    thresholds = cfg.get("thresholds", {})
+    entry_conf = thresholds.get("entry_conf_overall")
+    adaptation = (thresholds.get("signal_adaptation") or {}).get("zones") or {}
+    zones = {
+        name: (zone or {}).get("entry_conf_overall")
+        for name, zone in adaptation.items()
+        if isinstance(zone, dict)
+    }
+    mtf = cfg.get("multi_timeframe", {})
+    allow_override = mtf.get("allow_ltf_override")
+    override_thr = mtf.get("ltf_override_threshold")
+    print(
+        f"[CONFIG:{label}] entry_conf={entry_conf} "
+        f"zones(low/mid/high)={zones.get('low')}/{zones.get('mid')}/{zones.get('high')} "
+        f"allow_ltf_override={allow_override} override_thr={override_thr}"
+    )
 
 
 def _seed_all(seed: int) -> None:
@@ -117,6 +138,11 @@ def main():
         action="store_true",
         help="Precompute common features (ATR/EMA) for performance",
     )
+    parser.add_argument(
+        "--compare",
+        type=Path,
+        help="Path to baseline backtest JSON to compare against",
+    )
 
     args = parser.parse_args()
 
@@ -157,6 +183,7 @@ def main():
         authority = ConfigAuthority()
         cfg_obj, _, _ = authority.get()
         cfg = cfg_obj.model_dump()
+        _summarize_runtime("runtime", cfg)
 
         if args.config_file:
             override_payload = json.loads(args.config_file.read_text(encoding="utf-8"))
@@ -172,6 +199,7 @@ def main():
                 print(f"\n[FAILED] Ogiltig override-config: {exc}")
                 return 1
             cfg = cfg_obj.model_dump()
+            _summarize_runtime("runtime+override", cfg)
 
         # Prepare policy
         policy = {"symbol": args.symbol, "timeframe": args.timeframe}
@@ -186,16 +214,58 @@ def main():
         # Calculate metrics
         metrics = calculate_metrics(results)
 
+        # Calculate score (same as Optuna uses)
+        score_result = score_backtest(results)
+        score_value = score_result.get("score", 0.0)
+        score_metrics = score_result.get("metrics", {})
+
+        # Add score to results for saving
+        results["score"] = {
+            "score": score_value,
+            "metrics": score_metrics,
+            "hard_failures": score_result.get("hard_failures", []),
+        }
+
         # Print report
         print_metrics_report(metrics, results.get("backtest_info"))
+        print(f"\nScore: {score_value:.4f}")
 
         # Save results
+        saved_files: dict[str, Path] | None = None
         if not args.no_save:
             logger = TradeLogger()
             saved_files = logger.save_all(results)
             print("\n[OK] Results saved:")
             for key, path in saved_files.items():
                 print(f"  {key}: {path}")
+
+        # Diff mot baseline om begärt
+        if args.compare:
+            comparison_path = args.compare
+            if not comparison_path.exists():
+                print(f"\n[WARN] Compare file saknas: {comparison_path}")
+            else:
+                try:
+                    baseline = json.loads(comparison_path.read_text(encoding="utf-8"))
+                    baseline_metrics = (
+                        (baseline.get("summary") or {}).get("metrics")
+                        or baseline.get("metrics")
+                        or {}
+                    )
+                    result_metrics = (
+                        (results.get("summary") or {}).get("metrics")
+                        or results.get("metrics")
+                        or {}
+                    )
+                    metrics_diff = diff_metrics(baseline_metrics, result_metrics)
+                    trades_old = len(baseline.get("trades") or [])
+                    trades_new = len(results.get("trades") or [])
+                    print("\n[DIFF] Metrics delta:")
+                    print(summarize_metric_deltas(metrics_diff) or "  (no differences)")
+                    trade_delta = trades_new - trades_old
+                    print(f"[DIFF] Trades: old={trades_old} new={trades_new} delta={trade_delta:+}")
+                except json.JSONDecodeError as exc:
+                    print(f"\n[WARN] Kunde inte läsa compare-fil ({comparison_path}): {exc}")
 
         print("\n[SUCCESS] Backtest complete!")
         return 0

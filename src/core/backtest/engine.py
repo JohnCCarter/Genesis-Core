@@ -109,8 +109,21 @@ class BacktestEngine:
         self.bar_count = 0
 
         self.champion_loader = ChampionLoader()
+        # Initialize HTF exit engine configuration (moved out of _deep_merge)
+        self._init_htf_exit_engine(htf_exit_config)
 
-        # Initialize HTF Exit Engine
+    def _deep_merge(self, base: dict, override: dict) -> dict:
+        """Deep merge override dict into base dict, preserving nested structures."""
+        merged = dict(base)
+        for key, value in (override or {}).items():
+            if key in merged and isinstance(merged[key], dict) and isinstance(value, dict):
+                merged[key] = self._deep_merge(merged[key], value)
+            else:
+                merged[key] = value
+        return merged
+
+    def _init_htf_exit_engine(self, htf_exit_config: dict | None) -> None:
+        """Initialize HTF Fibonacci Exit Engine with defaults + optional override."""
         default_htf_config = {
             "partial_1_pct": 0.50,
             "partial_2_pct": 0.30,
@@ -426,7 +439,8 @@ class BacktestEngine:
             configs = cfg_pre
 
         champion_cfg = self.champion_loader.load_cached(self.symbol, self.timeframe)
-        configs = {**champion_cfg.config, **configs}
+        # Deep merge configs to preserve nested overrides
+        configs = self._deep_merge(champion_cfg.config, configs)
         meta = configs.setdefault("meta", {})
         meta.setdefault("champion_source", champion_cfg.source)
         meta.setdefault("champion_version", champion_cfg.version)
@@ -454,11 +468,25 @@ class BacktestEngine:
 
         # Track bars held for current position
 
+        # Performance optimization: Pre-extract numpy arrays to avoid repeated iloc calls
+        # This significantly speeds up the main backtest loop
+        timestamps_array = self.candles_df["timestamp"].values
+        open_prices_array = self.candles_df["open"].values
+        high_prices_array = self.candles_df["high"].values
+        low_prices_array = self.candles_df["low"].values
+        close_prices_array = self.candles_df["close"].values
+        volume_array = self.candles_df["volume"].values if "volume" in self.candles_df.columns else None
+        num_bars = len(self.candles_df)
+
         # Replay bars
+        for i in range(num_bars):
+            # Performance: Direct array access is significantly faster than iloc (~5-10x for this operation)
+            timestamp = timestamps_array[i]
+            close_price = close_prices_array[i]
         for i in range(len(self.candles_df)):
             # Fast-path: pull values from numpy buffers if available
             if self._np_arrays is not None:
-                timestamp = self._np_arrays["timestamp"][i]
+                timestamp = pd.Timestamp(self._np_arrays["timestamp"][i])
                 close_price = float(self._np_arrays["close"][i])
                 open_price = float(self._np_arrays["open"][i])
                 high_price = float(self._np_arrays["high"][i])
@@ -512,9 +540,14 @@ class BacktestEngine:
 
                 # === EXIT LOGIC (check BEFORE new entry) ===
                 if self.position_tracker.has_position():
-                    # Prepare bar data for exit engine
+                    # Prepare bar data for exit engine (using pre-extracted arrays)
                     bar_data = {
                         "timestamp": timestamp,
+                        "open": open_prices_array[i],
+                        "high": high_prices_array[i],
+                        "low": low_prices_array[i],
+                        "close": close_price,
+                        "volume": volume_array[i] if volume_array is not None else 0.0,
                         "open": open_price,
                         "high": high_price,
                         "low": low_price,
@@ -608,7 +641,7 @@ class BacktestEngine:
         # Close all positions at end
         if self._np_arrays is not None:
             final_close = float(self._np_arrays["close"][-1])
-            final_ts = self._np_arrays["timestamp"][-1]
+            final_ts = pd.Timestamp(self._np_arrays["timestamp"][-1])
         else:
             final_bar = self.candles_df.iloc[-1]
             final_close = final_bar["close"]
@@ -640,8 +673,8 @@ class BacktestEngine:
         position = self.position_tracker.position
         decision_state = (meta.get("decision") or {}).get("state_out") or {}
 
-        # Get exit config
-        exit_cfg = configs.get("cfg", {}).get("exit", {})
+        # Get exit config (top-level in merged configs)
+        exit_cfg = configs.get("exit", {})
         enabled = exit_cfg.get("enabled", True)
 
         if not enabled:
@@ -681,7 +714,7 @@ class BacktestEngine:
         meta["signal"]["current_atr"] = current_atr
 
         # Execute exit actions
-        exit_cfg = configs.get("cfg", {}).get("exit", {})
+        exit_cfg = configs.get("exit", {})
         break_even_trigger = exit_cfg.get("break_even_trigger")
         break_even_offset = exit_cfg.get("break_even_offset", 0.0)
         partial_break_even = exit_cfg.get("partial_break_even", False)
@@ -812,8 +845,8 @@ class BacktestEngine:
         """Fallback traditional exit conditions."""
         position = self.position_tracker.position
 
-        # Get exit config
-        exit_cfg = configs.get("cfg", {}).get("exit", {})
+        # Get exit config (top-level in merged configs)
+        exit_cfg = configs.get("exit", {})
         stop_loss_pct = float(exit_cfg.get("stop_loss_pct", 0.02))
         take_profit_pct = float(exit_cfg.get("take_profit_pct", 0.05))
         exit_conf_threshold = float(exit_cfg.get("exit_conf_threshold", 0.45))

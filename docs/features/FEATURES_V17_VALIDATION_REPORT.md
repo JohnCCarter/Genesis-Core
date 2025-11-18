@@ -11,6 +11,7 @@
 **Features v17** introduces **3 new Fibonacci combination features** that combine Fibonacci geometry with existing context features (EMA slope, ADX, RSI).
 
 **Key Results:**
+
 - ✅ **30m timeframe**: EXCELLENT validation (IC +0.058, AUC 0.539, low degradation 13%)
 - ✅ **6h timeframe**: EXCEPTIONAL validation (IC +0.308, AUC 0.665, NEGATIVE degradation!)
 - ✅ **1h timeframe**: GOOD validation (IC +0.036, AUC 0.516, moderate degradation 16%)
@@ -33,6 +34,7 @@
 ### Optimized Parameters
 
 **EMA Slope Calculation:**
+
 - **30m**: EMA period=50, lookback=20 (optimized, +166% IC improvement)
 - **Other timeframes**: EMA period=20, lookback=5 (standard)
 
@@ -54,6 +56,7 @@
 | **1D** | -0.1994 (p<0.001) ✅ | -0.2254 (p<0.001) ✅ | +0.3546 (p<0.001) ✅ | **3/3** |
 
 **Key Insight**: Each timeframe has different "champion" combinations:
+
 - **30m**: All 3 combinations work, `fib05_x_ema_slope` strongest
 - **1h**: Only `fib05_x_ema_slope` is significant
 - **6h**: `fib_prox_x_adx` and `fib05_x_rsi_inv` dominate
@@ -76,6 +79,7 @@
 **Verdict**: ✅ **EXCELLENT** - Low degradation, model generalizes well
 
 **Top Features by Coefficient:**
+
 1. `rsi_vol_interaction` (-0.59)
 2. `volatility_shift_ma3` (+0.28)
 3. `rsi_inv_lag1` (+0.27)
@@ -95,6 +99,7 @@
 **Verdict**: ✅ **GOOD** - Acceptable degradation, positive holdout edge
 
 **Top Features by Coefficient:**
+
 1. `fib_dist_min_atr` (+1.16) 🔥 **FIBONACCI DOMINATES!**
 2. `fib_dist_signed_atr` (-1.16) 🔥
 3. `bb_position_inv_ma3` (+0.59)
@@ -114,6 +119,7 @@
 **Verdict**: ✅ ✅ **EXCEPTIONAL** - NEGATIVE degradation (holdout BETTER than train!)
 
 **Top Features by Coefficient:**
+
 1. `volatility_shift_ma3` (-1.26)
 2. `bb_position_inv_ma3` (+1.23)
 3. `rsi_vol_interaction` (+1.22)
@@ -121,6 +127,7 @@
 5. `rsi_inv_lag1` (-0.30)
 
 **Critical Discovery**: 6h holdout performance is **BETTER** than training! This suggests:
+
 - ✅ Features capture true market structure (not noise)
 - ✅ No overfitting
 - ✅ Robust edge across different market periods
@@ -138,6 +145,7 @@
 **Verdict**: ⚠️ **CAUTION** - High IC degradation, but holdout still has edge
 
 **Top Features by Coefficient:**
+
 1. `rsi_inv_lag1` (-1.27)
 2. `vol_regime` (-0.49)
 3. `rsi_vol_interaction` (+0.42)
@@ -145,6 +153,7 @@
 5. `volatility_shift_ma3` (+0.32)
 
 **Analysis**:
+
 - ⚠️ 46% IC degradation suggests overfitting on training set
 - ✅ BUT holdout still has strong edge (IC +0.24, p<0.05)
 - ⚠️ Smaller sample size (324 samples) contributes to variance
@@ -168,6 +177,7 @@
 ### 1. Fibonacci Features DOMINATE on 1h
 
 **Top 2 features on 1h timeframe are BOTH Fibonacci:**
+
 - `fib_dist_min_atr`: Coefficient +1.16 (strongest!)
 - `fib_dist_signed_atr`: Coefficient -1.16
 
@@ -178,10 +188,12 @@
 ### 2. 6h Shows "Anti-Overfitting" (Negative Degradation)
 
 **Holdout performance BETTER than training:**
+
 - Train IC: +0.26
 - Holdout IC: +0.31 (+17.5% improvement!)
 
 **Possible explanations:**
+
 1. ✅ Training period had unusual market conditions (range-bound)
 2. ✅ Holdout period had stronger trends (Fibonacci edge amplified)
 3. ✅ Features capture fundamental market structure (not noise)
@@ -193,18 +205,22 @@
 ### 3. Feature Importance Varies by Timeframe
 
 **30m (Micro):**
+
 - Top feature: `rsi_vol_interaction` (momentum + volatility)
 - Fibonacci: Not in top 5
 
 **1h (Short):**
+
 - Top features: **Fibonacci distance features** (dominated!)
 - Context: `bb_position_inv_ma3`, `rsi_inv_lag1`
 
 **6h (Trend):**
+
 - Top features: `volatility_shift_ma3`, `bb_position_inv_ma3`, `rsi_vol_interaction`
 - Fibonacci: Not in top 5 (but combinations work!)
 
 **1D (Macro):**
+
 - Top features: `rsi_inv_lag1`, `vol_regime`, `rsi_vol_interaction`
 - Fibonacci: `fib_prox_score` in top 5
 
@@ -217,6 +233,7 @@
 ### Immediate Deployment (30m, 6h)
 
 **30m Timeframe:**
+
 ```python
 # Use optimized EMA slope parameters
 ema_period = 50
@@ -229,6 +246,7 @@ lookback = 20
 ```
 
 **6h Timeframe:**
+
 ```python
 # Use standard EMA slope parameters
 ema_period = 20
@@ -245,6 +263,7 @@ lookback = 5
 ### Monitored Deployment (1h, 1D)
 
 **1h Timeframe:**
+
 ```python
 # VALIDATED but with caution
 # - Only fib05_x_ema_slope is significant
@@ -255,6 +274,7 @@ lookback = 5
 ```
 
 **1D Timeframe:**
+
 ```python
 # HIGH DEGRADATION DETECTED
 # - Use with LOWER confidence threshold
@@ -271,10 +291,12 @@ lookback = 5
 ### 30m Timeframe (VALIDATED)
 
 **Optimal Parameters:**
+
 - EMA period: **50** (vs standard 20)
 - Lookback: **20** (vs standard 5)
 
 **Performance:**
+
 - Train IC: -0.0495
 - Test IC: **-0.1026** (vs baseline -0.0385)
 - Improvement: **+166.3%**
@@ -287,10 +309,12 @@ lookback = 5
 ### 1h Timeframe (NOT VALIDATED)
 
 **Optimal Parameters (from grid search):**
+
 - EMA period: 10
 - Lookback: 20
 
 **Performance:**
+
 - Test IC: -0.1201
 - Improvement: +95.7%
 - Overfit risk: **MEDIUM-HIGH** (IC diff = 0.055)
@@ -302,10 +326,12 @@ lookback = 5
 ### 1D Timeframe (NOT VALIDATED)
 
 **Optimal Parameters (from grid search):**
+
 - EMA period: 50
 - Lookback: 7
 
 **Performance:**
+
 - Test IC: -0.4691
 - Improvement: +41.4%
 - Overfit risk: **VERY HIGH** (IC diff = 0.30!)
@@ -326,6 +352,7 @@ lookback = 5
 ### v17 Feature List
 
 **Original 5 (from Phase 6):**
+
 1. `rsi_inv_lag1` - Lagged inverted RSI
 2. `volatility_shift_ma3` - Smoothed volatility expansion
 3. `bb_position_inv_ma3` - Inverted Bollinger Band position
@@ -376,6 +403,7 @@ lookback = 5
 ### 1. EMA Slope = Universal Context for Fibonacci
 
 **`fib05_x_ema_slope` is significant on MOST timeframes:**
+
 - ✅ 30m: IC -0.0637 (p<0.001) - STRONGEST combination
 - ✅ 1h: IC -0.0395 (p<0.001) - ONLY significant combination
 - ❌ 6h: IC -0.0480 (p=0.07) - Not significant (but others work)
@@ -388,6 +416,7 @@ lookback = 5
 ### 2. ADX = Best for Trend Timeframes (6h)
 
 **`fib_prox_x_adx` only significant on 6h:**
+
 - ✅ 6h: IC -0.1998 (p<0.001) - STRONGEST on 6h
 - ❌ 1h: IC -0.0031 (p=0.73) - Not significant
 - ❌ 30m: IC -0.0269 (p<0.001) - Weak signal
@@ -400,6 +429,7 @@ lookback = 5
 ### 3. RSI Inversion = Macro Mean Reversion
 
 **`fib05_x_rsi_inv` strongest on macro timeframes:**
+
 - ✅ 1D: IC +0.3546 (p<0.001) - STRONGEST
 - ✅ 6h: IC +0.1910 (p<0.001) - STRONG
 - ✅ 30m: IC +0.0274 (p<0.001) - WEAK but significant
@@ -414,6 +444,7 @@ lookback = 5
 **Optimal Feature Set by Timeframe:**
 
 **6h (Trend Following):**
+
 ```python
 Primary: fib_prox_x_adx, fib05_x_rsi_inv
 Secondary: volatility_shift_ma3, bb_position_inv_ma3
@@ -421,6 +452,7 @@ Strategy: Trend continuation with Fibonacci confluence
 ```
 
 **1h (Fibonacci Mean Reversion):**
+
 ```python
 Primary: fib_dist_min_atr, fib05_x_ema_slope
 Secondary: bb_position_inv_ma3, rsi_inv_lag1
@@ -428,6 +460,7 @@ Strategy: Mean reversion to Fibonacci levels when trend slows
 ```
 
 **30m (Micro Mean Reversion):**
+
 ```python
 Primary: fib05_x_ema_slope, rsi_vol_interaction
 Secondary: volatility_shift_ma3, rsi_inv_lag1
@@ -441,6 +474,7 @@ Strategy: Quick reversals at Fib levels with momentum context
 ### Risk 1: 1D Overfitting (46% degradation)
 
 **Mitigation:**
+
 - ✅ Use conservative confidence threshold (0.7 vs 0.6)
 - ✅ Require multiple feature confirmation
 - ✅ Monitor live performance weekly
@@ -454,6 +488,7 @@ Strategy: Quick reversals at Fib levels with momentum context
 **1W**: 51 samples (insufficient for holdout validation)
 
 **Mitigation:**
+
 - ✅ Fetch more historical data (24+ months)
 - ✅ Use bootstrap validation
 - ✅ Combine with lower timeframe signals
@@ -463,11 +498,13 @@ Strategy: Quick reversals at Fib levels with momentum context
 ### Risk 3: Regime Dependency
 
 **Fibonacci features work differently in different regimes:**
+
 - Bull regime: Mean reversion (buy dips at Fib levels)
 - Bear regime: Mixed signals (timeframe-dependent)
 - Ranging: Weak/neutral
 
 **Mitigation:**
+
 - ✅ Use regime-aware calibration (already implemented)
 - ✅ Apply regime gates (Bull/HighVol for Fibonacci trades)
 - ✅ Monitor performance by regime
@@ -514,17 +551,20 @@ Strategy: Quick reversals at Fib levels with momentum context
 **Features v17 is PRODUCTION READY** for 6h, 30m, and 1h timeframes.
 
 **Validated Edge:**
+
 - ✅ 6h: IC +0.31, AUC 0.67 (exceptional)
 - ✅ 30m: IC +0.06, AUC 0.54 (excellent with optimized params)
 - ✅ 1h: IC +0.04, AUC 0.52 (good, Fibonacci-driven)
 
 **Key Success Factors:**
+
 1. ✅ Fibonacci combinations provide context-aware edge
 2. ✅ EMA slope optimization (+166% on 30m) is validated
 3. ✅ Low overfitting risk (13-16% degradation acceptable)
 4. ✅ Positive out-of-sample performance on all timeframes
 
 **Deployment Strategy:**
+
 - **6h**: High confidence (0.6+), full capital allocation
 - **30m**: Standard confidence (0.6), optimized EMA slope params
 - **1h**: Standard confidence (0.6), Fibonacci-dominant strategy

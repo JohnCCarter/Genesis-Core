@@ -22,6 +22,16 @@ def _json_dumps_canonical(data: dict[str, Any]) -> str:
     return json.dumps(data, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
 
+def _deep_merge_dicts(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
+    merged = dict(base)
+    for key, value in (override or {}).items():
+        if key in merged and isinstance(merged[key], dict) and isinstance(value, dict):
+            merged[key] = _deep_merge_dicts(merged[key], value)
+        else:
+            merged[key] = value
+    return merged
+
+
 class ConfigAuthority:
     def __init__(self, path: Path | None = None) -> None:
         self.path = path or RUNTIME_PATH
@@ -130,6 +140,10 @@ class ConfigAuthority:
     def propose_update(
         self, patch: dict[str, Any], *, actor: str, expected_version: int
     ) -> RuntimeSnapshot:
+        normalized_patch = dict(patch or {})
+        if "cfg" in normalized_patch and isinstance(normalized_patch["cfg"], dict):
+            normalized_patch = dict(normalized_patch["cfg"])
+
         # whitelist enforcement (path-based)
         def _enforce_whitelist(p: dict[str, Any]) -> None:
             for k, v in (p or {}).items():
@@ -177,12 +191,12 @@ class ConfigAuthority:
                                     "non_whitelisted_field:ltf_override_adaptive.regime_multipliers"
                                 )
 
-        _enforce_whitelist(patch)
+        _enforce_whitelist(normalized_patch)
 
         # merge on top of current cfg
         current_cfg = self.load().cfg
         cur = current_cfg.model_dump_canonical()
-        merged = {**cur, **patch}
+        merged = _deep_merge_dicts(cur, normalized_patch)
         try:
             new_cfg = RuntimeConfig(**merged)
         except ValidationError as e:

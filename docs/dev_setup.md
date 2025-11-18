@@ -33,6 +33,6 @@ Detta dokument beskriver den minsta Cursor-konfigurationen som krävs för att a
 
 ## 4. Handoff-påminnelser
 
-- Dokumentera eventuella avvikelser i `docs/daily_summary_YYYY-MM-DD.md`.
+- Dokumentera eventuella avvikelser i `docs/daily_summaries/daily_summary_YYYY-MM-DD.md`.
 - Vid nya verktyg: uppdatera både detta dokument och `cursor-active-rules.mdc`.
 - För större miljöändringar: koordinera med nästa agent innan Optuna-körningar startas.

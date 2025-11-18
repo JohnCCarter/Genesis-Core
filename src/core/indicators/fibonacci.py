@@ -311,8 +311,9 @@ def calculate_fibonacci_features_vectorized(
 
     features_df = pd.DataFrame(index=df.index)
 
-    # Calculate ATR
-    atr = calculate_atr(df["high"], df["low"], df["close"])
+    # Calculate ATR (Series → numpy for fast indexing)
+    atr_series = calculate_atr(df["high"], df["low"], df["close"])
+    atr_arr = atr_series.to_numpy(copy=False)
 
     # Detect swing points
     swing_high_indices, swing_low_indices, swing_high_prices, swing_low_prices = (
@@ -332,23 +333,24 @@ def calculate_fibonacci_features_vectorized(
     for feature_name in feature_names:
         features_df[feature_name] = 0.0
 
-    # Calculate features for each row
+    # Convert close to numpy once
+    close_arr = df["close"].to_numpy(copy=False)
+
+    # Compute Fibonacci levels once (based on latest swings)
+    fib_levels_once = calculate_fibonacci_levels(swing_high_prices, swing_low_prices, config.levels)
+    swing_high_latest = swing_high_prices[-1] if swing_high_prices else None
+    swing_low_latest = swing_low_prices[-1] if swing_low_prices else None
+
+    # Calculate features for each row (numpy indexing; no pandas .iloc inside loop)
     for i in range(len(df)):
-        # Get current swing context
-        current_swing_high = swing_high_prices[-1] if swing_high_prices else None
-        current_swing_low = swing_low_prices[-1] if swing_low_prices else None
-
-        # Calculate Fibonacci levels
-        fib_levels = calculate_fibonacci_levels(swing_high_prices, swing_low_prices, config.levels)
-
         # Calculate features
         features = calculate_fibonacci_features(
-            df["close"].iloc[i],
-            fib_levels,
-            atr.iloc[i],
+            float(close_arr[i]),
+            fib_levels_once,
+            float(atr_arr[i]) if i < len(atr_arr) else 0.0,
             config,
-            current_swing_high,
-            current_swing_low,
+            swing_high_latest,
+            swing_low_latest,
         )
 
         # Store features

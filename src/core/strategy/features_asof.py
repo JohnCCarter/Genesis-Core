@@ -12,6 +12,8 @@ This eliminates all ambiguity between live and backtest modes.
 
 from __future__ import annotations
 
+import hashlib
+import os
 from collections import OrderedDict
 from typing import Any
 
@@ -32,6 +34,7 @@ from core.indicators.fibonacci import (
 from core.indicators.htf_fibonacci import get_htf_fibonacci_context, get_ltf_fibonacci_context
 from core.indicators.rsi import calculate_rsi
 from core.observability.metrics import metrics
+from core.utils.diffing.feature_cache import IndicatorCache, make_indicator_fingerprint
 from core.utils.logging_redaction import get_logger
 
 _log = get_logger(__name__)
@@ -59,6 +62,53 @@ def _compute_candles_hash(candles: dict[str, list[float] | np.ndarray], asof_bar
         # Use simple string hash instead of cryptographic hash (10x faster)
         return f"{asof_bar}:{last_close:.4f}"
     return str(asof_bar)
+_feature_cache: OrderedDict[str, tuple[dict[str, float], dict[str, Any]]] = OrderedDict()
+# Allow overriding via env; default larger LRU cache for speed
+try:
+    _MAX_CACHE_SIZE = int(os.environ.get("GENESIS_FEATURE_CACHE_SIZE", "500"))
+except Exception:
+    _MAX_CACHE_SIZE = 500
+_indicator_cache = IndicatorCache(max_size=2048)
+_INDICATOR_CACHE_ENABLED = not bool(os.environ.get("GENESIS_DISABLE_INDICATOR_CACHE"))
+
+
+def _indicator_cache_lookup(key):
+    if not _INDICATOR_CACHE_ENABLED:
+        return None
+    return _indicator_cache.lookup(key)
+
+
+def _indicator_cache_store(key, value):
+    if _INDICATOR_CACHE_ENABLED:
+        _indicator_cache.store(key, value)
+
+
+def _compute_candles_hash(candles: dict[str, list[float]], asof_bar: int) -> str:
+    """Compute a cache key for candles up to asof_bar.
+
+    Fast path (opt-in): GENESIS_FAST_HASH=1 → simple f-string on asof_bar:last_close
+    Default: compact digest summarized over last up to 100 bars, hashed by SHA256.
+    """
+    # Optional ultra-fast key for tight loops
+    if os.environ.get("GENESIS_FAST_HASH") in {"1", "true", "True"}:
+        try:
+            last_close = float(candles["close"][asof_bar])
+        except Exception:
+            last_close = 0.0
+        return f"{asof_bar}:{last_close:.4f}"
+
+    # Default compact SHA256 key
+    data_str = f"{asof_bar}"
+    for key in ["open", "high", "low", "close", "volume"]:
+        if key in candles:
+            start_idx = max(0, asof_bar - 99)
+            data = candles[key][start_idx : asof_bar + 1]
+            length = len(data)
+            data_sum = float(np.sum(data)) if length else 0.0
+            last_val = float(data[-1]) if length else 0.0
+            data_str += f"|{key}:{length}:{data_sum:.2f}:{last_val:.2f}"
+    # Non-security hash: use SHA256 to satisfy linters and avoid weak-hash warnings
+    return hashlib.sha256(data_str.encode()).hexdigest()
 
 
 def _extract_asof(
@@ -91,7 +141,12 @@ def _extract_asof(
     cache_key = _compute_candles_hash(candles, asof_bar)
     if cache_key in _feature_cache:
         metrics.inc("feature_cache_hit")
-        return _feature_cache[cache_key]
+        value = _feature_cache[cache_key]
+        try:
+            _feature_cache.move_to_end(cache_key)  # LRU
+        except Exception:
+            pass
+        return value
 
     metrics.inc("feature_cache_miss")
 
@@ -151,7 +206,18 @@ def _extract_asof(
     if isinstance(pre_rsi, list | tuple) and len(pre_rsi) >= asof_bar + 1:
         rsi_vals = list(pre_rsi[: asof_bar + 1])
     else:
-        rsi_vals = calculate_rsi(closes, period=14)
+        key = make_indicator_fingerprint(
+            "rsi",
+            params={"period": 14},
+            series=closes,
+        )
+        cached_rsi = _indicator_cache_lookup(key)
+        if cached_rsi is not None and len(cached_rsi) >= asof_bar + 1:
+            rsi_vals = cached_rsi[: asof_bar + 1]
+        else:
+            rsi_full = calculate_rsi(closes, period=14)
+            _indicator_cache_store(key, rsi_full)
+            rsi_vals = rsi_full
 
     # Bollinger Bands
     pre_bb_pos = pre.get("bb_position_20_2")
@@ -159,7 +225,23 @@ def _extract_asof(
         bb = {"position": list(pre_bb_pos[: asof_bar + 1])}
     else:
         _cl = closes.tolist() if isinstance(closes, np.ndarray) else closes
-        bb = bollinger_bands(_cl, period=20, std_dev=2.0)
+        bb_key = make_indicator_fingerprint(
+            "bollinger",
+            params={"period": 20, "std_dev": 2.0},
+            series=_cl,
+        )
+        cached_bb = _indicator_cache_lookup(bb_key)
+        if cached_bb is not None and len(cached_bb.get("position", [])) >= asof_bar + 1:
+            bb = {
+                "position": list(cached_bb["position"][: asof_bar + 1]),
+                "upper": cached_bb.get("upper"),
+                "lower": cached_bb.get("lower"),
+                "middle": cached_bb.get("middle"),
+            }
+        else:
+            bb_full = bollinger_bands(_cl, period=20, std_dev=2.0)
+            _indicator_cache_store(bb_key, bb_full)
+            bb = bb_full
 
     # ATR (use precomputed if available)
     pre = dict((config or {}).get("precomputed_features") or {})
@@ -167,15 +249,39 @@ def _extract_asof(
     if isinstance(pre_atr_full, list | tuple) and len(pre_atr_full) >= asof_bar + 1:
         atr_vals = list(pre_atr_full[: asof_bar + 1])
     else:
-        atr_vals = calculate_atr(highs, lows, closes, period=14)
+        key_atr14 = make_indicator_fingerprint("atr_14", params={"period": 14}, series=closes)
+        cached_atr14 = _indicator_cache_lookup(key_atr14)
+        if cached_atr14 is not None and len(cached_atr14) >= asof_bar + 1:
+            atr_vals = cached_atr14[: asof_bar + 1]
+        else:
+            atr_full = calculate_atr(highs, lows, closes, period=14)
+            _indicator_cache_store(key_atr14, atr_full)
+            atr_vals = atr_full
     pre_atr50_full = pre.get("atr_50")
     if isinstance(pre_atr50_full, list | tuple) and len(pre_atr50_full) >= asof_bar + 1:
         atr_long = list(pre_atr50_full[: asof_bar + 1])
     else:
-        atr_long = calculate_atr(highs, lows, closes, period=50)
+        key_atr50 = make_indicator_fingerprint("atr_50", params={"period": 50}, series=closes)
+        cached_atr50 = _indicator_cache_lookup(key_atr50)
+        if cached_atr50 is not None and len(cached_atr50) >= asof_bar + 1:
+            atr_long = cached_atr50[: asof_bar + 1]
+        else:
+            atr_long_full = calculate_atr(highs, lows, closes, period=50)
+            _indicator_cache_store(key_atr50, atr_long_full)
+            atr_long = atr_long_full
 
     # Volatility shift
-    vol_shift = calculate_volatility_shift(atr_vals, atr_long)
+    vol_key = make_indicator_fingerprint(
+        "volatility_shift",
+        params={},
+        series=[atr_vals, atr_long],
+    )
+    cached_vol_shift = _indicator_cache_lookup(vol_key)
+    if cached_vol_shift is not None and len(cached_vol_shift) >= len(atr_vals):
+        vol_shift = cached_vol_shift[: len(atr_vals)]
+    else:
+        vol_shift = calculate_volatility_shift(atr_vals, atr_long)
+        _indicator_cache_store(vol_key, vol_shift)
 
     # === FEATURE 1: rsi_inv_lag1 ===
     # Use RSI from 1 bar ago (asof_bar - 1)
@@ -213,12 +319,13 @@ def _extract_asof(
     vol_regime = 1.0 if vol_shift_current > 1.0 else 0.0
 
     # === BUILD FEATURES DICT ===
-    atr_series = pd.Series(atr_vals) if atr_vals else pd.Series(dtype=float)
     atr_percentiles: dict[str, dict[str, float]] = {}
-    if not atr_series.empty:
+    if atr_vals:
+        atr_arr = np.asarray(atr_vals, dtype=float)
+        n_atr = atr_arr.size
         for period in (14, 28, 56):
-            if len(atr_series) >= period:
-                window = atr_series.iloc[-period:]
+            if n_atr >= period:
+                window = atr_arr[-period:]
                 atr_percentiles[str(period)] = {
                     "p40": float(np.percentile(window, 40)),
                     "p80": float(np.percentile(window, 80)),
@@ -267,11 +374,36 @@ def _extract_asof(
                 if int(si) <= asof_bar
             ]
         else:
-            swing_high_indices, swing_low_indices, swing_high_prices, swing_low_prices = (
-                detect_swing_points(
-                    pd.Series(highs), pd.Series(lows), pd.Series(closes), fib_config
-                )
+            swing_key = make_indicator_fingerprint(
+                "fib_swings",
+                params={
+                    "atr_depth": fib_config.atr_depth,
+                    "max_swings": fib_config.max_swings,
+                    "min_swings": fib_config.min_swings,
+                },
+                series=[highs, lows, closes],
             )
+            cached_swings = _indicator_cache_lookup(swing_key)
+            if cached_swings:
+                swing_high_indices = cached_swings.get("swing_high_indices", [])
+                swing_low_indices = cached_swings.get("swing_low_indices", [])
+                swing_high_prices = cached_swings.get("swing_high_prices", [])
+                swing_low_prices = cached_swings.get("swing_low_prices", [])
+            else:
+                swing_high_indices, swing_low_indices, swing_high_prices, swing_low_prices = (
+                    detect_swing_points(
+                        pd.Series(highs), pd.Series(lows), pd.Series(closes), fib_config
+                    )
+                )
+                _indicator_cache_store(
+                    swing_key,
+                    {
+                        "swing_high_indices": swing_high_indices,
+                        "swing_low_indices": swing_low_indices,
+                        "swing_high_prices": swing_high_prices,
+                        "swing_low_prices": swing_low_prices,
+                    },
+                )
         fib_levels = calculate_fibonacci_levels(
             swing_high_prices, swing_low_prices, fib_config.levels
         )
@@ -318,7 +450,18 @@ def _extract_asof(
         if isinstance(pre_ema_full, list | tuple) and len(pre_ema_full) >= asof_bar + 1:
             ema_values = list(pre_ema_full[: asof_bar + 1])
         else:
-            ema_values = calculate_ema(closes, period=ema_period)
+            ema_key = make_indicator_fingerprint(
+                "ema",
+                params={"period": ema_period},
+                series=closes,
+            )
+            cached_ema = _indicator_cache_lookup(ema_key)
+            if cached_ema is not None and len(cached_ema) >= asof_bar + 1:
+                ema_values = cached_ema[: asof_bar + 1]
+            else:
+                ema_full = calculate_ema(closes, period=ema_period)
+                _indicator_cache_store(ema_key, ema_full)
+                ema_values = ema_full
         if len(ema_values) >= ema_lookback + 1:
             ema_slope_raw = (ema_values[-1] - ema_values[-1 - ema_lookback]) / ema_values[
                 -1 - ema_lookback
@@ -331,7 +474,18 @@ def _extract_asof(
         if isinstance(pre_adx_full, list | tuple) and len(pre_adx_full) >= asof_bar + 1:
             adx_values = list(pre_adx_full[: asof_bar + 1])
         else:
-            adx_values = calculate_adx(highs, lows, closes, period=14)
+            adx_key = make_indicator_fingerprint(
+                "adx",
+                params={"period": 14},
+                series=list(zip(highs, lows, closes, strict=False)),
+            )
+            cached_adx = _indicator_cache_lookup(adx_key)
+            if cached_adx is not None and len(cached_adx) >= asof_bar + 1:
+                adx_values = cached_adx[: asof_bar + 1]
+            else:
+                adx_full = calculate_adx(highs, lows, closes, period=14)
+                _indicator_cache_store(adx_key, adx_full)
+                adx_values = adx_full
         adx_latest = adx_values[-1] if adx_values else 25.0
         adx_normalized = adx_latest / 100.0
 
@@ -370,6 +524,12 @@ def _extract_asof(
             htf_fibonacci_context = get_htf_fibonacci_context(
                 _candles_for_htf, timeframe=timeframe, symbol=symbol or "tBTCUSD"
             )
+            _log.info(
+                "[FIB-FLOW] HTF fibonacci context created: symbol=%s timeframe=%s available=%s",
+                symbol or "tBTCUSD",
+                timeframe,
+                htf_fibonacci_context.get("available", False),
+            )
         except Exception as e:
             # Don't fail feature extraction if HTF context unavailable
             htf_fibonacci_context = {
@@ -377,6 +537,12 @@ def _extract_asof(
                 "reason": "HTF_CONTEXT_ERROR",
                 "error": str(e),
             }
+            _log.info(
+                "[FIB-FLOW] HTF fibonacci context failed: symbol=%s timeframe=%s error=%s",
+                symbol or "tBTCUSD",
+                timeframe,
+                str(e),
+            )
 
     # === Same timeframe Fibonacci context for entry/exit logic ===
     ltf_fibonacci_context = {}
@@ -391,12 +557,24 @@ def _extract_asof(
                 },
                 timeframe=timeframe,
             )
+            _log.info(
+                "[FIB-FLOW] LTF fibonacci context created: symbol=%s timeframe=%s available=%s",
+                symbol or "tBTCUSD",
+                timeframe,
+                ltf_fibonacci_context.get("available", False),
+            )
         except Exception as e:  # pragma: no cover - defensive
             ltf_fibonacci_context = {
                 "available": False,
                 "reason": "LTF_CONTEXT_ERROR",
                 "error": str(e),
             }
+            _log.info(
+                "[FIB-FLOW] LTF fibonacci context failed: symbol=%s timeframe=%s error=%s",
+                symbol or "tBTCUSD",
+                timeframe,
+                str(e),
+            )
 
     meta = {
         "versions": {
@@ -425,6 +603,16 @@ def _extract_asof(
     _feature_cache[cache_key] = result
     # Move to end to mark as recently used (LRU behavior)
     _feature_cache.move_to_end(cache_key)
+    # Cache the result (with size limit to prevent memory issues)
+    _feature_cache[cache_key] = result
+    # Enforce LRU size
+    try:
+        while len(_feature_cache) > _MAX_CACHE_SIZE:
+            _feature_cache.popitem(last=False)
+    except Exception:
+        # Fallback: simple FIFO eviction if OrderedDict semantics unavailable
+        if len(_feature_cache) > _MAX_CACHE_SIZE:
+            _feature_cache.pop(next(iter(_feature_cache)))
 
     return result
 

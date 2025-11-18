@@ -6,29 +6,36 @@
 ## Problem Analysis
 
 ### 1. Duplicate Parameters
+
 **Root Cause**: The duplicate streak counter was reset too aggressively (on any non-duplicate skip), allowing the TPE sampler to degenerate and suggest the same parameters repeatedly.
 
-**Impact**: 
+**Impact**:
+
 - Studies would terminate early with "Duplicate parameter suggestions limit reached"
 - Wasted computation on repeated parameter sets
 - TPE sampler unable to explore effectively
 
 ### 2. Zero Trades
+
 **Root Cause**: Multiple factors:
+
 - Entry confidence thresholds set too high (>0.5)
 - Fibonacci gate tolerances too strict
 - Multi-timeframe filtering too aggressive
 - Search space didn't include champion's viable parameters
 
 **Impact**:
+
 - Most trials completed but produced no trades
 - Scores around -95 to -100 (hard failure penalties)
 - Few valid trials to compare
 
 ### 3. TPE Sampler Defaults
+
 **Root Cause**: Default Optuna TPE settings without `multivariate=true` and `constant_liar=true` can degenerate in high-dimensional spaces.
 
 **Impact**:
+
 - Poor exploration of parameter space
 - Convergence to local optima
 - Increased duplicate suggestions
@@ -38,6 +45,7 @@
 ### Code Changes
 
 #### 1. Enhanced Duplicate Tracking (`src/core/optimizer/runner.py`)
+
 ```python
 # Before: Reset on any non-duplicate skip
 if payload.get("skipped"):
@@ -50,11 +58,13 @@ if num_trades > 0:
 ```
 
 Added counters:
+
 - `total_trials_attempted`
 - `duplicate_count`
 - `zero_trade_count`
 
 #### 2. Diagnostic Warnings
+
 ```python
 if duplicate_ratio > 0.5:
     print(warning_with_recommendations)
@@ -64,6 +74,7 @@ if zero_trade_ratio > 0.5:
 ```
 
 #### 3. Improved TPE Sampler Defaults
+
 ```python
 if "multivariate" not in kwargs:
     kwargs["multivariate"] = True
@@ -76,6 +87,7 @@ if "n_ei_candidates" not in kwargs:
 ```
 
 #### 4. Search Space Validation
+
 ```python
 def _estimate_optuna_search_space(spec: dict[str, Any]) -> dict[str, Any]:
     """Estimate the size and diversity of the Optuna search space."""
@@ -87,7 +99,9 @@ def _estimate_optuna_search_space(spec: dict[str, Any]) -> dict[str, Any]:
 ```
 
 #### 5. Diagnostics Persistence
+
 Diagnostics now stored in `run_meta.json`:
+
 ```json
 {
   "optuna": {
@@ -105,18 +119,22 @@ Diagnostics now stored in `run_meta.json`:
 ### New Tools
 
 #### 1. Diagnostic Script (`scripts/diagnose_optuna_issues.py`)
+
 ```bash
 python scripts/diagnose_optuna_issues.py run_20251103_110227
 ```
 
 Analyzes:
+
 - Duplicate parameter sets
 - Zero-trade trials
 - Score distributions
 - Provides actionable recommendations
 
-#### 2. Best Practices Documentation (`docs/OPTUNA_BEST_PRACTICES.md`)
+#### 2. Best Practices Documentation (`OPTUNA_BEST_PRACTICES.md`)
+
 Comprehensive guide covering:
+
 - Pre-run checklist
 - Common issues and solutions
 - Recommended workflows
@@ -124,7 +142,9 @@ Comprehensive guide covering:
 - Examples of good vs. problem runs
 
 #### 3. Smoke Test (`scripts/smoke_test_fixes.py`)
+
 Quick validation that fixes are working:
+
 - Tests search space validation
 - Verifies TPE defaults
 - Confirms diagnostic tracking
@@ -132,6 +152,7 @@ Quick validation that fixes are working:
 ### Testing
 
 Created comprehensive test suite (`tests/test_optimizer_duplicate_fixes.py`):
+
 - 8 new tests covering all fixes
 - Tests search space estimation
 - Tests duplicate and zero-trade tracking  
@@ -145,12 +166,14 @@ Created comprehensive test suite (`tests/test_optimizer_duplicate_fixes.py`):
 ### Before Running Optimization
 
 1. **Validate Configuration**
+
 ```bash
 python scripts/preflight_optuna_check.py config.yaml
 python scripts/validate_optimizer_config.py config.yaml
 ```
 
 2. **Run Smoke Test**
+
 ```yaml
 # config_smoke.yaml - Quick 2-5 trial test
 meta:
@@ -164,6 +187,7 @@ python scripts/diagnose_optuna_issues.py <run_id>
 ```
 
 3. **Check Results**
+
 - At least 1-2 trials should produce >0 trades
 - Duplicate ratio should be <30%
 - No excessive warnings
@@ -171,6 +195,7 @@ python scripts/diagnose_optuna_issues.py <run_id>
 ### During Optimization
 
 The runner now automatically:
+
 - Warns about narrow search spaces before starting
 - Tracks duplicates and zero-trades during execution
 - Displays warnings when ratios exceed 50%
@@ -239,19 +264,20 @@ cat results/hparam_search/run_*/run_meta.json | jq '.optuna.diagnostics'
 3. Use continuous parameters when possible (no step size)
 4. Aim for >50 discrete combinations or include continuous params
 5. Monitor first 10-20 trials and adjust if issues appear
-6. Read `docs/OPTUNA_BEST_PRACTICES.md` for detailed guidance
+6. Read `OPTUNA_BEST_PRACTICES.md` for detailed guidance
 
 ## Files Changed
 
 1. `src/core/optimizer/runner.py` - Core fixes
 2. `scripts/diagnose_optuna_issues.py` - Diagnostic tool (new)
 3. `tests/test_optimizer_duplicate_fixes.py` - Tests (new)
-4. `docs/OPTUNA_BEST_PRACTICES.md` - Documentation (new)
+4. `OPTUNA_BEST_PRACTICES.md` - Documentation (new)
 5. `scripts/smoke_test_fixes.py` - Validation (new)
 
 ## Next Steps
 
 For future improvements:
+
 1. Add automatic search space adjustment based on early trials
 2. Implement adaptive duplicate streak limits
 3. Add more sophisticated zero-trade prediction

@@ -19,6 +19,7 @@
 ## Methodology
 
 ### Test Design
+
 - **Baseline**: Test Fibonacci features in isolation
 - **Combinations**: Test Fibonacci × Context features
 - **Timeframes**: 1W, 1D, 6h, 3h, 1h, 30m, 15m (7 timeframes total)
@@ -26,12 +27,14 @@
 - **Total Combinations Tested**: 11 different feature combinations per timeframe
 
 ### Context Features Tested
+
 1. **Volatility Context**: `volatility_shift`, `volatility_shift_ma3`, `vol_regime`
 2. **Trend Context**: `adx`, `ema_slope_20`, `price_vs_ema20`
 3. **Momentum Context**: `rsi_inv`, `rsi_vol_interaction`
 4. **Price Position**: `bb_position_inv_ma3`
 
 ### Combination Types
+
 - **Single Context**: Fib × Single Context Feature
 - **Multi Context**: Fib × Volatility × Trend (e.g., `fib_prox_x_vol_x_adx`)
 
@@ -67,6 +70,7 @@
 | fib_prox_x_vol_shift | -0.4716 | 0.002 | — |
 
 **Key Insights:**
+
 - 🔥 **EXPLOSIVE improvement on weekly macro timeframe**
 - ✅ EMA slope provides +22.7% improvement (strongest on any timeframe)
 - ✅ RSI inversion also extremely strong (+23.1%)
@@ -86,6 +90,7 @@
 | fib_dist_x_price_vs_ema | +0.2967 | <0.001 | — |
 
 **Key Insights:**
+
 - ✅ Multi-context (`vol × rsi_vol`) provides best improvement on 1D
 - ✅ Baseline is already very strong (IC = -0.35)
 - ✅ All combinations maintain statistical significance
@@ -104,6 +109,7 @@
 | fib_prox_x_rsi_vol_int | -0.1890 | <0.001 | +0.4% |
 
 **Key Insights:**
+
 - ✅ **ADX is the "golden context"** for Fibonacci on 6h
 - ✅ Multi-context (`fib × vol × adx`) provides consistent improvement
 - ✅ RSI inversion works symmetrically (positive IC for mean reversion)
@@ -121,6 +127,7 @@
 | fib_dist_x_price_vs_ema | +0.0622 | <0.001 | — |
 
 **Key Insights:**
+
 - ✅ Combinations maintain baseline strength
 - ✅ RSI inversion provides slight edge
 - ⚠️ Less improvement than 6h (baseline already strong)
@@ -138,6 +145,7 @@
 | fib_prox_x_bb_position | +0.0087 | 0.32 | +144% |
 
 **Key Insights:**
+
 - 🔥 **FIBONACCI ALONE IS USELESS ON 1H** (IC = -0.0036, not significant)
 - 🔥 **FIB + EMA SLOPE = STRONG EDGE** (IC = -0.0395, p<0.001)
 - 🔥 **FIB + PRICE DEVIATION = MEDIUM EDGE** (IC = +0.0256, p<0.01)
@@ -157,6 +165,7 @@
 | fib05_x_rsi_inv | +0.0274 | <0.001 | — |
 
 **Key Insights:**
+
 - ✅ EMA slope provides consistent +45% improvement
 - ✅ Vol regime is second-best context for 30m
 - ✅ Baseline is weak but significant, context makes it strong
@@ -173,6 +182,7 @@
 | fib05_x_rsi_inv | +0.0190 | 0.078 | — |
 
 **Key Insights:**
+
 - ❌ **FIBONACCI DOES NOT WORK ON 15M** (even with context)
 - ⚠️ All combinations lose statistical significance
 - 🚫 **RECOMMENDATION**: Avoid Fibonacci on 15m timeframe
@@ -231,9 +241,11 @@ bb_position_inv_ma3 = (1 - ((close - BB_lower) / (BB_upper - BB_lower))).rolling
 ## Top 3 Validated Combinations
 
 ### 1. **fib_prox_x_adx** (Best for 6h)
+
 ```python
 fib_prox_x_adx = fib_prox_score * (adx / 100)
 ```
+
 - **Use Case**: Trend continuation setups on 6h
 - **Logic**: Fibonacci proximity weighted by trend strength
 - **Edge**: When price is near Fibonacci AND strong trend → high probability continuation
@@ -243,9 +255,11 @@ fib_prox_x_adx = fib_prox_score * (adx / 100)
 ---
 
 ### 2. **fib05_x_ema_slope** (Best for 1h)
+
 ```python
 fib05_x_ema_slope = fib05_prox_atr * ema_slope_20
 ```
+
 - **Use Case**: Mean reversion timing on 1h
 - **Logic**: Fibonacci 0.5 proximity weighted by trend direction
 - **Edge**: When price is near Fib 0.5 AND trend is slowing → reversal setup
@@ -255,9 +269,11 @@ fib05_x_ema_slope = fib05_prox_atr * ema_slope_20
 ---
 
 ### 3. **fib_dist_x_price_vs_ema** (Universal)
+
 ```python
 fib_dist_x_price_vs_ema = fib_dist_min_atr * abs(price_vs_ema20)
 ```
+
 - **Use Case**: Overstretched reversal setups (all timeframes)
 - **Logic**: Distance to nearest Fib weighted by price deviation from EMA
 - **Edge**: When price is far from Fib AND overstretched from EMA → mean reversion
@@ -284,7 +300,9 @@ fib_dist_x_price_vs_ema = fib_dist_min_atr * abs(price_vs_ema20)
 ## Why Combinations Work
 
 ### Problem: Fibonacci Alone is Ambiguous
+
 Fibonacci levels don't tell you:
+
 - **Is this a bounce zone or a breakout zone?**
 - **Is the trend strong or weak?**
 - **Is momentum building or fading?**
@@ -292,11 +310,13 @@ Fibonacci levels don't tell you:
 ### Solution: Context Features Answer These Questions
 
 **Example: Fib 0.618 Level**
+
 - **Fib alone**: Price is near 0.618 → ???
 - **Fib + ADX > 30**: Price is near 0.618 in strong trend → **CONTINUATION SETUP** ✅
 - **Fib + ADX < 20**: Price is near 0.618 in weak trend → **REVERSAL SETUP** ✅
 
 **Example: Fib 0.5 on 1h**
+
 - **Fib alone**: IC = -0.0036 (noise)
 - **Fib + EMA Slope < 0**: Price near 0.5 in downtrend → **SHORT RALLY** ✅
 - **Result**: IC = -0.0395 (strong signal)
@@ -324,11 +344,13 @@ feats.update({
 ```
 
 **Update feature count:**
+
 ```python
 "feature_count": 14,  # 11 existing + 3 new combinations
 ```
 
 **Update version:**
+
 ```python
 "features_v17_fibonacci_combinations": True,
 ```
@@ -338,16 +360,19 @@ feats.update({
 ### Phase 2: Multi-Timeframe Strategy (future)
 
 **6h Strategy (Trend Following):**
+
 - Use `fib_prox_x_adx` as primary signal
 - Entry: ADX > 30 AND price near Fib 0.618
 - Exit: ADX < 20 OR price breaks Fib 0.382
 
 **1h Strategy (Mean Reversion):**
+
 - Use `fib05_x_ema_slope` as primary signal
 - Entry: EMA slope turning AND price near Fib 0.5
 - Exit: Price returns to EMA20
 
 **Universal Strategy (Overstretched):**
+
 - Use `fib_dist_x_price_vs_ema` as confirmation
 - Entry: When both Fib distance AND EMA deviation are high
 - Exit: When price returns to nearest Fib level
@@ -357,16 +382,19 @@ feats.update({
 ## Validation Results
 
 ### Statistical Significance
+
 - ✅ All top 3 combinations are **highly significant** (p < 0.01)
 - ✅ Improvement is **consistent across timeframes**
 - ✅ Edge is **stable in different regimes** (tested in Bear analysis)
 
 ### Robustness
+
 - ✅ Combinations work in **Bull, Bear, and Ranging regimes**
 - ✅ No overfitting (simple multiplicative combinations)
 - ✅ Interpretable (each feature has clear economic meaning)
 
 ### Performance
+
 - ✅ **6h**: +6.2% improvement (strong baseline → stronger)
 - ✅ **1h**: +1009% improvement (no edge → strong edge)
 - ✅ **Universal**: Works across all tested timeframes
@@ -376,16 +404,19 @@ feats.update({
 ## Next Steps
 
 ### Immediate (30 minutes)
+
 1. ✅ Add top 3 combinations to `features.py`
 2. ✅ Update tests to validate new features
 3. ✅ Re-run comprehensive analysis with combinations
 
 ### Short-term (1-2 days)
+
 1. Test combinations in backtesting
 2. Validate in paper trading
 3. Monitor live performance
 
 ### Long-term (1-2 weeks)
+
 1. Implement "Essential 4" context features:
    - `trend_confluence` (EMA slope correlation)
    - `atr_shift` (ATR14/ATR50 ratio)

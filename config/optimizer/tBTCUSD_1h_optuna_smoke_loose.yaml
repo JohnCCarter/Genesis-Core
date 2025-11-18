@@ -5,22 +5,22 @@
   warmup_bars: 150
   runs:
     strategy: optuna
-    max_trials: 80
+    max_trials: 10
     max_concurrent: 4
     resume: false
     use_sample_range: true
     sample_start: 2024-10-22
     sample_end: 2025-10-01
     optuna:
-      storage: sqlite:///results/hparam_search/storage/optuna_tBTCUSD_1h_smoke_loose.db
-      study_name: smoke_loose
+      storage: sqlite:///results/hparam_search/storage/optuna_tBTCUSD_1h_smoke_loose_20251113b.db
+      study_name: smoke_loose_20251113b
       bootstrap_random_trials: 32
       bootstrap_seed: 42
       sampler:
         name: tpe
         kwargs:
-          n_startup_trials: 75
-          n_ei_candidates: 768
+          n_startup_trials: 100
+          n_ei_candidates: 1024
           constant_liar: true
           multivariate: true
       pruner:
@@ -41,7 +41,7 @@ parameters:
   thresholds:
     entry_conf_overall:
       type: float
-      low: 0.14
+      low: 0.25
       high: 0.50
     regime_proba:
       balanced:
@@ -67,76 +67,81 @@ parameters:
     signal_adaptation:
       type: grid
       values:
+        # Genombrott-konfiguration (baseline)
         - atr_period: 14
           zones:
             low:
-              entry_conf_overall: 0.20
+              entry_conf_overall: 0.25
               regime_proba:
-                { ranging: 0.30, bull: 0.30, bear: 0.30, balanced: 0.30 }
+                { ranging: 0.45, bull: 0.45, bear: 0.45, balanced: 0.45 }
             mid:
-              entry_conf_overall: 0.24
+              entry_conf_overall: 0.28
               regime_proba:
-                { ranging: 0.30, bull: 0.30, bear: 0.30, balanced: 0.30 }
-            high:
-              entry_conf_overall: 0.30
-              regime_proba:
-                { ranging: 0.30, bull: 0.30, bear: 0.30, balanced: 0.30 }
-        - atr_period: 14
-          zones:
-            low:
-              entry_conf_overall: 0.22
-              regime_proba:
-                { ranging: 0.32, bull: 0.32, bear: 0.32, balanced: 0.32 }
-            mid:
-              entry_conf_overall: 0.26
-              regime_proba:
-                { ranging: 0.34, bull: 0.34, bear: 0.34, balanced: 0.34 }
+                { ranging: 0.50, bull: 0.50, bear: 0.50, balanced: 0.50 }
             high:
               entry_conf_overall: 0.32
               regime_proba:
-                { ranging: 0.36, bull: 0.36, bear: 0.36, balanced: 0.36 }
+                { ranging: 0.55, bull: 0.55, bear: 0.55, balanced: 0.55 }
+        # Lite lägre (mer aggressiv)
         - atr_period: 14
           zones:
             low:
-              entry_conf_overall: 0.18
+              entry_conf_overall: 0.23
               regime_proba:
-                { ranging: 0.28, bull: 0.28, bear: 0.28, balanced: 0.28 }
+                { ranging: 0.42, bull: 0.42, bear: 0.42, balanced: 0.42 }
             mid:
-              entry_conf_overall: 0.22
-              regime_proba:
-                { ranging: 0.30, bull: 0.30, bear: 0.30, balanced: 0.30 }
-            high:
-              entry_conf_overall: 0.28
-              regime_proba:
-                { ranging: 0.32, bull: 0.32, bear: 0.32, balanced: 0.32 }
-        - atr_period: 14
-          zones:
-            low:
-              entry_conf_overall: 0.16
-              regime_proba:
-                { ranging: 0.26, bull: 0.26, bear: 0.26, balanced: 0.26 }
-            mid:
-              entry_conf_overall: 0.20
-              regime_proba:
-                { ranging: 0.28, bull: 0.28, bear: 0.28, balanced: 0.28 }
-            high:
               entry_conf_overall: 0.26
               regime_proba:
-                { ranging: 0.30, bull: 0.30, bear: 0.30, balanced: 0.30 }
+                { ranging: 0.47, bull: 0.47, bear: 0.47, balanced: 0.47 }
+            high:
+              entry_conf_overall: 0.30
+              regime_proba:
+                { ranging: 0.52, bull: 0.52, bear: 0.52, balanced: 0.52 }
+        # Lite högre (mer konservativ)
         - atr_period: 14
           zones:
             low:
-              entry_conf_overall: 0.24
+              entry_conf_overall: 0.27
               regime_proba:
-                { ranging: 0.34, bull: 0.34, bear: 0.34, balanced: 0.34 }
+                { ranging: 0.48, bull: 0.48, bear: 0.48, balanced: 0.48 }
             mid:
               entry_conf_overall: 0.30
               regime_proba:
-                { ranging: 0.36, bull: 0.36, bear: 0.36, balanced: 0.36 }
+                { ranging: 0.53, bull: 0.53, bear: 0.53, balanced: 0.53 }
             high:
-              entry_conf_overall: 0.36
+              entry_conf_overall: 0.34
               regime_proba:
-                { ranging: 0.40, bull: 0.40, bear: 0.40, balanced: 0.40 }
+                { ranging: 0.58, bull: 0.58, bear: 0.58, balanced: 0.58 }
+        # Variation med asymmetriska regime-trösklar
+        - atr_period: 14
+          zones:
+            low:
+              entry_conf_overall: 0.25
+              regime_proba:
+                { ranging: 0.48, bull: 0.43, bear: 0.43, balanced: 0.45 }
+            mid:
+              entry_conf_overall: 0.28
+              regime_proba:
+                { ranging: 0.53, bull: 0.48, bear: 0.48, balanced: 0.50 }
+            high:
+              entry_conf_overall: 0.32
+              regime_proba:
+                { ranging: 0.58, bull: 0.53, bear: 0.53, balanced: 0.55 }
+        # Bred tolerans (maximal aggressivitet)
+        - atr_period: 14
+          zones:
+            low:
+              entry_conf_overall: 0.20
+              regime_proba:
+                { ranging: 0.38, bull: 0.38, bear: 0.38, balanced: 0.38 }
+            mid:
+              entry_conf_overall: 0.24
+              regime_proba:
+                { ranging: 0.43, bull: 0.43, bear: 0.43, balanced: 0.43 }
+            high:
+              entry_conf_overall: 0.28
+              regime_proba:
+                { ranging: 0.48, bull: 0.48, bear: 0.48, balanced: 0.48 }
   gates:
     hysteresis_steps:
       type: int
@@ -214,8 +219,8 @@ parameters:
         value: pass
       tolerance_atr:
         type: float
-        low: 0.25
-        high: 1.00
+        low: 0.20
+        high: 0.80
       long_min_level:
         type: fixed
         value: 0.382
@@ -232,8 +237,8 @@ parameters:
         value: pass
       tolerance_atr:
         type: float
-        low: 0.25
-        high: 1.00
+        low: 0.20
+        high: 0.80
       long_max_level:
         type: float
         low: 0.700

@@ -20,39 +20,39 @@
       "thresholds": {
         "entry_conf_overall": 0.35,
         "regime_proba": {
-          "ranging": 0.8,
-          "bull": 0.7,
-          "bear": 0.7,
-          "balanced": 0.7
+          "ranging": 0.52,
+          "bull": 0.42,
+          "bear": 0.42,
+          "balanced": 0.48
         },
         "signal_adaptation": {
           "atr_period": 14,
           "zones": {
             "low": {
-              "entry_conf_overall": 0.36,
+              "entry_conf_overall": 0.25,
               "regime_proba": {
-                "ranging": 0.7,
-                "bull": 0.6,
-                "bear": 0.6,
-                "balanced": 0.7
+                "ranging": 0.5,
+                "bull": 0.45,
+                "bear": 0.45,
+                "balanced": 0.5
               }
             },
             "mid": {
-              "entry_conf_overall": 0.42,
+              "entry_conf_overall": 0.28,
               "regime_proba": {
-                "ranging": 0.8,
-                "bull": 0.7,
-                "bear": 0.7,
-                "balanced": 0.8
+                "ranging": 0.55,
+                "bull": 0.5,
+                "bear": 0.5,
+                "balanced": 0.55
               }
             },
             "high": {
-              "entry_conf_overall": 0.48,
+              "entry_conf_overall": 0.32,
               "regime_proba": {
-                "ranging": 0.88,
-                "bull": 0.78,
-                "bear": 0.78,
-                "balanced": 0.88
+                "ranging": 0.6,
+                "bull": 0.55,
+                "bear": 0.55,
+                "balanced": 0.6
               }
             }
           }
@@ -60,18 +60,9 @@
       },
       "risk": {
         "risk_map": [
-          [
-            0.45,
-            0.015
-          ],
-          [
-            0.55,
-            0.025
-          ],
-          [
-            0.65,
-            0.035
-          ]
+          [0.45, 0.015],
+          [0.55, 0.025],
+          [0.65, 0.035]
         ]
       },
       "exit": {
@@ -99,7 +90,7 @@
         "entry": {
           "enabled": true,
           "tolerance_atr": 0.5,
-          "long_max_level": 0.618,
+          "long_max_level": 0.786,
           "short_min_level": 0.382
         }
       },
@@ -107,9 +98,13 @@
         "entry": {
           "enabled": true,
           "tolerance_atr": 0.5,
-          "long_max_level": 0.618,
+          "long_max_level": 0.786,
           "short_min_level": 0.382
         }
+      },
+      "multi_timeframe": {
+        "use_htf_block": false,
+        "allow_ltf_override": true
       }
     },
     "constraints": {

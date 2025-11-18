@@ -1,32 +1,34 @@
 #!/usr/bin/env python3
 """
-Precompute features v17 (including Fibonacci combinations) in vectorized mode.
-This script generates features compatible with the updated features.py v17.
+Precompute features v17 (including Fibonacci combinations) using the same
+runtime pipeline (_extract_asof) to guarantee parity.
 """
 import argparse
 import sys
 import time
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
-# Add project root to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Add project root + src to path
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+SRC_ROOT = PROJECT_ROOT / "src"
+sys.path.insert(0, str(PROJECT_ROOT))
+sys.path.insert(0, str(SRC_ROOT))
 
-from src.core.indicators.fibonacci import (
-    FibonacciConfig,
-    calculate_fibonacci_features_vectorized,
-)
-from src.core.indicators.vectorized import (
-    calculate_adx_vectorized,
-    calculate_atr_vectorized,
-    calculate_bollinger_bands_vectorized,
-    calculate_ema_vectorized,
-    calculate_rsi_vectorized,
-)
+from core.strategy.features_asof import extract_features_backtest  # noqa: E402
 
 
-def precompute_features_v17(symbol: str, timeframe: str, verbose: bool = True) -> dict:
+def precompute_features_v17(
+    symbol: str,
+    timeframe: str,
+    *,
+    verbose: bool = True,
+    start_index: int | None = None,
+    end_index: int | None = None,
+    candles_file: Path | None = None,
+) -> dict:
     """
     Precompute features v17 with Fibonacci combinations.
 
@@ -35,7 +37,11 @@ def precompute_features_v17(symbol: str, timeframe: str, verbose: bool = True) -
     start_time = time.time()
 
     # Load candle data (try two-layer structure first, fallback to legacy)
-    candles_path = Path(f"data/curated/v1/candles/{symbol}_{timeframe}.parquet")
+    candles_path = (
+        Path(candles_file)
+        if candles_file is not None
+        else Path(f"data/curated/v1/candles/{symbol}_{timeframe}.parquet")
+    )
 
     if not candles_path.exists():
         legacy_path = Path(f"data/candles/{symbol}_{timeframe}.parquet")
@@ -53,97 +59,41 @@ def precompute_features_v17(symbol: str, timeframe: str, verbose: bool = True) -
 
     df = pd.read_parquet(candles_path)
 
+    if start_index is not None or end_index is not None:
+        start = start_index or 0
+        stop = end_index if end_index is not None else len(df)
+        df = df.iloc[start:stop].reset_index(drop=True)
+        if verbose:
+            print(f"[SLICE] Using rows {start}:{stop} ({len(df)} samples)")
+
     if verbose:
-        print(f"[VECTORIZE] Computing features v17 for {len(df):,} samples...")
+        print(f"[RUNTIME] Computing features v17 for {len(df):,} samples...")
 
-    # === CALCULATE BASE INDICATORS ===
-    close = df["close"]
-    high = df["high"]
-    low = df["low"]
-
-    # EMA (timeframe-specific parameters for slope calculation)
-    EMA_SLOPE_PARAMS = {
-        "30m": {"ema_period": 50, "lookback": 20},
-        "1h": {"ema_period": 20, "lookback": 5},
+    candles = {
+        "open": df["open"].tolist(),
+        "high": df["high"].tolist(),
+        "low": df["low"].tolist(),
+        "close": df["close"].tolist(),
+        "volume": df.get("volume", pd.Series([0.0] * len(df))).tolist(),
+        "timestamp": df["timestamp"].tolist(),
     }
-    params = EMA_SLOPE_PARAMS.get(timeframe, {"ema_period": 20, "lookback": 5})
 
-    ema = calculate_ema_vectorized(close, period=params["ema_period"])
+    rows: list[dict[str, float]] = []
+    for asof_bar in range(len(df)):
+        feats, _ = extract_features_backtest(candles, asof_bar, timeframe=timeframe, symbol=symbol)
+        if not feats:
+            continue
+        feats["timestamp"] = candles["timestamp"][asof_bar]
+        rows.append(feats)
 
-    # RSI
-    rsi = calculate_rsi_vectorized(close, period=14)
+    if not rows:
+        raise RuntimeError("No features computed; insufficient bars for selected timeframe.")
 
-    # ATR
-    atr = calculate_atr_vectorized(high, low, close, period=14)
-
-    # ADX
-    adx = calculate_adx_vectorized(high, low, close, period=14)
-
-    # Bollinger Bands
-    bb_upper, bb_middle, bb_lower = calculate_bollinger_bands_vectorized(
-        close, period=20, std_dev=2.0
+    features_df = pd.DataFrame(rows)
+    ordered_columns = ["timestamp"] + sorted(
+        col for col in features_df.columns if col != "timestamp"
     )
-
-    # === CALCULATE DERIVED FEATURES ===
-
-    # Volatility features
-    volatility_shift = (atr / atr.shift(20)).fillna(1.0)
-    volatility_shift_ma3 = volatility_shift.rolling(3).mean()
-    vol_regime = (atr > atr.rolling(50).quantile(0.75)).astype(float)
-
-    # RSI features
-    rsi_inv = -rsi / 100
-    rsi_inv_lag1 = rsi_inv.shift(1)
-    rsi_vol_interaction = (rsi / 100) * volatility_shift
-
-    # Bollinger features
-    bb_position = (close - bb_lower) / (bb_upper - bb_lower + 1e-8)
-    bb_position_inv = 1.0 - bb_position
-    bb_position_inv_ma3 = bb_position_inv.rolling(3).mean()
-
-    # EMA Slope (with timeframe-specific parameters)
-    ema_slope = ema.diff(params["lookback"]) / ema.shift(params["lookback"])
-    ema_slope = ema_slope.clip(-0.10, 0.10)
-
-    # === CALCULATE FIBONACCI FEATURES ===
-    fib_config = FibonacciConfig(atr_depth=3.0, max_swings=8, min_swings=1)
-    fib_features_df = calculate_fibonacci_features_vectorized(df, fib_config)
-
-    # === CALCULATE FIBONACCI COMBINATION FEATURES ===
-
-    # 1. fib05_x_ema_slope (CHAMPION)
-    fib05_x_ema_slope = fib_features_df["fib05_prox_atr"] * ema_slope
-
-    # 2. fib_prox_x_adx (TREND CONTINUATION)
-    fib_prox_x_adx = fib_features_df["fib_prox_score"] * (adx / 100.0)
-
-    # 3. fib05_x_rsi_inv (MEAN REVERSION)
-    fib05_x_rsi_inv = fib_features_df["fib05_prox_atr"] * rsi_inv
-
-    # === ASSEMBLE FINAL FEATURES DATAFRAME ===
-    features_df = pd.DataFrame(
-        {
-            # Timestamp
-            "timestamp": df["timestamp"],
-            # Original 5 features
-            "rsi_inv_lag1": rsi_inv_lag1.clip(-1.0, 1.0),
-            "volatility_shift_ma3": volatility_shift_ma3.clip(0.5, 2.0),
-            "bb_position_inv_ma3": bb_position_inv_ma3.clip(0.0, 1.0),
-            "rsi_vol_interaction": rsi_vol_interaction.clip(-2.0, 2.0),
-            "vol_regime": vol_regime,
-            # Fibonacci 6 features
-            "fib_dist_min_atr": fib_features_df["fib_dist_min_atr"].clip(0.0, 10.0),
-            "fib_dist_signed_atr": fib_features_df["fib_dist_signed_atr"].clip(-10.0, 10.0),
-            "fib_prox_score": fib_features_df["fib_prox_score"].clip(0.0, 1.0),
-            "fib0618_prox_atr": fib_features_df["fib0618_prox_atr"].clip(0.0, 1.0),
-            "fib05_prox_atr": fib_features_df["fib05_prox_atr"].clip(0.0, 1.0),
-            "swing_retrace_depth": fib_features_df["swing_retrace_depth"].clip(0.0, 1.0),
-            # Fibonacci Combination 3 features (v17)
-            "fib05_x_ema_slope": fib05_x_ema_slope.clip(-0.10, 0.10),
-            "fib_prox_x_adx": fib_prox_x_adx.clip(0.0, 1.0),
-            "fib05_x_rsi_inv": fib05_x_rsi_inv.clip(-1.0, 1.0),
-        }
-    )
+    features_df = features_df.reindex(columns=ordered_columns)
 
     compute_time = time.time() - start_time
 
@@ -193,8 +143,8 @@ def precompute_features_v17(symbol: str, timeframe: str, verbose: bool = True) -
         "samples_per_sec": len(features_df) / compute_time,
         "nan_count": nan_count,
         "inf_count": inf_count,
-        "ema_slope_params": params,
         "version": "v17_fibonacci_combinations",
+        "feature_columns": ordered_columns[1:],
     }
 
 
@@ -203,6 +153,13 @@ def main():
     parser.add_argument("--symbol", default="tBTCUSD", help="Trading symbol")
     parser.add_argument("--timeframe", required=True, help="Timeframe (1D, 6h, 3h, 1h, 30m)")
     parser.add_argument("--quiet", action="store_true", help="Suppress verbose output")
+    parser.add_argument("--start-index", type=int, default=None, help="Optional start row index")
+    parser.add_argument(
+        "--end-index", type=int, default=None, help="Optional end row index (exclusive)"
+    )
+    parser.add_argument(
+        "--candles-file", type=Path, default=None, help="Optional custom candles parquet"
+    )
     args = parser.parse_args()
 
     verbose = not args.quiet
@@ -216,7 +173,14 @@ def main():
     print()
 
     try:
-        summary = precompute_features_v17(args.symbol, args.timeframe, verbose=verbose)
+        summary = precompute_features_v17(
+            args.symbol,
+            args.timeframe,
+            verbose=verbose,
+            start_index=args.start_index,
+            end_index=args.end_index,
+            candles_file=args.candles_file,
+        )
 
         if verbose:
             print()
@@ -229,9 +193,7 @@ def main():
             print(f"Compute Time: {summary['compute_time']:.2f}s")
             print(f"Speed: {summary['samples_per_sec']:.0f} samples/sec")
             print(f"Version: {summary['version']}")
-            print(
-                f"EMA Slope Params: EMA={summary['ema_slope_params']['ema_period']}, Lookback={summary['ema_slope_params']['lookback']}"
-            )
+            print(f"Columns: {len(summary['feature_columns'])}")
 
             if summary["nan_count"] > 0 or summary["inf_count"] > 0:
                 print("\n[WARNING] Quality issues detected:")

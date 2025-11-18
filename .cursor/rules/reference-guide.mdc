@@ -1,6 +1,12 @@
+---
+description: Reference guide for Genesis-Core project
+alwaysApply: true
+---
+
 # Genesis-Core Project Rules
 
 ## Master Rules
+
 - **Pause on Uncertainty**: Always verify with codebase_search + grep. No assumptions.
 - **Planning Mode**: Always lay out steps before acting.
 - **Tools Usage**: Use codebase_search and grep when uncertainty exists.
@@ -15,6 +21,7 @@
 **Genesis-Core is in STABILIZATION PHASE** - Code stability > New features
 
 Every line of code must either:
+
 - ✅ Solve a concrete problem, OR
 - ✅ Increase reliability, performance, or readability
 
@@ -31,6 +38,7 @@ Every line of code must either:
 ### Green-Light Checklist
 
 Before any code is approved, it MUST pass all:
+
 1. ✅ Solves a defined need/problem
 2. ✅ Does not unexpectedly affect other parts
 3. ✅ Has unit tests or validated measurement point
@@ -38,6 +46,7 @@ Before any code is approved, it MUST pass all:
 5. ✅ Passes Ruff + pytest without warnings
 
 ### Focus Areas (Current Phase)
+
 - **Robustness**: Test extreme inputs, edge cases
 - **Performance profiling**: Identify bottlenecks with timing
 - **Minimized complexity**: Fewer code paths
@@ -45,6 +54,7 @@ Before any code is approved, it MUST pass all:
 - **Small diffs**: Keep changes < 100 lines for easier validation
 
 ### Systematic Review Routine
+
 1. Every diff < 100 lines → easier to validate
 2. Run Ruff + pytest + sanity checks before merge
 3. No code without test or at minimum docstring with purpose & usage
@@ -53,6 +63,7 @@ Before any code is approved, it MUST pass all:
 ## Code Standards
 
 ### Python Version & Style
+
 - Target Python 3.11+
 - Use modern type hints: `dict` not `Dict`, `list` not `List`, `X | None` not `Optional[X]`
 - Line length: 100 characters
@@ -60,6 +71,7 @@ Before any code is approved, it MUST pass all:
 - Follow ruff linting rules (E, W, F, I, B, C4, UP)
 
 ### Project Structure
+
 ```
 Genesis-Core/
 ├── src/core/           # Main application code
@@ -78,6 +90,7 @@ Genesis-Core/
 ```
 
 ### API & Exchange Rules
+
 - **Paper Trading Only**: Always use TEST symbols (tTESTBTC:TESTUSD, etc.)
 - **Whitelist Enforcement**: Only allow specific TEST-spot pairs
 - **API Keys**: Load from .env file (BITFINEX_API_KEY, BITFINEX_API_SECRET)
@@ -85,6 +98,7 @@ Genesis-Core/
 - **JSON Serialization**: Always use `json.dumps(body, separators=(",", ":"))` for signing
 
 ### Strategy Pipeline
+
 1. **Feature Extraction** (P1): EMA delta percentage + RSI from candles
 2. **Probability Model** (P2): predict_proba with calibration
 3. **Confidence Calculation** (P3): Confidence scores based on probabilities
@@ -93,6 +107,7 @@ Genesis-Core/
 6. **E2E Pipeline** (P4): Complete evaluation flow with observability
 
 ### FastAPI Endpoints
+
 - `/ui` - Trading dashboard interface
 - `/strategy/evaluate` - Run complete strategy pipeline
 - `/public/candles` - Fetch public market data
@@ -111,12 +126,14 @@ Genesis-Core/
 ## Development Workflow
 
 ### Before Making Changes
+
 1. Read existing code with `read_file`
 2. Search for related code with `codebase_search`
 3. Verify patterns with `grep`
 4. Create TODO list with `todo_write` for complex tasks
 
 ### When Making Changes
+
 1. **Never output code blocks** - use edit tools instead
 2. **Prefer editing existing files** over creating new ones
 3. **Never create documentation files** unless explicitly requested
@@ -129,6 +146,7 @@ Genesis-Core/
    - Prevents duplicate/conflicting documentation
 
 ### Testing & Validation
+
 1. Run tests before committing: `python -m pytest`
 2. Check formatting: `python -m black --check src`
 3. Check linting: `python -m ruff check src`
@@ -136,6 +154,7 @@ Genesis-Core/
 5. Verify no secrets: `detect-secrets scan` <!-- pragma: allowlist secret (docs) -->
 
 ### Git Workflow
+
 1. **Never commit sensitive files**: .env, .nonce_tracker.json, dev.overrides.local.json
 2. **Use descriptive commit messages** with prefixes:
    - `feat:` for new features
@@ -148,12 +167,14 @@ Genesis-Core/
 ## Security Rules
 
 ### Sensitive Data
+
 - **Never expose API keys** in code or commits
 - **Use environment variables** for all secrets
 - **Redact sensitive data** in logs using logging_redaction
 - **Force TEST symbols** for all paper trading operations
 
 ### Pre-commit Hooks
+
 - black (code formatting)
 - ruff (linting with fixes)
 - bandit (security scanning)
@@ -166,12 +187,14 @@ Genesis-Core/
 ## Error Handling
 
 ### Common Issues & Solutions
+
 1. **"invalid key" error**: Check JSON serialization consistency between signing and request body
 2. **"Ingen giltig order"**: Verify model exists for symbol/timeframe, check risk configuration
 3. **Nonce errors**: Use bump_nonce() for retry, ensure proper nonce tracking
 4. **WebSocket timeouts**: Implement exponential backoff with reconnection logic
 
 ### Debugging Steps
+
 1. Check `/debug/auth` endpoint for authentication issues
 2. Verify `/auth/check` returns success
 3. Review `/metrics` for system state
@@ -180,17 +203,20 @@ Genesis-Core/
 ## Configuration Management
 
 ### Model Registry
+
 - Models stored in `config/models/{symbol}_{timeframe}.json`
 - Registry tracks all available models in `config/models/registry.json`
 - Each model includes: weights, calibration, schema, version
 
 ### Risk Management
+
 - Position sizing based on confidence and risk map
 - Stop-loss and take-profit thresholds
 - Maximum position limits
 - Paper trading enforcement
 
 ### Development Overrides
+
 - Local overrides in `dev.overrides.local.json` (gitignored)
 - Example template in `dev.overrides.example.json`
 - Override any configuration without modifying defaults
@@ -198,12 +224,14 @@ Genesis-Core/
 ## Code Quality Standards
 
 ### Functions Should Be
+
 - **Pure when possible**: No side effects, deterministic
 - **Well-typed**: Complete type hints for all parameters and returns
 - **Documented**: Clear docstrings explaining purpose and usage
 - **Tested**: Unit tests for business logic, integration tests for IO
 
 ### Avoid
+
 - Global state except for singletons (metrics, settings)
 - Mutable default arguments
 - Broad exception catching without logging
@@ -213,6 +241,7 @@ Genesis-Core/
 ## Response Format
 
 ### When Reporting Progress
+
 - Use Swedish language
 - Structure with clear headings
 - List completed items with ✅
@@ -220,6 +249,7 @@ Genesis-Core/
 - Explain next steps if any
 
 ### When Encountering Issues
+
 - Explain the problem clearly
 - Show relevant error messages
 - Propose solution options
@@ -228,6 +258,7 @@ Genesis-Core/
 ## Project-Specific Context
 
 ### Current State (as of October 2025)
+
 - P1-P3 features complete: feature extraction, probability model, confidence/regime/decision
 - P4 E2E pipeline with observability implemented
 - All major endpoints functional
@@ -236,6 +267,7 @@ Genesis-Core/
 - Security hardening completed (no .env in git history)
 
 ### Technology Stack
+
 - Python 3.11+
 - FastAPI for REST API
 - httpx for HTTP client
@@ -246,6 +278,7 @@ Genesis-Core/
 - bandit/detect-secrets for security
 
 ### Integration Points
+
 - Bitfinex REST API v2 for trading
 - Bitfinex WebSocket API for real-time data
 - Prometheus metrics format
@@ -254,7 +287,9 @@ Genesis-Core/
 ## Plan Mode Usage
 
 ### When to Suggest Plan Mode
+
 Proactively recommend Plan Mode activation for:
+
 1. **New Features**: Architectural decisions, new modules, API design
 2. **Large Refactorings**: 3+ files with dependencies, structural changes
 3. **ML/Model Work**: Feature engineering, new indicators, training pipelines, validation methods
@@ -263,6 +298,7 @@ Proactively recommend Plan Mode activation for:
 **Suggestion Format**: "💡 Tips: Vill du att jag aktiverar Plan Mode för detta? Det är en större/komplex uppgift där du kanske vill se planen först."
 
 ### When to Stay in Normal Mode
+
 - Bug fixes and quick iterations
 - Code quality tasks (black, ruff, pytest, bandit)
 - Documentation updates
@@ -270,12 +306,14 @@ Proactively recommend Plan Mode activation for:
 - Testing and validation scripts
 
 ### Benefits of Plan Mode
+
 - User reviews approach before execution
 - Clear visibility of file changes and architecture
 - Opportunity to adjust strategy early
 - Educational value - shows implementation thinking
 
 ## Remember
+
 - **Quality over speed**: Take time to do things right
 - **Security first**: Never compromise on security
 - **Test everything**: Untested code is broken code

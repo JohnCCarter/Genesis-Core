@@ -336,8 +336,8 @@ src/core/backtest/__init__.py                 (+2 lines)
 ### Documentation
 
 ```
-docs/FIBONACCI_FRAKTAL_EXITS_IMPLEMENTATION_PLAN.md  (1070 lines)
-docs/HTF_FIBONACCI_EXITS_SUMMARY.md                  (this file)
+docs/fibonacci/FIBONACCI_FRAKTAL_EXITS_IMPLEMENTATION_PLAN.md  (1070 lines)
+docs/fibonacci/HTF_FIBONACCI_EXITS_SUMMARY.md                  (this file)
 CHANGELOG.md                                         (updated)
 ```
 
@@ -498,4 +498,3 @@ for trade in results["trades"]:
 **Last Updated:** 2025-10-13
 **Version:** 1.0
 **Status:** ✅ PRODUCTION READY
-

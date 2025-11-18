@@ -4,6 +4,9 @@ Tests for performance optimizations.
 Validates that optimized implementations produce same results as original.
 """
 
+import time
+
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -189,3 +192,137 @@ class TestHTFFibonacciOptimizations:
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
+
+
+class TestBacktestLoopPerformance:
+    """Test backtest loop performance optimizations."""
+
+    def test_numpy_array_access_vs_iloc(self):
+        """Verify numpy array access is faster than pandas iloc in loops."""
+        # Create test DataFrame with typical backtest size
+        n_bars = 1000
+        df = pd.DataFrame(
+            {
+                "timestamp": pd.date_range("2025-01-01", periods=n_bars, freq="1h"),
+                "close": np.random.randn(n_bars).cumsum() + 100,
+            }
+        )
+
+        # Measure pandas iloc access pattern (old way)
+        start = time.time()
+        total_iloc = 0.0
+        for i in range(n_bars):
+            bar = df.iloc[i]
+            total_iloc += bar["close"]
+        iloc_time = time.time() - start
+
+        # Measure numpy array access pattern (optimized way)
+        start = time.time()
+        close_prices = df["close"].values
+        total_numpy = 0.0
+        for i in range(n_bars):
+            total_numpy += close_prices[i]
+        numpy_time = time.time() - start
+
+        # Numpy should be significantly faster
+        # Allow for timer resolution issues on fast systems
+        if iloc_time > 1e-6 and numpy_time > 1e-6:
+            speedup = iloc_time / numpy_time
+            assert speedup > 5, (
+                f"Numpy array access not significantly faster: "
+                f"iloc={iloc_time:.6f}s, numpy={numpy_time:.6f}s, "
+                f"speedup={speedup:.1f}x (expected >5x)"
+            )
+        else:
+            # Times too small to measure reliably, just ensure numpy not slower
+            assert numpy_time <= iloc_time * 1.5, (
+                f"Numpy slower despite small times: "
+                f"iloc={iloc_time:.9f}s, numpy={numpy_time:.9f}s"
+            )
+
+        # Verify same results
+        assert abs(total_iloc - total_numpy) < 1e-9
+
+    def test_vectorized_column_extraction(self):
+        """Test that extracting columns as arrays is efficient."""
+        # Create large DataFrame
+        n_bars = 5000
+        df = pd.DataFrame(
+            {
+                "timestamp": pd.date_range("2025-01-01", periods=n_bars, freq="15min"),
+                "open": np.random.randn(n_bars).cumsum() + 100,
+                "high": np.random.randn(n_bars).cumsum() + 102,
+                "low": np.random.randn(n_bars).cumsum() + 98,
+                "close": np.random.randn(n_bars).cumsum() + 100,
+                "volume": np.random.randint(100, 1000, n_bars),
+            }
+        )
+
+        # Measure column extraction time
+        start = time.time()
+        timestamps = df["timestamp"].values
+        close_prices = df["close"].values
+        extraction_time = time.time() - start
+
+        # Should be very fast (sub-millisecond for 5000 bars)
+        assert (
+            extraction_time < 0.01
+        ), f"Column extraction too slow: {extraction_time:.6f}s for {n_bars} bars"
+
+        # Verify extracted data
+        assert len(timestamps) == n_bars
+        assert len(close_prices) == n_bars
+        assert isinstance(timestamps, np.ndarray)
+        assert isinstance(close_prices, np.ndarray)
+
+
+class TestCopyOptimizations:
+    """Test copy/deepcopy optimizations."""
+
+    def test_primitive_list_copy_vs_deepcopy(self):
+        """Verify that list() is faster than deepcopy for primitive values."""
+        import copy
+
+        # Test with list of primitives (typical grid values)
+        primitives = [0.1, 0.2, 0.3, 0.4, 0.5] * 100  # 500 float values
+
+        # Measure deepcopy
+        start = time.time()
+        for _ in range(100):
+            _ = [copy.deepcopy(v) for v in primitives]
+        deepcopy_time = time.time() - start
+
+        # Measure list()
+        start = time.time()
+        for _ in range(100):
+            _ = list(primitives)
+        list_time = time.time() - start
+
+        # list() should be much faster
+        if deepcopy_time > 1e-6 and list_time > 1e-6:
+            speedup = deepcopy_time / list_time
+            assert speedup > 2, (
+                f"list() not significantly faster than deepcopy: "
+                f"deepcopy={deepcopy_time:.6f}s, list={list_time:.6f}s, "
+                f"speedup={speedup:.1f}x"
+            )
+
+    def test_conditional_deepcopy_for_mixed_types(self):
+        """Test conditional deepcopy logic for mixed primitive and mutable types."""
+        import copy
+
+        # Primitives don't need deepcopy
+        primitives = [1, 2.5, "test", True, None]
+        for v in primitives:
+            if isinstance(v, (dict, list)):
+                result = copy.deepcopy(v)
+            else:
+                result = v
+            assert result == v
+
+        # Mutable containers do need deepcopy
+        nested_dict = {"key": {"nested": [1, 2, 3]}}
+        copied = copy.deepcopy(nested_dict)
+        copied["key"]["nested"].append(4)
+        assert len(nested_dict["key"]["nested"]) == 3  # Original unchanged
+        assert len(copied["key"]["nested"]) == 4  # Copy modified

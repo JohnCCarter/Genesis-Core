@@ -50,6 +50,14 @@ def _compute_percentile(values: list[float], q: float) -> float:
     return float(d0 + d1)
 
 
+def _as_float(value: Any) -> float | None:
+    """Best‑effort conversion; returns None if not convertible."""
+    try:
+        return float(value)  # type: ignore[arg-type]
+    except Exception:
+        return None
+
+
 def decide(
     policy: dict[str, Any],
     *,
@@ -74,6 +82,8 @@ def decide(
     9) Cooldown
     10) Sizing
     """
+    _LOG.info("[FIB-FLOW] decide() called with cfg keys: %s", list((cfg or {}).keys())[:15])
+
     reasons: list[str] = []
     versions: dict[str, Any] = {"decision": "v1"}
     cfg = dict(cfg or {})
@@ -211,6 +221,11 @@ def decide(
     buy_pass = p_buy >= thr and long_allowed
     sell_pass = p_sell >= thr and short_allowed
     if not buy_pass and not sell_pass:
+        _LOG.info(
+            "[FIB-FLOW] Early return: proba threshold not met (buy_pass=%s sell_pass=%s)",
+            buy_pass,
+            sell_pass,
+        )
         return "NONE", {
             "versions": versions,
             "reasons": reasons,
@@ -424,8 +439,21 @@ def decide(
 
     # HTF Fibonacci confirmation (trend filter)
     htf_entry_cfg = (cfg.get("htf_fib") or {}).get("entry") or {}
+    _LOG.info(
+        "[FIB-FLOW] HTF gate check: use_htf_block=%s htf_entry_enabled=%s",
+        use_htf_block,
+        htf_entry_cfg.get("enabled"),
+    )
     if use_htf_block and htf_entry_cfg.get("enabled"):
         htf_ctx = state_in.get("htf_fib") or {}
+        _LOG.info(
+            "[FIB-FLOW] HTF gate active: symbol=%s timeframe=%s enabled=%s htf_ctx_keys=%s available=%s",
+            policy_symbol,
+            policy_timeframe,
+            htf_entry_cfg.get("enabled"),
+            list(htf_ctx.keys()) if isinstance(htf_ctx, dict) else [],
+            htf_ctx.get("available") if isinstance(htf_ctx, dict) else None,
+        )
         price_now = state_in.get("last_close")
         atr_now = float(state_in.get("current_atr") or 0.0)
         tolerance = float(htf_entry_cfg.get("tolerance_atr", 0.5)) * atr_now if atr_now > 0 else 0.0
@@ -508,11 +536,19 @@ def decide(
                     level_price = _level_price(
                         htf_levels, float(min_level) if min_level is not None else None
                     )
-                    if level_price is not None and price_now < level_price - tolerance:
+                    p_val = _as_float(price_now)
+                    lp_val = _as_float(level_price) if level_price is not None else None
+                    tol_val = _as_float(tolerance)
+                    if (
+                        lp_val is not None
+                        and p_val is not None
+                        and tol_val is not None
+                        and p_val < (lp_val - tol_val)
+                    ):
                         payload = {
                             **base_debug,
                             "reason": "LONG_BELOW_LEVEL",
-                            "level_price": level_price,
+                            "level_price": lp_val,
                         }
                         if not _try_override_htf_block(payload):
                             state_out["htf_fib_entry_debug"] = payload
@@ -567,11 +603,19 @@ def decide(
                     level_price = _level_price(
                         htf_levels, float(max_level) if max_level is not None else None
                     )
-                    if level_price is not None and price_now > level_price + tolerance:
+                    p_val = _as_float(price_now)
+                    lp_val = _as_float(level_price) if level_price is not None else None
+                    tol_val = _as_float(tolerance)
+                    if (
+                        lp_val is not None
+                        and p_val is not None
+                        and tol_val is not None
+                        and p_val > (lp_val + tol_val)
+                    ):
                         payload = {
                             **base_debug,
                             "reason": "SHORT_ABOVE_LEVEL",
-                            "level_price": level_price,
+                            "level_price": lp_val,
                         }
                         if not _try_override_htf_block(payload):
                             state_out["htf_fib_entry_debug"] = payload
@@ -612,6 +656,14 @@ def decide(
     # LTF Fibonacci entry gating (same-timeframe fib context)
     if ltf_entry_cfg.get("enabled"):
         ltf_ctx = state_in.get("ltf_fib") or {}
+        _LOG.info(
+            "[FIB-FLOW] LTF gate active: symbol=%s timeframe=%s enabled=%s ltf_ctx_keys=%s available=%s",
+            policy_symbol,
+            policy_timeframe,
+            ltf_entry_cfg.get("enabled"),
+            list(ltf_ctx.keys()) if isinstance(ltf_ctx, dict) else [],
+            ltf_ctx.get("available") if isinstance(ltf_ctx, dict) else None,
+        )
         price_now = state_in.get("last_close")
         atr_now = float(state_in.get("current_atr") or 0.0)
         tol_atr = float(ltf_entry_cfg.get("tolerance_atr", 0.5))
@@ -665,11 +717,19 @@ def decide(
                 level_price = _level_price(
                     levels, float(max_level) if max_level is not None else None
                 )
-                if level_price is not None and price_now > level_price + tolerance:
+                p_val = _as_float(price_now)
+                lp_val = _as_float(level_price) if level_price is not None else None
+                tol_val = _as_float(tolerance)
+                if (
+                    lp_val is not None
+                    and p_val is not None
+                    and tol_val is not None
+                    and p_val > (lp_val + tol_val)
+                ):
                     state_out["ltf_fib_entry_debug"] = {
                         **ltf_base_debug,
                         "reason": "LONG_ABOVE_LEVEL",
-                        "level_price": level_price,
+                        "level_price": lp_val,
                     }
                     reasons.append("LTF_FIB_LONG_BLOCK")
                     return "NONE", {
@@ -682,11 +742,19 @@ def decide(
                 level_price = _level_price(
                     levels, float(min_level) if min_level is not None else None
                 )
-                if level_price is not None and price_now < level_price - tolerance:
+                p_val = _as_float(price_now)
+                lp_val = _as_float(level_price) if level_price is not None else None
+                tol_val = _as_float(tolerance)
+                if (
+                    lp_val is not None
+                    and p_val is not None
+                    and tol_val is not None
+                    and p_val < (lp_val - tol_val)
+                ):
                     state_out["ltf_fib_entry_debug"] = {
                         **ltf_base_debug,
                         "reason": "SHORT_BELOW_LEVEL",
-                        "level_price": level_price,
+                        "level_price": lp_val,
                     }
                     reasons.append("LTF_FIB_SHORT_BLOCK")
                     return "NONE", {

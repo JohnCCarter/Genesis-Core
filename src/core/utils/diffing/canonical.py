@@ -57,7 +57,7 @@ def canonicalize_config(
         if isinstance(obj, float):
             return _round_float(obj, precision)
 
-        if isinstance(obj, (int, str, bool)) or obj is None:
+        if isinstance(obj, int | str | bool) or obj is None:
             return obj
 
         if isinstance(obj, list | tuple):

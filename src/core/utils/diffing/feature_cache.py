@@ -52,7 +52,7 @@ def _flatten_series(series: Iterable[Any]) -> Sequence[float]:
     flattened: list[float] = []
     for item in series:
         # Treat nested Python sequences or array-like (e.g., numpy.ndarray) as sub-series
-        if isinstance(item, (list, tuple)):
+        if isinstance(item, list | tuple):
             flattened.extend(_flatten_series(item))
         elif hasattr(item, "tolist"):
             try:
@@ -89,7 +89,7 @@ def make_indicator_fingerprint(
     params_hash = _hash_bytes(params_blob.encode("utf-8"))
     data_hash = "none"
     if series is not None:
-        if isinstance(series, (list, tuple)) and series and isinstance(series[0], (list, tuple)):
+        if isinstance(series, list | tuple) and series and isinstance(series[0], list | tuple):
             sub_hashes = []
             for sub in series:
                 flattened_sub = _flatten_series(sub)

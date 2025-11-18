@@ -453,7 +453,21 @@ class BacktestEngine:
 
         # Track bars held for current position
 
+        # Performance optimization: Pre-extract numpy arrays to avoid repeated iloc calls
+        # This significantly speeds up the main backtest loop
+        timestamps_array = self.candles_df["timestamp"].values
+        open_prices_array = self.candles_df["open"].values
+        high_prices_array = self.candles_df["high"].values
+        low_prices_array = self.candles_df["low"].values
+        close_prices_array = self.candles_df["close"].values
+        volume_array = self.candles_df["volume"].values if "volume" in self.candles_df.columns else None
+        num_bars = len(self.candles_df)
+
         # Replay bars
+        for i in range(num_bars):
+            # Performance: Direct array access is significantly faster than iloc (~5-10x for this operation)
+            timestamp = timestamps_array[i]
+            close_price = close_prices_array[i]
         for i in range(len(self.candles_df)):
             # Fast-path: pull values from numpy buffers if available
             if self._np_arrays is not None:
@@ -511,9 +525,14 @@ class BacktestEngine:
 
                 # === EXIT LOGIC (check BEFORE new entry) ===
                 if self.position_tracker.has_position():
-                    # Prepare bar data for exit engine
+                    # Prepare bar data for exit engine (using pre-extracted arrays)
                     bar_data = {
                         "timestamp": timestamp,
+                        "open": open_prices_array[i],
+                        "high": high_prices_array[i],
+                        "low": low_prices_array[i],
+                        "close": close_price,
+                        "volume": volume_array[i] if volume_array is not None else 0.0,
                         "open": open_price,
                         "high": high_price,
                         "low": low_price,

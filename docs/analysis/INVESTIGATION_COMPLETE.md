@@ -1,7 +1,7 @@
 # Complete Investigation Results: Optuna Zero-Trade Issue
 
-**Investigation Period**: 2025-11-11  
-**Investigator**: GitHub Copilot  
+**Investigation Period**: 2025-11-11
+**Investigator**: GitHub Copilot
 **Status**: ✅ COMPLETE - Root cause identified, tools created, fixes specified
 
 ## Executive Summary
@@ -15,7 +15,7 @@ When Optuna explores parameter space, it frequently samples combinations that in
 ```yaml
 # Individual parameters look OK...
 entry_conf_overall: 0.50  # "Moderate" threshold
-htf_fib.tolerance_atr: 0.3  # "Standard" tolerance  
+htf_fib.tolerance_atr: 0.3  # "Standard" tolerance
 ltf_fib.tolerance_atr: 0.3  # "Standard" tolerance
 
 # But combined effect is devastating...
@@ -278,10 +278,10 @@ python scripts/diagnose_zero_trades.py run_20251103_110227 trial_001
 
 Your fixes are working when:
 
-✅ **Pre-run validation shows**: 🟢 or 🟡 (not 🔴)  
-✅ **Smoke test produces**: >5 trades in 2-5 trials  
-✅ **Full run shows**: <10% zero-trade trials  
-✅ **Optuna learns**: Score variance > 50 (not all -100)  
+✅ **Pre-run validation shows**: 🟢 or 🟡 (not 🔴)
+✅ **Smoke test produces**: >5 trades in 2-5 trials
+✅ **Full run shows**: <10% zero-trade trials
+✅ **Optuna learns**: Score variance > 50 (not all -100)
 ✅ **Best trial has**: 50+ trades, score > 0
 
 ## Technical Details
@@ -296,13 +296,13 @@ See: `docs/ZERO_TRADE_ANALYSIS.md`
 
 ## Summary
 
-**Problem**: Multiplicative cascade of 14 gates with conservative parameters → zero trades  
-**Root Cause**: Optuna explores parameter combinations that individually seem OK but collectively block all trades  
-**Solution**: Adjust search space, add pre-run validation, provide diagnostic tools  
+**Problem**: Multiplicative cascade of 14 gates with conservative parameters → zero trades
+**Root Cause**: Optuna explores parameter combinations that individually seem OK but collectively block all trades
+**Solution**: Adjust search space, add pre-run validation, provide diagnostic tools
 
 **Tools Delivered**:
 1. ✅ Pre-run risk validator (`validate_zero_trade_risk.py`)
-2. ✅ Post-run trial diagnostics (`diagnose_zero_trades.py`)  
+2. ✅ Post-run trial diagnostics (`diagnose_zero_trades.py`)
 3. ✅ Comprehensive documentation (`ZERO_TRADE_ANALYSIS.md`)
 4. ✅ Enhanced Optuna runner with telemetry
 5. ✅ Best practices guide (`OPTUNA_BEST_PRACTICES.md`)
@@ -311,12 +311,12 @@ See: `docs/ZERO_TRADE_ANALYSIS.md`
 
 ---
 
-**Investigation Complete**: All root causes identified, all tools created, all fixes specified.  
+**Investigation Complete**: All root causes identified, all tools created, all fixes specified.
 **Ready For**: Production deployment with confidence.
 
 **Commits**:
 - 102e7e9: Initial exploration
-- 2028db3: Fixed duplicate tracking  
+- 2028db3: Fixed duplicate tracking
 - f74f4d7: Added documentation
 - 076feee: Added smoke test
 - 2f05e04: Added zero-trade analysis

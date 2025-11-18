@@ -20,7 +20,7 @@ Top bottlenecks:
 - get_ltf_fibonacci_context: 1.65s
 ```
 
-### After Optimization  
+### After Optimization
 
 **Scenario 1: Identical repeated calls (best case)**
 ```
@@ -36,7 +36,7 @@ Before caching:
   Average per bar: ~0.07s
 
 After caching:
-  Total time: 4.57s  
+  Total time: 4.57s
   Average per bar: 0.057s
 Speedup: 1.23x (18% faster)
 ```
@@ -46,7 +46,7 @@ Speedup: 1.23x (18% faster)
 Before:
   test_engine_run_with_minimal_data: 6.83s
   test_engine_results_format: 6.79s
-  
+
 After:
   test_engine_run_with_minimal_data: 6.73s
   test_engine_results_format: 6.75s

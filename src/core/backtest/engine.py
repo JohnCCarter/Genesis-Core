@@ -290,9 +290,9 @@ class BacktestEngine:
                             fib_high_px=_np.asarray(sh_px, dtype=float),
                             fib_low_px=_np.asarray(sl_px, dtype=float),
                         )
-                        print(f"[CACHE] Precomputed features saved to {cache_path.name}")
-                    except Exception:
-                        pass
+                        print(f"[OK] Precomputed features cached: {cache_path.name}")
+                    except Exception:  # nosec B110
+                        pass  # Ignore cache write errors (not critical)
 
                     pre = {
                         "atr_14": atr_14,
@@ -475,7 +475,9 @@ class BacktestEngine:
         high_prices_array = self.candles_df["high"].values
         low_prices_array = self.candles_df["low"].values
         close_prices_array = self.candles_df["close"].values
-        volume_array = self.candles_df["volume"].values if "volume" in self.candles_df.columns else None
+        volume_array = (
+            self.candles_df["volume"].values if "volume" in self.candles_df.columns else None
+        )
         num_bars = len(self.candles_df)
 
         # Replay bars

@@ -123,8 +123,8 @@ def _read_json_cached(path: Path) -> Any:
         if cached_mtime == mtime:
             try:
                 _JSON_CACHE.move_to_end(key)
-            except Exception:
-                pass
+            except Exception:  # nosec B110
+                pass  # Cache error non-critical
             return cached_obj
 
     obj = _load_json_with_retries(path)
@@ -1187,8 +1187,8 @@ def _run_optuna(
             if guard is not None and sig:
                 try:
                     guard.remove(sig)
-                except Exception:
-                    pass
+                except Exception:  # nosec B110
+                    pass  # Guard already removed
             # Don't reset duplicate streak on errors
             raise optuna.TrialPruned()
 

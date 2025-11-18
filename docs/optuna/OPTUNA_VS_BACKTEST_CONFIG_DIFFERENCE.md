@@ -225,7 +225,7 @@ deltas: ±0.015 → max size = 0.035 + 0.015 = 0.050
   # 1. Kör manual backtest
   python scripts/run_backtest.py --symbol tBTCUSD --timeframe 1h \
     --config-file config/strategy/champions/tBTCUSD_1h.json
-  
+
   # 2. Konvertera till Optuna-spec och kör 1 trial
   # 3. Jämför resultat
   ```

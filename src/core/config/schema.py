@@ -28,6 +28,7 @@ class Thresholds(BaseModel):
     entry_conf_overall: float = Field(ge=0.0, le=1.0, default=0.7)
     regime_proba: dict[str, float] = Field(default_factory=lambda: {"balanced": 0.58})
     signal_adaptation: SignalAdaptationConfig | None = None
+    min_edge: float | None = Field(default=None)
 
     @field_validator("regime_proba")
     @classmethod
@@ -101,6 +102,63 @@ class MultiTimeframeConfig(BaseModel):
     )
 
 
+class FibOverrideConfidence(BaseModel):
+    enabled: bool = Field(default=False)
+    min: float | None = Field(default=None)
+    max: float | None = Field(default=None)
+
+
+class FibEntryConfig(BaseModel):
+    enabled: bool = Field(default=False)
+    tolerance_atr: float = Field(default=0.5, ge=0.0)
+    targets: list[float] | None = None
+    long_target_levels: list[float] | None = None
+    short_target_levels: list[float] | None = None
+    long_max_level: float | None = None
+    long_min_level: float | None = None
+    short_min_level: float | None = None
+    short_max_level: float | None = None
+    missing_policy: str | None = None
+    override_confidence: FibOverrideConfidence | None = None
+
+    @field_validator("targets", "long_target_levels", "short_target_levels", mode="before")
+    @classmethod
+    def _coerce_float_list(cls, v: Any) -> list[float] | None:
+        if v is None:
+            return None
+        if isinstance(v, list | tuple):
+            out: list[float] = []
+            for item in v:
+                try:
+                    out.append(float(item))
+                except (TypeError, ValueError):
+                    continue
+            return out
+        return v
+
+
+class FibExitConfig(BaseModel):
+    enabled: bool = Field(default=False)
+    fib_threshold_atr: float | None = Field(default=None, ge=0.0)
+    trail_atr_multiplier: float | None = Field(default=None, ge=0.0)
+
+
+class FibConfig(BaseModel):
+    entry: FibEntryConfig | None = None
+    exit: FibExitConfig | None = None
+
+
+class HTFExitConfig(BaseModel):
+    enable_partials: bool = Field(default=True)
+    enable_trailing: bool = Field(default=True)
+    enable_structure_breaks: bool = Field(default=True)
+    partial_1_pct: float = Field(default=0.4, ge=0.0, le=1.0)
+    partial_2_pct: float = Field(default=0.3, ge=0.0, le=1.0)
+    fib_threshold_atr: float = Field(default=0.3, ge=0.0)
+    trail_atr_multiplier: float = Field(default=1.3, ge=0.0)
+    swing_update_strategy: str = Field(default="fixed")
+
+
 class RuntimeConfig(BaseModel):
     thresholds: Thresholds = Field(default_factory=Thresholds)
     gates: Gates = Field(default_factory=Gates)
@@ -108,6 +166,10 @@ class RuntimeConfig(BaseModel):
     ev: EV = Field(default_factory=EV)
     exit: ExitLogic = Field(default_factory=ExitLogic)
     multi_timeframe: MultiTimeframeConfig = Field(default_factory=MultiTimeframeConfig)
+    warmup_bars: int | None = Field(default=None, ge=0)
+    htf_exit_config: HTFExitConfig | None = None
+    htf_fib: FibConfig | None = None
+    ltf_fib: FibConfig | None = None
 
     def model_dump_canonical(self) -> dict[str, Any]:
         """Dump in a stable, hash-friendly form (tuples → lists)."""

@@ -34,7 +34,7 @@ def _trial_key(params: dict[str, Any]) -> str:
 
 **Problem:** Loading existing trials performed redundant file reads and dictionary allocations.
 
-**Solution:** 
+**Solution:**
 - Pre-allocate dictionary capacity based on file count
 - Read file content once and parse in a single operation
 - Skip corrupted files silently without excessive error handling
@@ -58,7 +58,7 @@ def _trial_key(params: dict[str, Any]) -> str:
 
 **Problem:** Optuna metadata was written to disk multiple times, causing redundant file I/O.
 
-**Solution:** 
+**Solution:**
 - Batch metadata collection before writing
 - Write best trial and run metadata in a single sequence
 - Eliminate redundant `run_meta.json` reads
@@ -136,7 +136,7 @@ count = guard.add_batch(sigs)  # Much faster than individual adds
 
 **Problem:** `summarize_run()` made multiple passes through trial data for counting and validation.
 
-**Solution:** 
+**Solution:**
 - Single-pass algorithm that counts, validates, and extracts in one iteration
 - Early filtering to reduce memory usage
 - Sort only at the end

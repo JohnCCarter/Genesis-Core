@@ -1,8 +1,8 @@
 # Probability Threshold Bottleneck Fix
 
-**Date:** 2025-11-17  
-**Issue:** Champion config producing 0 trades despite correct fibonacci gate setup  
-**Root Cause:** `thresholds.regime_proba` values too high (0.70-0.80)  
+**Date:** 2025-11-17
+**Issue:** Champion config producing 0 trades despite correct fibonacci gate setup
+**Root Cause:** `thresholds.regime_proba` values too high (0.70-0.80)
 **Solution:** Lowered to match model output range (0.42-0.52)
 
 ## Problem Discovery

@@ -22,7 +22,7 @@ Root cause: **~2 million pandas `.iloc[]` indexing operations** in nested loops.
 
 ### 1. Fibonacci Swing Detection Optimization (`fibonacci.py`)
 
-**Problem**: 
+**Problem**:
 - Nested loops using `high.iloc[i]` for array access
 - Each `.iloc[]` call goes through pandas indexing abstraction layers
 - Millions of slow lookups per test run
@@ -73,7 +73,7 @@ meta = predict_proba_for._registry.get_meta(symbol, timeframe) or {}
 1. `test_detect_swing_points_performance`:
    - Ensures swing detection completes 10 iterations < 0.5s
    - Guards against future regressions
-   
+
 2. `test_numpy_array_conversion_benefit`:
    - Validates numpy is 5x+ faster than pandas iloc
    - Documents the optimization rationale
@@ -106,7 +106,7 @@ meta = predict_proba_for._registry.get_meta(symbol, timeframe) or {}
 ```python
 # high.iloc[i] internally does:
 1. Check if index is valid
-2. Convert index to positional location  
+2. Convert index to positional location
 3. Handle negative indices
 4. Validate bounds
 5. Return Series or scalar with appropriate dtype
@@ -139,7 +139,7 @@ In tight loops with millions of accesses, this overhead dominates execution time
 Consistent performance across multiple runs:
 ```
 Run 1: 7.39s
-Run 2: 7.39s  
+Run 2: 7.39s
 Run 3: 7.43s
 ```
 

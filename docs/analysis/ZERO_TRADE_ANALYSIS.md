@@ -1,6 +1,6 @@
 # Complete Decision Chain Analysis: Why Optuna Trials Generate Zero Trades
 
-**Date**: 2025-11-11  
+**Date**: 2025-11-11
 **Analysis**: Deep trace through the entire system from data to trades
 
 ## Executive Summary
@@ -162,14 +162,14 @@ htf_entry_cfg = (cfg.get("htf_fib") or {}).get("entry") or {}
 if use_htf_block and htf_entry_cfg.get("enabled"):
     # Check if price is near target Fibonacci levels
     # with tolerance based on ATR
-    
+
     # For LONG: must be near support levels
     if candidate == "LONG":
         if not near_target_level:
             if not _try_override_htf_block(payload):
                 return "NONE", {"reasons": ["HTF_FIB_LONG_BLOCK"]}
-    
-    # For SHORT: must be near resistance levels  
+
+    # For SHORT: must be near resistance levels
     elif candidate == "SHORT":
         if not near_target_level:
             if not _try_override_htf_block(payload):
@@ -198,7 +198,7 @@ if ltf_entry_cfg.get("enabled"):
     # Similar to HTF but for same-timeframe Fib levels
     # LONG: must be below max_level + tolerance
     # SHORT: must be above min_level - tolerance
-    
+
     if condition_fails:
         return "NONE", {"reasons": ["LTF_FIB_BLOCK"]}
 ```
@@ -290,7 +290,7 @@ if action != "NONE" and size > 0:
 If each gate has an independent pass rate:
 - Gate 5 (Probability): 20% pass (entry_conf = 0.50)
 - Gate 6 (HTF Fib): 10% pass (tolerance = 0.3)
-- Gate 7 (LTF Fib): 10% pass (tolerance = 0.3)  
+- Gate 7 (LTF Fib): 10% pass (tolerance = 0.3)
 - Gate 8 (Confidence): 30% pass
 - Gate 9 (Edge): 40% pass
 - Gate 10 (Hysteresis): 50% pass (every other signal)
@@ -417,7 +417,7 @@ parameters:
 
 **Current**: Start 100-trial Optuna run without testing
 
-**Fix**: 
+**Fix**:
 1. Run smoke test (2-5 trials) with champion parameters
 2. Verify >0 trades before full run
 3. Adjust search space if smoke test fails

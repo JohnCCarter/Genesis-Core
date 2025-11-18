@@ -1,6 +1,6 @@
 # Performance Analysis: Model Testing Code
 
-**Date:** 2025-11-10  
+**Date:** 2025-11-10
 **Scope:** Model testing, backtest engine, and training pipeline
 
 ## Executive Summary
@@ -15,7 +15,7 @@ Total: 47.09s for 378 tests
 
 Slowest tests:
 - test_engine_processes_correct_number_of_bars: 7.04s
-- test_engine_equity_curve_tracking: 7.02s  
+- test_engine_equity_curve_tracking: 7.02s
 - test_engine_handles_pipeline_errors_gracefully: 6.93s
 - test_engine_results_format: 6.89s
 - test_engine_closes_positions_at_end: 6.88s
@@ -47,7 +47,7 @@ Slowest tests:
 ```python
 # Benchmark (150 iterations, window size 50):
 Method 1 (iloc + tolist):        0.0147s
-Method 2 (iloc + values.tolist): 0.0149s  
+Method 2 (iloc + values.tolist): 0.0149s
 Method 3 (numpy slicing):        0.0007s (20x faster!)
 ```
 
@@ -110,12 +110,12 @@ def train_buy_sell_models(..., fast_mode: bool = False):
         buy_model.fit(X_train, buy_y_train)
         # ...
         return buy_model, sell_model, metrics
-    
+
     # Original GridSearchCV code for production use
     # ...
 ```
 
-**Result:** 
+**Result:**
 - test_train_buy_sell_models_basic: 1.58s → 0.01s (158x faster)
 - Full train_model suite: 2.75s → 1.03s (62% reduction)
 
@@ -180,7 +180,7 @@ trades_df["entry_reasons"] = trades_df["entry_reasons"].apply(
 ```python
 # Faster for large DataFrames
 trades_df["entry_reasons"] = [
-    json.dumps(x) if isinstance(x, dict) else x 
+    json.dumps(x) if isinstance(x, dict) else x
     for x in trades_df["entry_reasons"].values
 ]
 ```

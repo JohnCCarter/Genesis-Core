@@ -1,7 +1,7 @@
 # Performance Benchmark Results
 
-**Date:** 2025-11-07  
-**Dataset:** 2000 bars synthetic data (realistic price action with trend + noise)  
+**Date:** 2025-11-07
+**Dataset:** 2000 bars synthetic data (realistic price action with trend + noise)
 **Hardware:** GitHub Actions runner (Linux)
 
 ## Executive Summary
@@ -9,10 +9,10 @@
 The vectorization optimizations deliver **massive performance improvements** across all indicator categories:
 
 - **Volume Indicators:** ~30x faster (4.57ms → 0.15ms estimated baseline)
-- **Derived Features:** ~50x faster (3.76ms → 0.08ms estimated baseline)  
+- **Derived Features:** ~50x faster (3.76ms → 0.08ms estimated baseline)
 - **HTF Fibonacci:** ~200x faster (530ms → 2.7ms estimated baseline)
 
-**Total processing time:** 541ms for 2000 bars  
+**Total processing time:** 541ms for 2000 bars
 **Estimated old processing time:** ~106 seconds (200x slower)
 
 ## Detailed Results
@@ -60,7 +60,7 @@ The vectorization optimizations deliver **massive performance improvements** acr
 ### 2. Per-bar Performance
 Most operations now take **< 1 microsecond per bar**:
 - Volume SMA: 0.20µs/bar
-- Volume EMA: 0.20µs/bar  
+- Volume EMA: 0.20µs/bar
 - Volume Anomaly Z: 0.41µs/bar
 - Regime Persistence: 0.64µs/bar
 
@@ -84,7 +84,7 @@ For a typical backtest scenario:
 **Speedup: ~200x for full backtest pipeline**
 
 ### Optimization Runs
-Before: Running 100 optimization trials = ~880 minutes (14.7 hours)  
+Before: Running 100 optimization trials = ~880 minutes (14.7 hours)
 After: Running 100 optimization trials = ~4.5 minutes
 
 **This enables rapid iteration and hyperparameter tuning.**
@@ -116,7 +116,7 @@ The vectorization optimizations achieve **30-200x speedup** across all indicator
 
 - ✅ Real-time indicator calculations
 - ✅ Rapid backtest execution
-- ✅ Efficient hyperparameter optimization  
+- ✅ Efficient hyperparameter optimization
 - ✅ Linear scaling with data size
 
 **Recommendation:** Deploy these optimizations to production immediately. Monitor performance in live backtests and consider addressing remaining bottlenecks (Fibonacci swing detection, parallel processing) in Phase 2.

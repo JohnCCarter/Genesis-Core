@@ -14,7 +14,7 @@
 ### Två kritiska buggar identifierade och fixade
 
 #### Bug #1: Shallow merge i evaluate.py
-**Problem:** 
+**Problem:**
 ```python
 merged_cfg = champion_cfg
 merged_cfg.update(configs)  # ← SHALLOW UPDATE
@@ -38,7 +38,7 @@ merged_cfg = _deep_merge(champion_cfg, configs)
 ```
 
 #### Bug #2: Signal_adaptation trösklar för höga
-**Problem:** 
+**Problem:**
 Championens signal_adaptation hade för höga trösklar (genombrott-problemet från 2025-11-13):
 - low: entry 0.36, regime 0.60-0.70
 - mid: entry 0.42, regime 0.70-0.80

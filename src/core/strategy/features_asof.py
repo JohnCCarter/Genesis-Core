@@ -144,8 +144,8 @@ def _extract_asof(
         value = _feature_cache[cache_key]
         try:
             _feature_cache.move_to_end(cache_key)  # LRU
-        except Exception:
-            pass
+        except Exception:  # nosec B110
+            pass  # Cache error non-critical
         return value
 
     metrics.inc("feature_cache_miss")
@@ -505,8 +505,8 @@ def _extract_asof(
         # Om något går fel i fib-beräkning, behåll bas-features och fortsätt
         try:
             metrics.inc("feature_fib_errors")
-        except Exception:
-            pass
+        except Exception:  # nosec B110
+            pass  # Metrics error non-critical
         if _log:
             _log.warning("fib feature combination failed: %s", exc)
 

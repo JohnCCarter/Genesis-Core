@@ -10,8 +10,8 @@ Efter genomgång av alla dokument i `docs/` har följande dokument identifierats
 
 ### 1. `fibonacci/FIB_GATING_DEBUG_20251027.md`
 
-**Status:** Föråldrad debug-dokumentation  
-**Datum:** 2025-10-27  
+**Status:** Föråldrad debug-dokumentation
+**Datum:** 2025-10-27
 **Anledning:**
 
 - Dokumenterar ett specifikt debug-problem från oktober
@@ -25,8 +25,8 @@ Efter genomgång av alla dokument i `docs/` har följande dokument identifierats
 
 ### 2. `backtest/BACKTEST_CRITICAL_BUGS_FIXED.md`
 
-**Status:** Historisk dokumentation av fixade bugs  
-**Datum:** 2025-10-10  
+**Status:** Historisk dokumentation av fixade bugs
+**Datum:** 2025-10-10
 **Anledning:**
 
 - Dokumenterar bugs som är fixade sedan oktober
@@ -40,8 +40,8 @@ Efter genomgång av alla dokument i `docs/` har följande dokument identifierats
 
 ### 3. `optimization/1H_TIMEFRAME_OPTIMIZATION_RESULTS.md`
 
-**Status:** Föråldrade optimeringsresultat  
-**Datum:** Okänt (före 2025-11-13)  
+**Status:** Föråldrade optimeringsresultat
+**Datum:** Okänt (före 2025-11-13)
 **Anledning:**
 
 - Resultat från gamla optimeringar
@@ -56,8 +56,8 @@ Efter genomgång av alla dokument i `docs/` har följande dokument identifierats
 
 ### 4. `optimization/6H_TIMEFRAME_OPTIMIZATION_RESULTS.md`
 
-**Status:** Föråldrade optimeringsresultat  
-**Datum:** Okänt (före 2025-11-13)  
+**Status:** Föråldrade optimeringsresultat
+**Datum:** Okänt (före 2025-11-13)
 **Anledning:**
 
 - Resultat från gamla optimeringar för 6h timeframe
@@ -71,8 +71,8 @@ Efter genomgång av alla dokument i `docs/` har följande dokument identifierats
 
 ### 5. `optimization/OPTIMIZATION_SUMMARY.md`
 
-**Status:** Föråldrad sammanfattning  
-**Datum:** Okänt  
+**Status:** Föråldrad sammanfattning
+**Datum:** Okänt
 **Anledning:**
 
 - Mycket kort sammanfattning (31 rader)
@@ -88,8 +88,8 @@ Efter genomgång av alla dokument i `docs/` har följande dokument identifierats
 
 ### 6. `fibonacci/FIBONACCI_COMBINATION_ANALYSIS.md`
 
-**Status:** Gammal feature-analys  
-**Datum:** 2025-10-10  
+**Status:** Gammal feature-analys
+**Datum:** 2025-10-10
 **Anledning:**
 
 - Analys från oktober om Fibonacci-kombinationer
@@ -103,8 +103,8 @@ Efter genomgång av alla dokument i `docs/` har följande dokument identifierats
 
 ### 7. `fibonacci/FIBONACCI_FRAKTAL_EXITS_IMPLEMENTATION_NEXT_PLAN.md`
 
-**Status:** Potentiellt redundant  
-**Datum:** Okänt  
+**Status:** Potentiellt redundant
+**Datum:** Okänt
 **Anledning:**
 
 - Status säger "IMPLEMENTERAT OCH FUNGERAR"
@@ -118,8 +118,8 @@ Efter genomgång av alla dokument i `docs/` har följande dokument identifierats
 
 ### 8. `daily_summaries/daily_summary_2025-10-23.md`
 
-**Status:** Gammal daily summary  
-**Datum:** 2025-10-23  
+**Status:** Gammal daily summary
+**Datum:** 2025-10-23
 **Anledning:**
 
 - Gammal daily summary från oktober
@@ -133,8 +133,8 @@ Efter genomgång av alla dokument i `docs/` har följande dokument identifierats
 
 ### 9. `analysis/ZERO_TRADE_ANALYSIS.md`
 
-**Status:** ✅ Behåll som referens  
-**Datum:** 2025-11-11  
+**Status:** ✅ Behåll som referens
+**Datum:** 2025-11-11
 **Anledning:**
 
 - Analys från 2025-11-11 om zero-trade problem
@@ -148,8 +148,8 @@ Efter genomgång av alla dokument i `docs/` har följande dokument identifierats
 
 ### 10. `analysis/CONCURRENCY_DUPLICATES_ANALYSIS.md`
 
-**Status:** ✅ Behåll som referens  
-**Datum:** 2025-11-11  
+**Status:** ✅ Behåll som referens
+**Datum:** 2025-11-11
 **Anledning:**
 
 - Analys från 2025-11-11 om concurrency-duplicat problem
@@ -165,8 +165,8 @@ Efter genomgång av alla dokument i `docs/` har följande dokument identifierats
 
 ### 11. `performance/performance_optimization_summary.md`
 
-**Status:** ✅ Behåll - unikt innehåll  
-**Datum:** Okänt  
+**Status:** ✅ Behåll - unikt innehåll
+**Datum:** Okänt
 **Anledning:**
 
 - Detaljerad analys av specifika optimeringar (74% reduktion i test-tid)

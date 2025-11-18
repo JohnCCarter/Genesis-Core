@@ -1,6 +1,6 @@
 # Why More Concurrent Workers Increase Optuna Duplicates
 
-**Date**: 2025-11-11  
+**Date**: 2025-11-11
 **Analysis**: Deep dive into parallel optimization and duplicate parameter generation
 
 ## Executive Summary
@@ -140,13 +140,13 @@ parameters:
     low: 0.30
     high: 0.50
     step: 0.01  # 21 values
-  
+
   htf_tolerance:
     type: float
     low: 0.3
     high: 0.7
     step: 0.1  # 5 values
-  
+
   max_hold_bars:
     type: int
     low: 15
@@ -286,11 +286,11 @@ TPESampler(
 def objective(trial):
     parameters = _suggest_parameters(trial, parameters_spec)
     key = _trial_key(parameters)
-    
+
     if key in existing_trials:
         # ✅ Detects duplicates from previous runs (resume)
         return -1e6
-    
+
     # ⚠️ Does NOT prevent duplicates within current parallel batch
 ```
 
@@ -388,14 +388,14 @@ in_flight_lock = Lock()
 def objective(trial):
     parameters = _suggest_parameters(trial, parameters_spec)
     key = _trial_key(parameters)
-    
+
     # Check if already in-flight
     with in_flight_lock:
         if key in in_flight_params:
             # This is a duplicate within current batch
             return -1e6
         in_flight_params.add(key)
-    
+
     try:
         # Run trial
         result = make_trial(...)
@@ -478,14 +478,14 @@ def _estimate_duplicate_risk(
     n_startup_trials: int
 ) -> dict[str, Any]:
     """Estimate duplicate probability with given concurrency."""
-    
+
     # Risk in first batch
     first_batch_risk = 1 - math.exp(-concurrency**2 / (2 * total_combinations))
-    
+
     # Risk after startup phase
     remaining = max(1, total_combinations - n_startup_trials)
     post_startup_risk = 1 - math.exp(-concurrency**2 / (2 * remaining))
-    
+
     return {
         "first_batch_duplicate_prob": first_batch_risk,
         "post_startup_duplicate_prob": post_startup_risk,

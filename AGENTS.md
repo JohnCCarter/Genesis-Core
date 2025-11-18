@@ -16,6 +16,7 @@ This document explains the current workflow for Genesis-Core, highlights today's
 - YAML‑schema: bladnoder MÅSTE ha `type: fixed|grid|float|int|loguniform` (annars values/value‑fel).
 - Optuna-sökrymden breddad: fler kontinuerliga noder (entry/regime/hysteresis/max hold/risk map/HTF+LTF flippar) och `bootstrap_random_trials` (32 RandomSampler-trials sekventiellt) innan TPE.
 - Soft constraints returnerar nu `score - 1e3` (tidigare -1e6) för bättre signal till samplern utan att belöna felaktiga försök.
+- `RuntimeConfig`-schemat täcker nu `warmup_bars`, `htf_exit_config` samt kompletta `htf_fib`/`ltf_fib` block; `config/runtime.json` version 94 är uppdaterad till champion-parametrarna från `config/strategy/champions/tBTCUSD_1h.json` så fib-gates/partials testas i runtime direkt.
 
 ## 2. Snabbguide (Optuna körflöde, uppdaterad)
 

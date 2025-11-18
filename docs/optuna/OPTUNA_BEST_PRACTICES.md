@@ -38,7 +38,7 @@ parameters:
     low: 0.35
     high: 0.40
     step: 0.05  # Only 2 values: 0.35, 0.40
-  
+
   exit_conf:
     type: grid
     values: [0.4, 0.5]  # Only 2 values
@@ -50,7 +50,7 @@ parameters:
     low: 0.25
     high: 0.45
     step: 0.02  # 11 values
-  
+
   exit_conf:
     type: float
     low: 0.35
@@ -218,14 +218,14 @@ parameters:
       low: 0.25
       high: 0.45
       step: 0.05
-  
+
   exit:
     exit_conf_threshold:
       type: float
       low: 0.35
       high: 0.55
       step: 0.05
-    
+
     max_hold_bars:
       type: int
       low: 15
@@ -309,7 +309,7 @@ python scripts/validate_optimizer_config.py config.yaml
    export GENESIS_PRECOMPUTE_FEATURES=1
    export GENESIS_MAX_CONCURRENT=2
    export OPTUNA_MAX_DUPLICATE_STREAK=200
-   
+
    python -m core.optimizer.runner config.yaml
    ```
 

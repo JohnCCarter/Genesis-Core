@@ -303,4 +303,3 @@ parameters:
         value:
           bull: 0.95
           bear: 1.05
-

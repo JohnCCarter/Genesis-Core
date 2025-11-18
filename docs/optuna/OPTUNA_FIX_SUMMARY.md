@@ -1,6 +1,6 @@
 # Summary: Optuna Duplicate and Zero-Trade Fix
 
-**Date**: 2025-11-11  
+**Date**: 2025-11-11
 **Issue**: Many Optuna trials are duplicates (penalized to −1e6) or produce 0 trades, leaving few valid backtests.
 
 ## Problem Analysis
@@ -155,7 +155,7 @@ Created comprehensive test suite (`tests/test_optimizer_duplicate_fixes.py`):
 
 - 8 new tests covering all fixes
 - Tests search space estimation
-- Tests duplicate and zero-trade tracking  
+- Tests duplicate and zero-trade tracking
 - Tests TPE sampler defaults
 - Tests warning generation
 
@@ -292,5 +292,5 @@ For future improvements:
 
 ---
 
-**Status**: ✅ Complete and tested  
+**Status**: ✅ Complete and tested
 **Ready for**: Production use

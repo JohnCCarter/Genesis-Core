@@ -96,11 +96,13 @@ def _sanitize_patch(patch: dict) -> dict:
     return sanitized
 
 
-def _load_patch(path: Path) -> dict:
+def _load_patch(path: Path, full_mode: bool = False) -> dict:
     payload = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
         raise ValueError("Patch file must contain a JSON object")
     unwrapped = _unwrap_payload(payload)
+    if full_mode:
+        return unwrapped  # Skip whitelist filter in full mode
     sanitized = _sanitize_patch(unwrapped)
     if not sanitized:
         raise ValueError(
@@ -119,13 +121,20 @@ def main() -> int:
         action="store_true",
         help="Validate and show diff without writing runtime.json",
     )
+    parser.add_argument(
+        "--full",
+        action="store_true",
+        help="Apply ALL fields from patch (skip whitelist filter) - USE WITH CAUTION for experimentation only",
+    )
     args = parser.parse_args()
 
     authority = ConfigAuthority()
     cfg_obj, _, version = authority.get()
     baseline = cfg_obj.model_dump_canonical()
 
-    patch = _load_patch(args.patch_file)
+    patch = _load_patch(args.patch_file, full_mode=args.full)
+    if args.full:
+        print("[WARNING] Running in FULL mode - all fields will be applied (whitelist bypassed)")
     merged = _deep_merge(baseline, patch)
     try:
         authority.validate(merged)
@@ -144,15 +153,34 @@ def main() -> int:
             print("No differences detected.")
         return 0
 
-    try:
-        snap = authority.propose_update(patch, actor=args.actor, expected_version=version)
-    except Exception as exc:
-        print(f"[FAILED] Could not persist patch: {exc}")
-        return 1
+    if args.full:
+        # In full mode, write directly to runtime.json bypassing whitelist check
+        import json
 
-    print("[OK] Runtime config updated.")
-    print(f"  Version: {snap.version}")
-    print(f"  Hash:    {snap.hash}")
+        runtime_path = ROOT_DIR / "config" / "runtime.json"
+        try:
+            runtime_data = json.loads(runtime_path.read_text(encoding="utf-8"))
+            new_version = runtime_data.get("version", 0) + 1
+            runtime_data["version"] = new_version
+            runtime_data["cfg"] = merged
+            runtime_path.write_text(json.dumps(runtime_data, indent=2), encoding="utf-8")
+            print("[OK] Runtime config updated (FULL mode - direct write).")
+            print(f"  Version: {new_version}")
+            print(f"  Actor:   {args.actor}")
+        except Exception as exc:
+            print(f"[FAILED] Could not write runtime.json: {exc}")
+            return 1
+    else:
+        # Normal mode: use ConfigAuthority with whitelist
+        try:
+            snap = authority.propose_update(patch, actor=args.actor, expected_version=version)
+            print("[OK] Runtime config updated.")
+            print(f"  Version: {snap.version}")
+            print(f"  Hash:    {snap.hash}")
+        except Exception as exc:
+            print(f"[FAILED] Could not persist patch: {exc}")
+            return 1
+
     if diff:
         print("  Paths:")
         for path in diff:

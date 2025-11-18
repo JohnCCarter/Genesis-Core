@@ -279,9 +279,8 @@ def _expand_value(node: Any) -> list[Any]:
             values = node.get("values") or []
             # Performance: Only deepcopy if values contain mutable containers
             # Most grid values are primitives (int, float, str, bool) which don't need deepcopy
-            if values and any(isinstance(v, (dict, list)) for v in values):
-                return [copy.deepcopy(v) for v in values]
-            return list(values)
+            if values:
+                return [copy.deepcopy(v) if isinstance(v, (dict, list)) else v for v in values]
         if node_type == "fixed":
             value = node.get("value")
             # Performance: Only deepcopy mutable containers

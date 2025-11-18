@@ -314,7 +314,7 @@ class TestCopyOptimizations:
         # Primitives don't need deepcopy
         primitives = [1, 2.5, "test", True, None]
         for v in primitives:
-            if isinstance(v, (dict, list)):
+            if isinstance(v, dict | list):
                 result = copy.deepcopy(v)
             else:
                 result = v

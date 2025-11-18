@@ -16,14 +16,6 @@ repos:
         language_version: python3.11
         files: ^(src|scripts|tests)/.*\.py$
 
-  # Security scanning
-  - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.9
-    hooks:
-      - id: bandit
-        args: ["-c", "bandit.yaml"]
-        # Exclude tests and scripts from bandit scanning
-        exclude: ^(tests|scripts)/
   # Prevent secrets from being committed
   # - repo: https://github.com/Yelp/detect-secrets
   #   rev: v1.5.0

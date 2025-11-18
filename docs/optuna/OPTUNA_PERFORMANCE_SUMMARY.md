@@ -10,32 +10,32 @@
 
 ### 1. Trial Key Caching (runner.py)
 
-**Issue:** Repeated JSON serialization for duplicate parameter sets  
-**Solution:** Thread-safe LRU cache with 10k entry limit  
-**Impact:** 1.25x speedup for duplicate trials (182k ops/sec)  
+**Issue:** Repeated JSON serialization for duplicate parameter sets
+**Solution:** Thread-safe LRU cache with 10k entry limit
+**Impact:** 1.25x speedup for duplicate trials (182k ops/sec)
 
 ### 2. Optimized Trial Loading (runner.py)
 
-**Issue:** Multiple file reads and inefficient dictionary allocation  
-**Solution:** Pre-allocated dictionaries with single-pass parsing  
-**Impact:** 50% faster loading (22k files/sec throughput)  
+**Issue:** Multiple file reads and inefficient dictionary allocation
+**Solution:** Pre-allocated dictionaries with single-pass parsing
+**Impact:** 50% faster loading (22k files/sec throughput)
 
 ### 3. Step Decimal Caching (runner.py)
 
-**Issue:** Repeated string parsing to calculate decimal places for float steps  
-**Solution:** Internal cache for step decimal calculations  
-**Impact:** Eliminates redundant string operations in parameter suggestions  
+**Issue:** Repeated string parsing to calculate decimal places for float steps
+**Solution:** Internal cache for step decimal calculations
+**Impact:** Eliminates redundant string operations in parameter suggestions
 
 ### 4. Batched Metadata Updates (runner.py)
 
-**Issue:** Multiple file I/O operations for metadata  
-**Solution:** Batch collection and single-sequence writes  
-**Impact:** ~40% reduction in file I/O operations  
+**Issue:** Multiple file I/O operations for metadata
+**Solution:** Batch collection and single-sequence writes
+**Impact:** ~40% reduction in file I/O operations
 
 ### 5. SQLite Performance Tuning (optuna_helpers.py)
 
-**Issue:** Connection contention and slow queries  
-**Solution:**  
+**Issue:** Connection contention and slow queries
+**Solution:**
 
 - WAL mode enabled for concurrent access
 - 10MB cache size
@@ -46,20 +46,20 @@
 
 ### 6. Batch Signature Operations (optuna_helpers.py)
 
-**Issue:** Individual SQLite inserts are extremely slow  
-**Solution:** New add_batch() method with single transaction  
+**Issue:** Individual SQLite inserts are extremely slow
+**Solution:** New add_batch() method with single transaction
 **Impact:** **402x speedup** (171k ops/sec vs 425 ops/sec) ⚡
 
 ### 7. Parameter Signature Caching (optuna_helpers.py)
 
-**Issue:** Redundant normalization and hashing  
-**Solution:** Thread-safe LRU cache with 5k entry limit  
+**Issue:** Redundant normalization and hashing
+**Solution:** Thread-safe LRU cache with 5k entry limit
 **Impact:** 3x speedup for cached signatures (268k ops/sec)
 
 ### 8. Single-Pass Trial Processing (optimizer.py)
 
-**Issue:** Multiple passes through trial data  
-**Solution:** Combined counting, validation, and extraction  
+**Issue:** Multiple passes through trial data
+**Solution:** Combined counting, validation, and extraction
 **Impact:** 47% faster run summaries
 
 ## Benchmark Results

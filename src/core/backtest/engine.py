@@ -498,11 +498,11 @@ class BacktestEngine:
                 )
             else:
                 bar = self.candles_df.iloc[i]
-                timestamp = bar["timestamp"]
-                close_price = bar["close"]
-                open_price = bar["open"]
-                high_price = bar["high"]
-                low_price = bar["low"]
+                timestamp = timestamps_array[i]
+                close_price = close_prices_array[i]
+                open_price = open_prices_array[i]
+                high_price = high_prices_array[i]
+                low_price = low_prices_array[i]
                 volume_val = bar.get("volume", 0.0)
 
             # Skip warmup period
@@ -543,18 +543,14 @@ class BacktestEngine:
                 # === EXIT LOGIC (check BEFORE new entry) ===
                 if self.position_tracker.has_position():
                     # Prepare bar data for exit engine (using pre-extracted arrays)
+                    volume_snapshot = volume_array[i] if volume_array is not None else volume_val
                     bar_data = {
                         "timestamp": timestamp,
-                        "open": open_prices_array[i],
-                        "high": high_prices_array[i],
-                        "low": low_prices_array[i],
-                        "close": close_price,
-                        "volume": volume_array[i] if volume_array is not None else 0.0,
                         "open": open_price,
                         "high": high_price,
                         "low": low_price,
                         "close": close_price,
-                        "volume": volume_val,
+                        "volume": volume_snapshot,
                     }
 
                     exit_reason = self._check_htf_exit_conditions(

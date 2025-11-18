@@ -151,9 +151,9 @@ with metrics.timer("grid_expansion"):
 
 This PR delivers measurable performance improvements to critical hot paths in the Genesis-Core optimizer and backtest engine. The optimizations are:
 
-✅ **Safe** - All tests passing, no regressions  
-✅ **Validated** - Performance gains measured in unit tests  
-✅ **Documented** - Comprehensive analysis document  
-✅ **Maintainable** - Clear code with explanatory comments  
+✅ **Safe** - All tests passing, no regressions
+✅ **Validated** - Performance gains measured in unit tests
+✅ **Documented** - Comprehensive analysis document
+✅ **Maintainable** - Clear code with explanatory comments
 
 The improvements compound across thousands of optimization trials, making a significant impact on overall optimization runtime.

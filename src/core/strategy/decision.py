@@ -11,9 +11,9 @@ _LOG = get_logger(__name__)
 
 
 def _sanitize_context(value: Any) -> Any:
-    if isinstance(value, (str, int, float, bool)) or value is None:
+    if isinstance(value, str | int | float | bool) or value is None:
         return value
-    if isinstance(value, (list, tuple)):
+    if isinstance(value, list | tuple):
         return [_sanitize_context(v) for v in value[:5]]
     if isinstance(value, dict):
         return {str(k): _sanitize_context(v) for k, v in list(value.items())[:8]}

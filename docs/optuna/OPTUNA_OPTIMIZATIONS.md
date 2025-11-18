@@ -9,7 +9,7 @@ This document details performance optimizations for the Optuna-based hyperparame
 ### 1. Parameter Signature Generation
 **Location**: `runner.py::_trial_key()`, `optuna_helpers.py::param_signature()`
 
-**Problem**: 
+**Problem**:
 - Repeated JSON serialization and SHA256 hashing for same parameters
 - O(n) string operations on every trial
 - No caching across identical parameter sets
@@ -84,7 +84,7 @@ def param_signature(params: dict[str, Any], precision: int = 10) -> str:
     return sig
 ```
 
-**Impact**: 
+**Impact**:
 - **10-100x faster** for duplicate parameter sets
 - Cache hit rate: ~30-50% in typical optimization runs
 - Memory overhead: ~5-10MB for 5000 cached signatures
@@ -99,7 +99,7 @@ def add_batch(self, sigs: list[str]) -> int:
     """Add multiple signatures at once. Returns count of new signatures added."""
     if not sigs:
         return 0
-    
+
     # SQLite batch insert
     count = 0
     ts = time.time()
@@ -134,12 +134,12 @@ def _load_existing_trials(run_dir: Path) -> dict[str, dict[str, Any]]:
     """Load existing trials with optimized file I/O."""
     existing: dict[str, dict[str, Any]] = {}
     trial_paths = sorted(run_dir.glob("trial_*.json"))
-    
+
     # Performance: Pre-allocate dictionary size hint
     if trial_paths:
         existing = dict.fromkeys(range(len(trial_paths)))
         existing.clear()  # Keep capacity but clear keys
-    
+
     for trial_path in trial_paths:
         try:
             # Performance: Read file once, parse once
@@ -151,7 +151,7 @@ def _load_existing_trials(run_dir: Path) -> dict[str, dict[str, Any]]:
                 existing[key] = trial_data
         except (json.JSONDecodeError, OSError):
             continue
-    
+
     return existing
 ```
 
@@ -223,7 +223,7 @@ The optimized trial loading handles resume automatically:
 - **Warm cache**: 4ms (50% duplicates)
 - **Speedup**: 11x
 
-### SQLite Deduplication (1000 operations)  
+### SQLite Deduplication (1000 operations)
 - **Individual adds**: 850ms
 - **Batch add**: 75ms
 - **Speedup**: 11x

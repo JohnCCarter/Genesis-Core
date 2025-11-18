@@ -1,6 +1,6 @@
 # Original Repository Documentation: Zero-Trade and Duplicate Issue Mentions
 
-**Analysis Date**: 2025-11-11  
+**Analysis Date**: 2025-11-11
 **Purpose**: Identify mentions of zero-trade and duplicate issues in original repository documentation (before investigation)
 
 ## Summary
@@ -19,7 +19,7 @@ However, the mentions were:
 
 ### 1. AGENTS.md (Section 18: Optuna Degeneracy Issues)
 
-**Location**: AGENTS.md, lines ~280-320  
+**Location**: AGENTS.md, lines ~280-320
 **Context**: Developer handoff notes documenting Optuna optimization problems
 
 **What was mentioned**:
@@ -27,16 +27,16 @@ However, the mentions were:
 ```markdown
 ### Orsaker
 
-- Skippade försök p.g.a. identiska parametrar inom run: runner markerar 
+- Skippade försök p.g.a. identiska parametrar inom run: runner markerar
   `duplicate_within_run` och hoppar över backtest för performance.
-  
-- Objective returnerar 0.0 för skippade trials → TPE får dålig signal och 
+
+- Objective returnerar 0.0 för skippade trials → TPE får dålig signal och
   fortsätter föreslå liknande set.
-  
-- För strikt gating/constraints i uppstartsfasen (0 trades) ger ingen 
+
+- För strikt gating/constraints i uppstartsfasen (0 trades) ger ingen
   feedback till samplern.
-  
-- YAML‑blad utan `type:` kan tysta kollapsa sökrymden (schemafel → allt 
+
+- YAML‑blad utan `type:` kan tysta kollapsa sökrymden (schemafel → allt
   blir "fixed").
 ```
 
@@ -49,13 +49,13 @@ However, the mentions were:
 **Proposed Mitigations**:
 ```markdown
 1) Straffa duplicat i objective:
-   - I `src/core/optimizer/runner.py::_run_optuna.objective`: om payload 
-     markerats `skipped` eller `duplicate`, returnera en stor negativ poäng 
-     (t.ex. `-1e6`) i stället för `0.0`. Detta bryter TPE‑degenerering mot 
+   - I `src/core/optimizer/runner.py::_run_optuna.objective`: om payload
+     markerats `skipped` eller `duplicate`, returnera en stor negativ poäng
+     (t.ex. `-1e6`) i stället för `0.0`. Detta bryter TPE‑degenerering mot
      samma parametrar.
 
 2) Telemetri/varning:
-   - Räkna andel skippade trials; varna om `skipped_ratio > 0.5` 
+   - Räkna andel skippade trials; varna om `skipped_ratio > 0.5`
      ("hög duplicatfrekvens – bredda sökrymden eller sänk constraints").
 
 3) Pre‑random boost:
@@ -77,9 +77,9 @@ From grep search results:
 ```
 | **1D** | 0.00% | 0.0% | 0 | 0.00 | 0.00 | 0.00% | ❌ **NO TRADES** |
 - ❌ **1D timeframe**: NO TRADES generated (0% return)
-- Phase-7b debugging uncovered why six-month backtests reported zero trades 
+- Phase-7b debugging uncovered why six-month backtests reported zero trades
   despite relaxed Fibonacci gates and entry thresholds.
-- Backtest engine interprets zero-sized entries as "no trade", producing 
+- Backtest engine interprets zero-sized entries as "no trade", producing
   the earlier zero-trade runs.
 ```
 
@@ -100,8 +100,8 @@ From grep search results:
 
 ### 3. OPTUNA_6MONTH_PROBLEM_REPORT.md
 
-**Location**: docs/OPTUNA_6MONTH_PROBLEM_REPORT.md (146 lines)  
-**Language**: Swedish  
+**Location**: docs/OPTUNA_6MONTH_PROBLEM_REPORT.md (146 lines)
+**Language**: Swedish
 **Focus**: Optuna study continuity issues (different problem)
 
 **What was mentioned**:

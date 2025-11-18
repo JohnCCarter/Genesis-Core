@@ -13,11 +13,11 @@ The codebase already includes robust optimizations:
 #### 1. Parameter Signature Caching
 **Location**: `src/core/utils/optuna_helpers.py:136-162`
 
-- Thread-safe LRU cache for parameter signatures  
+- Thread-safe LRU cache for parameter signatures
 - Automatic eviction to prevent memory issues
 - **Impact**: 10-100x speedup on duplicate parameter sets
 
-#### 2. Trial Key Caching  
+#### 2. Trial Key Caching
 **Location**: `src/core/optimizer/runner.py:74-129`
 
 - Cached canonicalization of trial parameters
@@ -58,7 +58,7 @@ The existing code demonstrates:
 
 ✅ **Professional optimization practices**
 - Thread-safe caching with proper locking
-- LRU eviction to prevent memory bloat  
+- LRU eviction to prevent memory bloat
 - Configurable cache sizes
 
 ✅ **Good performance engineering**
@@ -113,7 +113,7 @@ Based on existing code analysis and benchmarks:
 - **Cache hit rate**: 30-50% typical
 - **Memory overhead**: ~10MB for 5000 entries
 
-### SQLite Deduplication  
+### SQLite Deduplication
 - **Individual adds**: ~0.85ms
 - **Batch adds**: ~0.075ms
 - **Speedup**: 11x
@@ -126,7 +126,7 @@ Based on existing code analysis and benchmarks:
 
 ### Full Study (100 trials)
 - **Without env flags**: ~100 minutes
-- **With env flags**: ~35 minutes  
+- **With env flags**: ~35 minutes
 - **Speedup**: ~2.8x
 
 ## Recommendations
@@ -148,7 +148,7 @@ Based on existing code analysis and benchmarks:
 The code is already well-optimized. Future improvements would be **advanced optimizations** requiring significant refactoring:
 
 1. **Persistent process pool** - Keep Python warm
-2. **Shared memory** - Share candle data  
+2. **Shared memory** - Share candle data
 3. **Incremental caching** - Cache partial computations
 4. **Database storage** - Replace JSON files
 

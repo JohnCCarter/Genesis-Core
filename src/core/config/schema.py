@@ -113,7 +113,7 @@ class FeaturePercentileRange(RuntimeSection):
     @model_validator(mode="before")
     @classmethod
     def _from_sequence(cls, value: Any) -> dict[str, float] | Any:
-        if isinstance(value, (list, tuple)) and len(value) == 2:
+        if isinstance(value, list | tuple) and len(value) == 2:
             return {"low": value[0], "high": value[1]}
         return value
 

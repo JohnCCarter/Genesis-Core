@@ -62,6 +62,8 @@ def _compute_candles_hash(candles: dict[str, list[float] | np.ndarray], asof_bar
         # Use simple string hash instead of cryptographic hash (10x faster)
         return f"{asof_bar}:{last_close:.4f}"
     return str(asof_bar)
+
+
 _feature_cache: OrderedDict[str, tuple[dict[str, float], dict[str, Any]]] = OrderedDict()
 # Allow overriding via env; default larger LRU cache for speed
 try:

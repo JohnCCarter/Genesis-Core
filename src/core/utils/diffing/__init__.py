@@ -40,7 +40,6 @@ def summarize_metrics_diff(metrics_diff: dict[str, Any]) -> str:
 
 
 __all__ = ["summarize_metrics_diff"]
-from __future__ import annotations
 
 from .canonical import canonicalize_config, fingerprint_config
 from .feature_cache import IndicatorCache, make_indicator_fingerprint

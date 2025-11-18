@@ -1,10 +1,10 @@
 # README for AI Agents (Local Development)
 
-## Last update: 2025-11-14
+## Last update: 2025-11-19
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
 
-## 1. Deliverables (latest highlights: 2025-11-14)
+## 1. Deliverables (latest highlights: 2025-11-19)
 
 - Champion tBTCUSD 1h återställd till originalparametrarna från `run_20251023_141747`; manuell backtest (`tBTCUSD_1h_20251114_154009.json`) visar 0 trades tills `htf_fib`/`ltf_fib` metadata matas genom pipelinen.
 - Ny Optuna-konfiguration `config/optimizer/tBTCUSD_1h_optuna_remodel_v1.yaml` (120 trials, bred sökrymd inkl. fib-gates, risk map, exit/MTF) är live i run `run_20251114_remodel_bootstrap`; bootstrap-trials producerar nu 100+ trades och constraints filtrerar 1–2-trade-spikar.
@@ -17,17 +17,21 @@ This document explains the current workflow for Genesis-Core, highlights today's
 - Optuna-sökrymden breddad: fler kontinuerliga noder (entry/regime/hysteresis/max hold/risk map/HTF+LTF flippar) och `bootstrap_random_trials` (32 RandomSampler-trials sekventiellt) innan TPE.
 - Soft constraints returnerar nu `score - 1e3` (tidigare -1e6) för bättre signal till samplern utan att belöna felaktiga försök.
 - `RuntimeConfig`-schemat täcker nu `warmup_bars`, `htf_exit_config` samt kompletta `htf_fib`/`ltf_fib` block; `config/runtime.json` version 94 är uppdaterad till champion-parametrarna från `config/strategy/champions/tBTCUSD_1h.json` så fib-gates/partials testas i runtime direkt.
+- `features.percentiles/versions` accepteras nu av `RuntimeConfig`, så tmp-profiler som styr feature-klippning/flaggar kan patchas via `scripts/apply_runtime_patch.py` utan att fältet tappas bort.
+- `RuntimeConfig` tillåter extra metadata (`description`, `status`, `feature_coefficients`, kommentar-fält osv.) i alla sektioner; tmp-profiler som `config/tmp/v17_6h_exceptional.json` kan därmed patchas rakt in utan att förlora dokumentation.
+- `core/strategy/decision.py` loggar nu varje gate-orasak (`[DECISION] ...`) – EV-block, proba/edge, HTF/LTF-fib orsaker, hysteresis/cooldown samt risk sizing – så 0-trade runs kan felsökas direkt i loggen utan att tweaka i blindo.
+- **Phase-8 reset**: fullständig snapshot av `config/`, `data/`, `reports/`, `results/` och `cache/` ligger under `results/_archive/Phase8_kickoff/`. Aktiva kataloger har tömts (endast seedad `config/runtime.json` + tracked baselinefiler kvar) så nästa agent startar från helt ren miljö.
 
 ## 2. Snabbguide (Optuna körflöde, uppdaterad)
 
-1) Preflight & Validate
+1. Preflight & Validate
 
 ```powershell
 python scripts/preflight_optuna_check.py config/optimizer/<config>.yaml
 python scripts/validate_optimizer_config.py config/optimizer/<config>.yaml
 ```
 
-2) Miljö (snabbkörning)
+2. Miljö (snabbkörning)
 
 ```powershell
 $Env:GENESIS_FAST_WINDOW='1'
@@ -38,13 +42,13 @@ $Env:GENESIS_RANDOM_SEED='42'
 
 > Tip: Ange även `OPTUNA_MAX_DUPLICATE_STREAK=2000` och kontrollera att konfigen har `bootstrap_random_trials` (32–40) för att tvinga fram en deterministisk RandomSampler-uppstartsfas innan TPE tar över.
 
-3) Start
+3. Start
 
 ```powershell
 python -c "from core.optimizer.runner import run_optimizer; from pathlib import Path; run_optimizer(Path('config/optimizer/<config>.yaml'))"
 ```
 
-4) Summera
+4. Summera
 
 ```powershell
 python scripts/optimizer.py summarize run_<YYYYMMDD_HHMMSS> --top 10
@@ -317,27 +321,27 @@ pip install -e .[dev,ml]
 
 ### Omgående mitigering (utan kodändring)
 
-1) Bredda sökrymden initialt (fler trades):
+1. Bredda sökrymden initialt (fler trades):
    - `thresholds.entry_conf_overall.low: 0.25`
    - `htf_fib.entry.tolerance_atr: 0.20–0.80`
    - `ltf_fib.entry.tolerance_atr: 0.20–0.80`
    - Tillåt `multi_timeframe.allow_ltf_override: true` i grid och sänk `ltf_override_threshold: 0.65–0.85`.
-2) Mildra constraints tidigt:
+2. Mildra constraints tidigt:
    - `constraints.min_trades: 1–3`, `min_profit_factor: 0.8`, `max_max_dd: 0.35`
    - Låt `include_scoring_failures: false` så scoringens hårda fel inte kortsluter utforskning.
-3) Sampler‑inställningar:
+3. Sampler‑inställningar:
    - `tpe` med `constant_liar: true`, `multivariate: true`, höj `n_ei_candidates` (128–512).
    - `OPTUNA_MAX_DUPLICATE_STREAK` högt (t.ex. 2000) så studien inte avbryts för tidigt.
-4) Unika `study_name`/`storage` per körning (timestamp) och tom `_cache/` per kampanj.
+4. Unika `study_name`/`storage` per körning (timestamp) och tom `_cache/` per kampanj.
 
 ### Rekommenderad kodförbättring (nästa agent)
 
-1) Straffa duplicat i objective:
+1. Straffa duplicat i objective:
    - I `src/core/optimizer/runner.py::_run_optuna.objective`: om payload markerats `skipped` eller `duplicate`, returnera en stor negativ poäng (t.ex. `-1e6`) i stället för `0.0`. Detta bryter TPE‑degenerering mot samma parametrar.
    - Tips: Säkerställ noll‑straff för legitima cache‑träffar endast om du vill återrapportera verklig poäng; för duplicat inom run använd hårt straff.
-2) Telemetri/varning:
+2. Telemetri/varning:
    - Räkna andel skippade trials; varna om `skipped_ratio > 0.5` (“hög duplicatfrekvens – bredda sökrymden eller sänk constraints”).
-3) Pre‑random boost:
+3. Pre‑random boost:
    - Överväg 20–30 initiala `RandomSampler`‑trials innan TPE (eller `tpe` med hög `n_startup_trials`) för att sprida förslag bättre.
 
 ### Checklista – innan långkörning
@@ -381,9 +385,9 @@ Backtester gav konsekvent 34 trades, PF 0.92, -0.10% return oavsett ändringar i
 ```yaml
 signal_adaptation:
   zones:
-    low:  {entry: 0.25, regime: 0.45}  # från 0.33/0.60-0.70
-    mid:  {entry: 0.28, regime: 0.50}  # från 0.39/0.60-0.75
-    high: {entry: 0.32, regime: 0.55}  # från 0.45/0.60-0.80
+    low: { entry: 0.25, regime: 0.45 } # från 0.33/0.60-0.70
+    mid: { entry: 0.28, regime: 0.50 } # från 0.39/0.60-0.75
+    high: { entry: 0.32, regime: 0.55 } # från 0.45/0.60-0.80
 ```
 
 **Slutresultat med alla optimeringar:**

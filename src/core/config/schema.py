@@ -2,10 +2,14 @@ from __future__ import annotations
 
 from typing import Any
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
-class SignalAdaptationZone(BaseModel):
+class RuntimeSection(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+
+class SignalAdaptationZone(RuntimeSection):
     entry_conf_overall: float
     regime_proba: dict[str, float]
     pct: float | None = None
@@ -19,12 +23,12 @@ class SignalAdaptationZone(BaseModel):
         return out
 
 
-class SignalAdaptationConfig(BaseModel):
+class SignalAdaptationConfig(RuntimeSection):
     atr_period: int = Field(default=14, ge=1, le=200)
     zones: dict[str, SignalAdaptationZone]
 
 
-class Thresholds(BaseModel):
+class Thresholds(RuntimeSection):
     entry_conf_overall: float = Field(ge=0.0, le=1.0, default=0.7)
     regime_proba: dict[str, float] = Field(default_factory=lambda: {"balanced": 0.58})
     signal_adaptation: SignalAdaptationConfig | None = None
@@ -39,12 +43,12 @@ class Thresholds(BaseModel):
         return out
 
 
-class Gates(BaseModel):
+class Gates(RuntimeSection):
     hysteresis_steps: int = Field(default=2, ge=0)
     cooldown_bars: int = Field(default=0, ge=0)
 
 
-class Risk(BaseModel):
+class Risk(RuntimeSection):
     risk_map: list[tuple[float, float]] = Field(
         default_factory=lambda: [(0.6, 0.005), (0.7, 0.008), (0.8, 0.01), (0.9, 0.012)]
     )
@@ -59,11 +63,11 @@ class Risk(BaseModel):
         return out
 
 
-class EV(BaseModel):
+class EV(RuntimeSection):
     R_default: float = Field(default=1.8)
 
 
-class ExitLogic(BaseModel):
+class ExitLogic(RuntimeSection):
     """Exit configuration for backtest and live trading."""
 
     enabled: bool = Field(default=True, description="Enable exit logic")
@@ -82,7 +86,7 @@ class ExitLogic(BaseModel):
     )
 
 
-class LTFOverrideAdaptiveConfig(BaseModel):
+class LTFOverrideAdaptiveConfig(RuntimeSection):
     enabled: bool = Field(default=False)
     window: int = Field(default=120, ge=5, le=2000)
     percentile: float = Field(default=0.85, ge=0.0, le=1.0)
@@ -93,7 +97,7 @@ class LTFOverrideAdaptiveConfig(BaseModel):
     regime_multipliers: dict[str, float] = Field(default_factory=dict)
 
 
-class MultiTimeframeConfig(BaseModel):
+class MultiTimeframeConfig(RuntimeSection):
     use_htf_block: bool = Field(default=True)
     allow_ltf_override: bool = Field(default=False)
     ltf_override_threshold: float = Field(default=0.85, ge=0.0, le=1.0)
@@ -102,13 +106,35 @@ class MultiTimeframeConfig(BaseModel):
     )
 
 
-class FibOverrideConfidence(BaseModel):
+class FeaturePercentileRange(RuntimeSection):
+    low: float
+    high: float
+
+    @model_validator(mode="before")
+    @classmethod
+    def _from_sequence(cls, value: Any) -> dict[str, float] | Any:
+        if isinstance(value, (list, tuple)) and len(value) == 2:
+            return {"low": value[0], "high": value[1]}
+        return value
+
+    @field_validator("low", "high")
+    @classmethod
+    def _coerce(cls, v: Any) -> float:
+        return float(v)
+
+
+class FeaturesConfig(RuntimeSection):
+    percentiles: dict[str, FeaturePercentileRange] = Field(default_factory=dict)
+    versions: dict[str, Any] = Field(default_factory=dict)
+
+
+class FibOverrideConfidence(RuntimeSection):
     enabled: bool = Field(default=False)
     min: float | None = Field(default=None)
     max: float | None = Field(default=None)
 
 
-class FibEntryConfig(BaseModel):
+class FibEntryConfig(RuntimeSection):
     enabled: bool = Field(default=False)
     tolerance_atr: float = Field(default=0.5, ge=0.0)
     targets: list[float] | None = None
@@ -137,18 +163,18 @@ class FibEntryConfig(BaseModel):
         return v
 
 
-class FibExitConfig(BaseModel):
+class FibExitConfig(RuntimeSection):
     enabled: bool = Field(default=False)
     fib_threshold_atr: float | None = Field(default=None, ge=0.0)
     trail_atr_multiplier: float | None = Field(default=None, ge=0.0)
 
 
-class FibConfig(BaseModel):
+class FibConfig(RuntimeSection):
     entry: FibEntryConfig | None = None
     exit: FibExitConfig | None = None
 
 
-class HTFExitConfig(BaseModel):
+class HTFExitConfig(RuntimeSection):
     enable_partials: bool = Field(default=True)
     enable_trailing: bool = Field(default=True)
     enable_structure_breaks: bool = Field(default=True)
@@ -159,7 +185,7 @@ class HTFExitConfig(BaseModel):
     swing_update_strategy: str = Field(default="fixed")
 
 
-class RuntimeConfig(BaseModel):
+class RuntimeConfig(RuntimeSection):
     thresholds: Thresholds = Field(default_factory=Thresholds)
     gates: Gates = Field(default_factory=Gates)
     risk: Risk = Field(default_factory=Risk)
@@ -170,6 +196,7 @@ class RuntimeConfig(BaseModel):
     htf_exit_config: HTFExitConfig | None = None
     htf_fib: FibConfig | None = None
     ltf_fib: FibConfig | None = None
+    features: FeaturesConfig | None = None
 
     def model_dump_canonical(self) -> dict[str, Any]:
         """Dump in a stable, hash-friendly form (tuples → lists)."""
@@ -178,6 +205,18 @@ class RuntimeConfig(BaseModel):
         rm = data.get("risk", {}).get("risk_map")
         if isinstance(rm, list):
             data["risk"]["risk_map"] = [[float(a), float(b)] for a, b in rm]
+        feats_cfg = data.get("features")
+        if isinstance(feats_cfg, dict):
+            pct = feats_cfg.get("percentiles")
+            if isinstance(pct, dict):
+                feats_cfg["percentiles"] = {
+                    key: [
+                        float((rng or {}).get("low", 0.0)),
+                        float((rng or {}).get("high", 0.0)),
+                    ]
+                    for key, rng in pct.items()
+                    if isinstance(rng, dict)
+                }
         return data
 
 

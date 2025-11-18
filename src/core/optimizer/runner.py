@@ -348,21 +348,6 @@ def _expand_value(node: Any) -> list[Any]:
         node_type = node.get("type")
         if node_type == "grid":
             values = node.get("values") or []
-            # Performance: Only deepcopy if values contain mutable containers
-            # Most grid values are primitives (int, float, str, bool) which don't need deepcopy
-            if values:
-                return [copy.deepcopy(v) if isinstance(v, (dict, list)) else v for v in values]
-        if node_type == "fixed":
-            value = node.get("value")
-            # Performance: Only deepcopy mutable containers
-            if isinstance(value, (dict, list)):
-                return [copy.deepcopy(value)]
-            return [value]
-        # Nested dict without explicit type – expand recursively
-        return list(_expand_dict(node))
-    if isinstance(node, list):
-        return [copy.deepcopy(node)]
-    return [node]  # Performance: Primitives don't need deepcopy
             return [_clone_value(v) for v in values]
         if node_type == "fixed":
             return [_clone_value(node.get("value"))]

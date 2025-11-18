@@ -10,6 +10,24 @@ Action = Literal["LONG", "SHORT", "NONE"]
 _LOG = get_logger(__name__)
 
 
+def _sanitize_context(value: Any) -> Any:
+    if isinstance(value, (str, int, float, bool)) or value is None:
+        return value
+    if isinstance(value, (list, tuple)):
+        return [_sanitize_context(v) for v in value[:5]]
+    if isinstance(value, dict):
+        return {str(k): _sanitize_context(v) for k, v in list(value.items())[:8]}
+    return str(value)
+
+
+def _log_decision_event(event: str, **context: Any) -> None:
+    try:
+        payload = {k: _sanitize_context(v) for k, v in context.items()}
+        _LOG.info("[DECISION] %s %s", event, payload)
+    except Exception:  # pragma: no cover
+        _LOG.info("[DECISION] %s", event)
+
+
 def _summarize_fib_debug(data: Any) -> dict[str, Any]:
     if not isinstance(data, dict):
         return {"status": "missing"}
@@ -110,6 +128,7 @@ def decide(
     # 1) Fail‑safe & EV‑filter
     if not probas or not isinstance(probas, dict):
         reasons.append("FAIL_SAFE_NULL")
+        _log_decision_event("FAIL_SAFE_NO_PROBAS", probas=probas)
         return "NONE", {
             "versions": versions,
             "reasons": reasons,
@@ -127,6 +146,14 @@ def decide(
 
     if max_ev <= 0.0:
         reasons.append("EV_NEG")
+        _log_decision_event(
+            "EV_NEGATIVE",
+            p_buy=p_buy,
+            p_sell=p_sell,
+            ev_long=ev_long,
+            ev_short=ev_short,
+            R=R,
+        )
         return "NONE", {
             "versions": versions,
             "reasons": reasons,
@@ -221,10 +248,14 @@ def decide(
     buy_pass = p_buy >= thr and long_allowed
     sell_pass = p_sell >= thr and short_allowed
     if not buy_pass and not sell_pass:
-        _LOG.info(
-            "[FIB-FLOW] Early return: proba threshold not met (buy_pass=%s sell_pass=%s)",
-            buy_pass,
-            sell_pass,
+        _log_decision_event(
+            "PROBA_THRESHOLD_FAIL",
+            buy_pass=buy_pass,
+            sell_pass=sell_pass,
+            threshold=thr,
+            regime=regime_str,
+            p_buy=p_buy,
+            p_sell=p_sell,
         )
         return "NONE", {
             "versions": versions,
@@ -251,6 +282,12 @@ def decide(
                     candidate = "SHORT"
                 else:
                     reasons.append("P_TIE_BREAK")
+                    _log_decision_event(
+                        "P_TIE_BREAK",
+                        p_buy=p_buy,
+                        p_sell=p_sell,
+                        regime=regime_str,
+                    )
                     return "NONE", {
                         "versions": versions,
                         "reasons": reasons,
@@ -258,6 +295,16 @@ def decide(
                     }
         else:
             candidate = "LONG" if p_buy > p_sell else "SHORT"
+
+    _log_decision_event(
+        "CANDIDATE_SELECTED",
+        candidate=candidate,
+        buy_pass=buy_pass,
+        sell_pass=sell_pass,
+        p_buy=p_buy,
+        p_sell=p_sell,
+        zone=zone_label,
+    )
 
     # Helper utilities for Fibonacci-based gating
     def _levels_to_lookup(levels_dict: Any | None) -> dict[float, float]:
@@ -468,6 +515,12 @@ def decide(
             }
             if missing_policy != "pass":
                 reasons.append("HTF_FIB_UNAVAILABLE")
+                _log_decision_event(
+                    "HTF_FIB_BLOCK",
+                    reason="UNAVAILABLE",
+                    policy=missing_policy,
+                    candidate=candidate,
+                )
                 return "NONE", {
                     "versions": versions,
                     "reasons": reasons,
@@ -482,6 +535,7 @@ def decide(
                 "raw": htf_ctx,
             }
             reasons.append("HTF_FIB_NO_PRICE")
+            _log_decision_event("HTF_FIB_BLOCK", reason="NO_PRICE", candidate=candidate)
             return "NONE", {
                 "versions": versions,
                 "reasons": reasons,
@@ -553,6 +607,12 @@ def decide(
                         if not _try_override_htf_block(payload):
                             state_out["htf_fib_entry_debug"] = payload
                             reasons.append("HTF_FIB_LONG_BLOCK")
+                            _log_decision_event(
+                                "HTF_FIB_BLOCK",
+                                reason=payload.get("reason"),
+                                price=payload.get("price"),
+                                tolerance=payload.get("tolerance"),
+                            )
                             return "NONE", {
                                 "versions": versions,
                                 "reasons": reasons,
@@ -566,6 +626,11 @@ def decide(
                         if not _try_override_htf_block(payload):
                             state_out["htf_fib_entry_debug"] = payload
                             reasons.append("HTF_FIB_LONG_BLOCK")
+                            _log_decision_event(
+                                "HTF_FIB_BLOCK",
+                                reason=payload.get("reason"),
+                                targets=payload.get("targets"),
+                            )
                             return "NONE", {
                                 "versions": versions,
                                 "reasons": reasons,
@@ -620,6 +685,12 @@ def decide(
                         if not _try_override_htf_block(payload):
                             state_out["htf_fib_entry_debug"] = payload
                             reasons.append("HTF_FIB_SHORT_BLOCK")
+                            _log_decision_event(
+                                "HTF_FIB_BLOCK",
+                                reason=payload.get("reason"),
+                                price=payload.get("price"),
+                                tolerance=payload.get("tolerance"),
+                            )
                             return "NONE", {
                                 "versions": versions,
                                 "reasons": reasons,
@@ -633,6 +704,11 @@ def decide(
                         if not _try_override_htf_block(payload):
                             state_out["htf_fib_entry_debug"] = payload
                             reasons.append("HTF_FIB_SHORT_BLOCK")
+                            _log_decision_event(
+                                "HTF_FIB_BLOCK",
+                                reason=payload.get("reason"),
+                                targets=payload.get("targets"),
+                            )
                             return "NONE", {
                                 "versions": versions,
                                 "reasons": reasons,
@@ -679,6 +755,12 @@ def decide(
             }
             if missing_policy != "pass":
                 reasons.append("LTF_FIB_UNAVAILABLE")
+                _log_decision_event(
+                    "LTF_FIB_BLOCK",
+                    reason="UNAVAILABLE",
+                    policy=missing_policy,
+                    candidate=candidate,
+                )
                 return "NONE", {
                     "versions": versions,
                     "reasons": reasons,
@@ -694,6 +776,7 @@ def decide(
                 "raw": ltf_ctx,
             }
             reasons.append("LTF_FIB_NO_PRICE")
+            _log_decision_event("LTF_FIB_BLOCK", reason="NO_PRICE", candidate=candidate)
             return "NONE", {
                 "versions": versions,
                 "reasons": reasons,
@@ -732,6 +815,13 @@ def decide(
                         "level_price": lp_val,
                     }
                     reasons.append("LTF_FIB_LONG_BLOCK")
+                    _log_decision_event(
+                        "LTF_FIB_BLOCK",
+                        reason="LONG_ABOVE_LEVEL",
+                        price=p_val,
+                        level=lp_val,
+                        tolerance=tol_val,
+                    )
                     return "NONE", {
                         "versions": versions,
                         "reasons": reasons,
@@ -757,6 +847,13 @@ def decide(
                         "level_price": lp_val,
                     }
                     reasons.append("LTF_FIB_SHORT_BLOCK")
+                    _log_decision_event(
+                        "LTF_FIB_BLOCK",
+                        reason="SHORT_BELOW_LEVEL",
+                        price=p_val,
+                        level=lp_val,
+                        tolerance=tol_val,
+                    )
                     return "NONE", {
                         "versions": versions,
                         "reasons": reasons,
@@ -777,6 +874,7 @@ def decide(
     # 7) Confidence‑gate (kräv över entry_conf_overall för vald riktning)
     if not confidence or not isinstance(confidence, dict):
         reasons.append("FAIL_SAFE_NULL")
+        _log_decision_event("FAIL_SAFE_NO_CONFIDENCE", confidence=confidence)
         return "NONE", {
             "versions": versions,
             "reasons": reasons,
@@ -789,6 +887,12 @@ def decide(
     # Check confidence threshold
     if candidate == "LONG" and c_buy < conf_thr:
         reasons.append("CONF_TOO_LOW")
+        _log_decision_event(
+            "CONF_TOO_LOW",
+            candidate=candidate,
+            confidence=c_buy,
+            threshold=conf_thr,
+        )
         return "NONE", {
             "versions": versions,
             "reasons": reasons,
@@ -796,6 +900,12 @@ def decide(
         }
     if candidate == "SHORT" and c_sell < conf_thr:
         reasons.append("CONF_TOO_LOW")
+        _log_decision_event(
+            "CONF_TOO_LOW",
+            candidate=candidate,
+            confidence=c_sell,
+            threshold=conf_thr,
+        )
         return "NONE", {
             "versions": versions,
             "reasons": reasons,
@@ -810,6 +920,9 @@ def decide(
             edge = p_buy - p_sell
             if edge < min_edge:
                 reasons.append("EDGE_TOO_SMALL")
+                _log_decision_event(
+                    "EDGE_TOO_SMALL", candidate=candidate, edge=edge, min_edge=min_edge
+                )
                 return "NONE", {
                     "versions": versions,
                     "reasons": reasons,
@@ -819,6 +932,9 @@ def decide(
             edge = p_sell - p_buy
             if edge < min_edge:
                 reasons.append("EDGE_TOO_SMALL")
+                _log_decision_event(
+                    "EDGE_TOO_SMALL", candidate=candidate, edge=edge, min_edge=min_edge
+                )
                 return "NONE", {
                     "versions": versions,
                     "reasons": reasons,
@@ -834,6 +950,13 @@ def decide(
         if d_steps < hysteresis_steps:
             reasons.append("HYST_WAIT")
             state_out["decision_steps"] = d_steps
+            _log_decision_event(
+                "HYSTERESIS_BLOCK",
+                last_action=last_action,
+                candidate=candidate,
+                steps=d_steps,
+                hysteresis=hysteresis_steps,
+            )
             return "NONE", {
                 "versions": versions,
                 "reasons": reasons,
@@ -848,6 +971,7 @@ def decide(
     cooldown_left = int(state_in.get("cooldown_remaining", 0))
     if cooldown_left > 0:
         reasons.append("COOLDOWN_ACTIVE")
+        _log_decision_event("COOLDOWN_ACTIVE", remaining=cooldown_left)
         state_out["cooldown_remaining"] = max(0, cooldown_left - 1)
         return "NONE", {
             "versions": versions,
@@ -866,6 +990,14 @@ def decide(
     except Exception:
         size = 0.0
 
+    if size <= 0.0:
+        _log_decision_event(
+            "SIZE_ZERO",
+            candidate=candidate,
+            confidence=conf_val,
+            risk_map=risk_map,
+        )
+
     state_out["last_action"] = candidate
     # Starta cooldown efter beslut
     cooldown_bars = int((cfg.get("gates") or {}).get("cooldown_bars") or 0)
@@ -882,4 +1014,21 @@ def decide(
         "size": size,
         "state_out": state_out,
     }
+
+    # FORENSIC DEBUG - verify function returns expected values
+    _LOG.info(
+        "[FORENSIC] About to return: candidate=%s, size=%.4f, conf=%.4f, zone=%s",
+        candidate,
+        size,
+        conf_val,
+        zone_debug.get("current_zone"),
+    )
+
+    _log_decision_event(
+        "ENTRY",
+        candidate=candidate,
+        size=size,
+        confidence=conf_val,
+        cooldown=state_out.get("cooldown_remaining"),
+    )
     return candidate, meta

@@ -8,6 +8,9 @@
   - `python -c "import json;from core.config.schema import RuntimeConfig;RuntimeConfig(**json.load(open('config/tmp/tmp_user_test.json'))['cfg'])"`
   - `python -c "import json;from core.config.schema import RuntimeConfig;payload=json.load(open('config/strategy/champions/tBTCUSD_1h.json'));RuntimeConfig(**payload['cfg']['parameters'])"`
   - `python -c "import json;from core.config.schema import RuntimeConfig;payload=json.load(open('config/runtime.json'));RuntimeConfig(**payload['cfg'])"`
+- `features.percentiles` och `features.versions` stöds också av schemat, så feature-klippning/versionsflaggor från tmp-profiler överlever patchar till runtime.
+- Alla runtime-sektioner tillåter nu extra metadata (`description`, `comment`, `feature_coefficients`, `metrics` osv.). `config/tmp/v17_6h_exceptional.json` laddas oförändrad via `RuntimeConfig(**...)` och kan patchas utan att förlora kontext.
+- `core/strategy/decision.py` har fått detaljerade `[DECISION]`-loggar som dumpas vid varje gate (EV, proba/edge, HTF/LTF-fib, confidence, hysteresis, cooldown, risk-map). Noll-trade-backtester visar nu exakt vilken spärr som slog ut kandidaten.
 
 ### Runtime synkad mot champion
 - `config/runtime.json` version 94 speglar nu championparametrarna från `config/strategy/champions/tBTCUSD_1h.json` (entry 0.35, ATR-zoner 0.25/0.28/0.32, fib-gates på 0.5 tolerance, HTF-exit-partials 0.6/0.5, warmup_bars 150).

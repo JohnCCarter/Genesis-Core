@@ -159,6 +159,8 @@ def main():
         print(f"\n[IMPROVEMENT] Best configuration is {improvement:.1f}% faster than baseline")
     else:
         print("[ERROR] No successful runs")
+
+
 def run_benchmark(symbol: str, timeframe: str, bars: int, warmup: int) -> None:
     os.environ.setdefault("GENESIS_FAST_WINDOW", "1")
     os.environ.setdefault("GENESIS_PRECOMPUTE_FEATURES", "1")

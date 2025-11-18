@@ -451,7 +451,7 @@ class BacktestEngine:
 
         # Replay bars
         for i in range(num_bars):
-            # Performance: Direct array access is ~10x faster than iloc
+            # Performance: Direct array access is significantly faster than iloc (~5-10x for this operation)
             timestamp = timestamps_array[i]
             close_price = close_prices_array[i]
 

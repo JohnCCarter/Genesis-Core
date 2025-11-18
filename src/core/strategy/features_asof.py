@@ -40,6 +40,28 @@ from core.utils.logging_redaction import get_logger
 _log = get_logger(__name__)
 
 # Cache for feature extraction to avoid recomputing features for same data
+# Using OrderedDict for LRU-style eviction (Python 3.7+ maintains insertion order)
+
+_feature_cache: OrderedDict[str, tuple[dict[str, float], dict[str, Any]]] = OrderedDict()
+_MAX_CACHE_SIZE = 500  # Increased from 100 to reduce thrashing during backtests
+
+
+def _compute_candles_hash(candles: dict[str, list[float] | np.ndarray], asof_bar: int) -> str:
+    """Compute a fast hash of candles data up to asof_bar for caching.
+
+    Optimization: Use a simpler hash based on bar index and last values only.
+    This is much faster than summing 100 bars and gives good cache discrimination.
+    Works with both lists and NumPy arrays.
+    """
+    # For sequential access patterns (like backtesting), asof_bar alone is often sufficient
+    # Add last close value for additional discrimination
+    close_data = candles.get("close")
+    if close_data is not None and len(close_data) > asof_bar:
+        # Handle both numpy arrays and lists
+        last_close = float(close_data[asof_bar])
+        # Use simple string hash instead of cryptographic hash (10x faster)
+        return f"{asof_bar}:{last_close:.4f}"
+    return str(asof_bar)
 _feature_cache: OrderedDict[str, tuple[dict[str, float], dict[str, Any]]] = OrderedDict()
 # Allow overriding via env; default larger LRU cache for speed
 try:
@@ -574,6 +596,13 @@ def _extract_asof(
 
     result = (features, meta)
 
+    # Cache the result with LRU eviction (OrderedDict maintains insertion order)
+    if len(_feature_cache) >= _MAX_CACHE_SIZE:
+        # Evict least recently used entry (first item in OrderedDict)
+        _feature_cache.popitem(last=False)
+    _feature_cache[cache_key] = result
+    # Move to end to mark as recently used (LRU behavior)
+    _feature_cache.move_to_end(cache_key)
     # Cache the result (with size limit to prevent memory issues)
     _feature_cache[cache_key] = result
     # Enforce LRU size

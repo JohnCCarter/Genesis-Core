@@ -1,0 +1,41 @@
+{
+  "cfg": {
+    "thresholds": {
+      "regime_proba": {
+        "bullish": 0.42,
+        "balanced": 0.48,
+        "ranging": 0.52
+      }
+    },
+    "signal_adaptation": {
+      "zones": {
+        "low": {
+          "entry": 0.22,
+          "regime": 0.42
+        },
+        "mid": {
+          "entry": 0.25,
+          "regime": 0.48
+        },
+        "high": {
+          "entry": 0.28,
+          "regime": 0.52
+        }
+      }
+    },
+    "htf_fib": {
+      "entry": {
+        "enabled": true,
+        "tolerance_atr": 0.5,
+        "missing_policy": "block"
+      }
+    },
+    "ltf_fib": {
+      "entry": {
+        "enabled": true,
+        "tolerance_atr": 0.5,
+        "missing_policy": "block"
+      }
+    }
+  }
+}

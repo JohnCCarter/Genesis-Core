@@ -1,0 +1,235 @@
+{
+  "created_at": "2025-10-21T10:55:50.120526+00:00",
+  "champion_id": "bf017088-7557-5b65-8b63-83863a34a365",
+  "run_id": "run_20251021_091703",
+  "git_commit": "e3c323f",
+  "snapshot_id": "tBTCUSD_1h_2024-10-22_2025-10-01_v1",
+  "symbol": "tBTCUSD",
+  "timeframe": "1h",
+  "score": 352.4062816401723,
+  "metrics": {
+    "total_return": 0.1409149271730046,
+    "profit_factor": 2.4508821498273665,
+    "max_drawdown": 0.0,
+    "win_rate": 0.3780487804878049,
+    "num_trades": 82,
+    "sharpe_ratio": 0.0,
+    "return_to_dd": 1409.149271730046
+  },
+  "parameters": {
+    "thresholds": {
+      "entry_conf_overall": {
+        "type": "grid",
+        "values": [0.36, 0.38, 0.4, 0.42, 0.44]
+      },
+      "regime_proba": {
+        "ranging": {
+          "type": "grid",
+          "values": [0.75, 0.8, 0.85]
+        },
+        "bull": {
+          "type": "grid",
+          "values": [0.65, 0.7, 0.75]
+        },
+        "bear": {
+          "type": "grid",
+          "values": [0.65, 0.7, 0.75]
+        },
+        "balanced": {
+          "type": "grid",
+          "values": [0.75, 0.8, 0.85]
+        }
+      },
+      "signal_adaptation": {
+        "enabled": {
+          "type": "fixed",
+          "value": true
+        },
+        "atr_period": {
+          "type": "grid",
+          "values": [14, 21]
+        },
+        "zones": {
+          "low": {
+            "entry_conf_overall": {
+              "type": "grid",
+              "values": [0.36, 0.38, 0.4]
+            },
+            "regime_proba": {
+              "ranging": {
+                "type": "grid",
+                "values": [0.7, 0.75]
+              },
+              "bull": {
+                "type": "grid",
+                "values": [0.6, 0.65]
+              },
+              "bear": {
+                "type": "grid",
+                "values": [0.6, 0.65]
+              },
+              "balanced": {
+                "type": "grid",
+                "values": [0.7, 0.75]
+              }
+            }
+          },
+          "mid": {
+            "entry_conf_overall": {
+              "type": "grid",
+              "values": [0.42, 0.44]
+            },
+            "regime_proba": {
+              "ranging": {
+                "type": "grid",
+                "values": [0.8, 0.85]
+              },
+              "bull": {
+                "type": "grid",
+                "values": [0.7, 0.75]
+              },
+              "bear": {
+                "type": "grid",
+                "values": [0.7, 0.75]
+              },
+              "balanced": {
+                "type": "grid",
+                "values": [0.8, 0.85]
+              }
+            }
+          },
+          "high": {
+            "entry_conf_overall": {
+              "type": "grid",
+              "values": [0.46, 0.5]
+            },
+            "regime_proba": {
+              "ranging": {
+                "type": "grid",
+                "values": [0.85, 0.9]
+              },
+              "bull": {
+                "type": "grid",
+                "values": [0.75, 0.8]
+              },
+              "bear": {
+                "type": "grid",
+                "values": [0.75, 0.8]
+              },
+              "balanced": {
+                "type": "grid",
+                "values": [0.85, 0.9]
+              }
+            }
+          }
+        }
+      }
+    },
+    "risk": {
+      "risk_map": {
+        "type": "grid",
+        "values": [
+          [
+            [0.5, 0.03],
+            [0.6, 0.05],
+            [0.7, 0.08],
+            [0.8, 0.1],
+            [0.9, 0.12]
+          ],
+          [
+            [0.48, 0.02],
+            [0.58, 0.04],
+            [0.68, 0.07],
+            [0.78, 0.09],
+            [0.88, 0.11]
+          ],
+          [
+            [0.52, 0.04],
+            [0.62, 0.06],
+            [0.72, 0.09],
+            [0.82, 0.12],
+            [0.92, 0.14]
+          ]
+        ]
+      },
+      "exit": {
+        "exit_conf_threshold": {
+          "type": "grid",
+          "values": [0.45, 0.48, 0.5]
+        },
+        "max_hold_bars": {
+          "type": "grid",
+          "values": [20, 25, 30]
+        },
+        "partial_1_pct": {
+          "type": "grid",
+          "values": [0.4, 0.5, 0.6]
+        },
+        "partial_2_pct": {
+          "type": "grid",
+          "values": [0.3, 0.4, 0.5]
+        },
+        "fib_threshold_atr": {
+          "type": "grid",
+          "values": [0.5, 0.6, 0.7]
+        },
+        "trail_atr_multiplier": {
+          "type": "grid",
+          "values": [1.8, 2.0, 2.2, 2.5]
+        }
+      }
+    }
+  },
+  "constraints": {
+    "hard_failures": [],
+    "raw": {
+      "ok": true,
+      "reasons": []
+    }
+  },
+  "metadata": {
+    "trial_id": "trial_001",
+    "results_path": "tBTCUSD_1h_20251021_125549.json",
+    "run_meta": {
+      "run_dir": "C:\\Users\\fa06662\\HCP\\Skrivbord\\Genesis-Core\\results\\hparam_search\\run_20251021_zones_final",
+      "config_path": "C:\\Users\\fa06662\\HCP\\Skrivbord\\Genesis-Core\\config\\optimizer\\tBTCUSD_1h_search.yaml",
+      "raw_run_meta": {
+        "run_id": "run_20251021_zones_final",
+        "config_path": "config\\optimizer\\tBTCUSD_1h_search.yaml",
+        "snapshot_id": "tBTCUSD_1h_2024-10-22_2025-10-01_v1",
+        "symbol": "tBTCUSD",
+        "timeframe": "1h",
+        "started_at": "2025-10-21T10:44:07.287916+00:00",
+        "git_commit": "1f71a88d821fa808e62c5a91cc62c7ed9df43814",
+        "raw_meta": {
+          "symbol": "tBTCUSD",
+          "timeframe": "1h",
+          "snapshot_id": "tBTCUSD_1h_2024-10-22_2025-10-01_v1",
+          "baseline_config": "config/timeframe_configs.py:get_1h_config",
+          "warmup_bars": 150,
+          "runs": {
+            "max_trials": 120,
+            "strategy": "grid"
+          }
+        }
+      },
+      "constraints": {
+        "ok": true,
+        "reasons": []
+      },
+      "score_block": {
+        "score": 352.4062816401723,
+        "metrics": {
+          "total_return": 0.1409149271730046,
+          "profit_factor": 2.4508821498273665,
+          "max_drawdown": 0.0,
+          "win_rate": 0.3780487804878049,
+          "num_trades": 82,
+          "sharpe_ratio": 0.0,
+          "return_to_dd": 1409.149271730046
+        },
+        "hard_failures": []
+      }
+    }
+  }
+}

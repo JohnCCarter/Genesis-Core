@@ -1,16 +1,18 @@
 # README for AI Agents (Local Development)
 
-## Last update: 2025-11-11
+## Last update: 2025-11-14
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
 
-## 1. Deliverables (latest highlights: 2025-11-11)
+## 1. Deliverables (latest highlights: 2025-11-14)
 
+- Champion tBTCUSD 1h återställd till originalparametrarna från `run_20251023_141747`; manuell backtest (`tBTCUSD_1h_20251114_154009.json`) visar 0 trades tills `htf_fib`/`ltf_fib` metadata matas genom pipelinen.
+- Ny Optuna-konfiguration `config/optimizer/tBTCUSD_1h_optuna_remodel_v1.yaml` (120 trials, bred sökrymd inkl. fib-gates, risk map, exit/MTF) är live i run `run_20251114_remodel_bootstrap`; bootstrap-trials producerar nu 100+ trades och constraints filtrerar 1–2-trade-spikar.
 - Robust scoring: PF/DD från trades/equity via `core.backtest.metrics.calculate_metrics` (inte summary). Skyddat `return_to_dd`.
 - `PositionTracker.get_summary()` rapporterar korrekt `profit_factor` (gross_profit/gross_loss) och `max_drawdown` från equity‑kurva.
 - Constraints separerade från scoringens “hard_failures” och styrs via YAML (`include_scoring_failures`).
 - Determinism: runner sätter `GENESIS_RANDOM_SEED=42` om inte redan satt.
-- Performance‑läge: `GENESIS_FAST_WINDOW=1`, `GENESIS_PRECOMPUTE_FEATURES=1` (se `docs/FEATURE_COMPUTATION_MODES.md`).
+- Performance‑läge: `GENESIS_FAST_WINDOW=1`, `GENESIS_PRECOMPUTE_FEATURES=1` (se `docs/features/FEATURE_COMPUTATION_MODES.md`).
 - YAML‑schema: bladnoder MÅSTE ha `type: fixed|grid|float|int|loguniform` (annars values/value‑fel).
 - Optuna-sökrymden breddad: fler kontinuerliga noder (entry/regime/hysteresis/max hold/risk map/HTF+LTF flippar) och `bootstrap_random_trials` (32 RandomSampler-trials sekventiellt) innan TPE.
 - Soft constraints returnerar nu `score - 1e3` (tidigare -1e6) för bättre signal till samplern utan att belöna felaktiga försök.
@@ -121,17 +123,16 @@ python scripts/validate_optimizer_config.py config/optimizer/<config>.yaml
 
 6. **Full validation (optional)** - `config/optimizer/tBTCUSD_1h_new_optuna.yaml` (`optuna_tBTCUSD_1h_6m.db`).
 7. **Champion update** - update `config/strategy/champions/<symbol>_<tf>.json` once a winner is validated.
-8. **Documentation** - log outcomes in `docs/daily_summary_YYYY-MM-DD.md` and this file.
+8. **Documentation** - log outcomes in `docs/daily_summaries/daily_summary_YYYY-MM-DD.md` and this file.
 
-## 4. Champion status (unchanged)
+## 4. Champion status
 
 Champion file: `config/strategy/champions/tBTCUSD_1h.json`
 
-- Source run: `run_20251023_141747`, `trial_002`.
-- Key parameters: `entry_conf_overall = 0.35`, `regime_proba.balanced = 0.70`, risk map `[[0.45, 0.015], [0.55, 0.025], [0.65, 0.035]]`, `exit_conf_threshold = 0.40`, `max_hold_bars = 20`.
-- Exits: HTF fib trailing enabled (`fib_threshold_atr = 0.7`, `trail_atr_multiplier = 2.5`, partials 0.6/0.5).
-- Entry fib gates are enabled in the champion config; ensure the runtime state supplies both `htf_fib` and `ltf_fib` metadata before activating in production.
-- Backtest reference: `results/backtests/tBTCUSD_1h_20251023_162506.json` -> net +10.43 %, PF 3.30, 75 trades.
+- Source run: `run_20251023_141747`, `trial_002` (parametrarna återställda 2025-11-14).
+- Key parameters: `entry_conf_overall = 0.35`, `regime_proba.balanced = 0.70`, risk map `[[0.45, 0.015], [0.55, 0.025], [0.65, 0.035]]`, `exit_conf_threshold = 0.40`, `max_hold_bars = 20`, HTF/LTF-fib-gates aktiva.
+- Senaste backtest (2025-11-14, `results/backtests/tBTCUSD_1h_20251114_154009.json`) gav 0 trades → pipelinen matar ännu inte `htf_fib`/`ltf_fib` metadata när gatesen är på. Åtgärda innan champion används skarpt.
+- Historisk referens: `results/backtests/tBTCUSD_1h_20251023_162506.json` -> net +10.43 %, PF 3.30, 75 trades.
 
 ## 5. Result caching
 
@@ -167,13 +168,24 @@ Champion file: `config/strategy/champions/tBTCUSD_1h.json`
 
   Adjust the ignore list as needed to keep focus on first-party code.
 
-## 8. Next steps for hand-off (25 Oct 2025)
+## 8. Next steps for hand-off (14 Nov 2025)
 
-1. Wire `feats_meta["htf_fibonacci"]` into the decision state (`evaluate_pipeline`) so the new HTF entry gate can operate (currently only `ltf_fib` is forwarded).
-2. Tune the fib gates: rerun `config/optimizer/tBTCUSD_1h_fib_grid_v2.yaml` with tighter `fib_threshold_atr` / tolerance ranges and compare against the champion (target >= 260 score).
-3. Decide between grid-first vs Optuna-first for fib parameters; if Optuna is chosen, script a warm-start study that seeds the current champion values.
-4. Add regression tests around the new decision gates (HTF/LTF) covering missing context, ATR=0, and tolerance handling.
-5. Re-run Bandit with the scoped command and capture a clean report for future reference.
+1. Wire `feats_meta["htf_fibonacci"]` och LTF-data hela vägen till `evaluate_pipeline`/decision state så championens fib-gates (och Optuna-trials där `enabled=true`) inte resulterar i 0 trades.
+2. Fortsätt Optuna remodel-runnen `run_20251114_remodel_bootstrap`: exportera topp-trials efter bootstrap/TPE och jämför mot champion (mål ≥ 260 score); dokumentera i `docs/daily_summaries/daily_summary_2025-11-14.md`.
+3. När fib-dataflödet är fixat, kör referensbacktest för champion igen och uppdatera `metrics` + dokumentation.
+4. Lägg till regressionstester runt fib-gates/MTF-override (missing context, ATR=0, tolerance handling) för att undvika framtida noll-trade-regressioner.
+5. Re-run Bandit med den scoped kommandot och spara rapport för framtida handoff.
+
+### Runtime patch workflow (2025-11-17)
+
+- `config/runtime.json` är den enda källan som backtester/servrar laddar via `ConfigAuthority`.
+- Använd `scripts/apply_runtime_patch.py` för att applicera profiler (tmp eller champion). Workflow:
+  1. `python scripts/apply_runtime_patch.py --dry-run <path>.json` för att se diff.
+  2. `python scripts/apply_runtime_patch.py <path>.json` för att skriva.
+- Skriptet unwrappar automatiskt `cfg.parameters` och filtrerar bort otillåtna fält (endast `thresholds`, `gates`, `risk.risk_map`, `ev`, `multi_timeframe`).
+- `ConfigAuthority` gör nu en deep merge, så partiella patchar tappar inte syskonfält.
+- `scripts/run_backtest.py` loggar `[CONFIG:runtime] …` efter laddning → verifiera att entry/zoner/MTF matchar förväntan innan långa körningar.
+- För detaljer, se `docs/runtime/RUNTIME_PATCH_WORKFLOW.md`.
 
 ## 9. Recent history (Phase-7a/7b, 21 Oct 2025)
 
@@ -183,7 +195,7 @@ Champion file: `config/strategy/champions/tBTCUSD_1h.json`
 - ChampionManager & ChampionLoader integrated into pipeline/backtest flows.
 - Walk-forward runs (`wf_tBTCUSD_1h_20251021_090446`, ATR zone tweak `wf_tBTCUSD_1h_20251021_094334`).
 - Optuna integration (median pruner), CLI summary (`scripts/optimizer.py summarize --top N`), documentation in `docs/optimizer.md` and `docs/TODO.md`.
-- Exit improvement plan documented in `docs/FIBONACCI_FRAKTAL_EXITS_IMPLEMENTATION_PLAN.md`.
+- Exit improvement plan documented in `docs/fibonacci/FIBONACCI_FRAKTAL_EXITS_IMPLEMENTATION_PLAN.md`.
 
 ## 10. Deployment and operations
 
@@ -213,21 +225,21 @@ pip install -e .[dev,ml]
 
 - Feature pipeline: `src/core/strategy/features_asof.py`, `scripts/precompute_features_v17.py`.
 - Backtesting: `scripts/run_backtest.py --symbol tBTCUSD --timeframe 1h --capital 10000`.
-- Model training: `scripts/train_model.py` (see `docs/FEATURE_COMPUTATION_MODES.md`).
+- Model training: `scripts/train_model.py` (see `docs/features/FEATURE_COMPUTATION_MODES.md`).
 - Indicator reference: `docs/INDICATORS_REFERENCE.md`.
-- Exit logic: `docs/EXIT_LOGIC_IMPLEMENTATION.md`.
-- Validation checklist: `docs/VALIDATION_CHECKLIST.md`.
-- Next exits phase (Fibonacci): `docs/FIBONACCI_FRAKTAL_EXITS_IMPLEMENTATION_PLAN.md`.
+- Exit logic: `docs/exit_logic/EXIT_LOGIC_IMPLEMENTATION.md`.
+- Validation checklist: `docs/validation/VALIDATION_CHECKLIST.md`.
+- Next exits phase (Fibonacci): `docs/fibonacci/FIBONACCI_FRAKTAL_EXITS_IMPLEMENTATION_PLAN.md`.
 - Model cache reset: `curl -X POST http://127.0.0.1:8000/models/reload` after retraining.
 
 ---
 
-> **Kom ihag:** folj flodet _coarse -> proxy -> fine_, utnyttja cache-filerna och dokumentera resultaten i `docs/daily_summary_YYYY-MM-DD.md`. Nasta agent borjar med att aktivera HTF-filtret i beslutslogiken, kalibrera fib-parametrarna och uppdatera dokumentationen darefter.
+> **Kom ihag:** folj flodet _coarse -> proxy -> fine_, utnyttja cache-filerna och dokumentera resultaten i `docs/daily_summaries/daily_summary_YYYY-MM-DD.md`. Nasta agent borjar med att aktivera HTF-filtret i beslutslogiken, kalibrera fib-parametrarna och uppdatera dokumentationen darefter.
 
 ## 14. Uppdateringar 30 okt 2025
 
 - Upstream-merge lade till `.github/copilot-instructions.md` (kort agentguide), förfinade beslutslogiken (`src/core/strategy/decision.py`, `evaluate.py`) samt indikatorerna (`src/core/indicators/fibonacci.py`, `htf_fibonacci.py`).
-- Nya referensdokument: `docs/FIB_GATING_DEBUG_20251027.md`, `docs/RISK_MAP_CONFIDENCE_TUNING.md` – använd dem när fib-toleranser eller riskkartor justeras.
+- Nya referensdokument: `docs/fibonacci/FIB_GATING_DEBUG_20251027.md`, `docs/risk/RISK_MAP_CONFIDENCE_TUNING.md` – använd dem när fib-toleranser eller riskkartor justeras.
 - Temporära JSON-profiler (`tmp_*.json`) och `tmp_reason_counts.py` innehåller kandidatkonfigurationer och statistik från senaste fib-gating-debuggen. Rensa eller migrera värdefulla varianter till `config/` innan de tas bort.
 - Champion-filen `config/strategy/champions/tBTCUSD_1h.json` uppdaterades med finjusterade fibparametrar. Stäm av mot nya `state_out`-fält och säkerställ att HTF/LTF-konteksten nu flödar hela vägen från `features_asof` -> `evaluate_pipeline` -> `decision`.
 - `cursor-active-rules.mdc` är nedtrimmad (~50 rader) och `AGENTS.md` ersätter tidigare `README.agents.md`; håll båda synkade med de här noteringarna inför nästa handoff.
@@ -239,7 +251,7 @@ pip install -e .[dev,ml]
   - Säkerställ att resultaten sparas i `results/hparam_search/run_*` och att `tmp_*`-konfigurationer versioneras vid behov.
   - Meddela resultat-ID, score, trades och nyckelmetriker till Agent B efter varje körning.
 - **Agent B – Analys & dokumentation**
-  - Jämför inkomna resultat mot champion (`score ≥ 260`), uppdatera `AGENTS.md` + relevanta docs (`docs/FIB_GATING_DEBUG_*.md`, `docs/RISK_MAP_CONFIDENCE_TUNING.md`).
+  - Jämför inkomna resultat mot champion (`score ≥ 260`), uppdatera `AGENTS.md` + relevanta docs (`docs/fibonacci/FIB_GATING_DEBUG_*.md`, `docs/risk/RISK_MAP_CONFIDENCE_TUNING.md`).
   - Kör regressionstester (fib-gates, ATR=0, missing context) och flagga avvikelser.
   - Rensa/migrera temporära profiler när de inte längre behövs och synka status tillbaka till Agent A.
 - **Gemensamma krav**
@@ -349,3 +361,69 @@ pip install -e .[dev,ml]
 - Baseline (`config/tmp/champion_base.json`) loggade 10 HTF, 8 HTF+fallback och 4 fallback-exits på +3.10 % netto – fallback används fortfarande för slutstängningar.
 - Aggressiv profil (`config/tmp/aggressive.json`) gav 22 rena fallback-closer och max DD 10.9 % → aggressiva toleranser överlastar fallback-logiken.
 - Rekommendation: öppna nästa grid/Optuna över `fib_threshold_atr` 0.80–0.90, `trail_atr_multiplier` 1.4–1.8 samt HTF/LTF toleranser, och tracka fallback-andelen (<40 %) som guardrail.
+
+## 21. GENOMBROTT – signal_adaptation flaskhalsen identifierad (2025-11-13)
+
+### Problem
+
+Backtester gav konsekvent 34 trades, PF 0.92, -0.10% return oavsett ändringar i `entry_conf_overall`, `regime_proba`, HTF/LTF-gates eller exit-inställningar.
+
+### Systematisk isoleringstestning
+
+1. **Test: entry_conf_overall (0.32→0.28)** → 34 trades (oförändrat)
+2. **Test: regime_proba (alla→0.50)** → 34 trades (oförändrat)
+3. **Test: HTF/LTF-gates (disabled)** → 34 trades (oförändrat)
+4. **Test: signal_adaptation ATR-zoner (sänkta)** → **176 trades (+5×), PF 1.31, +4.95%** ✅
+
+### Genombrott-konfiguration
+
+```yaml
+signal_adaptation:
+  zones:
+    low:  {entry: 0.25, regime: 0.45}  # från 0.33/0.60-0.70
+    mid:  {entry: 0.28, regime: 0.50}  # från 0.39/0.60-0.75
+    high: {entry: 0.32, regime: 0.55}  # från 0.45/0.60-0.80
+```
+
+**Slutresultat med alla optimeringar:**
+
+- **176 trades** (från 34), **PF 1.32** (från 0.92), **Return +8.41%** (från -0.10%)
+- Positionsstorlek 3× högre (`risk_map` 0.015–0.045)
+- Exit-threshold sänkt till 0.35
+- HTF/LTF-gates återaktiverade med `tolerance_atr: 0.60`
+
+### Optuna-problemet upptäckt
+
+Alla Optuna-konfigurationer hade `signal_adaptation` **fixerat till 44–60% högre trösklar** än genombrott-värdena:
+
+- Original Optuna: low 0.36, mid 0.42, high 0.48 (regime 0.60–0.88)
+- Genombrott: low 0.25, mid 0.28, high 0.32 (regime 0.45–0.55)
+
+**Konsekvens:** Optuna optimerade allt annat (fib-gates, exits, risk) medan ATR-zonerna garanterade få trades → därför identiska dåliga resultat.
+
+**Åtgärd:** `config/optimizer/tBTCUSD_1h_optuna_smoke_loose.yaml` uppdaterad med 5 grid-varianter runt genombrott-värdena (entry 0.20–0.34, regime 0.38–0.58).
+
+### Bugfix
+
+- `src/core/backtest/engine.py` – fixade exit-konfigladdning från `configs['cfg']['exit']` → `configs['exit']` så att exit-inställningar faktiskt respekteras.
+
+### Filer
+
+- Analys: `docs/optuna/BREAKTHROUGH_CONFIG_20251113.md`
+- Optuna-fix: `docs/optuna/OPTUNA_FIX_20251113.md`
+- Konfig: `config/tmp/tmp_user_test.json`
+- Backtest: `results/backtests/tBTCUSD_1h_20251113_163809.json`
+- Uppdaterad Optuna: `config/optimizer/tBTCUSD_1h_optuna_smoke_loose.yaml`
+
+### Nyckelinsikter
+
+1. **signal_adaptation ATR-zoner är den primära entry-kontrollen** – toppnivå-trösklar används inte när zoner är definierade
+2. **Systematisk isoleringstestning är kritisk** – ändra en parameter i taget för att identifiera verkliga flaskhalsar
+3. **Optuna kan optimera fel sökrymd** – verifiera alltid att kritiska parametrar inte är fixerade till suboptimala värden
+4. **Exit-konfigladdning måste vara korrekt** – bug i engine.py gjorde att exit-inställningar ignorerades
+
+### Nästa steg
+
+- Köra ny Optuna-session (80 trials) med uppdaterad `signal_adaptation`-grid
+- Validera på längre tidsperioder (6–12 månader)
+- Walk-forward-validering med rullande fönster

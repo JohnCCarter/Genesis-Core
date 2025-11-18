@@ -219,3 +219,37 @@ $Env:GENESIS_FAST_WINDOW='1'
 $Env:GENESIS_PRECOMPUTE_FEATURES='1'
 python scripts/run_backtest.py --symbol tBTCUSD --timeframe 1h --start 2024-10-22 --end 2025-10-01 --fast-window --precompute-features
 ```
+
+---
+
+## 🧪 Paritetstester 2025-11-14
+
+För att garantera att alla pipelines producerar identiska features lades två pytest-case till:
+
+1. `tests/test_feature_parity.py`
+   - Kör `_extract_asof()` bar-för-bar och jämför mot v17-featurefiler.
+   - Dataset: `tests/data/tBTCUSD_1h_sample.parquet` + `tests/data/tBTCUSD_1h_features_v17.parquet` (200 barer, december 2024).
+2. `tests/test_precompute_vs_runtime.py`
+   - Bygger `precomputed_features` exakt som `BacktestEngine` och validerar att `_extract_asof()` med/utan precompute ger samma resultat.
+
+### Precompute-scriptet
+
+`scripts/precompute_features_v17.py` genererar nu featurefiler genom att anropa `_extract_asof()` direkt. Nya flaggor:
+
+- `--start-index / --end-index` – begränsa datafönster för snabba tester.
+- `--candles-file` – kör mot valfri parquet (ex. `tests/data/tBTCUSD_1h_sample.parquet`).
+
+Det betyder att v17-featurefilerna är bit-exakta mot runtime (ingen längre avvikelse mellan vectorized och live-kod).
+
+### Rekommenderat flöde
+
+| Scenario | Kommando |
+|----------|----------|
+| Uppdatera hela v17-filen | `python scripts/precompute_features_v17.py --symbol tBTCUSD --timeframe 1h` |
+| Snabb sample (200 bar) | `python scripts/precompute_features_v17.py --symbol tBTCUSD --timeframe 1h --candles-file tests/data/tBTCUSD_1h_sample.parquet --quiet` |
+| Paritetskontroll | `python -m pytest tests/test_feature_parity.py tests/test_precompute_vs_runtime.py` |
+
+Alla ändringar ovan säkerställer att:
+
+- Backtest/Optuna (runtime) ↔ precompute ↔ ML-training använder samma definitioner.
+- Regressionstester fångar om någon bryter pariteten framöver.

@@ -1,0 +1,57 @@
+{
+  "cfg": {
+    "thresholds": {
+      "entry_conf_overall": 0.32,
+      "regime_proba": {
+        "ranging": 0.5,
+        "bull": 0.5,
+        "bear": 0.5,
+        "balanced": 0.5
+      },
+      "signal_adaptation": {
+        "atr_period": 14,
+        "zones": {
+          "low": {
+            "entry_conf_overall": 0.25,
+            "regime_proba": {
+              "ranging": 0.45,
+              "bull": 0.45,
+              "bear": 0.45,
+              "balanced": 0.45
+            }
+          },
+          "mid": {
+            "entry_conf_overall": 0.28,
+            "regime_proba": {
+              "ranging": 0.5,
+              "bull": 0.5,
+              "bear": 0.5,
+              "balanced": 0.5
+            }
+          },
+          "high": {
+            "entry_conf_overall": 0.32,
+            "regime_proba": {
+              "ranging": 0.55,
+              "bull": 0.55,
+              "bear": 0.55,
+              "balanced": 0.55
+            }
+          }
+        }
+      }
+    },
+    "exit": {
+      "enabled": true,
+      "exit_conf_threshold": 0.35,
+      "max_hold_bars": 20
+    },
+    "risk": {
+      "risk_map": [
+        [0.45, 0.015],
+        [0.55, 0.025],
+        [0.65, 0.035]
+      ]
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "cfg": {
+    "thresholds": {
+      "entry_conf_overall": 0.33,
+      "regime_proba": {
+        "ranging": 0.46,
+        "bull": 0.36,
+        "bear": 0.36,
+        "balanced": 0.42
+      }
+    },
+    "gates": {
+      "cooldown_bars": 2,
+      "hysteresis_steps": 2
+    },
+    "exit": {
+      "max_hold_bars": 25
+    },
+    "htf_fib": {
+      "entry": {
+        "enabled": true,
+        "tolerance_atr": 0.8,
+        "missing_policy": "pass"
+      }
+    },
+    "ltf_fib": {
+      "entry": {
+        "enabled": false
+      }
+    }
+  }
+}

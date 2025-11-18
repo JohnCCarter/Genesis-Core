@@ -13,6 +13,17 @@ from core.strategy.prob_model import predict_proba_for
 champion_loader = ChampionLoader()
 
 
+def _deep_merge(base: dict, override: dict) -> dict:
+    """Deep merge override into base, recursively merging nested dicts."""
+    merged = dict(base)
+    for key, value in (override or {}).items():
+        if key in merged and isinstance(merged[key], dict) and isinstance(value, dict):
+            merged[key] = _deep_merge(merged[key], value)
+        else:
+            merged[key] = value
+    return merged
+
+
 def evaluate_pipeline(
     candles: dict[str, Any],
     *,
@@ -37,8 +48,7 @@ def evaluate_pipeline(
     champion = champion_loader.load_cached(symbol, timeframe)
     champion_cfg = dict(champion.config or {})
     if configs:
-        merged_cfg = champion_cfg
-        merged_cfg.update(configs)
+        merged_cfg = _deep_merge(champion_cfg, configs)
         configs = merged_cfg
     else:
         configs = champion_cfg
@@ -122,12 +132,27 @@ def evaluate_pipeline(
         except (TypeError, ValueError):
             last_close = None
 
+    htf_fib_data = feats_meta.get("htf_fibonacci")
+    ltf_fib_data = feats_meta.get("ltf_fibonacci")
+
+    # Diagnostik för fib-dataflöde
+    from core.utils.logging_redaction import get_logger
+
+    _eval_log = get_logger(__name__)
+    _eval_log.info(
+        "[FIB-FLOW] evaluate_pipeline state assembly: symbol=%s timeframe=%s htf_available=%s ltf_available=%s",
+        symbol,
+        timeframe,
+        htf_fib_data.get("available") if isinstance(htf_fib_data, dict) else False,
+        ltf_fib_data.get("available") if isinstance(ltf_fib_data, dict) else False,
+    )
+
     state = {
         **state,
         "current_atr": feats.get("atr_14"),
         "atr_percentiles": feats_meta.get("atr_percentiles"),
-        "htf_fib": feats_meta.get("htf_fibonacci"),
-        "ltf_fib": feats_meta.get("ltf_fibonacci"),
+        "htf_fib": htf_fib_data,
+        "ltf_fib": ltf_fib_data,
         "last_close": last_close,
     }
 

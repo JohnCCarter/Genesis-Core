@@ -1,0 +1,8 @@
+{
+  "cfg": {
+    "multi_timeframe": {
+      "use_htf_block": false,
+      "allow_ltf_override": true
+    }
+  }
+}

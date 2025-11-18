@@ -109,7 +109,7 @@ def summarize_metric_deltas(diff: dict[str, MetricDelta]) -> str:
     lines = []
     for key, delta in diff.items():
         if delta.delta is not None:
-            lines.append(f"{key}: {delta:+.4f} (old={delta.old}, new={delta.new})")
+            lines.append(f"{key}: {delta.delta:+.4f} (old={delta.old}, new={delta.new})")
         elif delta.regression:
             lines.append(f"{key}: changed from {delta.old} to {delta.new}")
     return "\n".join(lines)

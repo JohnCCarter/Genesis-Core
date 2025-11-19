@@ -4,39 +4,39 @@
     "thresholds": {
       "entry_conf_overall": 0.35,
       "regime_proba": {
-        "ranging": 0.8,
-        "bull": 0.7,
-        "bear": 0.7,
-        "balanced": 0.7
+        "ranging": 0.5,
+        "bull": 0.5,
+        "bear": 0.5,
+        "balanced": 0.5
       },
       "signal_adaptation": {
         "atr_period": 14,
         "zones": {
           "low": {
-            "entry_conf_overall": 0.36,
+            "entry_conf_overall": 0.22,
             "regime_proba": {
-              "ranging": 0.7,
-              "bull": 0.6,
-              "bear": 0.6,
-              "balanced": 0.7
+              "ranging": 0.47,
+              "bull": 0.42,
+              "bear": 0.42,
+              "balanced": 0.46
             }
           },
           "mid": {
-            "entry_conf_overall": 0.42,
+            "entry_conf_overall": 0.26,
             "regime_proba": {
-              "ranging": 0.8,
-              "bull": 0.7,
-              "bear": 0.7,
-              "balanced": 0.8
+              "ranging": 0.5,
+              "bull": 0.46,
+              "bear": 0.46,
+              "balanced": 0.5
             }
           },
           "high": {
-            "entry_conf_overall": 0.48,
+            "entry_conf_overall": 0.3,
             "regime_proba": {
-              "ranging": 0.88,
-              "bull": 0.78,
-              "bear": 0.78,
-              "balanced": 0.88
+              "ranging": 0.55,
+              "bull": 0.5,
+              "bear": 0.5,
+              "balanced": 0.55
             }
           }
         }
@@ -60,15 +60,15 @@
       "regime_aware_exits": true,
       "stop_loss_pct": 0.02,
       "take_profit_pct": 0.05,
-      "trailing_stop_enabled": false,
+      "trailing_stop_enabled": true,
       "trailing_stop_pct": 0.015
     },
     "multi_timeframe": {
       "use_htf_block": true,
-      "allow_ltf_override": false,
+      "allow_ltf_override": true,
       "ltf_override_threshold": 0.85,
       "ltf_override_adaptive": {
-        "enabled": false,
+        "enabled": true,
         "window": 120,
         "percentile": 0.85,
         "min_history": 30,
@@ -76,6 +76,16 @@
         "max_ceiling": null,
         "fallback_threshold": null,
         "regime_multipliers": {}
+      },
+      "htf_selector": {
+        "mode": "fixed",
+        "default_timeframe": null,
+        "default_multiplier": null,
+        "fallback_timeframe": "1D",
+        "per_timeframe": {
+          "1h": { "multiplier": 6 },
+          "6h": { "timeframe": "1D" }
+        }
       }
     },
     "ev": {

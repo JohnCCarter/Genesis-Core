@@ -1,5 +1,6 @@
-"""Diagnostikskript for att spara fibonacci-datafl odet genom pipelinen."""
+"""Diagnostikskript for att spara fibonacci-dataflodet genom pipelinen."""
 
+import argparse
 import json
 import logging
 import sys
@@ -26,37 +27,63 @@ def deep_merge(base: dict, override: dict) -> dict:
     return merged
 
 
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Diagnostisera fib-dataflodet")
+    parser.add_argument(
+        "--config-path",
+        type=Path,
+        help="Valfri profil att ladda i stallet for championen (kan vara tmp-profil)",
+    )
+    parser.add_argument(
+        "--runtime-only",
+        action="store_true",
+        help="Anvand endast runtime-konfigurationen utan att merge:a champion",
+    )
+    return parser.parse_args()
+
+
+def _load_profile(path: Path) -> dict:
+    if not path.exists():
+        raise FileNotFoundError(f"Profil saknas: {path}")
+
+    with open(path) as f:
+        data = json.load(f)
+
+    cfg_wrapper = data.get("cfg", {})
+    profile_cfg = cfg_wrapper.get("parameters") or cfg_wrapper.get("config", {})
+    if not profile_cfg:
+        profile_cfg = data.get("parameters", data)
+    return profile_cfg
+
+
 def main():
     """Kor diagnostik pa fib-dataflod."""
+
+    args = _parse_args()
 
     print("\n" + "=" * 80)
     print("FIBONACCI DATAFLODES-DIAGNOSTIK")
     print("=" * 80 + "\n")
 
     champion_path = Path("config/strategy/champions/tBTCUSD_1h.json")
+    profile_cfg: dict | None = None
 
-    if not champion_path.exists():
-        print(f"[ERROR] Champion-fil saknas: {champion_path}")
-        return 1
+    if args.runtime_only:
+        print("[CONFIG] Runtime-only-lage: ingen champion eller extern profil anvands")
+    else:
+        config_path = args.config_path or champion_path
+        try:
+            profile_cfg = _load_profile(config_path)
+        except FileNotFoundError as exc:
+            print(f"[ERROR] {exc}")
+            return 1
 
-    with open(champion_path) as f:
-        champion_data = json.load(f)
-
-    # Champion-filen har strukturen {"cfg": {"parameters": {...}}}
-    # Vi ska använda parameters direkt (precis som ChampionLoader gör)
-    cfg_wrapper = champion_data.get("cfg", {})
-    champion_cfg = cfg_wrapper.get("parameters") or cfg_wrapper.get("config", {})
-
-    if not champion_cfg:
-        # Fallback: kanske redan parameters på toppnivå
-        champion_cfg = champion_data.get("parameters", champion_data)
-
-    print(f"[CONFIG] Champion laddad: {champion_path}")
-    print(f"   Champion cfg keys: {list(champion_cfg.keys())[:10]}")
-    print(f"   HTF fib entry: {champion_cfg.get('htf_fib', {}).get('entry', {}).get('enabled')}")
-    print(f"   LTF fib entry: {champion_cfg.get('ltf_fib', {}).get('entry', {}).get('enabled')}")
-    print(f"   HTF block: {champion_cfg.get('multi_timeframe', {}).get('use_htf_block')}")
-    print()
+        print(f"[CONFIG] Profil laddad: {config_path}")
+        print(f"   Profil cfg keys: {list(profile_cfg.keys())[:10]}")
+        print(f"   HTF fib entry: {profile_cfg.get('htf_fib', {}).get('entry', {}).get('enabled')}")
+        print(f"   LTF fib entry: {profile_cfg.get('ltf_fib', {}).get('entry', {}).get('enabled')}")
+        print(f"   HTF block: {profile_cfg.get('multi_timeframe', {}).get('use_htf_block')}")
+        print()
 
     authority = ConfigAuthority()
     baseline_cfg, _, _ = authority.get()
@@ -64,10 +91,12 @@ def main():
 
     print(f"[DEBUG] Baseline htf_fib: {baseline_cfg.get('htf_fib')}")
     print(f"[DEBUG] Baseline ltf_fib: {baseline_cfg.get('ltf_fib')}")
-    print(f"[DEBUG] Champion htf_fib before merge: {champion_cfg.get('htf_fib')}")
-    print()
-
-    merged_cfg = deep_merge(baseline_cfg, champion_cfg)
+    if profile_cfg:
+        print(f"[DEBUG] Profil htf_fib before merge: {profile_cfg.get('htf_fib')}")
+        print()
+        merged_cfg = deep_merge(baseline_cfg, profile_cfg)
+    else:
+        merged_cfg = baseline_cfg
 
     # Debug: visa merged config
     print(f"[DEBUG] After merge - htf_fib: {merged_cfg.get('htf_fib')}")

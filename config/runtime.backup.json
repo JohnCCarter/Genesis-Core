@@ -1,0 +1,115 @@
+{
+  "cfg": {
+    "ev": { "R_default": 1.8 },
+    "exit": {
+      "enabled": true,
+      "exit_conf_threshold": 0.4,
+      "max_hold_bars": 20,
+      "regime_aware_exits": true,
+      "stop_loss_pct": 0.02,
+      "take_profit_pct": 0.05,
+      "trailing_stop_enabled": false,
+      "trailing_stop_pct": 0.015
+    },
+    "features": null,
+    "gates": { "cooldown_bars": 2, "hysteresis_steps": 3 },
+    "htf_exit_config": null,
+    "htf_fib": {
+      "entry": {
+        "enabled": false,
+        "tolerance_atr": 0.3,
+        "long_target_levels": [0.5, 0.618, 0.786],
+        "short_target_levels": [0.5, 0.382, 0.236],
+        "missing_policy": "pass"
+      }
+    },
+    "ltf_fib": {
+      "entry": {
+        "enabled": true,
+        "tolerance_atr": 0.4,
+        "long_max_level": 0.786,
+        "short_min_level": 0.382,
+        "missing_policy": "pass"
+      }
+    },
+    "multi_timeframe": {
+      "allow_ltf_override": true,
+      "ltf_override_adaptive": {
+        "enabled": false,
+        "fallback_threshold": null,
+        "max_ceiling": null,
+        "min_floor": null,
+        "min_history": 30,
+        "percentile": 0.85,
+        "regime_multipliers": {},
+        "window": 120
+      },
+      "htf_selector": {
+        "mode": "fixed",
+        "default_timeframe": null,
+        "default_multiplier": null,
+        "fallback_timeframe": "1D",
+        "per_timeframe": {
+          "1h": { "multiplier": 6 },
+          "6h": { "timeframe": "1D" }
+        }
+      },
+      "ltf_override_threshold": 0.72,
+      "use_htf_block": false
+    },
+    "risk": {
+      "risk_map": [
+        [0.45, 0.015],
+        [0.55, 0.025],
+        [0.65, 0.035]
+      ]
+    },
+    "thresholds": {
+      "entry_conf_overall": 0.35,
+      "min_edge": null,
+      "regime_proba": {
+        "balanced": 0.48,
+        "bear": 0.42,
+        "bull": 0.42,
+        "ranging": 0.52
+      },
+      "signal_adaptation": {
+        "atr_period": 14,
+        "zones": {
+          "high": {
+            "entry_conf_overall": 0.3,
+            "pct": null,
+            "regime_proba": {
+              "balanced": 0.55,
+              "bear": 0.5,
+              "bull": 0.5,
+              "ranging": 0.55
+            }
+          },
+          "low": {
+            "entry_conf_overall": 0.22,
+            "pct": null,
+            "regime_proba": {
+              "balanced": 0.46,
+              "bear": 0.42,
+              "bull": 0.42,
+              "ranging": 0.47
+            }
+          },
+          "mid": {
+            "entry_conf_overall": 0.26,
+            "pct": null,
+            "regime_proba": {
+              "balanced": 0.5,
+              "bear": 0.46,
+              "bull": 0.46,
+              "ranging": 0.5
+            }
+          }
+        }
+      }
+    },
+    "warmup_bars": null
+  },
+  "version": 2
+}

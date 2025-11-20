@@ -97,6 +97,19 @@ class LTFOverrideAdaptiveConfig(RuntimeSection):
     regime_multipliers: dict[str, float] = Field(default_factory=dict)
 
 
+class HTFSelectorRule(RuntimeSection):
+    timeframe: str | None = None
+    multiplier: float | None = Field(default=None, gt=0)
+
+
+class HTFSelectorConfig(RuntimeSection):
+    mode: str = Field(default="fixed")
+    default_timeframe: str | None = None
+    default_multiplier: float | None = Field(default=None, gt=0)
+    fallback_timeframe: str | None = None
+    per_timeframe: dict[str, HTFSelectorRule] = Field(default_factory=dict)
+
+
 class MultiTimeframeConfig(RuntimeSection):
     use_htf_block: bool = Field(default=True)
     allow_ltf_override: bool = Field(default=False)
@@ -104,6 +117,7 @@ class MultiTimeframeConfig(RuntimeSection):
     ltf_override_adaptive: LTFOverrideAdaptiveConfig = Field(
         default_factory=LTFOverrideAdaptiveConfig
     )
+    htf_selector: HTFSelectorConfig = Field(default_factory=HTFSelectorConfig)
 
 
 class FeaturePercentileRange(RuntimeSection):

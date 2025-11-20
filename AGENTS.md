@@ -21,6 +21,7 @@ This document explains the current workflow for Genesis-Core, highlights today's
 - `RuntimeConfig` tillåter extra metadata (`description`, `status`, `feature_coefficients`, kommentar-fält osv.) i alla sektioner; tmp-profiler som `config/tmp/v17_6h_exceptional.json` kan därmed patchas rakt in utan att förlora dokumentation.
 - `core/strategy/decision.py` loggar nu varje gate-orasak (`[DECISION] ...`) – EV-block, proba/edge, HTF/LTF-fib orsaker, hysteresis/cooldown samt risk sizing – så 0-trade runs kan felsökas direkt i loggen utan att tweaka i blindo.
 - **Phase-8 reset**: fullständig snapshot av `config/`, `data/`, `reports/`, `results/` och `cache/` ligger under `results/_archive/Phase8_kickoff/`. Aktiva kataloger har tömts (endast seedad `config/runtime.json` + tracked baselinefiler kvar) så nästa agent startar från helt ren miljö.
+- 2025-11-19: ATR/Fibonacci-cache i `core/indicators/fibonacci.py`, `htf_fibonacci.py` och `src/core/strategy/features_asof.py` reducerade golden-runnen `scripts/run_backtest.py` från 159.1 s/183 M funktionsanrop till 100.7 s/75 M; pyinstrument + cProfile ligger under `reports/profiling/20251119_*.{txt,html}` och resultaten är dokumenterade i `docs/performance/PERFORMANCE_OPTIMIZATION_SUMMARY_.md` och `docs/daily_summaries/daily_summary_2025-11-19.md`. `pre-commit run --all-files` och `bandit -r src -c bandit.yaml -f txt -o bandit-report.txt` (rapport i `bandit-report.txt`) kördes direkt efter kodändringarna och passerade rent.
 
 ## 2. Snabbguide (Optuna körflöde, uppdaterad)
 
@@ -180,6 +181,15 @@ Champion file: `config/strategy/champions/tBTCUSD_1h.json`
 3. När fib-dataflödet är fixat, kör referensbacktest för champion igen och uppdatera `metrics` + dokumentation.
 4. Lägg till regressionstester runt fib-gates/MTF-override (missing context, ATR=0, tolerance handling) för att undvika framtida noll-trade-regressioner.
 5. Re-run Bandit med den scoped kommandot och spara rapport för framtida handoff.
+
+- Multi-timeframe-blocket har nu `htf_selector` (Alt 1) som styr HTF-val per timeframe/multiplikator. `features_asof` bifogar selector-metadata både i `meta['htf_selector']` och `meta['htf_fibonacci']['selector']`, så framtida Alt 2/3 kan luta sig mot samma struktur utan fler kodändringar.
+
+### Uppföljning 2025-11-19
+
+1. Använd `scripts/diagnose_fib_flow.py`/`diagnose_zero_trades.py` för att bekräfta att `feats_meta['htf_fibonacci']` och LTF-nycklarna verkligen skrivs vidare till `evaluate_pipeline` → `core/strategy/decision.decide`; fixera kedjan innan fler Optuna-körningar så championen inte fastnar på 0 trades.
+2. När fib-metadata flödar, kör ett nytt `scripts/run_backtest.py --config config/strategy/champions/tBTCUSD_1h.json` golden-run och jämför mot baselineprofileringen; uppdatera `docs/performance/PERFORMANCE_OPTIMIZATION_SUMMARY_.md` om tidsvinsterna förändras.
+3. Logga resultat och tidslinje i `docs/daily_summaries/daily_summary_2025-11-19.md` (fortsatt sektion) samt här i `AGENTS.md` så nästa agent ser att trades är tillbaka innan Optuna-remodeln återupptas.
+4. Upprepa `pre-commit run --all-files` och `bandit -r src -c bandit.yaml -f txt -o bandit-report.txt` efter fib-fixen och bifoga färska rapporter i repo för spårbarhet.
 
 ### Runtime patch workflow (2025-11-17)
 

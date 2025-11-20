@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import re
 from typing import Any
 
@@ -54,6 +55,21 @@ def redact_text(text: str) -> str:
     return out
 
 
+def _parse_log_level(raw_level: str | None, fallback: int = logging.INFO) -> int:
+    if not raw_level:
+        return fallback
+    # Tillåt "INFO,DEBUG" genom att välja den mest detaljerade nivån
+    parts = [segment.strip() for segment in raw_level.split(",") if segment.strip()]
+    candidate = parts[-1] if parts else raw_level.strip()
+    level_value = getattr(logging, candidate.upper(), None)
+    if isinstance(level_value, int):
+        return level_value
+    return fallback
+
+
+_EFFECTIVE_LOG_LEVEL = _parse_log_level(os.getenv("CORE_LOG_LEVEL") or os.getenv("LOG_LEVEL"))
+
+
 class RedactionFilter(logging.Filter):
     """Logging-filter som maskerar kända känsligheter i msg/args."""
 
@@ -80,5 +96,5 @@ def get_logger(name: str) -> logging.Logger:
         handler = logging.StreamHandler()
         handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
         logger.addHandler(handler)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(_EFFECTIVE_LOG_LEVEL)
     return logger

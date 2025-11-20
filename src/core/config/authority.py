@@ -163,6 +163,7 @@ class ConfigAuthority:
                         "allow_ltf_override",
                         "ltf_override_threshold",
                         "ltf_override_adaptive",
+                        "htf_selector",
                     }
                     if any(subk not in allowed for subk in v.keys()):
                         raise ValueError("non_whitelisted_field:multi_timeframe")
@@ -190,6 +191,33 @@ class ConfigAuthority:
                                 raise ValueError(
                                     "non_whitelisted_field:ltf_override_adaptive.regime_multipliers"
                                 )
+                    selector_cfg = v.get("htf_selector")
+                    if selector_cfg is not None:
+                        if not isinstance(selector_cfg, dict):
+                            raise ValueError("non_whitelisted_field:htf_selector")
+                        allowed_selector = {
+                            "mode",
+                            "default_timeframe",
+                            "default_multiplier",
+                            "fallback_timeframe",
+                            "per_timeframe",
+                        }
+                        if any(subk not in allowed_selector for subk in selector_cfg.keys()):
+                            raise ValueError("non_whitelisted_field:htf_selector")
+                        per_tf = selector_cfg.get("per_timeframe")
+                        if per_tf is not None:
+                            if not isinstance(per_tf, dict):
+                                raise ValueError("non_whitelisted_field:htf_selector.per_timeframe")
+                            allowed_rule = {"timeframe", "multiplier", "label"}
+                            for rule in per_tf.values():
+                                if not isinstance(rule, dict):
+                                    raise ValueError(
+                                        "non_whitelisted_field:htf_selector.per_timeframe.rule"
+                                    )
+                                if any(key not in allowed_rule for key in rule.keys()):
+                                    raise ValueError(
+                                        "non_whitelisted_field:htf_selector.per_timeframe.rule"
+                                    )
 
         _enforce_whitelist(normalized_patch)
 

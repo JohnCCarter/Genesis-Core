@@ -5,6 +5,7 @@ Cross-timeframe Fibonacci projection with strict AS-OF semantics (no lookahead).
 Maps 1D Fibonacci levels to LTF bars (1h/30m) for structure-aware exits.
 """
 
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
@@ -402,12 +403,16 @@ def get_ltf_fibonacci_context(
     *,
     timeframe: str | None = None,
     config: FibonacciConfig | None = None,
+    atr_values: Sequence[float] | None = None,
 ) -> dict:
     """
     Calculate Fibonacci context on the same timeframe as the candles (LTF).
 
     Useful when entries/exits should key off intraday swings while still allowing
     HTF context to act as trend filter.
+
+    atr_values lets callers pass precomputed ATR (aligned with candles) to avoid
+    recomputing the expensive ATR smoothing inside swing detection.
     """
     try:
         highs, lows, closes, timestamps = _to_series(ltf_candles)
@@ -437,7 +442,11 @@ def get_ltf_fibonacci_context(
 
     try:
         swing_high_idx, swing_low_idx, swing_high_prices, swing_low_prices = detect_swing_points(
-            highs, lows, closes, fib_cfg
+            highs,
+            lows,
+            closes,
+            fib_cfg,
+            atr_values=atr_values,
         )
     except Exception as exc:  # pragma: no cover - defensive
         return {"available": False, "reason": "LTF_SWING_ERROR", "error": str(exc)}

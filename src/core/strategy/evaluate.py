@@ -8,6 +8,7 @@ from core.strategy.champion_loader import ChampionLoader
 from core.strategy.confidence import compute_confidence
 from core.strategy.decision import decide
 from core.strategy.features_asof import extract_features
+from core.strategy.fib_logging import log_fib_flow
 from core.strategy.prob_model import predict_proba_for
 
 champion_loader = ChampionLoader()
@@ -135,11 +136,7 @@ def evaluate_pipeline(
     htf_fib_data = feats_meta.get("htf_fibonacci")
     ltf_fib_data = feats_meta.get("ltf_fibonacci")
 
-    # Diagnostik för fib-dataflöde
-    from core.utils.logging_redaction import get_logger
-
-    _eval_log = get_logger(__name__)
-    _eval_log.info(
+    log_fib_flow(
         "[FIB-FLOW] evaluate_pipeline state assembly: symbol=%s timeframe=%s htf_available=%s ltf_available=%s",
         symbol,
         timeframe,

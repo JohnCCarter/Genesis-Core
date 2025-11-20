@@ -18,7 +18,6 @@ from collections import OrderedDict
 from typing import Any
 
 import numpy as np
-import pandas as pd
 
 from core.indicators.adx import calculate_adx
 from core.indicators.atr import calculate_atr
@@ -34,6 +33,8 @@ from core.indicators.fibonacci import (
 from core.indicators.htf_fibonacci import get_htf_fibonacci_context, get_ltf_fibonacci_context
 from core.indicators.rsi import calculate_rsi
 from core.observability.metrics import metrics
+from core.strategy.fib_logging import log_fib_flow
+from core.strategy.htf_selector import select_htf_timeframe
 from core.utils.diffing.feature_cache import IndicatorCache, make_indicator_fingerprint
 from core.utils.logging_redaction import get_logger
 
@@ -44,6 +45,19 @@ _log = get_logger(__name__)
 
 _feature_cache: OrderedDict[str, tuple[dict[str, float], dict[str, Any]]] = OrderedDict()
 _MAX_CACHE_SIZE = 500  # Increased from 100 to reduce thrashing during backtests
+
+
+def _as_config_dict(value: Any) -> dict[str, Any]:
+    if value is None:
+        return {}
+    if isinstance(value, dict):
+        return value
+    if hasattr(value, "model_dump"):
+        try:
+            return value.model_dump()  # type: ignore[return-value]
+        except Exception:
+            return {}
+    return {}
 
 
 def _compute_candles_hash(candles: dict[str, list[float] | np.ndarray], asof_bar: int) -> str:
@@ -394,7 +408,11 @@ def _extract_asof(
             else:
                 swing_high_indices, swing_low_indices, swing_high_prices, swing_low_prices = (
                     detect_swing_points(
-                        pd.Series(highs), pd.Series(lows), pd.Series(closes), fib_config
+                        highs,
+                        lows,
+                        closes,
+                        fib_config,
+                        atr_values=atr_vals,
                     )
                 )
                 _indicator_cache_store(
@@ -515,6 +533,7 @@ def _extract_asof(
     # === ADD HTF FIBONACCI CONTEXT FOR SYMMETRIC CHAMOUN MODEL ===
     # Only for LTF timeframes that can benefit from HTF structure
     htf_fibonacci_context = {}
+    htf_selector_meta: dict[str, Any] | None = None
     if timeframe in ["1h", "30m", "6h", "15m"]:
         try:
             _candles_for_htf = {
@@ -523,14 +542,34 @@ def _extract_asof(
                 "close": closes.tolist() if isinstance(closes, np.ndarray) else closes,
                 "timestamp": candles.get("timestamp") if isinstance(candles, dict) else None,
             }
+            mtf_cfg_value = None
+            if hasattr(config, "multi_timeframe"):
+                mtf_cfg_value = config.multi_timeframe
+            elif isinstance(config, dict):
+                mtf_cfg_value = (config or {}).get("multi_timeframe")
+            multi_timeframe_cfg = _as_config_dict(mtf_cfg_value)
+            selector_cfg = multi_timeframe_cfg.get("htf_selector")
+            if not selector_cfg and multi_timeframe_cfg.get("htf_timeframe"):
+                selector_cfg = {
+                    "mode": "fixed",
+                    "per_timeframe": multi_timeframe_cfg.get("htf_timeframe", {}),
+                }
+            htf_timeframe, htf_selector_meta = select_htf_timeframe(timeframe or "", selector_cfg)
             htf_fibonacci_context = get_htf_fibonacci_context(
-                _candles_for_htf, timeframe=timeframe, symbol=symbol or "tBTCUSD"
+                _candles_for_htf,
+                timeframe=timeframe,
+                symbol=symbol or "tBTCUSD",
+                htf_timeframe=htf_timeframe,
             )
-            _log.info(
-                "[FIB-FLOW] HTF fibonacci context created: symbol=%s timeframe=%s available=%s",
+            if htf_selector_meta:
+                htf_fibonacci_context["selector"] = htf_selector_meta
+            log_fib_flow(
+                "[FIB-FLOW] HTF fibonacci context created: symbol=%s timeframe=%s htf_tf=%s available=%s",
                 symbol or "tBTCUSD",
                 timeframe,
+                htf_timeframe,
                 htf_fibonacci_context.get("available", False),
+                logger=_log,
             )
         except Exception as e:
             # Don't fail feature extraction if HTF context unavailable
@@ -539,11 +578,12 @@ def _extract_asof(
                 "reason": "HTF_CONTEXT_ERROR",
                 "error": str(e),
             }
-            _log.info(
+            log_fib_flow(
                 "[FIB-FLOW] HTF fibonacci context failed: symbol=%s timeframe=%s error=%s",
                 symbol or "tBTCUSD",
                 timeframe,
                 str(e),
+                logger=_log,
             )
 
     # === Same timeframe Fibonacci context for entry/exit logic ===
@@ -558,12 +598,14 @@ def _extract_asof(
                     "timestamp": candles.get("timestamp") if isinstance(candles, dict) else None,
                 },
                 timeframe=timeframe,
+                atr_values=atr_vals,
             )
-            _log.info(
+            log_fib_flow(
                 "[FIB-FLOW] LTF fibonacci context created: symbol=%s timeframe=%s available=%s",
                 symbol or "tBTCUSD",
                 timeframe,
                 ltf_fibonacci_context.get("available", False),
+                logger=_log,
             )
         except Exception as e:  # pragma: no cover - defensive
             ltf_fibonacci_context = {
@@ -571,11 +613,12 @@ def _extract_asof(
                 "reason": "LTF_CONTEXT_ERROR",
                 "error": str(e),
             }
-            _log.info(
+            log_fib_flow(
                 "[FIB-FLOW] LTF fibonacci context failed: symbol=%s timeframe=%s error=%s",
                 symbol or "tBTCUSD",
                 timeframe,
                 str(e),
+                logger=_log,
             )
 
     meta = {
@@ -594,6 +637,7 @@ def _extract_asof(
         "ltf_fibonacci": ltf_fibonacci_context,
         "current_atr": float(atr_vals[-1]) if atr_vals else None,
         "atr_percentiles": atr_percentiles,
+        "htf_selector": htf_selector_meta,
     }
 
     result = (features, meta)

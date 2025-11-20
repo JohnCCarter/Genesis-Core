@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 from typing import Any, Literal
 
+from core.strategy.fib_logging import log_fib_flow
 from core.utils.logging_redaction import get_logger
 
 Action = Literal["LONG", "SHORT", "NONE"]
@@ -100,7 +101,11 @@ def decide(
     9) Cooldown
     10) Sizing
     """
-    _LOG.info("[FIB-FLOW] decide() called with cfg keys: %s", list((cfg or {}).keys())[:15])
+    log_fib_flow(
+        "[FIB-FLOW] decide() called with cfg keys: %s",
+        list((cfg or {}).keys())[:15],
+        logger=_LOG,
+    )
 
     reasons: list[str] = []
     versions: dict[str, Any] = {"decision": "v1"}
@@ -486,20 +491,22 @@ def decide(
 
     # HTF Fibonacci confirmation (trend filter)
     htf_entry_cfg = (cfg.get("htf_fib") or {}).get("entry") or {}
-    _LOG.info(
+    log_fib_flow(
         "[FIB-FLOW] HTF gate check: use_htf_block=%s htf_entry_enabled=%s",
         use_htf_block,
         htf_entry_cfg.get("enabled"),
+        logger=_LOG,
     )
     if use_htf_block and htf_entry_cfg.get("enabled"):
         htf_ctx = state_in.get("htf_fib") or {}
-        _LOG.info(
+        log_fib_flow(
             "[FIB-FLOW] HTF gate active: symbol=%s timeframe=%s enabled=%s htf_ctx_keys=%s available=%s",
             policy_symbol,
             policy_timeframe,
             htf_entry_cfg.get("enabled"),
             list(htf_ctx.keys()) if isinstance(htf_ctx, dict) else [],
             htf_ctx.get("available") if isinstance(htf_ctx, dict) else None,
+            logger=_LOG,
         )
         price_now = state_in.get("last_close")
         atr_now = float(state_in.get("current_atr") or 0.0)
@@ -732,13 +739,14 @@ def decide(
     # LTF Fibonacci entry gating (same-timeframe fib context)
     if ltf_entry_cfg.get("enabled"):
         ltf_ctx = state_in.get("ltf_fib") or {}
-        _LOG.info(
+        log_fib_flow(
             "[FIB-FLOW] LTF gate active: symbol=%s timeframe=%s enabled=%s ltf_ctx_keys=%s available=%s",
             policy_symbol,
             policy_timeframe,
             ltf_entry_cfg.get("enabled"),
             list(ltf_ctx.keys()) if isinstance(ltf_ctx, dict) else [],
             ltf_ctx.get("available") if isinstance(ltf_ctx, dict) else None,
+            logger=_LOG,
         )
         price_now = state_in.get("last_close")
         atr_now = float(state_in.get("current_atr") or 0.0)

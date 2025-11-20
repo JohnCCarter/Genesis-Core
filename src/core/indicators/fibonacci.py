@@ -3,6 +3,7 @@ Fibonacci Retracement Features for Genesis-Core
 Implements professional-grade Fibonacci analysis with adaptive swing detection.
 """
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 import numpy as np
@@ -46,7 +47,11 @@ def calculate_atr(high: pd.Series, low: pd.Series, close: pd.Series, period: int
 
 
 def detect_swing_points(
-    high: pd.Series, low: pd.Series, close: pd.Series, config: FibonacciConfig
+    high: pd.Series | Sequence[float],
+    low: pd.Series | Sequence[float],
+    close: pd.Series | Sequence[float],
+    config: FibonacciConfig,
+    atr_values: Sequence[float] | None = None,
 ) -> tuple[list[int], list[int], list[float], list[float]]:
     """
     Detect swing highs and lows using ATR-based pivot detection.
@@ -54,20 +59,80 @@ def detect_swing_points(
     Performance: Optimized using numpy arrays for ~80% speedup in nested loops.
 
     Args:
-        high, low, close: Price series
+        high, low, close: Price series (pandas) or raw sequences
         config: Fibonacci configuration
+        atr_values: Optional precomputed ATR values aligned with inputs
 
     Returns:
         swing_high_indices, swing_low_indices, swing_high_prices, swing_low_prices
     """
-    atr = calculate_atr(high, low, close)
+
+    def _as_array(
+        series_or_seq: pd.Series | Sequence[float],
+    ) -> tuple[np.ndarray, pd.Series | None]:
+        if isinstance(series_or_seq, pd.Series):
+            return series_or_seq.to_numpy(copy=False), series_or_seq
+        return np.asarray(series_or_seq, dtype=float), None
+
+    high_arr, high_series = _as_array(high)
+    low_arr, low_series = _as_array(low)
+    close_arr, close_series = _as_array(close)
+
+    if atr_values is None:
+        if high_series is None:
+            high_series = pd.Series(high_arr, dtype=float)
+        if low_series is None:
+            low_series = pd.Series(low_arr, dtype=float)
+        if close_series is None:
+            close_series = pd.Series(close_arr, dtype=float)
+        atr_series = calculate_atr(high_series, low_series, close_series)
+        atr_arr = atr_series.to_numpy(copy=False)
+    else:
+        atr_arr = np.asarray(atr_values, dtype=float)
+        if atr_arr.size == 0:
+            return [], [], [], []
+        min_len = min(len(high_arr), len(low_arr), len(close_arr), atr_arr.size)
+        if min_len == 0:
+            return [], [], [], []
+        if not (len(high_arr) == len(low_arr) == len(close_arr) == atr_arr.size):
+            high_arr = high_arr[-min_len:]
+            low_arr = low_arr[-min_len:]
+            close_arr = close_arr[-min_len:]
+            atr_arr = atr_arr[-min_len:]
 
     atr_depth_int = max(1, int(config.atr_depth))
 
-    # OPTIMIZATION: Convert to numpy arrays once to avoid repeated .iloc[] overhead
-    high_arr = high.values
-    low_arr = low.values
-    atr_arr = atr.values
+    # OPTIMIZATION: Arrays already prepared above; reuse directly
+    range_span = high_arr - low_arr
+
+    def _local_extrema_masks() -> tuple[np.ndarray, np.ndarray]:
+        window = 2 * atr_depth_int + 1
+        n = len(high_arr)
+        if window > n:
+            return np.zeros(n, dtype=bool), np.zeros(n, dtype=bool)
+
+        high_windows = np.lib.stride_tricks.sliding_window_view(high_arr, window)
+        low_windows = np.lib.stride_tricks.sliding_window_view(low_arr, window)
+        center_idx = atr_depth_int
+
+        max_vals = high_windows.max(axis=1)
+        max_counts = (high_windows == max_vals[:, None]).sum(axis=1)
+        center_vals_high = high_windows[:, center_idx]
+        local_high_core = (center_vals_high == max_vals) & (max_counts == 1)
+
+        min_vals = low_windows.min(axis=1)
+        min_counts = (low_windows == min_vals[:, None]).sum(axis=1)
+        center_vals_low = low_windows[:, center_idx]
+        local_low_core = (center_vals_low == min_vals) & (min_counts == 1)
+
+        high_mask = np.zeros(n, dtype=bool)
+        low_mask = np.zeros(n, dtype=bool)
+        idx_range = np.arange(atr_depth_int, n - atr_depth_int)
+        high_mask[idx_range] = local_high_core
+        low_mask[idx_range] = local_low_core
+        return high_mask, low_mask
+
+    local_high_mask, local_low_mask = _local_extrema_masks()
 
     def _detect(
         threshold_multiple: float,
@@ -75,33 +140,20 @@ def detect_swing_points(
         candidate_highs: list[tuple[int, float]] = []
         candidate_lows: list[tuple[int, float]] = []
 
-        for i in range(atr_depth_int, len(close) - atr_depth_int):
-            window_high = high_arr[i]
-            window_low = low_arr[i]
+        if not local_high_mask.any() and not local_low_mask.any():
+            return [], []
 
-            is_swing_high = True
-            for j in range(i - atr_depth_int, i + atr_depth_int + 1):
-                if j != i and high_arr[j] >= window_high:
-                    is_swing_high = False
-                    break
+        atr_thresholds = np.nan_to_num(atr_arr, nan=0.0) * max(threshold_multiple, 0.0)
 
-            is_swing_low = True
-            for j in range(i - atr_depth_int, i + atr_depth_int + 1):
-                if j != i and low_arr[j] <= window_low:
-                    is_swing_low = False
-                    break
+        high_indices = np.where(local_high_mask)[0]
+        for idx in high_indices:
+            if range_span[idx] >= atr_thresholds[idx]:
+                candidate_highs.append((idx, float(high_arr[idx])))
 
-            atr_value = atr_arr[i]
-            threshold_value = (
-                float(atr_value) * threshold_multiple if not np.isnan(atr_value) else 0.0
-            )
-            range_ok = (high_arr[i] - low_arr[i]) >= threshold_value
-
-            if is_swing_high and range_ok:
-                candidate_highs.append((i, float(window_high)))
-
-            if is_swing_low and range_ok:
-                candidate_lows.append((i, float(window_low)))
+        low_indices = np.where(local_low_mask)[0]
+        for idx in low_indices:
+            if range_span[idx] >= atr_thresholds[idx]:
+                candidate_lows.append((idx, float(low_arr[idx])))
 
         cleaned_highs = _clean_swing_points(candidate_highs, config.max_lookback)
         cleaned_lows = _clean_swing_points(candidate_lows, config.max_lookback)
@@ -141,13 +193,13 @@ def detect_swing_points(
 
         threshold_multiple = next_threshold
 
-    if not swing_highs and len(high) > 0:
-        fallback_idx = high.values.argmax()
+    if not swing_highs and high_arr.size > 0:
+        fallback_idx = int(np.argmax(high_arr))
         fallback_price = float(high_arr[fallback_idx])
         swing_highs = [(fallback_idx, fallback_price)]
 
-    if not swing_lows and len(low) > 0:
-        fallback_idx = low.values.argmin()
+    if not swing_lows and low_arr.size > 0:
+        fallback_idx = int(np.argmin(low_arr))
         fallback_price = float(low_arr[fallback_idx])
         swing_lows = [(fallback_idx, fallback_price)]
 

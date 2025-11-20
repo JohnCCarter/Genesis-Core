@@ -13,18 +13,21 @@ Additional metrics:
 
 from __future__ import annotations
 
+import numpy as np
+
+
+def _empty_response() -> dict[str, list[float]]:
+    return {
+        "middle": [],
+        "upper": [],
+        "lower": [],
+        "width": [],
+        "position": [],
+    }
+
 
 def calculate_sma(values: list[float], period: int) -> list[float]:
-    """
-    Calculate Simple Moving Average.
-
-    Args:
-        values: List of prices
-        period: Number of periods for SMA
-
-    Returns:
-        List of SMA values (NaN for first period-1 values)
-    """
+    """Historical helper kept for compatibility (used in tests/debug tooling)."""
     if not values or period <= 0:
         return []
 
@@ -35,22 +38,11 @@ def calculate_sma(values: list[float], period: int) -> list[float]:
         else:
             window = values[i - period + 1 : i + 1]
             result.append(sum(window) / period)
-
     return result
 
 
 def calculate_std_dev(values: list[float], period: int, sma: list[float]) -> list[float]:
-    """
-    Calculate Standard Deviation.
-
-    Args:
-        values: List of prices
-        period: Number of periods
-        sma: Pre-calculated SMA values
-
-    Returns:
-        List of standard deviation values
-    """
+    """Historical helper kept for compatibility (used in tests/debug tooling)."""
     if not values or period <= 0 or len(values) != len(sma):
         return []
 
@@ -63,7 +55,6 @@ def calculate_std_dev(values: list[float], period: int, sma: list[float]) -> lis
             mean = sma[i]
             variance = sum((x - mean) ** 2 for x in window) / period
             result.append(variance**0.5)
-
     return result
 
 
@@ -94,65 +85,45 @@ def bollinger_bands(
         >>> bb["middle"][-1]  # Latest middle band
         105.6
     """
-    if not close or period <= 0 or len(close) < period:
-        return {
-            "middle": [],
-            "upper": [],
-            "lower": [],
-            "width": [],
-            "position": [],
-        }
+    if not close or period <= 0:
+        return _empty_response()
 
-    # Calculate middle band (SMA)
-    middle = calculate_sma(close, period)
+    close_arr = np.asarray(close, dtype=float)
+    n = close_arr.size
+    if n < period:
+        return _empty_response()
 
-    # Calculate standard deviation
-    std = calculate_std_dev(close, period, middle)
+    windows = np.lib.stride_tricks.sliding_window_view(close_arr, period)
+    sma_core = windows.mean(axis=1)
+    std_core = windows.std(axis=1, ddof=0)
 
-    # Calculate upper and lower bands
-    upper = []
-    lower = []
-    width = []
-    position = []
+    pad = np.full(period - 1, np.nan, dtype=float)
+    middle = np.concatenate((pad, sma_core))
+    std_full = np.concatenate((pad, std_core))
 
-    for i in range(len(close)):
-        if str(middle[i]) == "nan" or str(std[i]) == "nan":
-            upper.append(float("nan"))
-            lower.append(float("nan"))
-            width.append(float("nan"))
-            position.append(float("nan"))
-        else:
-            upper_val = middle[i] + (std_dev * std[i])
-            lower_val = middle[i] - (std_dev * std[i])
+    upper = middle + (std_dev * std_full)
+    lower = middle - (std_dev * std_full)
 
-            upper.append(upper_val)
-            lower.append(lower_val)
+    width = np.full(n, np.nan, dtype=float)
+    valid = ~np.isnan(middle) & ~np.isnan(std_full)
+    nonzero_middle = valid & (middle != 0.0)
+    width[nonzero_middle] = (upper[nonzero_middle] - lower[nonzero_middle]) / middle[nonzero_middle]
+    width[valid & ~nonzero_middle] = 0.0
 
-            # BB Width: (upper - lower) / middle
-            # Higher values = higher volatility
-            if middle[i] != 0:
-                width_val = (upper_val - lower_val) / middle[i]
-            else:
-                width_val = 0.0
-            width.append(width_val)
-
-            # BB Position: (price - lower) / (upper - lower)
-            # 0.0 = at lower band, 0.5 = at middle, 1.0 = at upper band
-            band_range = upper_val - lower_val
-            if band_range != 0:
-                pos_val = (close[i] - lower_val) / band_range
-                # Clamp between 0 and 1 (price can go outside bands)
-                pos_val = max(0.0, min(1.0, pos_val))
-            else:
-                pos_val = 0.5
-            position.append(pos_val)
+    position = np.full(n, np.nan, dtype=float)
+    band_range = upper - lower
+    valid_range = valid & (band_range != 0.0)
+    position[valid_range] = np.clip(
+        (close_arr[valid_range] - lower[valid_range]) / band_range[valid_range], 0.0, 1.0
+    )
+    position[valid & ~valid_range] = 0.5
 
     return {
-        "middle": middle,
-        "upper": upper,
-        "lower": lower,
-        "width": width,
-        "position": position,
+        "middle": middle.tolist(),
+        "upper": upper.tolist(),
+        "lower": lower.tolist(),
+        "width": width.tolist(),
+        "position": position.tolist(),
     }
 
 

@@ -99,6 +99,10 @@ _TRIAL_KEY_CACHE_LOCK = threading.Lock()
 _DEFAULT_CONFIG_CACHE: dict[str, Any] | None = None
 _DEFAULT_CONFIG_LOCK = threading.Lock()
 
+# Performance: Module-level cache for step decimal calculation (persists across trials)
+_STEP_DECIMALS_CACHE: dict[float, int] = {}
+_STEP_DECIMALS_CACHE_LOCK = threading.Lock()
+
 
 # Performance: JSON mtime cache for optimizer (opt-in via env GENESIS_OPTIMIZER_JSON_CACHE=1)
 _JSON_CACHE: OrderedDict[str, tuple[int, Any]] = OrderedDict()
@@ -355,6 +359,11 @@ def _load_existing_trials(run_dir: Path) -> dict[str, dict[str, Any]]:
 
     Performance optimization: Batch read operations, use more efficient
     JSON parsing, and optimize memory allocation patterns.
+    
+    Key optimizations:
+    - Single-pass JSON parsing (no double parse via _json_loads)
+    - Direct orjson usage when available (bypass wrapper overhead)
+    - Batch trial key generation to leverage caching
     """
     trial_paths = sorted(run_dir.glob("trial_*.json"))
 
@@ -366,9 +375,12 @@ def _load_existing_trials(run_dir: Path) -> dict[str, dict[str, Any]]:
 
     for trial_path in trial_paths:
         try:
-            # Performance: Use optimized JSON parser when available
+            # Performance: Direct orjson usage for better speed (single parse)
             content = trial_path.read_text(encoding="utf-8")
-            trial_data = _json_loads(content)
+            if _HAS_ORJSON:
+                trial_data = _orjson.loads(content)
+            else:
+                trial_data = json.loads(content)
 
             # JSON always returns exact dict, but be defensive
             if not isinstance(trial_data, dict):
@@ -1169,8 +1181,11 @@ def _create_optuna_study(
 
 
 def _suggest_parameters(trial, spec: dict[str, Any]) -> dict[str, Any]:
-    # Performance: Cache for decimal calculation to avoid repeated string operations
-    _step_decimals_cache: dict[float, int] = {}
+    """Suggest parameters for Optuna trial with optimized decimal caching.
+    
+    Performance optimization: Step decimal calculation is cached at module level
+    to avoid repeated string operations across all trials in the study.
+    """
 
     def _prepare_categorical_options(options: Iterable[Any]) -> tuple[list[Any], dict[str, Any]]:
         normalized: list[Any] = []
@@ -1188,15 +1203,16 @@ def _suggest_parameters(trial, spec: dict[str, Any]) -> dict[str, Any]:
         return normalized, decoder
 
     def _get_step_decimals(step_float: float) -> int:
-        """Get number of decimals for a step value with caching."""
-        if step_float not in _step_decimals_cache:
-            step_str = str(step_float)
-            if "." in step_str:
-                decimals = len(step_str.split(".")[1])
-            else:
-                decimals = 0
-            _step_decimals_cache[step_float] = decimals
-        return _step_decimals_cache[step_float]
+        """Get number of decimals for a step value with module-level caching."""
+        with _STEP_DECIMALS_CACHE_LOCK:
+            if step_float not in _STEP_DECIMALS_CACHE:
+                step_str = str(step_float)
+                if "." in step_str:
+                    decimals = len(step_str.split(".")[1])
+                else:
+                    decimals = 0
+                _STEP_DECIMALS_CACHE[step_float] = decimals
+            return _STEP_DECIMALS_CACHE[step_float]
 
     def _recurse(node: dict[str, Any], prefix: str = "") -> dict[str, Any]:
         resolved: dict[str, Any] = {}
@@ -1226,7 +1242,7 @@ def _suggest_parameters(trial, spec: dict[str, Any]) -> dict[str, Any]:
                 if step is not None:
                     step_float = float(step)
                     raw_value = trial.suggest_float(path, low, high, step=step_float, log=log)
-                    # Performance: Use cached decimal calculation
+                    # Performance: Use module-level cached decimal calculation
                     decimals = _get_step_decimals(step_float)
                     # Round till rätt antal decimaler baserat på step
                     resolved[key] = round(round(raw_value / step_float) * step_float, decimals)

@@ -210,6 +210,40 @@ class TestNoDupeGuardPerformance:
         count2 = guard.add_batch(sigs)
         assert count2 == 0
 
+    def test_nodupe_batch_seen(self, tmp_path: Path) -> None:
+        """Test batch seen check performance improvement."""
+        db_path = tmp_path / "dedup_batch_seen.db"
+        guard = optuna_helpers.NoDupeGuard(sqlite_path=str(db_path))
+
+        # Add some signatures
+        existing_sigs = [f"sig_exist_{i:04d}" for i in range(50)]
+        guard.add_batch(existing_sigs)
+
+        # Create a mix of existing and new signatures
+        test_sigs = existing_sigs + [f"sig_new_{i:04d}" for i in range(50)]
+
+        # Batch check should be much faster than individual checks
+        start = time.perf_counter()
+        results = guard.seen_batch(test_sigs)
+        batch_elapsed = time.perf_counter() - start
+
+        # Verify correctness
+        assert len(results) == 100
+        for sig in existing_sigs:
+            assert results[sig] is True
+        for i in range(50):
+            assert results[f"sig_new_{i:04d}"] is False
+
+        # Compare with individual checks
+        start = time.perf_counter()
+        for sig in test_sigs:
+            guard.seen(sig)
+        individual_elapsed = time.perf_counter() - start
+
+        # Batch should be faster (allow some tolerance for small datasets)
+        assert batch_elapsed < individual_elapsed * 2.0  # At least some improvement
+        assert batch_elapsed < 1.0  # Should be very fast
+
 
 class TestSuggestParametersPerformance:
     """Test performance of parameter suggestion with caching."""

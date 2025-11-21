@@ -1,0 +1,95 @@
+# Test config för abort-heuristik validering
+# Avsiktligt restriktiva trösklar för att trigga zero-trade abort
+
+meta:
+  symbol: tBTCUSD
+  timeframe: 1h
+  snapshot_id: tBTCUSD_1h_2025-01-01_2025-01-31_test
+  warmup_bars: 150
+  runs:
+    strategy: grid
+    max_concurrent: 2
+    max_trials: 4
+    resume: false
+
+parameters:
+  thresholds:
+    entry_conf_overall:
+      type: grid
+      values: [0.50, 0.55] # Extremt höga trösklar
+    min_edge:
+      type: grid
+      values: [0.025, 0.030] # Extremt höga trösklar
+    regime_proba:
+      balanced:
+        type: fixed
+        value: 0.85 # Extremt hög
+      ranging:
+        type: fixed
+        value: 0.85
+      bull:
+        type: fixed
+        value: 0.85
+      bear:
+        type: fixed
+        value: 0.85
+    signal_adaptation:
+      zones:
+        low:
+          entry_conf_overall:
+            type: grid
+            values: [0.40, 0.45] # Mycket höga
+          regime_proba:
+            balanced:
+              type: fixed
+              value: 0.80
+            ranging:
+              type: fixed
+              value: 0.80
+            bull:
+              type: fixed
+              value: 0.80
+            bear:
+              type: fixed
+              value: 0.80
+        mid:
+          entry_conf_overall:
+            type: fixed
+            value: 0.50
+          regime_proba:
+            balanced:
+              type: fixed
+              value: 0.85
+            ranging:
+              type: fixed
+              value: 0.85
+            bull:
+              type: fixed
+              value: 0.85
+            bear:
+              type: fixed
+              value: 0.85
+        high:
+          entry_conf_overall:
+            type: fixed
+            value: 0.55
+          regime_proba:
+            balanced:
+              type: fixed
+              value: 0.90
+            ranging:
+              type: fixed
+              value: 0.90
+            bull:
+              type: fixed
+              value: 0.90
+            bear:
+              type: fixed
+              value: 0.90
+
+# Inga constraints - vi vill bara se abort-logiken triggas
+constraints:
+  min_trades: 1
+  min_profit_factor: 0.5
+  max_max_dd: 0.99
+  include_scoring_failures: false

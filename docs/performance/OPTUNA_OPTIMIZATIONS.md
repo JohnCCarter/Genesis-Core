@@ -1,7 +1,7 @@
 # Optuna Performance Optimizations
 
-**Date**: 2025-11-21  
-**Author**: GitHub Copilot  
+**Date**: 2025-11-21
+**Author**: GitHub Copilot
 **Status**: Implemented
 
 ## Overview
@@ -27,7 +27,7 @@ These issues become particularly problematic in:
 
 ### 1. Direct orjson Parsing (Critical)
 
-**File**: `src/core/optimizer/runner.py`  
+**File**: `src/core/optimizer/runner.py`
 **Function**: `_load_existing_trials()`
 
 **Before**:
@@ -49,8 +49,8 @@ else:
 
 ### 2. Batch Duplicate Lookup (High Impact)
 
-**File**: `src/core/utils/optuna_helpers.py`  
-**Class**: `NoDupeGuard`  
+**File**: `src/core/utils/optuna_helpers.py`
+**Class**: `NoDupeGuard`
 **New Method**: `seen_batch()`
 
 **Before** (N lookups):
@@ -72,7 +72,7 @@ for sig, is_seen in results.items():
 ```python
 def seen_batch(self, sigs: list[str]) -> dict[str, bool]:
     """Check multiple signatures at once.
-    
+
     For SQLite: Uses IN clause for batch lookup
     For Redis: Uses pipeline for batch check
     """
@@ -92,7 +92,7 @@ def seen_batch(self, sigs: list[str]) -> dict[str, bool]:
 
 ### 3. Module-Level Step Decimal Cache (Medium Impact)
 
-**File**: `src/core/optimizer/runner.py`  
+**File**: `src/core/optimizer/runner.py`
 **Function**: `_suggest_parameters()`
 
 **Before** (per-call cache):

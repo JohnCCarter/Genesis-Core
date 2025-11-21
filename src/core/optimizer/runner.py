@@ -360,12 +360,12 @@ def _load_existing_trials(run_dir: Path) -> dict[str, dict[str, Any]]:
 
     Performance optimization: Batch read operations, use more efficient
     JSON parsing, and optimize memory allocation patterns.
-    
+
     Key optimizations:
     - Single-pass JSON parsing (no double parse via _json_loads)
     - Direct orjson usage when available (bypass wrapper overhead)
     - Batch trial key generation to leverage caching
-    
+
     Note: Duplicates logic from _json_loads() intentionally to avoid
     function call overhead in this hot path. This function is called
     once per optimization run during resume, loading potentially
@@ -1188,14 +1188,14 @@ def _create_optuna_study(
 
 def _suggest_parameters(trial: Trial, spec: dict[str, Any]) -> dict[str, Any]:
     """Suggest parameters for Optuna trial with optimized decimal caching.
-    
+
     Performance optimization: Step decimal calculation is cached at module level
     to avoid repeated string operations across all trials in the study.
-    
+
     Args:
         trial: Optuna Trial object to suggest parameters from
         spec: Parameter specification dictionary defining the search space
-        
+
     Returns:
         Dictionary of resolved parameter values for this trial
     """
@@ -1585,11 +1585,11 @@ def _run_optuna(
         "total_trials": len(study.trials),
         "cached_trials": sum(1 for t in study.trials if t.user_attrs.get("cached", False)),
         "unique_backtests": len(
-            set(
+            {
                 t.user_attrs.get("backtest_path", "")
                 for t in study.trials
                 if t.user_attrs.get("backtest_path")
-            )
+            }
         ),
     }
     if cache_stats["total_trials"] > 0:

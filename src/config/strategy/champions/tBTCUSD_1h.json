@@ -1,81 +1,53 @@
 {
-  "created_at": "2025-11-21T08:12:58.158401+00:00",
-  "run_id": "run_20251121_081233",
-  "git_commit": "99f1cea600b2ebbcb8d24eb27eea225fa796b7f0",
-  "snapshot_id": "snap_tBTCUSD_20250101_20250131_v1",
+  "created_at": "2025-11-21T14:13:07.393625+00:00",
+  "run_id": "run_20251121_140023",
+  "git_commit": "b011a0ee85582e12e904af18e272440fd4ab8ff9",
+  "snapshot_id": "snap_tBTCUSD_20240401_20250331_v1",
   "symbol": "tBTCUSD",
   "timeframe": "1h",
-  "score": 0.1259940226224605,
+  "score": 0.1633715456755628,
   "metrics": {
-    "total_return": 0.02196814775000048,
-    "profit_factor": 1.2329482779408067,
-    "max_drawdown": 0.036655834499999845,
-    "win_rate": 0.2727272727272727,
-    "num_trades": 11,
-    "sharpe_ratio": 0.08147151425007636,
-    "return_to_dd": 0.599308351580444
+    "total_return": 0.06151190625000196,
+    "profit_factor": 1.1618102065423606,
+    "max_drawdown": 0.07346679674999933,
+    "win_rate": 0.2352941176470588,
+    "num_trades": 85,
+    "sharpe_ratio": 0.05724679219198815,
+    "return_to_dd": 0.8372749183460557
   },
   "parameters": {
-    "thresholds": {
-      "entry_conf_overall": 0.32,
-      "regime_proba": {
-        "balanced": 0.58,
-        "bull": 0.6,
-        "bear": 0.56,
-        "ranging": 0.56
-      },
-      "min_edge": 0.006,
-      "signal_adaptation": {
-        "zones": {
-          "low": {
-            "entry_conf_overall": 0.24,
-            "regime_proba": {
-              "balanced": 0.44,
-              "bull": 0.48,
-              "bear": 0.48,
-              "ranging": 0.54
-            }
-          },
-          "mid": {
-            "entry_conf_overall": 0.3,
-            "regime_proba": {
-              "balanced": 0.54,
-              "bull": 0.48,
-              "bear": 0.54,
-              "ranging": 0.5
-            }
-          },
-          "high": {
-            "entry_conf_overall": 0.3,
-            "regime_proba": {
-              "balanced": 0.58,
-              "bull": 0.52,
-              "bear": 0.52,
-              "ranging": 0.52
-            }
-          }
-        }
-      }
-    },
-    "multi_timeframe": {
-      "ltf_override_threshold": 0.6
-    },
-    "exit": {
-      "exit_conf_threshold": 0.33,
-      "max_hold_bars": 16,
-      "trailing_stop_enabled": false,
-      "trailing_stop_pct": 0.012
-    },
-    "risk": {
-      "risk_map_deltas": {
-        "conf_0": -0.01,
-        "size_0": 0.005,
-        "conf_1": -0.01,
-        "size_1": 0.01,
-        "conf_2": -0.03,
-        "size_2": 0.0
-      }
-    }
+    "thresholds.entry_conf_overall": 0.32,
+    "thresholds.regime_proba.balanced": 0.52,
+    "thresholds.regime_proba.bull": 0.48,
+    "thresholds.regime_proba.bear": 0.48,
+    "thresholds.regime_proba.ranging": 0.54,
+    "thresholds.min_edge": 0.006,
+    "thresholds.signal_adaptation.zones.low.entry_conf_overall": 0.26,
+    "thresholds.signal_adaptation.zones.low.regime_proba.balanced": 0.48,
+    "thresholds.signal_adaptation.zones.low.regime_proba.bull": 0.4,
+    "thresholds.signal_adaptation.zones.low.regime_proba.bear": 0.48,
+    "thresholds.signal_adaptation.zones.low.regime_proba.ranging": 0.54,
+    "thresholds.signal_adaptation.zones.mid.entry_conf_overall": 0.3,
+    "thresholds.signal_adaptation.zones.mid.regime_proba.balanced": 0.48,
+    "thresholds.signal_adaptation.zones.mid.regime_proba.bull": 0.48,
+    "thresholds.signal_adaptation.zones.mid.regime_proba.bear": 0.48,
+    "thresholds.signal_adaptation.zones.mid.regime_proba.ranging": 0.56,
+    "thresholds.signal_adaptation.zones.high.entry_conf_overall": 0.36,
+    "thresholds.signal_adaptation.zones.high.regime_proba.balanced": 0.44,
+    "thresholds.signal_adaptation.zones.high.regime_proba.bull": 0.48,
+    "thresholds.signal_adaptation.zones.high.regime_proba.bear": 0.48,
+    "thresholds.signal_adaptation.zones.high.regime_proba.ranging": 0.54,
+    "exit.exit_conf_threshold": 0.3,
+    "exit.max_hold_bars": 32,
+    "exit.trailing_stop_enabled": false,
+    "exit.trailing_stop_pct": 0.015,
+    "risk.risk_map_deltas.conf_0": 0.01,
+    "risk.risk_map_deltas.size_0": 0.015,
+    "risk.risk_map_deltas.conf_1": -0.03,
+    "risk.risk_map_deltas.size_1": -0.01,
+    "risk.risk_map_deltas.conf_2": 0.03,
+    "risk.risk_map_deltas.size_2": 0.02,
+    "multi_timeframe.ltf_override_threshold": 0.62
   },
   "constraints": {
     "hard_failures": [],
@@ -85,59 +57,53 @@
     }
   },
   "metadata": {
-    "trial_id": "trial_019",
-    "results_path": "tBTCUSD_1h_20251121_091257.json",
+    "trial_id": "trial_009",
+    "results_path": "tBTCUSD_1h_20251121_150244.json",
     "run_meta": {
-      "run_dir": "C:\\Users\\fa06662\\HCP\\Skrivbord\\Genesis-Core\\results\\hparam_search\\run_20251121_081233",
-      "config_path": "config\\optimizer\\tBTCUSD_1h_optuna_phase2b_smoke_test.yaml",
+      "run_dir": "C:\\Users\\fa06662\\HCP\\Skrivbord\\Genesis-Core\\results\\hparam_search\\run_20251121_140023",
+      "config_path": "config\\optimizer\\tBTCUSD_1h_optuna_phase3_fine.yaml",
       "raw_run_meta": {
-        "run_id": "run_20251121_081233",
-        "config_path": "config\\optimizer\\tBTCUSD_1h_optuna_phase2b_smoke_test.yaml",
-        "snapshot_id": "snap_tBTCUSD_20250101_20250131_v1",
+        "run_id": "run_20251121_140023",
+        "config_path": "config\\optimizer\\tBTCUSD_1h_optuna_phase3_fine.yaml",
+        "snapshot_id": "snap_tBTCUSD_20240401_20250331_v1",
         "symbol": "tBTCUSD",
         "timeframe": "1h",
-        "started_at": "2025-11-21T08:12:33.720270+00:00",
-        "git_commit": "99f1cea600b2ebbcb8d24eb27eea225fa796b7f0",
+        "started_at": "2025-11-21T14:00:23.293995+00:00",
+        "git_commit": "b011a0ee85582e12e904af18e272440fd4ab8ff9",
         "raw_meta": {
           "symbol": "tBTCUSD",
           "timeframe": "1h",
-          "snapshot_id": "snap_tBTCUSD_20250101_20250131_v1",
-          "warmup_bars": 150,
+          "snapshot_id": "snap_tBTCUSD_20240401_20250331_v1",
           "runs": {
             "strategy": "optuna",
             "resume": false,
-            "max_trials": 20,
+            "max_trials": 50,
             "max_concurrent": 4,
+            "use_sample_range": true,
             "optuna": {
-              "study_name": "optuna_phase2b_v1",
-              "direction": "maximize",
+              "study_name": "optuna_phase3_fine_12m_v3",
+              "storage": "sqlite:///results/hparam_search/storage/optuna_phase3_fine_v3.db",
               "sampler": {
                 "name": "tpe",
                 "kwargs": {
+                  "n_startup_trials": 20,
+                  "n_ei_candidates": 24,
                   "multivariate": true,
-                  "constant_liar": true,
-                  "n_startup_trials": 10,
-                  "n_ei_candidates": 48
+                  "constant_liar": true
                 }
-              },
-              "pruner": {
-                "name": "median"
-              },
-              "heartbeat_interval": 30,
-              "heartbeat_grace_period": 120
-            },
-            "baseline_results_path": "results/backtests/tBTCUSD_1h_20251121_090915.json"
+              }
+            }
           }
         },
         "optuna": {
-          "study_name": "optuna_phase2b_v1",
-          "storage": null,
+          "study_name": "optuna_phase3_fine_12m_v3",
+          "storage": "sqlite:///results/hparam_search/storage/optuna_phase3_fine_v3.db",
           "direction": "maximize",
-          "n_trials": 20,
-          "best_value": 0.1259940226224605,
-          "best_trial_number": "trial_019",
+          "n_trials": 50,
+          "best_value": 0.1633715456755628,
+          "best_trial_number": "trial_009",
           "diagnostics": {
-            "total_trials_attempted": 20,
+            "total_trials_attempted": 50,
             "duplicate_count": 0,
             "zero_trade_count": 0,
             "duplicate_ratio": 0.0,
@@ -150,15 +116,15 @@
         "reasons": []
       },
       "score_block": {
-        "score": 0.1259940226224605,
+        "score": 0.1633715456755628,
         "metrics": {
-          "total_return": 0.02196814775000048,
-          "profit_factor": 1.2329482779408067,
-          "max_drawdown": 0.036655834499999845,
-          "win_rate": 0.2727272727272727,
-          "num_trades": 11,
-          "sharpe_ratio": 0.08147151425007636,
-          "return_to_dd": 0.599308351580444
+          "total_return": 0.06151190625000196,
+          "profit_factor": 1.1618102065423606,
+          "max_drawdown": 0.07346679674999933,
+          "win_rate": 0.2352941176470588,
+          "num_trades": 85,
+          "sharpe_ratio": 0.05724679219198815,
+          "return_to_dd": 0.8372749183460557
         },
         "hard_failures": []
       }
@@ -166,49 +132,49 @@
   },
   "merged_config": {
     "thresholds": {
-      "entry_conf_overall": 0.34,
+      "entry_conf_overall": 0.32,
       "regime_proba": {
-        "balanced": 0.54,
-        "bear": 0.52,
-        "bull": 0.54,
-        "ranging": 0.56
+        "balanced": 0.52,
+        "bear": 0.48,
+        "bull": 0.48,
+        "ranging": 0.54
       },
       "signal_adaptation": {
         "atr_period": 14,
         "zones": {
           "high": {
-            "entry_conf_overall": 0.32,
+            "entry_conf_overall": 0.36,
             "regime_proba": {
-              "balanced": 0.58,
-              "bear": 0.5,
-              "bull": 0.52,
-              "ranging": 0.56
+              "balanced": 0.44,
+              "bear": 0.48,
+              "bull": 0.48,
+              "ranging": 0.54
             },
             "pct": null
           },
           "low": {
-            "entry_conf_overall": 0.2,
+            "entry_conf_overall": 0.26,
             "regime_proba": {
               "balanced": 0.48,
               "bear": 0.48,
-              "bull": 0.48,
-              "ranging": 0.52
+              "bull": 0.4,
+              "ranging": 0.54
             },
             "pct": null
           },
           "mid": {
-            "entry_conf_overall": 0.28,
+            "entry_conf_overall": 0.3,
             "regime_proba": {
-              "balanced": 0.5,
-              "bear": 0.52,
-              "bull": 0.5,
-              "ranging": 0.5
+              "balanced": 0.48,
+              "bear": 0.48,
+              "bull": 0.48,
+              "ranging": 0.56
             },
             "pct": null
           }
         }
       },
-      "min_edge": 0.014
+      "min_edge": 0.006
     },
     "gates": {
       "hysteresis_steps": 3,
@@ -217,16 +183,16 @@
     "risk": {
       "risk_map": [
         [
-          0.48,
-          0.02
+          0.46,
+          0.03
         ],
         [
           0.52,
-          0.045
+          0.03
         ],
         [
-          0.63,
-          0.05
+          0.68,
+          0.055
         ]
       ]
     },
@@ -235,18 +201,18 @@
     },
     "exit": {
       "enabled": true,
-      "max_hold_bars": 16,
+      "max_hold_bars": 32,
       "stop_loss_pct": 0.02,
       "take_profit_pct": 0.05,
-      "exit_conf_threshold": 0.34,
+      "exit_conf_threshold": 0.3,
       "regime_aware_exits": true,
       "trailing_stop_enabled": false,
-      "trailing_stop_pct": 0.018
+      "trailing_stop_pct": 0.015
     },
     "multi_timeframe": {
       "use_htf_block": true,
       "allow_ltf_override": true,
-      "ltf_override_threshold": 0.54,
+      "ltf_override_threshold": 0.62,
       "ltf_override_adaptive": {
         "enabled": true,
         "window": 120,
@@ -274,11 +240,50 @@
         }
       }
     },
-    "warmup_bars": null,
-    "htf_exit_config": null,
-    "htf_fib": null,
-    "ltf_fib": null,
+    "warmup_bars": 150,
+    "htf_exit_config": {
+      "enable_partials": true,
+      "enable_trailing": true,
+      "enable_structure_breaks": true,
+      "partial_1_pct": 0.6,
+      "partial_2_pct": 0.5,
+      "fib_threshold_atr": 0.7,
+      "trail_atr_multiplier": 2.5,
+      "swing_update_strategy": "fixed"
+    },
+    "htf_fib": {
+      "entry": {
+        "enabled": true,
+        "tolerance_atr": 0.5,
+        "targets": null,
+        "long_target_levels": null,
+        "short_target_levels": null,
+        "long_max_level": 0.786,
+        "long_min_level": null,
+        "short_min_level": 0.382,
+        "short_max_level": null,
+        "missing_policy": null,
+        "override_confidence": null
+      },
+      "exit": null
+    },
+    "ltf_fib": {
+      "entry": {
+        "enabled": true,
+        "tolerance_atr": 0.5,
+        "targets": null,
+        "long_target_levels": null,
+        "short_target_levels": null,
+        "long_max_level": 0.786,
+        "long_min_level": null,
+        "short_min_level": 0.382,
+        "short_max_level": null,
+        "missing_policy": null,
+        "override_confidence": null
+      },
+      "exit": null
+    },
     "features": null
   },
-  "runtime_version": 2
+  "runtime_version": 4
 }

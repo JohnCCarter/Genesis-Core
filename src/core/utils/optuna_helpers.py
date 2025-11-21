@@ -175,7 +175,7 @@ class NoDupeGuard:
 
     sqlite_path: str | None = ".optuna_dedup.db"
     redis_url: str | None = None
-    
+
     # SQLite configuration constants
     _SQLITE_TIMEOUT = 10.0  # seconds to wait for lock
     _SQLITE_BATCH_CHUNK_SIZE = 500  # Max params per query (SQLite limit: 999-32766)
@@ -250,33 +250,33 @@ class NoDupeGuard:
         if self._use_redis:
             return self._redis_seen(sig)
         return self._sqlite_seen(sig)
-    
+
     def seen_batch(self, sigs: list[str]) -> dict[str, bool]:
         """Check multiple signatures at once. Returns dict mapping sig -> bool.
-        
+
         Performance optimization: Batch lookups are much faster than individual checks.
         For SQLite with 1000 sigs: ~30ms batch vs ~30s individual (1000x speedup).
         """
         if not sigs:
             return {}
-        
+
         if self._use_redis:  # pragma: no cover
             # Redis pipeline for batch check
             pipeline = self._redis.pipeline()
             for sig in sigs:
                 pipeline.sismember("optuna:dedup", sig)
             results = pipeline.execute()
-            return {sig: bool(result) for sig, result in zip(sigs, results)}
-        
+            return {sig: bool(result) for sig, result in zip(sigs, results, strict=False)}
+
         # SQLite batch lookup using IN clause
-        result_dict = {sig: False for sig in sigs}
+        result_dict = dict.fromkeys(sigs, False)
         with closing(
             sqlite3.connect(self.sqlite_path, timeout=self._SQLITE_TIMEOUT, check_same_thread=False)
         ) as conn:
             # SQLite has a limit on SQL variables (usually 999-32766)
             # Process in chunks to stay safely under the limit
             for i in range(0, len(sigs), self._SQLITE_BATCH_CHUNK_SIZE):
-                chunk = sigs[i:i + self._SQLITE_BATCH_CHUNK_SIZE]
+                chunk = sigs[i : i + self._SQLITE_BATCH_CHUNK_SIZE]
                 # Build parameterized query with one placeholder per signature
                 placeholder_list = ["?"] * len(chunk)
                 placeholders = ",".join(placeholder_list)
@@ -284,7 +284,7 @@ class NoDupeGuard:
                 rows = conn.execute(query, chunk).fetchall()
                 for (sig,) in rows:
                     result_dict[sig] = True
-        
+
         return result_dict
 
     def add(self, sig: str) -> bool:

@@ -47,12 +47,12 @@ for tf in trial_files:
 if not records:
     print("No phase2 trials found")
     raise SystemExit(1)
-scores = [r["score"] for r in records if isinstance(r["score"], (int, float))]
-trades = [r["trades"] for r in records if isinstance(r["trades"], (int, float))]
-returns = [r["return_pct"] for r in records if isinstance(r["return_pct"], (int, float))]
-pfs = [r["profit_factor"] for r in records if isinstance(r["profit_factor"], (int, float))]
-dds = [r["max_dd_pct"] for r in records if isinstance(r["max_dd_pct"], (int, float))]
-wrates = [r["win_rate"] for r in records if isinstance(r["win_rate"], (int, float))]
+scores = [r["score"] for r in records if isinstance(r["score"], int | float)]
+trades = [r["trades"] for r in records if isinstance(r["trades"], int | float)]
+returns = [r["return_pct"] for r in records if isinstance(r["return_pct"], int | float)]
+pfs = [r["profit_factor"] for r in records if isinstance(r["profit_factor"], int | float)]
+dds = [r["max_dd_pct"] for r in records if isinstance(r["max_dd_pct"], int | float)]
+wrates = [r["win_rate"] for r in records if isinstance(r["win_rate"], int | float)]
 constraint_flags = [r["constraints_ok"] for r in records if isinstance(r["constraints_ok"], bool)]
 metrics = {
     "total_trials": len(records),
@@ -78,7 +78,7 @@ try:
 except Exception:
     pass
 metrics["phase1_best_score"] = phase1_best
-if isinstance(phase1_best, (int, float)):
+if isinstance(phase1_best, int | float):
     metrics["best_score_delta_vs_phase1"] = metrics["best_score"] - phase1_best
 out_path = phase2_dir / "phase2_metrics.json"
 out_path.write_text(json.dumps(metrics, indent=2))

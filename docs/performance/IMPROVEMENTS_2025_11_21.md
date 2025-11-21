@@ -106,7 +106,7 @@ else:
 
 **Expected Runtime Improvement:**
 - Champion loader cache: ~8s saved
-- Percentile batch: ~5.3s saved  
+- Percentile batch: ~5.3s saved
 - Series optimization: ~4-6s saved (estimated)
 - **Total estimated savings: 17-19s (15-19% improvement)**
 
@@ -143,11 +143,11 @@ Based on profiling, remaining bottlenecks to address:
 1. **DataFrame Column Access** (8.5s): 34K calls to pandas `__getitem__`
    - Already has `fast_window` mode that pre-extracts arrays
    - Ensure `fast_window=True` is used in production backtests
-   
+
 2. **Feature Cache Fingerprinting** (6.8s): 17K calls to `make_indicator_fingerprint`
    - Consider simplifying fingerprint algorithm
    - Cache fingerprints for unchanged data windows
-   
+
 3. **JSON Encoding** (0.9s): 17K JSON encode operations
    - Consider using `orjson` (already attempted in code)
    - Batch or reduce frequency of JSON operations
@@ -155,7 +155,7 @@ Based on profiling, remaining bottlenecks to address:
 ## Recommendations
 
 1. **Always use fast_window mode**: Set `GENESIS_FAST_WINDOW=1` environment variable
-2. **Enable precompute features**: Set `GENESIS_PRECOMPUTE_FEATURES=1` 
+2. **Enable precompute features**: Set `GENESIS_PRECOMPUTE_FEATURES=1`
 3. **Monitor cache hit rates**: Add metrics for champion loader cache effectiveness
 4. **Profile regularly**: Run profiling after significant changes to catch new bottlenecks
 

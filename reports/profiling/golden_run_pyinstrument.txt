@@ -70,4 +70,3 @@ Program: scripts/run_backtest.py --symbol tBTCUSD --timeframe 1h --fast-window -
          └─ 3.677 log_fib_flow  core\strategy\fib_logging.py:24
             └─ 3.636 Logger.info  logging\__init__.py:1479
                   [6 frames hidden]  logging, <built-in>
-

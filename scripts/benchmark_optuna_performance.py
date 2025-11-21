@@ -125,7 +125,9 @@ def benchmark_sqlite_dedup(n: int = 1000, tmp_dir: Path | None = None) -> dict[s
         "ops_per_sec_batch": n / time_batch,
         "lookup_100_individual_ms": time_lookup_individual * 1000,
         "lookup_100_batch_ms": time_lookup_batch * 1000,
-        "lookup_speedup": time_lookup_individual / time_lookup_batch if time_lookup_batch > 0 else 1.0,
+        "lookup_speedup": (
+            time_lookup_individual / time_lookup_batch if time_lookup_batch > 0 else 1.0
+        ),
         "batch_inserted": count,
         "batch_lookup_count": len(results),
     }

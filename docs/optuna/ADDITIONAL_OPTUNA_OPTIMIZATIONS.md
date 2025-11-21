@@ -44,7 +44,7 @@ _DEFAULT_CONFIG_LOCK = threading.Lock()
 def _get_default_config() -> dict[str, Any]:
     """Get default config with thread-safe caching."""
     global _DEFAULT_CONFIG_CACHE
-    
+
     with _DEFAULT_CONFIG_LOCK:
         if _DEFAULT_CONFIG_CACHE is None:
             from core.config.authority import ConfigAuthority
@@ -136,7 +136,7 @@ Use in-place modification with backtracking:
 ```python
 def _expand_dict(spec: dict[str, Any]) -> Iterable[dict[str, Any]]:
     items = [(key, _expand_value(value)) for key, value in spec.items()]
-    
+
     def _recurse(idx: int, current: dict[str, Any]) -> Iterable[dict[str, Any]]:
         if idx >= len(items):
             yield dict(current)  # Only copy at leaf nodes

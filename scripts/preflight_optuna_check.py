@@ -106,9 +106,10 @@ def check_timeout_config(max_trials: Any, timeout_seconds: Any) -> tuple[bool, s
         max_trials_int = int(max_trials)
         if max_trials_int > 0:
             est_hours = (max_trials_int * 170) / 3600  # ~170s per trial
+            timeout_str = f"{timeout_seconds/3600:.1f}h" if timeout_seconds else "aldrig"
             issues.append(
                 f"[WARN] max_trials={max_trials_int} - stoppar efter ~{est_hours:.1f}h "
-                f"(eller timeout om {timeout_seconds/3600:.1f}h nås först)"
+                f"(eller timeout om {timeout_str} nås först)"
             )
 
     return True, " | ".join(issues)

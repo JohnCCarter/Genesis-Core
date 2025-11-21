@@ -24,7 +24,7 @@ from pathlib import Path
 project_root = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(project_root / "src"))
 
-from core.optimizer.runner import run_optimizer
+from core.optimizer.runner import run_optimizer  # noqa: E402
 
 
 def main():

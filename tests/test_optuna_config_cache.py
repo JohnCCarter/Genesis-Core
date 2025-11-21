@@ -1,4 +1,4 @@
-"""
+﻿"""
 Tests for Optuna default config caching optimization.
 """
 
@@ -28,7 +28,7 @@ class TestDefaultConfigCaching:
         mock_cfg_obj.model_dump.return_value = {"test": "config", "version": 1}
         mock_authority.get.return_value = (mock_cfg_obj, None, None)
 
-        with patch("core.optimizer.runner.ConfigAuthority", return_value=mock_authority):
+        with patch("core.config.authority.ConfigAuthority", return_value=mock_authority):
             # First call should load config
             config1 = _get_default_config()
             assert config1 == {"test": "config", "version": 1}
@@ -55,7 +55,7 @@ class TestDefaultConfigCaching:
         call_counts = []
 
         def worker():
-            with patch("core.optimizer.runner.ConfigAuthority", return_value=mock_authority):
+            with patch("core.config.authority.ConfigAuthority", return_value=mock_authority):
                 config = _get_default_config()
                 results.append(config)
                 call_counts.append(mock_authority.get.call_count)
@@ -89,7 +89,7 @@ class TestDefaultConfigCaching:
         mock_cfg_obj.model_dump.side_effect = slow_model_dump
         mock_authority.get.return_value = (mock_cfg_obj, None, None)
 
-        with patch("core.optimizer.runner.ConfigAuthority", return_value=mock_authority):
+        with patch("core.config.authority.ConfigAuthority", return_value=mock_authority):
             # First call (cold)
             start = time.perf_counter()
             _get_default_config()
@@ -117,7 +117,7 @@ class TestDefaultConfigCaching:
         mock_cfg_obj.model_dump.return_value = {"test": "config", "nested": {"value": 1}}
         mock_authority.get.return_value = (mock_cfg_obj, None, None)
 
-        with patch("core.optimizer.runner.ConfigAuthority", return_value=mock_authority):
+        with patch("core.config.authority.ConfigAuthority", return_value=mock_authority):
             config1 = _get_default_config()
             config2 = _get_default_config()
 

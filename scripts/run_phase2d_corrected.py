@@ -10,7 +10,7 @@ from pathlib import Path
 repo_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(repo_root / "src"))
 
-from core.optimizer.runner import run_optimizer
+from core.optimizer.runner import run_optimizer  # noqa: E402
 
 if __name__ == "__main__":
     config_path = repo_root / "config" / "optimizer" / "tBTCUSD_1h_optuna_phase2d_corrected.yaml"

@@ -77,6 +77,15 @@ def test_run_trial_uses_cache(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         timeframe = cmd[cmd.index("--timeframe") + 1]
         result_path = results_root / f"{symbol}_{timeframe}_diffcache_{call_count['runs']}.json"
         payload = {
+            "metrics": {
+                "initial_capital": 10000,
+                "total_return": 1.0,
+                "num_trades": 5,
+                "profit_factor": 1.2,
+                "max_drawdown": 0.1,
+                "sharpe_ratio": 0.5,
+                "win_rate": 0.5,
+            },
             "summary": {
                 "initial_capital": 10000,
                 "total_return": 1.0,
@@ -88,7 +97,7 @@ def test_run_trial_uses_cache(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         }
         result_path.write_text(json.dumps(payload), encoding="utf-8")
         created_files.append(result_path)
-        log_path.write_text("ok", encoding="utf-8")
+        log_path.write_text(f"  results: {result_path}\n", encoding="utf-8")
         return 0, "ok"
 
     monkeypatch.setattr("core.optimizer.runner._exec_backtest", fake_exec_backtest)

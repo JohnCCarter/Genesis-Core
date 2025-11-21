@@ -40,6 +40,7 @@ def _to_series(
         if isinstance(high_data, pd.Series):
             highs = high_data
         else:
+            # Explicit dtype ensures float type (input may be int/mixed)
             highs = pd.Series(high_data, dtype=float)
 
         if isinstance(low_data, pd.Series):

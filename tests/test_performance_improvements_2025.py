@@ -83,6 +83,7 @@ class TestPercentileOptimization:
 
     def test_batch_percentile_faster_than_separate(self):
         """Batch percentile calculation should be faster than separate calls."""
+        np.random.seed(42)  # Fixed seed for reproducible results
         data = np.random.rand(1000)
 
         # Separate calls (old approach)

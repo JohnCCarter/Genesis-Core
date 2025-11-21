@@ -20,7 +20,7 @@
 - Avsevärt snabbare trials tack vare fast‑window, precompute och caching. Mindre dubbletter via TPE (`constant_liar`, `multivariate`, `n_ei_candidates` 512).
 - NumPy‑ambiguitetsfel eliminerade (`features_asof`, `regime_unified`).
 
-### Nästa steg
+### Nästa steg är
 
 - Följ studien; rapportera topp‑trials (score, trades, PF, max DD) och jämför mot champion.
 - Justera concurrency (3–4) om CPU‑headroom finns.

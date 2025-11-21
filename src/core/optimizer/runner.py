@@ -1185,11 +1185,18 @@ def _create_optuna_study(
     return study
 
 
-def _suggest_parameters(trial, spec: dict[str, Any]) -> dict[str, Any]:
+def _suggest_parameters(trial: Trial, spec: dict[str, Any]) -> dict[str, Any]:
     """Suggest parameters for Optuna trial with optimized decimal caching.
     
     Performance optimization: Step decimal calculation is cached at module level
     to avoid repeated string operations across all trials in the study.
+    
+    Args:
+        trial: Optuna Trial object to suggest parameters from
+        spec: Parameter specification dictionary defining the search space
+        
+    Returns:
+        Dictionary of resolved parameter values for this trial
     """
 
     def _prepare_categorical_options(options: Iterable[Any]) -> tuple[list[Any], dict[str, Any]]:
@@ -1249,7 +1256,7 @@ def _suggest_parameters(trial, spec: dict[str, Any]) -> dict[str, Any]:
                     raw_value = trial.suggest_float(path, low, high, step=step_float, log=log)
                     # Performance: Use module-level cached decimal calculation
                     decimals = _get_step_decimals(step_float)
-                    # Round till rätt antal decimaler baserat på step
+                    # Round to correct number of decimals based on step size
                     resolved[key] = round(round(raw_value / step_float) * step_float, decimals)
                 else:
                     resolved[key] = trial.suggest_float(path, low, high, log=log)

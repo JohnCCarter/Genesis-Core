@@ -277,7 +277,9 @@ class NoDupeGuard:
             # Process in chunks to stay safely under the limit
             for i in range(0, len(sigs), self._SQLITE_BATCH_CHUNK_SIZE):
                 chunk = sigs[i:i + self._SQLITE_BATCH_CHUNK_SIZE]
-                placeholders = ",".join("?" * len(chunk))
+                # Build parameterized query with one placeholder per signature
+                placeholder_list = ["?"] * len(chunk)
+                placeholders = ",".join(placeholder_list)
                 query = f"SELECT sig FROM dedup_signatures WHERE sig IN ({placeholders})"
                 rows = conn.execute(query, chunk).fetchall()
                 for (sig,) in rows:

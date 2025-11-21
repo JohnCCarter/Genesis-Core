@@ -76,6 +76,10 @@ _COMPLEX_CHOICE_PREFIX = "__optuna_complex__"
 _TRIAL_KEY_CACHE: dict[int, str] = {}
 _TRIAL_KEY_CACHE_LOCK = threading.Lock()
 
+# Performance: Cache for default config to avoid repeated file reads and model dumps
+_DEFAULT_CONFIG_CACHE: dict[str, Any] | None = None
+_DEFAULT_CONFIG_LOCK = threading.Lock()
+
 
 # Performance: JSON mtime cache for optimizer (opt-in via env GENESIS_OPTIMIZER_JSON_CACHE=1)
 _JSON_CACHE: OrderedDict[str, tuple[int, Any]] = OrderedDict()
@@ -190,6 +194,29 @@ def _trial_key(params: dict[str, Any]) -> str:
         _TRIAL_KEY_CACHE[digest] = key
 
     return key
+
+
+def _get_default_config() -> dict[str, Any]:
+    """
+    Get default configuration with thread-safe caching.
+    
+    Performance optimization: The default config is loaded once and cached
+    for the entire optimization run, avoiding redundant file reads and
+    expensive Pydantic model_dump() operations for every trial.
+    
+    Returns:
+        Dictionary containing default configuration
+    """
+    global _DEFAULT_CONFIG_CACHE
+    
+    with _DEFAULT_CONFIG_LOCK:
+        if _DEFAULT_CONFIG_CACHE is None:
+            from core.config.authority import ConfigAuthority
+            
+            authority = ConfigAuthority()
+            default_cfg_obj, _, _ = authority.get()
+            _DEFAULT_CONFIG_CACHE = default_cfg_obj.model_dump()
+        return _DEFAULT_CONFIG_CACHE
 
 
 def _as_bool(value: Any) -> bool:
@@ -597,12 +624,8 @@ def run_trial(
     if trial.parameters:
         config_file = output_dir / f"{trial_id}_config.json"
 
-        # Load default config and merge with trial parameters
-        from core.config.authority import ConfigAuthority
-
-        authority = ConfigAuthority()
-        default_cfg_obj, _, _ = authority.get()
-        default_cfg = default_cfg_obj.model_dump()
+        # Performance: Use cached default config instead of loading for every trial
+        default_cfg = _get_default_config()
 
         # Deep merge trial parameters into default config
         transformed_params, derived_values = transform_parameters(trial.parameters)

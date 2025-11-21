@@ -318,8 +318,8 @@ def _load_existing_trials(run_dir: Path) -> dict[str, dict[str, Any]]:
             content = trial_path.read_text(encoding="utf-8")
             trial_data = _json_loads(content)
             
-            # Performance: Direct type check faster than isinstance
-            if type(trial_data) is not dict:
+            # JSON always returns exact dict, but be defensive
+            if not isinstance(trial_data, dict):
                 continue
                 
             params = trial_data.get("parameters")
@@ -389,6 +389,9 @@ def _deep_merge(base: dict, override: dict) -> dict:
     
     Performance optimization: Use iterative approach with stack for better
     performance on large nested structures, avoiding recursive overhead.
+    
+    Note: Uses isinstance() for dict checks to support dict subclasses,
+    as configuration may come from various sources including OrderedDict.
     """
     if not override:
         return dict(base)
@@ -403,8 +406,8 @@ def _deep_merge(base: dict, override: dict) -> dict:
         
         for key, value in source.items():
             target_value = target.get(key)
-            # Performance: Direct type() comparison is faster than isinstance
-            if (type(target_value) is dict and type(value) is dict):
+            # Support dict subclasses for flexibility with config sources
+            if isinstance(target_value, dict) and isinstance(value, dict):
                 # Schedule nested merge
                 stack.append((target_value, path + [key], value))
             else:
@@ -1048,8 +1051,8 @@ def _suggest_parameters(trial, spec: dict[str, Any]) -> dict[str, Any]:
             path = f"{prefix}.{key}" if prefix else key
             if value is None:
                 raise ValueError(f"parameter {path} saknar definition i YAML")
-            # Performance: Direct type() check instead of isinstance
-            if type(value) is dict and "type" not in value:
+            # Support dict subclasses for nested parameter specs
+            if isinstance(value, dict) and "type" not in value:
                 resolved[key] = _recurse(value, path)
                 continue
             node_type = (value or {}).get("type", "grid")

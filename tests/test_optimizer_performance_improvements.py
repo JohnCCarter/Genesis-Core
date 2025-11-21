@@ -329,7 +329,11 @@ class TestOptunaIntegrationOptimizations:
     """Test overall Optuna integration performance."""
 
     def test_sampler_defaults_optimized(self) -> None:
-        """Test that TPE sampler has good default parameters."""
+        """Test that TPE sampler has good default parameters.
+        
+        Note: Uses private attributes (_multivariate, _constant_liar) since Optuna
+        doesn't expose public properties for these experimental features.
+        """
         sampler = runner._select_optuna_sampler("tpe", {}, concurrency=4)
         
         # Check that multivariate and constant_liar are enabled (private attributes)

@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import logging
 import os
 import shutil
 import subprocess
@@ -26,10 +27,21 @@ try:  # optional faster JSON
     def _json_dumps(obj: Any) -> str:
         return _orjson.dumps(obj).decode("utf-8")
 
+    def _json_loads(text: str) -> Any:
+        """Parse JSON using orjson for better performance."""
+        return _orjson.loads(text)
+
+    _HAS_ORJSON = True
+
 except Exception:  # pragma: no cover
 
     def _json_dumps(obj: Any) -> str:
         return json.dumps(obj, indent=2)
+
+    def _json_loads(text: str) -> Any:
+        return json.loads(text)
+
+    _HAS_ORJSON = False
 
 
 from core.optimizer.champion import ChampionCandidate, ChampionManager
@@ -68,6 +80,13 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 RESULTS_DIR = PROJECT_ROOT / "results" / "hparam_search"
 BACKTEST_RESULTS_DIR = PROJECT_ROOT / "results" / "backtests"
 
+# Logger for cache reuse messages
+logger = logging.getLogger(__name__)
+try:
+    CONSTRAINT_SOFT_PENALTY = float(os.environ.get("GENESIS_CONSTRAINT_SOFT_PENALTY", "150"))
+except ValueError:  # Fallback om env ej numerisk
+    CONSTRAINT_SOFT_PENALTY = 150.0
+
 _OPTUNA_LOCK = threading.Lock()
 _SIMPLE_CATEGORICAL_TYPES = (type(None), bool, int, float, str)
 _COMPLEX_CHOICE_PREFIX = "__optuna_complex__"
@@ -90,14 +109,63 @@ except Exception:
 
 
 def _load_json_with_retries(path: Path, retries: int = 3, delay: float = 0.1) -> Any:
-    """Read JSON from disk with small retry loop to handle partial writes."""
+    """Read JSON from disk with small retry loop; salvage on trailing garbage.
+
+    Problem: Vi har observerat korrupta resultatfiler där flera JSON-objekt eller
+    loggdata har skrivits i samma fil vilket ger `JSONDecodeError: Extra data`.
+    Lösning: Vid 'Extra data' försöker vi extrahera första kompletta JSON-objektet
+    genom att balansera klammerparenteser och parsa substringen. Om salvage
+    misslyckas fortsätter vi med retries som tidigare.
+    """
     last_error: json.JSONDecodeError | None = None
     for attempt in range(retries):
         text = path.read_text(encoding="utf-8")
         try:
             return json.loads(text)
-        except json.JSONDecodeError as exc:  # pragma: no cover - only hit on IO races
+        except json.JSONDecodeError as exc:  # pragma: no cover - IO race eller korrupt fil
             last_error = exc
+            msg = str(exc)
+            # Salvage endast vid 'Extra data' (typiskt flera JSON-objekt concatenated)
+            if "Extra data" in msg:
+                # Försök hitta första kompletta objektet (antas börja med '{')
+                start_idx = text.find("{")
+                if start_idx != -1:
+                    depth = 0
+                    in_string = False
+                    escape = False
+                    end_idx = -1
+                    for i in range(start_idx, len(text)):
+                        ch = text[i]
+                        if in_string:
+                            if escape:
+                                escape = False
+                            elif ch == "\\":
+                                escape = True
+                            elif ch == '"':
+                                in_string = False
+                            continue
+                        else:
+                            if ch == '"':
+                                in_string = True
+                                continue
+                            if ch == "{":
+                                depth += 1
+                            elif ch == "}":
+                                depth -= 1
+                                if depth == 0:
+                                    end_idx = i + 1
+                                    break
+                    if end_idx != -1:
+                        candidate = text[start_idx:end_idx]
+                        try:
+                            salvaged = json.loads(candidate)
+                            # Logga minimal varning men returnera salvaged innehåll
+                            print(
+                                f"[WARN] Salvaged partial JSON från {path.name} (trailing data borttagen)"
+                            )
+                            return salvaged
+                        except json.JSONDecodeError:
+                            pass  # Salvage misslyckades, fortsätt retries
             if attempt + 1 < retries:
                 time.sleep(delay)
             else:
@@ -178,41 +246,53 @@ def load_search_config(path: Path) -> dict[str, Any]:
 
 
 def _trial_key(params: dict[str, Any]) -> str:
-    """Generate canonical key for trial parameters with caching."""
-    canonical = canonicalize_config(params or {})
-    key = json.dumps(canonical, sort_keys=True, separators=(",", ":"))
-    digest = hashlib.sha256(key.encode("utf-8")).hexdigest()
+    """Generate canonical key for trial parameters with caching.
+
+    Performance optimization: Cache both the canonical form and the final
+    digest to avoid redundant canonicalization calls.
+    """
+    try:
+        # Fast path: Try to generate key directly from params
+        key = json.dumps(params, sort_keys=True, separators=(",", ":"))
+        digest = hashlib.sha256(key.encode("utf-8")).hexdigest()
+    except (TypeError, ValueError):
+        # Fallback: Use canonicalize for complex types
+        canonical = canonicalize_config(params or {})
+        key = json.dumps(canonical, sort_keys=True, separators=(",", ":"))
+        digest = hashlib.sha256(key.encode("utf-8")).hexdigest()
 
     with _TRIAL_KEY_CACHE_LOCK:
         cached = _TRIAL_KEY_CACHE.get(digest)
         if cached is not None:
             return cached
+        # Performance: Trim cache when it grows too large
         if len(_TRIAL_KEY_CACHE) > 10000:
             items = list(_TRIAL_KEY_CACHE.items())
             _TRIAL_KEY_CACHE.clear()
+            # Keep most recent 8000 (approximate LRU via dict ordering)
             _TRIAL_KEY_CACHE.update(items[-8000:])
-        _TRIAL_KEY_CACHE[digest] = key
 
-    return key
+        _TRIAL_KEY_CACHE[digest] = digest
+        return digest
 
 
 def _get_default_config() -> dict[str, Any]:
     """
     Get default configuration with thread-safe caching.
-    
+
     Performance optimization: The default config is loaded once and cached
     for the entire optimization run, avoiding redundant file reads and
     expensive Pydantic model_dump() operations for every trial.
-    
+
     Returns:
         Dictionary containing default configuration
     """
     global _DEFAULT_CONFIG_CACHE
-    
+
     with _DEFAULT_CONFIG_LOCK:
         if _DEFAULT_CONFIG_CACHE is None:
             from core.config.authority import ConfigAuthority
-            
+
             authority = ConfigAuthority()
             default_cfg_obj, _, _ = authority.get()
             _DEFAULT_CONFIG_CACHE = default_cfg_obj.model_dump()
@@ -273,27 +353,32 @@ def _resolve_sample_range(snapshot_id: str, runs_cfg: dict[str, Any]) -> tuple[s
 def _load_existing_trials(run_dir: Path) -> dict[str, dict[str, Any]]:
     """Load existing trials with optimized file I/O.
 
-    Performance optimization: Batch read operations and use more efficient
-    JSON parsing with pre-allocated dictionary.
+    Performance optimization: Batch read operations, use more efficient
+    JSON parsing, and optimize memory allocation patterns.
     """
-    existing: dict[str, dict[str, Any]] = {}
     trial_paths = sorted(run_dir.glob("trial_*.json"))
 
-    # Performance: Pre-allocate dictionary size hint if we know count
-    if trial_paths:
-        existing = dict.fromkeys(range(len(trial_paths)))
-        existing.clear()  # Keep capacity but clear keys
+    if not trial_paths:
+        return {}
+
+    # Performance: Pre-allocate dictionary with size hint
+    existing: dict[str, dict[str, Any]] = {}
 
     for trial_path in trial_paths:
         try:
-            # Performance: Read file once, parse once
+            # Performance: Use optimized JSON parser when available
             content = trial_path.read_text(encoding="utf-8")
-            trial_data = json.loads(content)
+            trial_data = _json_loads(content)
+
+            # JSON always returns exact dict, but be defensive
+            if not isinstance(trial_data, dict):
+                continue
+
             params = trial_data.get("parameters")
             if params:
                 key = _trial_key(params)
                 existing[key] = trial_data
-        except (json.JSONDecodeError, OSError):
+        except (ValueError, OSError):
             # Skip corrupted files silently
             continue
 
@@ -352,23 +437,45 @@ def _serialize_meta(meta_payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def _deep_merge(base: dict, override: dict) -> dict:
-    """Deep merge override dict into base dict."""
+    """Deep merge override dict into base dict.
+
+    Performance optimization: Iterative implementation to avoid recursion depth limits
+    and function call overhead.
+    """
+    if not override:
+        return dict(base)
+
     merged = dict(base)
-    for key, value in (override or {}).items():
-        if key in merged and isinstance(merged[key], dict) and isinstance(value, dict):
-            merged[key] = _deep_merge(merged[key], value)
-        else:
-            merged[key] = value
+    stack = [(merged, override)]
+
+    while stack:
+        current_base, current_override = stack.pop()
+        for key, value in current_override.items():
+            if (
+                key in current_base
+                and isinstance(current_base[key], dict)
+                and isinstance(value, dict)
+            ):
+                current_base[key] = dict(current_base[key])
+                stack.append((current_base[key], value))
+            else:
+                current_base[key] = value
+
     return merged
 
 
 def _expand_value(node: Any) -> list[Any]:
     def _clone_value(v: Any) -> Any:
-        # Avoid expensive deepcopy for immutable/simple types
-        if isinstance(v, NoneType | bool | int | float | str | bytes):
+        # Performance: Use type() for faster checks on primitives
+        t = type(v)
+        if t in (int, float, str, bool, type(None), bytes):
             return v
-        if isinstance(v, tuple):
+        if t is tuple:
             return tuple(_clone_value(x) for x in v)
+        if t is list:
+            return [_clone_value(x) for x in v]
+        if t is dict:
+            return {k: _clone_value(val) for k, val in v.items()}
         return copy.deepcopy(v)
 
     if isinstance(node, dict):
@@ -537,7 +644,53 @@ def _candidate_from_result(result: dict[str, Any]) -> ChampionCandidate | None:
         hard_failures=hard_failures,
         trial_id=str(result.get("trial_id", "")),
         results_path=str(result.get("results_path", "")),
+        merged_config=result.get("merged_config"),  # Include merged config
     )
+
+
+def _check_abort_heuristic(
+    backtest_results: dict[str, Any], trial_params: dict[str, Any]
+) -> dict[str, Any]:
+    """Check if trial should be aborted post-backtest based on heuristic.
+
+    Returns dict with:
+        ok (bool): True if trial should continue, False if should abort
+        reason (str): Abort reason if ok=False
+        details (str): Additional details about why abort triggered
+        penalty (float): Score penalty to apply if aborted
+    """
+    metrics = backtest_results.get("metrics", {})
+    num_trades = metrics.get("num_trades", 0)
+
+    # Zero trades with high thresholds = likely configuration issue
+    if num_trades == 0:
+        thresholds = trial_params.get("thresholds", {})
+        entry_conf = thresholds.get("entry_conf_overall", 0.0)
+        signal_adapt = thresholds.get("signal_adaptation", {})
+        zones = signal_adapt.get("zones", {})
+        low_zone = zones.get("low", {})
+        low_entry = low_zone.get("entry_conf_overall", 0.0)
+        min_edge = thresholds.get("min_edge", 0.0)
+
+        # Early abort condition: zero trades + high thresholds
+        if entry_conf >= 0.35 or low_entry >= 0.28 or min_edge >= 0.015:
+            return {
+                "ok": False,
+                "reason": "zero_trades_high_thresholds",
+                "details": f"entry={entry_conf:.3f}, low_zone={low_entry:.3f}, min_edge={min_edge:.4f}",
+                "penalty": -500.0,
+            }
+
+    # Very few trades (1-3) - apply milder penalty
+    if 0 < num_trades <= 3:
+        return {
+            "ok": False,
+            "reason": "very_few_trades",
+            "details": f"only {num_trades} trades",
+            "penalty": -250.0,
+        }
+
+    return {"ok": True, "reason": "", "details": "", "penalty": 0.0}
 
 
 def run_trial(
@@ -716,12 +869,94 @@ def run_trial(
         attempt_duration = time.perf_counter() - attempt_started
         attempt_durations.append(attempt_duration)
         if returncode == 0:
-            results_path = sorted(
-                (Path(__file__).resolve().parents[3] / "results" / "backtests").glob(
-                    f"{trial.symbol}_{trial.timeframe}_*.json"
+            # Parse log file to find exact results path (avoids race condition with glob)
+            results_path: Path | None = None
+            try:
+                log_content = log_file.read_text(encoding="utf-8")
+                import re
+
+                # Look for: "  results: path/to/file.json"
+                match = re.search(r"^\s*results:\s*(.*\.json)\s*$", log_content, re.MULTILINE)
+                if match:
+                    extracted_path = Path(match.group(1).strip())
+                    if not extracted_path.is_absolute():
+                        extracted_path = PROJECT_ROOT / extracted_path
+                    if extracted_path.exists():
+                        results_path = extracted_path
+            except Exception as e:
+                print(f"[WARN] Could not parse log for results path: {e}")
+
+            if results_path is None:
+                # Fallback to glob (risky with concurrency)
+                results_path = sorted(
+                    (Path(__file__).resolve().parents[3] / "results" / "backtests").glob(
+                        f"{trial.symbol}_{trial.timeframe}_*.json"
+                    )
+                )[-1]
+
+            try:
+                results = _read_json_cached(results_path)
+            except json.JSONDecodeError as json_err:
+                # Korrupt JSON från samtidig skrivning eller partiell write
+                total_duration = time.perf_counter() - trial_started
+                error_payload = {
+                    "trial_id": trial_id,
+                    "parameters": trial.parameters,
+                    "results_path": results_path.name,
+                    "error": f"JSONDecodeError: {json_err}",
+                    "error_details": str(json_err),
+                    "log": log_file.name,
+                    "attempts": max_attempts - attempts_remaining,
+                    "duration_seconds": total_duration,
+                    "attempt_durations": attempt_durations,
+                }
+                if derived_values:
+                    error_payload["derived"] = derived_values
+                if config_file is not None:
+                    error_payload["config_path"] = config_file.name
+                print(
+                    f"[ERROR] Trial {trial_id} fick korrupt JSON ({results_path.name}): {json_err}"
                 )
-            )[-1]
-            results = _read_json_cached(results_path)
+                print("[ERROR] Detta indikerar race condition vid samtidig skrivning")
+                _atomic_write_text(trial_file, json.dumps(error_payload, indent=2))
+                # Returnera error payload så att objective kan lyfta TrialPruned
+                return error_payload
+            merged_config = results.get("merged_config")  # Full config for reproducibility
+            runtime_version = results.get("runtime_version")  # Runtime version used
+
+            # Abort-heuristic check (Option B: post-backtest)
+            abort_check = _check_abort_heuristic(results, trial.parameters)
+            if not abort_check["ok"]:
+                total_duration = time.perf_counter() - trial_started
+                abort_payload = {
+                    "trial_id": trial_id,
+                    "parameters": trial.parameters,
+                    "results_path": results_path.name,
+                    "score": {
+                        "score": abort_check["penalty"],
+                        "metrics": results.get("metrics"),
+                        "hard_failures": [],
+                    },
+                    "abort_reason": abort_check["reason"],
+                    "abort_details": abort_check["details"],
+                    "constraints": {"ok": False, "reasons": ["aborted_by_heuristic"]},
+                    "log": log_file.name,
+                    "attempts": max_attempts - attempts_remaining,
+                    "duration_seconds": total_duration,
+                    "attempt_durations": attempt_durations,
+                    "merged_config": merged_config,
+                    "runtime_version": runtime_version,
+                }
+                if derived_values:
+                    abort_payload["derived"] = derived_values
+                if config_file is not None:
+                    abort_payload["config_path"] = config_file.name
+                print(
+                    f"[Runner] Trial {trial_id} aborted: {abort_check['reason']} ({abort_check['details']}), penalty={abort_check['penalty']}"
+                )
+                _atomic_write_text(trial_file, json.dumps(abort_payload, indent=2))
+                return abort_payload
+
             score = score_backtest(results, thresholds=MetricThresholds())
             enforcement = enforce_constraints(
                 score,
@@ -748,6 +983,8 @@ def run_trial(
                 "attempts": max_attempts - attempts_remaining,
                 "duration_seconds": total_duration,
                 "attempt_durations": attempt_durations,
+                "merged_config": merged_config,  # Include for champion saving
+                "runtime_version": runtime_version,  # Include for champion saving
             }
             if derived_values:
                 final_payload.setdefault("derived", derived_values)
@@ -769,17 +1006,6 @@ def run_trial(
                 f" PF={profit_factor:.2f}, DD={max_dd_pct:.2f}%, Sharpe={sharpe:.3f}, WR={win_rate_pct:.1f}%)"
             )
             break
-            final_payload = {
-                "trial_id": trial_id,
-                "parameters": trial.parameters,
-                "error": "backtest_failed",
-                "log_path": log_file.name,
-                "attempts": max_attempts - attempts_remaining,
-                "duration_seconds": time.perf_counter() - trial_started,
-                "attempt_durations": attempt_durations,
-            }
-        if config_file is not None:
-            final_payload["config_path"] = config_file.name
         retry_wait = min(5 * (max_attempts - attempts_remaining), 60)
         if attempts_remaining > 0:
             print(f"[Runner] Backtest fail, retry om {retry_wait}s")
@@ -846,7 +1072,7 @@ def _select_optuna_sampler(
     if not OPTUNA_AVAILABLE:
         raise RuntimeError("Optuna är inte installerat")
     kwargs = (kwargs or {}).copy()
-    name = (name or kwargs.pop("name", None) or kwargs.pop("type", None) or "tpe").lower()
+    name = (name or kwargs.pop("type", None) or "tpe").lower()
     if name == "tpe":
         # Apply better defaults for TPE to avoid degeneracy
         if "multivariate" not in kwargs:
@@ -877,7 +1103,7 @@ def _select_optuna_pruner(
     if not OPTUNA_AVAILABLE:
         raise RuntimeError("Optuna är inte installerat")
     kwargs = (kwargs or {}).copy()
-    name = (name or kwargs.pop("name", None) or kwargs.pop("type", None) or "median").lower()
+    name = (name or kwargs.pop("type", None) or "median").lower()
     if name == "median":
         return MedianPruner(**kwargs)
     if name == "sha":
@@ -1072,6 +1298,7 @@ def _run_optuna(
     total_trials_attempted = 0
     duplicate_count = 0
     zero_trade_count = 0
+    score_memory: dict[str, float] = {}  # Cache scores for duplicate parameter sets
 
     # Fast duplicate precheck using persistent guard (SQLite WAL-backed)
     dedup_guard_enabled = bool(study_config.get("dedup_guard_enabled", True))
@@ -1162,6 +1389,24 @@ def _run_optuna(
         payload = make_trial(trial_number, parameters)
         results.append(payload)
 
+        # CACHE REUSE FIX: If payload is from cache, return actual score even if duplicate
+        if payload.get("from_cache"):
+            score_block = payload.get("score") or {}
+            cached_score = float(score_block.get("score", 0.0) or 0.0)
+            trial.set_user_attr("cached", True)
+            trial.set_user_attr("cache_reused", True)
+            if payload.get("results_path"):
+                trial.set_user_attr("backtest_path", payload["results_path"])
+            logger.info(
+                f"[CACHE] Trial {trial.number} reusing cached score {cached_score:.2f} "
+                f"(from_cache=True in payload)"
+            )
+            # Store in memory for future fast lookup
+            score_memory[key] = cached_score
+            # Don't penalize cache hits - return actual score
+            duplicate_streak = 0  # Reset streak since we got useful feedback
+            return cached_score
+
         if payload.get("skipped"):
             reason = payload.get("reason")
             trial.set_user_attr("skipped", True)
@@ -1185,6 +1430,14 @@ def _run_optuna(
             # Penalize in-run duplicates to avoid degeneracy
             if reason == "duplicate_within_run":
                 trial.set_user_attr("penalized_duplicate", True)
+                # Check if we have cached score from previous run
+                if key in score_memory:
+                    cached_score = score_memory[key]
+                    logger.info(
+                        f"[CACHE] Trial {trial.number} reusing memory-cached score {cached_score:.2f} "
+                        f"(duplicate_within_run but score available)"
+                    )
+                    return cached_score
                 return -1e6
             # Other skip reasons (e.g., already_completed) can report neutral score
             return float(payload.get("score", {}).get("score", 0.0) or 0.0)
@@ -1205,8 +1458,8 @@ def _run_optuna(
         score_value = float(score_block.get("score", 0.0) or 0.0)
 
         # Check for zero trades to track this issue
-        metrics = score_block.get("metrics", {})
-        num_trades = int(metrics.get("num_trades", 0))
+        metrics = score_block.get("metrics") if score_block else None
+        num_trades = int(metrics.get("num_trades", 0)) if metrics else 0
         if num_trades == 0:
             zero_trade_count += 1
             trial.set_user_attr("zero_trades", True)
@@ -1216,12 +1469,16 @@ def _run_optuna(
         if not constraints.get("ok", True):
             trial.set_user_attr("constraints", constraints)
             trial.set_user_attr("constraints_soft_fail", True)
-            # Stor negativ straff men lämna utrymme för rankning
-            return score_value - 1e3
+            trial.set_user_attr("constraints_penalty", CONSTRAINT_SOFT_PENALTY)
+            # Mjukare straff för att bevara gradient; justerbart via GENESIS_CONSTRAINT_SOFT_PENALTY
+            return score_value - CONSTRAINT_SOFT_PENALTY
 
         # Only reset duplicate streak on successful, non-zero-trade trials
         if num_trades > 0:
             duplicate_streak = 0
+
+        # Store score in memory for future cache lookup
+        score_memory[key] = score_value
 
         trial.set_user_attr("score_block", score_block)
         trial.set_user_attr("result_payload", payload)
@@ -1293,6 +1550,38 @@ def _run_optuna(
         gc_after_trial=True,
         show_progress_bar=False,  # Performance: Disable progress bar for batch runs
     )
+
+    # Collect cache statistics
+    cache_stats = {
+        "total_trials": len(study.trials),
+        "cached_trials": sum(1 for t in study.trials if t.user_attrs.get("cached", False)),
+        "unique_backtests": len(
+            set(
+                t.user_attrs.get("backtest_path", "")
+                for t in study.trials
+                if t.user_attrs.get("backtest_path")
+            )
+        ),
+    }
+    if cache_stats["total_trials"] > 0:
+        cache_stats["cache_hit_rate"] = cache_stats["cached_trials"] / cache_stats["total_trials"]
+    else:
+        cache_stats["cache_hit_rate"] = 0.0
+
+    logger.info(
+        f"[CACHE STATS] {cache_stats['cached_trials']}/{cache_stats['total_trials']} trials cached "
+        f"({cache_stats['cache_hit_rate']:.1%} hit rate), "
+        f"{cache_stats['unique_backtests']} unique backtests"
+    )
+
+    # Warn about abnormal cache usage
+    if cache_stats["cache_hit_rate"] > 0.8 and cache_stats["total_trials"] > 10:
+        logger.warning(
+            "[CACHE] Very high cache hit rate (>80%) - consider broadening search space or "
+            "reducing bootstrap_random_trials if using cached study"
+        )
+    elif cache_stats["cache_hit_rate"] < 0.05 and cache_stats["total_trials"] > 50:
+        logger.info("[CACHE] Low cache reuse (<5%) - good exploration diversity")
 
     # Diagnostic warnings for duplicate and zero-trade issues
     if total_trials_attempted > 0:
@@ -1602,6 +1891,7 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
                 git_commit=str(run_meta.get("git_commit", "unknown")),
                 snapshot_id=str(run_meta.get("snapshot_id") or meta.get("snapshot_id", "")),
                 run_meta=metadata_extra,
+                runtime_version=best_result.get("runtime_version") if best_result else None,
             )
             print(
                 f"[Champion] Uppdaterad champion för {symbol} {timeframe} (score {best_candidate.score:.2f})"

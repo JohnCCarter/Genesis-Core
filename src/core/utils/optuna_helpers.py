@@ -206,6 +206,12 @@ class NoDupeGuard:
             conn.execute("PRAGMA journal_mode=WAL")
             # Performance: Increase cache size (10MB)
             conn.execute("PRAGMA cache_size=-10000")
+            # Performance: Synchronous=NORMAL provides good balance of safety and speed in WAL mode
+            conn.execute("PRAGMA synchronous=NORMAL")
+            # Performance: Use memory for temp storage
+            conn.execute("PRAGMA temp_store=MEMORY")
+            # Performance: Increase page size for better bulk operations (16KB)
+            conn.execute("PRAGMA page_size=16384")
             conn.commit()
 
     def _sqlite_seen(self, sig: str) -> bool:

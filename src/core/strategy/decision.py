@@ -11,6 +11,28 @@ Action = Literal["LONG", "SHORT", "NONE"]
 _LOG = get_logger(__name__)
 
 
+def safe_float(value: Any, default: float = 0.0) -> float:
+    """Safely convert value to float, handling None and invalid types.
+
+    Args:
+        value: Value to convert (can be None, str, int, float, etc.)
+        default: Default value if conversion fails
+
+    Returns:
+        Float value or default
+
+    Note:
+        Created to fix critical bug where float(None) caused TypeError,
+        blocking all trades. See docs/bugs/FLOAT_NONE_BUG_20251120.md
+    """
+    if value is None:
+        return default
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
 def _sanitize_context(value: Any) -> Any:
     if isinstance(value, str | int | float | bool) or value is None:
         return value
@@ -922,7 +944,7 @@ def decide(
 
     # 7b) Edge requirement (probability difference must be significant)
     # Only trade when there's clear directional edge, not just marginal difference
-    min_edge = float((cfg.get("thresholds") or {}).get("min_edge", 0.0))
+    min_edge = safe_float((cfg.get("thresholds") or {}).get("min_edge"), 0.0)
     if min_edge > 0:
         if candidate == "LONG":
             edge = p_buy - p_sell

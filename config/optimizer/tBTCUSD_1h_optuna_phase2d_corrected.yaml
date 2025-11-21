@@ -1,0 +1,204 @@
+meta:
+  symbol: tBTCUSD
+  timeframe: 1h
+  snapshot_id: snap_tBTCUSD_20240401_20250331_v1
+  warmup_bars: 150
+  runs:
+    strategy: optuna
+    resume: false
+    max_trials: 50
+    max_concurrent: 4
+    optuna:
+      study_name: optuna_phase2d_corrected_12m
+      direction: maximize
+      sampler:
+        name: tpe
+        kwargs:
+          multivariate: true
+          constant_liar: true
+          n_startup_trials: 15
+          n_ei_candidates: 48
+      pruner:
+        name: median
+      heartbeat_interval: 30
+      heartbeat_grace_period: 120
+    baseline_results_path: results/backtests/tBTCUSD_1h_20251121_095540.json
+
+constraints:
+  min_trades: 4
+  min_profit_factor: 1.05
+  max_max_dd: 0.30
+
+parameters:
+  thresholds:
+    entry_conf_overall:
+      type: float
+      low: 0.24
+      high: 0.34
+      step: 0.02
+    regime_proba:
+      balanced:
+        type: float
+        low: 0.45
+        high: 0.55
+        step: 0.02
+      bull:
+        type: float
+        low: 0.45
+        high: 0.55
+        step: 0.02
+      bear:
+        type: float
+        low: 0.45
+        high: 0.55
+        step: 0.02
+      ranging:
+        type: float
+        low: 0.50
+        high: 0.65
+        step: 0.02
+    min_edge:
+      type: float
+      low: 0.004
+      high: 0.012
+      step: 0.001
+    signal_adaptation:
+      zones:
+        low:
+          entry_conf_overall:
+            type: float
+            low: 0.22
+            high: 0.30
+            step: 0.02
+          regime_proba:
+            balanced:
+              type: float
+              low: 0.40
+              high: 0.50
+              step: 0.02
+            bull:
+              type: float
+              low: 0.40
+              high: 0.50
+              step: 0.02
+            bear:
+              type: float
+              low: 0.40
+              high: 0.50
+              step: 0.02
+            ranging:
+              type: float
+              low: 0.50
+              high: 0.60
+              step: 0.02
+        mid:
+          entry_conf_overall:
+            type: float
+            low: 0.28
+            high: 0.38
+            step: 0.02
+          regime_proba:
+            balanced:
+              type: float
+              low: 0.45
+              high: 0.55
+              step: 0.02
+            bull:
+              type: float
+              low: 0.45
+              high: 0.55
+              step: 0.02
+            bear:
+              type: float
+              low: 0.45
+              high: 0.55
+              step: 0.02
+            ranging:
+              type: float
+              low: 0.50
+              high: 0.60
+              step: 0.02
+        high:
+          entry_conf_overall:
+            type: float
+            low: 0.34
+            high: 0.44
+            step: 0.02
+          regime_proba:
+            balanced:
+              type: float
+              low: 0.45
+              high: 0.55
+              step: 0.02
+            bull:
+              type: float
+              low: 0.45
+              high: 0.55
+              step: 0.02
+            bear:
+              type: float
+              low: 0.45
+              high: 0.55
+              step: 0.02
+            ranging:
+              type: float
+              low: 0.50
+              high: 0.60
+              step: 0.02
+  multi_timeframe:
+    ltf_override_threshold:
+      type: float
+      low: 0.58
+      high: 0.68
+      step: 0.02
+  exit:
+    exit_conf_threshold:
+      type: float
+      low: 0.35
+      high: 0.45
+      step: 0.02
+    max_hold_bars:
+      type: int
+      low: 16
+      high: 24
+      step: 2
+    trailing_stop_enabled:
+      type: grid
+      values: [true, false]
+    trailing_stop_pct:
+      type: float
+      low: 0.012
+      high: 0.022
+      step: 0.002
+  risk:
+    risk_map_deltas:
+      conf_0:
+        type: float
+        low: -0.05
+        high: 0.05
+        step: 0.01
+      size_0:
+        type: float
+        low: -0.01
+        high: 0.02
+        step: 0.005
+      conf_1:
+        type: float
+        low: -0.05
+        high: 0.05
+        step: 0.01
+      size_1:
+        type: float
+        low: -0.01
+        high: 0.03
+        step: 0.005
+      conf_2:
+        type: float
+        low: -0.05
+        high: 0.05
+        step: 0.01
+      size_2:
+        type: float
+        low: -0.01
+        high: 0.04
+        step: 0.005

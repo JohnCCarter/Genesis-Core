@@ -5,10 +5,19 @@ Exports trade history and results to JSON/CSV files.
 """
 
 import json
+import tempfile
 from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
+
+
+def _atomic_write_json(path: Path, data: dict, *, encoding: str = "utf-8") -> None:
+    """Atomically write JSON to disk to prevent corruption from concurrent writes."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile("w", encoding=encoding, delete=False, dir=path.parent) as tmp:
+        json.dump(data, tmp, indent=2, default=str)
+    Path(tmp.name).replace(path)
 
 
 class TradeLogger:
@@ -52,9 +61,8 @@ class TradeLogger:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         json_file = self.output_dir / f"{filename_prefix}_{timestamp}.json"
 
-        # Save results
-        with open(json_file, "w") as f:
-            json.dump(results, f, indent=2, default=str)
+        # Save results atomically to prevent corruption from concurrent writes
+        _atomic_write_json(json_file, results)
 
         print(f"[SAVED] Results: {json_file}")
 

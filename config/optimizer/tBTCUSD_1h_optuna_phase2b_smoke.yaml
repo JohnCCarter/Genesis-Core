@@ -1,0 +1,194 @@
+meta:
+  symbol: tBTCUSD
+  timeframe: 1h
+  snapshot_id: tBTCUSD_1h_2024-10-22_2025-10-01_v1
+  warmup_bars: 120
+  runs:
+    strategy: optuna
+    max_trials: 20
+    max_concurrent: 4
+    resume: false
+    use_sample_range: true
+    sample_start: 2025-05-01
+    sample_end: 2025-07-01
+    optuna:
+      storage: sqlite:///results/hparam_search/storage/optuna_tBTCUSD_1h_phase2b_smoke.db
+      study_name: optuna_phase2b_smoke_v1
+      bootstrap_random_trials: 8
+      bootstrap_seed: 42
+      sampler:
+        name: tpe
+        kwargs:
+          n_startup_trials: 8
+          n_ei_candidates: 256
+          constant_liar: true
+          multivariate: true
+      pruner:
+        name: median
+        kwargs:
+          n_startup_trials: 6
+      heartbeat_interval: 45
+      heartbeat_grace_period: 120
+      dedup_guard_enabled: true
+      timeout_seconds: 2400
+
+constraints:
+  min_trades: 5 # sänkt från 8 för att få positiv constraints-signal i förfiningsfas
+  min_profit_factor: 0.75
+  max_max_dd: 0.35
+  include_scoring_failures: false
+
+parameters:
+  thresholds:
+    entry_conf_overall:
+      type: float
+      low: 0.265 # breddat nedåt
+      high: 0.335
+    regime_proba:
+      balanced:
+        type: float
+        low: 0.48
+        high: 0.60
+      bull:
+        type: float
+        low: 0.50
+        high: 0.62
+      bear:
+        type: float
+        low: 0.50
+        high: 0.62
+      ranging:
+        type: float
+        low: 0.50
+        high: 0.66
+    min_edge:
+      type: float
+      low: 0.0008 # tillåter svagare edge för fler kandidater
+      high: 0.02
+    signal_adaptation:
+      atr_period:
+        type: fixed
+        value: 14
+      zones:
+        low:
+          entry_conf_overall:
+            type: float
+            low: 0.20 # sänkt för att öka trade-frekvens i låg ATR-zon
+            high: 0.25
+          regime_proba:
+            balanced:
+              type: float
+              low: 0.45
+              high: 0.52
+            bull:
+              type: float
+              low: 0.45
+              high: 0.52
+            bear:
+              type: float
+              low: 0.43
+              high: 0.52
+            ranging:
+              type: float
+              low: 0.48
+              high: 0.56
+        mid:
+          entry_conf_overall:
+            type: float
+            low: 0.25
+            high: 0.295
+          regime_proba:
+            balanced:
+              type: float
+              low: 0.49
+              high: 0.56
+            bull:
+              type: float
+              low: 0.49
+              high: 0.56
+            bear:
+              type: float
+              low: 0.47
+              high: 0.56
+            ranging:
+              type: float
+              low: 0.50
+              high: 0.58
+        high:
+          entry_conf_overall:
+            type: float
+            low: 0.295
+            high: 0.33
+          regime_proba:
+            balanced:
+              type: float
+              low: 0.50
+              high: 0.58
+            bull:
+              type: float
+              low: 0.50
+              high: 0.58
+            bear:
+              type: float
+              low: 0.50
+              high: 0.58
+            ranging:
+              type: float
+              low: 0.52
+              high: 0.60
+
+  multi_timeframe:
+    allow_ltf_override:
+      type: fixed
+      value: true
+    ltf_override_threshold:
+      type: float
+      low: 0.55 # sänkt intervall för fler override inträden
+      high: 0.64
+
+  exit:
+    enabled:
+      type: fixed
+      value: true
+    exit_conf_threshold:
+      type: float
+      low: 0.33
+      high: 0.36
+    max_hold_bars:
+      type: int
+      low: 14
+      high: 18
+    trailing_stop_enabled:
+      type: grid
+      values: [false, true]
+    trailing_stop_pct:
+      type: float
+      low: 0.0115
+      high: 0.0185
+
+  risk:
+    risk_map_deltas:
+      conf_0:
+        type: float
+        low: -0.06
+        high: 0.06
+      size_0:
+        type: float
+        low: -0.010
+        high: 0.014
+      conf_1:
+        type: float
+        low: -0.06
+        high: 0.06
+      size_1:
+        type: float
+        low: -0.012
+        high: 0.018
+      conf_2:
+        type: float
+        low: -0.06
+        high: 0.06
+      size_2:
+        type: float
+        low: -0.018
+        high: 0.022

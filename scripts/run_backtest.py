@@ -181,9 +181,9 @@ def main():
 
         # Load runtime config
         authority = ConfigAuthority()
-        cfg_obj, _, _ = authority.get()
+        cfg_obj, _, runtime_version = authority.get()
         cfg = cfg_obj.model_dump()
-        _summarize_runtime("runtime", cfg)
+        is_complete_champion = False
 
         if args.config_file:
             override_payload = json.loads(args.config_file.read_text(encoding="utf-8"))
@@ -192,20 +192,47 @@ def main():
             )
             if override_cfg is None:
                 raise ValueError("config-file must contain a 'cfg' dictionary")
-            merged_cfg = _deep_merge(cfg, override_cfg)
+
+            # Check if this is a complete champion (has merged_config)
+            merged_config_from_file = override_payload.get("merged_config")
+            if merged_config_from_file is not None:
+                # Complete champion - use merged_config directly, no runtime merge
+                is_complete_champion = True
+                print("[CONFIG:champion] Using complete champion config (no runtime merge)")
+                champion_runtime_version = override_payload.get("runtime_version")
+                if champion_runtime_version and champion_runtime_version != runtime_version:
+                    print(
+                        f"[CONFIG:champion] WARNING: Champion created with runtime v{champion_runtime_version}, "
+                        f"current runtime is v{runtime_version}"
+                    )
+                merged_cfg = merged_config_from_file
+            else:
+                # Regular test file - merge with runtime
+                _summarize_runtime("runtime", cfg)
+                merged_cfg = _deep_merge(cfg, override_cfg)
+
             try:
                 cfg_obj = authority.validate(merged_cfg)
             except Exception as exc:  # ValidationError from Pydantic
                 print(f"\n[FAILED] Ogiltig override-config: {exc}")
                 return 1
             cfg = cfg_obj.model_dump()
-            _summarize_runtime("runtime+override", cfg)
+            if not is_complete_champion:
+                _summarize_runtime("runtime+override", cfg)
+        else:
+            _summarize_runtime("runtime", cfg)
+            merged_cfg = cfg
 
         # Prepare policy
         policy = {"symbol": args.symbol, "timeframe": args.timeframe}
 
         # Run backtest
         results = engine.run(policy=policy, configs=cfg, verbose=args.verbose)
+
+        # Save merged config for reproducibility (only if not already a complete champion)
+        if not is_complete_champion:
+            results["merged_config"] = merged_cfg
+            results["runtime_version"] = runtime_version
 
         if "error" in results:
             print(f"\n[ERROR] Backtest failed: {results['error']}")

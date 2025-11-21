@@ -1,11 +1,14 @@
 # README for AI Agents (Local Development)
 
-## Last update: 2025-11-19
+## Last update: 2025-11-20
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
 
-## 1. Deliverables (latest highlights: 2025-11-19)
+## 1. Deliverables (latest highlights: 2025-11-20)
 
+- **OPTUNA CACHE REUSE FIX (2025-11-20)**: Implementerade Alternativ B för att eliminera duplicat-loop (98.8% → <10%). Objective-funktionen återanvänder nu cachade scores istället för att returnera -1e6/0.0, vilket ger TPE optimal feedback. Ny `score_memory` dict sparar scores per parameter-hash; när `make_trial` returnerar `from_cache=True` payload, returneras verklig score direkt. Cache-statistik loggas efter varje run (hit rate, unique backtests); varningar vid >80% (för smal sökrymd) eller <5% (god diversitet). Informationsförlust: 0-5% (vs 10-20% för Alt A, 80-90% för Alt C). Dokumentation: `docs/optuna/CACHE_REUSE_FIX_20251120.md`. Smoke-test: `scripts/test_optuna_cache_reuse.py`. Backup: `src/core/optimizer/runner.py.backup_20251120`.
+- **CHAMPION REPRODUCIBILITY (2025-11-20)**: Implementerade Alternativ 1 - Complete Config Storage för att lösa reproducerbarhetsproblem. Champions sparar nu `merged_config` (runtime + trial params) och `runtime_version` i både backtest-resultat och champion-filer. Backtest-kod detekterar "complete champions" och skippar runtime-merge, vilket garanterar identiska resultat oavsett framtida runtime-ändringar. Backward-compatible: gamla champions utan merged_config fortsätter fungera med runtime-merge. Dokumentation: `docs/config/CHAMPION_REPRODUCIBILITY.md`. Verifierade med champion_base.json (222 trades) och aggressive.json (938 trades) - båda sparar merged_config korrekt.
+- **CRITICAL BUG FIX (2025-11-20)**: Löste zero-trade bug orsakad av `float(None)` TypeError i `decision.py`. Root cause: `min_edge = float((cfg.get("thresholds") or {}).get("min_edge", 0.0))` kastade exception när config innehöll `"min_edge": null` explicit. Exception fångades tyst och resulterade i 0 trades trots giltiga kandidater. Solution: Införde `safe_float()` helper som hanterar None korrekt. Resultat: champion_base.json gick från 0 → 3 trades, balanced.json från 0 → 2147 trades. Full dokumentation i `docs/bugs/FLOAT_NONE_BUG_20251120.md`.
 - Champion tBTCUSD 1h återställd till originalparametrarna från `run_20251023_141747`; manuell backtest (`tBTCUSD_1h_20251114_154009.json`) visar 0 trades tills `htf_fib`/`ltf_fib` metadata matas genom pipelinen.
 - Ny Optuna-konfiguration `config/optimizer/tBTCUSD_1h_optuna_remodel_v1.yaml` (120 trials, bred sökrymd inkl. fib-gates, risk map, exit/MTF) är live i run `run_20251114_remodel_bootstrap`; bootstrap-trials producerar nu 100+ trades och constraints filtrerar 1–2-trade-spikar.
 - Robust scoring: PF/DD från trades/equity via `core.backtest.metrics.calculate_metrics` (inte summary). Skyddat `return_to_dd`.
@@ -21,6 +24,11 @@ This document explains the current workflow for Genesis-Core, highlights today's
 - `RuntimeConfig` tillåter extra metadata (`description`, `status`, `feature_coefficients`, kommentar-fält osv.) i alla sektioner; tmp-profiler som `config/tmp/v17_6h_exceptional.json` kan därmed patchas rakt in utan att förlora dokumentation.
 - `core/strategy/decision.py` loggar nu varje gate-orasak (`[DECISION] ...`) – EV-block, proba/edge, HTF/LTF-fib orsaker, hysteresis/cooldown samt risk sizing – så 0-trade runs kan felsökas direkt i loggen utan att tweaka i blindo.
 - **Phase-8 reset**: fullständig snapshot av `config/`, `data/`, `reports/`, `results/` och `cache/` ligger under `results/_archive/Phase8_kickoff/`. Aktiva kataloger har tömts (endast seedad `config/runtime.json` + tracked baselinefiler kvar) så nästa agent startar från helt ren miljö.
+- **Phase 2d (v6) Success (2025-11-21)**: Löste "Zero Trades"-problemet genom att sänka tröskelvärdena (Entry 0.24-0.34, Zones 0.22-0.30). Run `run_20251121_103811` genererade ~100-120 trades/år med PF ~1.04. Phase 3 (Fine Tuning) är förberedd för att höja kvaliteten. Dokumentation: `docs/optimization/PHASE2D_SUMMARY_20251121.md`.
+- **Phase 3 Started (2025-11-21)**: Startade "Fine Tuning" (Phase 3) med `config/optimizer/tBTCUSD_1h_optuna_phase3_fine.yaml`. Mål: PF > 1.15 genom att förfina exits och entries baserat på Phase 2d-resultat. Körs via `scripts/run_phase3_fine.py`.
+- **PR #19 Merged (2025-11-21)**: Merged performance fixes (Champion Loader Cache, Batch Percentiles, Series Creation, Optuna Config Cache). Local Optuna fixes (Cache Reuse, Abort Heuristic) were preserved and combined.
+- **Phase 3 Restarted (2025-11-21)**: Restarted Phase 3 optimization after verifying `runtime.json` has `htf_fib` enabled. Previous run might have used incorrect config or was stopped. New run ID: `optuna_phase3_fine_12m`.
+- **Phase 3 Retry (2025-11-21)**: Restarted again with `optuna_phase3_fine_12m_v2` and `MAX_CONCURRENT=2` due to SQLite `disk I/O error` on previous attempt.
 - 2025-11-19: ATR/Fibonacci-cache i `core/indicators/fibonacci.py`, `htf_fibonacci.py` och `src/core/strategy/features_asof.py` reducerade golden-runnen `scripts/run_backtest.py` från 159.1 s/183 M funktionsanrop till 100.7 s/75 M; pyinstrument + cProfile ligger under `reports/profiling/20251119_*.{txt,html}` och resultaten är dokumenterade i `docs/performance/PERFORMANCE_OPTIMIZATION_SUMMARY_.md` och `docs/daily_summaries/daily_summary_2025-11-19.md`. `pre-commit run --all-files` och `bandit -r src -c bandit.yaml -f txt -o bandit-report.txt` (rapport i `bandit-report.txt`) kördes direkt efter kodändringarna och passerade rent.
 
 ## 2. Snabbguide (Optuna körflöde, uppdaterad)
@@ -210,7 +218,7 @@ Champion file: `config/strategy/champions/tBTCUSD_1h.json`
 - ChampionManager & ChampionLoader integrated into pipeline/backtest flows.
 - Walk-forward runs (`wf_tBTCUSD_1h_20251021_090446`, ATR zone tweak `wf_tBTCUSD_1h_20251021_094334`).
 - Optuna integration (median pruner), CLI summary (`scripts/optimizer.py summarize --top N`), documentation in `docs/optimizer.md` and `docs/TODO.md`.
-- Exit improvement plan documented in `docs/fibonacci/FIBONACCI_FRAKTAL_EXITS_IMPLEMENTATION_PLAN.md`.
+- Exit improvement plan documented in `docs/fibonacci/FIBONACCI_FRAKTAL_EXITS IMPLEMENTATION_PLAN.md`.
 
 ## 10. Deployment and operations
 

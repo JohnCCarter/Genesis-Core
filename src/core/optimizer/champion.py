@@ -21,6 +21,7 @@ class ChampionCandidate:
     hard_failures: list[str]
     trial_id: str
     results_path: str
+    merged_config: JsonDict | None = None  # Full merged config for reproducibility
 
 
 @dataclass(slots=True)
@@ -36,24 +37,28 @@ class ChampionRecord:
     parameters: JsonDict
     constraints: JsonDict
     metadata: JsonDict
+    merged_config: JsonDict | None = None  # Full merged config for reproducibility
+    runtime_version: int | None = None  # Runtime version used during optimization
 
     def to_json(self) -> str:
-        return json.dumps(
-            {
-                "created_at": self.created_at,
-                "run_id": self.run_id,
-                "git_commit": self.git_commit,
-                "snapshot_id": self.snapshot_id,
-                "symbol": self.symbol,
-                "timeframe": self.timeframe,
-                "score": self.score,
-                "metrics": self.metrics,
-                "parameters": self.parameters,
-                "constraints": self.constraints,
-                "metadata": self.metadata,
-            },
-            indent=2,
-        )
+        payload = {
+            "created_at": self.created_at,
+            "run_id": self.run_id,
+            "git_commit": self.git_commit,
+            "snapshot_id": self.snapshot_id,
+            "symbol": self.symbol,
+            "timeframe": self.timeframe,
+            "score": self.score,
+            "metrics": self.metrics,
+            "parameters": self.parameters,
+            "constraints": self.constraints,
+            "metadata": self.metadata,
+        }
+        if self.merged_config is not None:
+            payload["merged_config"] = self.merged_config
+        if self.runtime_version is not None:
+            payload["runtime_version"] = self.runtime_version
+        return json.dumps(payload, indent=2)
 
 
 class ChampionManager:
@@ -115,6 +120,7 @@ class ChampionManager:
         git_commit: str,
         snapshot_id: str,
         run_meta: dict[str, Any] | None = None,
+        runtime_version: int | None = None,
     ) -> ChampionRecord:
         path = self._champion_path(symbol, timeframe)
         timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
@@ -140,6 +146,8 @@ class ChampionManager:
                 "results_path": candidate.results_path,
                 "run_meta": run_meta or {},
             },
+            merged_config=candidate.merged_config,
+            runtime_version=runtime_version,
         )
         path.write_text(record.to_json(), encoding="utf-8")
         return record

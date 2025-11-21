@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from core.optimizer.runner import _get_default_config, _DEFAULT_CONFIG_CACHE, _DEFAULT_CONFIG_LOCK
+from core.optimizer.runner import _get_default_config
 
 
 class TestDefaultConfigCaching:
@@ -18,7 +18,7 @@ class TestDefaultConfigCaching:
         """Reset cache before each test."""
         global _DEFAULT_CONFIG_CACHE
         import core.optimizer.runner as runner_module
-        
+
         runner_module._DEFAULT_CONFIG_CACHE = None
 
     def test_config_cached_after_first_call(self):
@@ -106,8 +106,7 @@ class TestDefaultConfigCaching:
 
             # Cached calls should be at least 10x faster
             assert avg_warm_time < cold_time / 10, (
-                f"Cache not effective: cold={cold_time:.6f}s, "
-                f"avg_warm={avg_warm_time:.6f}s"
+                f"Cache not effective: cold={cold_time:.6f}s, " f"avg_warm={avg_warm_time:.6f}s"
             )
 
     def test_cache_returns_copy_safe_for_mutation(self):

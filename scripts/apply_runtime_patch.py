@@ -52,7 +52,18 @@ def _diff_paths(a: object, b: object, prefix: str = "") -> list[str]:
     return paths
 
 
-ALLOWED_ROOT_KEYS = {"thresholds", "gates", "risk", "ev", "multi_timeframe"}
+ALLOWED_ROOT_KEYS = {
+    "thresholds",
+    "gates",
+    "risk",
+    "ev",
+    "multi_timeframe",
+    "htf_fib",
+    "ltf_fib",
+    "htf_exit_config",
+    "exit",
+    "warmup_bars",
+}
 ALLOWED_RISK_KEYS = {"risk_map"}
 ALLOWED_MTF_KEYS = {
     "use_htf_block",

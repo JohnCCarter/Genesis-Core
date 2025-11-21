@@ -175,6 +175,10 @@ class NoDupeGuard:
 
     sqlite_path: str | None = ".optuna_dedup.db"
     redis_url: str | None = None
+    
+    # SQLite configuration constants
+    _SQLITE_TIMEOUT = 10.0  # seconds to wait for lock
+    _SQLITE_BATCH_CHUNK_SIZE = 500  # Max params per query (SQLite limit: 999-32766)
 
     def __post_init__(self) -> None:
         self._lock = threading.Lock()
@@ -223,7 +227,7 @@ class NoDupeGuard:
     def _sqlite_add(self, sig: str) -> bool:
         # Performance: Use check_same_thread=False and timeout for better concurrency
         with closing(
-            sqlite3.connect(self.sqlite_path, timeout=10.0, check_same_thread=False)
+            sqlite3.connect(self.sqlite_path, timeout=self._SQLITE_TIMEOUT, check_same_thread=False)
         ) as conn:
             try:
                 conn.execute(
@@ -267,13 +271,12 @@ class NoDupeGuard:
         # SQLite batch lookup using IN clause
         result_dict = {sig: False for sig in sigs}
         with closing(
-            sqlite3.connect(self.sqlite_path, timeout=10.0, check_same_thread=False)
+            sqlite3.connect(self.sqlite_path, timeout=self._SQLITE_TIMEOUT, check_same_thread=False)
         ) as conn:
             # SQLite has a limit on SQL variables (usually 999-32766)
-            # Process in chunks of 500 to be safe
-            chunk_size = 500
-            for i in range(0, len(sigs), chunk_size):
-                chunk = sigs[i:i + chunk_size]
+            # Process in chunks to stay safely under the limit
+            for i in range(0, len(sigs), self._SQLITE_BATCH_CHUNK_SIZE):
+                chunk = sigs[i:i + self._SQLITE_BATCH_CHUNK_SIZE]
                 placeholders = ",".join("?" * len(chunk))
                 query = f"SELECT sig FROM dedup_signatures WHERE sig IN ({placeholders})"
                 rows = conn.execute(query, chunk).fetchall()
@@ -300,7 +303,7 @@ class NoDupeGuard:
             return
         # Performance: Use timeout and check_same_thread=False
         with closing(
-            sqlite3.connect(self.sqlite_path, timeout=10.0, check_same_thread=False)
+            sqlite3.connect(self.sqlite_path, timeout=self._SQLITE_TIMEOUT, check_same_thread=False)
         ) as conn:
             conn.execute("DELETE FROM dedup_signatures WHERE sig=?", (sig,))
             conn.commit()
@@ -321,7 +324,7 @@ class NoDupeGuard:
         count = 0
         ts = time.time()
         with closing(
-            sqlite3.connect(self.sqlite_path, timeout=10.0, check_same_thread=False)
+            sqlite3.connect(self.sqlite_path, timeout=self._SQLITE_TIMEOUT, check_same_thread=False)
         ) as conn:
             for sig in sigs:
                 try:

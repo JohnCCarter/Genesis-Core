@@ -364,6 +364,11 @@ def _load_existing_trials(run_dir: Path) -> dict[str, dict[str, Any]]:
     - Single-pass JSON parsing (no double parse via _json_loads)
     - Direct orjson usage when available (bypass wrapper overhead)
     - Batch trial key generation to leverage caching
+    
+    Note: Duplicates logic from _json_loads() intentionally to avoid
+    function call overhead in this hot path. This function is called
+    once per optimization run during resume, loading potentially
+    thousands of trial files, where every microsecond counts.
     """
     trial_paths = sorted(run_dir.glob("trial_*.json"))
 
@@ -375,7 +380,7 @@ def _load_existing_trials(run_dir: Path) -> dict[str, dict[str, Any]]:
 
     for trial_path in trial_paths:
         try:
-            # Performance: Direct orjson usage for better speed (single parse)
+            # Performance: Direct orjson usage for better speed (single parse, no wrapper)
             content = trial_path.read_text(encoding="utf-8")
             if _HAS_ORJSON:
                 trial_data = _orjson.loads(content)

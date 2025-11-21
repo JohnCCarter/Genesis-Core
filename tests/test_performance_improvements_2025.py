@@ -104,7 +104,9 @@ class TestPercentileOptimization:
         assert abs(p80_old - p80_new) < 1e-10
 
         # Batch should be faster (typically 30-50% faster)
-        assert time_batch < time_separate, f"Batch not faster: {time_batch:.4f}s vs {time_separate:.4f}s"
+        assert (
+            time_batch < time_separate
+        ), f"Batch not faster: {time_batch:.4f}s vs {time_separate:.4f}s"
         speedup = time_separate / time_batch
         assert speedup > 1.2, f"Expected >1.2x speedup, got {speedup:.2f}x"
 
@@ -177,14 +179,14 @@ class TestPandasSeriesOptimization:
     def test_to_series_performance_with_series_input(self):
         """_to_series should be faster when input is already Series."""
         n = 1000
-        
+
         # Test with list input
         data_list = {
             "high": list(range(n)),
             "low": list(range(n)),
             "close": list(range(n)),
         }
-        
+
         start = time.perf_counter()
         for _ in range(100):
             _to_series(data_list)
@@ -196,14 +198,16 @@ class TestPandasSeriesOptimization:
             "low": pd.Series(range(n), dtype=float),
             "close": pd.Series(range(n), dtype=float),
         }
-        
+
         start = time.perf_counter()
         for _ in range(100):
             _to_series(data_series)
         time_series = time.perf_counter() - start
 
         # Series input should be faster (no conversion needed)
-        assert time_series < time_list, f"Series input not faster: {time_series:.4f}s vs {time_list:.4f}s"
+        assert (
+            time_series < time_list
+        ), f"Series input not faster: {time_series:.4f}s vs {time_list:.4f}s"
         speedup = time_list / time_series
         # Should be at least 2x faster since we skip 3 Series creations
         assert speedup > 2.0, f"Expected >2x speedup, got {speedup:.2f}x"

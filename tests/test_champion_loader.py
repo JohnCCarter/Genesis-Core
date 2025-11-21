@@ -45,6 +45,8 @@ def test_load_cached(champions_dir: Path) -> None:
 
 
 def test_load_reload_on_change(champions_dir: Path, tmp_path: Path) -> None:
+    import time
+
     loader = ChampionLoader(champions_dir=champions_dir)
     champions_dir.mkdir(parents=True, exist_ok=True)
     path = champions_dir / "tTEST_1h.json"
@@ -53,6 +55,10 @@ def test_load_reload_on_change(champions_dir: Path, tmp_path: Path) -> None:
         encoding="utf-8",
     )
     loader.load("tTEST", "1h")
+
+    # Ensure mtime changes (filesystem granularity can be coarse)
+    time.sleep(0.01)
+
     path.write_text(
         json.dumps({"parameters": {"thresholds": {"entry_conf_overall": 0.6}}}),
         encoding="utf-8",

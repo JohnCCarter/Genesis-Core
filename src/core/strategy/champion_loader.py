@@ -150,11 +150,11 @@ class ChampionLoader:
         # Check if file existence changed
         if entry.exists != exists:
             return True
-        
+
         # Check if file was modified (only if it exists)
         if exists and entry.mtime != mtime:
             return True
-        
+
         return False
 
     def load_cached(self, symbol: str, timeframe: str) -> ChampionConfig:

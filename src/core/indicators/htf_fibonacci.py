@@ -27,7 +27,7 @@ def _to_series(
     """
     Normalize candle input (dict or list of tuples) into pandas Series.
     Returns (highs, lows, closes, timestamps)
-    
+
     Performance: Avoids redundant Series creation when data is already pandas Series or numpy arrays.
     """
     if isinstance(data, dict):
@@ -35,23 +35,23 @@ def _to_series(
         high_data = data.get("high", [])
         low_data = data.get("low", [])
         close_data = data.get("close", [])
-        
+
         # Fast path: if already Series, return as-is
         if isinstance(high_data, pd.Series):
             highs = high_data
         else:
             highs = pd.Series(high_data, dtype=float)
-            
+
         if isinstance(low_data, pd.Series):
             lows = low_data
         else:
             lows = pd.Series(low_data, dtype=float)
-            
+
         if isinstance(close_data, pd.Series):
             closes = close_data
         else:
             closes = pd.Series(close_data, dtype=float)
-        
+
         timestamps_raw = data.get("timestamp")
         if timestamps_raw is None:
             timestamps = None

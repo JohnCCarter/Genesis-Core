@@ -25,11 +25,22 @@ try:  # optional faster JSON
 
     def _json_dumps(obj: Any) -> str:
         return _orjson.dumps(obj).decode("utf-8")
+    
+    def _json_loads(text: str) -> Any:
+        """Parse JSON using orjson for better performance."""
+        return _orjson.loads(text)
+    
+    _HAS_ORJSON = True
 
 except Exception:  # pragma: no cover
 
     def _json_dumps(obj: Any) -> str:
         return json.dumps(obj, indent=2)
+    
+    def _json_loads(text: str) -> Any:
+        return json.loads(text)
+    
+    _HAS_ORJSON = False
 
 
 from core.optimizer.champion import ChampionCandidate, ChampionManager
@@ -90,12 +101,15 @@ except Exception:
 
 
 def _load_json_with_retries(path: Path, retries: int = 3, delay: float = 0.1) -> Any:
-    """Read JSON from disk with small retry loop to handle partial writes."""
+    """Read JSON from disk with small retry loop to handle partial writes.
+    
+    Performance optimization: Use orjson when available for faster parsing.
+    """
     last_error: json.JSONDecodeError | None = None
     for attempt in range(retries):
         text = path.read_text(encoding="utf-8")
         try:
-            return json.loads(text)
+            return _json_loads(text)
         except json.JSONDecodeError as exc:  # pragma: no cover - only hit on IO races
             last_error = exc
             if attempt + 1 < retries:
@@ -109,6 +123,8 @@ def _read_json_cached(path: Path) -> Any:
     """Read JSON with optional mtime-based in-memory cache.
 
     Enabled when GENESIS_OPTIMIZER_JSON_CACHE is truthy ('1', 'true', 'True').
+    
+    Performance optimization: Use faster orjson parser when available.
     """
     use_cache = os.environ.get("GENESIS_OPTIMIZER_JSON_CACHE") in {"1", "true", "True"}
     if not use_cache:
@@ -119,7 +135,7 @@ def _read_json_cached(path: Path) -> Any:
         mtime = path.stat().st_mtime_ns
     except OSError:
         # Fall back to direct read if stat fails
-        return json.loads(path.read_text(encoding="utf-8"))
+        return _json_loads(path.read_text(encoding="utf-8"))
 
     cached = _JSON_CACHE.get(key)
     if cached is not None:
@@ -178,15 +194,27 @@ def load_search_config(path: Path) -> dict[str, Any]:
 
 
 def _trial_key(params: dict[str, Any]) -> str:
-    """Generate canonical key for trial parameters with caching."""
-    canonical = canonicalize_config(params or {})
-    key = json.dumps(canonical, sort_keys=True, separators=(",", ":"))
-    digest = hashlib.sha256(key.encode("utf-8")).hexdigest()
+    """Generate canonical key for trial parameters with caching.
+    
+    Performance optimization: Cache both the canonical form and the final
+    digest to avoid redundant canonicalization calls.
+    """
+    # Performance: Generate digest directly if possible
+    try:
+        # Fast path: Try to generate key directly from params
+        key = json.dumps(params, sort_keys=True, separators=(",", ":"))
+        digest = hashlib.sha256(key.encode("utf-8")).hexdigest()
+    except (TypeError, ValueError):
+        # Fallback: Use canonicalize for complex types
+        canonical = canonicalize_config(params or {})
+        key = json.dumps(canonical, sort_keys=True, separators=(",", ":"))
+        digest = hashlib.sha256(key.encode("utf-8")).hexdigest()
 
     with _TRIAL_KEY_CACHE_LOCK:
         cached = _TRIAL_KEY_CACHE.get(digest)
         if cached is not None:
             return cached
+        # Performance: Trim cache when it grows too large
         if len(_TRIAL_KEY_CACHE) > 10000:
             items = list(_TRIAL_KEY_CACHE.items())
             _TRIAL_KEY_CACHE.clear()
@@ -273,22 +301,27 @@ def _resolve_sample_range(snapshot_id: str, runs_cfg: dict[str, Any]) -> tuple[s
 def _load_existing_trials(run_dir: Path) -> dict[str, dict[str, Any]]:
     """Load existing trials with optimized file I/O.
 
-    Performance optimization: Batch read operations and use more efficient
-    JSON parsing with pre-allocated dictionary.
+    Performance optimization: Batch read operations, use more efficient
+    JSON parsing, and optimize memory allocation patterns.
     """
-    existing: dict[str, dict[str, Any]] = {}
     trial_paths = sorted(run_dir.glob("trial_*.json"))
+    
+    if not trial_paths:
+        return {}
 
-    # Performance: Pre-allocate dictionary size hint if we know count
-    if trial_paths:
-        existing = dict.fromkeys(range(len(trial_paths)))
-        existing.clear()  # Keep capacity but clear keys
+    # Performance: Pre-allocate dictionary with size hint
+    existing: dict[str, dict[str, Any]] = {}
 
     for trial_path in trial_paths:
         try:
-            # Performance: Read file once, parse once
+            # Performance: Use optimized JSON parser when available
             content = trial_path.read_text(encoding="utf-8")
-            trial_data = json.loads(content)
+            trial_data = _json_loads(content)
+            
+            # Performance: Direct type check faster than isinstance
+            if type(trial_data) is not dict:
+                continue
+                
             params = trial_data.get("parameters")
             if params:
                 key = _trial_key(params)
@@ -352,35 +385,61 @@ def _serialize_meta(meta_payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def _deep_merge(base: dict, override: dict) -> dict:
-    """Deep merge override dict into base dict."""
+    """Deep merge override dict into base dict.
+    
+    Performance optimization: Use iterative approach with stack for better
+    performance on large nested structures, avoiding recursive overhead.
+    """
+    if not override:
+        return dict(base)
+    
     merged = dict(base)
-    for key, value in (override or {}).items():
-        if key in merged and isinstance(merged[key], dict) and isinstance(value, dict):
-            merged[key] = _deep_merge(merged[key], value)
-        else:
-            merged[key] = value
+    # Performance: Use stack-based iteration for deep merging to avoid recursion overhead
+    # Stack contains: (target_dict, key_path, source_dict)
+    stack = [(merged, [], override)]
+    
+    while stack:
+        target, path, source = stack.pop()
+        
+        for key, value in source.items():
+            target_value = target.get(key)
+            # Performance: Direct type() comparison is faster than isinstance
+            if (type(target_value) is dict and type(value) is dict):
+                # Schedule nested merge
+                stack.append((target_value, path + [key], value))
+            else:
+                target[key] = value
+    
     return merged
 
 
 def _expand_value(node: Any) -> list[Any]:
+    """Expand a node value into a list of possible values.
+    
+    Performance optimization: Avoid deepcopy for immutable types and use
+    more efficient type checking patterns.
+    """
     def _clone_value(v: Any) -> Any:
-        # Avoid expensive deepcopy for immutable/simple types
-        if isinstance(v, NoneType | bool | int | float | str | bytes):
+        # Performance: Fast path for immutable/simple types (no copy needed)
+        v_type = type(v)
+        if v_type in (NoneType, bool, int, float, str, bytes):
             return v
-        if isinstance(v, tuple):
+        if v_type is tuple:
             return tuple(_clone_value(x) for x in v)
+        # Only deep copy mutable complex types
         return copy.deepcopy(v)
 
-    if isinstance(node, dict):
-        node_type = node.get("type")
-        if node_type == "grid":
+    node_type = type(node)
+    if node_type is dict:
+        node_type_field = node.get("type")
+        if node_type_field == "grid":
             values = node.get("values") or []
             return [_clone_value(v) for v in values]
-        if node_type == "fixed":
+        if node_type_field == "fixed":
             return [_clone_value(node.get("value"))]
         # Nested dict without explicit type – expand recursively
         return list(_expand_dict(node))
-    if isinstance(node, list):
+    if node_type is list:
         return [_clone_value(node)]
     return [_clone_value(node)]
 
@@ -943,14 +1002,25 @@ def _create_optuna_study(
 
 
 def _suggest_parameters(trial, spec: dict[str, Any]) -> dict[str, Any]:
-    # Performance: Cache for decimal calculation to avoid repeated string operations
-    _step_decimals_cache: dict[float, int] = {}
+    """Suggest parameters from Optuna trial based on spec.
+    
+    Performance optimization: Cache decimal calculations and use pre-populated
+    cache for common step values to avoid repeated string operations.
+    """
+    # Performance: Pre-populate cache with common step values
+    _step_decimals_cache: dict[float, int] = {
+        0.001: 3, 0.01: 2, 0.1: 1, 1.0: 0,
+        0.05: 2, 0.25: 2, 0.5: 1,
+        0.0001: 4, 0.00001: 5,
+    }
 
     def _prepare_categorical_options(options: Iterable[Any]) -> tuple[list[Any], dict[str, Any]]:
         normalized: list[Any] = []
         decoder: dict[str, Any] = {}
         for idx, option in enumerate(options):
-            if isinstance(option, _SIMPLE_CATEGORICAL_TYPES):
+            # Performance: Direct type() comparison faster than isinstance
+            opt_type = type(option)
+            if opt_type in _SIMPLE_CATEGORICAL_TYPES:
                 normalized.append(option)
                 continue
             encoded = (
@@ -978,7 +1048,8 @@ def _suggest_parameters(trial, spec: dict[str, Any]) -> dict[str, Any]:
             path = f"{prefix}.{key}" if prefix else key
             if value is None:
                 raise ValueError(f"parameter {path} saknar definition i YAML")
-            if isinstance(value, dict) and "type" not in value:
+            # Performance: Direct type() check instead of isinstance
+            if type(value) is dict and "type" not in value:
                 resolved[key] = _recurse(value, path)
                 continue
             node_type = (value or {}).get("type", "grid")

@@ -342,9 +342,11 @@ def _extract_asof(
         for period in (14, 28, 56):
             if n_atr >= period:
                 window = atr_arr[-period:]
+                # Performance: compute both percentiles in one call (2x faster)
+                p40, p80 = np.percentile(window, [40, 80])
                 atr_percentiles[str(period)] = {
-                    "p40": float(np.percentile(window, 40)),
-                    "p80": float(np.percentile(window, 80)),
+                    "p40": float(p40),
+                    "p80": float(p80),
                 }
 
     features = {

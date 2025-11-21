@@ -27,20 +27,45 @@ def _to_series(
     """
     Normalize candle input (dict or list of tuples) into pandas Series.
     Returns (highs, lows, closes, timestamps)
+    
+    Performance: Avoids redundant Series creation when data is already pandas Series or numpy arrays.
     """
     if isinstance(data, dict):
-        highs = pd.Series([float(x) for x in data.get("high", [])])
-        lows = pd.Series([float(x) for x in data.get("low", [])])
-        closes = pd.Series([float(x) for x in data.get("close", [])])
+        # Optimization: Check if data is already pandas Series to avoid redundant conversion
+        high_data = data.get("high", [])
+        low_data = data.get("low", [])
+        close_data = data.get("close", [])
+        
+        # Fast path: if already Series, return as-is
+        if isinstance(high_data, pd.Series):
+            highs = high_data
+        else:
+            highs = pd.Series(high_data, dtype=float)
+            
+        if isinstance(low_data, pd.Series):
+            lows = low_data
+        else:
+            lows = pd.Series(low_data, dtype=float)
+            
+        if isinstance(close_data, pd.Series):
+            closes = close_data
+        else:
+            closes = pd.Series(close_data, dtype=float)
+        
         timestamps_raw = data.get("timestamp")
-        timestamps = pd.Series(timestamps_raw) if timestamps_raw is not None else None
+        if timestamps_raw is None:
+            timestamps = None
+        elif isinstance(timestamps_raw, pd.Series):
+            timestamps = timestamps_raw
+        else:
+            timestamps = pd.Series(timestamps_raw)
         return highs, lows, closes, timestamps
 
     if isinstance(data, list):
         # Assume list of tuples (timestamp, open, high, low, close, volume)
-        highs = pd.Series([float(item[2]) for item in data])
-        lows = pd.Series([float(item[3]) for item in data])
-        closes = pd.Series([float(item[4]) for item in data])
+        highs = pd.Series([float(item[2]) for item in data], dtype=float)
+        lows = pd.Series([float(item[3]) for item in data], dtype=float)
+        closes = pd.Series([float(item[4]) for item in data], dtype=float)
         timestamps = pd.Series([item[0] for item in data]) if data and len(data[0]) > 0 else None
         return highs, lows, closes, timestamps
 

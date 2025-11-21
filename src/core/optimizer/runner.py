@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import copy
 import hashlib
 import json
@@ -7,6 +8,7 @@ import logging
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 import threading
 import time
@@ -16,7 +18,6 @@ from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from pathlib import Path
-from types import NoneType
 from typing import Any
 
 import yaml
@@ -1930,3 +1931,23 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
             )
 
     return results
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Run optimizer from config")
+    parser.add_argument("config", type=Path, help="Path to optimizer config YAML")
+    parser.add_argument("--run-id", type=str, help="Optional explicit run ID")
+    args = parser.parse_args()
+
+    if not args.config.exists():
+        print(f"Config not found: {args.config}")
+        sys.exit(1)
+
+    try:
+        run_optimizer(args.config, run_id=args.run_id)
+    except Exception as e:
+        print(f"Optimizer failed: {e}")
+        import traceback
+
+        traceback.print_exc()
+        sys.exit(1)

@@ -33,6 +33,29 @@ def _build_risk_map_from_deltas(deltas: dict[str, Any]) -> list[list[float]]:
     return result
 
 
+def _expand_dot_notation(params: dict[str, Any]) -> dict[str, Any]:
+    """Expand dot-notation keys into nested dictionaries."""
+    expanded: dict[str, Any] = {}
+    for key, value in params.items():
+        if "." in key:
+            parts = key.split(".")
+            current = expanded
+            for part in parts[:-1]:
+                if part not in current:
+                    current[part] = {}
+                current = current[part]
+                if not isinstance(current, dict):
+                    # Should not happen in valid config, but handle gracefully
+                    continue
+            current[parts[-1]] = value
+        else:
+            if key in expanded and isinstance(expanded[key], dict) and isinstance(value, dict):
+                expanded[key].update(value)
+            else:
+                expanded[key] = value
+    return expanded
+
+
 def transform_parameters(parameters: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
     """
     Apply optimizer parameter transforms (risk map construction, etc.).
@@ -41,7 +64,9 @@ def transform_parameters(parameters: dict[str, Any]) -> tuple[dict[str, Any], di
         transformed_parameters: dict ready to merge into runtime config
         derived_values: dict with helpful derived structures (for logging/debug)
     """
-    params = copy.deepcopy(parameters)
+    # Expand dot-notation keys first (e.g. "thresholds.entry_conf" -> {"thresholds": {"entry_conf": ...}})
+    params = _expand_dot_notation(parameters)
+    params = copy.deepcopy(params)
     derived: dict[str, Any] = {}
 
     risk_cfg = params.get("risk")

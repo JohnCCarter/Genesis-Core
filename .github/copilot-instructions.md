@@ -47,6 +47,7 @@
 - Pre-commit kör ej Bandit längre; kör `bandit -r src -c bandit.yaml -f txt -o bandit-report.txt` separat vid behov (CI kör samma kommando med `continue-on-error: true`).
 - Kritiska tester: `pytest tests/test_config_api_e2e.py::test_runtime_endpoints_e2e`, `tests/test_exchange_client.py::test_build_and_request_smoke`, `tests/test_ui_endpoints.py::test_debug_auth_masked` (kräver `.env`).
 - Backtest-/optimeringsändringar kan påverka snapshots i `tests/test_optimizer_*` och JSON-resultat under `results/backtests/`; uppdatera dem konsekvent.
+Utför logiska commits för varje ändring för att underlätta granskning och återgång vid behov.
 
 ## Mönster & Konventioner
 

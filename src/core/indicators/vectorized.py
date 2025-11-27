@@ -193,10 +193,11 @@ def calculate_all_features_vectorized(df: pd.DataFrame) -> pd.DataFrame:
     # === MACD ===
     _, _, macd_histogram = calculate_macd_vectorized(df["close"], fast=12, slow=26, signal=9)
 
-    # === VOLATILITY SHIFT ===
+    # === VOLATILITY SHIFT & ATR ===
     volatility_shift = calculate_volatility_shift_vectorized(
         df["high"], df["low"], df["close"], short_period=14, long_period=50
     )
+    atr_14 = calculate_atr_vectorized(df["high"], df["low"], df["close"], period=14)
 
     # === NORMALIZE & PREPARE BASE INDICATORS ===
     # Match exact logic from extract_features()
@@ -234,6 +235,10 @@ def calculate_all_features_vectorized(df: pd.DataFrame) -> pd.DataFrame:
     # Feature 5: vol_regime - Binary indicator
     # Per-sample does: 1.0 if vol_shift_current > 1.0 else 0.0
     features["vol_regime"] = (vol_shift > 1.0).astype(float)
+
+    # === ATR FEATURES ===
+    # Match per-sample naming (`atr_14` stored directly in features dict)
+    features["atr_14"] = atr_14.fillna(0.0)
 
     # Fill NaN with 0.0 (from lookback periods)
     features = features.fillna(0.0)

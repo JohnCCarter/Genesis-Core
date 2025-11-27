@@ -280,7 +280,10 @@ class NoDupeGuard:
                 # Build parameterized query with one placeholder per signature
                 placeholder_list = ["?"] * len(chunk)
                 placeholders = ",".join(placeholder_list)
-                query = f"SELECT sig FROM dedup_signatures WHERE sig IN ({placeholders})"
+                # Safe: placeholders only contain literal '?' tokens defined above.
+                query = (
+                    f"SELECT sig FROM dedup_signatures WHERE sig IN ({placeholders})"  # nosec B608
+                )
                 rows = conn.execute(query, chunk).fetchall()
                 for (sig,) in rows:
                     result_dict[sig] = True

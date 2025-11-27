@@ -14,7 +14,7 @@ import threading
 import time
 from collections import OrderedDict
 from collections.abc import Iterable
-from concurrent.futures import Future, ThreadPoolExecutor, as_completed
+from concurrent.futures import Future, ProcessPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from pathlib import Path
@@ -22,29 +22,15 @@ from typing import Any
 
 import yaml
 
-try:  # optional faster JSON
-    import orjson as _orjson  # type: ignore
+try:  # Optional heavy deps used for JSON serialization helpers
+    import numpy as np  # type: ignore
+except Exception:  # pragma: no cover - numpy not strictly required
+    np = None  # type: ignore
 
-    def _json_dumps(obj: Any) -> str:
-        return _orjson.dumps(obj).decode("utf-8")
-
-    def _json_loads(text: str) -> Any:
-        """Parse JSON using orjson for better performance."""
-        return _orjson.loads(text)
-
-    _HAS_ORJSON = True
-
-except Exception:  # pragma: no cover
-
-    def _json_dumps(obj: Any) -> str:
-        return json.dumps(obj, indent=2)
-
-    def _json_loads(text: str) -> Any:
-        return json.loads(text)
-
-    _HAS_ORJSON = False
-
-
+try:
+    import pandas as pd  # type: ignore
+except Exception:  # pragma: no cover - pandas not strictly required
+    pd = None  # type: ignore
 from core.optimizer.champion import ChampionCandidate, ChampionManager
 from core.optimizer.constraints import enforce_constraints
 from core.optimizer.param_transforms import transform_parameters
@@ -56,15 +42,58 @@ from core.utils.diffing.results_diff import diff_backtest_results
 from core.utils.diffing.trial_cache import TrialResultCache
 from core.utils.optuna_helpers import NoDupeGuard, param_signature
 
+
+def _json_default(obj: Any) -> Any:
+    """Best-effort serializer for optional scientific types."""
+
+    if isinstance(obj, datetime | date):
+        return obj.isoformat()
+    if isinstance(obj, Path):
+        return str(obj)
+    if isinstance(obj, set | frozenset):
+        return list(obj)
+    if np is not None:
+        if isinstance(obj, np.integer | np.bool_):
+            return int(obj)
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+    if pd is not None and isinstance(obj, pd.Timestamp):
+        return obj.isoformat()
+    iso = getattr(obj, "isoformat", None)
+    if callable(iso):  # Fallback för objekt med isoformat (t.ex. pendulum)
+        return iso()
+    raise TypeError(f"Object of type {obj.__class__.__name__} is not JSON serializable")
+
+
+try:  # optional faster JSON
+    import orjson as _orjson  # type: ignore
+
+    def _json_dumps(obj: Any) -> str:
+        return _orjson.dumps(obj, default=_json_default).decode("utf-8")
+
+    def _json_loads(text: str) -> Any:
+        """Parse JSON using orjson for better performance."""
+        return _orjson.loads(text)
+
+    _HAS_ORJSON = True
+
+except Exception:  # pragma: no cover
+
+    def _json_dumps(obj: Any) -> str:
+        return json.dumps(obj, indent=2, default=_json_default)
+
+    def _json_loads(text: str) -> Any:
+        return json.loads(text)
+
+    _HAS_ORJSON = False
+
+
 try:
     import optuna
     from optuna import Trial
-    from optuna.pruners import (
-        HyperbandPruner,
-        MedianPruner,
-        NopPruner,
-        SuccessiveHalvingPruner,
-    )
+    from optuna.pruners import HyperbandPruner, MedianPruner, NopPruner, SuccessiveHalvingPruner
     from optuna.samplers import CmaEsSampler, RandomSampler, TPESampler
     from optuna.storages import RDBStorage
     from optuna.trial import TrialState
@@ -666,6 +695,38 @@ def _candidate_from_result(result: dict[str, Any]) -> ChampionCandidate | None:
     )
 
 
+def _extract_num_trades(payload: dict[str, Any]) -> int | None:
+    """Best effort extraction of num_trades from nested payloads."""
+
+    def _coerce(value: Any) -> int | None:
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return None
+
+    score_block = payload.get("score")
+    if isinstance(score_block, dict):
+        metrics = score_block.get("metrics")
+        if isinstance(metrics, dict):
+            coerced = _coerce(metrics.get("num_trades"))
+            if coerced is not None:
+                return coerced
+
+    summary_block = payload.get("summary")
+    if isinstance(summary_block, dict):
+        coerced = _coerce(summary_block.get("num_trades"))
+        if coerced is not None:
+            return coerced
+
+    metrics_block = payload.get("metrics")
+    if isinstance(metrics_block, dict):
+        coerced = _coerce(metrics_block.get("num_trades"))
+        if coerced is not None:
+            return coerced
+
+    return None
+
+
 def _check_abort_heuristic(
     backtest_results: dict[str, Any], trial_params: dict[str, Any]
 ) -> dict[str, Any]:
@@ -711,6 +772,92 @@ def _check_abort_heuristic(
     return {"ok": True, "reason": "", "details": "", "penalty": 0.0}
 
 
+# Performance: Cache for loaded DataFrames
+_DATA_CACHE: dict[str, Any] = {}
+_DATA_LOCK = threading.Lock()
+
+
+def _run_backtest_direct(
+    trial: TrialConfig,
+    config_path: Path,
+    optuna_context: dict[str, Any] | None = None,
+) -> tuple[int, str, dict[str, Any] | None]:
+    try:
+        from core.backtest.engine import BacktestEngine
+
+        # Load/Get engine
+        cache_key = f"{trial.symbol}_{trial.timeframe}"
+        with _DATA_LOCK:
+            if cache_key not in _DATA_CACHE:
+                # Create and load engine once
+                # Always use fast_window=True for optimization
+                engine_loader = BacktestEngine(
+                    symbol=trial.symbol,
+                    timeframe=trial.timeframe,
+                    warmup_bars=trial.warmup_bars,
+                    fast_window=True,
+                )
+                if engine_loader.load_data():
+                    _DATA_CACHE[cache_key] = engine_loader
+                else:
+                    _DATA_CACHE[cache_key] = None
+
+            engine = _DATA_CACHE[cache_key]
+
+        if engine is None:
+            return 1, "Failed to load data", None
+
+        # Update warmup_bars in case it changed between trials
+        engine.warmup_bars = trial.warmup_bars
+
+        # Enable precomputed features if requested (critical for performance)
+        if os.environ.get("GENESIS_PRECOMPUTE_FEATURES"):
+            engine.precompute_features = True
+
+        # Load config
+        payload = json.loads(config_path.read_text(encoding="utf-8"))
+        cfg = payload["cfg"]
+
+        # Pruning
+        pruning_callback = None
+        if optuna_context:
+            try:
+                import optuna
+
+                study = optuna.load_study(
+                    study_name=optuna_context["study_name"],
+                    storage=optuna_context["storage"],
+                )
+
+                def _cb(step, value):
+                    try:
+                        t = optuna.trial.Trial(study, optuna_context["trial_id"])
+                        t.report(value, step)
+                        return t.should_prune()
+                    except Exception:
+                        return False
+
+                pruning_callback = _cb
+            except Exception as err:  # pragma: no cover - defensive guard
+                logger.warning(
+                    "Optuna pruning disabled due to setup failure: %s", err, exc_info=True
+                )
+
+        results = engine.run(
+            policy={"symbol": trial.symbol, "timeframe": trial.timeframe},
+            configs=cfg,
+            verbose=False,
+            pruning_callback=pruning_callback,
+        )
+
+        return 0, "", results
+
+    except Exception as e:
+        import traceback
+
+        return 1, f"{e}\n{traceback.format_exc()}", None
+
+
 def run_trial(
     trial: TrialConfig,
     *,
@@ -726,9 +873,10 @@ def run_trial(
     seen_param_lock: threading.Lock | None = None,
     baseline_results: dict[str, Any] | None = None,
     baseline_label: str | None = None,
+    optuna_context: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     key = _trial_key(trial.parameters)
-    fingerprint_digest = hashlib.sha256(key.encode("utf-8")).hexdigest()
+    fingerprint_digest = key  # _trial_key already returns a SHA256 digest
 
     if allow_resume and key in existing_trials:
         if seen_param_keys is not None:
@@ -866,6 +1014,18 @@ def run_trial(
     if config_file is not None:
         cmd.extend(["--config-file", str(config_file)])
 
+    if optuna_context:
+        cmd.extend(
+            [
+                "--optuna-trial-id",
+                str(optuna_context["trial_id"]),
+                "--optuna-storage",
+                str(optuna_context["storage"]),
+                "--optuna-study-name",
+                str(optuna_context["study_name"]),
+            ]
+        )
+
     attempts_remaining = max(1, max_attempts)
     final_payload: dict[str, Any] | None = None
     trial_started = time.perf_counter()
@@ -877,68 +1037,104 @@ def run_trial(
     if "GENESIS_RANDOM_SEED" not in base_env or not str(base_env["GENESIS_RANDOM_SEED"]).strip():
         base_env["GENESIS_RANDOM_SEED"] = "42"
 
+    # Optimization: Force reduced logging in subprocess to minimize IO overhead
+    # User reported massive logs slowing down optimization
+    if "LOG_LEVEL" not in base_env:
+        base_env["LOG_LEVEL"] = "WARNING"
+
+    # GENESIS_IN_PROCESS=1 means "Debug Mode" (Single Process, Main Thread)
+    # GENESIS_IN_PROCESS=0 (Default) means "Process Pool" (Multi Process, Direct Execution)
+    debug_mode = os.environ.get("GENESIS_IN_PROCESS") == "1"
+
+    # Guard against debug mode with concurrency on Windows
+    if debug_mode and os.name == "nt":
+        # We can't easily check n_jobs here without passing it down, but we can warn/error if we detect issues
+        # For now, we rely on the caller to respect the rule.
+        pass
+
     while attempts_remaining > 0:
         attempt_started = time.perf_counter()
         attempts_remaining -= 1
-        returncode, log = _exec_backtest(
-            cmd, cwd=Path(__file__).resolve().parents[3], env=base_env, log_path=log_file
-        )
+
+        results_dict: dict[str, Any] | None = None
+
+        # Always use direct execution for performance (RAM caching), unless forced to shell out
+        # If debug_mode=True, this runs in the main process.
+        # If debug_mode=False, this runs in a worker process (if using Pool).
+        use_direct_execution = os.environ.get("GENESIS_FORCE_SHELL") != "1"
+
+        if use_direct_execution and config_file:
+            returncode, log, results_dict = _run_backtest_direct(trial, config_file, optuna_context)
+            if returncode == 0 and results_dict:
+                # Save results to file to match subprocess behavior
+                results_path = output_dir / f"{trial.symbol}_{trial.timeframe}_{trial_id}.json"
+                _atomic_write_text(results_path, _json_dumps(results_dict))
+        else:
+            returncode, log = _exec_backtest(
+                cmd, cwd=Path(__file__).resolve().parents[3], env=base_env, log_path=log_file
+            )
+
         last_log_output = log
         attempt_duration = time.perf_counter() - attempt_started
         attempt_durations.append(attempt_duration)
         if returncode == 0:
             # Parse log file to find exact results path (avoids race condition with glob)
-            results_path: Path | None = None
-            try:
-                log_content = log_file.read_text(encoding="utf-8")
-                import re
+            if not results_dict:
+                results_path: Path | None = None
+                try:
+                    log_content = log_file.read_text(encoding="utf-8")
+                    import re
 
-                # Look for: "  results: path/to/file.json"
-                match = re.search(r"^\s*results:\s*(.*\.json)\s*$", log_content, re.MULTILINE)
-                if match:
-                    extracted_path = Path(match.group(1).strip())
-                    if not extracted_path.is_absolute():
-                        extracted_path = PROJECT_ROOT / extracted_path
-                    if extracted_path.exists():
-                        results_path = extracted_path
-            except Exception as e:
-                print(f"[WARN] Could not parse log for results path: {e}")
+                    # Look for: "  results: path/to/file.json"
+                    match = re.search(r"^\s*results:\s*(.*\.json)\s*$", log_content, re.MULTILINE)
+                    if match:
+                        extracted_path = Path(match.group(1).strip())
+                        if not extracted_path.is_absolute():
+                            extracted_path = PROJECT_ROOT / extracted_path
+                        if extracted_path.exists():
+                            results_path = extracted_path
+                except Exception as e:
+                    print(f"[WARN] Could not parse log for results path: {e}")
 
-            if results_path is None:
-                # Fallback to glob (risky with concurrency)
-                results_path = sorted(
-                    (Path(__file__).resolve().parents[3] / "results" / "backtests").glob(
-                        f"{trial.symbol}_{trial.timeframe}_*.json"
+                if results_path is None:
+                    # Fallback to glob (risky with concurrency)
+                    results_path = sorted(
+                        (Path(__file__).resolve().parents[3] / "results" / "backtests").glob(
+                            f"{trial.symbol}_{trial.timeframe}_*.json"
+                        )
+                    )[-1]
+
+                try:
+                    results = _read_json_cached(results_path)
+                except json.JSONDecodeError as json_err:
+                    # Korrupt JSON från samtidig skrivning eller partiell write
+                    total_duration = time.perf_counter() - trial_started
+                    error_payload = {
+                        "trial_id": trial_id,
+                        "parameters": trial.parameters,
+                        "results_path": results_path.name,
+                        "error": f"JSONDecodeError: {json_err}",
+                        "error_details": str(json_err),
+                        "log": log_file.name,
+                        "attempts": max_attempts - attempts_remaining,
+                        "duration_seconds": total_duration,
+                        "attempt_durations": attempt_durations,
+                    }
+                    if derived_values:
+                        error_payload["derived"] = derived_values
+                    if config_file is not None:
+                        error_payload["config_path"] = config_file.name
+                    print(
+                        f"[ERROR] Trial {trial_id} fick korrupt JSON ({results_path.name}): {json_err}"
                     )
-                )[-1]
+                    print("[ERROR] Detta indikerar race condition vid samtidig skrivning")
+                    _atomic_write_text(trial_file, json.dumps(error_payload, indent=2))
+                    # Returnera error payload så att objective kan lyfta TrialPruned
+                    return error_payload
+            else:
+                results = results_dict
+                # results_path is already set in the if block above
 
-            try:
-                results = _read_json_cached(results_path)
-            except json.JSONDecodeError as json_err:
-                # Korrupt JSON från samtidig skrivning eller partiell write
-                total_duration = time.perf_counter() - trial_started
-                error_payload = {
-                    "trial_id": trial_id,
-                    "parameters": trial.parameters,
-                    "results_path": results_path.name,
-                    "error": f"JSONDecodeError: {json_err}",
-                    "error_details": str(json_err),
-                    "log": log_file.name,
-                    "attempts": max_attempts - attempts_remaining,
-                    "duration_seconds": total_duration,
-                    "attempt_durations": attempt_durations,
-                }
-                if derived_values:
-                    error_payload["derived"] = derived_values
-                if config_file is not None:
-                    error_payload["config_path"] = config_file.name
-                print(
-                    f"[ERROR] Trial {trial_id} fick korrupt JSON ({results_path.name}): {json_err}"
-                )
-                print("[ERROR] Detta indikerar race condition vid samtidig skrivning")
-                _atomic_write_text(trial_file, json.dumps(error_payload, indent=2))
-                # Returnera error payload så att objective kan lyfta TrialPruned
-                return error_payload
             merged_config = results.get("merged_config")  # Full config for reproducibility
             runtime_version = results.get("runtime_version")  # Runtime version used
 
@@ -1027,6 +1223,8 @@ def run_trial(
         retry_wait = min(5 * (max_attempts - attempts_remaining), 60)
         if attempts_remaining > 0:
             print(f"[Runner] Backtest fail, retry om {retry_wait}s")
+            if use_direct_execution and returncode != 0:
+                print(f"[Runner] Direct Execution Error: {log}")
             time.sleep(retry_wait)
 
     # If we didn't stream, persist the captured log
@@ -1415,7 +1613,12 @@ def _run_optuna(
             trial.set_user_attr("penalized_duplicate", True)
             return -1e6
 
-        payload = make_trial(trial_number, parameters)
+        optuna_ctx = {
+            "trial_id": trial._trial_id,
+            "storage": storage,
+            "study_name": study_name,
+        }
+        payload = make_trial(trial_number, parameters, optuna_context=optuna_ctx)
         results.append(payload)
 
         # CACHE REUSE FIX: If payload is from cache, return actual score even if duplicate
@@ -1486,9 +1689,9 @@ def _run_optuna(
         score_block = payload.get("score") or {}
         score_value = float(score_block.get("score", 0.0) or 0.0)
 
-        # Check for zero trades to track this issue
-        metrics = score_block.get("metrics") if score_block else None
-        num_trades = int(metrics.get("num_trades", 0)) if metrics else 0
+        # Check for zero trades to track this issue - do this BEFORE early returns
+        num_trades_value = _extract_num_trades(payload)
+        num_trades = num_trades_value if num_trades_value is not None else 0
         if num_trades == 0:
             zero_trade_count += 1
             trial.set_user_attr("zero_trades", True)
@@ -1743,7 +1946,7 @@ def _create_run_id(proposed: str | None = None) -> str:
 
 
 def _submit_trials(
-    executor: ThreadPoolExecutor,
+    executor: ProcessPoolExecutor,
     params_list: list[dict[str, Any]],
     trial_cfg_builder,
 ) -> list[Future]:
@@ -1751,6 +1954,64 @@ def _submit_trials(
     for idx, params in enumerate(params_list, start=1):
         futures.append(executor.submit(trial_cfg_builder, idx, params))
     return futures
+
+
+@dataclass
+class TrialContext:
+    """Context for executing a trial in a worker process."""
+
+    snapshot_id: str
+    symbol: str
+    timeframe: str
+    warmup_bars: int
+    start_date: str | None
+    end_date: str | None
+    run_id: str
+    run_dir: Path
+    allow_resume: bool
+    existing_trials: dict[str, dict[str, Any]]
+    max_attempts: int
+    constraints_cfg: dict[str, Any] | None
+    baseline_results: dict[str, Any] | None
+    baseline_label: str | None
+    optuna_context: dict[str, Any] | None
+
+
+def _execute_trial_task(
+    idx: int,
+    params: dict[str, Any],
+    ctx: TrialContext,
+) -> dict[str, Any]:
+    """Execute a single trial task in a worker process."""
+    trial_cfg = TrialConfig(
+        snapshot_id=ctx.snapshot_id,
+        symbol=ctx.symbol,
+        timeframe=ctx.timeframe,
+        warmup_bars=ctx.warmup_bars,
+        parameters=params,
+        start_date=ctx.start_date,
+        end_date=ctx.end_date,
+    )
+
+    # Note: seen_param_keys/lock are not shared across processes in this simple setup.
+    # We rely on existing_trials (disk cache) for deduplication.
+
+    return run_trial(
+        trial_cfg,
+        run_id=ctx.run_id,
+        index=idx,
+        run_dir=ctx.run_dir,
+        allow_resume=ctx.allow_resume,
+        existing_trials=ctx.existing_trials,
+        max_attempts=ctx.max_attempts,
+        constraints_cfg=ctx.constraints_cfg,
+        cache_enabled=True,
+        seen_param_keys=None,
+        seen_param_lock=None,
+        baseline_results=ctx.baseline_results,
+        baseline_label=ctx.baseline_label,
+        optuna_context=ctx.optuna_context,
+    )
 
 
 def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[str, Any]]:
@@ -1786,6 +2047,7 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
     run_dir = (
         Path(__file__).resolve().parents[3] / "results" / "hparam_search" / run_id_resolved
     ).resolve()
+
     existing_trials = _load_existing_trials(run_dir) if allow_resume and run_dir.exists() else {}
     seen_param_keys: set[str] = set()
     seen_param_lock = threading.Lock()
@@ -1814,7 +2076,12 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
         else:
             print(f"[WARN] baseline_results_path hittades inte: {candidate_path}")
 
-    def make_trial(idx: int, params: dict[str, Any], advance_only: bool = False) -> dict[str, Any]:
+    def make_trial(
+        idx: int,
+        params: dict[str, Any],
+        advance_only: bool = False,
+        optuna_context: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         if advance_only:
             # Cheap advancement without running backtest
             return {
@@ -1846,6 +2113,7 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
             seen_param_lock=seen_param_lock,
             baseline_results=baseline_results_data,
             baseline_label=baseline_label,
+            optuna_context=optuna_context,
         )
 
     results: list[dict[str, Any]] = []
@@ -1855,12 +2123,44 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
         if max_trials is not None:
             params_list = params_list[:max_trials]
 
-        with ThreadPoolExecutor(max_workers=concurrency) as executor:
-            if concurrency == 1:
+        # Use ProcessPoolExecutor for Grid Search to avoid GIL issues
+        # GENESIS_IN_PROCESS=1 forces concurrency=1 (Debug Mode)
+        debug_mode = os.environ.get("GENESIS_IN_PROCESS") == "1"
+        if debug_mode and concurrency > 1 and os.name == "nt":
+            raise RuntimeError(
+                "GENESIS_IN_PROCESS=1 är inte tillåtet med n_jobs>1 på Windows (GIL-slow)."
+            )
+
+        # If debug mode or single worker, run in main process (simpler for tests/patching)
+        if debug_mode or concurrency == 1:
+            for idx, params in enumerate(params_list, start=1):
+                results.append(make_trial(idx, params))
+        else:
+            # Use ProcessPoolExecutor for true parallelism with RAM caching per worker
+            # We must use a picklable task function (_execute_trial_task) and context
+            ctx = TrialContext(
+                snapshot_id=meta.get("snapshot_id", ""),
+                symbol=symbol,
+                timeframe=timeframe,
+                warmup_bars=int(meta.get("warmup_bars", 150)),
+                start_date=sample_start,
+                end_date=sample_end,
+                run_id=run_id_resolved,
+                run_dir=run_dir,
+                allow_resume=allow_resume,
+                existing_trials=existing_trials,
+                max_attempts=max_attempts,
+                constraints_cfg=config.get("constraints"),
+                baseline_results=baseline_results_data,
+                baseline_label=baseline_label,
+                optuna_context=None,
+            )
+
+            with ProcessPoolExecutor(max_workers=concurrency) as executor:
+                futures = []
                 for idx, params in enumerate(params_list, start=1):
-                    results.append(make_trial(idx, params))
-            else:
-                futures = _submit_trials(executor, params_list, make_trial)
+                    futures.append(executor.submit(_execute_trial_task, idx, params, ctx))
+
                 for future in as_completed(futures):
                     results.append(future.result())
     elif strategy == OptimizerStrategy.OPTUNA:

@@ -71,6 +71,9 @@ def test_run_trial_uses_cache(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     created_files: list[Path] = []
     call_count = {"runs": 0}
 
+    # Force runner to use the subprocess path so our fake _exec_backtest is invoked
+    monkeypatch.setenv("GENESIS_FORCE_SHELL", "1")
+
     def fake_exec_backtest(cmd, cwd, env, log_path):
         call_count["runs"] += 1
         symbol = cmd[cmd.index("--symbol") + 1]
@@ -100,7 +103,10 @@ def test_run_trial_uses_cache(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         log_path.write_text(f"  results: {result_path}\n", encoding="utf-8")
         return 0, "ok"
 
-    monkeypatch.setattr("core.optimizer.runner._exec_backtest", fake_exec_backtest)
+    # Import runner module to patch it correctly
+    from core.optimizer import runner as runner_module
+
+    monkeypatch.setattr(runner_module, "_exec_backtest", fake_exec_backtest)
 
     trial = TrialConfig(
         snapshot_id="tBTCUSD_1h_20240101_20240201_v1",

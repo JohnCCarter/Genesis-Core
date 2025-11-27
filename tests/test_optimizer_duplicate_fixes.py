@@ -16,11 +16,7 @@ try:
 except ImportError:
     OPTUNA_AVAILABLE = False
 
-from core.optimizer.runner import (
-    _estimate_optuna_search_space,
-    _run_optuna,
-    run_optimizer,
-)
+from core.optimizer.runner import _estimate_optuna_search_space, _run_optuna, run_optimizer
 
 
 def test_estimate_search_space_narrow():
@@ -124,7 +120,9 @@ def test_duplicate_tracking_in_objective(tmp_path: Path):
 
     trial_idx = [0]
 
-    def mock_make_trial(idx: int, params: dict[str, Any]) -> dict[str, Any]:
+    def mock_make_trial(
+        idx: int, params: dict[str, Any], **kwargs
+    ) -> dict[str, Any]:  # Accept optuna_context
         result = trial_results[trial_idx[0]].copy()
         result["parameters"] = params
         trial_idx[0] += 1
@@ -135,6 +133,7 @@ def test_duplicate_tracking_in_objective(tmp_path: Path):
         "study_name": "test_study",
         "sampler": {"name": "random"},
         "pruner": {"name": "none"},
+        "dedup_guard_enabled": False,  # Disable SQLite guard for tests
     }
 
     params_spec = {
@@ -156,7 +155,15 @@ def test_duplicate_tracking_in_objective(tmp_path: Path):
                 trial = MagicMock()
                 trial.number = i
                 trial.user_attrs = {}
-                trial.set_user_attr = lambda k, v, t=trial: t.user_attrs.update({k: v})
+
+                # Create a proper closure that binds to THIS trial's user_attrs
+                def make_setter(attrs_dict):
+                    def setter(k, v):
+                        attrs_dict[k] = v
+
+                    return setter
+
+                trial.set_user_attr = make_setter(trial.user_attrs)
                 trial.suggest_categorical = MagicMock(
                     return_value=[0.5, 0.5, 0.6][i]  # 2 duplicates
                 )

@@ -106,8 +106,8 @@ def main():
     parser.add_argument(
         "--commission",
         type=float,
-        default=0.001,
-        help="Commission rate (default: 0.001 = 0.1%%)",
+        default=0.002,
+        help="Commission rate (default: 0.002 = 0.2%%)",
     )
     parser.add_argument(
         "--slippage",
@@ -143,6 +143,9 @@ def main():
         type=Path,
         help="Path to baseline backtest JSON to compare against",
     )
+    parser.add_argument("--optuna-trial-id", type=int, help="Optuna trial ID for pruning")
+    parser.add_argument("--optuna-storage", type=str, help="Optuna storage URL")
+    parser.add_argument("--optuna-study-name", type=str, help="Optuna study name")
 
     args = parser.parse_args()
 
@@ -226,8 +229,44 @@ def main():
         # Prepare policy
         policy = {"symbol": args.symbol, "timeframe": args.timeframe}
 
+        # Setup Optuna pruning if requested
+        pruning_callback = None
+        if args.optuna_trial_id is not None and args.optuna_storage and args.optuna_study_name:
+            try:
+                import optuna
+
+                # Suppress Optuna logging in subprocess
+                optuna.logging.set_verbosity(optuna.logging.WARNING)
+
+                study = optuna.load_study(
+                    study_name=args.optuna_study_name,
+                    storage=args.optuna_storage,
+                )
+
+                def _optuna_callback(step, value):
+                    try:
+                        trial = optuna.trial.Trial(study, args.optuna_trial_id)
+                        trial.report(value, step)
+                        if trial.should_prune():
+                            return True
+                    except Exception:
+                        pass
+                    return False
+
+                pruning_callback = _optuna_callback
+                print(f"[Optuna] Pruning enabled for trial {args.optuna_trial_id}")
+            except ImportError:
+                print("[WARN] Optuna not installed, pruning disabled")
+            except Exception as e:
+                print(f"[WARN] Failed to setup Optuna pruning: {e}")
+
         # Run backtest
-        results = engine.run(policy=policy, configs=cfg, verbose=args.verbose)
+        results = engine.run(
+            policy=policy,
+            configs=merged_cfg,
+            verbose=args.verbose,
+            pruning_callback=pruning_callback,
+        )
 
         # Save merged config for reproducibility (only if not already a complete champion)
         if not is_complete_champion:

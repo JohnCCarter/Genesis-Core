@@ -7,6 +7,7 @@ Replays historical candle data bar-by-bar through the existing strategy pipeline
 import os
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 from tqdm import tqdm
@@ -404,6 +405,7 @@ class BacktestEngine:
         policy: dict | None = None,
         configs: dict | None = None,
         verbose: bool = False,
+        pruning_callback: Any | None = None,
     ) -> dict:
         """
         Run backtest.
@@ -412,6 +414,7 @@ class BacktestEngine:
             policy: Strategy policy (symbol, timeframe)
             configs: Strategy configs (thresholds, risk, etc.)
             verbose: Print detailed progress
+            pruning_callback: Optional callback(step, value) -> bool. If returns True, abort.
 
         Returns:
             Dict with backtest results
@@ -510,8 +513,27 @@ class BacktestEngine:
                 pbar.update(1)
                 continue
 
+            # Pruning check (every 100 bars to minimize overhead)
+            if pruning_callback and i % 100 == 0:
+                # Report current return as proxy for score
+                current_equity = self.position_tracker.current_equity
+                current_return = (
+                    current_equity - self.position_tracker.initial_capital
+                ) / self.position_tracker.initial_capital
+                if pruning_callback(i, current_return):
+                    pbar.close()
+                    return {
+                        "error": "pruned",
+                        "pruned_at": i,
+                        "metrics": {"total_return": current_return},
+                    }
+
             # Build candles window for pipeline
             candles_window = self._build_candles_window(i)
+
+            # Inject global index for precomputed features correctness
+            # This ensures features_asof uses the correct index in precomputed arrays
+            configs["_global_index"] = i
 
             # Run pipeline (uses existing evaluate_pipeline from strategy/)
             try:
@@ -635,6 +657,15 @@ class BacktestEngine:
             pbar.update(1)
 
         pbar.close()
+
+        # Report feature hit counts
+        try:
+            from core.strategy.features_asof import get_feature_hit_counts
+
+            fast_hits, slow_hits = get_feature_hit_counts()
+            print(f"[FEATURES] Fast path hits: {fast_hits}, slow path hits: {slow_hits}")
+        except ImportError:
+            pass
 
         # Close all positions at end
         if self._np_arrays is not None:

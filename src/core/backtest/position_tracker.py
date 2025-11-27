@@ -114,7 +114,7 @@ class PositionTracker:
     def __init__(
         self,
         initial_capital: float = 10000.0,
-        commission_rate: float = 0.001,  # 0.1% per trade
+        commission_rate: float = 0.002,  # 0.2% per trade (Taker fee)
         slippage_rate: float = 0.0005,  # 0.05% slippage
     ):
         self.initial_capital = initial_capital
@@ -131,6 +131,12 @@ class PositionTracker:
         self.total_commission = 0.0
         self.max_capital = initial_capital
         self.min_capital = initial_capital
+
+    @property
+    def current_equity(self) -> float:
+        """Get current equity (capital + unrealized PnL)."""
+        unrealized = self.position.unrealized_pnl if self.position else 0.0
+        return self.capital + unrealized
 
     def set_pending_reasons(self, reasons: list[str]) -> None:
         """Spara senaste beslutsorsaker innan eventuell entry."""

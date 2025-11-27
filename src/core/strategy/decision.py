@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import math
 from typing import Any, Literal
 
@@ -44,11 +45,16 @@ def _sanitize_context(value: Any) -> Any:
 
 
 def _log_decision_event(event: str, **context: Any) -> None:
+    # Optimization: Only sanitize and log if DEBUG is enabled
+    # This prevents massive IO overhead during backtesting/optimization
+    if not _LOG.isEnabledFor(logging.DEBUG):
+        return
+
     try:
         payload = {k: _sanitize_context(v) for k, v in context.items()}
-        _LOG.info("[DECISION] %s %s", event, payload)
+        _LOG.debug("[DECISION] %s %s", event, payload)
     except Exception:  # pragma: no cover
-        _LOG.info("[DECISION] %s", event)
+        _LOG.debug("[DECISION] %s", event)
 
 
 def _summarize_fib_debug(data: Any) -> dict[str, Any]:
@@ -827,6 +833,7 @@ def decide(
         if not missing_allowed_ltf:
             if candidate == "LONG":
                 max_level = ltf_entry_cfg.get("long_max_level")
+
                 level_price = _level_price(
                     levels, float(max_level) if max_level is not None else None
                 )

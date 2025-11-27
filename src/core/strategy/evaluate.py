@@ -55,8 +55,17 @@ def evaluate_pipeline(
         configs = champion_cfg
     configs.setdefault("meta", {})["champion_source"] = champion.source
 
+    closes = candles.get("close") if isinstance(candles, dict) else None
+    total_bars = len(closes) if closes is not None else 0
+    force_backtest_mode = "_global_index" in configs
+    now_index = total_bars if force_backtest_mode and total_bars > 0 else None
+
     feats, feats_meta = extract_features(
-        candles, config=configs, timeframe=timeframe, symbol=symbol
+        candles,
+        config=configs,
+        timeframe=timeframe,
+        symbol=symbol,
+        now_index=now_index,
     )
     if metrics_enabled:
         metrics.event("features_ok", {"keys": list(feats.keys())})
@@ -118,18 +127,17 @@ def evaluate_pipeline(
     if metrics_enabled:
         metrics.event("regime_ok", {"regime": regime})
 
-    close_list = candles.get("close") if isinstance(candles, dict) else None
     last_close = None
-    if close_list is not None:
+    if closes is not None:
         try:
-            length = len(close_list)
+            total_bars = len(closes)
         except Exception:
-            length = 0
+            total_bars = 0
     else:
-        length = 0
-    if length > 0:
+        total_bars = 0
+    if total_bars > 0 and closes is not None:
         try:
-            last_close = float(close_list[-1])
+            last_close = float(closes[-1])
         except (TypeError, ValueError):
             last_close = None
 

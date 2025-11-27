@@ -137,23 +137,30 @@ def detect_swing_points(
     def _detect(
         threshold_multiple: float,
     ) -> tuple[list[tuple[int, float]], list[tuple[int, float]]]:
-        candidate_highs: list[tuple[int, float]] = []
-        candidate_lows: list[tuple[int, float]] = []
-
         if not local_high_mask.any() and not local_low_mask.any():
             return [], []
 
         atr_thresholds = np.nan_to_num(atr_arr, nan=0.0) * max(threshold_multiple, 0.0)
 
+        # Vectorized high detection
         high_indices = np.where(local_high_mask)[0]
-        for idx in high_indices:
-            if range_span[idx] >= atr_thresholds[idx]:
-                candidate_highs.append((idx, float(high_arr[idx])))
+        if high_indices.size > 0:
+            valid_highs = range_span[high_indices] >= atr_thresholds[high_indices]
+            valid_high_indices = high_indices[valid_highs]
+            candidate_highs = list(
+                zip(valid_high_indices, high_arr[valid_high_indices], strict=False)
+            )
+        else:
+            candidate_highs = []
 
+        # Vectorized low detection
         low_indices = np.where(local_low_mask)[0]
-        for idx in low_indices:
-            if range_span[idx] >= atr_thresholds[idx]:
-                candidate_lows.append((idx, float(low_arr[idx])))
+        if low_indices.size > 0:
+            valid_lows = range_span[low_indices] >= atr_thresholds[low_indices]
+            valid_low_indices = low_indices[valid_lows]
+            candidate_lows = list(zip(valid_low_indices, low_arr[valid_low_indices], strict=False))
+        else:
+            candidate_lows = []
 
         cleaned_highs = _clean_swing_points(candidate_highs, config.max_lookback)
         cleaned_lows = _clean_swing_points(candidate_lows, config.max_lookback)

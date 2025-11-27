@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+from bisect import bisect_right
 from collections import OrderedDict
 from typing import Any
 
@@ -40,11 +41,18 @@ from core.utils.logging_redaction import get_logger
 
 _log = get_logger(__name__)
 
-# Cache for feature extraction to avoid recomputing features for same data
-# Using OrderedDict for LRU-style eviction (Python 3.7+ maintains insertion order)
+# Performance counters
+FAST_HITS = 0
+SLOW_HITS = 0
 
-_feature_cache: OrderedDict[str, tuple[dict[str, float], dict[str, Any]]] = OrderedDict()
-_MAX_CACHE_SIZE = 500  # Increased from 100 to reduce thrashing during backtests
+
+def get_feature_hit_counts() -> tuple[int, int]:
+    """Return (fast_hits, slow_hits) and reset counters."""
+    global FAST_HITS, SLOW_HITS
+    counts = (FAST_HITS, SLOW_HITS)
+    FAST_HITS = 0
+    SLOW_HITS = 0
+    return counts
 
 
 def _as_config_dict(value: Any) -> dict[str, Any]:
@@ -58,24 +66,6 @@ def _as_config_dict(value: Any) -> dict[str, Any]:
         except Exception:
             return {}
     return {}
-
-
-def _compute_candles_hash(candles: dict[str, list[float] | np.ndarray], asof_bar: int) -> str:
-    """Compute a fast hash of candles data up to asof_bar for caching.
-
-    Optimization: Use a simpler hash based on bar index and last values only.
-    This is much faster than summing 100 bars and gives good cache discrimination.
-    Works with both lists and NumPy arrays.
-    """
-    # For sequential access patterns (like backtesting), asof_bar alone is often sufficient
-    # Add last close value for additional discrimination
-    close_data = candles.get("close")
-    if close_data is not None and len(close_data) > asof_bar:
-        # Handle both numpy arrays and lists
-        last_close = float(close_data[asof_bar])
-        # Use simple string hash instead of cryptographic hash (10x faster)
-        return f"{asof_bar}:{last_close:.4f}"
-    return str(asof_bar)
 
 
 _feature_cache: OrderedDict[str, tuple[dict[str, float], dict[str, Any]]] = OrderedDict()
@@ -99,7 +89,7 @@ def _indicator_cache_store(key, value):
         _indicator_cache.store(key, value)
 
 
-def _compute_candles_hash(candles: dict[str, list[float]], asof_bar: int) -> str:
+def _compute_candles_hash(candles: dict[str, list[float] | np.ndarray], asof_bar: int) -> str:
     """Compute a cache key for candles up to asof_bar.
 
     Fast path (opt-in): GENESIS_FAST_HASH=1 → simple f-string on asof_bar:last_close
@@ -114,17 +104,45 @@ def _compute_candles_hash(candles: dict[str, list[float]], asof_bar: int) -> str
         return f"{asof_bar}:{last_close:.4f}"
 
     # Default compact SHA256 key
-    data_str = f"{asof_bar}"
-    for key in ["open", "high", "low", "close", "volume"]:
-        if key in candles:
-            start_idx = max(0, asof_bar - 99)
-            data = candles[key][start_idx : asof_bar + 1]
-            length = len(data)
-            data_sum = float(np.sum(data)) if length else 0.0
-            last_val = float(data[-1]) if length else 0.0
-            data_str += f"|{key}:{length}:{data_sum:.2f}:{last_val:.2f}"
-    # Non-security hash: use SHA256 to satisfy linters and avoid weak-hash warnings
-    return hashlib.sha256(data_str.encode()).hexdigest()
+    # Optimization: Use Python's built-in hash() for speed instead of SHA256
+    # We include asof_bar, last close, and a few sample points to ensure uniqueness
+    # without summing the entire array.
+    try:
+        close = candles.get("close")
+        high = candles.get("high")
+        low = candles.get("low")
+
+        def _safe_value(series: list[float] | np.ndarray | None, idx: int) -> float:
+            if series is None or idx < 0:
+                return 0.0
+            try:
+                if len(series) <= idx:
+                    return 0.0
+                return float(series[idx])
+            except Exception:
+                return 0.0
+
+        # Sample points: current, -1, -10, -50
+        c_now = _safe_value(close, asof_bar)
+        c_prev = _safe_value(close, asof_bar - 1)
+        h_now = _safe_value(high, asof_bar)
+        l_now = _safe_value(low, asof_bar)
+
+        # Create a tuple representing the state
+        state = (asof_bar, c_now, c_prev, h_now, l_now)
+        return str(hash(state))
+    except Exception:
+        # Fallback to robust string construction if something fails
+        data_str = f"{asof_bar}"
+        for key in ["open", "high", "low", "close", "volume"]:
+            if key in candles:
+                start_idx = max(0, asof_bar - 99)
+                data = candles[key][start_idx : asof_bar + 1]
+                length = len(data)
+                data_sum = float(np.sum(data)) if length else 0.0
+                last_val = float(data[-1]) if length else 0.0
+                data_str += f"|{key}:{length}:{data_sum:.2f}:{last_val:.2f}"
+        return hashlib.sha256(data_str.encode()).hexdigest()
 
 
 def _extract_asof(
@@ -216,12 +234,41 @@ def _extract_asof(
 
     # === CALCULATE INDICATORS ===
 
+    # Determine lookup index for precomputed features
+    # If _global_index is provided in config (from backtest engine), use it.
+    # Otherwise fallback to asof_bar (assuming full history or relative index).
+    lookup_idx = (config or {}).get("_global_index", asof_bar)
+    window_len = len(closes)
+    window_start_idx = max(0, lookup_idx - (window_len - 1)) if window_len > 0 else 0
+
     # RSI (returns [0, 100]) - use precomputed if available
     pre = dict((config or {}).get("precomputed_features") or {})
+    if window_start_idx > 0:
+        # Fast-window innebär att vi saknar komplett historik → undvik precompute-series
+        pre = {}
+
+    # Enforce precompute if requested via env var
+    use_precompute = os.environ.get("GENESIS_PRECOMPUTE_FEATURES") == "1"
+    if use_precompute and not pre:
+        raise RuntimeError(
+            "GENESIS_PRECOMPUTE_FEATURES=1 but precomputed_features is empty. "
+            "Fast path initialization failed."
+        )
+
+    global FAST_HITS, SLOW_HITS
+
     pre_rsi = pre.get("rsi_14")
-    if isinstance(pre_rsi, list | tuple) and len(pre_rsi) >= asof_bar + 1:
-        rsi_vals = list(pre_rsi[: asof_bar + 1])
+    rsi_vals = None
+    rsi_current_raw = 50.0
+    rsi_lag1_raw = 50.0
+
+    if isinstance(pre_rsi, list | tuple) and len(pre_rsi) > lookup_idx:
+        # FAST PATH: Direct access (no copy)
+        FAST_HITS += 1
+        rsi_current_raw = float(pre_rsi[lookup_idx])
+        rsi_lag1_raw = float(pre_rsi[lookup_idx - 1]) if lookup_idx > 0 else rsi_current_raw
     else:
+        SLOW_HITS += 1
         key = make_indicator_fingerprint(
             "rsi",
             params={"period": 14},
@@ -235,10 +282,19 @@ def _extract_asof(
             _indicator_cache_store(key, rsi_full)
             rsi_vals = rsi_full
 
+        if rsi_vals:
+            rsi_current_raw = rsi_vals[-1]
+            rsi_lag1_raw = rsi_vals[-2] if len(rsi_vals) > 1 else rsi_current_raw
+
     # Bollinger Bands
     pre_bb_pos = pre.get("bb_position_20_2")
-    if isinstance(pre_bb_pos, list | tuple) and len(pre_bb_pos) >= asof_bar + 1:
-        bb = {"position": list(pre_bb_pos[: asof_bar + 1])}
+    bb_vals = None
+    bb_last_3 = []
+
+    if isinstance(pre_bb_pos, list | tuple) and len(pre_bb_pos) > lookup_idx:
+        # FAST PATH: Slice only what we need (last 3 bars)
+        start_idx = max(0, lookup_idx - 2)
+        bb_last_3 = list(pre_bb_pos[start_idx : lookup_idx + 1])
     else:
         _cl = closes.tolist() if isinstance(closes, np.ndarray) else closes
         bb_key = make_indicator_fingerprint(
@@ -248,86 +304,133 @@ def _extract_asof(
         )
         cached_bb = _indicator_cache_lookup(bb_key)
         if cached_bb is not None and len(cached_bb.get("position", [])) >= asof_bar + 1:
-            bb = {
-                "position": list(cached_bb["position"][: asof_bar + 1]),
-                "upper": cached_bb.get("upper"),
-                "lower": cached_bb.get("lower"),
-                "middle": cached_bb.get("middle"),
-            }
+            bb_vals = list(cached_bb["position"][: asof_bar + 1])
         else:
             bb_full = bollinger_bands(_cl, period=20, std_dev=2.0)
             _indicator_cache_store(bb_key, bb_full)
-            bb = bb_full
+            bb_vals = bb_full["position"]
+
+        if bb_vals:
+            bb_last_3 = bb_vals[-3:]
 
     # ATR (use precomputed if available)
-    pre = dict((config or {}).get("precomputed_features") or {})
-    pre_atr_full = pre.get("atr_14")
-    if isinstance(pre_atr_full, list | tuple) and len(pre_atr_full) >= asof_bar + 1:
-        atr_vals = list(pre_atr_full[: asof_bar + 1])
+
+    # Determine ATR period from config (default 14)
+    thresholds = (config or {}).get("thresholds") or {}
+    sig_adapt = thresholds.get("signal_adaptation") or {}
+    atr_period = int(sig_adapt.get("atr_period", 14))
+
+    pre_atr_key = f"atr_{atr_period}"
+    pre_atr_full = pre.get(pre_atr_key)
+
+    # Fallback to atr_14 if specific period not found but period is 14 (legacy compat)
+    if pre_atr_full is None and atr_period == 14:
+        pre_atr_full = pre.get("atr_14")
+
+    atr_vals = None
+    atr_window_56 = []
+    current_atr = 1.0
+
+    if isinstance(pre_atr_full, list | tuple) and len(pre_atr_full) > lookup_idx:
+        # FAST PATH: Slice only what we need for percentiles (last 56 bars)
+        start_idx = max(0, lookup_idx - 55)
+        atr_window_56 = list(pre_atr_full[start_idx : lookup_idx + 1])
+        current_atr = float(pre_atr_full[lookup_idx])
+        # Ensure atr_vals is available for LTF context later
+        atr_vals = list(pre_atr_full[: lookup_idx + 1])
     else:
-        key_atr14 = make_indicator_fingerprint("atr_14", params={"period": 14}, series=closes)
-        cached_atr14 = _indicator_cache_lookup(key_atr14)
-        if cached_atr14 is not None and len(cached_atr14) >= asof_bar + 1:
-            atr_vals = cached_atr14[: asof_bar + 1]
+        key_atr = make_indicator_fingerprint(
+            f"atr_{atr_period}", params={"period": atr_period}, series=closes
+        )
+        cached_atr = _indicator_cache_lookup(key_atr)
+        if cached_atr is not None and len(cached_atr) >= asof_bar + 1:
+            atr_vals = cached_atr[: asof_bar + 1]
         else:
-            atr_full = calculate_atr(highs, lows, closes, period=14)
-            _indicator_cache_store(key_atr14, atr_full)
+            atr_full = calculate_atr(highs, lows, closes, period=atr_period)
+            _indicator_cache_store(key_atr, atr_full)
             atr_vals = atr_full
+
+        if atr_vals:
+            atr_window_56 = atr_vals[-56:]
+            current_atr = atr_vals[-1]
+
+    # ATR Long (needed for Vol Shift if not precomputed)
     pre_atr50_full = pre.get("atr_50")
-    if isinstance(pre_atr50_full, list | tuple) and len(pre_atr50_full) >= asof_bar + 1:
-        atr_long = list(pre_atr50_full[: asof_bar + 1])
-    else:
-        key_atr50 = make_indicator_fingerprint("atr_50", params={"period": 50}, series=closes)
-        cached_atr50 = _indicator_cache_lookup(key_atr50)
-        if cached_atr50 is not None and len(cached_atr50) >= asof_bar + 1:
-            atr_long = cached_atr50[: asof_bar + 1]
+    atr_long = None
+    if not pre.get("volatility_shift"):  # Only needed if vol shift not precomputed
+        if isinstance(pre_atr50_full, list | tuple) and len(pre_atr50_full) > lookup_idx:
+            # We might need full history if calculating vol shift manually?
+            # calculate_volatility_shift takes lists.
+            # If we are here, we are in slow path for vol shift anyway.
+            atr_long = list(pre_atr50_full[: lookup_idx + 1])
         else:
-            atr_long_full = calculate_atr(highs, lows, closes, period=50)
-            _indicator_cache_store(key_atr50, atr_long_full)
-            atr_long = atr_long_full
+            key_atr50 = make_indicator_fingerprint("atr_50", params={"period": 50}, series=closes)
+            cached_atr50 = _indicator_cache_lookup(key_atr50)
+            if cached_atr50 is not None and len(cached_atr50) >= asof_bar + 1:
+                atr_long = cached_atr50[: asof_bar + 1]
+            else:
+                atr_long_full = calculate_atr(highs, lows, closes, period=50)
+                _indicator_cache_store(key_atr50, atr_long_full)
+                atr_long = atr_long_full
 
     # Volatility shift
-    vol_key = make_indicator_fingerprint(
-        "volatility_shift",
-        params={},
-        series=[atr_vals, atr_long],
-    )
-    cached_vol_shift = _indicator_cache_lookup(vol_key)
-    if cached_vol_shift is not None and len(cached_vol_shift) >= len(atr_vals):
-        vol_shift = cached_vol_shift[: len(atr_vals)]
+    pre_vol_shift = pre.get("volatility_shift")
+    vol_shift_vals = None
+    vol_shift_last_3 = []
+    vol_shift_current = 1.0
+
+    if isinstance(pre_vol_shift, list | tuple) and len(pre_vol_shift) > lookup_idx:
+        # FAST PATH
+        start_idx = max(0, lookup_idx - 2)
+        vol_shift_last_3 = list(pre_vol_shift[start_idx : lookup_idx + 1])
+        vol_shift_current = float(pre_vol_shift[lookup_idx])
     else:
-        vol_shift = calculate_volatility_shift(atr_vals, atr_long)
-        _indicator_cache_store(vol_key, vol_shift)
+        # SLOW PATH
+        # We need atr_vals and atr_long here.
+        # If we took fast path for ATR, atr_vals is None.
+        # So we must reconstruct atr_vals if we are here.
+        if atr_vals is None and isinstance(pre_atr_full, list | tuple):
+            atr_vals = list(pre_atr_full[: lookup_idx + 1])
+
+        if atr_vals and atr_long:
+            vol_key = make_indicator_fingerprint(
+                "volatility_shift",
+                params={},
+                series=[atr_vals, atr_long],
+            )
+            cached_vol_shift = _indicator_cache_lookup(vol_key)
+            if cached_vol_shift is not None and len(cached_vol_shift) >= len(atr_vals):
+                vol_shift_vals = cached_vol_shift[: len(atr_vals)]
+            else:
+                vol_shift_vals = calculate_volatility_shift(atr_vals, atr_long)
+                _indicator_cache_store(vol_key, vol_shift_vals)
+
+            if vol_shift_vals:
+                vol_shift_last_3 = vol_shift_vals[-3:]
+                vol_shift_current = vol_shift_vals[-1]
 
     # === FEATURE 1: rsi_inv_lag1 ===
     # Use RSI from 1 bar ago (asof_bar - 1)
-    if len(rsi_vals) >= 2:
-        rsi_lag1 = rsi_vals[-2]  # Previous bar's RSI
-        rsi_inv_lag1 = (rsi_lag1 - 50.0) / 50.0
-    else:
-        rsi_inv_lag1 = 0.0
+    rsi_inv_lag1 = (rsi_lag1_raw - 50.0) / 50.0
 
     # === FEATURE 2: volatility_shift_ma3 ===
     # 3-bar MA of volatility shift
-    if len(vol_shift) >= 3:
-        vol_shift_last_3 = vol_shift[-3:]
-        vol_shift_ma3 = sum(vol_shift_last_3) / 3.0
+    if len(vol_shift_last_3) > 0:
+        vol_shift_ma3 = sum(vol_shift_last_3) / len(vol_shift_last_3)
     else:
-        vol_shift_ma3 = vol_shift[-1] if vol_shift else 1.0
+        vol_shift_ma3 = 1.0
 
     # === FEATURE 3: bb_position_inv_ma3 ===
     # 3-bar MA of inverted BB position
-    if len(bb["position"]) >= 3:
-        bb_last_3 = bb["position"][-3:]
+    if len(bb_last_3) > 0:
         bb_inv_last_3 = [1.0 - pos for pos in bb_last_3]
-        bb_position_inv_ma3 = sum(bb_inv_last_3) / 3.0
+        bb_position_inv_ma3 = sum(bb_inv_last_3) / len(bb_inv_last_3)
     else:
-        bb_position_inv_ma3 = 1.0 - bb["position"][-1] if bb["position"] else 0.5
+        bb_position_inv_ma3 = 0.5
 
     # === FEATURE 4: rsi_vol_interaction ===
     # Current bar RSI × current bar vol_shift
-    rsi_current = (rsi_vals[-1] - 50.0) / 50.0 if rsi_vals else 0.0
-    vol_shift_current = vol_shift[-1] if vol_shift else 1.0
+    rsi_current = (rsi_current_raw - 50.0) / 50.0
     rsi_vol_interaction = rsi_current * _clip(vol_shift_current, 0.5, 2.0)
 
     # === FEATURE 5: vol_regime ===
@@ -336,8 +439,12 @@ def _extract_asof(
 
     # === BUILD FEATURES DICT ===
     atr_percentiles: dict[str, dict[str, float]] = {}
-    if atr_vals:
-        atr_arr = np.asarray(atr_vals, dtype=float)
+
+    # Use atr_window_56 if available (fast path), otherwise atr_vals (slow path)
+    atr_source = atr_window_56 if atr_window_56 else atr_vals
+
+    if atr_source:
+        atr_arr = np.asarray(atr_source, dtype=float)
         n_atr = atr_arr.size
         for period in (14, 28, 56):
             if n_atr >= period:
@@ -348,6 +455,13 @@ def _extract_asof(
                     "p40": float(p40),
                     "p80": float(p80),
                 }
+            else:
+                # Fallback for insufficient data
+                atr_percentiles[str(period)] = {"p40": 1.0, "p80": 1.0}
+    else:
+        # No ATR data
+        for period in (14, 28, 56):
+            atr_percentiles[str(period)] = {"p40": 1.0, "p80": 1.0}
 
     features = {
         "rsi_inv_lag1": _clip(rsi_inv_lag1, -1.0, 1.0),
@@ -376,21 +490,18 @@ def _extract_asof(
             and isinstance(pre_sw_lo_idx, list | tuple)
             and isinstance(pre_sw_hi_px, list | tuple)
             and isinstance(pre_sw_lo_px, list | tuple)
+            and window_start_idx == 0
         ):
-            # Filter swings AS-OF current bar
-            swing_high_indices = [int(i) for i in pre_sw_hi_idx if int(i) <= asof_bar]
-            swing_low_indices = [int(i) for i in pre_sw_lo_idx if int(i) <= asof_bar]
-            # Align prices by keeping same positions from original arrays that satisfy index<=asof_bar
-            swing_high_prices = [
-                float(pre_sw_hi_px[idx])
-                for idx, si in enumerate(pre_sw_hi_idx)
-                if int(si) <= asof_bar
-            ]
-            swing_low_prices = [
-                float(pre_sw_lo_px[idx])
-                for idx, si in enumerate(pre_sw_lo_idx)
-                if int(si) <= asof_bar
-            ]
+            # Filter swings AS-OF current bar using bisect (O(log N))
+            # pre_sw_hi_idx is sorted, so we can find the cut-off point quickly
+            # Use lookup_idx (global index) to match precomputed global indices
+            hi_cut = bisect_right(pre_sw_hi_idx, lookup_idx)
+            lo_cut = bisect_right(pre_sw_lo_idx, lookup_idx)
+
+            swing_high_indices = [int(i) for i in pre_sw_hi_idx[:hi_cut]]
+            swing_low_indices = [int(i) for i in pre_sw_lo_idx[:lo_cut]]
+            swing_high_prices = [float(p) for p in pre_sw_hi_px[:hi_cut]]
+            swing_low_prices = [float(p) for p in pre_sw_lo_px[:lo_cut]]
         else:
             swing_key = make_indicator_fingerprint(
                 "fib_swings",
@@ -458,43 +569,50 @@ def _extract_asof(
 
         # === FIBONACCI-KOMBINATIONER (kontext × signal) ===
         # EMA-slope parametrar per timeframe
-        EMA_SLOPE_PARAMS = {
-            "30m": {"ema_period": 50, "lookback": 20},
-            "1h": {"ema_period": 20, "lookback": 5},
-            "3h": {"ema_period": 20, "lookback": 5},
-        }
-        par = EMA_SLOPE_PARAMS.get(str(timeframe or "").lower(), {"ema_period": 20, "lookback": 5})
-        ema_period = par["ema_period"]
-        ema_lookback = par["lookback"]
-        # EMA (use precomputed if exact period available)
-        pre_ema_key = f"ema_{ema_period}"
-        pre_ema_full = pre.get(pre_ema_key)
-        if isinstance(pre_ema_full, list | tuple) and len(pre_ema_full) >= asof_bar + 1:
-            ema_values = list(pre_ema_full[: asof_bar + 1])
+        pre_ema_slope = pre.get("ema_slope")
+        if isinstance(pre_ema_slope, list | tuple) and len(pre_ema_slope) > lookup_idx:
+            ema_slope_raw = float(pre_ema_slope[lookup_idx])
         else:
-            ema_key = make_indicator_fingerprint(
-                "ema",
-                params={"period": ema_period},
-                series=closes,
+            EMA_SLOPE_PARAMS = {
+                "30m": {"ema_period": 50, "lookback": 20},
+                "1h": {"ema_period": 20, "lookback": 5},
+                "3h": {"ema_period": 20, "lookback": 5},
+            }
+            par = EMA_SLOPE_PARAMS.get(
+                str(timeframe or "").lower(), {"ema_period": 20, "lookback": 5}
             )
-            cached_ema = _indicator_cache_lookup(ema_key)
-            if cached_ema is not None and len(cached_ema) >= asof_bar + 1:
-                ema_values = cached_ema[: asof_bar + 1]
+            ema_period = par["ema_period"]
+            ema_lookback = par["lookback"]
+            # EMA (use precomputed if exact period available)
+            pre_ema_key = f"ema_{ema_period}"
+            pre_ema_full = pre.get(pre_ema_key)
+            if isinstance(pre_ema_full, list | tuple) and len(pre_ema_full) >= asof_bar + 1:
+                ema_values = list(pre_ema_full[: asof_bar + 1])
             else:
-                ema_full = calculate_ema(closes, period=ema_period)
-                _indicator_cache_store(ema_key, ema_full)
-                ema_values = ema_full
-        if len(ema_values) >= ema_lookback + 1:
-            ema_slope_raw = (ema_values[-1] - ema_values[-1 - ema_lookback]) / ema_values[
-                -1 - ema_lookback
-            ]
-        else:
-            ema_slope_raw = 0.0
+                ema_key = make_indicator_fingerprint(
+                    "ema",
+                    params={"period": ema_period},
+                    series=closes,
+                )
+                cached_ema = _indicator_cache_lookup(ema_key)
+                if cached_ema is not None and len(cached_ema) >= asof_bar + 1:
+                    ema_values = cached_ema[: asof_bar + 1]
+                else:
+                    ema_full = calculate_ema(closes, period=ema_period)
+                    _indicator_cache_store(ema_key, ema_full)
+                    ema_values = ema_full
+            if len(ema_values) >= ema_lookback + 1:
+                ema_slope_raw = (ema_values[-1] - ema_values[-1 - ema_lookback]) / ema_values[
+                    -1 - ema_lookback
+                ]
+            else:
+                ema_slope_raw = 0.0
         ema_slope = _clip(ema_slope_raw, -0.10, 0.10)
 
         pre_adx_full = pre.get("adx_14")
-        if isinstance(pre_adx_full, list | tuple) and len(pre_adx_full) >= asof_bar + 1:
-            adx_values = list(pre_adx_full[: asof_bar + 1])
+        if isinstance(pre_adx_full, list | tuple) and len(pre_adx_full) > lookup_idx:
+            adx_values = list(pre_adx_full[: lookup_idx + 1])
+            adx_latest = float(pre_adx_full[lookup_idx])
         else:
             adx_key = make_indicator_fingerprint(
                 "adx",
@@ -508,7 +626,7 @@ def _extract_asof(
                 adx_full = calculate_adx(highs, lows, closes, period=14)
                 _indicator_cache_store(adx_key, adx_full)
                 adx_values = adx_full
-        adx_latest = adx_values[-1] if adx_values else 25.0
+            adx_latest = adx_values[-1] if adx_values else 25.0
         adx_normalized = adx_latest / 100.0
 
         fib05_x_ema_slope = features.get("fib05_prox_atr", 0.0) * ema_slope

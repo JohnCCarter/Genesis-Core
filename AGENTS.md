@@ -1,11 +1,12 @@
 # README for AI Agents (Local Development)
 
-## Last update: 2025-11-20
+## Last update: 2025-11-25
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
 
 ## 1. Deliverables (latest highlights: 2025-11-20)
 
+- **OPTIMIZER REPRODUCTION SOLVED (2025-11-26)**: Löste mysteriet med Trial 1032 (+22.75% i optimizer vs -16.65% manuellt). Root cause var att optimizern kör med `GENESIS_FAST_WINDOW=1` och `GENESIS_PRECOMPUTE_FEATURES=1`, vilket ger en annan exekveringsväg (batch) än default (streaming). Manuella backtester måste använda dessa miljövariabler för att matcha optimizern. Skapade `scripts/run_backtest_fast.py` för enkel reproduktion. Dokumentation: `docs/bugs/OPTIMIZER_REPRODUCTION_ENV_VARS_20251126.md`.
 - **OPTUNA CACHE REUSE FIX (2025-11-20)**: Implementerade Alternativ B för att eliminera duplicat-loop (98.8% → <10%). Objective-funktionen återanvänder nu cachade scores istället för att returnera -1e6/0.0, vilket ger TPE optimal feedback. Ny `score_memory` dict sparar scores per parameter-hash; när `make_trial` returnerar `from_cache=True` payload, returneras verklig score direkt. Cache-statistik loggas efter varje run (hit rate, unique backtests); varningar vid >80% (för smal sökrymd) eller <5% (god diversitet). Informationsförlust: 0-5% (vs 10-20% för Alt A, 80-90% för Alt C). Dokumentation: `docs/optuna/CACHE_REUSE_FIX_20251120.md`. Smoke-test: `scripts/test_optuna_cache_reuse.py`. Backup: `src/core/optimizer/runner.py.backup_20251120`.
 - **CHAMPION REPRODUCIBILITY (2025-11-20)**: Implementerade Alternativ 1 - Complete Config Storage för att lösa reproducerbarhetsproblem. Champions sparar nu `merged_config` (runtime + trial params) och `runtime_version` i både backtest-resultat och champion-filer. Backtest-kod detekterar "complete champions" och skippar runtime-merge, vilket garanterar identiska resultat oavsett framtida runtime-ändringar. Backward-compatible: gamla champions utan merged_config fortsätter fungera med runtime-merge. Dokumentation: `docs/config/CHAMPION_REPRODUCIBILITY.md`. Verifierade med champion_base.json (222 trades) och aggressive.json (938 trades) - båda sparar merged_config korrekt.
 - **CRITICAL BUG FIX (2025-11-20)**: Löste zero-trade bug orsakad av `float(None)` TypeError i `decision.py`. Root cause: `min_edge = float((cfg.get("thresholds") or {}).get("min_edge", 0.0))` kastade exception när config innehöll `"min_edge": null` explicit. Exception fångades tyst och resulterade i 0 trades trots giltiga kandidater. Solution: Införde `safe_float()` helper som hanterar None korrekt. Resultat: champion_base.json gick från 0 → 3 trades, balanced.json från 0 → 2147 trades. Full dokumentation i `docs/bugs/FLOAT_NONE_BUG_20251120.md`.
@@ -31,7 +32,24 @@ This document explains the current workflow for Genesis-Core, highlights today's
 - **Phase 3 Restarted (2025-11-21)**: Restarted Phase 3 optimization after verifying `runtime.json` has `htf_fib` enabled. Previous run might have used incorrect config or was stopped. New run ID: `optuna_phase3_fine_12m`.
 - **Phase 3 Retry (2025-11-21)**: Restarted again with `optuna_phase3_fine_12m_v2` and `MAX_CONCURRENT=2` due to SQLite `disk I/O error` on previous attempt.
 - **Phase 3 Fix & Success (2025-11-21)**: Fixed critical bug where dot-notation keys in Optuna config were ignored by the runner (causing identical results). Patched `src/core/optimizer/param_transforms.py` to expand dot-notation. Re-ran optimization (`run_20251121_140023`) which produced varied results. Best trial (`trial_009`) achieved Score 0.1634, PF 1.16, Return +6.15%, meeting the Phase 3 target. Documentation: `docs/optimization/PHASE3_FIX_AND_RESULTS_20251121.md`.
-- 2025-11-19: ATR/Fibonacci-cache i `core/indicators/fibonacci.py`, `htf_fibonacci.py` och `src/core/strategy/features_asof.py` reducerade golden-runnen `scripts/run_backtest.py` från 159.1 s/183 M funktionsanrop till 100.7 s/75 M; pyinstrument + cProfile ligger under `reports/profiling/20251119_*.{txt,html}` och resultaten är dokumenterade i `docs/performance/PERFORMANCE_OPTIMIZATION_SUMMARY_.md` och `docs/daily_summaries/daily_summary_2025-11-19.md`. `pre-commit run --all-files` och `bandit -r src -c bandit.yaml -f txt -o bandit-report.txt` (rapport i `bandit-report.txt`) kördes direkt efter kodändringarna och passerade rent.
+- **Phase 3 Wide Failure (2025-11-25)**: Run `run_20251125_082700` crashed at trial 177 (SQLite I/O error). Analysis revealed 0 valid trials due to `LTF_FIB_BLOCK` preventing trades (fixed `long_max_level=0.786` blocked strong trends). Action: Widen search space for Fib levels and tolerances, reduce concurrency. Docs: `docs/optimization/PHASE3_WIDE_FAIL_ANALYSIS_20251125.md`.
+- **Phase 3 Wide v2 Started (2025-11-25)**: Launched `run_20251125_090251` with corrected parameters (Fib levels optimized, tolerance up to 3.0 ATR) and reduced concurrency (2 workers). Early logs show healthy trade volume.
+- **Phase 3 Wide v3 (2025-11-25)**: Restarted optimization (`run_20251125_100252` approx) after fixing a critical bug in `BacktestEngine` where `max_hold_bars` was ignored, causing positions to be held indefinitely and reducing trade count. v3 should produce significantly more trades.
+- **OPTIMIZER REPORTING FIX (2025-11-25)**: Fixed a critical bug where optimization trials were incorrectly reported as having exactly 5 trades. Root cause was a case-sensitive regex in `runner.py` failing to match `[SAVED] Results: ...`, causing a fallback to a dummy file (`tBTCUSD_1h_diffcache_2.json`) that contained 5 trades. Deleted the trap file and updated regex to be robust. Docs: `docs/bugs/OPTIMIZER_REPORTING_FIX_20251125.md`.
+- **COMMISSION FEE UPDATE (2025-11-25)**: Updated default commission rate from 0.1% to 0.2% (Taker fee) in `BacktestEngine`, `PositionTracker`, and `run_backtest.py` to better reflect realistic costs on Bitfinex. This increases the total round-trip cost estimate to ~0.50% (incl. slippage). Phase 3 Wide optimization was restarted to incorporate these stricter cost assumptions.
+- **ATR PERIOD FIX (2025-11-25)**: Fixed a critical bug where `features_asof.py` and `engine.py` ignored the configured `atr_period` (e.g., 28) and hardcoded `atr_14`. This caused `LTF_FIB_BLOCK` to reject trades due to incorrect volatility tolerance. Refactored both files to respect the config. Verification: Backtest trades increased from 1 to 978 (PF 1.01). Docs: `docs/bugs/ATR_PERIOD_FIX_20251125.md`.
+- **PARITY TEST SUCCESS (2025-11-25)**: Confirmed mathematical parity between Optuna optimization pipeline (`runner.py`) and manual backtest (`run_backtest.py`). Initial discrepancy (-0.85% vs +0.46%) was resolved by aligning `warmup_bars` (150 vs 120). Both engines now produce identical trade counts (386) and returns (-0.85%) when configured identically. Docs: `docs/validation/PARITY_TEST_20251125.md`.
+- **ARCHIVED BUGGY RUNS (2025-11-25)**: Archived all `run_20251125_*` and `optuna_phase3_wide_v*.db` to `results/hparam_search/_archive/20251125_buggy_runs/`. These runs were affected by the ATR Period, Max Hold, and Commission bugs.
+- **LTF PARITY INVESTIGATION (2025-11-26)**: `features_asof` filtrerar nu bort prekompade swing-serier när `_global_index` visar att backtestfönstret börjar mitt i historiken (window_start_idx > 0). Detta hindrar LTF-gaten från att få nivåer som inte finns i streamingflödet. `scripts/diagnose_feature_parity.py --start-bar 190 --bars 40 --warmup 150` visar dock fortfarande 7 avvikelser (bar 210–228). Både streaming och precompute kör nu “slow path”, så kvarvarande skillnader beror på LTF-swing-detektionen snarare än ATR. Nästa steg: dumpa `swing_high/low` + `levels` per bar eller instrumentera `debug_fib_flow` för att jämföra nivåerna.
+- **Phase 3 Wide v7 Ready (2025-11-25)**: Created `config/optimizer/tBTCUSD_1h_optuna_phase3_wide_v7.yaml` with `warmup_bars: 150` and updated study name. This is the clean start for Phase 3 Wide exploration.
+- **In-process QA/optimizer test (2025-11-25)**: Körde hela verktygssviten (black, ruff, bandit, pytest samt `pre-commit run --all-files`) direkt i samma process som huvudagenten. Testet bekräftade att in-process-läget fungerar funktionellt men gav ingen prestandafördel och försvårade logg-isolering, så vi fortsätter med subprocess-läget i den ordinarie optimeringspipen.
+- **PERFORMANCE OVERHAUL (2025-11-26)**: Genomförde omfattande optimeringar av backtestmotorn:
+  1. **Vectorization**: `rsi.py`, `atr.py` och `adx.py` omskrivna till NumPy för O(1)/O(N) prestanda istället för Python-loopar.
+  2. **Optuna Pruning**: Implementerade stöd för `pruning_callback` i `BacktestEngine` och `scripts/run_backtest.py`. Optuna kan nu avbryta dåliga trials tidigt (var 100:e bar).
+  3. **RAM Caching (Experimental)**: Lade till `GENESIS_IN_PROCESS=1` stöd i `runner.py`. OBS: På Windows orsakar GIL massiv prestandaförlust (12x långsammare), så använd `GENESIS_IN_PROCESS=0` (Subprocess) som default.
+  4. **Reduced Logging**: Tvingar `LOG_LEVEL=WARNING` i subprocesser för att minska I/O-overhead.
+  5. **Critical Fixes**: Fixade `AttributeError` i `PositionTracker` (`current_capital` -> `current_equity`) och `runner.py` scope-fel.
+     Dokumentation: `docs/performance/OPTIMIZATION_20251126.md`.
 
 ## 2. Snabbguide (Optuna körflöde, uppdaterad)
 
@@ -73,7 +91,7 @@ python scripts/optimizer.py summarize run_<YYYYMMDD_HHMMSS> --top 10
 python scripts/validate_optimizer_config.py config/optimizer/<config>.yaml
 ```
 
-Valideringen MÅSTE returnera 0 innan körning. Fixa alla [ERROR]-fel och granska [WARN]-varningar.
+Valideringen MÅSTE returnera 0 innan körning. Fixa alla \[ERROR]-fel och granska \[WARN]-varningar.
 
 **Preflight-checklista för Optuna-körningar (KÖR INNAN LÅNGA KÖRNINGAR):**
 
@@ -122,15 +140,15 @@ python scripts/validate_optimizer_config.py config/optimizer/<config>.yaml
 
    Study file: `optuna_tBTCUSD_1h_fine.db`.
 
-4. **Optional Fibonacci grid** - warm up HTF exit combinations quickly:
+4. **Optional Fibonacci grid** - warm up HTF exit kombinationer snabbt:
 
    ```powershell
    python -m core.optimizer.runner config/optimizer/tBTCUSD_1h_fib_grid_v2.yaml
    ```
 
-   Use this before launching long Optuna runs when iterating on fib gating.
+   Använd detta innan du startar långa Optuna-körningar när du itererar på fib gating.
 
-5. **Summaries**
+5. **Sammanfattningar**
 
    ```powershell
    python -m scripts.summarize_hparam_results --run-dir results/hparam_search/<run_id>

@@ -1,0 +1,235 @@
+meta:
+  symbol: tBTCUSD
+  timeframe: 1h
+  snapshot_id: tBTCUSD_1h_2024-10-22_2025-10-01_v1
+  warmup_bars: 150
+  runs:
+    strategy: optuna
+    max_trials: 1
+    max_concurrent: 1
+    resume: False
+    optuna:
+      storage: sqlite:///results/hparam_search/storage/optuna_parity_test.db
+      study_name: parity_test_v1
+      bootstrap_random_trials: 0
+      bootstrap_seed: 42
+      sampler:
+        name: tpe
+        kwargs:
+          seed: 42
+      pruner:
+        name: none
+        kwargs: {}
+      timeout_seconds: 600
+
+constraints:
+  min_trades: 1
+  min_profit_factor: 0.0
+  max_max_dd: 1.0
+  include_scoring_failures: False
+
+parameters:
+  thresholds.entry_conf_overall:
+    type: fixed
+    value: 0.09
+  thresholds.regime_proba.balanced:
+    type: fixed
+    value: 0.64
+  thresholds.regime_proba.bear:
+    type: fixed
+    value: 0.64
+  thresholds.regime_proba.bull:
+    type: fixed
+    value: 0.88
+  thresholds.regime_proba.ranging:
+    type: fixed
+    value: 0.58
+  thresholds.min_edge:
+    type: fixed
+    value: 0.013
+
+  # Signal Adaptation
+  thresholds.signal_adaptation.atr_period:
+    type: fixed
+    value: 28
+  thresholds.signal_adaptation.zones.high.entry_conf_overall:
+    type: fixed
+    value: 0.38
+  thresholds.signal_adaptation.zones.high.regime_proba.balanced:
+    type: fixed
+    value: 0.55
+  thresholds.signal_adaptation.zones.high.regime_proba.bear:
+    type: fixed
+    value: 0.5
+  thresholds.signal_adaptation.zones.high.regime_proba.bull:
+    type: fixed
+    value: 0.5
+  thresholds.signal_adaptation.zones.high.regime_proba.ranging:
+    type: fixed
+    value: 0.55
+
+  thresholds.signal_adaptation.zones.low.entry_conf_overall:
+    type: fixed
+    value: 0.12
+  thresholds.signal_adaptation.zones.low.regime_proba.balanced:
+    type: fixed
+    value: 0.46
+  thresholds.signal_adaptation.zones.low.regime_proba.bear:
+    type: fixed
+    value: 0.42
+  thresholds.signal_adaptation.zones.low.regime_proba.bull:
+    type: fixed
+    value: 0.42
+  thresholds.signal_adaptation.zones.low.regime_proba.ranging:
+    type: fixed
+    value: 0.47
+
+  thresholds.signal_adaptation.zones.mid.entry_conf_overall:
+    type: fixed
+    value: 0.3
+  thresholds.signal_adaptation.zones.mid.regime_proba.balanced:
+    type: fixed
+    value: 0.5
+  thresholds.signal_adaptation.zones.mid.regime_proba.bear:
+    type: fixed
+    value: 0.46
+  thresholds.signal_adaptation.zones.mid.regime_proba.bull:
+    type: fixed
+    value: 0.46
+  thresholds.signal_adaptation.zones.mid.regime_proba.ranging:
+    type: fixed
+    value: 0.5
+
+  # Gates
+  gates.hysteresis_steps:
+    type: fixed
+    value: 3
+  gates.cooldown_bars:
+    type: fixed
+    value: 2
+
+  # Risk
+  risk.risk_map:
+    type: fixed
+    value: [[0.4, 0.02], [0.58, 0.02], [0.63, 0.04]]
+
+  # EV
+  ev.R_default:
+    type: fixed
+    value: 1.8
+
+  # Exit
+  exit.enabled:
+    type: fixed
+    value: true
+  exit.max_hold_bars:
+    type: fixed
+    value: 84
+  exit.stop_loss_pct:
+    type: fixed
+    value: 0.02
+  exit.take_profit_pct:
+    type: fixed
+    value: 0.05
+  exit.exit_conf_threshold:
+    type: fixed
+    value: 0.38
+  exit.regime_aware_exits:
+    type: fixed
+    value: true
+  exit.trailing_stop_enabled:
+    type: fixed
+    value: false
+  exit.trailing_stop_pct:
+    type: fixed
+    value: 0.015
+
+  # Multi Timeframe
+  multi_timeframe.use_htf_block:
+    type: fixed
+    value: true
+  multi_timeframe.allow_ltf_override:
+    type: fixed
+    value: true
+  multi_timeframe.ltf_override_threshold:
+    type: fixed
+    value: 0.66
+  multi_timeframe.ltf_override_adaptive.enabled:
+    type: fixed
+    value: true
+  multi_timeframe.ltf_override_adaptive.window:
+    type: fixed
+    value: 120
+  multi_timeframe.ltf_override_adaptive.percentile:
+    type: fixed
+    value: 0.85
+  multi_timeframe.ltf_override_adaptive.min_history:
+    type: fixed
+    value: 30
+
+  multi_timeframe.htf_selector.mode:
+    type: fixed
+    value: "fixed"
+  multi_timeframe.htf_selector.fallback_timeframe:
+    type: fixed
+    value: "1D"
+  multi_timeframe.htf_selector.per_timeframe.1h.multiplier:
+    type: fixed
+    value: 6.0
+  multi_timeframe.htf_selector.per_timeframe.6h.timeframe:
+    type: fixed
+    value: "1D"
+
+  # HTF Exit Config
+  htf_exit_config.enable_partials:
+    type: fixed
+    value: true
+  htf_exit_config.enable_trailing:
+    type: fixed
+    value: true
+  htf_exit_config.enable_structure_breaks:
+    type: fixed
+    value: true
+  htf_exit_config.partial_1_pct:
+    type: fixed
+    value: 0.6
+  htf_exit_config.partial_2_pct:
+    type: fixed
+    value: 0.5
+  htf_exit_config.fib_threshold_atr:
+    type: fixed
+    value: 0.7
+  htf_exit_config.trail_atr_multiplier:
+    type: fixed
+    value: 2.5
+  htf_exit_config.swing_update_strategy:
+    type: fixed
+    value: "fixed"
+
+  # HTF Fib
+  htf_fib.entry.enabled:
+    type: fixed
+    value: true
+  htf_fib.entry.tolerance_atr:
+    type: fixed
+    value: 1.6
+  htf_fib.entry.long_max_level:
+    type: fixed
+    value: -0.05
+  htf_fib.entry.short_min_level:
+    type: fixed
+    value: -0.25
+
+  # LTF Fib
+  ltf_fib.entry.enabled:
+    type: fixed
+    value: true
+  ltf_fib.entry.tolerance_atr:
+    type: fixed
+    value: 1.4
+  ltf_fib.entry.long_max_level:
+    type: fixed
+    value: 0.2
+  ltf_fib.entry.short_min_level:
+    type: fixed
+    value: 0.35

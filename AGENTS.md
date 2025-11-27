@@ -1,11 +1,22 @@
 # README for AI Agents (Local Development)
 
-## Last update: 2025-11-25
+## Last update: 2025-11-27
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
 
-## 1. Deliverables (latest highlights: 2025-11-20)
+## 1. Deliverables (latest highlights: 2025-11-27)
 
+- **MODE ENFORCEMENT (2025-11-27)**: Löste determinism-problemet mellan streaming och fast mode. Implementerade:
+  1. **Validation i BacktestEngine**: Kastar ValueError om `fast_window=True` utan `GENESIS_PRECOMPUTE_FEATURES=1`, varnar vid omvänd kombination
+  2. **Default till fast mode**: `run_backtest.py` och `runner.py` defaultar nu till fast mode (`GENESIS_FAST_WINDOW=1` + `GENESIS_PRECOMPUTE_FEATURES=1`) för determinism
+  3. **Deprecated streaming mode**: `compare_modes.py` deprecerad - kör endast fast mode och visar varning att använda `run_backtest.py` istället
+  4. Root cause: Streaming och fast mode körde olika code paths (iterativ vs batch) vilket gav olika trade counts (530 vs 886, 1078 vs 889 i olika körningar). Detta påverkade alla tester och optimeringar.
+  5. Dokumentation: Alla nya backtests och optimeringar använder nu konsekvent fast mode för reproducerbarhet.
+  6. **Verifierad determinism (manuella backtests)**: Dubbelkörning med champion-config (2024-06-01 till 2024-08-01) gav EXAKT identiska resultat (43 trades, -1.47%, PF 0.77, score -100.2217) i båda körningarna.
+  7. **Verifierad determinism (optimizer)**: Dubbelkörning med 3-trial grid gav EXAKT identiska scores i alla trials (Trial 1: -100.2123, Trial 2: -100.3729, Trial 3: -100.5498) med 15+ decimalers precision. Detta bekräftar att både manuella backtester OCH optimizer-körningar nu är helt deterministiska.
+  8. **Tests implementerade**: 5 unit tests (pytest) + 2 deterministiska verifieringstester (manuella dubbelkörningar)
+  9. **Filerna uppdaterade**: `src/core/backtest/engine.py`, `scripts/run_backtest.py`, `src/core/optimizer/runner.py`, `scripts/compare_modes.py`
+  10. **Dokumentation skapad**: `docs/bugs/MODE_ENFORCEMENT_20251127.md` (fullständig teknisk beskrivning + båda verifieringstesterna)
 - **OPTIMIZER REPRODUCTION SOLVED (2025-11-26)**: Löste mysteriet med Trial 1032 (+22.75% i optimizer vs -16.65% manuellt). Root cause var att optimizern kör med `GENESIS_FAST_WINDOW=1` och `GENESIS_PRECOMPUTE_FEATURES=1`, vilket ger en annan exekveringsväg (batch) än default (streaming). Manuella backtester måste använda dessa miljövariabler för att matcha optimizern. Skapade `scripts/run_backtest_fast.py` för enkel reproduktion. Dokumentation: `docs/bugs/OPTIMIZER_REPRODUCTION_ENV_VARS_20251126.md`.
 - **OPTUNA CACHE REUSE FIX (2025-11-20)**: Implementerade Alternativ B för att eliminera duplicat-loop (98.8% → <10%). Objective-funktionen återanvänder nu cachade scores istället för att returnera -1e6/0.0, vilket ger TPE optimal feedback. Ny `score_memory` dict sparar scores per parameter-hash; när `make_trial` returnerar `from_cache=True` payload, returneras verklig score direkt. Cache-statistik loggas efter varje run (hit rate, unique backtests); varningar vid >80% (för smal sökrymd) eller <5% (god diversitet). Informationsförlust: 0-5% (vs 10-20% för Alt A, 80-90% för Alt C). Dokumentation: `docs/optuna/CACHE_REUSE_FIX_20251120.md`. Smoke-test: `scripts/test_optuna_cache_reuse.py`. Backup: `src/core/optimizer/runner.py.backup_20251120`.
 - **CHAMPION REPRODUCIBILITY (2025-11-20)**: Implementerade Alternativ 1 - Complete Config Storage för att lösa reproducerbarhetsproblem. Champions sparar nu `merged_config` (runtime + trial params) och `runtime_version` i både backtest-resultat och champion-filer. Backtest-kod detekterar "complete champions" och skippar runtime-merge, vilket garanterar identiska resultat oavsett framtida runtime-ändringar. Backward-compatible: gamla champions utan merged_config fortsätter fungera med runtime-merge. Dokumentation: `docs/config/CHAMPION_REPRODUCIBILITY.md`. Verifierade med champion_base.json (222 trades) och aggressive.json (938 trades) - båda sparar merged_config korrekt.

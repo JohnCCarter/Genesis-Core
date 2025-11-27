@@ -161,6 +161,23 @@ def main():
     _seed_all(seed_value)
     print(f"[SEED] Deterministisk seed satt till {seed_value}")
 
+    # Default to fast mode for determinism (can be overridden via args/env)
+    use_fast_window = args.fast_window or os.environ.get("GENESIS_FAST_WINDOW") == "1"
+    use_precompute = (
+        args.precompute_features or os.environ.get("GENESIS_PRECOMPUTE_FEATURES") == "1"
+    )
+
+    # If neither explicitly set, default to fast mode
+    if not args.fast_window and "GENESIS_FAST_WINDOW" not in os.environ:
+        use_fast_window = True
+        os.environ["GENESIS_FAST_WINDOW"] = "1"
+        print("[MODE] Defaulting to fast_window=True for determinism")
+
+    if not args.precompute_features and "GENESIS_PRECOMPUTE_FEATURES" not in os.environ:
+        use_precompute = True
+        os.environ["GENESIS_PRECOMPUTE_FEATURES"] = "1"
+        print("[MODE] Defaulting to GENESIS_PRECOMPUTE_FEATURES=1 for determinism")
+
     try:
         # Initialize engine
         engine = BacktestEngine(
@@ -172,10 +189,10 @@ def main():
             commission_rate=args.commission,
             slippage_rate=args.slippage,
             warmup_bars=args.warmup,
-            fast_window=bool(args.fast_window or os.environ.get("GENESIS_FAST_WINDOW")),
+            fast_window=use_fast_window,
         )
         # Set optional precompute flag on engine instance if requested
-        if args.precompute_features or os.environ.get("GENESIS_PRECOMPUTE_FEATURES"):
+        if use_precompute:
             engine.precompute_features = True
 
         # Load data

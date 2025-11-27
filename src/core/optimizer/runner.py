@@ -1007,9 +1007,10 @@ def run_trial(
         str(trial.warmup_bars),
     ]
     # Opt-in performance flags via environment variables
-    if os.environ.get("GENESIS_FAST_WINDOW"):
+    # Default to fast mode for optimizer determinism
+    if os.environ.get("GENESIS_FAST_WINDOW", "1") == "1":
         cmd.append("--fast-window")
-    if os.environ.get("GENESIS_PRECOMPUTE_FEATURES"):
+    if os.environ.get("GENESIS_PRECOMPUTE_FEATURES", "1") == "1":
         cmd.append("--precompute-features")
     if config_file is not None:
         cmd.extend(["--config-file", str(config_file)])

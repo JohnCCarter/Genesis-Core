@@ -68,7 +68,7 @@ class ChampionDecisionMatrix:
         self.config = config or self._default_config()
         self._validate_weights()
 
-    def _default_config(self) -> dict[str, dict[str, float]]:
+    def _default_config(self) -> dict[str, dict[str, float | str]]:
         """Default normalization ranges for metrics."""
         return {
             "auc": {"min": 0.5, "max": 1.0, "direction": "maximize"},
@@ -105,9 +105,9 @@ class ChampionDecisionMatrix:
             Normalized value in [0, 1] range
         """
         cfg = self.config[metric_name]
-        min_val = cfg["min"]
-        max_val = cfg["max"]
-        direction = cfg["direction"]
+        min_val = float(cfg["min"])
+        max_val = float(cfg["max"])
+        direction = str(cfg["direction"])
 
         # Clip to range
         clipped = np.clip(value, min_val, max_val)

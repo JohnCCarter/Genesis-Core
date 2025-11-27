@@ -25,10 +25,10 @@ python scripts/run_backtest.py ... --warmup 150
 
 | Metric | Optuna Runner | Manual Runner | Match |
 | ------ | ------------- | ------------- | ----- |
-| Trades | 386           | 386           | ✅    |
-| Return | -0.85%        | -0.85%        | ✅    |
-| PF     | 0.99          | 0.99          | ✅    |
-| Max DD | 9.57%         | 9.57%         | ✅    |
+| Trades | 386           | 386           | Ja     |
+| Return | -0.85%        | -0.85%        | Ja     |
+| PF     | 0.99          | 0.99          | Ja     |
+| Max DD | 9.57%         | 9.57%         | Ja     |
 
 ## Conclusion
 

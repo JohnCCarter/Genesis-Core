@@ -25,7 +25,7 @@
 
 ## 5. Feature Parity Investigation (LTF Fibonacci)
 
-- **Change:** `src/core/strategy/features_asof.py` filtrerar nu bort prekompade swing‑serier när `_global_index` visar att backtestfönstret börjar mitt i historiken (`window_start_idx > 0`). I dessa fall kör både streaming och precompute samma lokala swing-detektion (slow path).
+- **Change:** `src/core/strategy/features_asof.py` filtrerar nu bort prekompade swing-serier när `_global_index` visar att backtestfönstret börjar mitt i historiken (`window_start_idx > 0`). I dessa fall kör både streaming och precompute samma lokala swing-detektion (slow path).
 - **Resultat:** `python scripts/diagnose_feature_parity.py --start-bar 190 --bars 40 --warmup 150 --config config/strategy/champions/tBTCUSD_1h.json` visar fortfarande 7 differenser (bar 210–228). ATR-paritet är redan verifierad, så kvarvarande avvikelser beror på LTF-swing-detektionen snarare än volatilitet eller HTF-data.
 - **Observations:** När env-flaggan `GENESIS_PRECOMPUTE_FEATURES=1` sätts samtidigt som precompute-serier filtreras bort leder det till `RuntimeError: ... precomputed_features is empty`. I pipelinekörningar inträffar inte detta, men i manuella REPL-test behöver vi antingen slå av flaggan eller behålla endast de precompute-fält som faktiskt används.
 

@@ -1,0 +1,31 @@
+# Minimal grid test for determinism verification
+# 3 fixed trials = should give identical results across runs
+
+meta:
+  symbol: tBTCUSD
+  timeframe: 1h
+  snapshot_id: tBTCUSD_1h_2024-10-22_2025-10-01_v1
+  warmup_bars: 150
+  runs:
+    strategy: grid
+    max_trials: 3
+    max_concurrent: 1
+    resume: false
+    use_sample_range: true
+  sample_start: 2024-06-01
+  sample_end: 2024-08-01
+
+constraints:
+  min_trades: 1
+  min_profit_factor: 0.0
+  max_max_dd: 1.0
+  include_scoring_failures: true
+
+parameters:
+  risk:
+    risk_map:
+      type: grid
+      values:
+        - [[0.45, 0.015], [0.55, 0.025], [0.65, 0.035]]
+        - [[0.50, 0.020], [0.60, 0.030], [0.70, 0.040]]
+        - [[0.45, 0.020], [0.55, 0.030], [0.65, 0.040]]

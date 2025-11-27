@@ -1,0 +1,160 @@
+{
+  "cfg": {
+    "thresholds": {
+      "entry_conf_overall": 0.05894561540715697,
+      "regime_proba": {
+        "balanced": 0.4495378912434402,
+        "bear": 0.5620087740707684,
+        "bull": 0.4206103636547791,
+        "ranging": 0.726224895316513
+      },
+      "signal_adaptation": {
+        "atr_period": 8,
+        "zones": {
+          "high": {
+            "entry_conf_overall": 0.2899749833869953,
+            "regime_proba": {
+              "balanced": 0.55,
+              "bear": 0.5,
+              "bull": 0.5,
+              "ranging": 0.55
+            },
+            "pct": null
+          },
+          "low": {
+            "entry_conf_overall": 0.08333136648384655,
+            "regime_proba": {
+              "balanced": 0.46,
+              "bear": 0.42,
+              "bull": 0.42,
+              "ranging": 0.47
+            },
+            "pct": null
+          },
+          "mid": {
+            "entry_conf_overall": 0.2114560902701807,
+            "regime_proba": {
+              "balanced": 0.5,
+              "bear": 0.46,
+              "bull": 0.46,
+              "ranging": 0.5
+            },
+            "pct": null
+          }
+        }
+      },
+      "min_edge": 0.008050723779691172
+    },
+    "gates": {
+      "hysteresis_steps": 3,
+      "cooldown_bars": 2
+    },
+    "risk": {
+      "risk_map": [
+        [
+          0.409332,
+          0.018816
+        ],
+        [
+          0.574632,
+          0.018816
+        ],
+        [
+          0.601499,
+          0.074146
+        ]
+      ]
+    },
+    "ev": {
+      "R_default": 1.8
+    },
+    "exit": {
+      "enabled": true,
+      "max_hold_bars": 52,
+      "stop_loss_pct": 0.02,
+      "take_profit_pct": 0.05,
+      "exit_conf_threshold": 0.44020305491235595,
+      "regime_aware_exits": true,
+      "trailing_stop_enabled": false,
+      "trailing_stop_pct": 0.04176635480357512
+    },
+    "multi_timeframe": {
+      "use_htf_block": true,
+      "allow_ltf_override": true,
+      "ltf_override_threshold": 0.6940133108469355,
+      "ltf_override_adaptive": {
+        "enabled": true,
+        "window": 120,
+        "percentile": 0.85,
+        "min_history": 30,
+        "min_floor": null,
+        "max_ceiling": null,
+        "fallback_threshold": null,
+        "regime_multipliers": {}
+      },
+      "htf_selector": {
+        "mode": "fixed",
+        "default_timeframe": null,
+        "default_multiplier": null,
+        "fallback_timeframe": "1D",
+        "per_timeframe": {
+          "1h": {
+            "timeframe": null,
+            "multiplier": 6.0
+          },
+          "6h": {
+            "timeframe": "1D",
+            "multiplier": null
+          }
+        }
+      }
+    },
+    "warmup_bars": 150,
+    "htf_exit_config": {
+      "enable_partials": true,
+      "enable_trailing": true,
+      "enable_structure_breaks": true,
+      "partial_1_pct": 0.503774530930537,
+      "partial_2_pct": 0.5565145193468478,
+      "fib_threshold_atr": 0.670237544451155,
+      "trail_atr_multiplier": 3.2273139776506454,
+      "swing_update_strategy": "fixed"
+    },
+    "htf_fib": {
+      "entry": {
+        "enabled": true,
+        "tolerance_atr": 1.5120084492498944,
+        "targets": null,
+        "long_target_levels": null,
+        "short_target_levels": null,
+        "long_max_level": 0.2,
+        "long_min_level": null,
+        "short_min_level": -0.146,
+        "short_max_level": null,
+        "missing_policy": null,
+        "override_confidence": null
+      },
+      "exit": null
+    },
+    "ltf_fib": {
+      "entry": {
+        "enabled": true,
+        "tolerance_atr": 1.880711174562089,
+        "targets": null,
+        "long_target_levels": null,
+        "short_target_levels": null,
+        "long_max_level": 0.2,
+        "long_min_level": null,
+        "short_min_level": -0.25,
+        "short_max_level": null,
+        "missing_policy": null,
+        "override_confidence": null
+      },
+      "exit": null
+    },
+    "features": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h"
+  },
+  "runtime_version": 12
+}

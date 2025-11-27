@@ -76,6 +76,8 @@ except Exception:
     _MAX_CACHE_SIZE = 500
 _indicator_cache = IndicatorCache(max_size=2048)
 _INDICATOR_CACHE_ENABLED = not bool(os.environ.get("GENESIS_DISABLE_INDICATOR_CACHE"))
+_PRECOMPUTE_DEBUG_ONCE = False
+_PRECOMPUTE_WARN_ONCE = False
 
 
 def _indicator_cache_lookup(key):
@@ -89,10 +91,85 @@ def _indicator_cache_store(key, value):
         _indicator_cache.store(key, value)
 
 
+def _remap_precomputed_features(
+    pre: dict[str, Any], window_start_idx: int, lookup_idx: int
+) -> tuple[dict[str, Any], int]:
+    """Remappa precompute till lokalt fönster när backtestet startar mitt i historiken.
+
+    Returnerar (remappad_pre, remappat_lookup_idx). Vid fel återgår vi till tom pre
+    och behåller original-index så att slow path tar över.
+    """
+    if not pre or window_start_idx <= 0:
+        return pre, lookup_idx
+
+    try:
+        local_lookup_idx = lookup_idx - window_start_idx
+        if local_lookup_idx < 0:
+            return {}, lookup_idx
+
+        remapped: dict[str, Any] = {}
+        # Standardserier: klipp bort prefixet före window_start_idx
+        for key, val in pre.items():
+            if isinstance(val, list | tuple):
+                if len(val) <= window_start_idx:
+                    continue
+                remapped[key] = list(val[window_start_idx:])
+            else:
+                remapped[key] = val
+
+        # Remappa fib-svängar (behåll endast de som finns inom fönstret och offset:a index)
+        def _remap_swings(idx_key: str, px_key: str) -> None:
+            idxs = pre.get(idx_key)
+            pxs = pre.get(px_key)
+            if not (isinstance(idxs, list | tuple) and isinstance(pxs, list | tuple)):
+                return
+            new_idx: list[int] = []
+            new_px: list[float] = []
+            for i, p in zip(idxs, pxs, strict=False):
+                try:
+                    if i < window_start_idx:
+                        continue
+                    new_idx.append(int(i - window_start_idx))
+                    new_px.append(float(p))
+                except Exception:
+                    continue
+            if new_idx and len(new_idx) == len(new_px):
+                remapped[idx_key] = new_idx
+                remapped[px_key] = new_px
+
+        _remap_swings("fib_high_idx", "fib_high_px")
+        _remap_swings("fib_low_idx", "fib_low_px")
+
+        return remapped, local_lookup_idx
+    except Exception:
+        return {}, lookup_idx
+
+
+def _log_precompute_status(
+    use_precompute: bool, pre: dict[str, Any], lookup_idx: int, window_start_idx: int
+) -> None:
+    """Loggar en engångsrad som visar om precompute-data är laddad."""
+    global _PRECOMPUTE_DEBUG_ONCE
+    if _PRECOMPUTE_DEBUG_ONCE or not _log:
+        return
+    _PRECOMPUTE_DEBUG_ONCE = True
+    try:
+        keys_sample = sorted(pre.keys())[:10]
+    except Exception:
+        keys_sample = []
+    _log.debug(
+        "precompute_status use_precompute=%s lookup_idx=%s window_start_idx=%s pre_keys=%s",
+        use_precompute,
+        lookup_idx,
+        window_start_idx,
+        keys_sample,
+    )
+
+
 def _compute_candles_hash(candles: dict[str, list[float] | np.ndarray], asof_bar: int) -> str:
     """Compute a cache key for candles up to asof_bar.
 
-    Fast path (opt-in): GENESIS_FAST_HASH=1 → simple f-string on asof_bar:last_close
+    Fast path (opt-in): GENESIS_FAST_HASH=1 -> simple f-string on asof_bar:last_close
     Default: compact digest summarized over last up to 100 bars, hashed by SHA256.
     """
     # Optional ultra-fast key for tight loops
@@ -243,17 +320,22 @@ def _extract_asof(
 
     # RSI (returns [0, 100]) - use precomputed if available
     pre = dict((config or {}).get("precomputed_features") or {})
-    if window_start_idx > 0:
-        # Fast-window innebär att vi saknar komplett historik → undvik precompute-series
-        pre = {}
+    pre, lookup_idx_local = _remap_precomputed_features(pre, window_start_idx, lookup_idx)
+    pre_idx = lookup_idx_local
 
     # Enforce precompute if requested via env var
     use_precompute = os.environ.get("GENESIS_PRECOMPUTE_FEATURES") == "1"
     if use_precompute and not pre:
-        raise RuntimeError(
-            "GENESIS_PRECOMPUTE_FEATURES=1 but precomputed_features is empty. "
-            "Fast path initialization failed."
-        )
+        # Graceful fallback: tillåt slow path men logga en engångsvarning
+        global _PRECOMPUTE_WARN_ONCE
+        if not _PRECOMPUTE_WARN_ONCE and _log:
+            _log.warning(
+                "GENESIS_PRECOMPUTE_FEATURES=1 men precomputed_features saknas; "
+                "faller tillbaka till slow path."
+            )
+            _PRECOMPUTE_WARN_ONCE = True
+        use_precompute = False
+    _log_precompute_status(use_precompute, pre, pre_idx, window_start_idx)
 
     global FAST_HITS, SLOW_HITS
 
@@ -262,11 +344,11 @@ def _extract_asof(
     rsi_current_raw = 50.0
     rsi_lag1_raw = 50.0
 
-    if isinstance(pre_rsi, list | tuple) and len(pre_rsi) > lookup_idx:
+    if isinstance(pre_rsi, list | tuple) and len(pre_rsi) > pre_idx:
         # FAST PATH: Direct access (no copy)
         FAST_HITS += 1
-        rsi_current_raw = float(pre_rsi[lookup_idx])
-        rsi_lag1_raw = float(pre_rsi[lookup_idx - 1]) if lookup_idx > 0 else rsi_current_raw
+        rsi_current_raw = float(pre_rsi[pre_idx])
+        rsi_lag1_raw = float(pre_rsi[pre_idx - 1]) if pre_idx > 0 else rsi_current_raw
     else:
         SLOW_HITS += 1
         key = make_indicator_fingerprint(
@@ -291,10 +373,10 @@ def _extract_asof(
     bb_vals = None
     bb_last_3 = []
 
-    if isinstance(pre_bb_pos, list | tuple) and len(pre_bb_pos) > lookup_idx:
+    if isinstance(pre_bb_pos, list | tuple) and len(pre_bb_pos) > pre_idx:
         # FAST PATH: Slice only what we need (last 3 bars)
-        start_idx = max(0, lookup_idx - 2)
-        bb_last_3 = list(pre_bb_pos[start_idx : lookup_idx + 1])
+        start_idx = max(0, pre_idx - 2)
+        bb_last_3 = list(pre_bb_pos[start_idx : pre_idx + 1])
     else:
         _cl = closes.tolist() if isinstance(closes, np.ndarray) else closes
         bb_key = make_indicator_fingerprint(
@@ -331,13 +413,13 @@ def _extract_asof(
     atr_window_56 = []
     current_atr = 1.0
 
-    if isinstance(pre_atr_full, list | tuple) and len(pre_atr_full) > lookup_idx:
+    if isinstance(pre_atr_full, list | tuple) and len(pre_atr_full) > pre_idx:
         # FAST PATH: Slice only what we need for percentiles (last 56 bars)
-        start_idx = max(0, lookup_idx - 55)
-        atr_window_56 = list(pre_atr_full[start_idx : lookup_idx + 1])
-        current_atr = float(pre_atr_full[lookup_idx])
+        start_idx = max(0, pre_idx - 55)
+        atr_window_56 = list(pre_atr_full[start_idx : pre_idx + 1])
+        current_atr = float(pre_atr_full[pre_idx])
         # Ensure atr_vals is available for LTF context later
-        atr_vals = list(pre_atr_full[: lookup_idx + 1])
+        atr_vals = list(pre_atr_full[: pre_idx + 1])
     else:
         key_atr = make_indicator_fingerprint(
             f"atr_{atr_period}", params={"period": atr_period}, series=closes
@@ -358,11 +440,11 @@ def _extract_asof(
     pre_atr50_full = pre.get("atr_50")
     atr_long = None
     if not pre.get("volatility_shift"):  # Only needed if vol shift not precomputed
-        if isinstance(pre_atr50_full, list | tuple) and len(pre_atr50_full) > lookup_idx:
+        if isinstance(pre_atr50_full, list | tuple) and len(pre_atr50_full) > pre_idx:
             # We might need full history if calculating vol shift manually?
             # calculate_volatility_shift takes lists.
             # If we are here, we are in slow path for vol shift anyway.
-            atr_long = list(pre_atr50_full[: lookup_idx + 1])
+            atr_long = list(pre_atr50_full[: pre_idx + 1])
         else:
             key_atr50 = make_indicator_fingerprint("atr_50", params={"period": 50}, series=closes)
             cached_atr50 = _indicator_cache_lookup(key_atr50)
@@ -379,18 +461,18 @@ def _extract_asof(
     vol_shift_last_3 = []
     vol_shift_current = 1.0
 
-    if isinstance(pre_vol_shift, list | tuple) and len(pre_vol_shift) > lookup_idx:
+    if isinstance(pre_vol_shift, list | tuple) and len(pre_vol_shift) > pre_idx:
         # FAST PATH
-        start_idx = max(0, lookup_idx - 2)
-        vol_shift_last_3 = list(pre_vol_shift[start_idx : lookup_idx + 1])
-        vol_shift_current = float(pre_vol_shift[lookup_idx])
+        start_idx = max(0, pre_idx - 2)
+        vol_shift_last_3 = list(pre_vol_shift[start_idx : pre_idx + 1])
+        vol_shift_current = float(pre_vol_shift[pre_idx])
     else:
         # SLOW PATH
         # We need atr_vals and atr_long here.
         # If we took fast path for ATR, atr_vals is None.
         # So we must reconstruct atr_vals if we are here.
         if atr_vals is None and isinstance(pre_atr_full, list | tuple):
-            atr_vals = list(pre_atr_full[: lookup_idx + 1])
+            atr_vals = list(pre_atr_full[: pre_idx + 1])
 
         if atr_vals and atr_long:
             vol_key = make_indicator_fingerprint(
@@ -429,7 +511,7 @@ def _extract_asof(
         bb_position_inv_ma3 = 0.5
 
     # === FEATURE 4: rsi_vol_interaction ===
-    # Current bar RSI × current bar vol_shift
+    # Current bar RSI x current bar vol_shift
     rsi_current = (rsi_current_raw - 50.0) / 50.0
     rsi_vol_interaction = rsi_current * _clip(vol_shift_current, 0.5, 2.0)
 
@@ -490,13 +572,11 @@ def _extract_asof(
             and isinstance(pre_sw_lo_idx, list | tuple)
             and isinstance(pre_sw_hi_px, list | tuple)
             and isinstance(pre_sw_lo_px, list | tuple)
-            and window_start_idx == 0
         ):
             # Filter swings AS-OF current bar using bisect (O(log N))
             # pre_sw_hi_idx is sorted, so we can find the cut-off point quickly
-            # Use lookup_idx (global index) to match precomputed global indices
-            hi_cut = bisect_right(pre_sw_hi_idx, lookup_idx)
-            lo_cut = bisect_right(pre_sw_lo_idx, lookup_idx)
+            hi_cut = bisect_right(pre_sw_hi_idx, pre_idx)
+            lo_cut = bisect_right(pre_sw_lo_idx, pre_idx)
 
             swing_high_indices = [int(i) for i in pre_sw_hi_idx[:hi_cut]]
             swing_low_indices = [int(i) for i in pre_sw_lo_idx[:lo_cut]]
@@ -567,11 +647,11 @@ def _extract_asof(
             }
         )
 
-        # === FIBONACCI-KOMBINATIONER (kontext × signal) ===
+        # === FIBONACCI-KOMBINATIONER (kontext x signal) ===
         # EMA-slope parametrar per timeframe
         pre_ema_slope = pre.get("ema_slope")
-        if isinstance(pre_ema_slope, list | tuple) and len(pre_ema_slope) > lookup_idx:
-            ema_slope_raw = float(pre_ema_slope[lookup_idx])
+        if isinstance(pre_ema_slope, list | tuple) and len(pre_ema_slope) > pre_idx:
+            ema_slope_raw = float(pre_ema_slope[pre_idx])
         else:
             EMA_SLOPE_PARAMS = {
                 "30m": {"ema_period": 50, "lookback": 20},
@@ -610,9 +690,9 @@ def _extract_asof(
         ema_slope = _clip(ema_slope_raw, -0.10, 0.10)
 
         pre_adx_full = pre.get("adx_14")
-        if isinstance(pre_adx_full, list | tuple) and len(pre_adx_full) > lookup_idx:
-            adx_values = list(pre_adx_full[: lookup_idx + 1])
-            adx_latest = float(pre_adx_full[lookup_idx])
+        if isinstance(pre_adx_full, list | tuple) and len(pre_adx_full) > pre_idx:
+            adx_values = list(pre_adx_full[: pre_idx + 1])
+            adx_latest = float(pre_adx_full[pre_idx])
         else:
             adx_key = make_indicator_fingerprint(
                 "adx",
@@ -804,8 +884,8 @@ def extract_features_live(
 
     Example:
         candles has 100 bars [0-99], bar 99 is forming
-        → asof_bar = 98
-        → Features computed from bars [0-98]
+        -> asof_bar = 98
+        -> Features computed from bars [0-98]
     """
     total_bars = len(candles["close"])
 
@@ -844,7 +924,7 @@ def extract_features_backtest(
     Example:
         candles has 100 bars [0-99], all closed
         asof_bar = 99
-        → Features computed from bars [0-99]
+        -> Features computed from bars [0-99]
     """
     total_bars = len(candles["close"])
 

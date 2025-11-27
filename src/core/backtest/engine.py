@@ -5,6 +5,7 @@ Replays historical candle data bar-by-bar through the existing strategy pipeline
 """
 
 import os
+import warnings
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -90,6 +91,9 @@ class BacktestEngine:
         self.warmup_bars = warmup_bars
         self.fast_window = bool(fast_window)
 
+        # Validate mode consistency to prevent mixed-mode bugs
+        self._validate_mode_consistency()
+
         self.candles_df: pd.DataFrame | None = None
         # Precomputed column arrays (initialized on demand when fast_window=True)
         self._col_open = None
@@ -112,6 +116,25 @@ class BacktestEngine:
         self.champion_loader = ChampionLoader()
         # Initialize HTF exit engine configuration (moved out of _deep_merge)
         self._init_htf_exit_engine(htf_exit_config)
+
+    def _validate_mode_consistency(self) -> None:
+        """Validate that fast_window and GENESIS_PRECOMPUTE_FEATURES are consistent."""
+        precompute = os.getenv("GENESIS_PRECOMPUTE_FEATURES") == "1"
+
+        if self.fast_window and not precompute:
+            raise ValueError(
+                "BacktestEngine: fast_window=True requires GENESIS_PRECOMPUTE_FEATURES=1. "
+                "Set the environment variable or use fast_window=False.\n"
+                'Tip: Add \'os.environ["GENESIS_PRECOMPUTE_FEATURES"] = "1"\' before creating engine.'
+            )
+
+        if not self.fast_window and precompute:
+            warnings.warn(
+                "BacktestEngine: GENESIS_PRECOMPUTE_FEATURES=1 is set but fast_window=False. "
+                "This creates inconsistent execution paths. Consider using fast_window=True for determinism.",
+                UserWarning,
+                stacklevel=3,
+            )
 
     def _deep_merge(self, base: dict, override: dict) -> dict:
         """Deep merge override dict into base dict, preserving nested structures."""
@@ -219,12 +242,8 @@ class BacktestEngine:
                 from core.indicators.atr import calculate_atr as _calc_atr
                 from core.indicators.bollinger import bollinger_bands as _bb
                 from core.indicators.ema import calculate_ema as _calc_ema
-                from core.indicators.fibonacci import (
-                    FibonacciConfig as _FibCfg,
-                )
-                from core.indicators.fibonacci import (
-                    detect_swing_points as _detect_swings,
-                )
+                from core.indicators.fibonacci import FibonacciConfig as _FibCfg
+                from core.indicators.fibonacci import detect_swing_points as _detect_swings
                 from core.indicators.rsi import calculate_rsi as _calc_rsi
 
                 # Try on-disk cache first

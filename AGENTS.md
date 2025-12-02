@@ -1,10 +1,12 @@
 # README for AI Agents (Local Development)
 
-## Last update: 2025-11-27
+## Last update: 2025-12-02
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
 
-## 1. Deliverables (latest highlights: 2025-11-27)
+## 1. Deliverables (latest highlights: 2025-12-02)
+
+- **PRECOMPUTE TIMING FIX (2025-12-02)**: Löste kritisk timing-bug som hindrade precompute features från att fungera i Optuna-optimeringar. Root cause: `precompute_features`-flaggan sattes EFTER `engine.load_data()` (runner.py line 816), men feature-generering sker UNDER `load_data()` (engine.py line 233). Solution: Flyttade flag-setting till före load_data() (lines 807-810). Resultat: 20x speedup verifierad (~100 bars/sec vs ~10 bars/sec), 5-trial smoke test går från 30 min till 2.5 min. Ytterligare fixes: Import-arkitektur (src.core → core), preflight-validering (`check_precompute_functionality()`), varningar när PRECOMPUTE utan fast_window. Cache thread-safety issue upptäckt vid max_concurrent>1 (temporary fix: max_concurrent=1). Dokumentation: `docs/bugs/PRECOMPUTE_TIMING_FIX_20251202.md`. Commit: 5551fcc pushat till Phase-7d.
 
 - **MODE ENFORCEMENT (2025-11-27)**: Löste determinism-problemet mellan streaming och fast mode. Implementerade:
   1. **Validation i BacktestEngine**: Kastar ValueError om `fast_window=True` utan `GENESIS_PRECOMPUTE_FEATURES=1`, varnar vid omvänd kombination
@@ -478,6 +480,8 @@ Alla Optuna-konfigurationer hade `signal_adaptation` **fixerat till 44–60% hö
 
 ### Nästa steg
 
-- Köra ny Optuna-session (80 trials) med uppdaterad `signal_adaptation`-grid
-- Validera på längre tidsperioder (6–12 månader)
+- Köra smoke test med max_concurrent=1 för att verifiera olika parametrar ger olika resultat
+- Fixa cache thread-safety för att aktivera max_concurrent>1 (ytterligare 2x från parallellism)
+- Vectorize Fibonacci swing detection för 1.5x speedup (totalt 30x)
+- Kör full Proxy Optuna (50-80 trials, 6-9 månader) för PF > 1.25
 - Walk-forward-validering med rullande fönster

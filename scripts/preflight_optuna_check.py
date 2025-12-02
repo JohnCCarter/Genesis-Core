@@ -158,6 +158,74 @@ def check_duplicate_guard() -> tuple[bool, str]:
     return True, f"[OK] OPTUNA_MAX_DUPLICATE_STREAK={streak}"
 
 
+def check_precompute_functionality(symbol: str, timeframe: str) -> tuple[bool, str]:
+    """Testa att precompute-funktionalitet fungerar korrekt."""
+    if not os.environ.get("GENESIS_PRECOMPUTE_FEATURES"):
+        return True, "[SKIP] GENESIS_PRECOMPUTE_FEATURES inte satt"
+
+    try:
+        import sys
+        from pathlib import Path
+
+        # Add project root and src to path for imports
+        project_root = Path(__file__).parent.parent
+        src_path = project_root / "src"
+        if str(project_root) not in sys.path:
+            sys.path.insert(0, str(project_root))
+        if str(src_path) not in sys.path:
+            sys.path.insert(0, str(src_path))
+
+        from src.core.backtest.engine import BacktestEngine
+
+        # Ladda data
+        data_path = ROOT / "data" / "curated" / "v1" / "candles" / f"{symbol}_{timeframe}.parquet"
+        if not data_path.exists():
+            return False, f"[FAIL] Data saknas: {data_path}"
+
+        # Skapa engine och testa precompute
+        engine = BacktestEngine(
+            symbol=symbol,
+            timeframe=timeframe,
+            initial_capital=10000,
+            commission_rate=0.002,
+            slippage_rate=0.001,
+            warmup_bars=150,
+            fast_window=True,  # Match production settings
+        )
+        engine.precompute_features = True
+
+        # Load data (inga argument - använder self.symbol och self.timeframe)
+        if not engine.load_data():
+            return False, "[FAIL] Kunde inte ladda data"
+
+        # Kolla antal bars
+        total_bars = len(engine.candles_df)
+        if total_bars < 150:
+            return True, f"[WARN] För lite data ({total_bars} bars) - kan inte testa ordentligt"
+
+        # Verifiera att precompute skapades
+        if not hasattr(engine, "_precomputed_features") or not engine._precomputed_features:
+            return False, "[FAIL] Precompute skapades inte trots precompute_features=True"
+
+        precomp = engine._precomputed_features
+        required = ["rsi_14", "atr_14", "ema_20", "ema_50"]
+        missing = [k for k in required if k not in precomp]
+        if missing:
+            return False, f"[FAIL] Saknar features: {missing}"
+
+        expected_len = total_bars
+        actual_len = len(precomp["rsi_14"])
+        if actual_len != expected_len:
+            return False, f"[FAIL] Feature-längd {actual_len} != data-längd {expected_len}"
+
+        return True, f"[OK] Precompute fungerar - {total_bars} bars, {len(precomp)} features"
+
+    except ImportError as e:
+        return True, f"[WARN] Import-fel (ignorerat): {e}"
+    except Exception as e:
+        return False, f"[FAIL] Precompute-fel: {e}"
+
+
 def check_parameters_valid(parameters: dict[str, Any]) -> tuple[bool, str]:
     """Kontrollera att parametrarna är korrekta."""
     issues = []
@@ -402,7 +470,7 @@ def main() -> int:
         all_ok = False
     print()
 
-    # 10. Validering mot champion
+    # 10. Champion-validering
     print("10. Champion-validering:")
     try:
         from scripts.validate_optimizer_config import validate_config
@@ -417,6 +485,13 @@ def main() -> int:
             print("   [OK] Champion-validering OK")
     except Exception as e:
         print(f"   [WARN] Kunde inte köra champion-validering: {e}")
+    print()
+
+    # 11. Precompute-funktionalitet
+    ok, msg = check_precompute_functionality(symbol, timeframe)
+    print(f"11. Precompute: {msg}")
+    if not ok:
+        all_ok = False
     print()
 
     # Sammanfattning

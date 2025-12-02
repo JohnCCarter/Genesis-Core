@@ -452,17 +452,17 @@ class BacktestEngine:
         policy.setdefault("timeframe", self.timeframe)
 
         configs = configs or {}
-        # Inject precomputed features for vectorized path
-        if getattr(self, "precompute_features", False) and getattr(
-            self, "_precomputed_features", None
-        ):
-            cfg_pre = dict(configs)
-            cfg_pre["precomputed_features"] = dict(self._precomputed_features)
-            configs = cfg_pre
 
         champion_cfg = self.champion_loader.load_cached(self.symbol, self.timeframe)
         # Deep merge configs to preserve nested overrides
         configs = self._deep_merge(champion_cfg.config, configs)
+
+        # Inject precomputed features AFTER merge to ensure they're preserved
+        if getattr(self, "precompute_features", False) and getattr(
+            self, "_precomputed_features", None
+        ):
+            configs["precomputed_features"] = dict(self._precomputed_features)
+
         meta = configs.setdefault("meta", {})
         meta.setdefault("champion_source", champion_cfg.source)
         meta.setdefault("champion_version", champion_cfg.version)

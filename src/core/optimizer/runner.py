@@ -789,7 +789,7 @@ def _run_backtest_direct(
         cache_key = f"{trial.symbol}_{trial.timeframe}"
         with _DATA_LOCK:
             if cache_key not in _DATA_CACHE:
-                # Create and load engine once
+                # Create engine
                 # Always use fast_window=True for optimization
                 engine_loader = BacktestEngine(
                     symbol=trial.symbol,
@@ -797,6 +797,13 @@ def _run_backtest_direct(
                     warmup_bars=trial.warmup_bars,
                     fast_window=True,
                 )
+
+                # Enable precompute BEFORE load_data() so features are generated
+                if os.environ.get("GENESIS_PRECOMPUTE_FEATURES"):
+                    engine_loader.precompute_features = True
+                    logger.info("[PRECOMPUTE] Enabled before data load for 20x speedup")
+
+                # Now load data (will trigger precompute if flag is set)
                 if engine_loader.load_data():
                     _DATA_CACHE[cache_key] = engine_loader
                 else:
@@ -809,10 +816,6 @@ def _run_backtest_direct(
 
         # Update warmup_bars in case it changed between trials
         engine.warmup_bars = trial.warmup_bars
-
-        # Enable precomputed features if requested (critical for performance)
-        if os.environ.get("GENESIS_PRECOMPUTE_FEATURES"):
-            engine.precompute_features = True
 
         # Load config
         payload = json.loads(config_path.read_text(encoding="utf-8"))

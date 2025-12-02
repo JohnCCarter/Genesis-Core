@@ -8,10 +8,10 @@ optimization:
   resume: false
   max_trials: 5
   timeout_seconds: 600
-  
+
   sampler:
     type: random
-  
+
   constraints:
     min_trades: 10
     min_profit_factor: 0.5
@@ -32,7 +32,7 @@ parameters:
       type: float
       low: 0.05
       high: 0.15
-    
+
   signal_adaptation:
     zones:
       low:
@@ -62,7 +62,7 @@ parameters:
           type: float
           low: 0.45
           high: 0.65
-  
+
   risk:
     risk_map:
       type: grid

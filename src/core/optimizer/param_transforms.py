@@ -5,9 +5,9 @@ from typing import Any
 
 # Champion baseline risk map (kept in ascending order)
 BASE_RISK_MAP: list[tuple[float, float]] = [
-    (0.45, 0.015),
-    (0.55, 0.025),
-    (0.65, 0.035),
+    (0.48, 0.01),
+    (0.59, 0.015),
+    (0.70, 0.07),
 ]
 
 

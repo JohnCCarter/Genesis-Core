@@ -786,7 +786,8 @@ def _run_backtest_direct(
         from core.backtest.engine import BacktestEngine
 
         # Load/Get engine
-        cache_key = f"{trial.symbol}_{trial.timeframe}"
+        # Include dates in cache key to support different ranges
+        cache_key = f"{trial.symbol}_{trial.timeframe}_{trial.start_date}_{trial.end_date}"
         with _DATA_LOCK:
             if cache_key not in _DATA_CACHE:
                 # Create engine
@@ -794,6 +795,8 @@ def _run_backtest_direct(
                 engine_loader = BacktestEngine(
                     symbol=trial.symbol,
                     timeframe=trial.timeframe,
+                    start_date=trial.start_date,
+                    end_date=trial.end_date,
                     warmup_bars=trial.warmup_bars,
                     fast_window=True,
                 )

@@ -134,72 +134,93 @@ def detect_swing_points(
 
     local_high_mask, local_low_mask = _local_extrema_masks()
 
-    def _detect(
-        threshold_multiple: float,
-    ) -> tuple[list[tuple[int, float]], list[tuple[int, float]]]:
-        if not local_high_mask.any() and not local_low_mask.any():
-            return [], []
+    # --- Vectorized Threshold Calculation ---
+    # Calculate strength for all points: strength = range_span / atr
+    # Handle ATR=0 -> inf (passes any threshold), ATR=NaN -> -inf (fails)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        strength = np.divide(range_span, atr_arr)
 
-        atr_thresholds = np.nan_to_num(atr_arr, nan=0.0) * max(threshold_multiple, 0.0)
+    # Fix non-finite values
+    # If ATR was 0, strength is inf. This is correct (infinite strength).
+    # If ATR was NaN, strength is NaN. We replace with -inf to ensure it fails comparisons.
+    strength = np.nan_to_num(strength, nan=-np.inf)
 
-        # Vectorized high detection
-        high_indices = np.where(local_high_mask)[0]
-        if high_indices.size > 0:
-            valid_highs = range_span[high_indices] >= atr_thresholds[high_indices]
-            valid_high_indices = high_indices[valid_highs]
-            candidate_highs = list(
-                zip(valid_high_indices, high_arr[valid_high_indices], strict=False)
-            )
+    # Get max strength for valid local extrema
+    # We use the masks to select only local highs/lows
+    high_strengths = strength[local_high_mask]
+    low_strengths = strength[local_low_mask]
+
+    max_h = np.max(high_strengths) if high_strengths.size > 0 else -np.inf
+    max_l = np.max(low_strengths) if low_strengths.size > 0 else -np.inf
+
+    # We want a threshold t such that we find at least one high and one low.
+    # So t <= max_h AND t <= max_l.
+    limit = min(max_h, max_l)
+
+    # Determine the optimal threshold on the grid defined by start/step
+    # We want the highest t in (start, start-step, ...) such that t <= limit.
+    start = max(config.swing_threshold_multiple, 0.0)
+    min_t = max(0.0, config.swing_threshold_min)
+    step = config.swing_threshold_step
+
+    if limit < min_t:
+        # Even the minimum threshold is too high for the data
+        best_threshold = min_t
+    elif step <= 0:
+        best_threshold = start
+    else:
+        # t = start - k * step <= limit
+        # k * step >= start - limit
+        # k >= (start - limit) / step
+        k = np.ceil((start - limit) / step)
+        k = max(0.0, k)
+        best_threshold = start - k * step
+        # Clamp to min_t
+        if best_threshold < min_t:
+            best_threshold = min_t
+
+    # --- Single Detection Pass ---
+
+    def _extract_swings(mask_type, threshold_val):
+        """Extract and filter swings using vectorized operations."""
+        # 1. Filter by threshold and extrema type
+        valid_mask = (strength >= threshold_val) & mask_type
+        indices = np.where(valid_mask)[0]
+
+        if indices.size == 0:
+            return []
+
+        # 2. Filter by lookback (vectorized)
+        # Lookback is relative to the most recent swing found
+        last_idx = indices[-1]
+        lookback_mask = (last_idx - indices) <= config.max_lookback
+        indices = indices[lookback_mask]
+
+        if indices.size == 0:
+            return []
+
+        # 3. Retrieve prices
+        if mask_type is local_high_mask:
+            prices = high_arr[indices]
         else:
-            candidate_highs = []
+            prices = low_arr[indices]
 
-        # Vectorized low detection
-        low_indices = np.where(local_low_mask)[0]
-        if low_indices.size > 0:
-            valid_lows = range_span[low_indices] >= atr_thresholds[low_indices]
-            valid_low_indices = low_indices[valid_lows]
-            candidate_lows = list(zip(valid_low_indices, low_arr[valid_low_indices], strict=False))
-        else:
-            candidate_lows = []
+        # 4. Convert to list for overlap cleaning
+        candidates = list(zip(indices, prices, strict=False))
 
-        cleaned_highs = _clean_swing_points(candidate_highs, config.max_lookback)
-        cleaned_lows = _clean_swing_points(candidate_lows, config.max_lookback)
+        # 5. Remove overlaps (iterative, but on small dataset)
+        cleaned = []
+        for idx, price in candidates:
+            if not cleaned or idx - cleaned[-1][0] > 10:  # Minimum 10 bars apart
+                cleaned.append((idx, price))
 
-        cleaned_highs = cleaned_highs[-config.max_swings :] if cleaned_highs else []
-        cleaned_lows = cleaned_lows[-config.max_swings :] if cleaned_lows else []
+        # 6. Keep max swings
+        return cleaned[-config.max_swings :]
 
-        return cleaned_highs, cleaned_lows
+    swing_highs = _extract_swings(local_high_mask, best_threshold)
+    swing_lows = _extract_swings(local_low_mask, best_threshold)
 
-    threshold_multiple = max(config.swing_threshold_multiple, 0.0)
-    min_threshold = max(0.0, config.swing_threshold_min)
-    step = config.swing_threshold_step if config.swing_threshold_step >= 0 else 0.0
-
-    swing_highs: list[tuple[int, float]] = []
-    swing_lows: list[tuple[int, float]] = []
-    attempted_min = False
-
-    while threshold_multiple >= min_threshold - 1e-9:
-        swing_highs, swing_lows = _detect(threshold_multiple)
-
-        if swing_highs and swing_lows:
-            # Found at least one of each, acceptable for Fibonacci projection
-            break
-
-        if step == 0:
-            break
-
-        if threshold_multiple <= min_threshold:
-            if attempted_min:
-                break
-            attempted_min = True
-
-        next_threshold = max(min_threshold, threshold_multiple - step)
-
-        if next_threshold == threshold_multiple:
-            break
-
-        threshold_multiple = next_threshold
-
+    # --- Fallback Logic ---
     if not swing_highs and high_arr.size > 0:
         fallback_idx = int(np.argmax(high_arr))
         fallback_price = float(high_arr[fallback_idx])
@@ -222,7 +243,12 @@ def detect_swing_points(
 def _clean_swing_points(
     swing_points: list[tuple[int, float]], max_lookback: int
 ) -> list[tuple[int, float]]:
-    """Remove overlapping swing points, keeping the most recent."""
+    """
+    Remove overlapping swing points, keeping the most recent.
+
+    NOTE: This function is kept for backward compatibility or external usage,
+    but detect_swing_points now uses inline optimized logic.
+    """
     if not swing_points:
         return []
 

@@ -276,7 +276,10 @@ def decide(
     reasons.append(zone_label)
 
     thresholds = zone_regime or thresholds_cfg.get("regime_proba", {})
-    thr = float(thresholds.get(regime_str, default_thr))
+    if isinstance(thresholds, float | int):
+        thr = float(thresholds)
+    else:
+        thr = float(thresholds.get(regime_str, default_thr))
 
     buy_pass = p_buy >= thr and long_allowed
     sell_pass = p_sell >= thr and short_allowed
@@ -1053,13 +1056,13 @@ def decide(
     }
 
     # FORENSIC DEBUG - verify function returns expected values
-    _LOG.info(
-        "[FORENSIC] About to return: candidate=%s, size=%.4f, conf=%.4f, zone=%s",
-        candidate,
-        size,
-        conf_val,
-        zone_debug.get("current_zone"),
-    )
+    # _LOG.info(
+    #     "[FORENSIC] About to return: candidate=%s, size=%.4f, conf=%.4f, zone=%s",
+    #     candidate,
+    #     size,
+    #     conf_val,
+    #     zone_debug.get("current_zone"),
+    # )
 
     _log_decision_event(
         "ENTRY",

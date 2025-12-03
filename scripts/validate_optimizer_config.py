@@ -22,9 +22,9 @@ from typing import Any
 import yaml
 
 BASE_RISK_MAP = [
-    (0.45, 0.015),
-    (0.55, 0.025),
-    (0.65, 0.035),
+    (0.48, 0.01),
+    (0.59, 0.015),
+    (0.70, 0.07),
 ]
 
 
@@ -34,7 +34,10 @@ def load_champion(symbol: str, timeframe: str) -> dict[str, Any]:
     if not champ_path.exists():
         raise FileNotFoundError(f"Champion not found: {champ_path}")
     data = json.loads(champ_path.read_text(encoding="utf-8"))
-    return data.get("cfg", data)
+    print(f"[DEBUG] Loaded champion from {champ_path}")
+    cfg = data.get("cfg", data)
+    print(f"[DEBUG] Champion risk map: {cfg.get('risk', {}).get('risk_map')}")
+    return cfg
 
 
 def load_optimizer_config(config_path: Path) -> dict[str, Any]:
@@ -157,6 +160,7 @@ def validate_risk_map_deltas(
         return errors, warnings
 
     champ_risk_map = champ_params.get("risk", {}).get("risk_map", [])
+    print(f"[DEBUG] validate_risk_map_deltas: champ_risk_map={champ_risk_map}")
     if champ_risk_map and len(champ_risk_map) != len(BASE_RISK_MAP):
         warnings.append(
             "[WARN] Championens risk_map har annat antal punkter än baseline - kontrollera manuell reproducerbarhet."
@@ -166,21 +170,27 @@ def validate_risk_map_deltas(
         conf_spec = deltas_spec.get(f"conf_{idx}")
         size_spec = deltas_spec.get(f"size_{idx}")
 
+        # Hämta faktiska champion-värden om de finns
+        actual_champ_conf = base_conf
+        actual_champ_size = base_size
+        if champ_risk_map and idx < len(champ_risk_map):
+            actual_champ_conf = champ_risk_map[idx][0]
+            actual_champ_size = champ_risk_map[idx][1]
+
         if not isinstance(conf_spec, dict) or conf_spec.get("type") != "float":
             errors.append(f"[ERROR] risk.risk_map_deltas.conf_{idx} måste vara type=float")
         else:
             low = float(conf_spec.get("low", 0.0))
             high = float(conf_spec.get("high", 0.0))
-            if low > 0 or high < 0:
+
+            # Beräkna räckvidd från basen
+            range_low = base_conf + low
+            range_high = base_conf + high
+
+            # Kontrollera om faktiska champion-värdet kan nås
+            if actual_champ_conf < range_low - 1e-9 or actual_champ_conf > range_high + 1e-9:
                 errors.append(
-                    f"[ERROR] risk_map_deltas.conf_{idx} ({low}, {high}) måste inkludera 0 för att champion ska vara möjlig"
-                )
-            champ_conf = base_conf
-            champ_low = base_conf + low
-            champ_high = base_conf + high
-            if champ_conf < champ_low or champ_conf > champ_high:
-                errors.append(
-                    f"[ERROR] Championens risk_map[{idx}].confidence={champ_conf} ligger utanför intervallet [{champ_low}, {champ_high}]"
+                    f"[ERROR] Championens risk_map[{idx}].confidence={actual_champ_conf} ligger utanför intervallet [{range_low:.3f}, {range_high:.3f}] (bas={base_conf})"
                 )
 
         if not isinstance(size_spec, dict) or size_spec.get("type") != "float":
@@ -188,20 +198,19 @@ def validate_risk_map_deltas(
         else:
             low = float(size_spec.get("low", 0.0))
             high = float(size_spec.get("high", 0.0))
-            if low > 0 or high < 0:
+
+            # Beräkna räckvidd från basen
+            range_low = base_size + low
+            range_high = base_size + high
+
+            # Kontrollera om faktiska champion-värdet kan nås
+            if actual_champ_size < range_low - 1e-9 or actual_champ_size > range_high + 1e-9:
                 errors.append(
-                    f"[ERROR] risk_map_deltas.size_{idx} ({low}, {high}) måste inkludera 0 för att champion ska vara möjlig"
+                    f"[ERROR] Championens risk_map[{idx}].size={actual_champ_size} ligger utanför intervallet [{range_low:.3f}, {range_high:.3f}] (bas={base_size})"
                 )
-            champ_size = base_size
-            champ_low = base_size + low
-            champ_high = base_size + high
-            if champ_size < champ_low or champ_size > champ_high:
-                errors.append(
-                    f"[ERROR] Championens risk_map[{idx}].size={champ_size} ligger utanför intervallet [{champ_low}, {champ_high}]"
-                )
-            if champ_low < 0:
+            if range_low < 0:
                 warnings.append(
-                    f"[WARN] risk_map_deltas.size_{idx} tillåter negativa storlekar (min {champ_low}) - kontrollera att position size inte blir negativ."
+                    f"[WARN] risk_map_deltas.size_{idx} tillåter negativa storlekar (min {range_low}) - kontrollera att position size inte blir negativ."
                 )
 
     return errors, warnings
@@ -222,7 +231,8 @@ def validate_config(opt_config_path: Path) -> int:
         print(f"[ERROR] {e}")
         return 1
 
-    champ_params = champ.get("parameters", {})
+    # Champion-filen returnerar redan cfg-objektet (se load_champion)
+    champ_params = champ
     errors: list[str] = []
     warnings: list[str] = []
 

@@ -4,7 +4,34 @@
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
 
-## 1. Deliverables (latest highlights: 2025-12-02)
+## 1. Deliverables (latest highlights: 2025-12-03)
+
+- **CHAMPION UPDATE (2025-12-03)**: Uppdaterade `config/strategy/champions/tBTCUSD_1h.json` med parametrar från `run_20251203_105838` (Trial 001).
+
+  - **Orsak**: Tidigare champion var optimerad för en kodbas med ATR-bugg (14 vs 28 period) och HTF-logikfel. Nya parametrar är anpassade för den fixade logiken.
+  - **Resultat**: Backtest 2024-01-01 till 2024-12-31 ger 201 trades, PF 1.25, +3.36% return.
+  - **Nyckeländringar**: `entry_conf_overall` höjd till 0.24 (från 0.09), `ltf_override_threshold` sänkt till 0.36 (från 0.66).
+
+- **PHASE 3 FINE TUNING (v7) - DEBUGGING (2025-12-03)**:
+
+  - **Zero Trades Fix**: Löste problemet med 0 trades i v7 genom att tillåta negativa deltas i `risk.risk_map_deltas` (t.ex. `conf_0` ner till -0.30). Detta lät optimizern sänka trösklar tillräckligt för att generera trades (1000+ i test).
+  - **Regression**: Vid omkörning av smoke-test (`tBTCUSD_1h_optuna_phase3_fine_v7_smoke.yaml`) uppstod `TypeError: float() argument must be a string or a real number, not 'dict'` i `param_transforms.py`.
+  - **Analys**: `deltas.get()` returnerar en dict istället för float, vilket tyder på att `runner.py` expanderar dot-notation keys felaktigt för `risk.risk_map_deltas`.
+  - **Status**: Pausad för felsökning. Dokumentation uppdaterad i `docs/daily_summaries/daily_summary_2025-12-03.md`.
+
+- **PHASE 3 FINE TUNING STARTED (2025-12-03)**: Startade optimering med `config/optimizer/tBTCUSD_1h_optuna_phase3_fine_v2.yaml` (100 trials, PF > 1.20 mål).
+
+  - **Konfiguration**: Nästlad YAML-struktur för att passera preflight.
+  - **Motor**: Vectorized Fibonacci (~240 bars/sec) + Single-threaded (`max_concurrent: 1`).
+  - **Status**: Körs nu (Run ID: `optuna_phase3_fine_12m_v4`).
+
+- **FIBONACCI VECTORIZATION (2025-12-03)**: Vektoriserade `detect_swing_points` i `src/core/indicators/fibonacci.py` för att eliminera iterativ `while`-loop. Implementerade O(1) tröskelberäkning (`min(max_h, max_l)`) och NumPy-baserad filtrering.
+
+  - **Prestanda**: Benchmark visar ~15ms per call (3.2M bars/sec) på syntetisk data.
+  - **Verifiering**: Alla unit tests (`tests/test_fibonacci.py`) passerade. Smoke test (`tBTCUSD_1h_champion_centered_smoke.yaml`) körde 5 trials framgångsrikt med ~70s runtime och genererade trades.
+  - **Extended Smoke Test**: Körde 12-månaders test (2024-01-01 till 2024-12-31) med 5 trials. Total tid 5:59 min. Resultat: Stabilt, ~240 bars/sec. Trial 0 gav positiv avkastning (+1.66%). Noterade `[DEBUG] Invalid swing` varningar i loggen (icke-kritisk, indikerar High < Low i vissa marknadslägen).
+  - **Cleanup**: Minskade loggbrus i `decision.py` (kommenterade ut FORENSIC logs).
+  - **Status**: Redo för fullskalig optimering.
 
 - **PRECOMPUTE TIMING FIX (2025-12-02)**: Löste kritisk timing-bug som hindrade precompute features från att fungera i Optuna-optimeringar. Root cause: `precompute_features`-flaggan sattes EFTER `engine.load_data()` (runner.py line 816), men feature-generering sker UNDER `load_data()` (engine.py line 233). Solution: Flyttade flag-setting till före load_data() (lines 807-810). Resultat: 20x speedup verifierad (~100 bars/sec vs ~10 bars/sec), 5-trial smoke test går från 30 min till 2.5 min. Ytterligare fixes: Import-arkitektur (src.core → core), preflight-validering (`check_precompute_functionality()`), varningar när PRECOMPUTE utan fast_window. Cache thread-safety issue upptäckt vid max_concurrent>1 (temporary fix: max_concurrent=1). Dokumentation: `docs/bugs/PRECOMPUTE_TIMING_FIX_20251202.md`. Commit: 5551fcc pushat till Phase-7d.
 
@@ -215,33 +242,26 @@ Champion file: `config/strategy/champions/tBTCUSD_1h.json`
 
   Adjust the ignore list as needed to keep focus on first-party code.
 
-## 8. Next steps for hand-off (14 Nov 2025)
+## 8. Next steps for hand-off (Dec 2025)
 
-1. Wire `feats_meta["htf_fibonacci"]` och LTF-data hela vägen till `evaluate_pipeline`/decision state så championens fib-gates (och Optuna-trials där `enabled=true`) inte resulterar i 0 trades.
-2. Fortsätt Optuna remodel-runnen `run_20251114_remodel_bootstrap`: exportera topp-trials efter bootstrap/TPE och jämför mot champion (mål ≥ 260 score); dokumentera i `docs/daily_summaries/daily_summary_2025-11-14.md`.
-3. När fib-dataflödet är fixat, kör referensbacktest för champion igen och uppdatera `metrics` + dokumentation.
-4. Lägg till regressionstester runt fib-gates/MTF-override (missing context, ATR=0, tolerance handling) för att undvika framtida noll-trade-regressioner.
-5. Re-run Bandit med den scoped kommandot och spara rapport för framtida handoff.
+1. **Monitor Phase 3 Fine Tuning**:
 
-- Multi-timeframe-blocket har nu `htf_selector` (Alt 1) som styr HTF-val per timeframe/multiplikator. `features_asof` bifogar selector-metadata både i `meta['htf_selector']` och `meta['htf_fibonacci']['selector']`, så framtida Alt 2/3 kan luta sig mot samma struktur utan fler kodändringar.
+   - Ensure `optuna_phase3_fine_12m_v4` completes at least 50-100 trials.
+   - Analyze results using `scripts/analyze_optuna_db.py`.
+   - Target: PF > 1.20.
 
-### Uppföljning 2025-11-19
+2. **Validate Best Candidate**:
 
-1. Använd `scripts/diagnose_fib_flow.py`/`diagnose_zero_trades.py` för att bekräfta att `feats_meta['htf_fibonacci']` och LTF-nycklarna verkligen skrivs vidare till `evaluate_pipeline` → `core/strategy/decision.decide`; fixera kedjan innan fler Optuna-körningar så championen inte fastnar på 0 trades.
-2. När fib-metadata flödar, kör ett nytt `scripts/run_backtest.py --config config/strategy/champions/tBTCUSD_1h.json` golden-run och jämför mot baselineprofileringen; uppdatera `docs/performance/PERFORMANCE_OPTIMIZATION_SUMMARY_.md` om tidsvinsterna förändras.
-3. Logga resultat och tidslinje i `docs/daily_summaries/daily_summary_2025-11-19.md` (fortsatt sektion) samt här i `AGENTS.md` så nästa agent ser att trades är tillbaka innan Optuna-remodeln återupptas.
-4. Upprepa `pre-commit run --all-files` och `bandit -r src -c bandit.yaml -f txt -o bandit-report.txt` efter fib-fixen och bifoga färska rapporter i repo för spårbarhet.
+   - Once a candidate with PF > 1.20 is found, run a full backtest with `scripts/run_backtest.py` to verify metrics and trade distribution.
+   - Check for "Invalid swing" warnings in logs (non-critical but worth noting).
 
-### Runtime patch workflow (2025-11-17)
+3. **Prepare Phase 4 (Walk-Forward)**:
 
-- `config/runtime.json` är den enda källan som backtester/servrar laddar via `ConfigAuthority`.
-- Använd `scripts/apply_runtime_patch.py` för att applicera profiler (tmp eller champion). Workflow:
-  1. `python scripts/apply_runtime_patch.py --dry-run <path>.json` för att se diff.
-  2. `python scripts/apply_runtime_patch.py <path>.json` för att skriva.
-- Skriptet unwrappar automatiskt `cfg.parameters` och filtrerar bort otillåtna fält (endast `thresholds`, `gates`, `risk.risk_map`, `ev`, `multi_timeframe`).
-- `ConfigAuthority` gör nu en deep merge, så partiella patchar tappar inte syskonfält.
-- `scripts/run_backtest.py` loggar `[CONFIG:runtime] …` efter laddning → verifiera att entry/zoner/MTF matchar förväntan innan långa körningar.
-- För detaljer, se `docs/runtime/RUNTIME_PATCH_WORKFLOW.md`.
+   - If Phase 3 is successful, prepare a Walk-Forward Analysis (WFA) configuration to validate robustness over rolling windows.
+
+4. **Documentation**:
+   - Keep `docs/optimization/PHASE3_FINE_TUNING_LOG.md` updated with major events.
+   - Update `config/strategy/champions/tBTCUSD_1h.json` if a new champion is crowned.
 
 ## 9. Recent history (Phase-7a/7b, 21 Oct 2025)
 

@@ -1,0 +1,282 @@
+# Optuna Hyperparameter Optimization Configuration - Phase 3 Fine Tuning (v2)
+#
+# Purpose:
+#   Fine-tune tBTCUSD 1h strategy to improve Profit Factor (PF) from baseline 1.04 to target >1.2
+#   by refining exit strategies and tightening entry conditions while maintaining trade frequency.
+#   Includes Fibonacci parameters missing in v1.
+#
+# Phase Context:
+#   - Builds on Phase 2d (v6) results
+#   - Uses vectorized Fibonacci engine (240 bars/sec)
+#   - Single-threaded for stability (max_concurrent: 1)
+#
+# Configuration Details:
+#   - Symbol: tBTCUSD
+#   - Timeframe: 1 hour
+#   - Data: 2024-01-01 to 2024-12-31 (12 months)
+#   - Optimization Runs: 100 trials (50 bootstrap + 50 TPE)
+#   - Sampler: TPE with multivariate and constant liar strategies
+#
+# Constraints:
+#   - min_trades: 30
+#   - min_profit_factor: 1.00
+#   - max_max_dd: 0.20
+
+meta:
+  symbol: tBTCUSD
+  timeframe: 1h
+  snapshot_id: snap_tBTCUSD_2024-01-01_2024-12-31_v1 # Metadata label (Fixed format)
+  runs:
+    strategy: optuna
+    resume: true
+    max_trials: 100
+    max_concurrent: 1
+    use_sample_range: true
+    sample_start: 2024-01-01
+    sample_end: 2024-12-31
+    bootstrap_random_trials: 50
+    optuna:
+      study_name: optuna_phase3_fine_12m_v5
+      storage: sqlite:///results/hparam_search/storage/optuna_phase3_fine_v5.db
+      sampler:
+        name: tpe
+        kwargs:
+          n_startup_trials: 20
+          n_ei_candidates: 24
+          multivariate: true
+          constant_liar: true
+
+constraints:
+  min_trades: 30
+  min_profit_factor: 1.00
+  max_max_dd: 0.20
+  include_scoring_failures: true
+
+parameters:
+  # 1. Thresholds - Centered on Phase 2d Best Trials (0.26-0.28)
+  thresholds:
+    entry_conf_overall:
+      type: float
+      low: 0.20
+      high: 0.32
+      step: 0.01
+
+    regime_proba:
+      balanced:
+        type: float
+        low: 0.45
+        high: 0.55
+        step: 0.02
+      bull:
+        type: float
+        low: 0.45
+        high: 0.55
+        step: 0.02
+      bear:
+        type: float
+        low: 0.45
+        high: 0.55
+        step: 0.02
+      ranging:
+        type: float
+        low: 0.50
+        high: 0.65
+        step: 0.02
+
+    min_edge:
+      type: float
+      low: 0.006
+      high: 0.014
+      step: 0.002
+
+    # 2. Signal Adaptation - Slightly tighter than v6
+    signal_adaptation:
+      zones:
+        low:
+          entry_conf_overall:
+            type: float
+            low: 0.20
+            high: 0.30
+            step: 0.01
+          regime_proba:
+            balanced:
+              type: float
+              low: 0.40
+              high: 0.50
+              step: 0.02
+            bull:
+              type: float
+              low: 0.40
+              high: 0.50
+              step: 0.02
+            bear:
+              type: float
+              low: 0.40
+              high: 0.50
+              step: 0.02
+            ranging:
+              type: float
+              low: 0.50
+              high: 0.60
+              step: 0.02
+        mid:
+          entry_conf_overall:
+            type: float
+            low: 0.28
+            high: 0.34
+            step: 0.01
+          regime_proba:
+            balanced:
+              type: float
+              low: 0.45
+              high: 0.55
+              step: 0.02
+            bull:
+              type: float
+              low: 0.45
+              high: 0.55
+              step: 0.02
+            bear:
+              type: float
+              low: 0.45
+              high: 0.55
+              step: 0.02
+            ranging:
+              type: float
+              low: 0.50
+              high: 0.60
+              step: 0.02
+        high:
+          entry_conf_overall:
+            type: float
+            low: 0.34
+            high: 0.42
+            step: 0.01
+          regime_proba:
+            balanced:
+              type: float
+              low: 0.45
+              high: 0.55
+              step: 0.02
+            bull:
+              type: float
+              low: 0.45
+              high: 0.55
+              step: 0.02
+            bear:
+              type: float
+              low: 0.45
+              high: 0.55
+              step: 0.02
+            ranging:
+              type: float
+              low: 0.50
+              high: 0.60
+              step: 0.02
+
+  # 3. Exits - WIDER SEARCH (Critical for PF)
+  exit:
+    exit_conf_threshold:
+      type: float
+      low: 0.30
+      high: 0.55
+      step: 0.02
+    max_hold_bars:
+      type: int
+      low: 12
+      high: 48
+      step: 4
+    trailing_stop_enabled:
+      type: grid
+      values: [true, false]
+    trailing_stop_pct:
+      type: float
+      low: 0.01
+      high: 0.04
+      step: 0.005
+
+  # 4. Risk Map - Fine Tuning
+  risk:
+    risk_map_deltas:
+      conf_0:
+        type: float
+        low: -0.05
+        high: 0.05
+        step: 0.01
+      size_0:
+        type: float
+        low: -0.01
+        high: 0.02
+        step: 0.005
+      conf_1:
+        type: float
+        low: -0.05
+        high: 0.05
+        step: 0.01
+      size_1:
+        type: float
+        low: -0.01
+        high: 0.02
+        step: 0.005
+      conf_2:
+        type: float
+        low: -0.05
+        high: 0.05
+        step: 0.01
+      size_2:
+        type: float
+        low: -0.01
+        high: 0.04
+        step: 0.005
+
+  # 5. Multi-Timeframe
+  multi_timeframe:
+    ltf_override_threshold:
+      type: float
+      low: 0.55
+      high: 0.75
+      step: 0.02
+
+  # 6. Fibonacci Tolerances (Added in v2)
+  htf_fib:
+    entry:
+      tolerance_atr:
+        type: float
+        low: 1.0
+        high: 5.0
+        step: 0.2
+
+  ltf_fib:
+    entry:
+      tolerance_atr:
+        type: float
+        low: 1.0
+        high: 5.0
+        step: 0.2
+
+  # 7. HTF Exit Config (Fixed from Champion)
+  htf_exit_config:
+    enable_partials:
+      type: fixed
+      value: true
+    enable_trailing:
+      type: fixed
+      value: true
+    enable_structure_breaks:
+      type: fixed
+      value: true
+    partial_1_pct:
+      type: fixed
+      value: 0.6
+    partial_2_pct:
+      type: fixed
+      value: 0.5
+    fib_threshold_atr:
+      type: fixed
+      value: 0.7
+    trail_atr_multiplier:
+      type: fixed
+      value: 2.5
+    swing_update_strategy:
+      type: fixed
+      value: "fixed"

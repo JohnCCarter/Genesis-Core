@@ -25,10 +25,10 @@ meta:
     max_concurrent: 1
     use_sample_range: true
     sample_start: 2024-01-01
-    sample_end: 2024-03-31
+    sample_end: 2024-12-31
     optuna:
-      study_name: champion_centered_smoke_20241202_v5_precompute
-      storage: sqlite:///results/hparam_search/storage/champion_centered_smoke_20241202_v5.db
+      study_name: champion_centered_smoke_20241203_12m_v2
+      storage: sqlite:///results/hparam_search/storage/champion_centered_smoke_20241203_12m.db
       sampler:
         name: tpe
         kwargs:

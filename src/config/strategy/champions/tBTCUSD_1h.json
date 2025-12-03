@@ -1,53 +1,78 @@
 {
-  "created_at": "2025-11-21T14:13:07.393625+00:00",
-  "run_id": "run_20251121_140023",
-  "git_commit": "b011a0ee85582e12e904af18e272440fd4ab8ff9",
-  "snapshot_id": "snap_tBTCUSD_20240401_20250331_v1",
+  "created_at": "2025-12-03T13:09:00.435889+00:00",
+  "run_id": "run_20251203_125944",
+  "git_commit": "ddd099cb30338f6925afd7f04ec00d4d77a7a3db",
+  "snapshot_id": "snap_tBTCUSD_2024-01-01_2024-12-31_v1",
   "symbol": "tBTCUSD",
   "timeframe": "1h",
-  "score": 0.1633715456755628,
+  "score": 1.118178244880416,
   "metrics": {
-    "total_return": 0.06151190625000196,
-    "profit_factor": 1.1618102065423606,
-    "max_drawdown": 0.07346679674999933,
-    "win_rate": 0.2352941176470588,
-    "num_trades": 85,
-    "sharpe_ratio": 0.05724679219198815,
-    "return_to_dd": 0.8372749183460557
+    "total_return": 0.1383795926550166,
+    "profit_factor": 1.1000003462271168,
+    "max_drawdown": 0.04238872812999876,
+    "win_rate": 0.5373608903020668,
+    "num_trades": 1887,
+    "sharpe_ratio": 0.026303386349295948,
+    "return_to_dd": 3.264537502296147
   },
   "parameters": {
-    "thresholds.entry_conf_overall": 0.32,
-    "thresholds.regime_proba.balanced": 0.52,
-    "thresholds.regime_proba.bull": 0.48,
-    "thresholds.regime_proba.bear": 0.48,
-    "thresholds.regime_proba.ranging": 0.54,
-    "thresholds.min_edge": 0.006,
-    "thresholds.signal_adaptation.zones.low.entry_conf_overall": 0.26,
-    "thresholds.signal_adaptation.zones.low.regime_proba.balanced": 0.48,
-    "thresholds.signal_adaptation.zones.low.regime_proba.bull": 0.4,
-    "thresholds.signal_adaptation.zones.low.regime_proba.bear": 0.48,
-    "thresholds.signal_adaptation.zones.low.regime_proba.ranging": 0.54,
-    "thresholds.signal_adaptation.zones.mid.entry_conf_overall": 0.3,
-    "thresholds.signal_adaptation.zones.mid.regime_proba.balanced": 0.48,
-    "thresholds.signal_adaptation.zones.mid.regime_proba.bull": 0.48,
-    "thresholds.signal_adaptation.zones.mid.regime_proba.bear": 0.48,
-    "thresholds.signal_adaptation.zones.mid.regime_proba.ranging": 0.56,
-    "thresholds.signal_adaptation.zones.high.entry_conf_overall": 0.36,
-    "thresholds.signal_adaptation.zones.high.regime_proba.balanced": 0.44,
-    "thresholds.signal_adaptation.zones.high.regime_proba.bull": 0.48,
-    "thresholds.signal_adaptation.zones.high.regime_proba.bear": 0.48,
-    "thresholds.signal_adaptation.zones.high.regime_proba.ranging": 0.54,
-    "exit.exit_conf_threshold": 0.3,
-    "exit.max_hold_bars": 32,
-    "exit.trailing_stop_enabled": false,
-    "exit.trailing_stop_pct": 0.015,
-    "risk.risk_map_deltas.conf_0": 0.01,
-    "risk.risk_map_deltas.size_0": 0.015,
-    "risk.risk_map_deltas.conf_1": -0.03,
-    "risk.risk_map_deltas.size_1": -0.01,
-    "risk.risk_map_deltas.conf_2": 0.03,
-    "risk.risk_map_deltas.size_2": 0.02,
-    "multi_timeframe.ltf_override_threshold": 0.62
+    "thresholds": {
+      "entry_conf_overall": 0.21,
+      "regime_proba": {
+        "balanced": 0.48,
+        "bull": 0.52,
+        "bear": 0.44,
+        "ranging": 0.42
+      },
+      "min_edge": 0.012,
+      "signal_adaptation": {
+        "zones": {
+          "low": {
+            "entry_conf_overall": 0.26,
+            "regime_proba": 0.44
+          },
+          "mid": {
+            "entry_conf_overall": 0.32,
+            "regime_proba": 0.44
+          },
+          "high": {
+            "entry_conf_overall": 0.37,
+            "regime_proba": 0.48
+          }
+        }
+      }
+    },
+    "exit": {
+      "exit_conf_threshold": 0.43,
+      "max_hold_bars": 14,
+      "trailing_stop_pct": 0.015
+    },
+    "multi_timeframe": {
+      "ltf_override_threshold": 0.45,
+      "ltf_override_adaptive": {
+        "percentile": 0.81
+      }
+    },
+    "htf_fib": {
+      "entry": {
+        "tolerance_atr": 4.25
+      }
+    },
+    "ltf_fib": {
+      "entry": {
+        "tolerance_atr": 1.8
+      }
+    },
+    "risk": {
+      "risk_map_deltas": {
+        "conf_0": 0.04,
+        "size_0": -0.005,
+        "conf_1": 0.03,
+        "size_1": -0.002,
+        "conf_2": 0.0,
+        "size_2": 0.005
+      }
+    }
   },
   "constraints": {
     "hard_failures": [],
@@ -57,57 +82,57 @@
     }
   },
   "metadata": {
-    "trial_id": "trial_009",
-    "results_path": "tBTCUSD_1h_20251121_150244.json",
+    "trial_id": "trial_003",
+    "results_path": "tBTCUSD_1h_trial_003.json",
     "run_meta": {
-      "run_dir": "C:\\Users\\fa06662\\HCP\\Skrivbord\\Genesis-Core\\results\\hparam_search\\run_20251121_140023",
-      "config_path": "config\\optimizer\\tBTCUSD_1h_optuna_phase3_fine.yaml",
+      "run_dir": "C:\\Users\\fa06662\\HCP\\Skrivbord\\Genesis-Core\\results\\hparam_search\\run_20251203_125944",
+      "config_path": "config\\optimizer\\tBTCUSD_1h_optuna_phase3_fine_v7.yaml",
       "raw_run_meta": {
-        "run_id": "run_20251121_140023",
-        "config_path": "config\\optimizer\\tBTCUSD_1h_optuna_phase3_fine.yaml",
-        "snapshot_id": "snap_tBTCUSD_20240401_20250331_v1",
+        "run_id": "run_20251203_125944",
+        "config_path": "config\\optimizer\\tBTCUSD_1h_optuna_phase3_fine_v7.yaml",
+        "snapshot_id": "snap_tBTCUSD_2024-01-01_2024-12-31_v1",
         "symbol": "tBTCUSD",
         "timeframe": "1h",
-        "started_at": "2025-11-21T14:00:23.293995+00:00",
-        "git_commit": "b011a0ee85582e12e904af18e272440fd4ab8ff9",
+        "started_at": "2025-12-03T12:59:44.425659+00:00",
+        "git_commit": "ddd099cb30338f6925afd7f04ec00d4d77a7a3db",
         "raw_meta": {
           "symbol": "tBTCUSD",
           "timeframe": "1h",
-          "snapshot_id": "snap_tBTCUSD_20240401_20250331_v1",
+          "snapshot_id": "snap_tBTCUSD_2024-01-01_2024-12-31_v1",
           "runs": {
             "strategy": "optuna",
             "resume": false,
-            "max_trials": 50,
-            "max_concurrent": 4,
-            "use_sample_range": true,
+            "max_trials": 100,
+            "max_concurrent": 1,
             "optuna": {
-              "study_name": "optuna_phase3_fine_12m_v3",
-              "storage": "sqlite:///results/hparam_search/storage/optuna_phase3_fine_v3.db",
+              "study_name": "optuna_phase3_fine_v7",
+              "storage": "sqlite:///results/hparam_search/storage/optuna_phase3_fine_v7.db",
+              "n_jobs": 1,
+              "timeout": 14400,
               "sampler": {
-                "name": "tpe",
-                "kwargs": {
-                  "n_startup_trials": 20,
-                  "n_ei_candidates": 24,
-                  "multivariate": true,
-                  "constant_liar": true
-                }
+                "type": "tpe",
+                "n_startup_trials": 20,
+                "n_ei_candidates": 24,
+                "multivariate": true,
+                "group": true,
+                "seed": 42
               }
             }
           }
         },
         "optuna": {
-          "study_name": "optuna_phase3_fine_12m_v3",
-          "storage": "sqlite:///results/hparam_search/storage/optuna_phase3_fine_v3.db",
+          "study_name": "optuna_phase3_fine_v7",
+          "storage": "sqlite:///results/hparam_search/storage/optuna_phase3_fine_v7.db",
           "direction": "maximize",
-          "n_trials": 50,
-          "best_value": 0.1633715456755628,
-          "best_trial_number": "trial_009",
+          "n_trials": 100,
+          "best_value": 1.118178244880416,
+          "best_trial_number": "trial_003",
           "diagnostics": {
-            "total_trials_attempted": 50,
+            "total_trials_attempted": 100,
             "duplicate_count": 0,
-            "zero_trade_count": 0,
+            "zero_trade_count": 96,
             "duplicate_ratio": 0.0,
-            "zero_trade_ratio": 0.0
+            "zero_trade_ratio": 0.96
           }
         }
       },
@@ -116,174 +141,18 @@
         "reasons": []
       },
       "score_block": {
-        "score": 0.1633715456755628,
+        "score": 1.118178244880416,
         "metrics": {
-          "total_return": 0.06151190625000196,
-          "profit_factor": 1.1618102065423606,
-          "max_drawdown": 0.07346679674999933,
-          "win_rate": 0.2352941176470588,
-          "num_trades": 85,
-          "sharpe_ratio": 0.05724679219198815,
-          "return_to_dd": 0.8372749183460557
+          "total_return": 0.1383795926550166,
+          "profit_factor": 1.1000003462271168,
+          "max_drawdown": 0.04238872812999876,
+          "win_rate": 0.5373608903020668,
+          "num_trades": 1887,
+          "sharpe_ratio": 0.026303386349295948,
+          "return_to_dd": 3.264537502296147
         },
         "hard_failures": []
       }
     }
-  },
-  "merged_config": {
-    "thresholds": {
-      "entry_conf_overall": 0.32,
-      "regime_proba": {
-        "balanced": 0.52,
-        "bear": 0.48,
-        "bull": 0.48,
-        "ranging": 0.54
-      },
-      "signal_adaptation": {
-        "atr_period": 14,
-        "zones": {
-          "high": {
-            "entry_conf_overall": 0.36,
-            "regime_proba": {
-              "balanced": 0.44,
-              "bear": 0.48,
-              "bull": 0.48,
-              "ranging": 0.54
-            },
-            "pct": null
-          },
-          "low": {
-            "entry_conf_overall": 0.26,
-            "regime_proba": {
-              "balanced": 0.48,
-              "bear": 0.48,
-              "bull": 0.4,
-              "ranging": 0.54
-            },
-            "pct": null
-          },
-          "mid": {
-            "entry_conf_overall": 0.3,
-            "regime_proba": {
-              "balanced": 0.48,
-              "bear": 0.48,
-              "bull": 0.48,
-              "ranging": 0.56
-            },
-            "pct": null
-          }
-        }
-      },
-      "min_edge": 0.006
-    },
-    "gates": {
-      "hysteresis_steps": 3,
-      "cooldown_bars": 2
-    },
-    "risk": {
-      "risk_map": [
-        [
-          0.46,
-          0.03
-        ],
-        [
-          0.52,
-          0.03
-        ],
-        [
-          0.68,
-          0.055
-        ]
-      ]
-    },
-    "ev": {
-      "R_default": 1.8
-    },
-    "exit": {
-      "enabled": true,
-      "max_hold_bars": 32,
-      "stop_loss_pct": 0.02,
-      "take_profit_pct": 0.05,
-      "exit_conf_threshold": 0.3,
-      "regime_aware_exits": true,
-      "trailing_stop_enabled": false,
-      "trailing_stop_pct": 0.015
-    },
-    "multi_timeframe": {
-      "use_htf_block": true,
-      "allow_ltf_override": true,
-      "ltf_override_threshold": 0.62,
-      "ltf_override_adaptive": {
-        "enabled": true,
-        "window": 120,
-        "percentile": 0.85,
-        "min_history": 30,
-        "min_floor": null,
-        "max_ceiling": null,
-        "fallback_threshold": null,
-        "regime_multipliers": {}
-      },
-      "htf_selector": {
-        "mode": "fixed",
-        "default_timeframe": null,
-        "default_multiplier": null,
-        "fallback_timeframe": "1D",
-        "per_timeframe": {
-          "1h": {
-            "timeframe": null,
-            "multiplier": 6.0
-          },
-          "6h": {
-            "timeframe": "1D",
-            "multiplier": null
-          }
-        }
-      }
-    },
-    "warmup_bars": 150,
-    "htf_exit_config": {
-      "enable_partials": true,
-      "enable_trailing": true,
-      "enable_structure_breaks": true,
-      "partial_1_pct": 0.6,
-      "partial_2_pct": 0.5,
-      "fib_threshold_atr": 0.7,
-      "trail_atr_multiplier": 2.5,
-      "swing_update_strategy": "fixed"
-    },
-    "htf_fib": {
-      "entry": {
-        "enabled": true,
-        "tolerance_atr": 0.5,
-        "targets": null,
-        "long_target_levels": null,
-        "short_target_levels": null,
-        "long_max_level": 0.786,
-        "long_min_level": null,
-        "short_min_level": 0.382,
-        "short_max_level": null,
-        "missing_policy": null,
-        "override_confidence": null
-      },
-      "exit": null
-    },
-    "ltf_fib": {
-      "entry": {
-        "enabled": true,
-        "tolerance_atr": 0.5,
-        "targets": null,
-        "long_target_levels": null,
-        "short_target_levels": null,
-        "long_max_level": 0.786,
-        "long_min_level": null,
-        "short_min_level": 0.382,
-        "short_max_level": null,
-        "missing_policy": null,
-        "override_confidence": null
-      },
-      "exit": null
-    },
-    "features": null
-  },
-  "runtime_version": 4
+  }
 }

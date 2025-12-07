@@ -1,5 +1,5 @@
 {
-  "cfg": {
+  "parameters": {
     "thresholds": {
       "entry_conf_overall": 0.24,
       "regime_proba": {
@@ -81,7 +81,7 @@
         "fallback_timeframe": "1D",
         "per_timeframe": {
           "1h": {
-            "multiplier": 6.0
+            "timeframe": "1D"
           },
           "6h": {
             "timeframe": "1D"

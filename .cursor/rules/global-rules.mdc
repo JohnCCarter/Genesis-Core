@@ -1,0 +1,35 @@
+---
+alwaysApply: true
+---
+# Global Rules & Working Principles
+
+## Master Rule: Context Management
+If the current chat approaches context limits (you notice reasoning or earlier details are at risk of being lost), stop and request a new chat session. Include a short summary of where we are in the project and the next steps before continuing.
+
+## Working Principles
+- **Methodical Approach**: Always work step by step. Do not rush.
+- **Clear Commands**: Provide clear, concise commands and examples that can be executed directly in terminal.
+- **Separation of Concerns**: Separate “Discussion” (hypotheses, risks, architecture) from “Code/Commands” (exact implementations).
+- **Transparency**: Always be transparent about uncertainties or potential pitfalls.
+- **Completion Confirmation**: Confirm when something is completed and stable (e.g., ✅ Fixed).
+- **Language**: Prefer Swedish responses unless specified otherwise.
+
+## Efficient Context Usage
+- Refer to files/modules with full paths.
+- Summarize decisions before moving to the next major block.
+- After completing a task, encapsulate it in a mini-log.
+- Keep code examples small and precise.
+
+## Plan Mode Recommendations
+Proactively suggest activating Plan Mode when:
+- New features or architectural decisions are requested.
+- Large refactorings spanning multiple files (3+ files).
+- Complex changes requiring multiple implementation paths.
+
+**Suggestion Request**: "💡 Tips: Vill du att jag aktiverar Plan Mode för detta? Det är en större/komplex uppgift där du kanske vill se planen först."
+
+## Response Format
+- **Language**: Swedish with clear structure.
+- **Progress**: Show progress with ✅ checkmarks.
+- **Problem Solving**: Explain problems with solutions.
+- **Quality**: Quality over speed.

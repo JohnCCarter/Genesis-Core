@@ -2,59 +2,59 @@
 
 ## File Structure
 
-### `cursor-active-rules.mdc` (Active Rules)
-- **Purpose**: Active rules loaded av Cursor AI (`alwaysApply: true`)
-- **Content**: Komprimerade basinstruktioner + hänvisningar till referensguiden
-- **Metadata**: Inkluderar `description` för tydlig identifiering
-- **Usage**: Automatisk kontext i varje session
-- **Size**: Kompakt (~50 rader) för snabb läsning
+### `global-rules.mdc` (Global Rules)
 
-### `reference-guide.md` (Reference Documentation)
-- **Purpose**: Omfattande projektregler och riktlinjer
-- **Content**: Detaljerade regler, arkitektur, standarder och exempel
-- **Usage**: Slå upp när mer kontext behövs
-- **Size**: Utförlig (~280 rader) med full kontext
+- **Purpose**: General behavioral rules for the AI assistant
+- **Content**: Language choice, Plan Mode triggers, working principles
+- **Usage**: Applied everywhere to ensure consistent collaboration style
 
-### `AGENTS.md` (Handoff & status)
-- **Purpose**: Snabb översikt för nästa agent
-- **Content**: Senaste leveranser, experiment, arbetsflöde och nästa steg
-- **Usage**: Läs vid handoff eller när projektläget behöver uppdateras
-- **Size**: Beror på aktuell status (uppdateras vid handoff)
+### `workspace-rules.mdc` (Genesis-Core Rules)
+
+- **Purpose**: Project-specific technical rules
+- **Content**: Tech stack, stabilization policy, security, API endpoints
+- **Usage**: Applied specifically when working on Genesis-Core code
+
+### `architecture.md` (Architecture & Reference)
+
+- **Purpose**: Comprehensive project documentation and guidelines
+- **Content**: Architecture, API reference, configuration details
+- **Usage**: Reference when detailed information is needed
 
 ## Rule Hierarchy
 
 ```
-cursor-active-rules.mdc    ← Active rules (Cursor loads this)
+global-rules.mdc       ← Behavior & Workflow
+workspace-rules.mdc    ← Project Tech & Security
     ↓
-reference-guide.md         ← Full documentation (reference)
+architecture.md        ← Full documentation (reference)
 ```
 
 ## When to Update
 
-### Update BOTH files when:
-- Core principles change
-- Security rules are modified
-- Development workflow changes
-- Critical patterns are established
+### Update `global-rules.mdc` when:
 
-### Update ONLY reference-guide.md when:
-- Adding detailed examples
-- Expanding troubleshooting sections
+- Interaction style needs to change
+- New general workflow steps are added
+
+### Update `workspace-rules.mdc` when:
+
+- Tech stack changes
+- Security policies are updated
+- Key endpoints or files change
+
+### Update `architecture.md` when:
+
 - Adding architectural details
+- Expanding troubleshooting sections
 - Documenting complex patterns
 
 ## Syncing Rules
 
 When updating common sections, ensure consistency between:
-- cursor-active-rules.mdc (sammandrag)
-- reference-guide.md (detaljer)
 
-Common sections to sync:
-- Core Principles
-- Security Rules
-- Development Workflow
-- FastAPI Endpoints
-- Common Issues
+- `workspace-rules.mdc` (concise)
+- `architecture.md` (detailed)
 
 ---
-**Last Updated**: 2025-10-30
+
+**Last Updated**: 2025-10-09

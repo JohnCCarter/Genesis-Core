@@ -1,57 +1,74 @@
-<!-- Updated by Copilot-guided review 2025-10-30 -->
+<!-- Generated from global-rules.mdc and workspace-rules.mdc -->
 
-# Genesis-Core Copilot Guide
+# Genesis-Core Combined Rules
 
-## Samarbetsregler
+## GLOBAL RULES (User-Assistant Interaction)
 
-- Läs `.cursor/rules/cursor-active-rules.mdc` för baskrav (svenska svar, steg-för-steg, diff < 100 rader); `reference-guide.md` innehåller full policy och `AGENTS.md` ger senaste lägesrapporten.
-- Stabiliseringsfas: varje kodrad ska lösa ett konkret problem eller höja tillförlitlighet/prestanda/läsbarhet. Lägg till tester direkt vid logikändringar.
+### Master Rule: Context Management
 
-## Arkitektur
+If the current chat approaches context limits, stop and request a new chat session. Include a short summary of where we are and the next steps.
 
-- FastAPI startas i `src/core/server.py`; endpoints ska vara tunna och delegera till rena funktionsmoduler i `src/core/strategy/` och `src/core/io/`.
-- `src/core/strategy/decision.py` och `evaluate.py` bildar kärnloopen (ATR-, regime- och Fibonacci-gating). Bevara `state_out`-strukturen; den för vidare ATR-percentiler, fib-kontekst och cooldown mellan körningar.
-- Champion-konfigurationer (`config/strategy/champions/*.json`) styr trösklar. `ChampionLoader` fallbackar mot default-tidsramar om filer saknas.
+### Working Principles
 
-## Strategipipeline
+- **Methodical Approach**: Always work step by step. Do not rush.
+- **Clear Commands**: Provide clear, concise commands (PowerShell/Bash) and examples.
+- **Separation**: Separate “Discussion” from “Code/Commands”.
+- **Transparency**: Be transparent about uncertainties.
+- **Completion**: Confirm when something is completed (e.g., ✅ Fixed).
+- **Language**: Prefer Swedish responses unless specified otherwise.
 
-- `evaluate_pipeline` hämtar champion, läser features via `features_asof.extract_features`, kör modellprediktion, räknar confidence och kallar `decision.decide`.
-- Featureberäkning använder AS-OF-semantik: live kör näst sista baren; backtest styrs via `asof_bar`. Ändra alltid fönsterlogik i `features_asof.py` kontrollerat.
-- `state_out` måste fortsatt exponera Fibonacci-kontekst för både HTF och LTF samt ATR-baserade toleranser (se senaste förändringar i `htf_fibonacci.py`).
+### Plan Mode Recommendations
 
-## Konfiguration & SSOT
+Proactively suggest activating Plan Mode when:
 
-- SSOT ligger utanför git i `config/runtime.json` och manipuleras via `ConfigAuthority` för atomiska skrivningar och audit-logg (`logs/config_audit.jsonl`).
-- `/config/runtime/propose` accepterar endast whitelistaste fält (`thresholds`, `gates`, `risk.risk_map`, `ev.R_default`). Utökningar kräver schemajustering i `core/config/schema.py` och valideringstester.
-- Miljöer läses i `core/config/settings.py`; tester behöver `SYMBOL_MODE=synthetic` för att tvinga TEST-symboler.
+- New features or architectural decisions are requested.
+- Large refactorings spanning multiple files (3+ files).
+- Complex changes requiring multiple implementation paths.
 
-## Backtest & Optimering
+---
 
-- `scripts/run_backtest.py --config-file path/to.json` kör `core/backtest/engine.BacktestEngine` mot Parquet-data under `data/curated/v1/candles/`.
-- Optimiseringsflöde enligt `AGENTS.md`: coarse grid → proxy Optuna → fine Optuna → ev. fib-grid. Cacha resultat i `results/hparam_search/run_*` och summera med `python scripts/optimizer.py summarize <run_id>`.
-- Trial-parametrar djupmergas över aktuell SSOT; schemaändringar kräver uppdatering av `_deep_merge` och associerade tester i `tests/test_optimizer_runner.py`.
+## WORKSPACE RULES (Genesis-Core Technical)
 
-## Bitfinex-integration
+### Stabilization Phase Policy
 
-- REST-klienten (`core/io/bitfinex/exchange_client.py`) signerar med `json.dumps(..., separators=(",", ":"))`; återanvänd exakt format vid nya auth-kroppar.
-- Nonce-hantering lever i `core/utils/nonce_manager.py`; kalla `bump_nonce` före retry på nonce-fel. Symbolmapping måste matcha TEST-whitelist i `src/core/server.py`.
+**Code stability > New features**. Every line of code must either:
+✅ Solve a concrete problem OR ✅ Increase reliability, performance, or readability
 
-## Observability & Loggning
+### Change Policy
 
-- Metrics finns i `core/observability/metrics.py` och exponeras via `/observability/dashboard`; bruk `metrics.event`/`metrics.inc` för nya händelser.
-- Loggar ska gå via `core/utils/logging_redaction.get_logger` för att maskera hemligheter och följa säkerhetspolicyn.
+- **Bug fixes**: ✅ Always allowed - Write test immediately after.
+- **Refactoring**: ✅ Small, documented steps without behavior change.
+- **New features**: ⚠️ Only after clear specification and justification.
+- **Experimental**: 🚫 Separate branch only.
 
-## Test & QA
+### Code Standards
 
-- Standardkörning: `pwsh -File scripts/ci.ps1` (pre-commit → ruff → black → pytest → bandit enligt `.github/workflows/ci.yml`).
-- Pre-commit kör ej Bandit längre; kör `bandit -r src -c bandit.yaml -f txt -o bandit-report.txt` separat vid behov (CI kör samma kommando med `continue-on-error: true`).
-- Kritiska tester: `pytest tests/test_config_api_e2e.py::test_runtime_endpoints_e2e`, `tests/test_exchange_client.py::test_build_and_request_smoke`, `tests/test_ui_endpoints.py::test_debug_auth_masked` (kräver `.env`).
-- Backtest-/optimeringsändringar kan påverka snapshots i `tests/test_optimizer_*` och JSON-resultat under `results/backtests/`; uppdatera dem konsekvent.
-Utför logiska commits för varje ändring för att underlätta granskning och återgång vid behov.
+- **Python**: 3.11+ (modern syntax, dict not Dict, X|None not Optional[X]).
+- **Style**: Line length 100 chars, black formatting, ruff linting.
+- **Structure**: `src/core/{config,indicators,io,observability,risk,strategy,utils}`.
+- **Testing**: pytest with comprehensive coverage.
+- **No Emojis in Code**: Do not use emojis in source files.
 
-## Mönster & Konventioner
+### Critical Security Rules
 
-- Håll `src/core/strategy/*` rena och deterministiska; ingen I/O, returnera metadata för observability.
-- Dokumentera nya state-/meta-nycklar och handoff-insikter i `AGENTS.md` för nästa agent.
-- Rör inte runtime-filer som är gitignored (`config/runtime.json`, `logs/config_audit.jsonl`) direkt; använd befintliga API:er/kommandon.
-- Lagra genererade rapporter under `results/backtests/` och `results/hparam_search/` enligt etablerat mönster.
+- **NEVER commit**: `.env`, `.nonce_tracker.json`, `dev.overrides.local.json`.
+- **Secrets**: API keys only from environment variables.
+- **Safety**: Force TEST symbols for paper trading.
+- **Signing**: Use compact JSON: `json.dumps(body, separators=(",",":"))`.
+
+### Development Workflow
+
+1. **Research**: `read_file` → `codebase_search` → `grep` → `todo_write`.
+2. **Edit**: Use edit tools (never output code). Prefer editing over creating.
+3. **Verify**: `pytest` → `black --check` → `ruff check` → `bandit`.
+4. **Docs**: Check existing `README.md`/`TODO.md` before creating new ones.
+
+### FastAPI Endpoints
+
+`/ui`, `/strategy/evaluate`, `/public/candles`, `/auth/check`, `/paper/submit`, `/debug/auth`
+
+### Common Issues
+
+- "invalid key": Check JSON serialization.
+- "Ingen giltig order": Verify model exists.
+- Nonce errors: Use `bump_nonce()`.

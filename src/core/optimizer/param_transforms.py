@@ -11,12 +11,26 @@ BASE_RISK_MAP: list[tuple[float, float]] = [
 ]
 
 
+def _safe_float(value: Any, default: float = 0.0) -> float:
+    """Safely convert value to float, handling dicts/None."""
+    if value is None:
+        return default
+    if isinstance(value, dict):
+        # Handle case where parameter expansion created a dict (e.g. nested keys)
+        # If the dict has a 'value' key, use it, otherwise default
+        return float(value.get("value", default))
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
 def _build_risk_map_from_deltas(deltas: dict[str, Any]) -> list[list[float]]:
     """Construct risk map points by applying deltas to the champion baseline."""
     points: list[tuple[float, float]] = []
     for idx, (base_conf, base_size) in enumerate(BASE_RISK_MAP):
-        conf_delta = float(deltas.get(f"conf_{idx}", 0.0) or 0.0)
-        size_delta = float(deltas.get(f"size_{idx}", 0.0) or 0.0)
+        conf_delta = _safe_float(deltas.get(f"conf_{idx}"))
+        size_delta = _safe_float(deltas.get(f"size_{idx}"))
         conf = max(0.05, min(0.95, base_conf + conf_delta))
         size = max(0.0, base_size + size_delta)
         points.append((conf, size))

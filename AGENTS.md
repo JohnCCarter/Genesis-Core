@@ -4,7 +4,13 @@
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
 
-## 1. Deliverables (latest highlights: 2025-12-03)
+## 1. Deliverables (latest highlights: 2025-12-08)
+
+- **REPRODUCIBILITY CRISIS (2025-12-08)**:
+
+  - **Issue**: Optimizer reported Score 0.42 (2382 trades), but manual verification of the _exact same config_ yielded Score 0.19 (386 trades).
+  - **Action**: Paused feature development. Initiated **The 9-Step Stabilization Plan** to enforce absolute determinism.
+  - **New Roadmap**: See `docs/roadmap/STABILIZATION_PLAN_9_STEPS.md`.
 
 - **CHAMPION UPDATE (2025-12-03)**: Uppdaterade `config/strategy/champions/tBTCUSD_1h.json` med parametrar från `run_20251203_105838` (Trial 001).
 

@@ -1,4 +1,4 @@
-description: "Phase 3 Fine Tuning v7 - Fixed Risk Map Deltas"
+description: "Phase 3 Fine Tuning v7 (50 trials) - Fixed Risk Map Deltas"
 # Based on Champion tBTCUSD_1h (PF 1.25, 201 trades)
 # Changes from v3:
 # - Fixed risk_map_deltas to prevent 0 position size (size_0, size_1)
@@ -12,12 +12,12 @@ meta:
   runs:
     strategy: optuna
     resume: false
-    max_trials: 100
-    max_concurrent: 4
+    max_trials: 50
+    max_concurrent: 1
     optuna:
-      study_name: "optuna_phase3_fine_v7"
-      storage: "sqlite:///results/hparam_search/storage/optuna_phase3_fine_v7.db"
-      n_jobs: 4
+      study_name: "optuna_phase3_fine_v7_50"
+      storage: "sqlite:///results/hparam_search/storage/optuna_phase3_fine_v7_50.db"
+      n_jobs: 1
       timeout: 14400
       pruner:
         type: "median"
@@ -154,7 +154,9 @@ parameters:
           type: float
           low: 1.4
           high: 2.2
-          step: 0.1 # 5. Risk Management - Risk Map Deltas
+          step: 0.1
+
+  # 5. Risk Management - Risk Map Deltas
   risk:
     risk_map_deltas:
       conf_0:

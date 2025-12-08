@@ -1,29 +1,32 @@
 # Optimization Config for tBTCUSD 1h (Phase 3 Fine Tuning - v7 Smoke)
 # Based on v7 but with fewer trials for verification
 
-study_name: "optuna_phase3_fine_v7_smoke"
-storage: "sqlite:///results/hparam_search/storage/optuna_phase3_fine_v7_smoke.db"
-n_trials: 10
-n_jobs: 1 # Serial execution for safety
-
-# Sampler settings
-sampler:
-  type: "tpe"
-  n_startup_trials: 5 # Half of trials are random
-  n_ei_candidates: 24
-  seed: 42 # Fixed seed for reproducibility
-
-# Objective settings
-objective:
-  target: "score"
-  direction: "maximize"
-  timeout_seconds: 3600
-
-# Constraints
-constraints:
-  min_trades: 10 # Lower for smoke
-  min_profit_factor: 0.5 # Very loose
-  max_max_dd: 1.0 # No DD limit
+meta:
+  symbol: tBTCUSD
+  timeframe: 1h
+  snapshot_id: snap_tBTCUSD_2024-01-01_2024-12-31_v1
+  runs:
+    strategy: optuna
+    resume: false
+    max_trials: 10
+    max_concurrent: 1
+    optuna:
+      study_name: "optuna_phase3_fine_v7_smoke"
+      storage: "sqlite:///results/hparam_search/storage/optuna_phase3_fine_v7_smoke.db"
+      n_jobs: 1
+      sampler:
+        type: "tpe"
+        n_startup_trials: 5 # Half of trials are random
+        n_ei_candidates: 24
+        seed: 42 # Fixed seed for reproducibility
+      objective:
+        target: "score"
+        direction: "maximize"
+        timeout_seconds: 3600
+      constraints:
+        min_trades: 10 # Lower for smoke
+        min_profit_factor: 0.5 # Very loose
+        max_max_dd: 1.0 # No DD limit
 
 # Parameter Search Space (Identical to v7)
 parameters:

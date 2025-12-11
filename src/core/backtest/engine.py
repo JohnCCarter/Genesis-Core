@@ -5,6 +5,7 @@ Replays historical candle data bar-by-bar through the existing strategy pipeline
 """
 
 import os
+import subprocess
 import warnings
 from datetime import datetime
 from pathlib import Path
@@ -167,19 +168,30 @@ class BacktestEngine:
         Returns:
             True if data loaded successfully, False otherwise
         """
-        # Find data file (try two-layer structure first, fallback to legacy)
+        # Find data file (try frozen first, then two-layer structure, fallback to legacy)
         base_dir = Path(__file__).parent.parent.parent.parent / "data"
+
+        # 1. Frozen Data (Priority 1)
+        data_file_frozen = base_dir / "raw" / f"{self.symbol}_{self.timeframe}_frozen.parquet"
+
+        # 2. Curated Data (Priority 2)
         data_file_curated = (
             base_dir / "curated" / "v1" / "candles" / f"{self.symbol}_{self.timeframe}.parquet"
         )
+
+        # 3. Legacy Data (Priority 3)
         data_file_legacy = base_dir / "candles" / f"{self.symbol}_{self.timeframe}.parquet"
 
-        if data_file_curated.exists():
+        if data_file_frozen.exists():
+            data_file = data_file_frozen
+            print(f"[DATA] Using FROZEN snapshot: {data_file.name}")
+        elif data_file_curated.exists():
             data_file = data_file_curated
         elif data_file_legacy.exists():
             data_file = data_file_legacy
         else:
             print("[ERROR] Data file not found:")
+            print(f"  Tried frozen: {data_file_frozen}")
             print(f"  Tried curated: {data_file_curated}")
             print(f"  Tried legacy: {data_file_legacy}")
             return False
@@ -438,6 +450,15 @@ class BacktestEngine:
         Returns:
             Dict with backtest results
         """
+        # Reset state for isolation (Step 3: Eliminate Hidden State)
+        self.position_tracker = PositionTracker(
+            initial_capital=self.position_tracker.initial_capital,
+            commission_rate=self.position_tracker.commission_rate,
+            slippage_rate=self.position_tracker.slippage_rate,
+        )
+        self.state = {}
+        self.bar_count = 0
+
         if self.candles_df is None:
             print("[ERROR] No data loaded. Call load_data() first.")
             return {"error": "no_data"}
@@ -937,6 +958,11 @@ class BacktestEngine:
         """Build final backtest results."""
         summary = self.position_tracker.get_summary()
 
+        try:
+            git_hash = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode("ascii").strip()
+        except Exception:
+            git_hash = "unknown"
+
         return {
             "backtest_info": {
                 "symbol": self.symbol,
@@ -946,6 +972,12 @@ class BacktestEngine:
                 "bars_total": len(self.candles_df),
                 "bars_processed": self.bar_count,
                 "warmup_bars": self.warmup_bars,
+                "initial_capital": self.position_tracker.initial_capital,
+                "commission_rate": self.position_tracker.commission_rate,
+                "slippage_rate": self.position_tracker.slippage_rate,
+                "git_hash": git_hash,
+                "seed": os.environ.get("GENESIS_RANDOM_SEED", "unknown"),
+                "timestamp": datetime.now().isoformat(),
             },
             "summary": summary,
             "trades": [

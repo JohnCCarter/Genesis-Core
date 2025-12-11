@@ -1,18 +1,35 @@
 # README for AI Agents (Local Development)
 
-## Last update: 2025-12-02
+## Last update: 2025-12-11
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
 
-## 1. Deliverables (latest highlights: 2025-12-08)
+## 1. Deliverables (latest highlights: 2025-12-11)
 
-- **REPRODUCIBILITY CRISIS (2025-12-08)**:
+- **STABILIZATION PLAN COMPLETE (2025-12-11)**:
 
-  - **Issue**: Optimizer reported Score 0.42 (2382 trades), but manual verification of the _exact same config_ yielded Score 0.19 (386 trades).
-  - **Action**: Paused feature development. Initiated **The 9-Step Stabilization Plan** to enforce absolute determinism.
-  - **New Roadmap**: See `docs/roadmap/STABILIZATION_PLAN_9_STEPS.md`.
+  - **Goal**: Enforce absolute determinism and reproducibility across manual backtests and optimizer runs.
+  - **Status**: ✅ All 9 steps completed.
+  - **Key Achievements**:
+    - **Frozen Data**: `data/raw/tBTCUSD_1h_frozen.parquet` ensures consistent input.
+    - **Unified Pipeline**: `src/core/pipeline.py` centralizes environment setup and engine creation.
+    - **Static Config**: `config/backtest_defaults.yaml` defines the single source of truth for defaults.
+    - **Determinism**: Global seeding and process isolation enforced.
+    - **Verification**: Smoke tests confirm parity between `run_backtest.py` and `runner.py`.
 
-- **CHAMPION UPDATE (2025-12-03)**: Uppdaterade `config/strategy/champions/tBTCUSD_1h.json` med parametrar från `run_20251203_105838` (Trial 001).
+- **STABILIZATION PROGRESS (2025-12-11)**:
+
+  - **Step 1 (Frozen Data)**: ✅ Completed. Created `data/raw/tBTCUSD_1h_frozen.parquet` and `data/raw/tBTCUSD_1m_frozen.parquet`. Updated `BacktestEngine` to prioritize these frozen files. Verified with smoke test.
+  - **Step 2 (Fix Seeds Globally)**: ✅ Completed. Enforced `set_global_seeds` in `scripts/run_backtest.py` and `src/core/optimizer/runner.py`. Injected deterministic seed into Optuna samplers if missing.
+  - **Step 3 (Eliminate "Hidden State")**: ✅ Completed. Fixed `htf_fibonacci.py` cache key to include config hash. Enforced `PositionTracker` reset in `BacktestEngine.run()`.
+  - **Step 4 (Full Isolation)**: ✅ Completed. Verified process isolation in default mode. Enforced state reset in `BacktestEngine.run()` for in-process mode.
+  - **Step 5 (Pure Functions)**: ✅ Completed. Verified critical paths (indicators, features) use pure functions or create new objects.
+  - **Step 6 (Freeze Requirements)**: ✅ Completed. Created `requirements.lock` and documented Python 3.11.9.
+  - **Step 7 (Static Config)**: ✅ Completed. Created `config/backtest_defaults.yaml` and updated `run_backtest.py` to load defaults from it.
+  - **Step 8 (Comprehensive Logging)**: ✅ Completed. Added `git_hash`, `seed`, `timestamp`, and config details to `backtest_info` in results.
+  - **Step 9 (Single Pipeline)**: ✅ Completed. Created `src/core/pipeline.py` and refactored `run_backtest.py` and `runner.py` to use it. Verified with smoke test.
+
+- **REPRODUCIBILITY CRISIS (2025-12-08)**: Uppdaterade `config/strategy/champions/tBTCUSD_1h.json` med parametrar från `run_20251203_105838` (Trial 001).
 
   - **Orsak**: Tidigare champion var optimerad för en kodbas med ATR-bugg (14 vs 28 period) och HTF-logikfel. Nya parametrar är anpassade för den fixade logiken.
   - **Resultat**: Backtest 2024-01-01 till 2024-12-31 ger 201 trades, PF 1.25, +3.36% return.

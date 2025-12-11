@@ -233,7 +233,11 @@ def check_parameters_valid(parameters: dict[str, Any]) -> tuple[bool, str]:
     # Kontrollera att alla required-fält finns
     required_sections = ["thresholds", "risk", "exit"]
     for section in required_sections:
-        if section not in parameters:
+        # Check for section key OR dot notation (e.g. "thresholds.entry_conf")
+        has_section = section in parameters or any(
+            k.startswith(f"{section}.") for k in parameters.keys()
+        )
+        if not has_section:
             issues.append(f"[FAIL] Saknar parameter-sektion: {section}")
 
     # Kontrollera att det finns minst en icke-fixerad parameter

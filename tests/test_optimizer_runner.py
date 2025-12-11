@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, patch
@@ -93,6 +94,7 @@ def test_run_optimizer_updates_champion(tmp_path: Path, search_config_tmp: Path)
         (run_dir / "run_meta.json").write_text(json.dumps(run_meta_payload), encoding="utf-8")
 
     with (
+        patch.dict(os.environ, {"GENESIS_MAX_CONCURRENT": "1"}),
         patch("core.optimizer.runner.RESULTS_DIR", results_root),
         patch(
             "core.optimizer.runner.expand_parameters",

@@ -40,7 +40,7 @@ from core.utils.diffing.canonical import canonicalize_config
 from core.utils.diffing.optuna_guard import estimate_zero_trade
 from core.utils.diffing.results_diff import diff_backtest_results
 from core.utils.diffing.trial_cache import TrialResultCache
-from core.utils.optuna_helpers import NoDupeGuard, param_signature
+from core.utils.optuna_helpers import NoDupeGuard, param_signature, set_global_seeds
 
 
 def _json_default(obj: Any) -> Any:
@@ -783,28 +783,24 @@ def _run_backtest_direct(
     optuna_context: dict[str, Any] | None = None,
 ) -> tuple[int, str, dict[str, Any] | None]:
     try:
-        from core.backtest.engine import BacktestEngine
+        from core.pipeline import GenesisPipeline
+
+        pipeline = GenesisPipeline()
 
         # Load/Get engine
         # Include dates in cache key to support different ranges
         cache_key = f"{trial.symbol}_{trial.timeframe}_{trial.start_date}_{trial.end_date}"
         with _DATA_LOCK:
             if cache_key not in _DATA_CACHE:
-                # Create engine
-                # Always use fast_window=True for optimization
-                engine_loader = BacktestEngine(
+                # Create engine via pipeline
+                # This ensures we use the centralized defaults for capital/commission/etc.
+                engine_loader = pipeline.create_engine(
                     symbol=trial.symbol,
                     timeframe=trial.timeframe,
                     start_date=trial.start_date,
                     end_date=trial.end_date,
                     warmup_bars=trial.warmup_bars,
-                    fast_window=True,
                 )
-
-                # Enable precompute BEFORE load_data() so features are generated
-                if os.environ.get("GENESIS_PRECOMPUTE_FEATURES"):
-                    engine_loader.precompute_features = True
-                    logger.info("[PRECOMPUTE] Enabled before data load for 20x speedup")
 
                 # Now load data (will trigger precompute if flag is set)
                 if engine_loader.load_data():
@@ -1295,6 +1291,14 @@ def _select_optuna_sampler(
     if not OPTUNA_AVAILABLE:
         raise RuntimeError("Optuna är inte installerat")
     kwargs = (kwargs or {}).copy()
+
+    # Inject deterministic seed if not provided
+    if "seed" not in kwargs:
+        try:
+            kwargs["seed"] = int(os.environ.get("GENESIS_RANDOM_SEED", "42"))
+        except ValueError:
+            kwargs["seed"] = 42
+
     name = (name or kwargs.pop("type", None) or "tpe").lower()
     if name == "tpe":
         # Apply better defaults for TPE to avoid degeneracy
@@ -2022,6 +2026,13 @@ def _execute_trial_task(
 
 
 def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[str, Any]]:
+    # Ensure global determinism for the main process
+    try:
+        seed_val = int(os.environ.get("GENESIS_RANDOM_SEED", "42"))
+    except ValueError:
+        seed_val = 42
+    set_global_seeds(seed_val)
+
     config = load_search_config(config_path)
     meta = config.get("meta") or {}
     parameters = config.get("parameters") or {}

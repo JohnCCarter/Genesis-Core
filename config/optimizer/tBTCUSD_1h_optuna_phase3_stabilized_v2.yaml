@@ -1,0 +1,180 @@
+# Optuna Configuration for Phase 3 Stabilized v2 (Fine Tuning)
+# Focus: Narrowing search space based on v1 results (0 vs 3000 trades)
+# Target: PF > 1.20, Trades > 100/year
+
+meta:
+  symbol: "tBTCUSD"
+  timeframe: "1h"
+  snapshot_id: "snap_tBTCUSD_2024-01-01_2024-12-31_v1"
+  runs:
+    strategy: "optuna"
+    max_trials: 100
+    max_concurrent: 4
+    optuna:
+      study_name: "tBTCUSD_1h_phase3_stabilized_v2"
+      storage: "sqlite:///results/hparam_search/storage/optuna_phase3_stabilized_v2.db"
+      direction: "maximize"
+      timeout_seconds: 14400 # 4 hours
+      sampler:
+        type: "tpe"
+        kwargs:
+          n_startup_trials: 20
+          n_ei_candidates: 24
+          multivariate: true
+          seed: 42
+      pruner:
+        type: "median"
+        kwargs:
+          n_startup_trials: 10
+          n_warmup_steps: 100
+          interval_steps: 50
+
+# Parameter search space
+parameters:
+  # --- Entry Thresholds (Narrowed) ---
+  thresholds.entry_conf_overall:
+    type: "float"
+    low: 0.26
+    high: 0.34
+    step: 0.01
+
+  thresholds.min_edge:
+    type: "float"
+    low: 0.005
+    high: 0.015
+    step: 0.001
+
+  # --- Signal Adaptation (Critical for trade volume) ---
+  # Low zone: High volatility -> Lower confidence required? Or higher?
+  # Usually high vol = higher risk = higher confidence needed.
+  # But here we map "low" zone to specific thresholds.
+  thresholds.signal_adaptation.zones.low.entry_conf_overall:
+    type: "float"
+    low: 0.24
+    high: 0.30
+    step: 0.01
+  thresholds.signal_adaptation.zones.low.regime_proba:
+    type: "float"
+    low: 0.35
+    high: 0.50
+    step: 0.01
+
+  thresholds.signal_adaptation.zones.mid.entry_conf_overall:
+    type: "float"
+    low: 0.28
+    high: 0.36
+    step: 0.01
+  thresholds.signal_adaptation.zones.mid.regime_proba:
+    type: "float"
+    low: 0.40
+    high: 0.55
+    step: 0.01
+
+  thresholds.signal_adaptation.zones.high.entry_conf_overall:
+    type: "float"
+    low: 0.34
+    high: 0.42
+    step: 0.01
+  thresholds.signal_adaptation.zones.high.regime_proba:
+    type: "float"
+    low: 0.50
+    high: 0.65
+    step: 0.01
+
+  # --- Exit Strategy ---
+  exit.exit_conf_threshold:
+    type: "float"
+    low: 0.35
+    high: 0.50
+    step: 0.01
+
+  exit.max_hold_bars:
+    type: "int"
+    low: 8
+    high: 48
+    step: 4
+
+  exit.trailing_stop_pct:
+    type: "float"
+    low: 0.01
+    high: 0.04
+    step: 0.0025
+
+  # --- Multi-Timeframe Logic ---
+  multi_timeframe.ltf_override_threshold:
+    type: "float"
+    low: 0.30
+    high: 0.50
+    step: 0.01
+
+  multi_timeframe.ltf_override_adaptive.percentile:
+    type: "float"
+    low: 0.75
+    high: 0.95
+    step: 0.01
+
+  # Fibonacci Gates (Wider tolerance to allow trades)
+  multi_timeframe.htf_fib.entry.tolerance_atr:
+    type: "float"
+    low: 2.0
+    high: 6.0
+    step: 0.25
+
+  multi_timeframe.ltf_fib.entry.tolerance_atr:
+    type: "float"
+    low: 1.0
+    high: 3.0
+    step: 0.1
+
+  # --- Risk Management (Deltas from Champion) ---
+  # Champion Base:
+  # 0: conf=0.48, size=0.015
+  # 1: conf=0.59, size=0.025
+  # 2: conf=0.69, size=0.035
+
+  # We want to LOWER confidence requirements significantly
+  risk.risk_map_deltas.conf_0:
+    type: "float"
+    low: -0.20
+    high: -0.05
+    step: 0.01
+  risk.risk_map_deltas.size_0:
+    type: "float"
+    low: -0.005
+    high: 0.005
+    step: 0.001
+
+  risk.risk_map_deltas.conf_1:
+    type: "float"
+    low: -0.20
+    high: -0.05
+    step: 0.01
+  risk.risk_map_deltas.size_1:
+    type: "float"
+    low: -0.005
+    high: 0.005
+    step: 0.001
+
+  risk.risk_map_deltas.conf_2:
+    type: "float"
+    low: -0.20
+    high: -0.05
+    step: 0.01
+  risk.risk_map_deltas.size_2:
+    type: "float"
+    low: -0.015
+    high: 0.015
+    step: 0.005
+
+# Constraints
+constraints:
+  min_trades: 50
+  min_profit_factor: 1.05
+  max_max_dd: 0.25
+  include_scoring_failures: true # Important: Log results even if constraints fail
+
+# Fixed parameters (from Champion)
+fixed:
+  # Ensure we use the stabilized pipeline settings
+  warmup_bars: 150
+  use_multiprocessing: true

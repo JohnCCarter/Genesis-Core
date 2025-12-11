@@ -7,57 +7,58 @@
 **Problem**: Fetching data dynamically causes inconsistency.
 **Action**: Create immutable snapshots.
 
-- [ ] Create `data/raw/BTCUSD_1m_2020-2025.parquet` (and ETHUSD).
-- [ ] Ensure ALL pipelines (Optuna, Backtest, Live) use these exact files.
-- [ ] Remove all API calls from the data loading pipeline.
+- [x] Create `data/raw/tBTCUSD_1h_frozen.parquet` and `data/raw/tBTCUSD_1m_frozen.parquet`.
+- [x] Ensure ALL pipelines (Optuna, Backtest, Live) use these exact files.
+- [x] Remove all API calls from the data loading pipeline.
 
 ## ⭐ STEP 2 — Fix Seeds Globally
 
 **Problem**: Randomness varies between runs.
 **Action**: Set seeds in all libraries.
 
-- [ ] Implement global seeding for `numpy`, `random`, `torch`.
-- [ ] Enforce `optuna.samplers.TPESampler(seed=42)`.
+- [x] Implement global seeding for `numpy`, `random`, `torch`.
+- [x] Enforce `optuna.samplers.TPESampler(seed=42)`.
 
 ## ⭐ STEP 3 — Eliminate "Hidden State"
 
 **Problem**: Results depend on execution order or previous runs.
 **Action**: Identify and remove state leakage.
 
-- [ ] Audit for global variables.
-- [ ] Ensure caches are cleared between runs.
-- [ ] Verify no signal values depend on previous runs.
+- [x] Audit for global variables.
+- [x] Ensure caches are cleared between runs.
+- [x] Verify no signal values depend on previous runs.
 
 ## ⭐ STEP 4 — Full Isolation
 
 **Problem**: Shared memory/instances cause side effects.
 **Action**: Isolate execution contexts.
 
-- [ ] Instantiate new objects for every trial/backtest.
-- [ ] Ideally: Run each trial in a separate process (multiprocessing).
+- [x] Instantiate new objects for every trial/backtest (or reset state completely).
+- [x] Ideally: Run each trial in a separate process (multiprocessing).
 
 ## ⭐ STEP 5 — Pure Functions
 
 **Problem**: In-place mutation makes data flow unpredictable.
 **Action**: Refactor to pure functions.
 
-- [ ] Replace `df['col'] = ...` with `df.assign()` or new dataframe creation where appropriate in critical paths.
-- [ ] Ensure inputs are never modified.
+- [x] Replace `df['col'] = ...` with `df.assign()` or new dataframe creation where appropriate in critical paths.
+- [x] Ensure inputs are never modified.
 
 ## ⭐ STEP 6 — Freeze Requirements
 
 **Problem**: Dependency updates break reproducibility.
 **Action**: Lock environment.
 
-- [ ] Run `pip freeze > requirements.txt`.
-- [ ] Enforce usage of this exact environment.
+- [x] Run `pip freeze > requirements.lock`.
+- [x] Enforce usage of this exact environment (Python 3.11.9).
 
 ## ⭐ STEP 7 — Static Configuration
 
 **Problem**: Configs injected from env/CLI/random sources are hard to track.
 **Action**: Centralize configuration.
 
-- [ ] Create static config files (`config/strategy.yaml`, `config/backtest.yaml`, `config/optuna.yaml`).
+- [x] Create static config files (`config/backtest_defaults.yaml`).
+- [x] Update `run_backtest.py` to load defaults from static config.
 - [ ] Disable runtime overrides that aren't explicitly tracked.
 
 ## ⭐ STEP 8 — Comprehensive Logging
@@ -65,7 +66,8 @@
 **Problem**: Cannot trace back _why_ a result happened.
 **Action**: Log metadata for every run.
 
-- [ ] Log: Timestamp, Git Commit Hash, Config Hash, Dataset Version, Seed, Result.
+- [x] Log: Timestamp, Git Commit Hash, Seed, Result in `backtest_info`.
+- [ ] Log: Config Hash, Dataset Version (explicitly).
 
 ## ⭐ STEP 9 — Single Pipeline
 

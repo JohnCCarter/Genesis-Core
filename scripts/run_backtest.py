@@ -10,7 +10,6 @@ Usage:
 import argparse
 import json
 import os
-import random
 import sys
 from pathlib import Path
 
@@ -36,11 +35,11 @@ CONFIG_DIR = ROOT_DIR / "config"
 CONFIG_DIR.mkdir(exist_ok=True)
 (CONFIG_DIR / "__init__.py").touch(exist_ok=True)
 
-from core.backtest.engine import BacktestEngine  # noqa: E402
 from core.backtest.metrics import calculate_metrics, print_metrics_report  # noqa: E402
 from core.backtest.trade_logger import TradeLogger  # noqa: E402
 from core.config.authority import ConfigAuthority  # noqa: E402
 from core.optimizer.scoring import score_backtest  # noqa: E402
+from core.pipeline import GenesisPipeline  # noqa: E402
 from core.utils.diffing import diff_metrics, summarize_metric_deltas  # noqa: E402
 
 
@@ -73,20 +72,11 @@ def _summarize_runtime(label: str, cfg: dict) -> None:
     )
 
 
-def _seed_all(seed: int) -> None:
-    """Sätt deterministiska seeds för alla relevanta bibliotek."""
-
-    random.seed(seed)
-    if np is not None:
-        np.random.seed(seed)
-    if torch is not None:
-        torch.manual_seed(seed)
-        if torch.cuda.is_available():  # pragma: no cover - CUDA inte i testmiljö
-            torch.cuda.manual_seed_all(seed)
-
-
 def main():
     """CLI entry point."""
+    pipeline = GenesisPipeline()
+    defaults = pipeline.defaults
+
     parser = argparse.ArgumentParser(description="Run backtest on historical data")
     parser.add_argument("--symbol", type=str, required=True, help="Trading symbol (e.g., tBTCUSD)")
     parser.add_argument(
@@ -100,26 +90,26 @@ def main():
     parser.add_argument(
         "--capital",
         type=float,
-        default=10000.0,
-        help="Initial capital (default: 10000)",
+        default=defaults.get("capital", 10000.0),
+        help=f"Initial capital (default: {defaults.get('capital', 10000.0)})",
     )
     parser.add_argument(
         "--commission",
         type=float,
-        default=0.002,
-        help="Commission rate (default: 0.002 = 0.2%%)",
+        default=defaults.get("commission", 0.002),
+        help=f"Commission rate (default: {defaults.get('commission', 0.002)} = {defaults.get('commission', 0.002)*100:.1f}%%)",
     )
     parser.add_argument(
         "--slippage",
         type=float,
-        default=0.0005,
-        help="Slippage rate (default: 0.0005 = 0.05%%)",
+        default=defaults.get("slippage", 0.0005),
+        help=f"Slippage rate (default: {defaults.get('slippage', 0.0005)} = {defaults.get('slippage', 0.0005)*100:.2f}%%)",
     )
     parser.add_argument(
         "--warmup",
         type=int,
-        default=120,
-        help="Warmup bars for indicators (default: 120)",
+        default=defaults.get("warmup", 120),
+        help=f"Warmup bars for indicators (default: {defaults.get('warmup', 120)})",
     )
     parser.add_argument("--verbose", "-v", action="store_true", help="Print trade details")
     parser.add_argument("--no-save", action="store_true", help="Don't save results to files")
@@ -158,42 +148,21 @@ def main():
     except ValueError:
         seed_value = 42
 
-    _seed_all(seed_value)
-    print(f"[SEED] Deterministisk seed satt till {seed_value}")
-
-    # Default to fast mode for determinism (can be overridden via args/env)
-    use_fast_window = args.fast_window or os.environ.get("GENESIS_FAST_WINDOW") == "1"
-    use_precompute = (
-        args.precompute_features or os.environ.get("GENESIS_PRECOMPUTE_FEATURES") == "1"
-    )
-
-    # If neither explicitly set, default to fast mode
-    if not args.fast_window and "GENESIS_FAST_WINDOW" not in os.environ:
-        use_fast_window = True
-        os.environ["GENESIS_FAST_WINDOW"] = "1"
-        print("[MODE] Defaulting to fast_window=True for determinism")
-
-    if not args.precompute_features and "GENESIS_PRECOMPUTE_FEATURES" not in os.environ:
-        use_precompute = True
-        os.environ["GENESIS_PRECOMPUTE_FEATURES"] = "1"
-        print("[MODE] Defaulting to GENESIS_PRECOMPUTE_FEATURES=1 for determinism")
+    # Setup environment via pipeline
+    pipeline.setup_environment(seed=seed_value)
 
     try:
-        # Initialize engine
-        engine = BacktestEngine(
+        # Initialize engine via pipeline
+        engine = pipeline.create_engine(
             symbol=args.symbol,
             timeframe=args.timeframe,
             start_date=args.start,
             end_date=args.end,
-            initial_capital=args.capital,
-            commission_rate=args.commission,
-            slippage_rate=args.slippage,
+            capital=args.capital,
+            commission=args.commission,
+            slippage=args.slippage,
             warmup_bars=args.warmup,
-            fast_window=use_fast_window,
         )
-        # Set optional precompute flag on engine instance if requested
-        if use_precompute:
-            engine.precompute_features = True
 
         # Load data
         if not engine.load_data():

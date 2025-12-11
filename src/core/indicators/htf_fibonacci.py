@@ -5,6 +5,8 @@ Cross-timeframe Fibonacci projection with strict AS-OF semantics (no lookahead).
 Maps 1D Fibonacci levels to LTF bars (1h/30m) for structure-aware exits.
 """
 
+import hashlib
+import json
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
@@ -349,7 +351,19 @@ def get_htf_fibonacci_context(
 
     reference_ts = _reference_timestamp()
 
-    cache_key = f"{symbol}_{htf_timeframe}"
+    # Create a stable hash of the config to prevent stale cache when params change
+    config_hash = "default"
+    if config:
+        try:
+            # Convert dataclass to dict, sort keys, and hash string representation
+            cfg_dict = config.__dict__
+            cfg_str = json.dumps(cfg_dict, sort_keys=True, default=str)
+            config_hash = hashlib.md5(cfg_str.encode()).hexdigest()
+        except Exception:
+            # Fallback if serialization fails
+            config_hash = str(hash(str(config)))
+
+    cache_key = f"{symbol}_{htf_timeframe}_{config_hash}"
     cache_entry = _htf_context_cache.setdefault(cache_key, {})
     fib_df = cache_entry.get("fib_df")
 

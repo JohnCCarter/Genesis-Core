@@ -76,6 +76,7 @@ ignore = [
 [tool.black]
 line-length = 100
 target-version = ['py311']
+extend-exclude = '\.ipynb$'
 
 [tool.bandit]
 exclude_dirs = ["tests", "scripts"]

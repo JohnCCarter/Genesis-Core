@@ -56,6 +56,9 @@ htmlcov/
 .mypy_cache/
 .ruff_cache/
 
+# Jupyter
+.ipynb_checkpoints/
+
 # Logs
 *.log
 logs/
@@ -163,5 +166,5 @@ results/fibonacci_exits_*.json
 results/fibonacci_exits_*.csv
 results/fibonacci_exits_*.png
 
- # Keep example files
+# Keep example files
 !.env.example

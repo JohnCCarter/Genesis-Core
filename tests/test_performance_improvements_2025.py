@@ -186,6 +186,7 @@ class TestPandasSeriesOptimization:
             "high": list(range(n)),
             "low": list(range(n)),
             "close": list(range(n)),
+            "timestamp": list(range(n)),
         }
 
         start = time.perf_counter()
@@ -198,6 +199,7 @@ class TestPandasSeriesOptimization:
             "high": pd.Series(range(n), dtype=float),
             "low": pd.Series(range(n), dtype=float),
             "close": pd.Series(range(n), dtype=float),
+            "timestamp": pd.Series(range(n)),
         }
 
         start = time.perf_counter()

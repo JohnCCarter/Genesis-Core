@@ -28,6 +28,31 @@ BASE_RISK_MAP = [
 ]
 
 
+def normalize_champion_payload(data: dict[str, Any]) -> dict[str, Any]:
+    """Normalize champion JSON payload to a runtime-like config dict.
+
+    The repository has historically stored champions in slightly different shapes:
+    - {"cfg": {...}}                         (older)
+    - {"parameters": {...}}                  (current)
+    - {"merged_config": {...}}               (optimizer outputs)
+
+    For validation we want the nested config (thresholds/risk/exit/...) regardless of wrapper.
+    """
+    if not isinstance(data, dict):
+        return {}
+
+    # Prefer explicit runtime config blocks if present.
+    if isinstance(data.get("cfg"), dict):
+        return data["cfg"]
+    if isinstance(data.get("parameters"), dict):
+        return data["parameters"]
+    if isinstance(data.get("merged_config"), dict):
+        return data["merged_config"]
+
+    # Fallback: assume payload already is a config dict.
+    return data
+
+
 def load_champion(symbol: str, timeframe: str) -> dict[str, Any]:
     """Ladda champion-konfiguration."""
     champ_path = Path(f"config/strategy/champions/{symbol}_{timeframe}.json")
@@ -35,7 +60,8 @@ def load_champion(symbol: str, timeframe: str) -> dict[str, Any]:
         raise FileNotFoundError(f"Champion not found: {champ_path}")
     data = json.loads(champ_path.read_text(encoding="utf-8"))
     print(f"[DEBUG] Loaded champion from {champ_path}")
-    cfg = data.get("cfg", data)
+    cfg = normalize_champion_payload(data)
+    print(f"[DEBUG] Champion payload keys: {sorted(data.keys())}")
     print(f"[DEBUG] Champion risk map: {cfg.get('risk', {}).get('risk_map')}")
     return cfg
 

@@ -13,13 +13,16 @@
         "atr_period": 18,
         "zones": {
           "low": {
-            "entry_conf_overall": 0.2284784768438524
+            "entry_conf_overall": 0.2284784768438524,
+            "regime_proba": 0.45
           },
           "mid": {
-            "entry_conf_overall": 0.34281962486923434
+            "entry_conf_overall": 0.34281962486923434,
+            "regime_proba": 0.50
           },
           "high": {
-            "entry_conf_overall": 0.3172323107674046
+            "entry_conf_overall": 0.3172323107674046,
+            "regime_proba": 0.55
           }
         }
       }

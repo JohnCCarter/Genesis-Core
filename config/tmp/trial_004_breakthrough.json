@@ -1,0 +1,67 @@
+{
+  "cfg": {
+    "thresholds": {
+      "entry_conf_overall": 0.2852521024757501,
+      "regime_proba": {
+        "balanced": 0.9033398374063518,
+        "bull": 0.7207576216631539,
+        "bear": 0.5629052160073987,
+        "ranging": 0.6589943270931532
+      },
+      "min_edge": 0.0028732806403762266,
+      "signal_adaptation": {
+        "atr_period": 18,
+        "zones": {
+          "low": {
+            "entry_conf_overall": 0.2284784768438524
+          },
+          "mid": {
+            "entry_conf_overall": 0.34281962486923434
+          },
+          "high": {
+            "entry_conf_overall": 0.3172323107674046
+          }
+        }
+      }
+    },
+    "htf_fib": {
+      "entry": {
+        "tolerance_atr": 0.6101295220822098,
+        "long_max_level": 0.786,
+        "short_min_level": -0.786
+      }
+    },
+    "ltf_fib": {
+      "entry": {
+        "tolerance_atr": 1.5030582392183862,
+        "long_max_level": 0.382,
+        "short_min_level": -0.5
+      }
+    },
+    "exit": {
+      "exit_conf_threshold": 0.3020158302663238,
+      "max_hold_bars": 84,
+      "trailing_stop_enabled": true,
+      "trailing_stop_pct": 0.02027636883555814
+    },
+    "risk": {
+      "risk_map_deltas": {
+        "conf_0": 0.0914256780393157,
+        "size_0": 0.01867264505072377,
+        "conf_1": 0.007663721950212754,
+        "size_1": 0.005830690654440539,
+        "conf_2": 0.047119493012561,
+        "size_2": 0.006452285459031806
+      }
+    },
+    "multi_timeframe": {
+      "ltf_override_threshold": 0.5058201432785441
+    },
+    "htf_exit_config": {
+      "partial_1_pct": 0.7545494190846701,
+      "partial_2_pct": 0.43050839070793123,
+      "fib_threshold_atr": 1.4995332865994004,
+      "trail_atr_multiplier": 2.8710624452257107
+    }
+  }
+}

@@ -1,10 +1,28 @@
 # README for AI Agents (Local Development)
 
-## Last update: 2025-12-11
+## Last update: 2025-12-15
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
 
-## 1. Deliverables (latest highlights: 2025-12-11)
+## 1. Deliverables (latest highlights: 2025-12-15)
+
+- **OPTUNA HARDENING + COST-AWARE SCORING (2025-12-15)**:
+
+  - **Goal**: Göra optimeringen mer robust och ekonomiskt korrekt (net-of-fee), samt styra mot "färre men bättre" trades.
+  - **Key changes**:
+    - **PRUNED ≠ 0 trades**: PRUNED trials hanteras och spåras explicit (undviker att Optuna förstärker felaktiga 0-trade outcomes).
+    - **Säker pruner-default**: Om pruner ej är konfigurerad används "none" som default för att undvika tyst pruning.
+    - **Kostmedvetna metrics**: `core.backtest.metrics.calculate_metrics()` använder net-of-commission PnL när commission finns och föredrar `equity_curve` för total_return/max_drawdown.
+    - **Churn/fee guardrails**: constraints stödjer `max_trades` samt `max_total_commission_pct`.
+    - **Champion-format normaliserat**: `scripts/validate_optimizer_config.py` stödjer `cfg`/`parameters`/`merged_config`.
+  - **Artifacts / docs**:
+    - Daily log: `docs/daily_summaries/daily_summary_2025-12-15.md`
+    - Hardening spec: `docs/optuna/OPTUNA_HARDENING_SPEC.md`
+    - Runnable champion wrapper: `config/tmp/champion_current_as_cfg.json`
+  - **Key result (sanity check)**:
+    - Nuvarande champion testad på sample-range 2025-06-01 → 2025-11-19 (maker fee 0.1%, slippage 0):
+      - **Return -1.97%**, **PF 0.93**, **DD 2.97%**, **164 trades**
+    - Slutsats: nuvarande champion är net-negativ på samplet och är inte i linje med "high quality" utan vidare justering.
 
 - **STABILIZATION PLAN COMPLETE (2025-12-11)**:
 

@@ -787,6 +787,11 @@ def _run_backtest_direct(
 
         pipeline = GenesisPipeline()
 
+        # Load config
+        payload = json.loads(config_path.read_text(encoding="utf-8"))
+        cfg = payload["cfg"]
+        overrides = payload.get("overrides", {})
+
         # Load/Get engine
         # Include dates in cache key to support different ranges
         cache_key = f"{trial.symbol}_{trial.timeframe}_{trial.start_date}_{trial.end_date}"
@@ -816,9 +821,11 @@ def _run_backtest_direct(
         # Update warmup_bars in case it changed between trials
         engine.warmup_bars = trial.warmup_bars
 
-        # Load config
-        payload = json.loads(config_path.read_text(encoding="utf-8"))
-        cfg = payload["cfg"]
+        # Apply overrides (e.g. commission, slippage)
+        if "commission" in overrides:
+            engine.position_tracker.commission_rate = float(overrides["commission"])
+        if "slippage" in overrides:
+            engine.position_tracker.slippage_rate = float(overrides["slippage"])
 
         # Pruning
         pruning_callback = None
@@ -826,9 +833,25 @@ def _run_backtest_direct(
             try:
                 import optuna
 
+                # IMPORTANT:
+                # optuna.load_study() defaults to MedianPruner when pruner is not provided.
+                # That can silently enable pruning even when the main optimizer run intends
+                # to use NopPruner (no pruning). Always inject the pruner config from the
+                # optimizer context to keep behavior consistent.
+                pruner_cfg = optuna_context.get("pruner")
+                if isinstance(pruner_cfg, dict):
+                    pruner_obj = _select_optuna_pruner(
+                        pruner_cfg.get("name"), pruner_cfg.get("kwargs")
+                    )
+                elif isinstance(pruner_cfg, str):
+                    pruner_obj = _select_optuna_pruner(pruner_cfg, None)
+                else:
+                    pruner_obj = _select_optuna_pruner(None, None)
+
                 study = optuna.load_study(
                     study_name=optuna_context["study_name"],
                     storage=optuna_context["storage"],
+                    pruner=pruner_obj,
                 )
 
                 def _cb(step, value):
@@ -1068,6 +1091,14 @@ def run_trial(
 
         if use_direct_execution and config_file:
             returncode, log, results_dict = _run_backtest_direct(trial, config_file, optuna_context)
+            # Ensure a log file exists for reproducibility/debugging even in direct mode.
+            if not log_file.exists():
+                _atomic_write_text(
+                    log_file,
+                    log
+                    or "[INFO] Direct execution: stdout not captured to file.\n"
+                    "[INFO] If you need full logs, set GENESIS_FORCE_SHELL=1.\n",
+                )
             if returncode == 0 and results_dict:
                 # Save results to file to match subprocess behavior
                 results_path = output_dir / f"{trial.symbol}_{trial.timeframe}_{trial_id}.json"
@@ -1137,6 +1168,29 @@ def run_trial(
             else:
                 results = results_dict
                 # results_path is already set in the if block above
+
+            # If the backtest was pruned, propagate as an error payload so Optuna marks the
+            # trial as PRUNED (instead of scoring it as a misleading zero-trade run).
+            if results.get("error") == "pruned":
+                total_duration = time.perf_counter() - trial_started
+                pruned_payload = {
+                    "trial_id": trial_id,
+                    "parameters": trial.parameters,
+                    "results_path": results_path.name,
+                    "error": "pruned",
+                    "pruned_at": results.get("pruned_at"),
+                    "metrics": results.get("metrics"),
+                    "log": log_file.name,
+                    "attempts": max_attempts - attempts_remaining,
+                    "duration_seconds": total_duration,
+                    "attempt_durations": attempt_durations,
+                }
+                if derived_values:
+                    pruned_payload["derived"] = derived_values
+                if config_file is not None:
+                    pruned_payload["config_path"] = config_file.name
+                _atomic_write_text(trial_file, json.dumps(pruned_payload, indent=2))
+                return pruned_payload
 
             merged_config = results.get("merged_config")  # Full config for reproducibility
             runtime_version = results.get("runtime_version")  # Runtime version used
@@ -1330,7 +1384,8 @@ def _select_optuna_pruner(
     if not OPTUNA_AVAILABLE:
         raise RuntimeError("Optuna är inte installerat")
     kwargs = (kwargs or {}).copy()
-    name = (name or kwargs.pop("type", None) or "median").lower()
+    # Safer default: only prune when explicitly configured.
+    name = (name or kwargs.pop("type", None) or "none").lower()
     if name == "median":
         return MedianPruner(**kwargs)
     if name == "sha":
@@ -1628,6 +1683,7 @@ def _run_optuna(
             "trial_id": trial._trial_id,
             "storage": storage,
             "study_name": study_name,
+            "pruner": pruner_cfg,
         }
         payload = make_trial(trial_number, parameters, optuna_context=optuna_ctx)
         results.append(payload)
@@ -1700,6 +1756,12 @@ def _run_optuna(
         score_block = payload.get("score") or {}
         score_value = float(score_block.get("score", 0.0) or 0.0)
 
+        # Always attach these for traceability, even when we return early due to soft constraints.
+        # (Optuna best_trial can otherwise end up with no payload saved, making run_meta
+        # and best_trial.json much less useful.)
+        trial.set_user_attr("score_block", score_block)
+        trial.set_user_attr("result_payload", payload)
+
         # Check for zero trades to track this issue - do this BEFORE early returns
         num_trades_value = _extract_num_trades(payload)
         num_trades = num_trades_value if num_trades_value is not None else 0
@@ -1723,8 +1785,6 @@ def _run_optuna(
         # Store score in memory for future cache lookup
         score_memory[key] = score_value
 
-        trial.set_user_attr("score_block", score_block)
-        trial.set_user_attr("result_payload", payload)
         return score_value
 
     remaining_trials = None if max_trials is None else max(0, max_trials)
@@ -1817,6 +1877,14 @@ def _run_optuna(
         f"{cache_stats['unique_backtests']} unique backtests"
     )
 
+    # Track PRUNED trials explicitly (Optuna pruning and our own TrialPruned paths)
+    try:
+        from optuna.trial import TrialState
+
+        pruned_count = sum(1 for t in study.trials if t.state == TrialState.PRUNED)
+    except Exception:
+        pruned_count = 0
+
     # Warn about abnormal cache usage
     if cache_stats["cache_hit_rate"] > 0.8 and cache_stats["total_trials"] > 10:
         logger.warning(
@@ -1830,6 +1898,7 @@ def _run_optuna(
     if total_trials_attempted > 0:
         duplicate_ratio = duplicate_count / total_trials_attempted
         zero_trade_ratio = zero_trade_count / total_trials_attempted
+        pruned_ratio = pruned_count / total_trials_attempted
 
         if duplicate_ratio > 0.5:
             print(
@@ -1874,6 +1943,18 @@ def _run_optuna(
                 f"   - Run smoke test (2-5 trials) before long runs\n"
             )
 
+        if pruned_ratio > 0.5:
+            print(
+                f"\n⚠️  WARNING: High pruned rate ({pruned_ratio*100:.1f}%)\n"
+                f"   {pruned_count}/{total_trials_attempted} trials were pruned.\n"
+                f"   This suggests:\n"
+                f"   - Pruner is too aggressive (warmup/interval too low)\n"
+                f"   - Objective intermediate reporting is too noisy early\n"
+                f"   Recommendations:\n"
+                f"   - Increase n_warmup_steps and/or interval_steps\n"
+                f"   - Consider disabling pruner for short diagnostics\n"
+            )
+
     # Performance: Batch metadata updates to reduce file I/O
     best_payload: dict[str, Any] | None = None
     optuna_meta: dict[str, Any] = {}
@@ -1892,8 +1973,10 @@ def _run_optuna(
                 "diagnostics": {
                     "total_trials_attempted": total_trials_attempted,
                     "duplicate_count": duplicate_count,
+                    "pruned_count": pruned_count,
                     "zero_trade_count": zero_trade_count,
                     "duplicate_ratio": duplicate_count / max(1, total_trials_attempted),
+                    "pruned_ratio": pruned_count / max(1, total_trials_attempted),
                     "zero_trade_ratio": zero_trade_count / max(1, total_trials_attempted),
                 },
             }
@@ -1909,8 +1992,10 @@ def _run_optuna(
                 "diagnostics": {
                     "total_trials_attempted": total_trials_attempted,
                     "duplicate_count": duplicate_count,
+                    "pruned_count": pruned_count,
                     "zero_trade_count": zero_trade_count,
                     "duplicate_ratio": duplicate_count / max(1, total_trials_attempted),
+                    "pruned_ratio": pruned_count / max(1, total_trials_attempted),
                     "zero_trade_ratio": zero_trade_count / max(1, total_trials_attempted),
                 },
             }
@@ -1925,8 +2010,10 @@ def _run_optuna(
             "diagnostics": {
                 "total_trials_attempted": total_trials_attempted,
                 "duplicate_count": duplicate_count,
+                "pruned_count": pruned_count,
                 "zero_trade_count": zero_trade_count,
                 "duplicate_ratio": duplicate_count / max(1, total_trials_attempted),
+                "pruned_ratio": pruned_count / max(1, total_trials_attempted),
                 "zero_trade_ratio": zero_trade_count / max(1, total_trials_attempted),
             },
         }

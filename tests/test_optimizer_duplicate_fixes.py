@@ -204,6 +204,121 @@ def test_duplicate_tracking_in_objective(tmp_path: Path):
     assert zero_trade_trial.user_attrs.get("zero_trades") is True
 
 
+@pytest.mark.skipif(not OPTUNA_AVAILABLE, reason="Optuna not installed")
+def test_pruned_payload_is_marked_pruned(tmp_path: Path):
+    """A payload with error='pruned' should translate to an Optuna TrialPruned."""
+
+    run_dir = tmp_path / "test_run"
+    run_dir.mkdir(parents=True)
+
+    def mock_make_trial(idx: int, params: dict[str, Any], **kwargs) -> dict[str, Any]:
+        return {
+            "trial_id": f"trial_{idx:03d}",
+            "parameters": params,
+            "results_path": "dummy.json",
+            "error": "pruned",
+            "pruned_at": 200,
+        }
+
+    study_config = {
+        "storage": None,
+        "study_name": "test_study",
+        "sampler": {"name": "random"},
+        "pruner": {"name": "none"},
+        "dedup_guard_enabled": False,
+    }
+
+    params_spec = {
+        "param1": {"type": "grid", "values": [0.5]},
+    }
+
+    with patch("core.optimizer.runner.optuna") as mock_optuna:
+        mock_study = MagicMock()
+        mock_study.study_name = "test_study"
+        mock_study.trials = []
+        mock_study.best_trials = []
+
+        def mock_optimize(objective, **kwargs):
+            trial = MagicMock()
+            trial.number = 0
+            trial._trial_id = 123
+            trial.user_attrs = {}
+
+            def setter(k, v):
+                trial.user_attrs[k] = v
+
+            trial.set_user_attr = setter
+            trial.suggest_categorical = MagicMock(return_value=0.5)
+            with pytest.raises(optuna.TrialPruned):
+                objective(trial)
+
+        mock_study.optimize = mock_optimize
+        mock_optuna.create_study = MagicMock(return_value=mock_study)
+        mock_optuna.exceptions = optuna.exceptions
+        mock_optuna.TrialPruned = optuna.TrialPruned
+
+        with patch("core.optimizer.runner._create_optuna_study", return_value=mock_study):
+            _run_optuna(
+                study_config=study_config,
+                parameters_spec=params_spec,
+                make_trial=mock_make_trial,
+                run_dir=run_dir,
+                run_id="test_run",
+                existing_trials={},
+                max_trials=1,
+                concurrency=1,
+                allow_resume=False,
+            )
+
+
+def test_best_trial_payload_saved_on_constraints_soft_fail(tmp_path):
+    pytest.importorskip("optuna")
+
+    # Import here to avoid importing Optuna-dependent code when optuna isn't installed.
+    from core.optimizer.runner import _run_optuna
+
+    run_dir = tmp_path / "run"
+    run_dir.mkdir(parents=True, exist_ok=True)
+
+    # Minimal Optuna config: 1 trial, no pruner, sqlite storage under tmp_path.
+    study_config = {
+        "storage": f"sqlite:///{(tmp_path / 'optuna_test.db').as_posix()}",
+        "study_name": "test_best_trial_payload_saved",
+        "direction": "maximize",
+        "sampler": {"name": "random", "kwargs": {"seed": 42}},
+        "pruner": {"name": "none", "kwargs": {}},
+        "timeout_seconds": None,
+        "dedup_guard_enabled": False,
+    }
+
+    # Minimal search space: fixed value to avoid any randomness in parameters.
+    parameters_spec = {"foo": {"type": "fixed", "value": 1}}
+
+    def make_trial(trial_number, parameters, optuna_context=None):
+        # Return a payload that triggers the soft-constraints early return path.
+        return {
+            "trial_id": f"trial_{trial_number:03d}",
+            "parameters": parameters,
+            "constraints": {"ok": False, "reasons": ["min_trades:0<50"]},
+            "score": {"score": 123.0, "metrics": {"num_trades": 0}, "hard_failures": []},
+        }
+
+    _run_optuna(
+        study_config=study_config,
+        parameters_spec=parameters_spec,
+        make_trial=make_trial,
+        run_dir=run_dir,
+        run_id="run_test_best_payload",
+        existing_trials={},
+        max_trials=1,
+        concurrency=1,
+        allow_resume=False,
+    )
+
+    # Regression check: best_trial.json should be written even if all trials are soft-fails.
+    assert (run_dir / "best_trial.json").exists(), "Expected best_trial.json to be written"
+
+
 def test_tpe_sampler_defaults():
     """Test that TPE sampler gets better defaults."""
     from core.optimizer.runner import _select_optuna_sampler

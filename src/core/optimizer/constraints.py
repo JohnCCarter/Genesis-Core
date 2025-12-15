@@ -32,6 +32,18 @@ def enforce_constraints(
         if trades < float(min_trades):
             reasons.append(f"min_trades:{trades}<{min_trades}")
 
+    max_trades = cfg.get("max_trades")
+    if isinstance(max_trades, (int | float)):
+        trades = float(score_obj.get("metrics", {}).get("num_trades", 0))
+        if trades > float(max_trades):
+            reasons.append(f"max_trades:{trades}>{max_trades}")
+
+    max_total_commission_pct = cfg.get("max_total_commission_pct")
+    if isinstance(max_total_commission_pct, (int | float)):
+        commission_pct = float(score_obj.get("metrics", {}).get("total_commission_pct", 0.0))
+        if commission_pct > float(max_total_commission_pct):
+            reasons.append(f"max_total_commission_pct:{commission_pct}>{max_total_commission_pct}")
+
     min_profit_factor = cfg.get("min_profit_factor")
     if isinstance(min_profit_factor, (int | float)):
         pf = float(score_obj.get("metrics", {}).get("profit_factor", 0))

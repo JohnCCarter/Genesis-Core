@@ -28,7 +28,28 @@ def score_backtest(
     thresholds = thresholds or MetricThresholds()
 
     # Robust metrics: compute from trades/equity (with equity fallback) instead of trusting summary
-    mt = calculate_metrics(result)
+    mt = calculate_metrics(result, prefer_summary=False)
+
+    # Cost / churn telemetry (used by constraints and optional scoring heuristics)
+    summary = result.get("summary") if isinstance(result, dict) else None
+    if not isinstance(summary, dict):
+        summary = {}
+    try:
+        initial_capital = float(summary.get("initial_capital", 10000.0) or 10000.0)
+    except Exception:
+        initial_capital = 10000.0
+
+    trades = result.get("trades") if isinstance(result, dict) else None
+    total_commission = 0.0
+    if isinstance(trades, list):
+        for t in trades:
+            if not isinstance(t, dict):
+                continue
+            try:
+                total_commission += float(t.get("commission", 0.0) or 0.0)
+            except Exception:
+                continue
+    total_commission_pct = total_commission / initial_capital if initial_capital > 0 else 0.0
 
     # Metrics from calculate_metrics() are in percent where applicable
     total_return = float(mt.get("total_return", 0.0)) / 100.0
@@ -71,6 +92,8 @@ def score_backtest(
             "num_trades": num_trades,
             "sharpe_ratio": sharpe,
             "return_to_dd": ret_ratio,
+            "total_commission": total_commission,
+            "total_commission_pct": total_commission_pct,
         },
         "hard_failures": hard_failures,
         "baseline": {

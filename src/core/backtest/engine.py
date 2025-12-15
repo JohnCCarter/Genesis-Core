@@ -525,10 +525,6 @@ class BacktestEngine:
 
         # Replay bars
         for i in range(num_bars):
-            # Performance: Direct array access is significantly faster than iloc (~5-10x for this operation)
-            timestamp = timestamps_array[i]
-            close_price = close_prices_array[i]
-        for i in range(len(self.candles_df)):
             # Fast-path: pull values from numpy buffers if available
             if self._np_arrays is not None:
                 timestamp = pd.Timestamp(self._np_arrays["timestamp"][i])

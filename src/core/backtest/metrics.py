@@ -10,6 +10,27 @@ import numpy as np
 import pandas as pd
 
 
+def _trade_net_pnl(trade: dict[str, Any]) -> float:
+    """Return trade PnL net of explicit commissions when present.
+
+    The backtest stores commissions separately ("commission") and trade PnL ("pnl") is
+    commonly gross. For optimization/scoring we must evaluate the same economics as the
+    equity curve / final capital.
+    """
+
+    pnl_raw = trade.get("pnl", 0.0)
+    commission_raw = trade.get("commission", 0.0)
+    try:
+        pnl = float(pnl_raw or 0.0)
+    except Exception:
+        pnl = 0.0
+    try:
+        commission = float(commission_raw or 0.0)
+    except Exception:
+        commission = 0.0
+    return pnl - commission
+
+
 def calculate_backtest_metrics(
     trades: list[dict[str, Any]], initial_capital: float = 10000.0, risk_free_rate: float = 0.02
 ) -> dict[str, float]:
@@ -27,8 +48,8 @@ def calculate_backtest_metrics(
     if not trades:
         return _empty_metrics()
 
-    # Extract trade data
-    pnls = [trade.get("pnl", 0) for trade in trades]
+    # Extract trade data (use net-of-commission PnL when available)
+    pnls = [_trade_net_pnl(trade) for trade in trades]
     returns_pct = [(pnl / initial_capital) * 100 for pnl in pnls]
 
     # Basic metrics
@@ -231,7 +252,10 @@ def compare_strategies(
 
 # Backward compatibility alias
 def calculate_metrics(
-    results: dict | list[dict[str, Any]], initial_capital: float = 10000.0
+    results: dict | list[dict[str, Any]],
+    initial_capital: float = 10000.0,
+    *,
+    prefer_summary: bool = True,
 ) -> dict[str, float]:
     """Backward compatibility wrapper for calculate_backtest_metrics."""
     # Handle both old API (full results dict) and new API (trades list)
@@ -242,39 +266,84 @@ def calculate_metrics(
         equity_curve = results.get("equity_curve", [])
         initial_capital = summary.get("initial_capital", initial_capital)
 
-        # Calculate metrics from trades
+        # Calculate metrics from trades (net-of-commission when available)
         metrics = calculate_backtest_metrics(trades, initial_capital)
 
-        # If no trades but we have equity curve, calculate drawdown from equity curve
-        if not trades and equity_curve:
-            equity_values = [point.get("total_equity", initial_capital) for point in equity_curve]
-            if len(equity_values) > 1:
-                # Calculate drawdown from equity curve (peak-to-trough)
-                running_max = np.maximum.accumulate(equity_values)
-                drawdowns = (running_max - equity_values) / running_max * 100
-                max_drawdown = np.max(drawdowns) if len(drawdowns) > 0 else 0.0
+        # If we have an equity curve, prefer it for total_return and drawdown since it
+        # represents the realized economics (incl. commissions and slippage).
+        if equity_curve:
+            equity_values: list[float] = []
+            for point in equity_curve:
+                if not isinstance(point, dict):
+                    continue
+                val = point.get("total_equity")
+                if val is None:
+                    val = point.get("equity")
+                if val is None:
+                    val = point.get("capital")
+                if val is None:
+                    continue
+                try:
+                    equity_values.append(float(val))
+                except Exception:
+                    continue
 
-                # Update drawdown metrics
+            if len(equity_values) > 1:
+                final_equity = equity_values[-1]
+                total_pnl = final_equity - float(initial_capital)
+                total_return_pct = (total_pnl / float(initial_capital)) * 100.0
+
+                running_max = np.maximum.accumulate(equity_values)
+                drawdowns = (running_max - equity_values) / running_max * 100.0
+                max_drawdown = float(np.max(drawdowns)) if len(drawdowns) > 0 else 0.0
+
+                metrics["total_pnl"] = float(total_pnl)
+                metrics["total_return"] = float(total_return_pct)
+                metrics["total_return_pct"] = float(total_return_pct)
                 metrics["max_drawdown"] = max_drawdown
                 metrics["max_drawdown_pct"] = max_drawdown
-                metrics["max_drawdown_usd"] = (max_drawdown / 100) * initial_capital
-
-                # Recalculate calmar ratio
-                total_return_pct = summary.get("total_return", 0.0)
+                metrics["max_drawdown_usd"] = (max_drawdown / 100.0) * float(initial_capital)
                 metrics["calmar_ratio"] = (
                     total_return_pct / max_drawdown if max_drawdown > 0 else 0.0
                 )
 
-        # Override with summary data if available (for backward compatibility)
-        if summary:
-            metrics.update(
-                {
-                    "total_return_pct": summary.get("total_return", metrics["total_return_pct"]),
-                    "num_trades": summary.get("num_trades", metrics["num_trades"]),
-                    "win_rate": summary.get("win_rate", metrics["win_rate"]),
-                    "profit_factor": summary.get("profit_factor", metrics["profit_factor"]),
-                }
-            )
+        # Backward compatibility: when callers expect summary-derived values, allow
+        # opting into summary overrides for selected fields.
+        if prefer_summary and isinstance(summary, dict):
+            if "num_trades" in summary:
+                try:
+                    num_trades = int(summary.get("num_trades") or 0)
+                except Exception:
+                    num_trades = 0
+                metrics["num_trades"] = num_trades
+                metrics["total_trades"] = num_trades
+
+            if "win_rate" in summary:
+                try:
+                    metrics["win_rate"] = float(summary.get("win_rate") or 0.0)
+                except Exception:
+                    pass
+
+            if "profit_factor" in summary:
+                try:
+                    metrics["profit_factor"] = float(summary.get("profit_factor") or 0.0)
+                except Exception:
+                    pass
+
+            # If we have no equity curve, fall back to summary for return/PnL as a last resort.
+            if not equity_curve:
+                if "total_return" in summary:
+                    try:
+                        total_return_pct = float(summary.get("total_return") or 0.0)
+                        metrics["total_return"] = total_return_pct
+                        metrics["total_return_pct"] = total_return_pct
+                    except Exception:
+                        pass
+                if "total_return_usd" in summary:
+                    try:
+                        metrics["total_pnl"] = float(summary.get("total_return_usd") or 0.0)
+                    except Exception:
+                        pass
 
         return metrics
     else:

@@ -173,6 +173,13 @@ def main():
         cfg_obj, _, runtime_version = authority.get()
         cfg = cfg_obj.model_dump()
         is_complete_champion = False
+        config_provenance: dict[str, object] = {
+            "used_runtime_merge": True,
+            "runtime_version_current": runtime_version,
+            "runtime_version_used": runtime_version,
+            "config_file": str(args.config_file) if args.config_file else None,
+            "config_file_is_complete": False,
+        }
 
         if args.config_file:
             override_payload = json.loads(args.config_file.read_text(encoding="utf-8"))
@@ -189,11 +196,19 @@ def main():
                 is_complete_champion = True
                 print("[CONFIG:champion] Using complete champion config (no runtime merge)")
                 champion_runtime_version = override_payload.get("runtime_version")
+                config_provenance["used_runtime_merge"] = False
+                config_provenance["config_file_is_complete"] = True
                 if champion_runtime_version and champion_runtime_version != runtime_version:
                     print(
                         f"[CONFIG:champion] WARNING: Champion created with runtime v{champion_runtime_version}, "
                         f"current runtime is v{runtime_version}"
                     )
+                if champion_runtime_version is not None:
+                    try:
+                        config_provenance["runtime_version_used"] = int(champion_runtime_version)
+                    except (TypeError, ValueError):
+                        # Keep current runtime_version_used as fallback
+                        pass
                 merged_cfg = merged_config_from_file
             else:
                 # Regular test file - merge with runtime
@@ -254,10 +269,13 @@ def main():
             pruning_callback=pruning_callback,
         )
 
-        # Save merged config for reproducibility (only if not already a complete champion)
-        if not is_complete_champion:
-            results["merged_config"] = merged_cfg
-            results["runtime_version"] = runtime_version
+        # Always attach config provenance & merged_config for reproducibility.
+        # Note: even for "complete champion" inputs we still include merged_config in results so that
+        # optimizer tooling (and humans) can inspect the effective config without chasing inputs.
+        results["config_provenance"] = config_provenance
+        results["merged_config"] = merged_cfg
+        results["runtime_version"] = config_provenance.get("runtime_version_used", runtime_version)
+        results["runtime_version_current"] = runtime_version
 
         if "error" in results:
             print(f"\n[ERROR] Backtest failed: {results['error']}")

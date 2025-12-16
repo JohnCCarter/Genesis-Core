@@ -127,6 +127,7 @@ _TRIAL_KEY_CACHE_LOCK = threading.Lock()
 
 # Performance: Cache for default config to avoid repeated file reads and model dumps
 _DEFAULT_CONFIG_CACHE: dict[str, Any] | None = None
+_DEFAULT_CONFIG_RUNTIME_VERSION: int | None = None
 _DEFAULT_CONFIG_LOCK = threading.Lock()
 
 # Performance: Module-level cache for step decimal calculation (persists across trials)
@@ -322,15 +323,24 @@ def _get_default_config() -> dict[str, Any]:
         Dictionary containing default configuration
     """
     global _DEFAULT_CONFIG_CACHE
+    global _DEFAULT_CONFIG_RUNTIME_VERSION
 
     with _DEFAULT_CONFIG_LOCK:
         if _DEFAULT_CONFIG_CACHE is None:
             from core.config.authority import ConfigAuthority
 
             authority = ConfigAuthority()
-            default_cfg_obj, _, _ = authority.get()
+            default_cfg_obj, _, runtime_version = authority.get()
             _DEFAULT_CONFIG_CACHE = default_cfg_obj.model_dump()
+            _DEFAULT_CONFIG_RUNTIME_VERSION = runtime_version
         return _DEFAULT_CONFIG_CACHE
+
+
+def _get_default_runtime_version() -> int | None:
+    """Return runtime.json version used for the cached default config (if loaded)."""
+    # Ensure _DEFAULT_CONFIG_RUNTIME_VERSION is populated when available.
+    _ = _get_default_config()
+    return _DEFAULT_CONFIG_RUNTIME_VERSION
 
 
 def _as_bool(value: Any) -> bool:
@@ -790,6 +800,18 @@ def _run_backtest_direct(
         # Load config
         payload = json.loads(config_path.read_text(encoding="utf-8"))
         cfg = payload["cfg"]
+        effective_cfg = payload.get("merged_config")
+        if not isinstance(effective_cfg, dict):
+            effective_cfg = cfg
+        runtime_version_used = payload.get("runtime_version")
+        runtime_version_current = _get_default_runtime_version()
+        config_provenance: dict[str, object] = {
+            "used_runtime_merge": False,
+            "runtime_version_current": runtime_version_current,
+            "runtime_version_used": runtime_version_used,
+            "config_file": str(config_path),
+            "config_file_is_complete": isinstance(payload.get("merged_config"), dict),
+        }
         overrides = payload.get("overrides", {})
 
         # Load/Get engine
@@ -870,10 +892,20 @@ def _run_backtest_direct(
 
         results = engine.run(
             policy={"symbol": trial.symbol, "timeframe": trial.timeframe},
-            configs=cfg,
+            configs=effective_cfg,
             verbose=False,
             pruning_callback=pruning_callback,
         )
+
+        # Ensure direct-mode results carry the same reproducibility metadata as subprocess mode.
+        # This is required for drift detection and provenance auditing.
+        if isinstance(results, dict):
+            results.setdefault("config_provenance", config_provenance)
+            results.setdefault("merged_config", effective_cfg)
+            if runtime_version_used is not None:
+                results.setdefault("runtime_version", runtime_version_used)
+            if runtime_version_current is not None:
+                results.setdefault("runtime_version_current", runtime_version_current)
 
         return 0, "", results
 
@@ -974,7 +1006,14 @@ def run_trial(
         # Deep merge trial parameters into default config
         transformed_params, derived_values = transform_parameters(trial.parameters)
         merged_cfg = _deep_merge(default_cfg, transformed_params)
-        config_payload = {"cfg": merged_cfg}
+        # Mark this config as "complete" by including merged_config + runtime_version.
+        # This lets scripts/run_backtest skip re-merging runtime.json, preventing drift if runtime.json
+        # changes during a long optimization run.
+        config_payload = {
+            "cfg": merged_cfg,
+            "merged_config": merged_cfg,
+            "runtime_version": _get_default_runtime_version(),
+        }
         _atomic_write_text(config_file, _json_dumps(config_payload))
 
     cache: TrialResultCache | None = None

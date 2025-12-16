@@ -114,6 +114,9 @@ build/
 *.temp
 .agent-locks/
 
+# Temporary config artifacts (generated)
+config/tmp/champion_current_as_cfg*.json
+
 # Phase 3-5: Data files (historical candles, features, metadata)
 # Two-layer architecture: Raw Lake + Curated
 data/raw/**/*.parquet

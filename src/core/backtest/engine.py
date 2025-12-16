@@ -478,6 +478,11 @@ class BacktestEngine:
         # Deep merge configs to preserve nested overrides
         configs = self._deep_merge(champion_cfg.config, configs)
 
+        # IMPORTANT: Apply HTF exit config from merged runtime/trial configs.
+        # The engine is constructed before configs are known (CLI loads config after create_engine),
+        # so we must (re)initialize the HTF exit engine here per run to respect overrides.
+        self._init_htf_exit_engine(configs.get("htf_exit_config"))
+
         # Inject precomputed features AFTER merge to ensure they're preserved
         if getattr(self, "precompute_features", False) and getattr(
             self, "_precomputed_features", None
@@ -584,19 +589,28 @@ class BacktestEngine:
                 action = result.get("action", "NONE")
                 size = meta.get("decision", {}).get("size", 0.0)
 
+                # Extract decision metadata early so we can attach correct entry reasons.
+                decision_meta = meta.get("decision", {}) or {}
+                reasons = decision_meta.get("reasons") or []
+                state_out = decision_meta.get("state_out", {}) or {}
+
                 # Extract confidence (can be dict or float)
+                # NOTE: confidence/regime may be needed for logging/debugging, but must never
+                # throw during backtest. Keep parsing best-effort and side-effect free.
                 conf_val = result.get("confidence", 0.5)
                 if isinstance(conf_val, dict):
-                    conf_val.get("overall", 0.5)
+                    _conf_overall = conf_val.get("overall", 0.5)
                 else:
-                    float(conf_val) if conf_val else 0.5
+                    try:
+                        _conf_overall = float(conf_val) if conf_val is not None else 0.5
+                    except (TypeError, ValueError):
+                        _conf_overall = 0.5
 
-                # Extract regime (can be dict or string)
                 regime_val = result.get("regime", "BALANCED")
                 if isinstance(regime_val, dict):
-                    regime_val.get("name", "BALANCED")
+                    _regime_name = str(regime_val.get("name", "BALANCED") or "BALANCED")
                 else:
-                    str(regime_val) if regime_val else "BALANCED"
+                    _regime_name = str(regime_val) if regime_val is not None else "BALANCED"
 
                 # === EXIT LOGIC (check BEFORE new entry) ===
                 if self.position_tracker.has_position():
@@ -634,6 +648,11 @@ class BacktestEngine:
 
                 # === ENTRY LOGIC ===
                 if action != "NONE" and size > 0:
+                    # Attach reasons for this bar BEFORE opening a position.
+                    # PositionTracker consumes and clears these when opening a trade.
+                    if hasattr(self.position_tracker, "set_pending_reasons"):
+                        self.position_tracker.set_pending_reasons(reasons or [])
+
                     exec_result = self.position_tracker.execute_action(
                         action=action,
                         size=size,
@@ -642,12 +661,17 @@ class BacktestEngine:
                         symbol=self.symbol,
                     )
 
+                    # If we attempted an entry but did not open a new position, clear pending reasons
+                    # to avoid leaking stale reasons into a later entry.
+                    if not exec_result.get("executed") and hasattr(
+                        self.position_tracker, "clear_pending_reasons"
+                    ):
+                        self.position_tracker.clear_pending_reasons()
+
                     if exec_result.get("executed"):
 
                         # Initialize exit context for new position
                         self._initialize_position_exit_context(result, meta, close_price, timestamp)
-                        decision_meta = meta.get("decision") or {}
-                        state_out = decision_meta.get("state_out") or {}
                         entry_debug = {
                             "timestamp": timestamp.isoformat(),
                             "summary": state_out.get("fib_gate_summary"),
@@ -666,11 +690,6 @@ class BacktestEngine:
                 self.position_tracker.update_equity(close_price, timestamp)
 
                 # Update state
-                decision_meta = meta.get("decision", {}) or {}
-                reasons = decision_meta.get("reasons") or []
-                state_out = decision_meta.get("state_out", {}) or {}
-                if hasattr(self.position_tracker, "set_pending_reasons"):
-                    self.position_tracker.set_pending_reasons(reasons or [])
                 self.state = state_out
                 self.bar_count += 1
 

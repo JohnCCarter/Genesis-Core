@@ -33,6 +33,13 @@ def log_fib_flow(
         return
     target_logger = logger or _FIB_LOGGER
     if level is None:
-        target_logger.info(message, *args)
+        # If the process is configured with a higher global log level (e.g. LOG_LEVEL=WARNING),
+        # INFO may be filtered out even when callers expect fib-flow logging to be visible.
+        # Since fib-flow logs are opt-in (via FIB_FLOW_LOGS_ENABLED), fall back to WARNING
+        # when INFO is not enabled.
+        if target_logger.isEnabledFor(logging.INFO):
+            target_logger.info(message, *args)
+        else:
+            target_logger.warning(message, *args)
     else:
         target_logger.log(level, message, *args)

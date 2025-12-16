@@ -58,7 +58,7 @@ Dokumentationen täcker Optuna-integration, optimeringsworkflow, problemlösning
 
 För att komma igång med Optuna-optimering, se:
 
-1. **AGENTS.md** (i `docs/`) - Snabbguide och workflow
+1. **AGENTS.md** (i repo-roten) - Snabbguide och workflow
 2. **OPTUNA_BEST_PRACTICES.md** - Best practices
 3. **OPTUNA_VS_BACKTEST_CONFIG_DIFFERENCE.md** - Förstå skillnader
 
@@ -89,10 +89,13 @@ Se `OPTUNA_VS_BACKTEST_CONFIG_DIFFERENCE.md` för fullständig checklista. Kortf
 - [ ] Smoke-test med champions exakta parametrar
 - [ ] Preflight-validering (`validate_optimizer_config.py`)
 - [ ] Verifiera att signal_adaptation.zones styr (inte top-level trösklar)
+- [ ] **Config-equivalence proof**: kör `scripts/check_trial_config_equivalence.py --run-dir results/hparam_search/<run_id> --all` och kräv `[OK]`
 
 ## Relaterade Filer
 
 - `config/optimizer/` - Optuna-konfigurationer
+- `config/optimizer/config_equivalence_smoke.yaml` - Minimal smoke-config för drift-check proof
 - `scripts/preflight_optuna_check.py` - Preflight-validering
 - `scripts/validate_optimizer_config.py` - Champion-validering
+- `scripts/check_trial_config_equivalence.py` - Drift-check (trial-config vs backtest-resultat)
 - `src/core/optimizer/` - Optuna-integration kod

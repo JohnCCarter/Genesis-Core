@@ -1,6 +1,6 @@
 # Optimizer Runner & Reporting (Phase 7)
 
-_Last updated: 2025-10-23_
+_Last updated: 2025-12-16_
 
 ## 1. Overview
 
@@ -30,6 +30,7 @@ Key components:
    ```
 
    Study file: `optuna_tBTCUSD_1h_proxy.db` (resumable).
+
 3. **Fine Optuna (full 6 months)** - narrow bounds around the proxy winners:
 
    ```powershell
@@ -37,6 +38,7 @@ Key components:
    ```
 
    Study file: `optuna_tBTCUSD_1h_fine.db`.
+
 4. **Summaries** - after each run:
 
    ```powershell
@@ -45,9 +47,17 @@ Key components:
    python scripts/optimizer.py summarize <run_id> --top 5
    ```
 
-5. **Full validation** (optional) - confirm the best candidate with the original 6-month config: `config/optimizer/tBTCUSD_1h_new_optuna.yaml` (`optuna_tBTCUSD_1h_6m.db`).
-6. **Champion update** - promote the best trial by updating `config/strategy/champions/<symbol>_<tf>.json`.
-7. **Document** - record the results in `docs/daily_summaries/daily_summary_YYYY-MM-DD.md` and this file.
+5. **Config-equivalence proof (rekommenderas)** - verifiera att trial-config och backtest-resultat använder samma effective config:
+
+```powershell
+python scripts/check_trial_config_equivalence.py --run-dir results/hparam_search/<run_id> --all
+```
+
+Förväntat utfall är `[OK]` per trial. Om `[MISMATCH]`: stoppa och felsök innan fler trials körs.
+
+6. **Full validation** (optional) - confirm the best candidate with the original 6-month config: `config/optimizer/tBTCUSD_1h_new_optuna.yaml` (`optuna_tBTCUSD_1h_6m.db`).
+7. **Champion update** - promote the best trial by updating `config/strategy/champions/<symbol>_<tf>.json`.
+8. **Document** - record the results in `docs/daily_summaries/daily_summary_YYYY-MM-DD.md` and this file.
 
 ## 3. Latest champion (23 Oct 2025)
 

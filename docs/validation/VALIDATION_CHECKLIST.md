@@ -1,4 +1,5 @@
 # VALIDATION CHECKLIST
+
 ## Stringent Model Validation Framework för Genesis-Core
 
 **Skapad:** 2025-10-09
@@ -16,6 +17,7 @@ Denna checklist säkerställer att varje modell går igenom **stringent validati
 ## 1️⃣ DATA INTEGRITY
 
 ### ✅ No Lookahead Bias
+
 - [ ] Features använder endast point-in-time data
 - [ ] Indikatorer är non-lookahead (EMA, RSI baserat på history)
 - [ ] Labels har ej lookahead i feature calculation
@@ -24,6 +26,7 @@ Denna checklist säkerställer att varje modell går igenom **stringent validati
 **Implementation:** `scripts/validate_purged_wfcv.py`
 
 ### ✅ Proper Data Splits
+
 - [ ] Holdout set: 20% (NEVER touched until final evaluation)
 - [ ] Train: 48% (för model training)
 - [ ] Validation: 16% (för hyperparameter tuning)
@@ -33,6 +36,7 @@ Denna checklist säkerställer att varje modell går igenom **stringent validati
 **Implementation:** `scripts/train_model.py --use-holdout`
 
 ### ✅ Purged Walk-Forward CV
+
 - [ ] Embargo period ≥ max holding period
 - [ ] Overlapping samples purged
 - [ ] Minimum 5 splits
@@ -45,6 +49,7 @@ Denna checklist säkerställer att varje modell går igenom **stringent validati
 ## 2️⃣ PREDICTIVE POWER METRICS
 
 ### ✅ Information Coefficient (IC)
+
 ```python
 # IC = Spearman correlation(predictions, forward_returns)
 # Target: IC > 0.03 (industry standard)
@@ -60,6 +65,7 @@ REQUIRED CHECKS:
 **Validated:** v12 model - IC: 0.0652, t-stat: 4.29, 69.5% positive
 
 ### ✅ IC Information Ratio (ICIR)
+
 ```python
 # ICIR = Mean(IC) / Std(IC)
 # Measures consistency of predictions
@@ -74,6 +80,7 @@ REQUIRED CHECKS:
 **Validated:** v12 model - ICIR: 0.5587 (GOOD)
 
 ### ✅ Quintile Analysis (Q5-Q1 Spread)
+
 ```python
 # Sort predictions into 5 buckets (quintiles)
 # Q5 = top 20% predictions
@@ -94,6 +101,7 @@ REQUIRED CHECKS:
 ## 3️⃣ OVERFIT DETECTION
 
 ### ✅ Deflated Sharpe Ratio
+
 ```python
 REQUIRED CHECKS:
 - [ ] Deflated Sharpe > 1.0
@@ -104,6 +112,7 @@ REQUIRED CHECKS:
 **Status:** ✅ IMPLEMENTED (`src/core/ml/overfit_detection.py`)
 
 ### ✅ Probability of Backtest Overfitting (PBO)
+
 ```python
 REQUIRED CHECKS:
 - [ ] PBO < 0.30 (robust)
@@ -114,6 +123,7 @@ REQUIRED CHECKS:
 **Status:** ✅ IMPLEMENTED (`src/core/ml/overfit_detection.py`)
 
 ### ✅ Holdout Performance Degradation
+
 ```python
 REQUIRED CHECKS:
 - [ ] Holdout AUC within 10% of validation AUC
@@ -128,6 +138,7 @@ REQUIRED CHECKS:
 ## 4️⃣ FEATURE VALIDATION
 
 ### ✅ Redundancy Check
+
 ```python
 REQUIRED CHECKS:
 - [ ] No feature pairs with correlation > 0.90
@@ -138,6 +149,7 @@ REQUIRED CHECKS:
 **Status:** ✅ IMPLEMENTED (`scripts/analyze_feature_synergy.py`)
 
 ### ✅ Feature Drift Monitoring
+
 ```python
 REQUIRED CHECKS:
 - [ ] PSI < 0.10 for all features (OK)
@@ -148,6 +160,7 @@ REQUIRED CHECKS:
 **Status:** ✅ IMPLEMENTED (`scripts/monitor_feature_drift.py`)
 
 ### ✅ Partial-IC Analysis
+
 ```python
 # Does Feature B add value AFTER controlling for Feature A?
 # Partial-IC = IC(B | A) after removing A's contribution
@@ -165,6 +178,7 @@ REQUIRED CHECKS:
 ## 5️⃣ REGIME ROBUSTNESS
 
 ### ✅ Hard Regime Gates
+
 ```python
 REQUIRED CHECKS:
 - [ ] Bull regime: Sharpe > 1.0, Drawdown > -20%
@@ -176,6 +190,7 @@ REQUIRED CHECKS:
 **Status:** ✅ IMPLEMENTED (`scripts/validate_regime_gates.py`)
 
 ### ✅ Regime Stability
+
 ```python
 REQUIRED CHECKS:
 - [ ] IC positive in all 3 regimes (bull/bear/ranging)
@@ -190,6 +205,7 @@ REQUIRED CHECKS:
 ## 6️⃣ MULTIPLE TESTING CORRECTION
 
 ### ✅ False Discovery Rate (FDR) Control
+
 ```python
 # When testing N features, some will be significant by chance!
 # Use Benjamini-Hochberg procedure
@@ -204,6 +220,7 @@ REQUIRED CHECKS:
 **Methods:** Benjamini-Hochberg, Bonferroni, Holm-Bonferroni
 
 ### ✅ Family-wise Error Rate (FWER)
+
 ```python
 # Conservative: Bonferroni correction
 # p_adjusted = p_value * n_tests
@@ -221,6 +238,7 @@ REQUIRED CHECKS:
 ## 7️⃣ STABILITY REQUIREMENTS
 
 ### ✅ Rolling Window Stability
+
 ```python
 # Calculate IC on rolling 3-month windows
 
@@ -235,6 +253,7 @@ REQUIRED CHECKS:
 **Validated:** v12 model - Rolling mean: 0.0962, worst: -0.2962, 69.5% positive
 
 ### ✅ Worst-case Analysis
+
 ```python
 REQUIRED CHECKS:
 - [ ] Worst 3-month AUC > 0.55
@@ -249,6 +268,7 @@ REQUIRED CHECKS:
 ## 8️⃣ PRE-COMMIT & STOPPING RULES
 
 ### ✅ Pre-commit Objectives
+
 ```python
 # BEFORE training, document objectives:
 
@@ -265,6 +285,7 @@ MUST DEFINE:
 **Priority:** P1 - HIGH
 
 ### ✅ Stopping Rules
+
 ```python
 # AUTO-STOP training if:
 
@@ -285,6 +306,7 @@ STOP CONDITIONS:
 ## 9️⃣ NESTED OOS CONFIRMATION
 
 ### ✅ Nested Cross-Validation
+
 ```python
 # Outer loop: Walk-forward splits (temporal)
 # Inner loop: K-fold CV for hyperparameters
@@ -314,10 +336,12 @@ REQUIRED CHECKS:
 ## 🔟 PROVENANCE & DOCUMENTATION
 
 ### ✅ Provenance Record
+
 ```python
 REQUIRED DOCUMENTATION:
 - [ ] Data hash (reproducibility)
 - [ ] Config hash (all parameters)
+- [ ] Optuna/backtest config-equivalence proof (trial-config vs backtest-resultat)
 - [ ] Feature list and versions
 - [ ] Training date/time
 - [ ] Environment (Python, sklearn versions)
@@ -326,6 +350,7 @@ REQUIRED DOCUMENTATION:
 **Status:** ✅ IMPLEMENTED (`src/core/utils/provenance.py`)
 
 ### ✅ Model Card
+
 ```python
 REQUIRED DOCUMENTATION:
 - [ ] Model description
@@ -339,6 +364,7 @@ REQUIRED DOCUMENTATION:
 **Status:** 📝 DOCUMENTED (maar not auto-generated)
 
 ### ✅ Championship Ticket
+
 ```python
 REQUIRED FOR PRODUCTION:
 - [ ] All validation checks passed
@@ -355,6 +381,7 @@ REQUIRED FOR PRODUCTION:
 ## 📊 VALIDATION SCORE CARD
 
 ### **Scoring System:**
+
 ```
 Each category scores 0-10 points
 Minimum passing score: 70/100
@@ -371,6 +398,7 @@ Category Weights:
 ```
 
 ### **Current Genesis-Core Score (Updated Phase-6b):**
+
 ```
 ✅ Data Integrity:      12/15  (missing nested OOS)
 ✅ Predictive Power:    18/20  (IC ✅, ICIR ✅, Quintile ✅, rolling std needs work)
@@ -392,18 +420,21 @@ EXCEEDED BY: +13 points 🎉
 ## 🚀 PRIORITY IMPLEMENTATION ROADMAP
 
 ### **P0 - CRITICAL (Must have for ANY production deployment)**
+
 1. ✅ IC / ICIR calculation → **DONE** (`scripts/calculate_ic_metrics.py`)
 2. ✅ Quintile analysis (Q5-Q1 spread) → **DONE** (`scripts/analyze_quintiles.py`)
 3. ✅ Rolling window stability → **DONE** (in IC script)
 4. ⏳ Pre-commit objectives → **IN PROGRESS**
 
 ### **P1 - HIGH (Needed for robust validation)**
+
 5. ⏳ Partial-IC for feature selection → **TODO**
 6. ✅ FDR control (multiple testing) → **DONE** (`scripts/fdr_correction.py`)
 7. ⏳ Stopping rules → **TODO**
 8. ⏳ Nested OOS implementation → **TODO**
 
 ### **P2 - MEDIUM (Nice to have)**
+
 9. ⏳ Automated model card generation → **TODO**
 10. ⏳ Championship ticket system → **TODO**
 11. ✅ FWER (Bonferroni correction) → **DONE** (`scripts/fdr_correction.py`)
@@ -413,6 +444,7 @@ EXCEEDED BY: +13 points 🎉
 ## 📝 USAGE
 
 ### **Before Training:**
+
 ```bash
 # 1. Define objectives in config
 cat > config/training_objectives.json << EOF
@@ -431,6 +463,7 @@ python scripts/precompute_features.py --symbol tBTCUSD --timeframe 1h
 ```
 
 ### **During Training:**
+
 ```bash
 # Train with full validation
 python scripts/train_model.py \
@@ -442,6 +475,7 @@ python scripts/train_model.py \
 ```
 
 ### **After Training:**
+
 ```bash
 # Run complete validation suite
 python scripts/validate_champion_complete.py \

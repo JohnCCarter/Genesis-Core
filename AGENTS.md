@@ -1,10 +1,28 @@
 # README for AI Agents (Local Development)
 
-## Last update: 2025-12-15
+## Last update: 2025-12-16
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
 
-## 1. Deliverables (latest highlights: 2025-12-15)
+## 1. Deliverables (latest highlights: 2025-12-16)
+
+- **CONFIG-EQUIVALENCE PROOF + BACKTEST CORRECTNESS (2025-12-16)**:
+
+  - **Goal**: Eliminera "config drift" mellan Optuna trial-configs och backtest-resultat, samt hårdna backtest-korrekthet (särskilt trade metadata).
+  - **Key changes**:
+    - **Config drift-check (CI-vänlig)**: Ny comparator + CLI som bevisar att trial-config och sparade backtest-resultat använder samma _effective config_ ("merged_config").
+    - **Reproducerbarhet i artifacts**: Backtest-resultat och trial-configs inkluderar nu konsekvent `merged_config` + versions/provenance-fält (även i direct/in-process-läge).
+    - **Backtest correctness**: Fixad timing för `entry_reasons` (rätt bar, ingen stale/pending-läckage) och säkerställd HTF-exit-konfig applicering per run.
+    - **Säkerhet**: UI/paper flow klampar icke-TEST symboler till TEST-par (testat).
+  - **Artifacts / docs**:
+    - Daily log: `docs/daily_summaries/daily_summary_2025-12-16.md`
+    - Smoke-config: `config/optimizer/config_equivalence_smoke.yaml`
+    - Drift-check CLI: `scripts/check_trial_config_equivalence.py`
+  - **Verification**:
+    - Full `pytest`: 487 passed, 1 skipped
+    - Smoke-run drift-check: `[OK] trial_001` på `results/hparam_search/run_20251216_152114`
+  - **Notes**:
+    - PR till `master` är blockerad i nuläget: "no history in common" (kräver bridge-branch / allow-unrelated-histories strategi).
 
 - **OPTUNA HARDENING + COST-AWARE SCORING (2025-12-15)**:
 

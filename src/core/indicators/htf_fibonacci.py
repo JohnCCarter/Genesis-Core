@@ -358,7 +358,8 @@ def get_htf_fibonacci_context(
             # Convert dataclass to dict, sort keys, and hash string representation
             cfg_dict = config.__dict__
             cfg_str = json.dumps(cfg_dict, sort_keys=True, default=str)
-            config_hash = hashlib.md5(cfg_str.encode()).hexdigest()
+            # Cache-key fingerprint only (not used for security): use SHA-256 to satisfy Bandit (B324).
+            config_hash = hashlib.sha256(cfg_str.encode("utf-8")).hexdigest()
         except Exception:
             # Fallback if serialization fails
             config_hash = str(hash(str(config)))

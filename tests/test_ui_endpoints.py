@@ -128,6 +128,10 @@ def test_paper_submit_monkeypatched(monkeypatch):
             paper_submit({"symbol": "tBTCUSD", "side": "LONG", "size": 0.003, "type": "MARKET"})
         )
         assert out.get("ok") is True and out.get("exchange") == "bitfinex"
+        # Säkerhet: paper-trading ska aldrig acceptera icke-TEST symboler.
+        # En icke-whitelistad symbol måste klampas till ett TEST-par.
+        req = out.get("request") or {}
+        assert req.get("symbol") == "tTESTBTC:TESTUSD"
     finally:
         srv.get_exchange_client = orig_get  # type: ignore
 

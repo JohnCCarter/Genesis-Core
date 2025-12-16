@@ -766,10 +766,11 @@ async def account_orders() -> dict:
 async def paper_submit(payload: dict = Body(...)) -> dict:
     """Skicka en order till Bitfinex Paper (auth krävs via .env).
 
-    OBS: Paper only – vi tvingar alltid testparet tTESTBTC:TESTUSD oavsett indata
+    OBS: Paper only – vi tillåter endast TEST-spotpar från whitelist.
+    Om indata-symbolen inte är whitelista: fallback till tTESTBTC:TESTUSD
     för att undvika risk för verklig handel.
 
-    payload: {symbol, side:"LONG"|"SHORT"|"NONE", size:float, type?:"MARKET"|"LIMIT", price?:float}
+      payload: {symbol, side:"LONG"|"SHORT"|"NONE", size:float, type?:"MARKET"|"LIMIT", price?:float}
     """
     # Använd endast symboler från whitelist; annars fall tillbaka till standard TEST-par
     requested_symbol_raw = str(payload.get("symbol") or "tTESTBTC:TESTUSD")

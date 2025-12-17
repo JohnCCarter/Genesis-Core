@@ -94,7 +94,10 @@ def _score_v2(
 
 
 def score_backtest(
-    result: dict[str, Any], *, thresholds: MetricThresholds | None = None, score_version: str | None = None
+    result: dict[str, Any],
+    *,
+    thresholds: MetricThresholds | None = None,
+    score_version: str | None = None,
 ) -> dict[str, Any]:
     thresholds = thresholds or MetricThresholds()
     score_version_resolved = _resolve_score_version(score_version)

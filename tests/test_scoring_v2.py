@@ -3,7 +3,8 @@ import pytest
 from core.optimizer.scoring import MetricThresholds, score_backtest
 
 
-def test_score_v2_does_not_explode_on_zero_drawdown() -> None:
+def test_score_v2_does_not_explode_on_zero_drawdown(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("GENESIS_SCORE_VERSION", raising=False)
     # Monotonic equity curve => max_drawdown = 0.0.
     # Legacy v1 score has a return_to_dd term that can explode; v2 should not.
     result = {
@@ -35,7 +36,8 @@ def test_score_v2_does_not_explode_on_zero_drawdown() -> None:
     assert score_v2["baseline"]["score_version"] == "v2"
 
 
-def test_score_v2_is_selectable_without_affecting_default() -> None:
+def test_score_v2_is_selectable_without_affecting_default(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("GENESIS_SCORE_VERSION", raising=False)
     result = {
         "summary": {"initial_capital": 1000.0},
         "trades": [

@@ -1,0 +1,17 @@
+{
+  "server_name": "genesis-core",
+  "version": "1.0.0",
+  "log_level": "INFO",
+  "log_file": "logs/mcp_server.log",
+  "security": {
+    "allowed_paths": ["."],
+    "blocked_patterns": [".git", "__pycache__", "*.pyc", "node_modules", ".env", ".nonce_tracker.json", "dev.overrides.local.json"],
+    "max_file_size_mb": 10,
+    "execution_timeout_seconds": 30
+  },
+  "features": {
+    "file_operations": true,
+    "code_execution": true,
+    "git_integration": true
+  }
+}

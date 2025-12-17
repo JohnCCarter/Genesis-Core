@@ -114,6 +114,8 @@ build/
 *.tmp
 *.temp
 .agent-locks/
+tmp/*.txt
+tmp/*.md
 
 # Temporary config artifacts (generated)
 config/tmp/champion_current_as_cfg*.json

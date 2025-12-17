@@ -1,6 +1,28 @@
 # Genesis-Core
 Denna kodbas är under aktiv utveckling (WIP).
 
+## MCP Server (AI Assistant Integration)
+
+Genesis-Core includes a full-featured MCP (Model Context Protocol) server for seamless integration with VSCode, GitHub Copilot, and other AI coding assistants.
+
+### Quick Start
+
+```bash
+# Install MCP dependencies
+pip install -e ".[mcp]"
+
+# Start the server
+python -m mcp_server.server
+```
+
+**Features:**
+- 🔧 7 powerful tools (read/write files, execute code, search, Git status)
+- 📚 4 resource types (docs, structure, Git, config)
+- 🔒 Security-first design with path validation and timeouts
+- 📝 Comprehensive logging and error handling
+
+**Documentation:** See [`docs/mcp_server_guide.md`](docs/mcp_server_guide.md) for complete setup and usage guide.
+
 <!--
 >
 > - Paper only: boten körs enbart mot Bitfinex Paper‑account. Livehandel aktiveras först när utvecklaren uttryckligen beslutar det.

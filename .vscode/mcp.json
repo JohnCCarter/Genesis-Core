@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "genesis-core": {
+      "command": "python",
+      "args": ["-m", "mcp_server.server"],
+      "env": {}
+    }
+  }
+}

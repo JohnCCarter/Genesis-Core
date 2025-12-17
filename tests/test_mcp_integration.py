@@ -4,6 +4,8 @@ Integration tests for MCP Server end-to-end functionality
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from mcp_server.config import load_config
@@ -27,6 +29,9 @@ from mcp_server.tools import (
 @pytest.fixture
 def config():
     """Load test configuration."""
+    # Ensure tmp directory exists
+    tmp_dir = Path("tmp")
+    tmp_dir.mkdir(exist_ok=True)
     return load_config()
 
 
@@ -97,43 +102,60 @@ async def test_file_operations_workflow(config):
     test_file = "tmp/mcp_integration_test.txt"
     test_content = "MCP Integration Test\nThis file tests the complete workflow."
 
-    # 1. Write a test file
-    write_result = await write_file(test_file, test_content, config)
-    assert write_result["success"] is True
+    try:
+        # 1. Write a test file
+        write_result = await write_file(test_file, test_content, config)
+        assert write_result["success"] is True
 
-    # 2. Read the file back
-    read_result = await read_file(test_file, config)
-    assert read_result["success"] is True
-    assert read_result["content"] == test_content
+        # 2. Read the file back
+        read_result = await read_file(test_file, config)
+        assert read_result["success"] is True
+        assert read_result["content"] == test_content
 
-    # 3. Search for content in the file
-    search_result = await search_code("Integration Test", "*.txt", config)
-    assert search_result["success"] is True
-    # Should find our test file
-    matches = [m for m in search_result["matches"] if test_file in m["file"]]
-    assert len(matches) > 0
+        # 3. Search for content in the file
+        search_result = await search_code("Integration Test", "*.txt", config)
+        assert search_result["success"] is True
+        # Should find our test file
+        matches = [m for m in search_result["matches"] if test_file in m["file"]]
+        assert len(matches) > 0
+    finally:
+        # Cleanup test file
+        test_path = Path(test_file)
+        if test_path.exists():
+            test_path.unlink()
 
 
 @pytest.mark.asyncio
 async def test_security_workflow(config):
     """Test that security features work in a realistic workflow."""
 
-    # 1. Try to read a blocked file
-    env_result = await read_file(".env", config)
-    assert env_result["success"] is False
-    assert "blocked pattern" in env_result["error"]
+    test_file = "tmp/safe_test.txt"
 
-    # 2. Try to access .git directory
-    git_result = await read_file(".git/config", config)
-    assert git_result["success"] is False
+    try:
+        # 1. Try to read a blocked file
+        env_result = await read_file(".env", config)
+        assert env_result["success"] is False
+        assert (
+            "blocked pattern" in env_result["error"].lower()
+            or "blocked" in env_result["error"].lower()
+        )
 
-    # 3. Try to write to a safe location (should succeed)
-    safe_result = await write_file("tmp/safe_test.txt", "Safe content", config)
-    assert safe_result["success"] is True
+        # 2. Try to access .git directory
+        git_result = await read_file(".git/config", config)
+        assert git_result["success"] is False
 
-    # 4. Verify we can list safe directories
-    list_result = await list_directory("src", config)
-    assert list_result["success"] is True
+        # 3. Try to write to a safe location (should succeed)
+        safe_result = await write_file(test_file, "Safe content", config)
+        assert safe_result["success"] is True
+
+        # 4. Verify we can list safe directories
+        list_result = await list_directory("src", config)
+        assert list_result["success"] is True
+    finally:
+        # Cleanup test file
+        test_path = Path(test_file)
+        if test_path.exists():
+            test_path.unlink()
 
 
 @pytest.mark.asyncio

@@ -7,6 +7,8 @@ This script verifies that the MCP server is properly installed and configured.
 
 from __future__ import annotations
 
+import importlib
+import importlib.util
 import sys
 from pathlib import Path
 
@@ -20,27 +22,26 @@ def check_dependencies():
     print("Checking dependencies...")
     missing = []
 
-    try:
-        import mcp
+    def _check_module(name: str, display_name: str | None = None) -> bool:
+        if importlib.util.find_spec(name) is None:
+            return False
+        # Import to validate that import doesn't explode at runtime.
+        mod = importlib.import_module(name)
+        shown = display_name or mod.__name__
+        version = getattr(mod, "__version__", None)
+        suffix = f" ({version})" if isinstance(version, str) and version else ""
+        print(f"  ✓ {shown} installed{suffix}")
+        return True
 
-        print("  ✓ mcp installed")
-    except ImportError:
+    if not _check_module("mcp"):
         print("  ✗ mcp not installed")
         missing.append("mcp")
 
-    try:
-        import aiofiles
-
-        print("  ✓ aiofiles installed")
-    except ImportError:
+    if not _check_module("aiofiles"):
         print("  ✗ aiofiles not installed")
         missing.append("aiofiles")
 
-    try:
-        import git
-
-        print("  ✓ gitpython installed")
-    except ImportError:
+    if not _check_module("git", display_name="gitpython"):
         print("  ✗ gitpython not installed")
         missing.append("gitpython")
 
@@ -89,14 +90,18 @@ def check_file_structure():
 def check_server_import():
     """Check if the MCP server can be imported."""
     print("\nChecking server import...")
-    try:
-        from mcp_server import config, resources, server, tools, utils
+    modules = [
+        "mcp_server.config",
+        "mcp_server.tools",
+        "mcp_server.resources",
+        "mcp_server.utils",
+        "mcp_server.server",
+    ]
 
-        print("  ✓ mcp_server.config")
-        print("  ✓ mcp_server.tools")
-        print("  ✓ mcp_server.resources")
-        print("  ✓ mcp_server.utils")
-        print("  ✓ mcp_server.server")
+    try:
+        for name in modules:
+            mod = importlib.import_module(name)
+            print(f"  ✓ {mod.__name__}")
         print("\n✅ Server modules can be imported")
         return True
     except ImportError as e:
@@ -117,9 +122,7 @@ def check_configuration():
         print(
             f"  ✓ File operations: {'enabled' if config.features.file_operations else 'disabled'}"
         )
-        print(
-            f"  ✓ Code execution: {'enabled' if config.features.code_execution else 'disabled'}"
-        )
+        print(f"  ✓ Code execution: {'enabled' if config.features.code_execution else 'disabled'}")
         print(
             f"  ✓ Git integration: {'enabled' if config.features.git_integration else 'disabled'}"
         )

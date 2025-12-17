@@ -26,7 +26,7 @@ def config():
 
 
 @pytest.mark.asyncio
-async def test_read_file(config, tmp_path):
+async def test_read_file(config):
     """Test reading a file."""
     # Test reading an existing file
     result = await read_file("README.md", config)
@@ -44,7 +44,7 @@ async def test_read_file_not_exists(config):
 
 
 @pytest.mark.asyncio
-async def test_write_and_read_file(config, tmp_path):
+async def test_write_and_read_file(config):
     """Test writing and then reading a file."""
     test_content = "# Test File\n\nThis is a test."
     test_path = "tmp/test_mcp_write.md"

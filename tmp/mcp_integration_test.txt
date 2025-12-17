@@ -1,0 +1,2 @@
+MCP Integration Test
+This file tests the complete workflow.

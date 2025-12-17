@@ -1,0 +1,103 @@
+# Genesis-Core MCP Server
+
+Model Context Protocol (MCP) server for Genesis-Core, enabling AI coding assistants to interact with the project.
+
+## Quick Start
+
+### Installation
+
+```bash
+# Install MCP dependencies
+pip install -e ".[mcp]"
+```
+
+### Running the Server
+
+```bash
+# Start the MCP server
+python -m mcp_server.server
+```
+
+You should see:
+```
+============================================================
+Genesis-Core MCP Server v1.0.0
+============================================================
+Server Name: genesis-core
+Log Level: INFO
+Features Enabled:
+  - File Operations: True
+  - Code Execution: True
+  - Git Integration: True
+============================================================
+MCP Server started and ready for connections
+```
+
+### VSCode Integration
+
+1. Ensure `.vscode/mcp.json` exists (already created)
+2. Open VSCode in the Genesis-Core directory
+3. Open Command Palette (Ctrl+Shift+P / Cmd+Shift+P)
+4. Search for "MCP: Connect to Server"
+5. Select "genesis-core"
+
+The server will start automatically and AI assistants can now interact with your project!
+
+## Available Tools
+
+- **read_file** - Read file contents
+- **write_file** - Write/update files
+- **list_directory** - List files and directories
+- **execute_python** - Execute Python code safely
+- **get_project_structure** - Get project tree structure
+- **search_code** - Search for code in the project
+- **get_git_status** - Get Git repository status
+
+## Available Resources
+
+- `genesis://docs/{path}` - Project documentation
+- `genesis://structure` - Project directory structure
+- `genesis://git/status` - Git status information
+- `genesis://config` - Configuration information
+
+## Configuration
+
+Edit `config/mcp_settings.json` to customize:
+- Security settings (allowed paths, blocked patterns)
+- File size limits
+- Code execution timeouts
+- Feature flags
+- Log levels
+
+## Testing
+
+```bash
+# Run MCP server tests
+pytest tests/test_mcp_server.py tests/test_mcp_resources.py -v
+```
+
+## Documentation
+
+See [`docs/mcp_server_guide.md`](../docs/mcp_server_guide.md) for complete documentation including:
+- Detailed tool descriptions with examples
+- Security features and best practices
+- Troubleshooting guide
+- Architecture overview
+- Advanced configuration
+
+## Security
+
+The MCP server includes multiple security features:
+- Path validation (prevents directory traversal)
+- Blocked patterns (`.git`, `__pycache__`, `.env`, etc.)
+- File size limits (default: 10MB)
+- Code execution timeouts (default: 30 seconds)
+- Comprehensive logging of all operations
+
+## Logs
+
+All operations are logged to `logs/mcp_server.log` with timestamps and detailed information.
+
+## Support
+
+For issues or questions, see the [full documentation](../docs/mcp_server_guide.md) or check the logs at `logs/mcp_server.log`.

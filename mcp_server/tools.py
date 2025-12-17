@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -57,7 +56,7 @@ async def read_file(file_path: str, config: MCPConfig) -> dict[str, Any]:
             return {"success": False, "error": size_error}
 
         # Read file content
-        async with aiofiles.open(path_obj, "r", encoding="utf-8") as f:
+        async with aiofiles.open(path_obj, encoding="utf-8") as f:
             content = await f.read()
 
         logger.info(f"Successfully read file: {file_path}")
@@ -236,7 +235,7 @@ async def execute_python(code: str, config: MCPConfig) -> dict[str, Any]:
                     "return_code": process.returncode,
                 }
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             process.kill()
             await process.wait()
             return {
@@ -276,9 +275,7 @@ async def get_project_structure(config: MCPConfig) -> dict[str, Any]:
         return {"success": False, "error": f"Error generating structure: {str(e)}"}
 
 
-async def search_code(
-    query: str, file_pattern: str | None, config: MCPConfig
-) -> dict[str, Any]:
+async def search_code(query: str, file_pattern: str | None, config: MCPConfig) -> dict[str, Any]:
     """
     Search for code in the project.
 
@@ -291,7 +288,6 @@ async def search_code(
         Dictionary with search results or error information
     """
     try:
-        import re
 
         project_root = get_project_root()
         matches = []
@@ -317,7 +313,7 @@ async def search_code(
                 continue
 
             try:
-                with open(file_path, "r", encoding="utf-8") as f:
+                with open(file_path, encoding="utf-8") as f:
                     lines = f.readlines()
 
                 for line_num, line in enumerate(lines, 1):

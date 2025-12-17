@@ -277,7 +277,7 @@ async def main():
     logger.info("=" * 60)
     logger.info(f"Server Name: {config.server_name}")
     logger.info(f"Log Level: {config.log_level}")
-    logger.info(f"Features Enabled:")
+    logger.info("Features Enabled:")
     logger.info(f"  - File Operations: {config.features.file_operations}")
     logger.info(f"  - Code Execution: {config.features.code_execution}")
     logger.info(f"  - Git Integration: {config.features.git_integration}")

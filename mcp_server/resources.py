@@ -6,9 +6,7 @@ Provides resources that can be accessed by AI assistants for context.
 
 from __future__ import annotations
 
-import json
 import logging
-from pathlib import Path
 from typing import Any
 
 from .config import MCPConfig, get_project_root
@@ -52,7 +50,7 @@ async def get_documentation(doc_path: str, config: MCPConfig) -> dict[str, Any]:
             return {"success": False, "error": error_msg}
 
         # Read documentation
-        with open(full_path, "r", encoding="utf-8") as f:
+        with open(full_path, encoding="utf-8") as f:
             content = f.read()
 
         logger.info(f"Successfully retrieved documentation: {doc_path}")
@@ -202,11 +200,13 @@ async def get_config_resource(config: MCPConfig) -> dict[str, Any]:
             full_path = project_root / config_path
             if full_path.exists():
                 try:
-                    with open(full_path, "r", encoding="utf-8") as f:
+                    with open(full_path, encoding="utf-8") as f:
                         content = f.read()
                     config_files.append({"path": config_path, "exists": True})
                 except Exception:
-                    config_files.append({"path": config_path, "exists": True, "error": "Could not read"})
+                    config_files.append(
+                        {"path": config_path, "exists": True, "error": "Could not read"}
+                    )
             else:
                 config_files.append({"path": config_path, "exists": False})
 

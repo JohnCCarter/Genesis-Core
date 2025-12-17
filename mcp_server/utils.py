@@ -8,7 +8,6 @@ import fnmatch
 import logging
 import re
 from pathlib import Path
-from typing import Any
 
 from .config import MCPConfig, get_project_root
 
@@ -48,9 +47,7 @@ def is_safe_path(path: str | Path, config: MCPConfig) -> tuple[bool, str]:
         path_str = str(path_obj)
         for pattern in config.security.blocked_patterns:
             # Check if any part of the path matches blocked patterns
-            if fnmatch.fnmatch(path_str, f"*{pattern}*") or fnmatch.fnmatch(
-                path_obj.name, pattern
-            ):
+            if fnmatch.fnmatch(path_str, f"*{pattern}*") or fnmatch.fnmatch(path_obj.name, pattern):
                 return False, f"Path matches blocked pattern '{pattern}': {path}"
 
         return True, ""
@@ -160,9 +157,7 @@ def format_tree_structure(
             if item.is_dir():
                 extension = "    " if is_last else "│   "
                 lines.extend(
-                    format_tree_structure(
-                        item, prefix + extension, max_depth, current_depth + 1
-                    )
+                    format_tree_structure(item, prefix + extension, max_depth, current_depth + 1)
                 )
 
     except PermissionError:

@@ -57,6 +57,12 @@ class ChampionLoader:
             return None
 
     def _validate_champion(self, payload: dict[str, Any]) -> dict[str, Any] | None:
+        # Prefer complete champions written by the optimizer/backtest pipeline.
+        # These include a full effective config under top-level `merged_config`.
+        merged_config = payload.get("merged_config")
+        if isinstance(merged_config, dict):
+            return merged_config
+
         # Support multiple formats:
         # 1. {"parameters": {...}} or {"config": {...}} (top-level)
         # 2. {"cfg": {"parameters": {...}}} (wrapped format)
@@ -65,6 +71,9 @@ class ChampionLoader:
             # Try wrapped format
             cfg_wrapper = payload.get("cfg", {})
             if isinstance(cfg_wrapper, dict):
+                merged_config_wrapped = cfg_wrapper.get("merged_config")
+                if isinstance(merged_config_wrapped, dict):
+                    return merged_config_wrapped
                 config = cfg_wrapper.get("parameters") or cfg_wrapper.get("config")
         if not isinstance(config, dict):
             return None

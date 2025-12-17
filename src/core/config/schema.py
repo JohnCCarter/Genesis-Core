@@ -11,16 +11,24 @@ class RuntimeSection(BaseModel):
 
 class SignalAdaptationZone(RuntimeSection):
     entry_conf_overall: float
-    regime_proba: dict[str, float]
+    # Backwards compatible: older Optuna/backtest configs used a scalar (e.g. 0.45) here.
+    # The decision logic supports both scalar and per-regime dict thresholds.
+    regime_proba: dict[str, float] | float
     pct: float | None = None
 
-    @field_validator("regime_proba")
+    @field_validator("regime_proba", mode="before")
     @classmethod
-    def _validate_regime(cls, v: dict[str, float]) -> dict[str, float]:
-        out: dict[str, float] = {}
-        for k, val in (v or {}).items():
-            out[str(k)] = float(val)
-        return out
+    def _validate_regime(cls, v: Any) -> dict[str, float] | float:
+        if v is None:
+            return {}
+        if isinstance(v, float | int):
+            return float(v)
+        if isinstance(v, dict):
+            out: dict[str, float] = {}
+            for k, val in (v or {}).items():
+                out[str(k)] = float(val)
+            return out
+        raise TypeError("regime_proba must be a dict[str, float] or a float")
 
 
 class SignalAdaptationConfig(RuntimeSection):
@@ -30,17 +38,24 @@ class SignalAdaptationConfig(RuntimeSection):
 
 class Thresholds(RuntimeSection):
     entry_conf_overall: float = Field(ge=0.0, le=1.0, default=0.7)
-    regime_proba: dict[str, float] = Field(default_factory=lambda: {"balanced": 0.58})
+    # Backwards compatible: some configs use a scalar proba threshold.
+    regime_proba: dict[str, float] | float = Field(default_factory=lambda: {"balanced": 0.58})
     signal_adaptation: SignalAdaptationConfig | None = None
     min_edge: float | None = Field(default=None)
 
-    @field_validator("regime_proba")
+    @field_validator("regime_proba", mode="before")
     @classmethod
-    def _validate_regime(cls, v: dict[str, float]) -> dict[str, float]:
-        out: dict[str, float] = {}
-        for k, val in (v or {}).items():
-            out[str(k)] = float(val)
-        return out
+    def _validate_regime(cls, v: Any) -> dict[str, float] | float:
+        if v is None:
+            return {"balanced": 0.58}
+        if isinstance(v, float | int):
+            return float(v)
+        if isinstance(v, dict):
+            out: dict[str, float] = {}
+            for k, val in (v or {}).items():
+                out[str(k)] = float(val)
+            return out
+        raise TypeError("regime_proba must be a dict[str, float] or a float")
 
 
 class Gates(RuntimeSection):

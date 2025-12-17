@@ -37,6 +37,26 @@ def test_load_champion_file(champions_dir: Path) -> None:
     assert cfg.source.endswith("tTEST_1h.json")
 
 
+def test_load_champion_prefers_merged_config(champions_dir: Path) -> None:
+    loader = ChampionLoader(champions_dir=champions_dir)
+    champions_dir.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "parameters": {
+            "thresholds": {"entry_conf_overall": 0.55},
+            "meta": {"note": "local"},
+        },
+        "merged_config": {
+            "thresholds": {"entry_conf_overall": 0.12},
+            "risk": {"risk_map": [[0.5, 0.01], [0.6, 0.02], [0.7, 0.03]]},
+        },
+    }
+    path = champions_dir / "tTEST_1h.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    cfg = loader.load("tTEST", "1h")
+    assert cfg.config["thresholds"]["entry_conf_overall"] == 0.12
+
+
 def test_load_cached(champions_dir: Path) -> None:
     loader = ChampionLoader(champions_dir=champions_dir)
     cfg1 = loader.load("tTEST", "1h")

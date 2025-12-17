@@ -1,4 +1,33 @@
 {
+  "created_at": "2025-12-17T12:47:49.060019",
+  "run_id": "baseline_2024_scored_20251217_124749",
+  "git_commit": "bdcf42bef4547e2e5a7db42f05c675ea23fbf1b7",
+  "snapshot_id": "snap_tBTCUSD_2024-01-01_2024-12-31_v1",
+  "symbol": "tBTCUSD",
+  "timeframe": "1h",
+  "score": -100.35051134527932,
+  "metrics": {
+    "max_drawdown": 0.06007121217844046,
+    "num_trades": 351,
+    "profit_factor": 0.9101169096451327,
+    "return_to_dd": -0.7945696437856966,
+    "sharpe_ratio": -0.03747150600383182,
+    "total_commission": 336.4344140389999,
+    "total_commission_pct": 0.033643441403899986,
+    "total_return": -0.04773076166239844,
+    "win_rate": 0.33333333333333326
+  },
+  "constraints": {
+    "hard_failures": ["pf<1.0"],
+    "raw": {
+      "source": "scripts/run_backtest.py",
+      "results_path": "results/backtests/tBTCUSD_1h_20251217_124749.json"
+    }
+  },
+  "metadata": {
+    "note": "Legacy champion config augmented with scored metrics (2024 window) so optimizer comparisons are meaningful. Parameters unchanged.",
+    "runtime_version": 49
+  },
   "parameters": {
     "thresholds": {
       "entry_conf_overall": 0.24,

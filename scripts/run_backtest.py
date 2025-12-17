@@ -183,11 +183,15 @@ def main():
 
         if args.config_file:
             override_payload = json.loads(args.config_file.read_text(encoding="utf-8"))
-            override_cfg = (
-                override_payload.get("cfg") if isinstance(override_payload, dict) else None
-            )
+            if not isinstance(override_payload, dict):
+                raise ValueError("config-file must be a JSON object")
+
+            # Backwards-compat: some files use 'parameters' instead of 'cfg'.
+            override_cfg = override_payload.get("cfg")
             if override_cfg is None:
-                raise ValueError("config-file must contain a 'cfg' dictionary")
+                override_cfg = override_payload.get("parameters")
+            if not isinstance(override_cfg, dict):
+                raise ValueError("config-file must contain a 'cfg' (or 'parameters') dictionary")
 
             # Check if this is a complete champion (has merged_config)
             merged_config_from_file = override_payload.get("merged_config")

@@ -1,10 +1,27 @@
 # README for AI Agents (Local Development)
 
-## Last update: 2025-12-16
+## Last update: 2025-12-17
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
 
-## 1. Deliverables (latest highlights: 2025-12-16)
+## 1. Deliverables (latest highlights: 2025-12-17)
+
+- **CHURN-SMOKE + LONG-WINDOW VALIDATION + CHAMPION PATH FIX (2025-12-17)**:
+
+  - **Goal**: Köra en churn-/kostnadsmedveten Optuna-smoke på 2024-fönstret och validera robusthet på längre period ("från 2023", begränsat av frozen data). Säkerställa att champion-jämförelser/promotion använder korrekt fil-path.
+  - **Key changes**:
+    - **Churn-smoke config**: `config/optimizer/tBTCUSD_1h_optuna_phase3_fine_v7_smoke.yaml` uppdaterad med `use_sample_range` + `sample_start/end` (2024-range), samt churn-guardrails (`max_trades`, `max_total_commission_pct`).
+    - **Champion path fix**: `src/core/optimizer/champion.py` defaultar nu till repo-root `config/strategy/champions` (pyproject-detektion) + regressionstest i `tests/test_optimizer_champion.py`.
+    - **Backcompat & loader-hardening**:
+      - `src/core/config/schema.py` accepterar scalar `regime_proba` (top-level och i `signal_adaptation.zones`).
+      - `scripts/run_backtest.py` accepterar `parameters` som alias till `cfg` i `--config-file`.
+      - `src/core/strategy/champion_loader.py` föredrar top-level `merged_config` när den finns.
+  - **Artifacts / docs**:
+    - Daily log: `docs/daily_summaries/daily_summary_2025-12-17.md`
+    - Run-dir: `results/hparam_search/run_20251217_122027` (best trial `trial_028`)
+  - **Outcome**:
+    - Drift-check OK för best trial (2024).
+    - Ingen promotion: best trial föll på långperiod via hard failure `pf<1.0`.
 
 - **CONFIG-EQUIVALENCE PROOF + BACKTEST CORRECTNESS (2025-12-16)**:
 

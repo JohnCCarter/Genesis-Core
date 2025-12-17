@@ -65,8 +65,19 @@ class ChampionManager:
     """Ansvarar för att läsa/skapa champion-filer med backup."""
 
     def __init__(self, champions_dir: Path | None = None) -> None:
-        root = Path(__file__).resolve().parents[2]
-        self.champions_dir = champions_dir or (root / "config" / "strategy" / "champions")
+        # Default ska peka på repo-roten, inte under src/.
+        # Vi försöker hitta pyproject.toml uppåt i trädet för robusthet.
+        resolved = Path(__file__).resolve()
+        repo_root: Path | None = None
+        for parent in resolved.parents:
+            if (parent / "pyproject.toml").exists():
+                repo_root = parent
+                break
+        if repo_root is None:
+            # Fallback: .../src/core/optimizer/champion.py -> repo root är normalt parents[3]
+            repo_root = resolved.parents[3]
+
+        self.champions_dir = champions_dir or (repo_root / "config" / "strategy" / "champions")
         self.champions_dir.mkdir(parents=True, exist_ok=True)
 
     def _champion_path(self, symbol: str, timeframe: str) -> Path:

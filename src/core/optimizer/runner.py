@@ -1274,10 +1274,15 @@ def run_trial(
                 constraints_cfg=constraints_cfg,
             )
             score_value = score.get("score")
+            baseline_block = score.get("baseline") if isinstance(score, dict) else None
+            score_version = None
+            if isinstance(baseline_block, dict):
+                score_version = baseline_block.get("score_version")
             score_serializable = {
                 "score": score_value,
                 "metrics": score.get("metrics"),
                 "hard_failures": list(score.get("hard_failures") or []),
+                "score_version": score_version,
             }
             total_duration = time.perf_counter() - trial_started
             final_payload = {

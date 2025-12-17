@@ -292,12 +292,17 @@ def main():
         score_result = score_backtest(results)
         score_value = score_result.get("score", 0.0)
         score_metrics = score_result.get("metrics", {})
+        score_baseline = score_result.get("baseline", {}) if isinstance(score_result, dict) else {}
+        score_version = None
+        if isinstance(score_baseline, dict):
+            score_version = score_baseline.get("score_version")
 
         # Add score to results for saving
         results["score"] = {
             "score": score_value,
             "metrics": score_metrics,
             "hard_failures": score_result.get("hard_failures", []),
+            "score_version": score_version,
         }
 
         # Print report

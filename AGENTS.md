@@ -336,8 +336,17 @@ Champion file: `config/strategy/champions/tBTCUSD_1h.json`
    - If Phase 3 is successful, prepare a Walk-Forward Analysis (WFA) configuration to validate robustness over rolling windows.
 
 4. **Documentation**:
+
    - Keep `docs/optimization/PHASE3_FINE_TUNING_LOG.md` updated with major events.
    - Update `config/strategy/champions/tBTCUSD_1h.json` if a new champion is crowned.
+
+5. **Improve Optuna learning signal (staging)**:
+
+   - Recommendation: run Optuna in an **explore stage** with milder constraints (reduce hard-fail clustering), then run strict
+     PF/DD/trades validation and champion promotion on the top-N candidates.
+   - If many trials are `aborted_by_heuristic`, ensure abort outcomes are treated as a clearly bad signal (not neutral) so the
+     sampler learns to avoid those regions.
+   - Re-run the same trial-outcome analysis on a newer (post-Scoring-v2) run to verify if the failure mode still dominates.
 
 ## 9. Recent history (Phase-7a/7b, 21 Oct 2025)
 

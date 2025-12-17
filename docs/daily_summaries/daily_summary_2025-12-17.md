@@ -66,3 +66,20 @@ Fokus idag var att driva en **churn-/kostnadsmedveten** Optuna-smoke på 2024-f�
 - Optuna churn-smoke: `results/hparam_search/run_20251217_122027`
 - Drift-check: `[OK] trial_028`
 - Long window (frozen): `2023-12-22 → 2025-12-11`
+
+## Addendum: Scoring v2 + Optuna-diagnos (handoff)
+
+### Scoring v2 (opt-in, default kvar)
+
+- Ny scoring-variant **v2** (Sharpe-first med små, klippta bonusar) finns i `src/core/optimizer/scoring.py`.
+- Defaultbeteende är oförändrat (**v1**), men v2 kan väljas via `GENESIS_SCORE_VERSION=v2` eller via API-parametern
+  `score_backtest(..., score_version="v2")`.
+- Regressionstester för v2 finns i `tests/test_scoring_v2.py` (bl.a. att v2 inte exploderar vid $DD=0$ och att default är v1).
+
+### Optuna-lärsignal: observerat failure mode + rekommendation
+
+- En större historisk run (`results/hparam_search/run_20251125_161913`) domineras av `constraints_fail`/`hard_failures` och en
+  stor andel `aborted_by_heuristic`, vilket ger en "platt" lärsignal till samplern.
+- Rekommendation: inför en **tvåstegsstrategi**:
+  - **Explore stage**: mildare constraints så fler trials blir värderade (färre hard-fail-kluster).
+  - **Validate/Promotion stage**: strikt PF/DD/trades + långfönster/WFA på top-N kandidater.

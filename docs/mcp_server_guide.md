@@ -504,10 +504,12 @@ The server implements multiple layers of path validation:
 
 When using `execute_python`:
 
-1. **Subprocess Isolation**: Code runs in a separate process
-2. **Timeout Protection**: 30-second default timeout (configurable)
-3. **Pattern Detection**: Dangerous patterns are logged
+1. **Subprocess Isolation**: Code runs in a separate process (primary security boundary)
+2. **Timeout Protection**: 30-second default timeout (configurable) prevents infinite loops
+3. **Pattern Detection**: Dangerous patterns are logged for auditing (does NOT block execution)
 4. **Working Directory**: Runs in project root, not server directory
+
+**Important**: The pattern detection is for audit logging only. The actual security comes from subprocess isolation and timeout enforcement. Users should review logs regularly and only allow trusted AI assistants to execute code.
 
 ### File Operation Security
 

@@ -288,7 +288,6 @@ async def search_code(query: str, file_pattern: str | None, config: MCPConfig) -
         Dictionary with search results or error information
     """
     try:
-
         project_root = get_project_root()
         matches = []
 

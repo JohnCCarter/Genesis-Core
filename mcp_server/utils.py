@@ -90,15 +90,24 @@ def check_file_size(path: Path, config: MCPConfig) -> tuple[bool, str]:
 
 def sanitize_code(code: str) -> str:
     """
-    Sanitize Python code before execution.
+    Detect potentially dangerous Python code patterns.
+
+    NOTE: This function only logs warnings about dangerous patterns but does NOT
+    prevent their execution. Code runs in an isolated subprocess with timeout,
+    which provides the actual security boundary. This logging is for auditing purposes.
+
+    The security model relies on:
+    1. Subprocess isolation (separate process)
+    2. Timeout enforcement (prevents infinite loops)
+    3. Audit logging (tracks what was executed)
 
     Args:
-        code: Python code to sanitize
+        code: Python code to check
 
     Returns:
-        Sanitized code
+        Original code (unchanged)
     """
-    # Remove potentially dangerous imports/operations
+    # Detect potentially dangerous patterns for logging/auditing
     dangerous_patterns = [
         r"import\s+os\s*$",
         r"from\s+os\s+import",
@@ -114,7 +123,7 @@ def sanitize_code(code: str) -> str:
 
     for pattern in dangerous_patterns:
         if re.search(pattern, code, re.MULTILINE):
-            logger.warning(f"Potentially dangerous code pattern detected: {pattern}")
+            logger.warning(f"Potentially dangerous code pattern detected (audit): {pattern}")
 
     return code
 

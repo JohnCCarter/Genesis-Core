@@ -8,11 +8,11 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
-
-import aiofiles
 
 from .config import MCPConfig, get_project_root
 from .utils import check_file_size, is_safe_path, sanitize_code
@@ -55,9 +55,8 @@ async def read_file(file_path: str, config: MCPConfig) -> dict[str, Any]:
         if not is_valid_size:
             return {"success": False, "error": size_error}
 
-        # Read file content
-        async with aiofiles.open(path_obj, encoding="utf-8") as f:
-            content = await f.read()
+        # Read file content (no external deps; avoid aiofiles requirement)
+        content = await asyncio.to_thread(path_obj.read_text, encoding="utf-8")
 
         logger.info(f"Successfully read file: {file_path}")
         return {"success": True, "content": content, "path": str(path_obj)}
@@ -96,9 +95,8 @@ async def write_file(file_path: str, content: str, config: MCPConfig) -> dict[st
         # Create parent directories if they don't exist
         path_obj.parent.mkdir(parents=True, exist_ok=True)
 
-        # Write file content
-        async with aiofiles.open(path_obj, "w", encoding="utf-8") as f:
-            await f.write(content)
+        # Write file content (no external deps; avoid aiofiles requirement)
+        await asyncio.to_thread(path_obj.write_text, content, encoding="utf-8")
 
         logger.info(f"Successfully wrote file: {file_path}")
         return {
@@ -291,18 +289,35 @@ async def search_code(query: str, file_pattern: str | None, config: MCPConfig) -
         project_root = get_project_root()
         matches = []
 
-        # Determine which files to search
-        if file_pattern:
-            import fnmatch
+        excluded_dirs = {
+            ".git",
+            ".venv",
+            "__pycache__",
+            "archive",
+            "cache",
+            "data",
+            "logs",
+            "reports",
+            "results",
+        }
 
-            files = [
-                f
-                for f in project_root.rglob("*")
-                if f.is_file() and fnmatch.fnmatch(f.name, file_pattern)
-            ]
-        else:
-            # Default to Python files
-            files = list(project_root.rglob("*.py"))
+        # Determine which files to search
+        import fnmatch
+
+        files: list[Path] = []
+        pattern = file_pattern or "*.py"
+        for f in project_root.rglob(pattern):
+            try:
+                if excluded_dirs.intersection(f.parts):
+                    continue
+                if not f.is_file():
+                    continue
+                if file_pattern and not fnmatch.fnmatch(f.name, file_pattern):
+                    continue
+                files.append(f)
+            except OSError:
+                # Some files (e.g. within broken/locked environments) can raise on stat.
+                continue
 
         # Search in files
         for file_path in files:
@@ -319,13 +334,13 @@ async def search_code(query: str, file_pattern: str | None, config: MCPConfig) -
                     if query.lower() in line.lower():
                         matches.append(
                             {
-                                "file": str(file_path.relative_to(project_root)),
+                                "file": str(file_path.relative_to(project_root)).replace("\\", "/"),
                                 "line": line_num,
                                 "content": line.strip(),
                             }
                         )
 
-            except (UnicodeDecodeError, PermissionError):
+            except (UnicodeDecodeError, PermissionError, OSError, ValueError):
                 # Skip files that can't be read
                 continue
 
@@ -351,38 +366,69 @@ async def get_git_status(config: MCPConfig) -> dict[str, Any]:
         if not config.features.git_integration:
             return {"success": False, "error": "Git integration is disabled"}
 
-        try:
-            import git
-        except ImportError:
-            return {
-                "success": False,
-                "error": "GitPython not installed. Install with: pip install gitpython",
-            }
-
         project_root = get_project_root()
 
-        try:
-            repo = git.Repo(project_root)
-        except git.exc.InvalidGitRepositoryError:
+        git_exe = shutil.which("git")
+        if not git_exe:
+            return {"success": False, "error": "git executable not found on PATH"}
+
+        timeout_s = min(5, int(config.security.execution_timeout_seconds or 5))
+
+        def _git(args: list[str], *, timeout: int = timeout_s) -> subprocess.CompletedProcess[str]:
+            return subprocess.run(
+                [git_exe, "-C", str(project_root), *args],
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=timeout,
+            )
+
+        inside = _git(["rev-parse", "--is-inside-work-tree"])
+        if inside.returncode != 0 or inside.stdout.strip().lower() != "true":
             return {"success": False, "error": "Not a git repository"}
 
-        # Get current branch
-        current_branch = repo.active_branch.name if not repo.head.is_detached else "HEAD"
+        branch_res = _git(["rev-parse", "--abbrev-ref", "HEAD"])
+        current_branch = branch_res.stdout.strip() or "HEAD"
 
-        # Get modified files
-        modified_files = [item.a_path for item in repo.index.diff(None)]
-
-        # Get staged files
-        staged_files = [item.a_path for item in repo.index.diff("HEAD")]
-
-        # Get untracked files
-        untracked_files = repo.untracked_files
-
-        # Get remote info
+        untracked_included = True
+        status_timed_out = False
         try:
-            remote_url = repo.remote().url if repo.remotes else None
-        except Exception:
-            remote_url = None
+            status_res = _git(["status", "--porcelain"])
+        except subprocess.TimeoutExpired:
+            logger.warning("git status timed out; retrying with --untracked-files=no")
+            status_timed_out = True
+            untracked_included = False
+            try:
+                status_res = _git(["status", "--porcelain", "--untracked-files=no"])
+            except subprocess.TimeoutExpired:
+                return {
+                    "success": False,
+                    "error": "git status timed out (even with untracked disabled)",
+                }
+
+        if status_res.returncode != 0:
+            return {"success": False, "error": "Unable to read git status"}
+
+        modified_files: list[str] = []
+        staged_files: list[str] = []
+        untracked_files: list[str] = []
+        for raw in status_res.stdout.splitlines():
+            if len(raw) < 3:
+                continue
+            x, y = raw[0], raw[1]
+            path = raw[3:].strip()
+            if raw.startswith("??"):
+                untracked_files.append(path)
+                continue
+            if x != " ":
+                staged_files.append(path)
+            if y != " ":
+                modified_files.append(path)
+
+        remote_res = _git(["config", "--get", "remote.origin.url"])
+        remote_url = remote_res.stdout.strip() or None
+
+        is_dirty = bool(modified_files or staged_files or untracked_files)
 
         logger.info("Successfully retrieved Git status")
         return {
@@ -392,7 +438,9 @@ async def get_git_status(config: MCPConfig) -> dict[str, Any]:
             "staged_files": staged_files,
             "untracked_files": untracked_files,
             "remote_url": remote_url,
-            "is_dirty": repo.is_dirty(),
+            "is_dirty": is_dirty,
+            "untracked_included": untracked_included,
+            "status_timed_out": status_timed_out,
         }
 
     except Exception as e:

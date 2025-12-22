@@ -4,6 +4,7 @@ Integration tests for MCP Server end-to-end functionality
 
 from __future__ import annotations
 
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -93,6 +94,40 @@ async def test_resource_workflow(config):
     config_result = await get_config_resource(config)
     assert config_result["success"] is True
     assert config_result["uri"] == "genesis://config"
+
+
+@pytest.mark.asyncio
+async def test_get_git_status_tool_fallback_timeout(monkeypatch, config):
+    """Tool should not hang if untracked scanning is slow."""
+
+    def _cp(args: list[str], stdout: str = "", stderr: str = "", returncode: int = 0):
+        return subprocess.CompletedProcess(
+            args=args, returncode=returncode, stdout=stdout, stderr=stderr
+        )
+
+    def fake_run(args, capture_output, text, check, timeout=None, **kwargs):  # type: ignore[no-untyped-def]
+        cmd = list(args)[3:]
+
+        if cmd[:2] == ["rev-parse", "--is-inside-work-tree"]:
+            return _cp(list(args), stdout="true\n")
+        if cmd[:3] == ["rev-parse", "--abbrev-ref", "HEAD"]:
+            return _cp(list(args), stdout="Phase-7e\n")
+        if cmd[:2] == ["status", "--porcelain"]:
+            if "--untracked-files=no" not in cmd:
+                raise subprocess.TimeoutExpired(cmd=args, timeout=timeout)
+            return _cp(list(args), stdout="A  foo.txt\n")
+        if cmd[:3] == ["config", "--get", "remote.origin.url"]:
+            return _cp(list(args), stdout="https://example.invalid/repo.git\n")
+
+        return _cp(list(args), returncode=1, stderr="unexpected")
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    result = await get_git_status(config)
+    assert result["success"] is True
+    assert result["untracked_included"] is False
+    assert result["status_timed_out"] is True
+    assert result["branch"] == "Phase-7e"
 
 
 @pytest.mark.asyncio

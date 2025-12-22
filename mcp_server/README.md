@@ -14,11 +14,31 @@ pip install -e ".[mcp]"
 ### Running the Server
 
 ```bash
-# Start the MCP server
+# Start the MCP server (stdio transport for VS Code MCP clients)
 python -m mcp_server.server
 ```
 
+### Running the Remote HTTP Server (ChatGPT Connector)
+
+For ChatGPT “Connect to MCP” / remote linking you should run the HTTP server:
+
+```bash
+# Start the MCP server (Streamable HTTP transport)
+# The MCP endpoint is POST /mcp
+$env:PORT=3333
+$env:GENESIS_MCP_REMOTE_SAFE=1
+python -m mcp_server.remote_server
+```
+
+Environment variables:
+
+- `PORT` (default: 8000) — set this to match your tunnel/forwarding target (e.g. 3333).
+- `GENESIS_MCP_REMOTE_SAFE` (default: 1) — read-only mode (no write/execute tools).
+- `GENESIS_MCP_REMOTE_ULTRA_SAFE` (default: 0) — exposes only `ping_tool` + connector stubs.
+- `GENESIS_MCP_DEBUG_ROUTES` (default: 0) — prints registered routes on startup.
+
 You should see:
+
 ```
 ============================================================
 Genesis-Core MCP Server v1.0.0
@@ -45,6 +65,8 @@ The server will start automatically and AI assistants can now interact with your
 
 ## Available Tools
 
+The stdio server (`python -m mcp_server.server`) exposes tools with these names:
+
 - **read_file** - Read file contents
 - **write_file** - Write/update files
 - **list_directory** - List files and directories
@@ -52,6 +74,10 @@ The server will start automatically and AI assistants can now interact with your
 - **get_project_structure** - Get project tree structure
 - **search_code** - Search for code in the project
 - **get_git_status** - Get Git repository status
+
+The remote HTTP server (`python -m mcp_server.remote_server`) uses FastMCP and exposes the same
+capabilities but with `*_tool` suffixes (e.g. `read_file_tool`, `list_directory_tool`). It also
+includes connector-compatible `search` and `fetch` helpers.
 
 ## Available Resources
 
@@ -63,6 +89,7 @@ The server will start automatically and AI assistants can now interact with your
 ## Configuration
 
 Edit `config/mcp_settings.json` to customize:
+
 - Security settings (allowed paths, blocked patterns)
 - File size limits
 - Code execution timeouts
@@ -79,6 +106,7 @@ pytest tests/test_mcp_server.py tests/test_mcp_resources.py -v
 ## Documentation
 
 See [`docs/mcp_server_guide.md`](../docs/mcp_server_guide.md) for complete documentation including:
+
 - Detailed tool descriptions with examples
 - Security features and best practices
 - Troubleshooting guide
@@ -88,6 +116,7 @@ See [`docs/mcp_server_guide.md`](../docs/mcp_server_guide.md) for complete docum
 ## Security
 
 The MCP server includes multiple security features:
+
 - Path validation (prevents directory traversal)
 - Blocked patterns (`.git`, `__pycache__`, `.env`, etc.)
 - File size limits (default: 10MB)

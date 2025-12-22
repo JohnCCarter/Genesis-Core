@@ -7,6 +7,8 @@ Provides resources that can be accessed by AI assistants for context.
 from __future__ import annotations
 
 import logging
+import shutil
+import subprocess
 from typing import Any
 
 from .config import MCPConfig, get_project_root
@@ -28,6 +30,39 @@ async def get_documentation(doc_path: str, config: MCPConfig) -> dict[str, Any]:
     """
     try:
         project_root = get_project_root()
+
+        # Special-case: docs index
+        if doc_path.strip() in {"*", ""}:
+            docs_dir = project_root / "docs"
+            items: list[dict[str, str]] = []
+
+            if docs_dir.exists():
+                for p in sorted(docs_dir.rglob("*.md")):
+                    # Keep URIs relative to docs/ so get_documentation() can resolve them
+                    rel = p.relative_to(docs_dir).as_posix()
+                    items.append({"path": f"docs/{rel}", "uri": f"genesis://docs/{rel}"})
+
+            # Common root docs
+            for root_doc in ("README.md", "CHANGELOG.md", "AGENTS.md"):
+                p = project_root / root_doc
+                if p.exists():
+                    items.append({"path": root_doc, "uri": f"genesis://docs/{root_doc}"})
+
+            content_lines = ["# Project Documentation Index", ""]
+            if not items:
+                content_lines.append("(No documentation files found.)")
+            else:
+                for item in items:
+                    content_lines.append(f"- {item['uri']}  ({item['path']})")
+
+            logger.info("Successfully generated documentation index")
+            return {
+                "success": True,
+                "uri": "genesis://docs/*",
+                "content": "\n".join(content_lines),
+                "type": "index",
+                "items": items,
+            }
 
         # Try to resolve the path
         if doc_path.startswith("/"):
@@ -110,36 +145,89 @@ async def get_git_status_resource(config: MCPConfig) -> dict[str, Any]:
         if not config.features.git_integration:
             return {"success": False, "error": "Git integration is disabled"}
 
-        try:
-            import git
-        except ImportError:
-            return {"success": False, "error": "GitPython not installed"}
-
         project_root = get_project_root()
 
-        try:
-            repo = git.Repo(project_root)
-        except git.exc.InvalidGitRepositoryError:
+        git_exe = shutil.which("git")
+        if not git_exe:
+            return {"success": False, "error": "git executable not found on PATH"}
+
+        timeout_s = min(5, int(config.security.execution_timeout_seconds or 5))
+
+        def _git(args: list[str], *, timeout: int = timeout_s) -> subprocess.CompletedProcess[str]:
+            return subprocess.run(
+                [git_exe, "-C", str(project_root), *args],
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=timeout,
+            )
+
+        inside = _git(["rev-parse", "--is-inside-work-tree"])
+        if inside.returncode != 0 or inside.stdout.strip().lower() != "true":
             return {"success": False, "error": "Not a git repository"}
 
-        # Get current branch
-        current_branch = repo.active_branch.name if not repo.head.is_detached else "HEAD"
+        branch_res = _git(["rev-parse", "--abbrev-ref", "HEAD"])
+        current_branch = branch_res.stdout.strip() or "HEAD"
 
-        # Get status information
+        untracked_included = True
+        status_timed_out = False
+        try:
+            status_res = _git(["status", "--porcelain"])
+        except subprocess.TimeoutExpired:
+            # On large working trees, enumerating untracked files can be very slow on Windows.
+            # Retry with untracked disabled to keep the MCP server responsive.
+            logger.warning("git status timed out; retrying with --untracked-files=no")
+            status_timed_out = True
+            untracked_included = False
+            try:
+                status_res = _git(["status", "--porcelain", "--untracked-files=no"])
+            except subprocess.TimeoutExpired:
+                return {
+                    "success": False,
+                    "error": "git status timed out (even with untracked disabled)",
+                }
+
+        if status_res.returncode != 0:
+            return {"success": False, "error": "Unable to read git status"}
+
+        modified_files: list[str] = []
+        staged_files: list[str] = []
+        untracked_files: list[str] = []
+        for raw in status_res.stdout.splitlines():
+            if len(raw) < 3:
+                continue
+            x, y = raw[0], raw[1]
+            path = raw[3:].strip()
+            if raw.startswith("??"):
+                untracked_files.append(path)
+                continue
+            if x != " ":
+                staged_files.append(path)
+            if y != " ":
+                modified_files.append(path)
+
         status_info = {
             "branch": current_branch,
-            "is_dirty": repo.is_dirty(),
-            "modified_files": [item.a_path for item in repo.index.diff(None)],
-            "staged_files": [item.a_path for item in repo.index.diff("HEAD")],
-            "untracked_files": repo.untracked_files,
+            "is_dirty": bool(modified_files or staged_files or untracked_files),
+            "modified_files": modified_files,
+            "staged_files": staged_files,
+            "untracked_files": untracked_files,
+            "untracked_included": untracked_included,
+            "status_timed_out": status_timed_out,
         }
 
         # Format as readable text
         content_lines = [
             f"Current Branch: {current_branch}",
-            f"Status: {'Modified' if repo.is_dirty() else 'Clean'}",
+            f"Status: {'Modified' if status_info['is_dirty'] else 'Clean'}",
             "",
         ]
+
+        if not untracked_included:
+            content_lines.append(
+                "Note: Untracked files omitted for performance (git status timed out scanning untracked)."
+            )
+            content_lines.append("")
 
         if status_info["modified_files"]:
             content_lines.append("Modified Files:")

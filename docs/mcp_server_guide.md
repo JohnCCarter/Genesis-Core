@@ -47,7 +47,8 @@ pip install -e ".[mcp]"
 Or install packages individually:
 
 ```bash
-pip install mcp>=0.9.0 aiofiles>=23.0.0 gitpython>=3.1.0
+# Note (PowerShell): quote specifiers with ">=" to avoid creating files like "=0.9.0".
+pip install "mcp>=0.9.0" "aiofiles>=23.0.0" "gitpython>=3.1.0"
 ```
 
 ### 2. Verify Installation
@@ -79,6 +80,7 @@ MCP Server started and ready for connections
 ### 1. Enable MCP Support
 
 Ensure you have VSCode with MCP support enabled. The MCP integration is available in:
+
 - GitHub Copilot with MCP support
 - Claude for VSCode
 - Other MCP-compatible extensions
@@ -89,15 +91,20 @@ The `.vscode/mcp.json` file has already been created with the following configur
 
 ```json
 {
-  "mcpServers": {
+  "servers": {
     "genesis-core": {
-      "command": "python",
+      "command": ".venv/Scripts/python.exe",
       "args": ["-m", "mcp_server.server"],
       "env": {}
     }
   }
 }
 ```
+
+On Windows this avoids accidentally launching a global Python that doesn't have the MCP dependencies.
+
+Note: some MCP clients/extensions use the key `mcpServers` instead of `servers`. If your client
+doesn't detect the server, check the expected key in that client's documentation.
 
 ### 3. Activate in VSCode
 
@@ -108,6 +115,34 @@ The `.vscode/mcp.json` file has already been created with the following configur
 
 The server will start automatically and connect to your AI assistant.
 
+## Remote (HTTP) server for ChatGPT connectors
+
+Genesis-Core also includes an HTTP entrypoint intended for ChatGPT “Connect to MCP” (remote MCP).
+
+- Entrypoint: `python -m mcp_server.remote_server`
+- Transport: Streamable HTTP
+- MCP endpoint: `POST /mcp`
+
+Recommended environment variables:
+
+- `PORT` (default 8000) – set to the local port you tunnel/forward (e.g. 3333)
+- `GENESIS_MCP_REMOTE_SAFE=1` (default) – read-only (no write/exec tools)
+- `GENESIS_MCP_REMOTE_ULTRA_SAFE=1` – exposes only `ping_tool` + connector stubs for debugging
+
+### CORS / “security status” note
+
+When the MCP client is a browser-based web app, cross-origin requests may require CORS headers.
+`mcp_server.remote_server` enables CORS for `https://chatgpt.com` and `https://chat.openai.com`.
+If tool discovery works but execution is blocked with generic security/trust errors, this is the
+first thing to verify.
+
+### Common linking pitfalls
+
+- Use the full path: `https://<host>/mcp` (not `/sse`).
+- If you are using a tunnel/reverse-proxy, ensure it forwards to the same `PORT` the server binds.
+- If you see 421 / Host header issues behind a proxy, ensure the ASGI server is started with proxy
+  headers enabled (remote_server uses uvicorn with `proxy_headers=True`).
+
 ## Available Tools
 
 The MCP server provides 7 tools that AI assistants can call:
@@ -117,15 +152,18 @@ The MCP server provides 7 tools that AI assistants can call:
 Read the contents of a file in the project.
 
 **Input:**
+
 - `file_path` (string, required): Path to the file relative to project root
 
 **Returns:**
+
 - `success` (boolean): Whether the operation succeeded
 - `content` (string): File contents (if successful)
 - `path` (string): Absolute path to the file
 - `error` (string): Error message (if failed)
 
 **Example:**
+
 ```json
 {
   "file_path": "src/core/config/__init__.py"
@@ -137,16 +175,19 @@ Read the contents of a file in the project.
 Write or update a file in the project.
 
 **Input:**
+
 - `file_path` (string, required): Path to the file relative to project root
 - `content` (string, required): Content to write to the file
 
 **Returns:**
+
 - `success` (boolean): Whether the operation succeeded
 - `message` (string): Success message
 - `path` (string): Absolute path to the file
 - `error` (string): Error message (if failed)
 
 **Example:**
+
 ```json
 {
   "file_path": "new_module/helper.py",
@@ -159,9 +200,11 @@ Write or update a file in the project.
 List files and directories in a specified path.
 
 **Input:**
+
 - `directory_path` (string, optional, default="."): Path to directory
 
 **Returns:**
+
 - `success` (boolean): Whether the operation succeeded
 - `path` (string): Directory path
 - `items` (array): List of files/directories with metadata
@@ -173,6 +216,7 @@ List files and directories in a specified path.
 - `error` (string): Error message (if failed)
 
 **Example:**
+
 ```json
 {
   "directory_path": "src/core"
@@ -184,9 +228,11 @@ List files and directories in a specified path.
 Execute Python code in a safe environment with timeout.
 
 **Input:**
+
 - `code` (string, required): Python code to execute
 
 **Returns:**
+
 - `success` (boolean): Whether the execution succeeded
 - `output` (string): Standard output from execution
 - `error_output` (string): Standard error from execution
@@ -194,6 +240,7 @@ Execute Python code in a safe environment with timeout.
 - `error` (string): Error message (if failed)
 
 **Example:**
+
 ```json
 {
   "code": "print('Hello from MCP!')\nfor i in range(5):\n    print(f'Count: {i}')"
@@ -201,6 +248,7 @@ Execute Python code in a safe environment with timeout.
 ```
 
 **Security Notes:**
+
 - Code execution has a 30-second timeout
 - Runs in a subprocess isolated from the server
 - Some dangerous operations are logged as warnings
@@ -212,12 +260,14 @@ Get the project structure as a tree representation.
 **Input:** None (empty object)
 
 **Returns:**
+
 - `success` (boolean): Whether the operation succeeded
 - `structure` (string): Tree representation of project
 - `root` (string): Project root path
 - `error` (string): Error message (if failed)
 
 **Example:**
+
 ```json
 {}
 ```
@@ -227,10 +277,12 @@ Get the project structure as a tree representation.
 Search for code in the project.
 
 **Input:**
+
 - `query` (string, required): Search query string
-- `file_pattern` (string, optional): File pattern to filter (e.g., "*.py", "*.md")
+- `file_pattern` (string, optional): File pattern to filter (e.g., "_.py", "_.md")
 
 **Returns:**
+
 - `success` (boolean): Whether the operation succeeded
 - `query` (string): The search query used
 - `matches` (array): List of matches
@@ -241,6 +293,7 @@ Search for code in the project.
 - `error` (string): Error message (if failed)
 
 **Example:**
+
 ```json
 {
   "query": "def backtest",
@@ -255,6 +308,7 @@ Get Git status information for the project.
 **Input:** None (empty object)
 
 **Returns:**
+
 - `success` (boolean): Whether the operation succeeded
 - `branch` (string): Current branch name
 - `modified_files` (array): List of modified files
@@ -265,6 +319,7 @@ Get Git status information for the project.
 - `error` (string): Error message (if failed)
 
 **Example:**
+
 ```json
 {}
 ```
@@ -280,6 +335,7 @@ Resources provide context that AI assistants can read. They use URI-based access
 Access project documentation files.
 
 **Examples:**
+
 - `genesis://docs/README.md` - Main README
 - `genesis://docs/mcp_server_guide.md` - This guide
 - `genesis://docs/performance/PERFORMANCE_GUIDE.md` - Performance documentation
@@ -301,6 +357,7 @@ Get the current Git repository status in a readable format.
 **URI:** `genesis://config`
 
 Get project configuration information including:
+
 - Available config files
 - MCP server settings
 - Feature flags
@@ -310,11 +367,13 @@ Get project configuration information including:
 ### Example 1: Reading a Configuration File
 
 **AI Assistant Prompt:**
+
 ```
 Read the MCP server configuration file
 ```
 
 **Tool Call:**
+
 ```json
 {
   "tool": "read_file",
@@ -327,11 +386,13 @@ Read the MCP server configuration file
 ### Example 2: Creating a New Module
 
 **AI Assistant Prompt:**
+
 ```
 Create a new module at utils/string_helpers.py with common string utilities
 ```
 
 **Tool Call:**
+
 ```json
 {
   "tool": "write_file",
@@ -345,11 +406,13 @@ Create a new module at utils/string_helpers.py with common string utilities
 ### Example 3: Searching for Functions
 
 **AI Assistant Prompt:**
+
 ```
 Find all functions that deal with backtesting
 ```
 
 **Tool Call:**
+
 ```json
 {
   "tool": "search_code",
@@ -363,11 +426,13 @@ Find all functions that deal with backtesting
 ### Example 4: Running a Quick Analysis
 
 **AI Assistant Prompt:**
+
 ```
 Calculate the average file size in the src/core directory
 ```
 
 **Tool Call Sequence:**
+
 1. `list_directory` to get file information
 2. `execute_python` to calculate average:
 
@@ -383,11 +448,13 @@ Calculate the average file size in the src/core directory
 ### Example 5: Checking Git Status Before Commit
 
 **AI Assistant Prompt:**
+
 ```
 What files have been modified?
 ```
 
 **Tool Call:**
+
 ```json
 {
   "tool": "get_git_status",
@@ -402,6 +469,7 @@ What files have been modified?
 **Problem:** `python -m mcp_server.server` fails
 
 **Solutions:**
+
 1. Check that dependencies are installed: `pip install -e ".[mcp]"`
 2. Verify Python version is 3.11+: `python --version`
 3. Check logs at `logs/mcp_server.log`
@@ -411,6 +479,7 @@ What files have been modified?
 **Problem:** VSCode shows "Failed to connect to MCP server"
 
 **Solutions:**
+
 1. Verify `.vscode/mcp.json` exists and is properly formatted
 2. Check that Python is in your PATH
 3. Try running the server manually to see error messages
@@ -421,6 +490,7 @@ What files have been modified?
 **Problem:** Tool returns "Path is outside project root" or "Path matches blocked pattern"
 
 **Solutions:**
+
 1. Check that the path is relative to project root
 2. Verify the file isn't in a blocked directory (`.git`, `__pycache__`, etc.)
 3. Review `config/mcp_settings.json` security settings
@@ -430,6 +500,7 @@ What files have been modified?
 **Problem:** `execute_python` returns "Execution timed out"
 
 **Solutions:**
+
 1. Simplify the code to run faster
 2. Increase timeout in `config/mcp_settings.json` (default: 30 seconds)
 3. Consider running long operations outside the MCP server
@@ -439,6 +510,7 @@ What files have been modified?
 **Problem:** "File size exceeds limit"
 
 **Solutions:**
+
 1. Adjust `max_file_size_mb` in `config/mcp_settings.json` (default: 10MB)
 2. Use streaming for large files
 3. Compress or split large files
@@ -484,12 +556,25 @@ AI Assistant → VSCode → MCP Server → Tools/Resources → Project Files
 
 ## Security
 
+### `.env` and secrets (recommended workflow)
+
+Genesis-Core loads settings from `.env` and environment variables. For local testing it's convenient to keep a `.env`
+file present, but when using MCP (especially the `execute_python` tool) you should avoid storing real secrets in `.env`.
+
+Recommended approach:
+
+- Keep `.env` **test-friendly** (dummy or blank values).
+- Inject real credentials via OS environment variables in a dedicated terminal session when needed.
+
+This avoids accidental secret exposure via logs or code execution tools.
+
 ### Path Security
 
 The server implements multiple layers of path validation:
 
 1. **Project Root Restriction**: All paths must be within the project directory
 2. **Blocked Patterns**: Certain directories and files are blocked:
+
    - `.git` (Git internals)
    - `__pycache__` (Python cache)
    - `*.pyc` (Compiled Python)
@@ -520,6 +605,7 @@ When using `execute_python`:
 ### Logging and Auditing
 
 All operations are logged to `logs/mcp_server.log`:
+
 - Timestamp of operation
 - Tool/resource accessed
 - Parameters provided
@@ -574,7 +660,7 @@ Disable features if not needed:
 {
   "features": {
     "file_operations": true,
-    "code_execution": false,  // Disable code execution
+    "code_execution": false, // Disable code execution
     "git_integration": true
   }
 }
@@ -586,7 +672,7 @@ Adjust logging verbosity:
 
 ```json
 {
-  "log_level": "DEBUG"  // Options: DEBUG, INFO, WARNING, ERROR
+  "log_level": "DEBUG" // Options: DEBUG, INFO, WARNING, ERROR
 }
 ```
 

@@ -43,6 +43,34 @@ def is_safe_path(path: str | Path, config: MCPConfig) -> tuple[bool, str]:
         except ValueError:
             return False, f"Path is outside project root: {path}"
 
+        # Enforce allowed paths allowlist (relative to project root)
+        allowed_paths = config.security.allowed_paths or []
+        if allowed_paths:
+            allowed_roots: list[Path] = []
+            for allowed in allowed_paths:
+                try:
+                    allowed_root = (project_root / allowed).resolve()
+                    # Only accept allowlist entries that are inside project root
+                    allowed_root.relative_to(project_root)
+                    allowed_roots.append(allowed_root)
+                except Exception:
+                    logger.warning(f"Ignoring invalid allowed_paths entry: {allowed!r}")
+
+            if not allowed_roots:
+                return False, "No valid allowed_paths configured"
+
+            allowed = False
+            for allowed_root in allowed_roots:
+                try:
+                    path_obj.relative_to(allowed_root)
+                    allowed = True
+                    break
+                except ValueError:
+                    continue
+
+            if not allowed:
+                return False, f"Path is not within allowed_paths: {path}"
+
         # Check against blocked patterns
         path_str = str(path_obj)
         for pattern in config.security.blocked_patterns:

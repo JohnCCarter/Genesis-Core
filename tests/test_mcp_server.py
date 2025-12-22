@@ -5,8 +5,9 @@ Tests for MCP Server functionality
 from __future__ import annotations
 
 import pytest
+from pydantic import AnyUrl, TypeAdapter
 
-from mcp_server.config import load_config
+from mcp_server.config import MCPConfig, SecurityConfig, load_config
 from mcp_server.tools import (
     execute_python,
     get_git_status,
@@ -17,6 +18,16 @@ from mcp_server.tools import (
     write_file,
 )
 from mcp_server.utils import is_safe_path
+
+
+@pytest.mark.asyncio
+async def test_read_resource_accepts_anyurl(config):
+    """read_resource must tolerate pydantic AnyUrl (some MCP clients pass this type)."""
+    from mcp_server.server import read_resource
+
+    uri = TypeAdapter(AnyUrl).validate_python("genesis://docs/*")
+    content = await read_resource(uri)
+    assert "Project Documentation Index" in content
 
 
 @pytest.fixture
@@ -154,6 +165,18 @@ def test_is_safe_path(config):
 
     is_safe, error = is_safe_path(".git/config", config)
     assert is_safe is False
+
+
+def test_is_safe_path_enforces_allowed_paths():
+    """Ensure allowed_paths restricts access even within project root."""
+    restricted = MCPConfig(security=SecurityConfig(allowed_paths=["src"]))
+
+    is_safe, _ = is_safe_path("src/core/config/__init__.py", restricted)
+    assert is_safe is True
+
+    is_safe, error = is_safe_path("README.md", restricted)
+    assert is_safe is False
+    assert "allowed_paths" in error
 
 
 def test_load_config():

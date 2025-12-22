@@ -4,6 +4,11 @@
 
 This document summarizes the complete Model Context Protocol (MCP) server implementation for Genesis-Core. The implementation enables seamless integration with VSCode, GitHub Copilot, and other AI coding assistants.
 
+It includes two entrypoints:
+
+- `python -m mcp_server.server` (stdio transport) for VS Code / desktop MCP clients
+- `python -m mcp_server.remote_server` (HTTP Streamable transport, `POST /mcp`) for ChatGPT remote connectors
+
 ## Implementation Status: ✅ COMPLETE
 
 All requirements from the problem statement have been successfully implemented, tested, and documented.
@@ -11,6 +16,7 @@ All requirements from the problem statement have been successfully implemented, 
 ## Files Created
 
 ### Core Server Implementation (mcp_server/)
+
 - `__init__.py` - Package initialization (176 bytes)
 - `server.py` - Main MCP server with protocol handling (9,056 bytes)
 - `tools.py` - 7 tool implementations (13,126 bytes)
@@ -18,18 +24,22 @@ All requirements from the problem statement have been successfully implemented, 
 - `config.py` - Configuration management (2,192 bytes)
 - `utils.py` - Security and validation helpers (5,859 bytes)
 - `README.md` - Quick start guide (2,779 bytes)
+- `remote_server.py` - Remote HTTP server (FastMCP + uvicorn, Streamable HTTP `/mcp`)
 
 **Total: 41,056 bytes of production code**
 
 ### Configuration Files
+
 - `config/mcp_settings.json` - Server configuration (470 bytes)
 - `.vscode/mcp.json` - VSCode integration (140 bytes)
 
 ### Documentation
+
 - `docs/mcp_server_guide.md` - Complete guide (15,391 bytes)
 - Main `README.md` updated with MCP section
 
 ### Testing
+
 - `tests/test_mcp_server.py` - 13 tool tests (4,868 bytes)
 - `tests/test_mcp_resources.py` - 6 resource tests (2,312 bytes)
 - `tests/test_mcp_integration.py` - 5 integration tests (5,158 bytes)
@@ -37,11 +47,13 @@ All requirements from the problem statement have been successfully implemented, 
 **Total: 12,338 bytes of test code | 24 tests | 100% passing**
 
 ### Utilities
+
 - `scripts/verify_mcp_installation.py` - Installation verification (4,509 bytes)
 
 ## Features Implemented
 
 ### 7 Tools (All Functional)
+
 1. ✅ **read_file** - Read file contents with security validation
 2. ✅ **write_file** - Write/update files with path validation
 3. ✅ **list_directory** - List directory contents with metadata
@@ -50,13 +62,19 @@ All requirements from the problem statement have been successfully implemented, 
 6. ✅ **search_code** - Code search with pattern matching
 7. ✅ **get_git_status** - Git repository status information
 
+Note: in the remote HTTP server, tool names are exposed with a `*_tool` suffix
+(e.g. `list_directory_tool`, `get_git_status_tool`). The remote server also provides
+connector-compatible `search` and `fetch` tools.
+
 ### 4 Resource Types (All Accessible)
+
 1. ✅ **genesis://docs/{path}** - Project documentation access
 2. ✅ **genesis://structure** - Project directory structure
 3. ✅ **genesis://git/status** - Git status information
 4. ✅ **genesis://config** - Configuration information
 
 ### Security Features (All Implemented)
+
 - ✅ Path validation preventing directory traversal
 - ✅ Blocked patterns (`.git`, `.env`, `__pycache__`, `.nonce_tracker.json`, etc.)
 - ✅ File size limits (10MB default, configurable)
@@ -66,6 +84,7 @@ All requirements from the problem statement have been successfully implemented, 
 - ✅ Subprocess isolation for code execution
 
 ### Quality Metrics
+
 - ✅ **Test Coverage**: 24 tests, 100% passing
 - ✅ **Code Formatting**: Black (100% compliant)
 - ✅ **Linting**: Ruff (0 issues)
@@ -81,14 +100,14 @@ All requirements from the problem statement have been successfully implemented, 
 - **Async**: asyncio for efficient I/O operations
 - **Dependencies**:
   - `mcp>=0.9.0` - MCP protocol implementation
-  - `aiofiles>=23.0.0` - Async file operations
-  - `gitpython>=3.1.0` - Git repository integration
+  - `uvicorn` / `starlette` - used by the remote HTTP server entrypoint
 - **Testing**: pytest with pytest-asyncio
 - **Code Quality**: black, ruff, bandit, CodeQL
 
 ## Installation & Usage
 
 ### Quick Start
+
 ```bash
 # Install dependencies
 pip install -e ".[mcp]"
@@ -100,7 +119,20 @@ python scripts/verify_mcp_installation.py
 python -m mcp_server.server
 ```
 
+### Remote HTTP (ChatGPT connectors)
+
+```bash
+# Bind on a specific port (example)
+PORT=3333 python -m mcp_server.remote_server
+```
+
+Default safety:
+
+- `GENESIS_MCP_REMOTE_SAFE=1` exposes read-only tools.
+- `GENESIS_MCP_REMOTE_ULTRA_SAFE=1` exposes only `ping_tool` + connector stubs.
+
 ### VSCode Integration
+
 1. Ensure `.vscode/mcp.json` exists (already created)
 2. Open VSCode in Genesis-Core directory
 3. Open Command Palette (Ctrl+Shift+P / Cmd+Shift+P)
@@ -108,6 +140,7 @@ python -m mcp_server.server
 5. Select "genesis-core"
 
 ### Testing
+
 ```bash
 # Run all MCP tests
 pytest tests/test_mcp_*.py -v
@@ -120,21 +153,25 @@ pytest tests/test_mcp_*.py -v
 The MCP server implements a defense-in-depth security model:
 
 ### 1. Path Security
+
 - All paths validated against project root
 - Blocked patterns prevent access to sensitive files
 - Path traversal attacks prevented via path resolution
 
 ### 2. Code Execution Security
+
 - **Primary**: Subprocess isolation (separate process)
 - **Secondary**: Timeout enforcement (prevents infinite loops)
 - **Tertiary**: Audit logging (tracks all executions)
 
 ### 3. File Operations Security
+
 - Size limits prevent memory exhaustion
 - Encoding validation ensures text files only
 - Permission checks before operations
 
 ### 4. Logging & Auditing
+
 - All operations logged to `logs/mcp_server.log`
 - Timestamps, parameters, and results tracked
 - Dangerous code patterns logged for review
@@ -142,7 +179,9 @@ The MCP server implements a defense-in-depth security model:
 ## Documentation
 
 ### Complete Documentation Provided
+
 1. **docs/mcp_server_guide.md** (15KB)
+
    - Installation instructions
    - VSCode configuration
    - Tool descriptions with examples
@@ -152,6 +191,7 @@ The MCP server implements a defense-in-depth security model:
    - Architecture overview
 
 2. **mcp_server/README.md** (2.8KB)
+
    - Quick start guide
    - Tool and resource summary
    - Testing instructions
@@ -193,6 +233,7 @@ All Genesis-Core coding standards followed:
 **Total Tests**: 24
 **Status**: 100% passing
 **Coverage Areas**:
+
 - Unit tests for all 7 tools
 - Unit tests for all 4 resources
 - Integration tests for workflows

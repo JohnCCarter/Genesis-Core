@@ -153,7 +153,24 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
         List of TextContent with the tool result
     """
     try:
-        logger.info(f"Tool called: {name} with arguments: {arguments}")
+
+        def _safe_args_for_logging(tool_name: str, args: dict[str, Any]) -> dict[str, Any]:
+            """Return a redacted view of tool arguments to avoid logging secrets/content."""
+            safe: dict[str, Any] = dict(args or {})
+            if tool_name in {"write_file", "execute_python"}:
+                if "content" in safe:
+                    content = safe.get("content")
+                    safe["content"] = (
+                        f"<redacted len={len(content) if isinstance(content, str) else 'n/a'}>"
+                    )
+                if "code" in safe:
+                    code = safe.get("code")
+                    safe["code"] = f"<redacted len={len(code) if isinstance(code, str) else 'n/a'}>"
+            return safe
+
+        logger.info(
+            f"Tool called: {name} with arguments: {_safe_args_for_logging(name, arguments)}"
+        )
 
         # Route to appropriate tool handler
         if name == "read_file":
@@ -227,7 +244,7 @@ async def list_resources() -> list[Resource]:
 
 
 @app.read_resource()
-async def read_resource(uri: str) -> str:
+async def read_resource(uri: Any) -> str:
     """
     Handle resource read requests.
 
@@ -238,22 +255,23 @@ async def read_resource(uri: str) -> str:
         Resource content as string
     """
     try:
-        logger.info(f"Resource requested: {uri}")
+        uri_str = str(uri)
+        logger.info(f"Resource requested: {uri_str}")
 
         import json
 
         # Route to appropriate resource handler
-        if uri.startswith("genesis://docs/"):
-            doc_path = uri.replace("genesis://docs/", "")
+        if uri_str.startswith("genesis://docs/"):
+            doc_path = uri_str.replace("genesis://docs/", "")
             result = await get_documentation(doc_path, config)
-        elif uri == "genesis://structure":
+        elif uri_str == "genesis://structure":
             result = await get_structure_resource(config)
-        elif uri == "genesis://git/status":
+        elif uri_str == "genesis://git/status":
             result = await get_git_status_resource(config)
-        elif uri == "genesis://config":
+        elif uri_str == "genesis://config":
             result = await get_config_resource(config)
         else:
-            result = {"success": False, "error": f"Unknown resource URI: {uri}"}
+            result = {"success": False, "error": f"Unknown resource URI: {uri_str}"}
 
         if result.get("success"):
             return result.get("content", json.dumps(result, indent=2))

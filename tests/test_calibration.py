@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 from sklearn.isotonic import IsotonicRegression
 
-from src.core.ml.calibration import (
+from core.ml.calibration import (
     apply_calibration_from_params,
     apply_isotonic_calibration,
     apply_platt_calibration,

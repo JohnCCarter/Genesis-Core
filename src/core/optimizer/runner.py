@@ -797,6 +797,22 @@ def _run_backtest_direct(
 
         pipeline = GenesisPipeline()
 
+        # Canonical mode for optimizer quality decisions: always run 1/1.
+        # IMPORTANT: Direct execution bypasses scripts/run_backtest.py, so we must
+        # enforce canonical env + seeding here too (including in worker processes).
+        os.environ["GENESIS_MODE_EXPLICIT"] = "0"
+        try:
+            seed_value = int(os.environ.get("GENESIS_RANDOM_SEED", "42"))
+        except ValueError:
+            seed_value = 42
+        # Unit tests may patch GenesisPipeline with a lightweight dummy that doesn't
+        # implement the full pipeline API. In that case, seed globally as fallback.
+        setup_env = getattr(pipeline, "setup_environment", None)
+        if callable(setup_env):
+            setup_env(seed=seed_value)
+        else:  # pragma: no cover - exercised via unit tests
+            set_global_seeds(seed_value)
+
         # Load config
         payload = json.loads(config_path.read_text(encoding="utf-8"))
         cfg = payload["cfg"]
@@ -815,8 +831,14 @@ def _run_backtest_direct(
         overrides = payload.get("overrides", {})
 
         # Load/Get engine
-        # Include dates in cache key to support different ranges
-        cache_key = f"{trial.symbol}_{trial.timeframe}_{trial.start_date}_{trial.end_date}"
+        # Include dates AND execution mode in cache key to prevent mixed-mode reuse.
+        mode_sig = (
+            f"fw{os.environ.get('GENESIS_FAST_WINDOW','')}"
+            f"pc{os.environ.get('GENESIS_PRECOMPUTE_FEATURES','')}"
+        )
+        cache_key = (
+            f"{trial.symbol}_{trial.timeframe}_{trial.start_date}_{trial.end_date}_{mode_sig}"
+        )
         with _DATA_LOCK:
             if cache_key not in _DATA_CACHE:
                 # Create engine via pipeline
@@ -831,13 +853,29 @@ def _run_backtest_direct(
 
                 # Now load data (will trigger precompute if flag is set)
                 if engine_loader.load_data():
-                    _DATA_CACHE[cache_key] = engine_loader
+                    # Hard guard: optimizer assumes canonical precompute is available.
+                    # If precompute is requested but not ready, fail fast to avoid
+                    # silent slow-path runs (incomparable results).
+                    if (
+                        os.environ.get("GENESIS_PRECOMPUTE_FEATURES") == "1"
+                        and hasattr(engine_loader, "_precomputed_features")
+                        and not getattr(engine_loader, "_precomputed_features", None)
+                    ):
+                        _DATA_CACHE[cache_key] = None
+                    else:
+                        _DATA_CACHE[cache_key] = engine_loader
                 else:
                     _DATA_CACHE[cache_key] = None
 
             engine = _DATA_CACHE[cache_key]
 
         if engine is None:
+            if os.environ.get("GENESIS_PRECOMPUTE_FEATURES") == "1":
+                return (
+                    1,
+                    "Failed to load data or precompute features in canonical mode",
+                    None,
+                )
             return 1, "Failed to load data", None
 
         # Update warmup_bars in case it changed between trials
@@ -852,43 +890,52 @@ def _run_backtest_direct(
         # Pruning
         pruning_callback = None
         if optuna_context:
-            try:
-                import optuna
+            storage = optuna_context.get("storage")
+            study_name = optuna_context.get("study_name")
+            trial_id = optuna_context.get("trial_id")
 
-                # IMPORTANT:
-                # optuna.load_study() defaults to MedianPruner when pruner is not provided.
-                # That can silently enable pruning even when the main optimizer run intends
-                # to use NopPruner (no pruning). Always inject the pruner config from the
-                # optimizer context to keep behavior consistent.
-                pruner_cfg = optuna_context.get("pruner")
-                if isinstance(pruner_cfg, dict):
-                    pruner_obj = _select_optuna_pruner(
-                        pruner_cfg.get("name"), pruner_cfg.get("kwargs")
+            # In-memory/no-storage Optuna runs can't be loaded from a separate process/context.
+            # Avoid noisy stacktraces in smoke-reruns when storage is null.
+            if storage and study_name and trial_id is not None:
+                try:
+                    import optuna
+
+                    # IMPORTANT:
+                    # optuna.load_study() defaults to MedianPruner when pruner is not provided.
+                    # That can silently enable pruning even when the main optimizer run intends
+                    # to use NopPruner (no pruning). Always inject the pruner config from the
+                    # optimizer context to keep behavior consistent.
+                    pruner_cfg = optuna_context.get("pruner")
+                    if isinstance(pruner_cfg, dict):
+                        pruner_obj = _select_optuna_pruner(
+                            pruner_cfg.get("name"), pruner_cfg.get("kwargs")
+                        )
+                    elif isinstance(pruner_cfg, str):
+                        pruner_obj = _select_optuna_pruner(pruner_cfg, None)
+                    else:
+                        pruner_obj = _select_optuna_pruner(None, None)
+
+                    study = optuna.load_study(
+                        study_name=str(study_name),
+                        storage=storage,
+                        pruner=pruner_obj,
                     )
-                elif isinstance(pruner_cfg, str):
-                    pruner_obj = _select_optuna_pruner(pruner_cfg, None)
-                else:
-                    pruner_obj = _select_optuna_pruner(None, None)
 
-                study = optuna.load_study(
-                    study_name=optuna_context["study_name"],
-                    storage=optuna_context["storage"],
-                    pruner=pruner_obj,
-                )
+                    def _cb(step, value):
+                        try:
+                            t = optuna.trial.Trial(study, int(trial_id))
+                            t.report(value, step)
+                            return t.should_prune()
+                        except Exception:
+                            return False
 
-                def _cb(step, value):
-                    try:
-                        t = optuna.trial.Trial(study, optuna_context["trial_id"])
-                        t.report(value, step)
-                        return t.should_prune()
-                    except Exception:
-                        return False
-
-                pruning_callback = _cb
-            except Exception as err:  # pragma: no cover - defensive guard
-                logger.warning(
-                    "Optuna pruning disabled due to setup failure: %s", err, exc_info=True
-                )
+                    pruning_callback = _cb
+                except KeyError as err:  # pragma: no cover - expected for in-memory studies
+                    logger.warning("Optuna pruning disabled (study not found): %s", err)
+                except Exception as err:  # pragma: no cover - defensive guard
+                    logger.warning(
+                        "Optuna pruning disabled due to setup failure: %s", err, exc_info=True
+                    )
 
         results = engine.run(
             policy={"symbol": trial.symbol, "timeframe": trial.timeframe},
@@ -1070,26 +1117,28 @@ def run_trial(
         "--warmup",
         str(trial.warmup_bars),
     ]
-    # Opt-in performance flags via environment variables
-    # Default to fast mode for optimizer determinism
-    if os.environ.get("GENESIS_FAST_WINDOW", "1") == "1":
-        cmd.append("--fast-window")
-    if os.environ.get("GENESIS_PRECOMPUTE_FEATURES", "1") == "1":
-        cmd.append("--precompute-features")
+    # Canonical mode for optimizer quality decisions: always run 1/1.
+    # (fast_window + precompute) is the SSOT for Optuna/validate/champion comparisons.
+    cmd.append("--fast-window")
+    cmd.append("--precompute-features")
     if config_file is not None:
         cmd.extend(["--config-file", str(config_file)])
 
     if optuna_context:
-        cmd.extend(
-            [
-                "--optuna-trial-id",
-                str(optuna_context["trial_id"]),
-                "--optuna-storage",
-                str(optuna_context["storage"]),
-                "--optuna-study-name",
-                str(optuna_context["study_name"]),
-            ]
-        )
+        storage = optuna_context.get("storage")
+        study_name = optuna_context.get("study_name")
+        trial_id = optuna_context.get("trial_id")
+        if storage and study_name and trial_id is not None:
+            cmd.extend(
+                [
+                    "--optuna-trial-id",
+                    str(trial_id),
+                    "--optuna-storage",
+                    str(storage),
+                    "--optuna-study-name",
+                    str(study_name),
+                ]
+            )
 
     attempts_remaining = max(1, max_attempts)
     final_payload: dict[str, Any] | None = None
@@ -1616,7 +1665,67 @@ def _run_optuna(
     storage = study_config.get("storage") or os.getenv("OPTUNA_STORAGE")
     study_name = study_config.get("study_name") or os.getenv("OPTUNA_STUDY_NAME")
     direction = study_config.get("direction") or "maximize"
-    timeout = study_config.get("timeout_seconds")
+    timeout_seconds_raw = study_config.get("timeout_seconds")
+    timeout_seconds: int | None
+    if timeout_seconds_raw is None:
+        timeout_seconds = None
+    else:
+        timeout_seconds = int(timeout_seconds_raw)
+
+    def _parse_end_at(value: Any) -> datetime | None:
+        """Parse an absolute Optuna deadline.
+
+        Accepts ISO-8601 strings (with offset or 'Z') or datetime objects.
+        If the parsed datetime is naive, assume local timezone.
+        """
+
+        if value is None or value == "":
+            return None
+        if isinstance(value, datetime):
+            dt = value
+        else:
+            s = str(value).strip()
+            if s.endswith("Z"):
+                s = s[:-1] + "+00:00"
+            dt = datetime.fromisoformat(s)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=datetime.now().astimezone().tzinfo)
+        return dt
+
+    end_at = _parse_end_at(study_config.get("end_at"))
+    start_monotonic = time.monotonic()
+
+    def _effective_timeout_seconds() -> int | None:
+        """Compute remaining time budget.
+
+        - If only timeout_seconds is set, returns remaining time since start of this run.
+        - If only end_at is set, returns remaining wall-clock time to deadline.
+        - If both are set, returns the minimum remaining budget.
+        """
+
+        candidates: list[int] = []
+
+        if timeout_seconds is not None:
+            elapsed = time.monotonic() - start_monotonic
+            remaining_rel = int(timeout_seconds - elapsed)
+            candidates.append(max(0, remaining_rel))
+
+        if end_at is not None:
+            now_utc = datetime.now(tz=UTC)
+            deadline_utc = end_at.astimezone(UTC)
+            remaining_abs = int((deadline_utc - now_utc).total_seconds())
+            candidates.append(max(0, remaining_abs))
+
+        if not candidates:
+            return None
+        return min(candidates)
+
+    initial_budget = _effective_timeout_seconds()
+    if initial_budget is not None and initial_budget <= 0:
+        raise ValueError(
+            "Optuna time budget is already exhausted (timeout_seconds/end_at). "
+            "Check optuna.end_at or recompute timeout_seconds."
+        )
     sampler_cfg = study_config.get("sampler")
     pruner_cfg = study_config.get("pruner")
     if isinstance(sampler_cfg, str):
@@ -1866,7 +1975,7 @@ def _run_optuna(
             bootstrap_study.optimize(
                 objective,
                 n_trials=bootstrap_to_run,
-                timeout=None,
+                timeout=_effective_timeout_seconds(),
                 n_jobs=1,
                 gc_after_trial=True,
                 show_progress_bar=False,
@@ -1892,7 +2001,7 @@ def _run_optuna(
     study.optimize(
         objective,
         n_trials=remaining_trials,
-        timeout=timeout,
+        timeout=_effective_timeout_seconds(),
         n_jobs=concurrency,
         gc_after_trial=True,
         show_progress_bar=False,  # Performance: Disable progress bar for batch runs
@@ -2335,9 +2444,113 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
     except (OSError, json.JSONDecodeError):
         run_meta = {}
 
+    # Optional two-stage flow: explore on the primary window, then validate top-N candidates
+    # on a (typically longer/stricter) validation window before champion promotion.
+    validation_cfg = runs_cfg.get("validation")
+    validation_results: list[dict[str, Any]] | None = None
+    if isinstance(validation_cfg, dict) and _as_bool(validation_cfg.get("enabled", True)):
+        try:
+            top_n_raw = validation_cfg.get("top_n", 0)
+            top_n = int(top_n_raw) if top_n_raw is not None else 0
+        except (TypeError, ValueError):
+            top_n = 0
+
+        if top_n > 0:
+            # Rank explore results by score (including soft constraint penalties) and pick top-N
+            ranked: list[tuple[float, dict[str, Any]]] = []
+            for r in results:
+                if r.get("error") or r.get("skipped"):
+                    continue
+                score_block = r.get("score") or {}
+                try:
+                    s = float(score_block.get("score"))
+                except (TypeError, ValueError):
+                    continue
+                ranked.append((s, r))
+            ranked.sort(key=lambda x: x[0], reverse=True)
+            selected = [r for _s, r in ranked[:top_n]]
+
+            if selected:
+                val_start: str | None = None
+                val_end: str | None = None
+                if _as_bool(validation_cfg.get("use_sample_range")):
+                    val_start, val_end = _resolve_sample_range(
+                        str(meta.get("snapshot_id", "")),
+                        validation_cfg,
+                    )
+
+                val_dir = (run_dir / "validation").resolve()
+                val_dir.mkdir(parents=True, exist_ok=True)
+                val_allow_resume = bool(validation_cfg.get("resume", allow_resume))
+                val_existing_trials = {}
+                if val_allow_resume and val_dir.exists():
+                    val_existing_trials = _load_existing_trials(val_dir)
+                val_constraints_cfg = validation_cfg.get("constraints")
+                if val_constraints_cfg is None:
+                    val_constraints_cfg = config.get("constraints")
+                if not isinstance(val_constraints_cfg, dict):
+                    val_constraints_cfg = None
+
+                validation_results = []
+                for idx, base_result in enumerate(selected, start=1):
+                    params = dict(base_result.get("parameters") or {})
+                    trial_cfg = TrialConfig(
+                        snapshot_id=str(meta.get("snapshot_id", "")),
+                        symbol=symbol,
+                        timeframe=timeframe,
+                        warmup_bars=int(meta.get("warmup_bars", 150)),
+                        parameters=params,
+                        start_date=val_start,
+                        end_date=val_end,
+                    )
+                    payload = run_trial(
+                        trial_cfg,
+                        run_id=run_id_resolved,
+                        index=idx,
+                        run_dir=val_dir,
+                        allow_resume=val_allow_resume,
+                        existing_trials=val_existing_trials,
+                        max_attempts=max_attempts,
+                        constraints_cfg=val_constraints_cfg,
+                        cache_enabled=True,
+                        seen_param_keys=None,
+                        seen_param_lock=None,
+                        baseline_results=baseline_results_data,
+                        baseline_label=baseline_label,
+                        optuna_context=None,
+                    )
+                    if isinstance(payload, dict):
+                        payload.setdefault("stage", "validation")
+                    validation_results.append(payload)
+
+                # Attach validation metadata to run_meta for traceability
+                run_meta.setdefault("validation", {}).update(
+                    {
+                        "enabled": True,
+                        "top_n": top_n,
+                        "sample_start": val_start,
+                        "sample_end": val_end,
+                        "constraints": val_constraints_cfg,
+                        "validated": len(validation_results),
+                        "validation_dir": str(val_dir),
+                    }
+                )
+                _atomic_write_text(run_meta_path, _json_dumps(_serialize_meta(run_meta)))
+
+    # If validation ran, prefer champion promotion based on validation outcomes.
+    results_for_promotion = validation_results if validation_results is not None else results
+
+    # Champion promotion is configurable to avoid accidental updates during smoke/explore runs.
+    promotion_cfg = runs_cfg.get("promotion") or {}
+    promotion_enabled = _as_bool(promotion_cfg.get("enabled", True))
+    try:
+        min_improvement = float(promotion_cfg.get("min_improvement", 0.0) or 0.0)
+    except (TypeError, ValueError):
+        min_improvement = 0.0
+
     best_candidate: ChampionCandidate | None = None
     best_result: dict[str, Any] | None = None
-    for result in results:
+    for result in results_for_promotion:
         candidate = _candidate_from_result(result)
         if candidate is None:
             continue
@@ -2345,10 +2558,18 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
             best_candidate = candidate
             best_result = result
 
-    if best_candidate is not None:
+    if best_candidate is not None and promotion_enabled:
         manager = ChampionManager()
         current = manager.load_current(symbol, timeframe)
-        if manager.should_replace(current, best_candidate):
+        should_replace = manager.should_replace(current, best_candidate)
+        if should_replace and current is not None and min_improvement > 0:
+            try:
+                should_replace = best_candidate.score > (float(current.score) + min_improvement)
+            except (TypeError, ValueError, AttributeError):
+                # If current record can't be parsed, fall back to manager decision.
+                should_replace = True
+
+        if should_replace:
             metadata_extra: dict[str, Any] = {
                 "run_dir": str(run_dir),
                 "config_path": str(config_path),
@@ -2378,6 +2599,13 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
             print(
                 f"[Champion] Ingen uppdatering: befintlig champion bättre eller constraints fel ({symbol} {timeframe})"
             )
+
+    if best_candidate is not None and not promotion_enabled:
+        print(f"[Champion] Promotion avstängd via config ({symbol} {timeframe})")
+
+    # Return explore results plus (optional) validation results for reporting.
+    if validation_results is not None:
+        results.extend(validation_results)
 
     return results
 

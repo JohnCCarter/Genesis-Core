@@ -93,7 +93,11 @@ def test_run_backtest_direct_includes_merged_config(monkeypatch, tmp_path: Path)
     assert results["config_provenance"]["config_file_is_complete"] is True
 
     # Sanity: engine saw the effective config.
+    mode_sig = (
+        f"fw{__import__('os').environ.get('GENESIS_FAST_WINDOW','')}"
+        f"pc{__import__('os').environ.get('GENESIS_PRECOMPUTE_FEATURES','')}"
+    )
     engine = runner._DATA_CACHE[
-        f"{trial.symbol}_{trial.timeframe}_{trial.start_date}_{trial.end_date}"
+        f"{trial.symbol}_{trial.timeframe}_{trial.start_date}_{trial.end_date}_{mode_sig}"
     ]
     assert engine.last_configs == {"a": 2}

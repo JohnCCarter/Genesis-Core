@@ -3,12 +3,12 @@ name: CI
 on:
   push:
     branches-ignore:
-      - 'archive/**'
-      - 'Archive/**'
+      - "archive/**"
+      - "Archive/**"
   pull_request:
     branches-ignore:
-      - 'archive/**'
-      - 'Archive/**'
+      - "archive/**"
+      - "Archive/**"
 
 jobs:
   lint-test:
@@ -20,7 +20,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Cache pip
         uses: actions/cache@v4
@@ -31,7 +31,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          python -m pip install .[dev,ml]
+          python -m pip install ".[dev,ml]"
 
       - name: Run pre-commit
         run: pre-commit run --all-files
@@ -55,3 +55,4 @@ jobs:
         with:
           name: bandit-report
           path: bandit-report.txt
+          if-no-files-found: warn

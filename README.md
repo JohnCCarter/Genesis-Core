@@ -1,4 +1,5 @@
 # Genesis-Core
+
 Denna kodbas är under aktiv utveckling (WIP).
 
 ## MCP Server (AI Assistant Integration)
@@ -16,12 +17,28 @@ python -m mcp_server.server
 ```
 
 **Features:**
+
 - 🔧 7 powerful tools (read/write files, execute code, search, Git status)
 - 📚 4 resource types (docs, structure, Git, config)
 - 🔒 Security-first design with path validation and timeouts
 - 📝 Comprehensive logging and error handling
 
 **Documentation:** See [`docs/mcp_server_guide.md`](docs/mcp_server_guide.md) for complete setup and usage guide.
+
+## Execution mode policy (canonical for quality decisions) 2025-12-18
+
+Genesis-Core har två prestandaväxlar som också påverkar exekveringsvägen i backtestmotorn:
+
+- `GENESIS_FAST_WINDOW=1` (zero-copy windows)
+- `GENESIS_PRECOMPUTE_FEATURES=1` (precompute + on-disk cache)
+
+Policy (2025-12): **1/1 är canonical** för alla "quality decisions" (Optuna, Validate, champion-jämförelser, rapportering).
+
+- Standardflöden kommer därför att köra 1/1 även om ditt shell råkat ha gamla env-flaggor.
+- För debug/felsökning kan du köra 0/0, men det är **debug-only** och ska inte jämföras mot Optuna/Validate.
+
+Se [`docs/features/FEATURE_COMPUTATION_MODES.md`](docs/features/FEATURE_COMPUTATION_MODES.md) för detaljer, inkl.
+`GENESIS_MODE_EXPLICIT` och hur du explicit väljer 0/0 via CLI.
 
 <!--
 >
@@ -215,11 +232,13 @@ pwsh -File scripts/ci.ps1
 - Audit: ändringar loggas i `logs/config_audit.jsonl` (rotation vid ~5MB). Innehåller `actor`, `paths`, `hash_before/after`.
 
 ## UI‑noter
+
 - UI laddar alltid `/config/runtime` vid start och visar `config_version/hash` i status.
 - Knappen “Föreslå ändring” POST:ar `/config/runtime/propose` och uppdaterar status.
 - Sätt bearer‑token i UI‑fältet (sparas i `localStorage.ui_bearer`).
 
 ## SymbolMapper
+
 - `SymbolMode`: `realistic|synthetic` (env `SYMBOL_MODE`, CI sätter `synthetic`).
 - Strategier använder mänskliga symboler (t.ex. `BTCUSD`); I/O mappar:
   - Realistic: `BTCUSD` → `tBTCUSD`

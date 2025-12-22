@@ -138,10 +138,12 @@ for i in range(len(df)):
 **Keep BOTH methods but use them CORRECTLY:**
 
 1. **Live Trading:** Use `extract_features()`
+
    - Call with `now_index = len(candles) - 1`
    - Gets features from last CLOSED bar
 
 2. **Backtesting:** Use `calculate_all_features_vectorized()`
+
    - Precompute ALL features at once
    - 27,734× faster
    - All bars are closed historical data
@@ -202,6 +204,27 @@ För att accelerera backtests och Optuna‑körningar finns två växlar:
 - Effekt: EMA50, swing points m.fl. förberäknas och cachas på disk (`cache/precomputed/*.npz`), vilket accelererar efterföljande körningar.
 - Semantik: Backtestläget förblir deterministiskt och använder stängda bars (ingen lookahead).
 
+### Canonical policy (quality decisions)
+
+Från 2025‑12-18 är **1/1 (fast_window + precompute)** den **canonical** exekveringsmoden för:
+
+- Optuna
+- Explore→Validate
+- champion‑jämförelser/promotion
+- all rapportering som används för beslut
+
+Det betyder att standardflöden aktivt undviker att “sticky” shell‑env råkar köra 0/0.
+
+### Debug‑only mode (0/0)
+
+0/0 (ingen fast_window + ingen precompute) är tillåtet för felsökning, men är **inte** jämförbart med canonical resultat.
+
+- För att tillåta icke‑canonical mode måste du sätta `GENESIS_MODE_EXPLICIT=1`.
+- Rekommenderat sätt är att använda CLI‑flaggor i `scripts/run_backtest.py` (t.ex.
+  `--no-fast-window --no-precompute-features`), vilket markerar läget explicit.
+
+Tips: Backtest‑artifacts sparar nu `backtest_info.execution_mode` så att du kan se exakt vilket läge som kördes.
+
 ### Determinism
 
 - Runner sätter `GENESIS_RANDOM_SEED=42` för backtest‑subprocesser om inte redan satt.
@@ -243,11 +266,11 @@ Det betyder att v17-featurefilerna är bit-exakta mot runtime (ingen längre avv
 
 ### Rekommenderat flöde
 
-| Scenario | Kommando |
-|----------|----------|
-| Uppdatera hela v17-filen | `python scripts/precompute_features_v17.py --symbol tBTCUSD --timeframe 1h` |
-| Snabb sample (200 bar) | `python scripts/precompute_features_v17.py --symbol tBTCUSD --timeframe 1h --candles-file tests/data/tBTCUSD_1h_sample.parquet --quiet` |
-| Paritetskontroll | `python -m pytest tests/test_feature_parity.py tests/test_precompute_vs_runtime.py` |
+| Scenario                 | Kommando                                                                                                                                |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Uppdatera hela v17-filen | `python scripts/precompute_features_v17.py --symbol tBTCUSD --timeframe 1h`                                                             |
+| Snabb sample (200 bar)   | `python scripts/precompute_features_v17.py --symbol tBTCUSD --timeframe 1h --candles-file tests/data/tBTCUSD_1h_sample.parquet --quiet` |
+| Paritetskontroll         | `python -m pytest tests/test_feature_parity.py tests/test_precompute_vs_runtime.py`                                                     |
 
 Alla ändringar ovan säkerställer att:
 

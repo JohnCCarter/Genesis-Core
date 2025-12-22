@@ -2,6 +2,16 @@
 
 Syfte: Förhindra att Optuna förstärker degenerata/extrema beteenden (0 trades, NaN, guard-block, loss clusters) och göra sökningen stabil, reproducerbar och informationsrik.
 
+## Status (implementerat 2025-12-18)
+
+- **Explore→Validate** (tvåstegsflöde) finns nu i `src/core/optimizer/runner.py`:
+  - Explore kör Optuna på kort fönster.
+  - Validate kör om top-N kandidater på längre fönster med striktare constraints.
+- **Promotion safety** är konfigstyrd via `promotion.enabled` samt extra spärr `promotion.min_improvement`.
+- Referenskonfig + resultat:
+  - `config/optimizer/tBTCUSD_1h_optuna_phase3_fine_v7_smoke_explore_validate.yaml`
+  - `docs/daily_summaries/daily_summary_2025-12-18.md`
+
 ## 1) Klassificera trial-outcome (måste finnas i payload)
 
 Varje trial ska klassas i exakt en av följande kategorier:

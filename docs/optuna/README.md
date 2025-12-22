@@ -32,6 +32,11 @@ Dokumentationen täcker Optuna-integration, optimeringsworkflow, problemlösning
 
 - **OPTUNA_HARDENING_SPEC.md** - Hardening-spec (penalties, two-phase objective, pruning, trace-krav)
 
+- **docs/daily_summaries/daily_summary_2025-12-18.md** - Explore→Validate (tvåstegsflöde) + promotion-säkerhet + resultat
+
+  - Konfig: `config/optimizer/tBTCUSD_1h_optuna_phase3_fine_v7_smoke_explore_validate.yaml`
+  - Runs: `results/hparam_search/run_20251218_ev_30t_nopromo`, `results/hparam_search/run_20251218_ev_60t_top5_nopromo`
+
 - **OPTUNA_VS_BACKTEST_CONFIG_DIFFERENCE.md** - Skillnader mellan backtest och Optuna
   - Strukturskillnader i config-filer
   - Parameterflöde och transformationer
@@ -59,8 +64,9 @@ Dokumentationen täcker Optuna-integration, optimeringsworkflow, problemlösning
 För att komma igång med Optuna-optimering, se:
 
 1. **AGENTS.md** (i repo-roten) - Snabbguide och workflow
-2. **OPTUNA_BEST_PRACTICES.md** - Best practices
-3. **OPTUNA_VS_BACKTEST_CONFIG_DIFFERENCE.md** - Förstå skillnader
+2. **docs/daily_summaries/daily_summary_2025-12-18.md** - Referens för Explore→Validate-flödet (smoke-säkert)
+3. **OPTUNA_BEST_PRACTICES.md** - Best practices
+4. **OPTUNA_VS_BACKTEST_CONFIG_DIFFERENCE.md** - Förstå skillnader
 
 ## Viktiga Insikter
 

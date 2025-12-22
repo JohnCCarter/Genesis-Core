@@ -1,10 +1,43 @@
 # README for AI Agents (Local Development)
 
-## Last update: 2025-12-17
+## Last update: 2025-12-18
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
 
-## 1. Deliverables (latest highlights: 2025-12-17)
+## 1. Deliverables (latest highlights: 2025-12-18)
+
+- **EXPLORE→VALIDATE OPTUNA RECOVERY + PROMOTION SAFETY (2025-12-18)**:
+
+  - **Goal**: Återställa Optunas lärsignal och undvika att “snabba” runs degenererar (0 trades / platt signal / dåliga kandidater), genom att separera **Explore** (kort fönster) från **Validate** (långt fönster + striktare constraints). Samtidigt säkerställa att smoke/explore aldrig kan råka uppdatera champion.
+  - **Key changes**:
+    - **Two-stage flow**: Explore→Validate-stöd i `src/core/optimizer/runner.py` (top-N reruns i `validation/`-katalog, rapportering baserad på validering).
+    - **Promotion safety**: konfigstyrt via `promotion.enabled` (default av i smoke) + extra spärr via `promotion.min_improvement` när promotion är på.
+    - **Smoke rerun safety**: `optuna.storage: null` (in-memory) i smoke-konfig för att undvika study/DB-kollisioner vid upprepade körningar.
+    - **Explore signal tuning**: smalare intervall för att eliminera 0-trade slöseri (zero_trade_ratio → 0.0 i körningarna nedan).
+  - **Config / docs**:
+    - Config: `config/optimizer/tBTCUSD_1h_optuna_phase3_fine_v7_smoke_explore_validate.yaml`
+    - Daily log: `docs/daily_summaries/daily_summary_2025-12-18.md`
+  - **Runs / outcome**:
+    - `results/hparam_search/run_20251218_ev_30t_nopromo`:
+      - Explore (H1 2024): 30 trials, `zero_trade_ratio=0.0`
+      - Validate (FY 2024): top-3 → **1/3** pass (vanligaste fail: `pf<1.0`)
+    - `results/hparam_search/run_20251218_ev_60t_top5_nopromo`:
+      - Explore (H1 2024): 60 trials, best_value `0.7644`, `zero_trade_ratio=0.0`
+      - Validate (FY 2024): top-5 → **4/5** pass (1 fail: `pf<1.0`)
+    - **Champion**: ingen uppdatering (promotion avstängt i smoke-konfig).
+
+- **CANONICAL MODE POLICY + DOCS + QA GREEN (2025-12-18)**:
+
+  - **Goal**: Låsa policy att **1/1 (fast_window + precompute)** är canonical för alla quality decisions (Optuna/Validate/champion/reporting) och göra det tydligt i docs, samt köra full QA (black/ruff/bandit/pytest/pre-commit).
+  - **Key changes**:
+    - Docs uppdaterade för canonical 1/1 + `GENESIS_MODE_EXPLICIT` (debug-only 0/0).
+    - `scripts/verify_fib_connection.py` kör nu explicit 1/1 (undviker mixed-mode).
+    - Bandit-fix: `git`-hash hämtas via absolut path (`shutil.which`) + smalare exception-hantering i några defensiva parsningar.
+  - **Verification**:
+    - `black` + `ruff` OK
+    - `bandit -r src` OK (0 findings)
+    - `pytest` OK (529 passed, 1 skipped)
+    - `pre-commit run --all-files` OK
 
 - **CHURN-SMOKE + LONG-WINDOW VALIDATION + CHAMPION PATH FIX (2025-12-17)**:
 

@@ -18,11 +18,13 @@ Before starting a long optimization run (>1 hour):
 ### 1. Too Many Duplicate Parameters
 
 **Symptoms:**
+
 - Optuna keeps suggesting the same parameters
 - Most trials marked as "duplicate_within_run"
 - Study terminates early with "Duplicate parameter suggestions limit reached"
 
 **Causes:**
+
 - Search space too narrow (too few combinations)
 - Float step sizes causing rounding to same values
 - TPE sampler degenerating without proper configuration
@@ -30,6 +32,7 @@ Before starting a long optimization run (>1 hour):
 **Solutions:**
 
 #### Widen Search Space
+
 ```yaml
 # ❌ Too narrow - only 4 combinations
 parameters:
@@ -59,6 +62,7 @@ parameters:
 ```
 
 #### Improve TPE Sampler Configuration
+
 ```yaml
 # ❌ Default/minimal TPE settings
 optuna:
@@ -79,6 +83,7 @@ optuna:
 **Note:** As of the recent fix, these better defaults are applied automatically if not specified.
 
 #### Remove or Loosen Step Constraints
+
 ```yaml
 # ❌ Very fine steps can cause duplicate rounding
 parameters:
@@ -98,6 +103,7 @@ parameters:
 ```
 
 #### Increase Duplicate Streak Limit
+
 ```bash
 # Allow more consecutive duplicates before failing
 export OPTUNA_MAX_DUPLICATE_STREAK=200
@@ -107,11 +113,13 @@ python -m core.optimizer.runner config.yaml
 ### 2. Too Many Zero-Trade Trials
 
 **Symptoms:**
+
 - Most trials complete but produce 0 trades
 - Scores around -95 to -100 (hard failure penalty)
 - Warning: "High zero-trade rate (>50%)"
 
 **Causes:**
+
 - Entry confidence thresholds too high
 - Fibonacci gates too strict (small tolerance_atr)
 - Multi-timeframe filtering too aggressive
@@ -120,6 +128,7 @@ python -m core.optimizer.runner config.yaml
 **Solutions:**
 
 #### Lower Entry Thresholds
+
 ```yaml
 # ❌ Too strict - blocks most signals
 parameters:
@@ -139,6 +148,7 @@ parameters:
 ```
 
 #### Widen Fibonacci Tolerances
+
 ```yaml
 # ❌ Too strict - rejects most entries
 parameters:
@@ -160,6 +170,7 @@ parameters:
 ```
 
 #### Enable LTF Override
+
 ```yaml
 # Allow LTF to override HTF blocks
 parameters:
@@ -175,11 +186,12 @@ parameters:
 ```
 
 #### Run Smoke Test First
+
 ```yaml
 # Create smoke test config with 2-5 trials
 meta:
   runs:
-    max_trials: 5  # Quick test
+    max_trials: 5 # Quick test
     strategy: optuna
 ```
 
@@ -193,6 +205,7 @@ If smoke test produces 0 trades for all trials, widen search space before long r
 ### 3. Search Space Too Small
 
 **Symptoms:**
+
 - Warning: "Search space very small (<10 combinations)"
 - Duplicates appear quickly
 - Study exhausts parameter space before timeout
@@ -200,6 +213,7 @@ If smoke test produces 0 trades for all trials, widen search space before long r
 **Solutions:**
 
 #### Add More Parameters
+
 ```yaml
 # ❌ Only 2 parameters = limited exploration
 parameters:
@@ -234,6 +248,7 @@ parameters:
 ```
 
 #### Use Continuous Parameters
+
 ```yaml
 # Discrete only - limited
 parameters:
@@ -250,6 +265,7 @@ parameters:
 ```
 
 #### Check Estimation Before Running
+
 ```python
 from core.optimizer.runner import _estimate_optuna_search_space
 
@@ -263,6 +279,7 @@ The optimizer now automatically prints this before starting.
 ## Diagnostic Tools
 
 ### Analyze Completed Runs
+
 ```bash
 # Comprehensive diagnosis
 python scripts/diagnose_optuna_issues.py run_20251103_110227
@@ -272,6 +289,7 @@ cat results/hparam_search/run_*/run_meta.json | jq '.optuna.diagnostics'
 ```
 
 ### Preflight Checks
+
 ```bash
 # Validate before running
 python scripts/preflight_optuna_check.py config.yaml
@@ -281,28 +299,33 @@ python scripts/validate_optimizer_config.py config.yaml
 ## Recommended Workflow
 
 1. **Design Search Space**
+
    - Start wide, narrow down later
    - Aim for 50+ discrete combinations or include continuous params
    - Include champion parameters in ranges
 
 2. **Validate Configuration**
+
    ```bash
    python scripts/preflight_optuna_check.py config.yaml
    python scripts/validate_optimizer_config.py config.yaml
    ```
 
 3. **Run Smoke Test (2-5 trials)**
+
    ```bash
    python -m core.optimizer.runner config.yaml --run-id smoke_test
    python scripts/diagnose_optuna_issues.py smoke_test
    ```
 
 4. **Check Smoke Results**
+
    - At least 1-2 trials should produce >0 trades
    - No excessive duplicates
    - Scores not all heavily negative
 
 5. **Full Optimization**
+
    ```bash
    # Set environment for performance
    export GENESIS_FAST_WINDOW=1
@@ -313,6 +336,11 @@ python scripts/validate_optimizer_config.py config.yaml
    python -m core.optimizer.runner config.yaml
    ```
 
+   **Canonical mode note: 2025-12-18** Optuna/Validate/champion decisions run in canonical "1/1" mode.
+   If you run a manual debug backtest in 0/0, treat it as debug-only and do not compare it to Optuna results.
+   To allow 0/0 explicitly, set `GENESIS_MODE_EXPLICIT=1` and use the backtest CLI flags
+   (e.g. `--no-fast-window --no-precompute-features`).
+
 6. **Post-Run Analysis**
    ```bash
    python scripts/diagnose_optuna_issues.py run_20251103_110227
@@ -322,18 +350,21 @@ python scripts/validate_optimizer_config.py config.yaml
 ## Interpreting Diagnostic Output
 
 ### Duplicate Ratio
+
 - **< 10%**: Healthy - good exploration
 - **10-30%**: Acceptable - TPE is converging
 - **30-50%**: Warning - may need wider space
 - **> 50%**: Problem - search space likely too narrow
 
 ### Zero-Trade Ratio
+
 - **< 10%**: Excellent - gating is appropriate
 - **10-30%**: Good - some strict parameter sets
 - **30-50%**: Warning - gates may be too strict
 - **> 50%**: Problem - search space doesn't produce viable strategies
 
 ### Example Good Run
+
 ```
 SUMMARY:
   Total trials:      100
@@ -356,6 +387,7 @@ VALID TRIALS:
 ```
 
 ### Example Problem Run
+
 ```
 SUMMARY:
   Total trials:      50
@@ -395,7 +427,7 @@ parameters:
   thresholds:
     entry_conf_overall:
       type: float
-      low: 0.33  # Champion ± 0.05
+      low: 0.33 # Champion ± 0.05
       high: 0.43
       step: 0.01
 ```
@@ -424,6 +456,7 @@ python scripts/diagnose_optuna_issues.py run_20251103_110227
 ## Troubleshooting
 
 ### Study Terminates Early
+
 ```
 optuna.exceptions.OptunaError: Duplicate parameter suggestions limit reached
 ```
@@ -431,16 +464,19 @@ optuna.exceptions.OptunaError: Duplicate parameter suggestions limit reached
 **Solution**: Increase `OPTUNA_MAX_DUPLICATE_STREAK` or widen search space.
 
 ### All Trials Score Around -100
+
 This indicates hard failures (zero trades, bad constraints, etc.).
 
 **Solution**: Lower entry thresholds, widen fibonacci tolerances, run diagnostic script.
 
 ### TPE Sampler Not Improving
+
 After many trials, scores stay flat or degenerate.
 
 **Solution**: Check if `multivariate=true` and `constant_liar=true` are set (now automatic).
 
 ### Out of Memory
+
 Large concurrent runs can exhaust memory.
 
 **Solution**: Reduce `max_concurrent` or enable `gc_after_trial=true` (now default).

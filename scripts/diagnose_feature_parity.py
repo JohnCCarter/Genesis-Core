@@ -130,8 +130,8 @@ def _capture_snapshots(
         raise RuntimeError("Unable to load candles")
     if use_precompute and invalidate_cache:
         cache_dir = PROJECT_ROOT / "cache" / "precomputed"
-        cache_key = f"{engine.symbol}_{engine.timeframe}_{len(engine.candles_df)}.npz"
-        cache_path = cache_dir / cache_key
+        cache_key = engine._precompute_cache_key(engine.candles_df)
+        cache_path = cache_dir / f"{cache_key}.npz"
         if cache_path.exists():
             cache_path.unlink()
     base_cfg = dict(cfg or {})

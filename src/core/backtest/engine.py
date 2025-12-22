@@ -241,6 +241,12 @@ class BacktestEngine:
             self._col_timestamp = df["timestamp"].tolist()
 
         # Optional: precompute common features for speed (consumed by features_asof via config)
+        # IMPORTANT: Treat GENESIS_PRECOMPUTE_FEATURES=1 as authoritative.
+        # Some callers historically only set the env var; make sure we enable
+        # engine-level precompute toggle consistently.
+        if os.getenv("GENESIS_PRECOMPUTE_FEATURES") == "1":
+            self.precompute_features = True
+
         self._precomputed_features: dict[str, list[float]] | None = None
         if getattr(self, "precompute_features", False):
             try:
@@ -261,7 +267,11 @@ class BacktestEngine:
                 # Try on-disk cache first
                 cache_dir = Path(__file__).resolve().parents[3] / "cache" / "precomputed"
                 cache_dir.mkdir(parents=True, exist_ok=True)
-                key = f"{self.symbol}_{self.timeframe}_{len(closes_all)}"
+                # IMPORTANT:
+                # Cache key must include data identity, not only length.
+                # Different periods can have the same number of bars; reusing the wrong
+                # cached features can drastically change strategy decisions.
+                key = self._precompute_cache_key(self.candles_df)
                 cache_path = cache_dir / f"{key}.npz"
                 loaded = False
                 pre: dict[str, list[float]] = {}
@@ -364,6 +374,26 @@ class BacktestEngine:
         }
 
         return True
+
+    def _precompute_cache_key(self, df: pd.DataFrame) -> str:
+        """Build a stable on-disk cache key for precomputed features.
+
+        Why:
+            A key based only on `len(df)` is unsafe because multiple date ranges can
+            share the same number of bars, which would cause loading wrong cached
+            indicators/fib swings.
+        """
+
+        if df is None or len(df) == 0:
+            # Defensive fallback; should not happen in normal flow.
+            return f"{self.symbol}_{self.timeframe}_empty"
+
+        ts0 = df["timestamp"].iloc[0]
+        ts1 = df["timestamp"].iloc[-1]
+        # pandas.Timestamp.value is ns since epoch; stable and file-name friendly.
+        start_ns = int(getattr(ts0, "value", 0))
+        end_ns = int(getattr(ts1, "value", 0))
+        return f"{self.symbol}_{self.timeframe}_{len(df)}_{start_ns}_{end_ns}"
 
     def _prepare_numpy_arrays(self) -> None:
         """Prepare numpy arrays from candles_df for fast window extraction."""
@@ -632,6 +662,7 @@ class BacktestEngine:
                         result=result,
                         meta=meta,
                         configs=configs,
+                        bar_index=i,
                     )
 
                     if exit_reason:
@@ -744,6 +775,7 @@ class BacktestEngine:
         result: dict,
         meta: dict,
         configs: dict,
+        bar_index: int | None = None,
     ) -> str | None:
         """
         Check HTF Fibonacci exit conditions.
@@ -769,18 +801,37 @@ class BacktestEngine:
         features_meta = meta.get("features", {})
         htf_fib_context = features_meta.get("htf_fibonacci", {})
 
-        # Calculate ATR for exit logic (use last 14 bars)
+        # Calculate ATR for exit logic (use last 14 bars AS OF current bar)
         from core.indicators.atr import calculate_atr
 
-        window_size = min(14, len(self.candles_df))
-        if window_size >= 2:
-            recent_highs = self.candles_df["high"].iloc[-window_size:].values
-            recent_lows = self.candles_df["low"].iloc[-window_size:].values
-            recent_closes = self.candles_df["close"].iloc[-window_size:].values
-            atr_values = calculate_atr(recent_highs, recent_lows, recent_closes, period=14)
-            current_atr = float(atr_values[-1]) if len(atr_values) > 0 else 100.0
-        else:
-            current_atr = 100.0
+        # Prefer explicit bar_index (passed from main loop). Fallback to configs['_global_index'].
+        idx = bar_index
+        if idx is None:
+            try:
+                idx = int(configs.get("_global_index"))
+            except Exception:
+                idx = None
+
+        current_atr = 100.0
+        if idx is not None and self._np_arrays is not None:
+            window_size = min(14, idx + 1)
+            if window_size >= 2:
+                i0 = max(0, idx - window_size + 1)
+                i1 = idx + 1
+                recent_highs = self._np_arrays["high"][i0:i1]
+                recent_lows = self._np_arrays["low"][i0:i1]
+                recent_closes = self._np_arrays["close"][i0:i1]
+                atr_values = calculate_atr(recent_highs, recent_lows, recent_closes, period=14)
+                current_atr = float(atr_values[-1]) if len(atr_values) > 0 else 100.0
+        elif self.candles_df is not None:
+            # Defensive fallback for callers that don't supply an index.
+            window_size = min(14, len(self.candles_df))
+            if window_size >= 2:
+                recent_highs = self.candles_df["high"].iloc[-window_size:].values
+                recent_lows = self.candles_df["low"].iloc[-window_size:].values
+                recent_closes = self.candles_df["close"].iloc[-window_size:].values
+                atr_values = calculate_atr(recent_highs, recent_lows, recent_closes, period=14)
+                current_atr = float(atr_values[-1]) if len(atr_values) > 0 else 100.0
 
         # Prepare indicators for exit engine
         features = result.get("features", {})
@@ -973,9 +1024,17 @@ class BacktestEngine:
         """Build final backtest results."""
         summary = self.position_tracker.get_summary()
 
+        # Resolve git executable to an absolute path (Bandit B607) and keep failure non-fatal.
+        git_hash = "unknown"
         try:
-            git_hash = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode("ascii").strip()
-        except Exception:
+            import shutil
+
+            git_exe = shutil.which("git")
+            if git_exe:
+                git_hash = subprocess.check_output(
+                    [git_exe, "rev-parse", "HEAD"], text=True
+                ).strip()
+        except (OSError, subprocess.SubprocessError):
             git_hash = "unknown"
 
         return {
@@ -990,6 +1049,13 @@ class BacktestEngine:
                 "initial_capital": self.position_tracker.initial_capital,
                 "commission_rate": self.position_tracker.commission_rate,
                 "slippage_rate": self.position_tracker.slippage_rate,
+                "execution_mode": {
+                    "fast_window": bool(self.fast_window),
+                    "env_precompute_features": os.environ.get("GENESIS_PRECOMPUTE_FEATURES"),
+                    "precompute_enabled": bool(getattr(self, "precompute_features", False)),
+                    "precomputed_ready": bool(getattr(self, "_precomputed_features", None)),
+                    "mode_explicit": os.environ.get("GENESIS_MODE_EXPLICIT"),
+                },
                 "git_hash": git_hash,
                 "seed": os.environ.get("GENESIS_RANDOM_SEED", "unknown"),
                 "timestamp": datetime.now().isoformat(),

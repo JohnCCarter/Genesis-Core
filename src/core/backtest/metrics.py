@@ -285,7 +285,7 @@ def calculate_metrics(
                     continue
                 try:
                     equity_values.append(float(val))
-                except Exception:
+                except (TypeError, ValueError):
                     continue
 
             if len(equity_values) > 1:
@@ -313,7 +313,7 @@ def calculate_metrics(
             if "num_trades" in summary:
                 try:
                     num_trades = int(summary.get("num_trades") or 0)
-                except Exception:
+                except (TypeError, ValueError):
                     num_trades = 0
                 metrics["num_trades"] = num_trades
                 metrics["total_trades"] = num_trades
@@ -321,13 +321,13 @@ def calculate_metrics(
             if "win_rate" in summary:
                 try:
                     metrics["win_rate"] = float(summary.get("win_rate") or 0.0)
-                except Exception:
+                except (TypeError, ValueError):
                     pass
 
             if "profit_factor" in summary:
                 try:
                     metrics["profit_factor"] = float(summary.get("profit_factor") or 0.0)
-                except Exception:
+                except (TypeError, ValueError):
                     pass
 
             # If we have no equity curve, fall back to summary for return/PnL as a last resort.
@@ -337,12 +337,12 @@ def calculate_metrics(
                         total_return_pct = float(summary.get("total_return") or 0.0)
                         metrics["total_return"] = total_return_pct
                         metrics["total_return_pct"] = total_return_pct
-                    except Exception:
+                    except (TypeError, ValueError):
                         pass
                 if "total_return_usd" in summary:
                     try:
                         metrics["total_pnl"] = float(summary.get("total_return_usd") or 0.0)
-                    except Exception:
+                    except (TypeError, ValueError):
                         pass
 
         return metrics

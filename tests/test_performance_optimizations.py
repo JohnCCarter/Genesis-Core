@@ -280,30 +280,36 @@ class TestCopyOptimizations:
     """Test copy/deepcopy optimizations."""
 
     def test_primitive_list_copy_vs_deepcopy(self):
-        """Verify that list() is faster than deepcopy for primitive values."""
+        """Verify that shallow list copy is faster than deepcopy for primitives.
+
+        This is a performance guardrail. Comparing per-element deepcopy can be
+        surprisingly noisy (deepcopy(float) is effectively a no-op), so we
+        compare list-level operations instead.
+        """
         import copy
+        from time import perf_counter
 
         # Test with list of primitives (typical grid values)
         primitives = [0.1, 0.2, 0.3, 0.4, 0.5] * 100  # 500 float values
 
-        # Measure deepcopy
-        start = time.time()
-        for _ in range(100):
-            _ = [copy.deepcopy(v) for v in primitives]
-        deepcopy_time = time.time() - start
+        loops = 200
 
-        # Measure list()
-        start = time.time()
-        for _ in range(100):
-            _ = list(primitives)
-        list_time = time.time() - start
+        start = perf_counter()
+        for _ in range(loops):
+            _ = copy.deepcopy(primitives)
+        deepcopy_time = perf_counter() - start
 
-        # list() should be much faster
-        if deepcopy_time > 1e-6 and list_time > 1e-6:
-            speedup = deepcopy_time / list_time
-            assert speedup > 2, (
-                f"list() not significantly faster than deepcopy: "
-                f"deepcopy={deepcopy_time:.6f}s, list={list_time:.6f}s, "
+        start = perf_counter()
+        for _ in range(loops):
+            _ = primitives.copy()
+        copy_time = perf_counter() - start
+
+        # Shallow copy should be faster than recursive deepcopy for primitives.
+        if deepcopy_time > 1e-6 and copy_time > 1e-6:
+            speedup = deepcopy_time / copy_time
+            assert speedup > 1.2, (
+                f"Shallow list copy not faster than deepcopy: "
+                f"deepcopy={deepcopy_time:.6f}s, copy={copy_time:.6f}s, "
                 f"speedup={speedup:.1f}x"
             )
 

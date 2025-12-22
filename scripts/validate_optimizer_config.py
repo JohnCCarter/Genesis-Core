@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -262,20 +263,49 @@ def validate_config(opt_config_path: Path) -> int:
     errors: list[str] = []
     warnings: list[str] = []
 
-    # Kontrollera max_trials vs timeout
+    # Kontrollera max_trials vs timeout/end_at
     runs_cfg = opt_cfg.get("meta", {}).get("runs", {})
     max_trials = runs_cfg.get("max_trials")
-    timeout = runs_cfg.get("optuna", {}).get("timeout_seconds")
-    if max_trials is not None and timeout is not None:
+    optuna_cfg = runs_cfg.get("optuna", {})
+    timeout = optuna_cfg.get("timeout_seconds")
+    end_at = optuna_cfg.get("end_at")
+
+    effective_timeout_seconds: float | None = float(timeout) if timeout is not None else None
+    if end_at:
+        try:
+            s = str(end_at).strip()
+            if s.endswith("Z"):
+                s = s[:-1] + "+00:00"
+            end_at_dt = datetime.fromisoformat(s)
+            if end_at_dt.tzinfo is None:
+                end_at_dt = end_at_dt.replace(tzinfo=datetime.now().astimezone().tzinfo)
+            remaining = (end_at_dt - datetime.now(tz=end_at_dt.tzinfo)).total_seconds()
+            if remaining > 0:
+                effective_timeout_seconds = (
+                    remaining
+                    if effective_timeout_seconds is None
+                    else min(effective_timeout_seconds, remaining)
+                )
+                warnings.append(
+                    f"[INFO] end_at={end_at_dt.isoformat()} (återstår ~{remaining/3600:.2f}h från nu)."
+                )
+            else:
+                warnings.append(f"[WARN] end_at={end_at_dt.isoformat()} ligger i dåtiden.")
+        except Exception as e:
+            warnings.append(f"[WARN] end_at kunde inte parsas: {e}")
+
+    if max_trials is not None and effective_timeout_seconds is not None:
         # Beräkna ungefärlig tid per trial (baserat på tidigare körningar: ~138s per trial)
-        est_trials_in_timeout = int(timeout / 138) if timeout else None
+        est_trials_in_timeout = int(effective_timeout_seconds / 138)
         warnings.append(
-            f"[INFO] max_trials={max_trials} och timeout={timeout}s ({timeout/3600:.1f}h) är båda satta. "
-            f"Optuna stoppar när första gränsen nås. Ungefär {est_trials_in_timeout} trials kan köras inom timeout."
+            f"[INFO] max_trials={max_trials} och effektiv timeout~{int(effective_timeout_seconds)}s "
+            f"({effective_timeout_seconds/3600:.1f}h) är båda satta. "
+            f"Optuna stoppar när första gränsen nås. Ungefär {est_trials_in_timeout} trials kan köras inom budget."
         )
-    elif max_trials is None and timeout:
+    elif max_trials is None and effective_timeout_seconds is not None:
         warnings.append(
-            f"[INFO] max_trials=null, timeout={timeout}s ({timeout/3600:.1f}h). Optuna kommer köra tills timeout nås."
+            f"[INFO] max_trials=null, effektiv timeout~{int(effective_timeout_seconds)}s "
+            f"({effective_timeout_seconds/3600:.1f}h). Optuna kommer köra tills budget nås."
         )
 
     # Kritiska parametrar att kontrollera

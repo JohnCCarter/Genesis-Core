@@ -10,7 +10,8 @@ from core.strategy.champion_loader import ChampionLoader
 
 
 def run_verification():
-    # Force use precomputed features if fast_window is needed
+    # Canonical mode for verification: 1/1
+    os.environ["GENESIS_FAST_WINDOW"] = "1"
     os.environ["GENESIS_PRECOMPUTE_FEATURES"] = "1"
 
     symbol = "tBTCUSD"
@@ -30,8 +31,11 @@ def run_verification():
         timeframe=timeframe,
         # start_date="2024-01-01",
         # end_date="2024-02-01",  # 1 month test
-        fast_window=False,
+        fast_window=True,
     )
+
+    # Mirror pipeline/runner behavior explicitly.
+    engine.precompute_features = True
 
     if not engine.load_data():
         print("Failed to load data")

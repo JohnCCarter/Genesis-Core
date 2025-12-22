@@ -43,11 +43,18 @@ class GenesisPipeline:
         os.environ["GENESIS_RANDOM_SEED"] = str(seed)
         set_global_seeds(seed)
 
-        # Enforce fast mode defaults if not set
-        if "GENESIS_FAST_WINDOW" not in os.environ:
+        # Canonical mode policy:
+        # 1/1 (fast_window + precompute) is the SSOT for quality decisions.
+        # Non-canonical modes are allowed ONLY when explicitly requested by the caller.
+        explicit_mode = os.environ.get("GENESIS_MODE_EXPLICIT") == "1"
+
+        if not explicit_mode:
             os.environ["GENESIS_FAST_WINDOW"] = "1"
-        if "GENESIS_PRECOMPUTE_FEATURES" not in os.environ:
             os.environ["GENESIS_PRECOMPUTE_FEATURES"] = "1"
+        else:
+            # If caller marked mode explicit but left variables unset, keep sensible defaults.
+            os.environ.setdefault("GENESIS_FAST_WINDOW", "1")
+            os.environ.setdefault("GENESIS_PRECOMPUTE_FEATURES", "1")
 
         logger.info(f"Environment setup complete. Seed: {seed}")
 

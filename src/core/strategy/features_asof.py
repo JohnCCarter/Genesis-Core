@@ -131,7 +131,7 @@ def _remap_precomputed_features(
                         continue
                     new_idx.append(int(i - window_start_idx))
                     new_px.append(float(p))
-                except Exception:
+                except (TypeError, ValueError):
                     continue
             if new_idx and len(new_idx) == len(new_px):
                 remapped[idx_key] = new_idx

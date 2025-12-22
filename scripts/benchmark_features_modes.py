@@ -13,10 +13,15 @@ CANDIDATE_PATH = "config/strategy/champions/tBTCUSD_1h.json"
 
 
 def run_once(use_precompute: bool):
-    os.environ["GENESIS_PRECOMPUTE_FEATURES"] = "1" if use_precompute else "0"
-    # Also set fast window for fair comparison if we want to isolate precompute
-    # But usually they go together. Let's enable fast window for both to isolate feature calc.
-    os.environ["GENESIS_FAST_WINDOW"] = "1"
+    # Canonical policy:
+    # - precompute run should be 1/1 (fast_window + precompute)
+    # - non-precompute run should be 0/0
+    if use_precompute:
+        os.environ["GENESIS_FAST_WINDOW"] = "1"
+        os.environ["GENESIS_PRECOMPUTE_FEATURES"] = "1"
+    else:
+        os.environ["GENESIS_FAST_WINDOW"] = "0"
+        os.environ["GENESIS_PRECOMPUTE_FEATURES"] = "0"
 
     if not Path(CANDIDATE_PATH).exists():
         print(f"Error: Config file not found: {CANDIDATE_PATH}")
@@ -42,6 +47,7 @@ def run_once(use_precompute: bool):
         start_date="2024-01-01",  # Shorter period for quick benchmark
         end_date="2024-06-01",
         warmup_bars=150,
+        fast_window=use_precompute,
     )
 
     # Explicitly set the flag on engine as runner does

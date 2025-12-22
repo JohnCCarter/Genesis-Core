@@ -146,7 +146,7 @@ def test_backtest_engine_is_deterministic_with_explicit_exit_reason(monkeypatch)
     exit_ts = _pd.Timestamp("2025-01-01 01:00:00")
 
     def _fake_check_htf_exit_conditions(
-        self, *, current_price, timestamp, bar_data, result, meta, configs
+        self, *, current_price, timestamp, bar_data, result, meta, configs, bar_index=None
     ):  # noqa: ARG001
         if timestamp == exit_ts:
             return "TEST_EXIT"

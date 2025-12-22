@@ -111,7 +111,7 @@ def score_backtest(
         summary = {}
     try:
         initial_capital = float(summary.get("initial_capital", 10000.0) or 10000.0)
-    except Exception:
+    except (TypeError, ValueError):
         initial_capital = 10000.0
 
     trades = result.get("trades") if isinstance(result, dict) else None
@@ -122,7 +122,7 @@ def score_backtest(
                 continue
             try:
                 total_commission += float(t.get("commission", 0.0) or 0.0)
-            except Exception:
+            except (TypeError, ValueError):
                 continue
     total_commission_pct = total_commission / initial_capital if initial_capital > 0 else 0.0
 

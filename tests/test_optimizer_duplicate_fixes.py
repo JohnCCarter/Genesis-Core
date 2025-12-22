@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, patch
@@ -317,6 +318,65 @@ def test_best_trial_payload_saved_on_constraints_soft_fail(tmp_path):
 
     # Regression check: best_trial.json should be written even if all trials are soft-fails.
     assert (run_dir / "best_trial.json").exists(), "Expected best_trial.json to be written"
+
+
+@pytest.mark.skipif(not OPTUNA_AVAILABLE, reason="Optuna not installed")
+def test_end_at_sets_effective_timeout(tmp_path: Path):
+    """end_at should translate to a finite (computed) timeout passed to Optuna."""
+
+    run_dir = tmp_path / "run"
+    run_dir.mkdir(parents=True, exist_ok=True)
+
+    captured: dict[str, Any] = {}
+
+    study = MagicMock()
+    study.study_name = "test_end_at"
+    study.trials = []
+    study.best_trials = []
+
+    def mock_optimize(objective, **kwargs):
+        captured.update(kwargs)
+
+    study.optimize = mock_optimize
+
+    # Deadline soon (but not too soon) so the test doesn't flap on slower machines.
+    end_at = (datetime.now(tz=UTC) + timedelta(seconds=30)).isoformat()
+
+    study_config = {
+        "storage": None,
+        "study_name": "test_end_at",
+        "sampler": {"name": "random"},
+        "pruner": {"name": "none"},
+        "timeout_seconds": 10_000,
+        "end_at": end_at,
+        "dedup_guard_enabled": False,
+    }
+
+    params_spec = {"param1": {"type": "fixed", "value": 1}}
+
+    def make_trial(idx: int, params: dict[str, Any], **kwargs) -> dict[str, Any]:
+        return {
+            "trial_id": f"trial_{idx:03d}",
+            "parameters": params,
+            "score": {"score": 1.0, "metrics": {"num_trades": 1}, "hard_failures": []},
+            "constraints": {"ok": True},
+        }
+
+    with patch("core.optimizer.runner._create_optuna_study", return_value=study):
+        _run_optuna(
+            study_config=study_config,
+            parameters_spec=params_spec,
+            make_trial=make_trial,
+            run_dir=run_dir,
+            run_id="run_test_end_at",
+            existing_trials={},
+            max_trials=1,
+            concurrency=1,
+            allow_resume=False,
+        )
+
+    assert captured.get("timeout") is not None
+    assert 0 < int(captured["timeout"]) <= 30
 
 
 def test_tpe_sampler_defaults():

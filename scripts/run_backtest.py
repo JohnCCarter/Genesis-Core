@@ -72,6 +72,44 @@ def _summarize_runtime(label: str, cfg: dict) -> None:
     )
 
 
+def _resolve_mode_env_overrides(
+    *, fast_window: bool | None, precompute_features: bool | None
+) -> dict[str, str]:
+    """Resolve CLI mode flags to env var overrides.
+
+    Notes:
+        - Defaults are handled by `GenesisPipeline.setup_environment()`; this function only
+          returns overrides when the user explicitly requested a mode.
+        - The engine currently requires `GENESIS_PRECOMPUTE_FEATURES=1` when `fast_window=True`.
+          If the user explicitly requests `--fast-window` together with `--no-precompute-features`,
+          we fail fast with a clear error.
+        - If the user disables one mode explicitly (e.g. `--no-precompute-features`) without
+          specifying the other, we also disable the other to avoid mixed-mode execution.
+    """
+
+    if fast_window is True and precompute_features is False:
+        raise ValueError(
+            "Invalid mode combination: --fast-window requires --precompute-features. "
+            "(The engine enforces GENESIS_PRECOMPUTE_FEATURES=1 when fast_window=True.)"
+        )
+
+    env: dict[str, str] = {}
+
+    if fast_window is not None:
+        env["GENESIS_FAST_WINDOW"] = "1" if fast_window else "0"
+        if fast_window is False and precompute_features is None:
+            # User explicitly requested slow window-building; keep execution path consistent.
+            env["GENESIS_PRECOMPUTE_FEATURES"] = "0"
+
+    if precompute_features is not None:
+        env["GENESIS_PRECOMPUTE_FEATURES"] = "1" if precompute_features else "0"
+        if precompute_features is False and fast_window is None:
+            # User explicitly disabled precompute; fast_window would error if left enabled by default.
+            env["GENESIS_FAST_WINDOW"] = "0"
+
+    return env
+
+
 def main():
     """CLI entry point."""
     pipeline = GenesisPipeline()
@@ -118,16 +156,35 @@ def main():
         type=Path,
         help="Optional JSON-fil med override av runtime-config",
     )
-    parser.add_argument(
+    fast_group = parser.add_mutually_exclusive_group()
+    fast_group.add_argument(
         "--fast-window",
+        dest="fast_window",
         action="store_true",
         help="Use precomputed column arrays for faster window building",
     )
-    parser.add_argument(
+    fast_group.add_argument(
+        "--no-fast-window",
+        dest="fast_window",
+        action="store_false",
+        help="Disable fast window building (forces slow/streaming window path)",
+    )
+    parser.set_defaults(fast_window=None)
+
+    precompute_group = parser.add_mutually_exclusive_group()
+    precompute_group.add_argument(
         "--precompute-features",
+        dest="precompute_features",
         action="store_true",
         help="Precompute common features (ATR/EMA) for performance",
     )
+    precompute_group.add_argument(
+        "--no-precompute-features",
+        dest="precompute_features",
+        action="store_false",
+        help="Disable feature precomputation (may reduce determinism/performance)",
+    )
+    parser.set_defaults(precompute_features=None)
     parser.add_argument(
         "--compare",
         type=Path,
@@ -144,12 +201,49 @@ def main():
     print("=" * 70)
 
     try:
+        mode_overrides = _resolve_mode_env_overrides(
+            fast_window=args.fast_window,
+            precompute_features=args.precompute_features,
+        )
+    except ValueError as exc:
+        print(f"\n[FAILED] {exc}")
+        return 1
+    for k, v in mode_overrides.items():
+        os.environ[k] = v
+
+    # Canonical mode policy:
+    # - If user explicitly requested a mode via CLI flags, mark it as explicit.
+    # - Otherwise, clear the explicit marker so GenesisPipeline enforces canonical 1/1.
+    if args.fast_window is None and args.precompute_features is None:
+        os.environ["GENESIS_MODE_EXPLICIT"] = "0"
+    else:
+        os.environ["GENESIS_MODE_EXPLICIT"] = "1"
+
+    try:
         seed_value = int(os.environ.get("GENESIS_RANDOM_SEED", "42"))
     except ValueError:
         seed_value = 42
 
     # Setup environment via pipeline
     pipeline.setup_environment(seed=seed_value)
+
+    print(
+        "[MODE] "
+        f"GENESIS_FAST_WINDOW={os.environ.get('GENESIS_FAST_WINDOW')} "
+        f"GENESIS_PRECOMPUTE_FEATURES={os.environ.get('GENESIS_PRECOMPUTE_FEATURES')} "
+        f"GENESIS_RANDOM_SEED={os.environ.get('GENESIS_RANDOM_SEED')}"
+    )
+
+    # If user forced a non-canonical mode, make it loud: this is debug-only.
+    if os.environ.get("GENESIS_MODE_EXPLICIT") == "1":
+        if (
+            os.environ.get("GENESIS_FAST_WINDOW") != "1"
+            or os.environ.get("GENESIS_PRECOMPUTE_FEATURES") != "1"
+        ):
+            print(
+                "[WARN] Non-canonical mode selected (debug only). "
+                "Results may NOT be comparable to Optuna/validation/champion decisions (canonical is 1/1)."
+            )
 
     try:
         # Initialize engine via pipeline
@@ -286,7 +380,9 @@ def main():
             return 1
 
         # Calculate metrics
-        metrics = calculate_metrics(results)
+        # IMPORTANT: Use the same robust metric path as Optuna scoring (trades/equity-based)
+        # to avoid confusing discrepancies between the printed report and `results["score"]`.
+        metrics = calculate_metrics(results, prefer_summary=False)
 
         # Calculate score (same as Optuna uses)
         score_result = score_backtest(results)

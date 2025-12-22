@@ -90,23 +90,74 @@ def check_study_resume(
         return False, f"[FAIL] Kan inte ladda study för resume-kontroll: {e}"
 
 
-def check_timeout_config(max_trials: Any, timeout_seconds: Any) -> tuple[bool, str]:
-    """Kontrollera timeout och max_trials-konfiguration."""
-    issues = []
+def check_timeout_config(max_trials: Any, timeout_seconds: Any, end_at: Any) -> tuple[bool, str]:
+    """Kontrollera timeout, max_trials och ev. absolut stopptid (end_at)."""
 
-    if timeout_seconds is None:
-        issues.append("[WARN] timeout_seconds är inte satt - Optuna kan köra oändligt")
+    issues: list[str] = []
+
+    def _parse_end_at(value: Any) -> datetime | None:
+        if value is None or value == "":
+            return None
+        if isinstance(value, datetime):
+            dt = value
+        else:
+            s = str(value).strip()
+            if s.endswith("Z"):
+                s = s[:-1] + "+00:00"
+            dt = datetime.fromisoformat(s)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=datetime.now().astimezone().tzinfo)
+        return dt
+
+    try:
+        end_at_dt = _parse_end_at(end_at)
+    except Exception as e:
+        return False, f"[FAIL] end_at kunde inte parsas: {e}"
+
+    effective_timeout_seconds: float | None = None
+
+    if timeout_seconds is not None:
+        timeout_seconds_f = float(timeout_seconds)
+        issues.append(
+            f"[OK] timeout_seconds={int(timeout_seconds_f)}s ({timeout_seconds_f/3600:.1f}h)"
+        )
+        effective_timeout_seconds = timeout_seconds_f
     else:
-        hours = timeout_seconds / 3600
-        issues.append(f"[OK] timeout_seconds={timeout_seconds}s ({hours:.1f}h)")
+        if end_at_dt is None:
+            issues.append("[WARN] timeout_seconds är inte satt")
+        else:
+            issues.append("[OK] timeout_seconds ej satt (styr via end_at)")
+
+    if end_at_dt is not None:
+        now = datetime.now(tz=end_at_dt.tzinfo)
+        remaining = (end_at_dt - now).total_seconds()
+        if remaining <= 0:
+            return False, f"[FAIL] end_at={end_at_dt.isoformat()} ligger i dåtiden"
+        issues.append(
+            f"[OK] end_at={end_at_dt.isoformat()} (återstår {remaining/3600:.2f}h från nu)"
+        )
+        effective_timeout_seconds = (
+            remaining
+            if effective_timeout_seconds is None
+            else min(effective_timeout_seconds, remaining)
+        )
+
+    if effective_timeout_seconds is None:
+        issues.append(
+            "[WARN] Ingen effektiv time budget (timeout_seconds/end_at) - Optuna kan köra oändligt"
+        )
 
     if max_trials is None:
-        issues.append("[OK] max_trials=null - kör tills timeout")
+        issues.append("[OK] max_trials=null - kör tills timeout/end_at")
     else:
         max_trials_int = int(max_trials)
         if max_trials_int > 0:
             est_hours = (max_trials_int * 170) / 3600  # ~170s per trial
-            timeout_str = f"{timeout_seconds/3600:.1f}h" if timeout_seconds else "aldrig"
+            timeout_str = (
+                "aldrig"
+                if effective_timeout_seconds is None
+                else f"{effective_timeout_seconds/3600:.1f}h"
+            )
             issues.append(
                 f"[WARN] max_trials={max_trials_int} - stoppar efter ~{est_hours:.1f}h "
                 f"(eller timeout om {timeout_str} nås först)"
@@ -446,7 +497,8 @@ def main() -> int:
     # 6. Timeout/max_trials
     max_trials = runs_cfg.get("max_trials")
     timeout_seconds = optuna_cfg.get("timeout_seconds")
-    ok, msg = check_timeout_config(max_trials, timeout_seconds)
+    end_at = optuna_cfg.get("end_at")
+    ok, msg = check_timeout_config(max_trials, timeout_seconds, end_at)
     print(f"6. Timeout/max_trials: {msg}")
     print()
 

@@ -122,6 +122,217 @@ def test_run_optimizer_updates_champion(tmp_path: Path, search_config_tmp: Path)
         assert call_kwargs["snapshot_id"] == run_meta_payload["snapshot_id"]
 
 
+def test_run_optimizer_validation_stage_promotes_validation_best(tmp_path: Path) -> None:
+    config = {
+        "meta": {
+            "symbol": "tTEST",
+            "timeframe": "1h",
+            "snapshot_id": "tTEST_1h_20240101_20240201_v1",
+            "warmup_bars": 50,
+            "runs": {
+                "max_trials": 2,
+                "resume": False,
+                "validation": {
+                    "top_n": 2,
+                    "use_sample_range": True,
+                    "sample_start": "2024-01-01",
+                    "sample_end": "2024-03-01",
+                    "constraints": {"min_trades": 1, "min_profit_factor": 1.0},
+                },
+            },
+        },
+        "parameters": {
+            "thresholds": {
+                "entry_conf_overall": {
+                    "type": "grid",
+                    "values": [0.4, 0.5],
+                }
+            }
+        },
+    }
+    config_path = tmp_path / "search_with_validation.yaml"
+    config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
+
+    results_root = tmp_path / "results" / "hparam_search"
+    run_meta_payload = {
+        "git_commit": "abc123",
+        "snapshot_id": "tTEST_1h_20240101_20240201_v1",
+    }
+
+    def fake_run_trial(*args: Any, **kwargs: Any) -> dict[str, Any]:
+        trial_cfg = args[0]
+        run_dir = kwargs.get("run_dir")
+        params = getattr(trial_cfg, "parameters", {}) or {}
+        entry_conf = params.get("thresholds", {}).get("entry_conf_overall")
+
+        # Explore stage (main run_dir)
+        if run_dir is None or "validation" not in str(run_dir):
+            if entry_conf == 0.4:
+                return {
+                    "trial_id": "trial_001",
+                    "parameters": params,
+                    "score": {"score": 120.0, "metrics": {"num_trades": 10}, "hard_failures": []},
+                    "constraints": {"ok": True, "reasons": []},
+                    "results_path": "explore_good.json",
+                }
+            return {
+                "trial_id": "trial_002",
+                "parameters": params,
+                "score": {
+                    "score": 80.0,
+                    "metrics": {"num_trades": 0},
+                    "hard_failures": ["pf<1.0"],
+                },
+                "constraints": {"ok": False, "reasons": ["min_profit_factor"]},
+                "results_path": "explore_bad.json",
+            }
+
+        # Validation stage (run_dir/validation)
+        if entry_conf == 0.4:
+            return {
+                "trial_id": "trial_001",
+                "parameters": params,
+                "score": {"score": 90.0, "metrics": {"num_trades": 15}, "hard_failures": []},
+                "constraints": {"ok": True, "reasons": []},
+                "results_path": "val_ok_04.json",
+            }
+        return {
+            "trial_id": "trial_002",
+            "parameters": params,
+            "score": {"score": 130.0, "metrics": {"num_trades": 20}, "hard_failures": []},
+            "constraints": {"ok": True, "reasons": []},
+            "results_path": "val_best_05.json",
+        }
+
+    def fake_ensure(run_dir: Path, *_args: Any, **_kwargs: Any) -> None:
+        run_dir.mkdir(parents=True, exist_ok=True)
+        (run_dir / "run_meta.json").write_text(json.dumps(run_meta_payload), encoding="utf-8")
+
+    with (
+        patch.dict(os.environ, {"GENESIS_MAX_CONCURRENT": "1"}),
+        patch("core.optimizer.runner.RESULTS_DIR", results_root),
+        patch(
+            "core.optimizer.runner.expand_parameters",
+            return_value=[
+                {"thresholds": {"entry_conf_overall": 0.4}},
+                {"thresholds": {"entry_conf_overall": 0.5}},
+            ],
+        ),
+        patch("core.optimizer.runner.run_trial", side_effect=fake_run_trial),
+        patch("core.optimizer.runner._ensure_run_metadata", side_effect=fake_ensure),
+        patch("core.optimizer.runner.ChampionManager") as manager_cls,
+        patch("core.strategy.champion_loader.CHAMPIONS_DIR", tmp_path / "champions"),
+    ):
+        manager_instance = manager_cls.return_value
+        manager_instance.load_current.return_value = None
+        manager_instance.should_replace.return_value = True
+
+        results = run_optimizer(config_path, run_id="run_test")
+
+        # 2 explore + 2 validation
+        assert len(results) == 4
+        manager_instance.write_champion.assert_called_once()
+        call_kwargs = manager_instance.write_champion.call_args.kwargs
+        assert call_kwargs["candidate"].score == pytest.approx(130.0)
+
+
+def test_run_optimizer_promotion_disabled_does_not_write_champion(
+    tmp_path: Path, search_config_tmp: Path
+) -> None:
+    results_root = tmp_path / "results" / "hparam_search"
+    run_meta_payload = {
+        "git_commit": "abc123",
+        "snapshot_id": "tTEST_1h_20240101_20240201_v1",
+    }
+
+    def fake_run_trial(*_args: Any, **kwargs: Any) -> dict[str, Any]:
+        return {
+            "trial_id": f"trial_{kwargs.get('index', 1):03d}",
+            "parameters": {"thresholds": {"entry_conf_overall": 0.4}},
+            "score": {"score": 120.0, "metrics": {"num_trades": 10}, "hard_failures": []},
+            "constraints": {"ok": True, "reasons": []},
+            "results_path": "explore_good.json",
+        }
+
+    def fake_ensure(run_dir: Path, *_args: Any, **_kwargs: Any) -> None:
+        run_dir.mkdir(parents=True, exist_ok=True)
+        (run_dir / "run_meta.json").write_text(json.dumps(run_meta_payload), encoding="utf-8")
+
+    # Patch the config file to disable promotion.
+    cfg = yaml.safe_load(search_config_tmp.read_text(encoding="utf-8"))
+    cfg["meta"]["runs"]["promotion"] = {"enabled": False}
+    search_config_tmp.write_text(yaml.safe_dump(cfg), encoding="utf-8")
+
+    with (
+        patch.dict(os.environ, {"GENESIS_MAX_CONCURRENT": "1"}),
+        patch("core.optimizer.runner.RESULTS_DIR", results_root),
+        patch(
+            "core.optimizer.runner.expand_parameters",
+            return_value=[{"thresholds": {"entry_conf_overall": 0.4}}],
+        ),
+        patch("core.optimizer.runner.run_trial", side_effect=fake_run_trial),
+        patch("core.optimizer.runner._ensure_run_metadata", side_effect=fake_ensure),
+        patch("core.optimizer.runner.ChampionManager") as manager_cls,
+        patch("core.strategy.champion_loader.CHAMPIONS_DIR", tmp_path / "champions"),
+    ):
+        manager_instance = manager_cls.return_value
+        manager_instance.load_current.return_value = None
+        manager_instance.should_replace.return_value = True
+
+        results = run_optimizer(search_config_tmp, run_id="run_test")
+
+        assert len(results) == 1
+        manager_instance.write_champion.assert_not_called()
+
+
+def test_run_optimizer_promotion_min_improvement_blocks_small_gain(
+    tmp_path: Path, search_config_tmp: Path
+) -> None:
+    results_root = tmp_path / "results" / "hparam_search"
+    run_meta_payload = {
+        "git_commit": "abc123",
+        "snapshot_id": "tTEST_1h_20240101_20240201_v1",
+    }
+
+    def fake_run_trial(*_args: Any, **kwargs: Any) -> dict[str, Any]:
+        return {
+            "trial_id": f"trial_{kwargs.get('index', 1):03d}",
+            "parameters": {"thresholds": {"entry_conf_overall": 0.4}},
+            "score": {"score": 102.0, "metrics": {"num_trades": 10}, "hard_failures": []},
+            "constraints": {"ok": True, "reasons": []},
+            "results_path": "explore_ok.json",
+        }
+
+    def fake_ensure(run_dir: Path, *_args: Any, **_kwargs: Any) -> None:
+        run_dir.mkdir(parents=True, exist_ok=True)
+        (run_dir / "run_meta.json").write_text(json.dumps(run_meta_payload), encoding="utf-8")
+
+    cfg = yaml.safe_load(search_config_tmp.read_text(encoding="utf-8"))
+    cfg["meta"]["runs"]["promotion"] = {"enabled": True, "min_improvement": 5.0}
+    search_config_tmp.write_text(yaml.safe_dump(cfg), encoding="utf-8")
+
+    with (
+        patch.dict(os.environ, {"GENESIS_MAX_CONCURRENT": "1"}),
+        patch("core.optimizer.runner.RESULTS_DIR", results_root),
+        patch(
+            "core.optimizer.runner.expand_parameters",
+            return_value=[{"thresholds": {"entry_conf_overall": 0.4}}],
+        ),
+        patch("core.optimizer.runner.run_trial", side_effect=fake_run_trial),
+        patch("core.optimizer.runner._ensure_run_metadata", side_effect=fake_ensure),
+        patch("core.optimizer.runner.ChampionManager") as manager_cls,
+        patch("core.strategy.champion_loader.CHAMPIONS_DIR", tmp_path / "champions"),
+    ):
+        manager_instance = manager_cls.return_value
+        manager_instance.load_current.return_value = MagicMock(score=100.0)
+        manager_instance.should_replace.return_value = True
+
+        results = run_optimizer(search_config_tmp, run_id="run_test")
+
+        assert len(results) == 1
+        manager_instance.write_champion.assert_not_called()
+
+
 @pytest.mark.skipif(not runner.OPTUNA_AVAILABLE, reason="Optuna ej installerat")
 def test_run_optimizer_optuna_strategy(tmp_path: Path) -> None:
     config = {

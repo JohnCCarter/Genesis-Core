@@ -23,7 +23,14 @@ MANIFEST
 
 # Virtual environments
 .env
+.env.backup*
+.env.*
+**/.env
+**/.env.*
+**/.env.backup*
 .venv/
+.venv_*/
+.venv-*/
 env/
 venv/
 ENV/
@@ -99,6 +106,9 @@ bandit-report.txt
 # Championship tickets (track in results/, gitignored)
 championship_tickets/
 
+# Champion backups (local safety copies, do not commit)
+config/strategy/champions/backup/
+
 # Runtime config (SSOT) - environment specific
 config/runtime.json
 
@@ -117,8 +127,15 @@ build/
 tmp/*.txt
 tmp/*.md
 
+# Local binaries / tunnel helpers (do not commit)
+cloudflared*.exe
+cloudflared*.exe.exe
+
 # Temporary config artifacts (generated)
 config/tmp/champion_current_as_cfg*.json
+
+# Local analysis artifacts (do not commit)
+config/tmp/trial_*_analysis.json
 
 # Phase 3-5: Data files (historical candles, features, metadata)
 # Two-layer architecture: Raw Lake + Curated
@@ -174,3 +191,6 @@ results/fibonacci_exits_*.png
 
 # Keep example files
 !.env.example
+
+# Archived configurations
+config/optimizer/archive/

@@ -15,7 +15,7 @@ meta:
     sample_end: 2025-09-30
 
     resume: true
-    max_trials: 500 # Let it run for a while
+    max_trials: null
     max_concurrent: 1 # Keep it stable
 
     optuna:
@@ -41,14 +41,18 @@ meta:
           seed: 42
 
     # VALIDATION PERIOD (Optuna does NOT see this)
-    # From 2025-10-01 to 2025-12-22 (3 months)
+    # From 2025-10-01 to 2025-12-11 (limited by curated data max)
     # Used only for final reporting/filtering.
     validation:
       enabled: true
       top_n: 10
       use_sample_range: true
       sample_start: 2025-10-01
-      sample_end: 2025-12-22
+      sample_end: 2025-12-11
+
+    # Promotion safety: keep champion immutable for this robustness run.
+    promotion:
+      enabled: false
 
 constraints:
   min_trades: 150 # Require decent volume over 21 months (~7-8 trades/month)
@@ -167,11 +171,11 @@ parameters:
       high: 0.7
       step: 0.1
     enable_partials:
-      type: categorical
-      choices: [true, false]
+      type: grid
+      values: [true, false]
     enable_trailing:
-      type: categorical
-      choices: [true, false]
+      type: grid
+      values: [true, false]
     fib_threshold_atr:
       type: float
       low: 0.5
@@ -186,11 +190,11 @@ parameters:
   # --- MULTI-TIMEFRAME GATES ---
   multi_timeframe:
     use_htf_block:
-      type: categorical
-      choices: [true] # Force HTF blocking for robustness
+      type: fixed
+      value: true # Force HTF blocking for robustness
     allow_ltf_override:
-      type: categorical
-      choices: [true, false]
+      type: grid
+      values: [true, false]
     ltf_override_threshold:
       type: float
       low: 0.35

@@ -226,7 +226,7 @@ def check_precompute_functionality(symbol: str, timeframe: str) -> tuple[bool, s
         if str(src_path) not in sys.path:
             sys.path.insert(0, str(src_path))
 
-        from src.core.backtest.engine import BacktestEngine
+        from core.backtest.engine import BacktestEngine
 
         # Ladda data
         data_path = ROOT / "data" / "curated" / "v1" / "candles" / f"{symbol}_{timeframe}.parquet"

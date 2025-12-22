@@ -1,0 +1,255 @@
+description: "Phase 4 Robustness - Long Training (2024-2025) with Validation Holdout"
+
+meta:
+  symbol: tBTCUSD
+  timeframe: 1h
+  snapshot_id: tBTCUSD_1h_2024-01-01_2025-09-30_robustness
+  runs:
+    strategy: optuna
+
+    # TRAINING PERIOD (Optuna sees this)
+    # From 2024-01-01 to 2025-09-30 (21 months)
+    # Covers bull runs, corrections, and ranging markets.
+    use_sample_range: true
+    sample_start: 2024-01-01
+    sample_end: 2025-09-30
+
+    resume: true
+    max_trials: 500 # Let it run for a while
+    max_concurrent: 1 # Keep it stable
+
+    optuna:
+      study_name: "optuna_phase4_robustness_2024_2025"
+      storage: "sqlite:///results/hparam_search/storage/optuna_phase4_robustness.db"
+      n_jobs: 1
+      timeout_seconds: 86400 # 24 hours
+
+      pruner:
+        type: "median"
+        kwargs:
+          n_startup_trials: 20
+          n_warmup_steps: 3000 # Give trades time to develop
+          interval_steps: 100
+
+      sampler:
+        type: "tpe"
+        kwargs:
+          n_startup_trials: 40 # More random exploration initially
+          n_ei_candidates: 64
+          multivariate: true
+          group: true
+          seed: 42
+
+    # VALIDATION PERIOD (Optuna does NOT see this)
+    # From 2025-10-01 to 2025-12-22 (3 months)
+    # Used only for final reporting/filtering.
+    validation:
+      enabled: true
+      top_n: 10
+      use_sample_range: true
+      sample_start: 2025-10-01
+      sample_end: 2025-12-22
+
+constraints:
+  min_trades: 150 # Require decent volume over 21 months (~7-8 trades/month)
+  max_trades: 1500 # Avoid scalping spam
+  min_profit_factor: 1.10 # Baseline quality
+  max_max_dd: 0.25 # Max 25% drawdown allowed
+  min_win_rate: 0.35 # Trend following needs at least 35%
+  include_scoring_failures: false
+
+parameters:
+  # --- ENTRY THRESHOLDS ---
+  thresholds:
+    entry_conf_overall:
+      type: float
+      low: 0.20
+      high: 0.40
+      step: 0.01
+
+    min_edge:
+      type: float
+      low: 0.005
+      high: 0.020
+      step: 0.001
+
+    # Signal Adaptation (ATR Zones) - Critical for regime handling
+    signal_adaptation:
+      atr_period:
+        type: fixed
+        value: 28
+      zones:
+        low:
+          entry_conf_overall:
+            type: float
+            low: 0.20
+            high: 0.30
+            step: 0.01
+          regime_proba:
+            type: float
+            low: 0.30
+            high: 0.45
+            step: 0.01
+        mid:
+          entry_conf_overall:
+            type: float
+            low: 0.28
+            high: 0.38
+            step: 0.01
+          regime_proba:
+            type: float
+            low: 0.40
+            high: 0.55
+            step: 0.01
+        high:
+          entry_conf_overall:
+            type: float
+            low: 0.35
+            high: 0.45
+            step: 0.01
+          regime_proba:
+            type: float
+            low: 0.50
+            high: 0.65
+            step: 0.01
+
+    # Regime Probabilities (Base)
+    regime_proba:
+      balanced:
+        type: float
+        low: 0.40
+        high: 0.60
+        step: 0.02
+      bull:
+        type: float
+        low: 0.40
+        high: 0.60
+        step: 0.02
+      bear:
+        type: float
+        low: 0.40
+        high: 0.60
+        step: 0.02
+      ranging:
+        type: float
+        low: 0.40
+        high: 0.60
+        step: 0.02
+
+  # --- EXITS ---
+  exit:
+    exit_conf_threshold:
+      type: float
+      low: 0.30
+      high: 0.50
+      step: 0.02
+    max_hold_bars:
+      type: int
+      low: 12
+      high: 96
+      step: 4
+    trailing_stop_pct:
+      type: float
+      low: 0.01
+      high: 0.05
+      step: 0.005
+
+  # --- HTF EXITS (Structure & Fibs) ---
+  htf_exit_config:
+    partial_1_pct:
+      type: float
+      low: 0.3
+      high: 0.7
+      step: 0.1
+    partial_2_pct:
+      type: float
+      low: 0.3
+      high: 0.7
+      step: 0.1
+    enable_partials:
+      type: categorical
+      choices: [true, false]
+    enable_trailing:
+      type: categorical
+      choices: [true, false]
+    fib_threshold_atr:
+      type: float
+      low: 0.5
+      high: 1.5
+      step: 0.1
+    trail_atr_multiplier:
+      type: float
+      low: 1.5
+      high: 4.0
+      step: 0.1
+
+  # --- MULTI-TIMEFRAME GATES ---
+  multi_timeframe:
+    use_htf_block:
+      type: categorical
+      choices: [true] # Force HTF blocking for robustness
+    allow_ltf_override:
+      type: categorical
+      choices: [true, false]
+    ltf_override_threshold:
+      type: float
+      low: 0.35
+      high: 0.65
+      step: 0.05
+    ltf_override_adaptive:
+      percentile:
+        type: float
+        low: 0.70
+        high: 0.95
+        step: 0.05
+
+  # --- FIBONACCI GATES ---
+  htf_fib:
+    entry:
+      tolerance_atr:
+        type: float
+        low: 1.0
+        high: 5.0
+        step: 0.5
+
+  ltf_fib:
+    entry:
+      tolerance_atr:
+        type: float
+        low: 0.5
+        high: 3.0
+        step: 0.25
+
+  # --- RISK MANAGEMENT (Dynamic Sizing) ---
+  risk:
+    risk_map_deltas:
+      conf_0:
+        type: float
+        low: -0.15
+        high: 0.10
+        step: 0.01
+      size_0:
+        type: float
+        low: -0.005
+        high: 0.005
+        step: 0.001
+      conf_1:
+        type: float
+        low: -0.10
+        high: 0.10
+        step: 0.01
+      size_1:
+        type: float
+        low: -0.005
+        high: 0.010
+        step: 0.001
+      conf_2:
+        type: float
+        low: -0.05
+        high: 0.10
+        step: 0.01
+      size_2:
+        type: float
+        low: -0.010
+        high: 0.020
+        step: 0.005

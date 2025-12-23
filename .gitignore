@@ -134,6 +134,9 @@ cloudflared*.exe.exe
 # Temporary config artifacts (generated)
 config/tmp/champion_current_as_cfg*.json
 
+# Generated composite configs (local experiments)
+config/tmp/composite_*.json
+
 # Local analysis artifacts (do not commit)
 config/tmp/trial_*_analysis.json
 

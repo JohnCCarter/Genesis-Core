@@ -25,6 +25,25 @@ python -m mcp_server.server
 
 **Documentation:** See [`docs/mcp_server_guide.md`](docs/mcp_server_guide.md) for complete setup and usage guide.
 
+## Cloudflare Worker gateway (legal.\*) → FastAPI backend 2025-12-23
+
+If you are using a Cloudflare Worker as an edge gateway (e.g. `legal.genesiscoremcp.com`), the worker must forward requests to a
+publicly reachable FastAPI base URL (the Genesis-Core HTTP API).
+
+- The worker cannot call `localhost` on your machine.
+- `BACKEND_ORIGIN` must point to the FastAPI backend base URL (not the worker domain, and not the MCP server).
+- In local development, FastAPI typically runs on `http://127.0.0.1:8000` (see the commented setup section below).
+- To make it reachable from the worker, expose FastAPI via Cloudflare Tunnel (recommended) or host it externally.
+
+Recommended pattern:
+
+- Public backend hostname: `https://api.genesiscoremcp.com`
+- Tunnel origin service: `http://127.0.0.1:8000`
+- Worker config: `BACKEND_ORIGIN=https://api.genesiscoremcp.com`
+
+Important: if you want to prevent bypassing the worker, protect the backend hostname (e.g. Cloudflare Access service token, or a
+shared secret header validated by the backend).
+
 ## Execution mode policy (canonical for quality decisions) 2025-12-18
 
 Genesis-Core har två prestandaväxlar som också påverkar exekveringsvägen i backtestmotorn:

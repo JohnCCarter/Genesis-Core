@@ -37,6 +37,26 @@ Environment variables:
 - `GENESIS_MCP_REMOTE_ULTRA_SAFE` (default: 0) — exposes only `ping_tool` + connector stubs.
 - `GENESIS_MCP_DEBUG_ROUTES` (default: 0) — prints registered routes on startup.
 
+Remote endpoints:
+
+- `GET /healthz` — returns `OK` (basic reachability check)
+- `POST /mcp` — MCP endpoint used by ChatGPT connector
+
+> Note: The server also registers some compatibility aliases (e.g. `/` and `/sse`) for POST in
+> certain connector setups, but you should prefer `/mcp`.
+
+Cloudflare Tunnel example (stable hostname):
+
+- Public base URL: `https://genesis-core-mcp.genesiscoremcp.com`
+- Connector endpoint: `https://genesis-core-mcp.genesiscoremcp.com/mcp`
+- Typical origin service: `http://127.0.0.1:3333`
+
+End-to-end checklist (ChatGPT “Connect to MCP”):
+
+1. Verify reachability: open `https://<your-hostname>/healthz` and confirm it returns `OK`.
+2. In ChatGPT, connect to the MCP server using the base URL and ensure it targets `POST /mcp`.
+3. Run a simple tool call (e.g. `ping_tool`) to confirm the full request/response flow.
+
 You should see:
 
 ```
@@ -52,6 +72,20 @@ Features Enabled:
 ============================================================
 MCP Server started and ready for connections
 ```
+
+Security notes:
+
+- If the server is exposed on the public Internet, treat the URL as a secret.
+- Prefer `GENESIS_MCP_REMOTE_SAFE=1` for read-only operation.
+- When you do not actively need project tools, consider `GENESIS_MCP_REMOTE_ULTRA_SAFE=1`.
+- Reduce `allowed_paths` in `config/mcp_settings.json` to the minimum required (avoid `"."` if
+  you only need a subset like `docs/`).
+
+“Private” access:
+
+There is no UI toggle that makes an MCP server truly private per user. If you need “only me”
+access for ChatGPT connector usage, you typically implement OAuth 2.1 (Auth Code + PKCE + token
+verification) and enforce it on the MCP endpoint.
 
 ### VSCode Integration
 

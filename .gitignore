@@ -127,6 +127,10 @@ build/
 tmp/*.txt
 tmp/*.md
 
+# Local scratch / canary tooling (never commit)
+tmp/
+tmp/**
+
 # Local binaries / tunnel helpers (do not commit)
 cloudflared*.exe
 cloudflared*.exe.exe
@@ -166,6 +170,10 @@ results/**/
 !results/archive/**
 !results/evaluation/
 !results/evaluation/**/*.json
+
+# Canary logs (append-only)
+results/evaluation/**/*.jsonl
+results/evaluation/**/*.ndjson
 
 # CI artifacts
 bandit-report.txt

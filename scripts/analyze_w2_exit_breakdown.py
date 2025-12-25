@@ -90,7 +90,7 @@ def analyze_trades_csv(path: Path) -> dict:
         "wins": wins,
         "losses": losses,
         "exit_reason_counts": dict(counts),
-        "net_by_exit_reason": [(k, v) for k, v in net_sorted],
+        "net_by_exit_reason": list(net_sorted),
         "top_losers": losers,
         "top_winners": winners,
     }

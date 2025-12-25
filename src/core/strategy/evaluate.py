@@ -219,27 +219,29 @@ def evaluate_pipeline(
     # Optional staleness check (timestamp deltas). If unavailable, stay neutral.
     ts = candles.get("timestamp") if isinstance(candles, dict) else None
     if isinstance(ts, list | tuple) and len(ts) >= 2:
-        try:
-            dt = float(ts[-1]) - float(ts[-2])
+        t1 = _safe_float(ts[-1])
+        t0 = _safe_float(ts[-2])
+        if t1 is not None and t0 is not None:
+            dt = float(t1) - float(t0)
             if dt > 0:
                 # Detect ms vs seconds by magnitude of delta.
                 dt_seconds = dt / 1000.0 if dt > 10_000 else dt
-                expected = None
+                expected: float | None = None
                 try:
                     from core.strategy.htf_selector import TIMEFRAME_TO_MINUTES
 
                     minutes = TIMEFRAME_TO_MINUTES.get(str(timeframe))
                     if minutes is not None:
-                        expected = float(minutes * 60)
+                        expected = float(minutes) * 60.0
                 except Exception:
                     expected = None
+
                 # If we can estimate expected, penalize if too stale.
-                if expected is not None and dt_seconds > expected * float(
-                    pipeline_cfg.get("stale_threshold_factor", 3.0) or 3.0
-                ):
-                    data_quality = min(data_quality, 0.5)
-        except Exception:
-            pass
+                if expected is not None:
+                    factor = _safe_float(pipeline_cfg.get("stale_threshold_factor"))
+                    factor = 3.0 if factor is None or factor <= 0 else float(factor)
+                    if dt_seconds > expected * factor:
+                        data_quality = min(data_quality, 0.5)
 
     conf_scaled, conf_meta = compute_confidence(
         probas,

@@ -43,6 +43,23 @@ Säkerställ canonical mode:
 - `GENESIS_PRECOMPUTE_FEATURES=1`
 - `GENESIS_RANDOM_SEED=42`
 
+### .env / auth (lokal körning)
+
+För live canary (API/paper) krävs en korrekt lokal `.env`.
+
+- `.env` ska vara **ignored/untracked** (ska aldrig committas). Kopiera in den uppdaterade filen lokalt från jobbdatorn.
+- Klistra aldrig in hemligheter i issue/PR/chat/loggar.
+
+Snabb smoke (lokalt) efter uppdaterad `.env`:
+
+- `/debug/auth` (ska maska nycklar)
+- `/auth/check`
+
+Om du tänker använda paper endpoints:
+
+- `/paper/estimate` (read-only)
+- `/paper/submit` (write) – se canary-policy nedan
+
 ### Backtest (control vs treatment)
 
 Kör samma symbol/timeframe och samma tidsfönster för både A och B.
@@ -142,6 +159,21 @@ Rekommenderad canary-policy (hög nivå):
 3. Full rollout om kriterier uppfylls
 
 Se `config/validation_config.json -> canary_deployment` för exakta default-trösklar.
+
+### Rekommenderat operativt upplägg (Phase-7e)
+
+- Kör A/B i **read-only evaluate** först (ingen submit), så att vi får loggar på signaler/sizing/quality.
+- Om signalerna ser rimliga ut: aktivera **paper submit endast för B** (treatment) under en begränsad period.
+- Notera att paper-flödet klampar icke-TEST symboler till TEST-par (säkerhetsregel).
+
+### Lokala canary-skript (ej committade)
+
+I den här fasen har vi lokala hjälpskript i `tmp/` (medvetet ej committade):
+
+- `tmp/canary_ab_one_shot.py` – en snabb A/B-check på senaste candles.
+- `tmp/paper_canary_ab_live.py` – loop som loggar beslut (och ev. kan skicka paper om du aktiverar det).
+
+Loggar/artifacts hamnar under `results/evaluation/` (JSONL), vilket gör det lätt att diff:a A vs B över tid.
 
 ## Snabb “done”-check
 

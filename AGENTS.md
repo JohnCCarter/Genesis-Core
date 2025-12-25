@@ -1,10 +1,24 @@
 # README for AI Agents (Local Development)
 
-## Last update: 2025-12-18
+## Last update: 2025-12-25
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
 
 ## 1. Deliverables (latest highlights: 2025-12-18)
+
+- **QUALITY V2 (SCOPED) + EXIT-SAFETY + A/B RUNBOOK + PAPER CANARY TOOLING (Phase-7e, 2025-12-25)**:
+
+  - **Goal**: Införa ett robust "context/market quality"-lager (Quality v2) utan att skapa exit-churn eller oavsiktliga entry-regressioner, samt operationalisera en kontrollerad A/B-canary.
+  - **Key changes**:
+    - Quality v2 som multiplicativ kvalitetsfaktor med clamp (`min_quality`).
+    - **Per-komponent scope** (gate vs sizing) för att separera entry-gating från position sizing-effekt.
+    - **Exit-stabilitet** via rå `confidence_exit` för CONF_DROP (undviker churn när quality dippar).
+    - Reproducerbar A/B-runbook med spikade windows + artifacts, och `pf_net` som primär jämförelse.
+  - **Config / docs**:
+    - Runbook: `docs/validation/AB_QUALITY_V2_PHASE7E.md`
+    - Treatment configs: `config/strategy/champions/tBTCUSD_1h_quality_v2_candidate_scoped.json` (B) och `..._scoped_relaxed_size.json` (C)
+  - **Ops note**:
+    - Live/paper canary kräver uppdaterad lokal `.env` (ignored/untracked). Kör auth smoke (`/debug/auth`, `/auth/check`) efter sync.
 
 - **EXPLORE→VALIDATE OPTUNA RECOVERY + PROMOTION SAFETY (2025-12-18)**:
 

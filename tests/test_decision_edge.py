@@ -126,3 +126,60 @@ def test_high_confidence_with_edge_requirement():
     assert a == "LONG"
     assert "EDGE_TOO_SMALL" not in m.get("reasons", [])
     assert "CONF_TOO_LOW" not in m.get("reasons", [])
+
+
+def test_sizing_prefers_scaled_confidence_when_present():
+    cfg = {
+        "thresholds": {
+            "entry_conf_overall": 0.75,
+            "min_edge": 0.0,
+        },
+        "risk": {
+            "risk_map": [
+                [0.50, 0.01],
+                [0.80, 0.02],
+            ]
+        },
+    }
+
+    # Entry gate should pass on raw buy=0.80, but sizing should use buy_scaled=0.55.
+    a, m = decide(
+        {},
+        probas={"buy": 0.85, "sell": 0.50},
+        confidence={"buy": 0.80, "sell": 0.10, "buy_scaled": 0.55},
+        regime="balanced",
+        state={},
+        risk_ctx={},
+        cfg=cfg,
+    )
+    assert a == "LONG"
+    # Base size for raw 0.80 would be 0.02, then scaled by 0.55/0.80.
+    assert abs(float(m.get("size") or 0.0) - 0.01375) < 1e-9
+
+
+def test_entry_gate_does_not_use_scaled_confidence():
+    cfg = {
+        "thresholds": {
+            "entry_conf_overall": 0.75,
+            "min_edge": 0.0,
+        },
+        "risk": {
+            "risk_map": [
+                [0.50, 0.01],
+                [0.80, 0.02],
+            ]
+        },
+    }
+
+    # Raw buy=0.70 is below the threshold; scaled must NOT allow entry.
+    a, m = decide(
+        {},
+        probas={"buy": 0.85, "sell": 0.50},
+        confidence={"buy": 0.70, "sell": 0.10, "buy_scaled": 0.95},
+        regime="balanced",
+        state={},
+        risk_ctx={},
+        cfg=cfg,
+    )
+    assert a == "NONE"
+    assert "CONF_TOO_LOW" in (m.get("reasons") or [])

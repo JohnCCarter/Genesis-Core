@@ -1020,21 +1020,50 @@ def decide(
         }
 
     # 10) Sizing (baserat på risk_map och vald confidence)
+    #
+    # Default: use the same confidence used for entry gating.
+    # If a scaled confidence view exists (e.g. quality v2 sizing-only mode),
+    # derive a size scale from (scaled/raw) and apply it to the chosen ladder size.
     risk_map = (cfg.get("risk") or {}).get("risk_map", [])
-    conf_val = c_buy if candidate == "LONG" else c_sell
-    size = 0.0
+    conf_val_gate = c_buy if candidate == "LONG" else c_sell
+
+    # Choose a base size from the ladder using *gating confidence*.
+    size_base = 0.0
     try:
         for thr_v, sz in sorted(risk_map, key=lambda x: float(x[0])):
-            if conf_val >= float(thr_v):
-                size = float(sz)
+            if conf_val_gate >= float(thr_v):
+                size_base = float(sz)
     except Exception:
-        size = 0.0
+        size_base = 0.0
+
+    # Apply a (0..1] scale if a scaled confidence view exists.
+    size_scale = 1.0
+    try:
+        if conf_val_gate > 0.0:
+            if candidate == "LONG" and "buy_scaled" in confidence:
+                c_scaled = float(confidence.get("buy_scaled") or conf_val_gate)
+                size_scale = c_scaled / conf_val_gate
+            elif candidate == "SHORT" and "sell_scaled" in confidence:
+                c_scaled = float(confidence.get("sell_scaled") or conf_val_gate)
+                size_scale = c_scaled / conf_val_gate
+    except Exception:
+        size_scale = 1.0
+    if size_scale < 0.0:
+        size_scale = 0.0
+    if size_scale > 1.0:
+        size_scale = 1.0
+
+    size = float(size_base * size_scale)
+
+    state_out["confidence_gate"] = conf_val_gate
+    state_out["size_base"] = size_base
+    state_out["size_scale"] = size_scale
 
     if size <= 0.0:
         _log_decision_event(
             "SIZE_ZERO",
             candidate=candidate,
-            confidence=conf_val,
+            confidence=conf_val_gate,
             risk_map=risk_map,
         )
 
@@ -1068,7 +1097,7 @@ def decide(
         "ENTRY",
         candidate=candidate,
         size=size,
-        confidence=conf_val,
+        confidence=conf_val_gate,
         cooldown=state_out.get("cooldown_remaining"),
     )
     return candidate, meta

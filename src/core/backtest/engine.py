@@ -996,7 +996,7 @@ class BacktestEngine:
             return "EMERGENCY_TP"
 
         # Confidence drop (use direction-aware confidence if dict)
-        conf_block = result.get("confidence", 1.0)
+        conf_block = result.get("confidence_exit", result.get("confidence", 1.0))
         if isinstance(conf_block, dict):
             # Prefer confidence in the direction of the open position
             if position.side == "LONG":

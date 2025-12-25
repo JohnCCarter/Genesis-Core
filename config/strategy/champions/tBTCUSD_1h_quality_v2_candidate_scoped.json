@@ -1,0 +1,177 @@
+{
+  "created_at": "2025-12-25T18:22:00.000000",
+  "run_id": "candidate_quality_v2_scoped_20251225",
+  "symbol": "tBTCUSD",
+  "timeframe": "1h",
+  "metadata": {
+    "note": "Candidate config for A/B rollout: quality v2 enabled with per-component scopes. data_quality+spread affect gating; atr+volume affect sizing only (to mitigate W2 regression while keeping W1/W3 gating benefits).",
+    "base_champion": "config/strategy/champions/tBTCUSD_1h.json",
+    "quality_model": "v2",
+    "quality_scopes": {
+      "data_quality": "both",
+      "spread": "both",
+      "atr": "sizing",
+      "volume": "sizing"
+    }
+  },
+  "parameters": {
+    "thresholds": {
+      "entry_conf_overall": 0.24,
+      "regime_proba": {
+        "balanced": 0.46,
+        "bull": 0.5,
+        "bear": 0.44,
+        "ranging": 0.46
+      },
+      "min_edge": 0.01,
+      "signal_adaptation": {
+        "atr_period": 28,
+        "zones": {
+          "low": {
+            "entry_conf_overall": 0.25,
+            "regime_proba": {
+              "balanced": 0.36,
+              "bull": 0.5,
+              "bear": 0.32,
+              "ranging": 0.52
+            }
+          },
+          "mid": {
+            "entry_conf_overall": 0.32,
+            "regime_proba": {
+              "balanced": 0.44,
+              "bull": 0.56,
+              "bear": 0.4,
+              "ranging": 0.6
+            }
+          },
+          "high": {
+            "entry_conf_overall": 0.38,
+            "regime_proba": {
+              "balanced": 0.56,
+              "bull": 0.6,
+              "bear": 0.5,
+              "ranging": 0.64
+            }
+          }
+        }
+      }
+    },
+    "gates": {
+      "hysteresis_steps": 3,
+      "cooldown_bars": 2
+    },
+    "risk": {
+      "risk_map": [
+        [0.48, 0.01],
+        [0.59, 0.015],
+        [0.7, 0.07]
+      ]
+    },
+    "ev": {
+      "R_default": 1.8
+    },
+    "exit": {
+      "enabled": true,
+      "exit_conf_threshold": 0.42,
+      "max_hold_bars": 12,
+      "trailing_stop_enabled": true,
+      "trailing_stop_pct": 0.015,
+      "stop_loss_pct": 0.02,
+      "take_profit_pct": 0.05,
+      "regime_aware_exits": true
+    },
+    "multi_timeframe": {
+      "use_htf_block": true,
+      "allow_ltf_override": true,
+      "ltf_override_threshold": 0.36,
+      "ltf_override_adaptive": {
+        "enabled": true,
+        "window": 120,
+        "percentile": 0.85,
+        "min_history": 30
+      },
+      "htf_selector": {
+        "mode": "fixed",
+        "fallback_timeframe": "1D",
+        "per_timeframe": {
+          "1h": {
+            "timeframe": "1D"
+          },
+          "6h": {
+            "timeframe": "1D"
+          }
+        }
+      }
+    },
+    "warmup_bars": 150,
+    "htf_exit_config": {
+      "enable_partials": true,
+      "enable_trailing": true,
+      "enable_structure_breaks": true,
+      "partial_1_pct": 0.6,
+      "partial_2_pct": 0.5,
+      "fib_threshold_atr": 0.7,
+      "trail_atr_multiplier": 2.5,
+      "swing_update_strategy": "fixed"
+    },
+    "htf_fib": {
+      "entry": {
+        "enabled": true,
+        "tolerance_atr": 4.5,
+        "long_max_level": -0.05,
+        "short_min_level": -0.25
+      }
+    },
+    "ltf_fib": {
+      "entry": {
+        "enabled": true,
+        "tolerance_atr": 1.4,
+        "long_max_level": 0.2,
+        "short_min_level": 0.35
+      }
+    },
+    "quality": {
+      "enabled": true,
+      "clamp": {
+        "min_quality": 0.2
+      },
+      "pipeline": {
+        "volume_window": 50,
+        "volume_cap_ratio": 3.0,
+        "stale_threshold_factor": 3.0,
+        "spread_bp": null
+      },
+      "components": {
+        "data_quality": {
+          "enabled": true,
+          "scope": "both",
+          "floor": 0.7,
+          "exponent": 1.0
+        },
+        "spread": {
+          "enabled": true,
+          "scope": "both",
+          "ref_bp": 5.0,
+          "max_bp": 50.0,
+          "floor": 0.7,
+          "exponent": 1.0
+        },
+        "atr": {
+          "enabled": true,
+          "scope": "sizing",
+          "ref_pct": 0.008,
+          "max_pct": 0.04,
+          "floor": 0.7,
+          "exponent": 1.0
+        },
+        "volume": {
+          "enabled": true,
+          "scope": "sizing",
+          "floor": 0.7,
+          "exponent": 1.0
+        }
+      }
+    }
+  }
+}

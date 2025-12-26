@@ -166,6 +166,22 @@ class HTFFibonacciExitEngine:
         if self.swing_strategy != SwingUpdateStrategy.FIXED and htf_fib_context:
             self._check_swing_updates(position, htf_fib_context, current_bar, indicators)
 
+            # If the swing was updated, we must refresh and re-validate the frozen context.
+            if position.exit_ctx:
+                fib_levels = position.exit_ctx.get("fib")
+                swing_bounds = position.exit_ctx.get("swing_bounds")
+
+                if not fib_levels or not swing_bounds:
+                    return self._fallback_exits(position, current_bar, indicators)
+
+                lo, hi = swing_bounds
+                if hi <= lo:
+                    return self._fallback_exits(position, current_bar, indicators)
+
+                levels = list(fib_levels.values())
+                if not levels or min(levels) < lo - 1e-9 or max(levels) > hi + 1e-9:
+                    return self._fallback_exits(position, current_bar, indicators)
+
         # Step 3: Reachability guard + tydlig orsak
         nearest = min(abs(current_price - v) for v in fib_levels.values()) if fib_levels else 999.0
         if nearest > 8 * max(atr, 1e-9):
@@ -599,12 +615,21 @@ class HTFFibonacciExitEngine:
             indicators: Technical indicators
         """
         htf_levels = htf_fib_context.get("levels", {})
-        current_price = indicators.get("ema50", 0.0)  # Use EMA as reference price
+        current_price = indicators.get("ema50", position.entry_price)  # Use EMA as reference price
         current_atr = indicators.get("atr", 100.0)
 
-        # Extract swing from HTF context
-        swing_high = htf_levels.get("htf_fib_100", 0.0)  # 1.0 level = swing high
-        swing_low = htf_levels.get("htf_fib_0", 0.0)  # 0.0 level = swing low
+        # Extract swing from HTF context (producer schema)
+        swing_high = htf_fib_context.get("swing_high")
+        swing_low = htf_fib_context.get("swing_low")
+
+        # Backward-compat: if someone passed a full-spectrum levels dict (0.0..1.0), infer bounds.
+        if (swing_high is None or swing_low is None) and isinstance(htf_levels, dict):
+            if 1.0 in htf_levels and 0.0 in htf_levels:
+                swing_high = htf_levels.get(1.0)
+                swing_low = htf_levels.get(0.0)
+
+        swing_high = float(swing_high) if swing_high is not None else 0.0
+        swing_low = float(swing_low) if swing_low is not None else 0.0
 
         if swing_high <= swing_low or swing_high <= 0 or swing_low <= 0:
             # Invalid swing - use fallback levels
@@ -633,7 +658,9 @@ class HTFFibonacciExitEngine:
             position.exit_fib_levels = exit_levels
             position.exit_swing_high = swing_high
             position.exit_swing_low = swing_low
-            position.exit_swing_timestamp = htf_fib_context.get("timestamp")
+            position.exit_swing_timestamp = htf_fib_context.get(
+                "last_update"
+            ) or htf_fib_context.get("timestamp")
             position.exit_swing_updated = 0
 
     def _check_swing_updates(
@@ -656,8 +683,17 @@ class HTFFibonacciExitEngine:
             return
 
         htf_levels = htf_fib_context.get("levels", {})
-        new_swing_high = htf_levels.get("htf_fib_100", 0.0)
-        new_swing_low = htf_levels.get("htf_fib_0", 0.0)
+        new_swing_high = htf_fib_context.get("swing_high")
+        new_swing_low = htf_fib_context.get("swing_low")
+
+        # Backward-compat: infer bounds if full-spectrum levels dict was passed.
+        if (new_swing_high is None or new_swing_low is None) and isinstance(htf_levels, dict):
+            if 1.0 in htf_levels and 0.0 in htf_levels:
+                new_swing_high = htf_levels.get(1.0)
+                new_swing_low = htf_levels.get(0.0)
+
+        new_swing_high = float(new_swing_high) if new_swing_high is not None else 0.0
+        new_swing_low = float(new_swing_low) if new_swing_low is not None else 0.0
 
         if new_swing_high <= new_swing_low or new_swing_high <= 0:
             return
@@ -667,15 +703,18 @@ class HTFFibonacciExitEngine:
             "swing_high": position.exit_swing_high,
             "swing_low": position.exit_swing_low,
             "swing_timestamp": position.exit_swing_timestamp,
-            "bars_since_swing": position.exit_swing_updated,
+            # NOTE: exit_swing_updated tracks update count, not bars.
+            "bars_since_swing": htf_fib_context.get("swing_age_bars", 0),
             "is_valid": True,
         }
 
         new_swing = {
             "swing_high": new_swing_high,
             "swing_low": new_swing_low,
-            "swing_timestamp": htf_fib_context.get("timestamp"),
-            "bars_since_swing": 0,
+            "swing_timestamp": htf_fib_context.get("last_update")
+            or htf_fib_context.get("timestamp")
+            or current_bar.get("timestamp"),
+            "bars_since_swing": int(htf_fib_context.get("swing_age_bars", 0)),
             "is_valid": True,
         }
 
@@ -693,7 +732,7 @@ class HTFFibonacciExitEngine:
 
             position.exit_swing_high = new_swing_high
             position.exit_swing_low = new_swing_low
-            position.exit_swing_timestamp = htf_fib_context.get("timestamp")
+            position.exit_swing_timestamp = new_swing.get("swing_timestamp")
             position.exit_swing_updated += 1
 
             # Recalculate exit levels
@@ -701,10 +740,18 @@ class HTFFibonacciExitEngine:
                 side=position.side,
                 swing_high=new_swing_high,
                 swing_low=new_swing_low,
-                levels=[0.382, 0.5, 0.618],
+                levels=[0.786, 0.618, 0.5, 0.382],
             )
 
             position.exit_fib_levels = new_exit_levels
+
+            # Keep the frozen exit context consistent with the strategy.
+            # For FIXED, this function is never called; for DYNAMIC/HYBRID we update
+            # exit_ctx so subsequent exit checks actually use the new levels.
+            if position.exit_ctx is not None:
+                position.exit_ctx["fib"] = dict(new_exit_levels)
+                position.exit_ctx["swing_bounds"] = (new_swing_low, new_swing_high)
+                position.exit_ctx["swing_id"] = f"swing_update_{position.exit_swing_updated}"
 
             # Reset triggered exits (new swing = fresh opportunity)
             position_id = f"{position.symbol}_{position.entry_time.isoformat()}"

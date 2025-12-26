@@ -7,6 +7,7 @@ Maps 1D Fibonacci levels to LTF bars (1h/30m) for structure-aware exits.
 
 import hashlib
 import json
+import math
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
@@ -259,22 +260,23 @@ def compute_htf_fibonacci_mapping(
     # Step 1: Compute HTF Fibonacci levels
     htf_fib_df = compute_htf_fibonacci_levels(htf_candles, config)
 
-    # Step 2: Project to LTF bars with AS-OF semantik (OPTIMIZED)
-    # Use merge_asof for efficient time-series join (100x faster than iterrows)
+    # Step 2: Project to LTF bars with AS-OF semantics.
+    # Use merge_asof for efficient time-series join.
     ltf_df = ltf_candles[["timestamp"]].copy()
 
-    # Perform asof merge (finds latest HTF data <= each LTF timestamp)
+    # Preserve the matched HTF timestamp to compute age correctly.
+    htf_df = htf_fib_df.rename(columns={"timestamp": "htf_timestamp"}).copy()
+
     merged = pd.merge_asof(
         ltf_df.sort_values("timestamp"),
-        htf_fib_df.sort_values("timestamp"),
-        on="timestamp",
+        htf_df.sort_values("htf_timestamp"),
+        left_on="timestamp",
+        right_on="htf_timestamp",
         direction="backward",
     )
 
-    # Calculate data age in hours (vectorized)
     merged["htf_data_age_hours"] = (
-        (merged["timestamp"] - htf_fib_df.loc[htf_fib_df.index[0], "timestamp"]).dt.total_seconds()
-        / 3600
+        (merged["timestamp"] - merged["htf_timestamp"]).dt.total_seconds() / 3600
     ).where(merged["htf_fib_0618"].notna(), None)
 
     return merged
@@ -368,9 +370,25 @@ def get_htf_fibonacci_context(
     cache_entry = _htf_context_cache.setdefault(cache_key, {})
     fib_df = cache_entry.get("fib_df")
 
-    # Only provide HTF context for LTF timeframes
-    if timeframe not in ["1h", "30m", "6h", "15m"]:
-        return {"available": False, "reason": "HTF_NOT_APPLICABLE"}
+    # Normalize/alias the input timeframe to avoid surprising "NOT_APPLICABLE" outcomes.
+    tf_raw = "" if timeframe is None else str(timeframe)
+    tf_norm = tf_raw.strip().lower()
+    tf_aliases = {
+        "60m": "1h",
+        "1hr": "1h",
+        "1hour": "1h",
+        "30min": "30m",
+        "15min": "15m",
+        "360m": "6h",
+    }
+    tf_norm = tf_aliases.get(tf_norm, tf_norm)
+
+    if not tf_norm:
+        return {"available": False, "reason": "HTF_TIMEFRAME_MISSING"}
+
+    # Only provide HTF context for LTF timeframes.
+    if tf_norm not in ["1h", "30m", "6h", "15m"]:
+        return {"available": False, "reason": "HTF_NOT_APPLICABLE", "timeframe": tf_norm}
 
     # Load or reuse cached HTF fib dataframe
     if fib_df is None:
@@ -387,17 +405,56 @@ def get_htf_fibonacci_context(
         return {"available": False, "reason": "NO_HTF_SWINGS"}
 
     try:
+        # Safety: never select HTF context without an as-of timestamp.
+        # Otherwise we'd implicitly use the last HTF row (lookahead) when callers
+        # pass candles without timestamps.
+        if reference_ts is None:
+            return {
+                "available": False,
+                "reason": "HTF_MISSING_REFERENCE_TS",
+                "htf_timeframe": htf_timeframe,
+            }
+
         if reference_ts is not None:
             ref_rows = fib_df[fib_df["timestamp"] <= reference_ts]
             if ref_rows.empty:
                 return {"available": False, "reason": "HTF_NO_HISTORY"}
             latest_htf = ref_rows.iloc[-1]
-        else:
-            latest_htf = fib_df.iloc[-1]
 
-        # Check if levels are valid
-        if pd.isna(latest_htf["htf_fib_0618"]):
-            return {"available": False, "reason": "NO_HTF_DATA"}
+        # Validate that all required levels are present and finite.
+        required_cols = {
+            0.382: "htf_fib_0382",
+            0.5: "htf_fib_05",
+            0.618: "htf_fib_0618",
+            0.786: "htf_fib_0786",
+        }
+        levels: dict[float, float] = {}
+        missing_levels: list[float] = []
+        for lvl, col in required_cols.items():
+            try:
+                raw = latest_htf[col]
+            except Exception:
+                raw = None
+            if raw is None or pd.isna(raw):
+                missing_levels.append(float(lvl))
+                continue
+            try:
+                val = float(raw)
+            except Exception:
+                missing_levels.append(float(lvl))
+                continue
+            if not math.isfinite(val):
+                missing_levels.append(float(lvl))
+                continue
+            levels[float(lvl)] = float(val)
+
+        if missing_levels:
+            return {
+                "available": False,
+                "reason": "HTF_LEVELS_INCOMPLETE",
+                "missing_levels": sorted(set(missing_levels)),
+                "htf_timeframe": htf_timeframe,
+            }
 
         last_htf_timestamp = _normalize_timestamp(latest_htf["timestamp"])
         data_age_hours = _compute_age_hours(last_htf_timestamp, reference_ts)
@@ -406,16 +463,44 @@ def get_htf_fibonacci_context(
             return {"available": False, "reason": "HTF_DATA_STALE"}
 
         # Return HTF context
+        swing_high = float(latest_htf["htf_swing_high"])
+        swing_low = float(latest_htf["htf_swing_low"])
+
+        # Guard: swing bounds must be sane, otherwise downstream exit-context init will be invalid.
+        # This can happen when "latest swing high" and "latest swing low" are selected independently.
+        if pd.isna(swing_high) or pd.isna(swing_low):
+            return {
+                "available": False,
+                "reason": "HTF_SWING_BOUNDS_NAN",
+                "htf_timeframe": htf_timeframe,
+            }
+        if swing_high <= swing_low:
+            return {
+                "available": False,
+                "reason": "HTF_INVALID_SWING_BOUNDS",
+                "htf_timeframe": htf_timeframe,
+                "swing_high": float(swing_high),
+                "swing_low": float(swing_low),
+            }
+
+        # Sanity: levels should live within the swing bounds (with tiny epsilon).
+        eps = 1e-9
+        if levels and (
+            min(levels.values()) < swing_low - eps or max(levels.values()) > swing_high + eps
+        ):
+            return {
+                "available": False,
+                "reason": "HTF_LEVELS_OUT_OF_BOUNDS",
+                "htf_timeframe": htf_timeframe,
+                "swing_high": float(swing_high),
+                "swing_low": float(swing_low),
+            }
+
         htf_context = {
             "available": True,
-            "levels": {
-                0.382: float(latest_htf["htf_fib_0382"]),
-                0.5: float(latest_htf["htf_fib_05"]),
-                0.618: float(latest_htf["htf_fib_0618"]),
-                0.786: float(latest_htf["htf_fib_0786"]),
-            },
-            "swing_high": float(latest_htf["htf_swing_high"]),
-            "swing_low": float(latest_htf["htf_swing_low"]),
+            "levels": levels,
+            "swing_high": swing_high,
+            "swing_low": swing_low,
             "swing_age_bars": int(latest_htf["htf_swing_age_bars"]),
             "data_age_hours": float(data_age_hours),
             "htf_timeframe": htf_timeframe,

@@ -21,6 +21,31 @@
 
 ---
 
+## Update (2025-12-26): Context integrity + "Invalid swing" hardening
+
+HTF-context är nu **avsiktligt strikt** och kan avvisa HTF-data med en tydlig `reason` (i stället för att producera otydliga
+"Invalid swing"-varningar).
+
+Viktiga garantier efter 2025-12-26:
+
+- **No-lookahead (AS-OF)**: HTF-context returneras inte om `reference_ts` saknas.
+- **Timeframe-normalisering**: alias som `60m` normaliseras till `1h` för konsekvent routing.
+- **Levels/bounds sanity**: kräver nivåerna 0.382/0.5/0.618/0.786 och att nivåerna ligger inom swing-bounds.
+- **Consumer schema alignment**: exit engine läser producer-schemat (`swing_high/swing_low`, `last_update`) och håller frusen
+  `exit_ctx` konsekvent även efter swing updates (DYNAMIC/HYBRID).
+- **Mapping age fix**: `htf_data_age_hours` beräknas från matchad HTF-timestamp (AS-OF merge).
+
+Vanliga `reason`-koder:
+
+- `HTF_MISSING_REFERENCE_TS`
+- `HTF_LEVELS_INCOMPLETE` (inkl. `missing_levels`)
+- `HTF_INVALID_SWING_BOUNDS`
+- `HTF_LEVELS_OUT_OF_BOUNDS`
+
+Regressionstester: `tests/test_htf_fibonacci_*` och `tests/test_htf_exit_engine_*`.
+
+---
+
 ## Architecture
 
 ```
@@ -36,14 +61,14 @@
 
 ### Long Positions
 
-| Event | Condition | Action |
-|-------|-----------|--------|
-| TP1 | Price ≈ 0.382 (HTF) | Close 40%, Stop→BE |
-| TP2 | Price ≈ 0.5 (HTF) | Close 30% |
-| Trail | Base: EMA50 - 1.3×ATR | Update every bar |
-| Trail Promotion | Price > 0.618 | Lock trail at 0.5 Fib |
-| Structure Break | Price < 0.618 & slope < 0 | Full exit |
-| Fallback | HTF unavailable | EMA-based trail |
+| Event           | Condition                 | Action                |
+| --------------- | ------------------------- | --------------------- |
+| TP1             | Price ≈ 0.382 (HTF)       | Close 40%, Stop→BE    |
+| TP2             | Price ≈ 0.5 (HTF)         | Close 30%             |
+| Trail           | Base: EMA50 - 1.3×ATR     | Update every bar      |
+| Trail Promotion | Price > 0.618             | Lock trail at 0.5 Fib |
+| Structure Break | Price < 0.618 & slope < 0 | Full exit             |
+| Fallback        | HTF unavailable           | EMA-based trail       |
 
 **Proximity Detection:**
 
@@ -151,24 +176,29 @@ htf_exit_config = {
 ### Components
 
 1. **Invocation Assurance**
+
    - Exit engine runs every bar when position open
    - Verified with debug logging
 
 2. **HTF-Swing Validation**
+
    - `_validate_fib_window()` checks swing order
    - Ensures Fib levels within swing bounds
 
 3. **Reachability Check**
+
    - `_fib_reachability_flag()` uses 8 ATR envelope
    - Prevents using stale/irrelevant HTF swings
    - Switches to fallback if out of reach
 
 4. **Adaptive Proximity**
+
    - `_adaptive_thresholds()` combines ATR + %
    - Widens thresholds if price far from all levels
    - Prevents missed exits on stretched markets
 
 5. **State Protection**
+
    - `triggered_exits` dict tracks executed exits
    - Idempotent (same exit won't trigger twice)
    - Position ID-based tracking
@@ -280,11 +310,13 @@ Storage Structure:
 ### Unit Tests
 
 1. **`scripts/test_htf_fibonacci_mapping.py`**
+
    - HTF Fibonacci calculation
    - AS-OF semantics verification
    - Swing detection validation
 
 2. **`scripts/test_partial_exit_infrastructure.py`**
+
    - Position tracking
    - PnL calculations
    - Partial exit mechanics
@@ -297,6 +329,7 @@ Storage Structure:
 ### Debug Scripts
 
 4. **`scripts/debug_htf_exit_usage.py`**
+
    - Real backtest with HTF exits
    - Verification of partial exits
    - System behavior validation
@@ -391,6 +424,7 @@ for trade in results["trades"]:
 ### Immediate
 
 1. **Run Full Ablation Study**
+
    - Compare HTF_FULL vs baseline
    - Test HTF_PARTIAL_ONLY and HTF_TRAIL_ONLY
    - Statistical significance testing
@@ -403,6 +437,7 @@ for trade in results["trades"]:
 ### Short-Term
 
 3. **Multi-Symbol Validation**
+
    - Test on tETHUSD
    - Compare behavior across instruments
 
@@ -413,6 +448,7 @@ for trade in results["trades"]:
 ### Long-Term
 
 5. **Advanced Features**
+
    - Volume-adaptive thresholds
    - Confluence filters (multiple HTF agreement)
    - Dynamic partial percentages based on regime
@@ -495,6 +531,6 @@ for trade in results["trades"]:
 
 ---
 
-**Last Updated:** 2025-10-13
+**Last Updated:** 2025-12-26
 **Version:** 1.0
 **Status:** ✅ PRODUCTION READY

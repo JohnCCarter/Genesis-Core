@@ -318,7 +318,12 @@ def main():
             except Exception as exc:  # ValidationError from Pydantic
                 print(f"\n[FAILED] Ogiltig override-config: {exc}")
                 return 1
+            # IMPORTANT: Use the validated/normalized config as the effective config.
+            # Otherwise defaults and schema coercions (e.g. FibEntryConfig.enabled) will not
+            # be applied, and backtest results can silently depend on whatever champion config
+            # happens to be active.
             cfg = cfg_obj.model_dump()
+            merged_cfg = cfg
             if not is_complete_champion:
                 _summarize_runtime("runtime+override", cfg)
         else:

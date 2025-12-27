@@ -1,10 +1,26 @@
 # README for AI Agents (Local Development)
 
-## Last update: 2025-12-25
+## Last update: 2025-12-26
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
 
 ## 1. Deliverables (latest highlights: 2025-12-18)
+
+- **HTF FIB CONTEXT INTEGRITY + INVALID SWING HARDENING + OPTUNA SMOKE SAFETY (2025-12-26)**:
+
+  - **Goal**: Eliminera "Invalid swing"-spam i HTF-exitflödet genom att göra HTF-context strikt, schema-kompatibelt och fritt från implicit lookahead.
+  - **Key changes**:
+    - **Strict AS-OF / no-lookahead**: HTF-context returneras inte om `reference_ts` saknas (undviker att "ta senaste" HTF-row).
+    - **Timeframe-normalisering + alias** (t.ex. `60m` → `1h`) och tydliga `reason`-koder när HTF inte är applicerbart.
+    - **Levels completeness + bounds sanity**: kräver nivåerna 0.382/0.5/0.618/0.786 och att nivåer ligger inom swing-bounds.
+    - **Consumer hardening**: `htf_exit_engine.py` läser producer-schemat (`swing_high/swing_low`, `last_update`) och håller frusen `exit_ctx` konsekvent efter swing updates (DYNAMIC/HYBRID).
+    - **Mapping age fix**: `htf_data_age_hours` beräknas från matchad HTF-timestamp (AS-OF merge), inte från första HTF-raden.
+  - **Config / tests**:
+    - Optuna smoke: `config/optimizer/tBTCUSD_1h_optuna_smoke_htf_fix.yaml` (promotion avstängd).
+    - Regression tests: flera nya `tests/test_htf_fibonacci_*` och `tests/test_htf_exit_engine_*` för edge cases, schema och swing update.
+  - **Verification**:
+    - `pytest -q` grönt.
+    - Optuna smoke (3 trials) körd lokalt; bekräftat: **promotion avstängd via config**.
 
 - **QUALITY V2 (SCOPED) + EXIT-SAFETY + A/B RUNBOOK + PAPER CANARY TOOLING (Phase-7e, 2025-12-25)**:
 

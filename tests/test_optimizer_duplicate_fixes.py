@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -318,6 +319,79 @@ def test_best_trial_payload_saved_on_constraints_soft_fail(tmp_path):
 
     # Regression check: best_trial.json should be written even if all trials are soft-fails.
     assert (run_dir / "best_trial.json").exists(), "Expected best_trial.json to be written"
+
+
+def test_abort_heuristic_payload_not_double_penalized(tmp_path):
+    """Abort-heuristic penalties should not be further reduced by the soft-constraints penalty.
+
+    Regression: aborted trials used to be scored as (penalty - CONSTRAINT_SOFT_PENALTY), e.g.
+    -500 -> -650, because abort payloads set constraints.ok=False.
+    """
+
+    pytest.importorskip("optuna")
+
+    from core.optimizer.runner import _run_optuna
+
+    run_dir = tmp_path / "run"
+    run_dir.mkdir(parents=True, exist_ok=True)
+
+    study_config = {
+        "storage": f"sqlite:///{(tmp_path / 'optuna_abort_heuristic.db').as_posix()}",
+        "study_name": "test_abort_heuristic_no_double_penalty",
+        "direction": "maximize",
+        "sampler": {"name": "random", "kwargs": {"seed": 42}},
+        "pruner": {"name": "none", "kwargs": {}},
+        "timeout_seconds": None,
+        "dedup_guard_enabled": False,
+    }
+
+    parameters_spec = {"foo": {"type": "fixed", "value": 1}}
+
+    def make_trial(trial_number, parameters, optuna_context=None):
+        return {
+            "trial_id": f"trial_{trial_number:03d}",
+            "parameters": parameters,
+            "score": {"score": -500.0, "metrics": {"num_trades": 0}, "hard_failures": []},
+            "abort_reason": "zero_trades_high_thresholds",
+            "abort_details": "entry=0.240, low_zone=0.320, min_edge=0.0100",
+            "constraints": {"ok": False, "reasons": ["aborted_by_heuristic"]},
+        }
+
+    _run_optuna(
+        study_config=study_config,
+        parameters_spec=parameters_spec,
+        make_trial=make_trial,
+        run_dir=run_dir,
+        run_id="run_test_abort_heuristic",
+        existing_trials={},
+        max_trials=1,
+        concurrency=1,
+        allow_resume=False,
+    )
+
+    run_meta = json.loads((run_dir / "run_meta.json").read_text(encoding="utf-8"))
+    best_value = run_meta.get("optuna", {}).get("best_value")
+    assert best_value == pytest.approx(-500.0)
+
+
+def test_objective_policy_expected_value_soft_constraints_penalty() -> None:
+    """Sanity-check the expected objective policy used by audit scripts.
+
+    This does not depend on Optuna; it verifies the soft-constraints arithmetic
+    stays consistent with the objective implementation.
+    """
+
+    from scripts.audit_optuna_objective_parity import _expected_objective_value
+
+    payload = {
+        "trial_id": "trial_001",
+        "constraints": {"ok": False, "reasons": ["min_trades:0<20"]},
+        "score": {"score": 123.0, "metrics": {"num_trades": 0}, "hard_failures": []},
+    }
+
+    expected, label = _expected_objective_value(payload, constraint_soft_penalty=150.0)
+    assert label == "constraints:soft_fail"
+    assert expected == pytest.approx(123.0 - 150.0)
 
 
 @pytest.mark.skipif(not OPTUNA_AVAILABLE, reason="Optuna not installed")

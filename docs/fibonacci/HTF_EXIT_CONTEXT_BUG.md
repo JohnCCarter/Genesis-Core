@@ -59,6 +59,7 @@
 ## Åtgärd i koden
 
 1. **`features_asof.py`** – utökad precompute-path:
+
    ```python
    feature_row = features_df.iloc[now_index]
    features = { ... }
@@ -91,6 +92,7 @@
        "htf_fibonacci_context": htf_fib_context,
    }
    ```
+
 2. Säkerhetskontroll: Om kolumner saknas eller innehåller NaN flaggar vi `available=False`, så exitmotorn faller tillbaka till traditionella exits (utan crash).
 3. Ingen ändring i `htf_exit_engine.py` behövdes efter att HTF-kontexten levererades korrekt. (Tidigare debug-utskrifter togs bort.)
 
@@ -137,3 +139,21 @@
 - Utan korrekt `htf_fibonacci_context` blev exitmotorn blind och kraschade på varje bar.
 - Med fixen får vi både stabil drift och möjlighet att reproducera historiska +14 % på 6h.
 - Dokumentationen här ska fungera som referens vid framtida regressioner och när vi kör full pipeline på v17/v18.
+
+---
+
+## Uppföljning (2025-12-26): "Invalid swing" hardening och strict AS-OF
+
+Efter att HTF-context-metadata-buggen var löst hittades en separat felklass i HTF-exitflödet: återkommande
+"Invalid swing"-varningar (ofta p.g.a. osunda bounds eller implicit lookahead när `reference_ts` saknades).
+
+Åtgärder (kort):
+
+- HTF-context (`get_htf_fibonacci_context`) är nu strikt AS-OF/no-lookahead och returnerar inte context utan `reference_ts`.
+- Nivåer/bounds valideras hårdare (krav på 0.382/0.5/0.618/0.786, finite bounds, nivåer inom bounds).
+- Exit engine alignas mot producer-schemat (`swing_high/swing_low`, `last_update`) och uppdaterar frusen `exit_ctx`
+  konsekvent efter swing updates.
+
+I stället för att jaga "Invalid swing" i loggar: börja med `reason` i HTF-context (t.ex. `HTF_LEVELS_INCOMPLETE`,
+`HTF_INVALID_SWING_BOUNDS`, `HTF_MISSING_REFERENCE_TS`). Regressionstester finns i `tests/test_htf_fibonacci_*` och
+`tests/test_htf_exit_engine_*`.

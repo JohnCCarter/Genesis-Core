@@ -12,6 +12,7 @@
 **Current Problem**: Fixed exits (TP 5%, SL 2%, TIME 20 bars) ignore market structure and kill winners early.
 
 **Solution**: **HTF-Fibonacci-driven exits** that respect market geometry:
+
 - Base exits on **HTF swing structures** (1D), not "entry→current"
 - Use **fraktal hierarchy**: 1D > 6h > 1h (global beats local)
 - **Partial exits** at Fibonacci confluence zones (0.382, 0.5)
@@ -19,6 +20,7 @@
 - **AS-OF semantics** (no lookahead bias)
 
 **Expected Impact**:
+
 - 30m: -12.21% → -5% to +5% (stop killing edge with overtrading)
 - 1h: +4.89% → +15-25% (let winners run, better sample size)
 - Higher Sharpe, lower drawdown, more trades (confidence sampling)
@@ -28,6 +30,7 @@
 ## 🔧 Kritisk Korrigering: HTF-Baserad (Inte Entry→Current)
 
 ### ❌ FELAKTIG APPROACH (Min Tidigare Förståelse):
+
 ```python
 # WRONG: Basera exits på egen position P&L
 entry_price = 100_000
@@ -41,6 +44,7 @@ if current_price <= position_fib[0.618]:  # Retrace av egen vinst
 **Problem**: Detta ger bara "procentuell retrace av din egen vinst" och tappar all marknadsstruktur.
 
 ### ✅ KORREKT APPROACH (HTF-Strukturbaserad):
+
 ```python
 # CORRECT: Basera exits på HTF-swing struktur
 htf_swing_low = 95_000    # Senaste validerade 1D swing low
@@ -61,6 +65,7 @@ if current_price >= htf_fib[0.5]:    # Starkare HTF resistance
 ## 🏗️ Arkitektur - HTF-till-LTF Projektion
 
 ### Dataflöde:
+
 ```
 1D Candles → Swing Detection → Fib Levels → Project to LTF → Exit Decisions
      ↓              ↓              ↓            ↓               ↓
@@ -70,6 +75,7 @@ if current_price >= htf_fib[0.5]:    # Starkare HTF resistance
 ```
 
 ### Fraktal Hierarki (Konflikter):
+
 ```python
 # Konflikthantering: Global beats Lokal
 def resolve_exit_conflict(signals_1d, signals_6h, signals_1h):
@@ -95,25 +101,26 @@ def resolve_exit_conflict(signals_1d, signals_6h, signals_1h):
 
 ### LONG Positions:
 
-| Trigger | Condition | Action | Rationale |
-|---------|-----------|--------|-----------|
-| **TP1** | `close ≈ 0.382 (HTF)` | Ta 33-50%, Stop→BE+fees | Lock första profit, låt resten löpa |
-| **TP2** | `close ≈ 0.5 (HTF)` | Ta 25-33% (av remaining) | Starkare resistance, säkra mer |
-| **Trail Base** | `Always active` | `EMA50 - 1.3·ATR` | Trend-following baseline |
-| **Trail Promotion** | `close > 0.618 (HTF)` | `trail = max(trail_base, Fib0.5)` | Breakout→lock mot 0.5 som support |
-| **Full Exit** | `close < 0.618 (HTF)` **AND** `ema_slope50_z < 0` | Close 100% | Strukturbrott + momentumvändning |
+| Trigger             | Condition                                         | Action                            | Rationale                           |
+| ------------------- | ------------------------------------------------- | --------------------------------- | ----------------------------------- |
+| **TP1**             | `close ≈ 0.382 (HTF)`                             | Ta 33-50%, Stop→BE+fees           | Lock första profit, låt resten löpa |
+| **TP2**             | `close ≈ 0.5 (HTF)`                               | Ta 25-33% (av remaining)          | Starkare resistance, säkra mer      |
+| **Trail Base**      | `Always active`                                   | `EMA50 - 1.3·ATR`                 | Trend-following baseline            |
+| **Trail Promotion** | `close > 0.618 (HTF)`                             | `trail = max(trail_base, Fib0.5)` | Breakout→lock mot 0.5 som support   |
+| **Full Exit**       | `close < 0.618 (HTF)` **AND** `ema_slope50_z < 0` | Close 100%                        | Strukturbrott + momentumvändning    |
 
 ### SHORT Positions (Spegelvänt):
 
-| Trigger | Condition | Action | Rationale |
-|---------|-----------|--------|-----------|
-| **TP1** | `close ≈ 0.618 (HTF)` | Ta 33-50%, Stop→BE+fees | Första target nådd |
-| **TP2** | `close ≈ 0.5 (HTF)` | Ta 25-33% | Djupare retrace, ta mer |
-| **Trail Base** | `Always active` | `EMA50 + 1.3·ATR` | Trend-following (inverted) |
-| **Trail Promotion** | `close < 0.382 (HTF)` | `trail = min(trail_base, Fib0.5)` | Breakdown→lock mot 0.5 som resistance |
-| **Full Exit** | `close > 0.382 (HTF)` **AND** `ema_slope50_z > 0` | Close 100% | Strukturbrott uppåt + momentum |
+| Trigger             | Condition                                         | Action                            | Rationale                             |
+| ------------------- | ------------------------------------------------- | --------------------------------- | ------------------------------------- |
+| **TP1**             | `close ≈ 0.618 (HTF)`                             | Ta 33-50%, Stop→BE+fees           | Första target nådd                    |
+| **TP2**             | `close ≈ 0.5 (HTF)`                               | Ta 25-33%                         | Djupare retrace, ta mer               |
+| **Trail Base**      | `Always active`                                   | `EMA50 + 1.3·ATR`                 | Trend-following (inverted)            |
+| **Trail Promotion** | `close < 0.382 (HTF)`                             | `trail = min(trail_base, Fib0.5)` | Breakdown→lock mot 0.5 som resistance |
+| **Full Exit**       | `close > 0.382 (HTF)` **AND** `ema_slope50_z > 0` | Close 100%                        | Strukturbrott uppåt + momentum        |
 
 ### Proximity Definition (ATR-Normaliserat):
+
 ```python
 def is_near_fib_level(price, fib_level, atr, threshold=0.3):
     """
@@ -139,9 +146,11 @@ def is_near_fib_level(price, fib_level, atr, threshold=0.3):
 ### **PHASE 0: Infrastructure (CRITICAL - 1-2 Days)**
 
 #### A) HTF-till-LTF Fibonacci Mapping
+
 **Missing Component**: Cross-timeframe Fibonacci projection.
 
 **Files to Create/Modify**:
+
 ```python
 # NEW FILE: src/core/indicators/htf_fibonacci.py
 
@@ -243,9 +252,11 @@ def extract_features_with_htf_fib(candles, config=None, timeframe=None):
 **Estimated Work**: 4-6 hours (careful AS-OF logic + testing)
 
 #### B) Partial Exit Infrastructure
+
 **Missing Component**: Position size management for partial closes.
 
 **Files to Modify**:
+
 ```python
 # MODIFY: src/core/backtest/position_tracker.py
 
@@ -333,6 +344,7 @@ class PositionTracker:
 ### **PHASE 1: Minimal HTF Exit Logic (2-3 Days)**
 
 #### Core Exit Engine
+
 **New File**: `src/core/backtest/htf_exit_engine.py`
 
 ```python
@@ -523,6 +535,7 @@ class HTFFibonacciExitEngine:
 ```
 
 #### Integration into BacktestEngine
+
 **Modify**: `src/core/backtest/engine.py`
 
 ```python
@@ -619,6 +632,7 @@ def _process_bar(self, symbol: str, bar: dict, features: dict, meta: dict):
 ### **PHASE 2: Validation & Ablation Study (1-2 Days)**
 
 #### Ablation Test Framework
+
 **New File**: `scripts/test_htf_fib_exits_ablation.py`
 
 ```python
@@ -709,6 +723,7 @@ if __name__ == "__main__":
 ```
 
 **Success Criteria for Phase 2**:
+
 - FULL_HTF beats BASELINE by >5% return AND >0.1 Sharpe
 - P-value < 0.05 for statistical significance
 - Component analysis shows which parts contribute most
@@ -722,6 +737,7 @@ if __name__ == "__main__":
 ## 🧪 Edge Cases & Risk Management
 
 ### 1. HTF Data Lag/Missing
+
 ```python
 def handle_missing_htf_data(ltf_bar, htf_fib_context):
     """Fallback when HTF Fibonacci data unavailable."""
@@ -744,6 +760,7 @@ def handle_missing_htf_data(ltf_bar, htf_fib_context):
 ```
 
 ### 2. Partial Exit Size Validation
+
 ```python
 def validate_partial_size(position, requested_size):
     """Ensure partial exit sizes are valid."""
@@ -763,6 +780,7 @@ def validate_partial_size(position, requested_size):
 ```
 
 ### 3. Swing Update Mid-Trade
+
 ```python
 def handle_swing_rebase(position, old_htf_context, new_htf_context):
     """
@@ -782,6 +800,7 @@ def handle_swing_rebase(position, old_htf_context, new_htf_context):
 ```
 
 ### 4. Vol Spike Protection (Phase 3)
+
 ```python
 def adjust_for_volatility_spike(trail_stop, current_atr, historical_atr):
     """
@@ -805,13 +824,16 @@ def adjust_for_volatility_spike(trail_stop, current_atr, historical_atr):
 ## 📊 Expected Results (Conservative Estimates)
 
 ### 30m Timeframe (123 trades baseline):
+
 **Current** (Threshold 0.65, Fixed Exits):
+
 - Return: -12.21%
 - Sharpe: -0.29
 - Win Rate: 43.9%
 - Max DD: -13.64%
 
 **Expected** (HTF Fib Exits):
+
 - Return: **-5% to +5%** (+7-17% improvement)
 - Sharpe: **0.0 to +0.2** (+0.3-0.5 improvement)
 - Win Rate: **48-55%** (+5-10% improvement)
@@ -820,13 +842,16 @@ def adjust_for_volatility_spike(trail_stop, current_atr, historical_atr):
 **Rationale**: Stop killing edge with overtrading, let winners run properly.
 
 ### 1h Timeframe (8 trades baseline):
+
 **Current** (Threshold 0.65, Fixed Exits):
+
 - Return: +4.89%
 - Sharpe: +0.32
 - Win Rate: 75%
 - Max DD: -0.87%
 
 **Expected** (HTF Fib Exits):
+
 - Return: **+15% to +25%** (+10-20% improvement)
 - Trades: **20-30** (better sample size!)
 - Sharpe: **0.5 to 0.8** (+0.2-0.5 improvement)
@@ -839,18 +864,21 @@ def adjust_for_volatility_spike(trail_stop, current_atr, historical_atr):
 ## 🚀 Implementation Timeline
 
 ### Week 1 (Phase 0 + 1):
+
 - **Day 1-2**: HTF Fibonacci mapping infrastructure
 - **Day 3**: Partial exit infrastructure
 - **Day 4-5**: Core HTF exit engine
 - **Day 6-7**: BacktestEngine integration + basic testing
 
 ### Week 2 (Phase 2):
+
 - **Day 1-2**: Comprehensive ablation study
 - **Day 3**: Statistical validation + OOS testing
 - **Day 4**: Edge case handling + robustness
 - **Day 5**: Documentation + code review
 
 ### Deployment Decision (End Week 2):
+
 If ablation study passes → Deploy to paper trading
 If ablation study fails → Investigate & iterate
 
@@ -859,6 +887,7 @@ If ablation study fails → Investigate & iterate
 ## 🎯 Success Metrics
 
 ### Technical Validation:
+
 - ✅ All tests pass (no regressions)
 - ✅ AS-OF semantics validated (no lookahead)
 - ✅ HTF-LTF mapping accurate
@@ -866,6 +895,7 @@ If ablation study fails → Investigate & iterate
 - ✅ Edge cases handled gracefully
 
 ### Performance Validation:
+
 - ✅ FULL_HTF config beats BASELINE by >5% return
 - ✅ Sharpe ratio improves by >0.1
 - ✅ Statistical significance (p < 0.05)
@@ -873,6 +903,7 @@ If ablation study fails → Investigate & iterate
 - ✅ Drawdown control maintained
 
 ### Production Readiness:
+
 - ✅ Real-time compatible (< 100ms exit decisions)
 - ✅ Error handling robust
 - ✅ Monitoring/observability hooks
@@ -884,18 +915,21 @@ If ablation study fails → Investigate & iterate
 ## 🔄 Iteration Plan (If Needed)
 
 ### If Phase 2 Shows Marginal Results (1-3% improvement):
+
 1. **Investigate components**: Which parts help/hurt?
 2. **Parameter tuning**: Adjust thresholds, ATR multipliers
 3. **HTF timeframe experiment**: Try 4h instead of 1D
 4. **Regime conditioning**: Different rules for trend vs range
 
 ### If Phase 2 Shows Negative Results:
+
 1. **Debug AS-OF logic**: Ensure no lookahead bias
 2. **Validate HTF mapping**: Are Fib levels correct?
 3. **Check trade sample**: Are we changing wrong trades?
 4. **Fallback plan**: Revert to fixed exits with better thresholds
 
 ### If Phase 2 Shows Excellent Results (>10% improvement):
+
 1. **Expand to other timeframes**: 6h, 15m
 2. **Add complexity**: Vol-adaptive, confluence filters
 3. **Multi-symbol validation**: Test on tETHUSD
@@ -929,7 +963,9 @@ Detta är en **strukturerad, systematisk approach** till HTF Fibonacci exits som
 ### **COMPLETED PHASES**
 
 #### **Phase 0A: HTF Fibonacci Mapping** ✅
+
 **Files Created:**
+
 - `src/core/indicators/htf_fibonacci.py` - HTF Fibonacci calculation with AS-OF semantics
 - `scripts/test_htf_fibonacci_mapping.py` - Unit tests
 
@@ -940,7 +976,9 @@ Detta är en **strukturerad, systematisk approach** till HTF Fibonacci exits som
 ---
 
 #### **Phase 0B: Partial Exit Infrastructure** ✅
+
 **Files Modified:**
+
 - `src/core/backtest/position_tracker.py` - Enhanced Position/Trade dataclasses
 
 **Features:** Partial closing, PnL tracking, position linking
@@ -950,15 +988,19 @@ Detta är en **strukturerad, systematisk approach** till HTF Fibonacci exits som
 ---
 
 #### **Phase 1: HTF Exit Engine** ✅
+
 **Files Created:**
+
 - `src/core/backtest/htf_exit_engine.py` - Core exit logic
 
 **Files Modified:**
+
 - `src/core/backtest/engine.py` - HTF integration
 - `src/core/strategy/features.py` - HTF context in features
 - `src/core/strategy/evaluate.py` - Timeframe parameter
 
 **Features:**
+
 - Partial exits at TP1 (0.382) and TP2 (0.5)
 - Trailing stop with HTF promotion
 - Structure break detection
@@ -972,7 +1014,9 @@ Detta är en **strukturerad, systematisk approach** till HTF Fibonacci exits som
 ---
 
 #### **Fix Pack v1: Production Hardening** ✅
+
 **Components:**
+
 1. Invocation assurance - Exit engine runs every bar
 2. HTF-swing validation - Invalid swing detection
 3. Reachability - 8 ATR envelope check
@@ -982,16 +1026,30 @@ Detta är en **strukturerad, systematisk approach** till HTF Fibonacci exits som
 
 **Verification:** ✅ PASSED
 
+**Addendum (2025-12-26): HTF context integrity / no-lookahead**
+
+För att eliminera "Invalid swing"-spam och undvika implicit lookahead har HTF-context hårdnats i producer/consumer:
+
+- **Strict AS-OF**: HTF-context returneras inte om `reference_ts` saknas (ingen "ta senaste" HTF-row).
+- **Timeframe-aliaser** normaliseras (t.ex. `60m` → `1h`).
+- **Levels/bounds sanity**: kräver 0.382/0.5/0.618/0.786 samt att nivåer ligger inom swing-bounds.
+- **Tydliga reason-codes** i HTF-context (t.ex. `HTF_MISSING_REFERENCE_TS`, `HTF_LEVELS_INCOMPLETE`,
+  `HTF_INVALID_SWING_BOUNDS`, `HTF_LEVELS_OUT_OF_BOUNDS`) i stället för otydliga varningar.
+- **Consumer alignment**: exit engine läser producer-schemat (`swing_high/swing_low`, `last_update`) och uppdaterar frusen
+  `exit_ctx` vid swing updates (DYNAMIC/HYBRID).
+
 ---
 
 ### **BACKTEST RESULTS (2025-08-01 to 2025-10-13)**
 
 **Configuration:**
+
 - tBTCUSD 1h (LTF) with 1D HTF
 - Capital: $10,000
 - Bars: 1,753 processed
 
 **Results:**
+
 ```
 Total Trades: 7
 ├─ Partial Exits: 2 (28.6%)
@@ -1013,6 +1071,7 @@ Total Trades: 7
 ### **DATA UPDATES**
 
 **Fresh Data Fetched (2025-10-13):**
+
 ```
 tBTCUSD 1D: 180 candles (6 months)
 tBTCUSD 1h: 2,160 candles (3 months)
@@ -1037,6 +1096,7 @@ Stored in:
 ### **FILES CREATED/MODIFIED**
 
 **New Files (7):**
+
 - `src/core/indicators/htf_fibonacci.py`
 - `src/core/backtest/htf_exit_engine.py`
 - `scripts/test_htf_fibonacci_mapping.py`
@@ -1046,6 +1106,7 @@ Stored in:
 - `scripts/test_htf_simple_validation.py`
 
 **Modified Files (6):**
+
 - `src/core/backtest/position_tracker.py`
 - `src/core/backtest/engine.py`
 - `src/core/strategy/features.py`

@@ -1925,6 +1925,22 @@ def _run_optuna(
         # Mjuk constraints: returnera straffad poäng istället för att pruna,
         # så att Optuna kan ranka försök och fortsätta utforskning.
         if not constraints.get("ok", True):
+            # Abort-heuristic (post-backtest) already encodes the intended penalty in score_value.
+            # Do not apply the additional soft-constraint penalty on top, otherwise Optuna sees a
+            # double-penalized value (e.g. -500 -> -650) which can mask the intended signal.
+            reasons = constraints.get("reasons")
+            is_abort_heuristic = bool(payload.get("abort_reason")) or (
+                isinstance(reasons, list) and "aborted_by_heuristic" in reasons
+            )
+            if is_abort_heuristic:
+                trial.set_user_attr("constraints", constraints)
+                trial.set_user_attr("constraints_soft_fail", True)
+                trial.set_user_attr("aborted_by_heuristic", True)
+                if payload.get("abort_reason"):
+                    trial.set_user_attr("abort_reason", payload.get("abort_reason"))
+                if payload.get("abort_details"):
+                    trial.set_user_attr("abort_details", payload.get("abort_details"))
+                return score_value
             trial.set_user_attr("constraints", constraints)
             trial.set_user_attr("constraints_soft_fail", True)
             trial.set_user_attr("constraints_penalty", CONSTRAINT_SOFT_PENALTY)

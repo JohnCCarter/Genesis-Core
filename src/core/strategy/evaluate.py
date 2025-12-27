@@ -115,20 +115,28 @@ def evaluate_pipeline(
     if metrics_enabled:
         metrics.inc("pipeline_eval_invocations")
 
+    # Backtests/optimizer runs inject `_global_index` on every bar. In that mode,
+    # treat `configs` as the *authoritative* config. Do NOT merge in the active
+    # champion, otherwise results become dependent on whichever champion file is
+    # currently active (non-reproducible and extremely confusing).
+    force_backtest_mode = "_global_index" in configs
+
     timeframe = policy.get("timeframe", "1m")
     symbol = policy.get("symbol", "tBTCUSD")
     champion = champion_loader.load_cached(symbol, timeframe)
-    champion_cfg = dict(champion.config or {})
-    if configs:
-        merged_cfg = _deep_merge(champion_cfg, configs)
-        configs = merged_cfg
+
+    if force_backtest_mode:
+        configs.setdefault("meta", {})["champion_source"] = "explicit_backtest_config"
     else:
-        configs = champion_cfg
-    configs.setdefault("meta", {})["champion_source"] = champion.source
+        champion_cfg = dict(champion.config or {})
+        if configs:
+            configs = _deep_merge(champion_cfg, configs)
+        else:
+            configs = champion_cfg
+        configs.setdefault("meta", {})["champion_source"] = champion.source
 
     closes = candles.get("close") if isinstance(candles, dict) else None
     total_bars = len(closes) if closes is not None else 0
-    force_backtest_mode = "_global_index" in configs
     now_index = total_bars if force_backtest_mode and total_bars > 0 else None
 
     feats, feats_meta = extract_features(

@@ -13,13 +13,15 @@ from core.observability.metrics import get_dashboard
 from core.server_config_api import router as config_router
 from core.strategy.evaluate import evaluate_pipeline
 
-# Enkla cache-behållare för /account/*
 _ACCOUNT_CACHE = {
     "wallets": {"ts": 0.0, "data": {"items": []}},
     "positions": {"ts": 0.0, "data": {"items": []}},
     "orders": {"ts": 0.0, "data": {"items": []}},
 }
 _ACCOUNT_TTL = 5.0
+_CANDLES_CACHE = {}  # key -> {ts: float, data: dict}
+_CANDLES_TTL = 10.0  # 10s cache for candles
+
 
 _AUTH = ConfigAuthority()
 
@@ -630,18 +632,34 @@ def strategy_evaluate(payload: dict = Body({})) -> dict:
 
 
 @app.get("/public/candles")
-def public_candles(symbol: str = "tBTCUSD", timeframe: str = "1m", limit: int = 120) -> dict:
+async def public_candles(symbol: str = "tBTCUSD", timeframe: str = "1m", limit: int = 120) -> dict:
     """Proxy till Bitfinex public candles och normaliserar till {open,high,low,close,volume}."""
-    url = f"https://api-pub.bitfinex.com/v2/candles/trade:{timeframe}:{symbol}/hist"
-    params = {"limit": max(1, min(int(limit), 500)), "sort": 1}
-    r = httpx.get(url, params=params, timeout=10)
-    r.raise_for_status()
+    import time
+
+    # Check cache
+    cache_key = f"{symbol}:{timeframe}:{limit}"
+    now = time.time()
+    if cache_key in _CANDLES_CACHE:
+        entry = _CANDLES_CACHE[cache_key]
+        if now - entry["ts"] < _CANDLES_TTL:
+            return entry["data"]
+
+    # Fetch fresh
+    # Justera limit inom rimliga gränser
+    safe_limit = max(1, min(int(limit), 1000))
+    endpoint = f"candles/trade:{timeframe}:{symbol}/hist"
+    params = {"limit": safe_limit, "sort": 1}
+
+    ec = get_exchange_client()
+    r = await ec.public_request(method="GET", endpoint=endpoint, params=params, timeout=10)
     data = r.json()
+
     opens: list[float] = []
     highs: list[float] = []
     lows: list[float] = []
     closes: list[float] = []
     volumes: list[float] = []
+
     if isinstance(data, list):
         for row in data:
             # Bitfinex format: [MTS, OPEN, CLOSE, HIGH, LOW, VOLUME]
@@ -651,13 +669,19 @@ def public_candles(symbol: str = "tBTCUSD", timeframe: str = "1m", limit: int = 
                 highs.append(float(row[3]))
                 lows.append(float(row[4]))
                 volumes.append(float(row[5]))
-    return {
+
+    result = {
         "open": opens,
         "high": highs,
         "low": lows,
         "close": closes,
         "volume": volumes,
     }
+
+    # Update cache
+    _CANDLES_CACHE[cache_key] = {"ts": now, "data": result}
+
+    return result
 
 
 @app.get("/auth/check")

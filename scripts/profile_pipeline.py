@@ -111,58 +111,61 @@ def main():
         results["decision"].append(t_decision)
 
     # Calculate statistics
-    print("=" * 60)
-    print(f"{'Module':<15} {'Min (ms)':<10} {'Avg (ms)':<10} {'Max (ms)':<10} {'Target':<10}")
-    print("=" * 60)
+    with open("profile_results_utf8.txt", "w", encoding="utf-8") as f:
+        f.write("=== Genesis-Core Pipeline Profiling ===\n\n")
+        f.write(f"{'Module':<15} {'Min (ms)':<10} {'Avg (ms)':<10} {'Max (ms)':<10} {'Target':<10}\n")
+        f.write("=" * 60 + "\n")
 
-    target_ms = 20.0
-    all_pass = True
+        target_ms = 20.0
+        all_pass = True
 
-    for module, times in results.items():
-        min_t = min(times)
-        avg_t = sum(times) / len(times)
-        max_t = max(times)
-        status = "[PASS]" if avg_t <= target_ms else "[FAIL]"
+        for module, times in results.items():
+            min_t = min(times)
+            avg_t = sum(times) / len(times)
+            max_t = max(times)
+            status = "[PASS]" if avg_t <= target_ms else "[FAIL]"
 
-        if avg_t > target_ms:
-            all_pass = False
+            if avg_t > target_ms:
+                all_pass = False
 
-        print(f"{module:<15} {min_t:<10.3f} {avg_t:<10.3f} {max_t:<10.3f} {status}")
+            f.write(f"{module:<15} {min_t:<10.3f} {avg_t:<10.3f} {max_t:<10.3f} {status}\n")
 
-    # Total pipeline latency
-    total_times = [
-        sum(
-            [
-                results["features"][i],
-                results["prob_model"][i],
-                results["confidence"][i],
-                results["regime"][i],
-                results["decision"][i],
-            ]
+        # Total pipeline latency
+        total_times = [
+            sum(
+                [
+                    results["features"][i],
+                    results["prob_model"][i],
+                    results["confidence"][i],
+                    results["regime"][i],
+                    results["decision"][i],
+                ]
+            )
+            for i in range(iterations)
+        ]
+
+        total_min = min(total_times)
+        total_avg = sum(total_times) / len(total_times)
+        total_max = max(total_times)
+        total_status = "[PASS]" if total_avg <= 100.0 else "[FAIL]"
+
+        f.write("=" * 60 + "\n")
+        f.write(
+            f"{'TOTAL PIPELINE':<15} {total_min:<10.3f} {total_avg:<10.3f} {total_max:<10.3f} {total_status}\n"
         )
-        for i in range(iterations)
-    ]
+        f.write("=" * 60 + "\n")
 
-    total_min = min(total_times)
-    total_avg = sum(total_times) / len(total_times)
-    total_max = max(total_times)
-    total_status = "[PASS]" if total_avg <= 100.0 else "[FAIL]"
+        f.write(f"\nTarget per module: <= {target_ms} ms\n")
+        f.write("Target total pipeline: <= 100 ms\n")
 
-    print("=" * 60)
-    print(
-        f"{'TOTAL PIPELINE':<15} {total_min:<10.3f} {total_avg:<10.3f} {total_max:<10.3f} {total_status}"
-    )
-    print("=" * 60)
-
-    print(f"\nTarget per module: <= {target_ms} ms")
-    print("Target total pipeline: <= 100 ms")
-
-    if all_pass and total_avg <= 100.0:
-        print("\n[OK] All modules meet latency requirements!")
-        return 0
-    else:
-        print("\n[WARN] Some modules exceed latency budget!")
-        return 1
+        if all_pass and total_avg <= 100.0:
+            f.write("\n[OK] All modules meet latency requirements!\n")
+            print("DONE")
+            return 0
+        else:
+            f.write("\n[WARN] Some modules exceed latency budget!\n")
+            print("DONE_WARN")
+            return 1
 
 
 if __name__ == "__main__":

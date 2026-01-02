@@ -165,6 +165,27 @@ class ExchangeClient:
         )
         await asyncio.sleep(delay)
 
+    async def public_request(
+        self,
+        *,
+        method: str,
+        endpoint: str,
+        params: dict[str, Any] | None = None,
+        timeout: float | None = None,
+    ) -> httpx.Response:
+        """Utför en publik (osignerad) request via den delade klienten."""
+        client = _get_http_client()
+        url = f"{_BASE_URL}/v2/{endpoint}"
+
+        try:
+            req = getattr(client, method.lower())
+            resp = await req(url, params=params, timeout=timeout)
+            resp.raise_for_status()
+            return resp
+        except Exception as e:
+            _LOGGER.warning("REST public error %s %s: %s", method, endpoint, e)
+            raise
+
 
 _EXCHANGE_CLIENT: ExchangeClient | None = None
 

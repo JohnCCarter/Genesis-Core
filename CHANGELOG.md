@@ -8,6 +8,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 
 ## [Unreleased]
 
+### Changed - Phase-8 (2026-01-02)
+
+**Optimization & Metrics**
+
+- Fixed metrics reporting bug in `src/core/backtest/metrics.py` (specifically `calculate_backtest_metrics`) to ensure accurate `total_trades` and `total_return` are reported during parameter optimization.
+- Resolved issue where optimization trials failed to capture correct trade counts, enabling successful tuning of `HTFFibonacciExitEngine`.
+
 ### Changed - Phase-7d (2025-11-10)
 
 **Scoring & Constraints**

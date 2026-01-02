@@ -1,12 +1,12 @@
 # README for AI Agents (Local Development)
 
-## Last update: 2025-12-26
+## Last update: 2026-01-02
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
 
-## 1. Deliverables (latest highlights: 2025-12-18)
+## 1. Deliverables (latest highlights: 2026-01-02)
 
-- **HTF FIB CONTEXT INTEGRITY + INVALID SWING HARDENING + OPTUNA SMOKE SAFETY (2025-12-26)**:
+- **QA SUITE & BUG FIXES (2026-01-02)**: Exekverade full QA suite och åtgärdade alla fel. Fixade async varningar i tester, löste problem med Optimizer runner concurrency (monkeypatch settings), och implementerade saknade HTF Fibonacci hjälpfunktioner. Alla 471 tester passerar.
 
   - **Goal**: Eliminera "Invalid swing"-spam i HTF-exitflödet genom att göra HTF-context strikt, schema-kompatibelt och fritt från implicit lookahead.
   - **Key changes**:
@@ -172,8 +172,9 @@ This document explains the current workflow for Genesis-Core, highlights today's
   - **Cleanup**: Minskade loggbrus i `decision.py` (kommenterade ut FORENSIC logs).
   - **Status**: Redo för fullskalig optimering.
 
-- **PRECOMPUTE TIMING FIX (2025-12-02)**: Löste kritisk timing-bug som hindrade precompute features från att fungera i Optuna-optimeringar. Root cause: `precompute_features`-flaggan sattes EFTER `engine.load_data()` (runner.py line 816), men feature-generering sker UNDER `load_data()` (engine.py line 233). Solution: Flyttade flag-setting till före load_data() (lines 807-810). Resultat: 20x speedup verifierad (~100 bars/sec vs ~10 bars/sec), 5-trial smoke test går från 30 min till 2.5 min. Ytterligare fixes: Import-arkitektur (src.core → core), preflight-validering (`check_precompute_functionality()`), varningar när PRECOMPUTE utan fast_window. Cache thread-safety issue upptäckt vid max_concurrent>1 (temporary fix: max_concurrent=1). Dokumentation: `docs/bugs/PRECOMPUTE_TIMING_FIX_20251202.md`. Commit: 5551fcc pushat till Phase-7d.
+- # **PRECOMPUTE TIMING FIX (2025-12-02)**: Löste kritisk timing-bug som hindrade precompute features från att fungera i Optuna-optimeringar. Root cause: `precompute_features`-flaggan sattes EFTER `engine.load_data()` (runner.py line 816), men feature-generering sker UNDER `load_data()` (engine.py line 233). Solution: Flyttade flag-setting till före load_data() (lines 807-810). Resultat: 20x speedup verifierad (~100 bars/sec vs ~10 bars/sec), 5-trial smoke test går från 30 min till 2.5 min. Ytterligare fixes: Import-arkitektur (src.core → core), preflight-validering (`check_precompute_functionality()`), varningar när PRECOMPUTE utan fast_window. Cache thread-safety issue upptäckt vid max_concurrent>1 (temporary fix: max_concurrent=1). Dokumentation: `docs/bugs/PRECOMPUTE_TIMING_FIX_20251202.md`. Commit: 5551fcc pushat till Phase-7d.
 
+- **METRICS REPORTING FIX (2026-01-02)**: Fixade en kritisk bugg i `src/core/backtest/metrics.py` där `total_trades` och `total_return` inte rapporterades korrekt i optimeringsloopen. Detta möjliggör återigen effektiv parameter-tuning av `HTFFibonacciExitEngine`.
 - **MODE ENFORCEMENT (2025-11-27)**: Löste determinism-problemet mellan streaming och fast mode. Implementerade:
   1. **Validation i BacktestEngine**: Kastar ValueError om `fast_window=True` utan `GENESIS_PRECOMPUTE_FEATURES=1`, varnar vid omvänd kombination
   2. **Default till fast mode**: `run_backtest.py` och `runner.py` defaultar nu till fast mode (`GENESIS_FAST_WINDOW=1` + `GENESIS_PRECOMPUTE_FEATURES=1`) för determinism

@@ -178,34 +178,6 @@ def compute_htf_fibonacci_mapping(
     # So if LTF is at T, we need HTF candle where (open_time + period) <= T
     # Or simply: use `asof` merge with direction='backward' but strict inequality.
 
-<<<<<<< HEAD
-    # Step 2: Project to LTF bars with AS-OF semantics.
-    # Use merge_asof for efficient time-series join.
-    ltf_df = ltf_candles[["timestamp"]].copy()
-
-    # Preserve the matched HTF timestamp to compute age correctly.
-    htf_df = htf_fib_df.rename(columns={"timestamp": "htf_timestamp"}).copy()
-
-    merged = pd.merge_asof(
-        ltf_df.sort_values("timestamp"),
-        htf_df.sort_values("htf_timestamp"),
-        left_on="timestamp",
-        right_on="htf_timestamp",
-=======
-    # Let's assume timestamp is Open Time.
-    # We can only use HTF data from a candle that has CLOSED.
-    # If HTF is daily, it closes 24h after open.
-    # To simplify, we can map using: valid_from = htf_timestamp + timedelta(1 unit)
-
-    # However, to be generic, let's use the provided timestamps and assume
-    # the user ensures they represent "data availability time" or we use strictly
-    # "htf_timestamp < ltf_timestamp" if both are open times, which effectively
-    # means we use the *previous* day's candle for today's trading, which is correct
-    # (today's daily candle is not closed yet).
-
-    htf_df.sort_values("htf_timestamp_close", inplace=True)
-    ltf_candles.sort_values("timestamp", inplace=True)
-
     # Infer HTF frequency to determine "valid_from" time (Close Time)
     if len(htf_df) > 1:
         # Calculate median delta between timestamps
@@ -234,13 +206,12 @@ def compute_htf_fibonacci_mapping(
         htf_df,
         left_on="timestamp",
         right_on="valid_from",
->>>>>>> cd1eda3 (fix: resolve QA suite failures and implement compute_htf_fibonacci_levels)
         direction="backward",
         allow_exact_matches=True,
     )
 
     merged["htf_data_age_hours"] = (
-        (merged["timestamp"] - merged["htf_timestamp"]).dt.total_seconds() / 3600
+        (merged["timestamp"] - merged["htf_timestamp_close"]).dt.total_seconds() / 3600
     ).where(merged["htf_fib_0618"].notna(), None)
 
     return merged

@@ -1,0 +1,17 @@
+=== Genesis-Core Pipeline Profiling ===
+
+Module          Min (ms)   Avg (ms)   Max (ms)   Target    
+============================================================
+features        1.449      1.887      4.668      [PASS]
+prob_model      0.155      0.228      1.314      [PASS]
+confidence      0.002      0.003      0.030      [PASS]
+regime          0.002      0.003      0.013      [PASS]
+decision        0.009      0.013      0.055      [PASS]
+============================================================
+TOTAL PIPELINE  1.619      2.134      5.150      [PASS]
+============================================================
+
+Target per module: <= 20.0 ms
+Target total pipeline: <= 100 ms
+
+[OK] All modules meet latency requirements!

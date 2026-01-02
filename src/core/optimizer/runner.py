@@ -791,6 +791,8 @@ def _run_backtest_direct(
     trial: TrialConfig,
     config_path: Path,
     optuna_context: dict[str, Any] | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
 ) -> tuple[int, str, dict[str, Any] | None]:
     try:
         from core.pipeline import GenesisPipeline
@@ -849,9 +851,12 @@ def _run_backtest_direct(
                     start_date=trial.start_date,
                     end_date=trial.end_date,
                     warmup_bars=trial.warmup_bars,
+                    fast_window=True,
                 )
 
-                # Now load data (will trigger precompute if flag is set)
+                # Critical: Set precompute flag BEFORE load_data() to ensure features are loaded/computed
+                if os.environ.get("GENESIS_PRECOMPUTE_FEATURES"):
+                    engine_loader.precompute_features = True
                 if engine_loader.load_data():
                     # Hard guard: optimizer assumes canonical precompute is available.
                     # If precompute is requested but not ready, fail fast to avoid

@@ -113,7 +113,9 @@ def main():
     # Calculate statistics
     with open("profile_results_utf8.txt", "w", encoding="utf-8") as f:
         f.write("=== Genesis-Core Pipeline Profiling ===\n\n")
-        f.write(f"{'Module':<15} {'Min (ms)':<10} {'Avg (ms)':<10} {'Max (ms)':<10} {'Target':<10}\n")
+        f.write(
+            f"{'Module':<15} {'Min (ms)':<10} {'Avg (ms)':<10} {'Max (ms)':<10} {'Target':<10}\n"
+        )
         f.write("=" * 60 + "\n")
 
         target_ms = 20.0

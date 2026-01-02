@@ -1,15 +1,14 @@
-
 import asyncio
-import time
-from unittest.mock import AsyncMock, patch
 import sys
+import time
 from pathlib import Path
+from unittest.mock import AsyncMock, patch
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from core.server import public_candles
-from core.io.bitfinex.exchange_client import ExchangeClient
+
 
 async def mock_public_request(*args, **kwargs):
     await asyncio.sleep(0.1)  # Simulate 100ms network latency
@@ -20,11 +19,15 @@ async def mock_public_request(*args, **kwargs):
     ]
     return mock_resp
 
+
 async def run_verification():
     print("=== Verifying Async Public Candles ===\n")
 
     # Mock the ExchangeClient.public_request
-    with patch("core.io.bitfinex.exchange_client.ExchangeClient.public_request", side_effect=mock_public_request) as mock_req:
+    with patch(
+        "core.io.bitfinex.exchange_client.ExchangeClient.public_request",
+        side_effect=mock_public_request,
+    ):
 
         # 1. Test Single Call Latency (Cold Cache)
         print("1. Testing Cold Cache Latency...")
@@ -43,9 +46,9 @@ async def run_verification():
         print(f"   Duration: {dur_warm:.2f} ms (expected ~0ms)")
 
         if dur_warm > 10:
-             print("   [FAIL] Cache does not seem to be working!")
+            print("   [FAIL] Cache does not seem to be working!")
         else:
-             print("   [PASS] Cache is working.")
+            print("   [PASS] Cache is working.")
 
         # 3. Test Concurrency (Simulating multiple users)
         # Clearing cache to test concurrency on fetch?
@@ -67,6 +70,7 @@ async def run_verification():
             print("   [PASS] Concurrency is working (parallel execution).")
         else:
             print("   [FAIL] Concurrency check failed (likely serial execution).")
+
 
 if __name__ == "__main__":
     asyncio.run(run_verification())

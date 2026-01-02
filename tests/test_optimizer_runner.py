@@ -45,7 +45,9 @@ def search_config_tmp(tmp_path: Path) -> Path:
     return config_path
 
 
-def test_run_optimizer_updates_champion(tmp_path: Path, search_config_tmp: Path) -> None:
+def test_run_optimizer_updates_champion(
+    tmp_path: Path, search_config_tmp: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     results_root = tmp_path / "results" / "hparam_search"
     run_meta_payload = {
         "git_commit": "abc123",
@@ -108,6 +110,7 @@ def test_run_optimizer_updates_champion(tmp_path: Path, search_config_tmp: Path)
         patch("core.optimizer.runner.ChampionManager") as manager_cls,
         patch("core.strategy.champion_loader.CHAMPIONS_DIR", tmp_path / "champions"),
     ):
+        monkeypatch.setenv("GENESIS_MAX_CONCURRENT", "1")
         manager_instance = manager_cls.return_value
         manager_instance.load_current.return_value = None
         manager_instance.should_replace.return_value = True

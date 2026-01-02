@@ -17,14 +17,14 @@ def _reload_module(monkeypatch, env_value: str | None):
 
 def test_fib_logging_disabled_by_default(monkeypatch, caplog):
     fib_logging = _reload_module(monkeypatch, None)
-    with caplog.at_level(logging.INFO):
+    with caplog.at_level(logging.INFO, logger="core.strategy.fib_flow"):
         fib_logging.log_fib_flow("should not appear")
     assert "should not appear" not in caplog.text
 
 
 def test_fib_logging_enabled_via_env(monkeypatch, caplog):
     fib_logging = _reload_module(monkeypatch, "1")
-    with caplog.at_level(logging.INFO):
+    with caplog.at_level(logging.INFO, logger="core.strategy.fib_flow"):
         fib_logging.log_fib_flow("fib flow active")
     assert "fib flow active" in caplog.text
 
@@ -32,11 +32,11 @@ def test_fib_logging_enabled_via_env(monkeypatch, caplog):
 def test_fib_logging_runtime_toggle(monkeypatch, caplog):
     fib_logging = _reload_module(monkeypatch, None)
     fib_logging.set_fib_flow_enabled(True)
-    with caplog.at_level(logging.INFO):
+    with caplog.at_level(logging.INFO, logger="core.strategy.fib_flow"):
         fib_logging.log_fib_flow("runtime toggle")
     assert "runtime toggle" in caplog.text
     fib_logging.set_fib_flow_enabled(False)
     caplog.clear()
-    with caplog.at_level(logging.INFO):
+    with caplog.at_level(logging.INFO, logger="core.strategy.fib_flow"):
         fib_logging.log_fib_flow("should disappear")
     assert "should disappear" not in caplog.text

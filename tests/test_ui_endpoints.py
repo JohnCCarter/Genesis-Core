@@ -57,12 +57,16 @@ def test_public_candles_endpoint_smoke(monkeypatch):
     def fake_get(url, params=None, timeout=10):  # noqa: ARG001
         return DummyResp()
 
+    import asyncio
+
     import core.server as srv
 
     orig = srv.httpx.get
     srv.httpx.get = fake_get  # type: ignore
     try:
-        out = pc(symbol="tBTCUSD", timeframe="1m", limit=1)
+        out = asyncio.get_event_loop().run_until_complete(
+            pc(symbol="tBTCUSD", timeframe="1m", limit=1)
+        )
         assert set(out.keys()) == {"open", "high", "low", "close", "volume"}
         assert out["open"] and out["close"]
     finally:

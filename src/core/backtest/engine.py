@@ -14,7 +14,14 @@ from typing import Any
 import pandas as pd
 from tqdm import tqdm
 
-from core.backtest.htf_exit_engine import HTFFibonacciExitEngine
+from core.backtest.htf_exit_engine import ExitAction
+from core.backtest.htf_exit_engine import HTFFibonacciExitEngine as LegacyExitEngine
+
+try:
+    from core.strategy.htf_exit_engine import HTFFibonacciExitEngine as NewExitEngine
+except ImportError:
+    NewExitEngine = None  # Fallback if not found
+
 from core.backtest.position_tracker import PositionTracker
 from core.indicators.exit_fibonacci import calculate_exit_fibonacci_levels
 from core.strategy.champion_loader import ChampionLoader
@@ -159,7 +166,16 @@ class BacktestEngine:
             "enable_structure_breaks": True,
         }
         self.htf_exit_config = {**default_htf_config, **(htf_exit_config or {})}
-        self.htf_exit_engine = HTFFibonacciExitEngine(self.htf_exit_config)
+
+        use_new_engine = os.environ.get("GENESIS_HTF_EXITS") == "1"
+        if use_new_engine and NewExitEngine:
+            print("[INFO] Using NEW HTF Exit Engine (Phase 1)")
+            self.htf_exit_engine = NewExitEngine(self.htf_exit_config)
+            self._use_new_exit_engine = True
+        else:
+            print("[INFO] Using LEGACY HTF Exit Engine")
+            self.htf_exit_engine = LegacyExitEngine(self.htf_exit_config)
+            self._use_new_exit_engine = False
 
     def load_data(self) -> bool:
         """
@@ -212,6 +228,29 @@ class BacktestEngine:
             print(f"[OK] Loaded {len(base_df):,} candles from {data_file.name}")
         else:
             print(f"[CACHE] Reusing {len(base_df):,} candles for {self.symbol} {self.timeframe}")
+
+        # Load HTF (1D) candles if new engine is enabled
+        self.htf_candles_df = None
+        if getattr(self, "_use_new_exit_engine", False):
+            htf_timeframe = "1D"
+            # Assuming HTF data follows same naming convention
+            htf_file = (
+                base_dir / "curated" / "v1" / "candles" / f"{self.symbol}_{htf_timeframe}.parquet"
+            )
+            if htf_file.exists():
+                try:
+                    self.htf_candles_df = pd.read_parquet(
+                        htf_file,
+                        columns=["timestamp", "open", "high", "low", "close"],
+                        engine="pyarrow",
+                    )
+                    print(
+                        f"[OK] Loaded {len(self.htf_candles_df):,} HTF candles from {htf_file.name}"
+                    )
+                except Exception as e:
+                    print(f"[WARN] Failed to load HTF candles: {e}")
+            else:
+                print(f"[WARN] HTF candles file not found: {htf_file}")
 
         # Work off cached DataFrame (avoid eager copy); filters below create sliced views/frames
         self.candles_df = base_df
@@ -351,6 +390,27 @@ class BacktestEngine:
                     }
 
                 self._precomputed_features = pre
+
+                # Precompute HTF Mapping if available
+                if self.htf_candles_df is not None:
+                    from core.indicators.htf_fibonacci import compute_htf_fibonacci_mapping
+
+                    print("[PRECOMPUTE] Mapping HTF Fibonacci levels...")
+                    htf_map = compute_htf_fibonacci_mapping(
+                        self.htf_candles_df, self.candles_df, fib_cfg
+                    )
+                    # Store in precomputed features (as lists)
+                    for col in [
+                        "htf_fib_0382",
+                        "htf_fib_05",
+                        "htf_fib_0618",
+                        "htf_swing_high",
+                        "htf_swing_low",
+                    ]:
+                        if col in htf_map.columns:
+                            self._precomputed_features[col] = htf_map[col].fillna(0.0).tolist()
+                    print("[PRECOMPUTE] HTF Mapping complete.")
+
                 print("[OK] Precomputed features ready - backtest will be faster!")
             except Exception as e:
                 # Non-fatal: skip precompute if indicators unavailable
@@ -700,6 +760,8 @@ class BacktestEngine:
                         self.position_tracker.clear_pending_reasons()
 
                     if exec_result.get("executed"):
+                        if getattr(self, "_use_new_exit_engine", False):
+                            self.htf_exit_engine.reset_state()
 
                         # Initialize exit context for new position
                         self._initialize_position_exit_context(result, meta, close_price, timestamp)
@@ -796,10 +858,35 @@ class BacktestEngine:
         if not enabled:
             return None
 
-        # Get HTF Fibonacci context from meta
-        # HTF context is in meta['features']['htf_fibonacci']
-        features_meta = meta.get("features", {})
-        htf_fib_context = features_meta.get("htf_fibonacci", {})
+        # Get HTF Fibonacci context - prefer precomputed if available
+        htf_fib_context = {}
+        if (
+            idx is not None
+            and self._precomputed_features
+            and "htf_fib_0382" in self._precomputed_features
+        ):
+            # Fast path: use precomputed HTF mapping
+            try:
+                htf_fib_context = {
+                    "available": True,
+                    "levels": {
+                        0.382: self._precomputed_features["htf_fib_0382"][idx],
+                        0.5: self._precomputed_features["htf_fib_05"][idx],
+                        0.618: self._precomputed_features["htf_fib_0618"][idx],
+                    },
+                    "swing_high": self._precomputed_features.get(
+                        "htf_swing_high", [0.0] * (idx + 1)
+                    )[idx],
+                    "swing_low": self._precomputed_features.get("htf_swing_low", [0.0] * (idx + 1))[
+                        idx
+                    ],
+                }
+            except (IndexError, KeyError):
+                htf_fib_context = {"available": False}
+        else:
+            # Fallback: use meta from evaluate_pipeline
+            features_meta = meta.get("features", {})
+            htf_fib_context = features_meta.get("htf_fibonacci", {})
 
         # Calculate ATR for exit logic (use last 14 bars AS OF current bar)
         from core.indicators.atr import calculate_atr
@@ -842,9 +929,53 @@ class BacktestEngine:
         }
 
         # Check HTF exit conditions
-        exit_actions = self.htf_exit_engine.check_exits(
-            position, bar_data, htf_fib_context, indicators
-        )
+        if getattr(self, "_use_new_exit_engine", False):
+            # Adapter for New Engine (Phase 1)
+            side_int = 1 if position.side == "LONG" else -1
+            # Wrap dictionary in Series for compatibility
+            htf_levels = htf_fib_context.get("levels", {})
+            htf_data = pd.Series(htf_levels)
+
+            signal = self.htf_exit_engine.check_exits(
+                current_price=current_price,
+                position_size=float(position.current_size),
+                entry_price=float(position.entry_price),
+                side=side_int,
+                current_atr=current_atr,
+                htf_data=htf_data,
+            )
+
+            exit_actions = []
+            if signal.action in ["PARTIAL_EXIT", "FULL_EXIT"]:
+                # Map to Legacy ExitAction
+                # PARTIAL_EXIT usually implies a size. FULL_EXIT implies size=current.
+                action_map = "PARTIAL" if signal.action == "PARTIAL_EXIT" else "FULL_EXIT"
+
+                # Calculate size amount
+                if signal.quantity_pct > 0:
+                    size_val = float(position.current_size) * signal.quantity_pct
+                else:
+                    size_val = float(
+                        position.current_size
+                    )  # Default to full? No, use 0 if partial not specified.
+
+                exit_actions.append(
+                    ExitAction(action=action_map, size=size_val, reason=signal.reason)
+                )
+
+            elif signal.action == "UPDATE_STOP":
+                exit_actions.append(
+                    ExitAction(
+                        action="TRAIL_UPDATE",
+                        stop_price=signal.new_stop_price,
+                        reason=signal.reason,
+                    )
+                )
+        else:
+            # Legacy Call
+            exit_actions = self.htf_exit_engine.check_exits(
+                position, bar_data, htf_fib_context, indicators
+            )
         meta.setdefault("signal", {})
         meta["signal"]["current_atr"] = current_atr
 
@@ -1061,6 +1192,16 @@ class BacktestEngine:
                 "timestamp": datetime.now().isoformat(),
             },
             "summary": summary,
+            # Add top-level metrics for convenience (duplicates summary fields)
+            "metrics": {
+                "total_trades": summary.get("num_trades", 0),
+                "num_trades": summary.get("num_trades", 0),
+                "total_return": summary.get("total_return", 0.0) / 100.0,  # Convert to fraction
+                "total_return_pct": summary.get("total_return", 0.0),
+                "win_rate": summary.get("win_rate", 0.0) / 100.0,  # Convert to fraction
+                "profit_factor": summary.get("profit_factor", 0.0),
+                "max_drawdown": summary.get("max_drawdown", 0.0) / 100.0,  # Convert to fraction
+            },
             "trades": [
                 {
                     "symbol": t.symbol,

@@ -16,6 +16,7 @@ from tqdm import tqdm
 
 from core.backtest.htf_exit_engine import ExitAction
 from core.backtest.htf_exit_engine import HTFFibonacciExitEngine as LegacyExitEngine
+from core.utils.logging_redaction import get_logger
 
 try:
     from core.strategy.htf_exit_engine import HTFFibonacciExitEngine as NewExitEngine
@@ -26,6 +27,8 @@ from core.backtest.position_tracker import PositionTracker
 from core.indicators.exit_fibonacci import calculate_exit_fibonacci_levels
 from core.strategy.champion_loader import ChampionLoader
 from core.strategy.evaluate import evaluate_pipeline
+
+_LOGGER = get_logger(__name__)
 
 
 class CandleCache:
@@ -112,6 +115,11 @@ class BacktestEngine:
         self._col_timestamp = None
         # Numpy arrays for fast window extraction (populated in load_data/_prepare_numpy_arrays)
         self._np_arrays: dict | None = None
+
+        # Precomputed features (set in load_data when precompute is enabled).
+        # Must exist even when tests inject candles_df directly (bypassing load_data).
+        self._precomputed_features: dict[str, list[float]] | None = None
+        self.precompute_features = False
         self.position_tracker = PositionTracker(
             initial_capital=initial_capital,
             commission_rate=commission_rate,
@@ -169,11 +177,11 @@ class BacktestEngine:
 
         use_new_engine = os.environ.get("GENESIS_HTF_EXITS") == "1"
         if use_new_engine and NewExitEngine:
-            print("[INFO] Using NEW HTF Exit Engine (Phase 1)")
+            _LOGGER.info("Using NEW HTF Exit Engine (Phase 1)")
             self.htf_exit_engine = NewExitEngine(self.htf_exit_config)
             self._use_new_exit_engine = True
         else:
-            print("[INFO] Using LEGACY HTF Exit Engine")
+            _LOGGER.info("Using LEGACY HTF Exit Engine")
             self.htf_exit_engine = LegacyExitEngine(self.htf_exit_config)
             self._use_new_exit_engine = False
 
@@ -200,16 +208,18 @@ class BacktestEngine:
 
         if data_file_frozen.exists():
             data_file = data_file_frozen
-            print(f"[DATA] Using FROZEN snapshot: {data_file.name}")
+            _LOGGER.debug("Using frozen snapshot: %s", data_file.name)
         elif data_file_curated.exists():
             data_file = data_file_curated
         elif data_file_legacy.exists():
             data_file = data_file_legacy
         else:
-            print("[ERROR] Data file not found:")
-            print(f"  Tried frozen: {data_file_frozen}")
-            print(f"  Tried curated: {data_file_curated}")
-            print(f"  Tried legacy: {data_file_legacy}")
+            _LOGGER.error(
+                "Data file not found. Tried frozen=%s curated=%s legacy=%s",
+                data_file_frozen,
+                data_file_curated,
+                data_file_legacy,
+            )
             return False
 
         cache_key = (self.symbol, self.timeframe)
@@ -225,9 +235,14 @@ class BacktestEngine:
                 # Fallback to default engine if pyarrow not available
                 base_df = pd.read_parquet(data_file, columns=read_columns)
             self._candles_cache.put(cache_key, base_df)
-            print(f"[OK] Loaded {len(base_df):,} candles from {data_file.name}")
+            _LOGGER.debug("Loaded %s candles from %s", f"{len(base_df):,}", data_file.name)
         else:
-            print(f"[CACHE] Reusing {len(base_df):,} candles for {self.symbol} {self.timeframe}")
+            _LOGGER.debug(
+                "Reusing %s candles for %s %s",
+                f"{len(base_df):,}",
+                self.symbol,
+                self.timeframe,
+            )
 
         # Load HTF (1D) candles if new engine is enabled
         self.htf_candles_df = None
@@ -244,13 +259,15 @@ class BacktestEngine:
                         columns=["timestamp", "open", "high", "low", "close"],
                         engine="pyarrow",
                     )
-                    print(
-                        f"[OK] Loaded {len(self.htf_candles_df):,} HTF candles from {htf_file.name}"
+                    _LOGGER.debug(
+                        "Loaded %s HTF candles from %s",
+                        f"{len(self.htf_candles_df):,}",
+                        htf_file.name,
                     )
                 except Exception as e:
-                    print(f"[WARN] Failed to load HTF candles: {e}")
+                    _LOGGER.warning("Failed to load HTF candles from %s: %s", htf_file, e)
             else:
-                print(f"[WARN] HTF candles file not found: {htf_file}")
+                _LOGGER.debug("HTF candles file not found: %s", htf_file)
 
         # Work off cached DataFrame (avoid eager copy); filters below create sliced views/frames
         self.candles_df = base_df
@@ -259,14 +276,14 @@ class BacktestEngine:
         if self.start_date:
             start_dt = pd.to_datetime(self.start_date)
             self.candles_df = self.candles_df[self.candles_df["timestamp"] >= start_dt]
-            print(f"[FILTER] Start date: {self.start_date}")
+            _LOGGER.debug("Applied start_date filter: %s", self.start_date)
 
         if self.end_date:
             end_dt = pd.to_datetime(self.end_date)
             self.candles_df = self.candles_df[self.candles_df["timestamp"] <= end_dt]
-            print(f"[FILTER] End date: {self.end_date}")
+            _LOGGER.debug("Applied end_date filter: %s", self.end_date)
 
-        print(f"[OK] Filtered to {len(self.candles_df):,} candles")
+        _LOGGER.debug("Filtered to %s candles", f"{len(self.candles_df):,}")
 
         # Initialize fast-window column arrays if enabled
         if self.fast_window:
@@ -289,7 +306,7 @@ class BacktestEngine:
         self._precomputed_features: dict[str, list[float]] | None = None
         if getattr(self, "precompute_features", False):
             try:
-                print("[PRECOMPUTE] Starting feature precomputation...")
+                _LOGGER.info("Precompute enabled: starting feature precomputation")
                 closes_all = self.candles_df["close"].tolist()
                 highs_all = self.candles_df["high"].tolist()
                 lows_all = self.candles_df["low"].tolist()
@@ -324,12 +341,12 @@ class BacktestEngine:
                             if swing_key in npz.files:
                                 pre[swing_key] = npz[swing_key].astype(int).tolist()
                         loaded = True
-                        print(f"[CACHE] Loaded precomputed features from {cache_path.name}")
+                        _LOGGER.debug("Loaded precomputed features from cache: %s", cache_path.name)
                     except Exception:
                         loaded = False
 
                 if not loaded:
-                    print("[PRECOMPUTE] Computing indicators (this may take a minute)...")
+                    _LOGGER.info("Precompute: computing indicators")
                     import time
 
                     start_time = time.perf_counter()
@@ -353,7 +370,7 @@ class BacktestEngine:
                     )
 
                     elapsed = time.perf_counter() - start_time
-                    print(f"[PRECOMPUTE] Computed in {elapsed:.2f}s")
+                    _LOGGER.info("Precompute: computed indicators in %.2fs", elapsed)
 
                     # Optional on-disk cache for reuse between runs
                     try:
@@ -371,7 +388,7 @@ class BacktestEngine:
                             fib_high_px=_np.asarray(sh_px, dtype=float),
                             fib_low_px=_np.asarray(sl_px, dtype=float),
                         )
-                        print(f"[OK] Precomputed features cached: {cache_path.name}")
+                        _LOGGER.debug("Cached precomputed features: %s", cache_path.name)
                     except Exception:  # nosec B110
                         pass  # Ignore cache write errors (not critical)
 
@@ -395,7 +412,7 @@ class BacktestEngine:
                 if self.htf_candles_df is not None:
                     from core.indicators.htf_fibonacci import compute_htf_fibonacci_mapping
 
-                    print("[PRECOMPUTE] Mapping HTF Fibonacci levels...")
+                    _LOGGER.info("Precompute: mapping HTF Fibonacci levels")
                     htf_map = compute_htf_fibonacci_mapping(
                         self.htf_candles_df, self.candles_df, fib_cfg
                     )
@@ -409,18 +426,19 @@ class BacktestEngine:
                     ]:
                         if col in htf_map.columns:
                             self._precomputed_features[col] = htf_map[col].fillna(0.0).tolist()
-                    print("[PRECOMPUTE] HTF Mapping complete.")
+                    _LOGGER.info("Precompute: HTF Fibonacci mapping complete")
 
-                print("[OK] Precomputed features ready - backtest will be faster!")
+                _LOGGER.info("Precompute: features ready")
             except Exception as e:
                 # Non-fatal: skip precompute if indicators unavailable
-                print(f"[WARN] Precomputation failed: {e}")
+                _LOGGER.warning("Precomputation failed (non-fatal): %s", e)
                 self._precomputed_features = None
 
         if len(self.candles_df) < self.warmup_bars:
-            print(
-                f"[WARN] Not enough data for warmup "
-                f"({len(self.candles_df)} < {self.warmup_bars})"
+            _LOGGER.warning(
+                "Not enough data for warmup (%s < %s)",
+                len(self.candles_df),
+                self.warmup_bars,
             )
 
         # Pre-convert DataFrame columns to numpy arrays for fast slicing
@@ -550,7 +568,13 @@ class BacktestEngine:
         self.bar_count = 0
 
         if self.candles_df is None:
-            print("[ERROR] No data loaded. Call load_data() first.")
+            _LOGGER.error("No data loaded. Call load_data() first.")
+            return {"error": "no_data"}
+
+        if len(self.candles_df) == 0:
+            _LOGGER.error(
+                "No candles available (empty dataset). Check date filters and data range."
+            )
             return {"error": "no_data"}
 
         # Ensure numpy arrays are prepared for fast window extraction
@@ -585,16 +609,16 @@ class BacktestEngine:
         meta.setdefault("champion_checksum", champion_cfg.checksum)
         meta.setdefault("champion_loaded_at", champion_cfg.loaded_at)
 
-        print(f"\n{'='*70}")
-        print(f"Running Backtest: {self.symbol} {self.timeframe}")
-        print(f"{'='*70}")
-        print(
-            f"Period:  {self.candles_df['timestamp'].min()} to "
-            f"{self.candles_df['timestamp'].max()}"
+        _LOGGER.info(
+            "Running backtest: %s %s | period=%s..%s | bars=%s (warmup=%s) | capital=$%s",
+            self.symbol,
+            self.timeframe,
+            self.candles_df["timestamp"].min(),
+            self.candles_df["timestamp"].max(),
+            f"{len(self.candles_df):,}",
+            self.warmup_bars,
+            f"{self.position_tracker.initial_capital:,.2f}",
         )
-        print(f"Bars:    {len(self.candles_df):,} (warmup: {self.warmup_bars})")
-        print(f"Capital: ${self.position_tracker.initial_capital:,.2f}")
-        print(f"{'='*70}\n")
 
         # Progress bar
         pbar = tqdm(
@@ -750,6 +774,7 @@ class BacktestEngine:
                         price=close_price,
                         timestamp=timestamp,
                         symbol=self.symbol,
+                        meta={"entry_regime": _regime_name},
                     )
 
                     # If we attempted an entry but did not open a new position, clear pending reasons
@@ -811,7 +836,7 @@ class BacktestEngine:
             from core.strategy.features_asof import get_feature_hit_counts
 
             fast_hits, slow_hits = get_feature_hit_counts()
-            print(f"[FEATURES] Fast path hits: {fast_hits}, slow path hits: {slow_hits}")
+            _LOGGER.debug("Feature paths: fast=%s slow=%s", fast_hits, slow_hits)
         except ImportError:
             pass
 
@@ -825,7 +850,7 @@ class BacktestEngine:
             final_ts = final_bar["timestamp"]
         self.position_tracker.close_all_positions(final_close, final_ts)
 
-        print(f"\n[OK] Backtest complete - {self.bar_count} bars processed")
+        _LOGGER.info("Backtest complete - %s bars processed", self.bar_count)
 
         return self._build_results()
 
@@ -857,6 +882,14 @@ class BacktestEngine:
 
         if not enabled:
             return None
+
+        # Prefer explicit bar_index (passed from main loop). Fallback to configs['_global_index'].
+        idx = bar_index
+        if idx is None:
+            try:
+                idx = int(configs.get("_global_index"))
+            except Exception:
+                idx = None
 
         # Get HTF Fibonacci context - prefer precomputed if available
         htf_fib_context = {}
@@ -890,14 +923,6 @@ class BacktestEngine:
 
         # Calculate ATR for exit logic (use last 14 bars AS OF current bar)
         from core.indicators.atr import calculate_atr
-
-        # Prefer explicit bar_index (passed from main loop). Fallback to configs['_global_index'].
-        idx = bar_index
-        if idx is None:
-            try:
-                idx = int(configs.get("_global_index"))
-            except Exception:
-                idx = None
 
         current_atr = 100.0
         if idx is not None and self._np_arrays is not None:
@@ -1024,8 +1049,12 @@ class BacktestEngine:
                     reason=action.reason,
                 )
                 if trade:  # Always log partial exits
-                    print(
-                        f"  [PARTIAL] {action.reason}: {trade.size:.3f} @ ${trade.exit_price:,.0f} = ${trade.pnl:,.2f}"
+                    _LOGGER.info(
+                        "PARTIAL exit: %s | size=%.3f @ $%s | pnl=$%s",
+                        action.reason,
+                        float(trade.size),
+                        f"{float(trade.exit_price):,.0f}",
+                        f"{float(trade.pnl):,.2f}",
                     )
                     if partial_break_even and trade.remaining_size > 0:
                         if position.side == "LONG":
@@ -1209,6 +1238,7 @@ class BacktestEngine:
                     "size": t.size,
                     "entry_price": t.entry_price,
                     "entry_time": t.entry_time.isoformat(),
+                    "entry_regime": t.entry_regime,
                     "exit_price": t.exit_price,
                     "exit_time": t.exit_time.isoformat(),
                     "pnl": t.pnl,
@@ -1250,7 +1280,7 @@ class BacktestEngine:
 
         if not htf_fib_context.get("available"):
             # No HTF data available - position will use fallback exits
-            print(f"[DEBUG] HTF not available: {htf_fib_context}")
+            _LOGGER.debug("HTF not available (using fallback exits): %s", htf_fib_context)
             return
 
         # Extract swing from HTF context
@@ -1259,7 +1289,9 @@ class BacktestEngine:
 
         if swing_high <= swing_low or swing_high <= 0 or swing_low <= 0:
             # Invalid swing - position will use fallback exits
-            print(f"[DEBUG] Invalid swing: high={swing_high}, low={swing_low}")
+            _LOGGER.debug(
+                "Invalid HTF swing (using fallback exits): high=%s, low=%s", swing_high, swing_low
+            )
             return
 
         # Get indicators for validation

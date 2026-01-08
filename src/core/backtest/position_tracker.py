@@ -19,6 +19,7 @@ class Position:
     current_size: float  # Remaining size after partials
     entry_price: float
     entry_time: datetime
+    entry_regime: str | None = None
     entry_reasons: list[str] = field(default_factory=list)
     unrealized_pnl: float = 0.0
     partial_exits: list = field(default_factory=list)  # [(size, price, reason, time)]
@@ -94,6 +95,7 @@ class Trade:
     size: float
     entry_price: float
     entry_time: datetime
+    entry_regime: str | None
     exit_price: float
     exit_time: datetime
     pnl: float
@@ -161,6 +163,7 @@ class PositionTracker:
         price: float,
         timestamp: datetime,
         symbol: str = "unknown",
+        meta: dict | None = None,
     ) -> dict:
         """
         Execute a trading action.
@@ -191,7 +194,7 @@ class PositionTracker:
 
         # Open new position if no position or after closing
         if self.position is None:
-            self._open_position(action, size, price, timestamp, symbol)
+            self._open_position(action, size, price, timestamp, symbol, meta=meta)
             result["executed"] = True
             result["reason"] = "opened"
         else:
@@ -223,6 +226,13 @@ class PositionTracker:
         # Create position with partial exit support
         state_reasons = self.pending_reasons()
         self.clear_pending_reasons()
+
+        entry_regime = None
+        if isinstance(meta, dict):
+            # Prefer explicit entry_regime; fall back to generic "regime" if caller uses that.
+            raw_regime = meta.get("entry_regime", meta.get("regime"))
+            if raw_regime is not None:
+                entry_regime = str(raw_regime)
         self.position = Position(
             symbol=symbol,
             side=side,
@@ -230,6 +240,7 @@ class PositionTracker:
             current_size=size,
             entry_price=effective_price,
             entry_time=timestamp,
+            entry_regime=entry_regime,
             entry_reasons=state_reasons,
         )
 
@@ -287,6 +298,7 @@ class PositionTracker:
             size=self.position.current_size,  # Remaining size being closed
             entry_price=self.position.entry_price,
             entry_time=self.position.entry_time,
+            entry_regime=self.position.entry_regime,
             exit_price=effective_price,
             exit_time=timestamp,
             pnl=total_pnl,  # Total PnL including partials
@@ -391,6 +403,7 @@ class PositionTracker:
             size=actual_close_size,
             entry_price=self.position.entry_price,
             entry_time=self.position.entry_time,
+            entry_regime=self.position.entry_regime,
             exit_price=effective_price,
             exit_time=timestamp,
             pnl=pnl,
@@ -490,6 +503,7 @@ class PositionTracker:
             size=self.position.size,
             entry_price=self.position.entry_price,
             entry_time=self.position.entry_time,
+            entry_regime=self.position.entry_regime,
             exit_price=effective_price,
             exit_time=timestamp,
             pnl=pnl,

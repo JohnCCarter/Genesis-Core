@@ -42,6 +42,7 @@ def sample_backtest_results():
                 "size": 0.1,
                 "entry_price": 100.0,
                 "entry_time": "2025-01-02T10:00:00",
+                "entry_regime": "RANGING",
                 "exit_price": 105.0,
                 "exit_time": "2025-01-02T14:00:00",
                 "pnl": 0.5,
@@ -141,6 +142,7 @@ def test_save_trades_csv(tmp_path, sample_backtest_results):
     df = pd.read_csv(csv_file)
     assert len(df) == 2  # Two trades
     assert "symbol" in df.columns
+    assert "entry_regime" in df.columns
     assert "pnl" in df.columns
     assert df["symbol"].iloc[0] == "tBTCUSD"
 

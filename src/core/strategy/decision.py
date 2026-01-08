@@ -1053,11 +1053,37 @@ def decide(
     if size_scale > 1.0:
         size_scale = 1.0
 
-    size = float(size_base * size_scale)
+    # Optional regime-aware sizing multiplier (scope: sizing only).
+    # Kept config-driven and non-invasive: default multiplier is 1.0.
+    regime_mult = 1.0
+    try:
+        rm = (cfg.get("risk") or {}).get("regime_size_multipliers") or {}
+        if isinstance(rm, dict):
+            r = str(regime or "").strip()
+            # Accept keys as provided, plus common casings.
+            regime_mult = float(
+                rm.get(r)
+                if r in rm
+                else (
+                    rm.get(r.lower())
+                    if r.lower() in rm
+                    else rm.get(r.upper()) if r.upper() in rm else 1.0
+                )
+            )
+    except Exception:
+        regime_mult = 1.0
+    if regime_mult < 0.0:
+        regime_mult = 0.0
+    if regime_mult > 1.0:
+        # Safety: this knob is intended as a protective downscaler.
+        regime_mult = 1.0
+
+    size = float(size_base * size_scale * regime_mult)
 
     state_out["confidence_gate"] = conf_val_gate
     state_out["size_base"] = size_base
     state_out["size_scale"] = size_scale
+    state_out["size_regime_mult"] = regime_mult
 
     if size <= 0.0:
         _log_decision_event(

@@ -21,6 +21,84 @@ from core.indicators.fibonacci import (
     calculate_fibonacci_levels,
     detect_swing_points,
 )
+from core.utils import timeframe_filename_suffix
+
+# --- Module-level caches / constants ---
+
+# Cache: {"{symbol}_{htf_timeframe}_{config_hash}": {"fib_df": pd.DataFrame}}
+_htf_context_cache: dict[str, dict[str, Any]] = {}
+
+# Small in-memory candle cache to avoid repeated parquet reads in hot paths.
+_candles_cache: dict[tuple[str, str], pd.DataFrame] = {}
+
+# Guardrail: HTF context older than this is considered stale.
+# Needs to be low enough to flag clearly outdated mappings (tests cover 40d stale).
+MAX_HTF_AGE_HOURS = 24.0 * 30.0
+
+
+def _normalize_timestamp(value: Any) -> pd.Timestamp | None:
+    """Normalize timestamps into tz-aware UTC pandas Timestamps.
+
+    Returns None for missing/NaT/unparseable values.
+    """
+
+    if value is None:
+        return None
+    try:
+        ts = pd.to_datetime(value, errors="coerce", utc=True)
+    except Exception:
+        return None
+    if ts is None or ts is pd.NaT:
+        return None
+    try:
+        pts = pd.Timestamp(ts)
+    except Exception:
+        return None
+    if getattr(pts, "tz", None) is None:
+        try:
+            pts = pts.tz_localize("UTC")
+        except Exception:
+            return None
+    else:
+        try:
+            pts = pts.tz_convert("UTC")
+        except Exception:
+            return None
+    return pts
+
+
+def load_candles_data(symbol: str, timeframe: str) -> pd.DataFrame:
+    """Load candles from frozen/curated/legacy parquet with deterministic priority.
+
+    Priority:
+      1) data/raw/{symbol}_{tf}_frozen.parquet
+      2) data/curated/v1/candles/{symbol}_{tf}.parquet
+      3) data/candles/{symbol}_{tf}.parquet
+    """
+
+    tf = timeframe_filename_suffix(str(timeframe))
+    cache_key = (symbol, tf)
+    cached = _candles_cache.get(cache_key)
+    if cached is not None:
+        return cached
+
+    repo_root = Path(__file__).resolve().parents[3]
+    data_dir = repo_root / "data"
+    candidates = [
+        data_dir / "raw" / f"{symbol}_{tf}_frozen.parquet",
+        data_dir / "curated" / "v1" / "candles" / f"{symbol}_{tf}.parquet",
+        data_dir / "candles" / f"{symbol}_{tf}.parquet",
+    ]
+    path = next((p for p in candidates if p.exists()), None)
+    if path is None:
+        tried = ", ".join(str(p) for p in candidates)
+        raise FileNotFoundError(f"No candle parquet found for {symbol} {tf}. Tried: {tried}")
+
+    df = pd.read_parquet(path)
+    if "timestamp" in df.columns:
+        df["timestamp"] = pd.to_datetime(df["timestamp"], utc=True, errors="coerce")
+    _candles_cache[cache_key] = df
+    return df
 
 
 def get_swings_as_of(
@@ -127,6 +205,7 @@ def compute_htf_fibonacci_levels(
                 "htf_fib_0382": fib_levels.get(0.382),
                 "htf_fib_05": fib_levels.get(0.5),
                 "htf_fib_0618": fib_levels.get(0.618),
+                "htf_fib_0786": fib_levels.get(0.786),
                 "htf_swing_high": current_swings["current_high"],
                 "htf_swing_low": current_swings["current_low"],
                 "htf_swing_age_bars": swing_age if swing_age >= 0 else 0,
@@ -139,7 +218,7 @@ def compute_htf_fibonacci_levels(
 def compute_htf_fibonacci_mapping(
     htf_candles: pd.DataFrame,
     ltf_candles: pd.DataFrame,
-    config: FibonacciConfig,
+    config: FibonacciConfig | None = None,
 ) -> pd.DataFrame:
     """
     Compute 1D Fibonacci levels and project to LTF timestamps.
@@ -166,43 +245,51 @@ def compute_htf_fibonacci_mapping(
             - htf_swing_high
             - htf_swing_low
     """
-    # 1. Calculate HTF levels
-    htf_df = compute_htf_fibonacci_levels(htf_candles, config)
+    config_obj = config or FibonacciConfig()
+    htf_df = compute_htf_fibonacci_levels(htf_candles, config_obj)
+    if htf_df is None or htf_df.empty:
+        return ltf_candles[["timestamp"]].assign(htf_data_age_hours=np.nan)
 
-    # 2. Project to LTF bars (forward-fill)
-    # We want: for each LTF bar at T, find latest HTF bar where htf_time < T
-    # Assuming htf_timestamp represents the OPEN time or close?
-    # Usually timestamps are candle open times.
-    # An HTF candle opened at D, closes at D+1d.
-    # Data from D is only available at D+1d.
-    # So if LTF is at T, we need HTF candle where (open_time + period) <= T
-    # Or simply: use `asof` merge with direction='backward' but strict inequality.
+    def _normalize_dt_series(values: Any, *, tz_aware: bool) -> pd.Series:
+        ts = pd.to_datetime(values, utc=True, errors="coerce")
+        if tz_aware:
+            return ts
+        # Drop tz (keep UTC clock time) to match naive LTF inputs.
+        try:
+            return ts.dt.tz_convert("UTC").dt.tz_localize(None)
+        except Exception:
+            # Fallback for older pandas edge cases
+            return pd.to_datetime(ts.dt.tz_localize(None), errors="coerce")
 
-    # Infer HTF frequency to determine "valid_from" time (Close Time)
-    if len(htf_df) > 1:
-        # Calculate median delta between timestamps
-        deltas = htf_df["htf_timestamp_close"].diff().dropna()
-        frequency = deltas.median()
+    ltf_left = ltf_candles[["timestamp"]].copy()
+    ltf_ts_in = pd.to_datetime(ltf_left["timestamp"], errors="coerce")
+    tz_aware = getattr(ltf_ts_in.dt, "tz", None) is not None
+    ltf_left["timestamp"] = _normalize_dt_series(ltf_left["timestamp"], tz_aware=tz_aware)
+
+    htf_df = htf_df.copy()
+
+    # Normalize timestamp semantics:
+    # - If `htf_timestamp_close` exists, treat it as HTF period start (open time) and
+    #   compute a strict availability timestamp `valid_from = open + frequency`.
+    # - If `timestamp` exists (cached/precomputed frames), treat it as availability timestamp.
+    if "htf_timestamp_close" in htf_df.columns:
+        htf_df["htf_timestamp"] = _normalize_dt_series(
+            htf_df["htf_timestamp_close"], tz_aware=tz_aware
+        )
+        deltas = htf_df["htf_timestamp"].diff().dropna()
+        frequency = deltas.median() if len(deltas) > 0 else pd.Timedelta(days=1)
+        htf_df["valid_from"] = htf_df["htf_timestamp"] + frequency
+    elif "timestamp" in htf_df.columns:
+        htf_df["htf_timestamp"] = _normalize_dt_series(htf_df["timestamp"], tz_aware=tz_aware)
+        htf_df = htf_df.drop(columns=["timestamp"])
+        htf_df["valid_from"] = htf_df["htf_timestamp"]
     else:
-        # Fallback to 1 Day if single row or unclear
-        frequency = pd.Timedelta(days=1)
+        raise KeyError("HTF fibonacci dataframe missing timestamp column")
 
-    # valid_from is strictly when the candle closes.
-    # We assume 'htf_timestamp_close' is the Open time (standard convention in this codebase).
-    # So valid_from = OpenTime + Frequency.
-    htf_df["valid_from"] = htf_df["htf_timestamp_close"] + frequency
-
-    # Debug: Ensure types are compatible
-    htf_df["valid_from"] = pd.to_datetime(htf_df["valid_from"])
-
-    # Use merge_asof
-    # left: LTF (timestamp)
-    # right: HTF (valid_from)
-    # We want closest HTF where valid_from <= LTF timestamp.
-    # direction='backward' gives right_on <= left_on
+    htf_df["valid_from"] = pd.to_datetime(htf_df["valid_from"], errors="coerce")
 
     merged = pd.merge_asof(
-        ltf_candles[["timestamp"]],  # Only keep timestamp to preserve index from left
+        ltf_left,
         htf_df,
         left_on="timestamp",
         right_on="valid_from",
@@ -210,9 +297,12 @@ def compute_htf_fibonacci_mapping(
         allow_exact_matches=True,
     )
 
-    merged["htf_data_age_hours"] = (
-        (merged["timestamp"] - merged["htf_timestamp_close"]).dt.total_seconds() / 3600
-    ).where(merged["htf_fib_0618"].notna(), None)
+    marker_col = "htf_fib_0618" if "htf_fib_0618" in merged.columns else None
+    age_hours = (merged["timestamp"] - merged["htf_timestamp"]).dt.total_seconds() / 3600
+    if marker_col is not None:
+        merged["htf_data_age_hours"] = age_hours.where(merged[marker_col].notna(), np.nan)
+    else:
+        merged["htf_data_age_hours"] = age_hours.where(merged["htf_timestamp"].notna(), np.nan)
 
     return merged
 
@@ -332,7 +422,12 @@ def get_htf_fibonacci_context(
 
     # Only provide HTF context for LTF timeframes.
     if tf_norm not in ["1h", "30m", "6h", "15m"]:
-        return {"available": False, "reason": "HTF_NOT_APPLICABLE", "timeframe": tf_norm}
+        return {
+            "available": False,
+            "reason": "HTF_NOT_APPLICABLE",
+            "timeframe": tf_norm,
+            "htf_timeframe": htf_timeframe,
+        }
 
     # Load or reuse cached HTF fib dataframe
     if fib_df is None:
@@ -360,13 +455,20 @@ def get_htf_fibonacci_context(
                 "htf_timeframe": htf_timeframe,
             }
 
-        if reference_ts is not None:
-            # Ensure 'timestamp' column exists in fib_df (it might be 'htf_timestamp_close' from compute_htf_fibonacci_levels)
-            ts_col = "timestamp" if "timestamp" in fib_df.columns else "htf_timestamp_close"
-            ref_rows = fib_df[fib_df[ts_col] <= reference_ts]
-            if ref_rows.empty:
-                return {"available": False, "reason": "HTF_NO_HISTORY"}
-            latest_htf = ref_rows.iloc[-1]
+        # Ensure we select the latest HTF row that is actually available as-of reference_ts
+        # (no lookahead).
+        ts_col = "timestamp" if "timestamp" in fib_df.columns else "htf_timestamp_close"
+        ts_series = pd.to_datetime(fib_df[ts_col], utc=True, errors="coerce")
+        if ts_col == "htf_timestamp_close":
+            deltas = ts_series.diff().dropna()
+            frequency = deltas.median() if len(deltas) > 0 else pd.Timedelta(days=1)
+            valid_from = ts_series + frequency
+        else:
+            valid_from = ts_series
+        ref_rows = fib_df[valid_from <= reference_ts]
+        if ref_rows.empty:
+            return {"available": False, "reason": "HTF_NO_HISTORY", "htf_timeframe": htf_timeframe}
+        latest_htf = ref_rows.iloc[-1]
 
         # Validate that all required levels are present and finite.
         required_cols = {
@@ -407,7 +509,7 @@ def get_htf_fibonacci_context(
         data_age_hours = _compute_age_hours(last_htf_timestamp, reference_ts)
 
         if data_age_hours > MAX_HTF_AGE_HOURS:
-            return {"available": False, "reason": "HTF_DATA_STALE"}
+            return {"available": False, "reason": "HTF_DATA_STALE", "htf_timeframe": htf_timeframe}
 
         # Return HTF context
         swing_high = float(latest_htf["htf_swing_high"])
@@ -460,7 +562,105 @@ def get_htf_fibonacci_context(
         return {"available": False, "reason": "HTF_ERROR", "error": str(e)}
 
 
-
 def get_ltf_fibonacci_context(*args, **kwargs) -> dict[str, Any]:
-    """Stub for LTF context."""
-    return {}
+    """Compute same-timeframe Fibonacci context for entry/exit gating.
+
+    This function is *as-of safe* by construction: it only uses the candles passed
+    in by the caller.
+
+    Expected caller format (from `features_asof.py`):
+      candles={high:[...], low:[...], close:[...], timestamp:[...]}, atr_values=[...]
+    """
+
+    candles = args[0] if args else kwargs.get("candles")
+    timeframe = kwargs.get("timeframe")
+    atr_values = kwargs.get("atr_values")
+    cfg = kwargs.get("config")
+    config = cfg if isinstance(cfg, FibonacciConfig) else FibonacciConfig()
+
+    tf_raw = "" if timeframe is None else str(timeframe)
+    tf_norm = tf_raw.strip().lower()
+    if not tf_norm:
+        return {"available": False, "reason": "LTF_TIMEFRAME_MISSING"}
+
+    if not isinstance(candles, dict):
+        return {"available": False, "reason": "LTF_BAD_INPUT"}
+
+    highs, lows, closes, timestamps = _to_series(candles)
+    n = int(len(closes))
+    if n < 3:
+        return {"available": False, "reason": "LTF_INSUFFICIENT_DATA"}
+
+    atr_seq: Sequence[float] | None = None
+    if atr_values is not None:
+        try:
+            atr_arr = np.asarray(atr_values, dtype=float)
+            if atr_arr.size > 0:
+                atr_seq = atr_arr.tolist()
+        except Exception:
+            atr_seq = None
+
+    swing_high_idx, swing_low_idx, swing_high_prices, swing_low_prices = detect_swing_points(
+        highs, lows, closes, config, atr_values=atr_seq
+    )
+
+    if not swing_high_prices or not swing_low_prices:
+        return {"available": False, "reason": "LTF_NO_SWINGS"}
+
+    fib_levels_list = calculate_fibonacci_levels(swing_high_prices, swing_low_prices, config.levels)
+    if len(fib_levels_list) != len(config.levels):
+        return {"available": False, "reason": "LTF_LEVELS_INCOMPLETE"}
+
+    levels_raw = dict(zip(config.levels, fib_levels_list, strict=False))
+
+    swing_high = float(swing_high_prices[-1])
+    swing_low = float(swing_low_prices[-1])
+    if not (math.isfinite(swing_high) and math.isfinite(swing_low)):
+        return {"available": False, "reason": "LTF_SWING_BOUNDS_NAN"}
+    if swing_high <= swing_low:
+        return {
+            "available": False,
+            "reason": "LTF_INVALID_SWING_BOUNDS",
+            "swing_high": swing_high,
+            "swing_low": swing_low,
+        }
+
+    last_hi_idx = swing_high_idx[-1] if swing_high_idx else None
+    last_lo_idx = swing_low_idx[-1] if swing_low_idx else None
+    last_idx = max(i for i in [last_hi_idx, last_lo_idx] if i is not None)
+    swing_age_bars = max(0, (n - 1) - int(last_idx))
+
+    last_update = None
+    if len(timestamps) == n:
+        last_update = _normalize_timestamp(timestamps.iloc[-1])
+
+    required_levels = [0.382, 0.5, 0.618, 0.786]
+    missing: list[float] = []
+    levels: dict[float, float] = {}
+    for lvl in required_levels:
+        raw = levels_raw.get(lvl)
+        if raw is None or pd.isna(raw):
+            missing.append(float(lvl))
+            continue
+        try:
+            val = float(raw)
+        except Exception:
+            missing.append(float(lvl))
+            continue
+        if not math.isfinite(val):
+            missing.append(float(lvl))
+            continue
+        levels[float(lvl)] = float(val)
+
+    if missing:
+        return {"available": False, "reason": "LTF_LEVELS_INCOMPLETE", "missing_levels": missing}
+
+    return {
+        "available": True,
+        "timeframe": tf_norm,
+        "levels": levels,
+        "swing_high": swing_high,
+        "swing_low": swing_low,
+        "swing_age_bars": int(swing_age_bars),
+        "last_update": last_update,
+    }

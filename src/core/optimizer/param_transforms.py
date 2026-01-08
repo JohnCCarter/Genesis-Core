@@ -3,11 +3,17 @@ from __future__ import annotations
 import copy
 from typing import Any
 
-# Champion baseline risk map (kept in ascending order)
+# Default risk map baseline (kept in ascending order).
+#
+# IMPORTANT:
+# - This baseline is used when Optuna configs omit `risk.risk_map_deltas` and don't
+#   provide an explicit `risk.risk_map`.
+# - Keep this conservative and aligned with runtime defaults to avoid accidentally
+#   amplifying drawdowns in explore/validate windows.
 BASE_RISK_MAP: list[tuple[float, float]] = [
-    (0.48, 0.01),
-    (0.59, 0.015),
-    (0.70, 0.07),
+    (0.45, 0.015),
+    (0.55, 0.025),
+    (0.65, 0.035),
 ]
 
 

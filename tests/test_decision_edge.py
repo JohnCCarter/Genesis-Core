@@ -183,3 +183,48 @@ def test_entry_gate_does_not_use_scaled_confidence():
     )
     assert a == "NONE"
     assert "CONF_TOO_LOW" in (m.get("reasons") or [])
+
+
+def test_regime_size_multiplier_scales_size_only():
+    cfg = {
+        "thresholds": {
+            "entry_conf_overall": 0.75,
+            "min_edge": 0.0,
+        },
+        "risk": {
+            "risk_map": [
+                [0.50, 0.01],
+                [0.80, 0.02],
+            ],
+            "regime_size_multipliers": {"ranging": 0.5},
+        },
+    }
+
+    # Entry should pass on raw buy=0.80 and size should be 0.02 in balanced.
+    a_bal, m_bal = decide(
+        {},
+        probas={"buy": 0.85, "sell": 0.50},
+        confidence={"buy": 0.80, "sell": 0.10},
+        regime="balanced",
+        state={},
+        risk_ctx={},
+        cfg=cfg,
+    )
+    assert a_bal == "LONG"
+    assert abs(float(m_bal.get("size") or 0.0) - 0.02) < 1e-12
+
+    # In ranging, size should be scaled down by multiplier (0.5).
+    a_rng, m_rng = decide(
+        {},
+        probas={"buy": 0.85, "sell": 0.50},
+        confidence={"buy": 0.80, "sell": 0.10},
+        regime="ranging",
+        state={},
+        risk_ctx={},
+        cfg=cfg,
+    )
+    assert a_rng == "LONG"
+    assert abs(float(m_rng.get("size") or 0.0) - 0.01) < 1e-12
+
+    # Debug signal should be present.
+    assert (m_rng.get("state_out") or {}).get("size_regime_mult") == 0.5

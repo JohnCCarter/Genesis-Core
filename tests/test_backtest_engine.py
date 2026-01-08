@@ -1,9 +1,13 @@
 """Tests for backtest engine."""
 
+import builtins
+from datetime import datetime
+
 import pandas as pd
 import pytest
 
 from core.backtest.engine import BacktestEngine
+from core.backtest.position_tracker import Position
 
 
 @pytest.fixture
@@ -137,6 +141,53 @@ def test_engine_run_no_data():
     assert results["error"] == "no_data"
 
 
+def test_engine_run_empty_dataframe():
+    """Test engine fails gracefully when candles_df is empty (e.g. after date filtering)."""
+    engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m")
+    engine.candles_df = pd.DataFrame(
+        {
+            "timestamp": pd.to_datetime([]),
+            "open": [],
+            "high": [],
+            "low": [],
+            "close": [],
+            "volume": [],
+        }
+    )
+
+    results = engine.run()
+
+    assert "error" in results
+    assert results["error"] == "no_data"
+
+
+def test_engine_does_not_print_htf_unavailable_debug(monkeypatch):
+    """Regression: HTF-unavailable should not spam stdout via print()."""
+    engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m")
+    engine.position_tracker.position = Position(
+        symbol="tBTCUSD",
+        side="LONG",
+        initial_size=1.0,
+        current_size=1.0,
+        entry_price=100.0,
+        entry_time=datetime(2025, 1, 1),
+    )
+
+    def _fail_print(*_args, **_kwargs):
+        raise AssertionError("print() should not be called for HTF debug")
+
+    monkeypatch.setattr(builtins, "print", _fail_print)
+
+    engine._initialize_position_exit_context(
+        result={"features": {}},
+        meta={
+            "features": {"htf_fibonacci": {"available": False, "reason": "HTF_LEVELS_INCOMPLETE"}}
+        },
+        entry_price=100.0,
+        timestamp=datetime(2025, 1, 1),
+    )
+
+
 def test_engine_run_with_minimal_data(sample_candles_data):
     """Test engine runs successfully with minimal data."""
     engine = BacktestEngine(
@@ -264,7 +315,7 @@ def test_engine_handles_pipeline_errors_gracefully(sample_candles_data):
 
 
 def test_engine_with_verbose_mode(sample_candles_data, capsys):
-    """Test engine verbose mode prints trade info."""
+    """Test engine verbose mode emits some user-facing progress/log output."""
     engine = BacktestEngine(
         symbol="tBTCUSD",
         timeframe="15m",
@@ -281,6 +332,11 @@ def test_engine_with_verbose_mode(sample_candles_data, capsys):
 
     engine.run(configs=configs, verbose=True)
 
-    # Check if any output was printed (trades or status)
+    # Check if any output was emitted (tqdm writes to stderr; logging may also use stderr)
     captured = capsys.readouterr()
-    assert "Backtest" in captured.out or "Running" in captured.out
+    assert (
+        "Backtest" in captured.err
+        or "Backtest" in captured.out
+        or "Running" in captured.err
+        or "Running" in captured.out
+    )

@@ -339,14 +339,29 @@ def check_snapshot_exists(snapshot_id: str, symbol: str, timeframe: str) -> tupl
     from pathlib import Path
 
     base_dir = Path(__file__).parent.parent / "data"
+    data_file_frozen = base_dir / "raw" / f"{symbol}_{timeframe}_frozen.parquet"
     data_file_curated = base_dir / "curated" / "v1" / "candles" / f"{symbol}_{timeframe}.parquet"
     data_file_legacy = base_dir / "candles" / f"{symbol}_{timeframe}.parquet"
 
+    if data_file_frozen.exists():
+        try:
+            import pandas as pd
+
+            df = pd.read_parquet(data_file_frozen, columns=["timestamp"])
+            if len(df) == 0:
+                return False, f"[FAIL] Datafil är tom: {data_file_frozen}"
+            n_rows = len(df)
+            return (
+                True,
+                f"[OK] snapshot_id: {snapshot_id} | Datafil: {data_file_frozen} ({n_rows:,} rader)",
+            )
+        except Exception as e:
+            return False, f"[FAIL] Kan inte läsa datafil {data_file_frozen}: {e}"
     if data_file_curated.exists():
         try:
             import pandas as pd
 
-            df = pd.read_parquet(data_file_curated)
+            df = pd.read_parquet(data_file_curated, columns=["timestamp"])
             if len(df) == 0:
                 return False, f"[FAIL] Datafil är tom: {data_file_curated}"
             n_rows = len(df)
@@ -360,7 +375,7 @@ def check_snapshot_exists(snapshot_id: str, symbol: str, timeframe: str) -> tupl
         try:
             import pandas as pd
 
-            df = pd.read_parquet(data_file_legacy)
+            df = pd.read_parquet(data_file_legacy, columns=["timestamp"])
             if len(df) == 0:
                 return False, f"[FAIL] Datafil är tom: {data_file_legacy}"
             n_rows = len(df)
@@ -373,8 +388,135 @@ def check_snapshot_exists(snapshot_id: str, symbol: str, timeframe: str) -> tupl
     else:
         return (
             False,
-            f"[FAIL] Datafil saknas för {symbol} {timeframe}:\n  Försökte: {data_file_curated}\n  Försökte: {data_file_legacy}",
+            f"[FAIL] Datafil saknas för {symbol} {timeframe}:\n  Försökte: {data_file_frozen}\n  Försökte: {data_file_curated}\n  Försökte: {data_file_legacy}",
         )
+
+
+def _is_truthy(value: Any) -> bool:
+    if value is True:
+        return True
+    if value is False or value is None:
+        return False
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "y", "on"}
+    return False
+
+
+def _pick_data_file(symbol: str, timeframe: str) -> Path | None:
+    base_dir = ROOT / "data"
+    candidates = [
+        base_dir / "raw" / f"{symbol}_{timeframe}_frozen.parquet",
+        base_dir / "curated" / "v1" / "candles" / f"{symbol}_{timeframe}.parquet",
+        base_dir / "candles" / f"{symbol}_{timeframe}.parquet",
+    ]
+    for p in candidates:
+        if p.exists():
+            return p
+    return None
+
+
+def _get_time_range_from_parquet(path: Path) -> tuple[datetime, datetime] | None:
+    """Returnera (min_ts, max_ts) för en candle-parquet via timestamp-kolumnen."""
+    try:
+        import pandas as pd
+
+        df = pd.read_parquet(path, columns=["timestamp"], engine="pyarrow", memory_map=True)
+    except Exception:
+        try:
+            import pandas as pd
+
+            df = pd.read_parquet(path, columns=["timestamp"])
+        except Exception:
+            return None
+
+    if df is None or len(df) == 0 or "timestamp" not in df.columns:
+        return None
+
+    ts = df["timestamp"]
+    min_ts = ts.min()
+    max_ts = ts.max()
+    if pd.isna(min_ts) or pd.isna(max_ts):
+        return None
+    # Säkerställ python-datetime
+    return (pd.Timestamp(min_ts).to_pydatetime(), pd.Timestamp(max_ts).to_pydatetime())
+
+
+def check_requested_data_coverage(
+    meta: dict[str, Any], runs_cfg: dict[str, Any]
+) -> tuple[bool, str]:
+    """Faila tidigt om önskat datumintervall inte täcks av tillgänglig candle-data."""
+    symbol = meta.get("symbol", "tBTCUSD")
+    timeframe = meta.get("timeframe", "1h")
+
+    use_sample_range = _is_truthy(runs_cfg.get("use_sample_range"))
+
+    start_raw: Any | None = None
+    end_raw: Any | None = None
+    source = ""
+
+    if use_sample_range:
+        start_raw = runs_cfg.get("sample_start")
+        end_raw = runs_cfg.get("sample_end")
+        source = "sample_range"
+    else:
+        snap = meta.get("snapshot_id")
+        if isinstance(snap, str) and snap.strip():
+            parts = snap.split("_")
+            if len(parts) >= 4:
+                start_raw = parts[-3]
+                end_raw = parts[-2]
+                source = "snapshot_id"
+
+    if not start_raw or not end_raw:
+        return (
+            True,
+            "[SKIP] Ingen datumintervall att täckningsvalidera (saknar sample_start/end eller snapshot_id)",
+        )
+
+    try:
+        req_start = datetime.fromisoformat(str(start_raw).strip())
+        req_end = datetime.fromisoformat(str(end_raw).strip())
+    except Exception as e:
+        return (
+            False,
+            f"[FAIL] Kunde inte tolka datumintervall ({source}): {start_raw} / {end_raw}: {e}",
+        )
+
+    if req_end < req_start:
+        return (
+            False,
+            f"[FAIL] Ogiltigt datumintervall: start={req_start.date()} > end={req_end.date()}",
+        )
+
+    data_file = _pick_data_file(symbol, timeframe)
+    if data_file is None:
+        return False, f"[FAIL] Ingen datafil hittades för {symbol} {timeframe}"
+
+    tr = _get_time_range_from_parquet(data_file)
+    if tr is None:
+        return False, f"[FAIL] Kunde inte läsa timestamp-range från {data_file}"
+
+    data_start, data_end = tr
+
+    if req_start > data_end or req_end < data_start:
+        return (
+            False,
+            f"[FAIL] Datumintervall ({req_start.date()}..{req_end.date()}) ligger utanför data-range "
+            f"({data_start.date()}..{data_end.date()}) i {data_file.name}",
+        )
+
+    if req_start < data_start or req_end > data_end:
+        return (
+            False,
+            f"[FAIL] Data täcker inte hela intervallet ({req_start.date()}..{req_end.date()}). "
+            f"Tillgängligt: {data_start.date()}..{data_end.date()} i {data_file.name}",
+        )
+
+    return (
+        True,
+        f"[OK] Data coverage: {req_start.date()}..{req_end.date()} inom {data_start.date()}..{data_end.date()} "
+        f"({data_file.name})",
+    )
 
 
 def check_date_source(meta: dict[str, Any], runs_cfg: dict[str, Any]) -> tuple[bool, str]:
@@ -399,9 +541,7 @@ def check_date_source(meta: dict[str, Any], runs_cfg: dict[str, Any]) -> tuple[b
         )
 
     # När runnern ska använda sample-range måste båda fält finnas i runs
-    if runs_usr is True or (
-        isinstance(runs_usr, str) and runs_usr.strip().lower() in {"1", "true", "yes", "y", "on"}
-    ):
+    if _is_truthy(runs_usr):
         start_raw = runs_cfg.get("sample_start")
         end_raw = runs_cfg.get("sample_end")
         if not start_raw or not end_raw:
@@ -416,6 +556,21 @@ def check_date_source(meta: dict[str, Any], runs_cfg: dict[str, Any]) -> tuple[b
                 datetime.fromisoformat(str(start_raw).strip())
                 datetime.fromisoformat(str(end_raw).strip())
                 issues.append(f"[OK] sample_range: {start_raw} -> {end_raw}")
+
+                # Informativt: snapshot_id används ofta bara som metadata när sample_range används.
+                # Om snapshot_id ändå är satt men inte matchar sample_start/end är det lätt att bli förvirrad.
+                snap = meta.get("snapshot_id")
+                if isinstance(snap, str) and snap.strip():
+                    parts = snap.split("_")
+                    if len(parts) >= 4:
+                        snap_start = parts[-3]
+                        snap_end = parts[-2]
+                        if str(snap_start) != str(start_raw) or str(snap_end) != str(end_raw):
+                            issues.append(
+                                "[WARN] meta.snapshot_id-datum matchar inte sample_range. "
+                                f"snapshot_id={snap_start}->{snap_end}, sample_range={start_raw}->{end_raw}. "
+                                "(Runnern använder sample_range när use_sample_range=true.)"
+                            )
             except Exception:
                 ok = False
                 issues.append(
@@ -526,8 +681,15 @@ def main() -> int:
         all_ok = False
     print()
 
-    # 10. Champion-validering
-    print("10. Champion-validering:")
+    # 10. Data coverage (matchar runnerns faktiska date-source + lokala candle-filer)
+    ok, msg = check_requested_data_coverage(meta, runs_cfg)
+    print(f"10. Data coverage: {msg}")
+    if not ok:
+        all_ok = False
+    print()
+
+    # 11. Champion-validering
+    print("11. Champion-validering:")
     try:
         from scripts.validate_optimizer_config import validate_config
 
@@ -543,9 +705,9 @@ def main() -> int:
         print(f"   [WARN] Kunde inte köra champion-validering: {e}")
     print()
 
-    # 11. Precompute-funktionalitet
+    # 12. Precompute-funktionalitet
     ok, msg = check_precompute_functionality(symbol, timeframe)
-    print(f"11. Precompute: {msg}")
+    print(f"12. Precompute: {msg}")
     if not ok:
         all_ok = False
     print()

@@ -845,14 +845,25 @@ def _run_backtest_direct(
             if cache_key not in _DATA_CACHE:
                 # Create engine via pipeline
                 # This ensures we use the centralized defaults for capital/commission/etc.
-                engine_loader = pipeline.create_engine(
-                    symbol=trial.symbol,
-                    timeframe=trial.timeframe,
-                    start_date=trial.start_date,
-                    end_date=trial.end_date,
-                    warmup_bars=trial.warmup_bars,
-                    fast_window=True,
-                )
+                try:
+                    engine_loader = pipeline.create_engine(
+                        symbol=trial.symbol,
+                        timeframe=trial.timeframe,
+                        start_date=trial.start_date,
+                        end_date=trial.end_date,
+                        warmup_bars=trial.warmup_bars,
+                        fast_window=True,
+                    )
+                except TypeError:
+                    # Unit tests may patch GenesisPipeline with a minimal dummy that doesn't
+                    # accept the fast_window kwarg.
+                    engine_loader = pipeline.create_engine(
+                        symbol=trial.symbol,
+                        timeframe=trial.timeframe,
+                        start_date=trial.start_date,
+                        end_date=trial.end_date,
+                        warmup_bars=trial.warmup_bars,
+                    )
 
                 # Critical: Set precompute flag BEFORE load_data() to ensure features are loaded/computed
                 if os.environ.get("GENESIS_PRECOMPUTE_FEATURES"):
@@ -1321,7 +1332,32 @@ def run_trial(
                 _atomic_write_text(trial_file, json.dumps(abort_payload, indent=2))
                 return abort_payload
 
-            score = score_backtest(results, thresholds=MetricThresholds())
+            # Allow overriding scoring hard-failure thresholds via optimizer constraints.
+            # This prevents the objective from collapsing to ~-100 when PF<1.0 is expected
+            # in early explore stages (the optimizer otherwise gets almost no gradient).
+            scoring_thresholds = MetricThresholds()
+            if isinstance(constraints_cfg, dict):
+                raw_scoring = constraints_cfg.get("scoring_thresholds")
+                if isinstance(raw_scoring, dict):
+                    if raw_scoring.get("min_trades") is not None:
+                        try:
+                            scoring_thresholds.min_trades = int(raw_scoring["min_trades"])
+                        except (TypeError, ValueError):
+                            pass
+                    if raw_scoring.get("min_profit_factor") is not None:
+                        try:
+                            scoring_thresholds.min_profit_factor = float(
+                                raw_scoring["min_profit_factor"]
+                            )
+                        except (TypeError, ValueError):
+                            pass
+                    if raw_scoring.get("max_max_dd") is not None:
+                        try:
+                            scoring_thresholds.max_max_dd = float(raw_scoring["max_max_dd"])
+                        except (TypeError, ValueError):
+                            pass
+
+            score = score_backtest(results, thresholds=scoring_thresholds)
             enforcement = enforce_constraints(
                 score,
                 trial.parameters,

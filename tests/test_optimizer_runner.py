@@ -336,6 +336,82 @@ def test_run_optimizer_promotion_min_improvement_blocks_small_gain(
         manager_instance.write_champion.assert_not_called()
 
 
+def test_run_trial_uses_scoring_thresholds_from_constraints(tmp_path: Path) -> None:
+    trial = runner.TrialConfig(
+        snapshot_id="tTEST_1h_20240101_20240201_v1",
+        symbol="tTEST",
+        timeframe="1h",
+        warmup_bars=1,
+        parameters={"thresholds": {"entry_conf_overall": 0.4}},
+        start_date="2024-01-01",
+        end_date="2024-01-02",
+    )
+
+    seen: dict[str, Any] = {}
+
+    def fake_score_backtest(
+        _results: dict[str, Any], *, thresholds: Any | None = None, score_version: str | None = None
+    ) -> dict[str, Any]:
+        seen["thresholds"] = thresholds
+        return {
+            "score": 0.0,
+            "metrics": {
+                "num_trades": 10,
+                "total_return": 0.0,
+                "profit_factor": 1.0,
+                "max_drawdown": 0.0,
+                "sharpe_ratio": 0.0,
+                "win_rate": 0.5,
+            },
+            "hard_failures": [],
+            "baseline": {"score_version": score_version or "v1"},
+        }
+
+    def fake_run_backtest_direct(*_args: Any, **_kwargs: Any) -> tuple[int, str, dict[str, Any]]:
+        return (
+            0,
+            "",
+            {
+                "summary": {"initial_capital": 10000.0},
+                "trades": [],
+                "equity_curve": [],
+                "metrics": {"num_trades": 10},
+                "merged_config": {},
+                "runtime_version": 1,
+            },
+        )
+
+    with (
+        patch("core.optimizer.runner._get_default_config", return_value={}),
+        patch("core.optimizer.runner._get_default_runtime_version", return_value=1),
+        patch("core.optimizer.runner._check_abort_heuristic", return_value={"ok": True}),
+        patch("core.optimizer.runner._run_backtest_direct", side_effect=fake_run_backtest_direct),
+        patch("core.optimizer.runner.score_backtest", side_effect=fake_score_backtest),
+    ):
+        payload = runner.run_trial(
+            trial,
+            run_id="run_test",
+            index=1,
+            run_dir=tmp_path,
+            allow_resume=False,
+            existing_trials={},
+            constraints_cfg={
+                "scoring_thresholds": {
+                    "min_trades": 1,
+                    "min_profit_factor": 0.55,
+                    "max_max_dd": 0.5,
+                }
+            },
+        )
+
+    assert payload.get("error") is None
+    thresholds = seen.get("thresholds")
+    assert thresholds is not None
+    assert thresholds.min_trades == 1
+    assert thresholds.min_profit_factor == pytest.approx(0.55)
+    assert thresholds.max_max_dd == pytest.approx(0.5)
+
+
 @pytest.mark.skipif(not runner.OPTUNA_AVAILABLE, reason="Optuna ej installerat")
 def test_run_optimizer_optuna_strategy(tmp_path: Path) -> None:
     config = {

@@ -1,4 +1,5 @@
 # Genesis-Core
+
 BOTEN ÄR UNDER AKTIV UTVECKLING OCH KAN ÄNDRAS UTAN VETANDE. DET ÄR INTE GARANTIAT ATT BOTEN FUNGERAR SOM FÖRUTSATT.
 
 > Status: Under utveckling
@@ -32,26 +33,16 @@ python scripts/test_rest_public.py
 python scripts/test_ws_public.py
 ```
 
-## Endpoints
-
 - `GET /health` – enkel hälsokontroll.
 - `GET /observability/dashboard` – counters/gauges/events.
-- `POST /config/validate` – body: JSON-config, svar: `{valid, errors}`.
-- `POST /config/diff` – body: `{old, new}`, svar: `{changes}`.
 - `POST /config/audit` – body: `{changes, user}`, append-only logg i `logs/config_audit.log`.
 
-Exempel:
-
-```bash
+````bash
 curl -s http://127.0.0.1:8000/health
 curl -s http://127.0.0.1:8000/observability/dashboard
 curl -s -X POST http://127.0.0.1:8000/config/validate -H 'Content-Type: application/json' -d '{"dry_run":true}'
 curl -s -X POST http://127.0.0.1:8000/config/diff -H 'Content-Type: application/json' -d '{"old":{"x":1},"new":{"x":2}}'
 curl -s -X POST http://127.0.0.1:8000/config/audit -H 'Content-Type: application/json' -d '{"changes":[{"key":"x","old":1,"new":2}],"user":"local"}'
-```
-
-### NonceManager
-
 - Per-nyckel nonce i mikrosekunder (µs) med persistens och låsning.
 - REST signerar strängen "/api/v2/{endpoint}{nonce}{body-json}" (HMAC-SHA384).
 - WS använder millisekunder (ms) i `authNonce` med payload `AUTH{nonce_ms}`.
@@ -66,11 +57,13 @@ curl -s -X POST "https://api.bitfinex.com/v2/auth/r/alerts" \
   -H "bfx-nonce: <NONCE_US>" \
   -H "bfx-signature: <HMAC_SHA384('/api/v2/auth/r/alerts' + NONCE_US + '{}')>" \
   -d '{}'
-```
+````
 
 ### Curl + PowerShell piping
 
 Generera headers och använd dem direkt i curl (Windows PowerShell):
+
+<<<<<<< HEAD
 
 ```powershell
 $h = python scripts/build_auth_headers.py auth/r/alerts --body '{}' | ConvertFrom-Json
@@ -81,6 +74,26 @@ curl -s -X POST "https://api.bitfinex.com/v2/auth/r/alerts" `
   -H ("bfx-signature: " + $h."bfx-signature") `
   -d '{}'
 ```
+
+=======
+
+## Registry governance (skills/compacts) – repo som SSOT
+
+Genesis-Core använder en enkel governance-modell där "skills" och "compacts" är **versionerade i repo:t**
+och används som SSOT för agent-/processregler.
+
+- Registry-data ligger under `registry/`.
+  - `registry/skills/*.json` och `registry/compacts/*.json` (versionerade objekt)
+  - `registry/manifests/dev.json` och `registry/manifests/stable.json` (vilka versioner som är aktiva)
+  - `registry/schemas/*.schema.json` (JSON Schema)
+- CI gate: `python scripts/validate_registry.py` validerar schema + korsreferenser.
+- Break-glass / audit: om `registry/manifests/stable.json` ändras i en PR kräver CI även att
+  `registry/audit/break_glass.jsonl` uppdateras med en audit-entry som matchar `HEAD`.
+- Review-disciplin: `.github/CODEOWNERS` kan kräva review för ändringar under `registry/`.
+
+## UI‑noter
+
+> > > > > > > ada3135 (docs(governance): document registry SSOT and audit rule)
 
 ### API‑nycklar (Paper account)
 

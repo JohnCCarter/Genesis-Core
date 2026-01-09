@@ -16,4 +16,14 @@ coverage.xml
 *.db
 *.sqlite
 
+.env
+
+# Local artifacts / generated data (must not be committed)
+cache/
+results/
+tmp/
+data/
+config/runtime.json
+config/strategy/champions/
+
 !.env.example

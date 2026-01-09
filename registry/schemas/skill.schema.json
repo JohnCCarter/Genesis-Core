@@ -23,10 +23,38 @@
       "minItems": 1,
       "uniqueItems": true
     },
+    "locked": {
+      "type": "boolean",
+      "description": "If true, this skill is allowed to be referenced from the stable manifest."
+    },
     "tags": {
       "type": "array",
       "items": { "type": "string", "minLength": 1 },
       "uniqueItems": true
+    },
+    "steps": {
+      "type": "array",
+      "description": "Executable steps for minimal runtime (scripts/run_skill.py).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "type"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_\\-]{2,63}$"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["registry_validate", "compare_backtest_results"]
+          },
+          "args": {
+            "type": "object",
+            "description": "Step-specific arguments."
+          }
+        }
+      },
+      "minItems": 1
     },
     "rules": {
       "type": "object",

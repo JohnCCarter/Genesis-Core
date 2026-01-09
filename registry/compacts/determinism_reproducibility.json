@@ -1,0 +1,21 @@
+{
+  "id": "determinism_reproducibility",
+  "version": "1.0.0",
+  "title": "P1: Determinism & reproducibility",
+  "description": "P1-compact: körningar ska vara deterministiska och reproducerbara (seed, mode enforcement, config SSOT).",
+  "status": "stable",
+  "priority": "P1",
+  "owners": ["fa06662"],
+  "scopes": ["determinism"],
+  "rules": [
+    {
+      "id": "deterministic_runs",
+      "text": "Alla verifieringsjobb ska vara deterministiska (samma inputs => samma outputs)."
+    },
+    {
+      "id": "explicit_mode",
+      "text": "Canonical mode ska vara explicit (t.ex. fast_window + precompute) där det är relevant."
+    }
+  ],
+  "enforcement": { "ci_required": true }
+}

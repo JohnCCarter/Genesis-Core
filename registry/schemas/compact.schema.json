@@ -26,6 +26,16 @@
     "title": { "type": "string", "minLength": 3, "maxLength": 120 },
     "description": { "type": "string", "minLength": 10, "maxLength": 5000 },
     "status": { "type": "string", "enum": ["dev", "stable"] },
+    "priority": {
+      "type": "string",
+      "enum": ["P0", "P1", "P2", "P3", "P4"],
+      "description": "Conflict resolution priority: P0 highest, P4 lowest."
+    },
+    "conflict_group": {
+      "type": "string",
+      "minLength": 1,
+      "description": "If set, only one compact per conflict_group may be active in a manifest."
+    },
     "owners": {
       "type": "array",
       "items": { "type": "string", "minLength": 1 },
@@ -50,6 +60,20 @@
         }
       },
       "minItems": 1
+    },
+    "includes_compacts": {
+      "type": "array",
+      "description": "Optional compact-pack expansion (references to other compacts).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "version"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "version": { "type": "string", "minLength": 1 }
+        }
+      },
+      "uniqueItems": true
     },
     "enforcement": {
       "type": "object",

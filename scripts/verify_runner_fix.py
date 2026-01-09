@@ -1,23 +1,31 @@
+from __future__ import annotations
+
 import os
 import sys
 from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+
+def _bootstrap_src_on_path() -> None:
+    # scripts/<this file> -> parents[1] == repo root
+    repo_root = Path(__file__).resolve().parents[1]
+    src_dir = repo_root / "src"
+    if src_dir.is_dir() and str(src_dir) not in sys.path:
+        sys.path.insert(0, str(src_dir))
+
+
+_bootstrap_src_on_path()
 
 from core.optimizer.runner import TrialConfig, _run_backtest_direct
 
 
-def verify_fix():
+def verify_fix() -> None:
     print("=== Verifying Runner Date Fix ===")
 
-    # 1. Setup Dummy Trial
     symbol = "tBTCUSD"
     timeframe = "1h"
     start_date = "2023-12-01"
     end_date = "2025-11-19"
 
-    # Enable precompute features for this test
     os.environ["GENESIS_PRECOMPUTE_FEATURES"] = "1"
 
     trial = TrialConfig(
@@ -30,18 +38,14 @@ def verify_fix():
         end_date=end_date,
     )
 
-    # Create a dummy config file
     config_path = Path("temp_config.json")
     import json
 
-    with open(config_path, "w") as f:
-        json.dump({"cfg": {}}, f)
+    config_path.write_text(json.dumps({"cfg": {}}, ensure_ascii=False), encoding="utf-8")
 
     try:
-        # 2. Run Direct Backtest
         print(f"Running backtest for {start_date} to {end_date}...")
-        # We expect this to use the filtered range
-        exit_code, log, results = _run_backtest_direct(
+        exit_code, log, _results = _run_backtest_direct(
             trial, config_path, start_date=start_date, end_date=end_date
         )
 
@@ -50,24 +54,15 @@ def verify_fix():
             print(log)
             return
 
-        # 3. Verify Results
-        # Check if we can deduce bar count. The results dict might not have it directly exposed
-        # in top level, but let's check what we get.
         print("Backtest successful.")
-
-        # In a real run, we would compare against expected bar count (17255).
-        # Since we don't have easy access to internal bar count from results dict (unless metrics has it),
-        # we can check if the cache key was created correctly by inspecting the runner's cache (if we could).
-        # But wait, looking at the code I modified:
-        # cache_key = f"{trial.symbol}_{trial.timeframe}_{start_date}_{end_date}"
-
-        # If the code runs without error and accepts the args, that's a good sign.
-        # To be really sure, we can do a second run with DIFFERENT dates and ensure it doesn't crash or reuse the old engine.
 
         start_date_2 = "2024-01-01"
         print(f"\nRunning second backtest for {start_date_2} to {end_date}...")
-        exit_code_2, _, _ = _run_backtest_direct(
-            trial, config_path, start_date=start_date_2, end_date=end_date  # different start
+        exit_code_2, _log2, _results2 = _run_backtest_direct(
+            trial,
+            config_path,
+            start_date=start_date_2,
+            end_date=end_date,
         )
 
         if exit_code_2 == 0:
@@ -75,11 +70,9 @@ def verify_fix():
         else:
             print("Second run failed!")
 
-        print("\n✅ Verification passed: _run_backtest_direct accepts dates and runs successfully.")
-
+        print("\nVerification passed: _run_backtest_direct accepts dates and runs successfully.")
     finally:
-        if config_path.exists():
-            os.remove(config_path)
+        config_path.unlink(missing_ok=True)
 
 
 if __name__ == "__main__":

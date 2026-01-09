@@ -1,29 +1,37 @@
 #!/usr/bin/env python3
-"""
-Simple HTF Exit Validation for Genesis-Core
+"""Simple HTF Exit Validation for Genesis-Core.
 
-Quick validation to prove HTF Exit System works and can be deployed.
-Tests key components without full ablation study complexity.
+Manual script (not a pytest test).
 """
+
+from __future__ import annotations
 
 import sys
 from pathlib import Path
 
-# Add src to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+
+def _bootstrap_src_on_path() -> None:
+    # scripts/<this file> -> repo root is parents[1]
+    repo_root = Path(__file__).resolve().parents[1]
+    src_dir = repo_root / "src"
+    if src_dir.is_dir() and str(src_dir) not in sys.path:
+        sys.path.insert(0, str(src_dir))
+
+
+_bootstrap_src_on_path()
 
 from core.backtest.engine import BacktestEngine
 from core.backtest.metrics import calculate_backtest_metrics
 from core.config.authority import ConfigAuthority
 
 
-def test_htf_vs_baseline():
+def test_htf_vs_baseline() -> bool:
     """Simple test: HTF exits vs baseline fixed exits."""
     print("=== HTF Exit System Validation ===")
 
     test_config = {
         "symbol": "tBTCUSD",
-        "timeframe": "1h",  # Use 1h (known profitable at +4.89%)
+        "timeframe": "1h",
         "start_date": "2025-07-01",
         "end_date": "2025-10-13",
         "initial_capital": 10000.0,
@@ -35,7 +43,6 @@ def test_htf_vs_baseline():
     print(f"Testing {test_config['symbol']} {test_config['timeframe']}")
     print(f"Period: {test_config['start_date']} to {test_config['end_date']}")
 
-    # Test configurations
     configs = {
         "BASELINE": {
             **test_config,
@@ -59,13 +66,12 @@ def test_htf_vs_baseline():
         },
     }
 
-    results = {}
+    results: dict[str, dict] = {}
 
     for config_name, config in configs.items():
         print(f"\n--- Running {config_name} ---")
 
         try:
-            # Create and run backtest
             engine = BacktestEngine(
                 symbol=config["symbol"],
                 timeframe=config["timeframe"],
@@ -82,21 +88,14 @@ def test_htf_vs_baseline():
                 print(f"[ERROR] Failed to load data for {config_name}")
                 continue
 
-            # Load runtime config (same as working scripts)
             authority = ConfigAuthority()
             cfg_obj, _, _ = authority.get()
             strategy_config = cfg_obj.model_dump()
 
-            # Prepare policy
             policy = {"symbol": config["symbol"], "timeframe": config["timeframe"]}
-
-            # Run backtest
             backtest_results = engine.run(policy=policy, configs=strategy_config, verbose=False)
 
-            # Calculate metrics
             trades = backtest_results.get("trades", [])
-            backtest_results.get("summary", {})
-
             if trades:
                 metrics = calculate_backtest_metrics(trades, config["initial_capital"])
                 results[config_name] = metrics
@@ -115,48 +114,50 @@ def test_htf_vs_baseline():
             print(f"[ERROR] {config_name} failed: {e}")
             results[config_name] = {"error": str(e)}
 
-    # Compare results
     print("\n=== COMPARISON ===")
 
-    if "BASELINE" in results and "HTF_FULL" in results:
-        baseline = results["BASELINE"]
-        htf_full = results["HTF_FULL"]
-
-        if "error" not in baseline and "error" not in htf_full:
-            improvement = htf_full["total_return"] - baseline["total_return"]
-            trade_diff = htf_full["total_trades"] - baseline["total_trades"]
-
-            print(f"Baseline Return: {baseline['total_return']:.2f}%")
-            print(f"HTF Full Return: {htf_full['total_return']:.2f}%")
-            print(
-                f"Improvement: {improvement:+.2f}% ({improvement/baseline['total_return']*100:+.1f}%)"
-            )
-            print(
-                f"Trade Count: {baseline['total_trades']} -> {htf_full['total_trades']} ({trade_diff:+d})"
-            )
-
-            # Simple success criteria
-            if improvement > 2.0:  # >2% absolute improvement
-                print("\n[SUCCESS] HTF Exit System shows significant improvement!")
-                print("RECOMMENDATION: Deploy HTF Exit System")
-                return True
-            elif improvement > 0:
-                print("\n[MARGINAL] HTF Exit System shows modest improvement")
-                print("RECOMMENDATION: Consider deployment with further testing")
-                return True
-            else:
-                print("\n[FAILURE] HTF Exit System does not improve performance")
-                print("RECOMMENDATION: Do not deploy, investigate issues")
-                return False
-        else:
-            print("[ERROR] Could not compare due to errors in backtests")
-            return False
-    else:
+    if "BASELINE" not in results or "HTF_FULL" not in results:
         print("[ERROR] Missing results for comparison")
         return False
 
+    baseline = results["BASELINE"]
+    htf_full = results["HTF_FULL"]
 
-def test_partial_exit_functionality():
+    if "error" in baseline or "error" in htf_full:
+        print("[ERROR] Could not compare due to errors in backtests")
+        return False
+
+    improvement = htf_full["total_return"] - baseline["total_return"]
+    trade_diff = htf_full["total_trades"] - baseline["total_trades"]
+
+    print(f"Baseline Return: {baseline['total_return']:.2f}%")
+    print(f"HTF Full Return: {htf_full['total_return']:.2f}%")
+
+    if baseline["total_return"]:
+        rel = improvement / baseline["total_return"] * 100
+        print(f"Improvement: {improvement:+.2f}% ({rel:+.1f}%)")
+    else:
+        print(f"Improvement: {improvement:+.2f}%")
+
+    print(
+        f"Trade Count: {baseline['total_trades']} -> {htf_full['total_trades']} ({trade_diff:+d})"
+    )
+
+    if improvement > 2.0:
+        print("\n[SUCCESS] HTF Exit System shows significant improvement!")
+        print("RECOMMENDATION: Deploy HTF Exit System")
+        return True
+    if improvement > 0:
+        print("\n[MARGINAL] HTF Exit System shows modest improvement")
+        print("RECOMMENDATION: Consider deployment with further testing")
+        return True
+
+    print("\n[FAILURE] HTF Exit System does not improve performance")
+    print("RECOMMENDATION: Do not deploy, investigate issues")
+    return False
+
+
+def test_partial_exit_functionality() -> bool:
     """Test that partial exits are actually working."""
     print("\n=== Testing Partial Exit Functionality ===")
 
@@ -171,20 +172,19 @@ def test_partial_exit_functionality():
                 "enable_partials": True,
                 "enable_trailing": False,
                 "enable_structure_breaks": False,
-                "partial_1_pct": 0.50,  # 50% partial exits for clear signal
-                "fib_threshold_atr": 1.0,  # More lenient threshold
+                "partial_1_pct": 0.50,
+                "fib_threshold_atr": 1.0,
             },
         }
 
         engine = BacktestEngine(**config)
-
         if not engine.load_data():
             print("[ERROR] Could not load data for partial exit test")
             return False
 
         strategy_config = {
             "cfg": {
-                "thresholds": {"entry_conf_overall": 0.60},  # Lower for more trades
+                "thresholds": {"entry_conf_overall": 0.60},
                 "exit": {"enabled": True},
                 "risk": {"risk_map": [[0.55, 0.02]]},
                 "ev": {"R_default": 1.8},
@@ -194,7 +194,6 @@ def test_partial_exit_functionality():
         results = engine.run(configs=strategy_config, verbose=False)
         trades = results.get("trades", [])
 
-        # Check for partial exits
         partial_trades = [t for t in trades if t.get("is_partial", False)]
         full_trades = [t for t in trades if not t.get("is_partial", False)]
 
@@ -202,66 +201,47 @@ def test_partial_exit_functionality():
         print(f"Partial exits: {len(partial_trades)}")
         print(f"Full exits: {len(full_trades)}")
 
-        if len(partial_trades) > 0:
+        if partial_trades:
             print("[SUCCESS] Partial exits are working!")
-
-            # Show example partial exits
             for i, trade in enumerate(partial_trades[:3]):
                 print(
                     f"   Partial {i+1}: {trade.get('exit_reason', 'N/A')} - "
                     f"Size: {trade.get('size', 0):.3f} - "
                     f"PnL: ${trade.get('pnl', 0):.2f}"
                 )
-
             return True
-        else:
-            print("[WARN] No partial exits detected - may need tuning")
-            return False
+
+        print("[WARN] No partial exits detected - may need tuning")
+        return False
 
     except Exception as e:
         print(f"[ERROR] Partial exit test failed: {e}")
         return False
 
 
-def main():
-    """Run simple HTF validation."""
+def main() -> bool:
     print("HTF Exit System Simple Validation")
     print("=" * 40)
 
-    # Test 1: Core comparison
     comparison_success = test_htf_vs_baseline()
-
-    # Test 2: Partial exit functionality
     partial_success = test_partial_exit_functionality()
 
-    # Summary
     print("\n" + "=" * 40)
     print("VALIDATION SUMMARY")
     print("=" * 40)
 
     if comparison_success and partial_success:
         print("[SUCCESS] HTF Exit System is ready for deployment!")
-        print("\nKey achievements:")
-        print("- Statistically significant improvement over baseline")
-        print("- Partial exit functionality confirmed working")
-        print("- Integration with BacktestEngine successful")
         print("\nRECOMMENDATION: Deploy HTF Exit System to paper trading")
-
     elif comparison_success:
         print("[PARTIAL SUCCESS] HTF Exit System shows improvement")
-        print("- Performance improvement demonstrated")
-        print("- Partial exit functionality needs validation")
         print("\nRECOMMENDATION: Deploy with monitoring")
-
     else:
         print("[NEEDS WORK] HTF Exit System requires further development")
-        print("- Performance issues detected")
-        print("- System not ready for deployment")
         print("\nRECOMMENDATION: Debug and iterate before deployment")
 
     return comparison_success
 
 
 if __name__ == "__main__":
-    success = main()
-    sys.exit(0 if success else 1)
+    raise SystemExit(0 if main() else 1)

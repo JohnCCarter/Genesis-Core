@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import sys
 from pathlib import Path
 
 import pandas as pd
@@ -23,6 +22,7 @@ OPTIONAL_COLUMNS = {"htf_swing_age_bars", "htf_timestamp"}
 
 def iter_feature_files(base_dir: Path, symbol: str | None, timeframe: str | None) -> list[Path]:
     """Returnera lista över featurefiler att kontrollera."""
+
     base_dir = base_dir.resolve()
     if not base_dir.exists():
         raise FileNotFoundError(f"Base directory does not exist: {base_dir}")
@@ -48,6 +48,7 @@ def iter_feature_files(base_dir: Path, symbol: str | None, timeframe: str | None
 
 def load_columns(path: Path) -> pd.Series:
     """Läs endast de kolumner som behövs från filen."""
+
     try:
         if path.suffix == ".feather":
             df = pd.read_feather(path, columns=list(REQUIRED_COLUMNS | OPTIONAL_COLUMNS))
@@ -62,6 +63,7 @@ def load_columns(path: Path) -> pd.Series:
 
 def check_file(path: Path) -> tuple[bool, list[str]]:
     """Kontrollera en enskild fil. Returnerar (ok, list med fel)."""
+
     errors: list[str] = []
     try:
         df = load_columns(path)
@@ -120,4 +122,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())

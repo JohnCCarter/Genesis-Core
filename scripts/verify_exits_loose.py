@@ -1,13 +1,24 @@
+from __future__ import annotations
+
 import os
 import sys
+from pathlib import Path
 
-# Force usage of local src
-sys.path.insert(0, os.path.abspath("src"))
+
+def _bootstrap_src_on_path() -> None:
+    # scripts/<this file> -> parents[1] == repo root
+    repo_root = Path(__file__).resolve().parents[1]
+    src_dir = repo_root / "src"
+    if src_dir.is_dir() and str(src_dir) not in sys.path:
+        sys.path.insert(0, str(src_dir))
+
+
+_bootstrap_src_on_path()
 
 from core.backtest.engine import BacktestEngine
 
 
-def run_loose_test():
+def run_loose_test() -> None:
     print("Running Backtest with LOOSE constraints to trigger exits...")
 
     # Enable Phase 1 Exits
@@ -27,7 +38,6 @@ def run_loose_test():
         print("Failed to load data")
         return
 
-    # Loose Configs
     loose_configs = {
         "exit": {"enabled": True},
         "thresholds": {
@@ -48,7 +58,9 @@ def run_loose_test():
 
     print("Running backtest...")
     results = engine.run(
-        policy={"symbol": "tBTCUSD", "timeframe": "30m"}, configs=loose_configs, verbose=False
+        policy={"symbol": "tBTCUSD", "timeframe": "30m"},
+        configs=loose_configs,
+        verbose=False,
     )
 
     metrics = results.get("metrics", {})

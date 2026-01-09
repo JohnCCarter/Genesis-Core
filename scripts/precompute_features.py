@@ -16,7 +16,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 import pandas as pd
 from tqdm import tqdm
 
-from core.strategy.features import extract_features
+from core.strategy.features_asof import extract_features_backtest
 from core.utils import curated_candles_path
 
 
@@ -78,10 +78,16 @@ def precompute_features_for_symbol(symbol: str, timeframe: str, verbose: bool = 
             "low": df["low"].iloc[: i + 1].tolist(),
             "close": df["close"].iloc[: i + 1].tolist(),
             "volume": df["volume"].iloc[: i + 1].tolist(),
+            "timestamp": df["timestamp"].iloc[: i + 1].tolist(),
         }
 
-        # Extract features using existing pipeline logic
-        feats, meta = extract_features(candles_window, now_index=i)
+        # Extract features AS-OF current bar (all bars are closed in backtest datasets)
+        feats, meta = extract_features_backtest(
+            candles_window,
+            asof_bar=i,
+            timeframe=timeframe,
+            symbol=symbol,
+        )
 
         # Store timestamp + features
         features_list.append(

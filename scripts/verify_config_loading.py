@@ -1,22 +1,31 @@
 #!/usr/bin/env python3
 """Verify that configuration loading works correctly in both backtest and Optuna."""
 
+from __future__ import annotations
+
 import json
 import sys
 from pathlib import Path
 
-ROOT_DIR = Path(__file__).resolve().parents[1]
-SRC_DIR = ROOT_DIR / "src"
-if str(ROOT_DIR) not in sys.path:
-    sys.path.insert(0, str(ROOT_DIR))
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
+
+def _bootstrap_paths() -> Path:
+    # scripts/<this file> -> parents[1] == repo root
+    root_dir = Path(__file__).resolve().parents[1]
+    src_dir = root_dir / "src"
+    if str(root_dir) not in sys.path:
+        sys.path.insert(0, str(root_dir))
+    if src_dir.is_dir() and str(src_dir) not in sys.path:
+        sys.path.insert(0, str(src_dir))
+    return root_dir
+
+
+ROOT_DIR = _bootstrap_paths()
 
 from core.config.authority import ConfigAuthority  # noqa: E402
 from core.strategy.champion_loader import ChampionLoader  # noqa: E402
 
 
-def main():
+def main() -> int:
     print("=" * 70)
     print("VERIFIERING AV KONFIGURATIONSLADDNING")
     print("=" * 70)
@@ -24,7 +33,6 @@ def main():
     symbol = "tBTCUSD"
     timeframe = "1h"
 
-    # 1. Baseline config (ConfigAuthority)
     print("\n1. BASELINE CONFIG (ConfigAuthority)")
     print("-" * 70)
     authority = ConfigAuthority()
@@ -34,7 +42,6 @@ def main():
     print(f"   Hash: {baseline_hash[:16]}...")
     print(f"   Keys: {sorted(baseline_cfg.keys())[:10]}...")
 
-    # 2. Champion config
     print("\n2. CHAMPION CONFIG (ChampionLoader)")
     print("-" * 70)
     champion_loader = ChampionLoader()
@@ -44,7 +51,6 @@ def main():
     print(f"   Checksum: {champion_cfg.checksum[:16]}...")
     print(f"   Keys: {sorted(champion_cfg.config.keys())}")
 
-    # 3. Test config (tmp_v4_test.json)
     print("\n3. TEST CONFIG (tmp_v4_test.json)")
     print("-" * 70)
     tmp_path = ROOT_DIR / "config" / "tmp" / "tmp_v4_test.json"
@@ -57,7 +63,6 @@ def main():
         print(f"   File not found: {tmp_path}")
         tmp_cfg = {}
 
-    # 4. Simulate BacktestEngine merge
     print("\n4. BACKTESTENGINE MERGE (simulerad)")
     print("-" * 70)
     print("   Steg:")
@@ -66,12 +71,10 @@ def main():
     print("   3. engine.run() mergar champion: {**champion_cfg.config, **configs}")
     print("   4. evaluate_pipeline() mergar igen: champion_cfg.update(configs)")
 
-    # Simulate the merge
     merged_engine = {**champion_cfg.config, **tmp_cfg}
     print("\n   Resultat (merged_engine):")
     print(f"   Keys: {sorted(merged_engine.keys())}")
 
-    # 5. Simulate evaluate_pipeline merge
     print("\n5. EVALUATE_PIPELINE MERGE (simulerad)")
     print("-" * 70)
     champion_cfg_dict = dict(champion_cfg.config or {})
@@ -83,7 +86,6 @@ def main():
     print("   Resultat (merged_pipeline):")
     print(f"   Keys: {sorted(merged_pipeline.keys())}")
 
-    # 6. Verify model loading
     print("\n6. MODELLLADDNING")
     print("-" * 70)
     from core.strategy.model_registry import ModelRegistry
@@ -97,7 +99,6 @@ def main():
     else:
         print("   [ERROR] No model found!")
 
-    # 7. Summary
     print("\n" + "=" * 70)
     print("SAMMANFATTNING")
     print("=" * 70)
@@ -113,25 +114,20 @@ def main():
     print("       inte mergas. Detta kan orsaka att falt forsvinner om")
     print("       de inte finns i override-config.")
 
-    # 8. Check for potential issues
     print("\n" + "=" * 70)
     print("POTENTIELLA PROBLEM")
     print("=" * 70)
 
-    issues = []
-
-    # Check if tmp_cfg has all necessary fields
+    issues: list[str] = []
     required_fields = ["thresholds", "exit", "risk"]
     missing_in_tmp = [f for f in required_fields if f not in tmp_cfg]
     if missing_in_tmp:
         issues.append(f"tmp_v4_test.json saknar: {missing_in_tmp}")
 
-    # Check for shallow merge issues
     if "thresholds" in tmp_cfg and "thresholds" in champion_cfg.config:
         tmp_thresholds = tmp_cfg["thresholds"]
         champ_thresholds = champion_cfg.config["thresholds"]
         if isinstance(tmp_thresholds, dict) and isinstance(champ_thresholds, dict):
-            # Check if tmp has all sub-keys from champion
             missing_subkeys = set(champ_thresholds.keys()) - set(tmp_thresholds.keys())
             if missing_subkeys:
                 issues.append(f"tmp_v4_test.json thresholds saknar: {missing_subkeys}")
@@ -157,4 +153,4 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())

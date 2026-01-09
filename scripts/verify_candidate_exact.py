@@ -1,18 +1,28 @@
+from __future__ import annotations
+
 import sys
 from pathlib import Path
 
-# Add src to path
-sys.path.append(str(Path.cwd() / "src"))
+
+def _bootstrap_src_on_path() -> None:
+    # scripts/<this file> -> parents[1] == repo root
+    repo_root = Path(__file__).resolve().parents[1]
+    src_dir = repo_root / "src"
+    if src_dir.is_dir() and str(src_dir) not in sys.path:
+        sys.path.insert(0, str(src_dir))
+
+
+_bootstrap_src_on_path()
 
 from core.backtest.engine import BacktestEngine
 from core.backtest.metrics import calculate_metrics
 
 
-def run_verification():
+def run_verification() -> None:
     print("Starting verification of Trial 005 configuration...")
 
     # Config exactly as in trial_005 (best_trial.json)
-    # Note: regime_proba are floats here, which caused validation error in CLI
+    # Note: regime_proba are floats here, which historically caused validation error in some CLIs
     config = {
         "thresholds": {
             "entry_conf_overall": 0.19,
@@ -47,7 +57,6 @@ def run_verification():
         },
     }
 
-    # Initialize engine
     engine = BacktestEngine(
         symbol="tBTCUSD",
         timeframe="1h",
@@ -56,7 +65,6 @@ def run_verification():
         end_date="2024-12-31",
     )
 
-    # Load data
     if not engine.load_data():
         print("Failed to load data")
         return
@@ -64,12 +72,9 @@ def run_verification():
     # Enable optimizations
     engine.precompute_features = True
 
-    # Run backtest
-    # We pass the config directly, bypassing Pydantic validation in run_backtest.py
     print("Running backtest...")
     results = engine.run(configs=config)
 
-    # Calculate metrics
     metrics = calculate_metrics(results["trades"], engine.position_tracker.initial_capital)
 
     print("\n=== Verification Results ===")
@@ -78,13 +83,12 @@ def run_verification():
     print(f"Profit Factor: {metrics['profit_factor']:.2f}")
     print(f"Max Drawdown: {metrics['max_drawdown']*100:.2f}%")
 
-    # Compare with expected
     expected_trades = 2382
     print(f"\nExpected Trades: {expected_trades}")
     if abs(metrics["num_trades"] - expected_trades) < 10:
-        print("✅ SUCCESS: Result reproduced!")
+        print("[SUCCESS] Result reproduced")
     else:
-        print("❌ FAILURE: Result mismatch.")
+        print("[FAIL] Result mismatch")
 
 
 if __name__ == "__main__":

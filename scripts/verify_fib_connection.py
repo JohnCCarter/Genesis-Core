@@ -1,15 +1,31 @@
+from __future__ import annotations
+
 import os
 import sys
 from pathlib import Path
 
-# Add src to path
-sys.path.append(str(Path(__file__).parent.parent / "src"))
+
+def _bootstrap_src_on_path() -> None:
+    """Make `import core` work when running without editable install."""
+
+    try:
+        import core  # noqa: F401
+
+        return
+    except Exception:
+        repo_root = Path(__file__).resolve().parents[1]
+        src_dir = repo_root / "src"
+        if src_dir.is_dir() and str(src_dir) not in sys.path:
+            sys.path.insert(0, str(src_dir))
+
+
+_bootstrap_src_on_path()
 
 from core.backtest.engine import BacktestEngine
 from core.strategy.champion_loader import ChampionLoader
 
 
-def run_verification():
+def run_verification() -> None:
     # Canonical mode for verification: 1/1
     os.environ["GENESIS_FAST_WINDOW"] = "1"
     os.environ["GENESIS_PRECOMPUTE_FEATURES"] = "1"
@@ -19,7 +35,6 @@ def run_verification():
 
     print(f"Running verification backtest for {symbol} {timeframe}...")
 
-    # Load champion config
     loader = ChampionLoader()
     champion_cfg = loader.load(symbol, timeframe)
     config = champion_cfg.config
@@ -41,16 +56,14 @@ def run_verification():
         print("Failed to load data")
         return
 
-    # Check data range
     print(f"Loaded {len(engine.candles_df)} bars")
 
-    # Run
     results = engine.run(configs=config, verbose=True)
 
     trades = results.get("trades", [])
     print(f"\nTotal Trades: {len(trades)}")
 
-    if len(trades) > 0:
+    if trades:
         print("First trade entry reason:", trades[0].get("entry_reasons"))
         print("First trade exit reason:", trades[0].get("exit_reason"))
         print("First trade FIB debug (entry):", trades[0].get("entry_fib_debug"))

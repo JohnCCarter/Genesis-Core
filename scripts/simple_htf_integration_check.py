@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Simplified HTF integration check - verify features.py passes HTF context correctly
+Simplified HTF integration check - verify features_asof passes HTF context correctly
 """
 
 import sys
@@ -9,7 +9,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from core.indicators.htf_fibonacci import load_candles_data
-from core.strategy.features import extract_features
+from core.strategy.features_asof import extract_features_backtest
 
 
 def check_htf_in_features():
@@ -29,8 +29,13 @@ def check_htf_in_features():
         "volume": ltf_data["volume"].tolist(),
     }
 
-    # Extract features with timeframe specified
-    features, meta = extract_features(candles_dict, timeframe="1h")
+    # Extract features AS-OF last closed bar in dataset
+    features, meta = extract_features_backtest(
+        candles_dict,
+        asof_bar=len(candles_dict["close"]) - 1,
+        timeframe="1h",
+        symbol="tBTCUSD",
+    )
 
     # Check HTF context
     htf_context = meta.get("htf_fibonacci", {})

@@ -3,7 +3,7 @@ import time
 import requests
 
 
-def test_connection():
+def test_connection() -> None:
     url = "http://localhost:3333/sse"
     print(f"Connecting to {url}...")
     try:

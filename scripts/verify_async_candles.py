@@ -1,17 +1,27 @@
+from __future__ import annotations
+
 import asyncio
 import sys
 import time
 from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+
+def _bootstrap_src_on_path() -> None:
+    # scripts/<this file> -> parents[1] == repo root
+    repo_root = Path(__file__).resolve().parents[1]
+    src_dir = repo_root / "src"
+    if src_dir.is_dir() and str(src_dir) not in sys.path:
+        sys.path.insert(0, str(src_dir))
+
+
+_bootstrap_src_on_path()
 
 from core.server import public_candles
 
 
 async def mock_public_request(*args, **kwargs):
-    await asyncio.sleep(0.1)  # Simulate 100ms network latency
+    await asyncio.sleep(0.1)  # simulate 100ms network latency
     mock_resp = AsyncMock()
     mock_resp.json.return_value = [
         [1000, 1.0, 2.0, 3.0, 0.5, 100.0],  # MTS, OPEN, CLOSE, HIGH, LOW, VOL
@@ -20,7 +30,7 @@ async def mock_public_request(*args, **kwargs):
     return mock_resp
 
 
-async def run_verification():
+async def run_verification() -> None:
     print("=== Verifying Async Public Candles ===\n")
 
     # Mock the ExchangeClient.public_request
@@ -28,7 +38,6 @@ async def run_verification():
         "core.io.bitfinex.exchange_client.ExchangeClient.public_request",
         side_effect=mock_public_request,
     ):
-
         # 1. Test Single Call Latency (Cold Cache)
         print("1. Testing Cold Cache Latency...")
         t0 = time.perf_counter()
@@ -51,12 +60,9 @@ async def run_verification():
             print("   [PASS] Cache is working.")
 
         # 3. Test Concurrency (Simulating multiple users)
-        # Clearing cache to test concurrency on fetch?
-        # Actually server.py global cache persists. Let's use a new symbol to bypass cache.
+        # Server cache persists. Use unique symbols to bypass cache.
         print("\n3. Testing Concurrency (5 concurrent requests, unique symbols)...")
-        tasks = []
-        for i in range(5):
-            tasks.append(public_candles(symbol=f"tTEST{i}", timeframe="1m", limit=10))
+        tasks = [public_candles(symbol=f"tTEST{i}", timeframe="1m", limit=10) for i in range(5)]
 
         t0 = time.perf_counter()
         await asyncio.gather(*tasks)
@@ -64,8 +70,7 @@ async def run_verification():
         dur_concurrent = (t1 - t0) * 1000
         print(f"   Total Duration for 5 requests: {dur_concurrent:.2f} ms")
 
-        # If it was serial, it would be 5 * 100ms = 500ms.
-        # If async, it should be close to 100ms (plus overhead).
+        # If serial it would be ~500ms. If async it should be close to ~100ms.
         if dur_concurrent < 200:
             print("   [PASS] Concurrency is working (parallel execution).")
         else:

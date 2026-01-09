@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from core.strategy.confidence import compute_confidence
 from core.strategy.decision import decide
-from core.strategy.features import extract_features
+from core.strategy.features_asof import extract_features_backtest
 from core.strategy.prob_model import predict_proba_for
 from core.strategy.regime import classify_regime
 
@@ -73,7 +73,14 @@ def main():
 
     for _ in range(iterations):
         # 1. Features
-        result, t_feats = time_function(extract_features, candles, config=configs)
+        result, t_feats = time_function(
+            extract_features_backtest,
+            candles,
+            asof_bar=len(candles["close"]) - 1,
+            timeframe="1m",
+            symbol="tBTCUSD",
+            config=configs,
+        )
         feats, feats_meta = result
         results["features"].append(t_feats)
 

@@ -34,3 +34,32 @@ def test_config_endpoints():
     r = c.get("/config/runtime")
     assert r.status_code == 200
     assert set(r.json().keys()) >= {"cfg", "version", "hash"}
+
+
+def test_runtime_endpoints_do_not_leak_exceptions(monkeypatch):
+    c = TestClient(app)
+
+    # validate should not echo exception details
+    r = c.post("/config/runtime/validate", json={"ev": {"R_default": "SECRET_SHOULD_NOT_LEAK"}})
+    assert r.status_code == 200
+    assert r.json().get("valid") is False
+    assert "SECRET_SHOULD_NOT_LEAK" not in r.text
+
+    # propose should not leak runtime exceptions
+    import core.server_config_api as api
+
+    def _boom(*args, **kwargs):  # noqa: ARG001
+        raise RuntimeError("some internal SECRET_SHOULD_NOT_LEAK")
+
+    monkeypatch.setattr(api.authority, "propose_update", _boom)
+    monkeypatch.delenv("BEARER_TOKEN", raising=False)
+    r = c.post(
+        "/config/runtime/propose",
+        json={
+            "patch": {"thresholds": {"entry_conf_overall": 0.6}},
+            "actor": "test",
+            "expected_version": 0,
+        },
+    )
+    assert r.status_code == 500
+    assert "SECRET_SHOULD_NOT_LEAK" not in r.text

@@ -31,6 +31,23 @@ def test_account_wallets_ok(monkeypatch) -> None:
     assert curr == ["ETH", "USD"]
 
 
+def test_account_wallets_does_not_leak_exception(monkeypatch) -> None:
+    async def _boom() -> Any:
+        raise RuntimeError("SECRET_SHOULD_NOT_LEAK")
+
+    import core.io.bitfinex.read_helpers as rh
+
+    monkeypatch.setattr(rh, "get_wallets", _boom)
+
+    c = TestClient(app)
+    r = c.get("/account/wallets")
+    assert r.status_code == 200
+    raw = r.text
+    assert "SECRET_SHOULD_NOT_LEAK" not in raw
+    data = r.json()
+    assert data.get("error") in {"internal_error", None}
+
+
 def test_account_positions_filters_test(monkeypatch) -> None:
     async def _fake_positions() -> Any:
         return [

@@ -1,4 +1,5 @@
 import asyncio
+import uuid
 from contextlib import asynccontextmanager
 
 import httpx
@@ -12,6 +13,9 @@ from core.io.bitfinex.exchange_client import get_exchange_client
 from core.observability.metrics import get_dashboard
 from core.server_config_api import router as config_router
 from core.strategy.evaluate import evaluate_pipeline
+from core.utils.logging_redaction import get_logger
+
+_LOGGER = get_logger(__name__)
 
 _ACCOUNT_CACHE = {
     "wallets": {"ts": 0.0, "data": {"items": []}},
@@ -718,8 +722,10 @@ async def account_wallets() -> dict:
         out = {"items": items}
         _ACCOUNT_CACHE["wallets"] = {"ts": now, "data": out}
         return out
-    except Exception as e:
-        return {"items": [], "error": str(e)}
+    except Exception:
+        error_id = uuid.uuid4().hex[:12]
+        _LOGGER.exception("/account/wallets failed (error_id=%s)", error_id)
+        return {"items": [], "error": "internal_error", "error_id": error_id}
 
 
 @app.get("/account/positions")
@@ -750,8 +756,10 @@ async def account_positions() -> dict:
         out = {"items": items}
         _ACCOUNT_CACHE["positions"] = {"ts": now, "data": out}
         return out
-    except Exception as e:
-        return {"items": [], "error": str(e)}
+    except Exception:
+        error_id = uuid.uuid4().hex[:12]
+        _LOGGER.exception("/account/positions failed (error_id=%s)", error_id)
+        return {"items": [], "error": "internal_error", "error_id": error_id}
 
 
 @app.get("/account/orders")
@@ -782,8 +790,10 @@ async def account_orders() -> dict:
         out = {"items": items}
         _ACCOUNT_CACHE["orders"] = {"ts": now, "data": out}
         return out
-    except Exception as e:
-        return {"items": [], "error": str(e)}
+    except Exception:
+        error_id = uuid.uuid4().hex[:12]
+        _LOGGER.exception("/account/orders failed (error_id=%s)", error_id)
+        return {"items": [], "error": "internal_error", "error_id": error_id}
 
 
 @app.post("/paper/submit")
@@ -929,11 +939,20 @@ async def paper_submit(payload: dict = Body(...)) -> dict:
             },
         }
     except httpx.HTTPStatusError as e:
+        error_id = uuid.uuid4().hex[:12]
         status = getattr(e.response, "status_code", None)
         text = getattr(e.response, "text", "")
-        return {"ok": False, "status": status, "error": text or str(e)}
-    except Exception as e:
-        return {"ok": False, "error": str(e)}
+        _LOGGER.warning(
+            "paper_submit upstream HTTP error (status=%s error_id=%s): %s",
+            status,
+            error_id,
+            text,
+        )
+        return {"ok": False, "status": status, "error": "bitfinex_http_error", "error_id": error_id}
+    except Exception:
+        error_id = uuid.uuid4().hex[:12]
+        _LOGGER.exception("paper_submit failed (error_id=%s)", error_id)
+        return {"ok": False, "error": "internal_error", "error_id": error_id}
 
 
 @app.get("/debug/auth")

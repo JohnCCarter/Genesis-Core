@@ -22,6 +22,7 @@ from core.indicators.fibonacci import (
     detect_swing_points,
 )
 from core.utils import timeframe_filename_suffix
+from core.utils.logging_redaction import get_logger
 
 # --- Module-level caches / constants ---
 
@@ -30,6 +31,8 @@ _htf_context_cache: dict[str, dict[str, Any]] = {}
 
 # Small in-memory candle cache to avoid repeated parquet reads in hot paths.
 _candles_cache: dict[tuple[str, str], pd.DataFrame] = {}
+
+_LOGGER = get_logger(__name__)
 
 # Guardrail: HTF context older than this is considered stale.
 # Needs to be low enough to flag clearly outdated mappings (tests cover 40d stale).
@@ -437,9 +440,11 @@ def get_htf_fibonacci_context(
                 fib_df = compute_htf_fibonacci_levels(htf_candles, config or FibonacciConfig())
                 cache_entry["fib_df"] = fib_df
         except FileNotFoundError as e:
-            return {"available": False, "reason": "HTF_DATA_NOT_FOUND", "error": str(e)}
-        except Exception as e:
-            return {"available": False, "reason": "HTF_ERROR", "error": str(e)}
+            _LOGGER.debug("HTF data not found for %s %s: %s", symbol, htf_timeframe, e)
+            return {"available": False, "reason": "HTF_DATA_NOT_FOUND"}
+        except Exception:
+            _LOGGER.exception("HTF load/compute failed for %s %s", symbol, htf_timeframe)
+            return {"available": False, "reason": "HTF_ERROR"}
 
     if fib_df is None or fib_df.empty:
         return {"available": False, "reason": "NO_HTF_SWINGS"}
@@ -558,8 +563,9 @@ def get_htf_fibonacci_context(
 
         return htf_context
 
-    except Exception as e:
-        return {"available": False, "reason": "HTF_ERROR", "error": str(e)}
+    except Exception:
+        _LOGGER.exception("HTF context failed for %s %s", symbol, htf_timeframe)
+        return {"available": False, "reason": "HTF_ERROR"}
 
 
 def get_ltf_fibonacci_context(*args, **kwargs) -> dict[str, Any]:

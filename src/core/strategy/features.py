@@ -254,12 +254,11 @@ def extract_features(
             htf_fibonacci_context = get_htf_fibonacci_context(
                 candles, timeframe=timeframe, symbol="tBTCUSD"
             )
-        except Exception as e:
+        except Exception:
             # Don't fail feature extraction if HTF context unavailable
             htf_fibonacci_context = {
                 "available": False,
                 "reason": "HTF_CONTEXT_ERROR",
-                "error": str(e),
             }
 
     meta: dict[str, Any] = {

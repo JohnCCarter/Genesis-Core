@@ -776,7 +776,6 @@ def _extract_asof(
             htf_fibonacci_context = {
                 "available": False,
                 "reason": "HTF_CONTEXT_ERROR",
-                "error": str(e),
             }
             log_fib_flow(
                 "[FIB-FLOW] HTF fibonacci context failed: symbol=%s timeframe=%s error=%s",
@@ -811,7 +810,6 @@ def _extract_asof(
             ltf_fibonacci_context = {
                 "available": False,
                 "reason": "LTF_CONTEXT_ERROR",
-                "error": str(e),
             }
             log_fib_flow(
                 "[FIB-FLOW] LTF fibonacci context failed: symbol=%s timeframe=%s error=%s",

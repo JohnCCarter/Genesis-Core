@@ -97,6 +97,7 @@ def _validate_audit_for_stable_change(*, base_ref: str) -> list[str]:
         return errors
 
     head_sha = _git("rev-parse", "HEAD")
+    base_sha = _git("rev-parse", base_ref)
     last = _last_nonempty_line(_repo_root() / audit_path)
     if last is None:
         errors.append("audit file is empty but stable manifest changed")
@@ -124,12 +125,6 @@ def _validate_audit_for_stable_change(*, base_ref: str) -> list[str]:
         errors.append(f"audit entry commit_sha does not exist as a commit: {commit_sha!r}")
         return errors
 
-    if commit_sha_full == head_sha:
-        errors.append(
-            "audit entry commit_sha must NOT equal HEAD (self-referential). "
-            "Set commit_sha to the earlier commit that modified registry/manifests/stable.json."
-        )
-
     # Determine the latest commit in the PR range that modified the stable manifest.
     # Use two-dot (base..HEAD) so we only consider commits introduced by this PR/branch.
     stable_commits = [
@@ -143,6 +138,44 @@ def _validate_audit_for_stable_change(*, base_ref: str) -> list[str]:
             "is base_ref correct?"
         )
         return errors
+
+    # If stable.json and the audit entry are introduced together in a *single* commit (common when a PR
+    # is created as a squash-import), we cannot require the audit entry to reference the stable-changing
+    # commit itself without becoming self-referential. In that case, require a break-glass override and
+    # anchor commit_sha to base_ref instead.
+    if len(stable_commits) == 1 and stable_commits[0] == head_sha:
+        if commit_sha_full == head_sha:
+            errors.append(
+                "audit entry commit_sha must NOT equal HEAD (self-referential) even for single-commit PRs. "
+                f"For single-commit stable-manifest changes, set commit_sha to base_ref ({base_sha})."
+            )
+        if commit_sha_full != base_sha:
+            errors.append(
+                "single-commit stable-manifest change requires commit_sha to reference base_ref "
+                f"({base_sha}); got {commit_sha!r}"
+            )
+        if entry.get("action") != "break_glass_override":
+            errors.append(
+                "single-commit stable-manifest change requires action='break_glass_override' "
+                "(squash-import safe path)"
+            )
+        approved_by = entry.get("approved_by")
+        if (
+            not isinstance(approved_by, list)
+            or not approved_by
+            or not all(isinstance(x, str) and x.strip() for x in approved_by)
+        ):
+            errors.append(
+                "single-commit stable-manifest change requires non-empty approved_by list "
+                "(explicit break-glass approval)"
+            )
+        return errors
+
+    if commit_sha_full == head_sha:
+        errors.append(
+            "audit entry commit_sha must NOT equal HEAD (self-referential). "
+            "Set commit_sha to the earlier commit that modified registry/manifests/stable.json."
+        )
 
     expected_sha = stable_commits[0]
     # rev-list returns newest-first, so the first entry is the latest change.

@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -35,7 +37,7 @@ jobs:
 
       - name: Fetch base branch (PR only)
         if: github.event_name == 'pull_request'
-        run: git fetch --no-tags --depth=1 origin ${{ github.base_ref }}
+        run: git fetch --no-tags origin ${{ github.base_ref }}
 
       - name: Validate registry (PR)
         if: github.event_name == 'pull_request'

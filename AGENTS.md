@@ -1,12 +1,20 @@
 # README for AI Agents (Local Development)
 
-## Last update: 2026-01-08
+## Last update: 2026-01-09
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
 
-## 1. Deliverables (latest highlights: 2026-01-08)
+## 1. Deliverables (latest highlights: 2026-01-09)
+
+- **SECURITY + CI HARDENING (2026-01-09)**: Åtgärdade CodeQL/Code Scanning findings:
+
+  - Sanitiserade client-facing fel så att exception-texter inte läcker (API-responser och feature/HTF-meta), med server-side logging + `error_id`.
+  - Lade till regressiontester som verifierar att exceptions inte ekas i HTTP-responser.
+  - CI: satte explicit `permissions` för `GITHUB_TOKEN` i `.github/workflows/ci.yml` (least privilege) för att släcka `actions/missing-workflow-permissions`.
 
 - **REGISTRY GOVERNANCE (Phase-8a, 2026-01-09)**: Introducerade repo-SSOT för skills/compacts under `registry/` med JSON-schema + CI-gate (`scripts/validate_registry.py`). CI kräver audit-entry i `registry/audit/break_glass.jsonl` när `registry/manifests/stable.json` ändras i PR.
+
+  - **Merge**: PR #24 (Phase-8a squash-import) är mergad till `master` och `master` är uppdaterad/synkad.
 
 - **DOCS + DEV ENV CHECK (2026-01-08)**: Uppdaterade docs för kontinuitet så de speglar faktisk drift idag: `README.md`, `docs/dev_setup.md`, `docs/roadmap/STABILIZATION_PLAN_9_STEPS.md`, `docs/mcp_server_guide.md`, `mcp_server/README.md`, samt Optuna-docs (`docs/optuna/README.md`, `docs/optuna/OPTUNA_BEST_PRACTICES.md`) med PowerShell-vänliga exempel och canonical 1/1-noter. Tog bort provider-specifika tunnel/hostname-exempel och gjorde `scripts/debug_mcp_tunnel.py` till ett enkelt `/healthz` reachability-test för remote MCP. Loggade ändringen i `CHANGELOG.md`. Verifierade att `pre-commit run --all-files` går igenom i `.venv`.
 

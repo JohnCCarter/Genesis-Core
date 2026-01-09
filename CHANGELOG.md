@@ -8,6 +8,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 
 ## [Unreleased]
 
+### Changed - Security & CI hardening (2026-01-09)
+
+- Sanitized client-facing error payloads to avoid leaking exception details (CodeQL: information exposure through an exception).
+  - FastAPI endpoints now return stable error codes (and `error_id` where applicable) while logging the full exception server-side.
+  - HTF/feature meta no longer embeds exception strings.
+  - Added regression tests to ensure exceptions are not echoed in HTTP responses.
+- CI workflow now sets explicit `permissions` for `GITHUB_TOKEN` (least privilege) to satisfy CodeQL
+  (`actions/missing-workflow-permissions`).
+
 ### Changed - Phase-8 (2026-01-08)
 
 **Documentation continuity (MCP + Optuna + dev setup)**

@@ -47,3 +47,21 @@ Dagens fokus var att implementera **Alternativ A** för governance av agent-regl
 
 - Om vi vill börja använda `stable` praktiskt: definiera en enkel promotionsprocess (PR som uppdaterar `stable.json` + audit-entry).
 - Vid behov: komplettera audit-entry-formatet (t.ex. ticket/ref, approved_by) och ev. lägga till en dedikerad promotion-workflow.
+
+---
+
+## Update: Security + CI hardening (post-merge)
+
+- **Merge-status**
+
+  - PR #24 (Phase-8a squash-import) är mergad till `master` och `master` är uppdaterad/synkad.
+
+- **CodeQL: exception info exposure**
+
+  - Sanitiserade client-facing fel: inga `str(e)`/upstream-texter returneras i API-responser.
+  - Bibehöll felsökbarhet via server-side logging och `error_id` i responser där det är relevant.
+  - Tog bort exception-strängar från HTF/feature-meta för att undvika att läcka intern info via artifacts.
+  - Lade till regressiontester som säkerställer att exceptions inte ekas i HTTP-responser.
+
+- **CodeQL: actions/missing-workflow-permissions**
+  - Uppdaterade `.github/workflows/ci.yml` med explicit `permissions` (least privilege) för `GITHUB_TOKEN`.

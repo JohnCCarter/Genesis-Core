@@ -33,6 +33,7 @@ python -m pytest
 
 - Lägg **aldrig** `.env` i git.
 - Utgå från `.env.example` för lokala nycklar/inställningar.
+- Säkerhet: API:t ska inte returnera råa exception-meddelanden till klienter; felsök via loggar (och `error_id` när det finns).
 
 ## MCP Server (AI Assistant Integration)
 

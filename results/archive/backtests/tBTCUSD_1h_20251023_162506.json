@@ -1,0 +1,2140 @@
+{
+  "backtest_info": {
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "start_date": "2024-10-22 13:00:00",
+    "end_date": "2025-10-01 00:00:00",
+    "bars_total": 8244,
+    "bars_processed": 139,
+    "warmup_bars": 50
+  },
+  "summary": {
+    "initial_capital": 10000.0,
+    "final_capital": 11042.722410536295,
+    "total_return": 10.427224105362948,
+    "total_return_usd": 1042.7224105362948,
+    "total_commission": 233.79986073872502,
+    "num_trades": 75,
+    "winning_trades": 26,
+    "losing_trades": 49,
+    "win_rate": 34.66666666666667,
+    "avg_win": 126.3762290163463,
+    "avg_loss": -38.24872471938755,
+    "profit_factor": 3.304063859475257,
+    "max_capital": 11020.428632410018,
+    "min_capital": 9343.469215022506
+  },
+  "trades": [
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.025,
+      "entry_price": 67662.152,
+      "entry_time": "2024-10-24T15:00:00",
+      "exit_price": 69292.629,
+      "exit_time": "2024-10-28T18:00:00",
+      "pnl": -40.76192499999998,
+      "pnl_pct": -2.409732696648488,
+      "commission": 1.732315725,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2024-10-24T15:00:00",
+      "entry_reasons": []
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.015,
+      "entry_price": 69633.166,
+      "entry_time": "2024-10-28T19:00:00",
+      "exit_price": 71195.58,
+      "exit_time": "2024-10-29T02:00:00",
+      "pnl": -23.436210000000063,
+      "pnl_pct": -2.243778489118252,
+      "commission": 1.0679337,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2024-10-28T19:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.015,
+      "entry_price": 70931.5165,
+      "entry_time": "2024-10-29T03:00:00",
+      "exit_price": 72397.1805,
+      "exit_time": "2024-10-29T15:00:00",
+      "pnl": -21.984960000000065,
+      "pnl_pct": -2.0663085639794607,
+      "commission": 1.0859577075,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2024-10-29T03:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.015,
+      "entry_price": 72676.6435,
+      "entry_time": "2024-10-29T16:00:00",
+      "exit_price": 74355.159,
+      "exit_time": "2024-11-06T03:00:00",
+      "pnl": -25.17773249999991,
+      "pnl_pct": -2.3095666216340796,
+      "commission": 1.115327385,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2024-10-29T16:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.015,
+      "entry_price": 74230.86600000001,
+      "entry_time": "2024-11-06T04:00:00",
+      "exit_price": 75785.874,
+      "exit_time": "2024-11-06T19:00:00",
+      "pnl": -23.325119999999806,
+      "pnl_pct": -2.09482669917927,
+      "commission": 1.13678811,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2024-11-06T04:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.015,
+      "entry_price": 75939.01150000001,
+      "entry_time": "2024-11-06T20:00:00",
+      "exit_price": 79039.5,
+      "exit_time": "2024-11-10T04:00:00",
+      "pnl": -46.50732749999988,
+      "pnl_pct": -4.082866551403546,
+      "commission": 1.1855925,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2024-11-06T20:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.025,
+      "entry_price": 79011.47450000001,
+      "entry_time": "2024-11-10T05:00:00",
+      "exit_price": 80678.31899999999,
+      "exit_time": "2024-11-10T22:00:00",
+      "pnl": -41.67111249999944,
+      "pnl_pct": -2.10962333072265,
+      "commission": 2.016957975,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2024-11-10T05:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.015,
+      "entry_price": 80324.8175,
+      "entry_time": "2024-11-10T23:00:00",
+      "exit_price": 82054.00649999999,
+      "exit_time": "2024-11-11T10:00:00",
+      "pnl": -25.937834999999758,
+      "pnl_pct": -2.152745631821677,
+      "commission": 1.2308100974999998,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2024-11-10T23:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.015,
+      "entry_price": 82123.91750000001,
+      "entry_time": "2024-11-11T11:00:00",
+      "exit_price": 84085.0215,
+      "exit_time": "2024-11-11T15:00:00",
+      "pnl": -29.41655999999988,
+      "pnl_pct": -2.387981552390011,
+      "commission": 1.2612753225,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2024-11-11T11:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.015,
+      "entry_price": 84116.92050000001,
+      "entry_time": "2024-11-11T16:00:00",
+      "exit_price": 85842.9,
+      "exit_time": "2024-11-11T18:00:00",
+      "pnl": -25.8896924999998,
+      "pnl_pct": -2.051881464205512,
+      "commission": 1.2876435,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2024-11-11T16:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.015,
+      "entry_price": 86073.9415,
+      "entry_time": "2024-11-11T19:00:00",
+      "exit_price": 87866.9115,
+      "exit_time": "2024-11-11T21:00:00",
+      "pnl": -26.894550000000017,
+      "pnl_pct": -2.0830578555531827,
+      "commission": 1.3180036725,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2024-11-11T19:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.015,
+      "entry_price": 87903.0265,
+      "entry_time": "2024-11-11T22:00:00",
+      "exit_price": 91446.70049999999,
+      "exit_time": "2024-11-13T14:00:00",
+      "pnl": -53.155109999999766,
+      "pnl_pct": -4.031344700059883,
+      "commission": 1.3717005074999997,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2024-11-11T22:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.015,
+      "entry_price": 92579.687,
+      "entry_time": "2024-11-13T15:00:00",
+      "exit_price": 94563.258,
+      "exit_time": "2024-11-20T14:00:00",
+      "pnl": -29.75356499999994,
+      "pnl_pct": -2.142555310216156,
+      "commission": 1.41844887,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2024-11-13T15:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.015,
+      "entry_price": 94585.6835,
+      "entry_time": "2024-11-20T15:00:00",
+      "exit_price": 97315.6335,
+      "exit_time": "2024-11-21T04:00:00",
+      "pnl": -40.94924999999996,
+      "pnl_pct": -2.8862190333487385,
+      "commission": 1.4597345025,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2024-11-20T15:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.015,
+      "entry_price": 97013.46900000001,
+      "entry_time": "2024-11-21T05:00:00",
+      "exit_price": 99154.55249999999,
+      "exit_time": "2024-11-22T07:00:00",
+      "pnl": -32.11625249999968,
+      "pnl_pct": -2.206996123393937,
+      "commission": 1.4873182874999997,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2024-11-21T05:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.015,
+      "entry_price": 98636.657,
+      "entry_time": "2024-11-22T08:00:00",
+      "exit_price": 101270.61,
+      "exit_time": "2024-12-05T02:00:00",
+      "pnl": -39.50929499999991,
+      "pnl_pct": -2.6703591546092182,
+      "commission": 1.5190591500000001,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2024-11-22T08:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.015,
+      "entry_price": 102898.52500000001,
+      "entry_time": "2024-12-05T03:00:00",
+      "exit_price": 105372.65999999999,
+      "exit_time": "2024-12-16T00:00:00",
+      "pnl": -37.112024999999704,
+      "pnl_pct": -2.4044416574484235,
+      "commission": 1.5805898999999997,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2024-12-05T03:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.015,
+      "entry_price": 105347.3,
+      "entry_time": "2024-12-16T01:00:00",
+      "exit_price": 108104.025,
+      "exit_time": "2024-12-17T14:00:00",
+      "pnl": -41.35087499999987,
+      "pnl_pct": -2.6167970133074046,
+      "commission": 1.6215603749999998,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2024-12-16T01:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.015,
+      "entry_price": 106306.82,
+      "entry_time": "2024-12-17T15:00:00",
+      "exit_price": 95467.70999999999,
+      "exit_time": "2024-12-20T08:00:00",
+      "pnl": 162.58665000000022,
+      "pnl_pct": 10.196062679703912,
+      "commission": 1.4320156499999999,
+      "exit_reason": "EMERGENCY_TP",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2024-12-17T15:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_LONG",
+      "size": 0.025,
+      "entry_price": 94498.2255,
+      "entry_time": "2024-12-20T10:00:00",
+      "exit_price": 92038.9575,
+      "exit_time": "2024-12-30T14:00:00",
+      "pnl": -61.48169999999991,
+      "pnl_pct": -2.602448868206521,
+      "commission": 2.3009739375000002,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2024-12-20T10:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_LONG",
+      "size": 0.025,
+      "entry_price": 92256.105,
+      "entry_time": "2024-12-30T15:00:00",
+      "exit_price": 102058.945,
+      "exit_time": "2025-01-06T15:00:00",
+      "pnl": 245.07100000000028,
+      "pnl_pct": 10.625681628332359,
+      "commission": 2.5514736250000007,
+      "exit_reason": "EMERGENCY_TP",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2024-12-30T15:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.015,
+      "entry_price": 101839.05500000001,
+      "entry_time": "2025-01-06T17:00:00",
+      "exit_price": 91107.53099999999,
+      "exit_time": "2025-01-13T11:00:00",
+      "pnl": 160.97286000000028,
+      "pnl_pct": 10.53772936129466,
+      "commission": 1.3666129649999998,
+      "exit_reason": "EMERGENCY_TP",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-01-06T17:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_LONG",
+      "size": 0.025,
+      "entry_price": 90982.46849999999,
+      "entry_time": "2025-01-13T12:00:00",
+      "exit_price": 100439.755,
+      "exit_time": "2025-01-15T23:00:00",
+      "pnl": 236.43216250000043,
+      "pnl_pct": 10.394625091975843,
+      "commission": 2.510993875,
+      "exit_reason": "EMERGENCY_TP",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-01-13T12:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.015,
+      "entry_price": 99811.06950000001,
+      "entry_time": "2025-01-16T00:00:00",
+      "exit_price": 102141.045,
+      "exit_time": "2025-01-17T08:00:00",
+      "pnl": -34.94963249999979,
+      "pnl_pct": -2.3343858668902304,
+      "commission": 1.532115675,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-01-16T00:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.015,
+      "entry_price": 101759.095,
+      "entry_time": "2025-01-17T09:00:00",
+      "exit_price": 104011.98,
+      "exit_time": "2025-01-17T15:00:00",
+      "pnl": -33.79327499999992,
+      "pnl_pct": -2.2139396974786334,
+      "commission": 1.5601797,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-01-17T09:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.015,
+      "entry_price": 104927.51000000001,
+      "entry_time": "2025-01-17T16:00:00",
+      "exit_price": 107463.70499999999,
+      "exit_time": "2025-01-20T06:00:00",
+      "pnl": -38.04292499999967,
+      "pnl_pct": -2.4170925241626127,
+      "commission": 1.6119555749999999,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-01-17T16:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.015,
+      "entry_price": 107876.035,
+      "entry_time": "2025-01-20T09:00:00",
+      "exit_price": 97038.495,
+      "exit_time": "2025-02-02T18:00:00",
+      "pnl": 162.5631000000001,
+      "pnl_pct": 10.046290633503546,
+      "commission": 1.455577425,
+      "exit_reason": "EMERGENCY_TP",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-01-20T09:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "HYST_WAIT"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_LONG",
+      "size": 0.025,
+      "entry_price": 97740.84599999999,
+      "entry_time": "2025-02-02T20:00:00",
+      "exit_price": 93351.301,
+      "exit_time": "2025-02-03T01:00:00",
+      "pnl": -109.7386249999996,
+      "pnl_pct": -4.491003689491273,
+      "commission": 2.333782525,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-02-02T20:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_LONG",
+      "size": 0.035,
+      "entry_price": 93509.7315,
+      "entry_time": "2025-02-03T02:00:00",
+      "exit_price": 91559.19750000001,
+      "exit_time": "2025-02-25T06:00:00",
+      "pnl": -68.26868999999948,
+      "pnl_pct": -2.085915517787563,
+      "commission": 3.2045719125000005,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-02-03T02:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_LONG",
+      "size": 0.035,
+      "entry_price": 89807.88149999999,
+      "entry_time": "2025-02-25T07:00:00",
+      "exit_price": 87280.338,
+      "exit_time": "2025-02-25T14:00:00",
+      "pnl": -88.46402249999949,
+      "pnl_pct": -2.814389403005777,
+      "commission": 3.0548118300000007,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-02-25T07:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_LONG",
+      "size": 0.035,
+      "entry_price": 87449.703,
+      "entry_time": "2025-02-25T15:00:00",
+      "exit_price": 84550.7035,
+      "exit_time": "2025-02-26T18:00:00",
+      "pnl": -101.46498249999969,
+      "pnl_pct": -3.3150478509915473,
+      "commission": 2.9592746225000006,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-02-25T15:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_LONG",
+      "size": 0.035,
+      "entry_price": 84203.0805,
+      "entry_time": "2025-02-26T19:00:00",
+      "exit_price": 81914.0225,
+      "exit_time": "2025-02-28T01:00:00",
+      "pnl": -80.11702999999966,
+      "pnl_pct": -2.7184967419333192,
+      "commission": 2.8669907875000002,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-02-26T19:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_LONG",
+      "size": 0.025,
+      "entry_price": 81138.549,
+      "entry_time": "2025-02-28T02:00:00",
+      "exit_price": 79369.29550000001,
+      "exit_time": "2025-02-28T07:00:00",
+      "pnl": -44.231337499999796,
+      "pnl_pct": -2.1805338175322704,
+      "commission": 1.9842323875000003,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-02-28T02:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_LONG",
+      "size": 0.035,
+      "entry_price": 79259.61,
+      "entry_time": "2025-02-28T08:00:00",
+      "exit_price": 87689.13350000001,
+      "exit_time": "2025-03-02T15:00:00",
+      "pnl": 295.0333225000004,
+      "pnl_pct": 10.635333052988791,
+      "commission": 3.069119672500001,
+      "exit_reason": "EMERGENCY_TP",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-02-28T08:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.015,
+      "entry_price": 94282.835,
+      "entry_time": "2025-03-02T17:00:00",
+      "exit_price": 83689.824,
+      "exit_time": "2025-03-04T01:00:00",
+      "pnl": 158.8951650000002,
+      "pnl_pct": 11.235354770568803,
+      "commission": 1.2553473599999998,
+      "exit_reason": "EMERGENCY_TP",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-03-02T17:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "HYST_WAIT"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_LONG",
+      "size": 0.035,
+      "entry_price": 84216.087,
+      "entry_time": "2025-03-04T02:00:00",
+      "exit_price": 92921.516,
+      "exit_time": "2025-03-06T05:00:00",
+      "pnl": 304.6900150000002,
+      "pnl_pct": 10.337014352139164,
+      "commission": 3.2522530600000006,
+      "exit_reason": "EMERGENCY_TP",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-03-04T02:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.015,
+      "entry_price": 92068.9425,
+      "entry_time": "2025-03-06T06:00:00",
+      "exit_price": 82840.3995,
+      "exit_time": "2025-03-09T16:00:00",
+      "pnl": 138.42814500000006,
+      "pnl_pct": 10.023513629473916,
+      "commission": 1.2426059925,
+      "exit_reason": "EMERGENCY_TP",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-03-06T06:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_LONG",
+      "size": 0.025,
+      "entry_price": 82689.324,
+      "entry_time": "2025-03-09T17:00:00",
+      "exit_price": 80472.74350000001,
+      "exit_time": "2025-03-09T22:00:00",
+      "pnl": -55.414512499999546,
+      "pnl_pct": -2.68061267498085,
+      "commission": 2.0118185875000005,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-03-09T17:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_LONG",
+      "size": 0.025,
+      "entry_price": 80992.476,
+      "entry_time": "2025-03-09T23:00:00",
+      "exit_price": 79193.38350000001,
+      "exit_time": "2025-03-10T16:00:00",
+      "pnl": -44.97731249999961,
+      "pnl_pct": -2.2213081867011755,
+      "commission": 1.9798345875000005,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-03-09T23:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_LONG",
+      "size": 0.035,
+      "entry_price": 78761.36099999999,
+      "entry_time": "2025-03-10T17:00:00",
+      "exit_price": 86985.48550000001,
+      "exit_time": "2025-03-19T23:00:00",
+      "pnl": 287.84435750000074,
+      "pnl_pct": 10.441826290939819,
+      "commission": 3.0444919925000007,
+      "exit_reason": "EMERGENCY_TP",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-03-10T17:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.015,
+      "entry_price": 85999.97850000001,
+      "entry_time": "2025-03-20T01:00:00",
+      "exit_price": 87973.965,
+      "exit_time": "2025-03-24T10:00:00",
+      "pnl": -29.609797499999768,
+      "pnl_pct": -2.2953337133682936,
+      "commission": 1.319609475,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-03-20T01:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.015,
+      "entry_price": 87808.07400000001,
+      "entry_time": "2025-03-24T11:00:00",
+      "exit_price": 79055.508,
+      "exit_time": "2025-04-06T18:00:00",
+      "pnl": 131.28849000000008,
+      "pnl_pct": 9.967837354000048,
+      "commission": 1.18583262,
+      "exit_reason": "EMERGENCY_TP",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-03-24T11:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_LONG",
+      "size": 0.025,
+      "entry_price": 78913.43699999999,
+      "entry_time": "2025-04-06T20:00:00",
+      "exit_price": 76944.50850000001,
+      "exit_time": "2025-04-07T04:00:00",
+      "pnl": -49.223212499999505,
+      "pnl_pct": -2.4950484668409265,
+      "commission": 1.9236127125000002,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-04-06T20:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_LONG",
+      "size": 0.025,
+      "entry_price": 76948.455,
+      "entry_time": "2025-04-07T05:00:00",
+      "exit_price": 74777.5925,
+      "exit_time": "2025-04-07T06:00:00",
+      "pnl": -54.27156250000007,
+      "pnl_pct": -2.8211904969372066,
+      "commission": 1.8694398125,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-04-07T05:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_LONG",
+      "size": 0.035,
+      "entry_price": 75114.5385,
+      "entry_time": "2025-04-07T07:00:00",
+      "exit_price": 83169.39450000001,
+      "exit_time": "2025-04-09T20:00:00",
+      "pnl": 281.9199600000005,
+      "pnl_pct": 10.723431390049761,
+      "commission": 2.9109288075000004,
+      "exit_reason": "EMERGENCY_TP",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-04-07T07:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.015,
+      "entry_price": 82977.4905,
+      "entry_time": "2025-04-09T22:00:00",
+      "exit_price": 84848.40299999999,
+      "exit_time": "2025-04-12T14:00:00",
+      "pnl": -28.06368749999987,
+      "pnl_pct": -2.254722923923557,
+      "commission": 1.272726045,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-04-09T22:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.015,
+      "entry_price": 84887.535,
+      "entry_time": "2025-04-12T15:00:00",
+      "exit_price": 87120.5385,
+      "exit_time": "2025-04-21T01:00:00",
+      "pnl": -33.49505249999987,
+      "pnl_pct": -2.6305434596492776,
+      "commission": 1.3068080775,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-04-12T15:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.015,
+      "entry_price": 87065.4455,
+      "entry_time": "2025-04-21T02:00:00",
+      "exit_price": 88933.4445,
+      "exit_time": "2025-04-22T12:00:00",
+      "pnl": -28.01998499999994,
+      "pnl_pct": -2.145511332621615,
+      "commission": 1.3340016675,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-04-21T02:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.015,
+      "entry_price": 90124.91500000001,
+      "entry_time": "2025-04-22T13:00:00",
+      "exit_price": 92973.4635,
+      "exit_time": "2025-04-22T21:00:00",
+      "pnl": -42.728227499999846,
+      "pnl_pct": -3.1606670586041488,
+      "commission": 1.3946019525,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-04-22T13:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.015,
+      "entry_price": 92645.65400000001,
+      "entry_time": "2025-04-22T22:00:00",
+      "exit_price": 94714.3335,
+      "exit_time": "2025-04-25T11:00:00",
+      "pnl": -31.030192499999757,
+      "pnl_pct": -2.2328942704640884,
+      "commission": 1.4207150025,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-04-22T22:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_LONG",
+      "size": 0.015,
+      "entry_price": 94515.234,
+      "entry_time": "2025-04-25T13:00:00",
+      "exit_price": 104697.625,
+      "exit_time": "2025-05-10T23:00:00",
+      "pnl": 152.73586500000005,
+      "pnl_pct": 10.773280210045296,
+      "commission": 1.570464375,
+      "exit_reason": "EMERGENCY_TP",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-04-25T13:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_LONG",
+      "size": 0.015,
+      "entry_price": 104422.185,
+      "entry_time": "2025-05-11T00:00:00",
+      "exit_price": 103778.085,
+      "exit_time": "2025-05-12T02:00:00",
+      "pnl": -9.661499999999869,
+      "pnl_pct": -0.6168229481120237,
+      "commission": 1.5566712750000002,
+      "exit_reason": "TRAIL_STOP",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-05-11T00:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_LONG",
+      "size": 0.015,
+      "entry_price": 104092.01999999999,
+      "entry_time": "2025-05-12T03:00:00",
+      "exit_price": 103678.13500000001,
+      "exit_time": "2025-05-12T11:00:00",
+      "pnl": -6.208274999999703,
+      "pnl_pct": -0.39761453375578665,
+      "commission": 1.555172025,
+      "exit_reason": "TRAIL_STOP",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-05-12T03:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_LONG",
+      "size": 0.015,
+      "entry_price": 104342.14499999999,
+      "entry_time": "2025-05-12T13:00:00",
+      "exit_price": 101629.16,
+      "exit_time": "2025-05-12T18:00:00",
+      "pnl": -40.69477499999979,
+      "pnl_pct": -2.6000855167391723,
+      "commission": 1.5244374,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-05-12T13:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_LONG",
+      "size": 0.025,
+      "entry_price": 101910.93,
+      "entry_time": "2025-05-12T19:00:00",
+      "exit_price": 103188.38,
+      "exit_time": "2025-05-14T08:00:00",
+      "pnl": 31.936250000000292,
+      "pnl_pct": 1.253496558220018,
+      "commission": 2.5797095000000003,
+      "exit_reason": "TRAIL_STOP",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-05-12T19:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_LONG",
+      "size": 0.025,
+      "entry_price": 103521.735,
+      "entry_time": "2025-05-14T09:00:00",
+      "exit_price": 103328.31000000001,
+      "exit_time": "2025-05-16T08:00:00",
+      "pnl": -4.835624999999709,
+      "pnl_pct": -0.18684482055868593,
+      "commission": 2.5832077500000006,
+      "exit_reason": "TRAIL_STOP",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-05-14T09:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_LONG",
+      "size": 0.025,
+      "entry_price": 103811.87999999999,
+      "entry_time": "2025-05-16T09:00:00",
+      "exit_price": 103318.315,
+      "exit_time": "2025-05-17T00:00:00",
+      "pnl": -12.339124999999695,
+      "pnl_pct": -0.4754417317170133,
+      "commission": 2.582957875,
+      "exit_reason": "TRAIL_STOP",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-05-16T09:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_LONG",
+      "size": 0.025,
+      "entry_price": 102851.4,
+      "entry_time": "2025-05-17T01:00:00",
+      "exit_price": 103528.21,
+      "exit_time": "2025-05-19T03:00:00",
+      "pnl": 16.920250000000305,
+      "pnl_pct": 0.65804646314976,
+      "commission": 2.5882052500000006,
+      "exit_reason": "TRAIL_STOP",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-05-17T01:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_LONG",
+      "size": 0.0025000000000000005,
+      "entry_price": 103041.495,
+      "entry_time": "2025-05-19T04:00:00",
+      "exit_price": 107526.21,
+      "exit_time": "2025-05-21T05:00:00",
+      "pnl": 11.21178750000003,
+      "pnl_pct": 4.352338832040443,
+      "commission": 0.2688155250000001,
+      "exit_reason": "TP4_0786",
+      "is_partial": true,
+      "remaining_size": 0.0225,
+      "position_id": "tBTCUSD_2025-05-19T04:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_LONG",
+      "size": 0.0225,
+      "entry_price": 103041.495,
+      "entry_time": "2025-05-19T04:00:00",
+      "exit_price": 111674.13500000001,
+      "exit_time": "2025-05-22T03:00:00",
+      "pnl": 205.44618750000035,
+      "pnl_pct": 7.9752797647200415,
+      "commission": 2.5126680375,
+      "exit_reason": "TRAIL_STOP",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-05-19T04:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.003,
+      "entry_price": 110764.59000000001,
+      "entry_time": "2025-05-22T05:00:00",
+      "exit_price": 111075.51,
+      "exit_time": "2025-05-22T07:00:00",
+      "pnl": -0.9327599999999511,
+      "pnl_pct": -0.2807034269706444,
+      "commission": 0.33322652999999997,
+      "exit_reason": "TP3_0382",
+      "is_partial": true,
+      "remaining_size": 0.012,
+      "position_id": "tBTCUSD_2025-05-22T05:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.012,
+      "entry_price": 110764.59000000001,
+      "entry_time": "2025-05-22T05:00:00",
+      "exit_price": 113726.83499999999,
+      "exit_time": "2025-07-10T17:00:00",
+      "pnl": -36.479699999999724,
+      "pnl_pct": -2.1956294877270626,
+      "commission": 1.3647220199999999,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-05-22T05:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.0045,
+      "entry_price": 113343.3,
+      "entry_time": "2025-07-10T18:00:00",
+      "exit_price": 113546.745,
+      "exit_time": "2025-07-10T20:00:00",
+      "pnl": -0.9155024999999659,
+      "pnl_pct": -0.17949450915933488,
+      "commission": 0.5109603524999999,
+      "exit_reason": "TP2_05",
+      "is_partial": true,
+      "remaining_size": 0.010499999999999999,
+      "position_id": "tBTCUSD_2025-07-10T18:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.0052499999999999995,
+      "entry_price": 113343.3,
+      "entry_time": "2025-07-10T18:00:00",
+      "exit_price": 116017.98,
+      "exit_time": "2025-07-10T22:00:00",
+      "pnl": -14.042069999999962,
+      "pnl_pct": -2.3598042407447046,
+      "commission": 0.609094395,
+      "exit_reason": "TP1_0618",
+      "is_partial": true,
+      "remaining_size": 0.0052499999999999995,
+      "position_id": "tBTCUSD_2025-07-10T18:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.0052499999999999995,
+      "entry_price": 113343.3,
+      "entry_time": "2025-07-10T18:00:00",
+      "exit_price": 117828.885,
+      "exit_time": "2025-07-11T05:00:00",
+      "pnl": -38.50689374999988,
+      "pnl_pct": -2.2649122180137615,
+      "commission": 0.6186016462499999,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-07-10T18:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.015,
+      "entry_price": 117501.22,
+      "entry_time": "2025-07-11T06:00:00",
+      "exit_price": 120650.295,
+      "exit_time": "2025-07-14T03:00:00",
+      "pnl": -47.23612499999995,
+      "pnl_pct": -2.680036003030434,
+      "commission": 1.809754425,
+      "exit_reason": "EMERGENCY_SL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-07-11T06:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.0015,
+      "entry_price": 121239.35,
+      "entry_time": "2025-07-14T04:00:00",
+      "exit_price": 119299.62,
+      "exit_time": "2025-07-16T09:00:00",
+      "pnl": 2.909595000000016,
+      "pnl_pct": 1.5999178484543266,
+      "commission": 0.17894943000000002,
+      "exit_reason": "TP4_0786",
+      "is_partial": true,
+      "remaining_size": 0.0135,
+      "position_id": "tBTCUSD_2025-07-14T04:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.00675,
+      "entry_price": 121239.35,
+      "entry_time": "2025-07-14T04:00:00",
+      "exit_price": 115887.915,
+      "exit_time": "2025-07-25T15:00:00",
+      "pnl": 36.122186250000084,
+      "pnl_pct": 4.413942338028051,
+      "commission": 0.78224342625,
+      "exit_reason": "TP1_0618",
+      "is_partial": true,
+      "remaining_size": 0.00675,
+      "position_id": "tBTCUSD_2025-07-14T04:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.002025,
+      "entry_price": 121239.35,
+      "entry_time": "2025-07-14T04:00:00",
+      "exit_price": 113426.685,
+      "exit_time": "2025-08-01T19:00:00",
+      "pnl": 15.820646625000016,
+      "pnl_pct": 6.444001060711731,
+      "commission": 0.22968903712499997,
+      "exit_reason": "TP2_05",
+      "is_partial": true,
+      "remaining_size": 0.004725,
+      "position_id": "tBTCUSD_2025-07-14T04:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.004725,
+      "entry_price": 121239.35,
+      "entry_time": "2025-07-14T04:00:00",
+      "exit_price": 123591.765,
+      "exit_time": "2025-08-14T02:00:00",
+      "pnl": 43.737267000000145,
+      "pnl_pct": 2.4050094296942452,
+      "commission": 0.583971089625,
+      "exit_reason": "TRAIL_STOP",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-07-14T04:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.0015,
+      "entry_price": 123118.41,
+      "entry_time": "2025-08-14T03:00:00",
+      "exit_price": 119329.635,
+      "exit_time": "2025-08-15T06:00:00",
+      "pnl": 5.683162500000013,
+      "pnl_pct": 3.0773423730862093,
+      "commission": 0.17899445249999998,
+      "exit_reason": "TP4_0786",
+      "is_partial": true,
+      "remaining_size": 0.0135,
+      "position_id": "tBTCUSD_2025-08-14T03:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.00675,
+      "entry_price": 123118.41,
+      "entry_time": "2025-08-14T03:00:00",
+      "exit_price": 115887.915,
+      "exit_time": "2025-08-18T05:00:00",
+      "pnl": 48.805841250000064,
+      "pnl_pct": 5.8727975775515695,
+      "commission": 0.78224342625,
+      "exit_reason": "TP1_0618",
+      "is_partial": true,
+      "remaining_size": 0.00675,
+      "position_id": "tBTCUSD_2025-08-14T03:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.002025,
+      "entry_price": 123118.41,
+      "entry_time": "2025-08-14T03:00:00",
+      "exit_price": 113646.795,
+      "exit_time": "2025-08-19T16:00:00",
+      "pnl": 19.18002037500001,
+      "pnl_pct": 7.693093989761568,
+      "commission": 0.23013475987499998,
+      "exit_reason": "TP2_05",
+      "is_partial": true,
+      "remaining_size": 0.004725,
+      "position_id": "tBTCUSD_2025-08-14T03:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.0009450000000000001,
+      "entry_price": 123118.41,
+      "entry_time": "2025-08-14T03:00:00",
+      "exit_price": 111235.59,
+      "exit_time": "2025-08-25T10:00:00",
+      "pnl": 11.229264900000008,
+      "pnl_pct": 9.651537897541079,
+      "commission": 0.10511763255,
+      "exit_reason": "TP3_0382",
+      "is_partial": true,
+      "remaining_size": 0.00378,
+      "position_id": "tBTCUSD_2025-08-14T03:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    },
+    {
+      "symbol": "tBTCUSD",
+      "side": "CLOSE_SHORT",
+      "size": 0.00378,
+      "entry_price": 123118.41,
+      "entry_time": "2025-08-14T03:00:00",
+      "exit_price": 114277.11,
+      "exit_time": "2025-10-01T00:00:00",
+      "pnl": 118.31840302500011,
+      "pnl_pct": 6.406753900574258,
+      "commission": 0.4319674758,
+      "exit_reason": "OPPOSITE_SIGNAL",
+      "is_partial": false,
+      "remaining_size": 0.0,
+      "position_id": "tBTCUSD_2025-08-14T03:00:00",
+      "entry_reasons": ["ZONE:base@0.350", "COOLDOWN_ACTIVE"]
+    }
+  ],
+  "equity_curve": [
+    {
+      "timestamp": "2024-10-24 15:00:00",
+      "capital": 9998.3084462,
+      "unrealized_pnl": -0.8461999999999534,
+      "total_equity": 9997.4622462
+    },
+    {
+      "timestamp": "2024-10-28 18:00:00",
+      "capital": 9955.814205475,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9955.814205475
+    },
+    {
+      "timestamp": "2024-10-28 19:00:00",
+      "capital": 9954.769707985,
+      "unrealized_pnl": -0.5225100000000384,
+      "total_equity": 9954.247197985
+    },
+    {
+      "timestamp": "2024-10-29 02:00:00",
+      "capital": 9930.265564285,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9930.265564285
+    },
+    {
+      "timestamp": "2024-10-29 03:00:00",
+      "capital": 9929.2015915375,
+      "unrealized_pnl": -0.5322525000000314,
+      "total_equity": 9928.6693390375
+    },
+    {
+      "timestamp": "2024-10-29 15:00:00",
+      "capital": 9906.130673829999,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9906.130673829999
+    },
+    {
+      "timestamp": "2024-10-29 16:00:00",
+      "capital": 9905.040524177499,
+      "unrealized_pnl": -0.5453474999999162,
+      "total_equity": 9904.4951766775
+    },
+    {
+      "timestamp": "2024-11-06 03:00:00",
+      "capital": 9878.747464292499,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9878.747464292499
+    },
+    {
+      "timestamp": "2024-11-06 04:00:00",
+      "capital": 9877.634001302498,
+      "unrealized_pnl": -0.5570099999998638,
+      "total_equity": 9877.076991302498
+    },
+    {
+      "timestamp": "2024-11-06 19:00:00",
+      "capital": 9853.1720931925,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9853.1720931925
+    },
+    {
+      "timestamp": "2024-11-06 20:00:00",
+      "capital": 9852.03300802,
+      "unrealized_pnl": -0.569827499999883,
+      "total_equity": 9851.46318052
+    },
+    {
+      "timestamp": "2024-11-10 04:00:00",
+      "capital": 9804.34008802,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9804.34008802
+    },
+    {
+      "timestamp": "2024-11-10 05:00:00",
+      "capital": 9802.3648011575,
+      "unrealized_pnl": -0.9881374999997207,
+      "total_equity": 9801.3766636575
+    },
+    {
+      "timestamp": "2024-11-10 22:00:00",
+      "capital": 9758.6767306825,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9758.6767306825
+    },
+    {
+      "timestamp": "2024-11-10 23:00:00",
+      "capital": 9757.47185842,
+      "unrealized_pnl": -0.6027374999999301,
+      "total_equity": 9756.86912092
+    },
+    {
+      "timestamp": "2024-11-11 10:00:00",
+      "capital": 9730.3032133225,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9730.3032133225
+    },
+    {
+      "timestamp": "2024-11-11 11:00:00",
+      "capital": 9729.071354560001,
+      "unrealized_pnl": -0.6162374999998428,
+      "total_equity": 9728.45511706
+    },
+    {
+      "timestamp": "2024-11-11 15:00:00",
+      "capital": 9698.393519237501,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9698.393519237501
+    },
+    {
+      "timestamp": "2024-11-11 16:00:00",
+      "capital": 9697.131765430002,
+      "unrealized_pnl": -0.6311924999998882,
+      "total_equity": 9696.500572930003
+    },
+    {
+      "timestamp": "2024-11-11 18:00:00",
+      "capital": 9669.954429430001,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9669.954429430001
+    },
+    {
+      "timestamp": "2024-11-11 19:00:00",
+      "capital": 9668.663320307502,
+      "unrealized_pnl": -0.6458774999999878,
+      "total_equity": 9668.017442807502
+    },
+    {
+      "timestamp": "2024-11-11 21:00:00",
+      "capital": 9640.450766635002,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9640.450766635002
+    },
+    {
+      "timestamp": "2024-11-11 22:00:00",
+      "capital": 9639.132221237502,
+      "unrealized_pnl": -0.6596024999998917,
+      "total_equity": 9638.472618737502
+    },
+    {
+      "timestamp": "2024-11-13 14:00:00",
+      "capital": 9584.605410730002,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9584.605410730002
+    },
+    {
+      "timestamp": "2024-11-13 15:00:00",
+      "capital": 9583.216715425002,
+      "unrealized_pnl": -0.6946949999999197,
+      "total_equity": 9582.522020425002
+    },
+    {
+      "timestamp": "2024-11-20 14:00:00",
+      "capital": 9552.044701555002,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9552.044701555002
+    },
+    {
+      "timestamp": "2024-11-20 15:00:00",
+      "capital": 9550.625916302502,
+      "unrealized_pnl": -0.7097475000000122,
+      "total_equity": 9549.916168802503
+    },
+    {
+      "timestamp": "2024-11-21 04:00:00",
+      "capital": 9508.216931800003,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9508.216931800003
+    },
+    {
+      "timestamp": "2024-11-21 05:00:00",
+      "capital": 9506.761729765003,
+      "unrealized_pnl": -0.7279649999998219,
+      "total_equity": 9506.033764765003
+    },
+    {
+      "timestamp": "2024-11-22 07:00:00",
+      "capital": 9473.158158977503,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9473.158158977503
+    },
+    {
+      "timestamp": "2024-11-22 08:00:00",
+      "capital": 9471.678609122504,
+      "unrealized_pnl": -0.7401449999999021,
+      "total_equity": 9470.938464122504
+    },
+    {
+      "timestamp": "2024-12-05 02:00:00",
+      "capital": 9430.650254972505,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9430.650254972505
+    },
+    {
+      "timestamp": "2024-12-05 03:00:00",
+      "capital": 9429.106777097504,
+      "unrealized_pnl": -0.772124999999869,
+      "total_equity": 9428.334652097505
+    },
+    {
+      "timestamp": "2024-12-16 00:00:00",
+      "capital": 9390.414162197505,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9390.414162197505
+    },
+    {
+      "timestamp": "2024-12-16 01:00:00",
+      "capital": 9388.833952697505,
+      "unrealized_pnl": -0.7904999999999563,
+      "total_equity": 9388.043452697506
+    },
+    {
+      "timestamp": "2024-12-17 14:00:00",
+      "capital": 9345.861517322504,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9345.861517322504
+    },
+    {
+      "timestamp": "2024-12-17 15:00:00",
+      "capital": 9344.266915022505,
+      "unrealized_pnl": -0.7976999999998952,
+      "total_equity": 9343.469215022506
+    },
+    {
+      "timestamp": "2024-12-20 08:00:00",
+      "capital": 9505.421549372504,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9505.421549372504
+    },
+    {
+      "timestamp": "2024-12-20 09:00:00",
+      "capital": 9505.421549372504,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9505.421549372504
+    },
+    {
+      "timestamp": "2024-12-20 10:00:00",
+      "capital": 9503.059093735004,
+      "unrealized_pnl": -1.1806375000000118,
+      "total_equity": 9501.878456235005
+    },
+    {
+      "timestamp": "2024-12-30 14:00:00",
+      "capital": 9439.276419797505,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9439.276419797505
+    },
+    {
+      "timestamp": "2024-12-30 15:00:00",
+      "capital": 9436.970017172505,
+      "unrealized_pnl": -1.152624999999898,
+      "total_equity": 9435.817392172505
+    },
+    {
+      "timestamp": "2025-01-06 15:00:00",
+      "capital": 9679.489543547506,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9679.489543547506
+    },
+    {
+      "timestamp": "2025-01-06 16:00:00",
+      "capital": 9679.489543547506,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9679.489543547506
+    },
+    {
+      "timestamp": "2025-01-06 17:00:00",
+      "capital": 9677.961957722506,
+      "unrealized_pnl": -0.7641749999998865,
+      "total_equity": 9677.197782722506
+    },
+    {
+      "timestamp": "2025-01-13 11:00:00",
+      "capital": 9837.568204757506,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9837.568204757506
+    },
+    {
+      "timestamp": "2025-01-13 12:00:00",
+      "capital": 9835.293643045006,
+      "unrealized_pnl": -1.1367124999997031,
+      "total_equity": 9834.156930545007
+    },
+    {
+      "timestamp": "2025-01-15 23:00:00",
+      "capital": 10069.214811670006,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10069.214811670006
+    },
+    {
+      "timestamp": "2025-01-16 00:00:00",
+      "capital": 10067.717645627506,
+      "unrealized_pnl": -0.7489574999998149,
+      "total_equity": 10066.968688127507
+    },
+    {
+      "timestamp": "2025-01-17 08:00:00",
+      "capital": 10031.235897452507,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10031.235897452507
+    },
+    {
+      "timestamp": "2025-01-17 09:00:00",
+      "capital": 10029.709511027508,
+      "unrealized_pnl": -0.7635749999999825,
+      "total_equity": 10028.945936027507
+    },
+    {
+      "timestamp": "2025-01-17 15:00:00",
+      "capital": 9994.356056327508,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9994.356056327508
+    },
+    {
+      "timestamp": "2025-01-17 16:00:00",
+      "capital": 9992.782143677508,
+      "unrealized_pnl": -0.7873499999998602,
+      "total_equity": 9991.994793677508
+    },
+    {
+      "timestamp": "2025-01-20 06:00:00",
+      "capital": 9953.12726310251,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9953.12726310251
+    },
+    {
+      "timestamp": "2025-01-20 07:00:00",
+      "capital": 9953.12726310251,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9953.12726310251
+    },
+    {
+      "timestamp": "2025-01-20 08:00:00",
+      "capital": 9953.12726310251,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9953.12726310251
+    },
+    {
+      "timestamp": "2025-01-20 09:00:00",
+      "capital": 9951.509122577509,
+      "unrealized_pnl": -0.8094749999999475,
+      "total_equity": 9950.699647577509
+    },
+    {
+      "timestamp": "2025-02-02 18:00:00",
+      "capital": 10112.61664515251,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10112.61664515251
+    },
+    {
+      "timestamp": "2025-02-02 19:00:00",
+      "capital": 10112.61664515251,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10112.61664515251
+    },
+    {
+      "timestamp": "2025-02-02 20:00:00",
+      "capital": 10110.17312400251,
+      "unrealized_pnl": -1.2211499999997615,
+      "total_equity": 10108.95197400251
+    },
+    {
+      "timestamp": "2025-02-03 01:00:00",
+      "capital": 9998.10071647751,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9998.10071647751
+    },
+    {
+      "timestamp": "2025-02-03 02:00:00",
+      "capital": 9994.82787587501,
+      "unrealized_pnl": -1.6356024999998047,
+      "total_equity": 9993.192273375009
+    },
+    {
+      "timestamp": "2025-02-25 06:00:00",
+      "capital": 9923.35461396251,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9923.35461396251
+    },
+    {
+      "timestamp": "2025-02-25 07:00:00",
+      "capital": 9920.21133811001,
+      "unrealized_pnl": -1.5708524999996007,
+      "total_equity": 9918.64048561001
+    },
+    {
+      "timestamp": "2025-02-25 14:00:00",
+      "capital": 9828.69250378001,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9828.69250378001
+    },
+    {
+      "timestamp": "2025-02-25 15:00:00",
+      "capital": 9825.63176417501,
+      "unrealized_pnl": -1.5296049999997923,
+      "total_equity": 9824.10215917501
+    },
+    {
+      "timestamp": "2025-02-26 18:00:00",
+      "capital": 9721.20750705251,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9721.20750705251
+    },
+    {
+      "timestamp": "2025-02-26 19:00:00",
+      "capital": 9718.26039923501,
+      "unrealized_pnl": -1.4728174999998738,
+      "total_equity": 9716.78758173501
+    },
+    {
+      "timestamp": "2025-02-28 01:00:00",
+      "capital": 9635.27637844751,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9635.27637844751
+    },
+    {
+      "timestamp": "2025-02-28 02:00:00",
+      "capital": 9633.24791472251,
+      "unrealized_pnl": -1.0137249999999767,
+      "total_equity": 9632.234189722509
+    },
+    {
+      "timestamp": "2025-02-28 07:00:00",
+      "capital": 9587.03234483501,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9587.03234483501
+    },
+    {
+      "timestamp": "2025-02-28 08:00:00",
+      "capital": 9584.25825848501,
+      "unrealized_pnl": -1.3863500000000204,
+      "total_equity": 9582.871908485009
+    },
+    {
+      "timestamp": "2025-03-02 15:00:00",
+      "capital": 9876.22246131251,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9876.22246131251
+    },
+    {
+      "timestamp": "2025-03-02 16:00:00",
+      "capital": 9876.22246131251,
+      "unrealized_pnl": 0.0,
+      "total_equity": 9876.22246131251
+    },
+    {
+      "timestamp": "2025-03-02 17:00:00",
+      "capital": 9874.808218787512,
+      "unrealized_pnl": -0.7074749999999039,
+      "total_equity": 9874.100743787512
+    },
+    {
+      "timestamp": "2025-03-04 01:00:00",
+      "capital": 10032.448036427511,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10032.448036427511
+    },
+    {
+      "timestamp": "2025-03-04 02:00:00",
+      "capital": 10029.500473382512,
+      "unrealized_pnl": -1.473044999999984,
+      "total_equity": 10028.027428382511
+    },
+    {
+      "timestamp": "2025-03-06 05:00:00",
+      "capital": 10330.938235322512,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10330.938235322512
+    },
+    {
+      "timestamp": "2025-03-06 06:00:00",
+      "capital": 10329.557201185013,
+      "unrealized_pnl": -0.6908624999999301,
+      "total_equity": 10328.866338685013
+    },
+    {
+      "timestamp": "2025-03-09 16:00:00",
+      "capital": 10466.742740192512,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10466.742740192512
+    },
+    {
+      "timestamp": "2025-03-09 17:00:00",
+      "capital": 10464.675507092512,
+      "unrealized_pnl": -1.0330999999998312,
+      "total_equity": 10463.642407092511
+    },
+    {
+      "timestamp": "2025-03-09 22:00:00",
+      "capital": 10407.249176005012,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10407.249176005012
+    },
+    {
+      "timestamp": "2025-03-09 23:00:00",
+      "capital": 10405.224364105012,
+      "unrealized_pnl": -1.011899999999878,
+      "total_equity": 10404.212464105012
+    },
+    {
+      "timestamp": "2025-03-10 16:00:00",
+      "capital": 10358.267217017512,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10358.267217017512
+    },
+    {
+      "timestamp": "2025-03-10 17:00:00",
+      "capital": 10355.510569382512,
+      "unrealized_pnl": -1.3776349999996456,
+      "total_equity": 10354.132934382513
+    },
+    {
+      "timestamp": "2025-03-19 23:00:00",
+      "capital": 10640.310434890012,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10640.310434890012
+    },
+    {
+      "timestamp": "2025-03-20 00:00:00",
+      "capital": 10640.310434890012,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10640.310434890012
+    },
+    {
+      "timestamp": "2025-03-20 01:00:00",
+      "capital": 10639.020435212513,
+      "unrealized_pnl": -0.6453224999998202,
+      "total_equity": 10638.375112712512
+    },
+    {
+      "timestamp": "2025-03-24 10:00:00",
+      "capital": 10608.091028237513,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10608.091028237513
+    },
+    {
+      "timestamp": "2025-03-24 11:00:00",
+      "capital": 10606.773907127514,
+      "unrealized_pnl": -0.658889999999883,
+      "total_equity": 10606.115017127513
+    },
+    {
+      "timestamp": "2025-04-06 18:00:00",
+      "capital": 10736.876564507515,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10736.876564507515
+    },
+    {
+      "timestamp": "2025-04-06 19:00:00",
+      "capital": 10736.876564507515,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10736.876564507515
+    },
+    {
+      "timestamp": "2025-04-06 20:00:00",
+      "capital": 10734.903728582514,
+      "unrealized_pnl": -0.9859249999997701,
+      "total_equity": 10733.917803582515
+    },
+    {
+      "timestamp": "2025-04-07 04:00:00",
+      "capital": 10683.756903370015,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10683.756903370015
+    },
+    {
+      "timestamp": "2025-04-07 05:00:00",
+      "capital": 10681.833191995014,
+      "unrealized_pnl": -0.9613750000000437,
+      "total_equity": 10680.871816995013
+    },
+    {
+      "timestamp": "2025-04-07 06:00:00",
+      "capital": 10625.692189682513,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10625.692189682513
+    },
+    {
+      "timestamp": "2025-04-07 07:00:00",
+      "capital": 10623.063180835014,
+      "unrealized_pnl": -1.313847499999829,
+      "total_equity": 10621.749333335014
+    },
+    {
+      "timestamp": "2025-04-09 20:00:00",
+      "capital": 10902.072212027513,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10902.072212027513
+    },
+    {
+      "timestamp": "2025-04-09 21:00:00",
+      "capital": 10902.072212027513,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10902.072212027513
+    },
+    {
+      "timestamp": "2025-04-09 22:00:00",
+      "capital": 10900.827549670013,
+      "unrealized_pnl": -0.6226425000000018,
+      "total_equity": 10900.204907170013
+    },
+    {
+      "timestamp": "2025-04-12 14:00:00",
+      "capital": 10871.491136125014,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10871.491136125014
+    },
+    {
+      "timestamp": "2025-04-12 15:00:00",
+      "capital": 10870.217823100014,
+      "unrealized_pnl": -0.6369749999999476,
+      "total_equity": 10869.580848100015
+    },
+    {
+      "timestamp": "2025-04-21 01:00:00",
+      "capital": 10835.415962522515,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10835.415962522515
+    },
+    {
+      "timestamp": "2025-04-21 02:00:00",
+      "capital": 10834.109980840014,
+      "unrealized_pnl": -0.6533174999999756,
+      "total_equity": 10833.456663340014
+    },
+    {
+      "timestamp": "2025-04-22 12:00:00",
+      "capital": 10804.755994172514,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10804.755994172514
+    },
+    {
+      "timestamp": "2025-04-22 13:00:00",
+      "capital": 10803.404120447514,
+      "unrealized_pnl": -0.6762749999998777,
+      "total_equity": 10802.727845447514
+    },
+    {
+      "timestamp": "2025-04-22 21:00:00",
+      "capital": 10759.281290995015,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10759.281290995015
+    },
+    {
+      "timestamp": "2025-04-22 22:00:00",
+      "capital": 10757.891606185016,
+      "unrealized_pnl": -0.6951899999998568,
+      "total_equity": 10757.196416185016
+    },
+    {
+      "timestamp": "2025-04-25 11:00:00",
+      "capital": 10725.440698682516,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10725.440698682516
+    },
+    {
+      "timestamp": "2025-04-25 12:00:00",
+      "capital": 10725.440698682516,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10725.440698682516
+    },
+    {
+      "timestamp": "2025-04-25 13:00:00",
+      "capital": 10724.022970172517,
+      "unrealized_pnl": -0.7085099999999511,
+      "total_equity": 10723.314460172516
+    },
+    {
+      "timestamp": "2025-05-10 23:00:00",
+      "capital": 10875.188370797516,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10875.188370797516
+    },
+    {
+      "timestamp": "2025-05-11 00:00:00",
+      "capital": 10873.622038022515,
+      "unrealized_pnl": -0.782774999999965,
+      "total_equity": 10872.839263022515
+    },
+    {
+      "timestamp": "2025-05-12 02:00:00",
+      "capital": 10862.403866747514,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10862.403866747514
+    },
+    {
+      "timestamp": "2025-05-12 03:00:00",
+      "capital": 10860.842486447515,
+      "unrealized_pnl": -0.7802999999998428,
+      "total_equity": 10860.062186447514
+    },
+    {
+      "timestamp": "2025-05-12 11:00:00",
+      "capital": 10853.079039422515,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10853.079039422515
+    },
+    {
+      "timestamp": "2025-05-12 12:00:00",
+      "capital": 10853.079039422515,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10853.079039422515
+    },
+    {
+      "timestamp": "2025-05-12 13:00:00",
+      "capital": 10851.513907247516,
+      "unrealized_pnl": -0.7821749999998429,
+      "total_equity": 10850.731732247516
+    },
+    {
+      "timestamp": "2025-05-12 18:00:00",
+      "capital": 10809.294694847516,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10809.294694847516
+    },
+    {
+      "timestamp": "2025-05-12 19:00:00",
+      "capital": 10806.746921597516,
+      "unrealized_pnl": -1.2732499999998255,
+      "total_equity": 10805.473671597516
+    },
+    {
+      "timestamp": "2025-05-14 08:00:00",
+      "capital": 10836.103462097517,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10836.103462097517
+    },
+    {
+      "timestamp": "2025-05-14 09:00:00",
+      "capital": 10833.515418722516,
+      "unrealized_pnl": -1.2933750000000146,
+      "total_equity": 10832.222043722517
+    },
+    {
+      "timestamp": "2025-05-16 08:00:00",
+      "capital": 10826.096585972517,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10826.096585972517
+    },
+    {
+      "timestamp": "2025-05-16 09:00:00",
+      "capital": 10823.501288972517,
+      "unrealized_pnl": -1.2969999999997528,
+      "total_equity": 10822.204288972516
+    },
+    {
+      "timestamp": "2025-05-17 00:00:00",
+      "capital": 10808.579206097516,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10808.579206097516
+    },
+    {
+      "timestamp": "2025-05-17 01:00:00",
+      "capital": 10806.007921097516,
+      "unrealized_pnl": -1.2849999999998545,
+      "total_equity": 10804.722921097517
+    },
+    {
+      "timestamp": "2025-05-19 03:00:00",
+      "capital": 10820.339965847517,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10820.339965847517
+    },
+    {
+      "timestamp": "2025-05-19 04:00:00",
+      "capital": 10817.763928472517,
+      "unrealized_pnl": -1.2873749999998836,
+      "total_equity": 10816.476553472517
+    },
+    {
+      "timestamp": "2025-05-22 03:00:00",
+      "capital": 11020.428632410018,
+      "unrealized_pnl": 0.0,
+      "total_equity": 11020.428632410018
+    },
+    {
+      "timestamp": "2025-05-22 04:00:00",
+      "capital": 11020.428632410018,
+      "unrealized_pnl": 0.0,
+      "total_equity": 11020.428632410018
+    },
+    {
+      "timestamp": "2025-05-22 05:00:00",
+      "capital": 11018.767163560018,
+      "unrealized_pnl": -0.8311499999998341,
+      "total_equity": 11017.936013560018
+    },
+    {
+      "timestamp": "2025-07-10 17:00:00",
+      "capital": 10980.589515010019,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10980.589515010019
+    },
+    {
+      "timestamp": "2025-07-10 18:00:00",
+      "capital": 10978.889365510018,
+      "unrealized_pnl": -0.8504999999999563,
+      "total_equity": 10978.038865510018
+    },
+    {
+      "timestamp": "2025-07-11 05:00:00",
+      "capital": 10938.64381536627,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10938.64381536627
+    },
+    {
+      "timestamp": "2025-07-11 06:00:00",
+      "capital": 10936.88129706627,
+      "unrealized_pnl": -0.8816999999999825,
+      "total_equity": 10935.99959706627
+    },
+    {
+      "timestamp": "2025-07-14 03:00:00",
+      "capital": 10887.835417641269,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10887.835417641269
+    },
+    {
+      "timestamp": "2025-07-14 04:00:00",
+      "capital": 10886.016827391268,
+      "unrealized_pnl": -0.9097499999999127,
+      "total_equity": 10885.107077391267
+    },
+    {
+      "timestamp": "2025-08-14 02:00:00",
+      "capital": 10927.979241408268,
+      "unrealized_pnl": 0.0,
+      "total_equity": 10927.979241408268
+    },
+    {
+      "timestamp": "2025-08-14 03:00:00",
+      "capital": 10926.132465258268,
+      "unrealized_pnl": -0.9238499999999475,
+      "total_equity": 10925.208615258269
+    }
+  ]
+}

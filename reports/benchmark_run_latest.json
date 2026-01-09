@@ -1,0 +1,62 @@
+{
+  "config": {
+    "bars": 2000,
+    "iterations": 5
+  },
+  "results": {
+    "volume": {
+      "volume_sma": {
+        "avg_ms": 0.7583400009025354,
+        "std_ms": 0.312987377320875
+      },
+      "volume_change": {
+        "avg_ms": 0.3868000007059891,
+        "std_ms": 0.07187377732179999
+      },
+      "volume_spike": {
+        "avg_ms": 0.38285999980871566,
+        "std_ms": 0.06276567806739762
+      },
+      "volume_ema": {
+        "avg_ms": 0.270059999456862,
+        "std_ms": 0.03471135881825823
+      },
+      "obv": {
+        "avg_ms": 1.1058200005209073,
+        "std_ms": 0.3843965308663262
+      },
+      "volume_price_divergence": {
+        "avg_ms": 3.3557399990968406,
+        "std_ms": 2.185053954424824
+      }
+    },
+    "derived": {
+      "momentum_displacement_z": {
+        "avg_ms": 1.6547200008062646,
+        "std_ms": 0.6978677796469441
+      },
+      "price_stretch_z": {
+        "avg_ms": 1.0357599981944077,
+        "std_ms": 0.06270855107688889
+      },
+      "volume_anomaly_z": {
+        "avg_ms": 0.580120000813622,
+        "std_ms": 0.04775568650650942
+      },
+      "regime_persistence": {
+        "avg_ms": 1.516299999639159,
+        "std_ms": 0.7591391414827257
+      }
+    },
+    "fibonacci": {
+      "htf_fibonacci_levels": {
+        "avg_ms": 186.85886666692872,
+        "std_ms": 0.9600184757552034
+      },
+      "htf_fibonacci_mapping": {
+        "avg_ms": 198.167966666612,
+        "std_ms": 9.109144782523684
+      }
+    }
+  }
+}

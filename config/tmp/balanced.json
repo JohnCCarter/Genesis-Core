@@ -1,0 +1,90 @@
+{
+  "cfg": {
+    "thresholds": {
+      "entry_conf_overall": 0.38,
+      "regime_proba": {
+        "ranging": 0.4,
+        "bull": 0.4,
+        "bear": 0.4,
+        "balanced": 0.4
+      },
+      "signal_adaptation": {
+        "atr_period": 14,
+        "zones": {
+          "low": {
+            "entry_conf_overall": 0.4,
+            "regime_proba": {
+              "ranging": 0.4,
+              "bull": 0.4,
+              "bear": 0.4,
+              "balanced": 0.4
+            }
+          },
+          "mid": {
+            "entry_conf_overall": 0.46,
+            "regime_proba": {
+              "ranging": 0.46,
+              "bull": 0.46,
+              "bear": 0.46,
+              "balanced": 0.46
+            }
+          },
+          "high": {
+            "entry_conf_overall": 0.52,
+            "regime_proba": {
+              "ranging": 0.52,
+              "bull": 0.52,
+              "bear": 0.52,
+              "balanced": 0.55
+            }
+          }
+        }
+      }
+    },
+    "risk": {
+      "risk_map": [
+        [0.3, 0.015],
+        [0.4, 0.022],
+        [0.5, 0.03],
+        [0.6, 0.038]
+      ]
+    },
+    "exit": {
+      "enabled": true,
+      "exit_conf_threshold": 0.3,
+      "max_hold_bars": 20,
+      "regime_aware_exits": true
+    },
+    "gates": {
+      "cooldown_bars": 0,
+      "hysteresis_steps": 2
+    },
+    "htf_exit_config": {
+      "enable_partials": true,
+      "enable_trailing": true,
+      "enable_structure_breaks": true,
+      "partial_1_pct": 0.4,
+      "partial_2_pct": 0.3,
+      "fib_threshold_atr": 0.3,
+      "trail_atr_multiplier": 1.3,
+      "swing_update_strategy": "fixed"
+    },
+    "warmup_bars": 50,
+    "ltf_fib": {
+      "entry": {
+        "enabled": true,
+        "tolerance_atr": 0.5,
+        "long_max_level": 0.618,
+        "short_min_level": 0.382
+      }
+    },
+    "htf_fib": {
+      "entry": {
+        "enabled": true,
+        "tolerance_atr": 0.5,
+        "long_max_level": 0.618,
+        "short_min_level": 0.382
+      }
+    }
+  }
+}

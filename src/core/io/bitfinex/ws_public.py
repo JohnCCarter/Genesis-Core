@@ -2,8 +2,12 @@ from __future__ import annotations
 
 import asyncio
 import json
+
 import websockets
+
+from core.config.settings import get_settings
 from core.observability.metrics import metrics
+from core.symbols.symbols import SymbolMapper, SymbolMode
 from core.utils.logging_redaction import get_logger
 
 WS_PUB = "wss://api-pub.bitfinex.com/ws/2"
@@ -13,14 +17,24 @@ _LOGGER = get_logger(__name__)
 async def one_message_ticker(symbol: str = "tBTCUSD", timeout: float = 5.0) -> dict:
     """Prenumerera på ticker och vänta på ACK eller fel (minimalt)."""
     metrics.inc("ws_public_request")
+    # resolve symbol (respect explicit TEST bypass)
+    try:
+        s = get_settings()
+        mapper = SymbolMapper(
+            SymbolMode.REALISTIC
+            if str(s.SYMBOL_MODE).lower() not in ("synthetic", "realistic")
+            else SymbolMode(str(s.SYMBOL_MODE).lower())
+        )
+        su = symbol.upper()
+        rsym = symbol if su.startswith("TTEST") or ":TEST" in su else mapper.resolve(symbol)
+    except Exception:
+        rsym = symbol
     async with websockets.connect(WS_PUB, ping_interval=None) as ws:
         try:
-            _LOGGER.info("WS pub subscribe ticker %s", symbol)
+            _LOGGER.info("WS pub subscribe ticker %s", rsym)
         except Exception as log_err:
             _LOGGER.debug("log_error: %s", log_err)
-        await ws.send(
-            json.dumps({"event": "subscribe", "channel": "ticker", "symbol": symbol})
-        )
+        await ws.send(json.dumps({"event": "subscribe", "channel": "ticker", "symbol": rsym}))
         try:
             for _ in range(10):
                 msg = await asyncio.wait_for(ws.recv(), timeout=timeout)
@@ -45,7 +59,7 @@ async def one_message_ticker(symbol: str = "tBTCUSD", timeout: float = 5.0) -> d
                         }
             metrics.inc("ws_public_timeout")
             return {"ok": False, "error": "timeout"}
-        except asyncio.TimeoutError:
+        except TimeoutError:
             metrics.inc("ws_public_timeout")
             return {"ok": False, "error": "timeout"}
 
@@ -55,15 +69,24 @@ async def one_message_candles(
 ) -> dict:
     """Prenumerera på candles och vänta på ACK eller fel (minimalt)."""
     metrics.inc("ws_public_request")
+    try:
+        s = get_settings()
+        mapper = SymbolMapper(
+            SymbolMode.REALISTIC
+            if str(s.SYMBOL_MODE).lower() not in ("synthetic", "realistic")
+            else SymbolMode(str(s.SYMBOL_MODE).lower())
+        )
+        su = symbol.upper()
+        rsym = symbol if su.startswith("TTEST") or ":TEST" in su else mapper.resolve(symbol)
+    except Exception:
+        rsym = symbol
     async with websockets.connect(WS_PUB, ping_interval=None) as ws:
-        key = f"trade:{timeframe}:{symbol}"
+        key = f"trade:{timeframe}:{rsym}"
         try:
             _LOGGER.info("WS pub subscribe candles %s", key)
         except Exception as log_err:
             _LOGGER.debug("log_error: %s", log_err)
-        await ws.send(
-            json.dumps({"event": "subscribe", "channel": "candles", "key": key})
-        )
+        await ws.send(json.dumps({"event": "subscribe", "channel": "candles", "key": key}))
         try:
             for _ in range(10):
                 msg = await asyncio.wait_for(ws.recv(), timeout=timeout)
@@ -92,6 +115,6 @@ async def one_message_candles(
                         }
             metrics.inc("ws_public_timeout")
             return {"ok": False, "error": "timeout"}
-        except asyncio.TimeoutError:
+        except TimeoutError:
             metrics.inc("ws_public_timeout")
             return {"ok": False, "error": "timeout"}

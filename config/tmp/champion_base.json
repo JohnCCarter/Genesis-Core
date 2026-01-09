@@ -1,0 +1,89 @@
+{
+  "cfg": {
+    "thresholds": {
+      "entry_conf_overall": 0.35,
+      "regime_proba": {
+        "ranging": 0.8,
+        "bull": 0.7,
+        "bear": 0.7,
+        "balanced": 0.7
+      },
+      "signal_adaptation": {
+        "atr_period": 14,
+        "zones": {
+          "low": {
+            "entry_conf_overall": 0.36,
+            "regime_proba": {
+              "ranging": 0.7,
+              "bull": 0.6,
+              "bear": 0.6,
+              "balanced": 0.7
+            }
+          },
+          "mid": {
+            "entry_conf_overall": 0.42,
+            "regime_proba": {
+              "ranging": 0.8,
+              "bull": 0.7,
+              "bear": 0.7,
+              "balanced": 0.8
+            }
+          },
+          "high": {
+            "entry_conf_overall": 0.48,
+            "regime_proba": {
+              "ranging": 0.88,
+              "bull": 0.78,
+              "bear": 0.78,
+              "balanced": 0.88
+            }
+          }
+        }
+      }
+    },
+    "risk": {
+      "risk_map": [
+        [0.45, 0.015],
+        [0.55, 0.025],
+        [0.65, 0.035]
+      ]
+    },
+    "exit": {
+      "enabled": true,
+      "exit_conf_threshold": 0.4,
+      "max_hold_bars": 20,
+      "regime_aware_exits": true
+    },
+    "gates": {
+      "cooldown_bars": 2,
+      "hysteresis_steps": 3
+    },
+    "htf_exit_config": {
+      "enable_partials": true,
+      "enable_trailing": true,
+      "enable_structure_breaks": true,
+      "partial_1_pct": 0.6,
+      "partial_2_pct": 0.5,
+      "fib_threshold_atr": 0.7,
+      "trail_atr_multiplier": 2.5,
+      "swing_update_strategy": "fixed"
+    },
+    "warmup_bars": 150,
+    "ltf_fib": {
+      "entry": {
+        "enabled": true,
+        "tolerance_atr": 0.5,
+        "long_max_level": 0.618,
+        "short_min_level": 0.382
+      }
+    },
+    "htf_fib": {
+      "entry": {
+        "enabled": true,
+        "tolerance_atr": 0.5,
+        "long_max_level": 0.618,
+        "short_min_level": 0.382
+      }
+    }
+  }
+}

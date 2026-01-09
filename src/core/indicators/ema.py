@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import Iterable, List
+from collections.abc import Iterable
 
 
-def calculate_ema(values: Iterable[float], period: int) -> List[float]:
+def calculate_ema(values: Iterable[float], period: int) -> list[float]:
     """Beräkna Exponential Moving Average.
 
     Returnerar lista med samma längd som input. Första EMA sätts till första värdet.
@@ -15,7 +15,7 @@ def calculate_ema(values: Iterable[float], period: int) -> List[float]:
     if not vals:
         return []
     k = 2.0 / (n + 1.0)
-    ema: List[float] = [vals[0]]
+    ema: list[float] = [vals[0]]
     for v in vals[1:]:
         ema.append(v * k + ema[-1] * (1.0 - k))
     return ema

@@ -1,12 +1,12 @@
 import time
-from typing import Any, Dict, List
+from typing import Any
 
 
 class Metrics:
     def __init__(self) -> None:
-        self.counters: Dict[str, int] = {}
-        self.gauges: Dict[str, float] = {}
-        self.events: List[dict] = []
+        self.counters: dict[str, int] = {}
+        self.gauges: dict[str, float] = {}
+        self.events: list[dict] = []
 
     def inc(self, name: str, value: int = 1) -> None:
         self.counters[name] = self.counters.get(name, 0) + value
@@ -14,10 +14,8 @@ class Metrics:
     def set_gauge(self, name: str, value: float) -> None:
         self.gauges[name] = float(value)
 
-    def event(self, name: str, payload: Dict[str, Any] | None = None) -> None:
-        self.events.append(
-            {"ts": int(time.time()), "name": name, "payload": payload or {}}
-        )
+    def event(self, name: str, payload: dict[str, Any] | None = None) -> None:
+        self.events.append({"ts": int(time.time()), "name": name, "payload": payload or {}})
 
 
 metrics = Metrics()

@@ -36,3 +36,19 @@ async def get_positions() -> Any:
             return json.loads(resp.text)
         except Exception:
             return resp.text
+
+
+async def get_orders() -> Any:
+    """Hämta öppna ordrar via privata REST v2 (auth/r/orders).
+
+    Returnerar JSON-avkodad respons (lista/dict) eller text.
+    """
+    ec = get_exchange_client()
+    resp = await ec.signed_request(method="POST", endpoint="auth/r/orders", body={})
+    try:
+        return resp.json()  # type: ignore[attr-defined]
+    except Exception:
+        try:
+            return json.loads(resp.text)
+        except Exception:
+            return resp.text

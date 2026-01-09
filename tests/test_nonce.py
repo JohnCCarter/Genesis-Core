@@ -1,4 +1,4 @@
-from core.utils.nonce_manager import get_nonce, bump_nonce
+from core.utils.nonce_manager import bump_nonce, get_nonce
 
 
 def test_nonce_monotonic_per_key():

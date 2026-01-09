@@ -1,0 +1,21 @@
+{
+  "id": "data_freeze_no_leakage",
+  "version": "1.0.0",
+  "title": "P2: Data freeze & no leakage",
+  "description": "P2-compact: verifiering ska ske mot frusen data utan lookahead eller dataläckage.",
+  "status": "stable",
+  "priority": "P2",
+  "owners": ["fa06662"],
+  "scopes": ["data"],
+  "rules": [
+    {
+      "id": "frozen_inputs",
+      "text": "Verifiering ska använda frusna/kuraterade dataset där det är möjligt."
+    },
+    {
+      "id": "no_lookahead",
+      "text": "Ingen lookahead: använd as-of merge och undvik att 'ta senaste' HTF-row utan reference_ts."
+    }
+  ],
+  "enforcement": { "ci_required": true }
+}

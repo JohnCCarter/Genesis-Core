@@ -1,0 +1,9 @@
+{
+  "thresholds": {
+    "entry_conf_overall": 0.5,
+    "regime_proba": { "balanced": 0.5 }
+  },
+  "risk": {
+    "risk_map": [[0.5, 0.003], [0.6, 0.005], [0.7, 0.01]]
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "trial_id": "trial_005",
+  "source_run": "run_20251208_111723",
+  "score": {
+    "score": 0.42640881087714083,
+    "metrics": {
+      "total_return": 0.05444265960502151,
+      "profit_factor": 1.0456760690081832,
+      "max_drawdown": 0.06485171243499441,
+      "win_rate": 0.5587741393786734,
+      "num_trades": 2382,
+      "sharpe_ratio": 0.003318372629126825,
+      "return_to_dd": 0.8394945570572766
+    }
+  },
+  "cfg": {
+    "thresholds": {
+      "entry_conf_overall": 0.19,
+      "regime_proba": {
+        "balanced": 0.46,
+        "bull": 0.5,
+        "bear": 0.44,
+        "ranging": 0.46
+      },
+      "min_edge": 0.011,
+      "signal_adaptation": {
+        "atr_period": 28,
+        "zones": {
+          "low": {
+            "entry_conf_overall": 0.25
+          },
+          "mid": {
+            "entry_conf_overall": 0.32
+          },
+          "high": {
+            "entry_conf_overall": 0.38
+          }
+        }
+      }
+    },
+    "exit": {
+      "exit_conf_threshold": 0.43,
+      "max_hold_bars": 20,
+      "trailing_stop_pct": 0.0225
+    },
+    "multi_timeframe": {
+      "ltf_override_threshold": 0.36,
+      "ltf_override_adaptive": {
+        "percentile": 0.83
+      }
+    },
+    "htf_fib": {
+      "entry": {
+        "tolerance_atr": 4.25
+      }
+    },
+    "ltf_fib": {
+      "entry": {
+        "tolerance_atr": 1.9
+      }
+    },
+    "risk": {
+      "risk_map": [
+        [0.43, 0.012],
+        [0.6, 0.075],
+        [0.62, 0.075]
+      ],
+      "risk_map_deltas": {
+        "conf_0": -0.05,
+        "size_0": 0.002,
+        "conf_1": 0.03,
+        "size_1": 0.004,
+        "conf_2": -0.1,
+        "size_2": 0.005
+      }
+    }
+  }
+}

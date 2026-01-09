@@ -1,0 +1,78 @@
+feat: Implement HTF Fibonacci Exit System
+
+Major Feature: Dynamic exit strategy using Higher Timeframe (HTF) Fibonacci
+levels projected to Lower Timeframe (LTF) decisions.
+
+New Modules:
+- src/core/indicators/htf_fibonacci.py (234 lines)
+  * HTF Fibonacci calculation with AS-OF semantics
+  * Swing detection, Fib level projection, timezone handling
+
+- src/core/backtest/htf_exit_engine.py (467 lines)
+  * Core exit engine with partial/trail/structure logic
+  * Adaptive thresholds, reachability checks, fallback logic
+  * Fix Pack v1 production hardening components
+
+Enhanced Modules:
+- src/core/backtest/position_tracker.py
+  * Partial exit infrastructure (partial_close method)
+  * Enhanced Position/Trade dataclasses with tracking fields
+
+- src/core/backtest/engine.py
+  * Integrated HTFFibonacciExitEngine
+  * HTF context extraction from feature pipeline
+  * Fixed trade serialization (added exit metadata)
+
+- src/core/strategy/features.py
+  * Added get_htf_fibonacci_context() integration
+  * HTF levels available in meta['htf_fibonacci']
+
+- src/core/strategy/evaluate.py
+  * Pass timeframe parameter to extract_features()
+
+Exit Logic Features:
+1. Partial Exits: TP1 @ 0.382 Fib (40%), TP2 @ 0.5 Fib (30%)
+2. Trailing Stop: EMA-based with HTF promotion (locks at 0.5 Fib)
+3. Structure Break: Full exit on 0.618 break + momentum loss
+4. Adaptive Thresholds: Dynamic ATR+% proximity calculation
+5. Reachability Check: 8 ATR envelope prevents stale swing usage
+6. Fallback Logic: EMA-trail when HTF unavailable
+
+Verification (tBTCUSD 1h, 2025-08-01 to 2025-10-13):
+- 7 total trades, 2 partial exits (28.6%), 5 full exits
+- Partial exits correctly triggered at HTF Fibonacci levels
+- Fallback logic engaged when HTF swings out of reach
+- All integration tests passing
+
+Bug Fixes:
+- fix: Dict vs float ATR extraction in htf_exit_engine.py
+- fix: Remove null bytes causing SyntaxError
+- fix: Add missing trade fields to results serialization
+- fix: Pass timeframe parameter through pipeline
+- fix: Correct HTF context nesting in meta
+
+Data Updates:
+- Fresh data: tBTCUSD 1D (180 candles, 6 months)
+- Fresh data: tBTCUSD 1h (2,160 candles, 3 months)
+- Stored in curated + legacy structures for compatibility
+
+Documentation:
+- docs/FIBONACCI_FRAKTAL_EXITS_IMPLEMENTATION_PLAN.md (1070 lines)
+- docs/HTF_FIBONACCI_EXITS_SUMMARY.md (quick reference)
+- CHANGELOG.md (updated with detailed entry)
+
+Test Coverage:
+- scripts/test_htf_fibonacci_mapping.py
+- scripts/test_partial_exit_infrastructure.py
+- scripts/test_htf_exit_engine.py
+- scripts/debug_htf_exit_usage.py
+- scripts/test_htf_simple_validation.py (ablation study ready)
+
+Status: Production ready, ablation study pending
+
+Files Changed:
+  7 new files
+  6 modified files
+  3 documentation files
+
+Breaking Changes: None (backward compatible)

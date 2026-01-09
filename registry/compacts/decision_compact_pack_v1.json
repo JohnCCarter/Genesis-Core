@@ -1,0 +1,23 @@
+{
+  "id": "decision_compact_pack_v1",
+  "version": "1.0.0",
+  "title": "Decision compact pack v1",
+  "description": "Litet decision-pack (vertical slice v1) som aktiverar P0/P1/P2 compacts för security, determinism och no-leakage.",
+  "status": "stable",
+  "priority": "P1",
+  "conflict_group": "decision_pack",
+  "owners": ["fa06662"],
+  "scopes": ["decision"],
+  "includes_compacts": [
+    { "id": "secrets_security", "version": "1.0.0" },
+    { "id": "determinism_reproducibility", "version": "1.0.0" },
+    { "id": "data_freeze_no_leakage", "version": "1.0.0" }
+  ],
+  "rules": [
+    {
+      "id": "pack_intent",
+      "text": "Detta pack ska ge en liten men tydlig policy-guardrail för decision/verifieringsjobb."
+    }
+  ],
+  "enforcement": { "ci_required": true }
+}

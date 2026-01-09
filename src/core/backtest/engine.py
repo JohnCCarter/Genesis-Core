@@ -106,6 +106,9 @@ class BacktestEngine:
         self._validate_mode_consistency()
 
         self.candles_df: pd.DataFrame | None = None
+        self.htf_candles_df: pd.DataFrame | None = None
+        self.htf_candles_source: str | None = None
+        self._htf_context_seen: bool = False
         # Precomputed column arrays (initialized on demand when fast_window=True)
         self._col_open = None
         self._col_high = None
@@ -179,6 +182,13 @@ class BacktestEngine:
         if use_new_engine and NewExitEngine:
             _LOGGER.info("Using NEW HTF Exit Engine (Phase 1)")
             self.htf_exit_engine = NewExitEngine(self.htf_exit_config)
+            # Backtest layer expects these feature flags to exist and be configurable.
+            # The strategy-level engine may not expose them; set defaults here.
+            for _flag in ("enable_partials", "enable_trailing", "enable_structure_breaks"):
+                if not hasattr(self.htf_exit_engine, _flag):
+                    setattr(
+                        self.htf_exit_engine, _flag, bool(self.htf_exit_config.get(_flag, True))
+                    )
             self._use_new_exit_engine = True
         else:
             _LOGGER.info("Using LEGACY HTF Exit Engine")
@@ -244,21 +254,26 @@ class BacktestEngine:
                 self.timeframe,
             )
 
-        # Load HTF (1D) candles if new engine is enabled
+        # Load HTF (1D) candles for HTF-related features/exits.
+        # NOTE: HTF context (and therefore HTF-exit tuning) is effectively inert if 1D data is missing.
         self.htf_candles_df = None
+        self.htf_candles_source = None
         if getattr(self, "_use_new_exit_engine", False):
             htf_timeframe = "1D"
-            # Assuming HTF data follows same naming convention
-            htf_file = (
-                base_dir / "curated" / "v1" / "candles" / f"{self.symbol}_{htf_timeframe}.parquet"
-            )
-            if htf_file.exists():
+            htf_candidates = [
+                base_dir / "raw" / f"{self.symbol}_{htf_timeframe}_frozen.parquet",
+                base_dir / "curated" / "v1" / "candles" / f"{self.symbol}_{htf_timeframe}.parquet",
+                base_dir / "candles" / f"{self.symbol}_{htf_timeframe}.parquet",
+            ]
+            htf_file = next((p for p in htf_candidates if p.exists()), None)
+            if htf_file is not None:
                 try:
                     self.htf_candles_df = pd.read_parquet(
                         htf_file,
                         columns=["timestamp", "open", "high", "low", "close"],
                         engine="pyarrow",
                     )
+                    self.htf_candles_source = str(htf_file)
                     _LOGGER.debug(
                         "Loaded %s HTF candles from %s",
                         f"{len(self.htf_candles_df):,}",
@@ -267,7 +282,12 @@ class BacktestEngine:
                 except Exception as e:
                     _LOGGER.warning("Failed to load HTF candles from %s: %s", htf_file, e)
             else:
-                _LOGGER.debug("HTF candles file not found: %s", htf_file)
+                _LOGGER.warning(
+                    "HTF candles missing for %s %s. Tried: %s",
+                    self.symbol,
+                    htf_timeframe,
+                    ", ".join(str(p) for p in htf_candidates),
+                )
 
         # Work off cached DataFrame (avoid eager copy); filters below create sliced views/frames
         self.candles_df = base_df
@@ -320,6 +340,10 @@ class BacktestEngine:
                 from core.indicators.fibonacci import detect_swing_points as _detect_swings
                 from core.indicators.rsi import calculate_rsi as _calc_rsi
 
+                # Fib config is used both for LTF swing precompute and HTF mapping.
+                # It must exist even when we load indicators from the on-disk cache.
+                fib_cfg = _FibCfg(atr_depth=3.0, max_swings=8, min_swings=1)
+
                 # Try on-disk cache first
                 cache_dir = Path(__file__).resolve().parents[3] / "cache" / "precomputed"
                 cache_dir.mkdir(parents=True, exist_ok=True)
@@ -361,7 +385,6 @@ class BacktestEngine:
                     adx_14 = _calc_adx(highs_all, lows_all, closes_all, period=14)
 
                     # Precompute Fibonacci swings (LTF) for reuse in feature calculation
-                    fib_cfg = _FibCfg(atr_depth=3.0, max_swings=8, min_swings=1)
                     # Use pandas only for Series conversion inside detect function to keep parity
                     import pandas as _pd
 
@@ -921,6 +944,10 @@ class BacktestEngine:
             features_meta = meta.get("features", {})
             htf_fib_context = features_meta.get("htf_fibonacci", {})
 
+        # Track whether HTF context was ever available during this run.
+        if isinstance(htf_fib_context, dict) and htf_fib_context.get("available"):
+            self._htf_context_seen = True
+
         # Calculate ATR for exit logic (use last 14 bars AS OF current bar)
         from core.indicators.atr import calculate_atr
 
@@ -961,7 +988,7 @@ class BacktestEngine:
             htf_levels = htf_fib_context.get("levels", {})
             htf_data = pd.Series(htf_levels)
 
-            signal = self.htf_exit_engine.check_exits(
+            signal_or_actions = self.htf_exit_engine.check_exits(
                 current_price=current_price,
                 position_size=float(position.current_size),
                 entry_price=float(position.entry_price),
@@ -970,32 +997,53 @@ class BacktestEngine:
                 htf_data=htf_data,
             )
 
-            exit_actions = []
-            if signal.action in ["PARTIAL_EXIT", "FULL_EXIT"]:
-                # Map to Legacy ExitAction
-                # PARTIAL_EXIT usually implies a size. FULL_EXIT implies size=current.
-                action_map = "PARTIAL" if signal.action == "PARTIAL_EXIT" else "FULL_EXIT"
-
-                # Calculate size amount
-                if signal.quantity_pct > 0:
-                    size_val = float(position.current_size) * signal.quantity_pct
+            # Some tests monkeypatch `check_exits` to return a list of ExitAction.
+            # Accept that shape directly to keep `_check_htf_exit_conditions` focused on ATR/no-lookahead.
+            if isinstance(signal_or_actions, list):
+                exit_actions = signal_or_actions
+            else:
+                signal = signal_or_actions
+                exit_actions = []
+                if signal is None:
+                    exit_actions = []
                 else:
-                    size_val = float(
-                        position.current_size
-                    )  # Default to full? No, use 0 if partial not specified.
+                    enable_partials = bool(getattr(self.htf_exit_engine, "enable_partials", True))
+                    enable_trailing = bool(getattr(self.htf_exit_engine, "enable_trailing", True))
 
-                exit_actions.append(
-                    ExitAction(action=action_map, size=size_val, reason=signal.reason)
-                )
+                    if signal.action in ["PARTIAL_EXIT", "FULL_EXIT"]:
+                        if signal.action == "PARTIAL_EXIT" and not enable_partials:
+                            pass
+                        else:
+                            # Map to Legacy ExitAction
+                            # PARTIAL_EXIT usually implies a size. FULL_EXIT implies size=current.
+                            action_map = (
+                                "PARTIAL" if signal.action == "PARTIAL_EXIT" else "FULL_EXIT"
+                            )
 
-            elif signal.action == "UPDATE_STOP":
-                exit_actions.append(
-                    ExitAction(
-                        action="TRAIL_UPDATE",
-                        stop_price=signal.new_stop_price,
-                        reason=signal.reason,
-                    )
-                )
+                            # Calculate size amount
+                            if getattr(signal, "quantity_pct", 0.0) and signal.quantity_pct > 0:
+                                size_val = float(position.current_size) * float(signal.quantity_pct)
+                            else:
+                                # No explicit quantity => treat as full for FULL_EXIT, else no-op.
+                                size_val = (
+                                    float(position.current_size)
+                                    if action_map == "FULL_EXIT"
+                                    else 0.0
+                                )
+
+                            exit_actions.append(
+                                ExitAction(action=action_map, size=size_val, reason=signal.reason)
+                            )
+
+                    elif signal.action == "UPDATE_STOP":
+                        if enable_trailing and getattr(signal, "new_stop_price", None) is not None:
+                            exit_actions.append(
+                                ExitAction(
+                                    action="TRAIL_UPDATE",
+                                    stop_price=float(signal.new_stop_price),
+                                    reason=signal.reason,
+                                )
+                            )
         else:
             # Legacy Call
             exit_actions = self.htf_exit_engine.check_exits(
@@ -1215,6 +1263,13 @@ class BacktestEngine:
                     "precompute_enabled": bool(getattr(self, "precompute_features", False)),
                     "precomputed_ready": bool(getattr(self, "_precomputed_features", None)),
                     "mode_explicit": os.environ.get("GENESIS_MODE_EXPLICIT"),
+                },
+                "htf": {
+                    "env_htf_exits": os.environ.get("GENESIS_HTF_EXITS"),
+                    "use_new_exit_engine": bool(getattr(self, "_use_new_exit_engine", False)),
+                    "htf_candles_loaded": bool(self.htf_candles_df is not None),
+                    "htf_candles_source": self.htf_candles_source,
+                    "htf_context_seen": bool(getattr(self, "_htf_context_seen", False)),
                 },
                 "git_hash": git_hash,
                 "seed": os.environ.get("GENESIS_RANDOM_SEED", "unknown"),

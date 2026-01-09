@@ -225,6 +225,12 @@ def test_engine_results_format(sample_candles_data):
     assert "timeframe" in results["backtest_info"]
     assert "bars_total" in results["backtest_info"]
     assert "bars_processed" in results["backtest_info"]
+    assert "execution_mode" in results["backtest_info"]
+    assert "htf" in results["backtest_info"]
+    assert "htf_candles_loaded" in results["backtest_info"]["htf"]
+    assert "use_new_exit_engine" in results["backtest_info"]["htf"]
+    assert "env_htf_exits" in results["backtest_info"]["htf"]
+    assert "htf_context_seen" in results["backtest_info"]["htf"]
 
     # Check summary
     assert "initial_capital" in results["summary"]
@@ -340,3 +346,85 @@ def test_engine_with_verbose_mode(sample_candles_data, capsys):
         or "Running" in captured.err
         or "Running" in captured.out
     )
+
+
+def test_engine_precompute_cache_hit_htf_mapping_does_not_require_local_fib_cfg(
+    tmp_path, monkeypatch
+):
+    """Regression: HTF mapping should work even when precompute loads from cache.
+
+    Previously, a cache-hit could skip the block that defines `fib_cfg`, causing
+    UnboundLocalError when mapping HTF Fibonacci levels.
+    """
+
+    import numpy as np
+
+    import core.backtest.engine as engine_mod
+
+    # Create a minimal fake repo layout rooted at tmp_path.
+    fake_engine_file = tmp_path / "src" / "core" / "backtest" / "engine.py"
+    fake_engine_file.parent.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(engine_mod, "__file__", str(fake_engine_file))
+
+    data_raw = tmp_path / "data" / "raw"
+    data_raw.mkdir(parents=True, exist_ok=True)
+
+    # LTF candles (1h)
+    ltf_ts = pd.date_range("2025-01-01", periods=48, freq="1h", tz="UTC")
+    ltf = pd.DataFrame(
+        {
+            "timestamp": ltf_ts,
+            "open": np.linspace(100.0, 120.0, len(ltf_ts)),
+            "high": np.linspace(101.0, 121.0, len(ltf_ts)),
+            "low": np.linspace(99.0, 119.0, len(ltf_ts)),
+            "close": np.linspace(100.5, 120.5, len(ltf_ts)),
+            "volume": np.full(len(ltf_ts), 1000.0),
+        }
+    )
+    ltf.to_parquet(data_raw / "tBTCUSD_1h_frozen.parquet", index=False)
+
+    # HTF candles (1D)
+    htf_ts = pd.date_range("2024-12-15", periods=40, freq="1D", tz="UTC")
+    htf = pd.DataFrame(
+        {
+            "timestamp": htf_ts,
+            "open": np.linspace(90.0, 110.0, len(htf_ts)),
+            "high": np.linspace(91.0, 111.0, len(htf_ts)),
+            "low": np.linspace(89.0, 109.0, len(htf_ts)),
+            "close": np.linspace(90.5, 110.5, len(htf_ts)),
+        }
+    )
+    htf.to_parquet(data_raw / "tBTCUSD_1D_frozen.parquet", index=False)
+
+    # Create a precompute cache file so load_data takes the cache-hit path.
+    cache_dir = tmp_path / "cache" / "precomputed"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    key = "pytest_precompute_cachehit"
+    np.savez_compressed(
+        cache_dir / f"{key}.npz",
+        atr_14=np.asarray([1.0, 1.0], dtype=float),
+        atr_50=np.asarray([1.0, 1.0], dtype=float),
+        ema_20=np.asarray([1.0, 1.0], dtype=float),
+        ema_50=np.asarray([1.0, 1.0], dtype=float),
+        rsi_14=np.asarray([50.0, 50.0], dtype=float),
+        bb_position_20_2=np.asarray([0.0, 0.0], dtype=float),
+        adx_14=np.asarray([20.0, 20.0], dtype=float),
+        fib_high_idx=np.asarray([0], dtype=int),
+        fib_low_idx=np.asarray([0], dtype=int),
+        fib_high_px=np.asarray([100.0], dtype=float),
+        fib_low_px=np.asarray([90.0], dtype=float),
+    )
+
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "1")
+    monkeypatch.setenv("GENESIS_HTF_EXITS", "1")
+
+    engine = BacktestEngine(symbol="tBTCUSD", timeframe="1h", warmup_bars=10, fast_window=True)
+    # Ensure the HTF loader path is active regardless of optional engine availability.
+    engine._use_new_exit_engine = True
+    monkeypatch.setattr(engine, "_precompute_cache_key", lambda _df: key)
+
+    assert engine.load_data() is True
+    assert engine._precomputed_features is not None
+    # HTF mapping should have been added to precomputed features.
+    assert "htf_fib_05" in engine._precomputed_features
+    assert len(engine._precomputed_features["htf_fib_05"]) == len(engine.candles_df)

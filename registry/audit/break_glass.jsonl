@@ -1,0 +1,1 @@
+{"ts":"2026-01-09T00:00:00Z","action":"stable_promotion","actor":"fa06662","commit_sha":"0a79bb7","items":[{"kind":"compact","id":"stabilization_phase","version":"1.0.0","from":"dev","to":"stable"}],"reason":"Test av audit-gate: stable-manifest ändrat (semantiskt neutral)."}

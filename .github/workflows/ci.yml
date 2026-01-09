@@ -33,6 +33,18 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install ".[dev,ml]"
 
+      - name: Fetch base branch (PR only)
+        if: github.event_name == 'pull_request'
+        run: git fetch --no-tags --depth=1 origin ${{ github.base_ref }}
+
+      - name: Validate registry (PR)
+        if: github.event_name == 'pull_request'
+        run: python scripts/validate_registry.py --ci-diff-base origin/${{ github.base_ref }}
+
+      - name: Validate registry (push)
+        if: github.event_name != 'pull_request'
+        run: python scripts/validate_registry.py
+
       - name: Run pre-commit
         run: pre-commit run --all-files
 

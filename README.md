@@ -63,8 +63,6 @@ curl -s -X POST "https://api.bitfinex.com/v2/auth/r/alerts" \
 
 Generera headers och använd dem direkt i curl (Windows PowerShell):
 
-<<<<<<< HEAD
-
 ```powershell
 $h = python scripts/build_auth_headers.py auth/r/alerts --body '{}' | ConvertFrom-Json
 curl -s -X POST "https://api.bitfinex.com/v2/auth/r/alerts" `
@@ -74,8 +72,6 @@ curl -s -X POST "https://api.bitfinex.com/v2/auth/r/alerts" `
   -H ("bfx-signature: " + $h."bfx-signature") `
   -d '{}'
 ```
-
-=======
 
 ## Registry governance (skills/compacts) – repo som SSOT
 
@@ -93,8 +89,6 @@ och används som SSOT för agent-/processregler.
 - Review-disciplin: `.github/CODEOWNERS` kan kräva review för ändringar under `registry/`.
 
 ## UI‑noter
-
-> > > > > > > ada3135 (docs(governance): document registry SSOT and audit rule)
 
 ### API‑nycklar (Paper account)
 

@@ -68,7 +68,12 @@ def evaluate_binary_classification(
     try:
         precision, recall, pr_thresholds = precision_recall_curve(y_true, y_pred_proba)
         # Average precision (area under PR curve)
-        avg_precision = np.trapz(precision, recall)
+        trapz_fn = getattr(np, "trapezoid", None)
+        if trapz_fn is None:
+            # Backwards compatibility with older NumPy versions.
+            avg_precision = np.trapz(precision, recall)  # type: ignore[attr-defined]
+        else:
+            avg_precision = trapz_fn(precision, recall)
     except ValueError:
         precision = recall = pr_thresholds = np.array([])
         avg_precision = 0.0

@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from core.strategy.features import extract_features
-from core.strategy.features_asof import _compute_candles_hash
+from core.strategy.features_asof import _compute_candles_hash, extract_features
 
 
 def test_extract_features_stub_shapes():
@@ -25,7 +24,7 @@ def test_extract_features_stub_shapes():
     assert isinstance(feats, dict) and isinstance(meta, dict)
     assert "versions" in meta and "reasons" in meta
 
-    # Should contain v17 features (5 original + 6 Fibonacci + 3 combinations = 14 total)
+    # SSOT (features_asof) ska innehålla v17 features + atr_14 (5 original + atr_14 + 6 Fibonacci + 3 kombinationer = 15)
     expected_original_features = {
         "rsi_inv_lag1",
         "volatility_shift_ma3",
@@ -33,6 +32,7 @@ def test_extract_features_stub_shapes():
         "rsi_vol_interaction",
         "vol_regime",
     }
+    expected_core_features = {"atr_14"}
     expected_fibonacci_features = {
         "fib_dist_min_atr",
         "fib_dist_signed_atr",
@@ -47,13 +47,16 @@ def test_extract_features_stub_shapes():
         "fib05_x_rsi_inv",
     }
     expected_features = (
-        expected_original_features | expected_fibonacci_features | expected_combination_features
+        expected_original_features
+        | expected_core_features
+        | expected_fibonacci_features
+        | expected_combination_features
     )
 
     assert set(feats.keys()) == expected_features
-    assert len(feats) == 14  # 5 original + 6 Fibonacci + 3 combinations
+    assert len(feats) == 15  # 5 original + atr_14 + 6 Fibonacci + 3 combinations
 
-    assert meta.get("feature_count") == 14
+    assert meta.get("feature_count") == 15
     assert meta.get("versions", {}).get("features_v17_fibonacci_combinations") is True
 
 

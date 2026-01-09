@@ -2,11 +2,11 @@
 
 ## 🎯 Quick Reference
 
-| Script | Duration | Use Case |
-|--------|----------|----------|
-| `fetch_quick_start.ps1` | ~5-10 sek | **START HERE** - Minimal setup (tBTCUSD 1h) |
-| `fetch_overnight.ps1` | ~10-15 min | Comprehensive dataset (BTC+ETH, all timeframes) |
-| `fetch_all_data.ps1` | Variabel | Custom batch fetch (configurable) |
+| Script                  | Duration   | Use Case                                        |
+| ----------------------- | ---------- | ----------------------------------------------- |
+| `fetch_quick_start.ps1` | ~5-10 sek  | **START HERE** - Minimal setup (tBTCUSD 1h)     |
+| `fetch_overnight.ps1`   | ~10-15 min | Comprehensive dataset (BTC+ETH, all timeframes) |
+| `fetch_all_data.ps1`    | Variabel   | Custom batch fetch (configurable)               |
 
 ---
 
@@ -20,6 +20,7 @@
 ```
 
 **Vad hämtas:**
+
 - Symbol: `tBTCUSD`
 - Timeframe: `1h`
 - Period: 18 månader
@@ -27,6 +28,7 @@
 - Tid: ~5-10 sekunder ⚡
 
 **Nästa steg:**
+
 ```powershell
 # 1. Precompute features (vektoriserat - snabbt!)
 python scripts/precompute_features_v17.py --symbol tBTCUSD --timeframe 1h
@@ -47,12 +49,14 @@ python scripts/train_model.py --symbol tBTCUSD --timeframe 1h --use-holdout
 ```
 
 **Vad hämtas:**
+
 - Symbols: `tBTCUSD`, `tETHUSD`
 - Timeframes: `1m`, `5m`, `15m`, `1h`, `6h`, `1D`
 - Period: 18 månader
 - Total tid: ~10-15 minuter
 
 **Detta ger dig:**
+
 - Multi-timeframe analysis capabilities
 - Higher timeframe (6h, 1D) för trend-following strategies
 - Lower timeframe (1m, 5m) för quick backtesting
@@ -92,29 +96,29 @@ python scripts/train_model.py --symbol tBTCUSD --timeframe 1h --use-holdout
 ### Per Symbol/Timeframe (18 månader):
 
 | Timeframe | Candles | API Requests | Duration |
-|-----------|---------|--------------|----------|
-| 1m | 777,600 | ~78 | ~3 min |
-| 5m | 155,520 | ~16 | ~35 sek |
-| 15m | 51,840 | ~6 | ~13 sek |
-| 30m | 25,920 | ~3 | ~7 sek |
-| 1h | 12,960 | ~2 | ~5 sek |
-| 3h | 4,320 | ~1 | ~2 sek |
-| 6h | 2,160 | ~1 | ~2 sek |
-| 12h | 1,080 | ~1 | ~2 sek |
-| 1D | 540 | ~1 | ~2 sek |
-| 1W | 77 | ~1 | ~2 sek |
+| --------- | ------- | ------------ | -------- |
+| 1m        | 777,600 | ~78          | ~3 min   |
+| 5m        | 155,520 | ~16          | ~35 sek  |
+| 15m       | 51,840  | ~6           | ~13 sek  |
+| 30m       | 25,920  | ~3           | ~7 sek   |
+| 1h        | 12,960  | ~2           | ~5 sek   |
+| 3h        | 4,320   | ~1           | ~2 sek   |
+| 6h        | 2,160   | ~1           | ~2 sek   |
+| 12h       | 1,080   | ~1           | ~2 sek   |
+| 1D        | 540     | ~1           | ~2 sek   |
+| 1W        | 77      | ~1           | ~2 sek   |
 
 **⚠️ Note:** `4h` is NOT supported by Bitfinex API. Use `3h` or `6h` instead.
 
 ### Batch Estimates:
 
-| Scenario | Duration |
-|----------|----------|
-| 1 symbol, 1 timeframe (1h) | ~5 sek |
-| 1 symbol, all timeframes | ~4-5 min |
-| 2 symbols, all timeframes | ~8-10 min |
-| 5 symbols, 1 timeframe (1h) | ~25 sek |
-| 16 symbols, all timeframes | ~30-60 min |
+| Scenario                    | Duration   |
+| --------------------------- | ---------- |
+| 1 symbol, 1 timeframe (1h)  | ~5 sek     |
+| 1 symbol, all timeframes    | ~4-5 min   |
+| 2 symbols, all timeframes   | ~8-10 min  |
+| 5 symbols, 1 timeframe (1h) | ~25 sek    |
+| 16 symbols, all timeframes  | ~30-60 min |
 
 ---
 
@@ -123,14 +127,14 @@ python scripts/train_model.py --symbol tBTCUSD --timeframe 1h --use-holdout
 **Per symbol (18 månader, compressed Parquet):**
 
 | Timeframe | Storage |
-|-----------|---------|
-| 1m | ~3.5 MB |
-| 5m | ~700 KB |
-| 15m | ~250 KB |
-| 1h | ~75 KB |
-| 3h | ~35 KB |
-| 6h | ~20 KB |
-| 1D | ~5 KB |
+| --------- | ------- |
+| 1m        | ~3.5 MB |
+| 5m        | ~700 KB |
+| 15m       | ~250 KB |
+| 1h        | ~75 KB  |
+| 3h        | ~35 KB  |
+| 6h        | ~20 KB  |
+| 1D        | ~5 KB   |
 
 **Total for 2 symbols × 6 timeframes:** ~10 MB
 **Total for 16 symbols × 6 timeframes:** ~80 MB
@@ -140,11 +144,13 @@ python scripts/train_model.py --symbol tBTCUSD --timeframe 1h --use-holdout
 ## 🔄 Rate Limits
 
 **Bitfinex Public API:**
+
 - Rate limit: 90 requests/min
 - Safety margin: 27 requests/min (~2.22s delay)
 - Max candles per request: 10,000
 
 **Scripts automatically handle:**
+
 - ✅ Rate limiting (built-in delays)
 - ✅ Retry on rate limit errors (60s backoff)
 - ✅ Error handling
@@ -155,21 +161,25 @@ python scripts/train_model.py --symbol tBTCUSD --timeframe 1h --use-holdout
 ## 📝 After Fetching Data
 
 **1. Validate data integrity:**
+
 ```powershell
 python scripts/validate_data.py --symbol tBTCUSD --timeframe 1h
 ```
 
 **2. Precompute features (VECTORIZED - FAST!):**
+
 ```powershell
 python scripts/precompute_features_v17.py --symbol tBTCUSD --timeframe 1h
 ```
 
 **3. Train model:**
+
 ```powershell
 python scripts/train_model.py --symbol tBTCUSD --timeframe 1h --use-holdout --save-provenance
 ```
 
 **4. Run comprehensive analysis:**
+
 ```powershell
 python scripts/comprehensive_feature_analysis.py --symbol tBTCUSD --timeframe 1h
 ```
@@ -189,21 +199,25 @@ python scripts/comprehensive_feature_analysis.py --symbol tBTCUSD --timeframe 1h
 ## 🆘 Troubleshooting
 
 **Problem: "Rate limit hit"**
+
 ```
 Solution: Script automatically retries after 60s. Just wait.
 ```
 
 **Problem: "No module named httpx"**
+
 ```powershell
 Solution: pip install httpx pandas pyarrow tqdm
 ```
 
 **Problem: "Connection timeout"**
+
 ```
 Solution: Check internet connection, retry script
 ```
 
 **Problem: "File already exists"**
+
 ```
 Solution: This is OK! Script overwrites existing files.
 ```
@@ -215,7 +229,7 @@ Solution: This is OK! Script overwrites existing files.
 - `README.agents.md` - Full ML pipeline workflow
 - `data/DATA_FORMAT.md` - Data format specifications
 - `scripts/fetch_historical.py` - Individual fetch script (advanced use)
-- `TODO.md` - Current project status and strategic decisions
+- `AGENTS.md` - Current project status, deliverables and next steps
 
 ---
 

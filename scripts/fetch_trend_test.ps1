@@ -1,5 +1,5 @@
 #!/usr/bin/env pwsh
-# Quick fetch för trend-following hypotes test (TODO.md Option A)
+# Quick fetch för trend-following hypotes test (see AGENTS.md for current notes)
 # Note: Using 3h and 6h instead of 4h (4h not supported by Bitfinex API)
 Write-Host "Fetching 3h, 6h + 1D for trend-following test..." -ForegroundColor Cyan
 Write-Host "Note: 4h is NOT supported by Bitfinex. Using 3h and 6h instead." -ForegroundColor Yellow

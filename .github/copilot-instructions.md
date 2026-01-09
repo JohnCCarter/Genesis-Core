@@ -61,7 +61,7 @@ Proactively suggest activating Plan Mode when:
 1. **Research**: `read_file` → `codebase_search` → `grep` → `todo_write`.
 2. **Edit**: Use edit tools (never output code). Prefer editing over creating.
 3. **Verify**: `pytest` → `black --check` → `ruff check` → `bandit`.
-4. **Docs**: Check existing `README.md`/`TODO.md` before creating new ones.
+4. **Docs**: Check existing `README.md`/`AGENTS.md` before creating new ones.
 
 ### FastAPI Endpoints
 

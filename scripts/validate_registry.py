@@ -18,11 +18,29 @@ import subprocess
 import sys
 from pathlib import Path
 
-from core.governance.registry import validate_registry
-
 
 def _repo_root() -> Path:
     return Path(__file__).resolve().parents[1]
+
+
+def _ensure_import_path() -> None:
+    """Ensure repo modules are importable when running this script directly.
+
+    CI typically installs the package (pip -e .), but local usage may not.
+    """
+
+    root = _repo_root()
+    src = root / "src"
+
+    for p in (root, src):
+        sp = str(p)
+        if sp not in sys.path:
+            sys.path.insert(0, sp)
+
+
+_ensure_import_path()
+
+from core.governance.registry import validate_registry  # noqa: E402
 
 
 def _git(*args: str) -> str:
@@ -54,11 +72,16 @@ def _validate_audit_for_stable_change(*, base_ref: str) -> list[str]:
 
     errors: list[str] = []
 
-    changed = {
-        p.strip()
-        for p in _git("diff", "--name-only", f"{base_ref}...HEAD").splitlines()
-        if p.strip()
-    }
+    # Prefer triple-dot (merge-base) diff when possible. If the branch and base_ref have
+    # no common history (or merge-base cannot be computed), fall back to two-dot diff.
+    try:
+        diff_range = f"{base_ref}...HEAD"
+        changed_out = _git("diff", "--name-only", diff_range)
+    except subprocess.CalledProcessError:
+        diff_range = f"{base_ref}..HEAD"
+        changed_out = _git("diff", "--name-only", diff_range)
+
+    changed = {p.strip() for p in changed_out.splitlines() if p.strip()}
 
     stable_manifest = "registry/manifests/stable.json"
     audit_path = "registry/audit/break_glass.jsonl"

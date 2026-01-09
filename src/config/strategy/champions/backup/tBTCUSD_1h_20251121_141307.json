@@ -1,0 +1,275 @@
+{
+  "created_at": "2025-11-21T08:12:58.158401+00:00",
+  "run_id": "run_20251121_081233",
+  "git_commit": "99f1cea600b2ebbcb8d24eb27eea225fa796b7f0",
+  "snapshot_id": "snap_tBTCUSD_20250101_20250131_v1",
+  "symbol": "tBTCUSD",
+  "timeframe": "1h",
+  "score": 0.1259940226224605,
+  "metrics": {
+    "total_return": 0.02196814775000048,
+    "profit_factor": 1.2329482779408067,
+    "max_drawdown": 0.036655834499999845,
+    "win_rate": 0.2727272727272727,
+    "num_trades": 11,
+    "sharpe_ratio": 0.08147151425007636,
+    "return_to_dd": 0.599308351580444
+  },
+  "parameters": {
+    "thresholds": {
+      "entry_conf_overall": 0.32,
+      "regime_proba": {
+        "balanced": 0.58,
+        "bull": 0.6,
+        "bear": 0.56,
+        "ranging": 0.56
+      },
+      "min_edge": 0.006,
+      "signal_adaptation": {
+        "zones": {
+          "low": {
+            "entry_conf_overall": 0.24,
+            "regime_proba": {
+              "balanced": 0.44,
+              "bull": 0.48,
+              "bear": 0.48,
+              "ranging": 0.54
+            }
+          },
+          "mid": {
+            "entry_conf_overall": 0.3,
+            "regime_proba": {
+              "balanced": 0.54,
+              "bull": 0.48,
+              "bear": 0.54,
+              "ranging": 0.5
+            }
+          },
+          "high": {
+            "entry_conf_overall": 0.3,
+            "regime_proba": {
+              "balanced": 0.58,
+              "bull": 0.52,
+              "bear": 0.52,
+              "ranging": 0.52
+            }
+          }
+        }
+      }
+    },
+    "multi_timeframe": {
+      "ltf_override_threshold": 0.6
+    },
+    "exit": {
+      "exit_conf_threshold": 0.33,
+      "max_hold_bars": 16,
+      "trailing_stop_enabled": false,
+      "trailing_stop_pct": 0.012
+    },
+    "risk": {
+      "risk_map_deltas": {
+        "conf_0": -0.01,
+        "size_0": 0.005,
+        "conf_1": -0.01,
+        "size_1": 0.01,
+        "conf_2": -0.03,
+        "size_2": 0.0
+      }
+    }
+  },
+  "constraints": {
+    "hard_failures": [],
+    "raw": {
+      "ok": true,
+      "reasons": []
+    }
+  },
+  "metadata": {
+    "trial_id": "trial_019",
+    "results_path": "tBTCUSD_1h_20251121_091257.json",
+    "run_meta": {
+      "run_dir": "C:\\Users\\fa06662\\HCP\\Skrivbord\\Genesis-Core\\results\\hparam_search\\run_20251121_081233",
+      "config_path": "config\\optimizer\\tBTCUSD_1h_optuna_phase2b_smoke_test.yaml",
+      "raw_run_meta": {
+        "run_id": "run_20251121_081233",
+        "config_path": "config\\optimizer\\tBTCUSD_1h_optuna_phase2b_smoke_test.yaml",
+        "snapshot_id": "snap_tBTCUSD_20250101_20250131_v1",
+        "symbol": "tBTCUSD",
+        "timeframe": "1h",
+        "started_at": "2025-11-21T08:12:33.720270+00:00",
+        "git_commit": "99f1cea600b2ebbcb8d24eb27eea225fa796b7f0",
+        "raw_meta": {
+          "symbol": "tBTCUSD",
+          "timeframe": "1h",
+          "snapshot_id": "snap_tBTCUSD_20250101_20250131_v1",
+          "warmup_bars": 150,
+          "runs": {
+            "strategy": "optuna",
+            "resume": false,
+            "max_trials": 20,
+            "max_concurrent": 4,
+            "optuna": {
+              "study_name": "optuna_phase2b_v1",
+              "direction": "maximize",
+              "sampler": {
+                "name": "tpe",
+                "kwargs": {
+                  "multivariate": true,
+                  "constant_liar": true,
+                  "n_startup_trials": 10,
+                  "n_ei_candidates": 48
+                }
+              },
+              "pruner": {
+                "name": "median"
+              },
+              "heartbeat_interval": 30,
+              "heartbeat_grace_period": 120
+            },
+            "baseline_results_path": "results/backtests/tBTCUSD_1h_20251121_090915.json"
+          }
+        },
+        "optuna": {
+          "study_name": "optuna_phase2b_v1",
+          "storage": null,
+          "direction": "maximize",
+          "n_trials": 20,
+          "best_value": 0.1259940226224605,
+          "best_trial_number": "trial_019",
+          "diagnostics": {
+            "total_trials_attempted": 20,
+            "duplicate_count": 0,
+            "zero_trade_count": 0,
+            "duplicate_ratio": 0.0,
+            "zero_trade_ratio": 0.0
+          }
+        }
+      },
+      "constraints": {
+        "ok": true,
+        "reasons": []
+      },
+      "score_block": {
+        "score": 0.1259940226224605,
+        "metrics": {
+          "total_return": 0.02196814775000048,
+          "profit_factor": 1.2329482779408067,
+          "max_drawdown": 0.036655834499999845,
+          "win_rate": 0.2727272727272727,
+          "num_trades": 11,
+          "sharpe_ratio": 0.08147151425007636,
+          "return_to_dd": 0.599308351580444
+        },
+        "hard_failures": []
+      }
+    }
+  },
+  "merged_config": {
+    "thresholds": {
+      "entry_conf_overall": 0.34,
+      "regime_proba": {
+        "balanced": 0.54,
+        "bear": 0.52,
+        "bull": 0.54,
+        "ranging": 0.56
+      },
+      "signal_adaptation": {
+        "atr_period": 14,
+        "zones": {
+          "high": {
+            "entry_conf_overall": 0.32,
+            "regime_proba": {
+              "balanced": 0.58,
+              "bear": 0.5,
+              "bull": 0.52,
+              "ranging": 0.56
+            },
+            "pct": null
+          },
+          "low": {
+            "entry_conf_overall": 0.2,
+            "regime_proba": {
+              "balanced": 0.48,
+              "bear": 0.48,
+              "bull": 0.48,
+              "ranging": 0.52
+            },
+            "pct": null
+          },
+          "mid": {
+            "entry_conf_overall": 0.28,
+            "regime_proba": {
+              "balanced": 0.5,
+              "bear": 0.52,
+              "bull": 0.5,
+              "ranging": 0.5
+            },
+            "pct": null
+          }
+        }
+      },
+      "min_edge": 0.014
+    },
+    "gates": {
+      "hysteresis_steps": 3,
+      "cooldown_bars": 2
+    },
+    "risk": {
+      "risk_map": [
+        [0.48, 0.02],
+        [0.52, 0.045],
+        [0.63, 0.05]
+      ]
+    },
+    "ev": {
+      "R_default": 1.8
+    },
+    "exit": {
+      "enabled": true,
+      "max_hold_bars": 16,
+      "stop_loss_pct": 0.02,
+      "take_profit_pct": 0.05,
+      "exit_conf_threshold": 0.34,
+      "regime_aware_exits": true,
+      "trailing_stop_enabled": false,
+      "trailing_stop_pct": 0.018
+    },
+    "multi_timeframe": {
+      "use_htf_block": true,
+      "allow_ltf_override": true,
+      "ltf_override_threshold": 0.54,
+      "ltf_override_adaptive": {
+        "enabled": true,
+        "window": 120,
+        "percentile": 0.85,
+        "min_history": 30,
+        "min_floor": null,
+        "max_ceiling": null,
+        "fallback_threshold": null,
+        "regime_multipliers": {}
+      },
+      "htf_selector": {
+        "mode": "fixed",
+        "default_timeframe": null,
+        "default_multiplier": null,
+        "fallback_timeframe": "1D",
+        "per_timeframe": {
+          "1h": {
+            "timeframe": null,
+            "multiplier": 6.0
+          },
+          "6h": {
+            "timeframe": "1D",
+            "multiplier": null
+          }
+        }
+      }
+    },
+    "warmup_bars": null,
+    "htf_exit_config": null,
+    "htf_fib": null,
+    "ltf_fib": null,
+    "features": null
+  },
+  "runtime_version": 2
+}

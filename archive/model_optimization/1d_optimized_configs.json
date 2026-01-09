@@ -1,0 +1,302 @@
+{
+  "conservative_entry": {
+    "name": "Conservative Entry",
+    "description": "H\u00f6gre entry confidence f\u00f6r b\u00e4ttre kvalitet",
+    "config": {
+      "thresholds": {
+        "entry_conf_overall": 0.15,
+        "regime_proba": {
+          "ranging": 0.3,
+          "bull": 0.2,
+          "bear": 0.2,
+          "balanced": 0.3
+        }
+      },
+      "risk": {
+        "risk_map": [
+          [
+            0.05,
+            0.25
+          ],
+          [
+            0.15,
+            0.3
+          ],
+          [
+            0.25,
+            0.35
+          ],
+          [
+            0.35,
+            0.4
+          ],
+          [
+            0.45,
+            0.45
+          ]
+        ]
+      },
+      "exit": {
+        "enabled": true,
+        "exit_conf_threshold": 0.05,
+        "max_hold_bars": 50,
+        "regime_aware_exits": true
+      },
+      "gates": {
+        "cooldown_bars": 0,
+        "hysteresis_steps": 1
+      },
+      "htf_exit_config": {
+        "enable_partials": true,
+        "enable_trailing": true,
+        "enable_structure_breaks": true,
+        "partial_1_pct": 0.15,
+        "partial_2_pct": 0.05,
+        "fib_threshold_atr": 0.05,
+        "trail_atr_multiplier": 0.3,
+        "swing_update_strategy": "fixed"
+      },
+      "warmup_bars": 10
+    }
+  },
+  "moderate_entry": {
+    "name": "Moderate Entry",
+    "description": "Balanserad entry confidence",
+    "config": {
+      "thresholds": {
+        "entry_conf_overall": 0.25,
+        "regime_proba": {
+          "ranging": 0.4,
+          "bull": 0.3,
+          "bear": 0.3,
+          "balanced": 0.4
+        }
+      },
+      "risk": {
+        "risk_map": [
+          [
+            0.05,
+            0.25
+          ],
+          [
+            0.15,
+            0.3
+          ],
+          [
+            0.25,
+            0.35
+          ],
+          [
+            0.35,
+            0.4
+          ],
+          [
+            0.45,
+            0.45
+          ]
+        ]
+      },
+      "exit": {
+        "enabled": true,
+        "exit_conf_threshold": 0.05,
+        "max_hold_bars": 50,
+        "regime_aware_exits": true
+      },
+      "gates": {
+        "cooldown_bars": 0,
+        "hysteresis_steps": 1
+      },
+      "htf_exit_config": {
+        "enable_partials": true,
+        "enable_trailing": true,
+        "enable_structure_breaks": true,
+        "partial_1_pct": 0.15,
+        "partial_2_pct": 0.05,
+        "fib_threshold_atr": 0.05,
+        "trail_atr_multiplier": 0.3,
+        "swing_update_strategy": "fixed"
+      },
+      "warmup_bars": 10
+    }
+  },
+  "aggressive_entry": {
+    "name": "Aggressive Entry",
+    "description": "L\u00e5g entry confidence f\u00f6r fler trades",
+    "config": {
+      "thresholds": {
+        "entry_conf_overall": 0.05,
+        "regime_proba": {
+          "ranging": 0.1,
+          "bull": 0.05,
+          "bear": 0.05,
+          "balanced": 0.1
+        }
+      },
+      "risk": {
+        "risk_map": [
+          [
+            0.05,
+            0.25
+          ],
+          [
+            0.15,
+            0.3
+          ],
+          [
+            0.25,
+            0.35
+          ],
+          [
+            0.35,
+            0.4
+          ],
+          [
+            0.45,
+            0.45
+          ]
+        ]
+      },
+      "exit": {
+        "enabled": true,
+        "exit_conf_threshold": 0.05,
+        "max_hold_bars": 50,
+        "regime_aware_exits": true
+      },
+      "gates": {
+        "cooldown_bars": 0,
+        "hysteresis_steps": 1
+      },
+      "htf_exit_config": {
+        "enable_partials": true,
+        "enable_trailing": true,
+        "enable_structure_breaks": true,
+        "partial_1_pct": 0.15,
+        "partial_2_pct": 0.05,
+        "fib_threshold_atr": 0.05,
+        "trail_atr_multiplier": 0.3,
+        "swing_update_strategy": "fixed"
+      },
+      "warmup_bars": 10
+    }
+  },
+  "long_hold_strategy": {
+    "name": "Long Hold Strategy",
+    "description": "Mycket l\u00e5nga holds f\u00f6r macro trends",
+    "config": {
+      "thresholds": {
+        "entry_conf_overall": 0.01,
+        "regime_proba": {
+          "ranging": 0.05,
+          "bull": 0.05,
+          "bear": 0.05,
+          "balanced": 0.05
+        }
+      },
+      "risk": {
+        "risk_map": [
+          [
+            0.05,
+            0.3
+          ],
+          [
+            0.15,
+            0.35
+          ],
+          [
+            0.25,
+            0.4
+          ],
+          [
+            0.35,
+            0.45
+          ],
+          [
+            0.45,
+            0.5
+          ]
+        ]
+      },
+      "exit": {
+        "enabled": true,
+        "exit_conf_threshold": 0.05,
+        "max_hold_bars": 100,
+        "regime_aware_exits": true
+      },
+      "gates": {
+        "cooldown_bars": 0,
+        "hysteresis_steps": 1
+      },
+      "htf_exit_config": {
+        "enable_partials": true,
+        "enable_trailing": true,
+        "enable_structure_breaks": true,
+        "partial_1_pct": 0.15,
+        "partial_2_pct": 0.05,
+        "fib_threshold_atr": 0.05,
+        "trail_atr_multiplier": 0.3,
+        "swing_update_strategy": "fixed"
+      },
+      "warmup_bars": 20
+    }
+  },
+  "short_hold_strategy": {
+    "name": "Short Hold Strategy",
+    "description": "Kortare holds f\u00f6r snabbare rotation",
+    "config": {
+      "thresholds": {
+        "entry_conf_overall": 0.01,
+        "regime_proba": {
+          "ranging": 0.05,
+          "bull": 0.05,
+          "bear": 0.05,
+          "balanced": 0.05
+        }
+      },
+      "risk": {
+        "risk_map": [
+          [
+            0.05,
+            0.2
+          ],
+          [
+            0.15,
+            0.25
+          ],
+          [
+            0.25,
+            0.3
+          ],
+          [
+            0.35,
+            0.35
+          ],
+          [
+            0.45,
+            0.4
+          ]
+        ]
+      },
+      "exit": {
+        "enabled": true,
+        "exit_conf_threshold": 0.05,
+        "max_hold_bars": 20,
+        "regime_aware_exits": true
+      },
+      "gates": {
+        "cooldown_bars": 0,
+        "hysteresis_steps": 1
+      },
+      "htf_exit_config": {
+        "enable_partials": true,
+        "enable_trailing": true,
+        "enable_structure_breaks": true,
+        "partial_1_pct": 0.15,
+        "partial_2_pct": 0.05,
+        "fib_threshold_atr": 0.05,
+        "trail_atr_multiplier": 0.3,
+        "swing_update_strategy": "fixed"
+      },
+      "warmup_bars": 5
+    }
+  }
+}

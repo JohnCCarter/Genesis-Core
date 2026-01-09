@@ -1,16 +1,15 @@
 from __future__ import annotations
 
 import asyncio
-import hashlib
-import hmac
 import json
 import time
 
 import websockets
 
 from core.config.settings import get_settings
-from core.utils.nonce_manager import get_nonce
 from core.observability.metrics import metrics
+from core.utils.crypto import build_hmac_signature
+from core.utils.nonce_manager import get_nonce
 
 WS_URL = "wss://api.bitfinex.com/ws/2"
 
@@ -27,7 +26,7 @@ async def auth_ping(timeout: float = 5.0) -> dict:
     except Exception:
         nonce_ms = str(int(time.time() * 1000))
     payload = f"AUTH{nonce_ms}"
-    sig = hmac.new(api_secret.encode(), payload.encode(), hashlib.sha384).hexdigest()
+    sig = build_hmac_signature(api_secret, payload)
 
     metrics.inc("ws_auth_request")
     async with websockets.connect(WS_URL, ping_interval=None) as ws:
@@ -75,6 +74,6 @@ async def auth_ping(timeout: float = 5.0) -> dict:
                         }
             metrics.inc("ws_auth_timeout")
             return {"ok": False, "error": "timeout"}
-        except asyncio.TimeoutError:
+        except TimeoutError:
             metrics.inc("ws_auth_timeout")
             return {"ok": False, "error": "timeout"}

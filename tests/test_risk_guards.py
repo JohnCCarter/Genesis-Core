@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import math
-
 from core.risk.guards import breached_max_drawdown, within_daily_loss_limit
 
 

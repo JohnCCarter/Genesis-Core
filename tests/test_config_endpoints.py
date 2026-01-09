@@ -1,5 +1,6 @@
-from core.config.validator import validate_config, diff_config
 from fastapi.testclient import TestClient
+
+from core.config.validator import diff_config, validate_config
 from core.server import app
 
 
@@ -18,15 +19,18 @@ def test_config_validation_and_diff_helpers():
 
 def test_config_endpoints():
     c = TestClient(app)
-    good = {"dry_run": True, "position_cap_pct": 20}
-    bad = {"dry_run": "yes"}
 
-    r = c.post("/config/validate", json=good)
-    assert r.status_code == 200 and r.json()["valid"] is True
+    # runtime validate (new API)
+    good_rt = {"thresholds": {"entry_conf_overall": 0.6}}
+    bad_rt = {"ev": {"R_default": "invalid"}}
 
-    r = c.post("/config/validate", json=bad)
-    assert r.status_code == 200 and r.json()["valid"] is False
+    r = c.post("/config/runtime/validate", json=good_rt)
+    assert r.status_code == 200 and r.json().get("valid") is True
 
-    r = c.post("/config/diff", json={"old": {"x": 1}, "new": {"x": 2}})
+    r = c.post("/config/runtime/validate", json=bad_rt)
+    assert r.status_code == 200 and r.json().get("valid") is False
+
+    # runtime get
+    r = c.get("/config/runtime")
     assert r.status_code == 200
-    assert r.json()["changes"][0]["key"] == "x"
+    assert set(r.json().keys()) >= {"cfg", "version", "hash"}

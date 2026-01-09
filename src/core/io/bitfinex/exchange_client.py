@@ -1,19 +1,17 @@
 from __future__ import annotations
 
-import hashlib
-import hmac
 import json
-import secrets
 from typing import Any
 
 import httpx
 
 from core.config.settings import get_settings
-from core.utils.nonce_manager import bump_nonce, get_nonce
 from core.observability.metrics import metrics
-from core.utils.logging_redaction import get_logger
+from core.symbols.symbols import SymbolMapper, SymbolMode
 from core.utils.backoff import exponential_backoff_delay
-
+from core.utils.crypto import build_hmac_signature
+from core.utils.logging_redaction import get_logger
+from core.utils.nonce_manager import bump_nonce, get_nonce
 
 _HTTP_CLIENT: httpx.AsyncClient | None = None
 _BASE_URL = "https://api.bitfinex.com"
@@ -37,18 +35,18 @@ class ExchangeClient:
 
     def __init__(self) -> None:
         self._settings = get_settings()
+        try:
+            self._symbol_mapper = SymbolMapper(self._settings.symbol_mode)
+        except Exception:
+            self._symbol_mapper = SymbolMapper(SymbolMode.REALISTIC)
 
-    def _build_headers(
-        self, endpoint: str, body: dict[str, Any] | None
-    ) -> dict[str, str]:
+    def _build_headers(self, endpoint: str, body: dict[str, Any] | None) -> dict[str, str]:
         api_key = (self._settings.BITFINEX_API_KEY or "").strip()
         api_secret = (self._settings.BITFINEX_API_SECRET or "").strip()
         nonce = get_nonce(api_key)
         payload_str = json.dumps(body or {}, separators=(",", ":"))
         message = f"/api/v2/{endpoint}{nonce}{payload_str}"
-        signature = hmac.new(
-            api_secret.encode(), message.encode(), hashlib.sha384
-        ).hexdigest()
+        signature = build_hmac_signature(api_secret, message)
         return {
             "bfx-apikey": api_key,
             "bfx-nonce": nonce,
@@ -64,7 +62,15 @@ class ExchangeClient:
         body: dict[str, Any] | None = None,
         timeout: float | None = None,
     ) -> httpx.Response:
-        body = body or {}
+        body = dict(body or {})
+        # Resolve symbol if present
+        sym = body.get("symbol")
+        if isinstance(sym, str):
+            su = sym.upper()
+            if su.startswith("TTEST") or ":TEST" in su:
+                body["symbol"] = self._symbol_mapper.force(sym)
+            else:
+                body["symbol"] = self._symbol_mapper.resolve(sym)
         metrics.inc("rest_auth_request")
         try:
             _LOGGER.info("REST %s %s", method.upper(), endpoint)
@@ -75,8 +81,10 @@ class ExchangeClient:
         headers = self._build_headers(endpoint, body)
 
         async def _do() -> httpx.Response:
+            # Viktigt: använd exakt samma JSON‑serialisering för innehållet som vid signering
+            body_str = json.dumps(body, separators=(",", ":"))
             req = getattr(client, method.lower())
-            return await req(url, headers=headers, content=json.dumps(body))
+            return await req(url, headers=headers, content=body_str)
 
         # Första försök
         try:
@@ -156,6 +164,27 @@ class ExchangeClient:
             0, base_delay=0.0, max_backoff=0.3, jitter_min_ms=100, jitter_max_ms=300
         )
         await asyncio.sleep(delay)
+
+    async def public_request(
+        self,
+        *,
+        method: str,
+        endpoint: str,
+        params: dict[str, Any] | None = None,
+        timeout: float | None = None,
+    ) -> httpx.Response:
+        """Utför en publik (osignerad) request via den delade klienten."""
+        client = _get_http_client()
+        url = f"{_BASE_URL}/v2/{endpoint}"
+
+        try:
+            req = getattr(client, method.lower())
+            resp = await req(url, params=params, timeout=timeout)
+            resp.raise_for_status()
+            return resp
+        except Exception as e:
+            _LOGGER.warning("REST public error %s %s: %s", method, endpoint, e)
+            raise
 
 
 _EXCHANGE_CLIENT: ExchangeClient | None = None

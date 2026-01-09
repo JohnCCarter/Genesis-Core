@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-import hashlib
-import hmac
 import json
 from typing import Any
 
 import httpx
 
 from core.config.settings import get_settings
-from core.utils.nonce_manager import get_nonce, bump_nonce
+from core.symbols.symbols import SymbolMapper, SymbolMode
+from core.utils.crypto import build_hmac_signature
+from core.utils.nonce_manager import bump_nonce, get_nonce
 
 BASE = "https://api.bitfinex.com"
 
@@ -20,7 +20,7 @@ def _sign_v2(endpoint: str, body: dict[str, Any] | None) -> dict[str, str]:
     nonce = get_nonce(api_key)
     payload_str = json.dumps(body or {}, separators=(",", ":"))
     message = f"/api/v2/{endpoint}{nonce}{payload_str}"
-    sig = hmac.new(api_secret.encode(), message.encode(), hashlib.sha384).hexdigest()
+    sig = build_hmac_signature(api_secret, message)
     return {
         "bfx-apikey": api_key,
         "bfx-nonce": nonce,
@@ -29,17 +29,28 @@ def _sign_v2(endpoint: str, body: dict[str, Any] | None) -> dict[str, str]:
     }
 
 
-async def post_auth(
-    endpoint: str, body: dict[str, Any] | None = None
-) -> httpx.Response:
+async def post_auth(endpoint: str, body: dict[str, Any] | None = None) -> httpx.Response:
     s = get_settings()
     api_key = (s.BITFINEX_API_KEY or "").strip()
-    headers = _sign_v2(endpoint, body)
+    mapper = SymbolMapper(
+        SymbolMode.REALISTIC
+        if str(s.SYMBOL_MODE).lower() not in ("synthetic", "realistic")
+        else SymbolMode(str(s.SYMBOL_MODE).lower())
+    )
+    b = dict(body or {})
+    sym = b.get("symbol")
+    if isinstance(sym, str):
+        su = sym.upper()
+        if su.startswith("TTEST") or ":TEST" in su:
+            b["symbol"] = mapper.force(sym)
+        else:
+            b["symbol"] = mapper.resolve(sym)
+    headers = _sign_v2(endpoint, b)
     async with httpx.AsyncClient(timeout=10) as client:
         try:
-            r = await client.post(
-                f"{BASE}/v2/{endpoint}", headers=headers, content=json.dumps(body or {})
-            )
+            # Använd samma kompakta JSON‑sträng för content som vid signeringen
+            body_str = json.dumps(b or {}, separators=(",", ":"))
+            r = await client.post(f"{BASE}/v2/{endpoint}", headers=headers, content=body_str)
             r.raise_for_status()
             return r
         except httpx.HTTPStatusError as e:
@@ -47,11 +58,12 @@ async def post_auth(
             text = e.response.text if e.response is not None else ""
             if "nonce" in text.lower():
                 bump_nonce(api_key)
-                headers = _sign_v2(endpoint, body)
+                headers = _sign_v2(endpoint, b)
+                body_str = json.dumps(b or {}, separators=(",", ":"))
                 r2 = await client.post(
                     f"{BASE}/v2/{endpoint}",
                     headers=headers,
-                    content=json.dumps(body or {}),
+                    content=body_str,
                 )
                 r2.raise_for_status()
                 return r2

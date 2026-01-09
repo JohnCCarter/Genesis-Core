@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+# ruff: noqa: E402
 import asyncio
 import contextlib
 import json
-import signal
 import sys
 from pathlib import Path
 from typing import Any
@@ -14,10 +14,10 @@ _SRC = _ROOT / "src"
 if str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
 
+# Imports som kräver sys.path injektion
 from core.config.settings import get_settings
+from core.io.bitfinex.read_helpers import get_positions, get_wallets
 from core.io.bitfinex.ws_public import one_message_ticker
-from core.io.bitfinex.read_helpers import get_wallets, get_positions
-from core.io.bitfinex.ws_reconnect import WSReconnectClient
 from core.observability.metrics import metrics
 
 
@@ -34,16 +34,12 @@ async def burn_in(
             "BURN-IN start duration_s=%s symbols=%s rest_enabled=%s",
             duration_seconds,
             ",".join(symbols or ["tBTCUSD"]),
-            bool(
-                (s.BITFINEX_API_KEY or "").strip()
-                and (s.BITFINEX_API_SECRET or "").strip()
-            ),
+            bool((s.BITFINEX_API_KEY or "").strip() and (s.BITFINEX_API_SECRET or "").strip()),
         )
     except Exception:
         _log = None
 
     async def ws_loop() -> None:
-        client = WSReconnectClient(enable_auth=False)
         # Kör enkel ticker-subscribe/cykel med ack/error/timeout-observation
         end = asyncio.get_running_loop().time() + duration_seconds
         while asyncio.get_running_loop().time() < end:
@@ -54,18 +50,16 @@ async def burn_in(
 
     async def rest_loop() -> None:
         # Kör endast om nycklar finns
-        if not (
-            (s.BITFINEX_API_KEY or "").strip() and (s.BITFINEX_API_SECRET or "").strip()
-        ):
+        if not ((s.BITFINEX_API_KEY or "").strip() and (s.BITFINEX_API_SECRET or "").strip()):
             return
         end = asyncio.get_running_loop().time() + duration_seconds
         while asyncio.get_running_loop().time() < end:
             try:
                 await get_wallets()
                 await get_positions()
-            except Exception:
-                # metrics i underliggande lager fångar counters
-                pass
+            except Exception as e:
+                # metrics in lower layers capture counters, but log for visibility
+                print(f"REST call exception: {e}")
             await asyncio.sleep(30.0)
 
     ws_task = asyncio.create_task(ws_loop())
@@ -88,7 +82,6 @@ async def burn_in(
             "success": c.get("ws_public_success", 0),
             "error": c.get("ws_public_error", 0),
             "timeout": c.get("ws_public_timeout", 0),
-            "maintenance": c.get("ws_public_maintenance", 0),
         },
         "rest_auth": {
             "request": c.get("rest_auth_request", 0),
@@ -115,8 +108,8 @@ async def burn_in(
                 report["rest_auth"]["request"],
                 report["rest_auth"]["success"],
             )
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"Logging error: {e}")
     return report
 
 
@@ -125,8 +118,8 @@ async def main(argv: list[str]) -> int:
     if len(argv) >= 2:
         try:
             duration = int(argv[1])
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"Invalid duration argument: {e}")
     # CLI: valfri kommaseparerad lista på symboler som tredje argument
     sym_list: list[str] | None = None
     if len(argv) >= 3 and isinstance(argv[2], str) and argv[2].strip():
@@ -150,8 +143,9 @@ async def main(argv: list[str]) -> int:
             _P(out_path).write_text(text, encoding="utf-8")
             print(text)
             return 0
-        except Exception:
+        except Exception as e:
             # Faller tillbaka till stdout
+            print(f"Failed to write output file: {e}")
             pass
     print(text)
     return 0

@@ -1,126 +1,102 @@
 # Genesis-Core
-BOTEN ÄR UNDER AKTIV UTVECKLING OCH KAN ÄNDRAS UTAN VETANDE. DET ÄR INTE GARANTIAT ATT BOTEN FUNGERAR SOM FÖRUTSATT.
 
-> Status: Under utveckling
->
-> - Paper only: boten körs enbart mot Bitfinex Paper‑account. Livehandel aktiveras först när utvecklaren uttryckligen beslutar det.
-> - Single‑user: endast repoägaren/utvecklaren utvecklar och använder boten. `.env` är lokal och ska aldrig committas.
+Genesis-Core är en Python 3.11+ kodbas för **deterministisk backtest/optimering** och en **FastAPI-tjänst** runt en trading-strategi.
 
-Minimal kärna med FastAPI, config-validering, observability och Bitfinex IO.
+Viktiga principer:
 
-## Setup (Python 3.11)
+- **Paper / TEST-symboler**: paper-orderflöden är hårt begränsade till whitelistade TEST-spotpar.
+- **Reproducerbarhet**: samma config + samma data ska ge samma resultat (stabiliseringsfokus).
+- **SSOT config**: runtime-konfig styrs via `config/runtime.json` och config-API.
+
+## Snabbstart (Windows PowerShell)
 
 ```powershell
 python -m venv .venv
 . .\.venv\Scripts\Activate.ps1
-pip install -e .[dev]
+python -m pip install -e ".[dev]"
+```
+
+Starta API (lokalt):
+
+```powershell
 uvicorn core.server:app --reload --app-dir src
 ```
 
-Hälsa:
-
-```bash
-curl http://127.0.0.1:8000/health
-```
-
-## Testskript (Bitfinex)
-
-Kräver ifylld `.env` (baserat på `.env.example`) för auth-test (auth-klienter tillkommer).
-
-```bash
-python scripts/test_rest_public.py
-python scripts/test_ws_public.py
-```
-
-## Endpoints
-
-- `GET /health` – enkel hälsokontroll.
-- `GET /observability/dashboard` – counters/gauges/events.
-- `POST /config/validate` – body: JSON-config, svar: `{valid, errors}`.
-- `POST /config/diff` – body: `{old, new}`, svar: `{changes}`.
-- `POST /config/audit` – body: `{changes, user}`, append-only logg i `logs/config_audit.log`.
-
-Exempel:
-
-```bash
-curl -s http://127.0.0.1:8000/health
-curl -s http://127.0.0.1:8000/observability/dashboard
-curl -s -X POST http://127.0.0.1:8000/config/validate -H 'Content-Type: application/json' -d '{"dry_run":true}'
-curl -s -X POST http://127.0.0.1:8000/config/diff -H 'Content-Type: application/json' -d '{"old":{"x":1},"new":{"x":2}}'
-curl -s -X POST http://127.0.0.1:8000/config/audit -H 'Content-Type: application/json' -d '{"changes":[{"key":"x","old":1,"new":2}],"user":"local"}'
-```
-
-### NonceManager
-
-- Per-nyckel nonce i mikrosekunder (µs) med persistens och låsning.
-- REST signerar strängen "/api/v2/{endpoint}{nonce}{body-json}" (HMAC-SHA384).
-- WS använder millisekunder (ms) i `authNonce` med payload `AUTH{nonce_ms}`.
-- Vid "nonce too small" (10114) görs engångs-retry efter `bump_nonce()`.
-
-Auth-REST (curl-exempel – beräkna `bfx-nonce` och `bfx-signature` enligt `core/io/bitfinex/rest_auth.py`):
-
-```bash
-curl -s -X POST "https://api.bitfinex.com/v2/auth/r/alerts" \
-  -H "Content-Type: application/json" \
-  -H "bfx-apikey: <BITFINEX_API_KEY>" \
-  -H "bfx-nonce: <NONCE_US>" \
-  -H "bfx-signature: <HMAC_SHA384('/api/v2/auth/r/alerts' + NONCE_US + '{}')>" \
-  -d '{}'
-```
-
-### Curl + PowerShell piping
-
-Generera headers och använd dem direkt i curl (Windows PowerShell):
+Verifiera tooling & tester:
 
 ```powershell
-$h = python scripts/build_auth_headers.py auth/r/alerts --body '{}' | ConvertFrom-Json
-curl -s -X POST "https://api.bitfinex.com/v2/auth/r/alerts" `
-  -H "Content-Type: application/json" `
-  -H ("bfx-apikey: " + $h."bfx-apikey") `
-  -H ("bfx-nonce: " + $h."bfx-nonce") `
-  -H ("bfx-signature: " + $h."bfx-signature") `
-  -d '{}'
+pre-commit run --all-files
+python -m pytest
 ```
 
-### API‑nycklar (Paper account)
+## Secrets / .env
 
-- Utveckling: Boten är en singel-user och används/utvecklas endast av utvecklaren för paper account och är för utveckling och testning, API nycklarna som används nu är API keys för paper account (Simulerad läge) Ingen rädsla att köp/sälj verkligen händer då detta är ett fullt ut paper account.
-- Produktion: Boten kommer inte att användas i produktion/live trading tills utvecklaren säger annat.
-- Endast nycklar behövs – REST/WS‑URL:er är hårdkodade mot Bitfinex v2. `.env` ska aldrig committas.
-- Snabbverifiering:
-  - `python scripts/test_ws_public.py` → `{ "ok": true }`
-  - `python scripts/test_ws_auth.py` → `{ "ok": true }`
-  - `python scripts/test_rest_auth.py` → `{ "status": 200 }`
+- Lägg **aldrig** `.env` i git.
+- Utgå från `.env.example` för lokala nycklar/inställningar.
 
-### WS reconnect – snabbstart
+## MCP Server (AI Assistant Integration)
 
-Kör en minimal reconnect‑loop med ping/pong och åter‑auth:
-
-```python
-# scripts/run_ws_reconnect.py
-import asyncio
-from core.io.bitfinex.ws_reconnect import get_ws_reconnect_client
-
-async def main():
-    client = get_ws_reconnect_client()
-    await client.run()
-
-asyncio.run(main())
-```
+Repo:t innehåller en MCP-server (Model Context Protocol) för integration med VS Code / Copilot och andra assistenter.
 
 ```powershell
-python -c "import asyncio; from core.io.bitfinex.ws_reconnect import get_ws_reconnect_client; asyncio.run(get_ws_reconnect_client().run())"
+python -m pip install -e ".[mcp]"
+python -m mcp_server.server
 ```
 
-## Pre-commit
+Se:
 
-```bash
-pip install pre-commit
-pre-commit install
-```
+- `mcp_server/README.md` (operativ guide)
+- `docs/mcp_server_guide.md` (projekt-specifik guide)
 
-## CI lokalt
+## Execution mode policy (canonical för quality decisions) 2025-12-18
 
-```powershell
-pwsh -File scripts/ci.ps1
-```
+Genesis-Core har två prestandaväxlar som också påverkar exekveringsvägen i backtestmotorn:
+
+- `GENESIS_FAST_WINDOW=1` (zero-copy windows)
+- `GENESIS_PRECOMPUTE_FEATURES=1` (precompute + on-disk cache)
+
+Policy (2025-12): **1/1 är canonical** för alla "quality decisions" (Optuna, Validate, champion-jämförelser, rapportering).
+
+- Standardflöden kommer därför att köra 1/1 även om ditt shell råkat ha gamla env-flaggor.
+- För debug/felsökning kan du köra 0/0, men det är **debug-only** och ska inte jämföras mot Optuna/Validate.
+
+Se `docs/features/FEATURE_COMPUTATION_MODES.md` för detaljer, inkl. `GENESIS_MODE_EXPLICIT`.
+
+## Konfiguration (SSOT)
+
+- Runtime config lagras i `config/runtime.json` (SSOT). Filen ignoreras av git; `config/runtime.seed.json` används som seed.
+- API:
+  - `GET /config/runtime` → `{ cfg, version, hash }`
+  - `POST /config/runtime/validate` → `{ valid, errors, cfg? }`
+  - `POST /config/runtime/propose` (kräver Bearer) → `{ cfg, version, hash }`
+- Bearer‑auth: sätt env `BEARER_TOKEN` i backend. Skicka `Authorization: Bearer <token>` i UI/klient.
+- Audit: ändringar loggas i `logs/config_audit.jsonl` (rotation vid ~5MB). Innehåller `actor`, `paths`, `hash_before/after`.
+
+## Registry governance (skills/compacts) – repo som SSOT
+
+Genesis-Core använder en enkel governance-modell där "skills" och "compacts" är **versionerade i repo:t**
+och används som SSOT för agent-/processregler.
+
+- Registry-data ligger under `registry/`.
+  - `registry/skills/*.json` och `registry/compacts/*.json` (versionerade objekt)
+  - `registry/manifests/dev.json` och `registry/manifests/stable.json` (vilka versioner som är aktiva)
+  - `registry/schemas/*.schema.json` (JSON Schema)
+- CI gate: `python scripts/validate_registry.py` validerar schema + korsreferenser.
+- Break-glass / audit: om `registry/manifests/stable.json` ändras i en PR kräver CI även att
+  `registry/audit/break_glass.jsonl` uppdateras med en audit-entry som refererar committen som ändrade
+  `registry/manifests/stable.json` (via `commit_sha`).
+- Review-disciplin: `.github/CODEOWNERS` kan kräva review för ändringar under `registry/`.
+
+## UI‑noter
+
+- UI laddar alltid `/config/runtime` vid start och visar `config_version/hash` i status.
+- Knappen “Föreslå ändring” POST:ar `/config/runtime/propose` och uppdaterar status.
+- Sätt bearer‑token i UI‑fältet (sparas i `localStorage.ui_bearer`).
+
+## SymbolMapper
+
+- `SymbolMode`: `realistic|synthetic` (env `SYMBOL_MODE`, CI sätter `synthetic`).
+- Strategier använder mänskliga symboler (t.ex. `BTCUSD`); I/O mappar:
+  - Realistic: `BTCUSD` → `tBTCUSD`
+  - Synthetic: `BTCUSD` → `tTESTBTC:TESTUSD`
+- Explicit TEST‑symboler (`tTEST...:TESTUSD`) bypassas oförändrade.

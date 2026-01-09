@@ -1,0 +1,39 @@
+{
+  "buy_model": {
+    "best_params": {
+      "C": 0.1,
+      "max_iter": 1000,
+      "penalty": "l2",
+      "solver": "lbfgs"
+    },
+    "best_score": -0.6827122868771797,
+    "val_log_loss": 0.6838132816282472,
+    "val_auc": 0.46869864353723745
+  },
+  "sell_model": {
+    "best_params": {
+      "C": 0.1,
+      "max_iter": 1000,
+      "penalty": "l2",
+      "solver": "lbfgs"
+    },
+    "best_score": -0.6827122868771797,
+    "val_log_loss": 0.6838132816282471,
+    "val_auc": 0.46869864353723756
+  },
+  "feature_names": [
+    "rsi_inv_lag1",
+    "volatility_shift_ma3",
+    "bb_position_inv_ma3",
+    "rsi_vol_interaction",
+    "vol_regime",
+    "fib05_prox_atr",
+    "fib_prox_score",
+    "fib05_x_ema_slope",
+    "fib_prox_x_adx",
+    "fib05_x_rsi_inv"
+  ],
+  "n_features": 10,
+  "n_train": 4774,
+  "n_val": 1591
+}

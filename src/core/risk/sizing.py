@@ -18,8 +18,6 @@ def capped_position_size(
         return 0.0
     if risk_fraction <= 0:
         return 0.0
-    cap: Final[float] = (
-        max(0.0, min(1.0, position_cap_pct / 100.0)) * account_equity_usd
-    )
+    cap: Final[float] = max(0.0, min(1.0, position_cap_pct / 100.0)) * account_equity_usd
     desired = account_equity_usd * risk_fraction
     return float(min(desired, cap))

@@ -1,0 +1,1102 @@
+{
+  "models_to_update": [
+    {
+      "file": "tADAUSD.json",
+      "timeframe": "1m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tADAUSD.json",
+      "timeframe": "5m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tADAUSD.json",
+      "timeframe": "15m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tADAUSD.json",
+      "timeframe": "1h",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tADAUSD.json",
+      "timeframe": "4h",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tADAUSD.json",
+      "timeframe": "1D",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tALGOUSD.json",
+      "timeframe": "1m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tALGOUSD.json",
+      "timeframe": "5m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tALGOUSD.json",
+      "timeframe": "15m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tALGOUSD.json",
+      "timeframe": "1h",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tALGOUSD.json",
+      "timeframe": "4h",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tALGOUSD.json",
+      "timeframe": "1D",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tAPTUSD.json",
+      "timeframe": "1m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tAPTUSD.json",
+      "timeframe": "5m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tAPTUSD.json",
+      "timeframe": "15m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tAPTUSD.json",
+      "timeframe": "1h",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tAPTUSD.json",
+      "timeframe": "4h",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tAPTUSD.json",
+      "timeframe": "1D",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tAVAXUSD.json",
+      "timeframe": "1m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tAVAXUSD.json",
+      "timeframe": "5m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tAVAXUSD.json",
+      "timeframe": "15m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tAVAXUSD.json",
+      "timeframe": "1h",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tAVAXUSD.json",
+      "timeframe": "4h",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tAVAXUSD.json",
+      "timeframe": "1D",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tBTCUSD.json",
+      "timeframe": "1m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tBTCUSD.json",
+      "timeframe": "5m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tBTCUSD.json",
+      "timeframe": "15m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tBTCUSD.json",
+      "timeframe": "1h",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tBTCUSD.json",
+      "timeframe": "4h",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tDOGEUSD.json",
+      "timeframe": "1m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tDOGEUSD.json",
+      "timeframe": "5m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tDOGEUSD.json",
+      "timeframe": "15m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tDOGEUSD.json",
+      "timeframe": "1h",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tDOGEUSD.json",
+      "timeframe": "4h",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tDOGEUSD.json",
+      "timeframe": "1D",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tDOTUSD.json",
+      "timeframe": "1m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tDOTUSD.json",
+      "timeframe": "5m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tDOTUSD.json",
+      "timeframe": "15m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tDOTUSD.json",
+      "timeframe": "1h",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tDOTUSD.json",
+      "timeframe": "4h",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tDOTUSD.json",
+      "timeframe": "1D",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tEOSUSD.json",
+      "timeframe": "1m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tEOSUSD.json",
+      "timeframe": "5m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tEOSUSD.json",
+      "timeframe": "15m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tEOSUSD.json",
+      "timeframe": "1h",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tEOSUSD.json",
+      "timeframe": "4h",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tEOSUSD.json",
+      "timeframe": "1D",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tETHUSD.json",
+      "timeframe": "1m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tETHUSD.json",
+      "timeframe": "5m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tETHUSD.json",
+      "timeframe": "15m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tETHUSD.json",
+      "timeframe": "1h",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tETHUSD.json",
+      "timeframe": "4h",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tETHUSD.json",
+      "timeframe": "1D",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tFILUSD.json",
+      "timeframe": "1m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tFILUSD.json",
+      "timeframe": "5m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tFILUSD.json",
+      "timeframe": "15m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tFILUSD.json",
+      "timeframe": "1h",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tFILUSD.json",
+      "timeframe": "4h",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tFILUSD.json",
+      "timeframe": "1D",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tLTCUSD.json",
+      "timeframe": "1m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tLTCUSD.json",
+      "timeframe": "5m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tLTCUSD.json",
+      "timeframe": "15m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tLTCUSD.json",
+      "timeframe": "1h",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tLTCUSD.json",
+      "timeframe": "4h",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tLTCUSD.json",
+      "timeframe": "1D",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tNEARUSD.json",
+      "timeframe": "1m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tNEARUSD.json",
+      "timeframe": "5m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tNEARUSD.json",
+      "timeframe": "15m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tNEARUSD.json",
+      "timeframe": "1h",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tNEARUSD.json",
+      "timeframe": "4h",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tNEARUSD.json",
+      "timeframe": "1D",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tSOLUSD.json",
+      "timeframe": "1m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tSOLUSD.json",
+      "timeframe": "5m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tSOLUSD.json",
+      "timeframe": "15m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tSOLUSD.json",
+      "timeframe": "1h",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tSOLUSD.json",
+      "timeframe": "4h",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tSOLUSD.json",
+      "timeframe": "1D",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tXAUTUSD.json",
+      "timeframe": "1m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tXAUTUSD.json",
+      "timeframe": "5m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tXAUTUSD.json",
+      "timeframe": "15m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tXAUTUSD.json",
+      "timeframe": "1h",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tXAUTUSD.json",
+      "timeframe": "4h",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tXAUTUSD.json",
+      "timeframe": "1D",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tXTZUSD.json",
+      "timeframe": "1m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tXTZUSD.json",
+      "timeframe": "5m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tXTZUSD.json",
+      "timeframe": "15m",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tXTZUSD.json",
+      "timeframe": "1h",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tXTZUSD.json",
+      "timeframe": "4h",
+      "action": "Uppdatera till 5-feature schema"
+    },
+    {
+      "file": "tXTZUSD.json",
+      "timeframe": "1D",
+      "action": "Uppdatera till 5-feature schema"
+    }
+  ],
+  "new_models_to_create": [
+    {
+      "file": "tBTCUSD_1m.json",
+      "symbol": "tBTCUSD",
+      "timeframe": "1m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tBTCUSD_5m.json",
+      "symbol": "tBTCUSD",
+      "timeframe": "5m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tBTCUSD_15m.json",
+      "symbol": "tBTCUSD",
+      "timeframe": "15m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tBTCUSD_3h.json",
+      "symbol": "tBTCUSD",
+      "timeframe": "3h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tETHUSD_1m.json",
+      "symbol": "tETHUSD",
+      "timeframe": "1m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tETHUSD_5m.json",
+      "symbol": "tETHUSD",
+      "timeframe": "5m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tETHUSD_15m.json",
+      "symbol": "tETHUSD",
+      "timeframe": "15m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tETHUSD_30m.json",
+      "symbol": "tETHUSD",
+      "timeframe": "30m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tETHUSD_1h.json",
+      "symbol": "tETHUSD",
+      "timeframe": "1h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tETHUSD_3h.json",
+      "symbol": "tETHUSD",
+      "timeframe": "3h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tETHUSD_6h.json",
+      "symbol": "tETHUSD",
+      "timeframe": "6h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tETHUSD_1D.json",
+      "symbol": "tETHUSD",
+      "timeframe": "1D",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tADAUSD_1m.json",
+      "symbol": "tADAUSD",
+      "timeframe": "1m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tADAUSD_5m.json",
+      "symbol": "tADAUSD",
+      "timeframe": "5m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tADAUSD_15m.json",
+      "symbol": "tADAUSD",
+      "timeframe": "15m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tADAUSD_30m.json",
+      "symbol": "tADAUSD",
+      "timeframe": "30m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tADAUSD_1h.json",
+      "symbol": "tADAUSD",
+      "timeframe": "1h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tADAUSD_3h.json",
+      "symbol": "tADAUSD",
+      "timeframe": "3h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tADAUSD_6h.json",
+      "symbol": "tADAUSD",
+      "timeframe": "6h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tADAUSD_1D.json",
+      "symbol": "tADAUSD",
+      "timeframe": "1D",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tDOTUSD_1m.json",
+      "symbol": "tDOTUSD",
+      "timeframe": "1m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tDOTUSD_5m.json",
+      "symbol": "tDOTUSD",
+      "timeframe": "5m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tDOTUSD_15m.json",
+      "symbol": "tDOTUSD",
+      "timeframe": "15m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tDOTUSD_30m.json",
+      "symbol": "tDOTUSD",
+      "timeframe": "30m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tDOTUSD_1h.json",
+      "symbol": "tDOTUSD",
+      "timeframe": "1h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tDOTUSD_3h.json",
+      "symbol": "tDOTUSD",
+      "timeframe": "3h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tDOTUSD_6h.json",
+      "symbol": "tDOTUSD",
+      "timeframe": "6h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tDOTUSD_1D.json",
+      "symbol": "tDOTUSD",
+      "timeframe": "1D",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tDOGEUSD_1m.json",
+      "symbol": "tDOGEUSD",
+      "timeframe": "1m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tDOGEUSD_5m.json",
+      "symbol": "tDOGEUSD",
+      "timeframe": "5m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tDOGEUSD_15m.json",
+      "symbol": "tDOGEUSD",
+      "timeframe": "15m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tDOGEUSD_30m.json",
+      "symbol": "tDOGEUSD",
+      "timeframe": "30m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tDOGEUSD_1h.json",
+      "symbol": "tDOGEUSD",
+      "timeframe": "1h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tDOGEUSD_3h.json",
+      "symbol": "tDOGEUSD",
+      "timeframe": "3h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tDOGEUSD_6h.json",
+      "symbol": "tDOGEUSD",
+      "timeframe": "6h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tDOGEUSD_1D.json",
+      "symbol": "tDOGEUSD",
+      "timeframe": "1D",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tEOSUSD_1m.json",
+      "symbol": "tEOSUSD",
+      "timeframe": "1m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tEOSUSD_5m.json",
+      "symbol": "tEOSUSD",
+      "timeframe": "5m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tEOSUSD_15m.json",
+      "symbol": "tEOSUSD",
+      "timeframe": "15m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tEOSUSD_30m.json",
+      "symbol": "tEOSUSD",
+      "timeframe": "30m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tEOSUSD_1h.json",
+      "symbol": "tEOSUSD",
+      "timeframe": "1h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tEOSUSD_3h.json",
+      "symbol": "tEOSUSD",
+      "timeframe": "3h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tEOSUSD_6h.json",
+      "symbol": "tEOSUSD",
+      "timeframe": "6h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tEOSUSD_1D.json",
+      "symbol": "tEOSUSD",
+      "timeframe": "1D",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tFILUSD_1m.json",
+      "symbol": "tFILUSD",
+      "timeframe": "1m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tFILUSD_5m.json",
+      "symbol": "tFILUSD",
+      "timeframe": "5m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tFILUSD_15m.json",
+      "symbol": "tFILUSD",
+      "timeframe": "15m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tFILUSD_30m.json",
+      "symbol": "tFILUSD",
+      "timeframe": "30m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tFILUSD_1h.json",
+      "symbol": "tFILUSD",
+      "timeframe": "1h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tFILUSD_3h.json",
+      "symbol": "tFILUSD",
+      "timeframe": "3h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tFILUSD_6h.json",
+      "symbol": "tFILUSD",
+      "timeframe": "6h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tFILUSD_1D.json",
+      "symbol": "tFILUSD",
+      "timeframe": "1D",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tLTCUSD_1m.json",
+      "symbol": "tLTCUSD",
+      "timeframe": "1m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tLTCUSD_5m.json",
+      "symbol": "tLTCUSD",
+      "timeframe": "5m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tLTCUSD_15m.json",
+      "symbol": "tLTCUSD",
+      "timeframe": "15m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tLTCUSD_30m.json",
+      "symbol": "tLTCUSD",
+      "timeframe": "30m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tLTCUSD_1h.json",
+      "symbol": "tLTCUSD",
+      "timeframe": "1h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tLTCUSD_3h.json",
+      "symbol": "tLTCUSD",
+      "timeframe": "3h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tLTCUSD_6h.json",
+      "symbol": "tLTCUSD",
+      "timeframe": "6h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tLTCUSD_1D.json",
+      "symbol": "tLTCUSD",
+      "timeframe": "1D",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tNEARUSD_1m.json",
+      "symbol": "tNEARUSD",
+      "timeframe": "1m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tNEARUSD_5m.json",
+      "symbol": "tNEARUSD",
+      "timeframe": "5m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tNEARUSD_15m.json",
+      "symbol": "tNEARUSD",
+      "timeframe": "15m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tNEARUSD_30m.json",
+      "symbol": "tNEARUSD",
+      "timeframe": "30m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tNEARUSD_1h.json",
+      "symbol": "tNEARUSD",
+      "timeframe": "1h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tNEARUSD_3h.json",
+      "symbol": "tNEARUSD",
+      "timeframe": "3h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tNEARUSD_6h.json",
+      "symbol": "tNEARUSD",
+      "timeframe": "6h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tNEARUSD_1D.json",
+      "symbol": "tNEARUSD",
+      "timeframe": "1D",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tSOLUSD_1m.json",
+      "symbol": "tSOLUSD",
+      "timeframe": "1m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tSOLUSD_5m.json",
+      "symbol": "tSOLUSD",
+      "timeframe": "5m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tSOLUSD_15m.json",
+      "symbol": "tSOLUSD",
+      "timeframe": "15m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tSOLUSD_30m.json",
+      "symbol": "tSOLUSD",
+      "timeframe": "30m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tSOLUSD_1h.json",
+      "symbol": "tSOLUSD",
+      "timeframe": "1h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tSOLUSD_3h.json",
+      "symbol": "tSOLUSD",
+      "timeframe": "3h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tSOLUSD_6h.json",
+      "symbol": "tSOLUSD",
+      "timeframe": "6h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tSOLUSD_1D.json",
+      "symbol": "tSOLUSD",
+      "timeframe": "1D",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tXTZUSD_1m.json",
+      "symbol": "tXTZUSD",
+      "timeframe": "1m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tXTZUSD_5m.json",
+      "symbol": "tXTZUSD",
+      "timeframe": "5m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tXTZUSD_15m.json",
+      "symbol": "tXTZUSD",
+      "timeframe": "15m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tXTZUSD_30m.json",
+      "symbol": "tXTZUSD",
+      "timeframe": "30m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tXTZUSD_1h.json",
+      "symbol": "tXTZUSD",
+      "timeframe": "1h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tXTZUSD_3h.json",
+      "symbol": "tXTZUSD",
+      "timeframe": "3h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tXTZUSD_6h.json",
+      "symbol": "tXTZUSD",
+      "timeframe": "6h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tXTZUSD_1D.json",
+      "symbol": "tXTZUSD",
+      "timeframe": "1D",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tXAUTUSD_1m.json",
+      "symbol": "tXAUTUSD",
+      "timeframe": "1m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tXAUTUSD_5m.json",
+      "symbol": "tXAUTUSD",
+      "timeframe": "5m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tXAUTUSD_15m.json",
+      "symbol": "tXAUTUSD",
+      "timeframe": "15m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tXAUTUSD_30m.json",
+      "symbol": "tXAUTUSD",
+      "timeframe": "30m",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tXAUTUSD_1h.json",
+      "symbol": "tXAUTUSD",
+      "timeframe": "1h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tXAUTUSD_3h.json",
+      "symbol": "tXAUTUSD",
+      "timeframe": "3h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tXAUTUSD_6h.json",
+      "symbol": "tXAUTUSD",
+      "timeframe": "6h",
+      "action": "Skapa ny model med 5-feature schema"
+    },
+    {
+      "file": "tXAUTUSD_1D.json",
+      "symbol": "tXAUTUSD",
+      "timeframe": "1D",
+      "action": "Skapa ny model med 5-feature schema"
+    }
+  ],
+  "registry_updates": [
+    {
+      "key": "tBTCUSD:15m",
+      "action": "Uppdatera till ny model"
+    },
+    {
+      "key": "tBTCUSD:1W",
+      "action": "Uppdatera till ny model"
+    },
+    {
+      "key": "tBTCUSD:1m",
+      "action": "Uppdatera till ny model"
+    },
+    {
+      "key": "tBTCUSD:3h",
+      "action": "Uppdatera till ny model"
+    },
+    {
+      "key": "tBTCUSD:5m",
+      "action": "Uppdatera till ny model"
+    }
+  ],
+  "timeframe_fixes": [
+    {
+      "file": "tADAUSD.json",
+      "timeframe": "4h",
+      "action": "Byt till 3h eller 6h"
+    },
+    {
+      "file": "tALGOUSD.json",
+      "timeframe": "4h",
+      "action": "Byt till 3h eller 6h"
+    },
+    {
+      "file": "tAPTUSD.json",
+      "timeframe": "4h",
+      "action": "Byt till 3h eller 6h"
+    },
+    {
+      "file": "tAVAXUSD.json",
+      "timeframe": "4h",
+      "action": "Byt till 3h eller 6h"
+    },
+    {
+      "file": "tBTCUSD.json",
+      "timeframe": "4h",
+      "action": "Byt till 3h eller 6h"
+    },
+    {
+      "file": "tDOGEUSD.json",
+      "timeframe": "4h",
+      "action": "Byt till 3h eller 6h"
+    },
+    {
+      "file": "tDOTUSD.json",
+      "timeframe": "4h",
+      "action": "Byt till 3h eller 6h"
+    },
+    {
+      "file": "tEOSUSD.json",
+      "timeframe": "4h",
+      "action": "Byt till 3h eller 6h"
+    },
+    {
+      "file": "tETHUSD.json",
+      "timeframe": "4h",
+      "action": "Byt till 3h eller 6h"
+    },
+    {
+      "file": "tFILUSD.json",
+      "timeframe": "4h",
+      "action": "Byt till 3h eller 6h"
+    },
+    {
+      "file": "tLTCUSD.json",
+      "timeframe": "4h",
+      "action": "Byt till 3h eller 6h"
+    },
+    {
+      "file": "tNEARUSD.json",
+      "timeframe": "4h",
+      "action": "Byt till 3h eller 6h"
+    },
+    {
+      "file": "tSOLUSD.json",
+      "timeframe": "4h",
+      "action": "Byt till 3h eller 6h"
+    },
+    {
+      "file": "tXAUTUSD.json",
+      "timeframe": "4h",
+      "action": "Byt till 3h eller 6h"
+    },
+    {
+      "file": "tXTZUSD.json",
+      "timeframe": "4h",
+      "action": "Byt till 3h eller 6h"
+    }
+  ]
+}

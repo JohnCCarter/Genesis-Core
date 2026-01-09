@@ -1,0 +1,158 @@
+{
+  "created_at": "2025-12-03T13:09:00.435889+00:00",
+  "run_id": "run_20251203_125944",
+  "git_commit": "ddd099cb30338f6925afd7f04ec00d4d77a7a3db",
+  "snapshot_id": "snap_tBTCUSD_2024-01-01_2024-12-31_v1",
+  "symbol": "tBTCUSD",
+  "timeframe": "1h",
+  "score": 1.118178244880416,
+  "metrics": {
+    "total_return": 0.1383795926550166,
+    "profit_factor": 1.1000003462271168,
+    "max_drawdown": 0.04238872812999876,
+    "win_rate": 0.5373608903020668,
+    "num_trades": 1887,
+    "sharpe_ratio": 0.026303386349295948,
+    "return_to_dd": 3.264537502296147
+  },
+  "parameters": {
+    "thresholds": {
+      "entry_conf_overall": 0.21,
+      "regime_proba": {
+        "balanced": 0.48,
+        "bull": 0.52,
+        "bear": 0.44,
+        "ranging": 0.42
+      },
+      "min_edge": 0.012,
+      "signal_adaptation": {
+        "zones": {
+          "low": {
+            "entry_conf_overall": 0.26,
+            "regime_proba": 0.44
+          },
+          "mid": {
+            "entry_conf_overall": 0.32,
+            "regime_proba": 0.44
+          },
+          "high": {
+            "entry_conf_overall": 0.37,
+            "regime_proba": 0.48
+          }
+        }
+      }
+    },
+    "exit": {
+      "exit_conf_threshold": 0.43,
+      "max_hold_bars": 14,
+      "trailing_stop_pct": 0.015
+    },
+    "multi_timeframe": {
+      "ltf_override_threshold": 0.45,
+      "ltf_override_adaptive": {
+        "percentile": 0.81
+      }
+    },
+    "htf_fib": {
+      "entry": {
+        "tolerance_atr": 4.25
+      }
+    },
+    "ltf_fib": {
+      "entry": {
+        "tolerance_atr": 1.8
+      }
+    },
+    "risk": {
+      "risk_map_deltas": {
+        "conf_0": 0.04,
+        "size_0": -0.005,
+        "conf_1": 0.03,
+        "size_1": -0.002,
+        "conf_2": 0.0,
+        "size_2": 0.005
+      }
+    }
+  },
+  "constraints": {
+    "hard_failures": [],
+    "raw": {
+      "ok": true,
+      "reasons": []
+    }
+  },
+  "metadata": {
+    "trial_id": "trial_003",
+    "results_path": "tBTCUSD_1h_trial_003.json",
+    "run_meta": {
+      "run_dir": "C:\\Users\\fa06662\\HCP\\Skrivbord\\Genesis-Core\\results\\hparam_search\\run_20251203_125944",
+      "config_path": "config\\optimizer\\tBTCUSD_1h_optuna_phase3_fine_v7.yaml",
+      "raw_run_meta": {
+        "run_id": "run_20251203_125944",
+        "config_path": "config\\optimizer\\tBTCUSD_1h_optuna_phase3_fine_v7.yaml",
+        "snapshot_id": "snap_tBTCUSD_2024-01-01_2024-12-31_v1",
+        "symbol": "tBTCUSD",
+        "timeframe": "1h",
+        "started_at": "2025-12-03T12:59:44.425659+00:00",
+        "git_commit": "ddd099cb30338f6925afd7f04ec00d4d77a7a3db",
+        "raw_meta": {
+          "symbol": "tBTCUSD",
+          "timeframe": "1h",
+          "snapshot_id": "snap_tBTCUSD_2024-01-01_2024-12-31_v1",
+          "runs": {
+            "strategy": "optuna",
+            "resume": false,
+            "max_trials": 100,
+            "max_concurrent": 1,
+            "optuna": {
+              "study_name": "optuna_phase3_fine_v7",
+              "storage": "sqlite:///results/hparam_search/storage/optuna_phase3_fine_v7.db",
+              "n_jobs": 1,
+              "timeout": 14400,
+              "sampler": {
+                "type": "tpe",
+                "n_startup_trials": 20,
+                "n_ei_candidates": 24,
+                "multivariate": true,
+                "group": true,
+                "seed": 42
+              }
+            }
+          }
+        },
+        "optuna": {
+          "study_name": "optuna_phase3_fine_v7",
+          "storage": "sqlite:///results/hparam_search/storage/optuna_phase3_fine_v7.db",
+          "direction": "maximize",
+          "n_trials": 100,
+          "best_value": 1.118178244880416,
+          "best_trial_number": "trial_003",
+          "diagnostics": {
+            "total_trials_attempted": 100,
+            "duplicate_count": 0,
+            "zero_trade_count": 96,
+            "duplicate_ratio": 0.0,
+            "zero_trade_ratio": 0.96
+          }
+        }
+      },
+      "constraints": {
+        "ok": true,
+        "reasons": []
+      },
+      "score_block": {
+        "score": 1.118178244880416,
+        "metrics": {
+          "total_return": 0.1383795926550166,
+          "profit_factor": 1.1000003462271168,
+          "max_drawdown": 0.04238872812999876,
+          "win_rate": 0.5373608903020668,
+          "num_trades": 1887,
+          "sharpe_ratio": 0.026303386349295948,
+          "return_to_dd": 3.264537502296147
+        },
+        "hard_failures": []
+      }
+    }
+  }
+}

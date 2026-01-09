@@ -1,0 +1,37 @@
+meta:
+  symbol: tBTCUSD
+  timeframe: 1h
+  snapshot_id: tBTCUSD_1h_2024-10-22_2025-10-01_v1
+  warmup_bars: 50
+  runs:
+    strategy: grid
+    max_trials: 27  # 3 x 3 x 3 combos
+    max_concurrent: 1
+    resume: false
+  use_sample_range: true
+  sample_start: 2025-04-01
+  sample_end: 2025-10-01
+
+parameters:
+  thresholds:
+    entry_conf_overall:
+      type: grid
+      values: [0.30, 0.45, 0.60]
+    regime_proba:
+      balanced:
+        type: grid
+        values: [0.55, 0.65, 0.75]
+  risk:
+    risk_map:
+      type: grid
+      values:
+        - [[0.6, 0.02], [0.7, 0.03], [0.8, 0.04]]
+        - [[0.5, 0.015], [0.6, 0.025], [0.7, 0.035]]
+        - [[0.4, 0.01], [0.5, 0.02], [0.6, 0.03]]
+  exit:
+    exit_conf_threshold:
+      type: grid
+      values: [0.35, 0.45, 0.55]
+    max_hold_bars:
+      type: grid
+      values: [15, 20, 30]

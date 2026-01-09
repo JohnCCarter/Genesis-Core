@@ -1,17 +1,15 @@
 from __future__ import annotations
 
 import asyncio
-import hashlib
-import hmac
 import json
 from typing import Any
 
 import websockets
 
 from core.config.settings import get_settings
-from core.utils.logging_redaction import get_logger
 from core.utils.backoff import exponential_backoff_delay
-
+from core.utils.crypto import build_hmac_signature
+from core.utils.logging_redaction import get_logger
 
 WS_URL = "wss://api.bitfinex.com/ws/2"
 logger = get_logger(__name__)
@@ -24,7 +22,7 @@ def _build_ws_auth_message() -> dict[str, Any]:
     # Nonce i ms; återanvänd µs‑tanke men här räcker ms
     nonce_ms = str(int(asyncio.get_running_loop().time() * 1000))
     payload = f"AUTH{nonce_ms}"
-    sig = hmac.new(api_secret.encode(), payload.encode(), hashlib.sha384).hexdigest()
+    sig = build_hmac_signature(api_secret, payload)
     return {
         "event": "auth",
         "apiKey": api_key,
@@ -75,7 +73,11 @@ class WSReconnectClient:
                 # Låt ytterloopen reconnecta
                 try:
                     await ws.close()
-                except (OSError, RuntimeError, websockets.exceptions.WebSocketException) as close_err:  # type: ignore[attr-defined]
+                except (
+                    OSError,
+                    RuntimeError,
+                    websockets.exceptions.WebSocketException,
+                ) as close_err:  # type: ignore[attr-defined]
                     logger.debug("ws_close_error: %s", close_err)
                 logger.debug("ws_watchdog_break: %s", watchdog_err)
                 break

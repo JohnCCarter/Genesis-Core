@@ -5,7 +5,6 @@ import time
 from pathlib import Path
 from threading import Lock
 
-
 # Lagra nonces lokalt per API‑nyckel för strikt växande sekvens (mikrosekunder)
 NONCE_FILE = Path(__file__).parent / ".nonce_tracker.json"
 _lock = Lock()
@@ -63,9 +62,7 @@ def bump_nonce(key_id: str, min_increment_micro: int = 1_000_000) -> str:
                     data = {}
 
             last_nonce = int(data.get(key_id, 0) or 0)
-            target = max(
-                last_nonce + int(min_increment_micro), now + int(min_increment_micro)
-            )
+            target = max(last_nonce + int(min_increment_micro), now + int(min_increment_micro))
             data[key_id] = target
 
             NONCE_FILE.parent.mkdir(parents=True, exist_ok=True)

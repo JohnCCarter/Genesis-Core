@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://genesis-core.local/schemas/skill.schema.json",
+  "title": "Genesis-Core Skill",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "version", "title", "description", "status", "owners"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_\\-]{2,63}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$"
+    },
+    "title": { "type": "string", "minLength": 3, "maxLength": 120 },
+    "description": { "type": "string", "minLength": 10, "maxLength": 5000 },
+    "status": { "type": "string", "enum": ["dev", "stable"] },
+    "owners": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "locked": {
+      "type": "boolean",
+      "description": "If true, this skill is allowed to be referenced from the stable manifest."
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "steps": {
+      "type": "array",
+      "description": "Executable steps for minimal runtime (scripts/run_skill.py).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "type"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_\\-]{2,63}$"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["registry_validate", "compare_backtest_results"]
+          },
+          "args": {
+            "type": "object",
+            "description": "Step-specific arguments."
+          }
+        }
+      },
+      "minItems": 1
+    },
+    "rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "must": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "must_not": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "references": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "value"],
+        "properties": {
+          "type": { "type": "string", "enum": ["doc", "file", "url"] },
+          "value": { "type": "string", "minLength": 1 }
+        }
+      },
+      "uniqueItems": false
+    }
+  }
+}

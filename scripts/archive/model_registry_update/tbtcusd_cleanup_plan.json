@@ -1,0 +1,36 @@
+{
+  "files_to_remove": [
+    "tBTCUSD_1h_v10_final.json",
+    "tBTCUSD_1h_v10_final_baseline.json",
+    "tBTCUSD_1h_v10_optimized.json",
+    "tBTCUSD_1h_v7_final_top7_6m.json",
+    "tBTCUSD_30m_v3.json",
+    "tBTCUSD_30m_v3_holdout_indices.json",
+    "tBTCUSD_30m_v3_provenance.json",
+    "tBTCUSD_6h_v3.json",
+    "tBTCUSD_6h_v3_holdout_indices.json",
+    "tBTCUSD_6h_v3_provenance.json"
+  ],
+  "files_to_review": [],
+  "current_models": [
+    "tBTCUSD_12h.json",
+    "tBTCUSD_14D.json",
+    "tBTCUSD_15m.json",
+    "tBTCUSD_1D.json",
+    "tBTCUSD_1h.json",
+    "tBTCUSD_1m.json",
+    "tBTCUSD_1W.json",
+    "tBTCUSD_30m.json",
+    "tBTCUSD_3h.json",
+    "tBTCUSD_5m.json",
+    "tBTCUSD_6h.json"
+  ],
+  "metrics_models": [
+    "tBTCUSD_1h_v10_final_baseline_metrics.json",
+    "tBTCUSD_1h_v10_final_metrics.json",
+    "tBTCUSD_1h_v10_optimized_metrics.json",
+    "tBTCUSD_1h_v7_final_top7_6m_metrics.json",
+    "tBTCUSD_30m_v3_metrics.json",
+    "tBTCUSD_6h_v3_metrics.json"
+  ]
+}

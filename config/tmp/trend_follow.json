@@ -1,0 +1,98 @@
+{
+  "cfg": {
+    "thresholds": {
+      "entry_conf_overall": 0.38,
+      "regime_proba": {
+        "ranging": 0.82,
+        "bull": 0.75,
+        "bear": 0.75,
+        "balanced": 0.78
+      },
+      "signal_adaptation": {
+        "atr_period": 14,
+        "zones": {
+          "low": {
+            "entry_conf_overall": 0.36,
+            "regime_proba": {
+              "ranging": 0.74,
+              "bull": 0.66,
+              "bear": 0.66,
+              "balanced": 0.74
+            }
+          },
+          "mid": {
+            "entry_conf_overall": 0.44,
+            "regime_proba": {
+              "ranging": 0.84,
+              "bull": 0.76,
+              "bear": 0.76,
+              "balanced": 0.84
+            }
+          },
+          "high": {
+            "entry_conf_overall": 0.5,
+            "regime_proba": {
+              "ranging": 0.9,
+              "bull": 0.82,
+              "bear": 0.82,
+              "balanced": 0.9
+            }
+          }
+        }
+      }
+    },
+    "risk": {
+      "risk_map": [
+        [
+          0.45,
+          0.012
+        ],
+        [
+          0.55,
+          0.022
+        ],
+        [
+          0.65,
+          0.032
+        ]
+      ]
+    },
+    "exit": {
+      "enabled": true,
+      "exit_conf_threshold": 0.4,
+      "max_hold_bars": 28,
+      "regime_aware_exits": true
+    },
+    "gates": {
+      "cooldown_bars": 2,
+      "hysteresis_steps": 4
+    },
+    "htf_exit_config": {
+      "enable_partials": true,
+      "enable_trailing": true,
+      "enable_structure_breaks": true,
+      "partial_1_pct": 0.55,
+      "partial_2_pct": 0.45,
+      "fib_threshold_atr": 0.72,
+      "trail_atr_multiplier": 3.0,
+      "swing_update_strategy": "fixed"
+    },
+    "warmup_bars": 160,
+    "ltf_fib": {
+      "entry": {
+        "enabled": true,
+        "tolerance_atr": 0.55,
+        "long_max_level": 0.786,
+        "short_min_level": 0.214
+      }
+    },
+    "htf_fib": {
+      "entry": {
+        "enabled": true,
+        "tolerance_atr": 0.48,
+        "long_max_level": 0.618,
+        "short_min_level": 0.382
+      }
+    }
+  }
+}

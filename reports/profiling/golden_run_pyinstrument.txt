@@ -1,0 +1,72 @@
+
+  _     ._   __/__   _ _  _  _ _/_   Recorded: 14:54:49  Samples:  144531
+ /_//_/// /_\ / //_// / //_'/ //     Duration: 150.702   CPU time: 7.125
+/   _/                      v5.1.1
+
+Program: scripts/run_backtest.py --symbol tBTCUSD --timeframe 1h --fast-window --precompute-features
+
+150.701 <module>  scripts/run_backtest.py:1
+└─ 149.315 main  scripts/run_backtest.py:88
+   └─ 148.249 BacktestEngine.run  core\backtest\engine.py:402
+      └─ 146.887 evaluate_pipeline  core\strategy\evaluate.py:28
+         ├─ 116.945 extract_features  core\strategy\features_asof.py:737
+         │  └─ 116.897 extract_features_live  core\strategy\features_asof.py:662
+         │     └─ 116.293 _extract_asof  core\strategy\features_asof.py:131
+         │        ├─ 57.708 get_ltf_fibonacci_context  core\indicators\htf_fibonacci.py:400
+         │        │  ├─ 37.661 detect_swing_points  core\indicators\fibonacci.py:48
+         │        │  │  ├─ 32.737 calculate_atr  core\indicators\fibonacci.py:38
+         │        │  │  │  ├─ 10.104 DataFrame.max  pandas\core\generic.py:11627
+         │        │  │  │  │     [14 frames hidden]  pandas
+         │        │  │  │  ├─ 8.593 concat  pandas\core\reshape\concat.py:149
+         │        │  │  │  │     [12 frames hidden]  pandas
+         │        │  │  │  ├─ 6.742 Series.new_method  pandas\core\ops\common.py:67
+         │        │  │  │  │     [5 frames hidden]  pandas
+         │        │  │  │  ├─ 3.470 Series.shift  pandas\core\series.py:5271
+         │        │  │  │  │     [4 frames hidden]  pandas
+         │        │  │  │  └─ 1.932 ExponentialMovingWindow.mean  pandas\core\window\ewm.py:496
+         │        │  │  │        [3 frames hidden]  pandas
+         │        │  │  └─ 2.926 _local_extrema_masks  core\indicators\fibonacci.py:73
+         │        │  └─ 18.338 _to_series  core\indicators\htf_fibonacci.py:23
+         │        │     └─ 17.130 Series.__init__  pandas\core\series.py:368
+         │        │           [12 frames hidden]  pandas, <built-in>
+         │        ├─ 18.696 get_htf_fibonacci_context  core\indicators\htf_fibonacci.py:254
+         │        │  ├─ 7.675 DataFrame.__getitem__  pandas\core\frame.py:3713
+         │        │  │     [8 frames hidden]  pandas
+         │        │  ├─ 4.876 Series.new_method  pandas\core\ops\common.py:67
+         │        │  │     [8 frames hidden]  pandas
+         │        │  └─ 2.802 _iLocIndexer.__getitem__  pandas\core\indexing.py:1089
+         │        │        [3 frames hidden]  pandas
+         │        ├─ 14.657 make_indicator_fingerprint  core\utils\diffing\feature_cache.py:126
+         │        │  ├─ 9.662 _flatten_series  core\utils\diffing\feature_cache.py:55
+         │        │  │  ├─ 6.139 [self]  core\utils\diffing\feature_cache.py
+         │        │  │  └─ 1.542 isinstance  <built-in>
+         │        │  └─ 4.654 _hash_iterable  core\utils\diffing\feature_cache.py:120
+         │        │     └─ 3.543 <genexpr>  core\utils\diffing\feature_cache.py:122
+         │        ├─ 9.201 log_fib_flow  core\strategy\fib_logging.py:24
+         │        │  └─ 9.121 Logger.info  logging\__init__.py:1479
+         │        │        [6 frames hidden]  logging, <built-in>
+         │        ├─ 9.157 percentile  numpy\lib\function_base.py:3992
+         │        │     [6 frames hidden]  numpy
+         │        └─ 2.094 [self]  core\strategy\features_asof.py
+         ├─ 9.768 ChampionLoader.load_cached  core\strategy\champion_loader.py:161
+         │  ├─ 6.482 ChampionLoader._load_from_disk  core\strategy\champion_loader.py:91
+         │  │  └─ 2.895 ChampionLoader._load_json  core\strategy\champion_loader.py:53
+         │  │     └─ 2.024 WindowsPath.read_text  pathlib.py:1053
+         │  └─ 3.189 ChampionLoader._needs_reload  core\strategy\champion_loader.py:142
+         │     └─ 2.087 WindowsPath.exists  pathlib.py:1230
+         │           [2 frames hidden]  pathlib, <built-in>
+         ├─ 7.843 decide  core\strategy\decision.py:80
+         │  ├─ 3.707 log_fib_flow  core\strategy\fib_logging.py:24
+         │  │  └─ 3.669 Logger.info  logging\__init__.py:1479
+         │  │        [6 frames hidden]  logging, <built-in>
+         │  └─ 3.475 _log_decision_event  core\strategy\decision.py:24
+         │     └─ 3.281 Logger.info  logging\__init__.py:1479
+         │           [5 frames hidden]  logging
+         ├─ 6.384 predict_proba_for  core\strategy\prob_model.py:61
+         │  └─ 5.573 ModelRegistry.get_meta  core\strategy\model_registry.py:78
+         │     └─ 3.954 ModelRegistry._get_registry  core\strategy\model_registry.py:36
+         │        └─ 2.875 WindowsPath.exists  pathlib.py:1230
+         │              [2 frames hidden]  pathlib, <built-in>
+         └─ 3.677 log_fib_flow  core\strategy\fib_logging.py:24
+            └─ 3.636 Logger.info  logging\__init__.py:1479
+                  [6 frames hidden]  logging, <built-in>

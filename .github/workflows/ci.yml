@@ -1,5 +1,9 @@
 name: CI
 
+# Least-privilege for GITHUB_TOKEN (explicit permissions avoids inheriting broader defaults).
+permissions:
+  contents: read
+
 on:
   push:
     branches-ignore:
@@ -13,6 +17,10 @@ on:
 jobs:
   lint-test:
     runs-on: ubuntu-latest
+    # Needed for checkout/fetch (contents: read) and artifact upload (actions: write).
+    permissions:
+      contents: read
+      actions: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4

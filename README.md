@@ -88,7 +88,8 @@ och används som SSOT för agent-/processregler.
   - `registry/schemas/*.schema.json` (JSON Schema)
 - CI gate: `python scripts/validate_registry.py` validerar schema + korsreferenser.
 - Break-glass / audit: om `registry/manifests/stable.json` ändras i en PR kräver CI även att
-  `registry/audit/break_glass.jsonl` uppdateras med en audit-entry som matchar `HEAD`.
+  `registry/audit/break_glass.jsonl` uppdateras med en audit-entry som refererar committen som ändrade
+  `registry/manifests/stable.json` (via `commit_sha`).
 - Review-disciplin: `.github/CODEOWNERS` kan kräva review för ändringar under `registry/`.
 
 ## UI‑noter

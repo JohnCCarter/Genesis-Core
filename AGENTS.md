@@ -6,6 +6,8 @@ This document explains the current workflow for Genesis-Core, highlights today's
 
 ## 1. Deliverables (latest highlights: 2026-01-08)
 
+- **REGISTRY GOVERNANCE (Phase-8a, 2026-01-09)**: Introducerade repo-SSOT för skills/compacts under `registry/` med JSON-schema + CI-gate (`scripts/validate_registry.py`). CI kräver audit-entry i `registry/audit/break_glass.jsonl` när `registry/manifests/stable.json` ändras i PR.
+
 - **DOCS + DEV ENV CHECK (2026-01-08)**: Uppdaterade docs för kontinuitet så de speglar faktisk drift idag: `README.md`, `docs/dev_setup.md`, `docs/roadmap/STABILIZATION_PLAN_9_STEPS.md`, `docs/mcp_server_guide.md`, `mcp_server/README.md`, samt Optuna-docs (`docs/optuna/README.md`, `docs/optuna/OPTUNA_BEST_PRACTICES.md`) med PowerShell-vänliga exempel och canonical 1/1-noter. Tog bort provider-specifika tunnel/hostname-exempel och gjorde `scripts/debug_mcp_tunnel.py` till ett enkelt `/healthz` reachability-test för remote MCP. Loggade ändringen i `CHANGELOG.md`. Verifierade att `pre-commit run --all-files` går igenom i `.venv`.
 
 - **HTF SIGNAL-VALIDERING + 1D DATA + PRECOMPUTE FIX (2026-01-08)**: Åtgärdade en blockerare som gjorde att Optuna-smoke körningar prunades när HTF-mappning försökte köras med precompute-cache.

@@ -72,6 +72,20 @@ Se `docs/features/FEATURE_COMPUTATION_MODES.md` för detaljer, inkl. `GENESIS_MO
 - Bearer‑auth: sätt env `BEARER_TOKEN` i backend. Skicka `Authorization: Bearer <token>` i UI/klient.
 - Audit: ändringar loggas i `logs/config_audit.jsonl` (rotation vid ~5MB). Innehåller `actor`, `paths`, `hash_before/after`.
 
+## Registry governance (skills/compacts) – repo som SSOT
+
+Genesis-Core använder en enkel governance-modell där "skills" och "compacts" är **versionerade i repo:t**
+och används som SSOT för agent-/processregler.
+
+- Registry-data ligger under `registry/`.
+  - `registry/skills/*.json` och `registry/compacts/*.json` (versionerade objekt)
+  - `registry/manifests/dev.json` och `registry/manifests/stable.json` (vilka versioner som är aktiva)
+  - `registry/schemas/*.schema.json` (JSON Schema)
+- CI gate: `python scripts/validate_registry.py` validerar schema + korsreferenser.
+- Break-glass / audit: om `registry/manifests/stable.json` ändras i en PR kräver CI även att
+  `registry/audit/break_glass.jsonl` uppdateras med en audit-entry som matchar `HEAD`.
+- Review-disciplin: `.github/CODEOWNERS` kan kräva review för ändringar under `registry/`.
+
 ## UI‑noter
 
 - UI laddar alltid `/config/runtime` vid start och visar `config_version/hash` i status.

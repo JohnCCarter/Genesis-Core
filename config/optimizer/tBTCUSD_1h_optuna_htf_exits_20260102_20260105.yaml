@@ -11,7 +11,7 @@ meta:
   runs:
     strategy: optuna
     resume: true
-    max_trials: null # Use timeout_seconds to limit run instead.
+    max_trials: 30
     max_concurrent: 1
     promotion:
       enabled: false
@@ -22,7 +22,7 @@ meta:
       study_name: "optuna_htf_exits_20260102_20260105"
       storage: "sqlite:///results/hparam_search/storage/optuna_tBTCUSD_1h_htf_exits_20260102_20260105.db"
       n_jobs: 1
-      timeout_seconds: 228600
+      timeout_seconds: 21600
       pruner:
         type: "median"
         kwargs:
@@ -100,16 +100,28 @@ parameters:
   exit:
     exit_conf_threshold:
       type: fixed
-      value: 0.42
+      value: 0.46
     max_hold_bars:
       type: fixed
       value: 12
-    trailing_stop_pct:
+    # NOTE: stop_loss_pct is used as an emergency stop in the engine (exit reason EMERGENCY_SL).
+    # Pin it here to avoid hidden defaults during HTF-exit tuning.
+    stop_loss_pct:
       type: fixed
-      value: 0.015
+      value: 0.03
+    take_profit_pct:
+      type: fixed
+      value: 0.05
 
-  # Keep risk pinned (no optimization) but include the section for preflight consistency.
-  risk: {}
+  # Keep risk pinned (no optimization) to avoid unintentional risk-policy drift during exit tuning.
+  risk:
+    risk_map:
+      type: fixed
+      value:
+        - [0.6, 0.02]
+        - [0.7, 0.03]
+        - [0.8, 0.04]
+        - [0.9, 0.05]
 
   # Avoid dead runs if fib context is temporarily unavailable.
   htf_fib:

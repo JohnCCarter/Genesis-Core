@@ -46,6 +46,16 @@ def _schema_validate(errors: list[str], *, data: object, schema: dict, source: P
         errors.append(f"{source}: {loc} {err.message}")
 
 
+def _priority_rank(compact: dict) -> int:
+    """Map P0..P4 to numeric rank (lower is higher priority)."""
+
+    val = compact.get("priority")
+    if not isinstance(val, str):
+        return 99
+    mapping = {"P0": 0, "P1": 1, "P2": 2, "P3": 3, "P4": 4}
+    return mapping.get(val, 99)
+
+
 def validate_registry(repo_root: Path) -> RegistryValidationResult:
     """Validate the skills/compacts registry (schema + cross-references).
 
@@ -113,6 +123,29 @@ def validate_registry(repo_root: Path) -> RegistryValidationResult:
             else:
                 compacts[key] = data
 
+    # Validate compact packs (includes_compacts) references.
+    for (cid, _ver), compact in compacts.items():
+        includes = compact.get("includes_compacts")
+        if includes is None:
+            continue
+        if not isinstance(includes, list):
+            errors.append(
+                f"registry/compacts/{cid}.json: includes_compacts must be a list, got {type(includes).__name__}"
+            )
+            continue
+        for ref in includes:
+            if not isinstance(ref, dict):
+                errors.append(
+                    f"registry/compacts/{cid}.json: includes_compacts entry must be object, got {type(ref).__name__}"
+                )
+                continue
+            rid = str(ref.get("id", ""))
+            rver = str(ref.get("version", ""))
+            if (rid, rver) not in compacts:
+                errors.append(
+                    f"registry/compacts/{cid}.json: includes missing compact {rid}@{rver}"
+                )
+
     def _validate_manifest(stage: str) -> None:
         manifest_path = manifests_dir / f"{stage}.json"
         if not manifest_path.exists():
@@ -144,7 +177,10 @@ def validate_registry(repo_root: Path) -> RegistryValidationResult:
                 continue
             if stage == "stable" and skills[key].get("status") != "stable":
                 errors.append(f"{manifest_path}: skill {rid}@{ver} must be status=stable")
+            if stage == "stable" and skills[key].get("locked") is not True:
+                errors.append(f"{manifest_path}: skill {rid}@{ver} must be locked=true for stable")
 
+        active_compacts: list[tuple[tuple[str, str], dict]] = []
         for ref in (
             manifest.get("compacts", []) if isinstance(manifest.get("compacts"), list) else []
         ):
@@ -161,6 +197,42 @@ def validate_registry(repo_root: Path) -> RegistryValidationResult:
                 continue
             if stage == "stable" and compacts[key].get("status") != "stable":
                 errors.append(f"{manifest_path}: compact {rid}@{ver} must be status=stable")
+
+            active_compacts.append((key, compacts[key]))
+
+            # Expand compact packs (one level) into active compacts.
+            includes = compacts[key].get("includes_compacts")
+            if isinstance(includes, list):
+                for inc in includes:
+                    if not isinstance(inc, dict):
+                        continue
+                    iid = str(inc.get("id", ""))
+                    iver = str(inc.get("version", ""))
+                    ikey = (iid, iver)
+                    if ikey in compacts:
+                        active_compacts.append((ikey, compacts[ikey]))
+
+        # Enforce compact conflicts per conflict_group with priority P0..P4.
+        groups: dict[str, list[tuple[int, str]]] = {}
+        for (rid, rver), compact in active_compacts:
+            cg = compact.get("conflict_group")
+            if not isinstance(cg, str) or not cg.strip():
+                continue
+            label = f"{rid}@{rver}"
+            groups.setdefault(cg, []).append((_priority_rank(compact), label))
+
+        for cg, items in groups.items():
+            if len(items) <= 1:
+                continue
+            items_sorted = sorted(items, key=lambda x: (x[0], x[1]))
+            keep = items_sorted[0][1]
+            drop = ", ".join([lbl for _, lbl in items_sorted[1:]])
+            all_list = ", ".join([f"{lbl}(P{rank})" for rank, lbl in items_sorted])
+            errors.append(
+                f"{manifest_path}: compact conflict in group {cg!r}: {all_list}. "
+                f"Alternative A: keep {keep} and remove {drop}. "
+                f"Alternative B: remove {keep} and keep one of [{drop}]."
+            )
 
     _validate_manifest("dev")
     _validate_manifest("stable")

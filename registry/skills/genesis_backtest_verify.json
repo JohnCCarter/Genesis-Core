@@ -1,0 +1,30 @@
+{
+  "id": "genesis_backtest_verify",
+  "version": "1.0.0",
+  "title": "Backtest verification (deterministic v1)",
+  "description": "Vertical slice v1: validates registry + compares backtest artifacts deterministically. Intended to be runnable via scripts/run_skill.py.",
+  "status": "stable",
+  "locked": true,
+  "owners": ["fa06662"],
+  "tags": ["backtest", "verification", "determinism"],
+  "steps": [
+    { "id": "validate_registry", "type": "registry_validate", "args": {} },
+    {
+      "id": "compare",
+      "type": "compare_backtest_results",
+      "args": {
+        "baseline_path": "registry/fixtures/backtest_sample.json",
+        "candidate_path": "registry/fixtures/backtest_sample.json"
+      }
+    }
+  ],
+  "rules": {
+    "must": [
+      "Kör deterministiskt (ingen slump).",
+      "Inga hemligheter i loggar eller artifacts."
+    ],
+    "must_not": [
+      "Skapa eller modifiera trading artifacts utan explicit flagga."
+    ]
+  }
+}

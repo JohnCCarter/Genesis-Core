@@ -7,7 +7,7 @@ Usage:
   python scripts/validate_registry.py --ci-diff-base origin/main
 
 CI rule (optional): if stable manifest changed vs base, require an audit entry in
-`registry/audit/break_glass.jsonl` for the current commit.
+`registry/audit/break_glass.jsonl` that references the commit which changed the stable manifest.
 """
 
 from __future__ import annotations
@@ -43,8 +43,14 @@ def _last_nonempty_line(path: Path) -> str | None:
     return lines[-1] if lines else None
 
 
-def _validate_audit_for_head(*, base_ref: str) -> list[str]:
-    """Enforce break-glass audit when stable manifest changes."""
+def _validate_audit_for_stable_change(*, base_ref: str) -> list[str]:
+    """Enforce break-glass audit when stable manifest changes.
+
+    NOTE: We intentionally do NOT require audit.commit_sha == HEAD.
+    Doing so is self-referential (the commit hash depends on the file contents).
+    Instead, we require audit.commit_sha to point to the latest commit in the PR range
+    that modified `registry/manifests/stable.json`, and require it to be different from HEAD.
+    """
 
     errors: list[str] = []
 
@@ -83,10 +89,51 @@ def _validate_audit_for_head(*, base_ref: str) -> list[str]:
         errors.append("last audit entry must be a JSON object")
         return errors
 
-    if entry.get("commit_sha") != head_sha:
+    commit_sha = entry.get("commit_sha")
+    if not isinstance(commit_sha, str) or not commit_sha:
+        errors.append("audit entry must include commit_sha")
+        return errors
+
+    # Allow short SHA in audit entry by normalizing to full SHA.
+    try:
+        commit_sha_full = _git("rev-parse", commit_sha)
+    except subprocess.CalledProcessError:
+        errors.append(f"audit entry commit_sha does not exist as a commit: {commit_sha!r}")
+        return errors
+
+    if commit_sha_full == head_sha:
         errors.append(
-            f"last audit entry commit_sha must match HEAD ({head_sha}); got {entry.get('commit_sha')!r}"
+            "audit entry commit_sha must NOT equal HEAD (self-referential). "
+            "Set commit_sha to the earlier commit that modified registry/manifests/stable.json."
         )
+
+    # Determine the latest commit in the PR range that modified the stable manifest.
+    # Use two-dot (base..HEAD) so we only consider commits introduced by this PR/branch.
+    stable_commits = [
+        ln.strip()
+        for ln in _git("rev-list", f"{base_ref}..HEAD", "--", stable_manifest).splitlines()
+        if ln.strip()
+    ]
+    if not stable_commits:
+        errors.append(
+            "stable manifest appears changed, but no commits were found in the range that modify it; "
+            "is base_ref correct?"
+        )
+        return errors
+
+    expected_sha = stable_commits[0]
+    # rev-list returns newest-first, so the first entry is the latest change.
+    if commit_sha_full != expected_sha:
+        errors.append(
+            f"audit entry commit_sha must reference the latest stable-manifest change commit ({expected_sha}); "
+            f"got {commit_sha!r}"
+        )
+
+    # Sanity: referenced commit must exist.
+    try:
+        _git("cat-file", "-e", f"{commit_sha_full}^{{commit}}")
+    except subprocess.CalledProcessError:
+        errors.append(f"audit entry commit_sha does not exist as a commit: {commit_sha!r}")
 
     action = entry.get("action")
     if action not in {"stable_promotion", "break_glass_override"}:
@@ -116,7 +163,7 @@ def main(argv: list[str]) -> int:
 
     if args.ci_diff_base:
         try:
-            errors.extend(_validate_audit_for_head(base_ref=args.ci_diff_base))
+            errors.extend(_validate_audit_for_stable_change(base_ref=args.ci_diff_base))
         except subprocess.CalledProcessError as e:
             errors.append(f"git diff/audit check failed: {e}")
 

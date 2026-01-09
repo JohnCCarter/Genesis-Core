@@ -1,0 +1,24 @@
+{
+  "id": "stabilization_phase",
+  "version": "1.0.0",
+  "title": "Stabilization phase policy",
+  "description": "Alla ändringar måste antingen fixa ett konkret problem eller höja tillförlitlighet/prestanda/läsbarhet. Små diffar, verifiering via pytest/ruff.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "scopes": ["repo", "src", "tests"],
+  "rules": [
+    {
+      "id": "small_diffs",
+      "text": "Håll diffar små och fokuserade (helst < 100 rader)."
+    },
+    {
+      "id": "tests_required",
+      "text": "Ny logik ska ha tester (eller motiverad mätpunkt) innan merge."
+    },
+    {
+      "id": "no_secrets",
+      "text": "API-nycklar och andra hemligheter får endast komma från miljövariabler."
+    }
+  ],
+  "enforcement": { "ci_required": true }
+}

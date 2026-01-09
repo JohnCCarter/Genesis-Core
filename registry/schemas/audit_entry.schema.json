@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://genesis-core.local/schemas/audit_entry.schema.json",
+  "title": "Genesis-Core Registry Audit Entry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["ts", "action", "actor", "commit_sha", "items", "reason"],
+  "properties": {
+    "ts": { "type": "string", "minLength": 10 },
+    "action": {
+      "type": "string",
+      "enum": ["stable_promotion", "break_glass_override"]
+    },
+    "actor": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "commit_sha": { "type": "string", "pattern": "^[0-9a-f]{7,40}$" },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "id", "version", "from", "to"],
+        "properties": {
+          "kind": { "type": "string", "enum": ["skill", "compact"] },
+          "id": { "type": "string" },
+          "version": { "type": "string" },
+          "from": { "type": "string", "enum": ["dev", "stable"] },
+          "to": { "type": "string", "enum": ["dev", "stable"] }
+        }
+      }
+    },
+    "reason": { "type": "string", "minLength": 5, "maxLength": 2000 },
+    "approved_by": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "ticket": { "type": "string", "maxLength": 200 }
+  }
+}

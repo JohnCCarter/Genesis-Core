@@ -1,0 +1,5 @@
+{
+  "registry_version": 1,
+  "skills": [{ "id": "python_engineering", "version": "1.0.0" }],
+  "compacts": [{ "id": "stabilization_phase", "version": "1.0.0" }]
+}

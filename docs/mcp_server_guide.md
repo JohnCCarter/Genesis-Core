@@ -2,6 +2,17 @@
 
 This guide covers the Model Context Protocol (MCP) server implementation for Genesis-Core, enabling seamless integration with VSCode, GitHub Copilot, and other AI coding assistants.
 
+## TL;DR (recommended usage)
+
+- **VS Code / Copilot MCP (local):** use the stdio server via `.vscode/mcp.json`.
+  - Command: `python -m mcp_server.server`
+- **ChatGPT “Connect to MCP” (remote):** use the HTTP server only if you need a remotely reachable MCP endpoint.
+  - Entrypoint: `python -m mcp_server.remote_server`
+  - Endpoint: `POST /mcp`
+  - Default: **read-only** (`GENESIS_MCP_REMOTE_SAFE=1`)
+
+If you expose the remote server outside localhost, use a reverse proxy / tunnel of your choice and treat the public URL as sensitive.
+
 ## Table of Contents
 
 - [Overview](#overview)
@@ -128,6 +139,11 @@ Recommended environment variables:
 - `PORT` (default 8000) – set to the local port you tunnel/forward (e.g. 3333)
 - `GENESIS_MCP_REMOTE_SAFE=1` (default) – read-only (no write/exec tools)
 - `GENESIS_MCP_REMOTE_ULTRA_SAFE=1` – exposes only `ping_tool` + connector stubs for debugging
+
+Reverse-proxy / port-forwarding note:
+
+- Ensure your public URL routes to the same `PORT` that the server binds to.
+- Prefer `GENESIS_MCP_REMOTE_SAFE=1` unless you explicitly need write/exec tools.
 
 ### CORS / “security status” note
 

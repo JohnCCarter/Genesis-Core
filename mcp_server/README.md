@@ -45,11 +45,11 @@ Remote endpoints:
 > Note: The server also registers some compatibility aliases (e.g. `/` and `/sse`) for POST in
 > certain connector setups, but you should prefer `/mcp`.
 
-Cloudflare Tunnel example (stable hostname):
+Reverse-proxy / port-forwarding note:
 
-- Public base URL: `https://genesis-core-mcp.genesiscoremcp.com`
-- Connector endpoint: `https://genesis-core-mcp.genesiscoremcp.com/mcp`
-- Typical origin service: `http://127.0.0.1:3333`
+- If you expose this server outside localhost, use a reverse proxy / tunnel of your choice.
+- Ensure the public URL routes to the same local `PORT` that `mcp_server.remote_server` binds.
+- Treat any public MCP URL as sensitive; prefer `GENESIS_MCP_REMOTE_SAFE=1`.
 
 End-to-end checklist (ChatGPT “Connect to MCP”):
 

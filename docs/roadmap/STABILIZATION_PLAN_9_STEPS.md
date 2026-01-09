@@ -59,7 +59,7 @@
 
 - [x] Create static config files (`config/backtest_defaults.yaml`).
 - [x] Update `run_backtest.py` to load defaults from static config.
-- [ ] Disable runtime overrides that aren't explicitly tracked.
+- [x] Track/guard runtime overrides explicitly (canonical 1/1 by default; debug-only requires explicit marker).
 
 ## ⭐ STEP 8 — Comprehensive Logging
 
@@ -67,13 +67,18 @@
 **Action**: Log metadata for every run.
 
 - [x] Log: Timestamp, Git Commit Hash, Seed, Result in `backtest_info`.
-- [ ] Log: Config Hash, Dataset Version (explicitly).
+- [ ] Log: Config Hash, Dataset Version (explicitly) in backtest artifacts.
+
+Notes (current state):
+
+- `backtest_info.execution_mode` captures canonical vs explicit mode flags.
+- Config hash/version is available via the runtime/config API, but is not yet embedded in every backtest JSON.
 
 ## ⭐ STEP 9 — Single Pipeline
 
 **Problem**: Divergent scripts (`runner.py` vs `run_backtest.py`) behave differently.
 **Action**: Unify execution.
 
-- [ ] Create `pipeline.py` as the single entry point.
-- [ ] Modes: `--mode backtest`, `--mode optuna`, `--mode live`.
-- [ ] Ensure they share the EXACT same loading and execution logic.
+- [x] Create `src/core/pipeline.py` as the unified entry point for shared setup.
+- [ ] Modes: `--mode backtest`, `--mode optuna`, `--mode live` (nice-to-have).
+- [x] Ensure backtest + optimizer share the same environment setup and engine creation defaults.

@@ -1,10 +1,23 @@
 # README for AI Agents (Local Development)
 
-## Last update: 2026-01-02
+## Last update: 2026-01-08
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
 
-## 1. Deliverables (latest highlights: 2026-01-02)
+## 1. Deliverables (latest highlights: 2026-01-08)
+
+- **DOCS + DEV ENV CHECK (2026-01-08)**: Uppdaterade docs för kontinuitet så de speglar faktisk drift idag: `README.md`, `docs/dev_setup.md`, `docs/roadmap/STABILIZATION_PLAN_9_STEPS.md`, `docs/mcp_server_guide.md`, `mcp_server/README.md`, samt Optuna-docs (`docs/optuna/README.md`, `docs/optuna/OPTUNA_BEST_PRACTICES.md`) med PowerShell-vänliga exempel och canonical 1/1-noter. Tog bort provider-specifika tunnel/hostname-exempel och gjorde `scripts/debug_mcp_tunnel.py` till ett enkelt `/healthz` reachability-test för remote MCP. Loggade ändringen i `CHANGELOG.md`. Verifierade att `pre-commit run --all-files` går igenom i `.venv`.
+
+- **HTF SIGNAL-VALIDERING + 1D DATA + PRECOMPUTE FIX (2026-01-08)**: Åtgärdade en blockerare som gjorde att Optuna-smoke körningar prunades när HTF-mappning försökte köras med precompute-cache.
+
+  - **Root cause**: `BacktestEngine.load_data()` definierade `fib_cfg` bara i cache-miss path. Vid cache-hit blev `fib_cfg` odefinierad och HTF mapping kraschade med `UnboundLocalError`.
+  - **Fix**: `src/core/backtest/engine.py` definierar nu `fib_cfg` innan cache-branching så HTF mapping fungerar både vid cache-hit och cache-miss.
+  - **Regressiontest**: `tests/test_backtest_engine.py::test_engine_precompute_cache_hit_htf_mapping_does_not_require_local_fib_cfg`.
+  - **HTF data**: Skapade kuraterad 1D-data från 1h så HTF-exits/params inte är “inerta” p.g.a. saknade candles:
+    - `scripts/curate_1d_candles.py`
+    - skrev `data/curated/v1/candles/tBTCUSD_1D.parquet` och `data/raw/tBTCUSD_1D_frozen.parquet`
+  - **Diagnostik**: `scripts/analyze_optuna_run_identity.py` för att gruppera trade-identiska trials och skriva ut HTF-status (via `backtest_info.htf`).
+  - **Verification**: Smoke-run visar att HTF mapping nu slutförs (`Precompute: HTF Fibonacci mapping complete`). Efter fix laddas 1D-data (`htf_candles_loaded=True`), men senaste smoke-fönstret gav fortfarande 0 trades → kvarvarande problem är “zero-trade thresholds/gates”, inte HTF/precompute.
 
 - **QA SUITE & BUG FIXES (2026-01-02)**: Exekverade full QA suite och åtgärdade alla fel. Fixade async varningar i tester, löste problem med Optimizer runner concurrency (monkeypatch settings), och implementerade saknade HTF Fibonacci hjälpfunktioner. Alla 471 tester passerar.
 

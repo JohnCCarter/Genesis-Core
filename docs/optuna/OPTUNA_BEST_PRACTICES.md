@@ -104,8 +104,17 @@ parameters:
 
 #### Increase Duplicate Streak Limit
 
-```bash
+PowerShell (Windows):
+
+```powershell
 # Allow more consecutive duplicates before failing
+$Env:OPTUNA_MAX_DUPLICATE_STREAK='200'
+python -m core.optimizer.runner config.yaml
+```
+
+Bash (Linux/macOS):
+
+```bash
 export OPTUNA_MAX_DUPLICATE_STREAK=200
 python -m core.optimizer.runner config.yaml
 ```
@@ -326,20 +335,33 @@ python scripts/validate_optimizer_config.py config.yaml
 
 5. **Full Optimization**
 
-   ```bash
-   # Set environment for performance
-   export GENESIS_FAST_WINDOW=1
-   export GENESIS_PRECOMPUTE_FEATURES=1
-   export GENESIS_MAX_CONCURRENT=2
-   export OPTUNA_MAX_DUPLICATE_STREAK=200
+PowerShell (Windows):
 
-   python -m core.optimizer.runner config.yaml
-   ```
+```powershell
+# Set environment for performance
+$Env:GENESIS_FAST_WINDOW='1'
+$Env:GENESIS_PRECOMPUTE_FEATURES='1'
+$Env:GENESIS_MAX_CONCURRENT='2'
+$Env:OPTUNA_MAX_DUPLICATE_STREAK='200'
 
-   **Canonical mode note: 2025-12-18** Optuna/Validate/champion decisions run in canonical "1/1" mode.
-   If you run a manual debug backtest in 0/0, treat it as debug-only and do not compare it to Optuna results.
-   To allow 0/0 explicitly, set `GENESIS_MODE_EXPLICIT=1` and use the backtest CLI flags
-   (e.g. `--no-fast-window --no-precompute-features`).
+python -m core.optimizer.runner config.yaml
+```
+
+Bash (Linux/macOS):
+
+```bash
+export GENESIS_FAST_WINDOW=1
+export GENESIS_PRECOMPUTE_FEATURES=1
+export GENESIS_MAX_CONCURRENT=2
+export OPTUNA_MAX_DUPLICATE_STREAK=200
+
+python -m core.optimizer.runner config.yaml
+```
+
+**Canonical mode note: 2025-12-18** Optuna/Validate/champion decisions run in canonical "1/1" mode.
+If you run a manual debug backtest in 0/0, treat it as debug-only and do not compare it to Optuna results.
+To allow 0/0 explicitly, set `GENESIS_MODE_EXPLICIT=1` and use the backtest CLI flags
+(e.g. `--no-fast-window --no-precompute-features`).
 
 6. **Post-Run Analysis**
    ```bash

@@ -68,6 +68,34 @@ För att komma igång med Optuna-optimering, se:
 3. **OPTUNA_BEST_PRACTICES.md** - Best practices
 4. **OPTUNA_VS_BACKTEST_CONFIG_DIFFERENCE.md** - Förstå skillnader
 
+## Snabbstart (praktiskt)
+
+Detta är ett minimalt flöde för en säker “smoke” innan längre körningar.
+
+1. Preflight + validering (måste vara grönt innan lång körning):
+
+- `python scripts/preflight_optuna_check.py config/optimizer/<config>.yaml`
+- `python scripts/validate_optimizer_config.py config/optimizer/<config>.yaml`
+
+2. Kör i canonical mode (1/1) och sätt rimliga guardrails:
+
+PowerShell (Windows):
+
+```powershell
+$Env:GENESIS_FAST_WINDOW='1'
+$Env:GENESIS_PRECOMPUTE_FEATURES='1'
+$Env:GENESIS_MAX_CONCURRENT='2'
+$Env:GENESIS_RANDOM_SEED='42'
+$Env:OPTUNA_MAX_DUPLICATE_STREAK='200'
+
+python -m core.optimizer.runner config/optimizer/<config>.yaml
+```
+
+Not:
+
+- Canonical mode (1/1) är SSOT för Optuna/Validate/champion-beslut.
+- Om du behöver debugga 0/0, gör det explicit och jämför inte resultaten med Optuna.
+
 ## Viktiga Insikter
 
 ### Signal Adaptation är Primär Entry-Kontroll

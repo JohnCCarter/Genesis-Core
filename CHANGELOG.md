@@ -8,6 +8,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 
 ## [Unreleased]
 
+### Changed - Phase-8 (2026-01-08)
+
+**Documentation continuity (MCP + Optuna + dev setup)**
+
+- Updated `docs/dev_setup.md` to be a practical dev setup SSOT (venv/deps/QA) and kept editor baseline as a separate section.
+- Updated `docs/roadmap/STABILIZATION_PLAN_9_STEPS.md` to reflect current implementation status (pipeline/defaults/canonical mode).
+- Updated `docs/mcp_server_guide.md` with a short TL;DR and clearer recommendation: local stdio server in VS Code by default; remote HTTP server only when needed.
+- Removed provider-specific tunnel/hostname examples from `mcp_server/README.md` and replaced them with provider-agnostic reverse-proxy/port-forwarding guidance.
+- Updated Optuna docs for Windows: `docs/optuna/OPTUNA_BEST_PRACTICES.md` and `docs/optuna/README.md` now include PowerShell-friendly environment variable examples and a minimal smoke workflow.
+- Repurposed `scripts/debug_mcp_tunnel.py` to a simple `/healthz` reachability check for the remote MCP server.
+
 ### Changed - Phase-8 (2026-01-02)
 
 **Optimization & Metrics**

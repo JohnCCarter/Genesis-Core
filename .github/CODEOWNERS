@@ -1,0 +1,7 @@
+# Registry governance (skills/compacts)
+
+# NOTE (2026-01-09): CODEOWNERS styr GitHub-identiteter (användare/teams), inte datorer.
+
+# Hem- och jobbdator använder samma GitHub-konto → ingen extra CODEOWNER behövs.
+
+/registry/ @fa06662

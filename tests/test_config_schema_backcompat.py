@@ -38,3 +38,27 @@ def test_validate_accepts_scalar_top_level_regime_proba() -> None:
 
     cfg = ConfigAuthority().validate(proposal)
     assert cfg.thresholds.regime_proba == 0.5
+
+
+def test_fib_entry_missing_policy_defaults_to_pass_for_backcompat() -> None:
+    """Back-compat: older champions/configs omitted fib.entry.missing_policy.
+
+    If missing_policy is absent (or null), we must not silently treat it as a hard block,
+    otherwise previously valid champions can degenerate into 0-trade configs after schema
+    validation/model_dump.
+    """
+
+    proposal = {
+        "htf_fib": {"entry": {"enabled": True, "tolerance_atr": 1.0}},
+        "ltf_fib": {"entry": {"enabled": True, "tolerance_atr": 1.0, "missing_policy": None}},
+    }
+
+    cfg = ConfigAuthority().validate(proposal)
+
+    assert cfg.htf_fib is not None
+    assert cfg.htf_fib.entry is not None
+    assert cfg.htf_fib.entry.missing_policy == "pass"
+
+    assert cfg.ltf_fib is not None
+    assert cfg.ltf_fib.entry is not None
+    assert cfg.ltf_fib.entry.missing_policy == "pass"

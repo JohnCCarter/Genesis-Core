@@ -5,6 +5,56 @@ import numpy as np
 from core.strategy.features_asof import _compute_candles_hash, extract_features
 
 
+def test_extract_features_atr14_is_true_atr14_even_when_atr_period_differs():
+    # Arrange: tillräckligt med bars för stabil ATR
+    n = 300
+    candles = {
+        "open": [100.0 + i for i in range(n)],
+        "high": [101.0 + i for i in range(n)],
+        "low": [99.0 + i for i in range(n)],
+        "close": [100.0 + i * 0.5 for i in range(n)],
+        "volume": [1000.0 + i * 10 for i in range(n)],
+    }
+    cfg = {
+        "thresholds": {"signal_adaptation": {"atr_period": 28}},
+        "features": {
+            "percentiles": {"ema_delta_pct": [-10.0, 10.0], "rsi": [-10.0, 10.0]},
+            "versions": {"feature_set": "v1"},
+        },
+    }
+
+    # Act
+    feats, meta = extract_features(candles, config=cfg)
+
+    # Assert: meta ska berätta vad vi faktiskt använde
+    assert meta.get("atr_period_used") == 28
+    assert meta.get("current_atr_used") is not None
+    assert meta.get("current_atr") == feats.get("atr_14")
+
+    # Och atr_14 ska vara riktig ATR(14), inte ATR(28)
+    from core.indicators.atr import calculate_atr
+
+    atr14_series = calculate_atr(
+        candles["high"],
+        candles["low"],
+        candles["close"],
+        period=14,
+    )
+    asof_bar = int(meta.get("asof_bar"))
+    assert feats.get("atr_14") == float(atr14_series[asof_bar])
+
+    # I normal data ska used-ATR (28) skilja sig från ATR(14)
+    assert float(meta["current_atr_used"]) != float(feats["atr_14"])
+
+    atr28_series = calculate_atr(
+        candles["high"],
+        candles["low"],
+        candles["close"],
+        period=28,
+    )
+    assert float(meta["current_atr_used"]) == float(atr28_series[asof_bar])
+
+
 def test_extract_features_stub_shapes():
     # Need at least 60 bars for volume_trend (slow_period=50)
     candles = {

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import core.optimizer.runner as runner
@@ -20,7 +21,7 @@ class _DummyEngine:
     def load_data(self) -> bool:
         return True
 
-    def run(self, *, policy, configs, verbose, pruning_callback=None):
+    def run(self, *, policy=None, configs=None, verbose=False, pruning_callback=None, **_kwargs):
         self.last_configs = configs
         return {"metrics": {"num_trades": 0}}
 
@@ -56,9 +57,13 @@ def test_run_backtest_direct_includes_merged_config(monkeypatch, tmp_path: Path)
     monkeypatch.setattr(runner, "_DATA_CACHE", {})
 
     # Patch pipeline used inside _run_backtest_direct.
+    # NOTE: runner may have imported GenesisPipeline directly (from core.pipeline import GenesisPipeline),
+    # so we patch both the source module and runner's reference to avoid touching real IO.
     import core.pipeline as pipeline_mod
 
-    monkeypatch.setattr(pipeline_mod, "GenesisPipeline", _DummyPipeline)
+    monkeypatch.setattr(pipeline_mod, "GenesisPipeline", _DummyPipeline, raising=True)
+    if hasattr(runner, "GenesisPipeline"):
+        monkeypatch.setattr(runner, "GenesisPipeline", _DummyPipeline, raising=True)
 
     config_payload = {
         "cfg": {"a": 1},
@@ -67,7 +72,7 @@ def test_run_backtest_direct_includes_merged_config(monkeypatch, tmp_path: Path)
         "overrides": {"commission": 0.001, "slippage": 0.0005},
     }
     config_path = tmp_path / "trial_001_config.json"
-    config_path.write_text(__import__("json").dumps(config_payload), encoding="utf-8")
+    config_path.write_text(json.dumps(config_payload), encoding="utf-8")
 
     trial = runner.TrialConfig(
         snapshot_id="dummy_snapshot",
@@ -93,11 +98,11 @@ def test_run_backtest_direct_includes_merged_config(monkeypatch, tmp_path: Path)
     assert results["config_provenance"]["config_file_is_complete"] is True
 
     # Sanity: engine saw the effective config.
-    mode_sig = (
-        f"fw{__import__('os').environ.get('GENESIS_FAST_WINDOW','')}"
-        f"pc{__import__('os').environ.get('GENESIS_PRECOMPUTE_FEATURES','')}"
-    )
-    engine = runner._DATA_CACHE[
-        f"{trial.symbol}_{trial.timeframe}_{trial.start_date}_{trial.end_date}_{mode_sig}"
-    ]
-    assert engine.last_configs == {"a": 2}
+    #
+    # NOTE: _DATA_CACHE key format is an internal detail and may depend on env/defaults,
+    # so we assert via the cached values instead of reconstructing the key here.
+    assert len(runner._DATA_CACHE) == 1
+    engine = next(iter(runner._DATA_CACHE.values()))
+    assert isinstance(engine.last_configs, dict)
+    assert engine.last_configs.get("a") == 2
+    assert (engine.last_configs.get("meta") or {}).get("skip_champion_merge") is True

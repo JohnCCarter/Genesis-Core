@@ -79,6 +79,8 @@ def test_run_optimizer_updates_champion(
         },
     }
 
+    created_run_dir: Path | None = None
+
     def fake_run_trial(*args: Any, **kwargs: Any) -> dict[str, Any]:
         index = kwargs.get("index")
         return trial_queue.get(
@@ -92,6 +94,8 @@ def test_run_optimizer_updates_champion(
         )
 
     def fake_ensure(run_dir: Path, *_args: Any, **_kwargs: Any) -> None:
+        nonlocal created_run_dir
+        created_run_dir = run_dir
         run_dir.mkdir(parents=True, exist_ok=True)
         (run_dir / "run_meta.json").write_text(json.dumps(run_meta_payload), encoding="utf-8")
 
@@ -237,6 +241,13 @@ def test_run_optimizer_validation_stage_promotes_validation_best(tmp_path: Path)
         manager_instance.write_champion.assert_called_once()
         call_kwargs = manager_instance.write_champion.call_args.kwargs
         assert call_kwargs["candidate"].score == pytest.approx(130.0)
+
+
+def test_trial_requests_htf_exits_detects_htf_exit_config() -> None:
+    assert runner._trial_requests_htf_exits({"htf_exit_config": {"partial_1_pct": 0.5}}) is True
+    assert runner._trial_requests_htf_exits({"htf_exit_config": {}}) is False
+    assert runner._trial_requests_htf_exits({"htf_exit_config": None}) is False
+    assert runner._trial_requests_htf_exits({}) is False
 
 
 def test_run_optimizer_promotion_disabled_does_not_write_champion(
@@ -495,3 +506,121 @@ def test_run_optimizer_optuna_strategy(tmp_path: Path) -> None:
     assert len(results) == 1
     assert results[0]["constraints"]["ok"] is True
     create_study.assert_called_once()
+
+
+@pytest.mark.skipif(not runner.OPTUNA_AVAILABLE, reason="Optuna ej installerat")
+def test_run_optimizer_validation_fallback_reads_from_optuna_storage(tmp_path: Path) -> None:
+    config = {
+        "meta": {
+            "symbol": "tTEST",
+            "timeframe": "1h",
+            "snapshot_id": "tTEST_1h_20240101_20240201_v1",
+            "runs": {
+                "strategy": "optuna",
+                "max_trials": 0,
+                "max_concurrent": 1,
+                "resume": True,
+                "optuna": {"storage": "sqlite:///dummy.db", "study_name": "test-study"},
+                "validation": {"enabled": True, "top_n": 2, "use_sample_range": False},
+            },
+        },
+        "parameters": {
+            "thresholds": {
+                "entry_conf_overall": {
+                    "type": "grid",
+                    "values": [0.4, 0.5],
+                }
+            }
+        },
+    }
+    config_path = tmp_path / "optuna_validate_only.yaml"
+    config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
+
+    results_root = tmp_path / "results" / "hparam_search"
+    run_meta_payload = {
+        "git_commit": "abc123",
+        "snapshot_id": "tTEST_1h_20240101_20240201_v1",
+        "optuna": {
+            "study_name": "test-study",
+            "storage": "sqlite:///dummy.db",
+            "direction": "maximize",
+            "n_trials": 0,
+            "best_value": None,
+            "best_trial_number": None,
+        },
+    }
+
+    created_run_dir: Path | None = None
+
+    def fake_ensure(run_dir: Path, *_args: Any, **_kwargs: Any) -> None:
+        nonlocal created_run_dir
+        created_run_dir = run_dir
+        run_dir.mkdir(parents=True, exist_ok=True)
+        (run_dir / "run_meta.json").write_text(json.dumps(run_meta_payload), encoding="utf-8")
+
+    # Two explore payloads living in Optuna storage
+    from types import SimpleNamespace
+
+    from optuna.trial import TrialState
+
+    trial_a = SimpleNamespace(
+        state=TrialState.COMPLETE,
+        user_attrs={
+            "result_payload": {
+                "trial_id": "trial_a",
+                "parameters": {"thresholds": {"entry_conf_overall": 0.4}},
+                "score": {"score": 10.0, "metrics": {}, "hard_failures": []},
+                "constraints": {"ok": True, "reasons": []},
+            }
+        },
+    )
+    trial_b = SimpleNamespace(
+        state=TrialState.COMPLETE,
+        user_attrs={
+            "result_payload": {
+                "trial_id": "trial_b",
+                "parameters": {"thresholds": {"entry_conf_overall": 0.5}},
+                "score": {"score": 7.0, "metrics": {}, "hard_failures": []},
+                "constraints": {"ok": True, "reasons": []},
+            }
+        },
+    )
+    study_mock = SimpleNamespace(trials=[trial_a, trial_b])
+
+    def fake_run_trial(*args: Any, **kwargs: Any) -> dict[str, Any]:
+        trial_cfg = args[0]
+        params = getattr(trial_cfg, "parameters", {}) or {}
+        entry_conf = params.get("thresholds", {}).get("entry_conf_overall")
+        # Return different validation scores just to ensure we ran it.
+        return {
+            "trial_id": f"val_{entry_conf}",
+            "parameters": params,
+            "score": {
+                "score": 100.0 if entry_conf == 0.4 else 200.0,
+                "metrics": {},
+                "hard_failures": [],
+            },
+            "constraints": {"ok": True, "reasons": []},
+            "results_path": "val.json",
+        }
+
+    with (
+        patch("core.optimizer.runner.RESULTS_DIR", results_root),
+        patch("core.optimizer.runner._ensure_run_metadata", side_effect=fake_ensure),
+        patch("core.optimizer.runner._run_optuna", return_value=[]),
+        patch("optuna.load_study", return_value=study_mock) as load_study,
+        patch("core.optimizer.runner.run_trial", side_effect=fake_run_trial),
+    ):
+        selected = runner._select_top_n_from_optuna_storage(run_meta_payload, top_n=2)
+        assert len(selected) == 2
+        results = run_optimizer(config_path, run_id="run_validate_only")
+
+    # Fallback-vägen ska ha läst kandidater från Optuna storage.
+    assert load_study.call_count >= 1
+
+    assert created_run_dir is not None
+    assert created_run_dir.exists()
+    assert (created_run_dir / "validation").exists()
+    meta = json.loads((created_run_dir / "run_meta.json").read_text(encoding="utf-8"))
+    assert meta.get("validation", {}).get("validated") == 2
+    assert len(results) == 2

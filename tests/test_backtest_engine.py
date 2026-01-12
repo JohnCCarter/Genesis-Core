@@ -2,12 +2,14 @@
 
 import builtins
 from datetime import datetime
+from pathlib import Path
 
 import pandas as pd
 import pytest
 
 from core.backtest.engine import BacktestEngine
 from core.backtest.position_tracker import Position
+from core.strategy.champion_loader import ChampionConfig
 
 
 @pytest.fixture
@@ -98,6 +100,52 @@ def test_engine_load_data_with_date_filter(temp_data_file):
 
     assert engine.candles_df is not None
     assert len(engine.candles_df) < 200  # Filtered
+
+
+def test_engine_load_data_date_filter_handles_tz_aware(monkeypatch):
+    """Regression: load_data date filter must handle tz-aware candle timestamps."""
+
+    # tz-aware candle timestamps (UTC)
+    dates = pd.date_range("2025-01-01", periods=10, freq="15min", tz="UTC")
+    df = pd.DataFrame(
+        {
+            "timestamp": dates,
+            "open": [100.0] * 10,
+            "high": [101.0] * 10,
+            "low": [99.0] * 10,
+            "close": [100.5] * 10,
+            "volume": [1.0] * 10,
+        }
+    )
+
+    engine = BacktestEngine(
+        symbol="tBTCUSD",
+        timeframe="15m",
+        start_date="2025-01-01",
+        end_date="2025-01-01",
+    )
+
+    # Pretend the frozen parquet exists so load_data takes that path.
+    original_exists = Path.exists
+
+    def _fake_exists(self: Path) -> bool:
+        if str(self).endswith("data\\raw\\tBTCUSD_15m_frozen.parquet"):
+            return True
+        return original_exists(self)
+
+    monkeypatch.setattr(Path, "exists", _fake_exists)
+
+    def _fake_read_parquet(_path, columns=None, **_kwargs):
+        if columns is None:
+            return df.copy()
+        return df[columns].copy()
+
+    monkeypatch.setattr(pd, "read_parquet", _fake_read_parquet)
+
+    assert engine.load_data() is True
+    assert engine.candles_df is not None
+    # end_date is inclusive at midnight; at least the first bar should remain.
+    assert len(engine.candles_df) >= 1
 
 
 def test_build_candles_window(sample_candles_data):
@@ -211,6 +259,103 @@ def test_engine_run_with_minimal_data(sample_candles_data):
     assert "summary" in results
     assert "trades" in results
     assert "equity_curve" in results
+
+
+def test_engine_run_skip_champion_merge_does_not_load_champion(monkeypatch, sample_candles_data):
+    """Optimizer/backtest configs should be authoritative (no implicit champion merge)."""
+
+    engine = BacktestEngine(
+        symbol="tBTCUSD",
+        timeframe="15m",
+        warmup_bars=10,
+        initial_capital=10000.0,
+    )
+    engine.candles_df = sample_candles_data
+
+    def _fail_load_cached(*_args, **_kwargs):
+        raise AssertionError(
+            "ChampionLoader.load_cached should not be called when skip_champion_merge"
+        )
+
+    monkeypatch.setattr(engine.champion_loader, "load_cached", _fail_load_cached)
+
+    results = engine.run(
+        policy={"symbol": "tBTCUSD", "timeframe": "15m"},
+        configs={
+            "meta": {"skip_champion_merge": True},
+            "thresholds": {"entry_conf_overall": 0.9},
+            "risk": {"risk_map": [[0.7, 0.01]]},
+        },
+        verbose=False,
+    )
+
+    assert "error" not in results
+    assert results.get("backtest_info", {}).get("effective_config_fingerprint")
+
+
+def test_engine_run_default_loads_champion_and_fingerprint_changes(
+    monkeypatch, sample_candles_data
+):
+    """By default the engine merges champion; fingerprint must reflect the effective config."""
+
+    engine = BacktestEngine(
+        symbol="tBTCUSD",
+        timeframe="15m",
+        warmup_bars=10,
+        initial_capital=10000.0,
+    )
+    engine.candles_df = sample_candles_data
+
+    called = {"count": 0}
+
+    def _fake_load_cached(_symbol: str, _timeframe: str) -> ChampionConfig:
+        called["count"] += 1
+        return ChampionConfig(
+            config={"thresholds": {"entry_conf_overall": 0.01}},
+            source="tests/fake_champion.json",
+            version="test",
+            checksum="deadbeef",
+            loaded_at="2025-01-01T00:00:00Z",
+        )
+
+    monkeypatch.setattr(engine.champion_loader, "load_cached", _fake_load_cached)
+
+    results_merged = engine.run(
+        policy={"symbol": "tBTCUSD", "timeframe": "15m"},
+        configs={
+            "thresholds": {"entry_conf_overall": 0.9},
+            "risk": {"risk_map": [[0.7, 0.01]]},
+        },
+        verbose=False,
+    )
+
+    assert called["count"] == 1
+    fp_merged = results_merged.get("backtest_info", {}).get("effective_config_fingerprint")
+    assert fp_merged
+
+    # Same base config, but skip champion merge should yield a different effective fingerprint.
+    engine2 = BacktestEngine(
+        symbol="tBTCUSD",
+        timeframe="15m",
+        warmup_bars=10,
+        initial_capital=10000.0,
+    )
+    engine2.candles_df = sample_candles_data
+
+    monkeypatch.setattr(engine2.champion_loader, "load_cached", _fake_load_cached)
+
+    results_skip = engine2.run(
+        policy={"symbol": "tBTCUSD", "timeframe": "15m"},
+        configs={
+            "meta": {"skip_champion_merge": True},
+            "thresholds": {"entry_conf_overall": 0.9},
+            "risk": {"risk_map": [[0.7, 0.01]]},
+        },
+        verbose=False,
+    )
+    fp_skip = results_skip.get("backtest_info", {}).get("effective_config_fingerprint")
+    assert fp_skip
+    assert fp_skip != fp_merged
 
 
 def test_engine_results_format(sample_candles_data):

@@ -43,6 +43,11 @@ def run_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
         "results_path": "test_001.json",
     }
     (root / "trial_001.json").write_text(json.dumps(valid_payload), encoding="utf-8")
+    # Regression guard: summarize_run must ignore config payloads.
+    (root / "trial_001_config.json").write_text(
+        json.dumps({"cfg": {"thresholds": {"entry_conf_overall": 0.4}}}),
+        encoding="utf-8",
+    )
     skipped_payload = {
         "trial_id": "trial_002",
         "skipped": True,

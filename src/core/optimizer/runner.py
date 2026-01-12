@@ -394,6 +394,60 @@ def _resolve_sample_range(snapshot_id: str, runs_cfg: dict[str, Any]) -> tuple[s
     return start, end
 
 
+def _select_top_n_from_optuna_storage(run_meta: dict[str, Any], top_n: int) -> list[dict[str, Any]]:
+    """Fallback för validation: välj top-N kandidater direkt från Optuna storage.
+
+    Detta gör att validation kan köras även när explore-delen redan är klar, eller när
+    vi inte har en komplett results-lista i minnet (t.ex. vid resume efter avbrott).
+
+    Returnerar en lista av payloads ("result_payload") som innehåller minst:
+    - parameters
+    - score.score
+    """
+
+    if top_n <= 0 or not OPTUNA_AVAILABLE:
+        return []
+
+    optuna_meta = run_meta.get("optuna")
+    if not isinstance(optuna_meta, dict):
+        return []
+
+    storage = optuna_meta.get("storage")
+    study_name = optuna_meta.get("study_name")
+    if not storage or not study_name:
+        return []
+
+    try:
+        import optuna
+        from optuna.trial import TrialState
+
+        study = optuna.load_study(study_name=str(study_name), storage=str(storage))
+    except Exception:
+        return []
+
+    ranked: list[tuple[float, dict[str, Any]]] = []
+    for t in getattr(study, "trials", []) or []:
+        try:
+            if getattr(t, "state", None) != TrialState.COMPLETE:
+                continue
+            user_attrs = getattr(t, "user_attrs", None)
+            if not isinstance(user_attrs, dict):
+                continue
+            payload = user_attrs.get("result_payload")
+            if not isinstance(payload, dict):
+                continue
+            if payload.get("error") or payload.get("skipped"):
+                continue
+            score_block = payload.get("score") or {}
+            s = float(score_block.get("score"))
+        except (TypeError, ValueError):
+            continue
+        ranked.append((s, payload))
+
+    ranked.sort(key=lambda x: x[0], reverse=True)
+    return [p for _s, p in ranked[:top_n]]
+
+
 def _load_existing_trials(run_dir: Path) -> dict[str, dict[str, Any]]:
     """Load existing trials with optimized file I/O.
 
@@ -787,6 +841,19 @@ _DATA_CACHE: dict[str, Any] = {}
 _DATA_LOCK = threading.Lock()
 
 
+def _trial_requests_htf_exits(effective_cfg: dict[str, Any]) -> bool:
+    """Return True if the trial config implies HTF exits should be enabled.
+
+    Why:
+    - The backtest engine selects the new HTF exit engine based on GENESIS_HTF_EXITS.
+    - If we tune/populate htf_exit_config but forget to enable the flag, the whole HTF
+        exit dimension becomes a no-op and artifacts will show HTF as not loaded/seen.
+    """
+
+    htf_exit_cfg = effective_cfg.get("htf_exit_config")
+    return isinstance(htf_exit_cfg, dict) and bool(htf_exit_cfg)
+
+
 def _run_backtest_direct(
     trial: TrialConfig,
     config_path: Path,
@@ -794,6 +861,9 @@ def _run_backtest_direct(
     start_date: str | None = None,
     end_date: str | None = None,
 ) -> tuple[int, str, dict[str, Any] | None]:
+    did_set_htf_exits = False
+    prior_htf_exits = os.environ.get("GENESIS_HTF_EXITS")
+
     try:
         from core.pipeline import GenesisPipeline
 
@@ -821,6 +891,13 @@ def _run_backtest_direct(
         effective_cfg = payload.get("merged_config")
         if not isinstance(effective_cfg, dict):
             effective_cfg = cfg
+
+        # Enable HTF exits when the trial config requests it.
+        # Do this before engine creation so BacktestEngine selects the correct engine
+        # and attempts to load HTF candles.
+        if _trial_requests_htf_exits(effective_cfg) and "GENESIS_HTF_EXITS" not in os.environ:
+            os.environ["GENESIS_HTF_EXITS"] = "1"
+            did_set_htf_exits = True
         runtime_version_used = payload.get("runtime_version")
         runtime_version_current = _get_default_runtime_version()
         config_provenance: dict[str, object] = {
@@ -837,6 +914,7 @@ def _run_backtest_direct(
         mode_sig = (
             f"fw{os.environ.get('GENESIS_FAST_WINDOW','')}"
             f"pc{os.environ.get('GENESIS_PRECOMPUTE_FEATURES','')}"
+            f"htf{os.environ.get('GENESIS_HTF_EXITS','')}"
         )
         cache_key = (
             f"{trial.symbol}_{trial.timeframe}_{trial.start_date}_{trial.end_date}_{mode_sig}"
@@ -952,10 +1030,16 @@ def _run_backtest_direct(
                     logger.warning(
                         "Optuna pruning disabled due to setup failure: %s", err, exc_info=True
                     )
+        effective_cfg_for_run: dict[str, Any] | Any = effective_cfg
+        if isinstance(effective_cfg, dict):
+            effective_cfg_for_run = dict(effective_cfg)
+            meta_for_run = dict(effective_cfg.get("meta") or {})
+            meta_for_run["skip_champion_merge"] = True
+            effective_cfg_for_run["meta"] = meta_for_run
 
         results = engine.run(
             policy={"symbol": trial.symbol, "timeframe": trial.timeframe},
-            configs=effective_cfg,
+            configs=effective_cfg_for_run,
             verbose=False,
             pruning_callback=pruning_callback,
         )
@@ -976,6 +1060,14 @@ def _run_backtest_direct(
         import traceback
 
         return 1, f"{e}\n{traceback.format_exc()}", None
+
+    finally:
+        # Restore environment if we temporarily enabled GENESIS_HTF_EXITS.
+        if did_set_htf_exits:
+            if prior_htf_exits is None:
+                os.environ.pop("GENESIS_HTF_EXITS", None)
+            else:
+                os.environ["GENESIS_HTF_EXITS"] = str(prior_htf_exits)
 
 
 def run_trial(
@@ -1069,6 +1161,12 @@ def run_trial(
         # Deep merge trial parameters into default config
         transformed_params, derived_values = transform_parameters(trial.parameters)
         merged_cfg = _deep_merge(default_cfg, transformed_params)
+
+        # Optimizer/backtest runs must treat the trial config as authoritative.
+        # Prevent BacktestEngine from implicitly merging the current champion.
+        meta = dict(merged_cfg.get("meta") or {})
+        meta["skip_champion_merge"] = True
+        merged_cfg["meta"] = meta
         # Mark this config as "complete" by including merged_config + runtime_version.
         # This lets scripts/run_backtest skip re-merging runtime.json, preventing drift if runtime.json
         # changes during a long optimization run.
@@ -1166,6 +1264,19 @@ def run_trial(
     base_env = dict(os.environ)
     if "GENESIS_RANDOM_SEED" not in base_env or not str(base_env["GENESIS_RANDOM_SEED"]).strip():
         base_env["GENESIS_RANDOM_SEED"] = "42"
+
+    # Enable HTF exits for this trial when config requests it (unless user already set it).
+    if config_file is not None and "GENESIS_HTF_EXITS" not in base_env:
+        try:
+            payload = json.loads(config_file.read_text(encoding="utf-8"))
+            eff_cfg = payload.get("merged_config")
+            if not isinstance(eff_cfg, dict):
+                eff_cfg = payload.get("cfg")
+            if isinstance(eff_cfg, dict) and _trial_requests_htf_exits(eff_cfg):
+                base_env["GENESIS_HTF_EXITS"] = "1"
+        except Exception:
+            # Defensive: never break a trial because we couldn't inspect the config payload.
+            pass
 
     # Optimization: Force reduced logging in subprocess to minimize IO overhead
     # User reported massive logs slowing down optimization
@@ -2055,14 +2166,75 @@ def _run_optuna(
         heartbeat_grace_period=heartbeat_grace,
     )
 
-    study.optimize(
-        objective,
-        n_trials=remaining_trials,
-        timeout=_effective_timeout_seconds(),
-        n_jobs=concurrency,
-        gc_after_trial=True,
-        show_progress_bar=False,  # Performance: Disable progress bar for batch runs
-    )
+    # Robustness: checkpoint run metadata periodically so interrupted runs still have
+    # best_trial.json + optuna meta on disk.
+    checkpoint_every_raw = os.environ.get("GENESIS_OPTUNA_CHECKPOINT_EVERY", "25")
+    try:
+        checkpoint_every = int(checkpoint_every_raw)
+    except (TypeError, ValueError):
+        checkpoint_every = 25
+    if checkpoint_every < 1:
+        checkpoint_every = 0
+
+    run_meta_path = run_dir / "run_meta.json"
+    try:
+        run_meta_checkpoint = json.loads(run_meta_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        run_meta_checkpoint = {}
+
+    def _write_optuna_checkpoint(study_to_write) -> None:
+        best_payload_local: dict[str, Any] | None = None
+        best_trial_number_local: str | None = None
+        best_value_local: float | None = None
+        if study_to_write.best_trials:
+            try:
+                best_trial_local = study_to_write.best_trial
+                best_payload_local = best_trial_local.user_attrs.get("result_payload")
+                best_value_local = float(study_to_write.best_value)
+                best_trial_number_local = (
+                    best_payload_local.get("trial_id") if best_payload_local else None
+                )
+            except Exception:
+                best_payload_local = None
+
+        run_meta_checkpoint.setdefault("optuna", {}).update(
+            {
+                "study_name": study_to_write.study_name,
+                "storage": storage,
+                "direction": direction,
+                "n_trials": len(study_to_write.trials),
+                "best_value": best_value_local,
+                "best_trial_number": best_trial_number_local,
+            }
+        )
+        _atomic_write_text(run_meta_path, _json_dumps(_serialize_meta(run_meta_checkpoint)))
+        if best_payload_local is not None:
+            _atomic_write_text(run_dir / "best_trial.json", _json_dumps(best_payload_local))
+
+    def _checkpoint_callback(study_to_write, frozen_trial) -> None:
+        if checkpoint_every and (int(frozen_trial.number) + 1) % checkpoint_every == 0:
+            try:
+                _write_optuna_checkpoint(study_to_write)
+            except Exception:
+                # Best-effort checkpointing only
+                pass
+
+    try:
+        study.optimize(
+            objective,
+            n_trials=remaining_trials,
+            timeout=_effective_timeout_seconds(),
+            n_jobs=concurrency,
+            gc_after_trial=True,
+            show_progress_bar=False,  # Performance: Disable progress bar for batch runs
+            callbacks=[_checkpoint_callback] if checkpoint_every else None,
+        )
+    finally:
+        # Ensure we leave a usable best_trial.json + optuna meta even on interrupts.
+        try:
+            _write_optuna_checkpoint(study)
+        except Exception:
+            pass
 
     # Collect cache statistics
     cache_stats = {
@@ -2479,19 +2651,24 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
                 for future in as_completed(futures):
                     results.append(future.result())
     elif strategy == OptimizerStrategy.OPTUNA:
-        results.extend(
-            _run_optuna(
-                study_config=runs_cfg.get("optuna") or {},
-                parameters_spec=parameters,
-                make_trial=make_trial,
-                run_dir=run_dir,
-                run_id=run_id_resolved,
-                existing_trials=existing_trials,
-                max_trials=max_trials,
-                concurrency=concurrency,
-                allow_resume=allow_resume,
+        try:
+            results.extend(
+                _run_optuna(
+                    study_config=runs_cfg.get("optuna") or {},
+                    parameters_spec=parameters,
+                    make_trial=make_trial,
+                    run_dir=run_dir,
+                    run_id=run_id_resolved,
+                    existing_trials=existing_trials,
+                    max_trials=max_trials,
+                    concurrency=concurrency,
+                    allow_resume=allow_resume,
+                )
             )
-        )
+        except ValueError as exc:
+            # Robustness: Om Optuna-budgeten är slut (timeout/end_at) vill vi fortfarande
+            # kunna köra validation-steget vid resume (där top-N kan hämtas ur storage).
+            print(f"[WARN] Optuna kunde inte köras (ValueError): {exc}")
     else:
         raise ValueError(f"Okänd optimizer-strategi: {strategy}")
 
@@ -2526,6 +2703,11 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
                 ranked.append((s, r))
             ranked.sort(key=lambda x: x[0], reverse=True)
             selected = [r for _s, r in ranked[:top_n]]
+
+            # Fallback: Om vi inte har några lokala results (t.ex. resume efter avbrott)
+            # försök hämta top-N direkt från Optuna storage.
+            if not selected and strategy == OptimizerStrategy.OPTUNA:
+                selected = _select_top_n_from_optuna_storage(run_meta, top_n)
 
             if selected:
                 val_start: str | None = None

@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -14,6 +14,32 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
+
+
+def maybe_load_dotenv() -> tuple[bool, str]:
+    """Ladda .env om den finns, utan att skriva över redan satta env vars.
+
+    Preflight körs ofta i ett "rent" skal där användaren förväntar sig att .env ska gälla.
+    För att spegla faktiska körningar (pipeline laddar också .env) försöker vi läsa den här.
+    """
+
+    dotenv_path = ROOT / ".env"
+    if not dotenv_path.exists():
+        return True, "[SKIP] .env saknas"
+
+    try:
+        from dotenv import load_dotenv  # type: ignore
+    except Exception:
+        return (
+            True,
+            "[WARN] .env finns men python-dotenv saknas; preflight kan missa GENESIS_* variabler",
+        )
+
+    try:
+        load_dotenv(dotenv_path=dotenv_path, override=False)
+    except Exception as e:
+        return False, f"[FAIL] Kunde inte ladda .env ({dotenv_path}): {e}"
+    return True, f"[OK] Laddade .env ({dotenv_path})"
 
 
 def check_optuna_installed() -> tuple[bool, str]:
@@ -207,6 +233,250 @@ def check_duplicate_guard() -> tuple[bool, str]:
             f"[WARN] OPTUNA_MAX_DUPLICATE_STREAK={streak} är lågt – risk för tidigt avbrott",
         )
     return True, f"[OK] OPTUNA_MAX_DUPLICATE_STREAK={streak}"
+
+
+def check_mode_flags_consistency() -> tuple[bool, str]:
+    """Validera canonical mode-flaggor så körningen inte kraschar eller blir icke-deterministisk."""
+
+    explicit_mode = os.environ.get("GENESIS_MODE_EXPLICIT") == "1"
+    fast_window = os.environ.get("GENESIS_FAST_WINDOW") == "1"
+    precompute = os.environ.get("GENESIS_PRECOMPUTE_FEATURES") == "1"
+
+    if explicit_mode:
+        # Explicit mode används som debug-escape hatch. Vi informerar men blockerar inte.
+        return True, "[WARN] GENESIS_MODE_EXPLICIT=1 (debug) – säkerställ att du vet varför"
+
+    if fast_window and not precompute:
+        return (
+            False,
+            "[FAIL] GENESIS_FAST_WINDOW=1 kräver GENESIS_PRECOMPUTE_FEATURES=1 (annars kraschar engine)",
+        )
+
+    if precompute and not fast_window:
+        return (
+            True,
+            "[WARN] GENESIS_PRECOMPUTE_FEATURES=1 men GENESIS_FAST_WINDOW!=1 – mixed-mode kan ge oväntat beteende",
+        )
+
+    return True, f"[OK] Mode flags: fast_window={int(fast_window)}, precompute={int(precompute)}"
+
+
+def check_storage_resume_sanity(
+    storage: Any, allow_resume: Any, n_jobs: Any, max_concurrent: Any
+) -> tuple[bool, str]:
+    """Extra sanity för run-konfiguration som annars ger tysta/överraskande resultat."""
+
+    msgs: list[str] = []
+    ok = True
+
+    allow_resume_bool = bool(allow_resume)
+    if storage in (None, "") and allow_resume_bool:
+        msgs.append(
+            "[WARN] resume=true men storage=null – inga trials persistieras (inget att resume:a)"
+        )
+    elif storage in (None, "") and not allow_resume_bool:
+        msgs.append("[OK] storage=null + resume=false (in-memory/engångskörning)")
+
+    try:
+        if n_jobs is not None and max_concurrent is not None:
+            if int(n_jobs) != int(max_concurrent):
+                msgs.append(
+                    f"[WARN] optuna.n_jobs={n_jobs} matchar inte meta.runs.max_concurrent={max_concurrent} – "
+                    "risk för förvirring kring parallellism"
+                )
+    except Exception:
+        pass
+
+    if not msgs:
+        msgs.append("[OK] Storage/resume sanity OK")
+    return ok, " | ".join(msgs)
+
+
+def check_htf_requirements(meta: dict[str, Any], parameters: dict[str, Any]) -> tuple[bool, str]:
+    """Faila tidigt om HTF-exits efterfrågas men nödvändiga 1D candles saknas."""
+
+    symbol = meta.get("symbol", "tBTCUSD")
+    htf_spec = parameters.get("htf_exit_config")
+    wants_htf = isinstance(htf_spec, dict) and len(htf_spec) > 0
+    if not wants_htf:
+        return True, "[SKIP] Ingen htf_exit_config i parameters"
+
+    htf_data = _pick_data_file(symbol, "1D")
+    if htf_data is None:
+        return (
+            False,
+            f"[FAIL] htf_exit_config kräver 1D candles men ingen datafil hittades för {symbol} 1D",
+        )
+
+    env_htf = os.environ.get("GENESIS_HTF_EXITS")
+    if env_htf != "1":
+        return (
+            True,
+            f"[WARN] htf_exit_config finns och 1D-data hittades ({htf_data.name}) men GENESIS_HTF_EXITS!=1. "
+            "Optimizer-runnern kan auto-enabla per trial, men manuella backtests behöver env/.env.",
+        )
+
+    return True, f"[OK] HTF: GENESIS_HTF_EXITS=1 och 1D-data finns ({htf_data.name})"
+
+
+def _parse_snapshot_date_range(snapshot_id: str) -> tuple[datetime, datetime] | None:
+    """Parse (start, end) från snapshot_id av typen ..._<YYYY-MM-DD>_<YYYY-MM-DD>_vX.
+
+    Returns:
+        (start_dt, end_dt) med tider 00:00:00, eller None om parsing misslyckas.
+    """
+
+    if not snapshot_id or not isinstance(snapshot_id, str):
+        return None
+
+    parts = snapshot_id.split("_")
+    if len(parts) < 4:
+        return None
+
+    start_raw = parts[-3]
+    end_raw = parts[-2]
+    try:
+        start_dt = datetime.fromisoformat(str(start_raw).strip())
+        end_dt = datetime.fromisoformat(str(end_raw).strip())
+    except Exception:
+        return None
+
+    if end_dt < start_dt:
+        return None
+
+    return start_dt, end_dt
+
+
+def _champion_path(symbol: str, timeframe: str) -> Path:
+    return ROOT / "config" / "strategy" / "champions" / f"{symbol}_{timeframe}.json"
+
+
+def check_champion_drift_smoke(symbol: str, timeframe: str) -> tuple[bool, str]:
+    """Snabb drift-check: verifiera att nuvarande champion fortfarande gör trades.
+
+    Bakgrund:
+        När schema/defaults eller decision-semantik ändras kan äldre champions bli 'no-trade'
+        utan att validering (Pydantic) failar. Denna check fångar det tidigt.
+
+    Policy:
+        - Default: WARN om 0 trades (för att undvika falska negativa på korta fönster).
+        - Om GENESIS_PREFLIGHT_CHAMPION_SMOKE_STRICT=1: FAIL på 0 trades.
+        - Om GENESIS_PREFLIGHT_CHAMPION_SMOKE=0: SKIP.
+    """
+
+    if os.environ.get("GENESIS_PREFLIGHT_CHAMPION_SMOKE", "1") == "0":
+        return True, "[SKIP] Champion drift smoke disabled (GENESIS_PREFLIGHT_CHAMPION_SMOKE=0)"
+
+    strict = os.environ.get("GENESIS_PREFLIGHT_CHAMPION_SMOKE_STRICT") == "1"
+    days_raw = os.environ.get("GENESIS_PREFLIGHT_CHAMPION_SMOKE_DAYS", "60")
+    try:
+        days = max(7, int(days_raw))
+    except ValueError:
+        days = 60
+
+    champion_file = _champion_path(symbol, timeframe)
+    if not champion_file.exists():
+        return True, f"[WARN] Ingen champion-fil hittades: {champion_file}"
+
+    try:
+        import json
+
+        champion = json.loads(champion_file.read_text(encoding="utf-8"))
+    except Exception as e:
+        return (False, f"[FAIL] Kunde inte läsa champion-fil ({champion_file.name}): {e}")
+
+    snapshot_id = champion.get("snapshot_id")
+    dr = _parse_snapshot_date_range(snapshot_id) if isinstance(snapshot_id, str) else None
+    if dr is None:
+        return True, f"[WARN] Champion saknar/har ogiltig snapshot_id: {snapshot_id}"
+    snap_start, snap_end = dr
+
+    start_dt = snap_start
+    end_dt = min(snap_end, snap_start + timedelta(days=days))
+
+    merged_cfg = champion.get("merged_config") or champion.get("cfg")
+    if not isinstance(merged_cfg, dict):
+        return False, "[FAIL] Champion saknar merged_config/cfg (kan inte smoke-testa)"
+
+    prev_env = {
+        "GENESIS_FAST_WINDOW": os.environ.get("GENESIS_FAST_WINDOW"),
+        "GENESIS_PRECOMPUTE_FEATURES": os.environ.get("GENESIS_PRECOMPUTE_FEATURES"),
+        "GENESIS_MODE_EXPLICIT": os.environ.get("GENESIS_MODE_EXPLICIT"),
+        "GENESIS_HTF_EXITS": os.environ.get("GENESIS_HTF_EXITS"),
+    }
+
+    try:
+        # Smoke-test ska spegla canonical 1/1.
+        os.environ["GENESIS_FAST_WINDOW"] = "1"
+        os.environ["GENESIS_PRECOMPUTE_FEATURES"] = "1"
+        os.environ["GENESIS_MODE_EXPLICIT"] = "0"
+
+        # Mimic runner: om htf_exit_config finns ska HTF vara på.
+        if isinstance(merged_cfg.get("htf_exit_config"), dict) and merged_cfg.get(
+            "htf_exit_config"
+        ):
+            os.environ["GENESIS_HTF_EXITS"] = "1"
+
+        from core.backtest.metrics import calculate_metrics
+        from core.pipeline import GenesisPipeline
+
+        pipe = GenesisPipeline()
+        pipe.setup_environment(seed=int(os.environ.get("GENESIS_RANDOM_SEED", "42")))
+
+        # Warmup: använd championens warmup om satt, annars 150 (canonical i våra runs).
+        warmup = merged_cfg.get("warmup_bars")
+        try:
+            warmup_bars = 150 if warmup is None else int(warmup)
+        except Exception:
+            warmup_bars = 150
+
+        engine = pipe.create_engine(
+            symbol=symbol,
+            timeframe=timeframe,
+            start_date=start_dt.date().isoformat(),
+            end_date=end_dt.date().isoformat(),
+            capital=10000.0,
+            commission=0.002,
+            slippage=0.0005,
+            warmup_bars=warmup_bars,
+        )
+        if not engine.load_data():
+            return False, f"[FAIL] Champion smoke: kunde inte ladda data för {symbol} {timeframe}"
+
+        results = engine.run(
+            policy={"symbol": symbol, "timeframe": timeframe},
+            configs=merged_cfg,
+            verbose=False,
+            pruning_callback=None,
+        )
+        if "error" in results:
+            return False, f"[FAIL] Champion smoke: backtest error: {results.get('error')}"
+
+        metrics = calculate_metrics(results, prefer_summary=False)
+        trades = int(metrics.get("total_trades") or 0)
+
+        if trades == 0:
+            msg = (
+                f"[WARN] Champion drift smoke: 0 trades i {days}d fönster "
+                f"({start_dt.date()}..{end_dt.date()}). "
+                "Indikerar möjlig drift/regression eller för strikt konfig."
+            )
+            if strict:
+                return False, msg.replace("[WARN]", "[FAIL]")
+            return True, msg
+
+        return True, (
+            f"[OK] Champion drift smoke: {trades} trades i {days}d fönster "
+            f"({start_dt.date()}..{end_dt.date()})"
+        )
+    except Exception as e:
+        return (False if strict else True, f"[WARN] Champion drift smoke: kunde inte köras: {e}")
+    finally:
+        for k, v in prev_env.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
 
 
 def check_precompute_functionality(symbol: str, timeframe: str) -> tuple[bool, str]:
@@ -613,6 +883,13 @@ def main() -> int:
 
     all_ok = True
 
+    # 0. .env (för att preflight ska spegla faktiska körningar)
+    ok, msg = maybe_load_dotenv()
+    print(f"0. Environment: {msg}")
+    if not ok:
+        all_ok = False
+    print()
+
     # 1. Optuna installerat
     ok, msg = check_optuna_installed()
     print(f"1. Optuna installation: {msg}")
@@ -657,6 +934,25 @@ def main() -> int:
     print(f"6. Timeout/max_trials: {msg}")
     print()
 
+    # 6b. Mode flags (canonical mode)
+    ok, msg = check_mode_flags_consistency()
+    print(f"6b. Mode flags: {msg}")
+    if not ok:
+        all_ok = False
+    print()
+
+    # 6c. Storage/resume/n_jobs sanity
+    ok, msg = check_storage_resume_sanity(
+        optuna_cfg.get("storage"),
+        runs_cfg.get("resume", True),
+        optuna_cfg.get("n_jobs"),
+        runs_cfg.get("max_concurrent"),
+    )
+    print(f"6c. Storage/resume sanity: {msg}")
+    if not ok:
+        all_ok = False
+    print()
+
     # 7. Parametrar
     ok, msg = check_parameters_valid(parameters)
     print(f"7. Parametrar: {msg}")
@@ -670,6 +966,13 @@ def main() -> int:
     timeframe = meta.get("timeframe", "1h")
     ok, msg = check_snapshot_exists(snapshot_id, symbol, timeframe)
     print(f"8. Snapshot & Data: {msg}")
+    if not ok:
+        all_ok = False
+    print()
+
+    # 8b. HTF requirements (om HTF-exits efterfrågas av config)
+    ok, msg = check_htf_requirements(meta, parameters)
+    print(f"8b. HTF requirements: {msg}")
     if not ok:
         all_ok = False
     print()
@@ -703,6 +1006,13 @@ def main() -> int:
             print("   [OK] Champion-validering OK")
     except Exception as e:
         print(f"   [WARN] Kunde inte köra champion-validering: {e}")
+    print()
+
+    # 11b. Champion drift smoke (fångar no-trade regressioner)
+    ok, msg = check_champion_drift_smoke(symbol, timeframe)
+    print(f"11b. Champion drift smoke: {msg}")
+    if not ok:
+        all_ok = False
     print()
 
     # 12. Precompute-funktionalitet

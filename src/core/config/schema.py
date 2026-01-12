@@ -173,8 +173,20 @@ class FibEntryConfig(RuntimeSection):
     long_min_level: float | None = None
     short_min_level: float | None = None
     short_max_level: float | None = None
-    missing_policy: str | None = None
+    # Backwards compatible default: older champions/configs omitted this field.
+    # We default to "pass" to avoid silently turning entry gates into a hard block.
+    missing_policy: str = Field(default="pass")
     override_confidence: FibOverrideConfidence | None = None
+
+    @field_validator("missing_policy", mode="before")
+    @classmethod
+    def _validate_missing_policy(cls, v: Any) -> str:
+        if v is None:
+            return "pass"
+        policy = str(v).lower().strip()
+        if policy in {"pass", "block"}:
+            return policy
+        raise ValueError("missing_policy must be 'pass' or 'block'")
 
     @field_validator("targets", "long_target_levels", "short_target_levels", mode="before")
     @classmethod

@@ -545,7 +545,9 @@ def decide(
 
         missing_allowed = False
         if not htf_ctx.get("available"):
-            missing_policy = str(htf_entry_cfg.get("missing_policy", "block")).lower()
+            # Backwards compatible: configs may omit missing_policy or carry None.
+            # Default to "pass" so older champions do not become no-trade configs.
+            missing_policy = str(htf_entry_cfg.get("missing_policy") or "pass").lower()
             state_out["htf_fib_entry_debug"] = {
                 "reason": "UNAVAILABLE",
                 "raw": htf_ctx,
@@ -786,7 +788,9 @@ def decide(
 
         missing_allowed_ltf = False
         if not ltf_ctx.get("available"):
-            missing_policy = str(ltf_entry_cfg.get("missing_policy", "block")).lower()
+            # Backwards compatible: configs may omit missing_policy or carry None.
+            # Default to "pass" so older champions do not become no-trade configs.
+            missing_policy = str(ltf_entry_cfg.get("missing_policy") or "pass").lower()
             state_out["ltf_fib_entry_debug"] = {
                 "reason": "UNAVAILABLE",
                 "raw": ltf_ctx,

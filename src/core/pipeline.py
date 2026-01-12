@@ -5,6 +5,11 @@ from typing import Any
 
 import yaml
 
+try:
+    from dotenv import load_dotenv
+except ImportError:  # pragma: no cover
+    load_dotenv = None
+
 from core.backtest.engine import BacktestEngine
 from core.utils.optuna_helpers import set_global_seeds
 
@@ -19,6 +24,16 @@ class GenesisPipeline:
 
     def __init__(self):
         self.root_dir = Path(__file__).resolve().parents[2]
+
+        # Load local .env once for CLI/dev convenience.
+        # NOTE: We never override already-set environment variables.
+        if load_dotenv is not None:
+            try:
+                load_dotenv(dotenv_path=self.root_dir / ".env", override=False)
+            except Exception:
+                # Defensive: never break runtime due to dotenv parsing.
+                pass
+
         self.config_dir = self.root_dir / "config"
         self.defaults = self._load_defaults()
 

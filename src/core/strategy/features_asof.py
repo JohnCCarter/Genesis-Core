@@ -397,7 +397,7 @@ def _extract_asof(
 
     # ATR (use precomputed if available)
 
-    # Determine ATR period from config (default 14)
+    # Determine ATR period used by signal_adaptation (default 14)
     thresholds = (config or {}).get("thresholds") or {}
     sig_adapt = thresholds.get("signal_adaptation") or {}
     atr_period = int(sig_adapt.get("atr_period", 14))
@@ -435,6 +435,29 @@ def _extract_asof(
         if atr_vals:
             atr_window_56 = atr_vals[-56:]
             current_atr = atr_vals[-1]
+
+    # Always compute true ATR(14) for legacy feature key stability.
+    # This prevents semantic drift where features["atr_14"] accidentally becomes ATR(atr_period).
+    atr14_vals = None
+    atr14_current = None
+    if atr_period == 14:
+        atr14_vals = atr_vals
+        atr14_current = float(atr_vals[-1]) if atr_vals else None
+    else:
+        pre_atr14_full = pre.get("atr_14")
+        if isinstance(pre_atr14_full, list | tuple) and len(pre_atr14_full) > pre_idx:
+            atr14_current = float(pre_atr14_full[pre_idx])
+            atr14_vals = list(pre_atr14_full[: pre_idx + 1])
+        else:
+            key_atr14 = make_indicator_fingerprint("atr_14", params={"period": 14}, series=closes)
+            cached_atr14 = _indicator_cache_lookup(key_atr14)
+            if cached_atr14 is not None and len(cached_atr14) >= asof_bar + 1:
+                atr14_vals = cached_atr14[: asof_bar + 1]
+            else:
+                atr14_full = calculate_atr(highs, lows, closes, period=14)
+                _indicator_cache_store(key_atr14, atr14_full)
+                atr14_vals = atr14_full
+            atr14_current = float(atr14_vals[-1]) if atr14_vals else None
 
     # ATR Long (needed for Vol Shift if not precomputed)
     pre_atr50_full = pre.get("atr_50")
@@ -551,7 +574,7 @@ def _extract_asof(
         "bb_position_inv_ma3": _clip(bb_position_inv_ma3, 0.0, 1.0),
         "rsi_vol_interaction": _clip(rsi_vol_interaction, -2.0, 2.0),
         "vol_regime": vol_regime,
-        "atr_14": float(atr_vals[-1]) if atr_vals else 0.0,
+        "atr_14": float(atr14_current) if atr14_current is not None else 0.0,
     }
 
     # === FIBONACCI FEATURES (levels + distances/proximity) ===
@@ -833,7 +856,11 @@ def _extract_asof(
         "total_bars_available": total_bars,
         "htf_fibonacci": htf_fibonacci_context,  # NEW: HTF context for exit logic
         "ltf_fibonacci": ltf_fibonacci_context,
-        "current_atr": float(atr_vals[-1]) if atr_vals else None,
+        # Backcompat: current_atr aligns with features['atr_14'] (true ATR(14))
+        "current_atr": float(atr14_current) if atr14_current is not None else None,
+        # Transparency: show the ATR used for signal_adaptation (may be != 14)
+        "current_atr_used": float(atr_vals[-1]) if atr_vals else None,
+        "atr_period_used": atr_period,
         "atr_percentiles": atr_percentiles,
         "htf_selector": htf_selector_meta,
     }

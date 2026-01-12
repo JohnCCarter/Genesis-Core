@@ -199,7 +199,9 @@ def evaluate_pipeline(
         except Exception:
             last_close = None
 
-    current_atr = _safe_float(feats.get("atr_14"))
+    current_atr = _safe_float(feats_meta.get("current_atr_used"))
+    if current_atr is None:
+        current_atr = _safe_float(feats.get("atr_14"))
     atr_pct = None
     if current_atr is not None and last_close is not None and last_close > 0:
         atr_pct = float(current_atr / last_close)
@@ -318,7 +320,7 @@ def evaluate_pipeline(
 
     state = {
         **state,
-        "current_atr": feats.get("atr_14"),
+        "current_atr": current_atr,
         "atr_percentiles": feats_meta.get("atr_percentiles"),
         "htf_fib": htf_fib_data,
         "ltf_fib": ltf_fib_data,

@@ -4,6 +4,8 @@ Backtest engine for Genesis-Core.
 Replays historical candle data bar-by-bar through the existing strategy pipeline.
 """
 
+import hashlib
+import json
 import os
 import subprocess
 import warnings
@@ -165,6 +167,25 @@ class BacktestEngine:
                 merged[key] = value
         return merged
 
+    def _config_fingerprint(self, configs: dict[str, Any]) -> str:
+        """Return a stable fingerprint of the effective config used by the backtest.
+
+        Notes:
+        - Excludes volatile/large keys (e.g. precomputed feature arrays and _global_index).
+        - Scrubs non-deterministic meta fields like champion_loaded_at timestamps.
+        """
+
+        scrubbed: dict[str, Any] = dict(configs or {})
+        scrubbed.pop("precomputed_features", None)
+        scrubbed.pop("_global_index", None)
+
+        meta = dict(scrubbed.get("meta") or {})
+        meta.pop("champion_loaded_at", None)
+        scrubbed["meta"] = meta
+
+        payload = json.dumps(scrubbed, sort_keys=True, separators=(",", ":"), default=str)
+        return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
     def _init_htf_exit_engine(self, htf_exit_config: dict | None) -> None:
         """Initialize HTF Fibonacci Exit Engine with defaults + optional override."""
         default_htf_config = {
@@ -254,6 +275,18 @@ class BacktestEngine:
                 self.timeframe,
             )
 
+        # Normalize timestamps to UTC to avoid tz-naive vs tz-aware comparison bugs
+        # when applying start/end filters (and to keep behavior deterministic across
+        # different Parquet engines / pandas versions).
+        if "timestamp" in base_df.columns:
+            ts = base_df["timestamp"]
+            if pd.api.types.is_datetime64tz_dtype(ts):
+                # Ensure UTC
+                base_df["timestamp"] = ts.dt.tz_convert("UTC")
+            else:
+                # Localize/convert to UTC (assume naive timestamps are UTC)
+                base_df["timestamp"] = pd.to_datetime(ts, utc=True, errors="coerce")
+
         # Load HTF (1D) candles for HTF-related features/exits.
         # NOTE: HTF context (and therefore HTF-exit tuning) is effectively inert if 1D data is missing.
         self.htf_candles_df = None
@@ -273,6 +306,10 @@ class BacktestEngine:
                         columns=["timestamp", "open", "high", "low", "close"],
                         engine="pyarrow",
                     )
+                    if "timestamp" in self.htf_candles_df.columns:
+                        self.htf_candles_df["timestamp"] = pd.to_datetime(
+                            self.htf_candles_df["timestamp"], utc=True, errors="coerce"
+                        )
                     self.htf_candles_source = str(htf_file)
                     _LOGGER.debug(
                         "Loaded %s HTF candles from %s",
@@ -294,12 +331,12 @@ class BacktestEngine:
 
         # Filter by date range if specified
         if self.start_date:
-            start_dt = pd.to_datetime(self.start_date)
+            start_dt = pd.to_datetime(self.start_date, utc=True)
             self.candles_df = self.candles_df[self.candles_df["timestamp"] >= start_dt]
             _LOGGER.debug("Applied start_date filter: %s", self.start_date)
 
         if self.end_date:
-            end_dt = pd.to_datetime(self.end_date)
+            end_dt = pd.to_datetime(self.end_date, utc=True)
             self.candles_df = self.candles_df[self.candles_df["timestamp"] <= end_dt]
             _LOGGER.debug("Applied end_date filter: %s", self.end_date)
 
@@ -611,9 +648,21 @@ class BacktestEngine:
 
         configs = configs or {}
 
-        champion_cfg = self.champion_loader.load_cached(self.symbol, self.timeframe)
-        # Deep merge configs to preserve nested overrides
-        configs = self._deep_merge(champion_cfg.config, configs)
+        meta = configs.setdefault("meta", {})
+        skip_champion_merge = bool(meta.get("skip_champion_merge"))
+
+        champion_cfg = None
+        if not skip_champion_merge:
+            champion_cfg = self.champion_loader.load_cached(self.symbol, self.timeframe)
+            # Deep merge configs to preserve nested overrides
+            configs = self._deep_merge(champion_cfg.config, configs)
+            meta = configs.setdefault("meta", {})
+            meta.setdefault("champion_source", champion_cfg.source)
+            meta.setdefault("champion_version", champion_cfg.version)
+            meta.setdefault("champion_checksum", champion_cfg.checksum)
+            meta.setdefault("champion_loaded_at", champion_cfg.loaded_at)
+        else:
+            meta.setdefault("champion_source", "explicit_backtest_config")
 
         # IMPORTANT: Apply HTF exit config from merged runtime/trial configs.
         # The engine is constructed before configs are known (CLI loads config after create_engine),
@@ -626,11 +675,9 @@ class BacktestEngine:
         ):
             configs["precomputed_features"] = dict(self._precomputed_features)
 
-        meta = configs.setdefault("meta", {})
-        meta.setdefault("champion_source", champion_cfg.source)
-        meta.setdefault("champion_version", champion_cfg.version)
-        meta.setdefault("champion_checksum", champion_cfg.checksum)
-        meta.setdefault("champion_loaded_at", champion_cfg.loaded_at)
+        # Record a stable fingerprint of the effective config used.
+        # Stored on the engine and emitted via backtest_info for debugging/tracing.
+        self._effective_config_fingerprint = self._config_fingerprint(configs)
 
         _LOGGER.info(
             "Running backtest: %s %s | period=%s..%s | bars=%s (warmup=%s) | capital=$%s",
@@ -1271,6 +1318,9 @@ class BacktestEngine:
                     "htf_candles_source": self.htf_candles_source,
                     "htf_context_seen": bool(getattr(self, "_htf_context_seen", False)),
                 },
+                "effective_config_fingerprint": getattr(
+                    self, "_effective_config_fingerprint", None
+                ),
                 "git_hash": git_hash,
                 "seed": os.environ.get("GENESIS_RANDOM_SEED", "unknown"),
                 "timestamp": datetime.now().isoformat(),

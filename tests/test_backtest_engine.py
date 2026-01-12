@@ -129,7 +129,7 @@ def test_engine_load_data_date_filter_handles_tz_aware(monkeypatch):
     original_exists = Path.exists
 
     def _fake_exists(self: Path) -> bool:
-        if str(self).endswith("data\\raw\\tBTCUSD_15m_frozen.parquet"):
+        if self.name == "tBTCUSD_15m_frozen.parquet" and "raw" in self.parts:
             return True
         return original_exists(self)
 

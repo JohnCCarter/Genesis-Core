@@ -258,6 +258,30 @@ parameters:
 
 #### Use Continuous Parameters
 
+### 4. Different Parameters But Identical Outcomes
+
+**Symptoms:**
+
+- Two trials have different parameter payloads, but produce identical trades/metrics.
+
+**First question to answer:** Are the trials actually running different _effective configs_?
+
+**How to verify (authoritatively):**
+
+- Check `backtest_info.effective_config_fingerprint` in the backtest artifact JSON.
+  - If the fingerprint is the same, the _effective config_ was the same (override/caching/merge).
+  - If the fingerprint differs, the configs truly differed — the parameter may simply be inert.
+
+**Common cause of “inert” parameters:**
+
+- In `decision.py`, if `regime_proba` is a dict, the regime-specific threshold is used.
+  In that case, changing a zoned `entry_conf_overall` may not affect the final threshold.
+
+**Practical recommendation:**
+
+- Prefer tuning parameters that are demonstrably on the active decision path.
+- When in doubt, run a tiny GRID smoke test (2–5 combos) and confirm that trades/metrics diverge.
+
 ```yaml
 # Discrete only - limited
 parameters:

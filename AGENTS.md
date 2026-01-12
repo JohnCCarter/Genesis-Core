@@ -6,6 +6,12 @@ This document explains the current workflow for Genesis-Core, highlights today's
 
 ## 1. Deliverables (latest highlights: 2026-01-09)
 
+- **VALIDATION TRUST REBUILD (2026-01-12)**: Återställde spårbarhet för OOS-validering när olika configs verkade ge identiska outcomes.
+
+  - **Audit-fingerprint**: Backtest-resultat inkluderar nu `backtest_info.effective_config_fingerprint` så varje artifact kan bevisa vilken _effective config_ som faktiskt kördes.
+  - **Config authority**: Optimerings-/valideringskörningar kan isoleras från implicit champion-merge via `meta.skip_champion_merge` (förhindrar tyst override).
+  - **Praktisk tolkning**: Om två trials får olika fingerprint men identiskt outcome betyder det ofta att parametern inte är aktivt styrande (ex. `signal_adaptation` kan vara aktiv men vissa subfält påverkar inte beslut när `regime_proba` är en dict och tröskeln tas från regim-värdet).
+
 - **SECURITY + CI HARDENING (2026-01-09)**: Åtgärdade CodeQL/Code Scanning findings:
 
   - Sanitiserade client-facing fel så att exception-texter inte läcker (API-responser och feature/HTF-meta), med server-side logging + `error_id`.
@@ -595,6 +601,22 @@ pip install -e .[dev,ml]
 - [ ] `GENESIS_RANDOM_SEED` satt (runner sätter 42 om saknas) – reproducera 2×.
 - [ ] `OPTUNA_MAX_DUPLICATE_STREAK` satt till högt värde (≥200).
 - [ ] Sökrymden ger trades i smoke (2–5 trials) innan långkörning.
+
+### Parameter-synergy (interaktioner) – tolkning
+
+`scripts/optimizer.py synergy <run_id>` skriver:
+
+- `param_synergy_singles.csv` (en parameter i taget)
+- `param_synergy_pairs.csv` (parvisa interaktioner)
+
+Snabba tumregler (för att undvika över-tolkning):
+
+1. **Se detta som hypotesgenerator** – inte “bevis”. Plocka topp-1–3 par och validera i en separat körning.
+2. **Minsta datamängd**: undvik slutsatser på små runs. Som riktvärde: ≥200 giltiga trials innan du litar på rankingen.
+3. **Minsta stöd per bin/par**: ignorera rader med låg `n` (t.ex. <30–50). Små grupper tenderar att ge spurious “synergy”.
+4. **Kolla om parametrar faktiskt varierade**: om en parameter har `lift=0` och/eller bara en kategori/bin, så är den i praktiken konstant i sökrymden.
+5. **Synergy-definitionen här är relativ**: “synergy” = bästa par-median minus bästa single-median. Om bästa single redan förklarar vinsten kan synergy bli 0 även om paret är bra.
+6. **Jämför bara inom samma mode/fönster**: canonical flags (`GENESIS_FAST_WINDOW`, `GENESIS_PRECOMPUTE_FEATURES`) + samma sample-range. Annars blandar du äpplen och päron.
 
 #### Status 2025-11-11
 

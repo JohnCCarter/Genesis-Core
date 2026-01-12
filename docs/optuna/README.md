@@ -125,6 +125,13 @@ Se `OPTUNA_VS_BACKTEST_CONFIG_DIFFERENCE.md` för fullständig checklista. Kortf
 - [ ] Verifiera att signal_adaptation.zones styr (inte top-level trösklar)
 - [ ] **Config-equivalence proof**: kör `scripts/check_trial_config_equivalence.py --run-dir results/hparam_search/<run_id> --all` och kräv `[OK]`
 
+### OOS/validation: spårbarhet för _effective config_
+
+- Backtest artifacts innehåller `backtest_info.effective_config_fingerprint`.
+  - Om två runs har samma fingerprint har de (per definition) kört samma _effective config_.
+  - Om fingerprints skiljer sig men outcome är identiskt är parametern ofta inert (inte aktivt styrande).
+- Optimerings-/valideringskörningar kan isoleras från implicit champion-merge via `meta.skip_champion_merge`.
+
 ## Relaterade Filer
 
 - `config/optimizer/` - Optuna-konfigurationer

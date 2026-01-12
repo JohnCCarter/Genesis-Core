@@ -15,10 +15,10 @@
     "champion": "config/models/tBTCUSD_1h.json"
   },
   "tBTCUSD:3h": {
-    "champion": "results/models/tBTCUSD_3h_v3_top8_v18.json"
+    "champion": "config/models/tBTCUSD_3h.json"
   },
   "tBTCUSD:6h": {
-    "champion": "results/models/tBTCUSD_6h_v3_top8_v18.json"
+    "champion": "config/models/tBTCUSD_6h.json"
   },
   "tBTCUSD:12h": {
     "champion": "config/models/tBTCUSD_12h.json"

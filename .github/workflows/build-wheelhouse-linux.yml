@@ -1,0 +1,178 @@
+name: Build Linux wheelhouse
+
+# Least-privilege for GITHUB_TOKEN (explicit permissions avoids inheriting broader defaults).
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches-ignore:
+      - "archive/**"
+      - "Archive/**"
+
+jobs:
+  build-wheelhouse:
+    runs-on: ubuntu-latest
+    # Needed for checkout/fetch (contents: read) and artifact upload (actions: write).
+    permissions:
+      contents: read
+      actions: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Prepare wheelhouse requirements (filtered)
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - << 'PY'
+          import re
+          from pathlib import Path
+
+          src = Path('requirements.lock')
+          if not src.exists():
+            raise SystemExit('[wheelhouse] requirements.lock not found in repo root')
+
+          lines = src.read_text(encoding='utf-8', errors='strict').splitlines()
+
+          # Keep only pinned requirements of the form name==version.
+          # Exclude direct URL/path requirements (e.g. "genesis-core @ file://...")
+          pinned = []
+          for line in lines:
+            line = line.strip()
+            if not line or line.startswith('#'):
+              continue
+            if ' @ ' in line:
+              continue
+            if re.match(r'^[A-Za-z0-9_.-]+==[^=].+$', line):
+              pinned.append(line)
+
+          out = Path('_wheelhouse_requirements_filtered.txt')
+          out.write_text('\n'.join(pinned) + '\n', encoding='utf-8')
+          print(f'[wheelhouse] wrote {out} with {len(pinned)} pinned lines')
+          PY
+
+      - name: Download pinned wheels (binary-only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p wheelhouse
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip download \
+            --dest wheelhouse \
+            --only-binary=:all: \
+            --progress-bar off \
+            --requirement _wheelhouse_requirements_filtered.txt
+
+      - name: Ensure dev+ml extras are present (binary-only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - << 'PY'
+          import tomllib
+          from pathlib import Path
+          from packaging.requirements import Requirement
+          from packaging.utils import canonicalize_name
+
+          pyproject = Path('pyproject.toml')
+          data = tomllib.loads(pyproject.read_text(encoding='utf-8'))
+          opt = (data.get('project', {}) or {}).get('optional-dependencies', {}) or {}
+
+          wanted = set()
+          for extra in ('dev', 'ml'):
+            for spec in opt.get(extra, []):
+              wanted.add(canonicalize_name(Requirement(spec).name))
+
+          # Always include build tools in wheelhouse.
+          wanted.update({canonicalize_name(n) for n in ('pip', 'setuptools', 'wheel')})
+
+          wh = Path('wheelhouse')
+          present = {canonicalize_name(p.name.split('-', 1)[0]) for p in wh.glob('*.whl')}
+
+          missing = sorted(wanted - present)
+          print(f'[wheelhouse] extras/dev+ml unique={len(wanted)} present={len(present)} missing={len(missing)}')
+
+          req = Path('_wheelhouse_extras_missing.txt')
+          req.write_text('\n'.join(missing) + '\n', encoding='utf-8')
+          print(f'[wheelhouse] wrote {req}')
+          for name in missing:
+            print(f'[wheelhouse] missing={name}')
+          PY
+
+          if [ -s _wheelhouse_extras_missing.txt ]; then
+            python -m pip download \
+              --dest wheelhouse \
+              --only-binary=:all: \
+              --progress-bar off \
+              --requirement _wheelhouse_extras_missing.txt
+          fi
+
+      - name: Verify wheelhouse
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - << 'PY'
+          from pathlib import Path
+
+          wh = Path('wheelhouse')
+          wheels = sorted(wh.glob('*.whl'))
+          print(f'[wheelhouse] whl_count={len(wheels)}')
+          if not wheels:
+            raise SystemExit('[wheelhouse] ERROR: wheelhouse is empty')
+
+          def has(prefix: str) -> str:
+            return ','.join(p.name for p in wheels if p.name.startswith(prefix + '-'))
+
+          pip_w = has('pip')
+          setuptools_w = has('setuptools')
+          wheel_w = has('wheel')
+
+          print(f'[wheelhouse] pip_wheels={pip_w}')
+          print(f'[wheelhouse] setuptools_wheels={setuptools_w}')
+          print(f'[wheelhouse] wheel_wheels={wheel_w}')
+
+          if not pip_w or not setuptools_w or not wheel_w:
+            raise SystemExit('[wheelhouse] ERROR: missing pip/setuptools/wheel wheels')
+          PY
+
+      - name: Create zip (wheelhouse/ inside)
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - << 'PY'
+          import os
+          import zipfile
+          from pathlib import Path
+
+          wh = Path('wheelhouse')
+          out = Path(f"genesis-core-wheelhouse_py311_linux_x86_64_{os.environ.get('GITHUB_RUN_ID','local')}.zip")
+
+          with zipfile.ZipFile(out, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=6) as z:
+            for p in sorted(wh.glob('*.whl')):
+              z.write(p, arcname='wheelhouse/' + p.name)
+
+          with zipfile.ZipFile(out, 'r') as z:
+            names = z.namelist()
+            ok = any(n.startswith('wheelhouse/') for n in names)
+            print(f'[wheelhouse] zip_path={out.resolve()}')
+            print(f'[wheelhouse] zip_entries={len(names)}')
+            print(f'[wheelhouse] zip_has_wheelhouse_dir={ok}')
+            if not ok:
+              raise SystemExit('[wheelhouse] ERROR: zip does not contain wheelhouse/ entries')
+          PY
+
+      - name: Upload wheelhouse zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheelhouse-linux-py311
+          path: genesis-core-wheelhouse_py311_linux_x86_64_*.zip
+          if-no-files-found: error

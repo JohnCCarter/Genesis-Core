@@ -206,6 +206,10 @@ results/evaluation/**/*.ndjson
 bandit-report.txt
 bandit-report.json
 
+# Offline wheelhouse artifacts (local/CI exports, never commit)
+wheelhouse/
+genesis-core-wheelhouse_*.zip
+
 # Keep results documentation and archives
 !results/README.md
 !results/**/README.md

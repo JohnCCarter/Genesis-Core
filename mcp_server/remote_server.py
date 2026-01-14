@@ -204,8 +204,15 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
 
     # Streamable HTTP transport (ChatGPT remote MCP)
-    # Explicitly use PORT env var if set, otherwise default to 8000
-    port = int(os.environ.get("PORT", 8000))
+    # Prefer a dedicated MCP port variable to avoid clashing with FastAPI's PORT.
+    # Backward-compatible fallback: PORT (common convention in hosting platforms).
+    port_raw = (
+        os.environ.get("GENESIS_MCP_PORT") or os.environ.get("MCP_PORT") or os.environ.get("PORT")
+    )
+    try:
+        port = int(port_raw) if port_raw else 8000
+    except ValueError:
+        port = 8000
     print(f"Starting MCP server on port {port}...")
 
     # Use uvicorn directly to control port.

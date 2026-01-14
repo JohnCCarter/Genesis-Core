@@ -42,7 +42,19 @@ jobs:
           if not src.exists():
             raise SystemExit('[wheelhouse] requirements.lock not found in repo root')
 
-          lines = src.read_text(encoding='utf-8', errors='strict').splitlines()
+          raw = src.read_bytes()
+          # requirements.lock may be UTF-16LE (common on Windows). Decode robustly.
+          if raw.startswith(b'\xff\xfe') or raw.startswith(b'\xfe\xff'):
+            text = raw.decode('utf-16')
+          elif raw.startswith(b'\xef\xbb\xbf'):
+            text = raw.decode('utf-8-sig')
+          else:
+            try:
+              text = raw.decode('utf-8')
+            except UnicodeDecodeError:
+              text = raw.decode('utf-16')
+
+          lines = text.splitlines()
 
           # Keep only pinned requirements of the form name==version.
           # Exclude direct URL/path requirements (e.g. "genesis-core @ file://...")
@@ -51,7 +63,8 @@ jobs:
             line = line.strip()
             if not line or line.startswith('#'):
               continue
-            if ' @ ' in line:
+            # Skip direct references (PEP 508 style), both spaced and unspaced: "pkg @ url" / "pkg@url".
+            if '@' in line:
               continue
             if re.match(r'^[A-Za-z0-9_.-]+==[^=].+$', line):
               pinned.append(line)
@@ -96,6 +109,31 @@ jobs:
               return None
             return _canonicalize_name(m.group(0))
 
+          _WHEEL_VERSION_RE = re.compile(r"^\d+(?:\.\d+)+")
+
+          def _dist_from_wheel_filename(filename: str) -> str | None:
+            """Best-effort extraction of dist name from a wheel filename.
+
+            Wheel: {dist}-{version}(-{build})?-{py}-{abi}-{platform}.whl
+            Dist itself may contain dashes.
+            """
+            if not filename.endswith('.whl'):
+              return None
+            stem = filename[:-4]
+            parts = stem.split('-')
+            if len(parts) < 5:
+              return None
+            version_or_build = parts[-4]
+            # If parts[-4] looks like a version, assume no build tag.
+            if _WHEEL_VERSION_RE.match(version_or_build):
+              dist = '-'.join(parts[:-4])
+            else:
+              # Otherwise assume we have a build tag and version sits at -5.
+              if len(parts) < 6:
+                return None
+              dist = '-'.join(parts[:-5])
+            return _canonicalize_name(dist)
+
           pyproject = Path('pyproject.toml')
           data = tomllib.loads(pyproject.read_text(encoding='utf-8'))
           opt = (data.get('project', {}) or {}).get('optional-dependencies', {}) or {}
@@ -111,7 +149,11 @@ jobs:
           wanted.update({_canonicalize_name(n) for n in ('pip', 'setuptools', 'wheel')})
 
           wh = Path('wheelhouse')
-          present = {_canonicalize_name(p.name.split('-', 1)[0]) for p in wh.glob('*.whl')}
+          present = set()
+          for p in wh.glob('*.whl'):
+            dist = _dist_from_wheel_filename(p.name)
+            if dist:
+              present.add(dist)
 
           missing = sorted(wanted - present)
           print(f'[wheelhouse] extras/dev+ml unique={len(wanted)} present={len(present)} missing={len(missing)}')

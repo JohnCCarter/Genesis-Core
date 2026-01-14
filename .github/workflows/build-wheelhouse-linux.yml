@@ -79,9 +79,22 @@ jobs:
           set -euo pipefail
           python - << 'PY'
           import tomllib
+          import re
           from pathlib import Path
-          from packaging.requirements import Requirement
-          from packaging.utils import canonicalize_name
+
+          _NAME_RE = re.compile(r"^[A-Za-z0-9_.-]+")
+
+          def _canonicalize_name(name: str) -> str:
+            # PEP 503-ish normalization: collapse runs of -_. to '-'
+            return re.sub(r"[-_.]+", "-", name).lower()
+
+          def _name_from_spec(spec: str) -> str | None:
+            # Extract the distribution name from an optional-dependencies entry.
+            # Handles e.g. "pytest>=7", "mcp", "foo[bar]>=1.0; python_version>'3.10'".
+            m = _NAME_RE.match(spec.strip())
+            if not m:
+              return None
+            return _canonicalize_name(m.group(0))
 
           pyproject = Path('pyproject.toml')
           data = tomllib.loads(pyproject.read_text(encoding='utf-8'))
@@ -90,13 +103,15 @@ jobs:
           wanted = set()
           for extra in ('dev', 'ml'):
             for spec in opt.get(extra, []):
-              wanted.add(canonicalize_name(Requirement(spec).name))
+              name = _name_from_spec(spec)
+              if name:
+                wanted.add(name)
 
           # Always include build tools in wheelhouse.
-          wanted.update({canonicalize_name(n) for n in ('pip', 'setuptools', 'wheel')})
+          wanted.update({_canonicalize_name(n) for n in ('pip', 'setuptools', 'wheel')})
 
           wh = Path('wheelhouse')
-          present = {canonicalize_name(p.name.split('-', 1)[0]) for p in wh.glob('*.whl')}
+          present = {_canonicalize_name(p.name.split('-', 1)[0]) for p in wh.glob('*.whl')}
 
           missing = sorted(wanted - present)
           print(f'[wheelhouse] extras/dev+ml unique={len(wanted)} present={len(present)} missing={len(missing)}')

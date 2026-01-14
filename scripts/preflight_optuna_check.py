@@ -932,6 +932,8 @@ def main() -> int:
     end_at = optuna_cfg.get("end_at")
     ok, msg = check_timeout_config(max_trials, timeout_seconds, end_at)
     print(f"6. Timeout/max_trials: {msg}")
+    if not ok:
+        all_ok = False
     print()
 
     # 6b. Mode flags (canonical mode)

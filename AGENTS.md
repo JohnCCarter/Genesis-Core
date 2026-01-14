@@ -1,10 +1,24 @@
 # README for AI Agents (Local Development)
 
-## Last update: 2026-01-09
+## Last update: 2026-01-14
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
 
-## 1. Deliverables (latest highlights: 2026-01-09)
+## 1. Deliverables (latest highlights: 2026-01-14)
+
+- **FEATURE/INDICATOR AUDIT (SSOT) + DOWNSTREAM CONSUMERS (2026-01-14)**: Producerade en evidence-based audit för `tBTCUSD_1h` (features → indikatorer → schema → scorer/Optuna/champion) och stängde kedjan till faktiska konsumenter (model/decision/exits).
+
+  - **Rapport (primär deliverable)**: `reports/feature_audit/audit_20260114_tBTCUSD_1h.md` (inkl. dubbel-baseline och provens-ankare från riktiga backtest-artefakter).
+  - **Runbook + mall**:
+    - `docs/analysis/FEATURE_INDICATOR_AUDIT_RUNBOOK.md` (metod: SSOT→schema→pipeline, risker och beviskrav)
+    - `docs/analysis/FEATURE_INDICATOR_AUDIT_PROMPT.md` (prompt/template för reproducerbar “read-only” granskning)
+  - **Automation (provenance extraction)**: `scripts/extract_backtest_provenance.py` + `tests/test_extract_backtest_provenance.py` för att plocka period/mode/provenance ur stora JSON-artefakter.
+  - **Schema-kontraktstest**: `tests/test_feature_schema_contract_tBTCUSD_1h.py` låser att SSOT producerar alla schema-keys med finita värden.
+  - **Bugfix + regressiontest (HTF exits)**:
+    - Fix: `src/core/backtest/engine.py` normaliserar HTF fib-nivåer till `htf_fib_0382/htf_fib_05/htf_fib_0618` även när context använder float-nycklar.
+    - Test: `tests/test_new_htf_exit_engine_adapter.py`.
+  - **Optuna preflight hardening**: `scripts/preflight_optuna_check.py` failar nu korrekt om timeout-checken misslyckas + regression i `tests/test_preflight_optuna_check.py`.
+  - **MCP remote QoL (ops)**: tydligare port-hantering via `GENESIS_MCP_PORT` i `mcp_server/remote_server.py` och dokumenterat i `.env.example`.
 
 - **VALIDATION TRUST REBUILD (2026-01-12)**: Återställde spårbarhet för OOS-validering när olika configs verkade ge identiska outcomes.
 
@@ -440,6 +454,12 @@ Champion file: `config/strategy/champions/tBTCUSD_1h.json`
    - If many trials are `aborted_by_heuristic`, ensure abort outcomes are treated as a clearly bad signal (not neutral) so the
      sampler learns to avoid those regions.
    - Re-run the same trial-outcome analysis on a newer (post-Scoring-v2) run to verify if the failure mode still dominates.
+
+6. **Audit/traceability (stabilization)**:
+
+- Återanvänd runbooken för fler symbol/timeframes (om/innan fler modeller läggs till) och håll rapporterna evidence-based.
+- Håll audit-verktyg och regressiontester “gröna” via full QA-körning (black/ruff/bandit/pytest/pre-commit) före merge.
+- Om MCP/ops-diffar inte hör ihop med trading/audit: dela upp i separata commits/PR för enklare granskning.
 
 ## 9. Recent history (Phase-7a/7b, 21 Oct 2025)
 

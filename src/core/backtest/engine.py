@@ -1044,9 +1044,39 @@ class BacktestEngine:
         if getattr(self, "_use_new_exit_engine", False):
             # Adapter for New Engine (Phase 1)
             side_int = 1 if position.side == "LONG" else -1
-            # Wrap dictionary in Series for compatibility
+            # Normalize levels to the keys expected by the strategy-level engine.
+            # The strategy engine reads: htf_fib_0382, htf_fib_05, htf_fib_0618.
+            # Our context may store levels keyed by floats (0.382/0.5/0.618) or strings.
             htf_levels = htf_fib_context.get("levels", {})
-            htf_data = pd.Series(htf_levels)
+            if not isinstance(htf_levels, dict):
+                htf_levels = {}
+
+            def _coerce_float(value: Any) -> float | None:
+                try:
+                    return float(value)
+                except Exception:  # nosec B110
+                    return None
+
+            def _get_level(*candidates: Any) -> float | None:
+                for cand in candidates:
+                    if cand in htf_levels:
+                        v = _coerce_float(htf_levels.get(cand))
+                        if v is not None:
+                            return v
+                    s = str(cand)
+                    if s in htf_levels:
+                        v = _coerce_float(htf_levels.get(s))
+                        if v is not None:
+                            return v
+                return None
+
+            htf_data = pd.Series(
+                {
+                    "htf_fib_0382": _get_level("htf_fib_0382", 0.382),
+                    "htf_fib_05": _get_level("htf_fib_05", 0.5),
+                    "htf_fib_0618": _get_level("htf_fib_0618", 0.618),
+                }
+            )
 
             signal_or_actions = self.htf_exit_engine.check_exits(
                 current_price=current_price,

@@ -18,6 +18,10 @@ jobs:
     permissions:
       contents: read
       actions: write
+    
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
 
     steps:
       - name: Checkout
@@ -28,7 +32,33 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python-version }}
+
+      - name: Detect Python and platform tags
+        id: detect-tags
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - << 'PY'
+          import sys
+          import sysconfig
+          import os
+          
+          # Get Python version tag (e.g., py311, py312, py313)
+          version_info = sys.version_info
+          py_tag = f"py{version_info.major}{version_info.minor}"
+          
+          # Get platform tag (e.g., linux_x86_64, linux_aarch64)
+          platform = sysconfig.get_platform().replace('-', '_').replace('.', '_')
+          
+          # Write to GitHub output
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+            f.write(f"python_tag={py_tag}\n")
+            f.write(f"platform_tag={platform}\n")
+          
+          print(f"[wheelhouse] python_tag={py_tag}")
+          print(f"[wheelhouse] platform_tag={platform}")
+          PY
 
       - name: Prepare wheelhouse requirements (filtered)
         shell: bash
@@ -203,6 +233,9 @@ jobs:
 
       - name: Create zip (wheelhouse/ inside)
         shell: bash
+        env:
+          PYTHON_TAG: ${{ steps.detect-tags.outputs.python_tag }}
+          PLATFORM_TAG: ${{ steps.detect-tags.outputs.platform_tag }}
         run: |
           set -euo pipefail
           python - << 'PY'
@@ -211,7 +244,10 @@ jobs:
           from pathlib import Path
 
           wh = Path('wheelhouse')
-          out = Path(f"genesis-core-wheelhouse_py311_linux_x86_64_{os.environ.get('GITHUB_RUN_ID','local')}.zip")
+          python_tag = os.environ['PYTHON_TAG']
+          platform_tag = os.environ['PLATFORM_TAG']
+          run_id = os.environ.get('GITHUB_RUN_ID', 'local')
+          out = Path(f"genesis-core-wheelhouse_{python_tag}_{platform_tag}_{run_id}.zip")
 
           with zipfile.ZipFile(out, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=6) as z:
             for p in sorted(wh.glob('*.whl')):
@@ -230,6 +266,6 @@ jobs:
       - name: Upload wheelhouse zip
         uses: actions/upload-artifact@v4
         with:
-          name: wheelhouse-linux-py311
-          path: genesis-core-wheelhouse_py311_linux_x86_64_*.zip
+          name: wheelhouse-linux-${{ steps.detect-tags.outputs.python_tag }}
+          path: genesis-core-wheelhouse_${{ steps.detect-tags.outputs.python_tag }}_${{ steps.detect-tags.outputs.platform_tag }}_*.zip
           if-no-files-found: error

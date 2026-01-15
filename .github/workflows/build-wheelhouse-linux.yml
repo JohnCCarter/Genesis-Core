@@ -55,8 +55,8 @@ jobs:
           # Get platform tag (e.g., linux_x86_64, linux_aarch64)
           platform = sysconfig.get_platform().replace('-', '_').replace('.', '_')
           
-          # Write to GitHub output
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+          # Write to GitHub output (overwrite for this step to avoid duplicate entries on retry)
+          with open(os.environ['GITHUB_OUTPUT'], 'w') as f:
             f.write(f"python_tag={py_tag}\n")
             f.write(f"platform_tag={platform}\n")
           

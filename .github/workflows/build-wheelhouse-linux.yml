@@ -271,5 +271,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: wheelhouse-linux-${{ steps.detect-tags.outputs.python_tag }}
-          path: genesis-core-wheelhouse_${{ steps.detect-tags.outputs.python_tag }}_${{ steps.detect-tags.outputs.platform_tag }}_*.zip
+          path: genesis-core-wheelhouse_${{ steps.detect-tags.outputs.python_tag }}_${{ steps.detect-tags.outputs.platform_tag }}_${{ github.run_id }}.zip
           if-no-files-found: error

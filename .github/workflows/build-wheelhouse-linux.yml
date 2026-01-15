@@ -20,6 +20,10 @@ jobs:
       actions: write
     
     strategy:
+      # NOTE:
+      # - pyproject.toml currently sets Black and Ruff target-version to "py311".
+      # - Python 3.12 and 3.13 builds are treated as experimental for now; full
+      #   lint/format coverage is only guaranteed for Python 3.11.
       matrix:
         python-version: ["3.11", "3.12", "3.13"]
 

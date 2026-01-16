@@ -252,6 +252,7 @@ def check_backtest_comparability(
 def format_comparability_issues(issues: list[str], *, max_items: int = 6) -> str:
     if not issues:
         return ""
-    preview = "; ".join(issues[: max(1, int(max_items))])
+    max_items = max(1, max_items)  # Ensure at least one item is shown
+    preview = "; ".join(issues[:max_items])
     suffix = "; ..." if len(issues) > max_items else ""
     return f"{preview}{suffix}"

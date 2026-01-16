@@ -175,7 +175,7 @@ def evaluate_pipeline(
     if "_global_index" in configs:
         try:
             ema_idx = int(configs.get("_global_index"))
-        except Exception:
+        except (TypeError, ValueError):
             ema_idx = None
     if ema_idx is None and closes is not None:
         ema_idx = len(closes) - 1

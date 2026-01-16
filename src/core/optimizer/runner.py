@@ -220,9 +220,10 @@ def _read_json_cached(path: Path) -> Any:
     Enabled when GENESIS_OPTIMIZER_JSON_CACHE is truthy ("1" or "true",
     case- and whitespace-insensitive).
     """
-    use_cache = (
-        (os.environ.get("GENESIS_OPTIMIZER_JSON_CACHE") or "").strip().lower() in {"1", "true"}
-    )
+    use_cache = (os.environ.get("GENESIS_OPTIMIZER_JSON_CACHE") or "").strip().lower() in {
+        "1",
+        "true",
+    }
     if not use_cache:
         return _load_json_with_retries(path)
 

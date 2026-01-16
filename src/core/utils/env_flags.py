@@ -4,7 +4,6 @@ We centralize parsing to avoid common footguns such as `bool(os.environ.get(NAME
 treating the string "0" as truthy.
 """
 
-
 _FALSY_VALUES: set[str] = {"0", "false", "off", "no"}
 
 

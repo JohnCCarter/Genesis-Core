@@ -76,7 +76,9 @@ try:
 except Exception:
     _MAX_CACHE_SIZE = 500
 _indicator_cache = IndicatorCache(max_size=2048)
-_INDICATOR_CACHE_ENABLED = not env_flag_enabled(os.getenv("GENESIS_DISABLE_INDICATOR_CACHE"), default=False)
+_INDICATOR_CACHE_ENABLED = not env_flag_enabled(
+    os.getenv("GENESIS_DISABLE_INDICATOR_CACHE"), default=False
+)
 _PRECOMPUTE_DEBUG_ONCE = False
 _PRECOMPUTE_WARN_ONCE = False
 

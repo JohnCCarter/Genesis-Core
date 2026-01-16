@@ -23,7 +23,7 @@ def test_optimizer_json_cache_disabled_by_default(monkeypatch, tmp_path: Path) -
     monkeypatch.delenv("GENESIS_OPTIMIZER_JSON_CACHE", raising=False)
 
     p = tmp_path / "payload.json"
-    p.write_text("{\"x\": 1}", encoding="utf-8")
+    p.write_text('{"x": 1}', encoding="utf-8")
 
     runner._read_json_cached(p)
     runner._read_json_cached(p)
@@ -38,7 +38,7 @@ def test_optimizer_json_cache_enabled_is_case_insensitive(monkeypatch, tmp_path:
     monkeypatch.setenv("GENESIS_OPTIMIZER_JSON_CACHE", "TRUE")
 
     p = tmp_path / "payload.json"
-    p.write_text("{\"x\": 1}", encoding="utf-8")
+    p.write_text('{"x": 1}', encoding="utf-8")
 
     runner._read_json_cached(p)
     runner._read_json_cached(p)
@@ -48,7 +48,7 @@ def test_optimizer_json_cache_enabled_is_case_insensitive(monkeypatch, tmp_path:
 
 def test_optimizer_json_cache_disabled_for_empty_or_zero(monkeypatch, tmp_path: Path) -> None:
     p = tmp_path / "payload.json"
-    p.write_text("{\"x\": 1}", encoding="utf-8")
+    p.write_text('{"x": 1}', encoding="utf-8")
 
     runner._JSON_CACHE.clear()
     calls = _install_counting_loader(monkeypatch)

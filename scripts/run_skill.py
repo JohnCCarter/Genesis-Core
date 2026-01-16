@@ -11,10 +11,14 @@ def _repo_root() -> Path:
     return Path(__file__).resolve().parents[1]
 
 
-# Ensure repo root is importable when executing from scripts/.
+# Ensure repo root and src/ are importable when executing from scripts/.
+# - repo root is needed for top-level helper modules like tools/*
+# - src/ is needed for the actual project package (core/*)
 _repo = _repo_root()
-if str(_repo) not in sys.path:
-    sys.path.insert(0, str(_repo))
+_src = _repo / "src"
+for p in (str(_repo), str(_src)):
+    if p not in sys.path:
+        sys.path.insert(0, p)
 
 from core.governance.registry import validate_registry  # noqa: E402
 from tools.compare_backtest_results import (  # noqa: E402

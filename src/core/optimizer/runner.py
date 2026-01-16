@@ -211,9 +211,12 @@ def _load_json_with_retries(path: Path, retries: int = 3, delay: float = 0.1) ->
 def _read_json_cached(path: Path) -> Any:
     """Read JSON with optional mtime-based in-memory cache.
 
-    Enabled when GENESIS_OPTIMIZER_JSON_CACHE is truthy ('1', 'true', 'True').
+    Enabled when GENESIS_OPTIMIZER_JSON_CACHE is truthy ("1" or "true",
+    case- and whitespace-insensitive).
     """
-    use_cache = os.environ.get("GENESIS_OPTIMIZER_JSON_CACHE") in {"1", "true", "True"}
+    use_cache = (
+        (os.environ.get("GENESIS_OPTIMIZER_JSON_CACHE") or "").strip().lower() in {"1", "true"}
+    )
     if not use_cache:
         return _load_json_with_retries(path)
 

@@ -17,7 +17,8 @@ TASK (B + C):
 
    - Find the module(s) that compute features "as-of" (likely something like features_asof.py).
    - List every computed feature key, and for each, the upstream indicators used (RSI/ATR/BB/ADX/FIB/etc), and the input columns required.
-   - Note any env flags that affect feature computation (e.g., GENESIS_PRECOMPUTE_FEATURES, FAST_WINDOW, FAST_HASH, DISABLE_METRICS).
+
+- Note any env flags that affect feature computation (e.g., GENESIS_PRECOMPUTE_FEATURES, FAST_WINDOW, FAST_HASH, DISABLE_METRICS). Treat FAST_HASH as non-canonical if comparing outcomes.
 
 2. Inventory all indicator implementations:
 

@@ -63,9 +63,19 @@ Proactively suggest activating Plan Mode when:
 3. **Verify**: `pytest` → `black --check` → `ruff check` → `bandit`.
 4. **Docs**: Check existing `README.md`/`AGENTS.md` before creating new ones.
 
+### Repo Governance (Agents, Skills, Registry)
+
+- **Repo-local subagents** live under `.github/agents/` and define bounded roles (planning, audit, governance QA, ops runs).
+  Prefer these over editing any editor/extension-bundled agent files.
+- **Skills** are defined under `.github/skills/` and referenced by repo governance.
+- **Registry** lives under `registry/` (manifests/schemas/compacts/audit). If you change registry content, run
+  `python scripts/validate_registry.py`.
+
 ### FastAPI Endpoints
 
-`/ui`, `/strategy/evaluate`, `/public/candles`, `/auth/check`, `/paper/submit`, `/debug/auth`
+`/ui`, `/strategy/evaluate`, `/public/candles`, `/auth/check`, `/paper/submit`, `/debug/auth`, `/health`, `/metrics`,
+`/account/wallets`, `/account/positions`, `/account/orders`, `/config/runtime`, `/config/runtime/validate`,
+`/config/runtime/propose`
 
 ### Common Issues
 

@@ -3,7 +3,11 @@
     "genesis-core": {
       "command": ".venv/Scripts/python.exe",
       "args": ["-m", "mcp_server.server"],
-      "env": {}
+      "env": {
+        "GENESIS_FAST_WINDOW": "1",
+        "GENESIS_PRECOMPUTE_FEATURES": "1",
+        "GENESIS_FAST_HASH": "0"
+      }
     }
   }
 }

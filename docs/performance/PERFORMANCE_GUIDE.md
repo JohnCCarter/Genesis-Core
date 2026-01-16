@@ -20,7 +20,7 @@ Set these environment flags (or export via CI) before benchmarking to enable all
 - `GENESIS_MODE_EXPLICIT=1` – allow non-canonical execution modes (debug-only)
 - `GENESIS_RANDOM_SEED=42` – enforce deterministic sampling for reproducible profiling runs
 - `GENESIS_FEATURE_CACHE_SIZE=500` – control the LRU feature cache footprint (default 500)
-- `GENESIS_FAST_HASH=1` – opt into the lightweight feature-cache hashing scheme (safe for speed tests)
+- `GENESIS_FAST_HASH=1` – debug/perf-only: lightweight feature-cache hashing scheme (may change outcomes; avoid for comparable runs)
 - `GENESIS_OPTIMIZER_JSON_CACHE=1` – cache optimizer result JSON by `mtime` for faster summaries
 
 ### Canonical execution mode (quality decisions) 2025-12-18
@@ -33,6 +33,8 @@ Genesis-Core treats **fast_window=1 + precompute_features=1 ("1/1")** as the can
 - any reporting used for decisions
 
 Non-canonical runs (e.g. 0/0) are supported for debugging only and should not be compared against canonical results.
+
+For comparability, canonical runs should also keep `GENESIS_FAST_HASH=0` (pipeline enforces this; preflight can warn/fail).
 
 **Quick benchmark**
 

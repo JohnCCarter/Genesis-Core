@@ -11,7 +11,7 @@
 ### `workspace-rules.mdc` (Genesis-Core Rules)
 
 - **Purpose**: Project-specific technical rules
-- **Content**: Tech stack, stabilization policy, security, API endpoints
+- **Content**: Tech stack, stabilization policy, security, API endpoints, and repo governance (agents/skills/registry)
 - **Usage**: Applied specifically when working on Genesis-Core code
 
 ### `architecture.md` (Architecture & Reference)
@@ -57,4 +57,4 @@ When updating common sections, ensure consistency between:
 
 ---
 
-**Last Updated**: 2025-10-09
+**Last Updated**: 2026-01-15

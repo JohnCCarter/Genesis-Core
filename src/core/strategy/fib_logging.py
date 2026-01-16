@@ -3,18 +3,13 @@ from __future__ import annotations
 import logging
 import os
 
+from core.utils.env_flags import env_flag_enabled
 from core.utils.logging_redaction import get_logger
 
 _FIB_LOGGER = get_logger("core.strategy.fib_flow")
 
 
-def _env_flag_true(env_value: str | None, *, default: bool = False) -> bool:
-    if env_value is None:
-        return default
-    return env_value.strip().lower() not in {"0", "false", "off", "no"}
-
-
-_FIB_FLOW_LOGS_ENABLED = _env_flag_true(os.getenv("FIB_FLOW_LOGS_ENABLED"), default=False)
+_FIB_FLOW_LOGS_ENABLED = env_flag_enabled(os.getenv("FIB_FLOW_LOGS_ENABLED"), default=False)
 
 
 def fib_flow_enabled() -> bool:

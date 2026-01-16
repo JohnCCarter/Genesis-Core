@@ -242,9 +242,19 @@ def check_mode_flags_consistency() -> tuple[bool, str]:
     fast_window = os.environ.get("GENESIS_FAST_WINDOW") == "1"
     precompute = os.environ.get("GENESIS_PRECOMPUTE_FEATURES") == "1"
 
+    fast_hash_raw = os.environ.get("GENESIS_FAST_HASH")
+    fast_hash_enabled = False
+    if fast_hash_raw is not None:
+        fast_hash_enabled = str(fast_hash_raw).strip().lower() in {"1", "true", "yes", "on"}
+
+    fast_hash_strict = os.environ.get("GENESIS_PREFLIGHT_FAST_HASH_STRICT") == "1"
+
     if explicit_mode:
         # Explicit mode används som debug-escape hatch. Vi informerar men blockerar inte.
-        return True, "[WARN] GENESIS_MODE_EXPLICIT=1 (debug) – säkerställ att du vet varför"
+        msg = "[WARN] GENESIS_MODE_EXPLICIT=1 (debug) – säkerställ att du vet varför"
+        if fast_hash_enabled:
+            msg += " | [WARN] GENESIS_FAST_HASH=1 (debug/perf) – kan ändra utfall, undvik för jämförbara runs"
+        return True, msg
 
     if fast_window and not precompute:
         return (
@@ -258,7 +268,19 @@ def check_mode_flags_consistency() -> tuple[bool, str]:
             "[WARN] GENESIS_PRECOMPUTE_FEATURES=1 men GENESIS_FAST_WINDOW!=1 – mixed-mode kan ge oväntat beteende",
         )
 
-    return True, f"[OK] Mode flags: fast_window={int(fast_window)}, precompute={int(precompute)}"
+    if fast_hash_enabled:
+        # FAST_HASH har empiriskt visat sig kunna påverka utfall. Canonical runs ska därför inte använda den.
+        msg = "[FAIL]" if fast_hash_strict else "[WARN]"
+        msg += (
+            " GENESIS_FAST_HASH=1 i canonical mode – kan ge icke-jämförbara resultat (debug/perf knob). "
+            "Sätt GENESIS_FAST_HASH=0 eller kör explicit mode om du verkligen vill."
+        )
+        return (False, msg) if fast_hash_strict else (True, msg)
+
+    return (
+        True,
+        f"[OK] Mode flags: fast_window={int(fast_window)}, precompute={int(precompute)}, fast_hash={int(fast_hash_enabled)}",
+    )
 
 
 def check_storage_resume_sanity(

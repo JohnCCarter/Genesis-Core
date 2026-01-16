@@ -126,7 +126,7 @@ def _resolve_registry(manifest: str) -> tuple[dict, dict[str, dict], dict[str, d
         raise ValueError(f"manifest must be a JSON object: {manifest_path}")
 
     skills: dict[str, dict] = {}
-    for p in (root / "registry" / "skills").glob("*.json"):
+    for p in (root / ".github" / "skills").glob("*.json"):
         obj = _load_json(p)
         if isinstance(obj, dict) and isinstance(obj.get("id"), str):
             skills[obj["id"]] = obj

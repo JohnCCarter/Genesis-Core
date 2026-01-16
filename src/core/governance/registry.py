@@ -68,7 +68,7 @@ def validate_registry(repo_root: Path) -> RegistryValidationResult:
     compact_schema = _load_schema(repo_root, "compact.schema.json")
     manifest_schema = _load_schema(repo_root, "manifest.schema.json")
 
-    skills_dir = repo_root / "registry" / "skills"
+    skills_dir = repo_root / ".github" / "skills"
     compacts_dir = repo_root / "registry" / "compacts"
     manifests_dir = repo_root / "registry" / "manifests"
 

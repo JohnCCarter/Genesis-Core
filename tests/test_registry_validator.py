@@ -49,7 +49,7 @@ def test_registry_detects_id_filename_mismatch(tmp_path: Path) -> None:
     repo_root = _repo_root()
     _copy_schemas(repo_root, tmp_path)
 
-    skills = tmp_path / "registry" / "skills"
+    skills = tmp_path / ".github" / "skills"
     skills.mkdir(parents=True, exist_ok=True)
     skills.joinpath("s1.json").write_text(
         '{"id":"different","version":"1.0.0","title":"Some title","description":"Long enough desc"'
@@ -71,7 +71,7 @@ def test_stable_manifest_requires_stable_status(tmp_path: Path) -> None:
     repo_root = _repo_root()
     _copy_schemas(repo_root, tmp_path)
 
-    skills = tmp_path / "registry" / "skills"
+    skills = tmp_path / ".github" / "skills"
     skills.mkdir(parents=True, exist_ok=True)
     skills.joinpath("s1.json").write_text(
         '{"id":"s1","version":"1.0.0","title":"Some title","description":"Long enough desc"'

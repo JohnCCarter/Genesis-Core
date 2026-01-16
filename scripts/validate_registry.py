@@ -61,6 +61,39 @@ def _last_nonempty_line(path: Path) -> str | None:
     return lines[-1] if lines else None
 
 
+def _load_audit_entries(path: Path) -> tuple[list[dict[str, object]], list[str]]:
+    """Load JSONL audit entries.
+
+    We treat blank lines as separators.
+    We also allow comment lines (starting with '#' or '//') so trailing notes
+    don't become a CI footgun.
+    """
+
+    if not path.exists():
+        return [], []
+
+    entries: list[dict[str, object]] = []
+    errors: list[str] = []
+
+    for i, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+        ln = raw.strip()
+        if not ln:
+            continue
+        if ln.startswith("#") or ln.startswith("//"):
+            continue
+        try:
+            obj = json.loads(ln)
+        except json.JSONDecodeError as e:
+            errors.append(f"invalid JSON in audit file at line {i}: {e}")
+            continue
+        if not isinstance(obj, dict):
+            errors.append(f"audit entry at line {i} must be a JSON object")
+            continue
+        entries.append(obj)
+
+    return entries, errors
+
+
 def _validate_audit_for_stable_change(*, base_ref: str) -> list[str]:
     """Enforce break-glass audit when stable manifest changes.
 
@@ -98,31 +131,12 @@ def _validate_audit_for_stable_change(*, base_ref: str) -> list[str]:
 
     head_sha = _git("rev-parse", "HEAD")
     base_sha = _git("rev-parse", base_ref)
-    last = _last_nonempty_line(_repo_root() / audit_path)
-    if last is None:
+    entries, parse_errors = _load_audit_entries(_repo_root() / audit_path)
+    if parse_errors:
+        errors.extend(parse_errors)
+        return errors
+    if not entries:
         errors.append("audit file is empty but stable manifest changed")
-        return errors
-
-    try:
-        entry = json.loads(last)
-    except json.JSONDecodeError as e:
-        errors.append(f"invalid JSON in last audit entry: {e}")
-        return errors
-
-    if not isinstance(entry, dict):
-        errors.append("last audit entry must be a JSON object")
-        return errors
-
-    commit_sha = entry.get("commit_sha")
-    if not isinstance(commit_sha, str) or not commit_sha:
-        errors.append("audit entry must include commit_sha")
-        return errors
-
-    # Allow short SHA in audit entry by normalizing to full SHA.
-    try:
-        commit_sha_full = _git("rev-parse", commit_sha)
-    except subprocess.CalledProcessError:
-        errors.append(f"audit entry commit_sha does not exist as a commit: {commit_sha!r}")
         return errors
 
     # Determine the latest commit in the PR range that modified the stable manifest.
@@ -139,26 +153,44 @@ def _validate_audit_for_stable_change(*, base_ref: str) -> list[str]:
         )
         return errors
 
+    def _normalize_commit_sha(sha: str) -> str | None:
+        """Return full SHA if sha exists, else None."""
+
+        try:
+            return _git("rev-parse", sha)
+        except subprocess.CalledProcessError:
+            return None
+
+    def _find_entry(*, predicate) -> dict[str, object] | None:
+        for e in reversed(entries):
+            # Prefer the most recent matching entry (files are append-only).
+            if predicate(e):
+                return e
+        return None
+
     # If stable.json and the audit entry are introduced together in a *single* commit (common when a PR
     # is created as a squash-import), we cannot require the audit entry to reference the stable-changing
     # commit itself without becoming self-referential. In that case, require a break-glass override and
     # anchor commit_sha to base_ref instead.
     if len(stable_commits) == 1 and stable_commits[0] == head_sha:
-        if commit_sha_full == head_sha:
+
+        def _single_commit_ok(e: dict[str, object]) -> bool:
+            commit_sha = e.get("commit_sha")
+            if not isinstance(commit_sha, str) or not commit_sha:
+                return False
+            commit_sha_full = _normalize_commit_sha(commit_sha)
+            if commit_sha_full != base_sha:
+                return False
+            return e.get("action") == "break_glass_override"
+
+        entry = _find_entry(predicate=_single_commit_ok)
+        if entry is None:
             errors.append(
-                "audit entry commit_sha must NOT equal HEAD (self-referential) even for single-commit PRs. "
-                f"For single-commit stable-manifest changes, set commit_sha to base_ref ({base_sha})."
+                "single-commit stable-manifest change requires an audit entry with "
+                f"action='break_glass_override' and commit_sha referencing base_ref ({base_sha})"
             )
-        if commit_sha_full != base_sha:
-            errors.append(
-                "single-commit stable-manifest change requires commit_sha to reference base_ref "
-                f"({base_sha}); got {commit_sha!r}"
-            )
-        if entry.get("action") != "break_glass_override":
-            errors.append(
-                "single-commit stable-manifest change requires action='break_glass_override' "
-                "(squash-import safe path)"
-            )
+            return errors
+
         approved_by = entry.get("approved_by")
         if (
             not isinstance(approved_by, list)
@@ -171,18 +203,39 @@ def _validate_audit_for_stable_change(*, base_ref: str) -> list[str]:
             )
         return errors
 
+    expected_sha = stable_commits[0]
+
+    def _expected_sha_ok(e: dict[str, object]) -> bool:
+        commit_sha = e.get("commit_sha")
+        if not isinstance(commit_sha, str) or not commit_sha:
+            return False
+        commit_sha_full = _normalize_commit_sha(commit_sha)
+        if commit_sha_full is None:
+            return False
+        if commit_sha_full != expected_sha:
+            return False
+        action = e.get("action")
+        return action in {"stable_promotion", "break_glass_override"}
+
+    entry = _find_entry(predicate=_expected_sha_ok)
+    if entry is None:
+        errors.append(
+            "audit entry commit_sha must reference the latest stable-manifest change commit "
+            f"({expected_sha})"
+        )
+        return errors
+
+    commit_sha = entry.get("commit_sha")
+    assert isinstance(commit_sha, str)
+    commit_sha_full = _normalize_commit_sha(commit_sha)
+    if commit_sha_full is None:
+        errors.append(f"audit entry commit_sha does not exist as a commit: {commit_sha!r}")
+        return errors
+
     if commit_sha_full == head_sha:
         errors.append(
             "audit entry commit_sha must NOT equal HEAD (self-referential). "
             "Set commit_sha to the earlier commit that modified registry/manifests/stable.json."
-        )
-
-    expected_sha = stable_commits[0]
-    # rev-list returns newest-first, so the first entry is the latest change.
-    if commit_sha_full != expected_sha:
-        errors.append(
-            f"audit entry commit_sha must reference the latest stable-manifest change commit ({expected_sha}); "
-            f"got {commit_sha!r}"
         )
 
     # Sanity: referenced commit must exist.

@@ -1,0 +1,24 @@
+{
+  "id": "incident_triage",
+  "version": "1.0.0",
+  "title": "Incident triage",
+  "description": "Standardiserar triage av incidenter med severity, mitigering och plan för rotorsak.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "tags": ["incident", "ops"],
+  "rules": {
+    "must": [
+      "Bedöm severity och impact.",
+      "Initiera mitigering.",
+      "Planera och följ upp rotorsak."
+    ],
+    "must_not": [
+      "Stäng incident utan åtgärdsplan.",
+      "Ignorera kommunikation till intressenter.",
+      "Lämna incident odokumenterad."
+    ]
+  },
+  "references": [
+    { "type": "doc", "value": "docs/templates/skills/incident_triage.md" }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "risk_guards_audit",
+  "version": "1.0.0",
+  "title": "Risk guards audit",
+  "description": "Granskar risk- och skyddsregler såsom position sizing, limits och TEST-symbolpolicy.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "tags": ["risk", "audit"],
+  "rules": {
+    "must": [
+      "Verifiera position sizing och riskkartor.",
+      "Bekräfta max drawdown/limits.",
+      "Säkerställ TEST-symboler i paper-flöden."
+    ],
+    "must_not": [
+      "Tillåt real-symboler i paper mode.",
+      "Ignorera riskgränser i backtest.",
+      "Ändra riskguards utan dokumentation."
+    ]
+  },
+  "references": [
+    { "type": "doc", "value": "docs/templates/skills/risk_guards_audit.md" }
+  ]
+}

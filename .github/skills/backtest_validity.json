@@ -1,0 +1,24 @@
+{
+  "id": "backtest_validity",
+  "version": "1.0.0",
+  "title": "Backtest validity",
+  "description": "Verifierar att backtest är korrekt, spårbart och jämförbart över körningar.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "tags": ["backtest", "validation"],
+  "rules": {
+    "must": [
+      "Bekräfta datafönster och warmup.",
+      "Säkerställ same-mode (1/1) vid jämförelse.",
+      "Spara och referera artefakter."
+    ],
+    "must_not": [
+      "Jämföra runs med olika datafönster utan notering.",
+      "Ignorera saknade artefakter.",
+      "Blanda olika seed utan att ange det."
+    ]
+  },
+  "references": [
+    { "type": "doc", "value": "docs/templates/skills/backtest_validity.md" }
+  ]
+}

@@ -97,3 +97,88 @@ def test_validate_registry_audit_single_commit_stable_change_allows_base_sha(
 
     errors = vr._validate_audit_for_stable_change(base_ref=base_sha)
     assert errors == []
+
+
+@pytest.mark.skipif(
+    subprocess.run(["git", "--version"], capture_output=True).returncode != 0,
+    reason="git is required for audit CI validation tests",
+)
+def test_validate_registry_audit_allows_matching_entry_not_last_line(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Audit-gaten ska inte vara en footgun om break_glass.jsonl har flera entries.
+
+    Om en korrekt entry finns (matchar senaste stable-manifest-commit), ska valideringen
+    passera även om ytterligare entries finns efter den.
+    """
+
+    repo = tmp_path
+    _git(repo, "init")
+    _git(repo, "checkout", "-b", "master")
+    _git(repo, "config", "user.email", "ci@example.test")
+    _git(repo, "config", "user.name", "CI")
+
+    manifests = repo / "registry" / "manifests"
+    manifests.mkdir(parents=True, exist_ok=True)
+    audit_dir = repo / "registry" / "audit"
+    audit_dir.mkdir(parents=True, exist_ok=True)
+
+    stable_path = manifests / "stable.json"
+    stable_path.write_text(
+        '{"registry_version":1,"skills":[],"compacts":[]}',
+        encoding="utf-8",
+    )
+    (manifests / "dev.json").write_text(
+        '{"registry_version":1,"skills":[],"compacts":[]}',
+        encoding="utf-8",
+    )
+
+    _git(repo, "add", "registry/manifests/stable.json", "registry/manifests/dev.json")
+    _git(repo, "commit", "-m", "base")
+    base_sha = _git(repo, "rev-parse", "HEAD")
+
+    # Commit 1: change stable manifest.
+    stable_path.write_text(
+        '{"registry_version":1,"skills":[{"id":"s1","version":"1.0.0"}],"compacts":[]}',
+        encoding="utf-8",
+    )
+    _git(repo, "add", "registry/manifests/stable.json")
+    _git(repo, "commit", "-m", "stable change")
+    stable_change_sha = _git(repo, "rev-parse", "HEAD")
+
+    # Commit 2: audit update with multiple entries; matching entry is NOT last.
+    matching = {
+        "ts": "2026-01-10T00:00:00Z",
+        "action": "stable_promotion",
+        "actor": "ci",
+        "commit_sha": stable_change_sha,
+        "items": [{"kind": "skill", "id": "s1", "version": "1.0.0", "from": "dev", "to": "stable"}],
+        "reason": "CI test: matching entry not last line.",
+    }
+    unrelated = {
+        "ts": "2026-01-10T00:01:00Z",
+        "action": "stable_promotion",
+        "actor": "ci",
+        "commit_sha": base_sha,
+        "items": [
+            {"kind": "skill", "id": "other", "version": "0.0.1", "from": "dev", "to": "stable"}
+        ],
+        "reason": "CI test: unrelated later entry.",
+    }
+
+    (audit_dir / "break_glass.jsonl").write_text(
+        json.dumps(matching, separators=(",", ":"))
+        + "\n"
+        + json.dumps(unrelated, separators=(",", ":"))
+        + "\n",
+        encoding="utf-8",
+    )
+
+    _git(repo, "add", "registry/audit/break_glass.jsonl")
+    _git(repo, "commit", "-m", "audit update")
+
+    monkeypatch.setattr(vr, "_repo_root", lambda: repo)
+
+    errors = vr._validate_audit_for_stable_change(base_ref=base_sha)
+    assert errors == []

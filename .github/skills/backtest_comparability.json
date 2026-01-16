@@ -1,0 +1,29 @@
+{
+  "id": "backtest_comparability",
+  "version": "1.0.0",
+  "title": "Backtest comparability (canonical 1/1)",
+  "description": "Säkerställer jämförbarhet mellan backtester genom samma mode-flaggor, seed och fönster.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "tags": ["backtest", "determinism", "comparability"],
+  "rules": {
+    "must": [
+      "Använd GENESIS_FAST_WINDOW=1 och GENESIS_PRECOMPUTE_FEATURES=1 för quality decisions.",
+      "Sätt GENESIS_RANDOM_SEED=42 (eller dokumentera avvikelse).",
+      "Jämför endast runs med samma tidsfönster och symbol/timeframe."
+    ],
+    "must_not": [
+      "Blanda streaming vs fast mode i samma jämförelse.",
+      "Jämför runs med olika seed utan att säga det explicit.",
+      "Blanda olika data- eller warmup-fönster i samma slutsats."
+    ]
+  },
+  "references": [
+    {
+      "type": "doc",
+      "value": "docs/templates/skills/backtest_comparability.md"
+    },
+    { "type": "doc", "value": "docs/features/FEATURE_COMPUTATION_MODES.md" },
+    { "type": "file", "value": "scripts/run_backtest.py" }
+  ]
+}

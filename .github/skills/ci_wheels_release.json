@@ -1,0 +1,24 @@
+{
+  "id": "ci_wheels_release",
+  "version": "1.0.0",
+  "title": "CI wheels release",
+  "description": "Säkerställer korrekt versionering och publicering av wheels via CI.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "tags": ["ci", "release"],
+  "rules": {
+    "must": [
+      "Verifiera versionsbump och changelog.",
+      "Kräv grön CI före release.",
+      "Bekräfta att artifacts byggs och publiceras."
+    ],
+    "must_not": [
+      "Publicera utan grön CI.",
+      "Hoppa över changelog.",
+      "Släppa utan tydlig version."
+    ]
+  },
+  "references": [
+    { "type": "doc", "value": "docs/templates/skills/ci_wheels_release.md" }
+  ]
+}

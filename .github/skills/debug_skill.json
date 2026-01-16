@@ -1,0 +1,25 @@
+{
+  "id": "debug_skill",
+  "version": "1.0.0",
+  "title": "Debug support (repro + root cause)",
+  "description": "Styr debug-arbete mot reproducerbara steg, tydliga hypoteser och verifiering av rotorsak.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "tags": ["debug", "stabilization", "quality"],
+  "rules": {
+    "must": [
+      "Skapa reproducerbara steg innan fix.",
+      "Formulera hypotes och verifiera rotorsak.",
+      "Lägg till test eller mätpunkt när buggen är fixad."
+    ],
+    "must_not": [
+      "Gissa utan verifiering.",
+      "Maskera fel med tyst exception-hantering.",
+      "Lämna debug-logik utan borttagning eller dokumentation."
+    ]
+  },
+  "references": [
+    { "type": "doc", "value": "docs/templates/skills/debug_skill.md" },
+    { "type": "doc", "value": "docs/bugs" }
+  ]
+}

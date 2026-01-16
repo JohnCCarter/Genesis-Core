@@ -1,0 +1,27 @@
+{
+  "id": "data_integrity_candles",
+  "version": "1.0.0",
+  "title": "Data integrity (candles)",
+  "description": "Säkerställer att candlestick-data är komplett, korrekt och spårbar.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "tags": ["data", "integrity"],
+  "rules": {
+    "must": [
+      "Verifiera att det inte finns dubletter eller luckor.",
+      "Bekräfta korrekt tidszonhantering.",
+      "Logga datakällor och versioner."
+    ],
+    "must_not": [
+      "Använda data med okänt ursprung.",
+      "Byta källa utan att dokumentera.",
+      "Ignorera tidszonsavvikelser."
+    ]
+  },
+  "references": [
+    {
+      "type": "doc",
+      "value": "docs/templates/skills/data_integrity_candles.md"
+    }
+  ]
+}

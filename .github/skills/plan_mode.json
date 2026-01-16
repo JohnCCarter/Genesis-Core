@@ -1,0 +1,25 @@
+{
+  "id": "plan_mode",
+  "version": "1.0.0",
+  "title": "Plan mode (stegvis och verifierbar)",
+  "description": "Tvingar fram en tydlig plan innan större ändringar, särskilt vid nya features, större refactor och ML/indikatorarbete.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "tags": ["planning", "stabilization", "workflow"],
+  "rules": {
+    "must": [
+      "Beskriv problemet och risker innan implementation.",
+      "Dela upp arbetet i verifierbara steg innan ändringar.",
+      "Begär bekräftelse innan större refaktor eller nya features."
+    ],
+    "must_not": [
+      "Påbörja stora ändringar utan plan eller acceptans.",
+      "Blanda flera orelaterade mål i samma plan.",
+      "Hoppa över plan vid ML- eller indikatorarbete."
+    ]
+  },
+  "references": [
+    { "type": "doc", "value": "docs/templates/skills/plan_mode.md" },
+    { "type": "file", "value": "AGENTS.md" }
+  ]
+}

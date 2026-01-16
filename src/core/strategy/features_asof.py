@@ -37,6 +37,7 @@ from core.observability.metrics import metrics
 from core.strategy.fib_logging import log_fib_flow
 from core.strategy.htf_selector import select_htf_timeframe
 from core.utils.diffing.feature_cache import IndicatorCache, make_indicator_fingerprint
+from core.utils.env_flags import env_flag_enabled
 from core.utils.logging_redaction import get_logger
 
 _log = get_logger(__name__)
@@ -75,7 +76,9 @@ try:
 except Exception:
     _MAX_CACHE_SIZE = 500
 _indicator_cache = IndicatorCache(max_size=2048)
-_INDICATOR_CACHE_ENABLED = not bool(os.environ.get("GENESIS_DISABLE_INDICATOR_CACHE"))
+_INDICATOR_CACHE_ENABLED = not env_flag_enabled(
+    os.getenv("GENESIS_DISABLE_INDICATOR_CACHE"), default=False
+)
 _PRECOMPUTE_DEBUG_ONCE = False
 _PRECOMPUTE_WARN_ONCE = False
 
@@ -173,7 +176,7 @@ def _compute_candles_hash(candles: dict[str, list[float] | np.ndarray], asof_bar
     Default: compact digest summarized over last up to 100 bars, hashed by SHA256.
     """
     # Optional ultra-fast key for tight loops
-    if os.environ.get("GENESIS_FAST_HASH") in {"1", "true", "True"}:
+    if str(os.environ.get("GENESIS_FAST_HASH", "")).strip().lower() in {"1", "true"}:
         try:
             last_close = float(candles["close"][asof_bar])
         except Exception:

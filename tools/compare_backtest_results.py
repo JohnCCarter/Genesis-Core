@@ -49,7 +49,7 @@ def _as_float(val: object) -> float | None:
         return None
     if isinstance(val, bool):
         return None
-    if isinstance(val, (int, float)):
+    if isinstance(val, int | float):
         f = float(val)
         if math.isfinite(f):
             return f

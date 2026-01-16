@@ -79,7 +79,8 @@ Genesis-Core använder en enkel governance-modell där "skills" och "compacts" �
 och används som SSOT för agent-/processregler.
 
 - Registry-data ligger under `registry/`.
-  - `registry/skills/*.json` och `registry/compacts/*.json` (versionerade objekt)
+  - `.github/skills/*.json` (versionerade skills)
+  - `registry/compacts/*.json` (versionerade compacts)
   - `registry/manifests/dev.json` och `registry/manifests/stable.json` (vilka versioner som är aktiva)
   - `registry/schemas/*.schema.json` (JSON Schema)
 - CI gate: `python scripts/validate_registry.py` validerar schema + korsreferenser.

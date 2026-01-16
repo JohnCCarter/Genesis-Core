@@ -1,5 +1,27 @@
 {
   "registry_version": 1,
-  "skills": [{ "id": "python_engineering", "version": "1.0.0" }],
+  "skills": [
+    { "id": "python_engineering", "version": "1.0.0" },
+    { "id": "optuna_run_guardrails", "version": "1.0.0" },
+    { "id": "backtest_comparability", "version": "1.0.0" },
+    { "id": "mtf_gate_validation", "version": "1.0.0" },
+    { "id": "qa_gate", "version": "1.0.0" },
+    { "id": "secrets_safety", "version": "1.0.0" },
+    { "id": "refactor_safety", "version": "1.0.0" },
+    { "id": "plan_mode", "version": "1.0.0" },
+    { "id": "debug_skill", "version": "1.0.0" },
+    { "id": "repo_cleaning", "version": "1.0.0" },
+    { "id": "code_review_readonly", "version": "1.0.0" },
+    { "id": "determinism_repro", "version": "1.0.0" },
+    { "id": "asof_semantics_audit", "version": "1.0.0" },
+    { "id": "feature_inventory", "version": "1.0.0" },
+    { "id": "optuna_hpo_sanity", "version": "1.0.0" },
+    { "id": "scorer_objective_audit", "version": "1.0.0" },
+    { "id": "backtest_validity", "version": "1.0.0" },
+    { "id": "data_integrity_candles", "version": "1.0.0" },
+    { "id": "risk_guards_audit", "version": "1.0.0" },
+    { "id": "ci_wheels_release", "version": "1.0.0" },
+    { "id": "incident_triage", "version": "1.0.0" }
+  ],
   "compacts": [{ "id": "stabilization_phase", "version": "1.0.0" }]
 }

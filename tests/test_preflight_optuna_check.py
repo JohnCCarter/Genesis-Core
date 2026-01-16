@@ -25,6 +25,36 @@ def test_mode_flags_requires_precompute(monkeypatch: pytest.MonkeyPatch) -> None
     assert "requires" in msg or "kräver" in msg
 
 
+def test_mode_flags_warns_when_fast_hash_enabled_in_canonical_mode(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("GENESIS_MODE_EXPLICIT", raising=False)
+    monkeypatch.setenv("GENESIS_FAST_WINDOW", "1")
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "1")
+    monkeypatch.setenv("GENESIS_FAST_HASH", "1")
+    monkeypatch.delenv("GENESIS_PREFLIGHT_FAST_HASH_STRICT", raising=False)
+
+    ok, msg = check_mode_flags_consistency()
+    assert ok is True
+    assert msg.startswith("[WARN]")
+    assert "FAST_HASH" in msg
+
+
+def test_mode_flags_fails_when_fast_hash_enabled_and_strict(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("GENESIS_MODE_EXPLICIT", raising=False)
+    monkeypatch.setenv("GENESIS_FAST_WINDOW", "1")
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "1")
+    monkeypatch.setenv("GENESIS_FAST_HASH", "1")
+    monkeypatch.setenv("GENESIS_PREFLIGHT_FAST_HASH_STRICT", "1")
+
+    ok, msg = check_mode_flags_consistency()
+    assert ok is False
+    assert msg.startswith("[FAIL]")
+    assert "FAST_HASH" in msg
+
+
 def test_storage_resume_warns_when_storage_null(monkeypatch: pytest.MonkeyPatch) -> None:
     ok, msg = check_storage_resume_sanity(
         storage=None,

@@ -1,0 +1,27 @@
+{
+  "id": "scorer_objective_audit",
+  "version": "1.0.0",
+  "title": "Scorer & objective audit",
+  "description": "Granskar målmetrik, constraints och fail-klassning i scoring/optimering.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "tags": ["scoring", "optuna", "audit"],
+  "rules": {
+    "must": [
+      "Definiera och motivera målmetrik.",
+      "Dokumentera constraints och hard-failers.",
+      "Verifiera att failures rapporteras tydligt."
+    ],
+    "must_not": [
+      "Dölja failure-kriterier.",
+      "Blanda scoring- och constraints-logik utan dokumentation.",
+      "Ändra objective utan regressionstest."
+    ]
+  },
+  "references": [
+    {
+      "type": "doc",
+      "value": "docs/templates/skills/scorer_objective_audit.md"
+    }
+  ]
+}

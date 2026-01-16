@@ -45,6 +45,63 @@ def search_config_tmp(tmp_path: Path) -> Path:
     return config_path
 
 
+def test_score_version_mismatch_is_fail_fast() -> None:
+    with pytest.raises(ValueError, match="Inkompatibla scoring-versioner"):
+        runner._enforce_score_version_compatibility(
+            current_score_version="v1",
+            candidate_score_version="v2",
+            context="unit_test",
+        )
+
+
+def test_collect_comparability_warnings_detects_drift_without_raising() -> None:
+    current_info = {
+        "execution_mode": {
+            "fast_window": True,
+            "env_precompute_features": "1",
+            "precompute_enabled": True,
+            "precomputed_ready": True,
+            "mode_explicit": "0",
+        },
+        "commission_rate": 0.002,
+        "slippage_rate": 0.0,
+        "git_hash": "abc",
+        "seed": "42",
+        "htf": {
+            "env_htf_exits": "1",
+            "use_new_exit_engine": True,
+            "htf_candles_loaded": True,
+            "htf_context_seen": True,
+        },
+    }
+    candidate_info = {
+        "execution_mode": {
+            "fast_window": False,
+            "env_precompute_features": "1",
+            "precompute_enabled": True,
+            "precomputed_ready": False,
+            "mode_explicit": "1",
+        },
+        "commission_rate": 0.001,
+        "slippage_rate": 0.0,
+        "git_hash": "def",
+        "seed": "123",
+        "htf": {
+            "env_htf_exits": "0",
+            "use_new_exit_engine": False,
+            "htf_candles_loaded": False,
+            "htf_context_seen": False,
+        },
+    }
+
+    warnings = runner._collect_comparability_warnings(current_info, candidate_info)
+    assert any("execution_mode.fast_window" in w for w in warnings)
+    assert any("execution_mode.precomputed_ready" in w for w in warnings)
+    assert any("commission_rate" in w for w in warnings)
+    assert any("git_hash" in w for w in warnings)
+    assert any("htf.env_htf_exits" in w for w in warnings)
+
+
 def test_run_optimizer_updates_champion(
     tmp_path: Path, search_config_tmp: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

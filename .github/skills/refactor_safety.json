@@ -1,0 +1,25 @@
+{
+  "id": "refactor_safety",
+  "version": "1.0.0",
+  "title": "Refactor safety (small + tested)",
+  "description": "Säkerställer att refaktoreringar är små, motiverade och testade utan oavsiktlig beteendeförändring.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "tags": ["refactor", "quality", "stabilization"],
+  "rules": {
+    "must": [
+      "Håll refaktoreringar små och fokuserade.",
+      "Lägg till eller uppdatera tester när logik ändras.",
+      "Dokumentera om beteende ändras avsiktligt."
+    ],
+    "must_not": [
+      "Ändra beteende utan specifikation.",
+      "Samla flera orelaterade refaktoreringar i samma diff.",
+      "Ta bort validering eller loggning utan ersättning."
+    ]
+  },
+  "references": [
+    { "type": "doc", "value": "docs/templates/skills/refactor_safety.md" },
+    { "type": "doc", "value": "docs/roadmap/STABILIZATION_PLAN_9_STEPS.md" }
+  ]
+}

@@ -18,6 +18,7 @@ from tqdm import tqdm
 
 from core.backtest.htf_exit_engine import ExitAction
 from core.backtest.htf_exit_engine import HTFFibonacciExitEngine as LegacyExitEngine
+from core.utils.env_flags import env_flag_enabled
 from core.utils.logging_redaction import get_logger
 
 try:
@@ -31,6 +32,12 @@ from core.strategy.champion_loader import ChampionLoader
 from core.strategy.evaluate import evaluate_pipeline
 
 _LOGGER = get_logger(__name__)
+
+
+def _debug_backtest_enabled() -> bool:
+    """Return whether verbose error output should be enabled for backtests."""
+
+    return env_flag_enabled(os.getenv("GENESIS_DEBUG_BACKTEST"), default=False)
 
 
 class CandleCache:
@@ -199,7 +206,15 @@ class BacktestEngine:
         }
         self.htf_exit_config = {**default_htf_config, **(htf_exit_config or {})}
 
-        use_new_engine = os.environ.get("GENESIS_HTF_EXITS") == "1"
+        # Engine selection policy:
+        # - If GENESIS_HTF_EXITS is explicitly set, it is authoritative ("1"=new, otherwise legacy).
+        # - Otherwise, if the effective config contains a non-empty htf_exit_config, assume the
+        #   caller intends to use HTF exits (prevents runner vs manual-backtest mismatches).
+        env_flag = os.environ.get("GENESIS_HTF_EXITS")
+        if env_flag is not None:
+            use_new_engine = env_flag == "1"
+        else:
+            use_new_engine = isinstance(htf_exit_config, dict) and bool(htf_exit_config)
         if use_new_engine and NewExitEngine:
             _LOGGER.info("Using NEW HTF Exit Engine (Phase 1)")
             self.htf_exit_engine = NewExitEngine(self.htf_exit_config)
@@ -895,7 +910,7 @@ class BacktestEngine:
                 self.bar_count += 1
 
             except Exception as e:
-                if verbose or os.environ.get("GENESIS_DEBUG_BACKTEST"):
+                if verbose or _debug_backtest_enabled():
                     try:
                         import sys  # noqa: PLC0415
                         import traceback  # noqa: PLC0415

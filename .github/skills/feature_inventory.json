@@ -1,0 +1,24 @@
+{
+  "id": "feature_inventory",
+  "version": "1.0.0",
+  "title": "Feature inventory",
+  "description": "Inventerar features, deras källor/beräkning och vilka konsumenter som använder dem.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "tags": ["features", "audit"],
+  "rules": {
+    "must": [
+      "Lista feature-namn och version.",
+      "Ange källa/beräkning för varje feature.",
+      "Identifiera konsumenter (model/decision/etc.)."
+    ],
+    "must_not": [
+      "Lämna oklara eller odokumenterade features.",
+      "Blanda olika feature-versioner utan spårning.",
+      "Utelämna beroenden."
+    ]
+  },
+  "references": [
+    { "type": "doc", "value": "docs/templates/skills/feature_inventory.md" }
+  ]
+}

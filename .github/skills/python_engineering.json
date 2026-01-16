@@ -16,5 +16,8 @@
       "Lägg aldrig in secrets i repo (.env ska vara gitignored).",
       "Skapa inte experimentell kod på mainline utan specifikation."
     ]
-  }
+  },
+  "references": [
+    { "type": "doc", "value": "docs/templates/skills/python_engineering.md" }
+  ]
 }

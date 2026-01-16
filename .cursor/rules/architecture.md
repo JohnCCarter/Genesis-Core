@@ -6,6 +6,16 @@ This document contains architectural details, system design, and reference mater
 
 ```
 Genesis-Core/
+├── .cursor/            # Editor rules for this repo (Cursor)
+├── .github/
+│   ├── agents/         # Repo-local chat agents (bounded roles)
+│   └── skills/         # Skill definitions used by repo governance
+├── registry/           # Repo governance registry (manifests/schemas/compacts/audit)
+├── docs/               # Documentation, runbooks, and reference material
+├── data/               # Market data (raw/curated/metadata)
+├── results/            # Backtests, evaluations, and optimizer artifacts
+├── reports/            # Benchmarks, profiling outputs, and audits
+├── mcp_server/         # MCP server (local/remote ops integration)
 ├── src/core/           # Main application code
 │   ├── config/         # Configuration and validation
 │   ├── indicators/     # Technical indicators (EMA, RSI, ADX, ATR)
@@ -18,7 +28,11 @@ Genesis-Core/
 ├── config/             # Configuration files
 │   ├── models/         # Model configurations and registry
 │   └── strategy/       # Strategy defaults
-└── scripts/            # Utility scripts
+├── scripts/            # Utility scripts
+├── tools/              # Helper tooling and misc utilities
+├── cache/              # Precomputed caches (may be large)
+├── logs/               # Local logs
+└── tmp/                # Local scratch space
 ```
 
 ## Strategy Pipeline
@@ -37,6 +51,8 @@ Genesis-Core/
 - Models stored in `config/models/{symbol}_{timeframe}.json`
 - Registry tracks all available models in `config/models/registry.json`
 - Each model includes: weights, calibration, schema, version
+
+Note: This model registry is separate from the repo governance registry under top-level `registry/`.
 
 ### Risk Management
 

@@ -1,0 +1,26 @@
+{
+  "id": "repo_cleaning",
+  "version": "1.0.0",
+  "title": "Repo cleaning (safe + tracked)",
+  "description": "Säker repo-rensning som undviker att radera spårbar data och följer .gitignore/regler.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "tags": ["maintenance", "cleanup", "stabilization"],
+  "rules": {
+    "must": [
+      "Verifiera att filer är cache/artefakter innan borttagning.",
+      "Respektera .gitignore och känsliga filer.",
+      "Dokumentera borttagna filer om de påverkar spårbarhet."
+    ],
+    "must_not": [
+      "Radera results/backtests eller reports utan explicit beslut.",
+      "Ta bort data som krävs för reproducerbarhet.",
+      "Rensa okända filer utan att kontrollera innehåll."
+    ]
+  },
+  "references": [
+    { "type": "doc", "value": "docs/templates/skills/repo_cleaning.md" },
+    { "type": "file", "value": ".gitignore" },
+    { "type": "doc", "value": "AGENTS.md" }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "mtf_gate_validation",
+  "version": "1.0.0",
+  "title": "MTF gate validation (HTF/LTF coverage)",
+  "description": "Kontrollerar att HTF/LTF-kontext finns och att gate-logik inte är inaktiv p.g.a. saknade nivåer.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "tags": ["mtf", "fib", "validation"],
+  "rules": {
+    "must": [
+      "Verifiera HTF- och LTF-täckning i aktuellt fönster innan gates tolkas.",
+      "Logga om HTF/LTF saknas och ange varför (t.ex. NaNs eller saknade candles).",
+      "Använd samma fönster vid A/B av gate-ändringar."
+    ],
+    "must_not": [
+      "Tolka gate-effekt när HTF/LTF inte är tillgängligt.",
+      "Blanda fönster före/efter HTF-datatillgänglighet.",
+      "Ignorera missing_policy när gates är aktiva."
+    ]
+  },
+  "references": [
+    { "type": "doc", "value": "docs/templates/skills/mtf_gate_validation.md" },
+    { "type": "file", "value": "src/core/strategy/features_asof.py" },
+    { "type": "file", "value": "src/core/strategy/decision.py" }
+  ]
+}

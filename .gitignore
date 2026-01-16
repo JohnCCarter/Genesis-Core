@@ -95,7 +95,6 @@ dev.overrides.local.json
 *.pem
 *.p12
 *.pfx
-.secrets.baseline
 bandit-report.json
 bandit-report.txt
 
@@ -112,8 +111,11 @@ championship_tickets/
 # Champion backups (local safety copies, do not commit)
 config/strategy/champions/backup/
 
-# Runtime config (SSOT) - environment specific
+# Runtime config
+# - `config/runtime.seed.json` är repo-baseline/seed (spåras i git).
+# - `config/runtime.json` är lokalt genererad/override (miljö-specifik) och ska INTE commit:as.
 config/runtime.json
+config/runtime.local.json
 
 # Dependencies
 node_modules/

@@ -4,4 +4,5 @@
 
 # Hem- och jobbdator använder samma GitHub-konto → ingen extra CODEOWNER behövs.
 
+/.github/skills/ @fa06662
 /registry/ @fa06662

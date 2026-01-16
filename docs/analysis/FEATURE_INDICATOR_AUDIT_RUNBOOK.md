@@ -1,4 +1,4 @@
-## Feature/Indicator Audit Runbook (Genesis-Core) 2026-01-14
+## Feature/Indicator Audit Runbook (Genesis-Core) 2026-01-15
 
 Syfte: Detta dokument är en **metod/runbook** (inte en färdig analys) för att producera en **read-only, evidence-based** karta över:
 
@@ -65,7 +65,7 @@ Modeller/schema:
 - `GENESIS_FAST_WINDOW`
 - `GENESIS_PRECOMPUTE_FEATURES`
 - `GENESIS_MODE_EXPLICIT`
-- `GENESIS_FAST_HASH` (feature cache key i `features_asof.py`)
+- `GENESIS_FAST_HASH` (feature cache key i `features_asof.py`; debug/perf-only och kan påverka utfall → behandla som non-canonical)
 - `GENESIS_DISABLE_METRICS` (metrics i `evaluate.py`)
 - `GENESIS_DISABLE_INDICATOR_CACHE` / `GENESIS_FEATURE_CACHE_SIZE` (cache i `features_asof.py`)
 

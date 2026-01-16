@@ -10,8 +10,18 @@ from core.strategy.decision import decide
 from core.strategy.features_asof import extract_features
 from core.strategy.fib_logging import log_fib_flow
 from core.strategy.prob_model import predict_proba_for
+from core.utils.env_flags import env_flag_enabled
 
 champion_loader = ChampionLoader()
+
+
+def _metrics_enabled() -> bool:
+    """Return whether observability metrics should be emitted for this process.
+
+    Note: `GENESIS_DISABLE_METRICS` is a *disable* flag.
+    """
+
+    return not env_flag_enabled(os.getenv("GENESIS_DISABLE_METRICS"), default=False)
 
 
 def _safe_float(value: Any) -> float | None:
@@ -111,7 +121,7 @@ def evaluate_pipeline(
     configs = dict(configs or {})
     state = dict(state or {})
 
-    metrics_enabled = not bool(os.environ.get("GENESIS_DISABLE_METRICS"))
+    metrics_enabled = _metrics_enabled()
     if metrics_enabled:
         metrics.inc("pipeline_eval_invocations")
 
@@ -153,13 +163,31 @@ def evaluate_pipeline(
     # Use unified regime detection (EMA-based, matches calibration analysis)
     from core.strategy.regime_unified import detect_regime_unified
 
-    # Fast-path: use precomputed EMA50 if present
+    # Fast-path: use precomputed EMA50 if present.
+    # IMPORTANT: In backtests/optimizer we feed a *windowed* candles dict (e.g. last 200 bars)
+    # but `precomputed_features` contains full-series arrays. In that mode, index EMA by
+    # `_global_index` (injected by BacktestEngine) rather than `len(closes)-1`.
     pre = dict(configs.get("precomputed_features") or {})
     ema50 = pre.get("ema_50")
     closes = candles.get("close") if isinstance(candles, dict) else None
-    if isinstance(ema50, list | tuple) and (closes is not None) and len(ema50) >= len(closes):
+
+    ema_idx: int | None = None
+    if "_global_index" in configs:
+        try:
+            ema_idx = int(configs.get("_global_index"))
+        except (TypeError, ValueError):
+            ema_idx = None
+    if ema_idx is None and closes is not None:
+        ema_idx = len(closes) - 1
+
+    if (
+        isinstance(ema50, list | tuple)
+        and (closes is not None)
+        and (ema_idx is not None)
+        and 0 <= ema_idx < len(ema50)
+    ):
         current_price = float(closes[-1])
-        current_ema = float(ema50[len(closes) - 1])
+        current_ema = float(ema50[ema_idx])
         if current_ema != 0:
             trend = (current_price - current_ema) / current_ema
             if trend > 0.02:

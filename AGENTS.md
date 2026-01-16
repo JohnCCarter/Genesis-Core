@@ -1,10 +1,31 @@
 # README for AI Agents (Local Development)
 
-## Last update: 2026-01-14
+## Last update: 2026-01-15
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
 
-## 1. Deliverables (latest highlights: 2026-01-14)
+## 1. Deliverables (latest highlights: 2026-01-15)
+
+- **CUSTOM AGENTS (FAIL-FAST) + TOOL FRONTMATTER NORMALIZATION (2026-01-15)**: Standardiserade repo-agenter under `.github/agents/` för att vara "overseer-friendly" och minska risk för oavsiktliga ändringar.
+
+  - **Agent-definitioner (English, bounded scope)**:
+    - `.github/agents/Plan.agent.md`
+    - `.github/agents/AnalysisAudit.agent.md`
+    - `.github/agents/GovernanceQA.agent.md`
+    - `.github/agents/OpsRunner.agent.md`
+  - **Authority boundary + escalation**: tydliga stop conditions + obligatorisk eskalering vid risk för behavior change, determinism/as-of påverkan eller scope creep.
+  - **Tool allow-lists**: la till/justerade `tools:` i YAML-frontmatter och normaliserade listformatet (block-list) för att undvika VS Code diagnostics och hålla agent-capabilities minimala.
+
+- **CANONICAL DETERMINISM HARDENING: GENESIS_FAST_HASH (2026-01-15)**: Låste ner en bevisad "perf knob" som kunde ändra utfall och därmed göra Optuna/backtests icke-jämförbara.
+
+  - **Evidens**: `GENESIS_FAST_HASH=1` kan ge stabila men annorlunda resultat jämfört med baseline trots samma seed/period.
+  - **Policy**: `GENESIS_FAST_HASH` är debug/perf-only och ska vara av i canonical quality runs.
+  - **Guardrails**:
+    - `src/core/pipeline.py`: canonical mode tvingar `GENESIS_FAST_HASH=0`.
+    - `scripts/preflight_optuna_check.py`: varnar om `GENESIS_FAST_HASH=1` i canonical mode; strict fail via `GENESIS_PREFLIGHT_FAST_HASH_STRICT=1`.
+  - **Tester**:
+    - `tests/test_pipeline_fast_hash_guard.py`
+    - `tests/test_preflight_optuna_check.py`
 
 - **FEATURE/INDICATOR AUDIT (SSOT) + DOWNSTREAM CONSUMERS (2026-01-14)**: Producerade en evidence-based audit för `tBTCUSD_1h` (features → indikatorer → schema → scorer/Optuna/champion) och stängde kedjan till faktiska konsumenter (model/decision/exits).
 
@@ -32,7 +53,7 @@ This document explains the current workflow for Genesis-Core, highlights today's
   - Lade till regressiontester som verifierar att exceptions inte ekas i HTTP-responser.
   - CI: satte explicit `permissions` för `GITHUB_TOKEN` i `.github/workflows/ci.yml` (least privilege) för att släcka `actions/missing-workflow-permissions`.
 
-- **REGISTRY GOVERNANCE (Phase-8a, 2026-01-09)**: Introducerade repo-SSOT för skills/compacts under `registry/` med JSON-schema + CI-gate (`scripts/validate_registry.py`). CI kräver audit-entry i `registry/audit/break_glass.jsonl` när `registry/manifests/stable.json` ändras i PR.
+- **REGISTRY GOVERNANCE (Phase-8a, 2026-01-09)**: Introducerade repo-SSOT för skills/compacts med JSON-schema + CI-gate (`scripts/validate_registry.py`). Skills ligger under `.github/skills/` och compacts under `registry/`. CI kräver audit-entry i `registry/audit/break_glass.jsonl` när `registry/manifests/stable.json` ändras i PR.
 
   - **Merge**: PR #24 (Phase-8a squash-import) är mergad till `master` och `master` är uppdaterad/synkad.
 

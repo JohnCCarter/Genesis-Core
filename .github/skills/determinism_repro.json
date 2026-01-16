@@ -1,0 +1,24 @@
+{
+  "id": "determinism_repro",
+  "version": "1.0.0",
+  "title": "Determinism & reproducibility",
+  "description": "Säkerställer att samma input ger samma output och att reproducerbarhet verifieras.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "tags": ["determinism", "reproducibility"],
+  "rules": {
+    "must": [
+      "Kör i canonical mode (1/1) för jämförelser.",
+      "Använd samma seed och tidsfönster.",
+      "Dubbelkör vid behov för att bekräfta identiskt resultat."
+    ],
+    "must_not": [
+      "Blanda olika exekveringslägen i slutsatser.",
+      "Jämför runs med olika seed utan att notera det.",
+      "Byta datafönster utan att ange avvikelse."
+    ]
+  },
+  "references": [
+    { "type": "doc", "value": "docs/templates/skills/determinism_repro.md" }
+  ]
+}

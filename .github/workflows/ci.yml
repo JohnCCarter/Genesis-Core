@@ -62,18 +62,11 @@ jobs:
       - name: Run pre-commit
         run: pre-commit run --all-files
 
-      - name: Ruff
-        run: ruff check . --exclude scripts/archive/
-
-      - name: Black (check)
-        run: black --check .
-
       - name: Pytest
         run: pytest -q
 
       - name: Bandit (src only)
         run: bandit -r src -c bandit.yaml -f txt -o bandit-report.txt
-        continue-on-error: true
 
       - name: Upload Bandit report
         if: always()

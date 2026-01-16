@@ -66,6 +66,22 @@ class GenesisPipeline:
         if not explicit_mode:
             os.environ["GENESIS_FAST_WINDOW"] = "1"
             os.environ["GENESIS_PRECOMPUTE_FEATURES"] = "1"
+
+            # Guardrail: GENESIS_FAST_HASH is a performance/debug knob for feature-cache keying.
+            # It can change backtest outcomes even with the same seed/period. Therefore we
+            # force it off in canonical (non-explicit) mode to keep results comparable.
+            fast_hash_raw = str(os.environ.get("GENESIS_FAST_HASH", "0")).strip()
+            fast_hash_enabled = fast_hash_raw.lower() in {"1", "true"}
+            if fast_hash_enabled:
+                logger.warning(
+                    "Canonical mode: forcing GENESIS_FAST_HASH=0 (was %r). "
+                    "GENESIS_FAST_HASH=1 is debug-only and may change outcomes.",
+                    fast_hash_raw,
+                )
+                os.environ["GENESIS_FAST_HASH"] = "0"
+            else:
+                # Make the canonical intent explicit, even if unset.
+                os.environ.setdefault("GENESIS_FAST_HASH", "0")
         else:
             # If caller marked mode explicit but left variables unset, keep sensible defaults.
             os.environ.setdefault("GENESIS_FAST_WINDOW", "1")

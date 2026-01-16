@@ -13,6 +13,12 @@ Before starting a long optimization run (>1 hour):
 - [ ] Review TPE sampler settings (use recommended defaults)
 - [ ] Set appropriate `OPTUNA_MAX_DUPLICATE_STREAK` (≥200 for large runs)
 
+When comparing results (A/B, regression, promotion decisions):
+
+- [ ] Ensure comparisons are apples-to-apples (same window, mode flags, fees, and `score_version` when available)
+- [ ] Prefer using `scripts/run_backtest.py --compare` for fail-fast comparability checks
+  - Use `--compare-warn-only` only for legacy/forensics where you knowingly accept drift
+
 ## Common Issues and Solutions
 
 ### 1. Too Many Duplicate Parameters

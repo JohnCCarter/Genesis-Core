@@ -1,0 +1,25 @@
+{
+  "id": "qa_gate",
+  "version": "1.0.0",
+  "title": "QA gate (ruff + pytest + bandit)",
+  "description": "Tvingar grundläggande QA-körningar innan merge för att skydda stabiliseringsfasen.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "tags": ["qa", "tests", "security"],
+  "rules": {
+    "must": [
+      "Kör ruff och pytest före merge.",
+      "Kör bandit mot src/ för säkerhetskontroll.",
+      "Dokumentera om något test är avsiktligt hoppat över."
+    ],
+    "must_not": [
+      "Mergas med röda tester.",
+      "Ignorera säkerhetsvarningar utan motivering.",
+      "Hoppa över QA för stabiliseringsrelaterade ändringar."
+    ]
+  },
+  "references": [
+    { "type": "doc", "value": "docs/templates/skills/qa_gate.md" },
+    { "type": "doc", "value": "docs/dev_setup.md" }
+  ]
+}

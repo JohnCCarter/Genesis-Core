@@ -40,6 +40,7 @@ from core.utils.diffing.canonical import canonicalize_config
 from core.utils.diffing.optuna_guard import estimate_zero_trade
 from core.utils.diffing.results_diff import diff_backtest_results
 from core.utils.diffing.trial_cache import TrialResultCache
+from core.utils.env_flags import env_flag_enabled
 from core.utils.optuna_helpers import NoDupeGuard, param_signature, set_global_seeds
 
 
@@ -130,6 +131,12 @@ _DEFAULT_CONFIG_CACHE: dict[str, Any] | None = None
 _DEFAULT_CONFIG_RUNTIME_VERSION: int | None = None
 _DEFAULT_CONFIG_LOCK = threading.Lock()
 
+# Backtest economics defaults (capital/fees) may be defined in config/backtest_defaults.yaml.
+# Optuna trials should not implicitly depend on that file changing during a long run, so we load
+# it once (thread-safe) and pin the values into each trial's execution.
+_BACKTEST_DEFAULTS_CACHE: dict[str, Any] | None = None
+_BACKTEST_DEFAULTS_LOCK = threading.Lock()
+
 # Performance: Module-level cache for step decimal calculation (persists across trials)
 _STEP_DECIMALS_CACHE: dict[float, int] = {}
 _STEP_DECIMALS_CACHE_LOCK = threading.Lock()
@@ -211,9 +218,13 @@ def _load_json_with_retries(path: Path, retries: int = 3, delay: float = 0.1) ->
 def _read_json_cached(path: Path) -> Any:
     """Read JSON with optional mtime-based in-memory cache.
 
-    Enabled when GENESIS_OPTIMIZER_JSON_CACHE is truthy ('1', 'true', 'True').
+    Enabled when GENESIS_OPTIMIZER_JSON_CACHE is truthy ("1" or "true",
+    case- and whitespace-insensitive).
     """
-    use_cache = os.environ.get("GENESIS_OPTIMIZER_JSON_CACHE") in {"1", "true", "True"}
+    use_cache = (os.environ.get("GENESIS_OPTIMIZER_JSON_CACHE") or "").strip().lower() in {
+        "1",
+        "true",
+    }
     if not use_cache:
         return _load_json_with_retries(path)
 
@@ -341,6 +352,48 @@ def _get_default_runtime_version() -> int | None:
     # Ensure _DEFAULT_CONFIG_RUNTIME_VERSION is populated when available.
     _ = _get_default_config()
     return _DEFAULT_CONFIG_RUNTIME_VERSION
+
+
+def _get_backtest_defaults() -> dict[str, Any]:
+    """Load config/backtest_defaults.yaml once and cache it.
+
+    Notes:
+        - This is used to pin capital/commission/slippage for optimizer trials so that
+          long runs are not affected by mid-run edits to the defaults file.
+        - Fallbacks are applied in `_get_backtest_economics()`.
+    """
+
+    global _BACKTEST_DEFAULTS_CACHE
+
+    with _BACKTEST_DEFAULTS_LOCK:
+        if _BACKTEST_DEFAULTS_CACHE is None:
+            path = PROJECT_ROOT / "config" / "backtest_defaults.yaml"
+            if not path.exists():
+                _BACKTEST_DEFAULTS_CACHE = {}
+                return _BACKTEST_DEFAULTS_CACHE
+            try:
+                raw = yaml.safe_load(path.read_text(encoding="utf-8"))
+                _BACKTEST_DEFAULTS_CACHE = raw if isinstance(raw, dict) else {}
+            except Exception:
+                _BACKTEST_DEFAULTS_CACHE = {}
+        return _BACKTEST_DEFAULTS_CACHE
+
+
+def _get_backtest_economics() -> tuple[float, float, float]:
+    """Return (capital, commission, slippage) with safe fallbacks."""
+
+    defaults = _get_backtest_defaults()
+
+    def _as_float(key: str, fallback: float) -> float:
+        try:
+            return float(defaults.get(key, fallback))
+        except (TypeError, ValueError):
+            return fallback
+
+    capital = _as_float("capital", 10000.0)
+    commission = _as_float("commission", 0.002)
+    slippage = _as_float("slippage", 0.0005)
+    return capital, commission, slippage
 
 
 def _as_bool(value: Any) -> bool:
@@ -759,6 +812,126 @@ def _candidate_from_result(result: dict[str, Any]) -> ChampionCandidate | None:
     )
 
 
+def _coerce_optional_str(value: Any) -> str | None:
+    if value is None:
+        return None
+    if isinstance(value, str):
+        v = value.strip()
+        return v or None
+    return None
+
+
+def _extract_score_version_from_result_payload(result: dict[str, Any] | None) -> str | None:
+    if not isinstance(result, dict):
+        return None
+    score_block = result.get("score")
+    if not isinstance(score_block, dict):
+        return None
+    return _coerce_optional_str(score_block.get("score_version"))
+
+
+def _extract_score_version_from_champion_record(current: Any) -> str | None:
+    # ChampionRecord.metadata structure: {"trial_id":..., "results_path":..., "run_meta": {"score_block": {...}}}
+    meta = getattr(current, "metadata", None)
+    if not isinstance(meta, dict):
+        return None
+    run_meta = meta.get("run_meta")
+    if not isinstance(run_meta, dict):
+        return None
+    score_block = run_meta.get("score_block")
+    if not isinstance(score_block, dict):
+        return None
+    return _coerce_optional_str(score_block.get("score_version"))
+
+
+def _extract_results_path_from_champion_record(current: Any) -> str | None:
+    meta = getattr(current, "metadata", None)
+    if not isinstance(meta, dict):
+        return None
+    return _coerce_optional_str(meta.get("results_path"))
+
+
+def _enforce_score_version_compatibility(
+    *,
+    current_score_version: str | None,
+    candidate_score_version: str | None,
+    context: str,
+) -> None:
+    # Backward-compat: older champions may not have score_version persisted.
+    if not current_score_version or not candidate_score_version:
+        return
+    if current_score_version != candidate_score_version:
+        raise ValueError(
+            "Inkompatibla scoring-versioner (äpplen och päron): "
+            f"current={current_score_version} candidate={candidate_score_version} ({context})"
+        )
+
+
+def _dig(mapping: dict[str, Any], dotted_path: str) -> Any:
+    cur: Any = mapping
+    for part in dotted_path.split("."):
+        if not isinstance(cur, dict):
+            return None
+        cur = cur.get(part)
+    return cur
+
+
+def _load_backtest_info_from_results_path(results_path: str | None) -> dict[str, Any] | None:
+    if not results_path:
+        return None
+    try:
+        p = Path(results_path)
+        if not p.is_absolute():
+            # If a path-like string is provided, treat it as repo-relative.
+            if ("/" in results_path) or ("\\" in results_path):
+                p = (PROJECT_ROOT / p).resolve()
+            else:
+                p = (BACKTEST_RESULTS_DIR / p).resolve()
+        if not p.exists():
+            return None
+        data = _read_json_cached(p)
+        if not isinstance(data, dict):
+            return None
+        info = data.get("backtest_info")
+        return info if isinstance(info, dict) else None
+    except Exception:
+        return None
+
+
+def _collect_comparability_warnings(
+    current_info: dict[str, Any] | None,
+    candidate_info: dict[str, Any] | None,
+) -> list[str]:
+    if not isinstance(current_info, dict) or not isinstance(candidate_info, dict):
+        return []
+
+    watched_fields = [
+        "execution_mode.fast_window",
+        "execution_mode.env_precompute_features",
+        "execution_mode.precompute_enabled",
+        "execution_mode.precomputed_ready",
+        "execution_mode.mode_explicit",
+        "commission_rate",
+        "slippage_rate",
+        "git_hash",
+        "seed",
+        "htf.env_htf_exits",
+        "htf.use_new_exit_engine",
+        "htf.htf_candles_loaded",
+        "htf.htf_context_seen",
+    ]
+
+    warnings: list[str] = []
+    for path in watched_fields:
+        a = _dig(current_info, path)
+        b = _dig(candidate_info, path)
+        if a is None or b is None:
+            continue
+        if a != b:
+            warnings.append(f"{path} current={a!r} candidate={b!r}")
+    return warnings
+
+
 def _extract_num_trades(payload: dict[str, Any]) -> int | None:
     """Best effort extraction of num_trades from nested payloads."""
 
@@ -944,7 +1117,7 @@ def _run_backtest_direct(
                     )
 
                 # Critical: Set precompute flag BEFORE load_data() to ensure features are loaded/computed
-                if os.environ.get("GENESIS_PRECOMPUTE_FEATURES"):
+                if env_flag_enabled(os.getenv("GENESIS_PRECOMPUTE_FEATURES"), default=False):
                     engine_loader.precompute_features = True
                 if engine_loader.load_data():
                     # Hard guard: optimizer assumes canonical precompute is available.
@@ -1087,6 +1260,8 @@ def run_trial(
     baseline_label: str | None = None,
     optuna_context: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    capital_default, commission_default, slippage_default = _get_backtest_economics()
+
     key = _trial_key(trial.parameters)
     fingerprint_digest = key  # _trial_key already returns a SHA256 digest
 
@@ -1174,6 +1349,11 @@ def run_trial(
             "cfg": merged_cfg,
             "merged_config": merged_cfg,
             "runtime_version": _get_default_runtime_version(),
+            "overrides": {
+                "capital": capital_default,
+                "commission": commission_default,
+                "slippage": slippage_default,
+            },
         }
         _atomic_write_text(config_file, _json_dumps(config_payload))
 
@@ -1230,6 +1410,12 @@ def run_trial(
         end_date,
         "--warmup",
         str(trial.warmup_bars),
+        "--capital",
+        str(capital_default),
+        "--commission",
+        str(commission_default),
+        "--slippage",
+        str(slippage_default),
     ]
     # Canonical mode for optimizer quality decisions: always run 1/1.
     # (fast_window + precompute) is the SSOT for Optuna/validate/champion comparisons.
@@ -2809,6 +2995,37 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
                 should_replace = True
 
         if should_replace:
+            # Comparability guardrails ("äpplen och päron"):
+            # - Fail-fast only when BOTH score_version values are known and differ.
+            # - Warn-only for execution_mode / fees / git_hash / seed / HTF status drift.
+            candidate_score_version = _extract_score_version_from_result_payload(best_result)
+            current_score_version = _extract_score_version_from_champion_record(current)
+            _enforce_score_version_compatibility(
+                current_score_version=current_score_version,
+                candidate_score_version=candidate_score_version,
+                context=f"promotion:{symbol}:{timeframe}",
+            )
+
+            if current is not None and (
+                current_score_version is None or candidate_score_version is None
+            ):
+                print(
+                    "[WARN] [Comparable] score_version saknas för jämförelse "
+                    f"(current={current_score_version!r}, candidate={candidate_score_version!r})"
+                )
+
+            current_info = _load_backtest_info_from_results_path(
+                _extract_results_path_from_champion_record(current)
+            )
+            candidate_info = _load_backtest_info_from_results_path(
+                _coerce_optional_str(best_result.get("results_path") if best_result else None)
+            )
+            drift_warnings = _collect_comparability_warnings(current_info, candidate_info)
+            if drift_warnings:
+                preview = "; ".join(drift_warnings[:6])
+                suffix = "; ..." if len(drift_warnings) > 6 else ""
+                print(f"[WARN] [Comparable] drift detected: {preview}{suffix}")
+
             metadata_extra: dict[str, Any] = {
                 "run_dir": str(run_dir),
                 "config_path": str(config_path),

@@ -14,6 +14,12 @@ Denna checklist säkerställer att varje modell går igenom **stringent validati
 
 ---
 
+## Pipeline changes (PIR)
+
+Om du gör en ändring som påverkar pipeline/backtest (determinism, mode-parity, state/leakage), fyll i PIR-mallen:
+
+- `docs/templates/PIPELINE_CHANGE_REVIEW.md`
+
 ## 1️⃣ DATA INTEGRITY
 
 ### ✅ No Lookahead Bias

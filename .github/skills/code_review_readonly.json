@@ -1,0 +1,24 @@
+{
+  "id": "code_review_readonly",
+  "version": "1.0.0",
+  "title": "Code review (read-only)",
+  "description": "Granskning utan kodändringar: läs diff, identifiera risker och följ upp oklarheter.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "tags": ["review", "quality"],
+  "rules": {
+    "must": [
+      "Läs diff och relevant kontext innan slutsats.",
+      "Notera risker, regressionsyta och oklarheter.",
+      "Be om kompletterande underlag vid behov."
+    ],
+    "must_not": [
+      "Föreslå ändringar utan att förstå kontext.",
+      "Anta att test/täckning finns utan bevis.",
+      "Godkänna ändringar med oklara risker."
+    ]
+  },
+  "references": [
+    { "type": "doc", "value": "docs/templates/skills/code_review_readonly.md" }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "optuna_hpo_sanity",
+  "version": "1.0.0",
+  "title": "Optuna HPO sanity",
+  "description": "Kontrollerar att Optuna HPO-konfig är rimlig och att viktiga parametrar finns i sökrymden.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "tags": ["optuna", "hpo", "validation"],
+  "rules": {
+    "must": [
+      "Kör preflight och config-validering.",
+      "Verifiera att kritiska parametrar finns i sökrymden.",
+      "Kör baseline-test före lång körning."
+    ],
+    "must_not": [
+      "Starta Optuna utan validerad sökrymd.",
+      "Fixera kritiska parametrar utan motivering.",
+      "Blanda olika fönster i samma jämförelse."
+    ]
+  },
+  "references": [
+    { "type": "doc", "value": "docs/templates/skills/optuna_hpo_sanity.md" }
+  ]
+}

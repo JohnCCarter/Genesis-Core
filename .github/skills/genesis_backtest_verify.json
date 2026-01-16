@@ -26,5 +26,11 @@
     "must_not": [
       "Skapa eller modifiera trading artifacts utan explicit flagga."
     ]
-  }
+  },
+  "references": [
+    {
+      "type": "doc",
+      "value": "docs/templates/skills/genesis_backtest_verify.md"
+    }
+  ]
 }

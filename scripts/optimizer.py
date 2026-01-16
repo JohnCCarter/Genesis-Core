@@ -15,6 +15,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 RESULTS_DIR = ROOT / "results" / "hparam_search"
+BACKTEST_RESULTS_DIR = ROOT / "results" / "backtests"
 
 # Cache for trial summaries to avoid repeated file I/O
 _SUMMARY_CACHE: dict[str, dict[str, Any]] = {}
@@ -115,6 +116,9 @@ def summarize_run(run_id: str, use_cache: bool = True) -> dict[str, Any]:
     trials: list[dict[str, Any]] = []
     valid_trials: list[dict[str, Any]] = []
 
+    score_versions_known: set[str] = set()
+    score_versions_missing = 0
+
     # Performance: Single pass through trials with early filtering
     skipped_count = 0
     failed_count = 0
@@ -156,6 +160,16 @@ def summarize_run(run_id: str, use_cache: bool = True) -> dict[str, Any]:
         except (TypeError, ValueError):
             continue
 
+        score_version = None
+        if isinstance(score_block, dict):
+            raw_sv = score_block.get("score_version")
+            if isinstance(raw_sv, str) and raw_sv.strip():
+                score_version = raw_sv.strip()
+        if score_version is None:
+            score_versions_missing += 1
+        else:
+            score_versions_known.add(score_version)
+
         metrics = dict(score_block.get("metrics") or {})
         valid_trials.append(
             {
@@ -164,6 +178,7 @@ def summarize_run(run_id: str, use_cache: bool = True) -> dict[str, Any]:
                 "results_path": trial.get("results_path"),
                 "score": score_value,
                 "metrics": metrics,
+                "score_version": score_version,
                 "parameters": trial.get("parameters") or {},
                 "duration_seconds": trial.get("duration_seconds"),
                 "attempts": trial.get("attempts"),
@@ -190,6 +205,10 @@ def summarize_run(run_id: str, use_cache: bool = True) -> dict[str, Any]:
         "best_trial": valid_trials[0] if valid_trials else None,
         "valid_trials": valid_trials,
         "trials": trials,
+        "score_versions": {
+            "known": sorted(score_versions_known),
+            "missing": score_versions_missing,
+        },
         "_cache_mtime": os.path.getmtime(run_dir) if run_dir.exists() else 0,
     }
 
@@ -474,17 +493,59 @@ def _print_summary(data: dict[str, Any], *, top_n: int) -> None:
         print("No trial satisfied the constraints.")
         return
 
+    score_versions = data.get("score_versions") or {}
+    known = score_versions.get("known") or []
+    missing = int(score_versions.get("missing") or 0)
+    if known or missing:
+        print(f"Score versions (valid trials): known={known} missing={missing}")
+        if len(known) > 1:
+            print("[WARN] [Comparable] Mixed score_version within run (äpplen och päron risk)")
+        elif missing and known:
+            print("[WARN] [Comparable] Some trials missing score_version (legacy/unknown)")
+
     best = valid_trials[0]
     print("Best trial:")
     print(f"  id: {best.get('trial_id')}")
     print(f"  file: {best.get('trial_file')}")
     print(f"  score: {best.get('score')}")
+    if best.get("score_version") is not None:
+        print(f"  score_version: {best.get('score_version')}")
     metrics = best.get("metrics") or {}
     if metrics:
         print(f"  num_trades: {metrics.get('num_trades')}")
         print(f"  sharpe_ratio: {metrics.get('sharpe_ratio')}")
         print(f"  total_return: {metrics.get('total_return')}")
         print(f"  profit_factor: {metrics.get('profit_factor')}")
+
+    # Best-effort comparability info from the saved backtest artifact (mode/fees/fingerprint).
+    results_path = best.get("results_path")
+    if isinstance(results_path, str) and results_path.strip():
+        try:
+            p = Path(results_path)
+            if not p.is_absolute():
+                if "/" in results_path or "\\" in results_path:
+                    p = (ROOT / p).resolve()
+                else:
+                    p = (BACKTEST_RESULTS_DIR / p).resolve()
+            if p.exists():
+                payload = json.loads(p.read_text(encoding="utf-8"))
+                info = payload.get("backtest_info") if isinstance(payload, dict) else None
+                if isinstance(info, dict):
+                    em = (
+                        info.get("execution_mode")
+                        if isinstance(info.get("execution_mode"), dict)
+                        else {}
+                    )
+                    fp = info.get("effective_config_fingerprint")
+                    print(
+                        "Comparable(best): "
+                        f"fw={em.get('fast_window')!r} pc={em.get('env_precompute_features')!r} "
+                        f"commission={info.get('commission_rate')!r} slippage={info.get('slippage_rate')!r} "
+                        f"warmup={info.get('warmup_bars')!r} fp={fp!r}"
+                    )
+        except Exception:
+            # Never break summarize on missing/legacy artifacts.
+            pass
 
     if top_n > 1:
         print(f"Top {min(top_n, len(valid_trials))} trials (score desc):")

@@ -1,0 +1,24 @@
+{
+  "id": "asof_semantics_audit",
+  "version": "1.0.0",
+  "title": "AS-OF semantics audit",
+  "description": "Validerar att AS-OF semantik inte läcker framtidsdata och att edge cases täcks.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "tags": ["asof", "validation"],
+  "rules": {
+    "must": [
+      "Verifiera att reference timestamp används korrekt.",
+      "Bekräfta att ingen implicit lookahead förekommer.",
+      "Dokumentera edge cases."
+    ],
+    "must_not": [
+      "Förlita dig på senaste rad utan as-of kontroll.",
+      "Acceptera lookahead i features eller exits.",
+      "Lämna oklarheter kring tidszoner."
+    ]
+  },
+  "references": [
+    { "type": "doc", "value": "docs/templates/skills/asof_semantics_audit.md" }
+  ]
+}

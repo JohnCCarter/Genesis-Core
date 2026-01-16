@@ -12,6 +12,8 @@ __all__ = [
     "diff_metrics",
     "diff_backtest_results",
     "diff_backtest_files",
+    "check_backtest_comparability",
+    "format_comparability_issues",
     "summarize_metric_deltas",
     "summarize_metrics_diff",
 ]
@@ -126,3 +128,130 @@ def summarize_metrics_diff(serialized_diff: dict[str, Any]) -> str:
         elif payload.get("regression"):
             lines.append(f"{key}: changed from {payload.get('old')} to {payload.get('new')}")
     return "\n".join(lines)
+
+
+def _dig(mapping: dict[str, Any], dotted_path: str) -> Any:
+    cur: Any = mapping
+    for part in dotted_path.split("."):
+        if not isinstance(cur, dict):
+            return None
+        cur = cur.get(part)
+    return cur
+
+
+def _coerce_optional_str(value: Any) -> str | None:
+    if value is None:
+        return None
+    if isinstance(value, str):
+        v = value.strip()
+        return v or None
+    return None
+
+
+def _extract_score_version(results: dict[str, Any]) -> str | None:
+    score_block = results.get("score")
+    if isinstance(score_block, dict):
+        return _coerce_optional_str(score_block.get("score_version"))
+    return None
+
+
+def check_backtest_comparability(
+    old_results: dict[str, Any],
+    new_results: dict[str, Any],
+    *,
+    warn_only: bool = False,
+    context: str = "compare",
+) -> list[str]:
+    """Enforce apples-to-apples guardrails for backtest comparisons.
+
+    Policy (STRICT default):
+    - Fail-fast ONLY when both values are known and differ.
+    - score_version: fail-fast only when both are known and differ; otherwise warn-only.
+    - HTF status + git_hash + seed + initial_capital: warn-only.
+
+    Returns:
+        List of warnings (strings). Raises ValueError on fail-fast errors unless warn_only=True.
+    """
+
+    old_info = old_results.get("backtest_info")
+    new_info = new_results.get("backtest_info")
+    old_info = old_info if isinstance(old_info, dict) else {}
+    new_info = new_info if isinstance(new_info, dict) else {}
+
+    warnings: list[str] = []
+    errors: list[str] = []
+
+    fail_fast_fields = [
+        "symbol",
+        "timeframe",
+        "start_date",
+        "end_date",
+        "warmup_bars",
+        "commission_rate",
+        "slippage_rate",
+        "effective_config_fingerprint",
+        "execution_mode.fast_window",
+        "execution_mode.env_precompute_features",
+    ]
+    for path in fail_fast_fields:
+        a = _dig(old_info, path)
+        b = _dig(new_info, path)
+        if a is None or b is None:
+            if a is None and b is None:
+                continue
+            warnings.append(f"missing:{path} old={a!r} new={b!r}")
+            continue
+        if a != b:
+            errors.append(f"{path} old={a!r} new={b!r}")
+
+    # runtime_version lives at top-level in results payloads.
+    old_runtime = old_results.get("runtime_version")
+    new_runtime = new_results.get("runtime_version")
+    if old_runtime is None or new_runtime is None:
+        if not (old_runtime is None and new_runtime is None):
+            warnings.append(f"missing:runtime_version old={old_runtime!r} new={new_runtime!r}")
+    elif old_runtime != new_runtime:
+        errors.append(f"runtime_version old={old_runtime!r} new={new_runtime!r}")
+
+    # score_version: only fail-fast if both known and differ.
+    old_sv = _extract_score_version(old_results)
+    new_sv = _extract_score_version(new_results)
+    if old_sv and new_sv and old_sv != new_sv:
+        errors.append(f"score_version old={old_sv!r} new={new_sv!r}")
+    elif (old_sv is None) != (new_sv is None):
+        warnings.append(f"missing:score_version old={old_sv!r} new={new_sv!r}")
+
+    warn_only_fields = [
+        "execution_mode.mode_explicit",
+        "git_hash",
+        "seed",
+        "initial_capital",
+        "htf.env_htf_exits",
+        "htf.use_new_exit_engine",
+        "htf.htf_candles_loaded",
+        "htf.htf_context_seen",
+    ]
+    for path in warn_only_fields:
+        a = _dig(old_info, path)
+        b = _dig(new_info, path)
+        if a is None or b is None:
+            continue
+        if a != b:
+            warnings.append(f"{path} old={a!r} new={b!r}")
+
+    if errors and not warn_only:
+        raise ValueError(
+            f"Inkompatibla backtest-resultat ({context}): "
+            + "; ".join(errors[:8])
+            + ("; ..." if len(errors) > 8 else "")
+        )
+
+    return warnings
+
+
+def format_comparability_issues(issues: list[str], *, max_items: int = 6) -> str:
+    if not issues:
+        return ""
+    preview = "; ".join(issues[: max(1, int(max_items))])
+    suffix = "; ..." if len(issues) > max_items else ""
+    return f"{preview}{suffix}"

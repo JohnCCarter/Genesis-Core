@@ -40,7 +40,12 @@ from core.backtest.trade_logger import TradeLogger  # noqa: E402
 from core.config.authority import ConfigAuthority  # noqa: E402
 from core.optimizer.scoring import score_backtest  # noqa: E402
 from core.pipeline import GenesisPipeline  # noqa: E402
-from core.utils.diffing import diff_metrics, summarize_metric_deltas  # noqa: E402
+from core.utils.diffing import (  # noqa: E402
+    check_backtest_comparability,
+    diff_metrics,
+    format_comparability_issues,
+    summarize_metric_deltas,
+)
 
 
 def _deep_merge(base: dict, override: dict) -> dict:
@@ -189,6 +194,11 @@ def main():
         "--compare",
         type=Path,
         help="Path to baseline backtest JSON to compare against",
+    )
+    parser.add_argument(
+        "--compare-warn-only",
+        action="store_true",
+        help="Do not fail fast on comparability drift when using --compare (legacy/forensics)",
     )
     parser.add_argument("--optuna-trial-id", type=int, help="Optuna trial ID for pruning")
     parser.add_argument("--optuna-storage", type=str, help="Optuna storage URL")
@@ -427,6 +437,26 @@ def main():
             else:
                 try:
                     baseline = json.loads(comparison_path.read_text(encoding="utf-8"))
+
+                    try:
+                        warnings = check_backtest_comparability(
+                            baseline,
+                            results,
+                            warn_only=bool(args.compare_warn_only),
+                            context="run_backtest --compare",
+                        )
+                        if warnings:
+                            print(
+                                "[WARN] [Comparable] "
+                                + format_comparability_issues(warnings, max_items=6)
+                            )
+                    except ValueError as exc:
+                        print(f"\n[FAILED] {exc}")
+                        print(
+                            "[HINT] Kör med --compare-warn-only om du medvetet vill jämföra legacy-artifacts."
+                        )
+                        return 1
+
                     baseline_metrics = (
                         (baseline.get("summary") or {}).get("metrics")
                         or baseline.get("metrics")

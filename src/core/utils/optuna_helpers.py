@@ -69,9 +69,16 @@ LOGGER = logging.getLogger(__name__)
 
 
 def set_global_seeds(seed: int = 42) -> None:
-    """Set deterministic seeds for Python, NumPy and hash randomization."""
+    """Set deterministic seeds for Python and NumPy.
+
+    Note:
+        Setting ``PYTHONHASHSEED`` here does *not* change hash randomization for the
+        current Python interpreter (that is decided at process start). It *does*
+        affect child processes spawned after this call (they inherit the env var).
+    """
     random.seed(seed)
     np.random.seed(seed)
+    # Only effective for child processes started after this point.
     os.environ["PYTHONHASHSEED"] = str(seed)
     # Torch (optional)
     try:  # pragma: no cover

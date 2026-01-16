@@ -3,11 +3,21 @@ from __future__ import annotations
 import pytest
 
 from core.utils.diffing.results_diff import (
+    check_backtest_comparability,
     diff_backtest_results,
     diff_metrics,
+    format_comparability_issues,
     summarize_metric_deltas,
     summarize_metrics_diff,
 )
+
+
+def _base_results(*, score_version: str | None = None) -> dict:
+    payload: dict = {"runtime_version": 123}
+    if score_version is not None:
+        payload["score"] = {"score": 0.0, "score_version": score_version, "metrics": {}}
+    payload["backtest_info"] = {}
+    return payload
 
 
 def test_diff_metrics_basic():
@@ -53,3 +63,42 @@ def test_summarize_metrics_diff():
     summary = summarize_metrics_diff(diff)
     assert "total_return: +0.1000" in summary
     assert "num_trades: -2.0000" in summary
+
+
+def test_check_backtest_comparability_score_version_mismatch_is_fail_fast():
+    old = _base_results(score_version="v1")
+    new = _base_results(score_version="v2")
+    with pytest.raises(ValueError, match=r"score_version"):
+        check_backtest_comparability(old, new)
+
+
+def test_check_backtest_comparability_score_version_missing_warns():
+    old = _base_results(score_version="v2")
+    new = _base_results(score_version=None)
+    warnings = check_backtest_comparability(old, new, warn_only=True)
+    assert any("missing:score_version" in w for w in warnings)
+
+
+def test_check_backtest_comparability_execution_mode_mismatch_is_fail_fast():
+    old = _base_results(score_version="v2")
+    new = _base_results(score_version="v2")
+    old["backtest_info"]["execution_mode"] = {"fast_window": True, "env_precompute_features": True}
+    new["backtest_info"]["execution_mode"] = {"fast_window": False, "env_precompute_features": True}
+    with pytest.raises(ValueError, match=r"execution_mode\.fast_window"):
+        check_backtest_comparability(old, new)
+
+
+def test_check_backtest_comparability_htf_drift_is_warn_only():
+    old = _base_results(score_version="v2")
+    new = _base_results(score_version="v2")
+    old["backtest_info"]["htf"] = {"htf_candles_loaded": True}
+    new["backtest_info"]["htf"] = {"htf_candles_loaded": False}
+    warnings = check_backtest_comparability(old, new)
+    assert any("htf.htf_candles_loaded" in w for w in warnings)
+
+
+def test_format_comparability_issues_truncates():
+    issues = [f"x{i}" for i in range(10)]
+    s = format_comparability_issues(issues, max_items=3)
+    assert s.startswith("x0; x1; x2")
+    assert s.endswith("; ...")

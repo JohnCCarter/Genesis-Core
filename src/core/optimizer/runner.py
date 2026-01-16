@@ -40,6 +40,7 @@ from core.utils.diffing.canonical import canonicalize_config
 from core.utils.diffing.optuna_guard import estimate_zero_trade
 from core.utils.diffing.results_diff import diff_backtest_results
 from core.utils.diffing.trial_cache import TrialResultCache
+from core.utils.env_flags import env_flag_enabled
 from core.utils.optuna_helpers import NoDupeGuard, param_signature, set_global_seeds
 
 
@@ -1116,8 +1117,7 @@ def _run_backtest_direct(
                     )
 
                 # Critical: Set precompute flag BEFORE load_data() to ensure features are loaded/computed
-                # NOTE: Avoid `if os.environ.get(...)` since the string "0" is truthy in Python.
-                if os.environ.get("GENESIS_PRECOMPUTE_FEATURES") == "1":
+                if env_flag_enabled(os.getenv("GENESIS_PRECOMPUTE_FEATURES"), default=False):
                     engine_loader.precompute_features = True
                 if engine_loader.load_data():
                     # Hard guard: optimizer assumes canonical precompute is available.

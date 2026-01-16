@@ -65,9 +65,10 @@ def test_evaluate_pipeline_regime_uses_global_index_for_precomputed_ema50(monkey
 
     ema_len = 600
     ema50 = [1000.0] * ema_len
-    # If code (incorrectly) uses local index 199, this would classify as bear.
+    # Current price is 1000.0. Threshold is 2%.
+    # If code (incorrectly) uses local index 199, EMA=1100 -> trend negative (bear).
     ema50[window_len - 1] = 1100.0
-    # Correct global index (500) should classify as bull.
+    # Correct global index (500) should have EMA=900 -> trend positive (bull).
     ema50[500] = 900.0
 
     configs = {

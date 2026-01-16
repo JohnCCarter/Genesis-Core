@@ -1,4 +1,5 @@
 # ADVANCED VALIDATION & PRODUCTION ML GUIDE
+
 ## Production-Grade Model Validation för Trading Systems
 
 **Skapad:** 2025-10-09
@@ -12,27 +13,27 @@
 
 ### ✅ IMPLEMENTERAT (Phase-5)
 
-| Komponent | Status | Fil | Testad |
-|-----------|--------|-----|--------|
-| Purged WFCV | ✅ KLAR | `scripts/validate_purged_wfcv.py` | ✅ |
-| Provenance Tracking | ✅ KLAR | `src/core/utils/provenance.py` | ✅ |
-| Feature Drift (PSI/K-S) | ✅ KLAR | `scripts/monitor_feature_drift.py` | ✅ |
-| Overfit Detection (Deflated Sharpe) | ✅ KLAR | `src/core/ml/overfit_detection.py` | ✅ |
-| Overfit Detection (PBO) | ✅ KLAR | `src/core/ml/overfit_detection.py` | ✅ |
-| Regime Gates | ✅ KLAR | `scripts/validate_regime_gates.py` | ✅ |
-| Validation Config | ✅ KLAR | `config/validation_config.json` | ✅ |
+| Komponent                           | Status  | Fil                                | Testad |
+| ----------------------------------- | ------- | ---------------------------------- | ------ |
+| Purged WFCV                         | ✅ KLAR | `scripts/validate_purged_wfcv.py`  | ✅     |
+| Provenance Tracking                 | ✅ KLAR | `src/core/utils/provenance.py`     | ✅     |
+| Feature Drift (PSI/K-S)             | ✅ KLAR | `scripts/monitor_feature_drift.py` | ✅     |
+| Overfit Detection (Deflated Sharpe) | ✅ KLAR | `src/core/ml/overfit_detection.py` | ✅     |
+| Overfit Detection (PBO)             | ✅ KLAR | `src/core/ml/overfit_detection.py` | ✅     |
+| Regime Gates                        | ✅ KLAR | `scripts/validate_regime_gates.py` | ✅     |
+| Validation Config                   | ✅ KLAR | `config/validation_config.json`    | ✅     |
 
 ### 📝 DOKUMENTERAT (Redo att implementera)
 
-| Komponent | Status | Prioritet |
-|-----------|--------|-----------|
-| Hysteresis & Cooldown | 📝 Dokumenterad | P1 |
-| Transaction Costs Model | 📝 Dokumenterad | P1 |
-| Latency Simulation | 📝 Dokumenterad | P2 |
-| Model Card Generator | 📝 Dokumenterad | P1 |
-| Championship Ticket | 📝 Dokumenterad | P1 |
-| Canary Deployment | 📝 Dokumenterad | P0 |
-| Complete Validation Pipeline | 📝 Dokumenterad | P0 |
+| Komponent                    | Status          | Prioritet |
+| ---------------------------- | --------------- | --------- |
+| Hysteresis & Cooldown        | 📝 Dokumenterad | P1        |
+| Transaction Costs Model      | 📝 Dokumenterad | P1        |
+| Latency Simulation           | 📝 Dokumenterad | P2        |
+| Model Card Generator         | 📝 Dokumenterad | P1        |
+| Championship Ticket          | 📝 Dokumenterad | P1        |
+| Canary Deployment            | 📝 Dokumenterad | P0        |
+| Complete Validation Pipeline | 📝 Dokumenterad | P0        |
 
 ---
 
@@ -41,6 +42,7 @@
 Detta dokument beskriver **enterprise-grade validation** och production practices för ML trading models. Täcker allt från Purged WFCV till Canary deployments.
 
 **Baserat på:**
+
 - Marcos López de Prado: "Advances in Financial Machine Learning"
 - David Aronson: "Evidence-Based Technical Analysis"
 - Production ML best practices från quant hedge funds
@@ -52,9 +54,11 @@ Detta dokument beskriver **enterprise-grade validation** och production practice
 ---
 
 ## 1. PURGED WFCV (Walk-Forward Cross-Validation med Embargo)
+
 ### ✅ STATUS: IMPLEMENTERAT (`scripts/validate_purged_wfcv.py`)
 
 ### Problem med Vanlig WFCV
+
 ```python
 # Standard WFCV (FARLIGT för time-series!)
 Train: [0:1000]
@@ -62,6 +66,7 @@ Test:  [1000:1200]  # ← Data leakage! Features beror på närmaste data
 ```
 
 **Leakage sources:**
+
 - Features använder indicators (EMA, RSI) som "blöder" över tid
 - Labels kan innehålla information från framtiden
 - Autocorrelation i time-series
@@ -179,6 +184,7 @@ for split in splits:
 ```
 
 ### Varför detta är KRITISKT
+
 - ✅ Eliminerar data leakage
 - ✅ Ger realistiska performance estimates
 - ✅ Embargo förhindrar autocorrelation bias
@@ -187,9 +193,11 @@ for split in splits:
 ---
 
 ## 2. DEFLATED SHARPE RATIO & PBO-CHECK
+
 ### ✅ STATUS: IMPLEMENTERAT (`src/core/ml/overfit_detection.py`)
 
 ### Problem med Vanlig Sharpe
+
 ```python
 # Sharpe Ratio ser bra ut → 1.8
 # MEN: Efter 1000 backtests kan detta vara ren tur!
@@ -338,6 +346,7 @@ if pbo_result['pbo'] > 0.5:
 ---
 
 ## 3. PROBABILITY CALIBRATION
+
 ### ✅ STATUS: REDAN IMPLEMENTERAT (`core/ml/calibration.py`)
 
 ### A. Isotonic Regression Calibration
@@ -391,6 +400,7 @@ def find_optimal_temperature(val_logits, val_labels):
 ---
 
 ## 4. FEATURE & LABEL DRIFT MONITORING
+
 ### ✅ STATUS: IMPLEMENTERAT (`scripts/monitor_feature_drift.py`)
 
 ### A. Population Stability Index (PSI)
@@ -511,9 +521,11 @@ if ks_result['drifted']:
 ---
 
 ## 5. HYSTERESIS & COOLDOWN vid Champion-byte
+
 ### 📝 STATUS: DOKUMENTERAD (Ej implementerad)
 
 ### Problem
+
 ```python
 # Utan hysteresis:
 # Dag 1: Model A är champion (score: 7.2)
@@ -642,7 +654,7 @@ else:
     "description": "Minimum 7 days between champion changes"
   },
   "confidence": {
-    "minimum": 0.80,
+    "minimum": 0.8,
     "method": "bootstrap",
     "n_bootstrap": 1000,
     "description": "80% confidence that challenger is truly better"
@@ -661,6 +673,7 @@ else:
 ---
 
 ## 6. REGIME-ROBUSTNESS SOM HÅRDA GATES
+
 ### ✅ STATUS: IMPLEMENTERAT (`scripts/validate_regime_gates.py`)
 
 ### Koncept: Champion måste PASSA alla gates
@@ -786,6 +799,7 @@ else:
 ---
 
 ## 7. REALISTISK BACKTEST
+
 ### 📝 STATUS: DOKUMENTERAD (Ej implementerad)
 
 ### A. Transaction Costs Model
@@ -933,9 +947,11 @@ if signal_generated_at_bar_i:
 ---
 
 ## 8. REPRODUCERBARHET via Data/Config Hashar
+
 ### ✅ STATUS: IMPLEMENTERAT (`src/core/utils/provenance.py`)
 
 ### Problem
+
 ```python
 # "Model v11 presterade bra i backtest"
 # 6 månader senare: "Vilken data användes? Vilka parametrar?"
@@ -1049,6 +1065,7 @@ def verify_reproducibility(model_path):
 ---
 
 ## 9. MODEL CARD & CHAMPIONSHIP TICKET
+
 ### 📝 STATUS: DOKUMENTERAD (Ej implementerad)
 
 ### Model Card (ML Documentation Standard)
@@ -1126,8 +1143,8 @@ def generate_model_card(model_path, validation_results):
         },
 
         "provenance": {
-            "data_hash": "a3f5c9d2e1b4f7a8",
-            "config_hash": "b2e4d1c8f9a3e5b7",
+            "data_hash": "<data_hash>",
+            "config_hash": "<config_hash>",
             "training_script": "scripts/train_model.py v2.1.0",
             "reproducible": True
         }
@@ -1296,6 +1313,7 @@ else:
 ---
 
 ## 10. CANARY & PHASED DEPLOYMENT
+
 ### 📝 STATUS: DOKUMENTERAD (Ej implementerad)
 
 ### Canary Deployment Strategy
@@ -1497,6 +1515,7 @@ def generate_canary_report(canary_deployment, current_trades):
 ---
 
 ## 11. KOMPLETT VALIDATION PIPELINE
+
 ### 📝 STATUS: DOKUMENTERAD (Ej implementerad)
 
 ### Master Validation Script
@@ -1701,43 +1720,43 @@ python scripts/monitor_canary.py \
     "n_splits": 6,
     "train_ratio": 0.6,
     "embargo_pct": 0.02,
-    "min_stability_score": 0.70,
-    "min_worst_case_auc": 0.60
+    "min_stability_score": 0.7,
+    "min_worst_case_auc": 0.6
   },
 
   "holdout": {
-    "size_pct": 0.20,
-    "max_performance_degradation": 0.10
+    "size_pct": 0.2,
+    "max_performance_degradation": 0.1
   },
 
   "overfit_detection": {
     "deflated_sharpe_threshold": 1.0,
-    "pbo_threshold": 0.50,
+    "pbo_threshold": 0.5,
     "n_trials_tested": 50
   },
 
   "drift_monitoring": {
     "psi_threshold": 0.25,
-    "psi_warning": 0.10,
+    "psi_warning": 0.1,
     "ks_alpha": 0.05,
     "monitoring_frequency_days": 1
   },
 
   "regime_gates": {
-    "bull": {"min_sharpe": 1.0, "max_drawdown": -0.20},
-    "bear": {"min_sharpe": 0.0, "max_drawdown": -0.15},
-    "ranging": {"min_sharpe": 0.3, "max_drawdown": -0.18}
+    "bull": { "min_sharpe": 1.0, "max_drawdown": -0.2 },
+    "bear": { "min_sharpe": 0.0, "max_drawdown": -0.15 },
+    "ranging": { "min_sharpe": 0.3, "max_drawdown": -0.18 }
   },
 
   "hysteresis": {
     "score_improvement_threshold": 0.5,
     "cooldown_days": 7,
-    "min_switch_confidence": 0.80
+    "min_switch_confidence": 0.8
   },
 
   "transaction_costs": {
-    "maker_fee": 0.0010,
-    "taker_fee": 0.0020,
+    "maker_fee": 0.001,
+    "taker_fee": 0.002,
     "base_slippage_bps": 2.0,
     "latency_bars": 1,
     "fill_probability": 0.95
@@ -1745,9 +1764,9 @@ python scripts/monitor_canary.py \
 
   "canary_deployment": {
     "phase_1_days": 3,
-    "phase_1_capital": 0.10,
+    "phase_1_capital": 0.1,
     "phase_2_days": 7,
-    "phase_2_capital": 0.50,
+    "phase_2_capital": 0.5,
     "rollback_conditions": {
       "consecutive_losses": 5,
       "max_drawdown": -0.15,
@@ -1858,6 +1877,7 @@ python scripts/validate_champion_complete.py \
 ### Pre-Deployment Validation
 
 - [ ] **Purged WFCV completed**
+
   - [ ] Embargo period = max holding period
   - [ ] Minimum 5 splits
   - [ ] Stability score > 0.70
@@ -1865,46 +1885,54 @@ python scripts/validate_champion_complete.py \
   - [ ] Purged overlapping samples
 
 - [ ] **Holdout evaluation completed**
+
   - [ ] 20% holdout set UNTOUCHED during training
   - [ ] Performance degradation < 10%
   - [ ] Holdout AUC > 0.65
   - [ ] Holdout Sharpe > 0.8
 
 - [ ] **Overfit detection completed**
+
   - [ ] Deflated Sharpe > 1.0
   - [ ] PBO score < 0.50
   - [ ] Multiple testing correction applied
 
 - [ ] **Regime gates passed**
+
   - [ ] Bear market Sharpe ≥ 0 (MUST protect capital)
   - [ ] Bull market Sharpe ≥ 1.0
   - [ ] Ranging market Sharpe ≥ 0.3
   - [ ] All regime gates PASSED
 
 - [ ] **Calibration verified**
+
   - [ ] ECE (Expected Calibration Error) < 0.15
   - [ ] Reliability diagram reviewed
   - [ ] Isotonic/Temperature calibration applied
 
 - [ ] **Drift monitoring setup**
+
   - [ ] PSI baseline calculated for all features
   - [ ] K-S test baseline established
   - [ ] Alert thresholds configured
   - [ ] Monitoring scripts scheduled
 
 - [ ] **Realistic backtest completed**
+
   - [ ] Transaction costs included (fees + slippage)
   - [ ] Latency simulation (execution delay)
   - [ ] Partial fill simulation
   - [ ] Volume impact considered
 
 - [ ] **Provenance & Reproducibility**
+
   - [ ] Data hash recorded
   - [ ] Config hash recorded
   - [ ] Environment captured
   - [ ] Reproducibility verified
 
 - [ ] **Documentation completed**
+
   - [ ] Model Card generated
   - [ ] Championship Ticket approved
   - [ ] Deployment plan documented
@@ -1919,12 +1947,14 @@ python scripts/validate_champion_complete.py \
 ### During Deployment
 
 - [ ] **Canary phase (3 days)**
+
   - [ ] 10% capital allocation
   - [ ] Daily performance monitoring
   - [ ] PSI check after each day
   - [ ] Success criteria met
 
 - [ ] **Paper-live phase (7 days)**
+
   - [ ] 50% capital allocation
   - [ ] Daily drift monitoring
   - [ ] Performance vs backtest comparison
@@ -1990,18 +2020,20 @@ IMMEDIATE stop trading if:
 **10 kritiska områden med implementation status:**
 
 ### ✅ IMPLEMENTERAT (Phase-5 Complete)
+
 1. ✅ **Purged WFCV** - Eliminera data leakage (`scripts/validate_purged_wfcv.py`)
 2. ✅ **Deflated Sharpe + PBO** - Detektera overfit (`src/core/ml/overfit_detection.py`)
 3. ✅ **Probability Calibration** - Redan implementerat! (`core/ml/calibration.py`)
 4. ✅ **Feature/Label Drift** - PSI & K-S monitoring (`scripts/monitor_feature_drift.py`)
-6. ✅ **Regime Gates** - Hårda robustness requirements (`scripts/validate_regime_gates.py`)
-8. ✅ **Reproducerbarhet** - Data/config hashar (`src/core/utils/provenance.py`)
+5. ✅ **Regime Gates** - Hårda robustness requirements (`scripts/validate_regime_gates.py`)
+6. ✅ **Reproducerbarhet** - Data/config hashar (`src/core/utils/provenance.py`)
 
 ### 📝 DOKUMENTERAT (Redo att implementera - Phase 6)
+
 5. 📝 **Hysteresis & Cooldown** - Stabil champion switching (Dokumenterad)
-7. 📝 **Realistisk Backtest** - Costs, latency, partial fills (Dokumenterad)
-9. 📝 **Model Card + Ticket** - Production documentation (Dokumenterad)
-10. 📝 **Canary Deployment** - Phased rollout (Dokumenterad)
+6. 📝 **Realistisk Backtest** - Costs, latency, partial fills (Dokumenterad)
+7. 📝 **Model Card + Ticket** - Production documentation (Dokumenterad)
+8. 📝 **Canary Deployment** - Phased rollout (Dokumenterad)
 
 **Phase-5: SOLID FOUNDATION för Production ML! 🚀**
 **Phase-6: Complete end-to-end production pipeline! 🎯**
@@ -2011,6 +2043,7 @@ IMMEDIATE stop trading if:
 ## 🚀 NEXT STEPS
 
 ### ✅ Phase-5 COMPLETED
+
 1. ✅ Implementera Purged WFCV script
 2. ✅ Uppdatera train_model.py med holdout
 3. ✅ Implementera deflated Sharpe calculation
@@ -2020,12 +2053,15 @@ IMMEDIATE stop trading if:
 7. ✅ Skapa provenance tracking
 
 ### 🎯 Phase-6: Production Pipeline (Next Sprint)
+
 1. **Immediate Priority (Week 1-2)**
+
    - [ ] Skapa complete validation pipeline script
    - [ ] Implementera model card generator
    - [ ] Implementera championship ticket system
 
 2. **High Priority (Week 3-4)**
+
    - [ ] Implementera hysteresis & cooldown mechanism
    - [ ] Implementera transaction costs model
    - [ ] Setup canary deployment infrastructure

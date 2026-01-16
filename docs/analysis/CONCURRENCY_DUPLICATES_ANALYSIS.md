@@ -12,14 +12,17 @@ When using multiple concurrent workers (`n_jobs > 1`) with Optuna, the duplicate
 ### Sequential vs. Parallel Sampling
 
 **Sequential (n_jobs=1)**:
+
 ```
 Worker 1: Request params → Get {A} → Evaluate → Report result
 Worker 1: Request params → Get {B} → Evaluate → Report result
 Worker 1: Request params → Get {C} → Evaluate → Report result
 ```
+
 Each request happens AFTER the previous trial completes and reports. The TPE sampler sees all previous results and avoids them.
 
 **Parallel (n_jobs=4)**:
+
 ```
 Worker 1: Request params → Get {A} → Evaluate...
 Worker 2: Request params → Get {B} → Evaluate...
@@ -37,6 +40,7 @@ Worker 4: Request params → Get {D} → Evaluate...
 **Problem**: Multiple workers request parameters from Optuna's sampler **before any of them complete**
 
 **How it happens**:
+
 ```python
 # In Optuna's study.optimize() with n_jobs=4
 
@@ -52,20 +56,22 @@ trial_4 = sampler.sample_independent(...)  # Worker 4 (doesn't see any others)
 ```
 
 **Why duplicates occur**:
+
 - TPESampler makes decisions based on **completed trials only**
 - During parallel execution, multiple workers are in-flight simultaneously
 - Each worker's trial is NOT visible to others until it completes
 - If search space is discrete/small, multiple workers can sample identical parameters
 
 **Example with narrow search space**:
+
 ```yaml
 parameters:
   param_a:
     type: grid
-    values: [1, 2, 3]  # Only 3 choices
+    values: [1, 2, 3] # Only 3 choices
   param_b:
     type: grid
-    values: [0.3, 0.4]  # Only 2 choices
+    values: [0.3, 0.4] # Only 2 choices
 
 # Total combinations: 3 × 2 = 6
 
@@ -90,12 +96,14 @@ TPESampler(
 ```
 
 **Why this increases duplicates**:
+
 - Random sampling doesn't avoid previous parameters
 - With 4 concurrent workers, 4 random samples are drawn simultaneously
 - No coordination between workers
 - High collision probability in discrete spaces
 
 **Example**:
+
 ```
 Startup phase with n_jobs=4:
 
@@ -113,45 +121,48 @@ After trial 28: TPE modeling starts, but damage already done
 **Problem**: Integer parameters and float rounding reduce unique combinations
 
 **Integer parameters**:
+
 ```yaml
 # Only 11 possible values
 max_hold_bars:
   type: int
   low: 10
   high: 20
-  step: 1  # Values: 10, 11, 12, ..., 20
+  step: 1 # Values: 10, 11, 12, ..., 20
 ```
 
 **Rounded floats**:
+
 ```yaml
 # Only 21 possible values
 entry_conf:
   type: float
   low: 0.30
   high: 0.50
-  step: 0.01  # Values: 0.30, 0.31, 0.32, ..., 0.50
+  step: 0.01 # Values: 0.30, 0.31, 0.32, ..., 0.50
 ```
 
 **Combined effect**:
+
 ```yaml
 parameters:
   entry_conf:
     type: float
     low: 0.30
     high: 0.50
-    step: 0.01  # 21 values
+    step: 0.01 # 21 values
 
   htf_tolerance:
     type: float
     low: 0.3
     high: 0.7
-    step: 0.1  # 5 values
+    step: 0.1 # 5 values
 
   max_hold_bars:
     type: int
     low: 15
     high: 25
-    step: 5  # 3 values
+    step: 5 # 3 values
 
 # Total combinations: 21 × 5 × 3 = 315
 
@@ -169,17 +180,21 @@ parameters:
 **What is Constant Liar?**
 
 `constant_liar=True` tells TPESampler to **predict** the result of in-flight trials:
+
 - When worker requests parameters, sampler marks previous in-flight trials
 - Assumes they will all return a constant value (typically median of history)
 - This prevents new samples from being identical to in-flight ones
 
 **Why it's not perfect**:
+
 1. **Only works if sampler is aware of in-flight trials**
+
    - Requires proper study synchronization
    - May not work with all storage backends
    - Database locking issues can cause stale views
 
 2. **Prediction may be wrong**
+
    - If constant value is far from actual result, doesn't guide sampler well
    - All in-flight trials get same predicted value, reducing information
 
@@ -192,29 +207,35 @@ parameters:
 **Problem**: Different storage backends have different synchronization guarantees
 
 **In-memory storage (None)**:
+
 ```python
 study = optuna.create_study(storage=None)  # SQLite in memory
 ```
+
 - No cross-process synchronization
 - Each worker has independent view
 - **WORST case for duplicates in parallel mode**
 
 **SQLite file storage**:
+
 ```python
 study = optuna.create_study(storage="sqlite:///optuna.db")
 ```
+
 - File-based locking
 - Workers compete for database access
 - Race conditions still possible during reads
 - **Better but not perfect**
 
 **PostgreSQL/MySQL with heartbeat**:
+
 ```python
 study = optuna.create_study(
     storage="postgresql://...",
     # Heartbeat mechanism for better synchronization
 )
 ```
+
 - Better transaction isolation
 - Heartbeat detects stale workers
 - **Best for parallel optimization** but still has race windows
@@ -226,12 +247,14 @@ study = optuna.create_study(
 For a search space with `N` total combinations and `k` concurrent workers:
 
 **First batch (no history)**:
+
 ```
 P(at least 1 duplicate) ≈ 1 - (N/N × (N-1)/N × (N-2)/N × ... × (N-k+1)/N)
                          ≈ 1 - e^(-k²/2N)  [approximation]
 ```
 
 **After `m` batches (m×k trials completed)**:
+
 ```
 Remaining space: N - m×k
 P(duplicate in next batch) ≈ 1 - e^(-k²/2(N-m×k))
@@ -240,6 +263,7 @@ P(duplicate in next batch) ≈ 1 - e^(-k²/2(N-m×k))
 ### Example Calculations
 
 **Scenario 1: Narrow space, high concurrency**
+
 ```
 N = 100 combinations
 k = 8 workers
@@ -249,6 +273,7 @@ P(duplicate) ≈ 1 - e^(-64/200) ≈ 1 - 0.73 ≈ 27%
 ```
 
 **Scenario 2: Wide space, moderate concurrency**
+
 ```
 N = 1000 combinations
 k = 4 workers
@@ -258,6 +283,7 @@ P(duplicate) ≈ 1 - e^(-16/2000) ≈ 1 - 0.992 ≈ 0.8%
 ```
 
 **Scenario 3: Narrow space after many trials**
+
 ```
 N = 100 combinations
 k = 4 workers
@@ -319,6 +345,7 @@ runs:
 ```
 
 **Rule of thumb**:
+
 ```
 Recommended n_jobs = min(
     available_cores,
@@ -334,6 +361,7 @@ Examples:
 ### Solution 2: Increase Search Space Size ⭐ RECOMMENDED
 
 **Remove unnecessary discretization**:
+
 ```yaml
 # Before: Only 21 values
 entry_conf:
@@ -351,6 +379,7 @@ entry_conf:
 ```
 
 **Use continuous parameters where possible**:
+
 - Remove `step` from float parameters
 - Use wider ranges
 - Avoid grid search in parallel mode
@@ -358,6 +387,7 @@ entry_conf:
 ### Solution 3: Adaptive Startup Trials
 
 **Scale startup trials with concurrency**:
+
 ```python
 # Proposed improvement
 n_startup_trials = max(25, 5 * concurrency)
@@ -370,6 +400,7 @@ n_startup_trials = max(25, 5 * concurrency)
 ```
 
 **Why this helps**:
+
 - Ensures at least 5 batches of pure random sampling
 - More diverse initial exploration
 - Better seed for TPE modeling phase
@@ -419,10 +450,12 @@ optuna:
 
 # After: PostgreSQL (better concurrency)
 optuna:
-  storage: "postgresql://user:pass@localhost/optuna"
+  # Note: avoid embedding credentials in docs; use env vars / .pgpass instead.
+  storage: "postgresql://user@localhost/optuna"
 ```
 
 **Benefits**:
+
 - Better transaction isolation
 - Heartbeat mechanism for stale worker detection
 - Reduced race condition window
@@ -443,6 +476,7 @@ for batch in range(10):
 ```
 
 **Benefits**:
+
 - Lower concurrency per batch = fewer duplicates
 - Still gets total parallelism benefit
 - Natural synchronization points
@@ -535,12 +569,14 @@ Expected duplicates: 30-50%
 ## Conclusion
 
 **Concurrency increases duplicates** because:
+
 1. Race conditions during parameter sampling
 2. Startup trials use random sampling (no coordination)
 3. Discrete spaces have limited unique combinations
 4. Storage backends have synchronization limitations
 
 **Mitigation strategies**:
+
 1. Lower `n_jobs` for discrete/narrow spaces
 2. Use continuous parameters (remove `step`)
 3. Scale `n_startup_trials` with concurrency

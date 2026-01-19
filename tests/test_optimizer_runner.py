@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, patch
@@ -305,6 +306,44 @@ def test_trial_requests_htf_exits_detects_htf_exit_config() -> None:
     assert runner._trial_requests_htf_exits({"htf_exit_config": {}}) is False
     assert runner._trial_requests_htf_exits({"htf_exit_config": None}) is False
     assert runner._trial_requests_htf_exits({}) is False
+
+
+def test_build_backtest_cmd_uses_sys_executable_and_module_invocation(tmp_path: Path) -> None:
+    trial = runner.TrialConfig(
+        snapshot_id="tTEST_1h_20240101_20240201_v1",
+        symbol="tTEST",
+        timeframe="1h",
+        warmup_bars=50,
+        parameters={},
+        start_date="2024-01-01",
+        end_date="2024-01-02",
+    )
+
+    cmd = runner._build_backtest_cmd(
+        trial,
+        start_date="2024-01-01",
+        end_date="2024-01-02",
+        capital_default=10_000.0,
+        commission_default=0.002,
+        slippage_default=0.0,
+        config_file=tmp_path / "trial_config.json",
+        optuna_context={
+            "storage": "sqlite:///dummy.db",
+            "study_name": "s",
+            "trial_id": 123,
+            "pruner": {"type": "none"},
+        },
+    )
+
+    assert cmd[0] == sys.executable
+    assert cmd[1:3] == ["-m", "scripts.run_backtest"]
+    assert "--fast-window" in cmd
+    assert "--precompute-features" in cmd
+    assert "--config-file" in cmd
+    assert "--optuna-trial-id" in cmd
+    assert "--optuna-pruner" in cmd
+    pruner_idx = cmd.index("--optuna-pruner")
+    assert cmd[pruner_idx + 1] == "none"
 
 
 def test_run_optimizer_promotion_disabled_does_not_write_champion(

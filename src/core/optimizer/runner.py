@@ -1243,6 +1243,99 @@ def _run_backtest_direct(
                 os.environ["GENESIS_HTF_EXITS"] = str(prior_htf_exits)
 
 
+def _build_backtest_cmd(
+    trial: TrialConfig,
+    *,
+    start_date: str,
+    end_date: str,
+    capital_default: float,
+    commission_default: float,
+    slippage_default: float,
+    config_file: Path | None,
+    optuna_context: dict[str, Any] | None,
+) -> list[str]:
+    """Build the subprocess command for running a backtest.
+
+    IMPORTANT (Windows/repro): Use sys.executable so the subprocess runs under the
+    same interpreter/environment (e.g. venv) as the optimizer, instead of relying
+    on PATH-resolved `python` which may point to a different installation.
+    """
+
+    cmd = [
+        sys.executable,
+        "-m",
+        "scripts.run_backtest",
+        "--symbol",
+        trial.symbol,
+        "--timeframe",
+        trial.timeframe,
+        "--start",
+        start_date,
+        "--end",
+        end_date,
+        "--warmup",
+        str(trial.warmup_bars),
+        "--capital",
+        str(capital_default),
+        "--commission",
+        str(commission_default),
+        "--slippage",
+        str(slippage_default),
+        "--fast-window",
+        "--precompute-features",
+    ]
+
+    if config_file is not None:
+        cmd.extend(["--config-file", str(config_file)])
+
+    if optuna_context:
+        storage = optuna_context.get("storage")
+        study_name = optuna_context.get("study_name")
+        trial_id = optuna_context.get("trial_id")
+        if storage and study_name and trial_id is not None:
+            pruner_cfg = optuna_context.get("pruner")
+            pruner_name: str | None = None
+            pruner_kwargs: dict[str, Any] | None = None
+            if isinstance(pruner_cfg, dict):
+                pruner_name = (
+                    pruner_cfg.get("name")
+                    or pruner_cfg.get("type")
+                    or pruner_cfg.get("pruner")
+                    or pruner_cfg.get("kind")
+                )
+                if isinstance(pruner_cfg.get("kwargs"), dict):
+                    pruner_kwargs = pruner_cfg.get("kwargs")
+            elif isinstance(pruner_cfg, str):
+                pruner_name = pruner_cfg
+
+            cmd.extend(
+                [
+                    "--optuna-trial-id",
+                    str(trial_id),
+                    "--optuna-storage",
+                    str(storage),
+                    "--optuna-study-name",
+                    str(study_name),
+                ]
+            )
+
+            # IMPORTANT:
+            # scripts/run_backtest uses optuna.load_study for pruning in subprocess mode.
+            # optuna.load_study defaults to MedianPruner if pruner is omitted, which can
+            # silently enable pruning even when the main optimizer config requests pruner=none.
+            if pruner_name:
+                cmd.extend(["--optuna-pruner", str(pruner_name)])
+            if pruner_kwargs:
+                cmd.extend(
+                    [
+                        "--optuna-pruner-kwargs",
+                        json.dumps(pruner_kwargs, separators=(",", ":")),
+                    ]
+                )
+
+    return cmd
+
+
 def run_trial(
     trial: TrialConfig,
     *,
@@ -1396,49 +1489,16 @@ def run_trial(
         message="start_date måste vara mindre än eller lika med end_date",
     )
 
-    cmd = [
-        "python",
-        "-m",
-        "scripts.run_backtest",
-        "--symbol",
-        trial.symbol,
-        "--timeframe",
-        trial.timeframe,
-        "--start",
-        start_date,
-        "--end",
-        end_date,
-        "--warmup",
-        str(trial.warmup_bars),
-        "--capital",
-        str(capital_default),
-        "--commission",
-        str(commission_default),
-        "--slippage",
-        str(slippage_default),
-    ]
-    # Canonical mode for optimizer quality decisions: always run 1/1.
-    # (fast_window + precompute) is the SSOT for Optuna/validate/champion comparisons.
-    cmd.append("--fast-window")
-    cmd.append("--precompute-features")
-    if config_file is not None:
-        cmd.extend(["--config-file", str(config_file)])
-
-    if optuna_context:
-        storage = optuna_context.get("storage")
-        study_name = optuna_context.get("study_name")
-        trial_id = optuna_context.get("trial_id")
-        if storage and study_name and trial_id is not None:
-            cmd.extend(
-                [
-                    "--optuna-trial-id",
-                    str(trial_id),
-                    "--optuna-storage",
-                    str(storage),
-                    "--optuna-study-name",
-                    str(study_name),
-                ]
-            )
+    cmd = _build_backtest_cmd(
+        trial,
+        start_date=start_date,
+        end_date=end_date,
+        capital_default=capital_default,
+        commission_default=commission_default,
+        slippage_default=slippage_default,
+        config_file=config_file,
+        optuna_context=optuna_context,
+    )
 
     attempts_remaining = max(1, max_attempts)
     final_payload: dict[str, Any] | None = None

@@ -115,6 +115,29 @@ def _resolve_mode_env_overrides(
     return env
 
 
+def _select_optuna_pruner(optuna_module, pruner_name: str | None, pruner_kwargs: dict | None):
+    """Select an Optuna pruner for subprocess pruning.
+
+    Important:
+        optuna.load_study() defaults to MedianPruner when pruner is not provided.
+        In subprocess mode this can silently enable pruning even when the main
+        optimizer intends pruner=none. We therefore default to NopPruner unless
+        the caller explicitly provides a pruner.
+    """
+
+    name = (pruner_name or "none").lower()
+    kwargs = dict(pruner_kwargs or {})
+    if name == "median":
+        return optuna_module.pruners.MedianPruner(**kwargs)
+    if name in {"sha", "successivehalving"}:
+        return optuna_module.pruners.SuccessiveHalvingPruner(**kwargs)
+    if name == "hyperband":
+        return optuna_module.pruners.HyperbandPruner(**kwargs)
+    if name == "none":
+        return optuna_module.pruners.NopPruner()
+    raise ValueError(f"Okänd Optuna-pruner: {name}")
+
+
 def main():
     """CLI entry point."""
     pipeline = GenesisPipeline()
@@ -203,6 +226,18 @@ def main():
     parser.add_argument("--optuna-trial-id", type=int, help="Optuna trial ID for pruning")
     parser.add_argument("--optuna-storage", type=str, help="Optuna storage URL")
     parser.add_argument("--optuna-study-name", type=str, help="Optuna study name")
+    parser.add_argument(
+        "--optuna-pruner",
+        type=str,
+        default=None,
+        help="Optuna pruner type for subprocess pruning (e.g. none|median|sha|hyperband)",
+    )
+    parser.add_argument(
+        "--optuna-pruner-kwargs",
+        type=str,
+        default=None,
+        help="JSON dict of pruner kwargs (optional)",
+    )
 
     args = parser.parse_args()
 
@@ -352,16 +387,34 @@ def main():
                 # Suppress Optuna logging in subprocess
                 optuna.logging.set_verbosity(optuna.logging.WARNING)
 
+                pruner_kwargs = None
+                if args.optuna_pruner_kwargs:
+                    try:
+                        parsed = json.loads(args.optuna_pruner_kwargs)
+                        if isinstance(parsed, dict):
+                            pruner_kwargs = parsed
+                    except Exception:
+                        pruner_kwargs = None
+
+                pruner = _select_optuna_pruner(optuna, args.optuna_pruner, pruner_kwargs)
+
                 study = optuna.load_study(
                     study_name=args.optuna_study_name,
                     storage=args.optuna_storage,
+                    pruner=pruner,
                 )
+
+                optuna_trial = optuna.trial.Trial(study, args.optuna_trial_id)
+                seen_steps: set[int] = set()
 
                 def _optuna_callback(step, value):
                     try:
-                        trial = optuna.trial.Trial(study, args.optuna_trial_id)
-                        trial.report(value, step)
-                        if trial.should_prune():
+                        step_int = int(step)
+                        if step_int in seen_steps:
+                            return False
+                        seen_steps.add(step_int)
+                        optuna_trial.report(value, step_int)
+                        if optuna_trial.should_prune():
                             return True
                     except Exception:
                         pass

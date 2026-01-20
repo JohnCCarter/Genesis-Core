@@ -173,6 +173,10 @@ config/tmp/composite_*.json
 # Local analysis artifacts (do not commit)
 config/tmp/trial_*_analysis.json
 
+# Local diagnostics artifacts (generated, do not commit)
+artifacts/
+!artifacts/**/README.md
+
 # Phase 3-5: Data files (historical candles, features, metadata)
 # Two-layer architecture: Raw Lake + Curated
 data/raw/**/*.parquet

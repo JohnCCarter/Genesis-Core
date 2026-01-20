@@ -19,6 +19,14 @@ When comparing results (A/B, regression, promotion decisions):
 - [ ] Prefer using `scripts/run_backtest.py --compare` for fail-fast comparability checks
   - Use `--compare-warn-only` only for legacy/forensics where you knowingly accept drift
 
+## Remote assistance (ChatGPT MCP)
+
+If you use ChatGPT “Connect to MCP” to assist with Optuna work:
+
+- Prefer the remote MCP JSON endpoint (`POST /mcp`, `application/json`) for diagnostics and linking.
+  Some tunnel/proxy setups can buffer long-lived SSE (`GET /sse`) even when the response headers look correct.
+- Keep the remote MCP server in read-only mode (`GENESIS_MCP_REMOTE_SAFE=1`) unless you are in a trusted network.
+
 ## Common Issues and Solutions
 
 ### 1. Too Many Duplicate Parameters
@@ -338,7 +346,6 @@ python scripts/validate_optimizer_config.py config.yaml
 ## Recommended Workflow
 
 1. **Design Search Space**
-
    - Start wide, narrow down later
    - Aim for 50+ discrete combinations or include continuous params
    - Include champion parameters in ranges
@@ -358,7 +365,6 @@ python scripts/validate_optimizer_config.py config.yaml
    ```
 
 4. **Check Smoke Results**
-
    - At least 1-2 trials should produce >0 trades
    - No excessive duplicates
    - Scores not all heavily negative

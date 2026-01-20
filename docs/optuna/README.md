@@ -11,13 +11,11 @@ Dokumentationen täcker Optuna-integration, optimeringsworkflow, problemlösning
 ### Genombrott och Problemlösning
 
 - **BREAKTHROUGH_CONFIG_20251113.md** - Identifierad signal_adaptation ATR-zon flaskhals
-
   - Systematisk isoleringstestning
   - Genombrott-konfiguration (176 trades, PF 1.32, +8.41%)
   - Nyckelinsikter om signal_adaptation som primär entry-kontroll
 
 - **OPTUNA_FIX_20251113.md** - Optuna-problem och lösning
-
   - Upptäckt att signal_adaptation var fixerat till för höga trösklar
   - Uppdaterad Optuna-spec med grid-varianter
   - Bugfix i engine.py för exit-konfigladdning
@@ -33,7 +31,6 @@ Dokumentationen täcker Optuna-integration, optimeringsworkflow, problemlösning
 - **OPTUNA_HARDENING_SPEC.md** - Hardening-spec (penalties, two-phase objective, pruning, trace-krav)
 
 - **docs/daily_summaries/daily_summary_2025-12-18.md** - Explore→Validate (tvåstegsflöde) + promotion-säkerhet + resultat
-
   - Konfig: `config/optimizer/tBTCUSD_1h_optuna_phase3_fine_v7_smoke_explore_validate.yaml`
   - Runs: `results/hparam_search/run_20251218_ev_30t_nopromo`, `results/hparam_search/run_20251218_ev_60t_top5_nopromo`
 
@@ -45,7 +42,6 @@ Dokumentationen täcker Optuna-integration, optimeringsworkflow, problemlösning
 ### Testing och Validering
 
 - **PARITY_TEST_RESULTS_20251114.md** - Parity-test mellan backtest och Optuna
-
   - Verifiering av 100% paritet
   - Resultat: 99%+ paritet (små skillnader p.g.a. numeriska avrundningar)
   - Score-beräkningar och jämförelser
@@ -95,6 +91,15 @@ Not:
 
 - Canonical mode (1/1) är SSOT för Optuna/Validate/champion-beslut.
 - Om du behöver debugga 0/0, gör det explicit och jämför inte resultaten med Optuna.
+
+## Ops-notis: AI-assistans via remote MCP
+
+Om du använder ChatGPT “Connect to MCP” för att assistera Optuna-arbete:
+
+- Använd `POST /mcp` (application/json) som primär endpoint (inte `/sse`).
+  - I vissa tunnel/proxy-setups kan `GET /sse` returnera `200 text/event-stream` men ändå buffra body så att inga bytes når klienten.
+- Håll `GENESIS_MCP_REMOTE_SAFE=1` (read-only) som default när endpointen exponeras utanför localhost.
+  Aktivera write/exec endast i kontrollerad miljö.
 
 ## Viktiga Insikter
 

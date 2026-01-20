@@ -1,13 +1,17 @@
 # README for AI Agents (Local Development)
 
-## Last update: 2026-01-15
+## Last update: 2026-01-19
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
 
 ## 1. Deliverables (latest highlights: 2026-01-15)
 
-- **CUSTOM AGENTS (FAIL-FAST) + TOOL FRONTMATTER NORMALIZATION (2026-01-15)**: Standardiserade repo-agenter under `.github/agents/` för att vara "overseer-friendly" och minska risk för oavsiktliga ändringar.
+- **MCP REMOTE: STREAMABLE-HTTP COMPAT FALLBACK (2026-01-19)**: Förbättrade remote-länkning mot ChatGPT genom att stödja en JSON-only
+  kompatibilitetsväg på `POST /mcp` (JSON-RPC `initialize`, `tools/list`, `tools/call`, `ping`) utan att kräva att `GET /sse` flushar.
+  Verifierat publikt via Cloudflare quick tunnel där `text/event-stream` kunde returnera headers men inte leverera första SSE-bytes.
+  Docs uppdaterade: `docs/mcp_server_guide.md`, `mcp_server/README.md`, `CHANGELOG.md`.
 
+- **CUSTOM AGENTS (FAIL-FAST) + TOOL FRONTMATTER NORMALIZATION (2026-01-15)**: Standardiserade repo-agenter under `.github/agents/` för att vara "overseer-friendly" och minska risk för oavsiktliga ändringar.
   - **Agent-definitioner (English, bounded scope)**:
     - `.github/agents/Plan.agent.md`
     - `.github/agents/AnalysisAudit.agent.md`
@@ -17,7 +21,6 @@ This document explains the current workflow for Genesis-Core, highlights today's
   - **Tool allow-lists**: la till/justerade `tools:` i YAML-frontmatter och normaliserade listformatet (block-list) för att undvika VS Code diagnostics och hålla agent-capabilities minimala.
 
 - **CANONICAL DETERMINISM HARDENING: GENESIS_FAST_HASH (2026-01-15)**: Låste ner en bevisad "perf knob" som kunde ändra utfall och därmed göra Optuna/backtests icke-jämförbara.
-
   - **Evidens**: `GENESIS_FAST_HASH=1` kan ge stabila men annorlunda resultat jämfört med baseline trots samma seed/period.
   - **Policy**: `GENESIS_FAST_HASH` är debug/perf-only och ska vara av i canonical quality runs.
   - **Guardrails**:
@@ -28,7 +31,6 @@ This document explains the current workflow for Genesis-Core, highlights today's
     - `tests/test_preflight_optuna_check.py`
 
 - **FEATURE/INDICATOR AUDIT (SSOT) + DOWNSTREAM CONSUMERS (2026-01-14)**: Producerade en evidence-based audit för `tBTCUSD_1h` (features → indikatorer → schema → scorer/Optuna/champion) och stängde kedjan till faktiska konsumenter (model/decision/exits).
-
   - **Rapport (primär deliverable)**: `reports/feature_audit/audit_20260114_tBTCUSD_1h.md` (inkl. dubbel-baseline och provens-ankare från riktiga backtest-artefakter).
   - **Runbook + mall**:
     - `docs/analysis/FEATURE_INDICATOR_AUDIT_RUNBOOK.md` (metod: SSOT→schema→pipeline, risker och beviskrav)
@@ -42,25 +44,21 @@ This document explains the current workflow for Genesis-Core, highlights today's
   - **MCP remote QoL (ops)**: tydligare port-hantering via `GENESIS_MCP_PORT` i `mcp_server/remote_server.py` och dokumenterat i `.env.example`.
 
 - **VALIDATION TRUST REBUILD (2026-01-12)**: Återställde spårbarhet för OOS-validering när olika configs verkade ge identiska outcomes.
-
   - **Audit-fingerprint**: Backtest-resultat inkluderar nu `backtest_info.effective_config_fingerprint` så varje artifact kan bevisa vilken _effective config_ som faktiskt kördes.
   - **Config authority**: Optimerings-/valideringskörningar kan isoleras från implicit champion-merge via `meta.skip_champion_merge` (förhindrar tyst override).
   - **Praktisk tolkning**: Om två trials får olika fingerprint men identiskt outcome betyder det ofta att parametern inte är aktivt styrande (ex. `signal_adaptation` kan vara aktiv men vissa subfält påverkar inte beslut när `regime_proba` är en dict och tröskeln tas från regim-värdet).
 
 - **SECURITY + CI HARDENING (2026-01-09)**: Åtgärdade CodeQL/Code Scanning findings:
-
   - Sanitiserade client-facing fel så att exception-texter inte läcker (API-responser och feature/HTF-meta), med server-side logging + `error_id`.
   - Lade till regressiontester som verifierar att exceptions inte ekas i HTTP-responser.
   - CI: satte explicit `permissions` för `GITHUB_TOKEN` i `.github/workflows/ci.yml` (least privilege) för att släcka `actions/missing-workflow-permissions`.
 
 - **REGISTRY GOVERNANCE (Phase-8a, 2026-01-09)**: Introducerade repo-SSOT för skills/compacts med JSON-schema + CI-gate (`scripts/validate_registry.py`). Skills ligger under `.github/skills/` och compacts under `registry/`. CI kräver audit-entry i `registry/audit/break_glass.jsonl` när `registry/manifests/stable.json` ändras i PR.
-
   - **Merge**: PR #24 (Phase-8a squash-import) är mergad till `master` och `master` är uppdaterad/synkad.
 
 - **DOCS + DEV ENV CHECK (2026-01-08)**: Uppdaterade docs för kontinuitet så de speglar faktisk drift idag: `README.md`, `docs/dev_setup.md`, `docs/roadmap/STABILIZATION_PLAN_9_STEPS.md`, `docs/mcp_server_guide.md`, `mcp_server/README.md`, samt Optuna-docs (`docs/optuna/README.md`, `docs/optuna/OPTUNA_BEST_PRACTICES.md`) med PowerShell-vänliga exempel och canonical 1/1-noter. Tog bort provider-specifika tunnel/hostname-exempel och gjorde `scripts/debug_mcp_tunnel.py` till ett enkelt `/healthz` reachability-test för remote MCP. Loggade ändringen i `CHANGELOG.md`. Verifierade att `pre-commit run --all-files` går igenom i `.venv`.
 
 - **HTF SIGNAL-VALIDERING + 1D DATA + PRECOMPUTE FIX (2026-01-08)**: Åtgärdade en blockerare som gjorde att Optuna-smoke körningar prunades när HTF-mappning försökte köras med precompute-cache.
-
   - **Root cause**: `BacktestEngine.load_data()` definierade `fib_cfg` bara i cache-miss path. Vid cache-hit blev `fib_cfg` odefinierad och HTF mapping kraschade med `UnboundLocalError`.
   - **Fix**: `src/core/backtest/engine.py` definierar nu `fib_cfg` innan cache-branching så HTF mapping fungerar både vid cache-hit och cache-miss.
   - **Regressiontest**: `tests/test_backtest_engine.py::test_engine_precompute_cache_hit_htf_mapping_does_not_require_local_fib_cfg`.
@@ -71,7 +69,6 @@ This document explains the current workflow for Genesis-Core, highlights today's
   - **Verification**: Smoke-run visar att HTF mapping nu slutförs (`Precompute: HTF Fibonacci mapping complete`). Efter fix laddas 1D-data (`htf_candles_loaded=True`), men senaste smoke-fönstret gav fortfarande 0 trades → kvarvarande problem är “zero-trade thresholds/gates”, inte HTF/precompute.
 
 - **QA SUITE & BUG FIXES (2026-01-02)**: Exekverade full QA suite och åtgärdade alla fel. Fixade async varningar i tester, löste problem med Optimizer runner concurrency (monkeypatch settings), och implementerade saknade HTF Fibonacci hjälpfunktioner. Alla 471 tester passerar.
-
   - **Goal**: Eliminera "Invalid swing"-spam i HTF-exitflödet genom att göra HTF-context strikt, schema-kompatibelt och fritt från implicit lookahead.
   - **Key changes**:
     - **Strict AS-OF / no-lookahead**: HTF-context returneras inte om `reference_ts` saknas (undviker att "ta senaste" HTF-row).
@@ -87,7 +84,6 @@ This document explains the current workflow for Genesis-Core, highlights today's
     - Optuna smoke (3 trials) körd lokalt; bekräftat: **promotion avstängd via config**.
 
 - **QUALITY V2 (SCOPED) + EXIT-SAFETY + A/B RUNBOOK + PAPER CANARY TOOLING (Phase-7e, 2025-12-25)**:
-
   - **Goal**: Införa ett robust "context/market quality"-lager (Quality v2) utan att skapa exit-churn eller oavsiktliga entry-regressioner, samt operationalisera en kontrollerad A/B-canary.
   - **Key changes**:
     - Quality v2 som multiplicativ kvalitetsfaktor med clamp (`min_quality`).
@@ -101,7 +97,6 @@ This document explains the current workflow for Genesis-Core, highlights today's
     - Live/paper canary kräver uppdaterad lokal `.env` (ignored/untracked). Kör auth smoke (`/debug/auth`, `/auth/check`) efter sync.
 
 - **EXPLORE→VALIDATE OPTUNA RECOVERY + PROMOTION SAFETY (2025-12-18)**:
-
   - **Goal**: Återställa Optunas lärsignal och undvika att “snabba” runs degenererar (0 trades / platt signal / dåliga kandidater), genom att separera **Explore** (kort fönster) från **Validate** (långt fönster + striktare constraints). Samtidigt säkerställa att smoke/explore aldrig kan råka uppdatera champion.
   - **Key changes**:
     - **Two-stage flow**: Explore→Validate-stöd i `src/core/optimizer/runner.py` (top-N reruns i `validation/`-katalog, rapportering baserad på validering).
@@ -121,7 +116,6 @@ This document explains the current workflow for Genesis-Core, highlights today's
     - **Champion**: ingen uppdatering (promotion avstängt i smoke-konfig).
 
 - **CANONICAL MODE POLICY + DOCS + QA GREEN (2025-12-18)**:
-
   - **Goal**: Låsa policy att **1/1 (fast_window + precompute)** är canonical för alla quality decisions (Optuna/Validate/champion/reporting) och göra det tydligt i docs, samt köra full QA (black/ruff/bandit/pytest/pre-commit).
   - **Key changes**:
     - Docs uppdaterade för canonical 1/1 + `GENESIS_MODE_EXPLICIT` (debug-only 0/0).
@@ -134,7 +128,6 @@ This document explains the current workflow for Genesis-Core, highlights today's
     - `pre-commit run --all-files` OK
 
 - **CHURN-SMOKE + LONG-WINDOW VALIDATION + CHAMPION PATH FIX (2025-12-17)**:
-
   - **Goal**: Köra en churn-/kostnadsmedveten Optuna-smoke på 2024-fönstret och validera robusthet på längre period ("från 2023", begränsat av frozen data). Säkerställa att champion-jämförelser/promotion använder korrekt fil-path.
   - **Key changes**:
     - **Churn-smoke config**: `config/optimizer/tBTCUSD_1h_optuna_phase3_fine_v7_smoke.yaml` uppdaterad med `use_sample_range` + `sample_start/end` (2024-range), samt churn-guardrails (`max_trades`, `max_total_commission_pct`).
@@ -151,7 +144,6 @@ This document explains the current workflow for Genesis-Core, highlights today's
     - Ingen promotion: best trial föll på långperiod via hard failure `pf<1.0`.
 
 - **CONFIG-EQUIVALENCE PROOF + BACKTEST CORRECTNESS (2025-12-16)**:
-
   - **Goal**: Eliminera "config drift" mellan Optuna trial-configs och backtest-resultat, samt hårdna backtest-korrekthet (särskilt trade metadata).
   - **Key changes**:
     - **Config drift-check (CI-vänlig)**: Ny comparator + CLI som bevisar att trial-config och sparade backtest-resultat använder samma _effective config_ ("merged_config").
@@ -169,7 +161,6 @@ This document explains the current workflow for Genesis-Core, highlights today's
     - PR till `master` är blockerad i nuläget: "no history in common" (kräver bridge-branch / allow-unrelated-histories strategi).
 
 - **OPTUNA HARDENING + COST-AWARE SCORING (2025-12-15)**:
-
   - **Goal**: Göra optimeringen mer robust och ekonomiskt korrekt (net-of-fee), samt styra mot "färre men bättre" trades.
   - **Key changes**:
     - **PRUNED ≠ 0 trades**: PRUNED trials hanteras och spåras explicit (undviker att Optuna förstärker felaktiga 0-trade outcomes).
@@ -187,7 +178,6 @@ This document explains the current workflow for Genesis-Core, highlights today's
     - Slutsats: nuvarande champion är net-negativ på samplet och är inte i linje med "high quality" utan vidare justering.
 
 - **STABILIZATION PLAN COMPLETE (2025-12-11)**:
-
   - **Goal**: Enforce absolute determinism and reproducibility across manual backtests and optimizer runs.
   - **Status**: ✅ All 9 steps completed.
   - **Key Achievements**:
@@ -198,7 +188,6 @@ This document explains the current workflow for Genesis-Core, highlights today's
     - **Verification**: Smoke tests confirm parity between `run_backtest.py` and `runner.py`.
 
 - **STABILIZATION PROGRESS (2025-12-11)**:
-
   - **Step 1 (Frozen Data)**: ✅ Completed. Created `data/raw/tBTCUSD_1h_frozen.parquet` and `data/raw/tBTCUSD_1m_frozen.parquet`. Updated `BacktestEngine` to prioritize these frozen files. Verified with smoke test.
   - **Step 2 (Fix Seeds Globally)**: ✅ Completed. Enforced `set_global_seeds` in `scripts/run_backtest.py` and `src/core/optimizer/runner.py`. Injected deterministic seed into Optuna samplers if missing.
   - **Step 3 (Eliminate "Hidden State")**: ✅ Completed. Fixed `htf_fibonacci.py` cache key to include config hash. Enforced `PositionTracker` reset in `BacktestEngine.run()`.
@@ -210,26 +199,22 @@ This document explains the current workflow for Genesis-Core, highlights today's
   - **Step 9 (Single Pipeline)**: ✅ Completed. Created `src/core/pipeline.py` and refactored `run_backtest.py` and `runner.py` to use it. Verified with smoke test.
 
 - **REPRODUCIBILITY CRISIS (2025-12-08)**: Uppdaterade `config/strategy/champions/tBTCUSD_1h.json` med parametrar från `run_20251203_105838` (Trial 001).
-
   - **Orsak**: Tidigare champion var optimerad för en kodbas med ATR-bugg (14 vs 28 period) och HTF-logikfel. Nya parametrar är anpassade för den fixade logiken.
   - **Resultat**: Backtest 2024-01-01 till 2024-12-31 ger 201 trades, PF 1.25, +3.36% return.
   - **Nyckeländringar**: `entry_conf_overall` höjd till 0.24 (från 0.09), `ltf_override_threshold` sänkt till 0.36 (från 0.66).
 
 - **PHASE 3 FINE TUNING (v7) - DEBUGGING (2025-12-03)**:
-
   - **Zero Trades Fix**: Löste problemet med 0 trades i v7 genom att tillåta negativa deltas i `risk.risk_map_deltas` (t.ex. `conf_0` ner till -0.30). Detta lät optimizern sänka trösklar tillräckligt för att generera trades (1000+ i test).
   - **Regression**: Vid omkörning av smoke-test (`tBTCUSD_1h_optuna_phase3_fine_v7_smoke.yaml`) uppstod `TypeError: float() argument must be a string or a real number, not 'dict'` i `param_transforms.py`.
   - **Analys**: `deltas.get()` returnerar en dict istället för float, vilket tyder på att `runner.py` expanderar dot-notation keys felaktigt för `risk.risk_map_deltas`.
   - **Status**: Pausad för felsökning. Dokumentation uppdaterad i `docs/daily_summaries/daily_summary_2025-12-03.md`.
 
 - **PHASE 3 FINE TUNING STARTED (2025-12-03)**: Startade optimering med `config/optimizer/tBTCUSD_1h_optuna_phase3_fine_v2.yaml` (100 trials, PF > 1.20 mål).
-
   - **Konfiguration**: Nästlad YAML-struktur för att passera preflight.
   - **Motor**: Vectorized Fibonacci (~240 bars/sec) + Single-threaded (`max_concurrent: 1`).
   - **Status**: Körs nu (Run ID: `optuna_phase3_fine_12m_v4`).
 
 - **FIBONACCI VECTORIZATION (2025-12-03)**: Vektoriserade `detect_swing_points` i `src/core/indicators/fibonacci.py` för att eliminera iterativ `while`-loop. Implementerade O(1) tröskelberäkning (`min(max_h, max_l)`) och NumPy-baserad filtrering.
-
   - **Prestanda**: Benchmark visar ~15ms per call (3.2M bars/sec) på syntetisk data.
   - **Verifiering**: Alla unit tests (`tests/test_fibonacci.py`) passerade. Smoke test (`tBTCUSD_1h_champion_centered_smoke.yaml`) körde 5 trials framgångsrikt med ~70s runtime och genererade trades.
   - **Extended Smoke Test**: Körde 12-månaders test (2024-01-01 till 2024-12-31) med 5 trials. Total tid 5:59 min. Resultat: Stabilt, ~240 bars/sec. Trial 0 gav positiv avkastning (+1.66%). Noterade `[DEBUG] Invalid swing` varningar i loggen (icke-kritisk, indikerar High < Low i vissa marknadslägen).
@@ -449,27 +434,22 @@ Champion file: `config/strategy/champions/tBTCUSD_1h.json`
 ## 8. Next steps for hand-off (Dec 2025)
 
 1. **Monitor Phase 3 Fine Tuning**:
-
    - Ensure `optuna_phase3_fine_12m_v4` completes at least 50-100 trials.
    - Analyze results using `scripts/analyze_optuna_db.py`.
    - Target: PF > 1.20.
 
 2. **Validate Best Candidate**:
-
    - Once a candidate with PF > 1.20 is found, run a full backtest with `scripts/run_backtest.py` to verify metrics and trade distribution.
    - Check for "Invalid swing" warnings in logs (non-critical but worth noting).
 
 3. **Prepare Phase 4 (Walk-Forward)**:
-
    - If Phase 3 is successful, prepare a Walk-Forward Analysis (WFA) configuration to validate robustness over rolling windows.
 
 4. **Documentation**:
-
    - Keep `docs/optimization/PHASE3_FINE_TUNING_LOG.md` updated with major events.
    - Update `config/strategy/champions/tBTCUSD_1h.json` if a new champion is crowned.
 
 5. **Improve Optuna learning signal (staging)**:
-
    - Recommendation: run Optuna in an **explore stage** with milder constraints (reduce hard-fail clustering), then run strict
      PF/DD/trades validation and champion promotion on the top-N candidates.
    - If many trials are `aborted_by_heuristic`, ensure abort outcomes are treated as a clearly bad signal (not neutral) so the

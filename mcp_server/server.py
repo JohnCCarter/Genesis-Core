@@ -8,20 +8,21 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import Any
+from typing import Any, cast
 
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
 from mcp.types import Resource, TextContent, Tool
+from pydantic import AnyUrl
 
-from .config import load_config
-from .resources import (
+from mcp_server.config import load_config
+from mcp_server.resources import (
     get_config_resource,
     get_documentation,
     get_git_status_resource,
     get_structure_resource,
 )
-from .tools import (
+from mcp_server.tools import (
     execute_python,
     get_git_status,
     get_project_structure,
@@ -30,7 +31,7 @@ from .tools import (
     search_code,
     write_file,
 )
-from .utils import setup_logging
+from mcp_server.utils import setup_logging
 
 logger = logging.getLogger(__name__)
 
@@ -211,25 +212,25 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
 # Resource definitions
 RESOURCES = [
     Resource(
-        uri="genesis://docs/*",
+        uri=cast(AnyUrl, "genesis://docs/*"),
         name="Project Documentation",
         description="Access project documentation files",
         mimeType="text/markdown",
     ),
     Resource(
-        uri="genesis://structure",
+        uri=cast(AnyUrl, "genesis://structure"),
         name="Project Structure",
         description="Project directory structure as a tree",
         mimeType="text/plain",
     ),
     Resource(
-        uri="genesis://git/status",
+        uri=cast(AnyUrl, "genesis://git/status"),
         name="Git Status",
         description="Current Git repository status",
         mimeType="text/plain",
     ),
     Resource(
-        uri="genesis://config",
+        uri=cast(AnyUrl, "genesis://config"),
         name="Configuration",
         description="Project configuration information",
         mimeType="text/plain",

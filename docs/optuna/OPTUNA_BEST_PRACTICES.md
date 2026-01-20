@@ -13,6 +13,17 @@ Before starting a long optimization run (>1 hour):
 - [ ] Review TPE sampler settings (use recommended defaults)
 - [ ] Set appropriate `OPTUNA_MAX_DUPLICATE_STREAK` (≥200 for large runs)
 
+### Resume safety (genesis_resume_signature)
+
+Genesis-Core attaches a study signature (`user_attr`: `genesis_resume_signature`) to prevent accidental resume drift.
+
+- If the stored signature mismatches the expected signature, the run fails fast with:
+  "Optuna resume blocked: study signature mismatch".
+- Safe way forward is usually to use a new `study_name` and/or a new SQLite `storage` file (or delete the old DB if you meant to restart).
+- Legacy studies with trials but without a signature will emit a warning. To explicitly attach a signature, set
+  `GENESIS_BACKFILL_STUDY_SIGNATURE=1` (only when you are certain the study/DB/config is correct).
+- For exceptional cases only, you can override mismatch blocking via `GENESIS_ALLOW_STUDY_RESUME_MISMATCH=1`.
+
 When comparing results (A/B, regression, promotion decisions):
 
 - [ ] Ensure comparisons are apples-to-apples (same window, mode flags, fees, and `score_version` when available)

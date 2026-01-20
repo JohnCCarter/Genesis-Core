@@ -82,6 +82,7 @@ $Env:GENESIS_FAST_WINDOW='1'
 $Env:GENESIS_PRECOMPUTE_FEATURES='1'
 $Env:GENESIS_MAX_CONCURRENT='2'
 $Env:GENESIS_RANDOM_SEED='42'
+$Env:GENESIS_FAST_HASH='0'
 $Env:OPTUNA_MAX_DUPLICATE_STREAK='200'
 
 python -m core.optimizer.runner config/optimizer/<config>.yaml
@@ -90,7 +91,20 @@ python -m core.optimizer.runner config/optimizer/<config>.yaml
 Not:
 
 - Canonical mode (1/1) är SSOT för Optuna/Validate/champion-beslut.
+- För canonical jämförbarhet: håll `GENESIS_FAST_HASH=0` (FAST_HASH är en debug/perf-knapp som kan ändra utfall).
 - Om du behöver debugga 0/0, gör det explicit och jämför inte resultaten med Optuna.
+
+### Resume-säkerhet (Optuna)
+
+Runnern sätter en Optuna `user_attr` med nyckeln `genesis_resume_signature` på studien.
+Den används för att **fail-fast** om du råkar försöka återuppta fel studie/DB eller om config/kod/runtime/mode-flaggor drivit.
+
+- Om signaturen skiljer sig: körningen stoppar med "Optuna resume blocked: study signature mismatch".
+- Det är OK att förlänga en lång körning genom att ändra stop-policy (`meta.runs.optuna.end_at` / `timeout_seconds`).
+  Dessa fält ingår inte i signaturen.
+- Legacy-studier kan sakna signature: då varnar runnern. Om du är säker på att du har rätt study/DB/config kan du backfilla med
+  `GENESIS_BACKFILL_STUDY_SIGNATURE=1` (engångsåtgärd).
+- Om du medvetet vill ignorera mismatch (ej rekommenderat för canonical beslut): sätt `GENESIS_ALLOW_STUDY_RESUME_MISMATCH=1`.
 
 ## Ops-notis: AI-assistans via remote MCP
 

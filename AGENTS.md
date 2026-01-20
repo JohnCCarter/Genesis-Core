@@ -1,10 +1,20 @@
 # README for AI Agents (Local Development)
 
-## Last update: 2026-01-19
+## Last update: 2026-01-20
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
 
-## 1. Deliverables (latest highlights: 2026-01-15)
+## 1. Deliverables (latest highlights: 2026-01-20)
+
+- **OPTUNA RESUME-SAFETY: STUDY SIGNATURE GUARDRAILS (2026-01-20)**: Låste ner risken att en lång Optuna-körning råkar återupptas mot fel studie/DB eller med tyst drift i config/kod/runtime/mode-flaggor.
+  - **Implementation**: `src/core/optimizer/runner.py` sätter/verifierar Optuna `user_attr` `genesis_resume_signature`.
+    - Fail-fast vid mismatch: "Optuna resume blocked: study signature mismatch".
+    - Stop-policy (`end_at`, `timeout_seconds`) exkluderas från signaturen så körningar kan förlängas utan att bryta resume-säkerhet.
+  - **Overrides (kontrollerade undantag)**:
+    - `GENESIS_BACKFILL_STUDY_SIGNATURE=1` (backfilla legacy-studier utan signature)
+    - `GENESIS_ALLOW_STUDY_RESUME_MISMATCH=1` (tillåt mismatch; ej för canonical beslut)
+  - **Tester**: `tests/test_optuna_resume_signature.py`.
+  - **Docs**: uppdaterade runbooks: `docs/optuna/README.md`, `docs/optuna/OPTUNA_BEST_PRACTICES.md`, `docs/optimization/optimizer.md`.
 
 - **MCP REMOTE: STREAMABLE-HTTP COMPAT FALLBACK (2026-01-19)**: Förbättrade remote-länkning mot ChatGPT genom att stödja en JSON-only
   kompatibilitetsväg på `POST /mcp` (JSON-RPC `initialize`, `tools/list`, `tools/call`, `ping`) utan att kräva att `GET /sse` flushar.

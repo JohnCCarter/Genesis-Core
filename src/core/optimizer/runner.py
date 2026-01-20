@@ -291,6 +291,115 @@ def load_search_config(path: Path) -> dict[str, Any]:
     return data
 
 
+def _compute_optuna_resume_signature(
+    *,
+    config: dict[str, Any],
+    config_path: Path,
+    git_commit: str,
+    runtime_version: int | None,
+) -> dict[str, Any]:
+    """Compute a stable signature to prevent resuming the wrong Optuna study.
+
+    Notes:
+        - Excludes wall-clock stop policy fields (end_at/timeout_seconds) so you can extend
+          a long run without breaking resume safety.
+        - Includes code/runtime/env so a resumed run won't silently drift.
+    """
+
+    meta = config.get("meta") or {}
+    runs_cfg = meta.get("runs") or {}
+    optuna_cfg = (runs_cfg.get("optuna") or {}).copy()
+    optuna_cfg.pop("timeout_seconds", None)
+    optuna_cfg.pop("end_at", None)
+
+    payload = {
+        "config_path": str(config_path),
+        "git_commit": str(git_commit or "unknown"),
+        "runtime_version": runtime_version,
+        "meta": {
+            "symbol": meta.get("symbol"),
+            "timeframe": meta.get("timeframe"),
+            "snapshot_id": meta.get("snapshot_id"),
+            "warmup_bars": meta.get("warmup_bars"),
+        },
+        "runs": {
+            "use_sample_range": runs_cfg.get("use_sample_range"),
+            "sample_start": runs_cfg.get("sample_start"),
+            "sample_end": runs_cfg.get("sample_end"),
+            "optuna": optuna_cfg,
+        },
+        "constraints": config.get("constraints") or {},
+        "parameters": config.get("parameters") or {},
+        "env": {
+            "GENESIS_MODE_EXPLICIT": os.environ.get("GENESIS_MODE_EXPLICIT"),
+            "GENESIS_FAST_WINDOW": os.environ.get("GENESIS_FAST_WINDOW"),
+            "GENESIS_PRECOMPUTE_FEATURES": os.environ.get("GENESIS_PRECOMPUTE_FEATURES"),
+            "GENESIS_FAST_HASH": os.environ.get("GENESIS_FAST_HASH"),
+        },
+    }
+
+    canonical = canonicalize_config(payload, precision=6)
+    blob = json.dumps(canonical, sort_keys=True, separators=(",", ":"))
+    fingerprint = hashlib.sha256(blob.encode("utf-8")).hexdigest()
+
+    return {
+        "version": 1,
+        "fingerprint": fingerprint,
+        "git_commit": payload["git_commit"],
+        "runtime_version": runtime_version,
+        "snapshot_id": payload["meta"]["snapshot_id"],
+        "sample_start": payload["runs"]["sample_start"],
+        "sample_end": payload["runs"]["sample_end"],
+    }
+
+
+def _verify_or_set_optuna_study_signature(study: Any, expected: dict[str, Any]) -> None:
+    """Fail-fast on resume when the study signature mismatches.
+
+    - If an existing signature is present and mismatches: raise unless overridden.
+    - If signature is missing on a non-empty study: warn and do not backfill by default.
+    - If study is empty (or explicit backfill): attach the signature.
+    """
+
+    allow_mismatch = os.environ.get("GENESIS_ALLOW_STUDY_RESUME_MISMATCH") == "1"
+    allow_backfill = os.environ.get("GENESIS_BACKFILL_STUDY_SIGNATURE") == "1"
+
+    expected_fp = str(expected.get("fingerprint") or "")
+    existing = getattr(study, "user_attrs", {}) or {}
+    existing_sig = existing.get("genesis_resume_signature")
+    existing_fp = (
+        str(existing_sig.get("fingerprint") or "") if isinstance(existing_sig, dict) else ""
+    )
+
+    if existing_fp and expected_fp and existing_fp != expected_fp:
+        msg = (
+            "Optuna resume blocked: study signature mismatch. "
+            f"expected={expected_fp} existing={existing_fp}. "
+            "This usually means you are resuming the wrong study/DB or the config/code/runtime/env changed."
+        )
+        if allow_mismatch:
+            print(f"[WARN] {msg} (override via GENESIS_ALLOW_STUDY_RESUME_MISMATCH=1)")
+        else:
+            raise RuntimeError(msg)
+
+    try:
+        has_trials = len(getattr(study, "trials", []) or []) > 0
+    except Exception:
+        has_trials = False
+
+    if not existing_fp and has_trials and not allow_backfill:
+        print(
+            "[WARN] Optuna study has trials but no genesis_resume_signature; cannot verify resume safety. "
+            "Set GENESIS_BACKFILL_STUDY_SIGNATURE=1 to attach a signature explicitly."
+        )
+        return
+
+    try:
+        study.set_user_attr("genesis_resume_signature", expected)
+    except Exception as exc:
+        print(f"[WARN] Could not set genesis_resume_signature on study: {exc}")
+
+
 def _trial_key(params: dict[str, Any]) -> str:
     """Generate canonical key for trial parameters with caching.
 
@@ -2042,6 +2151,7 @@ def _run_optuna(
     max_trials: int | None,
     concurrency: int,
     allow_resume: bool,
+    resume_signature: dict[str, Any] | None,
 ) -> list[dict[str, Any]]:
     if not OPTUNA_AVAILABLE:
         raise RuntimeError("Optuna-strategi vald men optuna är inte installerat")
@@ -2386,6 +2496,8 @@ def _run_optuna(
                 heartbeat_interval=heartbeat_interval,
                 heartbeat_grace_period=heartbeat_grace,
             )
+            if resume_signature is not None:
+                _verify_or_set_optuna_study_signature(bootstrap_study, resume_signature)
             bootstrap_study.optimize(
                 objective,
                 n_trials=bootstrap_to_run,
@@ -2411,6 +2523,8 @@ def _run_optuna(
         heartbeat_interval=heartbeat_interval,
         heartbeat_grace_period=heartbeat_grace,
     )
+    if resume_signature is not None:
+        _verify_or_set_optuna_study_signature(study, resume_signature)
 
     # Robustness: checkpoint run metadata periodically so interrupted runs still have
     # best_trial.json + optuna meta on disk.
@@ -2787,6 +2901,12 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
     run_dir.mkdir(parents=True, exist_ok=True)
     _ensure_run_metadata(run_dir, config_path.resolve(), meta, run_id_resolved)
 
+    run_meta_path = run_dir / "run_meta.json"
+    try:
+        run_meta_for_sig = json.loads(run_meta_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        run_meta_for_sig = {}
+
     symbol = str(meta.get("symbol", "tBTCUSD"))
     timeframe = str(meta.get("timeframe", "1h"))
 
@@ -2897,6 +3017,13 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
                 for future in as_completed(futures):
                     results.append(future.result())
     elif strategy == OptimizerStrategy.OPTUNA:
+        runtime_version = _get_default_runtime_version()
+        resume_signature = _compute_optuna_resume_signature(
+            config=config,
+            config_path=config_path.resolve(),
+            git_commit=str(run_meta_for_sig.get("git_commit", "unknown")),
+            runtime_version=runtime_version,
+        )
         try:
             results.extend(
                 _run_optuna(
@@ -2909,6 +3036,7 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
                     max_trials=max_trials,
                     concurrency=concurrency,
                     allow_resume=allow_resume,
+                    resume_signature=resume_signature,
                 )
             )
         except ValueError as exc:

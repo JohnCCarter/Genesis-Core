@@ -1572,6 +1572,10 @@ def _build_backtest_cmd(
     IMPORTANT (Windows/repro): Use sys.executable so the subprocess runs under the
     same interpreter/environment (e.g. venv) as the optimizer, instead of relying
     on PATH-resolved `python` which may point to a different installation.
+
+    ASSUMPTION: The subprocess is executed from the repository root directory (where
+    `scripts/` is located), so `-m scripts.run_backtest` will resolve correctly.
+    The caller must ensure the working directory is set appropriately.
     """
 
     cmd = [
@@ -2478,12 +2482,15 @@ def _run_optuna(
 
     heartbeat_interval_raw = study_config.get("heartbeat_interval")
     heartbeat_grace_raw = study_config.get("heartbeat_grace_period")
+
+    # Convert to int, preserving explicit 0 or empty string as-is (don't override to None)
     heartbeat_interval = (
         int(heartbeat_interval_raw) if heartbeat_interval_raw not in (None, "") else None
     )
     heartbeat_grace = int(heartbeat_grace_raw) if heartbeat_grace_raw not in (None, "") else None
 
     # Default heartbeats when using storage (reduces risk of zombie RUNNING on resume).
+    # Only apply defaults if value was not explicitly configured (is None specifically).
     if storage and heartbeat_interval is None:
         heartbeat_interval = 60
     if storage and heartbeat_grace is None:

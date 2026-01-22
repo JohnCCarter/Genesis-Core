@@ -7,7 +7,7 @@ from core.observability.metrics import metrics
 from core.strategy.champion_loader import ChampionLoader
 from core.strategy.confidence import compute_confidence
 from core.strategy.decision import decide
-from core.strategy.features_asof import extract_features
+from core.strategy.features_asof import extract_features_backtest, extract_features_live
 from core.strategy.fib_logging import log_fib_flow
 from core.strategy.prob_model import predict_proba_for
 from core.utils.env_flags import env_flag_enabled
@@ -149,13 +149,25 @@ def evaluate_pipeline(
     total_bars = len(closes) if closes is not None else 0
     now_index = total_bars if force_backtest_mode and total_bars > 0 else None
 
-    feats, feats_meta = extract_features(
-        candles,
-        config=configs,
-        timeframe=timeframe,
-        symbol=symbol,
-        now_index=now_index,
-    )
+    # Avoid deprecated compatibility wrapper (`features_asof.extract_features`) in core runtime code.
+    # Semantics must remain identical:
+    # - Live: last bar is forming -> use last CLOSED bar (len-2)
+    # - Backtest/optimizer: all bars closed -> use last bar (len-1)
+    if now_index is None:
+        feats, feats_meta = extract_features_live(
+            candles,
+            config=configs,
+            timeframe=timeframe,
+            symbol=symbol,
+        )
+    else:
+        feats, feats_meta = extract_features_backtest(
+            candles,
+            total_bars - 1,
+            config=configs,
+            timeframe=timeframe,
+            symbol=symbol,
+        )
     if metrics_enabled:
         metrics.event("features_ok", {"keys": list(feats.keys())})
 

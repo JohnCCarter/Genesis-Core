@@ -30,11 +30,14 @@ def test_evaluate_pipeline_does_not_merge_champion_in_backtest_mode(monkeypatch)
 
     captured: dict[str, object] = {}
 
-    def fake_extract_features(candles, *, config, timeframe, symbol, now_index):
+    def fake_extract_features_backtest(
+        candles, asof_bar, *, config, timeframe, symbol
+    ):  # noqa: ARG001
         captured["config"] = config
+        captured["asof_bar"] = asof_bar
         return {}, {}
 
-    monkeypatch.setattr(evaluate_mod, "extract_features", fake_extract_features)
+    monkeypatch.setattr(evaluate_mod, "extract_features_backtest", fake_extract_features_backtest)
     monkeypatch.setattr(
         evaluate_mod,
         "predict_proba_for",
@@ -86,11 +89,11 @@ def test_evaluate_pipeline_merges_champion_in_live_mode(monkeypatch):
 
     captured: dict[str, object] = {}
 
-    def fake_extract_features(candles, *, config, timeframe, symbol, now_index):
+    def fake_extract_features_live(candles, *, config, timeframe, symbol):  # noqa: ARG001
         captured["config"] = config
         return {}, {}
 
-    monkeypatch.setattr(evaluate_mod, "extract_features", fake_extract_features)
+    monkeypatch.setattr(evaluate_mod, "extract_features_live", fake_extract_features_live)
     monkeypatch.setattr(
         evaluate_mod,
         "predict_proba_for",

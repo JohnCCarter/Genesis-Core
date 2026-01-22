@@ -25,7 +25,7 @@ For ChatGPT “Connect to MCP” / remote linking you should run the HTTP server
 ```bash
 # Start the MCP server (Streamable HTTP transport)
 # The MCP endpoint is POST /mcp
-$env:PORT=3333
+$env:PORT=8000
 $env:GENESIS_MCP_REMOTE_SAFE=1
 python -m mcp_server.remote_server
 ```

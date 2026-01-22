@@ -173,7 +173,7 @@ def _compute_candles_hash(candles: dict[str, list[float] | np.ndarray], asof_bar
     """Compute a cache key for candles up to asof_bar.
 
     Fast path (opt-in): GENESIS_FAST_HASH=1 -> simple f-string on asof_bar:last_close
-    Default: compact digest summarized over last up to 100 bars, hashed by SHA256.
+    Default: deterministic compact digest over a small, representative state.
     """
     # Optional ultra-fast key for tight loops
     if str(os.environ.get("GENESIS_FAST_HASH", "")).strip().lower() in {"1", "true"}:
@@ -183,10 +183,11 @@ def _compute_candles_hash(candles: dict[str, list[float] | np.ndarray], asof_bar
             last_close = 0.0
         return f"{asof_bar}:{last_close:.4f}"
 
-    # Default compact SHA256 key
-    # Optimization: Use Python's built-in hash() for speed instead of SHA256
-    # We include asof_bar, last close, and a few sample points to ensure uniqueness
-    # without summing the entire array.
+    # Default deterministic key
+    # NOTE: Avoid Python's built-in hash() here, because it is salted per process
+    # (depends on PYTHONHASHSEED) and would make cache keys non-deterministic across runs.
+    # We include asof_bar, last close, and a few sample points to reduce collisions
+    # without hashing the entire array.
     try:
         close = candles.get("close")
         high = candles.get("high")
@@ -208,9 +209,11 @@ def _compute_candles_hash(candles: dict[str, list[float] | np.ndarray], asof_bar
         h_now = _safe_value(high, asof_bar)
         l_now = _safe_value(low, asof_bar)
 
-        # Create a tuple representing the state
-        state = (asof_bar, c_now, c_prev, h_now, l_now)
-        return str(hash(state))
+        import struct
+
+        # Pack as bytes to get a deterministic digest across processes.
+        payload = struct.pack("<qdddd", int(asof_bar), c_now, c_prev, h_now, l_now)
+        return hashlib.blake2b(payload, digest_size=16).hexdigest()
     except Exception:
         # Fallback to robust string construction if something fails
         data_str = f"{asof_bar}"

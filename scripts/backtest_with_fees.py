@@ -23,8 +23,8 @@ import pandas as pd
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+from core.utils import get_candles_path
 from core.utils.data_loader import load_features
-from src.core.utils import get_candles_path
 
 
 def load_model_and_data(model_path: str, symbol: str, timeframe: str):

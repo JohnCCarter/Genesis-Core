@@ -26,7 +26,7 @@ import pandas as pd
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from src.core.utils import get_candles_path
+from core.utils import get_candles_path
 
 
 def load_model(model_path: str) -> dict:

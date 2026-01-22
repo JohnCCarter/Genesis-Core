@@ -20,7 +20,7 @@ from sklearn.linear_model import LogisticRegression
 
 from core.ml.evaluation import generate_evaluation_report, save_evaluation_report
 from core.ml.labeling import align_features_with_labels, generate_labels
-from src.core.utils import get_candles_path
+from core.utils import get_candles_path
 
 
 def load_trained_model(model_path: Path) -> dict:

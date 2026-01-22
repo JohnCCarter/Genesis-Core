@@ -22,7 +22,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from core.indicators.atr import calculate_atr
 from core.ml.labeling import generate_adaptive_triple_barrier_labels
 from core.strategy.fvg_filter import generate_fvg_opportunities
-from src.core.utils import get_candles_path
+from core.utils import get_candles_path
 
 
 def generate_meta_labels(

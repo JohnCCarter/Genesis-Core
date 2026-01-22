@@ -166,10 +166,10 @@ def calculate_volume_ema(volume: list[float], period: int) -> list[float]:
     vol_series = pd.Series(volume)
     ema_series = vol_series.ewm(span=period, adjust=False).mean()
 
-    # Mark first period-1 values as NaN (not fully initialized) using numpy view
+    # Mark first period-1 values as NaN (not fully initialized).
+    # NOTE: On pandas >= 3.0, to_numpy(copy=False) may return a read-only view.
     if period > 1:
-        ema_values = ema_series.to_numpy(copy=False)
-        ema_values[: period - 1] = np.nan
+        ema_series.iloc[: period - 1] = np.nan
     return ema_series.tolist()
 
 
@@ -233,10 +233,10 @@ def volume_price_divergence(
     bearish_mask = opposite_signs & (price_trend > 0) & (vol_trend < 0)
     divergence[bearish_mask] = -abs(price_trend * vol_trend)[bearish_mask]
 
-    # Mark insufficient data as NaN (numpy view for speed)
+    # Mark insufficient data as NaN.
+    # NOTE: On pandas >= 3.0, to_numpy(copy=False) may return a read-only view.
     if lookback > 1:
-        div_values = divergence.to_numpy(copy=False)
-        div_values[: lookback - 1] = np.nan
+        divergence.iloc[: lookback - 1] = np.nan
 
     return divergence.tolist()
 

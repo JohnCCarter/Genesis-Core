@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, patch
@@ -307,6 +308,44 @@ def test_trial_requests_htf_exits_detects_htf_exit_config() -> None:
     assert runner._trial_requests_htf_exits({}) is False
 
 
+def test_build_backtest_cmd_uses_sys_executable_and_module_invocation(tmp_path: Path) -> None:
+    trial = runner.TrialConfig(
+        snapshot_id="tTEST_1h_20240101_20240201_v1",
+        symbol="tTEST",
+        timeframe="1h",
+        warmup_bars=50,
+        parameters={},
+        start_date="2024-01-01",
+        end_date="2024-01-02",
+    )
+
+    cmd = runner._build_backtest_cmd(
+        trial,
+        start_date="2024-01-01",
+        end_date="2024-01-02",
+        capital_default=10_000.0,
+        commission_default=0.002,
+        slippage_default=0.0,
+        config_file=tmp_path / "trial_config.json",
+        optuna_context={
+            "storage": "sqlite:///dummy.db",
+            "study_name": "s",
+            "trial_id": 123,
+            "pruner": {"type": "none"},
+        },
+    )
+
+    assert cmd[0] == sys.executable
+    assert cmd[1:3] == ["-m", "scripts.run_backtest"]
+    assert "--fast-window" in cmd
+    assert "--precompute-features" in cmd
+    assert "--config-file" in cmd
+    assert "--optuna-trial-id" in cmd
+    assert "--optuna-pruner" in cmd
+    pruner_idx = cmd.index("--optuna-pruner")
+    assert cmd[pruner_idx + 1] == "none"
+
+
 def test_run_optimizer_promotion_disabled_does_not_write_champion(
     tmp_path: Path, search_config_tmp: Path
 ) -> None:
@@ -404,7 +443,12 @@ def test_run_optimizer_promotion_min_improvement_blocks_small_gain(
         manager_instance.write_champion.assert_not_called()
 
 
-def test_run_trial_uses_scoring_thresholds_from_constraints(tmp_path: Path) -> None:
+def test_run_trial_uses_scoring_thresholds_from_constraints(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("GENESIS_SCORE_VERSION", "v2")
+    monkeypatch.delenv("GENESIS_FORCE_SHELL", raising=False)
+
     trial = runner.TrialConfig(
         snapshot_id="tTEST_1h_20240101_20240201_v1",
         symbol="tTEST",
@@ -421,6 +465,7 @@ def test_run_trial_uses_scoring_thresholds_from_constraints(tmp_path: Path) -> N
         _results: dict[str, Any], *, thresholds: Any | None = None, score_version: str | None = None
     ) -> dict[str, Any]:
         seen["thresholds"] = thresholds
+        seen["score_version"] = score_version
         return {
             "score": 0.0,
             "metrics": {
@@ -473,11 +518,192 @@ def test_run_trial_uses_scoring_thresholds_from_constraints(tmp_path: Path) -> N
         )
 
     assert payload.get("error") is None
+    assert seen.get("score_version") == "v2"
+
+    # Trial artifacts must be forensically bound to parameters + score_version.
+    cfg = json.loads((tmp_path / "trial_001_config.json").read_text(encoding="utf-8"))
+    assert cfg.get("run_id") == "run_test"
+    assert cfg.get("trial_id") == "trial_001"
+    assert cfg.get("parameters") == {"thresholds": {"entry_conf_overall": 0.4}}
+    assert cfg.get("score_version") == "v2"
+    assert cfg.get("trial_key") == runner._trial_key(trial.parameters)
+    assert cfg.get("param_signature") == runner.param_signature(trial.parameters)
+
     thresholds = seen.get("thresholds")
     assert thresholds is not None
     assert thresholds.min_trades == 1
     assert thresholds.min_profit_factor == pytest.approx(0.55)
     assert thresholds.max_max_dd == pytest.approx(0.5)
+
+
+def test_extract_results_path_from_log_parses_run_backtest_format(tmp_path: Path) -> None:
+    out_json = tmp_path / "out.json"
+    out_json.write_text("{}\n", encoding="utf-8")
+
+    log_content = f"[OK] Results saved:\njson: {out_json}\ntrades_csv: whatever.csv\n"
+    parsed = runner._extract_results_path_from_log(log_content)
+    assert parsed == out_json
+
+
+def test_run_trial_abort_payload_is_strict_json_and_includes_score_version(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("GENESIS_SCORE_VERSION", "v1")
+    monkeypatch.delenv("GENESIS_FORCE_SHELL", raising=False)
+
+    trial = runner.TrialConfig(
+        snapshot_id="tTEST_1h_20240101_20240201_v1",
+        symbol="tTEST",
+        timeframe="1h",
+        warmup_bars=1,
+        parameters={"thresholds": {"entry_conf_overall": 0.35}},
+        start_date="2024-01-01",
+        end_date="2024-01-02",
+    )
+
+    def fake_run_backtest_direct(*_args: Any, **_kwargs: Any) -> tuple[int, str, dict[str, Any]]:
+        return (
+            0,
+            "",
+            {
+                "summary": {"initial_capital": 10000.0},
+                "trades": [],
+                "equity_curve": [],
+                "metrics": {"num_trades": 0, "profit_factor": float("inf")},
+                "merged_config": {},
+                "runtime_version": 1,
+            },
+        )
+
+    with (
+        patch("core.optimizer.runner._get_default_config", return_value={}),
+        patch("core.optimizer.runner._get_default_runtime_version", return_value=1),
+        patch("core.optimizer.runner._run_backtest_direct", side_effect=fake_run_backtest_direct),
+    ):
+        payload = runner.run_trial(
+            trial,
+            run_id="run_test",
+            index=1,
+            run_dir=tmp_path,
+            allow_resume=False,
+            existing_trials={},
+        )
+
+    assert payload.get("abort_reason") == "zero_trades_high_thresholds"
+    assert payload.get("score", {}).get("score_version") == "v1"
+
+    trial_json_path = tmp_path / "trial_001.json"
+    raw = trial_json_path.read_text(encoding="utf-8")
+    assert "Infinity" not in raw
+
+    parsed = runner._json_loads(raw)
+    score_block = parsed.get("score")
+    assert isinstance(score_block, dict)
+    assert score_block.get("score_version") == "v1"
+
+    metrics = score_block.get("metrics")
+    assert isinstance(metrics, dict)
+    assert metrics.get("profit_factor") is None
+
+
+def test_ensure_run_metadata_mismatch_is_fail_fast(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("GENESIS_SCORE_VERSION", "v1")
+    monkeypatch.delenv("GENESIS_ALLOW_RUN_META_MISMATCH", raising=False)
+
+    run_dir = tmp_path / "run"
+    run_dir.mkdir(parents=True, exist_ok=True)
+    config_path = tmp_path / "cfg.yaml"
+    config_path.write_text("meta: {}\n", encoding="utf-8")
+
+    meta = {
+        "snapshot_id": "snap_A",
+        "symbol": "tTEST",
+        "timeframe": "1h",
+    }
+    run_id = "run_test"
+
+    # Match everything except snapshot_id (guard should fail-fast).
+    (run_dir / "run_meta.json").write_text(
+        json.dumps(
+            {
+                "run_id": run_id,
+                "config_path": str(config_path),
+                "snapshot_id": "snap_B",
+                "symbol": "tTEST",
+                "timeframe": "1h",
+                "score_version": "v1",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match=r"run_meta\.json mismatch"):
+        runner._ensure_run_metadata(run_dir, config_path, meta, run_id)
+
+
+def test_ensure_run_metadata_backfills_missing_fields(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("GENESIS_SCORE_VERSION", "v2")
+    monkeypatch.delenv("GENESIS_ALLOW_RUN_META_MISMATCH", raising=False)
+
+    run_dir = tmp_path / "run"
+    run_dir.mkdir(parents=True, exist_ok=True)
+    config_path = tmp_path / "cfg.yaml"
+    config_path.write_text("meta: {}\n", encoding="utf-8")
+
+    meta = {
+        "snapshot_id": "snap_A",
+        "symbol": "tTEST",
+        "timeframe": "1h",
+    }
+    run_id = "run_test"
+
+    # Older/partial run_meta.json missing key fields should be backfilled.
+    (run_dir / "run_meta.json").write_text(
+        json.dumps({"run_id": run_id, "snapshot_id": "snap_A"}),
+        encoding="utf-8",
+    )
+
+    runner._ensure_run_metadata(run_dir, config_path, meta, run_id)
+
+    updated = json.loads((run_dir / "run_meta.json").read_text(encoding="utf-8"))
+    assert updated.get("run_id") == run_id
+    assert updated.get("config_path") == str(config_path)
+    assert updated.get("symbol") == "tTEST"
+    assert updated.get("timeframe") == "1h"
+    assert updated.get("score_version") == "v2"
+    assert updated.get("raw_meta") == meta
+    assert updated.get("updated_at")
+
+
+def test_verify_or_set_optuna_study_score_version(monkeypatch: pytest.MonkeyPatch) -> None:
+    class _DummyStudy:
+        def __init__(self, existing: str | None = None) -> None:
+            self.user_attrs: dict[str, Any] = {}
+            if existing is not None:
+                self.user_attrs["genesis_score_version"] = existing
+
+        def set_user_attr(self, k: str, v: Any) -> None:
+            self.user_attrs[k] = v
+
+    monkeypatch.delenv("GENESIS_ALLOW_STUDY_RESUME_MISMATCH", raising=False)
+
+    s = _DummyStudy()
+    runner._verify_or_set_optuna_study_score_version(s, "v2")
+    assert s.user_attrs.get("genesis_score_version") == "v2"
+
+    s2 = _DummyStudy(existing="v1")
+    with pytest.raises(RuntimeError, match=r"score_version mismatch"):
+        runner._verify_or_set_optuna_study_score_version(s2, "v2")
+
+    monkeypatch.setenv("GENESIS_ALLOW_STUDY_RESUME_MISMATCH", "1")
+    s3 = _DummyStudy(existing="v1")
+    runner._verify_or_set_optuna_study_score_version(s3, "v2")
+    # Allow-mismatch should tolerate mismatch without overwriting existing.
+    assert s3.user_attrs.get("genesis_score_version") == "v1"
 
 
 @pytest.mark.skipif(not runner.OPTUNA_AVAILABLE, reason="Optuna ej installerat")

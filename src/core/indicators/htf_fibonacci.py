@@ -18,6 +18,7 @@ import pandas as pd
 
 from core.indicators.fibonacci import (
     FibonacciConfig,
+    calculate_atr,
     calculate_fibonacci_levels,
     detect_swing_points,
 )
@@ -168,39 +169,55 @@ def compute_htf_fibonacci_levels(
     if not pd.api.types.is_datetime64_any_dtype(htf_candles["timestamp"]):
         htf_candles["timestamp"] = pd.to_datetime(htf_candles["timestamp"])
 
-    swing_high_idx, swing_low_idx, _, _ = detect_swing_points(
-        htf_candles["high"], htf_candles["low"], htf_candles["close"], config
-    )
+    # Precompute ATR once and slice it per as-of window.
+    atr_series = calculate_atr(htf_candles["high"], htf_candles["low"], htf_candles["close"])
+    atr_arr = atr_series.to_numpy(copy=False)
 
-    if isinstance(swing_high_idx, np.ndarray):
-        swing_high_idx = swing_high_idx.tolist()
-    if isinstance(swing_low_idx, np.ndarray):
-        swing_low_idx = swing_low_idx.tolist()
+    htf_results: list[dict[str, Any]] = []
+    n = int(len(htf_candles))
+    lookback = int(getattr(config, "max_lookback", 250) or 250)
 
-    htf_results = []
-
-    for i in range(len(htf_candles)):
+    # IMPORTANT:
+    # We must compute swings with AS-OF semantics. A single global `detect_swing_points()`
+    # pass anchored at the end of the series will (by design) keep only recent swings
+    # within `max_lookback` of the latest swing, which makes early history appear to have
+    # no swings at all. That caused HTF levels to be unavailable for entire earlier
+    # windows (e.g. 2024) and made HTF gating parameters inert during optimization.
+    for i in range(n):
         htf_time = htf_candles.iloc[i]["timestamp"]
+        window_start = max(0, i - lookback)
+        window_end = i + 1
 
-        # Get swing context up to this point (AS-OF)
-        current_swings = get_swings_as_of(
-            swing_high_idx, swing_low_idx, i, htf_candles["high"], htf_candles["low"]
+        highs = htf_candles["high"].iloc[window_start:window_end]
+        lows = htf_candles["low"].iloc[window_start:window_end]
+        closes = htf_candles["close"].iloc[window_start:window_end]
+        atr_values = atr_arr[window_start:window_end]
+
+        swing_high_idx, swing_low_idx, swing_high_prices, swing_low_prices = detect_swing_points(
+            highs,
+            lows,
+            closes,
+            config,
+            atr_values=atr_values,
         )
 
         fib_levels_list = calculate_fibonacci_levels(
-            current_swings["highs"], current_swings["lows"], config.levels
+            swing_high_prices, swing_low_prices, config.levels
         )
-
-        # Map values back to keys
         if len(fib_levels_list) == len(config.levels):
             fib_levels = dict(zip(config.levels, fib_levels_list, strict=False))
         else:
             fib_levels = {}
 
-        # Calculate swing age
-        h_idx = current_swings["current_high_idx"]
-        l_idx = current_swings["current_low_idx"]
-        swing_age = i - max(h_idx if h_idx is not None else -1, l_idx if l_idx is not None else -1)
+        # Convert window-relative indices to absolute indices for swing age.
+        h_idx = (window_start + int(swing_high_idx[-1])) if swing_high_idx else None
+        l_idx = (window_start + int(swing_low_idx[-1])) if swing_low_idx else None
+        swing_age = i - max(
+            h_idx if h_idx is not None else -1,
+            l_idx if l_idx is not None else -1,
+        )
+        swing_high = float(swing_high_prices[-1]) if swing_high_prices else None
+        swing_low = float(swing_low_prices[-1]) if swing_low_prices else None
 
         htf_results.append(
             {
@@ -209,8 +226,8 @@ def compute_htf_fibonacci_levels(
                 "htf_fib_05": fib_levels.get(0.5),
                 "htf_fib_0618": fib_levels.get(0.618),
                 "htf_fib_0786": fib_levels.get(0.786),
-                "htf_swing_high": current_swings["current_high"],
-                "htf_swing_low": current_swings["current_low"],
+                "htf_swing_high": swing_high,
+                "htf_swing_low": swing_low,
                 "htf_swing_age_bars": swing_age if swing_age >= 0 else 0,
             }
         )

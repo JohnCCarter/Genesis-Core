@@ -291,6 +291,189 @@ def load_search_config(path: Path) -> dict[str, Any]:
     return data
 
 
+def _compute_optuna_resume_signature(
+    *,
+    config: dict[str, Any],
+    config_path: Path,
+    git_commit: str,
+    runtime_version: int | None,
+) -> dict[str, Any]:
+    """Compute a stable signature to prevent resuming the wrong Optuna study.
+
+    Notes:
+        - Excludes wall-clock stop policy fields (end_at/timeout_seconds) so you can extend
+          a long run without breaking resume safety.
+        - Includes code/runtime/env so a resumed run won't silently drift.
+    """
+
+    meta = config.get("meta") or {}
+    runs_cfg = meta.get("runs") or {}
+    optuna_cfg = (runs_cfg.get("optuna") or {}).copy()
+    optuna_cfg.pop("timeout_seconds", None)
+    optuna_cfg.pop("end_at", None)
+
+    # Avoid path-dependent signatures:
+    # - Use repo-relative path when possible (stable across machines/checkout locations).
+    # - Always include a content hash for the config file.
+    repo_root = PROJECT_ROOT.resolve()
+    try:
+        config_path_abs = config_path.resolve()
+    except Exception:
+        config_path_abs = config_path
+
+    config_path_external = True
+    config_path_rel_posix: str | None = None
+    try:
+        config_path_rel_posix = config_path_abs.relative_to(repo_root).as_posix()
+        config_path_external = False
+    except ValueError:
+        config_path_external = True
+
+    try:
+        config_sha256 = hashlib.sha256(config_path_abs.read_bytes()).hexdigest()
+    except OSError as exc:
+        raise ValueError(
+            f"Could not read config for resume signature: {config_path_abs} ({exc})"
+        ) from exc
+
+    payload = {
+        "config_path_rel_posix": config_path_rel_posix,
+        "config_path_external": config_path_external,
+        "config_sha256": config_sha256,
+        "git_commit": str(git_commit or "unknown"),
+        "runtime_version": runtime_version,
+        "meta": {
+            "symbol": meta.get("symbol"),
+            "timeframe": meta.get("timeframe"),
+            "snapshot_id": meta.get("snapshot_id"),
+            "warmup_bars": meta.get("warmup_bars"),
+        },
+        "runs": {
+            "use_sample_range": runs_cfg.get("use_sample_range"),
+            "sample_start": runs_cfg.get("sample_start"),
+            "sample_end": runs_cfg.get("sample_end"),
+            "optuna": optuna_cfg,
+        },
+        "constraints": config.get("constraints") or {},
+        "parameters": config.get("parameters") or {},
+        "env": {
+            "GENESIS_MODE_EXPLICIT": os.environ.get("GENESIS_MODE_EXPLICIT"),
+            "GENESIS_FAST_WINDOW": os.environ.get("GENESIS_FAST_WINDOW"),
+            "GENESIS_PRECOMPUTE_FEATURES": os.environ.get("GENESIS_PRECOMPUTE_FEATURES"),
+            "GENESIS_FAST_HASH": os.environ.get("GENESIS_FAST_HASH"),
+        },
+    }
+
+    canonical = canonicalize_config(payload, precision=6)
+    blob = json.dumps(canonical, sort_keys=True, separators=(",", ":"))
+    fingerprint = hashlib.sha256(blob.encode("utf-8")).hexdigest()
+
+    return {
+        "version": 1,
+        "fingerprint": fingerprint,
+        "git_commit": payload["git_commit"],
+        "runtime_version": runtime_version,
+        "config_path_rel_posix": config_path_rel_posix,
+        "config_path_external": config_path_external,
+        "config_path_abs": str(config_path_abs),
+        "config_sha256": config_sha256,
+        "snapshot_id": payload["meta"]["snapshot_id"],
+        "sample_start": payload["runs"]["sample_start"],
+        "sample_end": payload["runs"]["sample_end"],
+    }
+
+
+def _verify_or_set_optuna_study_signature(study: Any, expected: dict[str, Any]) -> None:
+    """Fail-fast on resume when the study signature mismatches.
+
+    - If an existing signature is present and mismatches: raise unless overridden.
+    - If signature is missing on a non-empty study: warn and do not backfill by default.
+    - If study is empty (or explicit backfill): attach the signature.
+    """
+
+    allow_mismatch = os.environ.get("GENESIS_ALLOW_STUDY_RESUME_MISMATCH") == "1"
+    allow_backfill = os.environ.get("GENESIS_BACKFILL_STUDY_SIGNATURE") == "1"
+
+    expected_fp = str(expected.get("fingerprint") or "")
+    existing = getattr(study, "user_attrs", {}) or {}
+    existing_sig = existing.get("genesis_resume_signature")
+    existing_fp = (
+        str(existing_sig.get("fingerprint") or "") if isinstance(existing_sig, dict) else ""
+    )
+
+    if existing_fp and expected_fp and existing_fp != expected_fp:
+        msg = (
+            "Optuna resume blocked: study signature mismatch. "
+            f"expected={expected_fp} existing={existing_fp}. "
+            "This usually means you are resuming the wrong study/DB or the config/code/runtime/env changed."
+        )
+        if allow_mismatch:
+            print(f"[WARN] {msg} (override via GENESIS_ALLOW_STUDY_RESUME_MISMATCH=1)")
+        else:
+            raise RuntimeError(msg)
+
+    try:
+        has_trials = len(getattr(study, "trials", []) or []) > 0
+    except Exception:
+        has_trials = False
+
+    if not existing_fp and has_trials and not allow_backfill:
+        print(
+            "[WARN] Optuna study has trials but no genesis_resume_signature; cannot verify resume safety. "
+            "Set GENESIS_BACKFILL_STUDY_SIGNATURE=1 to attach a signature explicitly."
+        )
+        return
+
+    try:
+        study.set_user_attr("genesis_resume_signature", expected)
+    except Exception as exc:
+        print(f"[WARN] Could not set genesis_resume_signature on study: {exc}")
+
+
+def _verify_or_set_optuna_study_score_version(study: Any, expected_score_version: str) -> None:
+    """Fail-fast on resume when Optuna study uses a different scoring version.
+
+    Motivation:
+    - score_version is selected via env (GENESIS_SCORE_VERSION).
+    - resuming a study with a different score_version corrupts comparability.
+    - we store this separately from genesis_resume_signature for backward-compat.
+    """
+
+    allow_mismatch = os.environ.get("GENESIS_ALLOW_STUDY_RESUME_MISMATCH") == "1"
+    try:
+        existing = getattr(study, "user_attrs", None)
+        if not isinstance(existing, dict):
+            existing = {}
+        existing_v = existing.get("genesis_score_version")
+    except Exception:
+        existing_v = None
+
+    expected_norm = str(expected_score_version or "").strip().lower()
+    existing_norm = str(existing_v or "").strip().lower()
+    if existing_norm and expected_norm and existing_norm != expected_norm:
+        msg = (
+            "Optuna resume blocked: score_version mismatch. "
+            f"expected={expected_score_version} existing={existing_v}. "
+            "This usually means GENESIS_SCORE_VERSION changed between runs."
+        )
+        if allow_mismatch:
+            print(f"[WARN] {msg} (override via GENESIS_ALLOW_STUDY_RESUME_MISMATCH=1)")
+            # Do not overwrite the existing study attr; keep forensic evidence intact.
+            return
+        else:
+            raise RuntimeError(msg)
+
+    # Only set when missing (backfill).
+    if existing_v:
+        return
+
+    try:
+        study.set_user_attr("genesis_score_version", expected_score_version)
+    except Exception as exc:
+        # Best-effort only; mocked studies in unit tests may not persist attrs.
+        logger.debug("Could not set genesis_score_version on Optuna study: %s", exc, exc_info=True)
+
+
 def _trial_key(params: dict[str, Any]) -> str:
     """Generate canonical key for trial parameters with caching.
 
@@ -530,7 +713,13 @@ def _load_existing_trials(run_dir: Path) -> dict[str, dict[str, Any]]:
             # Performance: Direct orjson usage for better speed (single parse, no wrapper)
             content = trial_path.read_text(encoding="utf-8")
             if _HAS_ORJSON:
-                trial_data = _orjson.loads(content)
+                # Legacy artifacts may contain non-standard floats (Infinity/NaN) written via
+                # json.dumps(..., allow_nan=True). orjson rejects these tokens on load.
+                # Fall back to stdlib json for backwards-compatible resume.
+                try:
+                    trial_data = _orjson.loads(content)
+                except ValueError:
+                    trial_data = json.loads(content)
             else:
                 trial_data = json.loads(content)
 
@@ -549,11 +738,112 @@ def _load_existing_trials(run_dir: Path) -> dict[str, dict[str, Any]]:
     return existing
 
 
+def _extract_results_path_from_log(log_content: str) -> Path | None:
+    """Extract the backtest result JSON path from subprocess logs.
+
+    scripts/run_backtest.py prints:
+        [OK] Results saved:\n
+        json: <path>\n
+        trades_csv: ...
+
+    TradeLogger also prints:
+        [SAVED] Results: <path>
+
+    Older code paths may print:
+        results: <path>
+    """
+
+    import re
+
+    patterns = [
+        r"^\s*results:\s*(.+?\.json)\s*$",
+        r"^\s*json:\s*(.+?\.json)\s*$",
+        r"^\[SAVED\]\s*Results:\s*(.+?\.json)\s*$",
+    ]
+
+    for pat in patterns:
+        matches = re.findall(pat, log_content, flags=re.MULTILINE)
+        if not matches:
+            continue
+        # Prefer the last match in case multiple backtests ran within the same log.
+        candidate = Path(str(matches[-1]).strip())
+        if not candidate.is_absolute():
+            candidate = PROJECT_ROOT / candidate
+        if candidate.exists():
+            return candidate
+    return None
+
+
 def _ensure_run_metadata(
     run_dir: Path, config_path: Path, meta: dict[str, Any], run_id: str
 ) -> None:
     meta_path = run_dir / "run_meta.json"
+
+    repo_root = PROJECT_ROOT
+    try:
+        config_rel = str(config_path.relative_to(repo_root))
+    except ValueError:
+        config_rel = str(config_path)
+
+    expected_score_version = _resolve_score_version_for_optimizer()
+
     if meta_path.exists():
+        try:
+            existing = json.loads(meta_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            logger.warning(
+                "Failed to read existing run_meta.json at %s, treating as empty metadata: %s",
+                meta_path,
+                exc,
+            )
+            existing = {}
+        if not isinstance(existing, dict):
+            existing = {}
+
+        expected = {
+            "run_id": run_id,
+            "config_path": config_rel,
+            "snapshot_id": meta.get("snapshot_id"),
+            "symbol": meta.get("symbol"),
+            "timeframe": meta.get("timeframe"),
+            "score_version": expected_score_version,
+        }
+
+        mismatches: list[str] = []
+        for k, exp in expected.items():
+            if exp is None:
+                continue
+            cur = existing.get(k)
+            if cur is None or cur == "":
+                continue
+            if str(cur) != str(exp):
+                mismatches.append(f"{k} existing={cur!r} expected={exp!r}")
+
+        allow_mismatch = os.environ.get("GENESIS_ALLOW_RUN_META_MISMATCH") == "1"
+        if mismatches and not allow_mismatch:
+            raise ValueError(
+                "run_meta.json mismatch (vägrar återanvända run_dir med annan konfig/metadata): "
+                + "; ".join(mismatches)
+                + ". Override via GENESIS_ALLOW_RUN_META_MISMATCH=1"
+            )
+        if mismatches and allow_mismatch:
+            print(
+                "[WARN] run_meta.json mismatch tolerated via GENESIS_ALLOW_RUN_META_MISMATCH=1: "
+                + "; ".join(mismatches)
+            )
+
+        # Backfill missing fields to improve forensics for older/partial run_meta.json.
+        did_change = False
+        for k, exp in expected.items():
+            if exp is None:
+                continue
+            if existing.get(k) is None or existing.get(k) == "":
+                existing[k] = exp
+                did_change = True
+        existing.setdefault("raw_meta", meta)
+        if did_change:
+            existing["updated_at"] = datetime.now(UTC).isoformat()
+            _atomic_write_text(meta_path, json.dumps(_serialize_meta(existing), indent=2))
         return
     commit = "unknown"
     git_executable = shutil.which("git")
@@ -561,7 +851,7 @@ def _ensure_run_metadata(
         try:
             completed = subprocess.run(  # nosec B603
                 [git_executable, "rev-parse", "HEAD"],
-                cwd=Path(__file__).resolve().parents[3],
+                cwd=PROJECT_ROOT,
                 capture_output=True,
                 text=True,
                 check=True,
@@ -569,16 +859,13 @@ def _ensure_run_metadata(
             commit = completed.stdout.strip()
         except subprocess.SubprocessError:
             commit = "unknown"
-    try:
-        config_rel = str(config_path.relative_to(Path(__file__).resolve().parents[3]))
-    except ValueError:
-        config_rel = str(config_path)
     meta_payload = {
         "run_id": run_id,
         "config_path": config_rel,
         "snapshot_id": meta.get("snapshot_id"),
         "symbol": meta.get("symbol"),
         "timeframe": meta.get("timeframe"),
+        "score_version": expected_score_version,
         "started_at": datetime.now(UTC).isoformat(),
         "git_commit": commit,
         "raw_meta": meta,
@@ -779,6 +1066,8 @@ def _exec_backtest(
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         cwd=str(cwd),
         env=env,
     ) as proc:
@@ -819,6 +1108,30 @@ def _coerce_optional_str(value: Any) -> str | None:
         v = value.strip()
         return v or None
     return None
+
+
+_ALLOWED_SCORE_VERSIONS: set[str] = {"v1", "v2"}
+
+
+def _resolve_score_version_for_optimizer(explicit: str | None = None) -> str:
+    """Resolve score_version deterministically for an optimizer run.
+
+    Source of truth:
+    - explicit arg (internal)
+    - env GENESIS_SCORE_VERSION
+    - default "v1"
+
+    We validate the value to fail-fast on typos, because mixing scoring versions
+    makes promotion/comparisons meaningless.
+    """
+
+    raw = explicit or os.environ.get("GENESIS_SCORE_VERSION") or "v1"
+    v = str(raw).strip().lower()
+    if v not in _ALLOWED_SCORE_VERSIONS:
+        raise ValueError(
+            f"Ogiltig GENESIS_SCORE_VERSION={raw!r}. Tillåtna värden: {sorted(_ALLOWED_SCORE_VERSIONS)}"
+        )
+    return v
 
 
 def _extract_score_version_from_result_payload(result: dict[str, Any] | None) -> str | None:
@@ -1243,6 +1556,99 @@ def _run_backtest_direct(
                 os.environ["GENESIS_HTF_EXITS"] = str(prior_htf_exits)
 
 
+def _build_backtest_cmd(
+    trial: TrialConfig,
+    *,
+    start_date: str,
+    end_date: str,
+    capital_default: float,
+    commission_default: float,
+    slippage_default: float,
+    config_file: Path | None,
+    optuna_context: dict[str, Any] | None,
+) -> list[str]:
+    """Build the subprocess command for running a backtest.
+
+    IMPORTANT (Windows/repro): Use sys.executable so the subprocess runs under the
+    same interpreter/environment (e.g. venv) as the optimizer, instead of relying
+    on PATH-resolved `python` which may point to a different installation.
+    """
+
+    cmd = [
+        sys.executable,
+        "-m",
+        "scripts.run_backtest",
+        "--symbol",
+        trial.symbol,
+        "--timeframe",
+        trial.timeframe,
+        "--start",
+        start_date,
+        "--end",
+        end_date,
+        "--warmup",
+        str(trial.warmup_bars),
+        "--capital",
+        str(capital_default),
+        "--commission",
+        str(commission_default),
+        "--slippage",
+        str(slippage_default),
+        "--fast-window",
+        "--precompute-features",
+    ]
+
+    if config_file is not None:
+        cmd.extend(["--config-file", str(config_file)])
+
+    if optuna_context:
+        storage = optuna_context.get("storage")
+        study_name = optuna_context.get("study_name")
+        trial_id = optuna_context.get("trial_id")
+        if storage and study_name and trial_id is not None:
+            pruner_cfg = optuna_context.get("pruner")
+            pruner_name: str | None = None
+            pruner_kwargs: dict[str, Any] | None = None
+            if isinstance(pruner_cfg, dict):
+                pruner_name = (
+                    pruner_cfg.get("name")
+                    or pruner_cfg.get("type")
+                    or pruner_cfg.get("pruner")
+                    or pruner_cfg.get("kind")
+                )
+                if isinstance(pruner_cfg.get("kwargs"), dict):
+                    pruner_kwargs = pruner_cfg.get("kwargs")
+            elif isinstance(pruner_cfg, str):
+                pruner_name = pruner_cfg
+
+            cmd.extend(
+                [
+                    "--optuna-trial-id",
+                    str(trial_id),
+                    "--optuna-storage",
+                    str(storage),
+                    "--optuna-study-name",
+                    str(study_name),
+                ]
+            )
+
+            # IMPORTANT:
+            # scripts/run_backtest uses optuna.load_study for pruning in subprocess mode.
+            # optuna.load_study defaults to MedianPruner if pruner is omitted, which can
+            # silently enable pruning even when the main optimizer config requests pruner=none.
+            if pruner_name:
+                cmd.extend(["--optuna-pruner", str(pruner_name)])
+            if pruner_kwargs:
+                cmd.extend(
+                    [
+                        "--optuna-pruner-kwargs",
+                        json.dumps(pruner_kwargs, separators=(",", ":")),
+                    ]
+                )
+
+    return cmd
+
+
 def run_trial(
     trial: TrialConfig,
     *,
@@ -1262,8 +1668,17 @@ def run_trial(
 ) -> dict[str, Any]:
     capital_default, commission_default, slippage_default = _get_backtest_economics()
 
+    # Pin scoring-version for the entire trial (and for any subprocess execution).
+    score_version = _resolve_score_version_for_optimizer()
+
     key = _trial_key(trial.parameters)
     fingerprint_digest = key  # _trial_key already returns a SHA256 digest
+
+    # Also compute the Optuna-style signature used by NoDupeGuard for cross-artifact binding.
+    try:
+        optuna_param_sig = param_signature(trial.parameters)
+    except Exception:
+        optuna_param_sig = fingerprint_digest
 
     if allow_resume and key in existing_trials:
         if seen_param_keys is not None:
@@ -1349,12 +1764,21 @@ def run_trial(
             "cfg": merged_cfg,
             "merged_config": merged_cfg,
             "runtime_version": _get_default_runtime_version(),
+            "run_id": run_id,
+            "trial_id": trial_id,
+            "parameters": trial.parameters,
+            "trial_key": fingerprint_digest,
+            "param_signature": optuna_param_sig,
+            "score_version": score_version,
+            "created_at": datetime.now(UTC).isoformat(),
             "overrides": {
                 "capital": capital_default,
                 "commission": commission_default,
                 "slippage": slippage_default,
             },
         }
+        if derived_values:
+            config_payload["derived"] = dict(derived_values)
         _atomic_write_text(config_file, _json_dumps(config_payload))
 
     cache: TrialResultCache | None = None
@@ -1396,49 +1820,16 @@ def run_trial(
         message="start_date måste vara mindre än eller lika med end_date",
     )
 
-    cmd = [
-        "python",
-        "-m",
-        "scripts.run_backtest",
-        "--symbol",
-        trial.symbol,
-        "--timeframe",
-        trial.timeframe,
-        "--start",
-        start_date,
-        "--end",
-        end_date,
-        "--warmup",
-        str(trial.warmup_bars),
-        "--capital",
-        str(capital_default),
-        "--commission",
-        str(commission_default),
-        "--slippage",
-        str(slippage_default),
-    ]
-    # Canonical mode for optimizer quality decisions: always run 1/1.
-    # (fast_window + precompute) is the SSOT for Optuna/validate/champion comparisons.
-    cmd.append("--fast-window")
-    cmd.append("--precompute-features")
-    if config_file is not None:
-        cmd.extend(["--config-file", str(config_file)])
-
-    if optuna_context:
-        storage = optuna_context.get("storage")
-        study_name = optuna_context.get("study_name")
-        trial_id = optuna_context.get("trial_id")
-        if storage and study_name and trial_id is not None:
-            cmd.extend(
-                [
-                    "--optuna-trial-id",
-                    str(trial_id),
-                    "--optuna-storage",
-                    str(storage),
-                    "--optuna-study-name",
-                    str(study_name),
-                ]
-            )
+    cmd = _build_backtest_cmd(
+        trial,
+        start_date=start_date,
+        end_date=end_date,
+        capital_default=capital_default,
+        commission_default=commission_default,
+        slippage_default=slippage_default,
+        config_file=config_file,
+        optuna_context=optuna_context,
+    )
 
     attempts_remaining = max(1, max_attempts)
     final_payload: dict[str, Any] | None = None
@@ -1450,6 +1841,14 @@ def run_trial(
     base_env = dict(os.environ)
     if "GENESIS_RANDOM_SEED" not in base_env or not str(base_env["GENESIS_RANDOM_SEED"]).strip():
         base_env["GENESIS_RANDOM_SEED"] = "42"
+
+    # Pin scoring version across subprocess/direct execution for deterministic comparability.
+    base_env["GENESIS_SCORE_VERSION"] = score_version
+
+    # Windows/stdio hardening: force UTF-8 for the backtest subprocess so its stdout/stderr can
+    # be captured and/or written without UnicodeEncodeError/DecodeError surprises.
+    base_env.setdefault("PYTHONUTF8", "1")
+    base_env.setdefault("PYTHONIOENCODING", "utf-8")
 
     # Enable HTF exits for this trial when config requests it (unless user already set it).
     if config_file is not None and "GENESIS_HTF_EXITS" not in base_env:
@@ -1505,9 +1904,7 @@ def run_trial(
                 results_path = output_dir / f"{trial.symbol}_{trial.timeframe}_{trial_id}.json"
                 _atomic_write_text(results_path, _json_dumps(results_dict))
         else:
-            returncode, log = _exec_backtest(
-                cmd, cwd=Path(__file__).resolve().parents[3], env=base_env, log_path=log_file
-            )
+            returncode, log = _exec_backtest(cmd, cwd=PROJECT_ROOT, env=base_env, log_path=log_file)
 
         last_log_output = log
         attempt_duration = time.perf_counter() - attempt_started
@@ -1518,26 +1915,28 @@ def run_trial(
                 results_path: Path | None = None
                 try:
                     log_content = log_file.read_text(encoding="utf-8")
-                    import re
-
-                    # Look for: "  results: path/to/file.json"
-                    match = re.search(r"^\s*results:\s*(.*\.json)\s*$", log_content, re.MULTILINE)
-                    if match:
-                        extracted_path = Path(match.group(1).strip())
-                        if not extracted_path.is_absolute():
-                            extracted_path = PROJECT_ROOT / extracted_path
-                        if extracted_path.exists():
-                            results_path = extracted_path
+                    results_path = _extract_results_path_from_log(log_content)
                 except Exception as e:
                     print(f"[WARN] Could not parse log for results path: {e}")
 
                 if results_path is None:
-                    # Fallback to glob (risky with concurrency)
-                    results_path = sorted(
-                        (Path(__file__).resolve().parents[3] / "results" / "backtests").glob(
-                            f"{trial.symbol}_{trial.timeframe}_*.json"
-                        )
-                    )[-1]
+                    total_duration = time.perf_counter() - trial_started
+                    error_payload = {
+                        "trial_id": trial_id,
+                        "parameters": trial.parameters,
+                        "error": "results_path_not_found",
+                        "error_details": "Could not locate results JSON path in subprocess logs",
+                        "log": log_file.name,
+                        "attempts": max_attempts - attempts_remaining,
+                        "duration_seconds": total_duration,
+                        "attempt_durations": attempt_durations,
+                    }
+                    if derived_values:
+                        error_payload["derived"] = derived_values
+                    if config_file is not None:
+                        error_payload["config_path"] = config_file.name
+                    _atomic_write_text(trial_file, _json_dumps(error_payload))
+                    return error_payload
 
                 try:
                     results = _read_json_cached(results_path)
@@ -1563,7 +1962,7 @@ def run_trial(
                         f"[ERROR] Trial {trial_id} fick korrupt JSON ({results_path.name}): {json_err}"
                     )
                     print("[ERROR] Detta indikerar race condition vid samtidig skrivning")
-                    _atomic_write_text(trial_file, json.dumps(error_payload, indent=2))
+                    _atomic_write_text(trial_file, _json_dumps(error_payload))
                     # Returnera error payload så att objective kan lyfta TrialPruned
                     return error_payload
             else:
@@ -1590,7 +1989,7 @@ def run_trial(
                     pruned_payload["derived"] = derived_values
                 if config_file is not None:
                     pruned_payload["config_path"] = config_file.name
-                _atomic_write_text(trial_file, json.dumps(pruned_payload, indent=2))
+                _atomic_write_text(trial_file, _json_dumps(pruned_payload))
                 return pruned_payload
 
             merged_config = results.get("merged_config")  # Full config for reproducibility
@@ -1608,6 +2007,7 @@ def run_trial(
                         "score": abort_check["penalty"],
                         "metrics": results.get("metrics"),
                         "hard_failures": [],
+                        "score_version": score_version,
                     },
                     "abort_reason": abort_check["reason"],
                     "abort_details": abort_check["details"],
@@ -1626,7 +2026,7 @@ def run_trial(
                 print(
                     f"[Runner] Trial {trial_id} aborted: {abort_check['reason']} ({abort_check['details']}), penalty={abort_check['penalty']}"
                 )
-                _atomic_write_text(trial_file, json.dumps(abort_payload, indent=2))
+                _atomic_write_text(trial_file, _json_dumps(abort_payload))
                 return abort_payload
 
             # Allow overriding scoring hard-failure thresholds via optimizer constraints.
@@ -1654,7 +2054,11 @@ def run_trial(
                         except (TypeError, ValueError):
                             pass
 
-            score = score_backtest(results, thresholds=scoring_thresholds)
+            score = score_backtest(
+                results,
+                thresholds=scoring_thresholds,
+                score_version=score_version,
+            )
             enforcement = enforce_constraints(
                 score,
                 trial.parameters,
@@ -1662,14 +2066,14 @@ def run_trial(
             )
             score_value = score.get("score")
             baseline_block = score.get("baseline") if isinstance(score, dict) else None
-            score_version = None
+            score_version_from_score = None
             if isinstance(baseline_block, dict):
-                score_version = baseline_block.get("score_version")
+                score_version_from_score = baseline_block.get("score_version")
             score_serializable = {
                 "score": score_value,
                 "metrics": score.get("metrics"),
                 "hard_failures": list(score.get("hard_failures") or []),
-                "score_version": score_version,
+                "score_version": score_version_from_score or score_version,
             }
             total_duration = time.perf_counter() - trial_started
             final_payload = {
@@ -1764,7 +2168,7 @@ def run_trial(
         cache_snapshot.pop("from_cache", None)
         cache_snapshot["parameters"] = trial.parameters
         cache.store(fingerprint_digest, cache_snapshot)
-    _atomic_write_text(trial_file, json.dumps(final_payload, indent=2))
+    _atomic_write_text(trial_file, _json_dumps(final_payload))
     return final_payload
 
 
@@ -1982,6 +2386,7 @@ def _run_optuna(
     max_trials: int | None,
     concurrency: int,
     allow_resume: bool,
+    resume_signature: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     if not OPTUNA_AVAILABLE:
         raise RuntimeError("Optuna-strategi vald men optuna är inte installerat")
@@ -2071,10 +2476,20 @@ def _run_optuna(
     if isinstance(pruner_cfg, str):
         pruner_cfg = {"name": pruner_cfg}
 
-    heartbeat_interval = study_config.get("heartbeat_interval")
-    heartbeat_grace = study_config.get("heartbeat_grace_period")
-    heartbeat_interval = int(heartbeat_interval) if heartbeat_interval else None
-    heartbeat_grace = int(heartbeat_grace) if heartbeat_grace else None
+    heartbeat_interval_raw = study_config.get("heartbeat_interval")
+    heartbeat_grace_raw = study_config.get("heartbeat_grace_period")
+    heartbeat_interval = (
+        int(heartbeat_interval_raw) if heartbeat_interval_raw not in (None, "") else None
+    )
+    heartbeat_grace = int(heartbeat_grace_raw) if heartbeat_grace_raw not in (None, "") else None
+
+    # Default heartbeats when using storage (reduces risk of zombie RUNNING on resume).
+    if storage and heartbeat_interval is None:
+        heartbeat_interval = 60
+    if storage and heartbeat_grace is None:
+        heartbeat_grace = 180
+
+    score_version = _resolve_score_version_for_optimizer()
 
     results: list[dict[str, Any]] = []
     duplicate_streak = 0
@@ -2093,6 +2508,14 @@ def _run_optuna(
     def objective(trial):
         nonlocal duplicate_streak, total_trials_attempted, duplicate_count, zero_trade_count
         total_trials_attempted += 1
+        try:
+            trial.set_user_attr("score_version", score_version)
+        except Exception as exc:
+            logger.debug(
+                "Failed to set Optuna trial user attribute 'score_version': %s",
+                exc,
+                exc_info=True,
+            )
         parameters = _suggest_parameters(trial, parameters_spec)
         trial_number = trial.number + 1
         key = _trial_key(parameters)
@@ -2326,6 +2749,9 @@ def _run_optuna(
                 heartbeat_interval=heartbeat_interval,
                 heartbeat_grace_period=heartbeat_grace,
             )
+            if resume_signature is not None:
+                _verify_or_set_optuna_study_signature(bootstrap_study, resume_signature)
+            _verify_or_set_optuna_study_score_version(bootstrap_study, score_version)
             bootstrap_study.optimize(
                 objective,
                 n_trials=bootstrap_to_run,
@@ -2351,6 +2777,9 @@ def _run_optuna(
         heartbeat_interval=heartbeat_interval,
         heartbeat_grace_period=heartbeat_grace,
     )
+    if resume_signature is not None:
+        _verify_or_set_optuna_study_signature(study, resume_signature)
+    _verify_or_set_optuna_study_score_version(study, score_version)
 
     # Robustness: checkpoint run metadata periodically so interrupted runs still have
     # best_trial.json + optuna meta on disk.
@@ -2717,15 +3146,19 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
         concurrency = max(1, int(runs_cfg.get("max_concurrent", 1)))
     max_attempts = max(1, int(runs_cfg.get("max_attempts", 2)))
     run_id_resolved = _create_run_id(run_id)
-    run_dir = (
-        Path(__file__).resolve().parents[3] / "results" / "hparam_search" / run_id_resolved
-    ).resolve()
+    run_dir = (PROJECT_ROOT / "results" / "hparam_search" / run_id_resolved).resolve()
 
     existing_trials = _load_existing_trials(run_dir) if allow_resume and run_dir.exists() else {}
     seen_param_keys: set[str] = set()
     seen_param_lock = threading.Lock()
     run_dir.mkdir(parents=True, exist_ok=True)
     _ensure_run_metadata(run_dir, config_path.resolve(), meta, run_id_resolved)
+
+    run_meta_path = run_dir / "run_meta.json"
+    try:
+        run_meta_for_sig = json.loads(run_meta_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        run_meta_for_sig = {}
 
     symbol = str(meta.get("symbol", "tBTCUSD"))
     timeframe = str(meta.get("timeframe", "1h"))
@@ -2837,6 +3270,13 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
                 for future in as_completed(futures):
                     results.append(future.result())
     elif strategy == OptimizerStrategy.OPTUNA:
+        runtime_version = _get_default_runtime_version()
+        resume_signature = _compute_optuna_resume_signature(
+            config=config,
+            config_path=config_path.resolve(),
+            git_commit=str(run_meta_for_sig.get("git_commit", "unknown")),
+            runtime_version=runtime_version,
+        )
         try:
             results.extend(
                 _run_optuna(
@@ -2849,6 +3289,7 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
                     max_trials=max_trials,
                     concurrency=concurrency,
                     allow_resume=allow_resume,
+                    resume_signature=resume_signature,
                 )
             )
         except ValueError as exc:

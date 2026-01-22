@@ -7,21 +7,24 @@ Main server implementation using the Model Context Protocol.
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
-from typing import Any
+import sys
+from typing import Any, cast
 
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
 from mcp.types import Resource, TextContent, Tool
+from pydantic import AnyUrl
 
-from .config import load_config
-from .resources import (
+from mcp_server.config import load_config
+from mcp_server.resources import (
     get_config_resource,
     get_documentation,
     get_git_status_resource,
     get_structure_resource,
 )
-from .tools import (
+from mcp_server.tools import (
     execute_python,
     get_git_status,
     get_project_structure,
@@ -30,7 +33,7 @@ from .tools import (
     search_code,
     write_file,
 )
-from .utils import setup_logging
+from mcp_server.utils import setup_logging
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +42,33 @@ config = load_config()
 
 # Initialize MCP server
 app = Server("genesis-core")
+
+
+def _ensure_utf8_stdio() -> None:
+    """Best-effort: ensure stdio streams can emit non-ASCII on Windows.
+
+    VS Code (and some host processes) may start Python with a legacy console encoding
+    (e.g. cp1252). The MCP stdio transport writes JSON responses to stdout; if that JSON
+    contains non-ASCII (docs, box-drawing tree glyphs, etc.), writing can crash with
+    UnicodeEncodeError and bring the server down.
+
+    We defensively reconfigure stdout/stderr to UTF-8 when possible.
+    """
+
+    for stream_name in ("stdout", "stderr"):
+        stream = getattr(sys, stream_name, None)
+        if stream is None:
+            continue
+
+        reconfigure = getattr(stream, "reconfigure", None)
+        if not callable(reconfigure):
+            continue
+
+        try:
+            reconfigure(encoding="utf-8", errors="strict")
+        except Exception:
+            # If the host/capture layer does not support reconfigure, avoid crashing.
+            continue
 
 
 # Tool definitions
@@ -195,15 +225,11 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
             result = {"success": False, "error": f"Unknown tool: {name}"}
 
         # Format result as TextContent
-        import json
-
         result_text = json.dumps(result, indent=2)
         return [TextContent(type="text", text=result_text)]
 
     except Exception as e:
         logger.error(f"Error calling tool {name}: {e}")
-        import json
-
         error_result = {"success": False, "error": f"Tool execution error: {str(e)}"}
         return [TextContent(type="text", text=json.dumps(error_result, indent=2))]
 
@@ -211,25 +237,25 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
 # Resource definitions
 RESOURCES = [
     Resource(
-        uri="genesis://docs/*",
+        uri=cast(AnyUrl, "genesis://docs/*"),
         name="Project Documentation",
         description="Access project documentation files",
         mimeType="text/markdown",
     ),
     Resource(
-        uri="genesis://structure",
+        uri=cast(AnyUrl, "genesis://structure"),
         name="Project Structure",
         description="Project directory structure as a tree",
         mimeType="text/plain",
     ),
     Resource(
-        uri="genesis://git/status",
+        uri=cast(AnyUrl, "genesis://git/status"),
         name="Git Status",
         description="Current Git repository status",
         mimeType="text/plain",
     ),
     Resource(
-        uri="genesis://config",
+        uri=cast(AnyUrl, "genesis://config"),
         name="Configuration",
         description="Project configuration information",
         mimeType="text/plain",
@@ -257,9 +283,6 @@ async def read_resource(uri: Any) -> str:
     try:
         uri_str = str(uri)
         logger.info(f"Resource requested: {uri_str}")
-
-        import json
-
         # Route to appropriate resource handler
         if uri_str.startswith("genesis://docs/"):
             doc_path = uri_str.replace("genesis://docs/", "")
@@ -280,13 +303,12 @@ async def read_resource(uri: Any) -> str:
 
     except Exception as e:
         logger.error(f"Error reading resource {uri}: {e}")
-        import json
-
         return json.dumps({"success": False, "error": f"Resource error: {str(e)}"}, indent=2)
 
 
 async def main():
     """Main entry point for the MCP server."""
+    _ensure_utf8_stdio()
     # Setup logging
     setup_logging(config)
 

@@ -42,6 +42,12 @@ Remote endpoints:
 - `GET /healthz` — returns `OK` (basic reachability check)
 - `POST /mcp` — MCP endpoint used by ChatGPT connector
 
+Tunnel/proxy note (important):
+
+- Some tunnels/proxies may return `200 text/event-stream` for `GET /sse` but still buffer the body so
+  the first SSE bytes never reach the client.
+- In that case, prefer `POST /mcp` (application/json) for ChatGPT linking and diagnostics.
+
 > Note: The server also registers some compatibility aliases (e.g. `/` and `/sse`) for POST in
 > certain connector setups, but you should prefer `/mcp`.
 
@@ -56,6 +62,20 @@ End-to-end checklist (ChatGPT “Connect to MCP”):
 1. Verify reachability: open `https://<your-hostname>/healthz` and confirm it returns `OK`.
 2. In ChatGPT, connect to the MCP server using the base URL and ensure it targets `POST /mcp`.
 3. Run a simple tool call (e.g. `ping_tool`) to confirm the full request/response flow.
+
+Quick PowerShell probe (recommended):
+
+```powershell
+$u = 'https://<your-host>/mcp'
+$body = @{ jsonrpc='2.0'; id=1; method='tools/call'; params=@{ name='ping'; arguments=@{} } } | ConvertTo-Json -Depth 10 -Compress
+(Invoke-WebRequest -Uri $u -Method Post -ContentType 'application/json' -Body $body -UseBasicParsing).Content
+```
+
+If ChatGPT shows “Connected” but the assistant cannot call tools/actions:
+
+- Verify `POST /mcp` works with `tools/list` and `tools/call` outside ChatGPT first.
+- Check server logs while triggering a tool call in ChatGPT.
+  - If no `POST /mcp` requests arrive, the current chat/model/mode is likely not permitted to call MCP tools.
 
 You should see:
 

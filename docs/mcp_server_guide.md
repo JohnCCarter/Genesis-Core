@@ -131,8 +131,19 @@ The server will start automatically and connect to your AI assistant.
 Genesis-Core also includes an HTTP entrypoint intended for ChatGPT “Connect to MCP” (remote MCP).
 
 - Entrypoint: `python -m mcp_server.remote_server`
-- Transport: Streamable HTTP
-- MCP endpoint: `POST /mcp`
+- Recommended endpoint (ChatGPT): `POST /mcp`
+
+Transport notes:
+
+- **Preferred (when available):** MCP “Streamable HTTP” via FastMCP.
+- **Compatibility fallback (used in some dev environments):** a minimal JSON-RPC handler on `POST /mcp`
+  for `initialize`, `tools/list`, `tools/call`, `ping`.
+
+Why this matters:
+
+- Some tunnel/proxy setups (notably Cloudflare _quick tunnel_) can return `200 text/event-stream` for `GET /sse`
+  but still buffer the body so the first SSE event never reaches the client.
+- In those cases, using `POST /mcp` (application/json) is more reliable than relying on long-lived SSE.
 
 Recommended environment variables:
 
@@ -158,6 +169,10 @@ first thing to verify.
 - If you are using a tunnel/reverse-proxy, ensure it forwards to the same `PORT` the server binds.
 - If you see 421 / Host header issues behind a proxy, ensure the ASGI server is started with proxy
   headers enabled (remote_server uses uvicorn with `proxy_headers=True`).
+
+If you are troubleshooting a tunnel:
+
+- Prefer verifying `POST /mcp` works end-to-end before spending time on SSE flush behavior.
 
 ## Available Tools
 
@@ -501,6 +516,32 @@ What files have been modified?
 3. Try running the server manually to see error messages
 4. Restart VSCode
 
+### ChatGPT shows “Connected” but no tools/actions are callable
+
+**Symptom:** ChatGPT UI indicates the MCP server is connected, but the assistant says it cannot call tools like
+`read_file`, `search_code`, `get_project_structure`, etc.
+
+**What this usually means:**
+
+- The current ChatGPT mode/conversation is not permitted to call external tools (platform/model limitation), **or**
+- The connector is connected globally, but the specific chat/GPT you are using is not actually using it.
+
+**Checks (fast):**
+
+1. Verify the server exposes tools over HTTP by calling `POST /mcp` with `tools/list`.
+
+- If this works outside ChatGPT, the server is healthy.
+
+2. Check your server logs when ChatGPT tries to use the connector.
+
+- If you see no incoming `POST /mcp` at all, ChatGPT is not attempting tool calls in that chat.
+
+3. Ensure you are using a ChatGPT experience that supports tool calling for MCP (some models/modes do not).
+4. Ensure the chat is using the correct GPT/app that has the MCP connection enabled.
+
+If ChatGPT can connect but not call tools in your environment, consider exposing minimal **resources** next
+(e.g. a small set of read-only resources) as an alternative integration path.
+
 ### Path Access Denied
 
 **Problem:** Tool returns "Path is outside project root" or "Path matches blocked pattern"
@@ -590,7 +631,6 @@ The server implements multiple layers of path validation:
 
 1. **Project Root Restriction**: All paths must be within the project directory
 2. **Blocked Patterns**: Certain directories and files are blocked:
-
    - `.git` (Git internals)
    - `__pycache__` (Python cache)
    - `*.pyc` (Compiled Python)

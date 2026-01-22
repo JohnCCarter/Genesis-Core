@@ -158,4 +158,7 @@ python scripts/optimizer.py summarize run_20251023_141747 --top 5
 
 - “values/problem” i YAML: lägg till `type` på bladnoder (se ovan).
 - `DuplicatedStudyError`: använd unika `study_name`/`storage` (t.ex. tidsstämpel) eller `resume: true`.
+- "Optuna resume blocked: study signature mismatch": du försöker återuppta fel studie/DB eller så har config/kod/runtime/mode-flaggor drivit.
+  Åtgärd: använd nytt `study_name` och/eller ny `storage` (eller verifiera att du pekar på rätt DB). För legacy-studier kan du backfilla
+  `genesis_resume_signature` via `GENESIS_BACKFILL_STUDY_SIGNATURE=1`.
 - 0 trades / långsam utforskning: bredda sökrymden för entry/toleranser/override (se `tBTCUSD_1h_optuna_fib_tune.yaml`), sänk constraints vid behov för tidig signaljakt.

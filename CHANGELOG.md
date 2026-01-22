@@ -8,6 +8,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 
 ## [Unreleased]
 
+### Changed - MCP remote interoperability (2026-01-19)
+
+- Remote MCP (`mcp_server.remote_server`) now supports a compatibility path on `POST /mcp` that handles
+  JSON-RPC `initialize`, `tools/list`, `tools/call`, and `ping` without relying on a long-lived SSE stream.
+  This improves reliability through tunnels/proxies where `GET /sse` can be buffered (e.g. Cloudflare quick tunnels).
+
 ### Changed - Security & CI hardening (2026-01-09)
 
 - Sanitized client-facing error payloads to avoid leaking exception details (CodeQL: information exposure through an exception).
@@ -121,13 +127,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 **Enhanced Modules:**
 
 - `src/core/backtest/position_tracker.py` - Partial exit infrastructure
-
   - Added `Position.current_size`, `initial_size`, `partial_exits` tracking
   - Added `Trade.is_partial`, `exit_reason`, `remaining_size`, `position_id`
   - New `partial_close()` method for fractional position closing
 
 - `src/core/backtest/engine.py` - HTF exit integration
-
   - Integrated `HTFFibonacciExitEngine` with configurable thresholds
   - Added HTF context extraction from feature pipeline
   - Fixed trade serialization (added exit metadata)
@@ -202,7 +206,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 ### Added - Phase-6a
 
 - **Systematic Indicator Validation Framework:**
-
   - `scripts/validate_all_indicators.py` - Permanent quality gate
   - Validates per-sample vs vectorized implementations
   - Cross-validates with TA-Lib (if available)
@@ -223,7 +226,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 ### Added - Phase-6c
 
 - **Regime-Aware ML Calibration:**
-
   - `scripts/analyze_calibration_by_regime.py` - Analyze ML calibration per regime
   - `scripts/calibrate_by_regime.py` - Regime-specific Platt scaling
   - `src/core/strategy/regime_unified.py` - Unified regime detection (EMA-based)
@@ -238,13 +240,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 ### Changed - Phase-6
 
 - **Pipeline Integration:**
-
   - `src/core/strategy/evaluate.py` - Now detects regime BEFORE ML prediction
   - `src/core/strategy/prob_model.py` - Applies regime-specific calibration parameters
   - `src/core/strategy/features.py` - Refactored to v15 (5 non-redundant features)
 
 - **Configuration:**
-
   - `config/runtime.json` - Added regime-specific probability thresholds
   - `config/models/tBTCUSD_1h.json` - Updated with regime calibration parameters
 
@@ -256,7 +256,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 ### Fixed - Phase-6
 
 - **Critical Bugs:**
-
   - Bollinger Bands `ddof` parameter (1.21% systematic error) 🚨
   - Unicode encoding errors in Windows console output
   - JSON serialization errors (numpy.bool\_, numpy.int32)
@@ -312,27 +311,23 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 ### Added - Phase-5
 
 - **Centralized Feature Loading:**
-
   - `src/core/utils/data_loader.py` - Single source for feature loading
   - Smart format selection (Feather first for speed, fallback to Parquet)
   - Robust error handling with helpful messages
 
 - **Champion Decision Matrix:**
-
   - `src/core/ml/decision_matrix.py` - Systematic model comparison
   - `ModelMetrics` dataclass for model performance encapsulation
   - Flexible weighting system (balanced, conservative, aggressive, quality)
   - Normalized scoring and ranking
 
 - **Visualization:**
-
   - `src/core/ml/visualization.py` - Visual model comparison
   - Radar charts for multi-metric comparison
   - Comprehensive summary plots
   - Integration with `scripts/select_champion.py`
 
 - **Advanced Validation Infrastructure:**
-
   - `scripts/validate_purged_wfcv.py` - Purged Walk-Forward Cross-Validation
   - `src/core/utils/provenance.py` - Deterministic hashing for reproducibility
   - `scripts/monitor_feature_drift.py` - PSI and K-S drift detection
@@ -340,12 +335,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
   - `scripts/validate_regime_gates.py` - Regime-specific performance gates
 
 - **Configuration:**
-
   - `config/validation_config.json` - Centralized validation parameters
   - `config/champion_weights.json` - Weight profiles for model selection
 
 - **IC Metrics & Analysis:**
-
   - `scripts/calculate_ic_metrics.py` - Information Coefficient analysis
   - `scripts/analyze_quintiles.py` - Quintile analysis for predictions
   - `scripts/fdr_correction.py` - False Discovery Rate correction
@@ -353,7 +346,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
   - `scripts/calculate_partial_ic.py` - Feature synergy detection
 
 - **Feature Engineering:**
-
   - `src/core/indicators/macd.py` - MACD indicator
   - Expanded feature set to 15 features (reactivated FVG, added classical indicators)
 
@@ -365,13 +357,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 ### Changed - Phase-5
 
 - **Updated Scripts:**
-
   - All ML scripts now use `core.utils.data_loader.load_features()`
   - `scripts/select_champion.py` - Integrated ChampionDecisionMatrix & visualization
   - `scripts/train_model.py` - Added `--use-holdout` and `--save-provenance` flags
 
 - **Test Updates:**
-
   - Updated all tests to mock both `scripts.train_model.Path` and `core.utils.data_loader.Path`
   - Updated `split_data_chronological` tests for new `holdout_indices` return value
 

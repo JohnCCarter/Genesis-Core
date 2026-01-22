@@ -1,0 +1,89 @@
+description: "Optuna resume minismoke (start) — sqlite storage"
+
+meta:
+  symbol: tBTCUSD
+  timeframe: 1h
+  snapshot_id: snap_tBTCUSD_2024-12-03_2024-12-11_v1
+  warmup_bars: 150
+  runs:
+    strategy: optuna
+
+    # Keep it short and fast.
+    use_sample_range: true
+    sample_start: "2024-12-03"
+    sample_end: "2024-12-11"
+
+    # Start a fresh sqlite-backed study.
+    resume: false
+    max_trials: 2
+    max_concurrent: 1
+
+    promotion:
+      enabled: false
+
+    optuna:
+      study_name: "optuna_resume_minismoke_20260121"
+      storage: "sqlite:///results/hparam_search/storage/optuna_resume_minismoke_20260121.db"
+      n_jobs: 1
+      timeout_seconds: 1800
+
+      pruner:
+        type: "none"
+
+      sampler:
+        type: "random"
+        kwargs:
+          seed: 42
+
+constraints:
+  # Mild constraints: the goal is to create a couple of COMPLETE trials.
+  min_trades: 1
+  min_profit_factor: 0.50
+  max_max_dd: 0.80
+  include_scoring_failures: false
+
+parameters:
+  thresholds:
+    entry_conf_overall:
+      type: float
+      low: 0.15
+      high: 0.30
+      step: 0.01
+
+    min_edge:
+      type: fixed
+      value: 0.01
+
+  # Disable MTF/Fib gates to reduce risk of zero-trade runs in a tiny smoke window.
+  multi_timeframe:
+    use_htf_block:
+      type: fixed
+      value: false
+    allow_ltf_override:
+      type: fixed
+      value: false
+
+  htf_fib:
+    entry:
+      enabled:
+        type: fixed
+        value: false
+
+  ltf_fib:
+    entry:
+      enabled:
+        type: fixed
+        value: false
+
+  # Required section for preflight; keeping it empty means we don't alter sizing logic.
+  risk: {}
+
+  # Required section for preflight; fixed to champion values.
+  exit:
+    exit_conf_threshold:
+      type: fixed
+      value: 0.46
+
+    max_hold_bars:
+      type: fixed
+      value: 12

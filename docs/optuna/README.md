@@ -11,13 +11,11 @@ Dokumentationen täcker Optuna-integration, optimeringsworkflow, problemlösning
 ### Genombrott och Problemlösning
 
 - **BREAKTHROUGH_CONFIG_20251113.md** - Identifierad signal_adaptation ATR-zon flaskhals
-
   - Systematisk isoleringstestning
   - Genombrott-konfiguration (176 trades, PF 1.32, +8.41%)
   - Nyckelinsikter om signal_adaptation som primär entry-kontroll
 
 - **OPTUNA_FIX_20251113.md** - Optuna-problem och lösning
-
   - Upptäckt att signal_adaptation var fixerat till för höga trösklar
   - Uppdaterad Optuna-spec med grid-varianter
   - Bugfix i engine.py för exit-konfigladdning
@@ -33,7 +31,6 @@ Dokumentationen täcker Optuna-integration, optimeringsworkflow, problemlösning
 - **OPTUNA_HARDENING_SPEC.md** - Hardening-spec (penalties, two-phase objective, pruning, trace-krav)
 
 - **docs/daily_summaries/daily_summary_2025-12-18.md** - Explore→Validate (tvåstegsflöde) + promotion-säkerhet + resultat
-
   - Konfig: `config/optimizer/tBTCUSD_1h_optuna_phase3_fine_v7_smoke_explore_validate.yaml`
   - Runs: `results/hparam_search/run_20251218_ev_30t_nopromo`, `results/hparam_search/run_20251218_ev_60t_top5_nopromo`
 
@@ -45,7 +42,6 @@ Dokumentationen täcker Optuna-integration, optimeringsworkflow, problemlösning
 ### Testing och Validering
 
 - **PARITY_TEST_RESULTS_20251114.md** - Parity-test mellan backtest och Optuna
-
   - Verifiering av 100% paritet
   - Resultat: 99%+ paritet (små skillnader p.g.a. numeriska avrundningar)
   - Score-beräkningar och jämförelser
@@ -86,6 +82,7 @@ $Env:GENESIS_FAST_WINDOW='1'
 $Env:GENESIS_PRECOMPUTE_FEATURES='1'
 $Env:GENESIS_MAX_CONCURRENT='2'
 $Env:GENESIS_RANDOM_SEED='42'
+$Env:GENESIS_FAST_HASH='0'
 $Env:OPTUNA_MAX_DUPLICATE_STREAK='200'
 
 python -m core.optimizer.runner config/optimizer/<config>.yaml
@@ -94,7 +91,29 @@ python -m core.optimizer.runner config/optimizer/<config>.yaml
 Not:
 
 - Canonical mode (1/1) är SSOT för Optuna/Validate/champion-beslut.
+- För canonical jämförbarhet: håll `GENESIS_FAST_HASH=0` (FAST_HASH är en debug/perf-knapp som kan ändra utfall).
 - Om du behöver debugga 0/0, gör det explicit och jämför inte resultaten med Optuna.
+
+### Resume-säkerhet (Optuna)
+
+Runnern sätter en Optuna `user_attr` med nyckeln `genesis_resume_signature` på studien.
+Den används för att **fail-fast** om du råkar försöka återuppta fel studie/DB eller om config/kod/runtime/mode-flaggor drivit.
+
+- Om signaturen skiljer sig: körningen stoppar med "Optuna resume blocked: study signature mismatch".
+- Det är OK att förlänga en lång körning genom att ändra stop-policy (`meta.runs.optuna.end_at` / `timeout_seconds`).
+  Dessa fält ingår inte i signaturen.
+- Legacy-studier kan sakna signature: då varnar runnern. Om du är säker på att du har rätt study/DB/config kan du backfilla med
+  `GENESIS_BACKFILL_STUDY_SIGNATURE=1` (engångsåtgärd).
+- Om du medvetet vill ignorera mismatch (ej rekommenderat för canonical beslut): sätt `GENESIS_ALLOW_STUDY_RESUME_MISMATCH=1`.
+
+## Ops-notis: AI-assistans via remote MCP
+
+Om du använder ChatGPT “Connect to MCP” för att assistera Optuna-arbete:
+
+- Använd `POST /mcp` (application/json) som primär endpoint (inte `/sse`).
+  - I vissa tunnel/proxy-setups kan `GET /sse` returnera `200 text/event-stream` men ändå buffra body så att inga bytes når klienten.
+- Håll `GENESIS_MCP_REMOTE_SAFE=1` (read-only) som default när endpointen exponeras utanför localhost.
+  Aktivera write/exec endast i kontrollerad miljö.
 
 ## Viktiga Insikter
 

@@ -13,7 +13,7 @@ Usage (quick):
         ensure_storage, make_sampler, set_global_seeds,
         NoDupeGuard, no_dupe_callback,
         ask_tell_optimize, param_signature,
-        env_fingerprint, dataframe_sha1
+        env_fingerprint
     )
 
     import optuna
@@ -441,23 +441,6 @@ def env_fingerprint(extra: dict[str, Any] | None = None) -> dict[str, Any]:
     if extra:
         fp.update(extra)
     return fp
-
-
-def dataframe_sha1(df) -> str:
-    """Compute a quick SHA256 over a pandas DataFrame index+values (float-safe)."""
-    # Lazy import to avoid pandas hard dep
-    import pandas as pd  # type: ignore
-
-    if not isinstance(df, pd.DataFrame):
-        raise TypeError("dataframe_sha1 expects a pandas.DataFrame")
-    # Ensure stable bytes: use numpy view
-    arr = np.ascontiguousarray(df.to_numpy(dtype=float))
-    h = hashlib.sha256()
-    h.update(arr.tobytes())
-    # Index and columns add to identity
-    h.update(pd.util.hash_pandas_object(df.index, index=True).values.tobytes())
-    h.update(pd.util.hash_pandas_object(df.columns, index=True).values.tobytes())
-    return h.hexdigest()
 
 
 # --- Convenience: attach metadata to a running trial ------------------------

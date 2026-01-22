@@ -2,13 +2,11 @@ from __future__ import annotations
 
 import json
 import os
-from datetime import datetime
 from typing import Any
 
 from jsonschema import Draft7Validator
 
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), "schema_v1.json")
-AUDIT_LOG = os.path.join(os.getcwd(), "logs", "config_audit.log")
 
 with open(SCHEMA_PATH, encoding="utf-8") as f:
     _SCHEMA = json.load(f)
@@ -32,20 +30,3 @@ def diff_config(old: dict[str, Any], new: dict[str, Any]) -> list[dict]:
         if ov != nv:
             changes.append({"key": k, "old": ov, "new": nv})
     return changes
-
-
-def append_audit(changes: list[dict], user: str = "system") -> None:
-    if not changes:
-        return
-    os.makedirs(os.path.join(os.getcwd(), "logs"), exist_ok=True)
-    line = json.dumps(
-        {
-            "ts": datetime.utcnow().isoformat(),
-            "user": user,
-            "changes": changes,
-            "schema": "v1",
-        },
-        ensure_ascii=False,
-    )
-    with open(AUDIT_LOG, "a", encoding="utf-8") as f:
-        f.write(line + "\n")

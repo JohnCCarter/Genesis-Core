@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from core.ml.label_cache import load_cached_labels
 from core.ml.labeling import align_features_with_labels
 from core.strategy.regime import detect_regime_from_candles
-from src.core.utils import get_candles_path
+from core.utils import get_candles_path
 
 
 def load_model(model_path: Path) -> dict:

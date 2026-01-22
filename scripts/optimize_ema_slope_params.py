@@ -11,15 +11,15 @@ import numpy as np
 import pandas as pd
 from scipy.stats import spearmanr
 
-# Add project root to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Add src to path
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from src.core.indicators.fibonacci import (
+from core.indicators.fibonacci import (
     FibonacciConfig,
     calculate_fibonacci_features_vectorized,
 )
-from src.core.indicators.vectorized import calculate_ema_vectorized
-from src.core.utils import get_candles_path
+from core.indicators.vectorized import calculate_ema_vectorized
+from core.utils import get_candles_path
 
 
 def calculate_forward_returns(close_prices: pd.Series, horizon: int = 10) -> pd.Series:

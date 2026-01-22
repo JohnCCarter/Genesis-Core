@@ -24,7 +24,7 @@ from core.ml.evaluation import generate_evaluation_report
 from core.ml.labeling import align_features_with_labels, generate_labels
 from core.ml.visualization import create_champion_summary, create_radar_chart
 from core.strategy.prob_model import predict_proba_for
-from src.core.utils import get_candles_path
+from core.utils import get_candles_path
 
 
 def load_baseline_model(symbol: str, timeframe: str) -> dict:

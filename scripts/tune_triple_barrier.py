@@ -31,8 +31,8 @@ from core.ml.labeling import (
     align_features_with_labels,
     generate_adaptive_triple_barrier_labels,
 )
+from core.utils import get_candles_path
 from core.utils.data_loader import load_features
-from src.core.utils import get_candles_path
 
 # Try Numba for 2000× speedup
 try:

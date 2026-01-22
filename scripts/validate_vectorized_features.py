@@ -20,7 +20,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from core.indicators.vectorized import calculate_all_features_vectorized
 from core.strategy.features_asof import extract_features_backtest
-from src.core.utils import get_candles_path
+from core.utils import get_candles_path
 
 
 def compute_per_sample_features(df: pd.DataFrame, max_samples: int = 100) -> pd.DataFrame:

@@ -16,13 +16,6 @@ class MetricThresholds:
     max_max_dd: float = 0.20  # Ökat för korta perioder
 
 
-def _extract_metric(name: str, container: dict[str, Any], default: float | None = None) -> float:
-    value = container.get(name, default)
-    if value is None:
-        raise KeyError(f"Missing metric '{name}' in summary")
-    return float(value)
-
-
 def _resolve_score_version(score_version: str | None) -> str:
     raw = (score_version or os.environ.get("GENESIS_SCORE_VERSION") or "v1").strip().lower()
     if raw in {"1", "v1", "legacy", "default"}:

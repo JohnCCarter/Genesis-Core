@@ -62,6 +62,7 @@ Added new `exit` section:
 ```
 
 **Defaults**:
+
 - **Max hold**: 20 bars (aligns with validation horizon ~2.5 days on 6h)
 - **Stop-loss**: 2% (risk management)
 - **Take-profit**: 5% (2.5:1 reward/risk ratio)
@@ -75,16 +76,19 @@ Added new `exit` section:
 #### New Methods:
 
 **`close_position_with_reason(price, timestamp, reason)`**:
+
 - Closes position with explicit reason tracking
 - Returns completed `Trade` object
 - Reasons: "SL", "TP", "TIME", "CONF_DROP", "REGIME_CHANGE", etc.
 
 **`get_unrealized_pnl_pct(current_price)`**:
+
 - Calculates current P&L% for open position
 - Used by exit logic to check SL/TP thresholds
 
-**`get_bars_held(current_timestamp)`**:
-- Stub method (BacktestEngine tracks this directly)
+**Bars held tracking**:
+
+- BacktestEngine tracks bars-held directly via `entry_bar`/`current_bar` (PositionTracker has no method for this)
 
 #### Updated Methods:
 
@@ -182,6 +186,7 @@ for i in range(len(self.candles_df)):
 **Trigger**: Position loses 2% or more
 
 **Example**:
+
 - LONG @ $100,000, current price $98,000 → -2% → EXIT (SL)
 - SHORT @ $100,000, current price $102,000 → -2% → EXIT (SL)
 
@@ -194,6 +199,7 @@ for i in range(len(self.candles_df)):
 **Trigger**: Position gains 5% or more
 
 **Example**:
+
 - LONG @ $100,000, current price $105,000 → +5% → EXIT (TP)
 - SHORT @ $100,000, current price $95,000 → +5% → EXIT (TP)
 
@@ -206,6 +212,7 @@ for i in range(len(self.candles_df)):
 **Trigger**: Position held for 20+ bars
 
 **Example**:
+
 - 6h timeframe: 20 bars = 5 days
 - 1h timeframe: 20 bars = 20 hours
 - 30m timeframe: 20 bars = 10 hours
@@ -213,6 +220,7 @@ for i in range(len(self.candles_df)):
 **Purpose**: Align with validation horizon (10-bar forward returns), prevent indefinite holds
 
 **Why 20 bars?**
+
 - Validation uses 10-bar horizon
 - 20 bars = 2× validation horizon (safety margin)
 - Prevents 11-month holds like we saw in 6h backtest!
@@ -224,6 +232,7 @@ for i in range(len(self.candles_df)):
 **Trigger**: Model confidence drops below 0.45
 
 **Example**:
+
 - Entry: conf = 0.57 → Open LONG
 - Bar +5: conf = 0.52 → Keep open
 - Bar +8: conf = 0.44 → EXIT (CONF_DROP)
@@ -231,6 +240,7 @@ for i in range(len(self.candles_df)):
 **Purpose**: Exit when model becomes uncertain
 
 **Why 0.45?**
+
 - Entry threshold: 0.55
 - Exit threshold: 0.45
 - Creates 0.10 hysteresis band (prevents flip-flopping)
@@ -242,6 +252,7 @@ for i in range(len(self.candles_df)):
 **Trigger**: Position side misaligned with regime
 
 **Examples**:
+
 - SHORT in BULL regime → EXIT (wrong direction)
 - LONG in BEAR regime → EXIT (wrong direction)
 - SHORT in BEAR → Keep open ✅
@@ -250,6 +261,7 @@ for i in range(len(self.candles_df)):
 **Purpose**: Prevent trading against dominant trend
 
 **Why important?**
+
 - 6h model showed SHORT entry in strong bull market
 - Position held 11 months, -36% loss
 - This would have exited within days!
@@ -260,22 +272,22 @@ for i in range(len(self.candles_df)):
 
 ### Before Exit Logic:
 
-| Issue | Impact |
-|-------|--------|
-| 11-month hold period | -36% loss on single trade |
-| 1 trade in 360 days | No statistical significance |
-| No stop-loss | Unlimited downside risk |
-| No take-profit | Missed profit opportunities |
+| Issue                | Impact                      |
+| -------------------- | --------------------------- |
+| 11-month hold period | -36% loss on single trade   |
+| 1 trade in 360 days  | No statistical significance |
+| No stop-loss         | Unlimited downside risk     |
+| No take-profit       | Missed profit opportunities |
 
 ### After Exit Logic (Expected):
 
-| Improvement | Impact |
-|-------------|--------|
+| Improvement         | Impact                         |
+| ------------------- | ------------------------------ |
 | Max 5-day hold (6h) | Aligns with validation horizon |
-| 20-40 trades/year | Statistical significance |
-| 2% stop-loss | Limited downside risk |
-| 5% take-profit | Captures profits |
-| Regime-aware | Avoids counter-trend disasters |
+| 20-40 trades/year   | Statistical significance       |
+| 2% stop-loss        | Limited downside risk          |
+| 5% take-profit      | Captures profits               |
+| Regime-aware        | Avoids counter-trend disasters |
 
 ---
 
@@ -336,6 +348,7 @@ Bar 204: Stop-Loss
 ## Testing Status
 
 ### Implemented ✅:
+
 1. Exit schema in RuntimeConfig
 2. Exit config in runtime.json
 3. PositionTracker methods
@@ -343,6 +356,7 @@ Bar 204: Stop-Loss
 5. Debug script for testing
 
 ### Testing 🔄:
+
 1. Running backtest on 30m (in progress)
 2. Will test 1h, 6h next
 3. Comparing results with validation metrics
@@ -350,10 +364,10 @@ Bar 204: Stop-Loss
 ### Expected Results:
 
 | Timeframe | Trades (before) | Trades (after) | Avg Hold (before) | Avg Hold (after) |
-|-----------|-----------------|----------------|-------------------|------------------|
-| 30m | 1 | 20-40 | Unknown | ~10 hours |
-| 1h | 3 | 20-40 | Unknown | ~20 hours |
-| 6h | 1 | 20-40 | **330 days!** | ~5 days |
+| --------- | --------------- | -------------- | ----------------- | ---------------- |
+| 30m       | 1               | 20-40          | Unknown           | ~10 hours        |
+| 1h        | 3               | 20-40          | Unknown           | ~20 hours        |
+| 6h        | 1               | 20-40          | **330 days!**     | ~5 days          |
 
 ---
 
@@ -363,8 +377,8 @@ Bar 204: Stop-Loss
 
 ```json
 {
-  "max_hold_bars": 10,  // Shorter hold period
-  "exit_conf_threshold": 0.50  // Higher threshold (exit sooner)
+  "max_hold_bars": 10, // Shorter hold period
+  "exit_conf_threshold": 0.5 // Higher threshold (exit sooner)
 }
 ```
 
@@ -372,8 +386,8 @@ Bar 204: Stop-Loss
 
 ```json
 {
-  "stop_loss_pct": 0.015,  // Tighter stop (1.5%)
-  "take_profit_pct": 0.06   // Higher target (6%)
+  "stop_loss_pct": 0.015, // Tighter stop (1.5%)
+  "take_profit_pct": 0.06 // Higher target (6%)
 }
 ```
 
@@ -381,9 +395,9 @@ Bar 204: Stop-Loss
 
 ```json
 {
-  "max_hold_bars": 50,  // Longer holds
-  "regime_aware_exits": true,  // Exit on regime change
-  "trailing_stop_enabled": true,  // Let winners run
+  "max_hold_bars": 50, // Longer holds
+  "regime_aware_exits": true, // Exit on regime change
+  "trailing_stop_enabled": true, // Let winners run
   "trailing_stop_pct": 0.02
 }
 ```
@@ -437,13 +451,13 @@ Bar 204: Stop-Loss
 
 ## Files Changed
 
-| File | Changes | Lines Added |
-|------|---------|-------------|
-| `src/core/config/schema.py` | Added ExitLogic class | +25 |
-| `src/core/backtest/position_tracker.py` | Added close_position_with_reason(), get_unrealized_pnl_pct() | +80 |
-| `src/core/backtest/engine.py` | Added _check_exit_conditions(), updated main loop | +90 |
-| `config/runtime.json` | Added exit config | +9 |
-| `scripts/debug_backtest_exit_logic.py` | New debug script | +60 |
+| File                                    | Changes                                                      | Lines Added |
+| --------------------------------------- | ------------------------------------------------------------ | ----------- |
+| `src/core/config/schema.py`             | Added ExitLogic class                                        | +25         |
+| `src/core/backtest/position_tracker.py` | Added close_position_with_reason(), get_unrealized_pnl_pct() | +80         |
+| `src/core/backtest/engine.py`           | Added \_check_exit_conditions(), updated main loop           | +90         |
+| `config/runtime.json`                   | Added exit config                                            | +9          |
+| `scripts/debug_backtest_exit_logic.py`  | New debug script                                             | +60         |
 
 **Total**: 5 files, ~264 lines added
 

@@ -448,79 +448,6 @@ class HTFFibonacciExitEngine:
 
         return None
 
-    def _is_near_level(self, price: float, level: float, atr: float) -> bool:
-        """Check if price is near Fib level (ATR-normalized)."""
-        if not level or atr <= 0:
-            return False
-        distance_atr = abs(price - level) / atr
-        return distance_atr <= self.fib_threshold_atr
-
-    def _validate_fib_window(self, htf_levels: dict[float, float]) -> tuple[bool, str]:
-        """
-        Validate that Fibonacci levels are within reasonable bounds.
-
-        Returns:
-            (is_valid, reason) - True if valid, False with reason if not
-        """
-        if not htf_levels:
-            return False, "NO_LEVELS"
-
-        # Get swing high/low from levels
-        # Note: levels dict contains calculated Fib levels, not the raw swing bounds
-        # We can infer bounds from the levels themselves
-        level_values = [v for v in htf_levels.values() if v is not None]
-        if not level_values:
-            return False, "INVALID_LEVELS"
-
-        # Basic sanity check: all levels should be positive and reasonable
-        if any(v <= 0 for v in level_values):
-            return False, "NEGATIVE_LEVELS"
-
-        return True, "OK"
-
-    def _fib_reachability_flag(
-        self, price: float, htf_levels: dict[float, float], atr: float, pad_atr: float = 8.0
-    ) -> tuple[bool, str, float]:
-        """
-        Check if ANY Fib level is within reachable distance.
-
-        Args:
-            price: Current price
-            htf_levels: Fibonacci levels dict
-            atr: Current ATR
-            pad_atr: Maximum distance in ATR units (default 8.0)
-
-        Returns:
-            (is_reachable, reason, nearest_distance_atr)
-        """
-        if atr <= 0:
-            return False, "INVALID_ATR", 999.0
-
-        # Calculate envelope around current price
-        envelope_lo = price - (pad_atr * atr)
-        envelope_hi = price + (pad_atr * atr)
-
-        # Check if any level is within envelope
-        reachable_levels = []
-        all_distances = []
-
-        for level_key, level_price in htf_levels.items():
-            if level_price is None:
-                continue
-
-            distance_atr = abs(price - level_price) / atr
-            all_distances.append(distance_atr)
-
-            if envelope_lo <= level_price <= envelope_hi:
-                reachable_levels.append((level_key, distance_atr))
-
-        nearest_distance = min(all_distances) if all_distances else 999.0
-
-        if reachable_levels:
-            return True, "REACHABLE", nearest_distance
-        else:
-            return False, "LEVELS_OUT_OF_REACH", nearest_distance
-
     def _adaptive_thresholds(
         self, price: float, htf_levels: dict[float, float], atr: float
     ) -> tuple[float, float]:
@@ -597,11 +524,6 @@ class HTFFibonacciExitEngine:
             trail_stop = ema50 + (self.trail_atr_multiplier * atr)
 
         return [ExitAction(action="TRAIL_UPDATE", stop_price=trail_stop, reason="FALLBACK_TRAIL")]
-
-    def cleanup_position(self, position_id: str):
-        """Clean up tracking data when position is closed."""
-        if position_id in self.triggered_exits:
-            del self.triggered_exits[position_id]
 
     def _initialize_position_exit_levels(
         self, position: Position, htf_fib_context: dict[str, Any], indicators: dict[str, float]

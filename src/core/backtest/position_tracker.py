@@ -461,13 +461,6 @@ class PositionTracker:
         original_notional = self.position.initial_size * self.position.entry_price
         return (total_pnl / original_notional) * 100 if original_notional > 0 else 0.0
 
-    def get_bars_held(self, current_timestamp: datetime) -> int:
-        """Get number of bars position has been held (approximate, assumes 1 bar per update)."""
-        if self.position is None:
-            return 0
-        # Note: This is approximate - actual bars held tracked by BacktestEngine
-        return 0  # BacktestEngine will track this
-
     def _close_position_legacy(self, price: float, timestamp: datetime):
         """LEGACY: Close the current position (kept for compatibility)."""
         if self.position is None:

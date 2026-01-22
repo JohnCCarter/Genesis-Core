@@ -85,12 +85,6 @@ class HTFFibonacciExitEngine:
         if position_size == 0:
             return ExitSignal("HOLD")
 
-        # 1. Helpers
-        def is_near(target, threshold_atr=self.fib_threshold_atr):
-            if target is None:
-                return False
-            return abs(current_price - target) <= (current_atr * threshold_atr)
-
         # 2. Extract HTF Levels
         # Use get() and float() conversion to ensure safety from numpy/pandas types
         try:

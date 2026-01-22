@@ -19,7 +19,7 @@ class HtfFibContext(BaseModel):
     timestamp: str | None = None
 
     @validator("levels", pre=True)
-    def _coerce_levels(cls, value: object) -> dict[float, float]:
+    def _coerce_levels(_cls, value: object) -> dict[float, float]:
         """Tillåt både str- och float-nycklar och filtrera bort ogiltiga värden."""
         out: dict[float, float] = {}
         if isinstance(value, dict):

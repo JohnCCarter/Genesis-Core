@@ -158,16 +158,3 @@ def predict_proba_for(
         },
     }
     return probas, meta_out
-
-
-class ProbModel:
-    def __init__(self, symbol: str, timeframe: str):
-        self.symbol = symbol
-        self.timeframe = timeframe
-
-    def predict_proba(self, features: dict[str, float]) -> dict[str, float]:
-        probas, _meta = predict_proba_for(self.symbol, self.timeframe, features)
-        return probas
-
-    def predict_meta(self, features: dict[str, float]) -> tuple[dict[str, float], dict[str, Any]]:
-        return predict_proba_for(self.symbol, self.timeframe, features)

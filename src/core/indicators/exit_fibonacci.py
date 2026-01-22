@@ -11,21 +11,6 @@ Detta ger symmetrisk logik där samma Fibonacci-psykologi används
 för både entry och exit, men med olika swing-referenser.
 """
 
-from dataclasses import dataclass
-from datetime import datetime
-
-
-@dataclass
-class SwingContext:
-    """Swing context för exit-beräkningar."""
-
-    swing_high: float
-    swing_low: float
-    swing_timestamp: datetime | None = None
-    bars_since_swing: int = 0
-    is_valid: bool = True
-    validation_reason: str = "OK"
-
 
 def calculate_exit_fibonacci_levels(
     side: str, swing_high: float, swing_low: float, levels: list[float] | None = None

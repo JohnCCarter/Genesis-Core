@@ -1457,10 +1457,6 @@ class BacktestEngine:
             )
             return
 
-        # Get indicators for validation
-        features = result.get("features", {})
-        features.get("atr", 100.0)
-
         # Skip swing validation at entry - we'll use frozen context approach
         # The swing will be validated when actually used for exits
 

@@ -17,6 +17,11 @@ def test_no_imports_of_core_strategy_features_module() -> None:
         re.compile(r"^\s*import\s+core\.strategy\.features\b", re.MULTILINE),
     ]
 
+    # Explicit allow-list: this test imports the legacy module intentionally to enforce delegation.
+    allow_list = {
+        "tests/test_dead_code_tripwires.py",
+    }
+
     offenders: list[str] = []
     for rel_dir in ("src", "scripts", "tests"):
         base = repo_root / rel_dir
@@ -27,12 +32,16 @@ def test_no_imports_of_core_strategy_features_module() -> None:
             if path.name == Path(__file__).name:
                 continue
 
+            rel_path = str(path.relative_to(repo_root)).replace("\\", "/")
+            if rel_path in allow_list:
+                continue
+
             try:
                 text = path.read_text(encoding="utf-8")
             except UnicodeDecodeError:
                 text = path.read_text(encoding="utf-8", errors="ignore")
 
             if any(p.search(text) for p in patterns):
-                offenders.append(str(path.relative_to(repo_root)))
+                offenders.append(rel_path)
 
     assert offenders == [], "Legacy-import hittad: \n" + "\n".join(offenders)

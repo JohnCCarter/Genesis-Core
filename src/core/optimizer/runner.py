@@ -312,8 +312,34 @@ def _compute_optuna_resume_signature(
     optuna_cfg.pop("timeout_seconds", None)
     optuna_cfg.pop("end_at", None)
 
+    # Avoid path-dependent signatures:
+    # - Use repo-relative path when possible (stable across machines/checkout locations).
+    # - Always include a content hash for the config file.
+    repo_root = PROJECT_ROOT.resolve()
+    try:
+        config_path_abs = config_path.resolve()
+    except Exception:
+        config_path_abs = config_path
+
+    config_path_external = True
+    config_path_rel_posix: str | None = None
+    try:
+        config_path_rel_posix = config_path_abs.relative_to(repo_root).as_posix()
+        config_path_external = False
+    except ValueError:
+        config_path_external = True
+
+    try:
+        config_sha256 = hashlib.sha256(config_path_abs.read_bytes()).hexdigest()
+    except OSError as exc:
+        raise ValueError(
+            f"Could not read config for resume signature: {config_path_abs} ({exc})"
+        ) from exc
+
     payload = {
-        "config_path": str(config_path),
+        "config_path_rel_posix": config_path_rel_posix,
+        "config_path_external": config_path_external,
+        "config_sha256": config_sha256,
         "git_commit": str(git_commit or "unknown"),
         "runtime_version": runtime_version,
         "meta": {
@@ -347,6 +373,10 @@ def _compute_optuna_resume_signature(
         "fingerprint": fingerprint,
         "git_commit": payload["git_commit"],
         "runtime_version": runtime_version,
+        "config_path_rel_posix": config_path_rel_posix,
+        "config_path_external": config_path_external,
+        "config_path_abs": str(config_path_abs),
+        "config_sha256": config_sha256,
         "snapshot_id": payload["meta"]["snapshot_id"],
         "sample_start": payload["runs"]["sample_start"],
         "sample_end": payload["runs"]["sample_end"],
@@ -418,7 +448,9 @@ def _verify_or_set_optuna_study_score_version(study: Any, expected_score_version
     except Exception:
         existing_v = None
 
-    if existing_v and str(existing_v).strip().lower() != expected_score_version:
+    expected_norm = str(expected_score_version or "").strip().lower()
+    existing_norm = str(existing_v or "").strip().lower()
+    if existing_norm and expected_norm and existing_norm != expected_norm:
         msg = (
             "Optuna resume blocked: score_version mismatch. "
             f"expected={expected_score_version} existing={existing_v}. "
@@ -437,9 +469,9 @@ def _verify_or_set_optuna_study_score_version(study: Any, expected_score_version
 
     try:
         study.set_user_attr("genesis_score_version", expected_score_version)
-    except Exception:
+    except Exception as exc:
         # Best-effort only; mocked studies in unit tests may not persist attrs.
-        pass
+        logger.debug("Could not set genesis_score_version on Optuna study: %s", exc, exc_info=True)
 
 
 def _trial_key(params: dict[str, Any]) -> str:
@@ -747,7 +779,7 @@ def _ensure_run_metadata(
 ) -> None:
     meta_path = run_dir / "run_meta.json"
 
-    repo_root = Path(__file__).resolve().parents[3]
+    repo_root = PROJECT_ROOT
     try:
         config_rel = str(config_path.relative_to(repo_root))
     except ValueError:
@@ -758,7 +790,12 @@ def _ensure_run_metadata(
     if meta_path.exists():
         try:
             existing = json.loads(meta_path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
+        except (OSError, json.JSONDecodeError) as exc:
+            logger.warning(
+                "Failed to read existing run_meta.json at %s, treating as empty metadata: %s",
+                meta_path,
+                exc,
+            )
             existing = {}
         if not isinstance(existing, dict):
             existing = {}
@@ -814,7 +851,7 @@ def _ensure_run_metadata(
         try:
             completed = subprocess.run(  # nosec B603
                 [git_executable, "rev-parse", "HEAD"],
-                cwd=Path(__file__).resolve().parents[3],
+                cwd=PROJECT_ROOT,
                 capture_output=True,
                 text=True,
                 check=True,
@@ -1029,6 +1066,8 @@ def _exec_backtest(
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         cwd=str(cwd),
         env=env,
     ) as proc:
@@ -1806,6 +1845,11 @@ def run_trial(
     # Pin scoring version across subprocess/direct execution for deterministic comparability.
     base_env["GENESIS_SCORE_VERSION"] = score_version
 
+    # Windows/stdio hardening: force UTF-8 for the backtest subprocess so its stdout/stderr can
+    # be captured and/or written without UnicodeEncodeError/DecodeError surprises.
+    base_env.setdefault("PYTHONUTF8", "1")
+    base_env.setdefault("PYTHONIOENCODING", "utf-8")
+
     # Enable HTF exits for this trial when config requests it (unless user already set it).
     if config_file is not None and "GENESIS_HTF_EXITS" not in base_env:
         try:
@@ -1860,9 +1904,7 @@ def run_trial(
                 results_path = output_dir / f"{trial.symbol}_{trial.timeframe}_{trial_id}.json"
                 _atomic_write_text(results_path, _json_dumps(results_dict))
         else:
-            returncode, log = _exec_backtest(
-                cmd, cwd=Path(__file__).resolve().parents[3], env=base_env, log_path=log_file
-            )
+            returncode, log = _exec_backtest(cmd, cwd=PROJECT_ROOT, env=base_env, log_path=log_file)
 
         last_log_output = log
         attempt_duration = time.perf_counter() - attempt_started
@@ -2434,10 +2476,12 @@ def _run_optuna(
     if isinstance(pruner_cfg, str):
         pruner_cfg = {"name": pruner_cfg}
 
-    heartbeat_interval = study_config.get("heartbeat_interval")
-    heartbeat_grace = study_config.get("heartbeat_grace_period")
-    heartbeat_interval = int(heartbeat_interval) if heartbeat_interval else None
-    heartbeat_grace = int(heartbeat_grace) if heartbeat_grace else None
+    heartbeat_interval_raw = study_config.get("heartbeat_interval")
+    heartbeat_grace_raw = study_config.get("heartbeat_grace_period")
+    heartbeat_interval = (
+        int(heartbeat_interval_raw) if heartbeat_interval_raw not in (None, "") else None
+    )
+    heartbeat_grace = int(heartbeat_grace_raw) if heartbeat_grace_raw not in (None, "") else None
 
     # Default heartbeats when using storage (reduces risk of zombie RUNNING on resume).
     if storage and heartbeat_interval is None:
@@ -2466,8 +2510,12 @@ def _run_optuna(
         total_trials_attempted += 1
         try:
             trial.set_user_attr("score_version", score_version)
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug(
+                "Failed to set Optuna trial user attribute 'score_version': %s",
+                exc,
+                exc_info=True,
+            )
         parameters = _suggest_parameters(trial, parameters_spec)
         trial_number = trial.number + 1
         key = _trial_key(parameters)
@@ -3098,9 +3146,7 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
         concurrency = max(1, int(runs_cfg.get("max_concurrent", 1)))
     max_attempts = max(1, int(runs_cfg.get("max_attempts", 2)))
     run_id_resolved = _create_run_id(run_id)
-    run_dir = (
-        Path(__file__).resolve().parents[3] / "results" / "hparam_search" / run_id_resolved
-    ).resolve()
+    run_dir = (PROJECT_ROOT / "results" / "hparam_search" / run_id_resolved).resolve()
 
     existing_trials = _load_existing_trials(run_dir) if allow_resume and run_dir.exists() else {}
     seen_param_keys: set[str] = set()

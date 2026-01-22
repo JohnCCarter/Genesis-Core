@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 
@@ -87,3 +89,97 @@ def test_missing_signature_can_be_backfilled(monkeypatch):
     )
 
     assert study.user_attrs.get("genesis_resume_signature", {}).get("fingerprint") == "abc"
+
+
+def test_compute_resume_signature_hashes_repo_relative_path(monkeypatch, tmp_path):
+    """Fingerprint should be stable across machines if the repo-relative config path is the same."""
+
+    from core.optimizer import runner
+
+    config = {
+        "meta": {
+            "symbol": "tBTCUSD",
+            "timeframe": "1h",
+            "snapshot_id": "snap",
+            "warmup_bars": 150,
+            "runs": {
+                "use_sample_range": True,
+                "sample_start": "2024-01-01",
+                "sample_end": "2024-12-31",
+                "optuna": {"timeout_seconds": 123, "end_at": "2026-01-01"},
+            },
+        },
+        "constraints": {},
+        "parameters": {},
+    }
+
+    # Simulate two different machine checkouts with the same relative config path.
+    repo_a = tmp_path / "repo_a"
+    repo_b = tmp_path / "repo_b"
+
+    cfg_rel = Path("config/optimizer/test.yaml")
+    cfg_a = repo_a / cfg_rel
+    cfg_b = repo_b / cfg_rel
+
+    cfg_a.parent.mkdir(parents=True, exist_ok=True)
+    cfg_b.parent.mkdir(parents=True, exist_ok=True)
+    cfg_a.write_text("# test", encoding="utf-8")
+    cfg_b.write_text("# test", encoding="utf-8")
+
+    monkeypatch.setattr(runner, "PROJECT_ROOT", repo_a)
+    sig_a = runner._compute_optuna_resume_signature(
+        config=config, config_path=cfg_a, git_commit="abc", runtime_version=123
+    )
+
+    monkeypatch.setattr(runner, "PROJECT_ROOT", repo_b)
+    sig_b = runner._compute_optuna_resume_signature(
+        config=config, config_path=cfg_b, git_commit="abc", runtime_version=123
+    )
+
+    assert sig_a["config_path_rel_posix"] == "config/optimizer/test.yaml"
+    assert sig_b["config_path_rel_posix"] == "config/optimizer/test.yaml"
+    assert sig_a["fingerprint"] == sig_b["fingerprint"]
+    assert sig_a["config_path_abs"] != sig_b["config_path_abs"]
+
+
+def test_compute_resume_signature_external_config_is_strict(monkeypatch, tmp_path):
+    """If config_path is outside the repo, the abs path should be part of the fingerprint."""
+
+    from core.optimizer import runner
+
+    config = {
+        "meta": {
+            "symbol": "tBTCUSD",
+            "timeframe": "1h",
+            "snapshot_id": "snap",
+            "warmup_bars": 150,
+            "runs": {
+                "use_sample_range": True,
+                "sample_start": "2024-01-01",
+                "sample_end": "2024-12-31",
+                "optuna": {},
+            },
+        },
+        "constraints": {},
+        "parameters": {},
+    }
+
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(runner, "PROJECT_ROOT", repo_root)
+
+    external_a = tmp_path / "external_a.yaml"
+    external_b = tmp_path / "external_b.yaml"
+    external_a.write_text("# ext a", encoding="utf-8")
+    external_b.write_text("# ext b", encoding="utf-8")
+
+    sig_a = runner._compute_optuna_resume_signature(
+        config=config, config_path=external_a, git_commit="abc", runtime_version=123
+    )
+    sig_b = runner._compute_optuna_resume_signature(
+        config=config, config_path=external_b, git_commit="abc", runtime_version=123
+    )
+
+    assert sig_a["config_path_external"] is True
+    assert sig_b["config_path_external"] is True
+    assert sig_a["fingerprint"] != sig_b["fingerprint"]

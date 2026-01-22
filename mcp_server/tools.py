@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 import shutil
 import subprocess
 import sys
@@ -372,7 +373,15 @@ async def get_git_status(config: MCPConfig) -> dict[str, Any]:
         if not git_exe:
             return {"success": False, "error": "git executable not found on PATH"}
 
-        timeout_s = min(5, int(config.security.execution_timeout_seconds or 5))
+        # Git can be surprisingly slow on Windows (cold start / AV scanning). Allow a
+        # slightly higher timeout while keeping an upper bound to maintain responsiveness.
+        timeout_s = int(config.security.execution_timeout_seconds or 5)
+        timeout_s = max(1, min(15, timeout_s))
+
+        git_env = dict(os.environ)
+        # Avoid any interactive prompts that can hang in stdio-hosted environments.
+        git_env.setdefault("GIT_TERMINAL_PROMPT", "0")
+        git_env.setdefault("GCM_INTERACTIVE", "Never")
 
         def _git(args: list[str], *, timeout: int = timeout_s) -> subprocess.CompletedProcess[str]:
             return subprocess.run(
@@ -381,13 +390,21 @@ async def get_git_status(config: MCPConfig) -> dict[str, Any]:
                 text=True,
                 check=False,
                 timeout=timeout,
+                stdin=subprocess.DEVNULL,
+                env=git_env,
             )
 
-        inside = _git(["rev-parse", "--is-inside-work-tree"])
+        try:
+            inside = _git(["rev-parse", "--is-inside-work-tree"])
+        except subprocess.TimeoutExpired:
+            return {"success": False, "error": "git rev-parse timed out"}
         if inside.returncode != 0 or inside.stdout.strip().lower() != "true":
             return {"success": False, "error": "Not a git repository"}
 
-        branch_res = _git(["rev-parse", "--abbrev-ref", "HEAD"])
+        try:
+            branch_res = _git(["rev-parse", "--abbrev-ref", "HEAD"])
+        except subprocess.TimeoutExpired:
+            return {"success": False, "error": "git branch query timed out"}
         current_branch = branch_res.stdout.strip() or "HEAD"
 
         untracked_included = True
@@ -425,8 +442,12 @@ async def get_git_status(config: MCPConfig) -> dict[str, Any]:
             if y != " ":
                 modified_files.append(path)
 
-        remote_res = _git(["config", "--get", "remote.origin.url"])
-        remote_url = remote_res.stdout.strip() or None
+        remote_url: str | None
+        try:
+            remote_res = _git(["config", "--get", "remote.origin.url"])
+            remote_url = remote_res.stdout.strip() or None
+        except subprocess.TimeoutExpired:
+            remote_url = None
 
         is_dirty = bool(modified_files or staged_files or untracked_files)
 

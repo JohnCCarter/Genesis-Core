@@ -112,6 +112,21 @@ async def test_get_git_status_resource_fallback_timeout(monkeypatch, config):
 
 
 @pytest.mark.asyncio
+async def test_get_git_status_resource_rev_parse_timeout(monkeypatch, config):
+    """If `git rev-parse` is slow/hangs, we should fail fast with a clear error."""
+
+    def fake_run(*args, **kwargs):  # type: ignore[no-untyped-def]
+        cmd = args[0] if args else []
+        raise subprocess.TimeoutExpired(cmd=cmd, timeout=kwargs.get("timeout"))
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    result = await get_git_status_resource(config)
+    assert result["success"] is False
+    assert "rev-parse" in result["error"]
+
+
+@pytest.mark.asyncio
 async def test_get_config_resource(config):
     """Test getting configuration resource."""
     result = await get_config_resource(config)

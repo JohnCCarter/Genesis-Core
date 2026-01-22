@@ -131,6 +131,21 @@ async def test_get_git_status_tool_fallback_timeout(monkeypatch, config):
 
 
 @pytest.mark.asyncio
+async def test_get_git_status_tool_rev_parse_timeout(monkeypatch, config):
+    """Tool should return a clean error if git rev-parse times out."""
+
+    def fake_run(*args, **kwargs):  # type: ignore[no-untyped-def]
+        cmd = args[0] if args else []
+        raise subprocess.TimeoutExpired(cmd=cmd, timeout=kwargs.get("timeout"))
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    result = await get_git_status(config)
+    assert result["success"] is False
+    assert "rev-parse" in result["error"]
+
+
+@pytest.mark.asyncio
 async def test_file_operations_workflow(config):
     """Test file operations workflow."""
 

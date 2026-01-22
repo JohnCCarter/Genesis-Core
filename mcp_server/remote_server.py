@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import importlib
+import json
+import logging
 import os
 from typing import TYPE_CHECKING, Any
 
@@ -111,6 +113,11 @@ else:
 
 # Reuse same config as stdio server
 CONFIG = load_config()
+
+# JSON-RPC 2.0 standard error codes.
+JSONRPC_INVALID_PARAMS = -32602
+JSONRPC_METHOD_NOT_FOUND = -32601
+JSONRPC_INTERNAL_ERROR = -32603
 
 # -----------------------------------------------------------------------------
 # Native Genesis-Core tools
@@ -322,8 +329,6 @@ def _build_sse_app():
     - Tool surface is gated by SAFE_REMOTE_MODE / ULTRA_SAFE_REMOTE_MODE.
     """
 
-    import json
-    import logging
     from urllib.parse import parse_qs
     from uuid import uuid4
 
@@ -573,11 +578,6 @@ def _build_sse_app():
         req_id = root.id
         params = root.params or {}
 
-        # JSON-RPC 2.0 standard error codes.
-        _INVALID_PARAMS = -32602
-        _METHOD_NOT_FOUND = -32601
-        _INTERNAL_ERROR = -32603
-
         def _err(code: int, message: str) -> dict[str, Any]:
             return {"jsonrpc": "2.0", "id": req_id, "error": {"code": code, "message": message}}
 
@@ -613,9 +613,9 @@ def _build_sse_app():
                 tool_name = str(params.get("name", ""))
                 arguments = params.get("arguments") or {}
                 if not isinstance(arguments, dict):
-                    return await JSONResponse(_err(_INVALID_PARAMS, "arguments must be an object"))(
-                        scope, receive, send
-                    )
+                    return await JSONResponse(
+                        _err(JSONRPC_INVALID_PARAMS, "arguments must be an object")
+                    )(scope, receive, send)
 
                 # Reuse the same tool dispatch as the legacy path.
                 out = await call_tool(tool_name, arguments)
@@ -643,11 +643,11 @@ def _build_sse_app():
                     scope, receive, send
                 )
 
-            return await JSONResponse(_err(_METHOD_NOT_FOUND, f"Unknown method: {method}"))(
+            return await JSONResponse(_err(JSONRPC_METHOD_NOT_FOUND, f"Unknown method: {method}"))(
                 scope, receive, send
             )
         except Exception as e:
-            return await JSONResponse(_err(_INTERNAL_ERROR, str(e)))(scope, receive, send)
+            return await JSONResponse(_err(JSONRPC_INTERNAL_ERROR, str(e)))(scope, receive, send)
 
     healthz_resp = PlainTextResponse("OK")
     root_resp = PlainTextResponse(
@@ -781,8 +781,17 @@ def _build_asgi_app():
     mcp_endpoint = getattr(mcp_route, "endpoint", None)
     if mcp_endpoint is not None:
         app.add_route("/", mcp_endpoint, methods=["POST"])
-        app.add_route("/sse", mcp_endpoint, methods=["POST"])
-        app.add_route("/sse/", mcp_endpoint, methods=["POST"])
+        sse_alias_methods = ["POST"]
+        try:
+            route_methods = getattr(mcp_route, "methods", None)
+            if route_methods and "GET" in route_methods:
+                sse_alias_methods = ["GET", "POST"]
+        except Exception:
+            # Best-effort only; if we can't introspect methods, keep POST alias.
+            pass
+
+        app.add_route("/sse", mcp_endpoint, methods=sse_alias_methods)
+        app.add_route("/sse/", mcp_endpoint, methods=sse_alias_methods)
 
     async def healthz(request):
         return PlainTextResponse("OK")
@@ -802,8 +811,6 @@ def _build_asgi_app():
 # -----------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    import logging
-
     import uvicorn
 
     # Enable debug logging for troubleshooting connection drops

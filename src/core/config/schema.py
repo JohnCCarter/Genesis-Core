@@ -18,7 +18,7 @@ class SignalAdaptationZone(RuntimeSection):
 
     @field_validator("regime_proba", mode="before")
     @classmethod
-    def _validate_regime(cls, v: Any) -> dict[str, float] | float:
+    def _validate_regime(_cls, v: Any) -> dict[str, float] | float:
         if v is None:
             return {}
         if isinstance(v, float | int):
@@ -45,7 +45,7 @@ class Thresholds(RuntimeSection):
 
     @field_validator("regime_proba", mode="before")
     @classmethod
-    def _validate_regime(cls, v: Any) -> dict[str, float] | float:
+    def _validate_regime(_cls, v: Any) -> dict[str, float] | float:
         if v is None:
             return {"balanced": 0.58}
         if isinstance(v, float | int):
@@ -70,7 +70,7 @@ class Risk(RuntimeSection):
 
     @field_validator("risk_map")
     @classmethod
-    def _validate_risk_map(cls, v: Any) -> list[tuple[float, float]]:
+    def _validate_risk_map(_cls, v: Any) -> list[tuple[float, float]]:
         out: list[tuple[float, float]] = []
         for item in v or []:
             thr, sz = (float(item[0]), float(item[1]))
@@ -141,14 +141,14 @@ class FeaturePercentileRange(RuntimeSection):
 
     @model_validator(mode="before")
     @classmethod
-    def _from_sequence(cls, value: Any) -> dict[str, float] | Any:
+    def _from_sequence(_cls, value: Any) -> dict[str, float] | Any:
         if isinstance(value, list | tuple) and len(value) == 2:
             return {"low": value[0], "high": value[1]}
         return value
 
     @field_validator("low", "high")
     @classmethod
-    def _coerce(cls, v: Any) -> float:
+    def _coerce(_cls, v: Any) -> float:
         return float(v)
 
 
@@ -180,7 +180,7 @@ class FibEntryConfig(RuntimeSection):
 
     @field_validator("missing_policy", mode="before")
     @classmethod
-    def _validate_missing_policy(cls, v: Any) -> str:
+    def _validate_missing_policy(_cls, v: Any) -> str:
         if v is None:
             return "pass"
         policy = str(v).lower().strip()
@@ -190,7 +190,7 @@ class FibEntryConfig(RuntimeSection):
 
     @field_validator("targets", "long_target_levels", "short_target_levels", mode="before")
     @classmethod
-    def _coerce_float_list(cls, v: Any) -> list[float] | None:
+    def _coerce_float_list(_cls, v: Any) -> list[float] | None:
         if v is None:
             return None
         if isinstance(v, list | tuple):

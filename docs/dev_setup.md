@@ -22,6 +22,13 @@ Viktigt:
   `scripts/run_backtest.py` och `core.pipeline.GenesisPipeline` hanterar detta och markerar
   icke-canonical mode explicit via `GENESIS_MODE_EXPLICIT=1`.
 
+Obs (scripts + src-layout):
+
+- Scripts ska lägga `<repo>/src` på `sys.path` och sedan importera via `core.*`.
+- Undvik `src.core.*` i aktiva scripts; detta fångas av guardrail-testet
+  `tests/test_no_src_core_imports_in_scripts.py`.
+  (Historiska scripts under `scripts/archive/**` är medvetet undantagna tills vidare.)
+
 ## 2) Kör API lokalt (FastAPI)
 
 API:t körs som ASGI-app: `core.server:app`.

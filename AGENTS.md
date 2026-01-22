@@ -1,20 +1,17 @@
 # README for AI Agents (Local Development)
 
-## Last update: 2026-01-23
+## Last update: 2026-01-22
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
 
-## 1. Deliverables (latest highlights: 2026-01-23)
+## 1. Deliverables (latest highlights: 2026-01-22)
 
-- **DOCS/MAINT: PATH_MISMATCH QUARANTINE + ARCHITECTURE_VISUAL (2026-01-23)**: Dokumenterade MCP/arkitektur visuellt och quarantinade orphaned champions-assets för att eliminera PATH_MISMATCH-risk.
-  - **Quarantine (archive-first, ingen delete)**: flyttade `src/config/strategy/champions/*` → `archive/_orphaned/src_config_strategy_champions/*`.
-  - **detect-secrets baseline**: uppdaterade `.secrets.baseline` så filpaths matchar nya quarantined-lokationen.
-  - **Docs**: lade till `docs/ARCHITECTURE_VISUAL.md` (evidence-based, Mermaid-diagram + ghost-map + safe clean-up checklist).
-  - **Import-säkerhet**: gjorde `src/core/strategy/e2e.py` import-säker (sidoeffekter flyttade till `main()` + `__main__`-guard).
-  - **Verifiering**:
-    - `pytest -q tests/test_dead_code_tripwires.py tests/test_walk_forward.py tests/test_risk_guards.py tests/test_risk_pnl.py` (grönt; endast förväntad DeprecationWarning).
-    - Pre-commit hooks (black/ruff/detect-secrets) passerade vid commit.
-  - **Commit**: `0b9368f`.
+- **SCRIPTS IMPORT-HYGIEN: `core.*` + guardrail (2026-01-22)**: Normaliserade aktiva scripts till repo:ts src-layout-konvention (lägger `<repo>/src` på `sys.path` och importerar `core.*`), samt lade en AST-guardrail som stoppar regress.
+  - **Implementation**:
+    - Uppdaterade imports i flera aktiva scripts: `src.core.*` → `core.*` (praktiskt: exkluderar `scripts/archive/**`).
+    - Fixade bootstrap i `scripts/optimize_ema_slope_params.py` (använder nu `<repo>/src` på `sys.path`).
+    - Nytt test: `tests/test_no_src_core_imports_in_scripts.py` (AST-baserad; skippar `scripts/archive|_archive|archive_local/**`).
+  - **Verification**: `pytest` + `ruff check` grönt.
 
 - **OPTUNA RESUME-SAFETY: STUDY SIGNATURE GUARDRAILS (2026-01-20)**: Låste ner risken att en lång Optuna-körning råkar återupptas mot fel studie/DB eller med tyst drift i config/kod/runtime/mode-flaggor.
   - **Implementation**: `src/core/optimizer/runner.py` sätter/verifierar Optuna `user_attr` `genesis_resume_signature`.
@@ -481,6 +478,12 @@ Champion file: `config/strategy/champions/tBTCUSD_1h.json`
 - Återanvänd runbooken för fler symbol/timeframes (om/innan fler modeller läggs till) och håll rapporterna evidence-based.
 - Håll audit-verktyg och regressiontester “gröna” via full QA-körning (black/ruff/bandit/pytest/pre-commit) före merge.
 - Om MCP/ops-diffar inte hör ihop med trading/audit: dela upp i separata commits/PR för enklare granskning.
+
+7. **Scripts-hygien (housekeeping)**:
+
+- Standardisera kvarvarande `sys.path`-bootstraps i `scripts/**` när det är värt det (många historiska varianter finns).
+- Fortsätt att exkludera `scripts/archive/**` från guardrails tills en dedikerad “legacy port” görs.
+- Nästa separata tech-fix att plocka upp: timeframe-alias/fallback `1M` vs `1mo` + regressiontest.
 
 ## 9. Recent history (Phase-7a/7b, 21 Oct 2025)
 

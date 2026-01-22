@@ -32,7 +32,10 @@ def test_evaluate_pipeline_regime_uses_global_index_for_precomputed_ema50(monkey
         }
         return feats, meta
 
-    monkeypatch.setattr(ev, "extract_features", fake_extract_features)
+    def fake_extract_features_backtest(*_a, **_k):
+        return fake_extract_features(*_a, **_k)
+
+    monkeypatch.setattr(ev, "extract_features_backtest", fake_extract_features_backtest)
 
     def fake_predict_proba_for(_symbol, _timeframe, _feats, *, regime=None):
         captured["regime"] = str(regime) if regime is not None else None

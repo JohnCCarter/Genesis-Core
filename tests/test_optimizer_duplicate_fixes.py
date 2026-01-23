@@ -207,6 +207,97 @@ def test_duplicate_tracking_in_objective(tmp_path: Path):
 
 
 @pytest.mark.skipif(not OPTUNA_AVAILABLE, reason="Optuna not installed")
+def test_duplicate_guard_precheck_marks_skipped_and_records_payload(tmp_path: Path) -> None:
+    """Tripwire: dedup guard precheck should mark the trial and emit a skipped payload.
+
+    This exercises the `duplicate_guard_precheck` early-return path, which is otherwise
+    easy to miss because many unit tests disable the SQLite-backed guard.
+    """
+
+    run_dir = tmp_path / "test_run"
+    run_dir.mkdir(parents=True)
+
+    def mock_make_trial(idx: int, params: dict[str, Any], **kwargs) -> dict[str, Any]:
+        return {
+            "trial_id": f"trial_{idx:03d}",
+            "parameters": params,
+            "score": {"score": 1.0, "metrics": {"num_trades": 1}, "hard_failures": []},
+            "constraints": {"ok": True},
+        }
+
+    study_config = {
+        "storage": None,
+        "study_name": "test_study",
+        "sampler": {"name": "random"},
+        "pruner": {"name": "none"},
+        "dedup_guard_enabled": True,
+    }
+
+    parameters_spec = {"foo": {"type": "fixed", "value": 1}}
+
+    objective_calls: list[tuple[Any, float | None, Exception | None]] = []
+
+    study = MagicMock()
+    study.study_name = "test_study"
+    study.trials = []
+    study.best_trials = []
+
+    def mock_optimize(objective, **kwargs):
+        for i in range(2):
+            trial = MagicMock()
+            trial.number = i
+            trial._trial_id = 100 + i
+            trial.user_attrs = {}
+
+            def make_setter(attrs_dict):
+                def setter(k, v):
+                    attrs_dict[k] = v
+
+                return setter
+
+            trial.set_user_attr = make_setter(trial.user_attrs)
+
+            try:
+                score = objective(trial)
+                objective_calls.append((trial, score, None))
+            except Exception as exc:
+                objective_calls.append((trial, None, exc))
+
+    study.optimize = mock_optimize
+
+    with patch("core.optimizer.runner._create_optuna_study", return_value=study):
+        results = _run_optuna(
+            study_config=study_config,
+            parameters_spec=parameters_spec,
+            make_trial=mock_make_trial,
+            run_dir=run_dir,
+            run_id="test_run",
+            existing_trials={},
+            max_trials=2,
+            concurrency=1,
+            allow_resume=False,
+        )
+
+    assert len(objective_calls) == 2
+    assert len(results) == 2
+
+    # First trial should be a normal payload
+    assert results[0].get("skipped") is not True
+
+    # Second trial should be precheck-skipped + heavily penalized
+    duplicate_trial = objective_calls[1][0]
+    assert duplicate_trial.user_attrs.get("duplicate") is True
+    assert duplicate_trial.user_attrs.get("skipped") is True
+    assert duplicate_trial.user_attrs.get("penalized_duplicate") is True
+    assert duplicate_trial.user_attrs.get("penalized_duplicate_precheck") is True
+    assert objective_calls[1][1] == pytest.approx(-1e6)
+
+    assert results[1].get("skipped") is True
+    assert results[1].get("reason") == "duplicate_guard_precheck"
+    assert results[1].get("trial_id") == "trial_002"
+
+
+@pytest.mark.skipif(not OPTUNA_AVAILABLE, reason="Optuna not installed")
 def test_pruned_payload_is_marked_pruned(tmp_path: Path):
     """A payload with error='pruned' should translate to an Optuna TrialPruned."""
 

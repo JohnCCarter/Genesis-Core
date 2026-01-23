@@ -1,10 +1,20 @@
 # README for AI Agents (Local Development)
 
-## Last update: 2026-01-20
+## Last update: 2026-01-23
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
 
-## 1. Deliverables (latest highlights: 2026-01-20)
+## 1. Deliverables (latest highlights: 2026-01-23)
+
+- **DOCS/MAINT: PATH_MISMATCH QUARANTINE + ARCHITECTURE_VISUAL (2026-01-23)**: Dokumenterade MCP/arkitektur visuellt och quarantinade orphaned champions-assets för att eliminera PATH_MISMATCH-risk.
+  - **Quarantine (archive-first, ingen delete)**: flyttade `src/config/strategy/champions/*` → `archive/_orphaned/src_config_strategy_champions/*`.
+  - **detect-secrets baseline**: uppdaterade `.secrets.baseline` så filpaths matchar nya quarantined-lokationen.
+  - **Docs**: lade till `docs/ARCHITECTURE_VISUAL.md` (evidence-based, Mermaid-diagram + ghost-map + safe clean-up checklist).
+  - **Import-säkerhet**: gjorde `src/core/strategy/e2e.py` import-säker (sidoeffekter flyttade till `main()` + `__main__`-guard).
+  - **Verifiering**:
+    - `pytest -q tests/test_dead_code_tripwires.py tests/test_walk_forward.py tests/test_risk_guards.py tests/test_risk_pnl.py` (grönt; endast förväntad DeprecationWarning).
+    - Pre-commit hooks (black/ruff/detect-secrets) passerade vid commit.
+  - **Commit**: `0b9368f`.
 
 - **OPTUNA RESUME-SAFETY: STUDY SIGNATURE GUARDRAILS (2026-01-20)**: Låste ner risken att en lång Optuna-körning råkar återupptas mot fel studie/DB eller med tyst drift i config/kod/runtime/mode-flaggor.
   - **Implementation**: `src/core/optimizer/runner.py` sätter/verifierar Optuna `user_attr` `genesis_resume_signature`.

@@ -8,6 +8,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 
 ## [Unreleased]
 
+### Changed - Docs & maintenance (2026-01-23)
+
+- Quarantined orphaned champion assets to eliminate a PATH_MISMATCH risk:
+  - Moved legacy champions from `src/config/strategy/champions/` to `archive/_orphaned/src_config_strategy_champions/` (no deletion).
+  - Updated `.secrets.baseline` file paths accordingly.
+- Added an evidence-based architecture overview document: `docs/ARCHITECTURE_VISUAL.md`.
+- Made `src/core/strategy/e2e.py` import-safe (no side effects on import; runnable via `__main__`).
+
 ### Changed - MCP remote interoperability (2026-01-19)
 
 - Remote MCP (`mcp_server.remote_server`) now supports a compatibility path on `POST /mcp` that handles

@@ -53,23 +53,42 @@ class TestSwingDetectionPerformance:
 
     def test_numpy_array_conversion_benefit(self):
         """Test that numpy array access is faster than pandas iloc."""
-        # Create test data
-        test_series = pd.Series(range(1000))
+        # Create test data.
+        # NOTE: Use a sufficiently large workload to avoid flaky results caused by
+        # coarse timer resolution (e.g., Windows) or sub-microsecond timings.
+        test_series = pd.Series(range(100_000))
         test_array = test_series.values
 
-        # Measure pandas iloc access
-        start = time.time()
-        total_pandas = 0
-        for i in range(100):
-            total_pandas += test_series.iloc[i]
-        pandas_time = time.time() - start
+        def _timeit(fn, *, repeats: int = 5) -> float:
+            best = float("inf")
+            for _ in range(repeats):
+                start_ns = time.perf_counter_ns()
+                fn()
+                elapsed = (time.perf_counter_ns() - start_ns) / 1e9
+                best = min(best, elapsed)
+            return float(best)
 
-        # Measure numpy array access
-        start = time.time()
-        total_numpy = 0
-        for i in range(100):
-            total_numpy += test_array[i]
-        numpy_time = time.time() - start
+        n = 50_000
+
+        def _pandas_sum() -> int:
+            total = 0
+            for i in range(n):
+                total += int(test_series.iloc[i])
+            return total
+
+        def _numpy_sum() -> int:
+            total = 0
+            for i in range(n):
+                total += int(test_array[i])
+            return total
+
+        # Warm-up (reduce first-run effects).
+        total_pandas = _pandas_sum()
+        total_numpy = _numpy_sum()
+
+        # Measure best-of-N to reduce jitter.
+        pandas_time = _timeit(_pandas_sum)
+        numpy_time = _timeit(_numpy_sum)
 
         # Numpy should be significantly faster (at least 5x) under measurable timings.
         # Om tiderna är extremt små (timerupplösning), acceptera att numpy inte är långsammare.

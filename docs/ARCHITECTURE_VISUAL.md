@@ -538,11 +538,7 @@ Algorithm (static; “import reachability”, not dynamic call reachability):
 2. Parse each module with `ast` and collect `import` / `from ... import ...` edges to other `core.*` modules.
 3. Seed reachable set from the entrypoint modules (and the `core.*` modules imported by those entrypoint files).
 4. Compute transitive closure (DFS/BFS) of the `core.*` import graph.
-5. Classify unreachable modules:
-   - `DEPRECATED_PATH` if file contains `DEPRECATED` marker (ex: `src/core/strategy/features.py:18-25`)
-
-- `TEST_ONLY` if imported only from `tests/` (including `src.core.*` namespace imports; examples in evidence table below)
-- `NEVER_IMPORTED` otherwise (negative evidence via `rg` commands)
+5. Classify unreachable modules: `DEPRECATED_PATH` if file contains `DEPRECATED` marker (ex: `src/core/strategy/features.py:18-25`); `TEST_ONLY` if imported only from `tests/` (including `src.core.*` namespace imports; examples in evidence table below); `NEVER_IMPORTED` otherwise (negative evidence via `rg` commands).
 
 Output snapshot (this workspace; AST import-graph reachability):
 

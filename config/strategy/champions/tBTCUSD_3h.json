@@ -53,11 +53,42 @@
     },
     "risk": {
       "risk_map": [
-        [0.6, 0.02],
-        [0.7, 0.03],
-        [0.8, 0.04],
-        [0.9, 0.05]
-      ]
+        [
+          0.6,
+          0.02
+        ],
+        [
+          0.7,
+          0.03
+        ],
+        [
+          0.8,
+          0.04
+        ],
+        [
+          0.9,
+          0.05
+        ]
+      ],
+      "regime_size_multipliers": {
+        "bull": 1.0,
+        "bear": 0.7,
+        "ranging": 0.5,
+        "balanced": 0.8
+      },
+      "htf_regime_size_multipliers": {
+        "bull": 1.0,
+        "bear": 0.5,
+        "ranging": 0.7,
+        "unknown": 0.8
+      },
+      "volatility_sizing": {
+        "enabled": true,
+        "high_vol_threshold": 80,
+        "high_vol_multiplier": 0.7,
+        "atr_period": 14
+      },
+      "min_combined_multiplier": 0.15
     },
     "exit": {
       "enabled": true,
@@ -148,11 +179,42 @@
     },
     "risk": {
       "risk_map": [
-        [0.6, 0.02],
-        [0.7, 0.03],
-        [0.8, 0.04],
-        [0.9, 0.05]
-      ]
+        [
+          0.6,
+          0.02
+        ],
+        [
+          0.7,
+          0.03
+        ],
+        [
+          0.8,
+          0.04
+        ],
+        [
+          0.9,
+          0.05
+        ]
+      ],
+      "regime_size_multipliers": {
+        "bull": 1.0,
+        "bear": 0.7,
+        "ranging": 0.5,
+        "balanced": 0.8
+      },
+      "htf_regime_size_multipliers": {
+        "bull": 1.0,
+        "bear": 0.5,
+        "ranging": 0.7,
+        "unknown": 0.8
+      },
+      "volatility_sizing": {
+        "enabled": true,
+        "high_vol_threshold": 80,
+        "high_vol_multiplier": 0.7,
+        "atr_period": 14
+      },
+      "min_combined_multiplier": 0.15
     },
     "exit": {
       "enabled": true,

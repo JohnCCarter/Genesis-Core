@@ -1,10 +1,21 @@
 # README for AI Agents (Local Development)
 
-## Last update: 2026-01-22
+## Last update: 2026-01-28
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
 
-## 1. Deliverables (latest highlights: 2026-01-22)
+## 1. Deliverables (latest highlights: 2026-01-28)
+
+- **3H TIMEFRAME BOOTSTRAP + HTF REGIME SIZING (2026-01-28)**: Bootstrappade `tBTCUSD_3h` med defensiv positionssizing baserad på HTF regime och volatilitet.
+  - **Implementation**:
+    - `src/core/strategy/evaluate.py::compute_htf_regime()`: beräknar HTF regime (bull/bear/ranging/unknown) från 1D swing struktur.
+    - `src/core/strategy/decision.py`: applicerar `htf_regime_size_multipliers` (bull:1.0, bear:0.5, ranging:0.7, unknown:0.8) och `volatility_sizing` (threshold + multiplier).
+    - `config/strategy/champions/tBTCUSD_3h.json`: ny champion med defensiva parametrar.
+    - `config/optimizer/tBTCUSD_3h_explore_validate_2024_2025.yaml`: Optuna config med sizing-parametrar i sökrymden.
+  - **Resultat (OOS 2025)**: DD reducerad från 7.54% till 4.25%, PF bibehållen ~1.25.
+  - **Optuna explore (40 trials)**: Bästa trial #1: PF 1.92, DD 0.98%, WR 68.9%.
+  - **PR Management**: Alla 4 öppna PRs (#42, #43, #44, #45) mergade till master.
+  - **Verification**: `pytest` 600 passed, `ruff`/`black` OK.
 
 - **SCRIPTS IMPORT-HYGIEN: `core.*` + guardrail (2026-01-22)**: Normaliserade aktiva scripts till repo:ts src-layout-konvention (lägger `<repo>/src` på `sys.path` och importerar `core.*`), samt lade en AST-guardrail som stoppar regress.
   - **Implementation**:

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Kör Phase2c Extended - 12 månader, 50 trials."""
+
 from __future__ import annotations
 
 import sys

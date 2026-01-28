@@ -29,7 +29,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 HYPER_DIR = PROJECT_ROOT / "results" / "hparam_search"
 BACKTEST_DIR = PROJECT_ROOT / "results" / "backtests"

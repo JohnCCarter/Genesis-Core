@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Test att float-normalisering fungerar korrekt."""
+
 import json
 
 

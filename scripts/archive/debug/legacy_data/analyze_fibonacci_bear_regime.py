@@ -3,6 +3,7 @@
 Analyze Fibonacci features specifically in BEAR regime.
 Tests if Fibonacci mean reversion works differently in downtrends.
 """
+
 import argparse
 import sys
 from pathlib import Path

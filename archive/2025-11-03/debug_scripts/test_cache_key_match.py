@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Test att cache-nycklar matchar efter normalisering."""
+
 import json
 
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Snabbtest för att mäta tid per trial."""
+
 import time
 from pathlib import Path
 

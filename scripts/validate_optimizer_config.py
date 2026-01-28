@@ -11,6 +11,7 @@ champion-konfigurationen för att säkerställa att:
 Användning:
     python scripts/validate_optimizer_config.py config/optimizer/tBTCUSD_1h_optuna_fib_tune.yaml
 """
+
 from __future__ import annotations
 
 import argparse

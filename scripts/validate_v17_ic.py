@@ -3,6 +3,7 @@
 Quick IC validation for features v17.
 Confirms that precomputed features match expected IC from analysis.
 """
+
 import argparse
 import sys
 from pathlib import Path

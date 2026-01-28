@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Debug why 30m backtest generates zero trades."""
+
 import sys
 from pathlib import Path
 

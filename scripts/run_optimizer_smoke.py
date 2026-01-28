@@ -3,6 +3,7 @@
 Quick Optuna smoke test for determinism verification.
 Runs a minimal optimization with fixed parameters.
 """
+
 import sys
 from pathlib import Path
 

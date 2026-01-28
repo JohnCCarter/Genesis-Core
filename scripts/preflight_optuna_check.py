@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Preflight-kontroll för Optuna-körningar - säkerställer att allt är korrekt innan start."""
+
 from __future__ import annotations
 
 import argparse

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Kör en snabb grid för att testa LTF-gating mot HTF-inställningar."""
+
 from __future__ import annotations
 
 import argparse

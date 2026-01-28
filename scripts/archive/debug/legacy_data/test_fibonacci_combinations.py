@@ -3,6 +3,7 @@
 Test Fibonacci features combined with existing context features.
 This validates if combinations improve IC before implementing new features.
 """
+
 import argparse
 import sys
 from pathlib import Path

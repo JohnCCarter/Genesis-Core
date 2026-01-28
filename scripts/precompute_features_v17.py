@@ -3,6 +3,7 @@
 Precompute features v17 (including Fibonacci combinations) using the same
 runtime pipeline (_extract_asof) to guarantee parity.
 """
+
 import argparse
 import sys
 import time

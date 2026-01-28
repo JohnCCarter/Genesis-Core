@@ -7,6 +7,7 @@ Usage:
     python scripts/restructure_data_layers.py --dry-run
     python scripts/restructure_data_layers.py --execute
 """
+
 import argparse
 import json
 import sys

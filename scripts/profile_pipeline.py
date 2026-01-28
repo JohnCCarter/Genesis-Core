@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Profile pipeline latency per module."""
+
 import sys
 import time
 from pathlib import Path

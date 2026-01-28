@@ -3,6 +3,7 @@
 Optimize EMA slope parameters (period + lookback) for Fibonacci combinations.
 Tests different EMA periods and slope lookback windows to find optimal parameters.
 """
+
 import argparse
 import sys
 from pathlib import Path

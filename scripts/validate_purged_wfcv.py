@@ -24,8 +24,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, log_loss, roc_auc_score
 
 from core.ml.labeling import align_features_with_labels, generate_labels
+from core.utils import get_candles_path
 from core.utils.data_loader import load_features
-from src.core.utils import get_candles_path
 
 
 def create_purged_splits(

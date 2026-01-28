@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from core.ml.labeling import generate_adaptive_triple_barrier_labels
 from core.ml.labeling_fast import generate_adaptive_triple_barrier_labels_fast
-from src.core.utils import get_candles_path
+from core.utils import get_candles_path
 
 
 def main():

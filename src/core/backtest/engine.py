@@ -211,6 +211,11 @@ class BacktestEngine:
         # - Otherwise, if the effective config contains a non-empty htf_exit_config, assume the
         #   caller intends to use HTF exits (prevents runner vs manual-backtest mismatches).
         env_flag = os.environ.get("GENESIS_HTF_EXITS")
+        if env_flag is not None and env_flag not in {"0", "1"}:
+            _LOGGER.warning(
+                "GENESIS_HTF_EXITS expected '0' or '1'; got %r. Treating as legacy.",
+                env_flag,
+            )
         if env_flag is not None:
             use_new_engine = env_flag == "1"
         else:

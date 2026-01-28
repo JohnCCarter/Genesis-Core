@@ -2529,6 +2529,7 @@ def _run_optuna(
                     duplicate_streak += 1
                     duplicate_count += 1
                     trial.set_user_attr("duplicate", True)
+                    trial.set_user_attr("skipped", True)
                     # For backward‑compatibility with tests and diagnostics,
                     # mark both generic and precheck-specific attributes.
                     trial.set_user_attr("penalized_duplicate", True)

@@ -138,20 +138,20 @@ def print_comparison(comparison: dict):
     print("=" * 80)
 
     # Summary
-    print("\n📊 STREAMING MODE (Default):")
+    print("\n[STREAMING MODE] (Default):")
     print(f"  Trades:        {comparison['streaming']['num_trades']}")
     print(f"  Return:        {comparison['streaming']['return']:.2f}%")
     print(f"  Profit Factor: {comparison['streaming']['profit_factor']:.2f}")
     print(f"  Win Rate:      {comparison['streaming']['win_rate']:.2f}%")
 
-    print("\n⚡ FAST MODE (Optimizer):")
+    print("\n[FAST MODE] (Optimizer):")
     print(f"  Trades:        {comparison['fast']['num_trades']}")
     print(f"  Return:        {comparison['fast']['return']:.2f}%")
     print(f"  Profit Factor: {comparison['fast']['profit_factor']:.2f}")
     print(f"  Win Rate:      {comparison['fast']['win_rate']:.2f}%")
 
     # Differences
-    print("\n🔍 DIFFERENCES:")
+    print("\n[DIFFERENCES]:")
     diff = comparison["differences"]
     print(f"  Trade Count Δ:  {diff['trade_count_diff']:+d} (Streaming - Fast)")
     print(f"  Return Δ:       {diff['return_diff']:+.2f}%")
@@ -161,7 +161,7 @@ def print_comparison(comparison: dict):
 
     # Divergent bars
     if diff["num_only_streaming"] > 0:
-        print("\n⚠️  Bars with trades ONLY in Streaming mode:")
+        print("\n[WARN] Bars with trades ONLY in Streaming mode:")
         bars = diff["only_streaming_bars"]
         if len(bars) <= 20:
             print(f"    {bars}")
@@ -171,7 +171,7 @@ def print_comparison(comparison: dict):
             print(f"    (Total: {len(bars)} bars)")
 
     if diff["num_only_fast"] > 0:
-        print("\n⚠️  Bars with trades ONLY in Fast mode:")
+        print("\n[WARN] Bars with trades ONLY in Fast mode:")
         bars = diff["only_fast_bars"]
         if len(bars) <= 20:
             print(f"    {bars}")
@@ -183,9 +183,9 @@ def print_comparison(comparison: dict):
     # Assessment
     print("\n" + "=" * 80)
     if diff["trade_count_diff"] == 0 and abs(diff["return_diff"]) < 0.01:
-        print("✅ PARITY ACHIEVED - Modes produce identical results!")
+        print("PARITY ACHIEVED - Modes produce identical results!")
     else:
-        print("❌ DISCREPANCY DETECTED - Modes diverge significantly!")
+        print("DISCREPANCY DETECTED - Modes diverge significantly!")
         print("\nRecommended next steps:")
         print("  1. Run with --verbose to see detailed trade logs")
         print("  2. Inspect feature values at divergent bars")
@@ -207,7 +207,7 @@ def main():
     args = parser.parse_args()
 
     print("\n" + "=" * 80)
-    print("⚠️  DEPRECATED: Use 'python scripts/run_backtest.py' instead")
+    print("[DEPRECATED] Use 'python scripts/run_backtest.py' instead")
     print("    This script now only runs fast mode (streaming removed)")
     print("=" * 80 + "\n")
 
@@ -215,23 +215,23 @@ def main():
     if args.trial:
         trial_path = Path(f"results/hparam_search/run_20251125_161913/trial_{args.trial:04d}.json")
         if not trial_path.exists():
-            print(f"❌ Trial file not found: {trial_path}")
+            print(f"ERROR: Trial file not found: {trial_path}")
             sys.exit(1)
         config = load_trial_config(trial_path)
         print(f"Loaded config from Trial {args.trial}")
     elif args.config:
         config_path = Path(args.config)
         if not config_path.exists():
-            print(f"❌ Config file not found: {config_path}")
+            print(f"ERROR: Config file not found: {config_path}")
             sys.exit(1)
         config = load_config_file(config_path)
         print(f"Loaded config from {config_path}")
     else:
-        print("❌ Must specify either --trial or --config")
+        print("ERROR: Must specify either --trial or --config")
         sys.exit(1)
 
     # Run backtest (fast mode only)
-    print("\n🚀 Running backtest in FAST MODE...")
+    print("\nRunning backtest in FAST MODE...")
     results = run_backtest(
         config=config,
         symbol=args.symbol,
@@ -253,7 +253,7 @@ def main():
     print(f"  Max DD:        {summary.get('max_drawdown', 0.0):.2f}%")
     print("=" * 80)
 
-    print("\n💡 For full backtest features, use: python scripts/run_backtest.py")
+    print("\nFor full backtest features, use: python scripts/run_backtest.py")
 
 
 if __name__ == "__main__":

@@ -80,3 +80,53 @@ def test_position_tracker_does_not_use_legacy_close_method(monkeypatch: pytest.M
     # Ensure we recorded at least one trade
     assert len(pt.trades) >= 1
     assert any(t.exit_reason == "OPPOSITE_SIGNAL" for t in pt.trades)
+
+
+def test_backtest_engine_prefers_new_htf_exit_engine_when_config_present_and_env_unset(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Tripwire: Om GENESIS_HTF_EXITS saknas men htf_exit_config är satt ska NEW-engine väljas.
+
+    Detta minskar risken för "spökkod" där manual backtest råkar gå en annan väg än optimizer.
+    """
+
+    import core.backtest.engine as engine_mod
+
+    if engine_mod.NewExitEngine is None:
+        pytest.skip("NewExitEngine not available in this environment")
+
+    monkeypatch.delenv("GENESIS_HTF_EXITS", raising=False)
+
+    engine = engine_mod.BacktestEngine(
+        symbol="tBTCUSD",
+        timeframe="1h",
+        start_date="2020-01-01",
+        end_date="2020-01-02",
+        htf_exit_config={"enable_partials": True},
+        fast_window=False,
+    )
+
+    assert getattr(engine, "_use_new_exit_engine", False) is True
+
+
+def test_backtest_engine_warns_on_unknown_htf_exit_env_flag(
+    caplog: pytest.LogCaptureFixture,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Tripwire: Okända GENESIS_HTF_EXITS-värden ska ge varning (typo-skydd)."""
+
+    import core.backtest.engine as engine_mod
+
+    caplog.set_level("WARNING")
+    monkeypatch.setenv("GENESIS_HTF_EXITS", "true")
+
+    _ = engine_mod.BacktestEngine(
+        symbol="tBTCUSD",
+        timeframe="1h",
+        start_date="2020-01-01",
+        end_date="2020-01-02",
+        htf_exit_config={"enable_partials": True},
+        fast_window=False,
+    )
+
+    assert any("GENESIS_HTF_EXITS expected '0' or '1'" in rec.message for rec in caplog.records)

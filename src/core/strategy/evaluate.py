@@ -106,6 +106,78 @@ def _deep_merge(base: dict, override: dict) -> dict:
     return merged
 
 
+def compute_htf_regime(
+    htf_fib_data: dict[str, Any] | None,
+    current_price: float | None = None,
+) -> str:
+    """Compute regime from HTF (1D) Fibonacci context for defensive sizing.
+
+    This function derives a regime classification from the HTF swing structure
+    to enable position size adjustments when the higher timeframe is bearish.
+
+    The regime is determined by the relationship between current price and
+    HTF Fibonacci levels:
+    - "bull": Price above 0.618 retracement (strong uptrend structure)
+    - "bear": Price below 0.382 retracement (strong downtrend structure)
+    - "ranging": Price between 0.382 and 0.618 (consolidation)
+    - "unknown": Insufficient HTF data available
+
+    Args:
+        htf_fib_data: HTF Fibonacci context dict from features_asof, containing
+            keys like 'swing_high', 'swing_low', 'levels', 'available'.
+        current_price: Current LTF close price for regime determination.
+
+    Returns:
+        Regime string: "bull", "bear", "ranging", or "unknown".
+
+    Note:
+        This is intentionally separate from LTF regime detection (EMA-based).
+        HTF regime changes slowly (~days) and provides "early warning" for
+        position sizing adjustments before LTF signals deteriorate.
+
+    Example:
+        >>> htf_data = {"available": True, "swing_high": 100000, "swing_low": 80000}
+        >>> compute_htf_regime(htf_data, current_price=95000)
+        'bull'  # Price in upper part of swing range
+
+    See also:
+        - decision.py: htf_regime_size_multipliers config
+        - decision.py: volatility_sizing config
+        - AGENTS.md: Section "HTF-Regim + Volatilitet styr Sizing"
+    """
+    if not htf_fib_data or not isinstance(htf_fib_data, dict):
+        return "unknown"
+
+    if not htf_fib_data.get("available"):
+        return "unknown"
+
+    if current_price is None or current_price <= 0:
+        return "unknown"
+
+    # Extract swing bounds from HTF context
+    swing_high = _safe_float(htf_fib_data.get("swing_high"))
+    swing_low = _safe_float(htf_fib_data.get("swing_low"))
+
+    if swing_high is None or swing_low is None:
+        return "unknown"
+
+    if swing_high <= swing_low:
+        return "unknown"
+
+    # Calculate position within swing range (0 = at low, 1 = at high)
+    swing_range = swing_high - swing_low
+    position_in_range = (current_price - swing_low) / swing_range
+
+    # Classify based on position in swing range
+    # These thresholds align with Fibonacci retracement levels
+    if position_in_range >= 0.618:
+        return "bull"
+    elif position_in_range <= 0.382:
+        return "bear"
+    else:
+        return "ranging"
+
+
 def evaluate_pipeline(
     candles: dict[str, Any],
     *,
@@ -350,12 +422,17 @@ def evaluate_pipeline(
     htf_fib_data = feats_meta.get("htf_fibonacci")
     ltf_fib_data = feats_meta.get("ltf_fibonacci")
 
+    # Compute HTF regime for defensive position sizing
+    # This provides "early warning" when 1D structure is bearish
+    htf_regime = compute_htf_regime(htf_fib_data, current_price=last_close)
+
     log_fib_flow(
-        "[FIB-FLOW] evaluate_pipeline state assembly: symbol=%s timeframe=%s htf_available=%s ltf_available=%s",
+        "[FIB-FLOW] evaluate_pipeline state assembly: symbol=%s timeframe=%s htf_available=%s ltf_available=%s htf_regime=%s",
         symbol,
         timeframe,
         htf_fib_data.get("available") if isinstance(htf_fib_data, dict) else False,
         ltf_fib_data.get("available") if isinstance(ltf_fib_data, dict) else False,
+        htf_regime,
     )
 
     state = {
@@ -365,6 +442,7 @@ def evaluate_pipeline(
         "htf_fib": htf_fib_data,
         "ltf_fib": ltf_fib_data,
         "last_close": last_close,
+        "htf_regime": htf_regime,
     }
 
     action, action_meta = decide(
@@ -372,6 +450,7 @@ def evaluate_pipeline(
         probas=probas,
         confidence=conf_for_decide,
         regime=regime,
+        htf_regime=htf_regime,
         state=state,
         risk_ctx=configs.get("risk"),
         cfg=configs,
@@ -391,6 +470,7 @@ def evaluate_pipeline(
         "confidence": conf_for_decide,
         "confidence_exit": conf_exit,
         "regime": regime,
+        "htf_regime": htf_regime,
         "action": action,
     }
     meta: dict[str, Any] = {
@@ -399,6 +479,7 @@ def evaluate_pipeline(
         "confidence": conf_meta,
         "confidence_exit": conf_exit_meta,
         "regime": regime_state,
+        "htf_regime": htf_regime,
         "decision": action_meta,
         "champion": {
             "source": configs.get("meta", {}).get("champion_source"),

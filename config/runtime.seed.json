@@ -84,6 +84,7 @@
         "fallback_timeframe": "1D",
         "per_timeframe": {
           "1h": { "multiplier": 6 },
+          "3h": { "timeframe": "1D" },
           "6h": { "timeframe": "1D" }
         }
       }

@@ -111,11 +111,27 @@ def decide(
     probas: dict[str, float] | None,
     confidence: dict[str, float] | None,
     regime: str | None,
+    htf_regime: str | None = None,
     state: dict[str, Any] | None,
     risk_ctx: dict[str, Any] | None,
     cfg: dict[str, Any] | None,
 ) -> tuple[Action, dict[str, Any]]:
     """Beslutsfunktion (pure) med strikt gate‑ordning.
+
+    Args:
+        policy: Trading policy dict with symbol, timeframe, etc.
+        probas: Model probability predictions {"buy": float, "sell": float}.
+        confidence: Confidence scores (may include scaled versions for sizing).
+        regime: LTF regime from EMA-based detection ("bull", "bear", "ranging", "balanced").
+        htf_regime: HTF (1D) regime for defensive sizing ("bull", "bear", "ranging", "unknown").
+            When htf_regime is "bear", position sizes are reduced via htf_regime_size_multipliers.
+            See: evaluate.py::compute_htf_regime(), AGENTS.md.
+        state: Mutable state dict (cooldown, hysteresis, etc.).
+        risk_ctx: Risk context (caps, event blocks).
+        cfg: Full config dict including thresholds, risk, exit, etc.
+
+    Returns:
+        Tuple of (Action, meta_dict) where Action is "LONG", "SHORT", or "NONE".
 
     Ordning:
     1) Fail‑safe & EV‑filter
@@ -127,7 +143,7 @@ def decide(
     7) Confidence‑gate
     8) Hysteresis
     9) Cooldown
-    10) Sizing
+    10) Sizing (with regime_size_multipliers, htf_regime_size_multipliers, volatility_sizing)
     """
     log_fib_flow(
         "[FIB-FLOW] decide() called with cfg keys: %s",
@@ -1082,12 +1098,63 @@ def decide(
         # Safety: this knob is intended as a protective downscaler.
         regime_mult = 1.0
 
-    size = float(size_base * size_scale * regime_mult)
+    # HTF (1D) regime-aware sizing multiplier for defensive positioning.
+    # When HTF is bearish, reduce position sizes even if LTF looks OK.
+    # This provides "early warning" protection against regime deterioration.
+    # See: evaluate.py::compute_htf_regime(), AGENTS.md
+    htf_regime_mult = 1.0
+    try:
+        hrm = (cfg.get("risk") or {}).get("htf_regime_size_multipliers") or {}
+        if isinstance(hrm, dict) and htf_regime:
+            hr = str(htf_regime).strip().lower()
+            htf_regime_mult = float(hrm.get(hr, 1.0))
+    except Exception:
+        htf_regime_mult = 1.0
+    # Clamp to [0, 1] - this is a protective downscaler only
+    htf_regime_mult = max(0.0, min(1.0, htf_regime_mult))
+
+    # Volatility-based sizing adjustment.
+    # High ATR percentile -> reduce position size (market uncertainty).
+    # See: AGENTS.md section "HTF-Regim + Volatilitet styr Sizing"
+    vol_size_mult = 1.0
+    try:
+        vol_cfg = (cfg.get("risk") or {}).get("volatility_sizing") or {}
+        if vol_cfg.get("enabled"):
+            threshold = float(vol_cfg.get("high_vol_threshold", 80))
+            multiplier = float(vol_cfg.get("high_vol_multiplier", 0.7))
+            atr_period = str(vol_cfg.get("atr_period", 14))
+            # Get current ATR and percentiles from state
+            atr_pct = state_in.get("atr_percentiles", {})
+            current_p = atr_pct.get(atr_period, {})
+            current_atr = state_in.get("current_atr")
+            # Check if ATR is above the high threshold (p80 by default)
+            if threshold >= 80:
+                p_threshold = current_p.get("p80")
+            else:
+                p_threshold = current_p.get("p40")
+            if current_atr is not None and p_threshold is not None:
+                if current_atr > p_threshold:
+                    vol_size_mult = multiplier
+    except Exception:
+        vol_size_mult = 1.0
+    # Clamp to [0, 1]
+    vol_size_mult = max(0.0, min(1.0, vol_size_mult))
+
+    # Final size with all multipliers combined
+    # Order: base -> quality_scale -> ltf_regime -> htf_regime -> volatility
+    # Minimum floor to avoid near-zero positions (configurable)
+    min_size_mult = float((cfg.get("risk") or {}).get("min_combined_multiplier", 0.1))
+    combined_mult = size_scale * regime_mult * htf_regime_mult * vol_size_mult
+    combined_mult = max(min_size_mult, combined_mult)
+    size = float(size_base * combined_mult)
 
     state_out["confidence_gate"] = conf_val_gate
     state_out["size_base"] = size_base
     state_out["size_scale"] = size_scale
     state_out["size_regime_mult"] = regime_mult
+    state_out["size_htf_regime_mult"] = htf_regime_mult
+    state_out["size_vol_mult"] = vol_size_mult
+    state_out["size_combined_mult"] = combined_mult
 
     if size <= 0.0:
         _log_decision_event(

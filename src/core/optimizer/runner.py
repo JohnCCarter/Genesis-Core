@@ -1030,11 +1030,40 @@ def _estimate_optuna_search_space(spec: dict[str, Any]) -> dict[str, Any]:
 
 
 def _derive_dates(snapshot_id: str) -> tuple[str, str]:
+    """Derive (start_date, end_date) from snapshot_id.
+
+    Supported formats (backwards compatible):
+        - tTEST_1h_20240101_20240201_v1
+        - snap_tBTCUSD_3h_2024-01-02_2024-12-31_v1
+
+    Implementation note:
+        Historically we assumed a fixed underscore layout. Newer snapshot_ids may include
+        extra tokens (e.g. prefix + symbol + timeframe), so we now locate date-like tokens
+        instead of relying on fixed indices.
+    """
+
     if not snapshot_id:
         raise ValueError("trial snapshot_id saknas")
+
     parts = snapshot_id.split("_")
     if len(parts) < 4:
         raise ValueError("snapshot_id saknar start/end datum")
+
+    import re
+
+    # Prefer extracting the last two date tokens, so prefixes never shift indices.
+    date_tokens: list[str] = []
+    for p in parts:
+        token = p.strip()
+        if not token:
+            continue
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}", token) or re.fullmatch(r"\d{8}", token):
+            date_tokens.append(token)
+
+    if len(date_tokens) >= 2:
+        return date_tokens[-2], date_tokens[-1]
+
+    # Fallback to the legacy positional convention.
     return parts[2], parts[3]
 
 

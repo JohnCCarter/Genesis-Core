@@ -55,6 +55,12 @@ def test_score_version_mismatch_is_fail_fast() -> None:
         )
 
 
+def test_derive_dates_supports_snap_prefix_symbol_timeframe_iso_dates() -> None:
+    start, end = runner._derive_dates("snap_tBTCUSD_3h_2024-01-02_2024-12-31_v1")
+    assert start == "2024-01-02"
+    assert end == "2024-12-31"
+
+
 def test_collect_comparability_warnings_detects_drift_without_raising() -> None:
     current_info = {
         "execution_mode": {

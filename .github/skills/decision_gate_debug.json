@@ -1,0 +1,47 @@
+{
+  "id": "decision_gate_debug",
+  "version": "1.0.0",
+  "title": "Decision gate debugging workflow",
+  "description": "Systematisk process för att felsöka zero-trade eller låg trade count i backtests genom att analysera decision gates och threshold-logik.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "tags": ["debug", "decision", "gates", "zero-trades"],
+  "rules": {
+    "must": [
+      "Sätt LOG_LEVEL=DEBUG eller CORE_LOG_LEVEL=DEBUG för detaljerad gate-logging.",
+      "Analysera [DECISION] log entries för gate-orsaker: EV_BLOCK, PROBA_BLOCK, EDGE_BLOCK, HTF_FIB_BLOCK, LTF_FIB_BLOCK, HYSTERESIS, COOLDOWN.",
+      "Kontrollera signal_adaptation ATR zones (entry/regime thresholds) - dessa är PRIMARY entry control.",
+      "Verifiera att toppnivå thresholds.entry_conf_overall används endast när zones saknas.",
+      "Kör isoleringstester: ändra EN parameter i taget för att identifiera flaskhalsar.",
+      "Använd scripts/diagnose_zero_trades.py för strukturerad analys."
+    ],
+    "must_not": [
+      "Tweaka parametrar i blindo utan att analysera logs först.",
+      "Anta att entry_conf_overall styr när signal_adaptation.zones är definierade.",
+      "Glömma att verifiera att config faktiskt laddas (exitcode från engine.py).",
+      "Ignorera att LTF/HTF fib-gates kan blocka alla trades om toleranser är för tighta."
+    ]
+  },
+  "references": [
+    {
+      "type": "file",
+      "value": "src/core/strategy/decision.py"
+    },
+    {
+      "type": "file",
+      "value": "scripts/diagnose_zero_trades.py"
+    },
+    {
+      "type": "doc",
+      "value": "docs/analysis/ZERO_TRADE_ANALYSIS.md"
+    },
+    {
+      "type": "doc",
+      "value": "docs/bugs/ZERO_TRADES_FIX_20251203.md"
+    },
+    {
+      "type": "doc",
+      "value": "CLAUDE.md"
+    }
+  ]
+}

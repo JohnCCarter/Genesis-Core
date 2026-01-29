@@ -21,7 +21,13 @@
     { "id": "data_integrity_candles", "version": "1.0.0" },
     { "id": "risk_guards_audit", "version": "1.0.0" },
     { "id": "ci_wheels_release", "version": "1.0.0" },
-    { "id": "incident_triage", "version": "1.0.0" }
+    { "id": "incident_triage", "version": "1.0.0" },
+    { "id": "champion_update", "version": "1.0.0" },
+    { "id": "backtest_run", "version": "1.0.0" },
+    { "id": "feature_parity_check", "version": "1.0.0" },
+    { "id": "git_commit_flow", "version": "1.0.0" },
+    { "id": "htf_exit_validation", "version": "1.0.0" },
+    { "id": "decision_gate_debug", "version": "1.0.0" }
   ],
   "compacts": [{ "id": "stabilization_phase", "version": "1.0.0" }]
 }

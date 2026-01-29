@@ -1,0 +1,47 @@
+{
+  "id": "champion_update",
+  "version": "1.0.0",
+  "title": "Champion config update workflow",
+  "description": "Säker process för att uppdatera champion-konfigurationer efter validerad Optuna-optimering. Säkerställer att nya champion-parametrar är reproducerbara och dokumenterade.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "tags": ["champion", "optimization", "validation", "workflow"],
+  "rules": {
+    "must": [
+      "Validera kandidat på lång period (minst FY 2024) innan champion-uppdatering.",
+      "Kör manuell backtest med exakt samma parametrar för att verifiera resultat.",
+      "Säkerställ att champion-filen innehåller merged_config för reproducerbarhet.",
+      "Dokumentera ändringen i docs/daily_summaries/daily_summary_YYYY-MM-DD.md.",
+      "Inkludera metrics: PF, DD%, return%, trade count, source run ID och trial nummer.",
+      "Uppdatera AGENTS.md sektion 4 (Champion status) med ny baseline."
+    ],
+    "must_not": [
+      "Uppdatera champion baserat på explore-resultat utan validate-körning.",
+      "Hoppa över manuell verifiering med scripts/run_backtest.py.",
+      "Commita champion utan att dokumentera source run och metrics.",
+      "Använda resultat från icke-canonical execution mode (0/0)."
+    ]
+  },
+  "references": [
+    {
+      "type": "file",
+      "value": "config/strategy/champions/tBTCUSD_1h.json"
+    },
+    {
+      "type": "file",
+      "value": "scripts/run_backtest.py"
+    },
+    {
+      "type": "file",
+      "value": "scripts/check_trial_config_equivalence.py"
+    },
+    {
+      "type": "doc",
+      "value": "docs/config/CHAMPION_REPRODUCIBILITY.md"
+    },
+    {
+      "type": "doc",
+      "value": "CLAUDE.md"
+    }
+  ]
+}

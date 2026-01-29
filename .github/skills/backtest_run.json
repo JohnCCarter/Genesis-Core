@@ -1,0 +1,38 @@
+{
+  "id": "backtest_run",
+  "version": "1.0.0",
+  "title": "Standard backtest execution",
+  "description": "Körning av manuell backtest med canonical mode och rätt miljövariabler. Säkerställer deterministiska och jämförbara resultat.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "tags": ["backtest", "canonical", "determinism"],
+  "rules": {
+    "must": [
+      "Sätt GENESIS_FAST_WINDOW=1 och GENESIS_PRECOMPUTE_FEATURES=1 för canonical mode.",
+      "Sätt GENESIS_RANDOM_SEED=42 (eller annan explicit seed) för reproducerbarhet.",
+      "Använd --fast-window och --precompute-features CLI-flaggor.",
+      "Verifiera att backtest_info.execution_mode är '1/1' i resultat.",
+      "Spara resultat under results/backtests/ med timestamp i filnamn."
+    ],
+    "must_not": [
+      "Köra backtest utan att sätta execution mode explicit.",
+      "Jämföra resultat från olika execution modes (0/0 vs 1/1).",
+      "Använda GENESIS_FAST_HASH=1 för quality decisions (endast debug).",
+      "Köra backtest utan warmup_bars (default 150 för 1h)."
+    ]
+  },
+  "references": [
+    {
+      "type": "file",
+      "value": "scripts/run_backtest.py"
+    },
+    {
+      "type": "doc",
+      "value": "docs/features/FEATURE_COMPUTATION_MODES.md"
+    },
+    {
+      "type": "doc",
+      "value": "CLAUDE.md"
+    }
+  ]
+}

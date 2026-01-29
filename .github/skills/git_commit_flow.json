@@ -1,0 +1,36 @@
+{
+  "id": "git_commit_flow",
+  "version": "1.0.0",
+  "title": "Git commit workflow with Claude",
+  "description": "Säker git commit-process när Claude Code skapar commits. Följer repo-konventioner och undviker destruktiva operationer.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "tags": ["git", "commit", "workflow", "safety"],
+  "rules": {
+    "must": [
+      "Slutföra commit message med: Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>",
+      "Stage specifika filer med namn (ej 'git add -A' eller 'git add .').",
+      "Skapa NYA commits (ej --amend) såvida inte explicit begärt.",
+      "Använd HEREDOC för commit messages: git commit -m \"$(cat <<'EOF'\\n...\\nEOF\\n)\"",
+      "Köra pre-commit hooks (aldrig --no-verify utan explicit request).",
+      "Köra git status, git diff och git log i parallell innan commit."
+    ],
+    "must_not": [
+      "Köra destruktiva kommandon (push --force, reset --hard, clean -f) utan explicit request.",
+      "Använda --no-verify eller --no-gpg-sign utan explicit request.",
+      "Amend:a commit efter hook failure (det är PREVIOUS commit, inte nuvarande).",
+      "Commita känsliga filer (.env, .nonce_tracker.json, credentials).",
+      "Push till remote utan explicit begäran."
+    ]
+  },
+  "references": [
+    {
+      "type": "doc",
+      "value": "CLAUDE.md"
+    },
+    {
+      "type": "file",
+      "value": ".pre-commit-config.yaml"
+    }
+  ]
+}

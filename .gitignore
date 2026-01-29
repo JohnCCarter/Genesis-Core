@@ -238,3 +238,7 @@ results/fibonacci_exits_*.png
 
 # Archived configurations
 config/optimizer/archive/
+
+# Agent communication (not tracked in git)
+.agent_messages/
+!.agent_messages/README.md

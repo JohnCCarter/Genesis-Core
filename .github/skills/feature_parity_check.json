@@ -1,0 +1,46 @@
+{
+  "id": "feature_parity_check",
+  "version": "1.0.0",
+  "title": "Feature computation parity validation",
+  "description": "Verifierar att feature-beräkningar är identiska mellan live trading, backtest och precompute modes. Kritiskt för att säkerställa att ML-träning och live trading använder samma features.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "tags": ["features", "parity", "validation", "testing"],
+  "rules": {
+    "must": [
+      "Kör tests/test_feature_parity.py efter ändringar i feature-logik.",
+      "Kör tests/test_precompute_vs_runtime.py för att verifiera precompute-cache.",
+      "Förstå off-by-one offset mellan live (now_index-1) och backtest (now_index).",
+      "Använd _extract_asof() för backtest, inte extract_features() direkt.",
+      "Regenerera v17 features med scripts/precompute_features_v17.py vid schema-ändringar."
+    ],
+    "must_not": [
+      "Ändra indicator-logik utan att köra parity-tester.",
+      "Mixa extract_features() och calculate_all_features_vectorized() utan att förstå semantiken.",
+      "Använda lookahead bias i feature-beräkningar.",
+      "Commita feature schema-ändringar utan att uppdatera test data."
+    ]
+  },
+  "references": [
+    {
+      "type": "file",
+      "value": "tests/test_feature_parity.py"
+    },
+    {
+      "type": "file",
+      "value": "tests/test_precompute_vs_runtime.py"
+    },
+    {
+      "type": "file",
+      "value": "src/core/strategy/features_asof.py"
+    },
+    {
+      "type": "file",
+      "value": "scripts/precompute_features_v17.py"
+    },
+    {
+      "type": "doc",
+      "value": "docs/features/FEATURE_COMPUTATION_MODES.md"
+    }
+  ]
+}

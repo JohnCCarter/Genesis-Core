@@ -1,0 +1,52 @@
+{
+  "id": "htf_exit_validation",
+  "version": "1.0.0",
+  "title": "HTF Fibonacci exit validation",
+  "description": "Validerar HTF (Higher Timeframe) Fibonacci exit-logik, swing detection och fallback-mekanismer. Säkerställer att exit-beslut är deterministiska och följer as-of semantics.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "tags": ["htf", "fibonacci", "exits", "validation"],
+  "rules": {
+    "must": [
+      "Verifiera att HTF context är strikt as-of (ingen lookahead).",
+      "Säkerställ att swing levels (0.382, 0.5, 0.618, 0.786) ligger inom swing bounds.",
+      "Kontrollera att htf_data_age_hours beräknas från matchad timestamp (AS-OF merge).",
+      "Tracka fallback-användning (<40% är acceptabelt för HTF exits).",
+      "Validera att exit_ctx förblir frozen efter swing updates (DYNAMIC/HYBRID modes).",
+      "Testa edge cases: missing HTF data, invalid swings, stale data (>48h)."
+    ],
+    "must_not": [
+      "Använda 'senaste' HTF-row när reference_ts saknas.",
+      "Acceptera swing_high < swing_low (returnera None med reason='invalid_swing').",
+      "Mixa HTF timeframe aliases utan normalisering (60m → 1h).",
+      "Logga 'Invalid swing' spam utan att åtgärda root cause.",
+      "Tillåta HTF-nivåer utanför [swing_low, swing_high] bounds."
+    ]
+  },
+  "references": [
+    {
+      "type": "file",
+      "value": "src/core/indicators/htf_fibonacci.py"
+    },
+    {
+      "type": "file",
+      "value": "src/core/strategy/htf_exit_engine.py"
+    },
+    {
+      "type": "file",
+      "value": "tests/test_htf_fibonacci_context.py"
+    },
+    {
+      "type": "file",
+      "value": "tests/test_htf_exit_engine_frozen_context.py"
+    },
+    {
+      "type": "doc",
+      "value": "docs/fibonacci/HTF_FIBONACCI_EXITS_SUMMARY.md"
+    },
+    {
+      "type": "doc",
+      "value": "docs/bugs/HTF_INVALID_SWING_HARDENING_20251226.md"
+    }
+  ]
+}

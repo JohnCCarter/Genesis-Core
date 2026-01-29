@@ -8,6 +8,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 
 ## [Unreleased]
 
+### Changed - Docs & maintenance (2026-01-29)
+
+- Documented the Git LFS policy (policy B: only curated zip bundles under `results/archive/bundles/*.zip`) in Copilot instruction files
+  to standardize cross-machine sharing of noteworthy results.
+
 ### Changed - Docs & maintenance (2026-01-23)
 
 - Quarantined orphaned champion assets to eliminate a PATH_MISMATCH risk:

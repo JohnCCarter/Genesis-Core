@@ -1,8 +1,39 @@
 # README for AI Agents (Local Development)
 
-## Last update: 2026-01-28
+## Last update: 2026-01-29
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
+
+## 0. Repo-lokala agenter (SSOT)
+
+Repo:t har **bounded** agent-definitioner under `c:\Users\fa06662\Projects\Genesis-Core\.github\agents\`. Dessa ska föredras för
+planering, audit, governance/QA och körningar – de har tydliga stop conditions och verktygsgränser.
+
+### Agentöversikt
+
+- `Plan` (`.github/agents/Plan.agent.md`)
+  - Roll: skapa en **testbar plan** (3–7 steg) vid större/ambigua uppgifter.
+  - Begränsning: **ingen implementation** och **ingen exekvering**.
+
+- `AnalysisAudit` (`.github/agents/AnalysisAudit.agent.md`)
+  - Roll: **read-only audit** av logik, gates, scoring och dataflöden.
+  - Begränsning: **inga körningar** och **inga ändringar**.
+
+- `GovernanceQA` (`.github/agents/GovernanceQA.agent.md`)
+  - Roll: governance/QA: registry/skills/compacts, lint/test/security gates och secrets-hygien.
+  - Begränsning: får exekvera **endast godkända kontroller**, men ska inte ändra produkt/strategilogik utan explicit uppdrag.
+
+- `OpsRunner` (`.github/agents/OpsRunner.agent.md`)
+  - Roll: kör backtests/Optuna/valideringar **reproducerbart** och rapportera artifacts + nyckelmetriker.
+  - Guardrails: canonical mode som default (t.ex. `GENESIS_FAST_WINDOW=1`, `GENESIS_PRECOMPUTE_FEATURES=1`, `GENESIS_RANDOM_SEED=42`).
+  - Stop: eskalera innan körningar > 30 min eller om data/env saknas.
+
+### Snabbt val: vilken agent använder vi?
+
+- Osäker scope / flera möjliga vägar → `Plan`
+- Fråga om “varför blev det så här?” (utan nya körningar) → `AnalysisAudit`
+- Vill säkerställa att ändringar följer policy/CI/registry/secrets → `GovernanceQA`
+- Vill köra preflight/validate/backtest/Optuna och få artifacts/metrics → `OpsRunner`
 
 ## 1. Deliverables (latest highlights: 2026-01-28)
 

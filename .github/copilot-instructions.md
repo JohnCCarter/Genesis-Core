@@ -56,6 +56,14 @@ Proactively suggest activating Plan Mode when:
 - **Safety**: Force TEST symbols for paper trading.
 - **Signing**: Use compact JSON: `json.dumps(body, separators=(",",":"))`.
 
+### Git LFS (results sharing policy)
+
+- Use Git LFS **only** for curated, noteworthy result bundles (policy B).
+- Location/pattern: `results/archive/bundles/*.zip` (tracked via `.gitattributes`).
+- Do **not** LFS-track raw `results/**`, `*.db`, `cache/**`, or large intermediate artifacts unless explicitly agreed.
+- Bundles must be minimal and reproducible: include config(s) + a short summary/provenance; never include secrets.
+- Prefer adding an anchor in `docs/daily_summaries/` pointing to the bundle filename and run identifiers.
+
 ### Development Workflow
 
 1. **Research**: `read_file` → `codebase_search` → `grep` → `todo_write`.

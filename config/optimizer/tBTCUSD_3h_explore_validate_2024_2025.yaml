@@ -6,7 +6,7 @@ description: "Explore on 2024, Validate (rank) on 2025 - 3h timeframe"
 meta:
   symbol: tBTCUSD
   timeframe: 3h
-  snapshot_id: snap_tBTCUSD_3h_20240102_20241231_ev_v1
+  snapshot_id: snap_tBTCUSD_3h_2024-01-02_2024-12-31_v1
   warmup_bars: 120
   runs:
     strategy: optuna
@@ -19,22 +19,35 @@ meta:
     # VALIDATE period (out-of-sample) - used to rank candidates
     validation:
       enabled: true
+      use_sample_range: true
       sample_start: "2025-01-01"
       sample_end: "2025-12-31"
       top_n: 5 # Validate top-5 from explore
 
+      # Stricter constraints in validation to rank/select a real champion.
+      # Keep explore constraints looser to preserve learning signal.
+      constraints:
+        include_scoring_failures: false
+        min_trades: 10
+        min_profit_factor: 1.05
+        max_max_dd: 0.45
+
     resume: false
-    max_trials: 40
+    max_trials: 80
     max_concurrent: 1
 
     promotion:
       enabled: false # Manual promotion after review
 
     optuna:
-      study_name: "optuna_3h_explore_validate_2024_2025"
-      storage: "sqlite:///results/hparam_search/storage/optuna_tBTCUSD_3h_explore_validate.db"
+      study_name: "optuna_3h_explore_validate_2024_2025_v2"
+      storage: "sqlite:///results/hparam_search/storage/optuna_tBTCUSD_3h_explore_validate_2024_2025_v2.db"
       n_jobs: 1
       timeout_seconds: 14400 # 4h
+
+      # Helps TPE avoid early degeneracy/duplicates on discrete-heavy spaces.
+      bootstrap_random_trials: 20
+      bootstrap_seed: 42
 
       pruner:
         type: "none"
@@ -42,7 +55,7 @@ meta:
       sampler:
         type: "tpe"
         kwargs:
-          n_startup_trials: 15
+          n_startup_trials: 25
           n_ei_candidates: 96
           multivariate: true
           group: true
@@ -195,7 +208,8 @@ parameters:
         value: true
       high_vol_threshold:
         type: int
-        low: 70
+        # Keep >=80 so decision.py consistently uses p80 (avoid p40/p80 discontinuity).
+        low: 80
         high: 90
         step: 5
       high_vol_multiplier:
@@ -218,8 +232,8 @@ parameters:
       type: fixed
       value: true
     allow_ltf_override:
-      type: fixed
-      value: true
+      type: grid
+      values: [true, false]
     ltf_override_threshold:
       type: float
       low: 0.30

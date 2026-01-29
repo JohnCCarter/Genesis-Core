@@ -16,8 +16,12 @@ dependencies = [
   "pydantic-settings>=2,<3",
   "python-dotenv>=1,<2",
   "jsonschema>=4.20,<5",
-  "numpy>=1.26.0",
-  "pandas>=2.0.0"
+  "numpy>=1.26,<2",
+  "pandas>=2.0,<3",
+  "PyYAML>=6.0,<7",
+  "tqdm>=4.65,<5",
+  "optuna>=3.5,<5",
+  "pyarrow>=14,<16"
 ]
 
 [project.optional-dependencies]
@@ -32,7 +36,6 @@ dev = [
   "detect-secrets>=1.5",
   "gitpython>=3.1.0",
   "mcp>=0.9.0",
-  "optuna>=3.5",
   "pyinstrument>=5.1",
   "orjson>=3.9",
 ]
@@ -43,10 +46,8 @@ mcp = [
 ]
 ml = [
   "scikit-learn>=1.3.0",
-  "pyarrow>=13.0.0",
   "matplotlib>=3.7.0",
   "seaborn>=0.12.0",
-  "tqdm>=4.65.0",
   "numba>=0.62.0",
   "scipy>=1.11.0"
 ]

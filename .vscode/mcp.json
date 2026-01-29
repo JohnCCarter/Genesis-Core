@@ -1,4 +1,12 @@
 {
+  "inputs": [
+    {
+      "description": "API key for authentication",
+      "id": "CONTEXT7_API_KEY",
+      "password": true,
+      "type": "promptString"
+    }
+  ],
   "servers": {
     "genesis-core": {
       "args": ["-m", "mcp_server.server"],
@@ -7,7 +15,16 @@
         "GENESIS_FAST_HASH": "0",
         "GENESIS_FAST_WINDOW": "1",
         "GENESIS_PRECOMPUTE_FEATURES": "1"
-      }
+      },
+      "type": "stdio"
+    },
+    "io.github.upstash/context7": {
+      "args": ["-y", "@upstash/context7-mcp@1.0.31"],
+      "command": "npx",
+      "env": {
+        "CONTEXT7_API_KEY": "${input:CONTEXT7_API_KEY}"
+      },
+      "type": "stdio"
     }
   }
 }

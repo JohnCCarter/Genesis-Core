@@ -521,10 +521,10 @@ def check_precompute_functionality(symbol: str, timeframe: str) -> tuple[bool, s
 
         from core.backtest.engine import BacktestEngine
 
-        # Ladda data
-        data_path = ROOT / "data" / "curated" / "v1" / "candles" / f"{symbol}_{timeframe}.parquet"
-        if not data_path.exists():
-            return False, f"[FAIL] Data saknas: {data_path}"
+        # Verify data exists. Do NOT hardcode curated paths here: the engine supports frozen/raw fallbacks.
+        data_path = _pick_data_file(symbol, timeframe)
+        if data_path is None:
+            return False, f"[FAIL] Ingen datafil hittades för {symbol} {timeframe}"
 
         # Skapa engine och testa precompute
         engine = BacktestEngine(
@@ -738,6 +738,21 @@ def check_requested_data_coverage(
     meta: dict[str, Any], runs_cfg: dict[str, Any]
 ) -> tuple[bool, str]:
     """Faila tidigt om önskat datumintervall inte täcks av tillgänglig candle-data."""
+
+    def _to_naive(dt: datetime) -> datetime:
+        """Normalize datetimes so comparisons do not fail on tz-aware vs tz-naive.
+
+        Notes:
+            Parquet timestamps may be timezone-aware (often UTC), while user-provided
+            date strings (YYYY-MM-DD) are parsed as tz-naive. Python forbids ordering
+            comparisons between tz-aware and tz-naive datetimes, so we normalize both
+            sides to tz-naive.
+        """
+
+        if dt.tzinfo is None:
+            return dt
+        return dt.replace(tzinfo=None)
+
     symbol = meta.get("symbol", "tBTCUSD")
     timeframe = meta.get("timeframe", "1h")
 
@@ -781,6 +796,9 @@ def check_requested_data_coverage(
             f"[FAIL] Ogiltigt datumintervall: start={req_start.date()} > end={req_end.date()}",
         )
 
+    req_start = _to_naive(req_start)
+    req_end = _to_naive(req_end)
+
     data_file = _pick_data_file(symbol, timeframe)
     if data_file is None:
         return False, f"[FAIL] Ingen datafil hittades för {symbol} {timeframe}"
@@ -790,6 +808,9 @@ def check_requested_data_coverage(
         return False, f"[FAIL] Kunde inte läsa timestamp-range från {data_file}"
 
     data_start, data_end = tr
+
+    data_start = _to_naive(data_start)
+    data_end = _to_naive(data_end)
 
     if req_start > data_end or req_end < data_start:
         return (

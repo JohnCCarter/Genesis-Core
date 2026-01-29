@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 import types
+from datetime import UTC, datetime
 
 import pytest
 
@@ -11,6 +12,7 @@ from scripts.preflight_optuna_check import (
     check_champion_drift_smoke,
     check_htf_requirements,
     check_mode_flags_consistency,
+    check_requested_data_coverage,
     check_storage_resume_sanity,
 )
 
@@ -115,6 +117,83 @@ def test_parse_snapshot_date_range_parses_expected_format() -> None:
     start_dt, end_dt = dr
     assert start_dt.date().isoformat() == "2024-01-01"
     assert end_dt.date().isoformat() == "2024-12-31"
+
+
+def test_requested_data_coverage_handles_tz_aware_parquet_range(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Regression test: preflight must not crash on tz-aware parquet timestamps."""
+    from scripts import preflight_optuna_check as preflight
+
+    # Pretend we found a data file, but avoid any real IO.
+    monkeypatch.setattr(
+        preflight, "_pick_data_file", lambda symbol, timeframe: preflight.ROOT / "dummy.parquet"
+    )
+    monkeypatch.setattr(
+        preflight,
+        "_get_time_range_from_parquet",
+        lambda path: (
+            datetime(2024, 1, 1, tzinfo=UTC),
+            datetime(2024, 12, 31, tzinfo=UTC),
+        ),
+    )
+
+    meta = {"symbol": "tBTCUSD", "timeframe": "3h"}
+    runs_cfg = {"use_sample_range": True, "sample_start": "2024-01-02", "sample_end": "2024-12-30"}
+
+    ok, msg = check_requested_data_coverage(meta, runs_cfg)
+    assert ok is True
+    assert msg.startswith("[OK]")
+
+
+def test_precompute_functionality_uses_pick_data_file_and_not_curated_path(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path,
+) -> None:
+    from scripts import preflight_optuna_check as preflight
+
+    # Enable the check.
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "1")
+
+    # Provide a fake data file via the repo's selection mechanism.
+    dummy_data = tmp_path / "dummy.parquet"
+    dummy_data.write_bytes(b"not-a-parquet")
+    monkeypatch.setattr(preflight, "_pick_data_file", lambda symbol, timeframe: dummy_data)
+
+    # Stub BacktestEngine import used inside the function.
+    stub_engine = types.ModuleType("core.backtest.engine")
+
+    class DummyEngine:  # noqa: D401
+        def __init__(
+            self,
+            symbol: str,
+            timeframe: str,
+            initial_capital: float,
+            commission_rate: float,
+            slippage_rate: float,
+            warmup_bars: int,
+            fast_window: bool,
+        ) -> None:
+            self.symbol = symbol
+            self.timeframe = timeframe
+            self.precompute_features = False
+            self.candles_df = [0] * 200
+            self._precomputed_features = {
+                "rsi_14": [0] * 200,
+                "atr_14": [0] * 200,
+                "ema_20": [0] * 200,
+                "ema_50": [0] * 200,
+            }
+
+        def load_data(self) -> bool:
+            return True
+
+    stub_engine.BacktestEngine = DummyEngine  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "core.backtest.engine", stub_engine)
+
+    ok, msg = preflight.check_precompute_functionality("tBTCUSD", "3h")
+    assert ok is True
+    assert msg.startswith("[OK]")
 
 
 def test_champion_drift_smoke_can_be_disabled(monkeypatch: pytest.MonkeyPatch) -> None:

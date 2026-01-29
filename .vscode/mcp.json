@@ -5,6 +5,12 @@
       "id": "CONTEXT7_API_KEY",
       "password": true,
       "type": "promptString"
+    },
+    {
+      "description": "Client IP encryption key for Context7 MCP (prevents startup warning that can break stdio)",
+      "id": "CLIENT_IP_ENCRYPTION_KEY",
+      "password": true,
+      "type": "promptString"
     }
   ],
   "servers": {
@@ -22,6 +28,7 @@
       "args": ["-y", "@upstash/context7-mcp@1.0.31"],
       "command": "npx",
       "env": {
+        "CLIENT_IP_ENCRYPTION_KEY": "${input:CLIENT_IP_ENCRYPTION_KEY}",
         "CONTEXT7_API_KEY": "${input:CONTEXT7_API_KEY}"
       },
       "type": "stdio"

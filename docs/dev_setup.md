@@ -1,6 +1,6 @@
 # Dev setup (Windows) + editor-baslinje
 
-**Senast uppdaterad:** 2026-01-08
+**Senast uppdaterad:** 2026-01-29
 
 Detta dokument är en praktisk “kontinuitets-SSOT” för hur man får Genesis-Core att köra lokalt utan överraskningar.
 

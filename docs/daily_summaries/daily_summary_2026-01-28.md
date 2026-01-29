@@ -30,6 +30,14 @@ Dagens fokus var **3h timeframe bootstrap** och **PR-hygien**: Mergade alla 4 ö
   - `volatility_sizing.{high_vol_threshold,high_vol_multiplier}`
   - `min_combined_multiplier`
 
+#### Artifacts / provenance (ankare)
+
+- Explore/Validate-config: `config/optimizer/tBTCUSD_3h_explore_validate_2024_2025.yaml`
+  - `snapshot_id`: `snap_tBTCUSD_3h_20240102_20241231_ev_v1`
+  - Explore: 2024-01-02 → 2024-12-31, Validate: 2025-01-01 → 2025-12-31
+  - Optuna: `study_name=optuna_3h_explore_validate_2024_2025`, `seed=42`
+  - Storage (konfigurerad): `sqlite:///results/hparam_search/storage/optuna_tBTCUSD_3h_explore_validate.db`
+
 ### PR Management (alla 4 mergade)
 
 | PR  | Rubrik                                                            | Status    |

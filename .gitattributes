@@ -1,0 +1,6 @@
+# Git LFS: store large, shareable result bundles outside normal Git history.
+#
+# Policy (Genesis-Core): Only curated result bundles should go into Git LFS.
+# Keep the tracked surface small to avoid burning the 10 GiB/10 GiB quota.
+
+results/archive/bundles/*.zip filter=lfs diff=lfs merge=lfs -text

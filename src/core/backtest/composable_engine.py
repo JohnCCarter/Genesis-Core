@@ -90,6 +90,17 @@ class ComposableBacktestEngine:
                     "components": list((decision.component_results or {}).keys()),
                 }
 
+                # Record trade for stateful components (Cooldown) ONLY on ENTRY actions
+                # ENTRY = LONG or SHORT (not NONE, not exit/close actions)
+                action = result.get("action", "NONE")
+                if action in ("LONG", "SHORT"):
+                    symbol = context.get("symbol")
+                    bar_index = context.get("bar_index")
+                    if symbol is not None and bar_index is not None:
+                        for component in self.strategy.components:
+                            if hasattr(component, "record_trade"):
+                                component.record_trade(symbol=symbol, bar_index=bar_index)
+
             return result, meta
 
         # Create BacktestEngine with component evaluation hook

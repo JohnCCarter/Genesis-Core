@@ -1,5 +1,7 @@
 """Tests for ComponentContextBuilder."""
 
+import pytest
+
 from core.strategy.components.context_builder import ComponentContextBuilder
 
 
@@ -38,6 +40,14 @@ class TestComponentContextBuilder:
         assert context["ml_confidence_long"] == 0.70
         assert context["ml_confidence_short"] == 0.30
         assert context["ml_confidence"] == 0.70  # defaults to LONG confidence
+
+        # Check EV calculation (new in Phase 2)
+        # EV_long = 0.65 * 1.0 - 0.35 = 0.30
+        # EV_short = 0.35 * 1.0 - 0.65 = -0.30
+        # expected_value = max(0.30, -0.30) = 0.30
+        assert context["ev_long"] == pytest.approx(0.30, abs=1e-10)
+        assert context["ev_short"] == pytest.approx(-0.30, abs=1e-10)
+        assert context["expected_value"] == pytest.approx(0.30, abs=1e-10)
 
         # Check regime
         assert context["regime"] == "trending"
@@ -202,3 +212,78 @@ class TestComponentContextBuilder:
         assert "ml_proba_long" in keys
         assert "rsi" in keys
         assert "current_price" in keys
+
+    def test_ev_calculation_determinism(self):
+        """Test that EV calculation is deterministic and correct."""
+        # Test case 1: Balanced probabilities (50/50)
+        result = {"probas": {"LONG": 0.5, "SHORT": 0.5}}
+        context = ComponentContextBuilder.build(result, {})
+
+        # EV_long = 0.5 * 1.0 - 0.5 = 0.0
+        # EV_short = 0.5 * 1.0 - 0.5 = 0.0
+        # expected_value = max(0.0, 0.0) = 0.0
+        assert context["ev_long"] == 0.0
+        assert context["ev_short"] == 0.0
+        assert context["expected_value"] == 0.0
+
+        # Test case 2: Strong long bias (70/30)
+        result = {"probas": {"LONG": 0.7, "SHORT": 0.3}}
+        context = ComponentContextBuilder.build(result, {})
+
+        # EV_long = 0.7 * 1.0 - 0.3 = 0.4
+        # EV_short = 0.3 * 1.0 - 0.7 = -0.4
+        # expected_value = max(0.4, -0.4) = 0.4
+        assert context["ev_long"] == pytest.approx(0.4, abs=1e-10)
+        assert context["ev_short"] == pytest.approx(-0.4, abs=1e-10)
+        assert context["expected_value"] == pytest.approx(0.4, abs=1e-10)
+
+        # Test case 3: Strong short bias (30/70)
+        result = {"probas": {"LONG": 0.3, "SHORT": 0.7}}
+        context = ComponentContextBuilder.build(result, {})
+
+        # EV_long = 0.3 * 1.0 - 0.7 = -0.4
+        # EV_short = 0.7 * 1.0 - 0.3 = 0.4
+        # expected_value = max(-0.4, 0.4) = 0.4
+        assert context["ev_long"] == pytest.approx(-0.4, abs=1e-10)
+        assert context["ev_short"] == pytest.approx(0.4, abs=1e-10)
+        assert context["expected_value"] == pytest.approx(0.4, abs=1e-10)
+
+    def test_ev_missing_when_probas_incomplete(self):
+        """Test that EV is not calculated when probas are missing or incomplete."""
+        # Missing probas entirely
+        result = {"regime": "trending"}
+        context = ComponentContextBuilder.build(result, {})
+        assert "expected_value" not in context
+        assert "ev_long" not in context
+        assert "ev_short" not in context
+
+        # Probas is None
+        result = {"probas": None}
+        context = ComponentContextBuilder.build(result, {})
+        assert "expected_value" not in context
+
+        # Empty probas dict
+        result = {"probas": {}}
+        context = ComponentContextBuilder.build(result, {})
+        assert "expected_value" not in context
+
+    def test_ev_boundary_cases(self):
+        """Test EV calculation at boundary conditions."""
+        # Case 1: 100% LONG probability (edge case)
+        result = {"probas": {"LONG": 1.0, "SHORT": 0.0}}
+        context = ComponentContextBuilder.build(result, {})
+
+        # EV_long = 1.0 * 1.0 - 0.0 = 1.0
+        # EV_short = 0.0 * 1.0 - 1.0 = -1.0
+        # expected_value = max(1.0, -1.0) = 1.0
+        assert context["ev_long"] == 1.0
+        assert context["ev_short"] == -1.0
+        assert context["expected_value"] == 1.0
+
+        # Case 2: 100% SHORT probability
+        result = {"probas": {"LONG": 0.0, "SHORT": 1.0}}
+        context = ComponentContextBuilder.build(result, {})
+
+        assert context["ev_long"] == -1.0
+        assert context["ev_short"] == 1.0
+        assert context["expected_value"] == 1.0

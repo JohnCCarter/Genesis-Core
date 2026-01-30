@@ -300,8 +300,8 @@ class BacktestEngine:
                     data_file, columns=read_columns, engine="pyarrow", memory_map=True
                 )
             except Exception:
-                # Fallback to default engine if pyarrow not available
-                base_df = pd.read_parquet(data_file, columns=read_columns)
+                # Fallback: retry without memory-mapped IO (keep engine deterministic).
+                base_df = pd.read_parquet(data_file, columns=read_columns, engine="pyarrow")
             self._candles_cache.put(cache_key, base_df)
             _LOGGER.debug("Loaded %s candles from %s", f"{len(base_df):,}", data_file.name)
         else:
@@ -378,6 +378,24 @@ class BacktestEngine:
             _LOGGER.debug("Applied end_date filter: %s", self.end_date)
 
         _LOGGER.debug("Filtered to %s candles", f"{len(self.candles_df):,}")
+
+        # If filtering yields an empty dataset, treat it as “no data loaded” so callers
+        # can skip gracefully (and so run() doesn't later return {'error': 'no_data'}
+        # after load_data() claimed success).
+        if self.candles_df is None or len(self.candles_df) == 0:
+            _LOGGER.error(
+                "No candles available (empty dataset). Check date filters and data range."
+            )
+            self.candles_df = None
+            self._np_arrays = None
+            self._col_open = None
+            self._col_high = None
+            self._col_low = None
+            self._col_close = None
+            self._col_volume = None
+            self._col_timestamp = None
+            self._precomputed_features = None
+            return False
 
         # Initialize fast-window column arrays if enabled
         if self.fast_window:
@@ -808,6 +826,12 @@ class BacktestEngine:
 
                 # Apply evaluation hook if provided (for composable strategy integration)
                 if self.evaluation_hook is not None:
+                    # Inject bar_index and symbol for stateful components (Cooldown, Hysteresis)
+                    if "bar_index" not in candles_window:
+                        candles_window["bar_index"] = i
+                    if "symbol" not in candles_window:
+                        candles_window["symbol"] = self.symbol
+
                     result, meta = self.evaluation_hook(result, meta, candles_window)
 
                 # Extract action, size, confidence, regime

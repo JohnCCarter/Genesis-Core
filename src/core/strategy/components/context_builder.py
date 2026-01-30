@@ -52,6 +52,47 @@ class ComponentContextBuilder:
         elif "ml_proba_long" in context:
             context["ml_confidence"] = context["ml_proba_long"]
 
+        # Expected Value (EV) calculation
+        # ===================================
+        # EV measures expected profit/loss per trade based on win probability.
+        #
+        # Formula (simplified with R=1.0 risk-reward ratio):
+        #   EV_long  = proba_long * R - proba_short
+        #   EV_short = proba_short * R - proba_long
+        #   expected_value = max(EV_long, EV_short)
+        #
+        # Where:
+        #   - proba_long: Probability of LONG win (from ML model)
+        #   - proba_short: Probability of SHORT win (from ML model)
+        #   - R: Reward-to-risk ratio (default 1.0 = equal R:R)
+        #
+        # Interpretation:
+        #   - EV > 0: Positive expected value (profitable on average)
+        #   - EV = 0: Break-even
+        #   - EV < 0: Negative expected value (unprofitable on average)
+        #
+        # IMPORTANT: This is a SIMPLIFIED calculation.
+        # Full EV should account for:
+        #   - Actual position size
+        #   - Slippage and commissions
+        #   - Dynamic R:R based on market conditions
+        #
+        # Phase 2: Uses R=1.0 for simplicity and consistency.
+        # Phase 3: May enhance with dynamic R:R from configs.
+        #
+        if "ml_proba_long" in context and "ml_proba_short" in context:
+            p_long = context["ml_proba_long"]
+            p_short = context["ml_proba_short"]
+            R = 1.0  # Simplified reward-to-risk ratio (1:1)
+
+            ev_long = p_long * R - p_short
+            ev_short = p_short * R - p_long
+
+            # Store both directions and max EV
+            context["ev_long"] = ev_long
+            context["ev_short"] = ev_short
+            context["expected_value"] = max(ev_long, ev_short)  # SSOT key for EVGate
+
         # Regime (from result)
         context["regime"] = result.get("regime", "unknown")
         context["htf_regime"] = result.get("htf_regime", "unknown")
@@ -105,6 +146,18 @@ class ComponentContextBuilder:
             if timestamps is not None and len(timestamps) > 0:
                 context["timestamp"] = timestamps[-1]
 
+            # Bar index for stateful components (Cooldown, Hysteresis)
+            # Injected by BacktestEngine before hook call
+            bar_index = candles.get("bar_index")
+            if bar_index is not None:
+                context["bar_index"] = int(bar_index)
+
+            # Symbol for multi-symbol state isolation
+            # Injected by BacktestEngine before hook call
+            symbol = candles.get("symbol")
+            if symbol is not None:
+                context["symbol"] = str(symbol)
+
         return context
 
     @staticmethod
@@ -131,12 +184,17 @@ class ComponentContextBuilder:
             "ml_proba_short",
             "ml_confidence_long",
             "ml_confidence_short",
+            "ev_long",
+            "ev_short",
+            "expected_value",
             "atr_ma",
             "rsi",
             "adx",
             "ema_delta_pct",
             "current_price",
             "timestamp",
+            "bar_index",
+            "symbol",
             "current_atr",
             "htf_fib_available",
             "ltf_fib_available",

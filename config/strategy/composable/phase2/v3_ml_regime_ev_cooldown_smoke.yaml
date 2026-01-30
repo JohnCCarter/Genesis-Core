@@ -1,0 +1,34 @@
+# Phase 2 Smoke Test: v3 ML + Regime + EV + Cooldown
+# Tests CooldownComponent integration with real pipeline data
+
+components:
+  - type: ml_confidence
+    params:
+      threshold: 0.24  # Baseline threshold
+
+  - type: regime_filter
+    params:
+      allowed_regimes: ["trending", "bull", "balanced"]
+
+  - type: ev_gate
+    params:
+      min_ev: 0.0  # Baseline (tandlös, allows all)
+
+  - type: cooldown
+    params:
+      min_bars_between_trades: 24  # 24 hours for 1h timeframe
+
+# Test period: 2024-06-01 to 2024-08-01 (same as v0/v1/v2)
+#
+# Expected behavior:
+#   - Cooldown should veto entries within 24 bars of previous trade
+#   - Trade count likely == v2 (since v2 had 0 trades due to upstream gates)
+#   - Attribution should show:
+#       * decision_count: 1345 (invariant)
+#       * cooldown veto_count: likely 0 (no trades to cool down from)
+#
+# Acceptance Criteria:
+#   1. Backtest completes without crash
+#   2. decision_count == 1345 (invariant still true)
+#   3. Cooldown appears in attribution (even if veto_count==0)
+#   4. No state leakage errors

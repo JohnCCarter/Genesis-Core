@@ -1,14 +1,12 @@
 """
 Composable Backtest Engine - Integrates component-based strategy with BacktestEngine.
 
-Uses decorator pattern to inject component evaluation into evaluate_pipeline.
+Uses evaluation_hook to inject component evaluation without monkey-patching.
 """
 
-import functools
 from typing import Any
 
 from core.backtest.engine import BacktestEngine
-from core.strategy import evaluate  # Import module to allow monkey-patching
 from core.strategy.components.attribution import AttributionTracker
 from core.strategy.components.context_builder import ComponentContextBuilder
 from core.strategy.components.strategy import ComposableStrategy
@@ -17,82 +15,12 @@ from core.utils.logging_redaction import get_logger
 _LOGGER = get_logger(__name__)
 
 
-def create_composable_pipeline(
-    strategy: ComposableStrategy,
-    attribution_tracker: AttributionTracker,
-    original_pipeline: Any,
-) -> Any:
-    """
-    Create a wrapper around evaluate_pipeline that injects component filtering.
-
-    Args:
-        strategy: ComposableStrategy to evaluate
-        attribution_tracker: Tracker for component decisions
-        original_pipeline: Original evaluate_pipeline function
-
-    Returns:
-        Wrapped function with same signature
-    """
-
-    @functools.wraps(original_pipeline)
-    def composable_evaluate_pipeline(
-        candles: dict, policy: dict, configs: dict, state: dict | None = None
-    ) -> tuple[dict, dict]:
-        """Wrapped evaluate_pipeline with component filtering."""
-        # Call original pipeline
-        result, meta = original_pipeline(candles, policy, configs, state)
-
-        # Build component context from pipeline output
-        context = ComponentContextBuilder.build(result, meta, candles=candles)
-
-        # Evaluate strategy components
-        decision = strategy.evaluate(context)
-
-        # Track attribution
-        attribution_tracker.record(decision)
-
-        # If components veto, override action to NONE
-        if not decision.allowed:
-            _LOGGER.debug(
-                "Components vetoed: %s (confidence=%.2f)",
-                decision.reason,
-                decision.confidence,
-            )
-            result["action"] = "NONE"
-            # Add component veto to metadata
-            meta["component_veto"] = {
-                "reason": decision.reason,
-                "confidence": decision.confidence,
-                "components": [
-                    {
-                        "name": cr.component,
-                        "allowed": cr.allowed,
-                        "confidence": cr.confidence,
-                        "reason": cr.reason,
-                    }
-                    for cr in decision.component_results
-                ],
-            }
-        else:
-            # Components allowed - keep original action
-            # Optionally adjust size based on component confidence
-            # (For MVP, we keep it simple and don't modify size)
-            meta["component_approved"] = {
-                "confidence": decision.confidence,
-                "components": [cr.component for cr in decision.component_results],
-            }
-
-        return result, meta
-
-    return composable_evaluate_pipeline
-
-
 class ComposableBacktestEngine:
     """
     Wrapper around BacktestEngine that integrates composable strategy.
 
-    Uses decorator pattern to inject component evaluation into evaluate_pipeline.
-    Preserves all existing exit logic (HTF Fibonacci, etc.).
+    Uses evaluation_hook to inject component evaluation after evaluate_pipeline.
+    No monkey-patching - clean and robust integration.
     """
 
     def __init__(
@@ -118,6 +46,53 @@ class ComposableBacktestEngine:
             strategy: ComposableStrategy instance with configured components
             (all other args passed through to BacktestEngine)
         """
+        self.strategy = strategy
+        self.attribution_tracker = AttributionTracker()
+
+        # Create evaluation hook that applies component filtering
+        def component_evaluation_hook(result: dict, meta: dict, candles: dict):
+            """Hook called after evaluate_pipeline to apply component filtering."""
+            # Build component context from pipeline output
+            context = ComponentContextBuilder.build(result, meta, candles=candles)
+
+            # Evaluate strategy components
+            decision = self.strategy.evaluate(context)
+
+            # Track attribution
+            self.attribution_tracker.record(decision)
+
+            # If components veto, override action to NONE
+            if not decision.allowed:
+                _LOGGER.debug(
+                    "Components vetoed: %s (confidence=%.2f)",
+                    decision.reason,
+                    decision.confidence,
+                )
+                result["action"] = "NONE"
+                # Add component veto to metadata
+                meta["component_veto"] = {
+                    "reason": decision.reason,
+                    "confidence": decision.confidence,
+                    "components": [
+                        {
+                            "name": name,
+                            "allowed": cr.allowed,
+                            "confidence": cr.confidence,
+                            "reason": cr.reason,
+                        }
+                        for name, cr in (decision.component_results or {}).items()
+                    ],
+                }
+            else:
+                # Components allowed - keep original action
+                meta["component_approved"] = {
+                    "confidence": decision.confidence,
+                    "components": list((decision.component_results or {}).keys()),
+                }
+
+            return result, meta
+
+        # Create BacktestEngine with component evaluation hook
         self.engine = BacktestEngine(
             symbol=symbol,
             timeframe=timeframe,
@@ -129,10 +104,8 @@ class ComposableBacktestEngine:
             warmup_bars=warmup_bars,
             htf_exit_config=htf_exit_config,
             fast_window=fast_window,
+            evaluation_hook=component_evaluation_hook,
         )
-        self.strategy = strategy
-        self.attribution_tracker = AttributionTracker()
-        self._original_pipeline = None
 
     def load_data(self) -> bool:
         """Load data via wrapped engine."""
@@ -148,36 +121,19 @@ class ComposableBacktestEngine:
         """
         Run backtest with component filtering.
 
-        Temporarily patches evaluate_pipeline to inject component evaluation,
-        then delegates to BacktestEngine.run().
+        Uses evaluation_hook - no monkey-patching required.
         """
         # Reset state
         self.strategy.reset()
         self.attribution_tracker = AttributionTracker()
 
-        # Save original pipeline
-        self._original_pipeline = evaluate.evaluate_pipeline
+        # Run backtest (hook is already configured in __init__)
+        results = self.engine.run(policy, configs, verbose, pruning_callback)
 
-        # Create wrapped pipeline
-        wrapped_pipeline = create_composable_pipeline(
-            self.strategy, self.attribution_tracker, self._original_pipeline
-        )
+        # Add attribution to results
+        results["attribution"] = self.attribution_tracker.get_report_dict()
 
-        try:
-            # Monkey-patch evaluate_pipeline
-            evaluate.evaluate_pipeline = wrapped_pipeline
-
-            # Run backtest with patched pipeline
-            results = self.engine.run(policy, configs, verbose, pruning_callback)
-
-            # Add attribution to results
-            results["attribution"] = self.attribution_tracker.get_report_dict()
-
-            return results
-
-        finally:
-            # Restore original pipeline
-            evaluate.evaluate_pipeline = self._original_pipeline
+        return results
 
     def get_attribution_report(self) -> dict:
         """Get attribution report from tracker."""

@@ -106,9 +106,9 @@ class TestComposableBacktestEngine:
 
     def test_monkey_patch_restoration(self, sample_strategy):
         """Test that evaluate_pipeline is restored after run."""
-        from core.strategy import evaluate
+        import core.strategy.evaluate as evaluate_module
 
-        original_pipeline = evaluate.evaluate_pipeline
+        original_pipeline = evaluate_module.evaluate_pipeline
 
         engine = ComposableBacktestEngine(
             symbol="tBTCUSD",
@@ -126,7 +126,7 @@ class TestComposableBacktestEngine:
             pass  # Ignore errors (data may not exist)
 
         # Check that pipeline is restored
-        assert evaluate.evaluate_pipeline is original_pipeline
+        assert evaluate_module.evaluate_pipeline is original_pipeline
 
     def test_attribution_report_accessible(self, sample_strategy):
         """Test that attribution report can be retrieved."""

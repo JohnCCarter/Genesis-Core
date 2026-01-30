@@ -90,6 +90,7 @@ class BacktestEngine:
         warmup_bars: int = 120,  # Bars needed for indicators (EMA, RSI, etc.)
         htf_exit_config: dict | None = None,  # HTF Exit Engine configuration
         fast_window: bool = False,  # Use precomputed NumPy arrays for window building
+        evaluation_hook: Any | None = None,  # Optional hook(result, meta) -> (result, meta)
     ):
         """
         Initialize backtest engine.
@@ -103,6 +104,8 @@ class BacktestEngine:
             commission_rate: Commission per trade (e.g., 0.001 = 0.1%)
             slippage_rate: Slippage per trade (e.g., 0.0005 = 0.05%)
             warmup_bars: Number of bars to skip for indicator warmup
+            evaluation_hook: Optional callable(result, meta, candles) -> (result, meta)
+                           Called after evaluate_pipeline, can modify result/meta
         """
         self.symbol = symbol
         self.timeframe = timeframe
@@ -110,6 +113,7 @@ class BacktestEngine:
         self.end_date = end_date
         self.warmup_bars = warmup_bars
         self.fast_window = bool(fast_window)
+        self.evaluation_hook = evaluation_hook
 
         # Validate mode consistency to prevent mixed-mode bugs
         self._validate_mode_consistency()
@@ -801,6 +805,10 @@ class BacktestEngine:
                     configs=configs,
                     state=self.state,
                 )
+
+                # Apply evaluation hook if provided (for composable strategy integration)
+                if self.evaluation_hook is not None:
+                    result, meta = self.evaluation_hook(result, meta, candles_window)
 
                 # Extract action, size, confidence, regime
                 action = result.get("action", "NONE")

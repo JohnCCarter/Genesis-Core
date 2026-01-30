@@ -17,6 +17,14 @@ If the current chat approaches context limits, stop and request a new chat sessi
 - **Completion**: Confirm when something is completed (e.g., ✅ Fixed).
 - **Language**: Prefer Swedish responses unless specified otherwise.
 
+### Context7 (MCP) auto-docs rule
+
+To avoid needing the user to type “use context7” in every prompt:
+
+- When a question involves **external libraries/APIs** (especially known pain points like **Optuna** and **Pydantic**), automatically consult Context7 docs via MCP before finalizing an answer.
+- Prefer Context7 for API signatures, defaults, gotchas, and migration notes (e.g., Pydantic v1→v2, Optuna storage/heartbeat/sampler/pruner args).
+- Do **not** use Context7 for questions that are purely about Genesis-Core internal code; use workspace search/read instead.
+
 ### Plan Mode Recommendations
 
 Proactively suggest activating Plan Mode when:

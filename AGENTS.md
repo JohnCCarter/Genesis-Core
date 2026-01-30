@@ -1,6 +1,6 @@
 # README for AI Agents (Local Development)
 
-## Last update: 2026-01-29
+## Last update: 2026-01-30
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
 
@@ -35,7 +35,19 @@ planering, audit, governance/QA och körningar – de har tydliga stop condition
 - Vill säkerställa att ändringar följer policy/CI/registry/secrets → `GovernanceQA`
 - Vill köra preflight/validate/backtest/Optuna och få artifacts/metrics → `OpsRunner`
 
-## 1. Deliverables (latest highlights: 2026-01-28)
+## 1. Deliverables (latest highlights: 2026-01-30)
+
+- **COMPOSABLE STRATEGY (PHASE 2) + OPTUNA/SQLITE HARDENING (2026-01-30)**: Pågående arbete på feature-branch för att göra strategin komponent-baserad och minska SQLite-friktion i Optuna.
+  - **Composable strategy integration**:
+    - `src/core/backtest/composable_engine.py`: wrapper som kopplar in composable komponenter via `BacktestEngine(evaluation_hook=...)` (utan monkeypatch).
+    - `src/core/strategy/components/context_builder.py`: bygger ett platt komponent-context från pipeline-resultat (inkl. EV-beräkning och state-keys).
+    - Nya komponenter: `src/core/strategy/components/{cooldown,ev_gate,regime_filter}.py`.
+    - Nya/uppdaterade tester: `tests/test_component_context_builder.py`, `tests/test_cooldown.py`, `tests/test_ev_gate.py`, `tests/test_regime_filter.py`, `tests/test_backtest_hook_invariants.py`.
+  - **Optuna/SQLite**:
+    - `tests/test_optuna_rdbstorage_engine_kwargs.py`: verifierar att SQLite får `engine_kwargs={'connect_args': {'timeout': 10}}` samt att heartbeat-parametrar hanteras.
+  - **Pydantic v2 hygiene**:
+    - Nya tester: `tests/test_no_pydantic_v1_validator_decorator.py`, `tests/test_pydantic_validator_exception_types.py`.
+  - **Handoff note**: Working tree innehåller även lokala artefakter (t.ex. zip-filer och ev. egg-info) som ska rensas/ignoreras och changes bör split-committas logiskt innan PR.
 
 - **3H TIMEFRAME BOOTSTRAP + HTF REGIME SIZING (2026-01-28)**: Bootstrappade `tBTCUSD_3h` med defensiv positionssizing baserad på HTF regime och volatilitet.
   - **Implementation**:

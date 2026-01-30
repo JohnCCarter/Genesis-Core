@@ -45,6 +45,18 @@ venv.bak/
 *.swo
 *~
 
+# AI coding assistant skills (generated local config, do not commit)
+.cursor/skills/
+.claude/skills/
+.codex/skills/
+.opencode/skills/
+.agents/skills/
+.agent/skills/
+
+# Local Copilot/CLI artifacts (do not commit)
+/.github/copilot-instructions.md.CLI
+/Copilot CLI*.zip
+
 # OS
 .DS_Store
 .DS_Store?

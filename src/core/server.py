@@ -9,7 +9,7 @@ from fastapi.responses import HTMLResponse
 from core.config.authority import ConfigAuthority
 from core.config.settings import get_settings
 from core.io.bitfinex import read_helpers as bfx_read
-from core.io.bitfinex.exchange_client import get_exchange_client
+from core.io.bitfinex.exchange_client import aclose_http_client, get_exchange_client
 from core.observability.metrics import get_dashboard
 from core.server_config_api import router as config_router
 from core.strategy.evaluate import evaluate_pipeline
@@ -43,6 +43,10 @@ async def lifespan(app: FastAPI):
     yield
 
     # Shutdown (cleanup if needed)
+    try:
+        await aclose_http_client()
+    except Exception as e:
+        _LOGGER.debug("shutdown_close_http_client_error: %s", e)
 
 
 app = FastAPI(lifespan=lifespan)

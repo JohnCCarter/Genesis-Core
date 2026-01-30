@@ -5,6 +5,7 @@ src/core/pipeline.py
 src/core/server.py
 src/core/server_config_api.py
 src/core/backtest/__init__.py
+src/core/backtest/composable_engine.py
 src/core/backtest/engine.py
 src/core/backtest/exit_strategies.py
 src/core/backtest/htf_exit_engine.py
@@ -80,6 +81,17 @@ src/core/strategy/regime.py
 src/core/strategy/regime_unified.py
 src/core/strategy/schemas.py
 src/core/strategy/validation.py
+src/core/strategy/components/__init__.py
+src/core/strategy/components/atr_filter.py
+src/core/strategy/components/attribution.py
+src/core/strategy/components/base.py
+src/core/strategy/components/context_builder.py
+src/core/strategy/components/cooldown.py
+src/core/strategy/components/ev_gate.py
+src/core/strategy/components/htf_gate.py
+src/core/strategy/components/ml_confidence.py
+src/core/strategy/components/regime_filter.py
+src/core/strategy/components/strategy.py
 src/core/symbols/symbols.py
 src/core/utils/__init__.py
 src/core/utils/backoff.py
@@ -108,7 +120,9 @@ tests/test_backtest_applies_htf_exit_config.py
 tests/test_backtest_debug_env_flag.py
 tests/test_backtest_determinism_smoke.py
 tests/test_backtest_engine.py
+tests/test_backtest_engine_hook.py
 tests/test_backtest_entry_reasons.py
+tests/test_backtest_hook_invariants.py
 tests/test_backtest_metrics.py
 tests/test_backtest_position_tracker.py
 tests/test_backtest_trade_logger.py
@@ -118,6 +132,11 @@ tests/test_calibration.py
 tests/test_canonical_mode_policy.py
 tests/test_champion_loader.py
 tests/test_compare_backtest_results.py
+tests/test_component_context_builder.py
+tests/test_components_poc.py
+tests/test_composable_backtest_engine.py
+tests/test_composable_strategy_poc.py
+tests/test_cooldown.py
 tests/test_confidence.py
 tests/test_config_api_e2e.py
 tests/test_config_endpoints.py
@@ -130,6 +149,7 @@ tests/test_decision_edge.py
 tests/test_decision_matrix.py
 tests/test_e2e_pipeline.py
 tests/test_env_flags.py
+tests/test_ev_gate.py
 tests/test_evaluate_pipeline.py
 tests/test_evaluate_pipeline_config_isolation.py
 tests/test_evaluate_regime_precomputed_index.py
@@ -179,6 +199,7 @@ tests/test_model_registry_min.py
 tests/test_model_schema_compat.py
 tests/test_new_htf_exit_engine_adapter.py
 tests/test_no_legacy_feature_imports.py
+tests/test_no_pydantic_v1_validator_decorator.py
 tests/test_no_src_core_imports_in_scripts.py
 tests/test_nonce.py
 tests/test_observability.py
@@ -192,6 +213,7 @@ tests/test_optimizer_performance.py
 tests/test_optimizer_runner.py
 tests/test_optimizer_synergy.py
 tests/test_optuna_config_cache.py
+tests/test_optuna_rdbstorage_engine_kwargs.py
 tests/test_optuna_resume_signature.py
 tests/test_performance_improvements.py
 tests/test_performance_improvements_2025.py
@@ -203,7 +225,9 @@ tests/test_precompute_vs_runtime.py
 tests/test_preflight_optuna_check.py
 tests/test_prob_model_integration.py
 tests/test_prob_model_min.py
+tests/test_pydantic_validator_exception_types.py
 tests/test_read_helpers.py
+tests/test_regime_filter.py
 tests/test_regime.py
 tests/test_registry_validator.py
 tests/test_remote_server_fastmcp_sse_alias.py
@@ -216,6 +240,7 @@ tests/test_run_skill_vertical_slice.py
 tests/test_runner_direct_includes_merged_config.py
 tests/test_scoring_v2.py
 tests/test_strategy_ema_cross.py
+tests/test_strategy_schemas.py
 tests/test_symbols.py
 tests/test_timeframe_month_alias.py
 tests/test_train_model.py

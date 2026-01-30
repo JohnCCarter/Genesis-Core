@@ -1,0 +1,14 @@
+# POC Config v0 - Baseline (ML only)
+# This is the baseline: only ML confidence component
+
+symbol: tBTCUSD
+timeframe: 1h
+start_date: "2024-06-01"
+end_date: "2024-08-01"
+
+components:
+  - type: ml_confidence
+    params:
+      threshold: 0.5
+
+description: "Baseline - ML confidence only (threshold 0.5)"

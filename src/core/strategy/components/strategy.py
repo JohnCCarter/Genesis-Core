@@ -48,6 +48,16 @@ class ComposableStrategy:
             raise ValueError("At least one component required")
         self.components = components
 
+    def reset(self) -> None:
+        """
+        Reset state of all stateful components.
+
+        Should be called before each backtest to ensure clean state.
+        """
+        for component in self.components:
+            if hasattr(component, "reset_state"):
+                component.reset_state()
+
     def evaluate(self, context: dict) -> StrategyDecision:
         """
         Evaluate all components and produce final decision.

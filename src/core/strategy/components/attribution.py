@@ -64,6 +64,48 @@ class AttributionTracker:
             if not result.allowed:
                 stats.veto_count += 1
 
+    def get_report_dict(self) -> dict:
+        """
+        Get attribution data as dictionary for programmatic access.
+
+        Returns:
+            Dictionary with component statistics and totals.
+        """
+        component_stats = {}
+        for component_name, stats in self.stats.items():
+            avg_conf = sum(stats.confidences) / len(stats.confidences) if stats.confidences else 0.0
+            min_conf = min(stats.confidences) if stats.confidences else 0.0
+            max_conf = max(stats.confidences) if stats.confidences else 0.0
+
+            component_stats[component_name] = {
+                "evaluations": stats.total_evaluations,
+                "vetoes": stats.veto_count,
+                "veto_rate": (
+                    stats.veto_count / stats.total_evaluations
+                    if stats.total_evaluations > 0
+                    else 0.0
+                ),
+                "confidence": {
+                    "avg": avg_conf,
+                    "min": min_conf,
+                    "max": max_conf,
+                },
+            }
+
+        return {
+            "total_decisions": self.total_decisions,
+            "allowed": self.total_allowed,
+            "vetoed": self.total_vetoed,
+            "allow_rate": (
+                self.total_allowed / self.total_decisions if self.total_decisions > 0 else 0.0
+            ),
+            "veto_counts": {name: stats["vetoes"] for name, stats in component_stats.items()},
+            "component_confidence": {
+                name: stats["confidence"] for name, stats in component_stats.items()
+            },
+            "components": component_stats,
+        }
+
     def get_report(self) -> str:
         """
         Generate attribution report showing component impact.

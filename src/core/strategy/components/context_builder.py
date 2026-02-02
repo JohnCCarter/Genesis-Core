@@ -38,8 +38,25 @@ class ComponentContextBuilder:
         confidence = result.get("confidence", {})
 
         if isinstance(probas, dict) and probas:
-            context["ml_proba_long"] = probas.get("LONG", 0.0)
-            context["ml_proba_short"] = probas.get("SHORT", 0.0)
+            # Normalize keys to handle both 'buy'/'sell' (model output) and 'LONG'/'SHORT' (legacy)
+            # Case-insensitive lookup with explicit fallback chain
+            probas_normalized = {k.lower(): v for k, v in probas.items()}
+
+            p_long = (
+                probas_normalized.get("buy")  # Primary: model output
+                or probas_normalized.get("long")  # Fallback: legacy key
+                or 0.0
+            )
+            p_short = (
+                probas_normalized.get("sell")  # Primary: model output
+                or probas_normalized.get("short")  # Fallback: legacy key
+                or 0.0
+            )
+
+            # Only set proba keys if we have valid values
+            if p_long > 0 or p_short > 0:
+                context["ml_proba_long"] = p_long
+                context["ml_proba_short"] = p_short
 
         if isinstance(confidence, dict) and confidence:
             context["ml_confidence_long"] = confidence.get("buy", 0.0)
@@ -80,18 +97,22 @@ class ComponentContextBuilder:
         # Phase 2: Uses R=1.0 for simplicity and consistency.
         # Phase 3: May enhance with dynamic R:R from configs.
         #
+        # IMPORTANT: Only calculate EV when probas are present and valid (no degenerate 0.0)
         if "ml_proba_long" in context and "ml_proba_short" in context:
             p_long = context["ml_proba_long"]
             p_short = context["ml_proba_short"]
-            R = 1.0  # Simplified reward-to-risk ratio (1:1)
 
-            ev_long = p_long * R - p_short
-            ev_short = p_short * R - p_long
+            # Only emit EV fields if probas are meaningful (not both zero)
+            if p_long > 0 or p_short > 0:
+                R = 1.0  # Simplified reward-to-risk ratio (1:1)
 
-            # Store both directions and max EV
-            context["ev_long"] = ev_long
-            context["ev_short"] = ev_short
-            context["expected_value"] = max(ev_long, ev_short)  # SSOT key for EVGate
+                ev_long = p_long * R - p_short
+                ev_short = p_short * R - p_long
+
+                # Store both directions and max EV
+                context["ev_long"] = ev_long
+                context["ev_short"] = ev_short
+                context["expected_value"] = max(ev_long, ev_short)  # SSOT key for EVGate
 
         # Regime (from result)
         context["regime"] = result.get("regime", "unknown")

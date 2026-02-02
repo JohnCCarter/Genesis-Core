@@ -111,6 +111,12 @@ def main():
     print("\nRunning backtest...")
     results = engine.run(verbose=args.verbose)
 
+    # Add composable config identity for traceability (helps avoid overwrite confusion)
+    bt_info = results.setdefault("backtest_info", {})
+    bt_info.setdefault("composable_config_id", config_path.stem)
+    bt_info.setdefault("composable_config_path", str(config_path))
+    bt_info.setdefault("composable_components", [c["type"] for c in config.get("components", [])])
+
     # Check for errors
     if "error" in results:
         print(f"\nERROR: Backtest failed: {results['error']}")
@@ -135,9 +141,8 @@ def main():
 
     attribution = results.get("attribution", {})
     print(f"Total Decisions: {attribution.get('total_decisions', 0)}")
-    print(
-        f"Allowed: {attribution.get('allowed', 0)} ({attribution.get('allow_rate', 0.0) * 100:.1f}%)"
-    )
+    allow_rate = attribution.get("allow_rate", 0.0) * 100
+    print(f"Allowed: {attribution.get('allowed', 0)} ({allow_rate:.1f}%)")
     print(f"Vetoed: {attribution.get('vetoed', 0)}")
 
     veto_counts = attribution.get("veto_counts", {})
@@ -150,15 +155,17 @@ def main():
     if component_confidence:
         print("\nComponent Confidence:")
         for comp_name, conf in component_confidence.items():
-            print(
-                f"  {comp_name}: avg={conf['avg']:.3f}, min={conf['min']:.3f}, max={conf['max']:.3f}"
-            )
+            avg, min_c, max_c = conf["avg"], conf["min"], conf["max"]
+            print(f"  {comp_name}: avg={avg:.3f}, min={min_c:.3f}, max={max_c:.3f}")
 
     # Save results
     output_dir = repo_root / "results" / "composable_backtest_phase2"
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    output_file = output_dir / f"{args.symbol}_{args.timeframe}_{args.start}_{args.end}.json"
+    output_file = (
+        output_dir
+        / f"{args.symbol}_{args.timeframe}_{config_path.stem}_{args.start}_{args.end}.json"
+    )
     with open(output_file, "w") as f:
         json.dump(results, f, indent=2, default=str)
 

@@ -133,9 +133,8 @@ class AttributionTracker:
             stats = self.stats[component_name]
             lines.append(f"\n{component_name}:")
             lines.append(f"  Evaluations: {stats.total_evaluations}")
-            lines.append(
-                f"  Vetoes: {stats.veto_count} ({self._pct(stats.veto_count, stats.total_evaluations)}%)"
-            )
+            veto_pct = self._pct(stats.veto_count, stats.total_evaluations)
+            lines.append(f"  Vetoes: {stats.veto_count} ({veto_pct}%)")
 
             if stats.confidences:
                 avg_conf = sum(stats.confidences) / len(stats.confidences)

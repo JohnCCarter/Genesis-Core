@@ -157,9 +157,8 @@ def main():
 
     attribution = results.get("attribution", {})
     print(f"Total Decisions: {attribution.get('total_decisions', 0)}")
-    print(
-        f"Allowed: {attribution.get('allowed', 0)} ({attribution.get('allow_rate', 0.0) * 100:.1f}%)"
-    )
+    allow_rate = attribution.get("allow_rate", 0.0) * 100
+    print(f"Allowed: {attribution.get('allowed', 0)} ({allow_rate:.1f}%)")
     print(f"Vetoed: {attribution.get('vetoed', 0)}")
 
     veto_counts = attribution.get("veto_counts", {})
@@ -172,16 +171,16 @@ def main():
     if component_confidence:
         print("\nComponent Confidence:")
         for comp_name, conf in component_confidence.items():
-            print(
-                f"  {comp_name}: avg={conf['avg']:.3f}, min={conf['min']:.3f}, max={conf['max']:.3f}"
-            )
+            avg, min_c, max_c = conf["avg"], conf["min"], conf["max"]
+            print(f"  {comp_name}: avg={avg:.3f}, min={min_c:.3f}, max={max_c:.3f}")
 
     # Save results with unique filename (include config name to avoid overwrites)
     output_dir = repo_root / "results" / "composable_no_fib"
     output_dir.mkdir(parents=True, exist_ok=True)
 
     config_id = config_path.stem
-    output_file = output_dir / f"{config_id}_{args.symbol}_{args.timeframe}_{args.start}_{args.end}.json"
+    fname = f"{config_id}_{args.symbol}_{args.timeframe}_{args.start}_{args.end}.json"
+    output_file = output_dir / fname
     with open(output_file, "w") as f:
         json.dump(results, f, indent=2, default=str)
 

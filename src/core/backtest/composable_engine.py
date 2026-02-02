@@ -64,14 +64,16 @@ class ComposableBacktestEngine:
             # If components veto, override action to NONE
             if not decision.allowed:
                 _LOGGER.debug(
-                    "Components vetoed: %s (confidence=%.2f)",
-                    decision.reason,
+                    "Components vetoed: %s/%s (confidence=%.2f)",
+                    decision.veto_component,
+                    decision.veto_reason,
                     decision.confidence,
                 )
                 result["action"] = "NONE"
                 # Add component veto to metadata
                 meta["component_veto"] = {
-                    "reason": decision.reason,
+                    "component": decision.veto_component,
+                    "reason": decision.veto_reason,
                     "confidence": decision.confidence,
                     "components": [
                         {

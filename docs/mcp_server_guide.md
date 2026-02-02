@@ -18,6 +18,7 @@ If you expose the remote server outside localhost, use a reverse proxy / tunnel 
 - [Overview](#overview)
 - [Installation](#installation)
 - [VSCode Configuration](#vscode-configuration)
+- [Windows desktop automation (Windows-MCP)](#windows-desktop-automation-windows-mcp)
 - [Available Tools](#available-tools)
 - [Available Resources](#available-resources)
 - [Usage Examples](#usage-examples)
@@ -173,6 +174,51 @@ first thing to verify.
 If you are troubleshooting a tunnel:
 
 - Prefer verifying `POST /mcp` works end-to-end before spending time on SSE flush behavior.
+
+## Windows desktop automation (Windows-MCP)
+
+Windows-MCP is a separate MCP server that exposes Windows desktop automation tools (e.g., snapshotting UI state,
+clicking, typing). It is **not** part of Genesis-Core, but it can be used alongside Genesis-Core to help with
+hands-on ops workflows (e.g., verifying local setup, inspecting UI state, running safe smoke checks).
+
+Recommended approach on Windows:
+
+- Run Windows-MCP via `uvx` so it stays isolated from the Genesis-Core `.venv`.
+- Keep the configuration **outside this repo** (user-scoped), to avoid project conflicts.
+
+Prerequisites:
+
+- Python **3.13+** (Windows-MCP requirement)
+- `uv` / `uvx` installed
+
+Note: Some desktop “extensions” UIs validate `python --version` from your PATH and may complain even if
+`py -3.13` is installed. Running via `uvx windows-mcp --transport stdio` avoids that mismatch.
+
+Example (Claude Desktop) config location:
+
+- `%APPDATA%\Claude\claude_desktop_config.json`
+
+Example config snippet:
+
+```json
+{
+  "mcpServers": {
+    "windows-mcp": {
+      "command": "uvx",
+      "args": ["windows-mcp", "--transport", "stdio"],
+      "env": {
+        "ANONYMIZED_TELEMETRY": "false"
+      }
+    }
+  }
+}
+```
+
+Safety notes:
+
+- Treat OS automation as high-trust access. Prefer read-only tools (`Snapshot`) before any `Click`/`Type`.
+- Never type/paste secrets via automation tools.
+- If you are sharing a screen or recording, assume UI state may contain sensitive information.
 
 ## Available Tools
 

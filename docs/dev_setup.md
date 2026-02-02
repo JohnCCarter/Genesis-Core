@@ -66,6 +66,31 @@ Verifiera med `code --list-extensions`:
 - `github.codespaces`, `github.vscode-pull-request-github`, `github.vscode-github-actions`
 - `openai.chatgpt` (explicit önskemål att behålla)
 
+### Valfritt: OS-automation via Windows-MCP (Claude Desktop/Code)
+
+Windows-MCP är en **separat** MCP-server som exponerar Windows OS-automation (t.ex. “snapshot” av UI,
+klick/typing). Den ingår inte i Genesis-Core, men kan vara praktisk för säkra, manuella ops-flöden.
+
+Rekommenderad princip:
+
+- Kör den isolerat via `uvx` (så att den inte blandar sig med Genesis-Core `.venv`).
+- Lägg konfigurationen **utanför repot** (user-scoped), så att vi inte får handoff-/merge-konflikter.
+
+Förutsättningar (Windows-MCP):
+
+- Python **3.13+**
+- `uv` / `uvx`
+
+Claude Desktop läser typiskt MCP-konfig från:
+
+- `%APPDATA%\Claude\claude_desktop_config.json`
+
+Säkerhet:
+
+- Börja alltid med read-only verktyg (t.ex. “Snapshot”) innan du använder klick/typing.
+- Klistra aldrig in hemligheter via OS-automation.
+- Anta att UI state (fönstertitlar/textfält) kan innehålla känslig information.
+
 ## 4) Verifiering (snabb check)
 
 1. Öppna en Python-fil och kontrollera att format-on-save triggar Black.

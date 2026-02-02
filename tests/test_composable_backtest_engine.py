@@ -2,9 +2,11 @@
 
 import os
 
+import pandas as pd
 import pytest
 
 from core.backtest.composable_engine import ComposableBacktestEngine
+from core.strategy.components.base import ComponentResult, StrategyComponent
 from core.strategy.components.ml_confidence import MLConfidenceComponent
 from core.strategy.components.strategy import ComposableStrategy
 
@@ -21,6 +23,80 @@ def sample_strategy():
 
 class TestComposableBacktestEngine:
     """Test ComposableBacktestEngine integration."""
+
+    def test_veto_path_does_not_crash_and_counts_bars(self, monkeypatch):
+        """Regression: veto-path must not raise and must process all bars.
+
+        Historically, the composable evaluation hook referenced a non-existent
+        attribute (decision.reason) on veto, causing an exception on every veto.
+        This silently collapsed bars_processed/equity_curve to the number of
+        allowed decisions.
+        """
+
+        class AlwaysVeto(StrategyComponent):
+            def name(self) -> str:  # noqa: D401
+                return "AlwaysVeto"
+
+            def evaluate(self, context: dict) -> ComponentResult:
+                return ComponentResult(allowed=False, confidence=0.0, reason="ALWAYS_VETO")
+
+        def stub_evaluate_pipeline(*, candles, policy, configs, state):
+            # Minimal structure that BacktestEngine expects.
+            result = {
+                "action": "NONE",
+                "confidence": 0.5,
+                "regime": "BALANCED",
+                "probas": {"LONG": 0.5, "SHORT": 0.5},
+                "features": {},
+            }
+            meta = {
+                "decision": {"size": 0.0, "reasons": [], "state_out": {}},
+                "features": {},
+            }
+            return result, meta
+
+        import core.backtest.engine as engine_module
+
+        monkeypatch.setattr(engine_module, "evaluate_pipeline", stub_evaluate_pipeline)
+
+        strategy = ComposableStrategy(components=[AlwaysVeto()])
+        engine = ComposableBacktestEngine(
+            symbol="tBTCUSD",
+            timeframe="1h",
+            strategy=strategy,
+            start_date=None,
+            end_date=None,
+            warmup_bars=0,
+            fast_window=False,
+        )
+
+        n_bars = 32
+        ts = pd.date_range("2024-01-01", periods=n_bars, freq="1h", tz="UTC")
+        engine.engine.candles_df = pd.DataFrame(
+            {
+                "timestamp": ts,
+                "open": 100.0,
+                "high": 101.0,
+                "low": 99.0,
+                "close": 100.0,
+                "volume": 1.0,
+            }
+        )
+        engine.engine._np_arrays = None
+
+        results = engine.run(configs={"meta": {"skip_champion_merge": True}})
+
+        assert results.get("backtest_info", {}).get("bars_total") == n_bars
+        assert results.get("backtest_info", {}).get("bars_processed") == n_bars
+
+        attribution = results.get("attribution") or {}
+        assert attribution.get("total_decisions") == n_bars
+        assert attribution.get("allowed") == 0
+        assert attribution.get("vetoed") == n_bars
+
+        assert isinstance(results.get("equity_curve"), list)
+        assert len(results.get("equity_curve")) == n_bars
+        assert results.get("summary", {}).get("num_trades") == 0
 
     def test_engine_initialization(self, sample_strategy):
         """Test that engine initializes correctly."""

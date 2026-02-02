@@ -4,8 +4,15 @@
 **Started**: 2026-01-29
 **Phase 1 Completed**: 2026-01-30
 **Phase 2 Completed**: 2026-02-02
-**Status**: ✅ Phase 2 Complete - Ready for Phase 3
+**Phase 3 Status**: ⚠️ PARTIAL - Bug #2 FIXED, Bug #1 pending
 **Owner**: Claude Code + User
+
+**Latest**: Bug #2 (ComponentContextBuilder) FIXED (2026-02-02)
+- ✅ Key mapping fix applied (buy/sell → LONG/SHORT)
+- ✅ 26 tests added (all passing)
+- ✅ EVGate now functional (~45% veto rate vs 100% before)
+- ⚠️ Bug #1 (CooldownComponent) pending debug
+- See: `docs/features/PHASE3_MILESTONE1_BLOCKER_INVESTIGATION.md`
 
 ---
 
@@ -44,25 +51,42 @@ Phase 3: Full Migration (2-3 veckor)   ← NEXT
 
 ---
 
-## Phase 1: Proof of Concept (Current)
+## Phase 1: Proof of Concept - ✅ COMPLETE
 
-**Goal**: Bevisa att component-based approach fungerar och ger värdefulla insights
+**Completed**: 2026-01-30
+**Duration**: 1 day
+**Goal**: Prove component-based approach works and provides attribution insights
 
-**Timeline**: 1 dag (6-8 timmar arbete)
+### Summary
 
-**Success Criteria**:
-- [ ] 3 komponenter implementerade och testade
-- [ ] Komponenter går att kombinera via config
-- [ ] Backtest körs med olika kombinationer
-- [ ] Results visar vilket som ger värde
-- [ ] Koden är ren och maintainable
+**Core Infrastructure**:
+- ✅ StrategyComponent base class with evaluate() interface
+- ✅ ComponentResult dataclass (allowed, confidence, reason, metadata)
+- ✅ ComposableStrategy with first-veto-wins composition logic
+- ✅ Attribution tracking (veto counts, confidence distributions)
 
-### Tasks
+**Components Implemented** (3):
+1. ✅ MLConfidenceComponent (threshold-based ML filtering)
+2. ✅ HTFGateComponent (HTF regime filtering)
+3. ✅ ATRFilterComponent (volatility-based filtering)
 
-#### ✅ Setup (30 min)
-- [x] Skapa feature branch: `feature/composable-strategy-poc`
-- [x] Skapa tracking dokument: `docs/features/COMPOSABLE_STRATEGY_PROJECT.md`
-- [ ] Skapa working directory: `src/core/strategy/components/` (POC code här)
+**Validation**:
+- ✅ Unit tests for base classes and composition
+- ✅ POC backtests demonstrated component filtering
+- ✅ Attribution reports showed component impact
+- ✅ **Decision**: GREEN LIGHT for Phase 2
+
+**Key Learnings**:
+- Component isolation enables clear attribution
+- First-veto-wins pattern simple and effective
+- Config-driven composition works well
+
+---
+
+## Phase 1 Detailed Tasks (Archived)
+
+<details>
+<summary>Expand to see original Phase 1 planning tasks (archived)</summary>
 
 #### 🚧 Core Infrastructure (2h)
 - [ ] **StrategyComponent base class** (`components/base.py`)
@@ -351,19 +375,11 @@ Proof of concept is successful if:
 
 **If all 3 categories pass: GREEN LIGHT for Phase 2** ✅
 
----
-
-## References
-
-- Original discussion: Session 2026-01-29
-- Related docs: `CLAUDE.md`, `AGENTS.md`
-- Current strategy: `src/core/strategy/decision.py`
-- Current results: `config/strategy/champions/tBTCUSD_1h.json`
-
+</details>
 
 ---
 
-## Phase 2: Minimal Viable - COMPLETE ✅
+## Phase 2: Minimal Viable - ✅ COMPLETE
 
 **Completed**: 2026-02-02
 **Branch**: `feature/composable-strategy-phase2`
@@ -475,17 +491,65 @@ Proof of concept is successful if:
 
 ---
 
-## Phase 3: Full Migration - NEXT
+## Phase 3: Full Migration - BLOCKED
 
-**Status**: Ready to start
-**Estimated Duration**: 2-3 weeks
+**Status**: 🚨 BLOCKED - Critical bugs identified (see investigation report)
+**Estimated Duration**: 2-3 weeks (after bug fixes)
+**Investigation Report**: `docs/features/PHASE3_MILESTONE1_BLOCKER_INVESTIGATION.md`
 
-### Goals
+### Milestone 1: Component Tuning - PARTIAL (2026-02-02)
+
+**Attempt**: Config-only tuning (v4a, v4 configs)
+**Result**: 0 trades produced (investigation complete, Bug #2 FIXED)
+**Blocker Investigation**: ✅ COMPLETE
+
+**Critical bugs identified and status**:
+
+1. **CooldownComponent anomaly**: ⚠️ PENDING
+   - 1871 vetoes (91.7%) with 0 trades
+   - Isolation test proves it's the blocker (v4a_no_cooldown → 18 trades)
+   - Root cause: TBD (requires decision logging)
+   - **Status**: Not fixed yet (HIGH priority)
+
+2. **ComponentContextBuilder key mapping bug**: ✅ FIXED (2026-02-02)
+   - Root cause: Used probas.get('LONG'/'SHORT') but model outputs 'buy'/'sell'
+   - Impact: EVGate received EV=0.0 for ALL decisions (degenerate)
+   - **Fix applied**: Robust key mapping (buy/sell → LONG/SHORT, case-insensitive)
+   - **Tests**: 26 new tests added (all passing)
+   - **Validation**: EVGate now shows ~45% veto rate (was 100%)
+
+3. **Allowed→Trades gap**: ⚠️ PENDING (MEDIUM priority)
+   - 98.6% drop rate (1277 signals → 18 trades)
+   - Primary cause: PositionTracker rejects new entry when position open
+   - Impact: Cannot achieve >100 trades without execution layer changes
+   - **Status**: Requires PositionTracker analysis
+
+**Investigation artifacts**:
+- Scripts: `scripts/extract_ev_distribution.py`, `scripts/diagnose_ml_probas.py`
+- Configs: `v4a_ml_regime_relaxed.yaml`, `v4a_no_cooldown.yaml`, `v4_ml_regime_ev_cooldown_tuned.yaml`
+- Results: `results/composable_no_fib/v4a_*` (isolation tests)
+
+**Corrected EV distribution** (Q1 2024, with key fix):
+- Mean: 0.064, Std: 0.048, Range: [0.0, 0.276]
+- Recommended min_ev: 0.10 (20% veto), 0.13 (10% veto)
+
+**Change Policy**: Bug #2 fixed with comprehensive tests. Bug #1 pending.
+
+**Completed**:
+- ✅ Bug #2 fixed: ComponentContextBuilder key mapping (26 tests added)
+- ✅ EVGate validated: ~45% veto rate with min_ev=0.1 (was 100%)
+
+**Next Steps**:
+1. ✅ ~~Fix Bug #2 (ComponentContextBuilder)~~ DONE
+2. ⚠️ Debug Bug #1 (CooldownComponent) - HIGH priority, requires decision logging
+3. ⚠️ Analyze Gap #3 (execution layer) - affects tuning interpretation
+
+### Goals (After Bug Fixes)
 
 1. **Component Tuning**:
-   - Relax RegimeFilter (add "bear", "ranging")
-   - Tune EVGate (min_ev: 0.0 → 0.1-0.2)
-   - Extended validation (full 2024 for >100 trades)
+   - Relax RegimeFilter (add "bear", "ranging") ✅ Verified in isolation
+   - Tune EVGate (min_ev: 0.10-0.13 based on corrected distribution)
+   - Extended validation (full 2024 for >100 trades, accounting for 98% drop rate)
 
 2. **Additional Components**:
    - HysteresisComponent (anti-flipflop, stateful)
@@ -507,7 +571,8 @@ Proof of concept is successful if:
 
 ### Success Criteria
 
-- [ ] >100 trades on full 2024 validation
+- [ ] Bug fixes validated (CooldownComponent, ComponentContextBuilder)
+- [ ] >100 trades on full 2024 validation (requires execution layer tuning)
 - [ ] PF >= current champion -5%
 - [ ] Component attribution shows value
 - [ ] Optuna optimization working

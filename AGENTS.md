@@ -1,6 +1,6 @@
 # README for AI Agents (Local Development)
 
-## Last update: 2026-01-30
+## Last update: 2026-02-02
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
 
@@ -34,6 +34,22 @@ planering, audit, governance/QA och körningar – de har tydliga stop condition
 - Fråga om “varför blev det så här?” (utan nya körningar) → `AnalysisAudit`
 - Vill säkerställa att ändringar följer policy/CI/registry/secrets → `GovernanceQA`
 - Vill köra preflight/validate/backtest/Optuna och få artifacts/metrics → `OpsRunner`
+
+### Fasdisciplin (implementering vs validering vs optimering)
+
+För att undvika “vi ändrade något men kan inte bevisa vad/varför” kör vi med tydliga faser:
+
+- **Implementering**: kod-/konfigändring med liten diff + test direkt. Undvik långkörningar; fokusera på snabba, deterministiska checks.
+- **Validering**: bevisa beteende på ett fixerat fönster. Logga alltid _vad som kördes_ (config path, symbol/timeframe, start/end,
+  canonical flags) och _vad som hände_ (nyckelmetriker + run_id).
+- **Optimering**: Optuna/kampanjer. Kör preflight + config-validering innan långa runs och börja med baseline (champion-parametrar).
+
+**Artifacts / två datorer**:
+
+- Anta att råa artifacts under `results/**` ofta är gitignored. För delning/hand-off:
+  - Committa små sammanfattningar under `results/evaluation/` och/eller lägg en kort “pointer” i `docs/daily_summaries/`.
+  - För större uppsättningar: skapa kuraterad zip-bundle under `results/archive/bundles/*.zip` (LFS-tracked) + lägg run_id/nyckeldata
+    i `docs/daily_summaries/`.
 
 ## 1. Deliverables (latest highlights: 2026-01-30)
 

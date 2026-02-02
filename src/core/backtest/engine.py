@@ -90,7 +90,12 @@ class BacktestEngine:
         warmup_bars: int = 120,  # Bars needed for indicators (EMA, RSI, etc.)
         htf_exit_config: dict | None = None,  # HTF Exit Engine configuration
         fast_window: bool = False,  # Use precomputed NumPy arrays for window building
-        evaluation_hook: Any | None = None,  # Optional hook(result, meta) -> (result, meta)
+        evaluation_hook: (
+            Any | None
+        ) = None,  # Optional hook(result, meta, candles) -> (result, meta)
+        post_execution_hook: (
+            Any | None
+        ) = None,  # Optional hook(symbol, bar_index, action, executed)
     ):
         """
         Initialize backtest engine.
@@ -106,6 +111,8 @@ class BacktestEngine:
             warmup_bars: Number of bars to skip for indicator warmup
             evaluation_hook: Optional callable(result, meta, candles) -> (result, meta)
                            Called after evaluate_pipeline, can modify result/meta
+            post_execution_hook: Optional callable(symbol, bar_index, action, executed)
+                           Called after execute_action, executed=True means trade opened
         """
         self.symbol = symbol
         self.timeframe = timeframe
@@ -114,6 +121,7 @@ class BacktestEngine:
         self.warmup_bars = warmup_bars
         self.fast_window = bool(fast_window)
         self.evaluation_hook = evaluation_hook
+        self.post_execution_hook = post_execution_hook
 
         # Validate mode consistency to prevent mixed-mode bugs
         self._validate_mode_consistency()
@@ -933,6 +941,15 @@ class BacktestEngine:
                             "reasons": decision_meta.get("reasons"),
                         }
                         self.position_tracker.log_entry_fib_debug(entry_debug)
+
+                        # Call post-execution hook for stateful components (Cooldown)
+                        if self.post_execution_hook is not None:
+                            self.post_execution_hook(
+                                symbol=self.symbol,
+                                bar_index=i,
+                                action=action,
+                                executed=True,
+                            )
 
                         if verbose:
                             print(

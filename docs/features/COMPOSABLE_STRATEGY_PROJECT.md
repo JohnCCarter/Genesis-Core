@@ -4,15 +4,16 @@
 **Started**: 2026-01-29
 **Phase 1 Completed**: 2026-01-30
 **Phase 2 Completed**: 2026-02-02
-**Phase 3 Status**: ⚠️ PARTIAL - Bug #2 FIXED, Bug #1 pending
+**Phase 3 Status**: ✅ UNBLOCKED - Bug #1 FIXED, Bug #2 FIXED
 **Owner**: Claude Code + User
 
-**Latest**: Bug #2 (ComponentContextBuilder) FIXED (2026-02-02)
-- ✅ Key mapping fix applied (buy/sell → LONG/SHORT)
-- ✅ 26 tests added (all passing)
-- ✅ EVGate now functional (~45% veto rate vs 100% before)
-- ⚠️ Bug #1 (CooldownComponent) pending debug
-- See: `docs/features/PHASE3_MILESTONE1_BLOCKER_INVESTIGATION.md`
+**Latest**: Bug #1 (CooldownComponent Phantom Trades) FIXED (2026-02-02)
+- ✅ Root cause: premature `record_trade()` call (signal-based, not execution-based)
+- ✅ Fix: post-execution hook in BacktestEngine (only calls on executed=True)
+- ✅ 5 regression tests added (all passing)
+- ✅ v4a validation: 0 trades → 15 trades, 1526 phantom vetoes eliminated
+- ✅ Bug #2 (ComponentContextBuilder key mapping) also fixed (26 tests passing)
+- See: `docs/features/PHASE3_BUG1_FIX_SUMMARY.md` and `PHASE3_BUG2_FIX_SUMMARY.md`
 
 ---
 
@@ -541,8 +542,9 @@ Proof of concept is successful if:
 
 **Next Steps**:
 1. ✅ ~~Fix Bug #2 (ComponentContextBuilder)~~ DONE
-2. ⚠️ Debug Bug #1 (CooldownComponent) - HIGH priority, requires decision logging
-3. ⚠️ Analyze Gap #3 (execution layer) - affects tuning interpretation
+2. ✅ ~~Fix Bug #1 (CooldownComponent phantom trades)~~ DONE
+3. Proceed with Phase 3 Milestone 1: Component Tuning (unblocked)
+4. (Optional) Analyze Gap #3 (execution layer) for tuning interpretation
 
 ### Goals (After Bug Fixes)
 

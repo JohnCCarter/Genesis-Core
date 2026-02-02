@@ -5,7 +5,6 @@ Verifies that 'buy'/'sell' keys (model output) are correctly mapped to
 ml_proba_long/short, with fallback to 'LONG'/'SHORT' for legacy compatibility.
 """
 
-
 from core.strategy.components.context_builder import ComponentContextBuilder
 
 

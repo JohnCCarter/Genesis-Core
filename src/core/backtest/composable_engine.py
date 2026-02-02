@@ -92,20 +92,22 @@ class ComposableBacktestEngine:
                     "components": list((decision.component_results or {}).keys()),
                 }
 
-                # Record trade for stateful components (Cooldown) ONLY on ENTRY actions
-                # ENTRY = LONG or SHORT (not NONE, not exit/close actions)
-                action = result.get("action", "NONE")
-                if action in ("LONG", "SHORT"):
-                    symbol = context.get("symbol")
-                    bar_index = context.get("bar_index")
-                    if symbol is not None and bar_index is not None:
-                        for component in self.strategy.components:
-                            if hasattr(component, "record_trade"):
-                                component.record_trade(symbol=symbol, bar_index=bar_index)
-
             return result, meta
 
-        # Create BacktestEngine with component evaluation hook
+        # Create post-execution hook for stateful component updates
+        def post_execution_hook(symbol: str, bar_index: int, action: str, executed: bool):
+            """Hook called after execute_action to update stateful components.
+
+            CRITICAL: Only call when executed=True (trade actually opened).
+            This prevents "phantom trades" where signals update cooldown state
+            but BacktestEngine rejects the entry (position already open, size=0, etc.).
+            """
+            if executed and action in ("LONG", "SHORT"):
+                for component in self.strategy.components:
+                    if hasattr(component, "record_trade"):
+                        component.record_trade(symbol=symbol, bar_index=bar_index)
+
+        # Create BacktestEngine with component evaluation hook + post-execution hook
         self.engine = BacktestEngine(
             symbol=symbol,
             timeframe=timeframe,
@@ -118,6 +120,7 @@ class ComposableBacktestEngine:
             htf_exit_config=htf_exit_config,
             fast_window=fast_window,
             evaluation_hook=component_evaluation_hook,
+            post_execution_hook=post_execution_hook,
         )
 
     def load_data(self) -> bool:

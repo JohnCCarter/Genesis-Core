@@ -5,7 +5,6 @@ Verifies that EVGate does NOT veto 100% after fix (was degenerate before).
 Uses golden-trace approach for stability.
 """
 
-
 from core.strategy.components.context_builder import ComponentContextBuilder
 from core.strategy.components.ev_gate import EVGateComponent
 

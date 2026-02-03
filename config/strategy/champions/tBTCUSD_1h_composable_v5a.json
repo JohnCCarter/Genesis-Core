@@ -4,6 +4,7 @@
   "trial_id": "sizing_exp1",
   "git_commit": "986bd277f47fc1de27e05bd528032e5a23e91524",
   "snapshot_id": "snap_tBTCUSD_2024-01-01_2024-12-31_phase3",
+  "test_modification": "This should trigger freeze-guard violation",
   "symbol": "tBTCUSD",
   "timeframe": "1h",
   "score": 0.0,

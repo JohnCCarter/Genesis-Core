@@ -30,7 +30,8 @@ jobs:
         run: |
           # Paper trading freeze period configuration
           # Format: YYYY-MM-DD (UTC dates)
-          FREEZE_START="2026-02-03"
+          # Start date moved to 2026-02-04 to allow champion structure fix on 2026-02-03
+          FREEZE_START="2026-02-04"
           FREEZE_END="2026-03-17"
 
           # Get current date in UTC

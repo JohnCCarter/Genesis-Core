@@ -55,6 +55,62 @@
       }
     }
   },
+  "merged_config": {
+    "components": [
+      {
+        "type": "ml_confidence",
+        "params": {
+          "threshold": 0.24
+        }
+      },
+      {
+        "type": "regime_filter",
+        "params": {
+          "allowed_regimes": [
+            "trending",
+            "bull",
+            "balanced",
+            "bear",
+            "ranging"
+          ]
+        }
+      },
+      {
+        "type": "ev_gate",
+        "params": {
+          "min_ev": 0.0
+        }
+      },
+      {
+        "type": "cooldown",
+        "params": {
+          "min_bars_between_trades": 24
+        }
+      }
+    ],
+    "risk": {
+      "risk_map": [
+        [
+          0.53,
+          0.005
+        ],
+        [
+          0.7,
+          0.008
+        ],
+        [
+          0.8,
+          0.01
+        ],
+        [
+          0.9,
+          0.012
+        ]
+      ],
+      "risk_cap_pct": 0.012,
+      "symbol_portfolio_cap_pct": 0.025
+    }
+  },
   "cfg": {
     "components": [
       {

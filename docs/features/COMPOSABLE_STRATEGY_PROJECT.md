@@ -5,17 +5,27 @@
 **Phase 1 Completed**: 2026-01-30
 **Phase 2 Completed**: 2026-02-02
 **Phase 3 Milestone 1 Completed**: 2026-02-03
-**Phase 3 Status**: ✅ MILESTONE 1 CLOSED - Baseline established
+**Phase 3 Milestone 2 Completed**: 2026-02-03
+**Phase 3 Status**: ✅ MILESTONE 2 CLOSED - HQT Audit complete
 **Owner**: Claude Code + User
 
-**Latest**: Milestone 1 (Component Tuning, config-only) CLOSED (2026-02-03)
+**Latest**: Milestone 2 (HQT Audit, PF-first) CLOSED (2026-02-03)
+- ✅ HQT audit completed on v4a baseline (read-only)
+- ❌ Verdict: HQT-FAIL (robustness criterion not met)
+- ⚠️ Critical: PF collapses to 1.07 when top-3 trades removed (< 1.2 threshold)
+- ⚠️ High concentration: Top-1 trade = 40.7% of total PnL
+- 🔍 Root cause: Low trade frequency (63/year) + outlier dependence
+- ✅ All other criteria pass: PF 1.59, all quarters >= 1.3, fees reasonable
+- 📊 Recommendation: Proceed with Sizing Policy Review to increase trade frequency
+- See: `docs/features/PHASE3_MILESTONE2_HQT_AUDIT.md`
+
+**Previous**: Milestone 1 (Component Tuning, config-only) CLOSED (2026-02-03)
 - ✅ v4a baseline established: 63 trades/year, PF 1.59, Win 68.3%, Return 1.14%
 - ✅ Extended validation (full 2024) passed guardrails: all quarters >0 trades
 - ✅ Bug #1 (CooldownComponent phantom trades) FIXED - 1526 phantom vetoes eliminated
 - ✅ Bug #2 (ComponentContextBuilder key mapping) FIXED - EVGate functional
 - ✅ Execution layer analyzed: ATR zone sizing is bottleneck (98.6% size==0)
 - ⚠️ Finding: Permissive baseline is toothless (0% component veto rate)
-- 📊 Next: Sizing Policy Review (Milestone 2) to enable meaningful component tuning
 - See: `docs/features/PHASE3_MILESTONE1_CLOSURE.md`
 
 ---
@@ -564,12 +574,47 @@ Under v4a permissive settings, component chain has **0% veto rate**:
 
 **Next Steps**: See Milestone 2 below
 
-### Milestone 2: Sizing Policy Review (Proposed)
+### Milestone 2: HQT Audit (PF-First) - ✅ COMPLETE (2026-02-03)
+
+**Goal**: Quality audit of v4a baseline with PF-first criteria (read-only).
+
+**Result**: HQT-FAIL verdict
+
+**Deliverables Completed**:
+1. ✅ PF helår + per kvartal (Q1-Q4)
+2. ✅ PnL concentration (top-1: 40.7%, top-5: 120.4%)
+3. ✅ PF robustness (without top-1: 1.35, without top-3: 1.07 ❌ FAIL)
+4. ✅ Fees analysis ($1.43/trade, 11% burden)
+
+**HQT-Pass Criteria Results**:
+- [1] ✅ PASS: Helår PF >= 1.5 (1.59)
+- [2] ✅ PASS: 4/4 kvartal PF >= 1.3
+- [3] ✅ PASS: Inget kvartal < 1.0 (min=1.67)
+- [4] ❌ FAIL: PF utan top-3 >= 1.2 (1.07 < 1.2)
+
+**Critical Finding**:
+Strategy is NOT robust to outlier removal. PF collapses from 1.59 → 1.07 (-32.9%) when top-3 trades removed. Top-1 trade accounts for 40.7% of total PnL.
+
+**Root Cause**: Low trade frequency (63/year) + no quality filtering → high outlier dependence.
+
+**Recommendation**: Proceed with Sizing Policy Review (Milestone 3) to increase trade frequency → reduce outlier dependence → improve PF robustness.
+
+**Artifacts**:
+- Script: `scripts/hqt_audit_pf_first.py`
+- Results: `results/hqt_audit/v4a_hqt_audit_20260203.txt`
+- Docs: `docs/features/PHASE3_MILESTONE2_HQT_AUDIT.md`
+
+### Milestone 3: Sizing Policy Review (Proposed)
 
 **Status**: ⏸️ NOT STARTED
-**Goal**: Increase attempted executions (size>0) so that component filtering becomes meaningful.
+**Goal**: Increase attempted executions (size>0) to improve PF robustness and enable meaningful component filtering.
 **Target**: 100-150 trades/year without MaxDD explosion.
-**Blockers**: None (Milestone 1 complete, architecture validated)
+**Blockers**: None (Milestone 2 complete, HQT audit confirms direction)
+
+**Rationale** (from HQT audit):
+- More trades → reduced outlier dependence → better PF robustness
+- Addresses root cause of HQT-FAIL verdict
+- Must maintain PF quality (not just inflate trade count)
 
 **Approach**:
 
@@ -586,6 +631,7 @@ Under v4a permissive settings, component chain has **0% veto rate**:
 3. **Validation**:
    - Re-run full 2024 with adjusted sizing
    - Target: 100-150 trades/year, maintain PF >1.5, MaxDD <5%
+   - Re-run HQT audit on new baseline
    - If successful: Proceed with component tuning (EVGate, ml_confidence)
 
 4. **If NOT config-only**:
@@ -594,7 +640,7 @@ Under v4a permissive settings, component chain has **0% veto rate**:
 
 **Estimated Effort**: 1-2 days (if config-only), 1 week (if code changes required)
 
-### Future Milestones (After Milestone 2)
+### Future Milestones (After Milestone 3)
 
 1. **Component Tuning** (revisit after sizing fixed):
    - Tune EVGate (min_ev: 0.09-0.13 based on distribution)

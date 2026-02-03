@@ -103,7 +103,6 @@ def sanity_check_size_zero_reasons(config_path: Path):
 
                     # Extract reasons from meta["decision"]
                     reasons = decision_meta.get("reasons", [])
-                    state_out = decision_meta.get("state_out", {})
 
                     # Classify reason for size=0
                     if not reasons:
@@ -181,18 +180,26 @@ def sanity_check_size_zero_reasons(config_path: Path):
 
     print("Entry Actions Breakdown:")
     print(f"  Total entry actions (LONG/SHORT): {size_data['total_entry_actions']}")
-    print(f"  Component allowed: {size_data['component_allowed']} ({100.0 * size_data['component_allowed'] / size_data['total_entry_actions']:.1f}%)")
-    print(f"  Component vetoed: {size_data['component_vetoed']} ({100.0 * size_data['component_vetoed'] / size_data['total_entry_actions']:.1f}%)")
+    print(
+        f"  Component allowed: {size_data['component_allowed']} ({100.0 * size_data['component_allowed'] / size_data['total_entry_actions']:.1f}%)"
+    )
+    print(
+        f"  Component vetoed: {size_data['component_vetoed']} ({100.0 * size_data['component_vetoed'] / size_data['total_entry_actions']:.1f}%)"
+    )
     print()
 
     print("Component-Allowed Breakdown:")
-    print(f"  size > 0: {size_data['size_nonzero']} ({100.0 * size_data['size_nonzero'] / size_data['component_allowed']:.1f}%)")
-    print(f"  size == 0: {size_data['size_zero']} ({100.0 * size_data['size_zero'] / size_data['component_allowed']:.1f}%)")
+    print(
+        f"  size > 0: {size_data['size_nonzero']} ({100.0 * size_data['size_nonzero'] / size_data['component_allowed']:.1f}%)"
+    )
+    print(
+        f"  size == 0: {size_data['size_zero']} ({100.0 * size_data['size_zero'] / size_data['component_allowed']:.1f}%)"
+    )
     print()
 
-    if size_data['size_zero_reasons']:
+    if size_data["size_zero_reasons"]:
         print("size==0 Reasons (from meta['decision']['reasons']):")
-        for reason, count in size_data['size_zero_reasons'].most_common():
+        for reason, count in size_data["size_zero_reasons"].most_common():
             print(f"  {reason}: {count} ({100.0 * count / size_data['size_zero']:.1f}%)")
     else:
         print("size==0 Reasons: No reasons found in meta")
@@ -208,7 +215,9 @@ def sanity_check_size_zero_reasons(config_path: Path):
     print("-" * 110)
     for sample in size_data["size_zero_samples"][:20]:
         reasons_str = ",".join(sample["reasons_list"][:3]) if sample["reasons_list"] else "none"
-        print(f"{sample['bar_index']:<12} {sample['action']:<8} {sample['size']:<8.4f} {sample['reason']:<30} {reasons_str:<50}")
+        print(
+            f"{sample['bar_index']:<12} {sample['action']:<8} {sample['size']:<8.4f} {sample['reason']:<30} {reasons_str:<50}"
+        )
 
     print()
     print("Decision Metadata Keys (from samples):")

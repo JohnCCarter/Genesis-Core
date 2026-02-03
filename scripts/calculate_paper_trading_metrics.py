@@ -148,7 +148,9 @@ def generate_weekly_report(
     metrics, criteria_results, primary_passed, all_passed, week_num, period_start, period_end
 ):
     """Generate weekly report markdown."""
-    status_emoji = lambda passed: "✅" if passed else "❌"
+
+    def status_emoji(passed):
+        return "✅" if passed else "❌"
 
     report = f"""# Paper Trading Weekly Report: {period_end}
 

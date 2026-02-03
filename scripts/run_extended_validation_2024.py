@@ -89,7 +89,6 @@ def run_backtest_with_funnel_analysis(
         context = ComponentContextBuilder.build(result, meta, candles=candles)
 
         action = result.get("action", "NONE")
-        bar_index = context.get("bar_index", -1)
 
         funnel_data["total_bars"] += 1
 
@@ -254,7 +253,7 @@ def print_period_report(results: dict, period_name: str):
     # ZONE breakdown
     total_size_zero = funnel.get("size_zero", 0)
     if total_size_zero > 0:
-        print(f"          ZONE breakdown:")
+        print("          ZONE breakdown:")
         print(
             f"            low@0.250: {funnel.get('zone_low', 0)} ({100.0 * funnel.get('zone_low', 0) / total_size_zero:.1f}%)"
         )
@@ -338,7 +337,9 @@ def main():
 
     # Save results
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_file = Path("results") / "extended_validation" / f"{config_name}_full2024_{timestamp}.json"
+    output_file = (
+        Path("results") / "extended_validation" / f"{config_name}_full2024_{timestamp}.json"
+    )
     output_file.parent.mkdir(parents=True, exist_ok=True)
 
     with open(output_file, "w") as f:

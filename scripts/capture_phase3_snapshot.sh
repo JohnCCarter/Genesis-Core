@@ -13,6 +13,18 @@
 #
 # Output: logs/paper_trading/snapshots/snapshot_YYYYMMDD_HHMMSSZ.txt
 # No secrets are written to snapshot.
+#
+# SECURITY SIGN-OFF (reviewed 2026-02-04):
+# This script is considered non-sensitive and safe to archive because:
+#   1. /health endpoint returns only status + config version/hash (no API keys)
+#   2. Runner logs contain candle data + evaluation results (no credentials)
+#   3. State file contains only counters + timestamps (no secrets)
+#   4. Pre-flight script calls /health without auth headers (safe)
+#   5. Port inspection tools show only process metadata (no sensitive data)
+#   6. No environment variables (API keys/secrets) are captured
+#   7. Order responses (if present) contain only Bitfinex order metadata
+#      (order ID, symbol, amount, status) - no API keys or tokens
+# Safe for operational documentation during Phase 3 freeze period.
 
 set -euo pipefail
 

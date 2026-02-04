@@ -8,33 +8,265 @@
 
 ---
 
-## Pre-Flight
+## Pre-flight (5 min)
 
-**Start dry-run:**
+**IMPORTANT:** All commands use UTC timezone (`date -u`) for consistency with runner logs.
+
+**Fallback note:** If `grep -oP` fails (macOS/BSD), use `grep -E` with `sed` instead:
+```bash
+# Instead of: grep -oP 'ts=\K[0-9]+'
+# Use: grep -oE 'ts=[0-9]+' | sed 's/ts=//'
+```
+
+### 1. Verify API Server Running (Port 8000)
+
+**Check which process owns port 8000:**
 
 ```bash
-# Ensure API server is running
+# Linux/macOS (lsof)
+lsof -i :8000 -P -n
+
+# Linux alternative (ss)
+ss -tlnp | grep :8000
+
+# Windows Git Bash (netstat)
+netstat -ano | grep :8000
+```
+
+**Expected output:**
+
+```
+COMMAND   PID   USER   TYPE DEVICE   NAME
+python   1234   user   TCP  *:8000 (LISTEN)
+```
+
+**Verify it's the Genesis API server:**
+
+```bash
+# Get PID from lsof/ss output above
+PID=<pid_from_above>
+
+# Check process details
+ps -fp $PID
+
+# Expected: Should show uvicorn/python running core.server:app
+```
+
+**Health check:**
+
+```bash
 curl -s http://localhost:8000/health | grep '"status":"ok"'
 
-# Start runner in dry-run mode
-python scripts/paper_trading_runner.py --dry-run --symbol tBTCUSD --timeframe 1h --poll-interval 10
+# Expected output: {"status":"ok","config_version":105,...}
+```
+
+**If port 8000 not in use:**
+
+```bash
+# Start API server first
+cd /c/Users/fa06662/Projects/Genesis-Core
+source .venv/Scripts/activate
+uvicorn core.server:app --app-dir src --port 8000
+```
+
+---
+
+### 2. Start Runner in Dry-Run Mode (UTC)
+
+**IMPORTANT:** Use `TZ=UTC` to ensure log timestamps match runner internal time.
+
+```bash
+# Activate venv
+source .venv/Scripts/activate
+
+# Start runner with UTC timezone
+TZ=UTC python scripts/paper_trading_runner.py --dry-run --symbol tBTCUSD --timeframe 1h --poll-interval 10
 ```
 
 **Expected startup output:**
 
 ```
+================================================================================
 Paper Trading Runner Started
 Symbol: tBTCUSD, Timeframe: 1h
+Poll interval: 10s
 Mode: DRY-RUN (no orders)
+State file: logs/paper_trading/runner_state.json
+================================================================================
 Verifying champion loading...
 Champion verified successfully.
 ```
 
-**Verify log file created:**
+**If startup fails:**
+
+- Check logs: `tail -20 logs/paper_trading/runner_$(date -u +%Y%m%d).log`
+- Common issues:
+  - "Failed to evaluate strategy on startup" → API server not running
+  - "Champion verification failed" → Champion file missing/corrupt
+  - "Baseline fallback detected" → Champion not loading (check ChampionLoader)
+
+---
+
+### 3. Verify Log File Created (Within 60 Seconds)
+
+**Check log file exists:**
 
 ```bash
-ls -lh logs/paper_trading/runner_$(date +%Y%m%d).log
+# Use date -u for UTC (matches runner)
+LOG_FILE="logs/paper_trading/runner_$(date -u +%Y%m%d).log"
+ls -lh "$LOG_FILE"
+
+# Expected: File created, size growing (should be >1KB after 1 minute)
 ```
+
+**Tail logs in real-time:**
+
+```bash
+tail -f logs/paper_trading/runner_$(date -u +%Y%m%d).log
+```
+
+**Expected output (first 2-3 minutes):**
+
+```
+2026-02-04 10:00:00 - paper_trading_runner - INFO - ================...
+2026-02-04 10:00:00 - paper_trading_runner - INFO - Paper Trading Runner Started
+2026-02-04 10:00:00 - paper_trading_runner - INFO - Symbol: tBTCUSD, Timeframe: 1h
+2026-02-04 10:00:00 - paper_trading_runner - INFO - Poll interval: 10s
+2026-02-04 10:00:00 - paper_trading_runner - INFO - Mode: DRY-RUN (no orders)
+2026-02-04 10:00:00 - paper_trading_runner - INFO - Verifying champion loading...
+2026-02-04 10:00:01 - paper_trading_runner - INFO - Champion verified successfully.
+2026-02-04 10:00:02 - paper_trading_runner - DEBUG - Candle selection: source=previous, ts=1704067200000, ...
+2026-02-04 10:00:02 - paper_trading_runner - DEBUG - Candle {ts} already processed. Skipping.
+... (polls every 10s)
+```
+
+**Wait for first new candle close** (top of next hour):
+
+```
+2026-02-04 11:00:15 - paper_trading_runner - DEBUG - Candle selection: source=previous, ts=1704070800000, ...
+2026-02-04 11:00:15 - paper_trading_runner - INFO - NEW CANDLE CLOSE: ts=1704070800000, close=50150.00, source=previous
+2026-02-04 11:00:16 - paper_trading_runner - INFO - EVALUATION: action=BUY, signal=1, confidence=0.750
+2026-02-04 11:00:16 - paper_trading_runner - INFO - DRY-RUN: Would submit BUY order (skipped)
+```
+
+**Stop condition:** If no "Champion verified successfully" within 10 seconds → STOP and investigate.
+
+---
+
+### 4. Verify State File Created and Updates (Within 2 Minutes)
+
+**Check state file exists:**
+
+```bash
+ls -lh logs/paper_trading/runner_state.json
+
+# Expected: File created within 60 seconds of startup
+```
+
+**Check initial state:**
+
+```bash
+cat logs/paper_trading/runner_state.json
+
+# Expected (before first candle):
+# {
+#   "last_processed_candle_ts": null,
+#   "total_evaluations": 0,
+#   "total_orders_submitted": 0,
+#   "last_heartbeat": null
+# }
+```
+
+**After first heartbeat (100 seconds):**
+
+```bash
+# Heartbeat occurs every 10 polls * 10s = ~100 seconds
+cat logs/paper_trading/runner_state.json
+
+# Expected:
+# {
+#   "last_processed_candle_ts": <ts or null if no new candle yet>,
+#   "total_evaluations": 0 or 1,
+#   "total_orders_submitted": 0,
+#   "last_heartbeat": "2026-02-04T10:01:40+00:00"
+# }
+```
+
+**Verify last_heartbeat updates:**
+
+```bash
+# Wait 2 minutes, check again
+sleep 120
+cat logs/paper_trading/runner_state.json | grep last_heartbeat
+
+# Should show recent timestamp (within last 2 minutes)
+```
+
+**Stop condition:** If state file not created within 2 minutes → STOP and check logs for errors.
+
+---
+
+### 5. Quick Smoke Test (First 5 Minutes)
+
+**Check for errors:**
+
+```bash
+grep -E "ERROR|FATAL|exception" logs/paper_trading/runner_$(date -u +%Y%m%d).log
+
+# Expected: Empty (or only transient "Failed to fetch candle" if network hiccup)
+```
+
+**Check polling activity:**
+
+```bash
+# Count log lines (should grow ~6 lines per 10s poll)
+wc -l logs/paper_trading/runner_$(date -u +%Y%m%d).log
+
+# After 5 minutes: Should have 100+ lines
+```
+
+**Verify champion loading (from logs):**
+
+```bash
+grep "Champion verified successfully" logs/paper_trading/runner_$(date -u +%Y%m%d).log
+
+# Expected: At least 1 line (startup)
+```
+
+**Check for baseline fallback (should be absent):**
+
+```bash
+grep "Baseline fallback detected" logs/paper_trading/runner_$(date -u +%Y%m%d).log
+
+# Expected: Empty (no output)
+```
+
+---
+
+## Pre-flight Checklist Summary
+
+**Complete within 5 minutes of runner start:**
+
+- [ ] Port 8000 verified (API server running, PID identified)
+- [ ] Runner started with `TZ=UTC --dry-run`
+- [ ] Startup logs show "Champion verified successfully"
+- [ ] Log file created: `logs/paper_trading/runner_$(date -u +%Y%m%d).log`
+- [ ] State file created: `logs/paper_trading/runner_state.json`
+- [ ] State file updates (check `last_heartbeat` after 2 min)
+- [ ] No ERROR/FATAL in first 5 minutes
+- [ ] No "Baseline fallback detected"
+
+**If ANY pre-flight check fails:**
+- Stop runner (Ctrl+C)
+- Investigate root cause before proceeding
+- Do NOT wait 24 hours for acceptance if pre-flight fails
+
+**If all pre-flight checks pass:**
+- Runner is healthy
+- Proceed to 24h dry-run test
+- Run acceptance checks after 24h (see sections below)
+
+---
 
 ---
 
@@ -48,7 +280,7 @@ ls -lh logs/paper_trading/runner_$(date +%Y%m%d).log
 
 ```bash
 # Extract all candle close timestamps
-grep "NEW CANDLE CLOSE" logs/paper_trading/runner_$(date +%Y%m%d).log \
+grep "NEW CANDLE CLOSE" logs/paper_trading/runner_$(date -u +%Y%m%d).log \
   | grep -oP 'ts=\K[0-9]+' \
   | sort \
   | uniq -c
@@ -82,7 +314,7 @@ grep "NEW CANDLE CLOSE" logs/paper_trading/runner_$(date +%Y%m%d).log \
 
 ```bash
 # Count unique candle timestamps
-grep "NEW CANDLE CLOSE" logs/paper_trading/runner_$(date +%Y%m%d).log \
+grep "NEW CANDLE CLOSE" logs/paper_trading/runner_$(date -u +%Y%m%d).log \
   | grep -oP 'ts=\K[0-9]+' \
   | sort -u \
   | wc -l
@@ -96,7 +328,7 @@ grep "NEW CANDLE CLOSE" logs/paper_trading/runner_$(date +%Y%m%d).log \
 
 ```bash
 # Show candle timestamps (should be 3600000ms = 1h apart)
-grep "NEW CANDLE CLOSE" logs/paper_trading/runner_$(date +%Y%m%d).log \
+grep "NEW CANDLE CLOSE" logs/paper_trading/runner_$(date -u +%Y%m%d).log \
   | grep -oP 'ts=\K[0-9]+' \
   | sort -u
 
@@ -115,11 +347,11 @@ grep "NEW CANDLE CLOSE" logs/paper_trading/runner_$(date +%Y%m%d).log \
 
 ```bash
 # Count "NEW CANDLE CLOSE" lines with source field
-grep "NEW CANDLE CLOSE" logs/paper_trading/runner_$(date +%Y%m%d).log \
+grep "NEW CANDLE CLOSE" logs/paper_trading/runner_$(date -u +%Y%m%d).log \
   | grep -c "source="
 
 # Count total "NEW CANDLE CLOSE" lines
-grep -c "NEW CANDLE CLOSE" logs/paper_trading/runner_$(date +%Y%m%d).log
+grep -c "NEW CANDLE CLOSE" logs/paper_trading/runner_$(date -u +%Y%m%d).log
 
 # Both counts should be equal
 ```
@@ -130,7 +362,7 @@ grep -c "NEW CANDLE CLOSE" logs/paper_trading/runner_$(date +%Y%m%d).log
 
 ```bash
 # Check for "Candle selection" debug logs
-grep "Candle selection:" logs/paper_trading/runner_$(date +%Y%m%d).log \
+grep "Candle selection:" logs/paper_trading/runner_$(date -u +%Y%m%d).log \
   | head -3
 
 # Expected format:
@@ -152,11 +384,11 @@ grep "Candle selection:" logs/paper_trading/runner_$(date +%Y%m%d).log \
 ```bash
 # Count latest vs previous
 echo "Latest candles:"
-grep "NEW CANDLE CLOSE" logs/paper_trading/runner_$(date +%Y%m%d).log \
+grep "NEW CANDLE CLOSE" logs/paper_trading/runner_$(date -u +%Y%m%d).log \
   | grep -c "source=latest"
 
 echo "Previous candles:"
-grep "NEW CANDLE CLOSE" logs/paper_trading/runner_$(date +%Y%m%d).log \
+grep "NEW CANDLE CLOSE" logs/paper_trading/runner_$(date -u +%Y%m%d).log \
   | grep -c "source=previous"
 ```
 
@@ -176,12 +408,12 @@ grep "NEW CANDLE CLOSE" logs/paper_trading/runner_$(date +%Y%m%d).log \
 
 ```bash
 # Check for order submission attempts
-grep -E "Submitting (BUY|SELL) order" logs/paper_trading/runner_$(date +%Y%m%d).log
+grep -E "Submitting (BUY|SELL) order" logs/paper_trading/runner_$(date -u +%Y%m%d).log
 
 # Should return: (no output - grep exits with code 1)
 
 # Check for actual submissions
-grep "ORDER SUBMITTED" logs/paper_trading/runner_$(date +%Y%m%d).log
+grep "ORDER SUBMITTED" logs/paper_trading/runner_$(date -u +%Y%m%d).log
 
 # Should return: (no output)
 ```
@@ -192,7 +424,7 @@ grep "ORDER SUBMITTED" logs/paper_trading/runner_$(date +%Y%m%d).log
 
 ```bash
 # Should see DRY-RUN messages for non-NONE actions
-grep "DRY-RUN: Would submit" logs/paper_trading/runner_$(date +%Y%m%d).log
+grep "DRY-RUN: Would submit" logs/paper_trading/runner_$(date -u +%Y%m%d).log
 
 # Example output:
 # DRY-RUN: Would submit BUY order (skipped)
@@ -211,11 +443,11 @@ grep "DRY-RUN: Would submit" logs/paper_trading/runner_$(date +%Y%m%d).log
 
 ```bash
 # Count candles
-CANDLE_COUNT=$(grep -c "NEW CANDLE CLOSE" logs/paper_trading/runner_$(date +%Y%m%d).log)
+CANDLE_COUNT=$(grep -c "NEW CANDLE CLOSE" logs/paper_trading/runner_$(date -u +%Y%m%d).log)
 echo "Candles detected: $CANDLE_COUNT"
 
 # Count evaluations
-EVAL_COUNT=$(grep -c "EVALUATION: action=" logs/paper_trading/runner_$(date +%Y%m%d).log)
+EVAL_COUNT=$(grep -c "EVALUATION: action=" logs/paper_trading/runner_$(date -u +%Y%m%d).log)
 echo "Evaluations run: $EVAL_COUNT"
 
 # Should be equal
@@ -240,7 +472,7 @@ fi
 
 ```bash
 # Get latest candle timestamp from logs
-LATEST_CANDLE=$(grep "NEW CANDLE CLOSE" logs/paper_trading/runner_$(date +%Y%m%d).log \
+LATEST_CANDLE=$(grep "NEW CANDLE CLOSE" logs/paper_trading/runner_$(date -u +%Y%m%d).log \
   | grep -oP 'ts=\K[0-9]+' \
   | tail -1)
 echo "Latest candle from logs: $LATEST_CANDLE"
@@ -291,12 +523,12 @@ python -c "import json; print(json.dumps(json.load(open('logs/paper_trading/runn
 
 ```bash
 # Check for champion verification success
-grep "Champion verified successfully" logs/paper_trading/runner_$(date +%Y%m%d).log | wc -l
+grep "Champion verified successfully" logs/paper_trading/runner_$(date -u +%Y%m%d).log | wc -l
 
 # Should be >= 1 (startup verification)
 
 # Check for baseline fallback errors
-grep "Baseline fallback detected" logs/paper_trading/runner_$(date +%Y%m%d).log
+grep "Baseline fallback detected" logs/paper_trading/runner_$(date -u +%Y%m%d).log
 
 # Should return: (no output)
 ```
@@ -315,17 +547,17 @@ grep "Baseline fallback detected" logs/paper_trading/runner_$(date +%Y%m%d).log
 
 ```bash
 # Check for FATAL errors
-grep "FATAL" logs/paper_trading/runner_$(date +%Y%m%d).log
+grep "FATAL" logs/paper_trading/runner_$(date -u +%Y%m%d).log
 
 # Should return: (no output in dry-run)
 
 # Check for ERROR logs
-grep "ERROR" logs/paper_trading/runner_$(date +%Y%m%d).log | head -10
+grep "ERROR" logs/paper_trading/runner_$(date -u +%Y%m%d).log | head -10
 
 # Expected: Only transient errors like "Failed to fetch candle" are OK if rare
 
 # Check for exceptions
-grep -i "exception\|traceback" logs/paper_trading/runner_$(date +%Y%m%d).log
+grep -i "exception\|traceback" logs/paper_trading/runner_$(date -u +%Y%m%d).log
 
 # Should return: (no output)
 ```
@@ -344,7 +576,7 @@ grep -i "exception\|traceback" logs/paper_trading/runner_$(date +%Y%m%d).log
 
 ```bash
 # Count heartbeats
-HEARTBEAT_COUNT=$(grep "Heartbeat: evaluations=" logs/paper_trading/runner_$(date +%Y%m%d).log | wc -l)
+HEARTBEAT_COUNT=$(grep "Heartbeat: evaluations=" logs/paper_trading/runner_$(date -u +%Y%m%d).log | wc -l)
 echo "Heartbeats logged: $HEARTBEAT_COUNT"
 
 # For 24h with 10s poll interval: ~8640 polls = ~864 heartbeats (every 10 polls)
@@ -357,7 +589,7 @@ echo "Heartbeats logged: $HEARTBEAT_COUNT"
 
 ```bash
 # Show last 3 heartbeats
-grep "Heartbeat: evaluations=" logs/paper_trading/runner_$(date +%Y%m%d).log | tail -3
+grep "Heartbeat: evaluations=" logs/paper_trading/runner_$(date -u +%Y%m%d).log | tail -3
 
 # Expected format:
 # Heartbeat: evaluations=24, orders=0, last_candle_ts=1704067200000
@@ -376,7 +608,7 @@ grep "Heartbeat: evaluations=" logs/paper_trading/runner_$(date +%Y%m%d).log | t
 **Symptom:**
 
 ```bash
-grep "NEW CANDLE CLOSE" logs/paper_trading/runner_$(date +%Y%m%d).log \
+grep "NEW CANDLE CLOSE" logs/paper_trading/runner_$(date -u +%Y%m%d).log \
   | grep -oP 'ts=\K[0-9]+' \
   | sort \
   | uniq -c \
@@ -398,7 +630,7 @@ grep "NEW CANDLE CLOSE" logs/paper_trading/runner_$(date +%Y%m%d).log \
 **Symptom:**
 
 ```bash
-grep "ORDER SUBMITTED" logs/paper_trading/runner_$(date +%Y%m%d).log
+grep "ORDER SUBMITTED" logs/paper_trading/runner_$(date -u +%Y%m%d).log
 ```
 
 **If ANY output:** Order leaked → **STOP RUNNER IMMEDIATELY**
@@ -416,7 +648,7 @@ grep "ORDER SUBMITTED" logs/paper_trading/runner_$(date +%Y%m%d).log
 **Symptom:**
 
 ```bash
-grep "Baseline fallback detected" logs/paper_trading/runner_$(date +%Y%m%d).log
+grep "Baseline fallback detected" logs/paper_trading/runner_$(date -u +%Y%m%d).log
 ```
 
 **If ANY output:** Champion not loading → **STOP RUNNER**
@@ -436,7 +668,7 @@ grep "Baseline fallback detected" logs/paper_trading/runner_$(date +%Y%m%d).log
 
 ```bash
 # Extract candle timestamps and check for gaps > 2 hours
-grep "NEW CANDLE CLOSE" logs/paper_trading/runner_$(date +%Y%m%d).log \
+grep "NEW CANDLE CLOSE" logs/paper_trading/runner_$(date -u +%Y%m%d).log \
   | grep -oP 'ts=\K[0-9]+' \
   | sort -u \
   | awk 'NR>1 {gap=($1-prev)/3600000; if(gap>2) print "GAP:",gap,"hours between",prev,"and",$1} {prev=$1}'
@@ -445,8 +677,8 @@ grep "NEW CANDLE CLOSE" logs/paper_trading/runner_$(date +%Y%m%d).log \
 **If gaps > 2 hours detected:** Runner downtime or errors
 
 **Action:**
-1. Check for errors in gap period: `grep ERROR logs/paper_trading/runner_$(date +%Y%m%d).log`
-2. Check for runner crashes: `grep "Runner stopped" logs/paper_trading/runner_$(date +%Y%m%d).log`
+1. Check for errors in gap period: `grep ERROR logs/paper_trading/runner_$(date -u +%Y%m%d).log`
+2. Check for runner crashes: `grep "Runner stopped" logs/paper_trading/runner_$(date -u +%Y%m%d).log`
 3. If unexplained: Document and investigate before proceeding
 
 ---
@@ -478,7 +710,7 @@ python -c "import json; json.load(open('logs/paper_trading/runner_state.json'))"
 
 set -e
 
-LOG_FILE="logs/paper_trading/runner_$(date +%Y%m%d).log"
+LOG_FILE="logs/paper_trading/runner_$(date -u +%Y%m%d).log"
 STATE_FILE="logs/paper_trading/runner_state.json"
 
 echo "=== Phase 3 Dry-Run Acceptance Check ==="
@@ -671,16 +903,16 @@ Status: READY FOR SINGLE-CANDLE LIVE TEST
 
 ```bash
 # Show first 50 lines
-head -50 logs/paper_trading/runner_$(date +%Y%m%d).log
+head -50 logs/paper_trading/runner_$(date -u +%Y%m%d).log
 
 # Show random candle closes
-grep "NEW CANDLE CLOSE" logs/paper_trading/runner_$(date +%Y%m%d).log | shuf -n 5
+grep "NEW CANDLE CLOSE" logs/paper_trading/runner_$(date -u +%Y%m%d).log | shuf -n 5
 
 # Show random evaluations
-grep "EVALUATION: action=" logs/paper_trading/runner_$(date +%Y%m%d).log | shuf -n 5
+grep "EVALUATION: action=" logs/paper_trading/runner_$(date -u +%Y%m%d).log | shuf -n 5
 
 # Show DRY-RUN messages
-grep "DRY-RUN:" logs/paper_trading/runner_$(date +%Y%m%d).log | head -10
+grep "DRY-RUN:" logs/paper_trading/runner_$(date -u +%Y%m%d).log | head -10
 ```
 
 **Verify candle data consistency (manual):**
@@ -690,7 +922,7 @@ grep "DRY-RUN:" logs/paper_trading/runner_$(date +%Y%m%d).log | head -10
 TS=1704067200000
 
 # Show all logs for that candle
-grep "$TS" logs/paper_trading/runner_$(date +%Y%m%d).log
+grep "$TS" logs/paper_trading/runner_$(date -u +%Y%m%d).log
 
 # Expected sequence:
 # 1. "Candle selection: source=..., ts=1704067200000, ..."

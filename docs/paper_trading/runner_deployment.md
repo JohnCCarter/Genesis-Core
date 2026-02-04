@@ -5,6 +5,266 @@
 
 ---
 
+## Pre-flight (5 min)
+
+**IMPORTANT:** Use UTC timezone (`date -u`) for consistency with runner logs.
+
+**Fallback note:** If `grep -oP` fails (macOS/BSD), use `grep -E` with `sed` instead:
+```bash
+# Instead of: grep -oP 'ts=\K[0-9]+'
+# Use: grep -oE 'ts=[0-9]+' | sed 's/ts=//'
+```
+
+### 1. Verify API Server Running (Port 8000)
+
+**Check which process owns port 8000:**
+
+```bash
+# Linux/macOS (lsof)
+lsof -i :8000 -P -n
+
+# Linux alternative (ss)
+ss -tlnp | grep :8000
+
+# Windows Git Bash (netstat)
+netstat -ano | grep :8000
+```
+
+**Expected output example:**
+
+```
+COMMAND   PID   USER   TYPE DEVICE   NAME
+python   1234   user   TCP  *:8000 (LISTEN)
+```
+
+**Verify it's the Genesis API server:**
+
+```bash
+# Get PID from above output
+PID=<pid_from_above>
+
+# Check process command line
+ps -fp $PID
+
+# Expected: Should show uvicorn or python with core.server:app
+# Example: python /path/to/.venv/bin/uvicorn core.server:app --app-dir src
+```
+
+**Health check:**
+
+```bash
+curl -s http://localhost:8000/health | grep '"status":"ok"'
+
+# Expected: {"status":"ok","config_version":105,...}
+# If fails: API server not running or not responding
+```
+
+**If port 8000 not in use (start API server first):**
+
+```bash
+cd /c/Users/fa06662/Projects/Genesis-Core
+source .venv/Scripts/activate
+
+# Start API server (in separate terminal or screen)
+uvicorn core.server:app --app-dir src --port 8000
+```
+
+---
+
+### 2. Start Runner in Dry-Run Mode (UTC Timezone)
+
+**CRITICAL:** Use `TZ=UTC` to ensure log filenames and timestamps align.
+
+```bash
+# Activate venv (if not already)
+source .venv/Scripts/activate
+
+# Start runner with UTC timezone
+TZ=UTC python scripts/paper_trading_runner.py --dry-run --symbol tBTCUSD --timeframe 1h --poll-interval 10
+```
+
+**Expected startup output:**
+
+```
+================================================================================
+Paper Trading Runner Started
+Symbol: tBTCUSD, Timeframe: 1h
+Poll interval: 10s
+Mode: DRY-RUN (no orders)
+State file: logs/paper_trading/runner_state.json
+================================================================================
+Verifying champion loading...
+Champion verified successfully.
+```
+
+**Stop conditions (startup failures):**
+- "Failed to evaluate strategy on startup" → API server down or unreachable
+- "Champion verification failed" → Champion file missing/corrupt
+- "Baseline fallback detected" → Champion not loading correctly
+- Any FATAL error → Stop and investigate before proceeding
+
+---
+
+### 3. Verify Log File Writing (Within 2 Minutes)
+
+**Check log file created with correct UTC date:**
+
+```bash
+# Use date -u for UTC (matches runner)
+LOG_FILE="logs/paper_trading/runner_$(date -u +%Y%m%d).log"
+
+# Verify file exists
+ls -lh "$LOG_FILE"
+
+# Expected: File created, size >0 (should be 1-2 KB after startup)
+```
+
+**Tail logs in real-time:**
+
+```bash
+tail -f logs/paper_trading/runner_$(date -u +%Y%m%d).log
+```
+
+**Verify polling activity (every 10 seconds):**
+
+```bash
+# Count log lines (should grow steadily)
+wc -l logs/paper_trading/runner_$(date -u +%Y%m%d).log
+
+# After 2 minutes: Should have 50+ lines (startup + ~12 polls)
+```
+
+**Check for champion verification:**
+
+```bash
+grep "Champion verified successfully" logs/paper_trading/runner_$(date -u +%Y%m%d).log
+
+# Expected: At least 1 line
+```
+
+**Check for errors in first 2 minutes:**
+
+```bash
+grep -E "ERROR|FATAL" logs/paper_trading/runner_$(date -u +%Y%m%d).log
+
+# Expected: Empty (or only transient "Failed to fetch candle" is OK if rare)
+```
+
+---
+
+### 4. Verify State File Created and Updates (Within 2 Minutes)
+
+**Check state file exists:**
+
+```bash
+ls -lh logs/paper_trading/runner_state.json
+
+# Expected: File created within 60 seconds of startup
+```
+
+**Check initial state:**
+
+```bash
+cat logs/paper_trading/runner_state.json
+
+# Expected (before first candle):
+# {
+#   "last_processed_candle_ts": null,
+#   "total_evaluations": 0,
+#   "total_orders_submitted": 0,
+#   "last_heartbeat": null
+# }
+```
+
+**Wait for first heartbeat (~100 seconds after startup):**
+
+```bash
+# Heartbeat occurs every 10 polls * 10s = 100 seconds
+# Wait 2 minutes, then check state
+sleep 120
+cat logs/paper_trading/runner_state.json | grep last_heartbeat
+
+# Expected: "last_heartbeat": "2026-02-04T10:01:40+00:00" (recent UTC timestamp)
+```
+
+**Verify state file updates:**
+
+```bash
+# Get initial last_heartbeat
+HEARTBEAT1=$(cat logs/paper_trading/runner_state.json | grep -o '"last_heartbeat":"[^"]*"')
+
+# Wait 2 minutes
+sleep 120
+
+# Get new last_heartbeat
+HEARTBEAT2=$(cat logs/paper_trading/runner_state.json | grep -o '"last_heartbeat":"[^"]*"')
+
+# Should be different (state file is updating)
+echo "Initial: $HEARTBEAT1"
+echo "After 2min: $HEARTBEAT2"
+```
+
+**Stop condition:** If state file not created or not updating → STOP and investigate.
+
+---
+
+### 5. Pre-flight Smoke Test Summary
+
+**Run after 5 minutes:**
+
+```bash
+echo "=== Pre-flight Smoke Test ==="
+
+# 1. API server responding
+echo "[1/5] API server..."
+curl -s http://localhost:8000/health > /dev/null && echo "  ✓ OK" || echo "  ✗ FAIL"
+
+# 2. Log file exists and growing
+echo "[2/5] Log file..."
+LOG_FILE="logs/paper_trading/runner_$(date -u +%Y%m%d).log"
+if [ -f "$LOG_FILE" ] && [ $(wc -l < "$LOG_FILE") -gt 50 ]; then
+  echo "  ✓ OK ($(wc -l < "$LOG_FILE") lines)"
+else
+  echo "  ✗ FAIL (file missing or too small)"
+fi
+
+# 3. Champion verified
+echo "[3/5] Champion loading..."
+grep -q "Champion verified successfully" "$LOG_FILE" && echo "  ✓ OK" || echo "  ✗ FAIL"
+
+# 4. State file exists
+echo "[4/5] State file..."
+[ -f "logs/paper_trading/runner_state.json" ] && echo "  ✓ OK" || echo "  ✗ FAIL"
+
+# 5. No fatal errors
+echo "[5/5] No fatal errors..."
+! grep -q "FATAL" "$LOG_FILE" && echo "  ✓ OK" || echo "  ✗ FAIL"
+
+echo ""
+echo "If all ✓ OK: Pre-flight passed. Continue 24h dry-run."
+echo "If any ✗ FAIL: Stop runner and investigate before proceeding."
+```
+
+**Expected output:**
+
+```
+=== Pre-flight Smoke Test ===
+[1/5] API server...
+  ✓ OK
+[2/5] Log file...
+  ✓ OK (127 lines)
+[3/5] Champion loading...
+  ✓ OK
+[4/5] State file...
+  ✓ OK
+[5/5] No fatal errors...
+  ✓ OK
+
+If all ✓ OK: Pre-flight passed. Continue 24h dry-run.
+```
+
+---
+
 ## Quick Start
 
 ### Dry-Run Mode (Safe - No Orders Submitted)

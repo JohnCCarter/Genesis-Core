@@ -13,10 +13,13 @@
 #   - Champion loading
 #   - No fatal errors
 #   - Heartbeat logging
+#
+# IMPORTANT: Uses UTC date (date -u) to match runner log filenames
 
 set -e
 
-LOG_FILE="logs/paper_trading/runner_$(date +%Y%m%d).log"
+# Use UTC date to match runner log filenames
+LOG_FILE="logs/paper_trading/runner_$(date -u +%Y%m%d).log"
 STATE_FILE="logs/paper_trading/runner_state.json"
 
 echo "=== Phase 3 Dry-Run Acceptance Check ==="

@@ -131,7 +131,9 @@ def hqt_audit_with_comparison(results: dict, baseline_results: dict = None):
         baseline_trades = baseline_results["Full 2024"]["summary"]["num_trades"]
         pf_change = full_pf - baseline_pf
         trades_change = full_trades - baseline_trades
-        print(f"    vs v5a: PF {baseline_pf:.2f} -> {full_pf:.2f} ({pf_change:+.2f}), trades {baseline_trades} -> {full_trades} ({trades_change:+d})")
+        print(
+            f"    vs v5a: PF {baseline_pf:.2f} -> {full_pf:.2f} ({pf_change:+.2f}), trades {baseline_trades} -> {full_trades} ({trades_change:+d})"
+        )
 
     quarters = ["Q1 2024", "Q2 2024", "Q3 2024", "Q4 2024"]
     pf_quarters = []
@@ -159,8 +161,14 @@ def hqt_audit_with_comparison(results: dict, baseline_results: dict = None):
         baseline_trades = baseline_results["Full 2024"]["trades"]
         baseline_sorted = sorted(baseline_trades, key=lambda t: t["pnl"], reverse=True)
         baseline_total_pnl = sum(t["pnl"] for t in baseline_trades)
-        baseline_top1_pct = 100.0 * baseline_sorted[0]["pnl"] / baseline_total_pnl if baseline_total_pnl != 0 else 0.0
-        print(f"    vs v5a: {baseline_top1_pct:.1f}% -> {top1_pct:.1f}% ({top1_pct - baseline_top1_pct:+.1f}pp)")
+        baseline_top1_pct = (
+            100.0 * baseline_sorted[0]["pnl"] / baseline_total_pnl
+            if baseline_total_pnl != 0
+            else 0.0
+        )
+        print(
+            f"    vs v5a: {baseline_top1_pct:.1f}% -> {top1_pct:.1f}% ({top1_pct - baseline_top1_pct:+.1f}pp)"
+        )
 
     if len(sorted_trades) >= 5:
         top5_pnl = sum(t["pnl"] for t in sorted_trades[:5])
@@ -188,7 +196,9 @@ def hqt_audit_with_comparison(results: dict, baseline_results: dict = None):
             if len(baseline_sorted_trades) > 3:
                 baseline_without_top3 = baseline_sorted_trades[3:]
                 baseline_pf_without_top3 = calculate_pf(baseline_without_top3)
-                print(f"    vs v5a: {baseline_pf_without_top3:.2f} -> {pf_without_top3:.2f} ({pf_without_top3 - baseline_pf_without_top3:+.2f})")
+                print(
+                    f"    vs v5a: {baseline_pf_without_top3:.2f} -> {pf_without_top3:.2f} ({pf_without_top3 - baseline_pf_without_top3:+.2f})"
+                )
 
     print()
 
@@ -207,7 +217,7 @@ def hqt_audit_with_comparison(results: dict, baseline_results: dict = None):
     print(f"  Vetoed: {vetoed} ({100.0 * vetoed / total_decisions:.1f}%)")
 
     if veto_counts:
-        print(f"  Veto breakdown:")
+        print("  Veto breakdown:")
         for comp, count in veto_counts.items():
             veto_rate = 100.0 * count / total_decisions if total_decisions > 0 else 0.0
             print(f"    {comp}: {count} ({veto_rate:.1f}%)")
@@ -228,9 +238,16 @@ def hqt_audit_with_comparison(results: dict, baseline_results: dict = None):
 
     if baseline_results:
         baseline_max_dd = baseline_results["Full 2024"]["summary"]["max_drawdown"]
-        baseline_fees_per_trade = (baseline_results["Full 2024"]["summary"]["total_commission"] + baseline_results["Full 2024"]["summary"].get("total_slippage", 0.0)) / baseline_results["Full 2024"]["summary"]["num_trades"]
-        print(f"    vs v5a: MaxDD {baseline_max_dd:.2f}% -> {max_dd:.2f}% ({max_dd - baseline_max_dd:+.2f}pp)")
-        print(f"    vs v5a: Fees/trade ${baseline_fees_per_trade:.2f} -> ${fees_per_trade:.2f} ({fees_per_trade - baseline_fees_per_trade:+.2f})")
+        baseline_fees_per_trade = (
+            baseline_results["Full 2024"]["summary"]["total_commission"]
+            + baseline_results["Full 2024"]["summary"].get("total_slippage", 0.0)
+        ) / baseline_results["Full 2024"]["summary"]["num_trades"]
+        print(
+            f"    vs v5a: MaxDD {baseline_max_dd:.2f}% -> {max_dd:.2f}% ({max_dd - baseline_max_dd:+.2f}pp)"
+        )
+        print(
+            f"    vs v5a: Fees/trade ${baseline_fees_per_trade:.2f} -> ${fees_per_trade:.2f} ({fees_per_trade - baseline_fees_per_trade:+.2f})"
+        )
 
     print()
 
@@ -254,7 +271,7 @@ def hqt_audit_with_comparison(results: dict, baseline_results: dict = None):
         status2 = "PASS" if check2 else "FAIL"
         print(f"  [2] PF utan top-3 >= 1.25: {pf_without_top3:.2f} - {status2}")
     else:
-        print(f"  [2] PF utan top-3 >= 1.25: N/A")
+        print("  [2] PF utan top-3 >= 1.25: N/A")
         checks.append(False)
 
     # [3] Top-1 PnL < 30%

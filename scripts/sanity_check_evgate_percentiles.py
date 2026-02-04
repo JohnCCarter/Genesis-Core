@@ -137,7 +137,7 @@ def sanity_check_evgate_percentiles(config_path: Path):
         print(f"  Std: {all_ev.std():.4f}")
         print(f"  Min: {all_ev.min():.4f}")
         print(f"  Max: {all_ev.max():.4f}")
-        print(f"  Percentiles:")
+        print("  Percentiles:")
         for p in [25, 50, 75, 80, 85, 90, 95]:
             print(f"    p{p}: {np.percentile(all_ev, p):.4f}")
     else:
@@ -154,7 +154,7 @@ def sanity_check_evgate_percentiles(config_path: Path):
         print(f"  Std: {allowed_ev.std():.4f}")
         print(f"  Min: {allowed_ev.min():.4f}")
         print(f"  Max: {allowed_ev.max():.4f}")
-        print(f"  Percentiles:")
+        print("  Percentiles:")
         for p in [25, 50, 75, 80, 85, 90, 95]:
             percentile_val = np.percentile(allowed_ev, p)
             print(f"    p{p}: {percentile_val:.4f}")
@@ -177,9 +177,7 @@ def sanity_check_evgate_percentiles(config_path: Path):
         print()
 
         # Get EVGate min_ev threshold from config
-        evgate_cfg = next(
-            (c for c in config.get("components", []) if c["type"] == "ev_gate"), None
-        )
+        evgate_cfg = next((c for c in config.get("components", []) if c["type"] == "ev_gate"), None)
         min_ev = evgate_cfg["params"]["min_ev"] if evgate_cfg else 0.0
 
         print(f"EVGate Threshold: min_ev={min_ev:.4f}")
@@ -197,9 +195,7 @@ def sanity_check_evgate_percentiles(config_path: Path):
             print("Reconciliation:")
             print(f"  Configured min_ev: {min_ev:.4f}")
             print(f"  Actual veto rate: {100.0 * veto_rate:.1f}%")
-            print(
-                f"  Corresponding percentile: p{actual_percentile:.1f} = {actual_threshold:.4f}"
-            )
+            print(f"  Corresponding percentile: p{actual_percentile:.1f} = {actual_threshold:.4f}")
             print()
 
             # Check if threshold matches percentile
@@ -213,7 +209,9 @@ def sanity_check_evgate_percentiles(config_path: Path):
             # Sanity check: Does min_ev match expected_threshold?
             threshold_diff = abs(min_ev - expected_threshold)
             if threshold_diff < 0.01:
-                print(f"  ✅ MATCH: min_ev ({min_ev:.4f}) ≈ p{expected_percentile:.1f} ({expected_threshold:.4f})")
+                print(
+                    f"  ✅ MATCH: min_ev ({min_ev:.4f}) ≈ p{expected_percentile:.1f} ({expected_threshold:.4f})"
+                )
             else:
                 print(
                     f"  ❌ MISMATCH: min_ev ({min_ev:.4f}) != p{expected_percentile:.1f} ({expected_threshold:.4f})"

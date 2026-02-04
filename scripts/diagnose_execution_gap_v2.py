@@ -219,7 +219,9 @@ def diagnose_execution_gap_v2(config_path: Path):
 
     # Action distribution
     print("Action Distribution:")
-    print(f"  Action NONE: {summary['action_none']} ({100.0 * summary['action_none'] / summary['total_bars']:.1f}%)")
+    print(
+        f"  Action NONE: {summary['action_none']} ({100.0 * summary['action_none'] / summary['total_bars']:.1f}%)"
+    )
     print(
         f"  Action LONG/SHORT: {summary['action_entry_total']} ({100.0 * summary['action_entry_total'] / summary['total_bars']:.1f}%)"
     )
@@ -233,9 +235,9 @@ def diagnose_execution_gap_v2(config_path: Path):
     print(
         f"  Vetoed by components: {summary['component_vetoed']} ({100.0 * summary['component_vetoed'] / summary['action_entry_total']:.1f}%)"
     )
-    if summary['component_veto_reasons']:
+    if summary["component_veto_reasons"]:
         print("    Veto reasons:")
-        for comp, count in summary['component_veto_reasons'].most_common():
+        for comp, count in summary["component_veto_reasons"].most_common():
             print(
                 f"      {comp}: {count} ({100.0 * count / summary['component_vetoed']:.1f}% of vetoes)"
             )
@@ -273,15 +275,19 @@ def diagnose_execution_gap_v2(config_path: Path):
     print(f"{'bar_index':<12} {'action':<8} {'reason':<50} {'EV':<10}")
     print("-" * 90)
     for sample in summary["rejection_samples"][:20]:
-        ev_str = f"{sample['ev']:.4f}" if sample['ev'] is not None else "N/A"
-        print(f"{sample['bar_index']:<12} {sample['action']:<8} {sample['reason']:<50} {ev_str:<10}")
+        ev_str = f"{sample['ev']:.4f}" if sample["ev"] is not None else "N/A"
+        print(
+            f"{sample['bar_index']:<12} {sample['action']:<8} {sample['reason']:<50} {ev_str:<10}"
+        )
 
-    print(f"\nExecution Samples (first 20):")
+    print("\nExecution Samples (first 20):")
     print(f"{'bar_index':<12} {'action':<8} {'reason':<50} {'EV':<10}")
     print("-" * 90)
     for sample in summary["execution_samples"][:20]:
-        ev_str = f"{sample['ev']:.4f}" if sample['ev'] is not None else "N/A"
-        print(f"{sample['bar_index']:<12} {sample['action']:<8} {sample['reason']:<50} {ev_str:<10}")
+        ev_str = f"{sample['ev']:.4f}" if sample["ev"] is not None else "N/A"
+        print(
+            f"{sample['bar_index']:<12} {sample['action']:<8} {sample['reason']:<50} {ev_str:<10}"
+        )
 
     # EV distribution
     print(f"\n{'='*90}")
@@ -302,7 +308,7 @@ def diagnose_execution_gap_v2(config_path: Path):
         print(f"  Std: {ev_array.std():.4f}")
         print(f"  Min: {ev_array.min():.4f}")
         print(f"  Max: {ev_array.max():.4f}")
-        print(f"  Percentiles:")
+        print("  Percentiles:")
         for p in [25, 50, 75, 80, 85, 90, 95]:
             print(f"    p{p}: {np.percentile(ev_array, p):.4f}")
 

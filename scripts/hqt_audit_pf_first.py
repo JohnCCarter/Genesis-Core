@@ -19,7 +19,6 @@ HQT-pass (PF-first):
 
 import json
 from pathlib import Path
-from datetime import datetime
 
 
 def calculate_pf(trades):
@@ -100,10 +99,12 @@ def hqt_audit(results_path: Path):
         top5_pnl = sum(t["pnl"] for t in sorted_trades[:5])
         top5_pct = 100.0 * top5_pnl / total_pnl if total_pnl != 0 else 0.0
         print(f"  Top-5 trades: ${top5_pnl:.2f} ({top5_pct:.1f}% of total PnL)")
-        print(f"  Top-5 breakdown:")
+        print("  Top-5 breakdown:")
         for i, trade in enumerate(sorted_trades[:5], 1):
             pct = 100.0 * trade["pnl"] / total_pnl if total_pnl != 0 else 0.0
-            print(f"    #{i}: ${trade['pnl']:.2f} ({pct:.1f}%) - {trade['entry_time']} to {trade['exit_time']}")
+            print(
+                f"    #{i}: ${trade['pnl']:.2f} ({pct:.1f}%) - {trade['entry_time']} to {trade['exit_time']}"
+            )
 
     print()
 
@@ -194,7 +195,7 @@ def hqt_audit(results_path: Path):
         status4 = "PASS" if check4 else "FAIL"
         print(f"  [4] PF utan top-3 >= 1.2: {pf_without_top3:.2f} - {status4}")
     else:
-        print(f"  [4] PF utan top-3 >= 1.2: N/A (not enough trades)")
+        print("  [4] PF utan top-3 >= 1.2: N/A (not enough trades)")
         checks.append(False)
 
     print()

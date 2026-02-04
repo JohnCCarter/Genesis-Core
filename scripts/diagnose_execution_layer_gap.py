@@ -22,7 +22,7 @@ os.environ["GENESIS_FAST_WINDOW"] = "1"
 os.environ["GENESIS_PRECOMPUTE_FEATURES"] = "1"
 
 import yaml
-from collections import Counter, defaultdict
+from collections import Counter
 
 from core.backtest.composable_engine import ComposableBacktestEngine
 from core.strategy.components.ml_confidence import MLConfidenceComponent
@@ -223,12 +223,16 @@ def diagnose_execution_gap(config_path: Path):
     print("EXECUTION LAYER GAP ANALYSIS (Gap #3)")
     print(f"{'='*80}")
     print(f"Total decisions: {execution_data['total_decisions']}")
-    print(f"Action NONE: {execution_data['action_none']} ({100.0 * execution_data['action_none'] / execution_data['total_decisions']:.1f}%)")
+    print(
+        f"Action NONE: {execution_data['action_none']} ({100.0 * execution_data['action_none'] / execution_data['total_decisions']:.1f}%)"
+    )
     print(
         f"Action LONG/SHORT: {execution_data['action_entry']} ({100.0 * execution_data['action_entry'] / execution_data['total_decisions']:.1f}%)"
     )
     print()
-    print(f"Executed: {execution_data['executed']} ({100.0 * execution_data['executed'] / execution_data['action_entry']:.1f}% of entry actions)")
+    print(
+        f"Executed: {execution_data['executed']} ({100.0 * execution_data['executed'] / execution_data['action_entry']:.1f}% of entry actions)"
+    )
     print(
         f"Rejected: {execution_data['rejected']} ({100.0 * execution_data['rejected'] / execution_data['action_entry']:.1f}% of entry actions)"
     )
@@ -241,7 +245,7 @@ def diagnose_execution_gap(config_path: Path):
         print(f"  {reason}: {count}")
 
     # Show rejection samples
-    print(f"\nRejection Samples (first 20):")
+    print("\nRejection Samples (first 20):")
     print(
         f"{'bar_index':<12} {'action':<8} {'pos_state':<12} {'size':<8} {'executed':<10} {'reason':<40}"
     )
@@ -252,7 +256,7 @@ def diagnose_execution_gap(config_path: Path):
         )
 
     # Show execution samples
-    print(f"\nExecution Samples (first 20):")
+    print("\nExecution Samples (first 20):")
     print(
         f"{'bar_index':<12} {'action':<8} {'pos_state':<12} {'size':<8} {'executed':<10} {'reason':<40}"
     )
@@ -281,12 +285,14 @@ def diagnose_execution_gap(config_path: Path):
         print(f"  Std: {ev_array.std():.4f}")
         print(f"  Min: {ev_array.min():.4f}")
         print(f"  Max: {ev_array.max():.4f}")
-        print(f"  Percentiles:")
+        print("  Percentiles:")
         for p in [25, 50, 75, 80, 85, 90, 95]:
             print(f"    p{p}: {np.percentile(ev_array, p):.4f}")
 
     print_ev_stats(execution_data["ev_all"], "(a) All Decisions")
-    print_ev_stats(execution_data["ev_ml_regime_allowed"], "(b) ML+Regime Allowed (pre EVGate/Cooldown)")
+    print_ev_stats(
+        execution_data["ev_ml_regime_allowed"], "(b) ML+Regime Allowed (pre EVGate/Cooldown)"
+    )
     print_ev_stats(execution_data["ev_executed"], "(c) Executed Trades")
 
     print(f"\n{'='*80}")

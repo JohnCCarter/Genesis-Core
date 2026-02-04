@@ -6,21 +6,55 @@ Paper trading validation period for Genesis-Core champion strategy v5a.
 
 **Period:** 2026-02-04 to 2026-03-17 (6 weeks)
 **Champion:** v5a_sizing_exp1 (tBTCUSD_1h)
-**Status:** Pre-flight verification (väntar på CI-green)
+**Status:** ✅ **ACTIVE** (started 2026-02-04 09:29 UTC)
+
+## Artefakt-cykel
+
+### Daglig (Automated)
+
+**Health/Runtime Snapshot:**
+- Script: `scripts/daily_health_check.sh`
+- Output: `logs/paper_trading/daily_snapshots/health_YYYYMMDD.json`
+- Content: Server health, runtime config, git status, uptime
+- Schedule: Daily 00:00 UTC (cron/Task Scheduler)
+
+### Veckovis (Manual/Automated)
+
+**Metrics Report:**
+- Script: `scripts/calculate_paper_trading_metrics.py`
+- Output: `docs/paper_trading/weekly_reports/week_N_YYYYMMDD.md`
+- Content: Trades, PF, WR, DD, commission, criteria evaluation
+- Schedule: Every Monday (end of week)
+- Documentation: `docs/paper_trading/weekly_metrics.md`
+
+### Kontinuerlig
+
+**Server Logs:**
+- Location: `logs/paper_trading/server_YYYYMMDD.log`
+- Rotation: Daily (automatic by filename)
+- Retention: Keep last 30 days
+- Monitor: Tail for errors, NONE actions, decision reasons
+
+**Evaluate Responses:**
+- Location: `logs/paper_trading/evaluate_response_*.json`
+- Saved: On-demand or scheduled intervals
+- Purpose: Audit champion loading, decision quality
 
 ## Pre-Flight Checklist
 
-Before paper trading can start, all items must be verified:
+All items verified and complete:
 
 - [x] Champion file exists: `config/strategy/champions/tBTCUSD_1h.json`
 - [x] Champion structure valid (merged_config key present)
 - [x] FREEZE_START date set: 2026-02-04
 - [x] Freeze-guard CI workflow active
-- [x] Lint errors resolved (commit 390984d)
-- [ ] CI fully green for lint-fix commit
-- [ ] POST /strategy/evaluate verified (champion loads, not baseline)
-- [ ] Server running with logging enabled
-- [ ] First evaluate snapshot captured
+- [x] Lint errors resolved (commit 2ca031c)
+- [x] Manual gate applied (GitHub Actions degraded - incident f314nlctbfs5)
+- [x] POST /strategy/evaluate verified (champion loads, not baseline)
+- [x] Server running with logging enabled (PID 24646)
+- [x] First evaluate snapshot captured (logs/paper_trading/evaluate_response_20260204_092959.json)
+
+**Status:** ✅ All pre-flight checks PASSED (2026-02-04 09:29 UTC)
 
 ## Champion Details
 

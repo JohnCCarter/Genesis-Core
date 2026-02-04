@@ -150,21 +150,34 @@ def fetch_latest_candle(
         now_ms = int(time.time() * 1000)
         latest_ts = int(latest[0])
         candle_duration_ms = _timeframe_to_ms(timeframe)
+        latest_close_ms = latest_ts + candle_duration_ms
 
-        # If now > latest_ts + duration, latest is closed
-        if now_ms > latest_ts + candle_duration_ms:
-            closed_candle_ts = latest_ts
+        # Determine which candle is closed (use consistent ts + OHLCV from same candle)
+        if now_ms > latest_close_ms:
+            # Latest is closed - use latest candle data
+            selected_candle = latest
+            source = "latest"
         else:
-            # Latest is still forming, use previous
-            closed_candle_ts = int(previous[0])
+            # Latest is still forming - use previous closed candle
+            selected_candle = previous
+            source = "previous"
+
+        closed_candle_ts = int(selected_candle[0])
+
+        # Audit logging for determinism verification
+        logger.debug(
+            f"Candle selection: source={source}, ts={closed_candle_ts}, "
+            f"now_ms={now_ms}, latest_ts={latest_ts}, latest_close_ms={latest_close_ms}"
+        )
 
         return {
             "ts": closed_candle_ts,
-            "open": float(latest[1]),
-            "close": float(latest[2]),
-            "high": float(latest[3]),
-            "low": float(latest[4]),
-            "volume": float(latest[5]),
+            "open": float(selected_candle[1]),
+            "close": float(selected_candle[2]),
+            "high": float(selected_candle[3]),
+            "low": float(selected_candle[4]),
+            "volume": float(selected_candle[5]),
+            "_source": source,  # Audit metadata
         }
 
     except httpx.HTTPError as e:
@@ -318,7 +331,10 @@ def run_loop(config: RunnerConfig, logger: logging.Logger, state: RunnerState) -
                 continue
 
             # New candle detected!
-            logger.info(f"NEW CANDLE CLOSE: ts={candle_ts}, close={candle['close']:.2f}")
+            candle_source = candle.get("_source", "unknown")
+            logger.info(
+                f"NEW CANDLE CLOSE: ts={candle_ts}, close={candle['close']:.2f}, source={candle_source}"
+            )
 
             # Evaluate strategy
             eval_resp = evaluate_strategy(config, client, logger)
@@ -352,13 +368,20 @@ def run_loop(config: RunnerConfig, logger: logging.Logger, state: RunnerState) -
                         logger.info(f"ORDER SUBMITTED: {order_resp}")
                         state.total_orders_submitted += 1
                     else:
-                        logger.error("Order submission failed.")
+                        # CRITICAL: Order submission failed in uncertain state
+                        logger.error(
+                            f"FATAL: Order submission failed for candle {candle_ts}. "
+                            f"Fail-closed: Cannot proceed with uncertain order state. "
+                            f"Manual intervention required."
+                        )
+                        save_state(state, config.state_file, logger)  # Persist current state
+                        sys.exit(1)  # Fail-closed
                 else:
                     logger.info(f"DRY-RUN: Would submit {action} order (skipped)")
             else:
                 logger.info("Action=NONE. No order.")
 
-            # Mark candle as processed
+            # Mark candle as processed (only reached if order succeeded, dry-run, or NONE)
             state.last_processed_candle_ts = candle_ts
             save_state(state, config.state_file, logger)
 

@@ -244,3 +244,261 @@ def test_champion_verification():
     eval_resp = {"meta": {"champion": {"source": "baseline:fallback_1h"}}}
     assert verify_champion_loaded(eval_resp, logger) is False
     logger.error.assert_called()
+
+
+# --- Bug #1 Test: Candle Data Consistency ---
+
+
+@patch("paper_trading_runner.time.time")
+def test_fetch_candle_uses_correct_ohlcv_when_forming(mock_time):
+    """
+    Bug #1 regression test: Verify that when latest is forming,
+    previous candle's ts AND OHLCV are returned (not mixed data).
+    """
+    candle_ts = 1704067200000  # Latest candle start
+    previous_ts = candle_ts - 3600000  # 1h before
+    current_time = (candle_ts + 30 * 60 * 1000) / 1000  # 30 min into latest (forming)
+
+    mock_time.return_value = current_time
+
+    mock_response = Mock()
+    mock_response.json.return_value = [
+        [candle_ts, 50000.0, 50100.0, 50200.0, 49900.0, 100.5],  # Latest (forming)
+        [previous_ts, 49000.0, 49500.0, 49800.0, 48900.0, 95.3],  # Previous (closed)
+    ]
+    mock_response.raise_for_status = Mock()
+
+    mock_client = Mock(spec=httpx.Client)
+    mock_client.get.return_value = mock_response
+    logger = Mock()
+
+    candle = fetch_latest_candle("tBTCUSD", "1h", mock_client, logger)
+
+    # Should return previous candle (timestamp AND OHLCV must match)
+    assert candle is not None
+    assert candle["ts"] == previous_ts, "Timestamp should be from previous candle"
+    assert candle["open"] == 49000.0, "Open should be from previous candle, NOT latest"
+    assert candle["close"] == 49500.0, "Close should be from previous candle, NOT latest"
+    assert candle["high"] == 49800.0, "High should be from previous candle"
+    assert candle["low"] == 48900.0, "Low should be from previous candle"
+    assert candle["volume"] == 95.3, "Volume should be from previous candle"
+    assert candle["_source"] == "previous", "Source metadata should indicate 'previous'"
+
+    # Verify audit logging was called
+    logger.debug.assert_called()
+    debug_call = logger.debug.call_args[0][0]
+    assert "source=previous" in debug_call
+    assert f"ts={previous_ts}" in debug_call
+
+
+@patch("paper_trading_runner.time.time")
+def test_fetch_candle_uses_correct_ohlcv_when_closed(mock_time):
+    """
+    Bug #1 regression test: Verify that when latest is closed,
+    latest candle's ts AND OHLCV are returned.
+    """
+    candle_ts = 1704067200000  # Latest candle start
+    previous_ts = candle_ts - 3600000  # 1h before
+    candle_duration = 60 * 60 * 1000
+    current_time = (candle_ts + candle_duration + 60 * 1000) / 1000  # 1 min after close
+
+    mock_time.return_value = current_time
+
+    mock_response = Mock()
+    mock_response.json.return_value = [
+        [candle_ts, 50000.0, 50100.0, 50200.0, 49900.0, 100.5],  # Latest (closed)
+        [previous_ts, 49000.0, 49500.0, 49800.0, 48900.0, 95.3],  # Previous
+    ]
+    mock_response.raise_for_status = Mock()
+
+    mock_client = Mock(spec=httpx.Client)
+    mock_client.get.return_value = mock_response
+    logger = Mock()
+
+    candle = fetch_latest_candle("tBTCUSD", "1h", mock_client, logger)
+
+    # Should return latest candle (timestamp AND OHLCV must match)
+    assert candle is not None
+    assert candle["ts"] == candle_ts, "Timestamp should be from latest candle"
+    assert candle["open"] == 50000.0, "Open should be from latest candle"
+    assert candle["close"] == 50100.0, "Close should be from latest candle"
+    assert candle["high"] == 50200.0, "High should be from latest candle"
+    assert candle["low"] == 49900.0, "Low should be from latest candle"
+    assert candle["volume"] == 100.5, "Volume should be from latest candle"
+    assert candle["_source"] == "latest", "Source metadata should indicate 'latest'"
+
+    # Verify audit logging was called
+    logger.debug.assert_called()
+    debug_call = logger.debug.call_args[0][0]
+    assert "source=latest" in debug_call
+    assert f"ts={candle_ts}" in debug_call
+
+
+# --- Bug #2 Test: Fail-Closed on Order Submission Failure ---
+
+
+def test_order_submission_failure_causes_fail_closed_exit(tmp_path):
+    """
+    Bug #2 regression test: Verify that order submission failure in live-paper mode
+    causes fail-closed exit (sys.exit(1)) and does NOT update last_processed_candle_ts.
+    """
+    from paper_trading_runner import RunnerConfig, RunnerState
+
+    # Mock all dependencies
+    with (
+        patch("paper_trading_runner.httpx.Client") as mock_client_class,
+        patch("paper_trading_runner.fetch_latest_candle") as mock_fetch,
+        patch("paper_trading_runner.evaluate_strategy") as mock_eval,
+        patch("paper_trading_runner.submit_paper_order") as mock_submit,
+        patch("paper_trading_runner.save_state") as mock_save,
+    ):
+
+        # Setup mocks
+        mock_client = Mock()
+        mock_client_class.return_value = mock_client
+
+        candle_ts = 1704067200000
+        mock_fetch.return_value = {
+            "ts": candle_ts,
+            "open": 50000.0,
+            "close": 50100.0,
+            "high": 50200.0,
+            "low": 49900.0,
+            "volume": 100.5,
+            "_source": "latest",
+        }
+
+        # Evaluation returns BUY signal
+        mock_eval.return_value = {
+            "result": {
+                "action": "BUY",
+                "signal": 1,
+                "confidence": {"overall": 0.75},
+                "size_pct": 0.5,
+            },
+            "meta": {"champion": {"source": "config\\strategy\\champions\\tBTCUSD_1h.json"}},
+        }
+
+        # Order submission FAILS (returns None)
+        mock_submit.return_value = None
+
+        # Setup config and state
+        config = RunnerConfig(
+            host="localhost",
+            port=8000,
+            symbol="tBTCUSD",
+            timeframe="1h",
+            poll_interval=1,
+            dry_run=False,
+            live_paper=True,  # LIVE-PAPER mode
+            log_dir=tmp_path,
+            state_file=tmp_path / "state.json",
+        )
+
+        state = RunnerState()
+        logger = Mock()
+
+        # Import run_loop
+        from paper_trading_runner import run_loop
+
+        # Run should exit with code 1 (fail-closed)
+        with pytest.raises(SystemExit) as exc_info:
+            run_loop(config, logger, state)
+
+        # Verify exit code 1
+        assert exc_info.value.code == 1, "Should exit with code 1 on order submission failure"
+
+        # Verify that save_state was called (to persist state before exit)
+        assert mock_save.called, "State should be saved before fail-closed exit"
+
+        # Verify that last_processed_candle_ts was NOT updated
+        # Check the state object passed to save_state
+        save_calls = mock_save.call_args_list
+        saved_state = save_calls[-1][0][0]  # First arg of last call
+        assert (
+            saved_state.last_processed_candle_ts != candle_ts
+        ), "Candle should NOT be marked as processed on order submission failure"
+
+        # Verify FATAL error was logged
+        fatal_logged = any("FATAL" in str(call) for call in logger.error.call_args_list)
+        assert fatal_logged, "FATAL error should be logged on order submission failure"
+
+
+def test_order_submission_success_updates_candle_ts(tmp_path):
+    """
+    Bug #2 regression test: Verify that successful order submission
+    updates last_processed_candle_ts correctly.
+    """
+    from paper_trading_runner import RunnerConfig, RunnerState
+
+    with (
+        patch("paper_trading_runner.httpx.Client") as mock_client_class,
+        patch("paper_trading_runner.fetch_latest_candle") as mock_fetch,
+        patch("paper_trading_runner.evaluate_strategy") as mock_eval,
+        patch("paper_trading_runner.submit_paper_order") as mock_submit,
+        patch("paper_trading_runner.save_state") as mock_save,
+        patch("paper_trading_runner.time.sleep"),
+    ):  # Mock sleep to speed up test
+
+        mock_client = Mock()
+        mock_client_class.return_value = mock_client
+
+        candle_ts = 1704067200000
+
+        # First fetch returns candle, second returns None to exit loop
+        mock_fetch.side_effect = [
+            {
+                "ts": candle_ts,
+                "open": 50000.0,
+                "close": 50100.0,
+                "high": 50200.0,
+                "low": 49900.0,
+                "volume": 100.5,
+                "_source": "latest",
+            },
+            None,  # Triggers exit
+        ]
+
+        mock_eval.return_value = {
+            "result": {
+                "action": "BUY",
+                "signal": 1,
+                "confidence": {"overall": 0.75},
+                "size_pct": 0.5,
+            },
+            "meta": {"champion": {"source": "config\\strategy\\champions\\tBTCUSD_1h.json"}},
+        }
+
+        # Order submission SUCCEEDS
+        mock_submit.return_value = {"order_id": "12345", "status": "accepted"}
+
+        config = RunnerConfig(
+            host="localhost",
+            port=8000,
+            symbol="tBTCUSD",
+            timeframe="1h",
+            poll_interval=1,
+            dry_run=False,
+            live_paper=True,
+            log_dir=tmp_path,
+            state_file=tmp_path / "state.json",
+        )
+
+        state = RunnerState()
+        logger = Mock()
+
+        from paper_trading_runner import run_loop
+
+        # Run loop (will exit on second fetch returning None)
+        run_loop(config, logger, state)
+
+        # Verify that last_processed_candle_ts WAS updated
+        save_calls = mock_save.call_args_list
+        # Find the save call after order submission (not just heartbeat saves)
+        saved_states = [call[0][0] for call in save_calls]
+        final_state = saved_states[-1]
+
+        assert (
+            final_state.last_processed_candle_ts == candle_ts
+        ), "Candle should be marked as processed after successful order submission"
+        assert final_state.total_orders_submitted == 1, "Order counter should be incremented"

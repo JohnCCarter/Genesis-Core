@@ -27,19 +27,22 @@ For ChatGPT “Connect to MCP” / remote linking you should run the HTTP server
 # The MCP endpoint is POST /mcp
 $env:PORT=8000
 $env:GENESIS_MCP_REMOTE_SAFE=1
+$env:GENESIS_MCP_REMOTE_ULTRA_SAFE=0
 python -m mcp_server.remote_server
 ```
 
 Environment variables:
 
-- `PORT` (default: 8000) — set this to match your tunnel/forwarding target (e.g. 3333).
+- `GENESIS_MCP_PORT` / `MCP_PORT` / `PORT` (default: 8000) — set this to match your tunnel/forwarding target (e.g. 3333).
 - `GENESIS_MCP_REMOTE_SAFE` (default: 1) — read-only mode (no write/execute tools).
-- `GENESIS_MCP_REMOTE_ULTRA_SAFE` (default: 0) — exposes only `ping_tool` + connector stubs.
+- `GENESIS_MCP_REMOTE_ULTRA_SAFE` (default: 0) — if set to `1`, exposes only `ping_tool` + connector stubs.
+- `GENESIS_MCP_REMOTE_TOKEN` (default: unset) — if set, `/mcp` requires either `Authorization: Bearer <token>` or `X-Genesis-MCP-Token: <token>`.
 - `GENESIS_MCP_DEBUG_ROUTES` (default: 0) — prints registered routes on startup.
 
 Remote endpoints:
 
 - `GET /healthz` — returns `OK` (basic reachability check)
+- `GET /privacy-policy` — privacy policy (public, used by GPT Builder validation)
 - `POST /mcp` — MCP endpoint used by ChatGPT connector
 
 Tunnel/proxy note (important):
@@ -100,6 +103,9 @@ Security notes:
 - When you do not actively need project tools, consider `GENESIS_MCP_REMOTE_ULTRA_SAFE=1`.
 - Reduce `allowed_paths` in `config/mcp_settings.json` to the minimum required (avoid `"."` if
   you only need a subset like `docs/`).
+- If you want SAFE read-only _with real file access_, keep `GENESIS_MCP_REMOTE_SAFE=1` and ensure `GENESIS_MCP_REMOTE_ULTRA_SAFE=0`.
+- If you enable `GENESIS_MCP_REMOTE_TOKEN`, remember that some clients (including ChatGPT “Connect to MCP”) may not support custom headers.
+  In that case, enforce auth at the reverse proxy (e.g. Cloudflare Access) instead of relying on header injection.
 
 “Private” access:
 
@@ -184,3 +190,20 @@ All operations are logged to `logs/mcp_server.log` with timestamps and detailed 
 ## Support
 
 For issues or questions, see the [full documentation](../docs/mcp_server_guide.md) or check the logs at `logs/mcp_server.log`.
+
+## Example: Running the Remote Server with PowerShell
+
+Local-only note (important): The configuration below enables **write_file** and **execute_python** over HTTP.
+Do not expose this on the public Internet. If you must access it remotely, put it behind a strong reverse-proxy
+auth layer (e.g. Cloudflare Access) and keep a tight `allowed_paths` allowlist.
+
+```powershell
+$Env:GENESIS_MCP_PORT = '3333'
+$Env:GENESIS_MCP_REMOTE_SAFE = '0'
+$Env:GENESIS_MCP_REMOTE_ULTRA_SAFE = '0'
+
+# Optional but recommended if any proxying is involved:
+# $Env:GENESIS_MCP_REMOTE_TOKEN = '<long-random-token>'
+
+& 'C:\Users\fa06662\Projects\Genesis-Core\.venv\Scripts\python.exe' -m mcp_server.remote_server
+```

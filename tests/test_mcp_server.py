@@ -4,6 +4,8 @@ Tests for MCP Server functionality
 
 from __future__ import annotations
 
+import re
+
 import pytest
 from pydantic import AnyUrl, TypeAdapter
 
@@ -49,7 +51,8 @@ async def test_read_file(config):
 @pytest.mark.asyncio
 async def test_read_file_not_exists(config):
     """Test reading a non-existent file."""
-    result = await read_file("nonexistent_file.txt", config)
+    # Use a path within an allowed root to ensure the error is about existence (not allowlisting).
+    result = await read_file("src/nonexistent_file.txt", config)
     assert result["success"] is False
     assert "does not exist" in result["error"]
 
@@ -82,10 +85,10 @@ async def test_list_directory(config):
 
 @pytest.mark.asyncio
 async def test_list_directory_root(config):
-    """Test listing root directory."""
-    result = await list_directory(".", config)
+    """Test listing an allowed directory."""
+    result = await list_directory("src", config)
     assert result["success"] is True
-    assert any(item["name"] == "src" for item in result["items"])
+    assert any(item["name"] == "core" for item in result["items"])
 
 
 @pytest.mark.asyncio
@@ -155,14 +158,16 @@ def test_is_safe_path(config):
     is_safe, _ = is_safe_path("README.md", config)
     assert is_safe is True
 
-    # Blocked patterns
-    is_safe, error = is_safe_path(".env", config)
+    # Blocked patterns (exercise within allowed roots)
+    is_safe, error = is_safe_path("config/.env", config)
     assert is_safe is False
     assert "blocked pattern" in error
 
-    is_safe, error = is_safe_path("__pycache__/module.pyc", config)
+    is_safe, error = is_safe_path("src/__pycache__/module.pyc", config)
     assert is_safe is False
+    assert "blocked pattern" in error
 
+    # Outside allowed paths (also inside project root)
     is_safe, error = is_safe_path(".git/config", config)
     assert is_safe is False
 
@@ -183,7 +188,38 @@ def test_load_config():
     """Test loading configuration."""
     config = load_config()
     assert config.server_name == "genesis-core"
-    assert config.version == "1.0.0"
+    # Version can be bumped in config/mcp_settings.json; validate it's a semver-like string.
+    assert re.fullmatch(r"\d+\.\d+\.\d+(?:[-+].+)?", config.version)
     assert config.features.file_operations is True
     assert config.features.code_execution is True
     assert config.features.git_integration is True
+
+
+def test_remote_token_auth_allows_when_unset(monkeypatch):
+    """Remote token auth should be a no-op unless a token is configured."""
+    import mcp_server.remote_server as remote
+
+    monkeypatch.setattr(remote, "REMOTE_TOKEN", None)
+    assert remote._is_authorized_remote_request(authorization=None, token_header=None) is True
+
+
+def test_remote_token_auth_accepts_bearer_or_header(monkeypatch):
+    """When configured, the token must match either Authorization Bearer or X-Genesis-MCP-Token."""
+    import mcp_server.remote_server as remote
+
+    monkeypatch.setattr(remote, "REMOTE_TOKEN", "s3cr3t")
+
+    assert (
+        remote._is_authorized_remote_request(authorization="Bearer s3cr3t", token_header=None)
+        is True
+    )
+    assert remote._is_authorized_remote_request(authorization=None, token_header="s3cr3t") is True
+
+    assert (
+        remote._is_authorized_remote_request(authorization="Bearer wrong", token_header=None)
+        is False
+    )
+    assert remote._is_authorized_remote_request(authorization=None, token_header="wrong") is False
+    assert (
+        remote._is_authorized_remote_request(authorization="Basic abc", token_header=None) is False
+    )

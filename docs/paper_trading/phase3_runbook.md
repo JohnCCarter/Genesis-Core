@@ -87,7 +87,7 @@ Then run:
 Status: Runner is healthy and ready for 24h dry-run.
 
 Next steps:
-  1. Monitor logs: tail -f logs/paper_trading/runner_YYYYMMDD.log
+  1. Monitor logs: tail -f logs/paper_trading/runner_$(date -u +%Y%m%d).log
   2. Wait for first candle close (top of next hour)
   3. Run acceptance checks after 24h:
      ./scripts/dry_run_acceptance.sh

@@ -65,21 +65,65 @@ else
   FAILED=1
 fi
 
-# Check 2: Today's runner log exists and has >50 lines
+# Check 2: Today's runner log exists, is fresh, and has activity
 echo -n "[2/5] Runner log file existence... "
 if [ -f "$LOG_FILE" ]; then
+  echo -e "${GREEN}✓ EXISTS${NC}"
+
+  # Check 2a: Log file freshness (mtime within last 120 seconds)
+  echo -n "      Log file freshness (mtime)... "
+
+  # Get file modification time (Unix timestamp)
+  # Try Linux stat first, fall back to macOS/BSD stat
+  if stat -c %Y "$LOG_FILE" > /dev/null 2>&1; then
+    # Linux
+    FILE_MTIME=$(stat -c %Y "$LOG_FILE")
+  elif stat -f %m "$LOG_FILE" > /dev/null 2>&1; then
+    # macOS/BSD
+    FILE_MTIME=$(stat -f %m "$LOG_FILE")
+  else
+    # Fallback: use ls + date parsing (less reliable)
+    echo -e "${YELLOW}⚠ WARNING${NC}"
+    echo "  Warning: Cannot determine file mtime (stat not available)"
+    echo "  Skipping freshness check"
+    FILE_MTIME=0
+  fi
+
+  if [ "$FILE_MTIME" -ne 0 ]; then
+    CURRENT_TIME=$(date +%s)
+    FILE_AGE=$((CURRENT_TIME - FILE_MTIME))
+
+    if [ "$FILE_AGE" -le 120 ]; then
+      echo -e "${GREEN}✓ PASS${NC} (${FILE_AGE}s ago)"
+    else
+      echo -e "${RED}✗ FAIL${NC}"
+      echo "  Error: Log file is stale (last modified ${FILE_AGE}s ago, expected <120s)"
+      echo "  Possible causes:"
+      echo "    - Runner not writing to this file (wrong filename/date)"
+      echo "    - Runner crashed/stopped (not polling)"
+      echo "    - Runner writing to different log file (timezone mismatch)"
+      echo "  Current time: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+      echo "  File mtime: $(date -u -d @$FILE_MTIME +'%Y-%m-%d %H:%M:%S UTC' 2>/dev/null || date -r $FILE_MTIME -u +'%Y-%m-%d %H:%M:%S UTC' 2>/dev/null || echo 'unknown')"
+      echo "  Check: ps aux | grep paper_trading_runner"
+      echo "  Check: ls -lht logs/paper_trading/runner_*.log | head -3"
+      FAILED=1
+    fi
+  fi
+
+  # Check 2b: Line count (warning only, not fail)
+  echo -n "      Log file activity (lines)... "
   LINE_COUNT=$(wc -l < "$LOG_FILE")
   if [ "$LINE_COUNT" -gt 50 ]; then
     echo -e "${GREEN}✓ PASS${NC} ($LINE_COUNT lines)"
   else
     echo -e "${YELLOW}⚠ WARNING${NC}"
-    echo "  Warning: Log file exists but has only $LINE_COUNT lines (expected >50)"
+    echo "  Warning: Log file has only $LINE_COUNT lines (expected >50 after 2-3 min)"
     echo "  Possible causes:"
     echo "    - Runner just started (wait 2-3 more minutes)"
     echo "    - Runner crashed shortly after startup"
-    echo "    - Runner not polling (check for errors in log)"
+    echo "    - Runner not polling actively"
     echo "  Last 10 lines of log:"
-    tail -10 "$LOG_FILE" | sed 's/^/    /'
+    tail -10 "$LOG_FILE" | sed 's/^/        /'
     # Don't fail on this, just warn
   fi
 else

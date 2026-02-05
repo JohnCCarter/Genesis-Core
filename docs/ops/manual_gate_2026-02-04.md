@@ -6,11 +6,13 @@
 **Incident:** Delays in UI updates for Actions Runs
 **Link:** https://www.githubstatus.com/incidents/f314nlctbfs5
 **Timeline:**
+
 - Investigation started: Feb 03, 16:10 UTC
 - Mitigation applied: Feb 03, 16:51 UTC
 - Status at manual gate: Still degraded (Feb 04, 08:16 UTC)
 
 **Impact on Genesis-Core:**
+
 - CI results inconsistent between GitHub UI and API
 - GitHub UI shows: CI #599 Passed
 - GitHub API shows: lint-test failure
@@ -19,6 +21,7 @@
 ## Decision
 
 **Manual Gate Applied** as replacement for CI hard gate per project policy:
+
 > "CI är en hård gate. Om Actions är degraderat globalt kan vi fortsätta endast genom att ersätta CI temporärt med explicit manuell verifiering: inga nya commits, kör samma lint/tests lokalt, spara output och dokumentera beslutet."
 
 ## Commit Verified
@@ -30,6 +33,7 @@
 **Date:** Wed Feb 4 08:27:04 2026 +0100
 
 **Changes:**
+
 - 9 files changed, 750 insertions(+), 47 deletions(-)
 - Auto-fixed 15 ruff F541 errors (f-strings without placeholders)
 - Added documentation: daily_summary, paper_trading README, known_issues, AGENTS.md
@@ -48,6 +52,7 @@
 ### Check 1: Pre-commit (all hooks)
 
 **Command:**
+
 ```bash
 pre-commit run --all-files
 ```
@@ -55,6 +60,7 @@ pre-commit run --all-files
 **Result:** ✅ **PASSED**
 
 **Output:**
+
 ```
 black....................................................................Passed
 ruff.....................................................................Passed
@@ -74,6 +80,7 @@ check json...............................................................Passed
 ### Check 2: Pytest (full test suite)
 
 **Command:**
+
 ```bash
 pytest -v --tb=short
 ```
@@ -81,6 +88,7 @@ pytest -v --tb=short
 **Result:** ✅ **PASSED**
 
 **Summary:**
+
 - **810 passed**
 - **15 skipped**
 - **32 warnings** (deprecations, expected)
@@ -89,6 +97,7 @@ pytest -v --tb=short
 **Exit Code:** 0
 
 **Warnings (non-blocking):**
+
 - DeprecationWarning: `is_datetime64tz_dtype` (pandas)
 - DeprecationWarning: `core.strategy.features.extract_features` (delegated to SSOT)
 - ExperimentalWarning: Optuna arguments (heartbeat_interval, multivariate, constant_liar)
@@ -104,6 +113,7 @@ All warnings are expected/known and do not indicate failures.
 ### ✅ **PASSED**
 
 All checks completed successfully:
+
 1. ✅ Pre-commit: All 9 hooks passed
 2. ✅ Pytest: 810 tests passed, 0 failures
 

@@ -11,18 +11,21 @@
 **Phase 3 paper trading är BLOCKED** pga saknad autotrade-runner.
 
 **Vad vi har:**
+
 - ✅ API-server operativ (http://localhost:8000)
 - ✅ Champion v5a loaded och verified
 - ✅ Manual evaluation via /strategy/evaluate fungerar
 - ✅ Paper order submission endpoint (/paper/submit) finns
 
 **Vad som SAKNAS:**
+
 - ❌ **Autotrade-runner** - ingen process som driver trading-loopen
 - ❌ Candle-close polling
 - ❌ Automatisk evaluate → submit order flow
 - ❌ Kontinuerlig paper trading execution
 
 **Konsekvens:**
+
 - Paper trading kan INTE köra automatiskt
 - "LIVE sedan 2026-02-04 09:29 UTC" avser endast API-upptid
 - **Ingen faktisk trading har skett eller kan ske utan manuell intervention**
@@ -37,6 +40,7 @@
 **Size:** 435 bytes (efter 60+ minuter idle)
 
 **Complete log content:**
+
 ```
 INFO:     Started server process [48412]
 INFO:     Waiting for application startup.
@@ -49,12 +53,14 @@ CONFIG_VERSION=105 CONFIG_HASH={"ev":{"R_de
 ```
 
 **Analysis:**
+
 - Server process 48412 försökte starta
 - Port 8000 redan upptagen av annan process
 - Server stängdes ned
 - **Total log size 435 bytes = INGEN aktivitet efter startup**
 
 **Expected for autotrade:**
+
 - Skulle se: "Polling started", "Candle close detected", "Evaluating...", "Order submitted", etc.
 - Skulle växa: Minst 1 log-rad per minut (candle polling), hundratals rader efter 60 min
 - **Actual: 435 bytes static log = NO autotrade loop**
@@ -64,6 +70,7 @@ CONFIG_VERSION=105 CONFIG_HASH={"ev":{"R_de
 ### Active server process (discovered 2026-02-04 10:40 UTC)
 
 **Process info:**
+
 ```
 PID: 18725
 Started: 17:01:44 (2026-02-03, före pre-flight)
@@ -71,6 +78,7 @@ Command: /c/Users/fa06662/Projects/Genesis-Core/.venv/Scripts/uvicorn
 ```
 
 **Health check:**
+
 ```bash
 $ curl -s http://localhost:8000/health
 {"status":"ok","config_version":105, ...}
@@ -79,6 +87,7 @@ $ curl -s http://localhost:8000/health
 **Log location:** Unknown (inte logs/paper_trading/, ingen stdout/stderr visible)
 
 **Analysis:**
+
 - Server svarar på HTTP requests
 - Ingen synlig logging aktivitet
 - Startad FÖRE pre-flight (pre-existerande process)
@@ -93,6 +102,7 @@ $ curl -s http://localhost:8000/health
 **File:** `src/core/server.py` (1049 lines)
 
 **Lifespan event handler:**
+
 ```python
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -114,6 +124,7 @@ async def lifespan(app: FastAPI):
 ```
 
 **Analysis:**
+
 - ✅ Startup: Load config, print version
 - ✅ Shutdown: Cleanup HTTP client
 - ❌ **NO background tasks created**
@@ -122,6 +133,7 @@ async def lifespan(app: FastAPI):
 - ❌ **NO asyncio.create_task for autotrade**
 
 **Search results:**
+
 ```bash
 $ grep -n "app.add_event_handler\|BackgroundTasks\|scheduler\|autotrade\|polling" src/core/server.py
 # NO RESULTS (only HTML template references to "background:" CSS)
@@ -136,6 +148,7 @@ $ grep -n "app.add_event_handler\|BackgroundTasks\|scheduler\|autotrade\|polling
 ### Search for autotrade runner
 
 **Commands executed:**
+
 ```bash
 $ find scripts -name "*autotrade*" -o -name "*runner*" -o -name "*loop*" -o -name "*scheduler*"
 scripts/verify_runner_fix.py  # (Optuna runner fix, inte autotrade)
@@ -149,6 +162,7 @@ run_milestone3_exp1.py              # Backtest experiments
 ```
 
 **Analysis:**
+
 - `calculate_paper_trading_metrics.py` - Metrics-rapport (EFTER trading, inte driver)
 - Alla `run_*.py` scripts - Backtesting och validation (historisk data)
 - **NO paper_trading_runner.py eller liknande**
@@ -161,17 +175,19 @@ run_milestone3_exp1.py              # Backtest experiments
 ### Manual /strategy/evaluate verification (2026-02-04 09:29 UTC)
 
 **Request:**
+
 ```bash
 POST http://localhost:8000/strategy/evaluate
 Body: {"policy":{"symbol":"tBTCUSD","timeframe":"1h"}}
 ```
 
 **Response (excerpt):**
+
 ```json
 {
   "result": {
     "action": "NONE",
-    "confidence": {"overall": 0.353},
+    "confidence": { "overall": 0.353 },
     "regime": "balanced"
   },
   "meta": {
@@ -183,6 +199,7 @@ Body: {"policy":{"symbol":"tBTCUSD","timeframe":"1h"}}
 ```
 
 **Analysis:**
+
 - ✅ Endpoint fungerar
 - ✅ Champion laddas korrekt
 - ✅ Evaluation körs
@@ -196,12 +213,14 @@ Body: {"policy":{"symbol":"tBTCUSD","timeframe":"1h"}}
 ### Vad "LIVE sedan 2026-02-04 09:29 UTC" faktiskt betyder
 
 **Vad som är LIVE:**
+
 - API-server online och svarar på requests
 - /health, /ui, /strategy/evaluate, /paper/submit endpoints operativa
 - Champion v5a loaded och verified
 - Manual testing möjlig via /ui eller curl
 
 **Vad som INTE är LIVE:**
+
 - ❌ Automatisk paper trading execution
 - ❌ Candle-close detection
 - ❌ Kontinuerlig evaluation loop
@@ -209,6 +228,7 @@ Body: {"policy":{"symbol":"tBTCUSD","timeframe":"1h"}}
 - ❌ **INGEN faktisk trading har skett**
 
 **Paper Trading Status:**
+
 - Declared: "LIVE från 2026-02-04 09:29 UTC"
 - **Reality: BLOCKED - API-upptid endast, INGEN autotrade-process**
 - Data collection: NONE (inga orders, inga trades)
@@ -221,22 +241,26 @@ Body: {"policy":{"symbol":"tBTCUSD","timeframe":"1h"}}
 ### Arkitektonisk brist
 
 **System är designat som:**
+
 - Stateless API-server (request/response only)
 - Manual evaluation via HTTP endpoints
 - UI för interactive testing
 
 **System SAKNAR:**
+
 - Background worker/scheduler
 - Candle polling mechanism
 - Autotrade decision loop
 - Order submission automation
 
 **Inte dokumenterat i:**
+
 - `docs/paper_trading/README.md` - Nämner INTE att runner krävs
 - `CLAUDE.md` - Beskriver endpoints, men INTE autotrade-runner
 - Pre-flight checklist - INGEN verifiering av autotrade-process
 
 **Discovery trigger:**
+
 - User request: "kolla upp http://localhost:8000/ui"
 - Follow-up question: Verify autotrade-runner exists
 - Server log analysis: 435 bytes efter 60 min = NO activity
@@ -251,18 +275,21 @@ Body: {"policy":{"symbol":"tBTCUSD","timeframe":"1h"}}
 **Freeze-guard active:** `.github/workflows/champion-freeze-guard.yml`
 
 **FORBIDDEN under freeze:**
+
 - ❌ Champion config changes (`config/strategy/champions/`)
 - ❌ Strategy logic changes (`src/core/strategy/`)
 - ❌ Risk config changes
 - ❌ Model changes (`config/models/`)
 
 **ALLOWED under freeze:**
+
 - ✅ Documentation updates (`docs/`)
 - ✅ Process/ops improvements (server setup, monitoring)
 - ✅ Scripts for data collection/analysis
 - ✅ **NEW: Runner-process för autotrade (process/ops, INTE champion-change)**
 
 **Rationale:**
+
 - Autotrade-runner är en **process/operations komponent**
 - Läser champion config (inte ändrar)
 - Anropar befintliga endpoints (inte ändrar logic)
@@ -278,12 +305,14 @@ Body: {"policy":{"symbol":"tBTCUSD","timeframe":"1h"}}
 **Type:** Process/Operations Enhancement (NOT strategy change)
 
 **Scope:**
+
 - Create: `scripts/paper_trading_runner.py`
 - Purpose: Poll candles → evaluate → submit orders (execution only)
 - Config: Read-only champion config
 - No changes to: champion, strategy logic, risk map, models
 
 **Implementation:**
+
 1. **Polling loop:**
    - Fetch public candles from Bitfinex (tBTCUSD 1h)
    - Detect candle close
@@ -310,6 +339,7 @@ Body: {"policy":{"symbol":"tBTCUSD","timeframe":"1h"}}
    - Abort if baseline fallback detected
 
 **Deployment:**
+
 ```bash
 # Start runner (separate from API server)
 screen -S genesis-runner -dm python scripts/paper_trading_runner.py \
@@ -323,17 +353,20 @@ tail -f logs/paper_trading/runner_*.log
 ```
 
 **Testing:**
+
 1. Dry-run mode först (24h) - verify logic, no orders sent
 2. Single candle test - send 1 test order, verify reception
 3. Enable live mode - monitor first 3 hours closely
 4. Document in daily health snapshot
 
 **Documentation:**
+
 - Update: `docs/paper_trading/README.md` (add runner requirement)
 - Create: `docs/paper_trading/runner_setup.md` (deployment guide)
 - Update: `docs/paper_trading/operations_summary.md` (add runner to drift)
 
 **Approval Required:**
+
 - [ ] Verify: Runner läser champion (inte ändrar)
 - [ ] Verify: Runner anropar endpoints (inte ändrar logic)
 - [ ] Verify: Freeze-regler respekteras (process/ops, inte champion-change)
@@ -401,6 +434,7 @@ tail -f logs/paper_trading/runner_*.log
 **Analyzed:** 2026-02-04 10:40 UTC (71 minutes after creation)
 
 **Complete file content:**
+
 ```
 INFO:     Started server process [48412]
 INFO:     Waiting for application startup.
@@ -412,6 +446,7 @@ CONFIG_VERSION=105 CONFIG_HASH={"ev":{"R_de
 ```
 
 **Interpretation:**
+
 - 6 log lines total
 - No activity after startup failure
 - Port conflict = server shutdown

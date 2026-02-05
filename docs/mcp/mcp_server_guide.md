@@ -414,7 +414,7 @@ Access project documentation files.
 **Examples:**
 
 - `genesis://docs/README.md` - Main README
-- `genesis://docs/mcp_server_guide.md` - This guide
+- `genesis://docs/mcp/mcp_server_guide.md` - This guide
 - `genesis://docs/performance/PERFORMANCE_GUIDE.md` - Performance documentation
 
 ### 2. Project Structure
@@ -801,4 +801,4 @@ For issues or questions:
 - [Model Context Protocol Specification](https://modelcontextprotocol.io/)
 - [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk)
 - [MCP SDK Documentation](https://modelcontextprotocol.io/docs/sdk/python)
-- [Genesis-Core Documentation](../README.md)
+- [Genesis-Core Documentation](../../README.md)

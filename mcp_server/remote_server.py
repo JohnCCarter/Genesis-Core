@@ -105,11 +105,20 @@ REMOTE_TOKEN = (os.environ.get("GENESIS_MCP_REMOTE_TOKEN") or "").strip() or Non
 def _load_privacy_policy_text() -> str:
     """Load privacy policy text from docs, with a safe fallback."""
 
-    policy_path = get_project_root() / "docs" / "privacy-policy.md"
-    try:
-        return policy_path.read_text(encoding="utf-8")
-    except Exception:
-        return "Privacy policy not found."
+    # Canonical location (docs were reorganized into category subfolders).
+    # Keep a legacy fallback for older checkouts.
+    policy_paths = [
+        get_project_root() / "docs" / "mcp" / "privacy-policy.md",
+        get_project_root() / "docs" / "privacy-policy.md",
+    ]
+
+    for policy_path in policy_paths:
+        try:
+            return policy_path.read_text(encoding="utf-8")
+        except Exception:
+            continue
+
+    return "Privacy policy not found."
 
 
 _HAS_FASTMCP = _FastMCP is not None and _TransportSecuritySettings is not None

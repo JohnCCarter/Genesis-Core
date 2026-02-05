@@ -87,23 +87,19 @@ Detta dokument sammanfattar de viktigaste funktionerna i original‑Genesis, som
 ## Nonce‑hantering (Bitfinex v2)
 
 - REST v2
-
   - Nonce måste vara ett strikt växande heltal per API‑nyckel. Vanlig praxis: tidsstämpel i mikrosekunder (µs).
   - Signatur: HMAC‑SHA384 över strängen: "/api/v2/{endpoint}{nonce}{body-json}" med API‑hemligheten.
   - Headers: `bfx-apikey`, `bfx-nonce`, `bfx-signature`, `Content-Type: application/json`.
 
 - WebSocket v2 (auth event)
-
   - `authNonce` ska vara millisekunder (ms). `authPayload` är `"AUTH{nonce_ms}"`. `authSig` är HMAC‑SHA384 av payload.
   - Meddelande: `{ event: "auth", apiKey, authNonce, authPayload, authSig }`.
 
 - Felhantering
-
   - Vid t.ex. `10114` ("nonce too small"): bumpa lokalt nonce (≥ +1e6 µs), uppdatera cache och gör en engångs‑retry.
   - Spåra nonce per nyckel med persistens och låsning för process-/tråd‑säkerhet.
 
 - Praxis i original‑Genesis
-
   - `NonceManager`: per‑nyckel, µs, filpersistens, `Lock`; WS återanvänder och konverterar µs→ms.
   - Engångs‑retry med `bump_nonce()` vid nonce‑fel.
 

@@ -165,7 +165,7 @@ pytest tests/test_mcp_server.py tests/test_mcp_resources.py -v
 
 ## Documentation
 
-See [`docs/mcp_server_guide.md`](../docs/mcp_server_guide.md) for complete documentation including:
+See [`docs/mcp/mcp_server_guide.md`](../docs/mcp/mcp_server_guide.md) for complete documentation including:
 
 - Detailed tool descriptions with examples
 - Security features and best practices
@@ -189,7 +189,7 @@ All operations are logged to `logs/mcp_server.log` with timestamps and detailed 
 
 ## Support
 
-For issues or questions, see the [full documentation](../docs/mcp_server_guide.md) or check the logs at `logs/mcp_server.log`.
+For issues or questions, see the [full documentation](../docs/mcp/mcp_server_guide.md) or check the logs at `logs/mcp_server.log`.
 
 ## Example: Running the Remote Server with PowerShell
 

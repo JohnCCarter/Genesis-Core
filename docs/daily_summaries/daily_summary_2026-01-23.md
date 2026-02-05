@@ -14,7 +14,7 @@ Dagens fokus var **stabilitet först**: dokumentera arkitektur/MCP evidence-base
   - `.secrets.baseline` uppdaterades så att filpaths matchar nya quarantined-lokationen.
 
 - **Ny evidence-based arkitekturvisual**
-  - Lade till `docs/ARCHITECTURE_VISUAL.md` (Mermaid-diagram + proof-checklists + ghost-map reachability).
+  - Lade till `docs/architecture/ARCHITECTURE_VISUAL.md` (Mermaid-diagram + proof-checklists + ghost-map reachability).
   - Ghost-map justerades så att `TEST_ONLY` även omfattar test-importer via `src.core.*` (namespace-import path) och implicit package-import.
 
 - **Import-säker E2E smoke-modul**

@@ -96,7 +96,7 @@ För att undvika “vi ändrade något men kan inte bevisa vad/varför” kör v
 - **MCP REMOTE: STREAMABLE-HTTP COMPAT FALLBACK (2026-01-19)**: Förbättrade remote-länkning mot ChatGPT genom att stödja en JSON-only
   kompatibilitetsväg på `POST /mcp` (JSON-RPC `initialize`, `tools/list`, `tools/call`, `ping`) utan att kräva att `GET /sse` flushar.
   Verifierat publikt via Cloudflare quick tunnel där `text/event-stream` kunde returnera headers men inte leverera första SSE-bytes.
-  Docs uppdaterade: `docs/mcp_server_guide.md`, `mcp_server/README.md`, `CHANGELOG.md`.
+  Docs uppdaterade: `docs/mcp/mcp_server_guide.md`, `mcp_server/README.md`, `CHANGELOG.md`.
 
 - **CUSTOM AGENTS (FAIL-FAST) + TOOL FRONTMATTER NORMALIZATION (2026-01-15)**: Standardiserade repo-agenter under `.github/agents/` för att vara "overseer-friendly" och minska risk för oavsiktliga ändringar.
   - **Agent-definitioner (English, bounded scope)**:
@@ -143,7 +143,7 @@ För att undvika “vi ändrade något men kan inte bevisa vad/varför” kör v
 - **REGISTRY GOVERNANCE (Phase-8a, 2026-01-09)**: Introducerade repo-SSOT för skills/compacts med JSON-schema + CI-gate (`scripts/validate_registry.py`). Skills ligger under `.github/skills/` och compacts under `registry/`. CI kräver audit-entry i `registry/audit/break_glass.jsonl` när `registry/manifests/stable.json` ändras i PR.
   - **Merge**: PR #24 (Phase-8a squash-import) är mergad till `master` och `master` är uppdaterad/synkad.
 
-- **DOCS + DEV ENV CHECK (2026-01-08)**: Uppdaterade docs för kontinuitet så de speglar faktisk drift idag: `README.md`, `docs/dev_setup.md`, `docs/roadmap/STABILIZATION_PLAN_9_STEPS.md`, `docs/mcp_server_guide.md`, `mcp_server/README.md`, samt Optuna-docs (`docs/optuna/README.md`, `docs/optuna/OPTUNA_BEST_PRACTICES.md`) med PowerShell-vänliga exempel och canonical 1/1-noter. Tog bort provider-specifika tunnel/hostname-exempel och gjorde `scripts/debug_mcp_tunnel.py` till ett enkelt `/healthz` reachability-test för remote MCP. Loggade ändringen i `CHANGELOG.md`. Verifierade att `pre-commit run --all-files` går igenom i `.venv`.
+- **DOCS + DEV ENV CHECK (2026-01-08)**: Uppdaterade docs för kontinuitet så de speglar faktisk drift idag: `README.md`, `docs/ops/dev_setup.md`, `docs/roadmap/STABILIZATION_PLAN_9_STEPS.md`, `docs/mcp/mcp_server_guide.md`, `mcp_server/README.md`, samt Optuna-docs (`docs/optuna/README.md`, `docs/optuna/OPTUNA_BEST_PRACTICES.md`) med PowerShell-vänliga exempel och canonical 1/1-noter. Tog bort provider-specifika tunnel/hostname-exempel och gjorde `scripts/debug_mcp_tunnel.py` till ett enkelt `/healthz` reachability-test för remote MCP. Loggade ändringen i `CHANGELOG.md`. Verifierade att `pre-commit run --all-files` går igenom i `.venv`.
 
 - **HTF SIGNAL-VALIDERING + 1D DATA + PRECOMPUTE FIX (2026-01-08)**: Åtgärdade en blockerare som gjorde att Optuna-smoke körningar prunades när HTF-mappning försökte köras med precompute-cache.
   - **Root cause**: `BacktestEngine.load_data()` definierade `fib_cfg` bara i cache-miss path. Vid cache-hit blev `fib_cfg` odefinierad och HTF mapping kraschade med `UnboundLocalError`.

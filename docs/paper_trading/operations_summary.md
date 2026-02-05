@@ -172,7 +172,7 @@ python scripts/calculate_paper_trading_metrics.py \
 
 5. **Update manual_gate doc:**
    ```bash
-   # Append to docs/manual_gate_2026-02-04.md
+   # Append to docs/ops/manual_gate_2026-02-04.md
    echo "
    ## CI Re-verification (Post-Incident)
 
@@ -185,12 +185,12 @@ python scripts/calculate_paper_trading_metrics.py \
    - check-champion-freeze: success
 
    **Conclusion:** Manual gate validated by CI. Incident f314nlctbfs5 closed.
-   " >> docs/manual_gate_2026-02-04.md
+   " >> docs/ops/manual_gate_2026-02-04.md
    ```
 
 6. **Commit update (docs-only):**
    ```bash
-   git add docs/manual_gate_2026-02-04.md
+   git add docs/ops/manual_gate_2026-02-04.md
    git commit -m "docs: CI re-verified – incident f314nlctbfs5 closed
 
    GitHub Actions returned to operational status.
@@ -210,7 +210,7 @@ python scripts/calculate_paper_trading_metrics.py \
 **For issues during paper trading:**
 1. Check `logs/paper_trading/` for recent errors
 2. Review `docs/daily_summaries/` for context
-3. Check `docs/known_issues.md` for documented problems
+3. Check `docs/bugs/known_issues.md` for documented problems
 4. Escalate blocking issues immediately (freeze period is time-limited)
 
 **Freeze period:** 2026-02-04 to 2026-03-17

@@ -445,7 +445,7 @@ python -m pip install -e ".[mcp]"
 python -m mcp_server.server
 ```
 
-See `mcp_server/README.md` and `docs/mcp_server_guide.md` for details.
+See `mcp_server/README.md` and `docs/mcp/mcp_server_guide.md` for details.
 
 ## Language Preference
 

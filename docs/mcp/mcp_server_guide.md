@@ -151,11 +151,13 @@ Recommended environment variables:
 - `PORT` (default 8000) – set to the local port you tunnel/forward (e.g. 3333)
 - `GENESIS_MCP_REMOTE_SAFE=1` (default) – read-only (no write/exec tools)
 - `GENESIS_MCP_REMOTE_ULTRA_SAFE=1` – exposes only `ping_tool` + connector stubs for debugging
+- `GENESIS_MCP_CONFIG_PATH=config/mcp_settings.remote_safe.json` – optional: load a tighter allowlist for remote usage
 
 Reverse-proxy / port-forwarding note:
 
 - Ensure your public URL routes to the same `PORT` that the server binds to.
 - Prefer `GENESIS_MCP_REMOTE_SAFE=1` unless you explicitly need write/exec tools.
+- Prefer a separate remote config file via `GENESIS_MCP_CONFIG_PATH` so local stdio usage can remain full-featured.
 
 ### CORS / “security status” note
 
@@ -174,6 +176,56 @@ first thing to verify.
 If you are troubleshooting a tunnel:
 
 - Prefer verifying `POST /mcp` works end-to-end before spending time on SSE flush behavior.
+
+### Remote readiness checklist (Cloudflare)
+
+Use this checklist when exposing `mcp_server.remote_server` via Cloudflare Tunnel / proxy.
+
+**1) Start remote MCP in safe mode (recommended)**
+
+- Keep write/exec disabled:
+  - `GENESIS_MCP_REMOTE_SAFE=1`
+- Use a dedicated remote allowlist:
+  - `GENESIS_MCP_CONFIG_PATH=config/mcp_settings.remote_safe.json`
+- Bind only to localhost on the origin machine (tunnel should connect to it):
+  - `GENESIS_MCP_BIND_HOST=127.0.0.1`
+
+Tip: on Windows you can run the server without VS Code via Task Scheduler using:
+- `scripts/start_mcp_remote.ps1`
+
+**2) Cloudflare rules (avoid “enable cookies” / JS challenges)**
+
+ChatGPT / MCP clients are not browsers; they cannot pass interactive challenges.
+
+- Create a **skip/bypass** rule for the MCP hostname for these endpoints:
+  - Paths: `/mcp`, `/healthz`, `/privacy-policy`
+  - Skip: managed/JS challenges and bot checks that require cookies/JS.
+- Create **block** rules to reduce attack surface:
+  - Block any path not in `{ /mcp, /healthz, /privacy-policy }`
+  - Block any method other than `POST` to `/mcp`
+- Add **rate limiting** for `POST /mcp`.
+
+**3) Verify end-to-end**
+
+PowerShell probes (replace host):
+
+```powershell
+$hostUrl = 'https://<your-host>'
+
+(Invoke-WebRequest -Uri "$hostUrl/healthz" -UseBasicParsing -TimeoutSec 20).Content
+
+$u = "$hostUrl/mcp"
+$tools = @{ jsonrpc='2.0'; id=1; method='tools/list'; params=@{} } | ConvertTo-Json -Depth 10 -Compress
+(Invoke-WebRequest -Uri $u -Method Post -ContentType 'application/json' -Body $tools -UseBasicParsing -TimeoutSec 20).Content
+
+$git = @{ jsonrpc='2.0'; id=2; method='tools/call'; params=@{ name='get_git_status'; arguments=@{} } } | ConvertTo-Json -Depth 10 -Compress
+(Invoke-WebRequest -Uri $u -Method Post -ContentType 'application/json' -Body $git -UseBasicParsing -TimeoutSec 20).Content
+```
+
+Negative tests (should be blocked):
+
+- `read_file config/runtime.json` should fail (blocked pattern)
+- `read_file .env` should fail (outside allowlist / blocked)
 
 ## Windows desktop automation (Windows-MCP)
 

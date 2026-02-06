@@ -262,7 +262,72 @@ async def get_project_structure(config: MCPConfig) -> dict[str, Any]:
 
         project_root = get_project_root()
         tree_lines = [str(project_root.name)]
-        tree_lines.extend(format_tree_structure(project_root, "", max_depth=5))
+
+        allowed_paths = config.security.allowed_paths or []
+        if not allowed_paths:
+            tree_lines.extend(format_tree_structure(project_root, "", max_depth=5))
+        else:
+            allowed_roots: list[Path] = []
+            for allowed in allowed_paths:
+                try:
+                    allowed_root = (project_root / allowed).resolve()
+                    allowed_root.relative_to(project_root)
+                    if allowed_root.exists():
+                        allowed_roots.append(allowed_root)
+                except Exception:
+                    continue
+
+            if not allowed_roots:
+                structure = "\n".join(tree_lines)
+                return {"success": True, "structure": structure, "root": str(project_root)}
+
+            allowed_roots = sorted(set(allowed_roots))
+            allowed_dir_roots = [p for p in allowed_roots if p.is_dir()]
+            allowed_file_roots = [p for p in allowed_roots if p.is_file()]
+
+            # Keep only top-most allowed directories (avoid duplicating nested roots).
+            def _is_within(child: Path, parent: Path) -> bool:
+                try:
+                    child.relative_to(parent)
+                    return True
+                except Exception:
+                    return False
+
+            minimal_dir_roots: list[Path] = []
+            for candidate in allowed_dir_roots:
+                if any(
+                    candidate != parent and _is_within(candidate, parent)
+                    for parent in allowed_dir_roots
+                ):
+                    continue
+                minimal_dir_roots.append(candidate)
+
+            # Keep only allowed files not already covered by an allowed directory root.
+            minimal_file_roots: list[Path] = []
+            for f in allowed_file_roots:
+                if any(_is_within(f, d) for d in minimal_dir_roots):
+                    continue
+                minimal_file_roots.append(f)
+
+            display_roots: list[Path] = sorted(minimal_dir_roots + minimal_file_roots)
+
+            for i, allowed_root in enumerate(display_roots):
+                is_last = i == len(display_roots) - 1
+                current_prefix = "└── " if is_last else "├── "
+                rel = allowed_root.relative_to(project_root).as_posix()
+                tree_lines.append(f"{current_prefix}{rel}")
+
+                if allowed_root.is_dir():
+                    extension = "    " if is_last else "│   "
+                    # Reserve one level for the allowed root itself.
+                    tree_lines.extend(
+                        format_tree_structure(
+                            allowed_root,
+                            prefix=extension,
+                            max_depth=4,
+                            current_depth=0,
+                        )
+                    )
 
         structure = "\n".join(tree_lines)
 
@@ -353,7 +418,9 @@ async def search_code(query: str, file_pattern: str | None, config: MCPConfig) -
         return {"success": False, "error": f"Error searching code: {str(e)}"}
 
 
-async def get_git_status(config: MCPConfig) -> dict[str, Any]:
+async def get_git_status(
+    config: MCPConfig, *, apply_security_filters: bool = False
+) -> dict[str, Any]:
     """
     Get Git status information for the project.
 
@@ -448,6 +515,37 @@ async def get_git_status(config: MCPConfig) -> dict[str, Any]:
             remote_url = remote_res.stdout.strip() or None
         except subprocess.TimeoutExpired:
             remote_url = None
+
+        if apply_security_filters:
+
+            def _filter_paths(paths: list[str]) -> list[str]:
+                visible: list[str] = []
+                for p in paths:
+                    ok, _ = is_safe_path(p, config)
+                    if ok:
+                        visible.append(p)
+                return visible
+
+            modified_files = _filter_paths(modified_files)
+            staged_files = _filter_paths(staged_files)
+            untracked_files = _filter_paths(untracked_files)
+
+        # Avoid leaking credentials if the remote URL includes userinfo
+        # (e.g. URLs containing userinfo like "userinfo@host").
+        if remote_url and "://" in remote_url:
+            try:
+                from urllib.parse import urlsplit, urlunsplit
+
+                parts = urlsplit(remote_url)
+                netloc = parts.netloc
+                if "@" in netloc:
+                    netloc = netloc.split("@", 1)[1]
+                    remote_url = urlunsplit(
+                        (parts.scheme, netloc, parts.path, parts.query, parts.fragment)
+                    )
+            except Exception:
+                # Best-effort only; keep original if parsing fails.
+                pass
 
         is_dirty = bool(modified_files or staged_files or untracked_files)
 

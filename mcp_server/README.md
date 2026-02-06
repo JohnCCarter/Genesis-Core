@@ -28,6 +28,7 @@ For ChatGPT “Connect to MCP” / remote linking you should run the HTTP server
 $env:PORT=8000
 $env:GENESIS_MCP_REMOTE_SAFE=1
 $env:GENESIS_MCP_REMOTE_ULTRA_SAFE=0
+$env:GENESIS_MCP_CONFIG_PATH='config/mcp_settings.remote_safe.json'
 python -m mcp_server.remote_server
 ```
 
@@ -37,6 +38,7 @@ Environment variables:
 - `GENESIS_MCP_REMOTE_SAFE` (default: 1) — read-only mode (no write/execute tools).
 - `GENESIS_MCP_REMOTE_ULTRA_SAFE` (default: 0) — if set to `1`, exposes only `ping_tool` + connector stubs.
 - `GENESIS_MCP_REMOTE_TOKEN` (default: unset) — if set, `/mcp` requires either `Authorization: Bearer <token>` or `X-Genesis-MCP-Token: <token>`.
+- `GENESIS_MCP_CONFIG_PATH` / `MCP_CONFIG_PATH` (default: unset) — if set, overrides which MCP config JSON file is loaded (use this to run a tighter allowlist for remote).
 - `GENESIS_MCP_DEBUG_ROUTES` (default: 0) — prints registered routes on startup.
 
 Remote endpoints:
@@ -199,11 +201,60 @@ auth layer (e.g. Cloudflare Access) and keep a tight `allowed_paths` allowlist.
 
 ```powershell
 $Env:GENESIS_MCP_PORT = '3333'
-$Env:GENESIS_MCP_REMOTE_SAFE = '0'
+$Env:GENESIS_MCP_REMOTE_SAFE = '1'
 $Env:GENESIS_MCP_REMOTE_ULTRA_SAFE = '0'
+python -m mcp_server.remote_server
 
 # Optional but recommended if any proxying is involved:
 # $Env:GENESIS_MCP_REMOTE_TOKEN = '<long-random-token>'
 
 & 'C:\Users\fa06662\Projects\Genesis-Core\.venv\Scripts\python.exe' -m mcp_server.remote_server
 ```
+
+## Keep Remote MCP Running (Windows Task Scheduler)
+
+If you want the remote MCP to stay active without VS Code, run `mcp_server.remote_server` as a background
+process using Task Scheduler.
+
+Recommended approach: use the repo script `scripts/start_mcp_remote.ps1` (sets safe env vars and redirects
+stdout/stderr to `logs/`).
+
+### If Task Scheduler is blocked (no admin)
+
+If you can't create a Scheduled Task due to permissions, you can still auto-start the remote MCP on
+logon using the Windows **Startup** folder:
+
+- Script: `scripts/start_mcp_remote_startup.cmd`
+- Installed copy:
+  - `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\Genesis-Core MCP Remote.cmd`
+
+To disable it: delete the `.cmd` file from the Startup folder.
+
+### Manual Task Scheduler steps
+
+1. Open **Task Scheduler** → **Create Task…**
+2. **General**
+   - Run whether user is logged on or not
+   - Run with highest privileges (recommended for reliability)
+3. **Triggers**
+   - New… → **At startup**
+4. **Actions**
+   - New… → *Start a program*
+   - Program/script: `powershell.exe`
+   - Add arguments:
+     - `-NoProfile -ExecutionPolicy Bypass -File "C:\Users\fa06662\Projects\Genesis-Core\scripts\start_mcp_remote.ps1" -Port 3333`
+   - Start in:
+     - `C:\Users\fa06662\Projects\Genesis-Core`
+5. **Settings**
+   - If the task fails, restart every: 1 minute (or similar)
+
+Verify:
+- `https://<your-host>/healthz` returns `OK`
+- `POST https://<your-host>/mcp` supports `tools/list`
+
+Logs:
+- `logs/mcp_remote_stdout.log`
+- `logs/mcp_remote_stderr.log`
+
+Tip: sanity-check the script without starting the server:
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start_mcp_remote.ps1 -DryRun`

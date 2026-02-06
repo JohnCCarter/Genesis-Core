@@ -210,7 +210,7 @@ if not ULTRA_SAFE_REMOTE_MODE:
 
     @mcp.tool()
     async def get_git_status_tool(**kwargs: Any) -> dict[str, Any]:
-        return await get_git_status(CONFIG)
+        return await get_git_status(CONFIG, apply_security_filters=True)
 
 
 # -----------------------------------------------------------------------------
@@ -551,7 +551,7 @@ def _build_sse_app():
                     CONFIG,
                 )
             elif name == "get_git_status":
-                result = await get_git_status(CONFIG)
+                result = await get_git_status(CONFIG, apply_security_filters=True)
             elif SAFE_REMOTE_MODE:
                 result = {"success": False, "error": "SAFE_REMOTE_MODE blocks this tool"}
             elif name == "write_file":

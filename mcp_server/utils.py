@@ -73,9 +73,21 @@ def is_safe_path(path: str | Path, config: MCPConfig) -> tuple[bool, str]:
 
         # Check against blocked patterns
         path_str = str(path_obj)
+        path_str_norm = path_str.replace("\\", "/")
+        try:
+            rel_str_norm = str(path_obj.relative_to(project_root)).replace("\\", "/")
+        except Exception:
+            rel_str_norm = path_str_norm
+
         for pattern in config.security.blocked_patterns:
             # Check if any part of the path matches blocked patterns
-            if fnmatch.fnmatch(path_str, f"*{pattern}*") or fnmatch.fnmatch(path_obj.name, pattern):
+            if (
+                fnmatch.fnmatch(path_obj.name, pattern)
+                or fnmatch.fnmatch(path_str, f"*{pattern}*")
+                or fnmatch.fnmatch(path_str_norm, f"*{pattern}*")
+                or fnmatch.fnmatch(rel_str_norm, pattern)
+                or fnmatch.fnmatch(rel_str_norm, f"*{pattern}*")
+            ):
                 return False, f"Path matches blocked pattern '{pattern}': {path}"
 
         return True, ""

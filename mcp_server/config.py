@@ -5,6 +5,7 @@ MCP Server Configuration Management
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 from pydantic import BaseModel, Field
@@ -54,14 +55,25 @@ def load_config(config_path: str | Path | None = None) -> MCPConfig:
 
     Args:
         config_path: Path to configuration file. If None, uses default location.
+            If unset, this also respects GENESIS_MCP_CONFIG_PATH (or MCP_CONFIG_PATH)
+            as an override for the default.
 
     Returns:
         MCPConfig instance with loaded configuration.
     """
     if config_path is None:
-        # Default to config/mcp_settings.json relative to project root
-        project_root = Path(__file__).parent.parent
-        config_path = project_root / "config" / "mcp_settings.json"
+        # Optional override for running remote/server with a tighter allowlist.
+        # Keep this out of config/mcp_settings.json so local stdio usage can remain
+        # full-featured while remote usage can be locked down.
+        env_override = os.environ.get("GENESIS_MCP_CONFIG_PATH") or os.environ.get(
+            "MCP_CONFIG_PATH"
+        )
+        if env_override:
+            config_path = Path(env_override)
+        else:
+            # Default to config/mcp_settings.json relative to project root
+            project_root = Path(__file__).parent.parent
+            config_path = project_root / "config" / "mcp_settings.json"
     else:
         config_path = Path(config_path)
 

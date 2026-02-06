@@ -30,7 +30,7 @@ import logging
 import signal
 import sys
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, UTC
 from pathlib import Path
 
@@ -69,6 +69,7 @@ class RunnerState:
     total_evaluations: int = 0
     total_orders_submitted: int = 0
     last_heartbeat: str | None = None
+    pipeline_state: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         return {
@@ -76,6 +77,7 @@ class RunnerState:
             "total_evaluations": self.total_evaluations,
             "total_orders_submitted": self.total_orders_submitted,
             "last_heartbeat": self.last_heartbeat,
+            "pipeline_state": self.pipeline_state,
         }
 
     @classmethod
@@ -85,6 +87,7 @@ class RunnerState:
             total_evaluations=data.get("total_evaluations", 0),
             total_orders_submitted=data.get("total_orders_submitted", 0),
             last_heartbeat=data.get("last_heartbeat"),
+            pipeline_state=data.get("pipeline_state") or {},
         )
 
 
@@ -205,12 +208,35 @@ def _timeframe_to_ms(timeframe: str) -> int:
 
 
 def evaluate_strategy(
-    config: RunnerConfig, client: httpx.Client, logger: logging.Logger
+    config: RunnerConfig,
+    candle_ts_ms: int,
+    state_in: dict,
+    client: httpx.Client,
+    logger: logging.Logger,
 ) -> dict | None:
-    """POST to /strategy/evaluate and return response."""
+    """POST to /strategy/evaluate and return response.
+
+    IMPORTANT: We always include a real candles window so the server does not
+    evaluate against its built-in dummy candles payload.
+    """
     try:
         url = f"{config.api_base}/strategy/evaluate"
-        payload = {"policy": {"symbol": config.symbol, "timeframe": config.timeframe}}
+        end_ms = int(candle_ts_ms) + _timeframe_to_ms(config.timeframe) - 1
+        candles = fetch_candles_window(
+            symbol=config.symbol,
+            timeframe=config.timeframe,
+            end_ms=end_ms,
+            client=client,
+            logger=logger,
+        )
+        if not candles:
+            return None
+
+        payload = {
+            "policy": {"symbol": config.symbol, "timeframe": config.timeframe},
+            "candles": candles,
+            "state": state_in or {},
+        }
         resp = client.post(url, json=payload, timeout=30.0)
         resp.raise_for_status()
         return resp.json()
@@ -246,26 +272,133 @@ def submit_paper_order(
     """POST to /paper/submit and return response."""
     try:
         url = f"{config.api_base}/paper/submit"
-        # Extract size from evaluation response
-        size_pct = eval_response.get("result", {}).get("size_pct", 0.0)
-        confidence = eval_response.get("result", {}).get("confidence", {}).get("overall", 0.0)
+        # Strategy returns size under meta.decision.size (base units, used by backtest engine)
+        raw_size = (eval_response.get("meta", {}) or {}).get("decision", {}).get("size", 0.0)
+        try:
+            size = float(raw_size) if raw_size is not None else 0.0
+        except (TypeError, ValueError):
+            size = 0.0
+
+        test_symbol = map_policy_symbol_to_test_symbol(config.symbol)
 
         payload = {
-            "symbol": config.symbol,
-            "side": action.lower(),  # "buy" or "sell"
-            "size_pct": size_pct,
-            "confidence": confidence,
+            "symbol": test_symbol,
+            "side": str(action).upper(),  # LONG|SHORT
+            "size": size,
+            "type": "MARKET",
         }
 
         resp = client.post(url, json=payload, timeout=10.0)
         resp.raise_for_status()
-        return resp.json()
+        data = resp.json()
+        if not isinstance(data, dict) or not data.get("ok"):
+            logger.error(f"paper_submit returned ok=false: {data}")
+            return None
+        return data
     except httpx.HTTPError as e:
         logger.error(f"HTTP error submitting order: {e}")
         return None
     except Exception as e:
         logger.error(f"Error submitting order: {e}")
         return None
+
+
+def fetch_candles_window(
+    symbol: str,
+    timeframe: str,
+    end_ms: int,
+    client: httpx.Client,
+    logger: logging.Logger,
+    limit: int = 120,
+) -> dict | None:
+    """Fetch a candles window from Bitfinex public API and normalize to {open,high,low,close,volume} arrays."""
+    try:
+        url = f"https://api-pub.bitfinex.com/v2/candles/trade:{timeframe}:{symbol}/hist"
+        params = {"limit": int(limit), "sort": 1, "end": int(end_ms)}
+        resp = client.get(url, params=params, timeout=10.0)
+        resp.raise_for_status()
+        data = resp.json()
+
+        if not isinstance(data, list) or not data:
+            logger.error(f"Unexpected candles window response: {data}")
+            return None
+
+        opens: list[float] = []
+        highs: list[float] = []
+        lows: list[float] = []
+        closes: list[float] = []
+        volumes: list[float] = []
+
+        for row in data:
+            # Bitfinex format: [MTS, OPEN, CLOSE, HIGH, LOW, VOLUME]
+            if isinstance(row, list) and len(row) >= 6:
+                opens.append(float(row[1]))
+                closes.append(float(row[2]))
+                highs.append(float(row[3]))
+                lows.append(float(row[4]))
+                volumes.append(float(row[5]))
+
+        if len(opens) < 2:
+            logger.error(
+                f"Insufficient candles window length={len(opens)} for {symbol} {timeframe}"
+            )
+            return None
+
+        return {
+            "open": opens,
+            "high": highs,
+            "low": lows,
+            "close": closes,
+            "volume": volumes,
+        }
+    except httpx.HTTPError as e:
+        logger.error(f"HTTP error fetching candles window: {e}")
+        return None
+    except Exception as e:
+        logger.error(f"Error fetching candles window: {e}")
+        return None
+
+
+def map_policy_symbol_to_test_symbol(policy_symbol: str) -> str:
+    """Map a real/policy Bitfinex symbol (e.g. tBTCUSD) to a TEST spot symbol (e.g. tTESTBTC:TESTUSD).
+
+    This allows the runner to use real market data while ensuring paper orders are forced to TEST symbols.
+    """
+    s = (policy_symbol or "").strip()
+    if not s:
+        return "tTESTBTC:TESTUSD"
+
+    u = s.upper()
+    # Already a TEST symbol
+    if ":TEST" in u:
+        # Accept either full Bitfinex form 'tTEST...' or bare 'TEST...'.
+        if u.startswith(("TTEST", "FTEST")):
+            u = u[1:]
+        return ("t" + u) if not u.startswith("T") else ("t" + u)
+
+    # Strip leading 't'/'f'
+    if u.startswith(("T", "F")):
+        u = u[1:]
+
+    # Handle colon form (e.g. DOGE:USD)
+    if ":" in u:
+        base, quote = u.split(":", 1)
+    else:
+        # Heuristic for common quotes
+        if u.endswith("USDT"):
+            base, quote = u[:-4], "USDT"
+        elif u.endswith("USD"):
+            base, quote = u[:-3], "USD"
+        else:
+            base, quote = u, "USD"
+
+    base = base.replace("TEST", "")
+    quote = quote.replace("TEST", "")
+    if not base:
+        base = "BTC"
+    if quote not in ("USD", "USDT"):
+        quote = "USD"
+    return f"tTEST{base}:TEST{quote}"
 
 
 # --- Main Loop ---
@@ -284,9 +417,16 @@ def run_loop(config: RunnerConfig, logger: logging.Logger, state: RunnerState) -
     # Setup HTTP client
     client = httpx.Client()
 
-    # Verify champion on startup
+    # Verify champion on startup (use a real candles window)
     logger.info("Verifying champion loading...")
-    eval_resp = evaluate_strategy(config, client, logger)
+    startup_candle = fetch_latest_candle(config.symbol, config.timeframe, client, logger)
+    if not startup_candle:
+        logger.error("Failed to fetch candle on startup. Exiting.")
+        sys.exit(1)
+
+    eval_resp = evaluate_strategy(
+        config, startup_candle["ts"], state.pipeline_state, client, logger
+    )
     if not eval_resp:
         logger.error("Failed to evaluate strategy on startup. Exiting.")
         sys.exit(1)
@@ -296,6 +436,14 @@ def run_loop(config: RunnerConfig, logger: logging.Logger, state: RunnerState) -
         sys.exit(1)
 
     logger.info("Champion verified successfully.")
+
+    # Persist pipeline state after startup evaluation
+    try:
+        out_state = ((eval_resp.get("meta") or {}).get("decision") or {}).get("state_out") or {}
+        if isinstance(out_state, dict):
+            state.pipeline_state = out_state
+    except Exception:
+        pass
 
     # Main loop
     heartbeat_counter = 0
@@ -337,7 +485,7 @@ def run_loop(config: RunnerConfig, logger: logging.Logger, state: RunnerState) -
             )
 
             # Evaluate strategy
-            eval_resp = evaluate_strategy(config, client, logger)
+            eval_resp = evaluate_strategy(config, candle_ts, state.pipeline_state, client, logger)
             if not eval_resp:
                 logger.error("Evaluation failed. Skipping this candle.")
                 time.sleep(config.poll_interval)
@@ -349,6 +497,16 @@ def run_loop(config: RunnerConfig, logger: logging.Logger, state: RunnerState) -
                 sys.exit(1)
 
             state.total_evaluations += 1
+
+            # Update pipeline state (cooldown/hysteresis etc.)
+            try:
+                out_state = ((eval_resp.get("meta") or {}).get("decision") or {}).get(
+                    "state_out"
+                ) or {}
+                if isinstance(out_state, dict):
+                    state.pipeline_state = out_state
+            except Exception:
+                pass
 
             # Extract action
             action = eval_resp.get("result", {}).get("action", "NONE")

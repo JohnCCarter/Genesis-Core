@@ -4,22 +4,20 @@ Tests for Paper Trading Runner
 Tests candle-close detection and idempotency logic without network calls.
 """
 
-# Import from scripts (add to path if needed)
-import sys
-from pathlib import Path
+from __future__ import annotations
+
 from unittest.mock import Mock, patch
 
 import httpx
 import pytest
-
-sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
-
 from paper_trading_runner import (
     RunnerState,
     _timeframe_to_ms,
     fetch_latest_candle,
     load_state,
+    map_policy_symbol_to_test_symbol,
     save_state,
+    submit_paper_order,
 )
 
 # --- Timeframe Conversion Tests ---
@@ -49,6 +47,7 @@ def test_state_roundtrip(tmp_path):
         total_evaluations=42,
         total_orders_submitted=10,
         last_heartbeat="2026-02-04T10:00:00Z",
+        pipeline_state={"cooldown_remaining": 3, "last_action": "LONG"},
     )
 
     # Save
@@ -62,6 +61,7 @@ def test_state_roundtrip(tmp_path):
     assert loaded.total_evaluations == state.total_evaluations
     assert loaded.total_orders_submitted == state.total_orders_submitted
     assert loaded.last_heartbeat == state.last_heartbeat
+    assert loaded.pipeline_state == state.pipeline_state
 
 
 def test_load_state_missing_file(tmp_path):
@@ -371,12 +371,14 @@ def test_order_submission_failure_causes_fail_closed_exit(tmp_path):
         # Evaluation returns BUY signal
         mock_eval.return_value = {
             "result": {
-                "action": "BUY",
+                "action": "LONG",
                 "signal": 1,
                 "confidence": {"overall": 0.75},
-                "size_pct": 0.5,
             },
-            "meta": {"champion": {"source": "config\\strategy\\champions\\tBTCUSD_1h.json"}},
+            "meta": {
+                "champion": {"source": "config\\strategy\\champions\\tBTCUSD_1h.json"},
+                "decision": {"size": 0.01},
+            },
         }
 
         # Order submission FAILS (returns None)
@@ -445,8 +447,18 @@ def test_order_submission_success_updates_candle_ts(tmp_path):
 
         candle_ts = 1704067200000
 
-        # First fetch returns candle, second returns None to exit loop
+        # First fetch is used for startup verification, second for first loop iteration,
+        # then None/StopIteration to exit.
         mock_fetch.side_effect = [
+            {
+                "ts": candle_ts,
+                "open": 50000.0,
+                "close": 50100.0,
+                "high": 50200.0,
+                "low": 49900.0,
+                "volume": 100.5,
+                "_source": "latest",
+            },
             {
                 "ts": candle_ts,
                 "open": 50000.0,
@@ -461,16 +473,18 @@ def test_order_submission_success_updates_candle_ts(tmp_path):
 
         mock_eval.return_value = {
             "result": {
-                "action": "BUY",
+                "action": "LONG",
                 "signal": 1,
                 "confidence": {"overall": 0.75},
-                "size_pct": 0.5,
             },
-            "meta": {"champion": {"source": "config\\strategy\\champions\\tBTCUSD_1h.json"}},
+            "meta": {
+                "champion": {"source": "config\\strategy\\champions\\tBTCUSD_1h.json"},
+                "decision": {"size": 0.01},
+            },
         }
 
         # Order submission SUCCEEDS
-        mock_submit.return_value = {"order_id": "12345", "status": "accepted"}
+        mock_submit.return_value = {"ok": True, "order_id": "12345", "status": "accepted"}
 
         config = RunnerConfig(
             host="localhost",
@@ -502,3 +516,78 @@ def test_order_submission_success_updates_candle_ts(tmp_path):
             final_state.last_processed_candle_ts == candle_ts
         ), "Candle should be marked as processed after successful order submission"
         assert final_state.total_orders_submitted == 1, "Order counter should be incremented"
+
+
+def test_map_policy_symbol_to_test_symbol():
+    assert map_policy_symbol_to_test_symbol("tBTCUSD") == "tTESTBTC:TESTUSD"
+    assert map_policy_symbol_to_test_symbol("tBTCUSDT") == "tTESTBTC:TESTUSDT"
+    assert map_policy_symbol_to_test_symbol("tDOGE:USD") == "tTESTDOGE:TESTUSD"
+    assert map_policy_symbol_to_test_symbol("tTESTETH:TESTUSD") == "tTESTETH:TESTUSD"
+
+
+def test_submit_paper_order_uses_test_symbol_and_size_from_meta(tmp_path):
+    from paper_trading_runner import RunnerConfig
+
+    config = RunnerConfig(
+        host="localhost",
+        port=8000,
+        symbol="tBTCUSD",
+        timeframe="1h",
+        poll_interval=1,
+        dry_run=False,
+        live_paper=True,
+        log_dir=tmp_path,
+        state_file=tmp_path / "state.json",
+    )
+
+    eval_resp = {
+        "result": {"confidence": {"overall": 0.75}},
+        "meta": {"decision": {"size": 0.005}},
+    }
+
+    mock_resp = Mock()
+    mock_resp.raise_for_status = Mock()
+    mock_resp.json.return_value = {"ok": True, "response": {"status": "accepted"}}
+
+    client = Mock(spec=httpx.Client)
+    client.post.return_value = mock_resp
+
+    logger = Mock()
+    out = submit_paper_order(config, "LONG", eval_resp, client, logger)
+
+    assert out is not None
+    client.post.assert_called_once()
+    _, kwargs = client.post.call_args
+    assert kwargs["json"]["symbol"] == "tTESTBTC:TESTUSD"
+    assert kwargs["json"]["side"] == "LONG"
+    assert kwargs["json"]["size"] == 0.005
+
+
+def test_submit_paper_order_ok_false_returns_none(tmp_path):
+    from paper_trading_runner import RunnerConfig
+
+    config = RunnerConfig(
+        host="localhost",
+        port=8000,
+        symbol="tBTCUSD",
+        timeframe="1h",
+        poll_interval=1,
+        dry_run=False,
+        live_paper=True,
+        log_dir=tmp_path,
+        state_file=tmp_path / "state.json",
+    )
+
+    eval_resp = {"meta": {"decision": {"size": 0.005}}}
+
+    mock_resp = Mock()
+    mock_resp.raise_for_status = Mock()
+    mock_resp.json.return_value = {"ok": False, "error": "invalid_action_or_size"}
+
+    client = Mock(spec=httpx.Client)
+    client.post.return_value = mock_resp
+    logger = Mock()
+
+    out = submit_paper_order(config, "LONG", eval_resp, client, logger)
+    assert out is None
+    logger.error.assert_called()

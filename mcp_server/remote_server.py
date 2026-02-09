@@ -101,6 +101,11 @@ ULTRA_SAFE_REMOTE_MODE = os.environ.get("GENESIS_MCP_REMOTE_ULTRA_SAFE", "0") ==
 # Only enforced when a non-empty token is set.
 REMOTE_TOKEN = (os.environ.get("GENESIS_MCP_REMOTE_TOKEN") or "").strip() or None
 
+# Secure-by-default: remote requests must be authorized unless explicitly overridden.
+# NOTE: If a token is configured, authorization is always required.
+ALLOW_UNAUTH_REMOTE = (os.environ.get("GENESIS_MCP_REMOTE_ALLOW_UNAUTH") or "").strip() == "1"
+REMOTE_AUTH_REQUIRED = REMOTE_TOKEN is not None or not ALLOW_UNAUTH_REMOTE
+
 
 def _load_privacy_policy_text() -> str:
     """Load privacy policy text from docs, with a safe fallback."""
@@ -299,11 +304,15 @@ def _is_authorized_remote_request(*, authorization: str | None, token_header: st
     - Authorization: Bearer <token>
     - X-Genesis-MCP-Token: <token>
 
-    If REMOTE_TOKEN is not configured, all requests are authorized.
+    If remote auth is disabled (explicit override), all requests are authorized.
+    Otherwise, requests are authorized only when they present a valid token.
     """
 
-    if REMOTE_TOKEN is None:
+    if not REMOTE_AUTH_REQUIRED:
         return True
+
+    if REMOTE_TOKEN is None:
+        return False
 
     presented: str | None = None
     if authorization:
@@ -597,7 +606,7 @@ def _build_sse_app():
         are unreliable through certain proxies/tunnels.
         """
 
-        if REMOTE_TOKEN is not None:
+        if REMOTE_AUTH_REQUIRED:
             # Avoid reading/consuming request body before auth.
             for k, v in scope.get("headers") or []:
                 if k.lower() == b"authorization":
@@ -742,7 +751,7 @@ def _build_sse_app():
 
         method = scope.get("method")
 
-        if REMOTE_TOKEN is not None and normalized not in {"/healthz", "/privacy-policy"}:
+        if REMOTE_AUTH_REQUIRED and normalized not in {"/healthz", "/privacy-policy"}:
             auth_header = None
             token_header = None
             for k, v in scope.get("headers") or []:
@@ -864,7 +873,7 @@ def _build_asgi_app():
 
     app = mcp.streamable_http_app()
 
-    if REMOTE_TOKEN is not None:
+    if REMOTE_AUTH_REQUIRED:
 
         class _RemoteTokenMiddleware(BaseHTTPMiddleware):
             async def dispatch(self, request, call_next):

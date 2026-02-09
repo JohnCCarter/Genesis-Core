@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import time
@@ -78,7 +79,11 @@ class ConfigAuthority:
         return version, cfg
 
     def _hash_cfg(self, cfg: dict[str, Any]) -> str:
-        return _json_dumps_canonical(cfg)
+        # Contract: hash = sha256(canonical_json(cfg)).
+        # Canonical JSON may be used internally for debugging, but the public
+        # API must expose only the digest.
+        canon = _json_dumps_canonical(cfg)
+        return hashlib.sha256(canon.encode("utf-8")).hexdigest()
 
     def load(self) -> RuntimeSnapshot:
         version, cfg_raw = self._read()

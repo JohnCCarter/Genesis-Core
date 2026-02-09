@@ -57,12 +57,16 @@ def test_public_candles_endpoint_smoke(monkeypatch):
     def fake_get(url, params=None, timeout=10):  # noqa: ARG001
         return DummyResp()
 
+    class DummyEC:
+        async def public_request(self, **kwargs):  # noqa: D401, ARG002
+            return fake_get("unused")
+
     import asyncio
 
     import core.server as srv
 
-    orig = srv.httpx.get
-    srv.httpx.get = fake_get  # type: ignore
+    orig = srv.get_exchange_client
+    srv.get_exchange_client = lambda: DummyEC()  # type: ignore
     try:
         out = asyncio.get_event_loop().run_until_complete(
             pc(symbol="tBTCUSD", timeframe="1m", limit=1)
@@ -70,7 +74,7 @@ def test_public_candles_endpoint_smoke(monkeypatch):
         assert set(out.keys()) == {"open", "high", "low", "close", "volume"}
         assert out["open"] and out["close"]
     finally:
-        srv.httpx.get = orig  # type: ignore
+        srv.get_exchange_client = orig  # type: ignore
 
 
 def test_auth_check_uses_helpers(monkeypatch):

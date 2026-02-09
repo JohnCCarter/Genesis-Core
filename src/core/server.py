@@ -884,9 +884,12 @@ async def paper_submit(payload: dict = Body(...)) -> dict:
                 usd_avail = avail_by_ccy.get("USD", 0.0) or avail_by_ccy.get("TESTUSD", 0.0) or 0.0
                 px = None
                 try:
-                    r = httpx.get(f"https://api-pub.bitfinex.com/v2/ticker/{real_sym}", timeout=5)
-                    r.raise_for_status()
-                    arr = r.json()
+                    resp = await get_exchange_client().public_request(
+                        method="GET",
+                        endpoint=f"ticker/{real_sym}",
+                        timeout=5,
+                    )
+                    arr = resp.json()
                     if isinstance(arr, list) and len(arr) >= 7:
                         px = float(arr[6])
                 except Exception:
@@ -1026,9 +1029,12 @@ async def paper_estimate(symbol: str) -> dict:
     # Hämta senaste pris
     try:
         real_sym = _real_from_test(sym)
-        r = httpx.get(f"https://api-pub.bitfinex.com/v2/ticker/{real_sym}", timeout=5)
-        r.raise_for_status()
-        arr = r.json()
+        resp = await get_exchange_client().public_request(
+            method="GET",
+            endpoint=f"ticker/{real_sym}",
+            timeout=5,
+        )
+        arr = resp.json()
         if isinstance(arr, list) and len(arr) >= 7:
             last_price = float(arr[6])
     except Exception:

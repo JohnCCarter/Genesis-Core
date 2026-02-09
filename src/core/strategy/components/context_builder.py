@@ -39,19 +39,24 @@ class ComponentContextBuilder:
 
         if isinstance(probas, dict) and probas:
             # Normalize keys to handle both 'buy'/'sell' (model output) and 'LONG'/'SHORT' (legacy)
-            # Case-insensitive lookup with explicit fallback chain
+            # Case-insensitive lookup with explicit fallback chain.
+            # IMPORTANT: Use "key in dict" instead of truthiness ("or") so that
+            # a valid 0.0 probability is not silently replaced by a fallback key.
             probas_normalized = {k.lower(): v for k, v in probas.items()}
 
-            p_long = (
-                probas_normalized.get("buy")  # Primary: model output
-                or probas_normalized.get("long")  # Fallback: legacy key
-                or 0.0
-            )
-            p_short = (
-                probas_normalized.get("sell")  # Primary: model output
-                or probas_normalized.get("short")  # Fallback: legacy key
-                or 0.0
-            )
+            if "buy" in probas_normalized:
+                p_long = probas_normalized["buy"]
+            elif "long" in probas_normalized:
+                p_long = probas_normalized["long"]
+            else:
+                p_long = 0.0
+
+            if "sell" in probas_normalized:
+                p_short = probas_normalized["sell"]
+            elif "short" in probas_normalized:
+                p_short = probas_normalized["short"]
+            else:
+                p_short = 0.0
 
             # Only set proba keys if we have valid values
             if p_long > 0 or p_short > 0:
@@ -68,6 +73,19 @@ class ComponentContextBuilder:
             context["ml_confidence"] = context["ml_confidence_long"]
         elif "ml_proba_long" in context:
             context["ml_confidence"] = context["ml_proba_long"]
+
+        # Direction-aware confidence: pick the correct side based on pipeline action.
+        # Components should prefer this key over the backward-compat "ml_confidence".
+        action = result.get("action", "NONE").upper()
+        if action == "SHORT" and "ml_confidence_short" in context:
+            context["ml_confidence_for_action"] = context["ml_confidence_short"]
+        elif action == "SHORT" and "ml_proba_short" in context:
+            context["ml_confidence_for_action"] = context["ml_proba_short"]
+        elif "ml_confidence_long" in context:
+            context["ml_confidence_for_action"] = context["ml_confidence_long"]
+        elif "ml_proba_long" in context:
+            context["ml_confidence_for_action"] = context["ml_proba_long"]
+        # else: key absent -> component falls back to "ml_confidence"
 
         # Expected Value (EV) calculation
         # ===================================
@@ -205,6 +223,7 @@ class ComponentContextBuilder:
             "ml_proba_short",
             "ml_confidence_long",
             "ml_confidence_short",
+            "ml_confidence_for_action",
             "ev_long",
             "ev_short",
             "expected_value",

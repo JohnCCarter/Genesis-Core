@@ -709,7 +709,12 @@ class BacktestEngine:
         policy.setdefault("symbol", self.symbol)
         policy.setdefault("timeframe", self.timeframe)
 
-        configs = configs or {}
+        # Defensive copy: never mutate the caller-supplied configs dict.
+        # run() injects per-bar keys (_global_index), meta fields and
+        # precomputed_features; without a copy these leak back to the caller.
+        import copy
+
+        configs = copy.deepcopy(configs) if configs else {}
 
         meta = configs.setdefault("meta", {})
         skip_champion_merge = bool(meta.get("skip_champion_merge"))

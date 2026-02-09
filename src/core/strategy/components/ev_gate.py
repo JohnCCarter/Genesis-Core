@@ -31,7 +31,7 @@ class EVGateComponent(StrategyComponent):
         - EV_MISSING: expected_value key missing from context
     """
 
-    def __init__(self, min_ev: float = 0.0, name: str = "EVGate"):
+    def __init__(self, min_ev: float = 0.0, name: str = "ev_gate"):
         """
         Initialize EVGateComponent.
 

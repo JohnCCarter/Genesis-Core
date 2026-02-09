@@ -31,21 +31,29 @@ class MLConfidenceComponent(StrategyComponent):
         """
         Evaluate ML confidence from context.
 
+        Uses direction-aware key ``ml_confidence_for_action`` when available
+        (set by ComponentContextBuilder based on pipeline action direction).
+        Falls back to ``ml_confidence`` for backward compatibility.
+
         Args:
-            context: Must contain 'ml_confidence' key with float value.
+            context: Should contain 'ml_confidence_for_action' (preferred)
+                     or 'ml_confidence' (backward compat) with float value.
 
         Returns:
             ComponentResult with allowed/confidence/reason.
         """
-        if "ml_confidence" not in context:
+        # Prefer direction-aware key; fall back to legacy single key
+        confidence = context.get("ml_confidence_for_action")
+        if confidence is None:
+            confidence = context.get("ml_confidence")
+
+        if confidence is None:
             return ComponentResult(
                 allowed=False,
                 confidence=0.0,
                 reason="ML_CONFIDENCE_MISSING",
                 metadata={"threshold": self.threshold},
             )
-
-        confidence = context["ml_confidence"]
 
         if not isinstance(confidence, int | float):
             return ComponentResult(

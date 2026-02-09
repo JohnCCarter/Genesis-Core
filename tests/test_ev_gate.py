@@ -78,14 +78,14 @@ class TestEVGateComponent:
         # Allow case
         context = {"expected_value": 0.3}
         decision = component.evaluate(context)
-        assert decision.metadata["component"] == "EVGate"
+        assert decision.metadata["component"] == "ev_gate"
         assert decision.metadata["min_ev"] == 0.1
         assert decision.metadata["ev_value"] == 0.3
 
         # Veto case
         context = {"expected_value": 0.05}
         decision = component.evaluate(context)
-        assert decision.metadata["component"] == "EVGate"
+        assert decision.metadata["component"] == "ev_gate"
         assert decision.metadata["min_ev"] == 0.1
         assert decision.metadata["ev_value"] == 0.05
 

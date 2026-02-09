@@ -81,7 +81,7 @@ class TestRegimeFilterComponent:
 
         # Check all metadata fields
         assert "component" in decision.metadata
-        assert decision.metadata["component"] == "RegimeFilter"
+        assert decision.metadata["component"] == "regime_filter"
         assert "allowed_regimes" in decision.metadata
         assert decision.metadata["allowed_regimes"] == ["bull", "trending"]
         assert "regime_found" in decision.metadata
@@ -95,7 +95,7 @@ class TestRegimeFilterComponent:
         decision = component.evaluate(context)
 
         # Check metadata on veto
-        assert decision.metadata["component"] == "RegimeFilter"
+        assert decision.metadata["component"] == "regime_filter"
         assert decision.metadata["allowed_regimes"] == ["trending"]
         assert decision.metadata["regime_found"] == "ranging"
 

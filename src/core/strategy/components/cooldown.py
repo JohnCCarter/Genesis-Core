@@ -70,7 +70,7 @@ class CooldownComponent(StrategyComponent):
         Raises:
             ValueError: If min_bars_between_trades is missing or invalid
         """
-        self._name = "CooldownComponent"
+        self._name = "cooldown"
 
         # Validate config
         if "min_bars_between_trades" not in config:

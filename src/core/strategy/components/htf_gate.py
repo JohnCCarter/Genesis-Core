@@ -21,8 +21,12 @@ class HTFGateComponent(StrategyComponent):
             required_regimes: List of acceptable regime strings
                             (e.g., ['trending', 'bull']).
                             If None, defaults to ['trending', 'bull'].
+                            If empty list, blocks ALL regimes.
         """
-        self.required_regimes = required_regimes or ["trending", "bull"]
+        if required_regimes is None:
+            self.required_regimes = ["trending", "bull"]
+        else:
+            self.required_regimes = list(required_regimes)
 
     def name(self) -> str:
         return "htf_gate"

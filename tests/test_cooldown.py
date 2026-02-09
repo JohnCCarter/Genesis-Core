@@ -24,7 +24,7 @@ class TestCooldownComponent:
     def test_name_returns_cooldown_component(self):
         """Test that name() returns component identifier."""
         component = CooldownComponent({"min_bars_between_trades": 10})
-        assert component.name() == "CooldownComponent"
+        assert component.name() == "cooldown"
 
     def test_allow_when_no_prior_trade(self):
         """Test that component allows entry when no prior trade exists."""
@@ -174,7 +174,7 @@ class TestCooldownComponent:
         context = {"bar_index": 100, "symbol": "tBTCUSD"}
         decision = component.evaluate(context)
 
-        assert decision.metadata["component"] == "CooldownComponent"
+        assert decision.metadata["component"] == "cooldown"
 
     def test_record_trade_updates_state(self):
         """Test that record_trade() updates internal state correctly."""

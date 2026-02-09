@@ -29,7 +29,7 @@ class RegimeFilterComponent(StrategyComponent):
         - REGIME_MISSING: Regime key missing from context
     """
 
-    def __init__(self, allowed_regimes: list[str], name: str = "RegimeFilter"):
+    def __init__(self, allowed_regimes: list[str], name: str = "regime_filter"):
         """
         Initialize RegimeFilterComponent.
 

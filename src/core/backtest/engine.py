@@ -34,6 +34,35 @@ from core.strategy.evaluate import evaluate_pipeline
 _LOGGER = get_logger(__name__)
 
 
+# B1: On-disk precompute cache versioning.
+#
+# This guards against silently reusing stale cached indicators/swings after code or
+# configuration changes that affect the precomputed outputs.
+PRECOMPUTE_SCHEMA_VERSION = 1
+
+
+def _precompute_cache_key_material() -> str:
+    """Return stable cache key material for precomputed features.
+
+    Includes a schema version and the effective precompute feature spec.
+    """
+
+    spec = {
+        "schema_version": int(PRECOMPUTE_SCHEMA_VERSION),
+        "indicators": {
+            "atr_periods": [14, 50],
+            "ema_periods": [20, 50],
+            "rsi_period": 14,
+            "bb": {"period": 20, "std_dev": 2.0},
+            "adx_period": 14,
+        },
+        "fib_cfg": {"atr_depth": 3.0, "max_swings": 8, "min_swings": 1},
+    }
+    canon = json.dumps(spec, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    digest12 = hashlib.sha256(canon.encode("utf-8")).hexdigest()[:12]
+    return f"v{int(PRECOMPUTE_SCHEMA_VERSION)}_{digest12}"
+
+
 def _debug_backtest_enabled() -> bool:
     """Return whether verbose error output should be enabled for backtests."""
 
@@ -594,7 +623,8 @@ class BacktestEngine:
         # pandas.Timestamp.value is ns since epoch; stable and file-name friendly.
         start_ns = int(getattr(ts0, "value", 0))
         end_ns = int(getattr(ts1, "value", 0))
-        return f"{self.symbol}_{self.timeframe}_{len(df)}_{start_ns}_{end_ns}"
+        material = _precompute_cache_key_material()
+        return f"{self.symbol}_{self.timeframe}_{material}_{len(df)}_{start_ns}_{end_ns}"
 
     def _prepare_numpy_arrays(self) -> None:
         """Prepare numpy arrays from candles_df for fast window extraction."""

@@ -223,13 +223,12 @@ class BacktestEngine:
         - Scrubs non-deterministic meta fields like champion_loaded_at timestamps.
         """
 
-        scrubbed: dict[str, Any] = dict(configs or {})
+        from core.utils.diffing.canonical import scrub_volatile
+
+        scrubbed_any = scrub_volatile(dict(configs or {}))
+        scrubbed: dict[str, Any] = scrubbed_any if isinstance(scrubbed_any, dict) else {}
         scrubbed.pop("precomputed_features", None)
         scrubbed.pop("_global_index", None)
-
-        meta = dict(scrubbed.get("meta") or {})
-        meta.pop("champion_loaded_at", None)
-        scrubbed["meta"] = meta
 
         payload = json.dumps(scrubbed, sort_keys=True, separators=(",", ":"), default=str)
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()

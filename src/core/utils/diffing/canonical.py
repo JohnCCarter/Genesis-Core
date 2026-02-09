@@ -23,6 +23,56 @@ _DEFAULT_IGNORE_PATHS: frozenset[tuple[str, ...]] = frozenset(
 )
 
 
+_DEFAULT_VOLATILE_KEYS: frozenset[str] = frozenset(
+    {
+        # Common timestamp / run identifiers
+        "ts",
+        "timestamp",
+        "created_at",
+        "loaded_at",
+        "run_id",
+        "trial_id",
+        "error_id",
+        # File/log paths and attempt telemetry
+        "log",
+        "log_path",
+        "results_path",
+        "config_path",
+        "duration_seconds",
+        "attempt_durations",
+        "attempts",
+        # Strategy/runtime meta that is intentionally non-deterministic
+        "champion_loaded_at",
+    }
+)
+
+
+def scrub_volatile(payload: Any, *, volatile_keys: frozenset[str] | None = None) -> Any:
+    """Recursively remove volatile fields from nested payloads.
+
+    This is used to produce stable fingerprints that ignore timestamps/run IDs and
+    other non-deterministic metadata.
+    """
+
+    keys = _DEFAULT_VOLATILE_KEYS if volatile_keys is None else volatile_keys
+
+    if isinstance(payload, dict):
+        out: dict[str, Any] = {}
+        for k, v in payload.items():
+            if isinstance(k, str) and k in keys:
+                continue
+            out[k] = scrub_volatile(v, volatile_keys=keys)
+        return out
+
+    if isinstance(payload, list):
+        return [scrub_volatile(v, volatile_keys=keys) for v in payload]
+
+    if isinstance(payload, tuple):
+        return tuple(scrub_volatile(v, volatile_keys=keys) for v in payload)
+
+    return payload
+
+
 def _round_float(value: float, precision: int) -> float:
     quantize_exp = Decimal("1") / (Decimal(10) ** precision)
     return float(Decimal(str(value)).quantize(quantize_exp, rounding=ROUND_HALF_UP))

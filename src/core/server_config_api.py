@@ -35,10 +35,13 @@ def propose_runtime(payload: dict, authorization: str | None = Header(default=No
 
     s = get_settings()
     expected_bearer = (s.BEARER_TOKEN or "").strip()
-    if expected_bearer:
-        token = (authorization or "").replace("Bearer ", "").strip()
-        if token != expected_bearer:
-            raise HTTPException(status_code=401, detail="unauthorized")
+    if not expected_bearer:
+        # Fail-closed: never allow runtime config writes without an explicit bearer token.
+        raise HTTPException(status_code=403, detail="forbidden")
+
+    token = (authorization or "").replace("Bearer ", "").strip()
+    if token != expected_bearer:
+        raise HTTPException(status_code=401, detail="unauthorized")
     patch = payload.get("patch") or {}
     actor = str(payload.get("actor") or "system")
     expected_version = int(payload.get("expected_version") or 0)

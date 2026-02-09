@@ -196,11 +196,16 @@ def test_load_config():
 
 
 def test_remote_token_auth_allows_when_unset(monkeypatch):
-    """Remote token auth should be a no-op unless a token is configured."""
+    """Remote auth är secure-by-default.
+
+    Om en remote-token inte är konfigurerad ska vi ändå fail-closed (ingen implicit
+    "allow all") så att en oavsiktligt exponerad remote endpoint inte blir publik.
+    """
     import mcp_server.remote_server as remote
 
     monkeypatch.setattr(remote, "REMOTE_TOKEN", None)
-    assert remote._is_authorized_remote_request(authorization=None, token_header=None) is True
+    monkeypatch.setattr(remote, "REMOTE_AUTH_REQUIRED", True)
+    assert remote._is_authorized_remote_request(authorization=None, token_header=None) is False
 
 
 def test_remote_token_auth_accepts_bearer_or_header(monkeypatch):

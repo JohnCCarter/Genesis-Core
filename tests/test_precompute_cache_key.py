@@ -36,5 +36,5 @@ def test_precompute_cache_key_changes_with_date_window(monkeypatch) -> None:
     key_b = engine._precompute_cache_key(df_b)
 
     assert key_a != key_b
-    assert key_a.startswith("tBTCUSD_1h_10_")
-    assert key_b.startswith("tBTCUSD_1h_10_")
+    assert key_a.startswith("tBTCUSD_1h_v1_")
+    assert key_b.startswith("tBTCUSD_1h_v1_")

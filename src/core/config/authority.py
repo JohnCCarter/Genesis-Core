@@ -12,10 +12,30 @@ from core.config.schema import RuntimeConfig, RuntimeSnapshot
 from core.utils.logging_redaction import get_logger
 
 _LOGGER = get_logger(__name__)
-RUNTIME_PATH = Path.cwd() / "config" / "runtime.json"
-AUDIT_LOG = Path.cwd() / "logs" / "config_audit.jsonl"
+
+
+def _resolve_repo_root() -> Path:
+    """Resolve repo root deterministically from this module's location.
+
+    This must never depend on Path.cwd() because services/scripts may run from
+    different working directories.
+    """
+
+    here = Path(__file__).resolve()
+    for parent in [here.parent, *here.parents]:
+        if (parent / "pyproject.toml").exists():
+            return parent
+    # Fallback for unexpected layouts: assume the canonical repo structure
+    # <root>/src/core/config/authority.py
+    return here.parents[3]
+
+
+_REPO_ROOT = _resolve_repo_root()
+
+RUNTIME_PATH = _REPO_ROOT / "config" / "runtime.json"
+AUDIT_LOG = _REPO_ROOT / "logs" / "config_audit.jsonl"
 MAX_AUDIT_SIZE = 5 * 1024 * 1024  # 5 MB
-SEED_PATH = Path.cwd() / "config" / "runtime.seed.json"
+SEED_PATH = _REPO_ROOT / "config" / "runtime.seed.json"
 
 
 def _json_dumps_canonical(data: dict[str, Any]) -> str:

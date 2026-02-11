@@ -19,6 +19,22 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+# Fail-fast: prevent accidental placeholder targets (e.g. genesis@<DIN_VM>) from reaching ssh.
+if ($SshTarget -match '[<>]' -or $SshTarget -match 'DIN_VM') {
+    Write-Error (
+        "Invalid -SshTarget: appears to be a placeholder ('$SshTarget'). " +
+        "Use a real SSH target, e.g. genesis@203.0.113.10 or genesis@myvm.example.com (no angle brackets)."
+    )
+    exit 1
+}
+
+if ($SshTarget -notmatch '@') {
+    Write-Warning (
+        "-SshTarget '$SshTarget' does not contain '@'. This is OK if you are using an SSH config alias, " +
+        "but make sure 'ssh $SshTarget' works from this machine."
+    )
+}
+
 function Quote-BashSingle {
     param([string]$Value)
     return "'" + ($Value -replace "'", "'\\''") + "'"

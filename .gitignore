@@ -175,6 +175,7 @@ tmp/**
 # Local binaries / tunnel helpers (do not commit)
 cloudflared*.exe
 cloudflared*.exe.exe
+*.msi
 
 # Temporary config artifacts (generated)
 config/tmp/champion_current_as_cfg*.json

@@ -35,15 +35,18 @@ if ($SshTarget -notmatch '@') {
     )
 }
 
-function Quote-BashSingle {
+function ConvertTo-BashSingleQuoted {
     param([string]$Value)
-    return "'" + ($Value -replace "'", "'\\''") + "'"
+    # Bash-safe single-quote wrapper.
+    # To embed a single quote in a single-quoted bash string: close, insert escaped quote, reopen => '\''
+    # Note: use -replace with a literal replacement string that contains a single backslash.
+    return "'" + ($Value -replace "'", "'\''") + "'"
 }
 
-$repoDirQ = Quote-BashSingle $RepoDir
-$branchQ = Quote-BashSingle $Branch
-$apiSvcQ = Quote-BashSingle $ApiService
-$runnerSvcQ = Quote-BashSingle $RunnerService
+$repoDirQ = ConvertTo-BashSingleQuoted $RepoDir
+$branchQ = ConvertTo-BashSingleQuoted $Branch
+$apiSvcQ = ConvertTo-BashSingleQuoted $ApiService
+$runnerSvcQ = ConvertTo-BashSingleQuoted $RunnerService
 $preflightWait = [Math]::Max(0, $PreflightWaitSeconds)
 $acceptanceDelay = [Math]::Max(0, $AcceptanceDelayHours)
 $useSudoFlag = if ($UseSudo) { "1" } else { "0" }
@@ -64,100 +67,132 @@ $remoteHeader = "set -euo pipefail`n" +
 
 $remoteBody = @'
 
-cd "$REPO_DIR"
+        # Normalize REPO_DIR (strip any stray CR / trailing backslashes) and auto-detect if needed.
+        REPO_DIR="${REPO_DIR%\\}"
 
-TS="$(date -u +%Y%m%d_%H%M%S)"
-ARCHIVE_DIR="logs/paper_trading/_archive/restart_${TS}"
-mkdir -p "$ARCHIVE_DIR"
+        if [ ! -d "$REPO_DIR" ]; then
+        echo "[remote] WARN: repo dir not found: $REPO_DIR"
+        for c in /opt/genesis/Genesis-Core "$HOME/Genesis-Core" /opt/Genesis-Core; do
+        if [ -d "$c" ] && [ -d "$c/.git" ]; then
+        echo "[remote] INFO: using detected repo dir: $c"
+        REPO_DIR="$c"
+        break
+        fi
+        done
+        fi
 
-echo "[remote] repo=$REPO_DIR"
-echo "[remote] branch=$BRANCH"
-echo "[remote] archive=$ARCHIVE_DIR"
+        if [ ! -d "$REPO_DIR" ]; then
+        echo "[remote] ERROR: repo directory not found (after auto-detect)."
+        echo "[remote] REPO_DIR=$REPO_DIR"
+        echo "[remote] Debug listing: /opt/genesis and HOME"
+        ls -la /opt/genesis 2>/dev/null || true
+        ls -la "$HOME" 2>/dev/null || true
+        exit 10
+        fi
 
-if [ -f logs/paper_trading/runner_state.json ]; then
-  mv logs/paper_trading/runner_state.json "$ARCHIVE_DIR/" || true
-fi
+        cd "$REPO_DIR"
 
-# Move runner logs to ensure a clean 24h acceptance window.
-shopt -s nullglob
-for f in logs/paper_trading/runner_*.log; do
-  mv "$f" "$ARCHIVE_DIR/" || true
-done
+        TS="$(date -u +%Y%m%d_%H%M%S)"
+        ARCHIVE_DIR="logs/paper_trading/_archive/restart_${TS}"
+        mkdir -p "$ARCHIVE_DIR"
 
-if [ "$USE_SUDO" = "1" ]; then
-  sudo -n true >/dev/null 2>&1 || { echo "ERROR: sudo requires a password. Re-run with -UseSudo:\$false or configure NOPASSWD."; exit 2; }
-  sudo -n systemctl stop "$RUNNER_SERVICE" || true
-  sudo -n systemctl stop "$API_SERVICE" || true
-else
-  systemctl stop "$RUNNER_SERVICE" || true
-  systemctl stop "$API_SERVICE" || true
-fi
+        echo "[remote] repo=$REPO_DIR"
+        echo "[remote] branch=$BRANCH"
+        echo "[remote] archive=$ARCHIVE_DIR"
 
-echo "[remote] git fetch/pull..."
-git fetch origin
+        if [ -f logs/paper_trading/runner_state.json ]; then
+        mv logs/paper_trading/runner_state.json "$ARCHIVE_DIR/" || true
+        fi
 
-git checkout "$BRANCH"
-git pull --ff-only origin "$BRANCH"
-echo "[remote] HEAD=$(git rev-parse --short HEAD)"
+        # Move runner logs to ensure a clean 24h acceptance window.
+        shopt -s nullglob
+        for f in logs/paper_trading/runner_*.log; do
+        mv "$f" "$ARCHIVE_DIR/" || true
+        done
 
-if [ "$USE_SUDO" = "1" ]; then
-  sudo -n systemctl start "$API_SERVICE"
-else
-  systemctl start "$API_SERVICE"
-fi
+        if [ "$USE_SUDO" = "1" ]; then
+        sudo -n true >/dev/null 2>&1 || { echo "ERROR: sudo requires a password. Re-run with -UseSudo:\$false or configure NOPASSWD."; exit 2; }
+        sudo -n systemctl stop "$RUNNER_SERVICE" || true
+        sudo -n systemctl stop "$API_SERVICE" || true
+        else
+        systemctl stop "$RUNNER_SERVICE" || true
+        systemctl stop "$API_SERVICE" || true
+        fi
 
-echo "[remote] waiting for /health..."
-OK=0
-for i in $(seq 1 30); do
-  if command -v curl >/dev/null 2>&1; then
-    if curl -fsS --max-time 2 http://127.0.0.1:8000/health >/dev/null; then OK=1; break; fi
-  else
-    if python3 - <<'PY'
-import sys, urllib.request
-try:
-  urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2).read()
-  sys.exit(0)
-except Exception:
-  sys.exit(1)
-PY
-    then OK=1; break; fi
-  fi
-  sleep 1
-done
+        echo "[remote] git fetch/pull..."
+        DIRTY="$(git status --porcelain 2>/dev/null || true)"
+        if [ -n "$DIRTY" ]; then
+        echo "[remote] WARN: repo has local modifications; stashing before pull"
+        git status --porcelain=v1 >"$ARCHIVE_DIR/git_status_porcelain.txt" 2>/dev/null || true
+        git status >"$ARCHIVE_DIR/git_status.txt" 2>/dev/null || true
+        git diff >"$ARCHIVE_DIR/git_diff.patch" 2>/dev/null || true
+        git diff --cached >"$ARCHIVE_DIR/git_diff_cached.patch" 2>/dev/null || true
+        git stash push -u -m "orchestrate_${TS}" >/dev/null 2>&1 || { echo "ERROR: git stash failed"; exit 11; }
+        echo "[remote] stashed: $(git stash list | head -1 || true)"
+        fi
+        git fetch origin
 
-if [ "$OK" -ne 1 ]; then
-  echo "ERROR: API server did not become healthy on 127.0.0.1:8000"
-  exit 3
-fi
+        git checkout "$BRANCH"
+        git pull --ff-only origin "$BRANCH"
+        echo "[remote] HEAD=$(git rev-parse --short HEAD)"
 
-echo "[remote] API healthy. Starting runner..."
-if [ "$USE_SUDO" = "1" ]; then
-  sudo -n systemctl start "$RUNNER_SERVICE"
-else
-  systemctl start "$RUNNER_SERVICE"
-fi
+        if [ "$USE_SUDO" = "1" ]; then
+        sudo -n systemctl start "$API_SERVICE"
+        else
+        systemctl start "$API_SERVICE"
+        fi
 
-echo "[remote] waiting ${PREFLIGHT_WAIT_SECONDS}s before preflight..."
-sleep "$PREFLIGHT_WAIT_SECONDS"
+        echo "[remote] waiting for /health..."
+        OK=0
+        for i in $(seq 1 30); do
+        if command -v curl >/dev/null 2>&1; then
+        if curl -fsS --max-time 2 http://127.0.0.1:8000/health >/dev/null; then OK=1; break; fi
+        else
+        if python3 -c "import sys,urllib.request;\
+    u=urllib.request.urlopen('http://127.0.0.1:8000/health',timeout=2);\
+    u.read();\
+    sys.exit(0)" >/dev/null 2>&1; then OK=1; break; fi
+        fi
+        sleep 1
+        done
 
-echo "[remote] running preflight..."
-bash ./scripts/preflight_smoke_test.sh
+        if [ "$OK" -ne 1 ]; then
+        echo "ERROR: API server did not become healthy on 127.0.0.1:8000"
+        exit 3
+        fi
 
-LATEST_LOG=$(ls -1t logs/paper_trading/runner_*.log 2>/dev/null | head -1 || true)
-echo "[remote] latest runner log: ${LATEST_LOG:-<none>}"
+        echo "[remote] API healthy. Starting runner..."
+        if [ "$USE_SUDO" = "1" ]; then
+        sudo -n systemctl start "$RUNNER_SERVICE"
+        else
+        systemctl start "$RUNNER_SERVICE"
+        fi
 
-if [ "$SCHEDULE_ACCEPTANCE" = "1" ]; then
-  DELAY_SECS=$((ACCEPTANCE_DELAY_HOURS * 3600))
-  OUT="logs/paper_trading/acceptance_check_${TS}.txt"
-  echo "[remote] scheduling acceptance in ${ACCEPTANCE_DELAY_HOURS}h -> $OUT"
-  nohup bash -lc "sleep ${DELAY_SECS}; cd \"$REPO_DIR\"; bash ./scripts/dry_run_acceptance.sh" >"$OUT" 2>&1 </dev/null &
-  echo $! >"${OUT}.pid"
-fi
+        echo "[remote] waiting ${PREFLIGHT_WAIT_SECONDS}s before preflight..."
+        sleep "$PREFLIGHT_WAIT_SECONDS"
 
-echo "[remote] done."
+        echo "[remote] running preflight..."
+        bash ./scripts/preflight_smoke_test.sh
+
+        LATEST_LOG=$(ls -1t logs/paper_trading/runner_*.log 2>/dev/null | head -1 || true)
+        echo "[remote] latest runner log: ${LATEST_LOG:-<none>}"
+
+        if [ "$SCHEDULE_ACCEPTANCE" = "1" ]; then
+        DELAY_SECS=$((ACCEPTANCE_DELAY_HOURS * 3600))
+        OUT="logs/paper_trading/acceptance_check_${TS}.txt"
+        echo "[remote] scheduling acceptance in ${ACCEPTANCE_DELAY_HOURS}h -> $OUT"
+        nohup bash -lc "sleep ${DELAY_SECS}; cd \"$REPO_DIR\"; bash ./scripts/dry_run_acceptance.sh" >"$OUT" 2>&1 </dev/null &
+        echo $! >"${OUT}.pid"
+        fi
+
+        echo "[remote] done."
 '@
 
 $remoteScript = $remoteHeader + $remoteBody
+
+# IMPORTANT: Normalize Windows CRLF to LF before sending to bash.
+# Otherwise remote bash can error with: $'\r': command not found
+$remoteScript = $remoteScript.Replace("`r`n", "`n").Replace("`r", "")
 
 Write-Host "SSH target: $SshTarget"
 Write-Host "RepoDir: $RepoDir"
@@ -175,4 +210,7 @@ if ($DryRun) {
 }
 
 # Run in a single SSH session. Requires key-based auth.
-& ssh $SshTarget "bash -lc $(Quote-BashSingle $remoteScript)"
+# Send payload as base64 to avoid nested-quoting issues in very long multiline bash scripts.
+$remoteScriptB64 = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($remoteScript))
+$remoteExec = "printf %s " + (ConvertTo-BashSingleQuoted $remoteScriptB64) + " | base64 -d | bash -seuo pipefail"
+& ssh $SshTarget "bash -lc $(ConvertTo-BashSingleQuoted $remoteExec)"

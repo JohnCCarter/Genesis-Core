@@ -5,6 +5,7 @@
 ### Option 1: Screen (Recommended for Windows/MINGW)
 
 **Start server in detached screen:**
+
 ```bash
 cd /c/Users/fa06662/Projects/Genesis-Core
 . .venv/Scripts/activate
@@ -21,12 +22,14 @@ screen -ls
 ```
 
 **Attach to running session:**
+
 ```bash
 screen -r genesis-paper
 # Ctrl+A, D to detach
 ```
 
 **Auto-restart wrapper:**
+
 ```bash
 # Create restart script: scripts/start_paper_trading_server.sh
 #!/bin/bash
@@ -45,6 +48,7 @@ done
 ```
 
 **Start with auto-restart:**
+
 ```bash
 chmod +x scripts/start_paper_trading_server.sh
 screen -S genesis-paper -dm scripts/start_paper_trading_server.sh
@@ -55,11 +59,13 @@ screen -S genesis-paper -dm scripts/start_paper_trading_server.sh
 ### Option 2: pm2 (Node.js process manager)
 
 **Install:**
+
 ```bash
 npm install -g pm2
 ```
 
 **Start:**
+
 ```bash
 cd /c/Users/fa06662/Projects/Genesis-Core
 pm2 start --name genesis-paper \
@@ -72,6 +78,7 @@ pm2 start --name genesis-paper \
 ```
 
 **Monitor:**
+
 ```bash
 pm2 status
 pm2 logs genesis-paper
@@ -81,9 +88,13 @@ pm2 stop genesis-paper
 
 ---
 
-### Option 3: systemd (Linux/WSL)
+### Option 3: systemd (Linux, incl. Azure VM)
+
+**Important:** Use native Linux paths and a Linux-created virtualenv (`.venv/bin/python`).
+Do not point systemd at Windows paths or a Windows-created venv.
 
 **Create service file:** `/etc/systemd/system/genesis-paper.service`
+
 ```ini
 [Unit]
 Description=Genesis Paper Trading Server
@@ -91,22 +102,23 @@ After=network.target
 
 [Service]
 Type=simple
-User=fa06662
-WorkingDirectory=/c/Users/fa06662/Projects/Genesis-Core
+User=genesis
+WorkingDirectory=/opt/genesis/Genesis-Core
 Environment="GENESIS_SYMBOL_MODE=realistic"
 Environment="LOG_LEVEL=INFO"
-ExecStart=/c/Users/fa06662/Projects/Genesis-Core/.venv/Scripts/python \
+ExecStart=/opt/genesis/Genesis-Core/.venv/bin/python \
   -m uvicorn core.server:app --app-dir src --port 8000
 Restart=always
 RestartSec=5
-StandardOutput=append:/c/Users/fa06662/Projects/Genesis-Core/logs/paper_trading/server_%Y%m%d.log
-StandardError=append:/c/Users/fa06662/Projects/Genesis-Core/logs/paper_trading/server_%Y%m%d.log
+StandardOutput=append:/opt/genesis/Genesis-Core/logs/paper_trading/server_%Y%m%d.log
+StandardError=append:/opt/genesis/Genesis-Core/logs/paper_trading/server_%Y%m%d.log
 
 [Install]
 WantedBy=multi-user.target
 ```
 
 **Control:**
+
 ```bash
 sudo systemctl start genesis-paper
 sudo systemctl status genesis-paper
@@ -123,6 +135,7 @@ sudo systemctl enable genesis-paper  # Auto-start on boot
 **Log:** `logs/paper_trading/server_20260204_092946.log`
 
 **To upgrade to persistent setup:**
+
 1. Stop current server: `kill 24646`
 2. Choose option (Screen recommended)
 3. Start with auto-restart
@@ -133,6 +146,7 @@ sudo systemctl enable genesis-paper  # Auto-start on boot
 ## Health Monitoring
 
 **Manual check:**
+
 ```bash
 curl -s http://localhost:8000/health | python -c "
 import json, sys
@@ -151,6 +165,7 @@ print(f\"Config version: {d.get('config_version')}\")
 **Daily logs:** Server creates new log per day (filename includes YYYYMMDD)
 
 **Cleanup old logs (manual):**
+
 ```bash
 # Keep last 30 days
 find logs/paper_trading/ -name "server_*.log" -mtime +30 -delete
@@ -163,6 +178,7 @@ find logs/paper_trading/ -name "server_*.log" -mtime +30 -delete
 ## Emergency Procedures
 
 **Server not responding:**
+
 ```bash
 # 1. Check if process running
 ps aux | grep uvicorn
@@ -179,6 +195,7 @@ curl http://localhost:8000/health
 ```
 
 **Port already in use:**
+
 ```bash
 # Find process using port 8000
 netstat -ano | grep :8000

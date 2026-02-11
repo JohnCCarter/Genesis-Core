@@ -10,6 +10,7 @@
 **IMPORTANT:** Use UTC timezone (`date -u`) for consistency with runner logs.
 
 **Fallback note:** If `grep -oP` fails (macOS/BSD), use `grep -E` with `sed` instead:
+
 ```bash
 # Instead of: grep -oP 'ts=\K[0-9]+'
 # Use: grep -oE 'ts=[0-9]+' | sed 's/ts=//'
@@ -98,6 +99,7 @@ Champion verified successfully.
 ```
 
 **Stop conditions (startup failures):**
+
 - "Failed to evaluate strategy on startup" → API server down or unreachable
 - "Champion verification failed" → Champion file missing/corrupt
 - "Baseline fallback detected" → Champion not loading correctly
@@ -278,6 +280,7 @@ python scripts/paper_trading_runner.py --dry-run
 ```
 
 **Default behavior:**
+
 - Symbol: tBTCUSD
 - Timeframe: 1h
 - Poll interval: 10 seconds
@@ -293,6 +296,7 @@ python scripts/paper_trading_runner.py --live-paper
 ```
 
 **IMPORTANT:** Only use `--live-paper` after:
+
 1. 24h dry-run test passes
 2. Champion verification confirmed
 3. Single test order successful
@@ -381,6 +385,16 @@ pm2 save
 ```
 
 ### Option 3: Systemd (Linux Production)
+
+**Azure/remote note (minimal):**
+
+- If you run this on an Azure VM, keep the VM surface area small:
+  - Restrict SSH in the NSG to a single source IP (/32)
+  - Disable password auth; key-based only
+- Ensure you can actually provision/recover the VM first (subscription visibility). See:
+  - `docs/paper_trading/operations_summary.md` (Remote deployment status)
+  - `docs/paper_trading/daily_summaries/day2_summary_2026-02-06.md`
+  - `docs/paper_trading/daily_summaries/day3_summary_2026-02-11.md`
 
 **Create service file:** `/etc/systemd/system/genesis-runner.service`
 
@@ -501,6 +515,7 @@ python scripts/paper_trading_runner.py --live-paper
 ```
 
 **State persistence ensures:**
+
 - No duplicate candle processing
 - No missed candles (resumes from last processed)
 - Counters preserved (total_evaluations, total_orders_submitted)
@@ -514,6 +529,7 @@ python scripts/paper_trading_runner.py --live-paper
 **State file:** `logs/paper_trading/runner_state.json`
 
 **Behavior:**
+
 - Tracks `last_processed_candle_ts`
 - Skips candles with `ts <= last_processed_candle_ts`
 - Fail-closed: Exits on corrupt state file (manual intervention required)
@@ -531,17 +547,20 @@ python scripts/paper_trading_runner.py --live-paper
 ### 2. Champion Verification
 
 **Startup check:**
+
 - POST /strategy/evaluate on startup
 - Verify `champion.source` contains "champions"
 - Exit if baseline fallback detected
 
 **Per-evaluation check:**
+
 - Verify champion loaded after each /strategy/evaluate
 - Exit immediately if baseline fallback detected mid-run
 
 ### 3. Dry-Run Default
 
 **Safety by default:**
+
 - If neither `--dry-run` nor `--live-paper` is set, defaults to `--dry-run`
 - Dry-run mode logs all orders but never submits to /paper/submit
 - Must explicitly enable `--live-paper` for order submission
@@ -549,6 +568,7 @@ python scripts/paper_trading_runner.py --live-paper
 ### 4. Rate Limiting
 
 **Polling discipline:**
+
 - Max 1 request per `poll-interval` seconds (default: 10s)
 - Sleep after each poll (success or failure)
 - No burst requests
@@ -556,6 +576,7 @@ python scripts/paper_trading_runner.py --live-paper
 ### 5. Graceful Shutdown
 
 **Signal handling:**
+
 - Catches SIGINT (Ctrl+C) and SIGTERM
 - Saves state before exit
 - Closes HTTP client cleanly
@@ -575,6 +596,7 @@ pytest tests/test_paper_trading_runner.py::test_idempotency_skips_processed_cand
 ```
 
 **Test coverage:**
+
 - Timeframe conversion (1m, 5m, 15m, 1h, 4h, 1D)
 - State persistence (save/load roundtrip)
 - Corrupt state fail-closed (verifies sys.exit(1))
@@ -615,6 +637,7 @@ cat logs/paper_trading/runner_state.json
 ```
 
 **Expected after 24h:**
+
 - `last_processed_candle_ts`: Recent timestamp
 - `total_evaluations`: ~24 (one per hour)
 - `total_orders_submitted`: 0 (dry-run mode)
@@ -725,6 +748,7 @@ Fail-closed: Cannot proceed with corrupt state.
 **Diagnosis:** Idempotency failure (should not happen)
 
 **Immediate action:**
+
 1. Stop runner immediately
 2. Check state file for corruption
 3. Review logs for duplicate candle timestamps
@@ -790,6 +814,7 @@ grep "EVALUATION:" logs/paper_trading/runner_$(date +%Y%m%d).log | wc -l
 ```
 
 **Expected for 1h timeframe:**
+
 - Process running: YES
 - State file age: < 10 minutes
 - Evaluations today: ~hour_of_day (e.g., 12 evaluations by noon)

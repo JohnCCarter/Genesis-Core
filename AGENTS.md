@@ -1,8 +1,18 @@
 # README for AI Agents (Local Development)
 
-## Last update: 2026-02-02
+## Last update: 2026-02-11
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
+
+## Quick status (2026-02-11)
+
+- **Paper trading runner hardening:** Candle window fetch is now newest-first (`sort=-1`) and normalized back to chronological order
+  before building OHLCV arrays (prevents silent indicator distortion / “stuck” confidence patterns).
+- **Regression coverage:** Added a focused unit test for candle-window ordering and a small defensive guard for persisted
+  `pipeline_state` incompatibility on startup.
+- **Docs:** Azure/remote hosting work is now explicitly indexed from the Phase 3 runbook + deployment guides (no longer only in chat).
+- **Repo hygiene:** Installer artifacts (e.g. `AzureCLI.msi`) are now ignored via `*.msi` in `.gitignore`.
+- **Azure VM ops:** Remote runner started via systemd; preflight PASS; 24h acceptance is scheduled (review the acceptance output file after ~24h).
 
 ## 0. Repo-lokala agenter (SSOT)
 

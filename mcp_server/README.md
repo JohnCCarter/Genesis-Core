@@ -25,7 +25,7 @@ For ChatGPT “Connect to MCP” / remote linking you should run the HTTP server
 ```bash
 # Start the MCP server (Streamable HTTP transport)
 # The MCP endpoint is POST /mcp
-$env:PORT=8000
+$env:GENESIS_MCP_PORT=3333
 $env:GENESIS_MCP_REMOTE_SAFE=1
 $env:GENESIS_MCP_REMOTE_ULTRA_SAFE=0
 $env:GENESIS_MCP_CONFIG_PATH='config/mcp_settings.remote_safe.json'
@@ -239,7 +239,7 @@ To disable it: delete the `.cmd` file from the Startup folder.
 3. **Triggers**
    - New… → **At startup**
 4. **Actions**
-   - New… → *Start a program*
+   - New… → _Start a program_
    - Program/script: `powershell.exe`
    - Add arguments:
      - `-NoProfile -ExecutionPolicy Bypass -File "C:\Users\fa06662\Projects\Genesis-Core\scripts\start_mcp_remote.ps1" -Port 3333`
@@ -249,12 +249,15 @@ To disable it: delete the `.cmd` file from the Startup folder.
    - If the task fails, restart every: 1 minute (or similar)
 
 Verify:
+
 - `https://<your-host>/healthz` returns `OK`
 - `POST https://<your-host>/mcp` supports `tools/list`
 
 Logs:
+
 - `logs/mcp_remote_stdout.log`
 - `logs/mcp_remote_stderr.log`
 
 Tip: sanity-check the script without starting the server:
+
 - `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start_mcp_remote.ps1 -DryRun`

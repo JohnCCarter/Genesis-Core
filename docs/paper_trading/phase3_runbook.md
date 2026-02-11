@@ -20,6 +20,18 @@ Before starting Day 0, verify:
   - `scripts/dry_run_acceptance.sh`
   - `scripts/capture_phase3_snapshot.sh`
 
+### Remote hosting (Azure VM) — note
+
+If you intend to run Phase 3 remotely (e.g. on an Azure VM), keep the operational narrative and blockers documented here:
+
+- `docs/paper_trading/operations_summary.md` (Remote deployment status)
+- `docs/paper_trading/daily_summaries/day2_summary_2026-02-06.md` (tooling/subscription blocker)
+- `docs/paper_trading/daily_summaries/day3_summary_2026-02-11.md` (identity/subscription + VS Code filter + VM incident)
+
+For Windows → Azure VM operations (sync → restart → preflight → schedule 24h acceptance), use:
+
+- `scripts/phase3_remote_orchestrate.ps1`
+
 ---
 
 ## Day 0: Initial Start (Dry-Run)
@@ -34,6 +46,7 @@ TZ=UTC python scripts/paper_trading_runner.py --dry-run
 ```
 
 **Expected output:**
+
 ```
 ================================================================================
 Paper Trading Runner Started
@@ -47,6 +60,7 @@ Champion verified successfully.
 ```
 
 **Runner process should:**
+
 - Poll every 10 seconds
 - Log to `logs/paper_trading/runner_YYYYMMDD.log` (UTC date)
 - Create `logs/paper_trading/runner_state.json`
@@ -59,6 +73,7 @@ Leave runner running in the background (do NOT stop).
 ### Step 2: Pre-flight Smoke Test (2-3 minutes after start)
 
 **Wait 2-3 minutes** to allow runner to:
+
 - Create log file
 - Write initial state
 - Poll for first candle
@@ -72,6 +87,7 @@ Then run:
 **Required result:** Exit code **0** (all checks PASS).
 
 **If exit code 1 (FAIL):**
+
 1. Review error output (script provides detailed guidance)
 2. Stop runner: `pkill -f paper_trading_runner` or Ctrl+C
 3. Fix issues (see "STOP if FAIL" section below)
@@ -79,6 +95,7 @@ Then run:
 5. **DO NOT proceed until pre-flight PASSES**
 
 **Expected output (success):**
+
 ```
 =========================================
 === PRE-FLIGHT: PASS ✓ ===============
@@ -104,6 +121,7 @@ Next steps:
 ```
 
 **Expected output:**
+
 ```
 Phase 3 snapshot captured successfully.
 
@@ -113,6 +131,7 @@ Time: 2026-02-04 HH:MM:SS UTC
 ```
 
 **Record snapshot filename** in your Phase 3 log:
+
 - Example: `snapshot_20260204_120000Z.txt` = Day 0 startup proof
 - This snapshot documents healthy startup state
 
@@ -127,6 +146,7 @@ tail -f logs/paper_trading/runner_$(date -u +%Y%m%d).log
 ```
 
 **Expected log entry (at top of hour):**
+
 ```
 NEW CANDLE CLOSE: ts=1707134400000, close=50123.45, source=previous
 EVALUATION: action=NONE, signal=0, confidence=0.450
@@ -134,6 +154,7 @@ Action=NONE. No order.
 ```
 
 **Verify:**
+
 - [ ] Candle detected at top of hour (00:00, 01:00, etc.)
 - [ ] `source=previous` or `source=latest` present
 - [ ] Evaluation runs (action logged)
@@ -169,6 +190,7 @@ cp docs/paper_trading/daily_runtime_snapshot_template.md \
 ```
 
 **Key fields to update:**
+
 1. Date and snapshot time
 2. API server PID (from snapshot)
 3. Runner PID (from snapshot)
@@ -209,6 +231,7 @@ grep -c "Baseline fallback detected" logs/paper_trading/runner_$(date -u +%Y%m%d
 **Required result:** Exit code **0** (all 10 checks PASS).
 
 **Expected output (success):**
+
 ```
 =========================================
 === DRY-RUN ACCEPTANCE: PASS ✓ =========
@@ -226,6 +249,7 @@ Status: ✓ READY FOR SINGLE-CANDLE LIVE TEST
 ```
 
 **If exit code 1 (FAIL):**
+
 - Review error output
 - Fix issues (see "STOP if FAIL" section)
 - May need to restart 24h dry-run
@@ -240,6 +264,7 @@ Status: ✓ READY FOR SINGLE-CANDLE LIVE TEST
 ```
 
 **Record snapshot filename** as Day 1 acceptance proof:
+
 - Example: `snapshot_20260205_120000Z.txt` = 24h acceptance proof
 
 ---
@@ -249,22 +274,26 @@ Status: ✓ READY FOR SINGLE-CANDLE LIVE TEST
 **If acceptance PASSED:**
 
 1. **Stop dry-run runner:**
+
    ```bash
    pkill -f paper_trading_runner
    # OR use Ctrl+C if running in foreground
    ```
 
 2. **Start live-paper runner:**
+
    ```bash
    TZ=UTC python scripts/paper_trading_runner.py --live-paper
    ```
 
 3. **Run pre-flight again** (after 2-3 min):
+
    ```bash
    ./scripts/preflight_smoke_test.sh
    ```
 
 4. **Capture live-paper startup snapshot:**
+
    ```bash
    ./scripts/capture_phase3_snapshot.sh
    ```
@@ -272,6 +301,7 @@ Status: ✓ READY FOR SINGLE-CANDLE LIVE TEST
 5. **Continue daily operations** for remaining 41 days
 
 **If acceptance FAILED:**
+
 - Document failure in daily summary
 - Fix issues (may require code changes outside freeze scope)
 - Restart from Day 0 after fixes
@@ -286,6 +316,7 @@ Status: ✓ READY FOR SINGLE-CANDLE LIVE TEST
 ### 1. Duplicate Candle Timestamp
 
 **Check:**
+
 ```bash
 grep "NEW CANDLE CLOSE" logs/paper_trading/runner_*.log \
   | grep -oP 'ts=\K[0-9]+' \
@@ -295,6 +326,7 @@ grep "NEW CANDLE CLOSE" logs/paper_trading/runner_*.log \
 ```
 
 **If output (duplicate found):**
+
 - STOP runner immediately
 - Document as CRITICAL BUG
 - DO NOT restart until investigated
@@ -306,11 +338,13 @@ grep "NEW CANDLE CLOSE" logs/paper_trading/runner_*.log \
 ### 2. Order Submitted in Dry-Run Mode
 
 **Check:**
+
 ```bash
 grep "ORDER SUBMITTED" logs/paper_trading/runner_*.log
 ```
 
 **If output (any matches):**
+
 - EMERGENCY STOP runner immediately
 - DO NOT proceed to live-paper
 - Document as CRITICAL SAFETY VIOLATION
@@ -322,11 +356,13 @@ grep "ORDER SUBMITTED" logs/paper_trading/runner_*.log
 ### 3. Champion Baseline Fallback
 
 **Check:**
+
 ```bash
 grep "Baseline fallback detected" logs/paper_trading/runner_*.log
 ```
 
 **If output (any matches):**
+
 - STOP runner immediately
 - Verify champion file: `cat config/strategy/champions/tBTCUSD_1h.json`
 - Check for `merged_config` key
@@ -340,6 +376,7 @@ grep "Baseline fallback detected" logs/paper_trading/runner_*.log
 ### 4. Missing Hours (>2h Gap in Candles)
 
 **Check:**
+
 ```bash
 # Review candle timestamps (should be ~1h apart for 1h timeframe)
 grep "NEW CANDLE CLOSE" logs/paper_trading/runner_*.log \
@@ -348,6 +385,7 @@ grep "NEW CANDLE CLOSE" logs/paper_trading/runner_*.log \
 ```
 
 **If gap >2 hours detected:**
+
 - Review logs for errors during gap period
 - Check if runner crashed (no heartbeat logs)
 - Check system time/timezone consistency
@@ -360,11 +398,13 @@ grep "NEW CANDLE CLOSE" logs/paper_trading/runner_*.log \
 ### 5. State File Corruption
 
 **Check:**
+
 ```bash
 python -c "import json; json.load(open('logs/paper_trading/runner_state.json'))"
 ```
 
 **If error (JSON parse failure):**
+
 - **DO NOT delete state file**
 - Backup corrupt file: `cp logs/paper_trading/runner_state.json logs/paper_trading/runner_state_corrupt_$(date -u +%Y%m%d_%H%M%S).json`
 - Document as CRITICAL BUG
@@ -377,17 +417,20 @@ python -c "import json; json.load(open('logs/paper_trading/runner_state.json'))"
 ### 6. FATAL Errors in Log
 
 **Check:**
+
 ```bash
 grep "FATAL" logs/paper_trading/runner_$(date -u +%Y%m%d).log
 ```
 
 **If any FATAL errors:**
+
 - STOP runner immediately
 - Review error context (surrounding log lines)
 - Document error details
 - Fix root cause before restarting
 
 **Common causes:**
+
 - Corrupt state file
 - Order submission failure (live-paper mode)
 - Champion verification failure
@@ -399,10 +442,12 @@ grep "FATAL" logs/paper_trading/runner_$(date -u +%Y%m%d).log
 ### Runner Not Writing to Log File
 
 **Symptoms:**
+
 - Pre-flight fails: "Log file not found"
 - OR log file exists but stale (mtime >120s)
 
 **Diagnosis:**
+
 ```bash
 # Check if runner is actually running
 ps aux | grep paper_trading_runner
@@ -416,6 +461,7 @@ ls -lht logs/paper_trading/runner_*.log | head -5
 ```
 
 **Fix:**
+
 1. Verify runner started with `TZ=UTC`
 2. Check runner is not writing to different date (timezone mismatch)
 3. Restart runner: `TZ=UTC python scripts/paper_trading_runner.py --dry-run`
@@ -425,10 +471,12 @@ ls -lht logs/paper_trading/runner_*.log | head -5
 ### API Server Not Responding
 
 **Symptoms:**
+
 - Pre-flight fails: "API server not responding on http://localhost:8000/health"
 - Snapshot shows: "API not responding"
 
 **Diagnosis:**
+
 ```bash
 # Check port 8000
 lsof -i :8000 -P -n  # macOS/Linux
@@ -439,6 +487,7 @@ curl -v http://localhost:8000/health
 ```
 
 **Fix:**
+
 1. Start API server: `uvicorn core.server:app --reload --app-dir src`
 2. Verify champion file exists
 3. Check logs for startup errors
@@ -448,10 +497,12 @@ curl -v http://localhost:8000/health
 ### Champion Not Loading
 
 **Symptoms:**
+
 - Pre-flight fails: "Champion verified successfully" not found
 - Logs show: "Baseline fallback detected"
 
 **Diagnosis:**
+
 ```bash
 # Verify champion file exists
 ls -lh config/strategy/champions/tBTCUSD_1h.json
@@ -462,6 +513,7 @@ python -c "import json; c=json.load(open('config/strategy/champions/tBTCUSD_1h.j
 ```
 
 **Fix:**
+
 1. Verify champion file is not corrupted
 2. Restart API server to reload champion
 3. Restart runner
@@ -471,10 +523,12 @@ python -c "import json; c=json.load(open('config/strategy/champions/tBTCUSD_1h.j
 ### No Candles Detected After 1 Hour
 
 **Symptoms:**
+
 - No "NEW CANDLE CLOSE" logs after 1 hour
 - Heartbeat logs present (runner is polling)
 
 **Diagnosis:**
+
 ```bash
 # Check latest log entries
 tail -50 logs/paper_trading/runner_$(date -u +%Y%m%d).log
@@ -487,6 +541,7 @@ curl "https://api-pub.bitfinex.com/v2/candles/trade:1h:tBTCUSD/hist?limit=2&sort
 ```
 
 **Fix:**
+
 1. Verify network connectivity to Bitfinex API
 2. Check for rate limiting or API errors
 3. Restart runner if transient network issue
@@ -540,24 +595,28 @@ netstat -an | grep :8000  # Windows
 ## Phase 3 Timeline
 
 **Day 0 (2026-02-04):**
+
 - Start dry-run
 - Pre-flight test PASS
 - Capture startup snapshot
 - Monitor first candle
 
 **Day 1 (2026-02-05):**
+
 - Run 24h acceptance test
 - Capture acceptance snapshot
 - Transition to live-paper (if PASS)
 - Daily snapshot + summary
 
 **Day 2-42 (2026-02-06 to 2026-03-17):**
+
 - Daily snapshot
 - Daily summary
 - Monitor for stop conditions
 - No champion changes (freeze)
 
 **Day 42 (2026-03-17):**
+
 - Final snapshot
 - Phase 3 completion report
 - Champion promotion decision (if metrics acceptable)
@@ -576,6 +635,7 @@ netstat -an | grep :8000  # Windows
 6. **Escalate** if CRITICAL BUG (duplicate candles, orders in dry-run, etc.)
 
 **CRITICAL BUG escalation requires:**
+
 - Snapshot file showing issue
 - Relevant log excerpts
 - State file backup (if corrupted)

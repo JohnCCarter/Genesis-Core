@@ -8,11 +8,14 @@ Paper trading validation period for Genesis-Core champion strategy v5a.
 **Champion:** v5a_sizing_exp1 (tBTCUSD_1h)
 **Status:** ✅ **ACTIVE** (started 2026-02-04 09:29 UTC)
 
+**Remote (Azure VM) ops:** See `docs/paper_trading/operations_summary.md` ("Remote deployment" section) and the daily summaries.
+
 ## Artefakt-cykel
 
 ### Daglig (Automated)
 
 **Health/Runtime Snapshot:**
+
 - Script: `scripts/daily_health_check.sh`
 - Output: `logs/paper_trading/daily_snapshots/health_YYYYMMDD.json`
 - Content: Server health, runtime config, git status, uptime
@@ -21,6 +24,7 @@ Paper trading validation period for Genesis-Core champion strategy v5a.
 ### Veckovis (Manual/Automated)
 
 **Metrics Report:**
+
 - Script: `scripts/calculate_paper_trading_metrics.py`
 - Output: `docs/paper_trading/weekly_reports/week_N_YYYYMMDD.md`
 - Content: Trades, PF, WR, DD, commission, criteria evaluation
@@ -30,12 +34,14 @@ Paper trading validation period for Genesis-Core champion strategy v5a.
 ### Kontinuerlig
 
 **Server Logs:**
+
 - Location: `logs/paper_trading/server_YYYYMMDD.log`
 - Rotation: Daily (automatic by filename)
 - Retention: Keep last 30 days
 - Monitor: Tail for errors, NONE actions, decision reasons
 
 **Evaluate Responses:**
+
 - Location: `logs/paper_trading/evaluate_response_*.json`
 - Saved: On-demand or scheduled intervals
 - Purpose: Audit champion loading, decision quality
@@ -61,6 +67,7 @@ All items verified and complete:
 **File:** `config/strategy/champions/tBTCUSD_1h.json`
 
 **Metadata:**
+
 - Run ID: milestone3_v5a
 - Trial ID: sizing_exp1
 - Git commit: 986bd277f47fc1de27e05bd528032e5a23e91524
@@ -68,22 +75,26 @@ All items verified and complete:
 - Phase: phase3_milestone3
 
 **Configuration:**
+
 - Symbol: tBTCUSD (TEST symbol: tTESTBTC:TESTUSD)
 - Timeframe: 1h
 - Composable: true (4 components)
 
 **Components:**
+
 1. ml_confidence (threshold: 0.24)
 2. regime_filter (allowed: all regimes)
 3. ev_gate (min_ev: 0.0)
 4. cooldown (min_bars_between_trades: 24)
 
 **Risk Management:**
+
 - Risk map first entry: [0.53, 0.005] ← 53% confidence = 0.5% risk
 - Risk cap: 1.2%
 - Symbol portfolio cap: 2.5%
 
 **Historical Performance (Backtest 2024):**
+
 - Total return: -0.03% (after commissions)
 - Profit factor: 1.45
 - Max drawdown: 1.25%
@@ -92,12 +103,14 @@ All items verified and complete:
 - Total commission: 1.41%
 
 **Quarterly Breakdown:**
+
 - Q1 2024: PF 1.57, 80 trades
 - Q2 2024: PF 1.35, 104 trades
 - Q3 2024: PF 1.30, 120 trades
 - Q4 2024: PF 1.69, 86 trades
 
 **Robustness Metrics:**
+
 - PF without top 1 trade: 1.40
 - PF without top 3 trades: 1.30
 - Top 1 concentration: -1014.7%
@@ -116,6 +129,7 @@ curl -X POST http://localhost:8000/strategy/evaluate \
 ```
 
 **Expected response includes:**
+
 - `champion.source` = `"champion"` (NOT "baseline")
 - `merged_config.risk.risk_map[0]` = `[0.53, 0.005]`
 - `merged_config.components` = array of 4 components
@@ -172,6 +186,7 @@ curl -X POST http://localhost:8000/strategy/evaluate \
 ### Symbol Restriction
 
 Paper trading MUST use TEST symbols only:
+
 - Real symbol: `tBTCUSD`
 - Mapped to: `tTESTBTC:TESTUSD` (when GENESIS_SYMBOL_MODE=realistic)
 - Enforced in: `src/core/symbols/mapper.py`
@@ -179,6 +194,7 @@ Paper trading MUST use TEST symbols only:
 ### Freeze Rules
 
 During freeze period (2026-02-04 to 2026-03-17):
+
 - NO changes to `config/strategy/champions/*.json`
 - CI workflow `champion-freeze-guard.yml` blocks violations
 - Exception: Critical security/data-loss fixes only
@@ -186,6 +202,7 @@ During freeze period (2026-02-04 to 2026-03-17):
 ### Configuration Immutability
 
 Champion config is frozen:
+
 - `merged_config` must match validation run
 - Risk map cannot be adjusted
 - Component params cannot be tuned
@@ -196,12 +213,14 @@ Champion config is frozen:
 ### Key Metrics (Weekly Check)
 
 **Primary Criteria (must pass):**
+
 1. Profit Factor ≥ 1.3
 2. Max Drawdown ≤ 3%
 3. Win Rate ≥ 50%
 4. Min Trades ≥ 10/week
 
 **Secondary Criteria (monitor):**
+
 5. Sharpe Ratio ≥ 1.0 (if calculable)
 6. Return/DD ≥ 5.0
 7. Commission % ≤ 2%
@@ -209,6 +228,7 @@ Champion config is frozen:
 ### Red Flags
 
 Stop paper trading if:
+
 - 2 consecutive weeks fail primary criteria
 - Single week with DD > 5%
 - Champion loading fails (baseline fallback detected)
@@ -221,6 +241,7 @@ Stop paper trading if:
 **Symptom:** Response shows `champion.source = "baseline"`
 
 **Fix:**
+
 1. Verify `config/strategy/champions/tBTCUSD_1h.json` exists
 2. Check file has top-level `merged_config` key
 3. Restart server
@@ -231,6 +252,7 @@ Stop paper trading if:
 **Symptom:** Weeks pass with 0 trades
 
 **Diagnosis:**
+
 1. Check decision logging: `grep "action_none" server.log`
 2. Look for gate reasons: HTF_FIB_BLOCK, PROBA_BLOCK, etc.
 3. Verify model exists: `config/models/tBTCUSD_1h/`
@@ -241,6 +263,7 @@ Stop paper trading if:
 **Symptom:** Bitfinex rejects paper orders
 
 **Diagnosis:**
+
 1. Verify TEST symbol used (not real tBTCUSD)
 2. Check API permissions for paper trading
 3. Verify order size within limits
@@ -249,6 +272,7 @@ Stop paper trading if:
 ## Contact
 
 For questions or issues during paper trading:
+
 - Check `docs/daily_summaries/` for daily status
 - Review Known Issues in latest summary
 - Escalate blocking issues immediately (freeze period is time-limited)
@@ -259,3 +283,11 @@ For questions or issues during paper trading:
 - Freeze guard: `.github/workflows/champion-freeze-guard.yml`
 - Known issues: `docs/daily_summaries/daily_summary_2026-02-03.md` (Known Issues section)
 - Validation results: `results/milestone3/v5a_sizing_exp1_full2024_20260203_110625.json`
+
+**Phase 3 ops docs:**
+
+- Runbook: `docs/paper_trading/phase3_runbook.md`
+- Runner deployment: `docs/paper_trading/runner_deployment.md`
+- Server persistence: `docs/paper_trading/server_setup.md`
+- Operations summary: `docs/paper_trading/operations_summary.md`
+- Daily summaries (incl. Azure/remote notes): `docs/paper_trading/daily_summaries/`

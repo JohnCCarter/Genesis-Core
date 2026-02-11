@@ -26,15 +26,24 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# Use UTC date to match runner log filenames
-LOG_FILE="logs/paper_trading/runner_$(date -u +%Y%m%d).log"
+# Use UTC date to match runner log filenames.
+# NOTE: The runner log filename is chosen at runner start and does not necessarily rotate at UTC midnight.
+# For robustness, prefer the most recently modified runner_*.log (runner is expected to be writing to it).
+EXPECTED_LOG_FILE="logs/paper_trading/runner_$(date -u +%Y%m%d).log"
+LATEST_LOG_FILE=$(ls -1t logs/paper_trading/runner_*.log 2>/dev/null | head -1)
+if [ -n "$LATEST_LOG_FILE" ]; then
+  LOG_FILE="$LATEST_LOG_FILE"
+else
+  LOG_FILE="$EXPECTED_LOG_FILE"
+fi
 STATE_FILE="logs/paper_trading/runner_state.json"
 
 echo "========================================="
 echo "=== Pre-flight Smoke Test (5 min) ======"
 echo "========================================="
 echo ""
-echo "Log file: $LOG_FILE"
+echo "Expected log file (UTC date): $EXPECTED_LOG_FILE"
+echo "Using log file: $LOG_FILE"
 echo "State file: $STATE_FILE"
 echo ""
 
@@ -130,6 +139,7 @@ else
   echo -e "${RED}✗ FAIL${NC}"
   echo "  Error: Log file not found: $LOG_FILE"
   echo "  Expected filename: runner_$(date -u +%Y%m%d).log (UTC date)"
+  echo "  Note: If the runner started before UTC midnight, it may still be writing to yesterday's log file."
   echo "  Possible causes:"
   echo "    - Runner not started"
   echo "    - Runner started with different date (timezone mismatch - use TZ=UTC)"
@@ -169,7 +179,8 @@ fi
 echo -n "[4/5] State file heartbeat... "
 if [ -f "$STATE_FILE" ]; then
   if grep -q "last_heartbeat" "$STATE_FILE"; then
-    HEARTBEAT=$(grep -o '"last_heartbeat":"[^"]*"' "$STATE_FILE" | head -1)
+    # Allow optional whitespace around ':' to avoid false warnings.
+    HEARTBEAT=$(grep -oE '"last_heartbeat"[[:space:]]*:[[:space:]]*"[^"]*"' "$STATE_FILE" | head -1)
     if [ -n "$HEARTBEAT" ]; then
       echo -e "${GREEN}✓ PASS${NC}"
       echo "  $HEARTBEAT"

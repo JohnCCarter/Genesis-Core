@@ -313,11 +313,21 @@ def fetch_candles_window(
 ) -> dict | None:
     """Fetch a candles window from Bitfinex public API and normalize to {open,high,low,close,volume} arrays."""
     try:
+        # IMPORTANT:
+        # Bitfinex returns candles sorted by `sort`.
+        # - sort=1  (ascending) + limit=N yields the *oldest* N candles in the range.
+        # - sort=-1 (descending) + limit=N yields the *newest* N candles in the range.
+        # We want the most recent window ending at `end_ms`, in chronological order.
+        sort = -1
         url = f"https://api-pub.bitfinex.com/v2/candles/trade:{timeframe}:{symbol}/hist"
-        params = {"limit": int(limit), "sort": 1, "end": int(end_ms)}
+        params = {"limit": int(limit), "sort": int(sort), "end": int(end_ms)}
         resp = client.get(url, params=params, timeout=10.0)
         resp.raise_for_status()
         data = resp.json()
+
+        # Ensure we build arrays in chronological order (oldest -> newest).
+        if sort == -1 and isinstance(data, list):
+            data = list(reversed(data))
 
         if not isinstance(data, list) or not data:
             logger.error(f"Unexpected candles window response: {data}")
@@ -401,6 +411,49 @@ def map_policy_symbol_to_test_symbol(policy_symbol: str) -> str:
     return f"tTEST{base}:TEST{quote}"
 
 
+def _maybe_reset_pipeline_state(
+    pipeline_state: dict,
+    *,
+    live_close: float,
+    logger: logging.Logger,
+    rel_threshold: float = 0.50,
+) -> dict:
+    """Defensive state migration guard.
+
+    If we resume from a persisted `pipeline_state` that is incompatible with the live inputs
+    (e.g. historical bugs such as wrong candle window ordering), the persisted `last_close`
+    can be wildly different from the live candle close.
+
+    In that case we reset the pipeline state to avoid propagating incompatible hysteresis/
+    cooldown state.
+    """
+    if not isinstance(pipeline_state, dict) or not pipeline_state:
+        return pipeline_state if isinstance(pipeline_state, dict) else {}
+
+    prev_close = pipeline_state.get("last_close")
+    if prev_close is None:
+        return pipeline_state
+
+    try:
+        prev_close_f = float(prev_close)
+        live_close_f = float(live_close)
+    except (TypeError, ValueError):
+        return pipeline_state
+
+    if prev_close_f <= 0 or live_close_f <= 0:
+        return pipeline_state
+
+    rel = abs(prev_close_f - live_close_f) / live_close_f
+    if rel <= rel_threshold:
+        return pipeline_state
+
+    logger.warning(
+        "Resetting pipeline_state due to last_close mismatch: "
+        f"state_last_close={prev_close_f:.4f}, live_close={live_close_f:.4f}"
+    )
+    return {}
+
+
 # --- Main Loop ---
 
 
@@ -423,6 +476,12 @@ def run_loop(config: RunnerConfig, logger: logging.Logger, state: RunnerState) -
     if not startup_candle:
         logger.error("Failed to fetch candle on startup. Exiting.")
         sys.exit(1)
+
+    state.pipeline_state = _maybe_reset_pipeline_state(
+        state.pipeline_state,
+        live_close=float(startup_candle.get("close")),
+        logger=logger,
+    )
 
     eval_resp = evaluate_strategy(
         config, startup_candle["ts"], state.pipeline_state, client, logger

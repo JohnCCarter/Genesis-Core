@@ -18,18 +18,28 @@
 
 set -e
 
-# Use UTC date to match runner log filenames
-LOG_FILE="logs/paper_trading/runner_$(date -u +%Y%m%d).log"
+# Use UTC date to match runner log filenames.
+# NOTE: The runner log filename is chosen at runner start and does not necessarily rotate at UTC midnight.
+# For robustness, prefer the most recently modified runner_*.log (runner is expected to be writing to it).
+EXPECTED_LOG_FILE="logs/paper_trading/runner_$(date -u +%Y%m%d).log"
+LATEST_LOG_FILE=$(ls -1t logs/paper_trading/runner_*.log 2>/dev/null | head -1)
+if [ -n "$LATEST_LOG_FILE" ]; then
+  LOG_FILE="$LATEST_LOG_FILE"
+else
+  LOG_FILE="$EXPECTED_LOG_FILE"
+fi
 STATE_FILE="logs/paper_trading/runner_state.json"
 
 echo "=== Phase 3 Dry-Run Acceptance Check ==="
-echo "Log file: $LOG_FILE"
+echo "Expected log file (UTC date): $EXPECTED_LOG_FILE"
+echo "Using log file: $LOG_FILE"
 echo "State file: $STATE_FILE"
 echo ""
 
 # Verify files exist
 if [ ! -f "$LOG_FILE" ]; then
   echo "ERROR: Log file not found: $LOG_FILE"
+  echo "Check: ls -lht logs/paper_trading/runner_*.log | head -3"
   exit 1
 fi
 

@@ -32,6 +32,22 @@ For Windows → Azure VM operations (sync → restart → preflight → schedule
 
 - `scripts/phase3_remote_orchestrate.ps1`
 
+Notes (remote orchestrator):
+
+- Default SSH target is the SSH-config alias `genesis-we`.
+  - Override with `-SshTarget <alias|user@host>` or `GENESIS_SSH_TARGET`.
+- The orchestrator fails fast if systemd units are missing (`genesis-paper.service`, `genesis-runner.service`).
+  Deploy services first, then `sudo systemctl daemon-reload`.
+- Quick stability checks (VM):
+
+  ```bash
+  # Verify only one uvicorn is running
+  pgrep -af uvicorn
+
+  # Verify service is stable (restart counter not increasing)
+  systemctl show genesis-paper.service -p MainPID -p NRestarts -p ActiveState -p SubState --no-pager
+  ```
+
 ---
 
 ## Day 0: Initial Start (Dry-Run)

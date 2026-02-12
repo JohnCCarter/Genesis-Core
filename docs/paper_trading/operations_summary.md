@@ -32,13 +32,27 @@
 
 **Goal:** Run the API server + runner on a small Ubuntu VM with persistent supervision (systemd) and a minimal attack surface.
 
-**Current status (2026-02-11):** ✅ Remote runner is up.
+**Current status (2026-02-12):** ✅ Remote runner is up.
 
 - API service (`genesis-paper.service`): healthy on `http://127.0.0.1:8000/health` (VM-local only)
 - Runner service (`genesis-runner.service`): running
 - Preflight: **PASS**
 - 24h acceptance: scheduled; output file is written under `logs/paper_trading/acceptance_check_<UTC_TS>.txt`
 - Orchestration: `scripts/phase3_remote_orchestrate.ps1` (archives logs/state, stashes dirty repo, ff-pulls, restarts services)
+  - Default SSH target: `genesis-we` (SSH config alias). Override via `-SshTarget` or `GENESIS_SSH_TARGET`.
+
+**Stability checks (VM):**
+
+```bash
+# Verify only one uvicorn process is running
+pgrep -af uvicorn
+
+# Verify systemd restart counter is stable (not ticking up)
+systemctl show genesis-paper.service -p MainPID -p NRestarts -p ActiveState -p SubState --no-pager
+
+# Verify port 8000 is only bound on loopback
+ss -ltnp | grep ':8000'
+```
 
 **What we learned (so far):**
 

@@ -1,6 +1,7 @@
 param(
-    [Parameter(Mandatory = $true)]
-    [string]$SshTarget,
+    # Optional: allow automation to pass SSH target via env var.
+    # Recommended: use an SSH config alias (e.g. 'genesis-we') instead of hardcoding IPs.
+    [string]$SshTarget = $(if ($Env:GENESIS_SSH_TARGET) { $Env:GENESIS_SSH_TARGET } else { "genesis-we" }),
 
     [string]$RepoDir = "/opt/genesis/Genesis-Core",
     [string]$Branch = "feature/composable-strategy-phase2",
@@ -19,6 +20,14 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+if ([string]::IsNullOrWhiteSpace($SshTarget)) {
+    Write-Error (
+        "Missing -SshTarget and GENESIS_SSH_TARGET is not set. " +
+        "Pass -SshTarget (e.g. 'genesis-we' or 'user@host') or set '$Env:GENESIS_SSH_TARGET' to 'genesis-we'."
+    )
+    exit 1
+}
+
 # Fail-fast: prevent accidental placeholder targets (e.g. genesis@<DIN_VM>) from reaching ssh.
 if ($SshTarget -match '[<>]' -or $SshTarget -match 'DIN_VM') {
     Write-Error (
@@ -29,10 +38,18 @@ if ($SshTarget -match '[<>]' -or $SshTarget -match 'DIN_VM') {
 }
 
 if ($SshTarget -notmatch '@') {
-    Write-Warning (
-        "-SshTarget '$SshTarget' does not contain '@'. This is OK if you are using an SSH config alias, " +
-        "but make sure 'ssh $SshTarget' works from this machine."
-    )
+    # If the target looks like a host/IP (contains '.' or ':'), missing '@' is often accidental (wrong user).
+    # If the target looks like an SSH config alias (e.g. 'genesis-we'), this is expected.
+    if ($SshTarget -match '[\.:]' -or $SshTarget -match '^\d{1,3}(?:\.\d{1,3}){3}$') {
+        Write-Warning (
+            "-SshTarget '$SshTarget' does not contain '@'. If this is a host/IP, " +
+            "consider using 'user@host' to avoid connecting as the wrong user. " +
+            "If it's an SSH config alias, you're fine."
+        )
+    }
+    else {
+        Write-Host "Info: using SSH config alias '$SshTarget' (no '@' expected)."
+    }
 }
 
 function ConvertTo-BashSingleQuoted {
@@ -66,6 +83,27 @@ $remoteHeader = "set -euo pipefail`n" +
 "ACCEPTANCE_DELAY_HOURS=$acceptanceDelay`n"
 
 $remoteBody = @'
+
+    svc_exists() {
+    local svc="$1"
+    if [ "$USE_SUDO" = "1" ]; then
+    sudo -n systemctl cat "$svc" >/dev/null 2>&1
+    else
+    systemctl cat "$svc" >/dev/null 2>&1
+    fi
+    }
+
+    if ! svc_exists "$API_SERVICE"; then
+    echo "[remote] ERROR: systemd unit not found: $API_SERVICE"
+    echo "[remote] Hint: deploy the service unit, then run: sudo systemctl daemon-reload"
+    exit 20
+    fi
+
+    if ! svc_exists "$RUNNER_SERVICE"; then
+    echo "[remote] ERROR: systemd unit not found: $RUNNER_SERVICE"
+    echo "[remote] Hint: deploy the service unit, then run: sudo systemctl daemon-reload"
+    exit 21
+    fi
 
         # Normalize REPO_DIR (strip any stray CR / trailing backslashes) and auto-detect if needed.
         REPO_DIR="${REPO_DIR%\\}"

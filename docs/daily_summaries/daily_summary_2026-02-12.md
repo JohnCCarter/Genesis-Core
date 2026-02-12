@@ -19,6 +19,12 @@ Fokus idag: stabilisera **nya Azure VM:n i West Europe** och verifiera att API:t
 
 - Docs (paper trading)
   - Runbook/ops-noter uppdaterade för `genesis-we` + stabilitetschecks.
+  - Standardiserade env-var: `SYMBOL_MODE` (ersatte `GENESIS_SYMBOL_MODE`) i relevanta paper trading-docs.
+  - Systemd-hardening: exempel använder `EnvironmentFile=/opt/genesis/Genesis-Core/.env`, loopback-bind (`127.0.0.1`) och dokumenterad incidentfälla: **UTF-8 utan BOM** för `.env`.
+  - Lade till operativ not om **Bitfinex spot vs positions** (verifiera exekvering via runner-loggar + orders/wallet-delta).
+
+- Bitfinex
+  - Verifierade lokalt (i projektets venv) att REST-auth + WS-auth fungerar, samt att public REST/WS fungerar utan nycklar.
 
 ## Referenser / artefakter
 

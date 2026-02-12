@@ -53,6 +53,18 @@ but the last start is successful and the service is stable.
 
 ---
 
+## Documentation / operational hardening
+
+- Paper trading docs were aligned to the current VM operating model:
+  - Use `SYMBOL_MODE` (replacing historical `GENESIS_SYMBOL_MODE`).
+  - systemd examples load settings via `EnvironmentFile=.../.env` and bind the API to loopback (`127.0.0.1`).
+  - Added an incident note: `.env` must be **UTF-8 without BOM** when used with systemd `EnvironmentFile=`.
+  - Added an operational note on **Bitfinex spot vs positions** (verify execution via runner logs + orders/wallet deltas).
+
+- Bitfinex connectivity/auth was smoke-tested locally (project venv): REST/WS auth ok; public REST/WS ok.
+
+---
+
 ## Next steps
 
 1. If not already done for this VM instance, run the remote orchestrator **without** `-DryRun` once you want a clean restart + preflight.

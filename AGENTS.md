@@ -11,10 +11,12 @@ This document explains the current workflow for Genesis-Core, highlights today's
 - **Regression coverage:** Added a focused unit test for candle-window ordering and a small defensive guard for persisted
   `pipeline_state` incompatibility on startup.
 - **Docs:** Azure/remote hosting work is now explicitly indexed from the Phase 3 runbook + deployment guides (no longer only in chat).
+- **Docs (paper trading, prod-hardening):** Standardiserade `SYMBOL_MODE` (ersatte `GENESIS_SYMBOL_MODE`), uppdaterade systemd-exempel att läsa `.env` via `EnvironmentFile=...`, samt lade till incidentnot om **UTF-8 utan BOM** för `.env` och en operativ not om **spot vs positions** (verifiera via orders/wallet-delta + runner-loggar).
 - **Repo hygiene:** Installer artifacts (e.g. `AzureCLI.msi`) are now ignored via `*.msi` in `.gitignore`.
 - **Azure VM ops (West Europe):** VM is reachable via SSH alias `genesis-we`; API binds to `127.0.0.1:8000`.
   Verified stable state: single `uvicorn` process, `genesis-paper.service` + `genesis-runner.service` running under systemd with `NRestarts=0`.
 - **Orchestration:** `scripts/phase3_remote_orchestrate.ps1` now defaults SSH target to `genesis-we` and fails fast if systemd units are missing.
+- **Bitfinex credentials:** Verifierade auth mot REST + WS (samt public REST/WS) med repo-scripts i lokal venv.
 
 ## 0. Repo-lokala agenter (SSOT)
 

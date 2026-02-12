@@ -50,6 +50,58 @@ Notes (remote orchestrator):
 
 ---
 
+## Execution Verification Checklist
+
+Use this checklist **after each larger operational change** (deploy, config change, service restart, runner update) to
+formalize how we verify the system is actually working end-to-end.
+
+### 1) Health endpoint
+
+```bash
+curl -s http://127.0.0.1:8000/health
+```
+
+### 2) Wallets endpoint (spot-style verification anchor)
+
+```bash
+curl -s http://127.0.0.1:8000/account/wallets
+```
+
+Record a baseline snapshot (timestamp + relevant wallet balances). This is the reference for the wallet delta check.
+
+### 3) Manual test order (TEST symbols only)
+
+Submit a **small** manual test order through the normal paper path.
+
+- Verify in logs: `ORDER SUBMITTED` (+ follow-up status)
+- Verify in API: `/account/orders` (open orders)
+
+### 4) Verify wallet delta
+
+Re-run wallets and confirm a **wallet delta** versus your baseline snapshot.
+
+```bash
+curl -s http://127.0.0.1:8000/account/wallets
+```
+
+### 5) systemd stability (restart counters)
+
+```bash
+systemctl show genesis-paper.service -p MainPID -p NRestarts -p ActiveState -p SubState --no-pager
+systemctl show genesis-runner.service -p MainPID -p NRestarts -p ActiveState -p SubState --no-pager
+
+journalctl -u genesis-paper -n 200 --no-pager
+journalctl -u genesis-runner -n 200 --no-pager
+```
+
+### 6) Runner log tail
+
+```bash
+tail -n 200 -f logs/paper_trading/runner_$(date -u +%Y%m%d).log
+```
+
+---
+
 ## Day 0: Initial Start (Dry-Run)
 
 **Goal:** Start runner in DRY-RUN mode and verify healthy operation within 5 minutes.
@@ -301,6 +353,16 @@ Status: ✓ READY FOR SINGLE-CANDLE LIVE TEST
    ```bash
    TZ=UTC python scripts/paper_trading_runner.py --live-paper
    ```
+
+   **Operational risk note (Bitfinex spot vs positions):**
+
+- Paper trading here is spot-style for TEST symbols. Spot execution primarily shows up as **wallet balance changes**.
+- The `/account/positions` endpoint can legitimately be empty even when spot orders are being submitted/filled.
+- To verify execution in live-paper:
+  - Check runner logs for `ORDER SUBMITTED` and any follow-up status.
+  - Check `/account/orders` for open orders.
+  - Check `/account/wallets` and verify a **wallet delta** vs. the previous snapshot (exchange wallet).
+    This is often the most reliable “did something actually happen?” signal for spot-style flow.
 
 3. **Run pre-flight again** (after 2-3 min):
 

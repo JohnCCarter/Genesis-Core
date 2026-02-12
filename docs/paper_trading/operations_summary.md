@@ -7,7 +7,10 @@
 
 ---
 
-## Current Drift Setup
+## Local dev drift setup (historical)
+
+This section documents the original local/manual bring-up. For current Azure VM operations, treat the "Remote deployment"
+section below as the operational source of truth.
 
 **Server:**
 
@@ -16,7 +19,7 @@
 - Method: nohup (manual, no auto-restart)
 - Log: `logs/paper_trading/server_20260204_092946.log`
 - Environment:
-  - `GENESIS_SYMBOL_MODE=realistic`
+  - `SYMBOL_MODE=realistic`
   - `LOG_LEVEL=INFO`
 
 **Persistence:** ⚠️ Manual (no auto-restart yet)

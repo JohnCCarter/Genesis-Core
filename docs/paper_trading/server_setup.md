@@ -12,7 +12,7 @@ cd /c/Users/fa06662/Projects/Genesis-Core
 
 # Create new screen session
 screen -S genesis-paper -dm bash -c "
-  GENESIS_SYMBOL_MODE=realistic LOG_LEVEL=INFO \
+  SYMBOL_MODE=realistic LOG_LEVEL=INFO \
   uvicorn core.server:app --app-dir src --port 8000 \
   >> logs/paper_trading/server_\$(date +%Y%m%d).log 2>&1
 "
@@ -38,7 +38,7 @@ cd /c/Users/fa06662/Projects/Genesis-Core
 
 while true; do
   echo "$(date): Starting server..." >> logs/paper_trading/restart.log
-  GENESIS_SYMBOL_MODE=realistic LOG_LEVEL=INFO \
+  SYMBOL_MODE=realistic LOG_LEVEL=INFO \
     uvicorn core.server:app --app-dir src --port 8000 \
     >> logs/paper_trading/server_$(date +%Y%m%d).log 2>&1
 
@@ -72,7 +72,7 @@ pm2 start --name genesis-paper \
   --interpreter .venv/Scripts/python \
   --interpreter-args "$(which uvicorn) core.server:app --app-dir src --port 8000" \
   --log logs/paper_trading/server_$(date +%Y%m%d).log \
-  --env GENESIS_SYMBOL_MODE=realistic \
+  --env SYMBOL_MODE=realistic \
   --env LOG_LEVEL=INFO \
   --restart-delay 3000
 ```
@@ -104,14 +104,15 @@ After=network.target
 Type=simple
 User=genesis
 WorkingDirectory=/opt/genesis/Genesis-Core
-Environment="GENESIS_SYMBOL_MODE=realistic"
-Environment="LOG_LEVEL=INFO"
+# Load secrets and runtime settings from .env (see UTF-8/BOM note below)
+EnvironmentFile=/opt/genesis/Genesis-Core/.env
 ExecStart=/opt/genesis/Genesis-Core/.venv/bin/python \
-  -m uvicorn core.server:app --app-dir src --port 8000
+  -m uvicorn core.server:app --app-dir src --host 127.0.0.1 --port 8000
 Restart=always
 RestartSec=5
-StandardOutput=append:/opt/genesis/Genesis-Core/logs/paper_trading/server_%Y%m%d.log
-StandardError=append:/opt/genesis/Genesis-Core/logs/paper_trading/server_%Y%m%d.log
+# Prefer journald via `journalctl -u genesis-paper`.
+# If you need file logs, use a fixed path + logrotate (avoid strftime-like tokens in unit files).
+TimeoutStopSec=30
 
 [Install]
 WantedBy=multi-user.target
@@ -127,7 +128,10 @@ sudo systemctl enable genesis-paper  # Auto-start on boot
 
 ---
 
-## Current Setup (Manual)
+## Historical Note (Local manual start)
+
+This section is a historical snapshot from early Phase 3 bring-up. For Azure VM production, prefer the systemd setup
+above and treat PIDs as ephemeral (record them via snapshots rather than hardcoding).
 
 **Started:** 2026-02-04 09:29 UTC
 **PID:** 24646
@@ -157,6 +161,80 @@ print(f\"Config version: {d.get('config_version')}\")
 ```
 
 **Automated daily check:** See `scripts/daily_health_check.sh`
+
+---
+
+## UTF-8 without BOM for `.env` (systemd EnvironmentFile)
+
+When using `EnvironmentFile=.../.env`, systemd reads the file as plain text. If the file starts with a UTF-8 BOM
+(`EF BB BF`), the first variable name can become invisible/invalid and variables may not load as expected.
+
+### How to detect BOM
+
+- **On Linux (VM):**
+
+  ```bash
+  # Prints "UTF-8 Unicode (with BOM)" if BOM is present
+  file -b --mime-encoding /opt/genesis/Genesis-Core/.env
+
+  # Hex-dump first bytes (BOM = ef bb bf)
+  head -c 3 /opt/genesis/Genesis-Core/.env | hexdump -C
+  ```
+
+- **On Windows (VS Code):**
+  - Look at the status bar (bottom-right). It should say **UTF-8** (not **UTF-8 with BOM**).
+  - Command Palette → “Change File Encoding” → “Save with Encoding” → **UTF-8**.
+
+### How to remove BOM
+
+- **On Linux:**
+
+  ```bash
+  # Create a BOM-free copy atomically
+  sed '1s/^\xEF\xBB\xBF//' /opt/genesis/Genesis-Core/.env > /opt/genesis/Genesis-Core/.env.tmp \
+    && mv /opt/genesis/Genesis-Core/.env.tmp /opt/genesis/Genesis-Core/.env
+  ```
+
+- **On Windows:** re-save the file as **UTF-8** (no BOM) in your editor, then re-deploy `.env` to the VM.
+
+### Why this matters
+
+If the API starts but behaves like credentials/settings are missing (while the `.env` “looks fine”), BOM is a common
+culprit for the first line.
+
+---
+
+## Service Reliability (systemd)
+
+Recommended hardening for long-running services:
+
+- Use `Restart=always` for the API and runner.
+- Use a small backoff (`RestartSec=5`–`10`) to avoid restart storms.
+- Set `TimeoutStopSec` so deploy/restart doesn't hang indefinitely.
+
+### Verify service health
+
+```bash
+sudo systemctl status genesis-paper --no-pager
+sudo systemctl show genesis-paper -p MainPID -p NRestarts -p ActiveState -p SubState --no-pager
+
+# API is loopback-only on the VM
+curl -s http://127.0.0.1:8000/health
+
+# Logs (preferred)
+journalctl -u genesis-paper -n 200 --no-pager
+```
+
+### Simulate a crash test (safe)
+
+This is useful after deploy/hardening changes.
+
+```bash
+# Force-stop the process and confirm systemd restarts it
+sudo systemctl kill -s SIGKILL genesis-paper
+sleep 2
+sudo systemctl show genesis-paper -p NRestarts -p MainPID --no-pager
+```
 
 ---
 

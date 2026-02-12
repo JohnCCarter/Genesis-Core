@@ -405,14 +405,19 @@ After=network.target
 
 [Service]
 Type=simple
-User=your-user
-WorkingDirectory=/path/to/Genesis-Core
-Environment="PATH=/path/to/Genesis-Core/.venv/bin"
-ExecStart=/path/to/Genesis-Core/.venv/bin/python scripts/paper_trading_runner.py --live-paper
-Restart=on-failure
+User=genesis
+WorkingDirectory=/opt/genesis/Genesis-Core
+
+# Load secrets and runtime settings from .env
+# IMPORTANT: .env must be UTF-8 without BOM (see docs/paper_trading/server_setup.md)
+EnvironmentFile=/opt/genesis/Genesis-Core/.env
+
+ExecStart=/opt/genesis/Genesis-Core/.venv/bin/python scripts/paper_trading_runner.py --live-paper
+Restart=always
 RestartSec=10
-StandardOutput=append:/path/to/Genesis-Core/logs/paper_trading/runner_systemd.log
-StandardError=append:/path/to/Genesis-Core/logs/paper_trading/runner_systemd_error.log
+TimeoutStopSec=30
+
+# Prefer journald via `journalctl -u genesis-runner`.
 
 [Install]
 WantedBy=multi-user.target

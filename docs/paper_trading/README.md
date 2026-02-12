@@ -57,7 +57,7 @@ All items verified and complete:
 - [x] Lint errors resolved (commit 2ca031c)
 - [x] Manual gate applied (GitHub Actions degraded - incident f314nlctbfs5)
 - [x] POST /strategy/evaluate verified (champion loads, not baseline)
-- [x] Server running with logging enabled (PID 24646)
+- [x] Server running with logging enabled (PID recorded in snapshot)
 - [x] First evaluate snapshot captured (logs/paper_trading/evaluate_response_20260204_092959.json)
 
 **Status:** ✅ All pre-flight checks PASSED (2026-02-04 09:29 UTC)
@@ -142,7 +142,7 @@ cd C:\Users\fa06662\Projects\Genesis-Core
 . .venv\Scripts\Activate.ps1
 
 # Set environment
-$Env:GENESIS_SYMBOL_MODE='realistic'
+$Env:SYMBOL_MODE='realistic'
 $Env:LOG_LEVEL='INFO'
 
 # Start server with logging
@@ -188,8 +188,8 @@ curl -X POST http://localhost:8000/strategy/evaluate \
 Paper trading MUST use TEST symbols only:
 
 - Real symbol: `tBTCUSD`
-- Mapped to: `tTESTBTC:TESTUSD` (when GENESIS_SYMBOL_MODE=realistic)
-- Enforced in: `src/core/symbols/mapper.py`
+- Mapped to: `tTESTBTC:TESTUSD` (when SYMBOL_MODE=realistic)
+- Enforced in: `src/core/symbols/symbols.py` (`SymbolMapper`)
 
 ### Freeze Rules
 

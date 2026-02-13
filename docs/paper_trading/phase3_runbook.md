@@ -48,6 +48,80 @@ Notes (remote orchestrator):
   systemctl show genesis-paper.service -p MainPID -p NRestarts -p ActiveState -p SubState --no-pager
   ```
 
+### VM SSH quick-start (interactive session)
+
+Use this when you want to log in and do quick sanity checks manually on the VM.
+
+```bash
+# 0) Log in (if you are not already in)
+ssh genesis-we
+
+# 1) Become the correct user (if you SSH in as another user)
+whoami
+sudo -iu genesis
+
+# 2) Go to the repo directory
+cd /opt/genesis/Genesis-Core
+pwd
+ls -la
+
+# 3) Confirm .env is readable and BOM-free
+# (Shows invisible characters; the first line should NOT begin with odd symbols.)
+head -n 2 .env | cat -A
+
+# 4) Activate venv (if you use .venv)
+test -f .venv/bin/activate && source .venv/bin/activate
+python -V
+which python
+pip -V
+
+# 5) Load env vars into the current shell (only if you need to run scripts manually)
+# NOTE: Avoid this if your .env contains spaces/quotes you do not want to export naively.
+set -a
+source .env
+set +a
+
+# 6) Sanity: are services up?
+sudo systemctl status genesis-paper --no-pager
+sudo systemctl status genesis-runner --no-pager
+
+# 7) API health (VM-local loopback)
+curl -fsS http://127.0.0.1:8000/health && echo
+```
+
+### VM log locations (where logs end up)
+
+On the Azure VM (systemd-managed), logs are primarily available via **journald**:
+
+```bash
+# API service logs
+journalctl -u genesis-paper -n 200 --no-pager
+journalctl -u genesis-paper -f
+
+# Runner service logs
+journalctl -u genesis-runner -n 200 --no-pager
+journalctl -u genesis-runner -f
+```
+
+The runner also writes **its own files** under the repo working directory:
+
+- `/opt/genesis/Genesis-Core/logs/paper_trading/runner_YYYYMMDD.log`
+- `/opt/genesis/Genesis-Core/logs/paper_trading/runner_state.json`
+
+Other Phase 3 artefacts typically land in the same directory tree:
+
+- Acceptance output: `/opt/genesis/Genesis-Core/logs/paper_trading/acceptance_check_<UTC_TS>.txt`
+- Snapshots: `/opt/genesis/Genesis-Core/logs/paper_trading/snapshots/`
+
+If you use `scripts/phase3_remote_orchestrate.ps1`, it intentionally archives the runner state + runner log files before
+restarts to create a clean acceptance window:
+
+- `/opt/genesis/Genesis-Core/logs/paper_trading/_archive/restart_<UTC_TS>/runner_*.log`
+- `/opt/genesis/Genesis-Core/logs/paper_trading/_archive/restart_<UTC_TS>/runner_state.json`
+
+Note: The API server does **not** necessarily write `logs/paper_trading/server_*.log` on the VM when running under
+systemd; stdout/stderr are captured by journald unless you explicitly redirect to a file.
+
 ---
 
 ## Execution Verification Checklist

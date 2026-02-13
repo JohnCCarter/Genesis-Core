@@ -4,7 +4,7 @@ repos:
     rev: 24.10.0
     hooks:
       - id: black
-        language_version: python3.11
+        language_version: python3.12
         files: \.py$
 
   # Linting
@@ -12,7 +12,7 @@ repos:
     rev: v0.6.9
     hooks:
       - id: ruff
-        language_version: python3.11
+        language_version: python3.12
         files: \.py$
 
   # Prevent secrets from being committed

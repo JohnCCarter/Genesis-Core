@@ -353,7 +353,7 @@ class BacktestEngine:
         # different Parquet engines / pandas versions).
         if "timestamp" in base_df.columns:
             ts = base_df["timestamp"]
-            if pd.api.types.is_datetime64tz_dtype(ts):
+            if isinstance(ts.dtype, pd.DatetimeTZDtype):
                 # Ensure UTC
                 base_df["timestamp"] = ts.dt.tz_convert("UTC")
             else:

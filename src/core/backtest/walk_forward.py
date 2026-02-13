@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Iterable
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -42,7 +42,7 @@ def run_walk_forward(
     loader = ChampionLoader()
     champion = loader.load_cached(symbol, timeframe)
 
-    timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
     run_id = f"wf_{symbol}_{timeframe}_{timestamp}"
     run_dir = output_dir / run_id
     run_dir.mkdir(parents=True, exist_ok=True)
@@ -77,7 +77,7 @@ def run_walk_forward(
         "timeframe": timeframe,
         "windows": windows,
         "champion_source": champion.source,
-        "generated_at": datetime.utcnow().isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "periods": [
             {
                 "index": res["walk_forward_info"]["window_index"],

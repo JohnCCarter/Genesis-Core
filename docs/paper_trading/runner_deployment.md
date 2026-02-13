@@ -408,9 +408,10 @@ Type=simple
 User=genesis
 WorkingDirectory=/opt/genesis/Genesis-Core
 
-# Load secrets and runtime settings from .env
-# IMPORTANT: .env must be UTF-8 without BOM (see docs/paper_trading/server_setup.md)
-EnvironmentFile=/opt/genesis/Genesis-Core/.env
+# Load secrets and runtime settings from systemd-safe env file.
+# Generate it from .env before daemon-reload:
+#   ./scripts/generate_env_systemd.sh /opt/genesis/Genesis-Core/.env /opt/genesis/Genesis-Core/.env.systemd
+EnvironmentFile=/opt/genesis/Genesis-Core/.env.systemd
 
 ExecStart=/opt/genesis/Genesis-Core/.venv/bin/python scripts/paper_trading_runner.py --live-paper
 Restart=always
@@ -435,6 +436,14 @@ sudo systemctl status genesis-runner
 
 # View logs
 journalctl -u genesis-runner -f
+```
+
+If you changed `.env`, regenerate `.env.systemd` first:
+
+```bash
+./scripts/generate_env_systemd.sh /opt/genesis/Genesis-Core/.env /opt/genesis/Genesis-Core/.env.systemd
+sudo systemctl daemon-reload
+sudo systemctl restart genesis-runner
 ```
 
 ### Option 4: Nohup (Simple Background)
@@ -467,6 +476,29 @@ cat logs/paper_trading/runner_state.json
 ```
 
 **Expected state file content:**
+
+---
+
+## Weekend Gate (Pre-start)
+
+Use the automated gate before weekend activation:
+
+```bash
+cd /opt/genesis/Genesis-Core
+./scripts/weekend_bot_gate.sh
+```
+
+The gate verifies:
+
+1. `.env.systemd` regeneration + BOM/CRLF safety
+2. systemd chain (`paper` health, `runner` start sequencing, restart stability)
+3. Trading safety checks (`/paper/submit`, symbol fallback contract, `/account/orders`)
+4. Strategy/data livetecken (`Champion verified successfully`, candle/evaluation logs)
+
+Result handling:
+
+1. `RESULT: PASS` => proceed
+2. `RESULT: FAIL` => stop and fix before any live-paper continuation
 
 ```json
 {

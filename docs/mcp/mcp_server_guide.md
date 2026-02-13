@@ -105,7 +105,7 @@ The `.vscode/mcp.json` file has already been created with the following configur
 {
   "servers": {
     "genesis-core": {
-      "command": ".venv/Scripts/python.exe",
+      "command": ".venv/bin/python",
       "args": ["-m", "mcp_server.server"],
       "env": {}
     }
@@ -113,7 +113,21 @@ The `.vscode/mcp.json` file has already been created with the following configur
 }
 ```
 
-On Windows this avoids accidentally launching a global Python that doesn't have the MCP dependencies.
+On Linux/macOS this avoids accidentally launching a global Python that doesn't have the MCP dependencies.
+
+On Windows, use:
+
+```json
+{
+  "servers": {
+    "genesis-core": {
+      "command": ".venv/Scripts/python.exe",
+      "args": ["-m", "mcp_server.server"],
+      "env": {}
+    }
+  }
+}
+```
 
 Note: some MCP clients/extensions use the key `mcpServers` instead of `servers`. If your client
 doesn't detect the server, check the expected key in that client's documentation.
@@ -191,6 +205,7 @@ Use this checklist when exposing `mcp_server.remote_server` via Cloudflare Tunne
   - `GENESIS_MCP_BIND_HOST=127.0.0.1`
 
 Tip: on Windows you can run the server without VS Code via Task Scheduler using:
+
 - `scripts/start_mcp_remote.ps1`
 
 **2) Cloudflare rules (avoid “enable cookies” / JS challenges)**
@@ -613,6 +628,18 @@ What files have been modified?
 2. Check that Python is in your PATH
 3. Try running the server manually to see error messages
 4. Restart VSCode
+
+### Context7 MCP won't start (npx missing)
+
+**Problem:** VS Code shows errors like `spawn npx ENOENT` or the `io.github.upstash/context7` server never starts.
+
+**Cause:** Context7 MCP is started via `npx`, which is provided by **npm**. Installing only `nodejs` on Ubuntu often does **not** include `npm`/`npx`.
+
+**Fix (Ubuntu/Debian):** install npm (which provides npx).
+
+Then restart VS Code and reconnect to the MCP server.
+
+**Also required:** provide values for `CONTEXT7_API_KEY` and `CLIENT_IP_ENCRYPTION_KEY` when prompted by VS Code (or via your MCP client configuration).
 
 ### ChatGPT shows “Connected” but no tools/actions are callable
 

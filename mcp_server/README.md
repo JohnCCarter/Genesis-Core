@@ -62,6 +62,26 @@ Reverse-proxy / port-forwarding note:
 - Ensure the public URL routes to the same local `PORT` that `mcp_server.remote_server` binds.
 - Treat any public MCP URL as sensitive; prefer `GENESIS_MCP_REMOTE_SAFE=1`.
 
+Linux/systemd note (recommended):
+
+- For systemd services, avoid reading `.env` directly.
+- Generate a systemd-safe env file and point `EnvironmentFile` to it:
+
+```bash
+./scripts/generate_env_systemd.sh /opt/genesis/Genesis-Core/.env /opt/genesis/Genesis-Core/.env.systemd
+```
+
+- Use in unit file:
+
+```ini
+EnvironmentFile=/opt/genesis/Genesis-Core/.env.systemd
+```
+
+- After changing `.env`:
+  1. Regenerate `.env.systemd`
+  2. `sudo systemctl daemon-reload`
+  3. `sudo systemctl restart genesis-mcp`
+
 End-to-end checklist (ChatGPT “Connect to MCP”):
 
 1. Verify reachability: open `https://<your-hostname>/healthz` and confirm it returns `OK`.

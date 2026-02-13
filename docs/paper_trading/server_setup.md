@@ -104,8 +104,9 @@ After=network.target
 Type=simple
 User=genesis
 WorkingDirectory=/opt/genesis/Genesis-Core
-# Load secrets and runtime settings from .env (see UTF-8/BOM note below)
-EnvironmentFile=/opt/genesis/Genesis-Core/.env
+# Generate /opt/genesis/Genesis-Core/.env.systemd from .env before daemon-reload.
+# Load secrets and runtime settings from the systemd-safe env file.
+EnvironmentFile=/opt/genesis/Genesis-Core/.env.systemd
 ExecStart=/opt/genesis/Genesis-Core/.venv/bin/python \
   -m uvicorn core.server:app --app-dir src --host 127.0.0.1 --port 8000
 Restart=always
@@ -125,6 +126,88 @@ sudo systemctl start genesis-paper
 sudo systemctl status genesis-paper
 sudo systemctl enable genesis-paper  # Auto-start on boot
 ```
+
+### Dev vs Runtime paths on `genesis-we` (important)
+
+On the VM there are often two repo trees:
+
+- **Dev workspace:** `/home/azureuser/Genesis-Core`
+- **Runtime/systemd workspace:** `/opt/genesis/Genesis-Core`
+
+`genesis-paper.service` runs from `WorkingDirectory=/opt/genesis/Genesis-Core`.
+Changes in `/home/azureuser/Genesis-Core` do **not** go live until you explicitly deploy/sync to `/opt/genesis/Genesis-Core` and restart.
+
+### Minimal deploy checklist (`/home` -> `/opt`)
+
+1. **Verify both trees (before deploy):**
+
+```bash
+git -C /home/azureuser/Genesis-Core rev-parse --short HEAD
+git -C /opt/genesis/Genesis-Core rev-parse --short HEAD
+git -C /home/azureuser/Genesis-Core status --short
+git -C /opt/genesis/Genesis-Core status --short
+```
+
+2. **Sync code from dev to runtime tree** (adjust excludes as needed):
+
+```bash
+rsync -a --delete \
+  --exclude '.git' \
+  --exclude '.venv' \
+  --exclude 'logs' \
+  --exclude 'results' \
+  /home/azureuser/Genesis-Core/ /opt/genesis/Genesis-Core/
+```
+
+**One-command alternative (recommended):**
+
+```bash
+/home/azureuser/Genesis-Core/scripts/deploy_home_to_opt.sh --dry-run
+/home/azureuser/Genesis-Core/scripts/deploy_home_to_opt.sh
+```
+
+By default, deploy script also writes an RC diagnostics bundle to:
+
+- `/opt/genesis/Genesis-Core/logs/paper_trading/rc_capture_<UTC>.txt`
+
+Disable this for a specific deploy with:
+
+```bash
+/home/azureuser/Genesis-Core/scripts/deploy_home_to_opt.sh --no-rc
+```
+
+3. **Regenerate systemd-safe env file** (if `.env` changed):
+
+```bash
+/opt/genesis/Genesis-Core/scripts/generate_env_systemd.sh \
+  /opt/genesis/Genesis-Core/.env \
+  /opt/genesis/Genesis-Core/.env.systemd
+```
+
+4. **Reload and restart services:**
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart genesis-paper genesis-runner
+```
+
+5. **Post-deploy verification:**
+
+```bash
+systemctl show genesis-paper -p WorkingDirectory -p MainPID -p NRestarts -p ActiveState -p SubState --no-pager
+systemctl show genesis-paper -p EnvironmentFiles -p DropInPaths --no-pager
+ss -ltnp | grep ':8000 '
+curl -s http://127.0.0.1:8000/health
+```
+
+6. **Confirm trees are aligned** (optional but recommended):
+
+```bash
+git -C /home/azureuser/Genesis-Core rev-parse --short HEAD
+git -C /opt/genesis/Genesis-Core rev-parse --short HEAD
+```
+
+If HEAD differs, you are running code that is not identical to your dev workspace.
 
 ---
 
@@ -202,6 +285,26 @@ When using `EnvironmentFile=.../.env`, systemd reads the file as plain text. If 
 If the API starts but behaves like credentials/settings are missing (while the `.env` “looks fine”), BOM is a common
 culprit for the first line.
 
+### Recommended operation: generate `.env.systemd` from `.env`
+
+Instead of pointing systemd directly at `.env`, generate a dedicated systemd-safe file and use that in all services.
+
+```bash
+# From repo root on the VM:
+./scripts/generate_env_systemd.sh /opt/genesis/Genesis-Core/.env /opt/genesis/Genesis-Core/.env.systemd
+
+# Then reload + restart services that use EnvironmentFile
+sudo systemctl daemon-reload
+sudo systemctl restart genesis-paper genesis-runner genesis-mcp
+```
+
+Operational routine after editing `.env`:
+
+1. Regenerate `.env.systemd`
+2. `daemon-reload`
+3. Restart affected services
+4. Verify health endpoints + `systemctl show ... -p NRestarts`
+
 ---
 
 ## Service Reliability (systemd)
@@ -225,6 +328,15 @@ curl -s http://127.0.0.1:8000/health
 journalctl -u genesis-paper -n 200 --no-pager
 ```
 
+### Capture RC diagnostics bundle on demand
+
+```bash
+/opt/genesis/Genesis-Core/scripts/capture_paper_rc.sh --window-minutes 30
+```
+
+This captures systemd status/cat, targeted journald windows, listener/process snapshots,
+and recent service log tails into a timestamped file for root-cause analysis.
+
 ### Simulate a crash test (safe)
 
 This is useful after deploy/hardening changes.
@@ -237,6 +349,31 @@ sudo systemctl show genesis-paper -p NRestarts -p MainPID --no-pager
 ```
 
 ---
+
+## Weekend Go-Live Gate (Recommended)
+
+Before enabling `genesis-runner` for a weekend run, execute the automated gate:
+
+```bash
+cd /opt/genesis/Genesis-Core
+./scripts/weekend_bot_gate.sh
+```
+
+Expected signature:
+
+- `RESULT: PASS`
+- Report artifact written to:
+  - `logs/paper_trading/weekend_gate_<UTC>.txt`
+
+Stop policy:
+
+- If any check fails, the script exits non-zero and prints `RESULT: FAIL`.
+- Do not proceed with manual runner activation until the failing check is fixed.
+
+Runtime note for `1h` timeframe:
+
+- Between candle closes, logs can show polling/skip behavior without new actions.
+- This is normal and not itself a failure.
 
 ## Log Rotation
 

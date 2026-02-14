@@ -13,7 +13,7 @@
       "Kontrollera signal_adaptation ATR zones (entry/regime thresholds) - dessa är PRIMARY entry control.",
       "Verifiera att toppnivå thresholds.entry_conf_overall används endast när zones saknas.",
       "Kör isoleringstester: ändra EN parameter i taget för att identifiera flaskhalsar.",
-      "Använd scripts/diagnose_zero_trades.py för strukturerad analys."
+      "Använd scripts/archive/debug/2026-02-14/diagnose_zero_trades.py för strukturerad analys."
     ],
     "must_not": [
       "Tweaka parametrar i blindo utan att analysera logs först.",
@@ -29,7 +29,7 @@
     },
     {
       "type": "file",
-      "value": "scripts/diagnose_zero_trades.py"
+      "value": "scripts/archive/debug/2026-02-14/diagnose_zero_trades.py"
     },
     {
       "type": "doc",

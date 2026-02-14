@@ -125,6 +125,7 @@ Status per 2026-02-14:
 - P1 tooling-inventering: införd (icke-destruktiv)
 - P2 destruktiv cleanup: föreslagen (kräver separat kontrakt + retention policy + dry-run + explicit godkännande)
 - P3 dry-run-scope: införd (icke-destruktiv, docs-only)
+- P3 dry-run-rapport: införd (icke-destruktiv, docs-only)
 
 Detaljer:
 
@@ -135,6 +136,7 @@ Detaljer:
 - `docs/ops/REPO_RETENTION_POLICY_DRAFT_2026-02-14.md`
 - `docs/ops/REPO_CLEANUP_P3_DRYRUN_CONTRACT_2026-02-14.md`
 - `docs/ops/REPO_CLEANUP_P3_DRYRUN_SCOPE_2026-02-14.md`
+- `docs/ops/REPO_CLEANUP_P3_DRYRUN_REPORT_2026-02-14.md`
 
 ## 8) Referenser
 

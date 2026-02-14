@@ -47,6 +47,22 @@ You are an IMPLEMENTATION agent.
 - Default mode is NO BEHAVIOR CHANGE unless explicitly overridden.
 - Keep diffs minimal and testable.
 - Update imports/references when moving files.
+- ALWAYS run tests before and after changes.
+
+## REQUIRED GATES (MINIMUM)
+
+- pre-commit eller lint
+- smoke tests
+- determinism replay test (decision parity)
+- feature cache invariance test
+- pipeline invariant check (component order hash)
+
+If any test fails:
+
+- Stop.
+- Report FAIL.
+- List exactly which tests broke.
+- Propose minimal fix.
 
 ## Must not
 

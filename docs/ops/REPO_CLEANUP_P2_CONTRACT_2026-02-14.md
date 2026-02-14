@@ -50,3 +50,5 @@ Default: `NO BEHAVIOR CHANGE`
 
 - P2-destructive cleanup är fortsatt **föreslagen** och kräver separat kontrakt.
 - Ingen flytt/radering är införd under detta kontrakt.
+- Retention policy-draft finns i:
+  - `docs/ops/REPO_RETENTION_POLICY_DRAFT_2026-02-14.md`

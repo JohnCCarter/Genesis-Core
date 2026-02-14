@@ -36,3 +36,10 @@ destruktiva steg är högre risk och fortsatt **föreslagna**.
 
 - D3/D4/D5 i denna backlog är fortsatt **föreslagna**.
 - Ingen ny destruktiv åtgärd är införd i detta dokument.
+
+## D4A trackability blocker (2026-02-14)
+
+- Pilotkandidat `results/hparam_search/phase7b_grid_3months` (10 filer, 0 externa refs) testades för move-only.
+- Ingen spårbar git-diff uppstod eftersom `.gitignore:212` innehåller `results/`.
+- D4A execution i denna iteration genomförs därför som docs-only blocker-dokumentation.
+- Faktisk `results/**` move-only execution är fortsatt **föreslagen** tills separat policybeslut finns.

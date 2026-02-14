@@ -114,7 +114,7 @@ $Env:GENESIS_PRECOMPUTE_FEATURES='1'
 $Env:GENESIS_RANDOM_SEED='42'
 ```
 
-## 7) Pågående repo-cleanup (P0/P1/P2/P3/D1/D2/D3)
+## 7) Pågående repo-cleanup (P0/P1/P2/P3/D1/D2/D3/D3A)
 
 Status per 2026-02-14:
 
@@ -129,6 +129,7 @@ Status per 2026-02-14:
 - D1 root-artefaktflytt: införd (destruktiv, move-only, 3 filer)
 - D2 root-output hardening: införd (tooling, styrd output-path för burnin_summary)
 - D3 större destruktiva scope (results/scripts): föreslagen (högre risk, kräver kandidatvis kontrakt)
+- D3A debug-script move-only: införd (6 lågkopplade script)
 
 Detaljer:
 
@@ -145,6 +146,8 @@ Detaljer:
 - `docs/ops/REPO_CLEANUP_D2_HARDEN_CONTRACT_2026-02-14.md`
 - `docs/ops/REPO_CLEANUP_D2_HARDEN_REPORT_2026-02-14.md`
 - `docs/ops/REPO_CLEANUP_NEXT_BACKLOG_2026-02-14.md`
+- `docs/ops/REPO_CLEANUP_D3A_EXEC_CONTRACT_2026-02-14.md`
+- `docs/ops/REPO_CLEANUP_D3A_EXEC_REPORT_2026-02-14.md`
 
 ## 8) Referenser
 

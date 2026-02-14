@@ -146,6 +146,16 @@ Vid rollspecifik granskning/implementering bör även inkluderas:
 - `.github/agents/Codex53.agent.md`
 - `.github/agents/Opus46.agent.md`
 
+## Operativ fallback: terminalverktyg i chatten otillgängligt
+
+Om terminalverktyg tillfälligt är otillgängligt i chattsessionen, följ playbook:
+
+- `docs/ops/TERMINAL_TOOL_ACCESS_PLAYBOOK_2026-02-14.md`
+
+Denna fallback är ett operativt arbetssätt och ändrar inte source-of-truth eller
+gated commit-krav. Prioriteringsordningen i detta dokument och
+`.github/copilot-instructions.md` gäller oförändrad.
+
 ### Codex leverabler (output)
 
 - Uppdaterad todo-lista (från start till slutförd)

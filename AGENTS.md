@@ -134,3 +134,4 @@ Detaljer:
 - `docs/OPUS_46_GOVERNANCE.md`
 - `docs/history/AGENTS_HISTORY.md`
 - `CLAUDE.md`
+- `docs/ops/TERMINAL_TOOL_ACCESS_PLAYBOOK_2026-02-14.md`

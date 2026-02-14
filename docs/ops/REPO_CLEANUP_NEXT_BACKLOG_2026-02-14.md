@@ -50,3 +50,10 @@ destruktiva steg är högre risk och fortsatt **föreslagna**.
 	- `docs/ops/REPO_CLEANUP_D4B_POLICY_OPTIONS_2026-02-14.md`
 - D4B i denna iteration är docs-only.
 - Ignore-policyändring är fortsatt **föreslagen** och kräver separat kontrakt + explicit godkännande.
+
+	## D5 out-of-band execution guide (2026-02-14)
+
+	- Operativ vägledning är dokumenterad i:
+		- `docs/ops/REPO_CLEANUP_D5_OOB_EXECUTION_GUIDE_2026-02-14.md`
+	- D5 i denna iteration är docs-only.
+	- Git-spårad `results/**` execution är fortsatt **föreslagen** under nuvarande policy.

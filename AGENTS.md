@@ -114,7 +114,7 @@ $Env:GENESIS_PRECOMPUTE_FEATURES='1'
 $Env:GENESIS_RANDOM_SEED='42'
 ```
 
-## 7) Pågående repo-cleanup (P0/P1/P2/P3/D1/D2/D3/D3A/D3B/D3C/D3D/D3E/D3F/D3G/D3H/D3I/D3J/D3K/D3L/D4A)
+## 7) Pågående repo-cleanup (P0/P1/P2/P3/D1/D2/D3/D3A/D3B/D3C/D3D/D3E/D3F/D3G/D3H/D3I/D3J/D3K/D3L/D4A/D4B)
 
 Status per 2026-02-14:
 
@@ -142,6 +142,7 @@ Status per 2026-02-14:
 - D3K diagnose move-only: införd (1 diagnose-script + 1 scopead .github-referensfil)
 - D3L diagnose move-only: införd (1 diagnose-script)
 - D4A results trackability blocker: införd (docs-only, execution fortsatt föreslagen)
+- D4B results policy options: införd (docs-only, policyändring fortsatt föreslagen)
 
 Detaljer:
 
@@ -184,6 +185,7 @@ Detaljer:
 - `docs/ops/REPO_CLEANUP_D3L_EXEC_REPORT_2026-02-14.md`
 - `docs/ops/REPO_CLEANUP_D4A_TRACKABILITY_CONTRACT_2026-02-14.md`
 - `docs/ops/REPO_CLEANUP_D4A_TRACKABILITY_REPORT_2026-02-14.md`
+- `docs/ops/REPO_CLEANUP_D4B_POLICY_OPTIONS_2026-02-14.md`
 
 ## 8) Referenser
 

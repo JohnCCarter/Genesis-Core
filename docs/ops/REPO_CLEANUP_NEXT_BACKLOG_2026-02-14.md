@@ -43,3 +43,10 @@ destruktiva steg är högre risk och fortsatt **föreslagna**.
 - Ingen spårbar git-diff uppstod eftersom `.gitignore:212` innehåller `results/`.
 - D4A execution i denna iteration genomförs därför som docs-only blocker-dokumentation.
 - Faktisk `results/**` move-only execution är fortsatt **föreslagen** tills separat policybeslut finns.
+
+## D4B policyspår (2026-02-14)
+
+- Beslutsunderlag för policyalternativ är framtaget i:
+	- `docs/ops/REPO_CLEANUP_D4B_POLICY_OPTIONS_2026-02-14.md`
+- D4B i denna iteration är docs-only.
+- Ignore-policyändring är fortsatt **föreslagen** och kräver separat kontrakt + explicit godkännande.

@@ -114,7 +114,7 @@ $Env:GENESIS_PRECOMPUTE_FEATURES='1'
 $Env:GENESIS_RANDOM_SEED='42'
 ```
 
-## 7) Pågående repo-cleanup (P0/P1/P2/P3/D1/D2/D3/D3A/D3B/D3C/D3D/D3E)
+## 7) Pågående repo-cleanup (P0/P1/P2/P3/D1/D2/D3/D3A/D3B/D3C/D3D/D3E/D3F)
 
 Status per 2026-02-14:
 
@@ -134,6 +134,7 @@ Status per 2026-02-14:
 - D3C test-script move-only: införd (7 lågkopplade testprototyper)
 - D3D mixad low-ref move-only: införd (2 diagnose + 1 test-script)
 - D3E mixad low-ref move-only: införd (3 diagnose + 2 test-script)
+- D3F test low-ref move-only: införd (3 test-script)
 
 Detaljer:
 
@@ -160,6 +161,8 @@ Detaljer:
 - `docs/ops/REPO_CLEANUP_D3D_EXEC_REPORT_2026-02-14.md`
 - `docs/ops/REPO_CLEANUP_D3E_EXEC_CONTRACT_2026-02-14.md`
 - `docs/ops/REPO_CLEANUP_D3E_EXEC_REPORT_2026-02-14.md`
+- `docs/ops/REPO_CLEANUP_D3F_EXEC_CONTRACT_2026-02-14.md`
+- `docs/ops/REPO_CLEANUP_D3F_EXEC_REPORT_2026-02-14.md`
 
 ## 8) Referenser
 

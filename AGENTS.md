@@ -114,7 +114,7 @@ $Env:GENESIS_PRECOMPUTE_FEATURES='1'
 $Env:GENESIS_RANDOM_SEED='42'
 ```
 
-## 7) Pågående repo-cleanup (P0/P1/P2/P3)
+## 7) Pågående repo-cleanup (P0/P1/P2/P3/D1)
 
 Status per 2026-02-14:
 
@@ -126,6 +126,7 @@ Status per 2026-02-14:
 - P2 destruktiv cleanup: föreslagen (kräver separat kontrakt + retention policy + dry-run + explicit godkännande)
 - P3 dry-run-scope: införd (icke-destruktiv, docs-only)
 - P3 dry-run-rapport: införd (icke-destruktiv, docs-only)
+- D1 root-artefaktflytt: införd (destruktiv, move-only, 3 filer)
 
 Detaljer:
 
@@ -137,6 +138,8 @@ Detaljer:
 - `docs/ops/REPO_CLEANUP_P3_DRYRUN_CONTRACT_2026-02-14.md`
 - `docs/ops/REPO_CLEANUP_P3_DRYRUN_SCOPE_2026-02-14.md`
 - `docs/ops/REPO_CLEANUP_P3_DRYRUN_REPORT_2026-02-14.md`
+- `docs/ops/REPO_CLEANUP_D1_EXEC_CONTRACT_2026-02-14.md`
+- `docs/ops/REPO_CLEANUP_D1_EXEC_REPORT_2026-02-14.md`
 
 ## 8) Referenser
 

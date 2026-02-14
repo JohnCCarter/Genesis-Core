@@ -114,7 +114,7 @@ $Env:GENESIS_PRECOMPUTE_FEATURES='1'
 $Env:GENESIS_RANDOM_SEED='42'
 ```
 
-## 7) Pågående repo-cleanup (P0/P1/P2)
+## 7) Pågående repo-cleanup (P0/P1/P2/P3)
 
 Status per 2026-02-14:
 
@@ -124,6 +124,7 @@ Status per 2026-02-14:
 - `AGENTS.md`: delad i aktiv guide + historikfil
 - P1 tooling-inventering: införd (icke-destruktiv)
 - P2 destruktiv cleanup: föreslagen (kräver separat kontrakt + retention policy + dry-run + explicit godkännande)
+- P3 dry-run-scope: införd (icke-destruktiv, docs-only)
 
 Detaljer:
 
@@ -131,6 +132,9 @@ Detaljer:
 - `docs/ops/ROOT_ARTIFACT_INVENTORY_2026-02-14.md`
 - `docs/ops/REPO_CLEANUP_P1_TOOLING_CONTRACT_2026-02-14.md`
 - `docs/ops/REPO_CLEANUP_P2_CONTRACT_2026-02-14.md`
+- `docs/ops/REPO_RETENTION_POLICY_DRAFT_2026-02-14.md`
+- `docs/ops/REPO_CLEANUP_P3_DRYRUN_CONTRACT_2026-02-14.md`
+- `docs/ops/REPO_CLEANUP_P3_DRYRUN_SCOPE_2026-02-14.md`
 
 ## 8) Referenser
 

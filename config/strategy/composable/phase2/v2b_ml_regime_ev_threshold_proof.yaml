@@ -1,0 +1,24 @@
+# Phase 2 Functional Proof: EVGate with min_ev=0.2
+# Purpose: Prove EVGate CAN veto when threshold is meaningful (NOT tuning)
+
+components:
+  - type: ml_confidence
+    params:
+      threshold: 0.24  # Baseline threshold
+
+  - type: regime_filter
+    params:
+      allowed_regimes: ["trending", "bull", "balanced"]
+
+  - type: ev_gate
+    params:
+      min_ev: 0.2  # Functional proof: require EV > 0.2
+
+# Test period: 2024-06-01 to 2024-08-01 (same as v0/v1/v2)
+#
+# Acceptance Criteria:
+#   1. EV veto_rate > 0 (proves EVGate can filter)
+#   2. Decision count == 1345 (invariant still true)
+#   3. Regime veto_count == 1227 (unchanged)
+#
+# After this: FREEZE EVGate in Phase 2 (no more EV formula iteration)

@@ -1,0 +1,31 @@
+# Phase 2 Smoke Test: v2 ML + Regime + EV
+# Tests EVGateComponent integration with real pipeline data
+
+components:
+  - type: ml_confidence
+    params:
+      threshold: 0.24  # Baseline threshold
+
+  - type: regime_filter
+    params:
+      allowed_regimes: ["trending", "bull", "balanced"]
+
+  - type: ev_gate
+    params:
+      min_ev: 0.0  # Require non-negative expected value
+
+# Test period: 2024-06-01 to 2024-08-01 (2 months)
+# Expected behavior:
+#   - EVGate should veto some entries (veto_count > 0)
+#   - Trade count <= v1 (ML + Regime)
+#   - Attribution should show:
+#       * ml_confidence: total_decisions, allowed, vetoed
+#       * regime_filter: total_decisions (if early exit disabled), allowed, vetoed
+#       * ev_gate: total_decisions, allowed, vetoed
+#   - veto_rate for ev_gate should be > 0
+
+# Success criteria:
+#   1. Backtest completes without crash
+#   2. EVGate veto_count > 0 (component is active)
+#   3. Attribution report is interpretable
+#   4. Allowed count <= v1 (additional filtering)

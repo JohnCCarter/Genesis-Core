@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hmac
 import importlib
 import json
 import logging
@@ -15,7 +16,7 @@ if TYPE_CHECKING:
     )
 
 
-from .config import load_config
+from .config import get_project_root, load_config
 from .tools import (
     execute_python,
     get_git_status,
@@ -95,6 +96,35 @@ SAFE_REMOTE_MODE = os.environ.get("GENESIS_MCP_REMOTE_SAFE", "1") != "0"
 # Some environments appear to block *any* tool that can access local files, even read-only.
 # This mode exposes only extremely low-risk tools (e.g. ping) and connector stubs.
 ULTRA_SAFE_REMOTE_MODE = os.environ.get("GENESIS_MCP_REMOTE_ULTRA_SAFE", "0") == "1"
+
+# Optional shared-secret guard for remote usage.
+# Only enforced when a non-empty token is set.
+REMOTE_TOKEN = (os.environ.get("GENESIS_MCP_REMOTE_TOKEN") or "").strip() or None
+
+# Secure-by-default: remote requests must be authorized unless explicitly overridden.
+# NOTE: If a token is configured, authorization is always required.
+ALLOW_UNAUTH_REMOTE = (os.environ.get("GENESIS_MCP_REMOTE_ALLOW_UNAUTH") or "").strip() == "1"
+REMOTE_AUTH_REQUIRED = REMOTE_TOKEN is not None or not ALLOW_UNAUTH_REMOTE
+
+
+def _load_privacy_policy_text() -> str:
+    """Load privacy policy text from docs, with a safe fallback."""
+
+    # Canonical location (docs were reorganized into category subfolders).
+    # Keep a legacy fallback for older checkouts.
+    policy_paths = [
+        get_project_root() / "docs" / "mcp" / "privacy-policy.md",
+        get_project_root() / "docs" / "privacy-policy.md",
+    ]
+
+    for policy_path in policy_paths:
+        try:
+            return policy_path.read_text(encoding="utf-8")
+        except Exception:
+            continue
+
+    return "Privacy policy not found."
+
 
 _HAS_FASTMCP = _FastMCP is not None and _TransportSecuritySettings is not None
 
@@ -185,7 +215,7 @@ if not ULTRA_SAFE_REMOTE_MODE:
 
     @mcp.tool()
     async def get_git_status_tool(**kwargs: Any) -> dict[str, Any]:
-        return await get_git_status(CONFIG)
+        return await get_git_status(CONFIG, apply_security_filters=True)
 
 
 # -----------------------------------------------------------------------------
@@ -265,6 +295,38 @@ async def fetch(
         "url": f"file://{path}",
         "metadata": {},
     }
+
+
+def _is_authorized_remote_request(*, authorization: str | None, token_header: str | None) -> bool:
+    """Validate remote auth headers against REMOTE_TOKEN.
+
+    Accepted forms:
+    - Authorization: Bearer <token>
+    - X-Genesis-MCP-Token: <token>
+
+    If remote auth is disabled (explicit override), all requests are authorized.
+    Otherwise, requests are authorized only when they present a valid token.
+    """
+
+    if not REMOTE_AUTH_REQUIRED:
+        return True
+
+    if REMOTE_TOKEN is None:
+        return False
+
+    presented: str | None = None
+    if authorization:
+        auth = authorization.strip()
+        if auth.lower().startswith("bearer "):
+            presented = auth[7:].strip()
+
+    if not presented and token_header:
+        presented = token_header.strip()
+
+    if not presented:
+        return False
+
+    return hmac.compare_digest(presented, REMOTE_TOKEN)
 
 
 def _wrap_sse_send_for_proxy(*, send, pad_bytes: bytes):
@@ -498,7 +560,7 @@ def _build_sse_app():
                     CONFIG,
                 )
             elif name == "get_git_status":
-                result = await get_git_status(CONFIG)
+                result = await get_git_status(CONFIG, apply_security_filters=True)
             elif SAFE_REMOTE_MODE:
                 result = {"success": False, "error": "SAFE_REMOTE_MODE blocks this tool"}
             elif name == "write_file":
@@ -543,6 +605,29 @@ def _build_sse_app():
         This is a pragmatic fallback for environments where long-lived SSE streams
         are unreliable through certain proxies/tunnels.
         """
+
+        if REMOTE_AUTH_REQUIRED:
+            # Avoid reading/consuming request body before auth.
+            for k, v in scope.get("headers") or []:
+                if k.lower() == b"authorization":
+                    auth_header = v.decode("utf-8", errors="ignore")
+                    break
+            else:
+                auth_header = None
+
+            for k, v in scope.get("headers") or []:
+                if k.lower() == b"x-genesis-mcp-token":
+                    token_header = v.decode("utf-8", errors="ignore")
+                    break
+            else:
+                token_header = None
+
+            if not _is_authorized_remote_request(
+                authorization=auth_header,
+                token_header=token_header,
+            ):
+                await Response("Unauthorized", status_code=401)(scope, receive, send)
+                return
 
         request = Request(scope, receive)
         try:
@@ -650,6 +735,7 @@ def _build_sse_app():
             return await JSONResponse(_err(JSONRPC_INTERNAL_ERROR, str(e)))(scope, receive, send)
 
     healthz_resp = PlainTextResponse("OK")
+    privacy_resp = PlainTextResponse(_load_privacy_policy_text())
     root_resp = PlainTextResponse(
         "Genesis-Core MCP server is running. Use POST /mcp (streamable HTTP) or GET /sse (legacy SSE)."
     )
@@ -664,6 +750,22 @@ def _build_sse_app():
         normalized = path.rstrip("/")
 
         method = scope.get("method")
+
+        if REMOTE_AUTH_REQUIRED and normalized not in {"/healthz", "/privacy-policy"}:
+            auth_header = None
+            token_header = None
+            for k, v in scope.get("headers") or []:
+                lk = k.lower()
+                if lk == b"authorization":
+                    auth_header = v.decode("utf-8", errors="ignore")
+                elif lk == b"x-genesis-mcp-token":
+                    token_header = v.decode("utf-8", errors="ignore")
+            if not _is_authorized_remote_request(
+                authorization=auth_header,
+                token_header=token_header,
+            ):
+                await PlainTextResponse("Unauthorized", status_code=401)(scope, receive, send)
+                return
 
         def _query_has_session_id() -> bool:
             # Legacy HTTP+SSE transport uses session_id in query string.
@@ -727,6 +829,10 @@ def _build_sse_app():
             await healthz_resp(scope, receive, send)
             return
 
+        if normalized == "/privacy-policy":
+            await privacy_resp(scope, receive, send)
+            return
+
         if normalized == "":
             if method in {"GET", "HEAD"}:
                 await root_resp(scope, receive, send)
@@ -761,10 +867,28 @@ def _build_asgi_app():
     if not _HAS_FASTMCP:
         return _build_sse_app()
 
+    from starlette.middleware.base import BaseHTTPMiddleware
     from starlette.middleware.cors import CORSMiddleware
     from starlette.responses import PlainTextResponse
 
     app = mcp.streamable_http_app()
+
+    if REMOTE_AUTH_REQUIRED:
+
+        class _RemoteTokenMiddleware(BaseHTTPMiddleware):
+            async def dispatch(self, request, call_next):
+                if request.url.path in {"/healthz", "/privacy-policy"}:
+                    return await call_next(request)
+
+                if not _is_authorized_remote_request(
+                    authorization=request.headers.get("authorization"),
+                    token_header=request.headers.get("x-genesis-mcp-token"),
+                ):
+                    return PlainTextResponse("Unauthorized", status_code=401)
+
+                return await call_next(request)
+
+        app.add_middleware(_RemoteTokenMiddleware)
 
     app.add_middleware(
         CORSMiddleware,
@@ -797,6 +921,11 @@ def _build_asgi_app():
         return PlainTextResponse("OK")
 
     app.add_route("/healthz", healthz, methods=["GET"])
+
+    async def privacy_policy(request):
+        return PlainTextResponse(_load_privacy_policy_text())
+
+    app.add_route("/privacy-policy", privacy_policy, methods=["GET"])
 
     async def root(request):
         return PlainTextResponse("Genesis-Core MCP is running. Use POST /mcp")

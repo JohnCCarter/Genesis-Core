@@ -28,9 +28,12 @@ def test_fastmcp_mode_supports_sse_alias_get_and_post(monkeypatch):
 
     monkeypatch.setattr(rs, "_HAS_FASTMCP", True, raising=False)
     monkeypatch.setattr(rs, "mcp", FakeMcp(), raising=False)
+    monkeypatch.setattr(rs, "REMOTE_TOKEN", "test-token", raising=False)
+    monkeypatch.setattr(rs, "REMOTE_AUTH_REQUIRED", True, raising=False)
 
     app = rs._build_asgi_app()
     client = TestClient(app)
 
-    assert client.get("/sse").status_code == 200
-    assert client.post("/sse", json={"jsonrpc": "2.0"}).status_code == 200
+    headers = {"X-Genesis-MCP-Token": "test-token"}
+    assert client.get("/sse", headers=headers).status_code == 200
+    assert client.post("/sse", json={"jsonrpc": "2.0"}, headers=headers).status_code == 200

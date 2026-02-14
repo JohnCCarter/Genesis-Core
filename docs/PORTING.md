@@ -28,7 +28,7 @@ Denna fil beskriver läget för portningen från gamla Genesis till nya `Genesis
 
 1. Latens‑metrics i REST/WS och exponera i dashboard.
 2. Fler privata read‑helpers (t.ex. historik/ledger) + tester (mock).
-3. Uppdatera `docs/GENESIS-CORE_FEATURES.md` och `docs/SHARE.md` vid behov.
+3. Uppdatera `docs/features/GENESIS-CORE_FEATURES.md` och `docs/ops/SHARE.md` vid behov.
 
 ## Policy
 

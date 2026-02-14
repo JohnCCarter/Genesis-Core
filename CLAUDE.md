@@ -6,6 +6,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Genesis-Core is a Python 3.11+ trading system with deterministic backtesting/optimization and a FastAPI service for trading strategy execution. The system focuses on reproducibility, paper trading safety, and configuration-driven runtime behavior.
 
+## Context7 (MCP) documentation rule
+
+To avoid repeatedly asking for “use context7”:
+
+- If the task involves **external libraries/APIs** (especially **Optuna** and **Pydantic/pydantic-settings**), consult Context7 docs via MCP before implementing or advising.
+- Use Context7 to confirm API signatures, defaults, and migration gotchas.
+- For questions limited to Genesis-Core internal code, prefer repo search/read instead of Context7.
+
 **Core Principles:**
 
 - **Reproducibility**: Same config + same data = same results (canonical mode: `GENESIS_FAST_WINDOW=1`, `GENESIS_PRECOMPUTE_FEATURES=1`)
@@ -437,7 +445,7 @@ python -m pip install -e ".[mcp]"
 python -m mcp_server.server
 ```
 
-See `mcp_server/README.md` and `docs/mcp_server_guide.md` for details.
+See `mcp_server/README.md` and `docs/mcp/mcp_server_guide.md` for details.
 
 ## Language Preference
 

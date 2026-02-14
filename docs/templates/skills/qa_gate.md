@@ -31,4 +31,4 @@ Tvingar grundläggande QA-körningar innan merge för att skydda stabiliseringsf
 
 ## Referenser
 
-- doc: docs/dev_setup.md
+- doc: docs/ops/dev_setup.md

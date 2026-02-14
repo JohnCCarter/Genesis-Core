@@ -1,0 +1,37 @@
+{
+  "id": "paper_runner_ops",
+  "version": "1.0.0",
+  "title": "Paper runner ops (fail-fast och driftdisciplin)",
+  "description": "Standardiserar drift och incidenthantering för paper trading-runnern i Azure VM/systemd-miljö. Använd när arbete rör runner-start/restart, preflight/acceptance, systemd-stabilitet, .env/EnvironmentFile, symbol-läge eller verifiering via health/wallet/orders/loggar.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "tags": ["ops", "paper", "runner", "systemd", "incident", "azure"],
+  "rules": {
+    "must": [
+      "Verifiera SYMBOL_MODE explicit innan start/restart och dokumentera valt läge.",
+      "Använd systemd EnvironmentFile mot repo .env och verifiera att filen är UTF-8 utan BOM.",
+      "Bekräfta API-bind till 127.0.0.1:8000 i VM-scenario och behandla avvikelse som blockerare.",
+      "Verifiera systemd-stabilitet för genesis-paper.service och genesis-runner.service inklusive NRestarts och aktivt tillstånd.",
+      "Bekräfta att exakt en uvicorn-process är aktiv innan runner startas.",
+      "Kör preflight och acceptance enligt runbook samt spara snapshot/acceptance-artefakter i logs/paper_trading.",
+      "Verifiera exekvering via orders/wallet-delta och runner-loggar vid submit-flöden."
+    ],
+    "must_not": [
+      "Fortsätt drift om systemd-units saknas, restart-counter ökar eller tjänster flappar.",
+      "Acceptera .env med BOM eller oklar encoding i EnvironmentFile-flödet.",
+      "Kör order-submit utan verifiering i både /account/orders, wallet-delta och runner-logg.",
+      "Blanda ihop spot/positions-tolkning utan att validera med orders och wallet-delta.",
+      "Anta att runnern är frisk utan preflight-resultat och färsk heartbeat i runner_state."
+    ]
+  },
+  "references": [
+    { "type": "doc", "value": "docs/paper_trading/phase3_runbook.md" },
+    { "type": "doc", "value": "docs/paper_trading/runner_deployment.md" },
+    { "type": "doc", "value": "docs/paper_trading/server_setup.md" },
+    { "type": "doc", "value": "docs/paper_trading/operations_summary.md" },
+    { "type": "file", "value": "scripts/phase3_remote_orchestrate.ps1" },
+    { "type": "file", "value": "scripts/preflight_smoke_test.sh" },
+    { "type": "file", "value": "scripts/dry_run_acceptance.sh" },
+    { "type": "file", "value": "scripts/capture_phase3_snapshot.sh" }
+  ]
+}

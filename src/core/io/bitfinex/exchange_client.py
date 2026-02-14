@@ -18,10 +18,46 @@ _BASE_URL = "https://api.bitfinex.com"
 _LOGGER = get_logger(__name__)
 
 
+def _default_httpx_timeout() -> httpx.Timeout:
+    """Default timeouts for Bitfinex REST.
+
+    Keep this conservative to avoid hanging requests.
+    """
+
+    # 10s overall default, with slightly tighter connect/pool timeouts.
+    return httpx.Timeout(10.0, connect=5.0, pool=5.0)
+
+
+def _default_httpx_limits() -> httpx.Limits:
+    """Default connection pool limits for Bitfinex REST."""
+
+    return httpx.Limits(max_connections=20, max_keepalive_connections=10)
+
+
+async def aclose_http_client() -> None:
+    """Close the shared HTTP client (if created).
+
+    This is primarily used from FastAPI lifespan shutdown to avoid resource warnings.
+    """
+
+    global _HTTP_CLIENT
+    client = _HTTP_CLIENT
+    _HTTP_CLIENT = None
+    if client is None:
+        return
+    try:
+        await client.aclose()
+    except Exception as e:
+        _LOGGER.debug("http_client_close_error: %s", e)
+
+
 def _get_http_client() -> httpx.AsyncClient:
     global _HTTP_CLIENT
     if _HTTP_CLIENT is None:
-        _HTTP_CLIENT = httpx.AsyncClient(timeout=10)
+        _HTTP_CLIENT = httpx.AsyncClient(
+            timeout=_default_httpx_timeout(),
+            limits=_default_httpx_limits(),
+        )
     return _HTTP_CLIENT
 
 
@@ -84,7 +120,10 @@ class ExchangeClient:
             # Viktigt: använd exakt samma JSON‑serialisering för innehållet som vid signering
             body_str = json.dumps(body, separators=(",", ":"))
             req = getattr(client, method.lower())
-            return await req(url, headers=headers, content=body_str)
+            kwargs: dict[str, Any] = {"headers": headers, "content": body_str}
+            if timeout is not None:
+                kwargs["timeout"] = timeout
+            return await req(url, **kwargs)
 
         # Första försök
         try:
@@ -179,7 +218,10 @@ class ExchangeClient:
 
         try:
             req = getattr(client, method.lower())
-            resp = await req(url, params=params, timeout=timeout)
+            kwargs: dict[str, Any] = {"params": params}
+            if timeout is not None:
+                kwargs["timeout"] = timeout
+            resp = await req(url, **kwargs)
             resp.raise_for_status()
             return resp
         except Exception as e:

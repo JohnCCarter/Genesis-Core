@@ -9,7 +9,7 @@ from fastapi.responses import HTMLResponse
 from core.config.authority import ConfigAuthority
 from core.config.settings import get_settings
 from core.io.bitfinex import read_helpers as bfx_read
-from core.io.bitfinex.exchange_client import get_exchange_client
+from core.io.bitfinex.exchange_client import aclose_http_client, get_exchange_client
 from core.observability.metrics import get_dashboard
 from core.server_config_api import router as config_router
 from core.strategy.evaluate import evaluate_pipeline
@@ -43,6 +43,10 @@ async def lifespan(app: FastAPI):
     yield
 
     # Shutdown (cleanup if needed)
+    try:
+        await aclose_http_client()
+    except Exception as e:
+        _LOGGER.debug("shutdown_close_http_client_error: %s", e)
 
 
 app = FastAPI(lifespan=lifespan)
@@ -880,9 +884,12 @@ async def paper_submit(payload: dict = Body(...)) -> dict:
                 usd_avail = avail_by_ccy.get("USD", 0.0) or avail_by_ccy.get("TESTUSD", 0.0) or 0.0
                 px = None
                 try:
-                    r = httpx.get(f"https://api-pub.bitfinex.com/v2/ticker/{real_sym}", timeout=5)
-                    r.raise_for_status()
-                    arr = r.json()
+                    resp = await get_exchange_client().public_request(
+                        method="GET",
+                        endpoint=f"ticker/{real_sym}",
+                        timeout=5,
+                    )
+                    arr = resp.json()
                     if isinstance(arr, list) and len(arr) >= 7:
                         px = float(arr[6])
                 except Exception:
@@ -1022,9 +1029,12 @@ async def paper_estimate(symbol: str) -> dict:
     # Hämta senaste pris
     try:
         real_sym = _real_from_test(sym)
-        r = httpx.get(f"https://api-pub.bitfinex.com/v2/ticker/{real_sym}", timeout=5)
-        r.raise_for_status()
-        arr = r.json()
+        resp = await get_exchange_client().public_request(
+            method="GET",
+            endpoint=f"ticker/{real_sym}",
+            timeout=5,
+        )
+        arr = resp.json()
         if isinstance(arr, list) and len(arr) >= 7:
             last_price = float(arr[6])
     except Exception:

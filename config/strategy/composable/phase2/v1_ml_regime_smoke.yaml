@@ -1,0 +1,28 @@
+# Phase 2 Smoke Test: v1 ML + Regime Filter
+# Tests RegimeFilterComponent integration with real pipeline data
+
+components:
+  - type: ml_confidence
+    params:
+      threshold: 0.24  # Baseline threshold
+
+  - type: regime_filter
+    params:
+      allowed_regimes: ["trending", "bull", "balanced"]
+      # NOTE: "ranging" and "bear" will be vetoed
+      # This should reduce trade count vs v0 baseline
+
+# Test period: 2024-06-01 to 2024-08-01 (2 months)
+# Expected behavior:
+#   - RegimeFilter should veto some entries (veto_count > 0)
+#   - Trade count < v0 baseline (due to regime filtering)
+#   - Attribution should show:
+#       * ml_confidence: total_decisions, allowed, vetoed
+#       * regime_filter: total_decisions, allowed, vetoed
+#   - veto_rate for regime_filter should be > 0 and < 1.0
+
+# Success criteria:
+#   1. Backtest completes without crash
+#   2. RegimeFilter veto_count > 0 (component is active)
+#   3. Attribution report is interpretable
+#   4. Trades generated (> 0, but likely < v0 baseline)

@@ -3,4 +3,21 @@
 # Policy (Genesis-Core): Only curated result bundles should go into Git LFS.
 # Keep the tracked surface small to avoid burning the 10 GiB/10 GiB quota.
 
+# Cross-platform line-ending policy:
+# - Store text files normalized as LF in git.
+# - Keep shell/env/systemd-safe files LF (prevents CRLF/BOM-related ops issues).
+# - PowerShell Core/Windows PowerShell handle LF fine; this avoids SSH/Linux drift.
+* text=auto eol=lf
+
+*.sh text eol=lf
+*.bash text eol=lf
+*.env text eol=lf
+*.toml text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.py text eol=lf
+*.ps1 text eol=lf
+
 results/archive/bundles/*.zip filter=lfs diff=lfs merge=lfs -text

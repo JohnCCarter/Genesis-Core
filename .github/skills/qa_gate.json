@@ -20,6 +20,6 @@
   },
   "references": [
     { "type": "doc", "value": "docs/templates/skills/qa_gate.md" },
-    { "type": "doc", "value": "docs/dev_setup.md" }
+    { "type": "doc", "value": "docs/ops/dev_setup.md" }
   ]
 }

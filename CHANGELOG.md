@@ -18,7 +18,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 - Quarantined orphaned champion assets to eliminate a PATH_MISMATCH risk:
   - Moved legacy champions from `src/config/strategy/champions/` to `archive/_orphaned/src_config_strategy_champions/` (no deletion).
   - Updated `.secrets.baseline` file paths accordingly.
-- Added an evidence-based architecture overview document: `docs/ARCHITECTURE_VISUAL.md`.
+- Added an evidence-based architecture overview document: `docs/architecture/ARCHITECTURE_VISUAL.md`.
 - Made `src/core/strategy/e2e.py` import-safe (no side effects on import; runnable via `__main__`).
 
 ### Changed - MCP remote interoperability (2026-01-19)
@@ -40,9 +40,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 
 **Documentation continuity (MCP + Optuna + dev setup)**
 
-- Updated `docs/dev_setup.md` to be a practical dev setup SSOT (venv/deps/QA) and kept editor baseline as a separate section.
+- Updated `docs/ops/dev_setup.md` to be a practical dev setup SSOT (venv/deps/QA) and kept editor baseline as a separate section.
 - Updated `docs/roadmap/STABILIZATION_PLAN_9_STEPS.md` to reflect current implementation status (pipeline/defaults/canonical mode).
-- Updated `docs/mcp_server_guide.md` with a short TL;DR and clearer recommendation: local stdio server in VS Code by default; remote HTTP server only when needed.
+- Updated `docs/mcp/mcp_server_guide.md` with a short TL;DR and clearer recommendation: local stdio server in VS Code by default; remote HTTP server only when needed.
 - Removed provider-specific tunnel/hostname examples from `mcp_server/README.md` and replaced them with provider-agnostic reverse-proxy/port-forwarding guidance.
 - Updated Optuna docs for Windows: `docs/optuna/OPTUNA_BEST_PRACTICES.md` and `docs/optuna/README.md` now include PowerShell-friendly environment variable examples and a minimal smoke workflow.
 - Repurposed `scripts/debug_mcp_tunnel.py` to a simple `/healthz` reachability check for the remote MCP server.

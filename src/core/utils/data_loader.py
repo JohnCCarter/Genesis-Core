@@ -77,7 +77,7 @@ def load_features(symbol: str, timeframe: str, version: str | None = "v17") -> p
             )
             for path in parquet_candidates:
                 if path.exists():
-                    return pd.read_parquet(path)
+                    return pd.read_parquet(path, engine="pyarrow")
 
     raise FileNotFoundError(
         f"Features not found for {symbol} {timeframe}. Tried versions {versions_to_try}"

@@ -1,0 +1,42 @@
+# Phase 3 Tuned Config: v4 ML + Relaxed Regime + Tuned EV + Cooldown
+# Goal: Reduce restrictiveness while maintaining quality filter
+#
+# Changes from v3:
+#   - RegimeFilter: Add "bear" and "ranging" (all regimes allowed)
+#     Target: Reduce veto rate from 80.7% to 40-60%
+#   - EVGate: Increase min_ev from 0.0 to 0.1
+#     Target: Add 10-20% veto rate (currently 0%)
+
+components:
+  - type: ml_confidence
+    params:
+      threshold: 0.24  # Baseline threshold (unchanged)
+
+  - type: regime_filter
+    params:
+      allowed_regimes: ["trending", "bull", "balanced", "bear", "ranging"]
+      # TUNED: All regimes allowed (vs v3: only trending/bull/balanced)
+      # Expected: Reduce veto rate from 80.7% to ~40-60%
+
+  - type: ev_gate
+    params:
+      min_ev: 0.1  # TUNED: Require positive expected value (vs v3: 0.0)
+      # Expected: Add 10-20% veto rate (v3 had 0%)
+
+  - type: cooldown
+    params:
+      min_bars_between_trades: 24  # 24 hours for 1h timeframe (unchanged)
+
+# Test period: 2024-01-01 to 2024-03-31 (Q1 2024, same as Milestone 3 validation)
+#
+# Expected behavior vs v3:
+#   - More entries allowed (relaxed regime filter)
+#   - Some EV filtering (tuned gate)
+#   - Trade count: target 10-30 (vs v3: 1 trade)
+#   - Win rate: maintain >70% (quality filter still active)
+#
+# Success criteria:
+#   1. Trade count > v3 (1 trade) and < v0 (18 trades)
+#   2. RegimeFilter veto_rate in 40-60% range
+#   3. EVGate veto_rate in 10-20% range
+#   4. Performance metrics: PF >= 1.5, Win% >= 70%

@@ -1,0 +1,33 @@
+# Phase 3 Isolation Test: v4a WITHOUT Cooldown
+# Goal: Isolate CooldownComponent anomaly (1871 vetoes with 0 trades)
+#
+# Hypothesis: Removing cooldown should restore expected behavior
+# Expected: If RegimeFilter is truly relaxed, should see more allowed entries
+
+components:
+  - type: ml_confidence
+    params:
+      threshold: 0.24  # Baseline threshold
+
+  - type: regime_filter
+    params:
+      allowed_regimes: ["trending", "bull", "balanced", "bear", "ranging"]
+      # All regimes allowed (relaxed from v3)
+
+  - type: ev_gate
+    params:
+      min_ev: 0.0  # Tandlös (for isolation)
+
+  # REMOVED: cooldown component to isolate its anomalous veto behavior
+
+# Test period: 2024-01-01 to 2024-03-31 (Q1 2024)
+#
+# Expected behavior:
+#   - If cooldown was the blocker: trades > 0
+#   - If another issue: trades still 0
+#   - Allowed rate should increase vs v4a (170 allowed)
+#
+# Success criteria:
+#   1. Trades > 0 (proves cooldown was blocker)
+#   2. Attribution shows no cooldown vetoes
+#   3. Allowed > 170 (from v4a)

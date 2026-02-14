@@ -22,6 +22,7 @@
     { "id": "risk_guards_audit", "version": "1.0.0" },
     { "id": "ci_wheels_release", "version": "1.0.0" },
     { "id": "incident_triage", "version": "1.0.0" },
+    { "id": "paper_runner_ops", "version": "1.0.0" },
     { "id": "champion_update", "version": "1.0.0" },
     { "id": "backtest_run", "version": "1.0.0" },
     { "id": "feature_parity_check", "version": "1.0.0" },

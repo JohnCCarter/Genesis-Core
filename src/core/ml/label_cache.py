@@ -68,7 +68,7 @@ def load_cached_labels(
         return None
 
     try:
-        df = pd.read_parquet(cache_path)
+        df = pd.read_parquet(cache_path, engine="pyarrow")
         labels = df["label"].tolist()
 
         # Convert NaN to None (Parquet stores None as NaN)
@@ -111,7 +111,7 @@ def save_labels_to_cache(
     try:
         # Convert to DataFrame (None → NaN for Parquet compatibility)
         df = pd.DataFrame({"label": labels})
-        df.to_parquet(cache_path, index=False, compression="snappy")
+        df.to_parquet(cache_path, index=False, compression="snappy", engine="pyarrow")
 
         print(f"[CACHE] Saved labels to {cache_key}")
     except Exception as e:

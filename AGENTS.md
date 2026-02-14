@@ -1,8 +1,22 @@
 # README for AI Agents (Local Development)
 
-## Last update: 2026-01-29
+## Last update: 2026-02-12
 
 This document explains the current workflow for Genesis-Core, highlights today's deliverables, and lists the next tasks for the hand-off.
+
+## Quick status (2026-02-12)
+
+- **Paper trading runner hardening:** Candle window fetch is now newest-first (`sort=-1`) and normalized back to chronological order
+  before building OHLCV arrays (prevents silent indicator distortion / “stuck” confidence patterns).
+- **Regression coverage:** Added a focused unit test for candle-window ordering and a small defensive guard for persisted
+  `pipeline_state` incompatibility on startup.
+- **Docs:** Azure/remote hosting work is now explicitly indexed from the Phase 3 runbook + deployment guides (no longer only in chat).
+- **Docs (paper trading, prod-hardening):** Standardiserade `SYMBOL_MODE` (ersatte `GENESIS_SYMBOL_MODE`), uppdaterade systemd-exempel att läsa `.env` via `EnvironmentFile=...`, samt lade till incidentnot om **UTF-8 utan BOM** för `.env` och en operativ not om **spot vs positions** (verifiera via orders/wallet-delta + runner-loggar).
+- **Repo hygiene:** Installer artifacts (e.g. `AzureCLI.msi`) are now ignored via `*.msi` in `.gitignore`.
+- **Azure VM ops (West Europe):** VM is reachable via SSH alias `genesis-we`; API binds to `127.0.0.1:8000`.
+  Verified stable state: single `uvicorn` process, `genesis-paper.service` + `genesis-runner.service` running under systemd with `NRestarts=0`.
+- **Orchestration:** `scripts/phase3_remote_orchestrate.ps1` now defaults SSH target to `genesis-we` and fails fast if systemd units are missing.
+- **Bitfinex credentials:** Verifierade auth mot REST + WS (samt public REST/WS) med repo-scripts i lokal venv.
 
 ## 0. Repo-lokala agenter (SSOT)
 
@@ -35,7 +49,35 @@ planering, audit, governance/QA och körningar – de har tydliga stop condition
 - Vill säkerställa att ändringar följer policy/CI/registry/secrets → `GovernanceQA`
 - Vill köra preflight/validate/backtest/Optuna och få artifacts/metrics → `OpsRunner`
 
-## 1. Deliverables (latest highlights: 2026-01-28)
+### Fasdisciplin (implementering vs validering vs optimering)
+
+För att undvika “vi ändrade något men kan inte bevisa vad/varför” kör vi med tydliga faser:
+
+- **Implementering**: kod-/konfigändring med liten diff + test direkt. Undvik långkörningar; fokusera på snabba, deterministiska checks.
+- **Validering**: bevisa beteende på ett fixerat fönster. Logga alltid _vad som kördes_ (config path, symbol/timeframe, start/end,
+  canonical flags) och _vad som hände_ (nyckelmetriker + run_id).
+- **Optimering**: Optuna/kampanjer. Kör preflight + config-validering innan långa runs och börja med baseline (champion-parametrar).
+
+**Artifacts / två datorer**:
+
+- Anta att råa artifacts under `results/**` ofta är gitignored. För delning/hand-off:
+  - Committa små sammanfattningar under `results/evaluation/` och/eller lägg en kort “pointer” i `docs/daily_summaries/`.
+  - För större uppsättningar: skapa kuraterad zip-bundle under `results/archive/bundles/*.zip` (LFS-tracked) + lägg run_id/nyckeldata
+    i `docs/daily_summaries/`.
+
+## 1. Deliverables (latest highlights: 2026-01-30)
+
+- **COMPOSABLE STRATEGY (PHASE 2) + OPTUNA/SQLITE HARDENING (2026-01-30)**: Pågående arbete på feature-branch för att göra strategin komponent-baserad och minska SQLite-friktion i Optuna.
+  - **Composable strategy integration**:
+    - `src/core/backtest/composable_engine.py`: wrapper som kopplar in composable komponenter via `BacktestEngine(evaluation_hook=...)` (utan monkeypatch).
+    - `src/core/strategy/components/context_builder.py`: bygger ett platt komponent-context från pipeline-resultat (inkl. EV-beräkning och state-keys).
+    - Nya komponenter: `src/core/strategy/components/{cooldown,ev_gate,regime_filter}.py`.
+    - Nya/uppdaterade tester: `tests/test_component_context_builder.py`, `tests/test_cooldown.py`, `tests/test_ev_gate.py`, `tests/test_regime_filter.py`, `tests/test_backtest_hook_invariants.py`.
+  - **Optuna/SQLite**:
+    - `tests/test_optuna_rdbstorage_engine_kwargs.py`: verifierar att SQLite får `engine_kwargs={'connect_args': {'timeout': 10}}` samt att heartbeat-parametrar hanteras.
+  - **Pydantic v2 hygiene**:
+    - Nya tester: `tests/test_no_pydantic_v1_validator_decorator.py`, `tests/test_pydantic_validator_exception_types.py`.
+  - **Handoff note**: Working tree innehåller även lokala artefakter (t.ex. zip-filer och ev. egg-info) som ska rensas/ignoreras och changes bör split-committas logiskt innan PR.
 
 - **3H TIMEFRAME BOOTSTRAP + HTF REGIME SIZING (2026-01-28)**: Bootstrappade `tBTCUSD_3h` med defensiv positionssizing baserad på HTF regime och volatilitet.
   - **Implementation**:
@@ -68,7 +110,7 @@ planering, audit, governance/QA och körningar – de har tydliga stop condition
 - **MCP REMOTE: STREAMABLE-HTTP COMPAT FALLBACK (2026-01-19)**: Förbättrade remote-länkning mot ChatGPT genom att stödja en JSON-only
   kompatibilitetsväg på `POST /mcp` (JSON-RPC `initialize`, `tools/list`, `tools/call`, `ping`) utan att kräva att `GET /sse` flushar.
   Verifierat publikt via Cloudflare quick tunnel där `text/event-stream` kunde returnera headers men inte leverera första SSE-bytes.
-  Docs uppdaterade: `docs/mcp_server_guide.md`, `mcp_server/README.md`, `CHANGELOG.md`.
+  Docs uppdaterade: `docs/mcp/mcp_server_guide.md`, `mcp_server/README.md`, `CHANGELOG.md`.
 
 - **CUSTOM AGENTS (FAIL-FAST) + TOOL FRONTMATTER NORMALIZATION (2026-01-15)**: Standardiserade repo-agenter under `.github/agents/` för att vara "overseer-friendly" och minska risk för oavsiktliga ändringar.
   - **Agent-definitioner (English, bounded scope)**:
@@ -115,7 +157,7 @@ planering, audit, governance/QA och körningar – de har tydliga stop condition
 - **REGISTRY GOVERNANCE (Phase-8a, 2026-01-09)**: Introducerade repo-SSOT för skills/compacts med JSON-schema + CI-gate (`scripts/validate_registry.py`). Skills ligger under `.github/skills/` och compacts under `registry/`. CI kräver audit-entry i `registry/audit/break_glass.jsonl` när `registry/manifests/stable.json` ändras i PR.
   - **Merge**: PR #24 (Phase-8a squash-import) är mergad till `master` och `master` är uppdaterad/synkad.
 
-- **DOCS + DEV ENV CHECK (2026-01-08)**: Uppdaterade docs för kontinuitet så de speglar faktisk drift idag: `README.md`, `docs/dev_setup.md`, `docs/roadmap/STABILIZATION_PLAN_9_STEPS.md`, `docs/mcp_server_guide.md`, `mcp_server/README.md`, samt Optuna-docs (`docs/optuna/README.md`, `docs/optuna/OPTUNA_BEST_PRACTICES.md`) med PowerShell-vänliga exempel och canonical 1/1-noter. Tog bort provider-specifika tunnel/hostname-exempel och gjorde `scripts/debug_mcp_tunnel.py` till ett enkelt `/healthz` reachability-test för remote MCP. Loggade ändringen i `CHANGELOG.md`. Verifierade att `pre-commit run --all-files` går igenom i `.venv`.
+- **DOCS + DEV ENV CHECK (2026-01-08)**: Uppdaterade docs för kontinuitet så de speglar faktisk drift idag: `README.md`, `docs/ops/dev_setup.md`, `docs/roadmap/STABILIZATION_PLAN_9_STEPS.md`, `docs/mcp/mcp_server_guide.md`, `mcp_server/README.md`, samt Optuna-docs (`docs/optuna/README.md`, `docs/optuna/OPTUNA_BEST_PRACTICES.md`) med PowerShell-vänliga exempel och canonical 1/1-noter. Tog bort provider-specifika tunnel/hostname-exempel och gjorde `scripts/debug_mcp_tunnel.py` till ett enkelt `/healthz` reachability-test för remote MCP. Loggade ändringen i `CHANGELOG.md`. Verifierade att `pre-commit run --all-files` går igenom i `.venv`.
 
 - **HTF SIGNAL-VALIDERING + 1D DATA + PRECOMPUTE FIX (2026-01-08)**: Åtgärdade en blockerare som gjorde att Optuna-smoke körningar prunades när HTF-mappning försökte köras med precompute-cache.
   - **Root cause**: `BacktestEngine.load_data()` definierade `fib_cfg` bara i cache-miss path. Vid cache-hit blev `fib_cfg` odefinierad och HTF mapping kraschade med `UnboundLocalError`.

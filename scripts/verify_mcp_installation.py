@@ -73,7 +73,7 @@ def check_file_structure(repo_root: Path) -> bool:
         "mcp_server/utils.py",
         "config/mcp_settings.json",
         ".vscode/mcp.json",
-        "docs/mcp_server_guide.md",
+        "docs/mcp/mcp_server_guide.md",
     ]
 
     all_exist = True
@@ -165,7 +165,7 @@ def main() -> int:
         print("MCP Server installation verified successfully")
         print("\nNext steps:")
         print("1. Start the server: python -m mcp_server.server")
-        print("2. Configure VSCode (see docs/mcp_server_guide.md)")
+        print("2. Configure VSCode (see docs/mcp/mcp_server_guide.md)")
         return 0
 
     print("Installation verification failed")

@@ -2294,13 +2294,42 @@ def _create_optuna_study(
         sampler_name, sampler_cfg.get("kwargs"), concurrency=concurrency
     )
     pruner = _select_optuna_pruner(pruner_name, pruner_cfg.get("kwargs"))
+
+    # Defensive validation (Optuna enforces the same in RDBStorage):
+    # - heartbeat_interval must be None or a positive int
+    # - grace_period must be None or a positive int
+    if heartbeat_interval is not None and heartbeat_interval <= 0:
+        raise ValueError("heartbeat_interval must be a positive integer")
+    if heartbeat_grace_period is not None and heartbeat_grace_period <= 0:
+        raise ValueError("heartbeat_grace_period must be a positive integer")
+
+    def _default_engine_kwargs_for_storage(storage_url: str) -> dict[str, Any] | None:
+        """Return default SQLAlchemy engine_kwargs for Optuna RDBStorage.
+
+        For SQLite we set connect_args.timeout to reduce transient lock errors when
+        multiple workers/processes contend for the DB.
+
+        Ref: Optuna docs show `engine_kwargs={"connect_args": {"timeout": 10}}` for SQLite.
+        """
+
+        if not storage_url:
+            return None
+        if storage_url.lower().startswith("sqlite"):
+            return {"connect_args": {"timeout": 10}}
+        return None
+
     storage_obj: Any | None = storage
-    if storage and heartbeat_interval:
-        storage_obj = RDBStorage(
-            storage,
-            heartbeat_interval=heartbeat_interval,
-            grace_period=heartbeat_grace_period,
-        )
+    if storage:
+        engine_kwargs = _default_engine_kwargs_for_storage(storage)
+        # To pass engine_kwargs (e.g. sqlite connect timeout), we must instantiate
+        # RDBStorage explicitly (passing a URL string alone doesn't allow engine_kwargs).
+        if heartbeat_interval is not None or engine_kwargs is not None:
+            storage_obj = RDBStorage(
+                storage,
+                engine_kwargs=engine_kwargs,
+                heartbeat_interval=heartbeat_interval,
+                grace_period=heartbeat_grace_period,
+            )
 
     with _OPTUNA_LOCK:
         study = optuna.create_study(

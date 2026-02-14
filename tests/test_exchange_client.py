@@ -43,3 +43,23 @@ async def test_build_and_request_smoke(monkeypatch):
     finally:
         mod._HTTP_CLIENT = None
         mod._get_http_client = orig_get
+
+
+@pytest.mark.asyncio
+async def test_aclose_http_client_resets_global_client() -> None:
+    from core.io.bitfinex import exchange_client as mod
+
+    closed = {"ok": False}
+
+    class DummyClient:
+        async def aclose(self):  # noqa: D401
+            closed["ok"] = True
+
+    orig = mod._HTTP_CLIENT
+    try:
+        mod._HTTP_CLIENT = DummyClient()  # type: ignore[assignment]
+        await mod.aclose_http_client()
+        assert closed["ok"] is True
+        assert mod._HTTP_CLIENT is None
+    finally:
+        mod._HTTP_CLIENT = orig

@@ -1,0 +1,11 @@
+# Phase 2 Smoke Test: v0 Baseline (ML Confidence Only)
+# Minimal config to test ComposableBacktestEngine integration
+
+components:
+  - type: ml_confidence
+    params:
+      threshold: 0.24  # Same as POC for comparison
+
+# Test period: 2024-06-01 to 2024-08-01 (2 months)
+# Expected: Should produce trades (champion config has been tuned)
+# Attribution: Should show ML component vetoing some entries

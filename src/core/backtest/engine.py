@@ -34,6 +34,35 @@ from core.strategy.evaluate import evaluate_pipeline
 _LOGGER = get_logger(__name__)
 
 
+# B1: On-disk precompute cache versioning.
+#
+# This guards against silently reusing stale cached indicators/swings after code or
+# configuration changes that affect the precomputed outputs.
+PRECOMPUTE_SCHEMA_VERSION = 1
+
+
+def _precompute_cache_key_material() -> str:
+    """Return stable cache key material for precomputed features.
+
+    Includes a schema version and the effective precompute feature spec.
+    """
+
+    spec = {
+        "schema_version": int(PRECOMPUTE_SCHEMA_VERSION),
+        "indicators": {
+            "atr_periods": [14, 50],
+            "ema_periods": [20, 50],
+            "rsi_period": 14,
+            "bb": {"period": 20, "std_dev": 2.0},
+            "adx_period": 14,
+        },
+        "fib_cfg": {"atr_depth": 3.0, "max_swings": 8, "min_swings": 1},
+    }
+    canon = json.dumps(spec, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    digest12 = hashlib.sha256(canon.encode("utf-8")).hexdigest()[:12]
+    return f"v{int(PRECOMPUTE_SCHEMA_VERSION)}_{digest12}"
+
+
 def _debug_backtest_enabled() -> bool:
     """Return whether verbose error output should be enabled for backtests."""
 
@@ -90,6 +119,12 @@ class BacktestEngine:
         warmup_bars: int = 120,  # Bars needed for indicators (EMA, RSI, etc.)
         htf_exit_config: dict | None = None,  # HTF Exit Engine configuration
         fast_window: bool = False,  # Use precomputed NumPy arrays for window building
+        evaluation_hook: (
+            Any | None
+        ) = None,  # Optional hook(result, meta, candles) -> (result, meta)
+        post_execution_hook: (
+            Any | None
+        ) = None,  # Optional hook(symbol, bar_index, action, executed)
     ):
         """
         Initialize backtest engine.
@@ -103,6 +138,10 @@ class BacktestEngine:
             commission_rate: Commission per trade (e.g., 0.001 = 0.1%)
             slippage_rate: Slippage per trade (e.g., 0.0005 = 0.05%)
             warmup_bars: Number of bars to skip for indicator warmup
+            evaluation_hook: Optional callable(result, meta, candles) -> (result, meta)
+                           Called after evaluate_pipeline, can modify result/meta
+            post_execution_hook: Optional callable(symbol, bar_index, action, executed)
+                           Called after execute_action, executed=True means trade opened
         """
         self.symbol = symbol
         self.timeframe = timeframe
@@ -110,6 +149,8 @@ class BacktestEngine:
         self.end_date = end_date
         self.warmup_bars = warmup_bars
         self.fast_window = bool(fast_window)
+        self.evaluation_hook = evaluation_hook
+        self.post_execution_hook = post_execution_hook
 
         # Validate mode consistency to prevent mixed-mode bugs
         self._validate_mode_consistency()
@@ -182,13 +223,12 @@ class BacktestEngine:
         - Scrubs non-deterministic meta fields like champion_loaded_at timestamps.
         """
 
-        scrubbed: dict[str, Any] = dict(configs or {})
+        from core.utils.diffing.canonical import scrub_volatile
+
+        scrubbed_any = scrub_volatile(dict(configs or {}))
+        scrubbed: dict[str, Any] = scrubbed_any if isinstance(scrubbed_any, dict) else {}
         scrubbed.pop("precomputed_features", None)
         scrubbed.pop("_global_index", None)
-
-        meta = dict(scrubbed.get("meta") or {})
-        meta.pop("champion_loaded_at", None)
-        scrubbed["meta"] = meta
 
         payload = json.dumps(scrubbed, sort_keys=True, separators=(",", ":"), default=str)
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()
@@ -296,8 +336,8 @@ class BacktestEngine:
                     data_file, columns=read_columns, engine="pyarrow", memory_map=True
                 )
             except Exception:
-                # Fallback to default engine if pyarrow not available
-                base_df = pd.read_parquet(data_file, columns=read_columns)
+                # Fallback: retry without memory-mapped IO (keep engine deterministic).
+                base_df = pd.read_parquet(data_file, columns=read_columns, engine="pyarrow")
             self._candles_cache.put(cache_key, base_df)
             _LOGGER.debug("Loaded %s candles from %s", f"{len(base_df):,}", data_file.name)
         else:
@@ -313,7 +353,7 @@ class BacktestEngine:
         # different Parquet engines / pandas versions).
         if "timestamp" in base_df.columns:
             ts = base_df["timestamp"]
-            if pd.api.types.is_datetime64tz_dtype(ts):
+            if isinstance(ts.dtype, pd.DatetimeTZDtype):
                 # Ensure UTC
                 base_df["timestamp"] = ts.dt.tz_convert("UTC")
             else:
@@ -374,6 +414,24 @@ class BacktestEngine:
             _LOGGER.debug("Applied end_date filter: %s", self.end_date)
 
         _LOGGER.debug("Filtered to %s candles", f"{len(self.candles_df):,}")
+
+        # If filtering yields an empty dataset, treat it as “no data loaded” so callers
+        # can skip gracefully (and so run() doesn't later return {'error': 'no_data'}
+        # after load_data() claimed success).
+        if self.candles_df is None or len(self.candles_df) == 0:
+            _LOGGER.error(
+                "No candles available (empty dataset). Check date filters and data range."
+            )
+            self.candles_df = None
+            self._np_arrays = None
+            self._col_open = None
+            self._col_high = None
+            self._col_low = None
+            self._col_close = None
+            self._col_volume = None
+            self._col_timestamp = None
+            self._precomputed_features = None
+            return False
 
         # Initialize fast-window column arrays if enabled
         if self.fast_window:
@@ -564,7 +622,8 @@ class BacktestEngine:
         # pandas.Timestamp.value is ns since epoch; stable and file-name friendly.
         start_ns = int(getattr(ts0, "value", 0))
         end_ns = int(getattr(ts1, "value", 0))
-        return f"{self.symbol}_{self.timeframe}_{len(df)}_{start_ns}_{end_ns}"
+        material = _precompute_cache_key_material()
+        return f"{self.symbol}_{self.timeframe}_{material}_{len(df)}_{start_ns}_{end_ns}"
 
     def _prepare_numpy_arrays(self) -> None:
         """Prepare numpy arrays from candles_df for fast window extraction."""
@@ -679,7 +738,12 @@ class BacktestEngine:
         policy.setdefault("symbol", self.symbol)
         policy.setdefault("timeframe", self.timeframe)
 
-        configs = configs or {}
+        # Defensive copy: never mutate the caller-supplied configs dict.
+        # run() injects per-bar keys (_global_index), meta fields and
+        # precomputed_features; without a copy these leak back to the caller.
+        import copy
+
+        configs = copy.deepcopy(configs) if configs else {}
 
         meta = configs.setdefault("meta", {})
         skip_champion_merge = bool(meta.get("skip_champion_merge"))
@@ -802,6 +866,16 @@ class BacktestEngine:
                     state=self.state,
                 )
 
+                # Apply evaluation hook if provided (for composable strategy integration)
+                if self.evaluation_hook is not None:
+                    # Inject bar_index and symbol for stateful components (Cooldown, Hysteresis)
+                    if "bar_index" not in candles_window:
+                        candles_window["bar_index"] = i
+                    if "symbol" not in candles_window:
+                        candles_window["symbol"] = self.symbol
+
+                    result, meta = self.evaluation_hook(result, meta, candles_window)
+
                 # Extract action, size, confidence, regime
                 action = result.get("action", "NONE")
                 size = meta.get("decision", {}).get("size", 0.0)
@@ -901,6 +975,15 @@ class BacktestEngine:
                             "reasons": decision_meta.get("reasons"),
                         }
                         self.position_tracker.log_entry_fib_debug(entry_debug)
+
+                        # Call post-execution hook for stateful components (Cooldown)
+                        if self.post_execution_hook is not None:
+                            self.post_execution_hook(
+                                symbol=self.symbol,
+                                bar_index=i,
+                                action=action,
+                                executed=True,
+                            )
 
                         if verbose:
                             print(

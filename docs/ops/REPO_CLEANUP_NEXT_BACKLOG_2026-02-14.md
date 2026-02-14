@@ -1,0 +1,38 @@
+# Repo Cleanup Next Backlog (2026-02-14)
+
+## Syfte
+
+Samla kvarvarande cleanup-kandidater efter D1/D2 och tydliggöra varför nästa
+destruktiva steg är högre risk och fortsatt **föreslagna**.
+
+## Kvarvarande kandidatområden
+
+1. `results/hparam_search/**` (stor volym)
+2. `results/backtests/*`
+3. `scripts/debug_*.py`
+4. `scripts/diagnose_*.py`
+5. `scripts/test_*.py`
+
+## Riskdrivare
+
+- **Referensdrift:** flera historiska docs refererar uttryckligen till debug/diagnose-script paths.
+- **Operativ osäkerhet:** vissa scripts kan fortfarande användas ad hoc i felsökning.
+- **Stor diffyta:** `results/**` innebär hög volym och större risk för scope-drift.
+
+## Rekommenderad nästa ordning (föreslagen)
+
+1. D3: kandidatvis referenskartläggning per mönster (read-only rapportering).
+2. D4: små, separata move-only commits per artefaktklass.
+3. D5: eventuell radering först efter flytt- och retentionbeslut i separata kontrakt.
+
+## Kriterier innan nästa destruktiva steg
+
+1. Tight kontrakt per artefaktklass.
+2. Opus pre-code och post-code APPROVED.
+3. Explicit godkännande från requester.
+4. Inga out-of-scope ändringar i code/runtime-zoner.
+
+## Status
+
+- D3/D4/D5 i denna backlog är fortsatt **föreslagna**.
+- Ingen ny destruktiv åtgärd är införd i detta dokument.

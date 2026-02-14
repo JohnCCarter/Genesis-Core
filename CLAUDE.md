@@ -200,6 +200,47 @@ Repo-local agents under `.github/agents/`:
 - **Codex53** - Agent + Plan + Doer (implements scoped changes from commit-contract)
 - **Opus46** - Subagent + Reviewer + Risk-auditor (plan review, diff-audit, veto)
 
+## Codex53 + Opus46 Working Contract (Mandatory)
+
+For non-trivial changes, the working contract is enforced through:
+
+1. **Commit contract (before work)**
+   - Category: `security | docs | tooling | refactor(server) | api | obs`
+   - Scope IN: exact allowed file list
+   - Scope OUT: explicit exclusions
+   - Constraints default: **NO BEHAVIOR CHANGE**
+   - Done criteria: concrete gates + manual checks when relevant
+
+2. **Opus46 pre-code review**
+   - Review scope tightness and risk zones
+   - Approve minimal sufficient gate set
+   - Codex53 must not start implementation before approval
+
+3. **Codex53 implementation**
+   - Minimal diff, strictly inside approved scope
+   - Update imports/references when moving or renaming files
+
+4. **Opus46 post-code diff audit**
+   - Verify no unintended behavior drift and no contract drift
+   - Veto on violations with minimal remediation steps
+
+5. **Gates pass before commit**
+   - Run defined gates and report outcomes
+   - Commit only when all required gates are green
+
+Communication status discipline:
+
+- Use `föreslagen` for not-yet-implemented process/tooling changes.
+- Use `införd` only after verified implementation in this repository.
+- Do not claim blocking CI/pre-commit exists unless configuration is present and validated.
+
+Source-of-truth precedence for conflicts:
+
+1. Explicit user request for the current task
+2. `.github/copilot-instructions.md`
+3. `docs/OPUS_46_GOVERNANCE.md`
+4. `AGENTS.md`
+
 ## Critical Development Rules
 
 ### Execution Mode Policy
@@ -239,7 +280,7 @@ Repo-local agents under `.github/agents/`:
 - NEVER run destructive git commands without explicit user request
 - ALWAYS create NEW commits (not amend) unless explicitly requested
 - Stage specific files by name (avoid `git add -A` or `git add .`)
-- Commit message format: End with `Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>`
+- Commit message must include: category, why, what changed, and gate results
 
 ### Stability Policy
 

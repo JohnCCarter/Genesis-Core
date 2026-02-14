@@ -197,10 +197,8 @@ Located under `registry/`:
 
 Repo-local agents under `.github/agents/`:
 
-- **Plan** - Create testable plans for large/ambiguous tasks (no implementation)
-- **AnalysisAudit** - Read-only audit of logic, gates, scoring (no runs, no changes)
-- **GovernanceQA** - Registry/skills/compacts validation, lint/test/security gates
-- **OpsRunner** - Run backtests/Optuna reproducibly with canonical mode defaults
+- **Codex53** - Agent + Plan + Doer (implements scoped changes from commit-contract)
+- **Opus46** - Subagent + Reviewer + Risk-auditor (plan review, diff-audit, veto)
 
 ## Critical Development Rules
 

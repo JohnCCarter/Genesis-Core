@@ -54,68 +54,156 @@ Proactively suggest activating Plan Mode when:
 - **Python**: 3.11+ (modern syntax, dict not Dict, X|None not Optional[X]).
 - **Style**: Line length 100 chars, black formatting, ruff linting.
 - **Structure**: `src/core/{config,indicators,io,observability,risk,strategy,utils}`.
-- **Testing**: pytest with comprehensive coverage.
-- **No Emojis in Code**: Do not use emojis in source files.
+# Copilot Instructions (Reference)
 
-### Critical Security Rules
+Last update: 2026-02-14
 
-- **NEVER commit**: `.env`, `.nonce_tracker.json`, `dev.overrides.local.json`.
-- **Secrets**: API keys only from environment variables.
-- **Safety**: Force TEST symbols for paper trading.
-- **Signing**: Use compact JSON: `json.dumps(body, separators=(",",":"))`.
+This file is the practical reference for collaboration between:
 
-### Git LFS (results sharing policy)
+- Codex 5.3 (Agent + Plan + Doer)
+- Opus 4.6 (Subagent + Reviewer + Risk-auditor)
 
-- Use Git LFS **only** for curated, noteworthy result bundles (policy B).
-- Location/pattern: `results/archive/bundles/*.zip` (tracked via `.gitattributes`).
-- Do **not** LFS-track raw `results/**`, `*.db`, `cache/**`, or large intermediate artifacts unless explicitly agreed.
-- Bundles must be minimal and reproducible: include config(s) + a short summary/provenance; never include secrets.
-- Prefer adding an anchor in `docs/daily_summaries/` pointing to the bundle filename and run identifiers.
+Use this as the default operating contract for all non-trivial changes.
 
-### Phase discipline (Implementation vs Validation vs Optimization)
+## Core principles
 
-To avoid “we changed something but can’t prove what/why” regressions, keep work explicitly in one of these phases:
+- Prefer Swedish responses unless explicitly requested otherwise.
+- Work step by step; avoid large speculative changes.
+- Stability first: no behavior changes unless explicitly authorized.
+- Keep diffs minimal and scoped.
+- Be explicit about assumptions, risks, and verification.
+- Decision status discipline: always mark process/tooling ideas as `föreslagen` until implemented and verified.
 
-- **Implementation (code/config changes)**
-  - Goal: change behavior or reliability.
-  - Requirements: small diffs, add/adjust unit tests immediately.
-  - Avoid long runs; focus on fast, deterministic checks.
+## Roles and responsibilities
 
-- **Validation (prove behavior on a fixed window)**
-  - Goal: prove that a specific code/config state produces expected results.
-  - Requirements: record _what was run_ (config path, symbol/timeframe, start/end, canonical env flags) and _what happened_ (key metrics + run_id).
-  - Artifacts: do **not** rely on `results/**` being committed (most of it is gitignored). Prefer committing a small summary under
-    `results/evaluation/` and/or an anchor note in `docs/daily_summaries/`.
+### Codex 5.3 (Agent + Plan + Doer)
 
-- **Optimization (Optuna/backtest campaigns)**
-  - Goal: explore parameter space; produce candidates.
-  - Requirements (before >30 min runs): preflight + validate config, baseline run with champion params, canonical comparability.
-  - Artifacts: keep raw runs local/ignored; for cross-machine sharing use a curated zip bundle under `results/archive/bundles/*.zip`
-    (LFS-tracked) + a short pointer/summary in `docs/daily_summaries/`.
+Codex must:
 
-### Development Workflow
+1. Take a commit-brief.
+2. Produce a todo plan before coding.
+3. Implement strictly inside approved scope.
+4. Update imports and file references when moving/renaming files.
+5. Run required gates and report results.
 
-1. **Research**: `read_file` → `codebase_search` → `grep` → `todo_write`.
-2. **Edit**: Use edit tools (never output code). Prefer editing over creating.
-3. **Verify**: `pytest` → `black --check` → `ruff check` → `bandit`.
-4. **Docs**: Check existing `README.md`/`AGENTS.md` before creating new ones.
+Codex must not:
 
-### Repo Governance (Agents, Skills, Registry)
+- Start implementation before Opus approves contract + plan.
+- Add opportunistic cleanups outside scope.
+- Introduce logic changes in refactor-only work.
+- Present proposed process changes as if they are already implemented.
 
-- **Repo-local subagents** live under `.github/agents/` and define bounded roles (planning, audit, governance QA, ops runs).
-  Prefer these over editing any editor/extension-bundled agent files.
-- **Skills** are defined under `.github/skills/` and referenced by repo governance.
-- **Registry** lives under `registry/` (manifests/schemas/compacts/audit). If you change registry content, run
-  `python scripts/validate_registry.py`.
+Codex communication rule:
 
-### FastAPI Endpoints
+- Use `föreslagen` for not-yet-implemented changes.
+- Use `införd` only after verified implementation in this repository.
+- Do not claim CI/pre-commit blocking is active unless the blocking config exists and has been validated.
 
-`/ui`, `/strategy/evaluate`, `/public/candles`, `/auth/check`, `/paper/submit`, `/debug/auth`, `/health`, `/metrics`,
-`/account/wallets`, `/account/positions`, `/account/orders`, `/config/runtime`, `/config/runtime/validate`,
-`/config/runtime/propose`
+### Opus 4.6 (Subagent + Reviewer)
 
-### Common Issues
+Opus must:
 
-- "invalid key": Check JSON serialization.
-- "Ingen giltig order": Verify model exists.
-- Nonce errors: Use `bump_nonce()`.
+1. Review the plan before coding.
+2. Audit diff after coding.
+3. Enforce contract and veto on violations.
+4. Specify minimal reverts/adjustments when blocking.
+
+## Mandatory gated commit protocol (every commit)
+
+### 1) Commit contract (before work)
+
+Required fields:
+
+- Category: `security | docs | tooling | refactor(server) | api | obs`
+- Scope IN: exact allowed file list
+- Scope OUT: explicit exclusions
+- Constraints (default): NO BEHAVIOR CHANGE
+- Done criteria: concrete gates + manual checks (when relevant)
+
+Default constraints (unless explicitly overridden in contract):
+
+- Do not change defaults, sorting, numerics, seeds, cache keys.
+- Do not change endpoint paths, status codes, response shapes.
+- Do not change env/config interpretation or config authority paths.
+
+### 2) Opus plan review (pre-code)
+
+Opus verifies:
+
+- Scope tightness
+- Risk zones (init order, env/config, determinism, API contract)
+- Minimal sufficient gates
+- Approve or stop
+
+### 3) Codex implementation (plan/do)
+
+Codex executes only approved scope and constraints, with minimal diff.
+
+### 4) Opus diff audit (post-code)
+
+Opus verifies no unintended behavior change, no contract drift, no hidden paper/live risk.
+
+### 5) Gates run -> commit
+
+Commit only when all defined gates are green.
+
+Commit message should include:
+
+- Category
+- Why
+- What changed
+- Gate results
+
+## High-sensitivity zones (extra strict)
+
+Changes here require stricter review and deterministic verification:
+
+- `src/core/strategy/*`
+- `src/core/backtest/*`
+- `src/core/optimizer/*`
+- runtime/config authority paths
+- paper/live execution and API edges
+
+## Refactor policy
+
+For `refactor(server)` category:
+
+- Allowed: structure/move/import updates only.
+- Not allowed: behavior changes, default changes, parameter semantics changes.
+
+## Verification baseline
+
+Minimum recommended gate stack for code commits:
+
+1. `black --check .`
+2. `ruff check .`
+3. `bandit -r src -c bandit.yaml`
+4. Relevant pytest subset
+5. Focused smoke command for touched flow (if applicable)
+
+For docs-only commits, use a reduced gate set defined in contract.
+
+## Security and operational guardrails
+
+- Never commit `.env`, `.nonce_tracker.json`, `dev.overrides.local.json`.
+- Secrets must come from environment variables.
+- Keep test/paper safety behavior intact unless explicitly requested.
+- Preserve deterministic behavior in optimizer/backtest flows.
+
+## Operational notes for this repository
+
+- Python target: 3.11+
+- Style: black + ruff; line length 100
+- Primary testing framework: pytest
+- No emojis in source code files
+
+## Source of truth
+
+If any conflict appears, follow this precedence:
+
+1. Explicit user request for the current task
+2. This file (`.github/copilot-instructions.md`)
+3. `docs/OPUS_46_GOVERNANCE.md`
+4. `AGENTS.md`
+
+When uncertain, pause and request clarification before implementing.

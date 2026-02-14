@@ -20,34 +20,36 @@ This document explains the current workflow for Genesis-Core, highlights today's
 
 ## 0. Repo-lokala agenter (SSOT)
 
-Repo:t har **bounded** agent-definitioner under `c:\Users\fa06662\Projects\Genesis-Core\.github\agents\`. Dessa ska föredras för
-planering, audit, governance/QA och körningar – de har tydliga stop conditions och verktygsgränser.
+Repo:t använder nu en förenklad modell med **två** agentroller under `.github/agents/`:
+
+- `Codex53` (`.github/agents/Codex53.agent.md`) — Agent + Plan + Doer
+- `Opus46` (`.github/agents/Opus46.agent.md`) — Subagent + Reviewer + Risk-auditor
+
+Mål: mindre agent-sprawl, tydligare ansvar och strikt gated commit-protokoll.
 
 ### Agentöversikt
 
-- `Plan` (`.github/agents/Plan.agent.md`)
-  - Roll: skapa en **testbar plan** (3–7 steg) vid större/ambigua uppgifter.
-  - Begränsning: **ingen implementation** och **ingen exekvering**.
+- `Codex53`
+  - Tar commit-brief, producerar todo-plan och implementerar inom godkänt scope.
+  - Uppdaterar imports/filflyttar säkert och håller diffen minimal.
+  - Får inte starta implementation innan Opus godkänt kontrakt + plan.
 
-- `AnalysisAudit` (`.github/agents/AnalysisAudit.agent.md`)
-  - Roll: **read-only audit** av logik, gates, scoring och dataflöden.
-  - Begränsning: **inga körningar** och **inga ändringar**.
-
-- `GovernanceQA` (`.github/agents/GovernanceQA.agent.md`)
-  - Roll: governance/QA: registry/skills/compacts, lint/test/security gates och secrets-hygien.
-  - Begränsning: får exekvera **endast godkända kontroller**, men ska inte ändra produkt/strategilogik utan explicit uppdrag.
-
-- `OpsRunner` (`.github/agents/OpsRunner.agent.md`)
-  - Roll: kör backtests/Optuna/valideringar **reproducerbart** och rapportera artifacts + nyckelmetriker.
-  - Guardrails: canonical mode som default (t.ex. `GENESIS_FAST_WINDOW=1`, `GENESIS_PRECOMPUTE_FEATURES=1`, `GENESIS_RANDOM_SEED=42`).
-  - Stop: eskalera innan körningar > 30 min eller om data/env saknas.
+- `Opus46`
+  - Granskar plan innan kodning (scope, risker, saknade gates).
+  - Kör diff-audit efter kodning och verifierar NO BEHAVIOR CHANGE där det är default.
+  - Har veto vid kontraktsbrott och anger minsta nödvändiga revert/justering.
 
 ### Snabbt val: vilken agent använder vi?
 
-- Osäker scope / flera möjliga vägar → `Plan`
-- Fråga om “varför blev det så här?” (utan nya körningar) → `AnalysisAudit`
-- Vill säkerställa att ändringar följer policy/CI/registry/secrets → `GovernanceQA`
-- Vill köra preflight/validate/backtest/Optuna och få artifacts/metrics → `OpsRunner`
+- Plan/do och implementation enligt kontrakt → `Codex53`
+- Pre-review, diff-audit, gate-beslut/veto → `Opus46`
+
+### Obligatorisk kommunikationsregel
+
+- Statusmärk processändringar tydligt:
+  - `föreslagen` = inte implementerad
+  - `införd` = implementerad + verifierad i repot
+- Påstå inte att blockerande CI/pre-commit är aktiv utan validerad konfiguration.
 
 ### Fasdisciplin (implementering vs validering vs optimering)
 
@@ -112,12 +114,9 @@ För att undvika “vi ändrade något men kan inte bevisa vad/varför” kör v
   Verifierat publikt via Cloudflare quick tunnel där `text/event-stream` kunde returnera headers men inte leverera första SSE-bytes.
   Docs uppdaterade: `docs/mcp/mcp_server_guide.md`, `mcp_server/README.md`, `CHANGELOG.md`.
 
-- **CUSTOM AGENTS (FAIL-FAST) + TOOL FRONTMATTER NORMALIZATION (2026-01-15)**: Standardiserade repo-agenter under `.github/agents/` för att vara "overseer-friendly" och minska risk för oavsiktliga ändringar.
+- **CUSTOM AGENTS (FAIL-FAST) + TOOL FRONTMATTER NORMALIZATION (2026-01-15)**: Standardiserade repo-agenter under `.github/agents/` för att vara "overseer-friendly" och minska risk för oavsiktliga ändringar. **Legacy setup** (ersatt 2026-02-14 av Codex53 + Opus46).
   - **Agent-definitioner (English, bounded scope)**:
-    - `.github/agents/Plan.agent.md`
-    - `.github/agents/AnalysisAudit.agent.md`
-    - `.github/agents/GovernanceQA.agent.md`
-    - `.github/agents/OpsRunner.agent.md`
+    - Legacy 4-agent setup (Plan/AnalysisAudit/GovernanceQA/OpsRunner), ersatt av 2-agent modellen.
   - **Authority boundary + escalation**: tydliga stop conditions + obligatorisk eskalering vid risk för behavior change, determinism/as-of påverkan eller scope creep.
   - **Tool allow-lists**: la till/justerade `tools:` i YAML-frontmatter och normaliserade listformatet (block-list) för att undvika VS Code diagnostics och hålla agent-capabilities minimala.
 

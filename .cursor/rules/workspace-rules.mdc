@@ -61,7 +61,9 @@ Genesis-Core is a Python 3.11+ FastAPI trading system with:
 
 ## Repo Governance: Agents, Skills, Registry
 
-- **Repo-local subagents** live under `.github/agents/` and define bounded roles (planning, audit, governance QA, ops runs).
+- **Repo-local agents** live under `.github/agents/` with two bounded roles:
+  - `Codex53` (Agent + Plan + Doer)
+  - `Opus46` (Subagent + Reviewer + Risk-auditor)
   Prefer these over editing any editor/extension-bundled agent files.
 - **Skills** are defined under `.github/skills/` and referenced by repo governance (do not duplicate skill sources elsewhere).
 - **Registry** lives under `registry/` (manifests/schemas/compacts/audit). If you change registry content, run

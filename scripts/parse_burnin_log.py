@@ -85,8 +85,11 @@ def parse_burnin_log(path: str | Path) -> dict[str, Any]:
 def main() -> int:
     root = Path(__file__).resolve().parents[1]
     log_path = root / "burnin.log"
-    out_path = root / "burnin_summary.json"
+    out_path = (
+        root / "archive" / "_orphaned" / "root_artifacts" / "2026-02-14" / "burnin_summary.json"
+    )
     data = parse_burnin_log(log_path)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
     print(f"Wrote {out_path}")
     return 0

@@ -539,3 +539,15 @@ destruktiva steg är högre risk och fortsatt **föreslagna**.
 - Noterad residual risk i denna tranche:
   - inga observerade runtime-risker; åtgärden avser endast äldre rådatafiler.
 - Ingen övrig execution ingår i D37.
+
+## D38 minimal move execution tranche (2026-02-15)
+
+- Separat execution-kontrakt + rapport:
+  - `docs/ops/REPO_CLEANUP_D38_EXEC_CONTRACT_2026-02-15.md`
+  - `docs/ops/REPO_CLEANUP_D38_EXEC_REPORT_2026-02-15.md`
+- Scoped move-only execution genomförs för exakt 2 filer:
+  - `optimizer_phase7b.db` -> `results/hparam_search/storage/optimizer_phase7b.db`
+  - `optuna_search.db` -> `results/hparam_search/storage/optuna_search.db`
+- Noterad residual risk i denna tranche:
+  - inga observerade runtime-risker; åtgärden avser flytt av två lokala DB-artefakter.
+- Ingen övrig execution ingår i D38.

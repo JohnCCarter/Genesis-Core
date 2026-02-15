@@ -431,3 +431,23 @@ destruktiva steg är högre risk och fortsatt **föreslagna**.
 - Noterad residual risk i denna tranche:
   - inga externa referensträffar observerades i `results/hparam_search/**` för dessa filer vid genomförandet.
 - Ingen övrig `results/**` execution ingår i D29.
+
+## D30 minimal delete execution tranche (2026-02-15)
+
+- Separat execution-kontrakt + rapport:
+  - `docs/ops/REPO_CLEANUP_D30_EXEC_CONTRACT_2026-02-15.md`
+  - `docs/ops/REPO_CLEANUP_D30_EXEC_REPORT_2026-02-15.md`
+- Scoped delete-only execution genomförs för exakt 10 filer:
+  - `results/backtests/tBTCUSD_1h_20251225_182338.json`
+  - `results/backtests/tBTCUSD_1h_20251225_182533.json`
+  - `results/backtests/tBTCUSD_1h_20251225_182738.json`
+  - `results/backtests/tBTCUSD_1h_20251225_183122.json`
+  - `results/backtests/tBTCUSD_1h_20251225_183205.json`
+  - `results/backtests/tBTCUSD_1h_20251225_183248.json`
+  - `results/backtests/tBTCUSD_1h_20251225_183324.json`
+  - `results/backtests/tBTCUSD_1h_20251225_183417.json`
+  - `results/backtests/tBTCUSD_1h_20251225_183511.json`
+  - `results/backtests/tBTCUSD_1h_20251225_185329.json`
+- Noterad residual risk i denna tranche:
+  - inga externa referensträffar observerades i `results/hparam_search/**` för dessa filer vid genomförandet.
+- Ingen övrig `results/**` execution ingår i D30.

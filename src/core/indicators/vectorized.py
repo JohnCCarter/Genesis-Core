@@ -8,6 +8,8 @@ Used by precompute_features.py for efficient batch processing.
 import numpy as np
 import pandas as pd
 
+from core.indicators.adx import calculate_adx
+
 
 def calculate_ema_vectorized(series: pd.Series, period: int = 50) -> pd.Series:
     """Calculate EMA on entire series at once."""
@@ -47,31 +49,20 @@ def calculate_rsi_vectorized(series: pd.Series, period: int = 14) -> pd.Series:
 def calculate_adx_vectorized(
     high: pd.Series, low: pd.Series, close: pd.Series, period: int = 14
 ) -> pd.Series:
-    """Calculate ADX on entire series."""
-    # True Range
-    tr1 = high - low
-    tr2 = abs(high - close.shift(1))
-    tr3 = abs(low - close.shift(1))
-    tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
+    """Calculate ADX with parity to reference Wilder implementation.
 
-    # Directional Movement
-    up_move = high - high.shift(1)
-    down_move = low.shift(1) - low
-
-    plus_dm = np.where((up_move > down_move) & (up_move > 0), up_move, 0)
-    minus_dm = np.where((down_move > up_move) & (down_move > 0), down_move, 0)
-
-    # Smoothed indicators
-    atr = tr.rolling(window=period).mean()
-    plus_di = 100 * pd.Series(plus_dm).rolling(window=period).mean() / atr
-    minus_di = 100 * pd.Series(minus_dm).rolling(window=period).mean() / atr
-
-    # ADX
-    dx = 100 * abs(plus_di - minus_di) / (plus_di + minus_di).replace(0, np.nan)
-    adx = dx.rolling(window=period).mean()
-
-    # Normalize to [0, 1]
-    return adx / 100
+    Returns normalized ADX in [0, 1] range, matching prior vectorized API.
+    """
+    adx_raw = np.asarray(
+        calculate_adx(
+            highs=high.to_numpy(copy=False),
+            lows=low.to_numpy(copy=False),
+            closes=close.to_numpy(copy=False),
+            period=period,
+        ),
+        dtype=float,
+    )
+    return pd.Series(adx_raw / 100.0, index=high.index)
 
 
 def calculate_atr_vectorized(

@@ -114,7 +114,7 @@ $Env:GENESIS_PRECOMPUTE_FEATURES='1'
 $Env:GENESIS_RANDOM_SEED='42'
 ```
 
-## 7) Pågående repo-cleanup (P0/P1/P2/P3/D1/D2/D3/D3A/D3B/D3C/D3D/D3E/D3F/D3G/D3H/D3I/D3J/D3K/D3L/D4A/D4B/D5/D6/D7/D8/D9/D10/D11/D12/D13/D14/D15)
+## 7) Pågående repo-cleanup (P0/P1/P2/P3/D1/D2/D3/D3A/D3B/D3C/D3D/D3E/D3F/D3G/D3H/D3I/D3J/D3K/D3L/D4A/D4B/D5/D6/D7/D8/D9/D10/D11/D12/D13/D14/D15/D16)
 
 Status per 2026-02-15:
 
@@ -154,6 +154,7 @@ Status per 2026-02-15:
 - D13 results minimal execution tranche: införd (move-only, exakt 3 filer till `archive/_orphaned/results/**`, plus scopead newline-normalisering för 3 orphaned filer)
 - D14 results minimal execution tranche: införd (move-only, exakt 3 filer till `archive/_orphaned/results/**`, plus scopead newline-normalisering för 3 orphaned filer)
 - D15 results minimal execution tranche: införd (move-only, exakt 3 filer till `archive/_orphaned/results/**`, plus scopead newline-normalisering för 3 orphaned filer)
+- D16 results minimal execution tranche: införd (move-only, exakt 3 filer till `archive/_orphaned/results/**`, ingen övrig execution)
 
 Detaljer:
 
@@ -218,6 +219,8 @@ Detaljer:
 - `docs/ops/REPO_CLEANUP_D14_EXEC_REPORT_2026-02-15.md`
 - `docs/ops/REPO_CLEANUP_D15_EXEC_CONTRACT_2026-02-15.md`
 - `docs/ops/REPO_CLEANUP_D15_EXEC_REPORT_2026-02-15.md`
+- `docs/ops/REPO_CLEANUP_D16_EXEC_CONTRACT_2026-02-15.md`
+- `docs/ops/REPO_CLEANUP_D16_EXEC_REPORT_2026-02-15.md`
 
 ## 8) Referenser
 

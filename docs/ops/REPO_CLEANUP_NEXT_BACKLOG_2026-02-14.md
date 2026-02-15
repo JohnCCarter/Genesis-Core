@@ -281,3 +281,16 @@ destruktiva steg är högre risk och fortsatt **föreslagna**.
 - Noterad bakgrund i denna tranche:
   - kandidaten var tidigare dokumenterad som låg extern ref-risk i D4A.
 - Ingen övrig `results/**` execution ingår i D21.
+
+## D22 minimal delete execution tranche (2026-02-15)
+
+- Separat execution-kontrakt + rapport:
+  - `docs/ops/REPO_CLEANUP_D22_EXEC_CONTRACT_2026-02-15.md`
+  - `docs/ops/REPO_CLEANUP_D22_EXEC_REPORT_2026-02-15.md`
+- Scoped delete-only execution genomförs för exakt 3 filer:
+  - `results/backtests/tBTCUSD_1h_20251022_152515.json`
+  - `results/backtests/tBTCUSD_1h_20251022_152517.json`
+  - `results/backtests/tBTCUSD_1h_20251022_152519.json`
+- Noterad residual risk i denna tranche:
+  - basename-referenser i legacy run-artefakter (`results/hparam_search/phase7b_optuna/**`) är accepterade inom delete-only scope.
+- Ingen övrig `results/**` execution ingår i D22.

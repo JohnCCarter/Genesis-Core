@@ -391,3 +391,23 @@ destruktiva steg är högre risk och fortsatt **föreslagna**.
 - Noterad residual risk i denna tranche:
   - referenser i legacy run-artefakter (`results/hparam_search/run_20251026_194233/**`) är accepterade inom delete-only scope.
 - Ingen övrig `results/**` execution ingår i D27.
+
+## D28 minimal delete execution tranche (2026-02-15)
+
+- Separat execution-kontrakt + rapport:
+  - `docs/ops/REPO_CLEANUP_D28_EXEC_CONTRACT_2026-02-15.md`
+  - `docs/ops/REPO_CLEANUP_D28_EXEC_REPORT_2026-02-15.md`
+- Scoped delete-only execution genomförs för exakt 10 filer:
+  - `results/backtests/tBTCUSD_1h_20251225_171516.json`
+  - `results/backtests/tBTCUSD_1h_20251225_171704.json`
+  - `results/backtests/tBTCUSD_1h_20251225_172521.json`
+  - `results/backtests/tBTCUSD_1h_20251225_175455.json`
+  - `results/backtests/tBTCUSD_1h_20251225_175753.json`
+  - `results/backtests/tBTCUSD_1h_20251225_175923.json`
+  - `results/backtests/tBTCUSD_1h_20251225_180035.json`
+  - `results/backtests/tBTCUSD_1h_20251225_180142.json`
+  - `results/backtests/tBTCUSD_1h_20251225_180507.json`
+  - `results/backtests/tBTCUSD_1h_20251225_180544.json`
+- Noterad residual risk i denna tranche:
+  - inga externa referensträffar observerades i `results/hparam_search/**` för dessa filer vid genomförandet.
+- Ingen övrig `results/**` execution ingår i D28.

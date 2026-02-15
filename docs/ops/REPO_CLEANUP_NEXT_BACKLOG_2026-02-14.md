@@ -451,3 +451,14 @@ destruktiva steg är högre risk och fortsatt **föreslagna**.
 - Noterad residual risk i denna tranche:
   - inga externa referensträffar observerades i `results/hparam_search/**` för dessa filer vid genomförandet.
 - Ingen övrig `results/**` execution ingår i D30.
+
+## D31 minimal delete execution tranche (2026-02-15)
+
+- Separat execution-kontrakt + rapport:
+  - `docs/ops/REPO_CLEANUP_D31_EXEC_CONTRACT_2026-02-15.md`
+  - `docs/ops/REPO_CLEANUP_D31_EXEC_REPORT_2026-02-15.md`
+- Scoped delete-only execution genomförs för exakt 1 run-dir:
+  - `results/hparam_search/run_20251226_173828/**`
+- Noterad residual risk i denna tranche:
+  - träffar observerades endast internt i målrun-dir samt i script-hjälptext, utan runtime-beroende.
+- Ingen övrig `results/**` execution ingår i D31.

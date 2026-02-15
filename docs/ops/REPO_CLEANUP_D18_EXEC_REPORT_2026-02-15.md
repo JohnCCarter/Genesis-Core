@@ -1,4 +1,4 @@
-# Repo Cleanup D17 Minimal Execution Report (2026-02-15)
+# Repo Cleanup D18 Minimal Execution Report (2026-02-15)
 
 ## Syfte
 
@@ -8,22 +8,30 @@ Fortsätta kandidatvis låg-risk cleanup med en ny move-only batch.
 
 ### Scoped move-only execution (exakt 3 filer)
 
-1. Från `results/hparam_search/run_20251227_180204/trial_027.log`
-   till `archive/_orphaned/results/hparam_search/run_20251227_180204/trial_027.log`
-2. Från `results/hparam_search/run_20251227_180204/trial_028.log`
-   till `archive/_orphaned/results/hparam_search/run_20251227_180204/trial_028.log`
-3. Från `results/hparam_search/run_20251227_180204/trial_029.log`
-   till `archive/_orphaned/results/hparam_search/run_20251227_180204/trial_029.log`
+1. Från `results/hparam_search/run_20251227_180204/trial_030.log`
+   till `archive/_orphaned/results/hparam_search/run_20251227_180204/trial_030.log`
+2. Från `results/hparam_search/run_20251227_180204/trial_031.log`
+   till `archive/_orphaned/results/hparam_search/run_20251227_180204/trial_031.log`
+3. Från `results/hparam_search/run_20251227_180204/trial_032.log`
+   till `archive/_orphaned/results/hparam_search/run_20251227_180204/trial_032.log`
 
 ## Preconditions
 
-- Exakta path-referenser för `trial_027/028/029.log` gav inga träffar.
+- Exakta path-referenser för `trial_030/031/032.log` gav inga träffar.
 - Basename-referenser i run-artefakter verifierades och accepterades som residual risk.
-- Destinationerna för `trial_027/028/029.log` var frånvarande före move (no-overwrite).
+- Destinationerna för `trial_030/031/032.log` var frånvarande före move (no-overwrite).
+
+## Carry-forward (newline-only)
+
+- `archive/_orphaned/results/hparam_search/run_20251227_180204/trial_027.log`
+- `archive/_orphaned/results/hparam_search/run_20251227_180204/trial_028.log`
+- `archive/_orphaned/results/hparam_search/run_20251227_180204/trial_029.log`
+- `docs/ops/REPO_CLEANUP_D17_EXEC_CONTRACT_2026-02-15.md`
+- `docs/ops/REPO_CLEANUP_D17_EXEC_REPORT_2026-02-15.md`
 
 ## Scope-verifiering
 
-- Ingen `.gitignore`-ändring i D17.
+- Ingen `.gitignore`-ändring i D18.
 - Inga ändringar i `src/**`, `tests/**`, `config/**`, `.github/**`, `tmp/**`.
 - Ingen execution utanför de tre scopeade källfilerna.
 
@@ -50,5 +58,5 @@ Gate-status:
 
 ## Status
 
-- D17 minimal execution tranche: införd.
-- Vidare execution utanför scopead D17-batch: fortsatt föreslagen.
+- D18 minimal execution tranche: införd.
+- Vidare execution utanför scopead D18-batch: fortsatt föreslagen.

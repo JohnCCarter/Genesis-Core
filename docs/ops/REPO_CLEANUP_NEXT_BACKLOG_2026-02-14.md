@@ -255,3 +255,18 @@ destruktiva steg är högre risk och fortsatt **föreslagna**.
 - Noterad residual risk i denna tranche:
   - basename-referenser i run-artefakter (`trial_033/034/035.json` och `_cache/*.json`) är accepterade inom move-only scope.
 - Ingen övrig `results/**` execution ingår i D19.
+
+## D20 minimal execution tranche (2026-02-15)
+
+- Separat execution-kontrakt + rapport:
+  - `docs/ops/REPO_CLEANUP_D20_EXEC_CONTRACT_2026-02-15.md`
+  - `docs/ops/REPO_CLEANUP_D20_EXEC_REPORT_2026-02-15.md`
+- Scoped move-only execution genomförs för exakt 3 filer:
+  - `results/hparam_search/run_20251227_180204/trial_036.log`
+  - `results/hparam_search/run_20251227_180204/trial_037.log`
+  - `results/hparam_search/run_20251227_180204/trial_038.log`
+- Mål under:
+  - `archive/_orphaned/results/hparam_search/run_20251227_180204/`
+- Noterad residual risk i denna tranche:
+  - basename-referenser i run-artefakter (`trial_036/037/038.json` och `_cache/*.json`) är accepterade inom move-only scope.
+- Ingen övrig `results/**` execution ingår i D20.

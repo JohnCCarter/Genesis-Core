@@ -105,3 +105,16 @@ destruktiva steg är högre risk och fortsatt **föreslagna**.
 - Carry-forward i denna tranche:
   - newline/format-normalisering för redan orphaned filer `run_meta.json`, `trial_001.log`, `trial_002.log`
 - Ingen övrig `results/**` execution ingår i D9.
+
+## D10 minimal execution tranche (2026-02-15)
+
+- Separat execution-kontrakt + rapport:
+  - `docs/ops/REPO_CLEANUP_D10_EXEC_CONTRACT_2026-02-15.md`
+  - `docs/ops/REPO_CLEANUP_D10_EXEC_REPORT_2026-02-15.md`
+- Scoped move-only execution genomförs för exakt 3 filer:
+  - `results/hparam_search/run_20251227_180204/trial_006.log`
+  - `results/hparam_search/run_20251227_180204/trial_007.log`
+  - `results/hparam_search/run_20251227_180204/trial_008.log`
+- Mål under:
+  - `archive/_orphaned/results/hparam_search/run_20251227_180204/`
+- Ingen övrig `results/**` execution ingår i D10.

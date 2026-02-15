@@ -501,3 +501,14 @@ destruktiva steg är högre risk och fortsatt **föreslagna**.
 - Noterad residual risk i denna tranche:
   - målrun-katalogen innehåller fortsatt metadata/stödartefakter; vidare steg scopeas separat.
 - Ingen övrig `results/**` execution ingår i D34.
+
+## D35 minimal delete execution tranche (2026-02-15)
+
+- Separat execution-kontrakt + rapport:
+  - `docs/ops/REPO_CLEANUP_D35_EXEC_CONTRACT_2026-02-15.md`
+  - `docs/ops/REPO_CLEANUP_D35_EXEC_REPORT_2026-02-15.md`
+- Scoped delete-only execution genomförs för exakt 1 run-dir:
+  - `results/hparam_search/run_20251227_173827/**`
+- Noterad residual risk i denna tranche:
+  - `results/hparam_search` innehåller fortsatt mindre run-kataloger och `storage`; vidare steg scopeas separat.
+- Ingen övrig `results/**` execution ingår i D35.

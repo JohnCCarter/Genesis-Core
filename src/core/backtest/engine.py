@@ -623,7 +623,22 @@ class BacktestEngine:
         start_ns = int(getattr(ts0, "value", 0))
         end_ns = int(getattr(ts1, "value", 0))
         material = _precompute_cache_key_material()
-        return f"{self.symbol}_{self.timeframe}_{material}_{len(df)}_{start_ns}_{end_ns}"
+
+        # Optional config context isolation:
+        # If GENESIS_PRECOMPUTE_CONFIG_HASH is provided, namespace cache keys by a
+        # deterministic short digest so runs with different feature-config contexts
+        # do not reuse the same on-disk precompute artifact.
+        # IMPORTANT: Do not include raw env value in key/path.
+        config_hash_env = str(os.getenv("GENESIS_PRECOMPUTE_CONFIG_HASH", "")).strip()
+        cfg_segment = ""
+        if config_hash_env:
+            cfg_digest = hashlib.sha256(config_hash_env.encode("utf-8")).hexdigest()[:12]
+            cfg_segment = f"_cfg{cfg_digest}"
+
+        return (
+            f"{self.symbol}_{self.timeframe}_{material}"
+            f"{cfg_segment}_{len(df)}_{start_ns}_{end_ns}"
+        )
 
     def _prepare_numpy_arrays(self) -> None:
         """Prepare numpy arrays from candles_df for fast window extraction."""

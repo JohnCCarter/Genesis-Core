@@ -334,3 +334,23 @@ destruktiva steg är högre risk och fortsatt **föreslagna**.
 - Noterad residual risk i denna tranche:
   - referenser i legacy run-artefakter (`results/hparam_search/phase7b_optuna_quick/**`, `results/hparam_search/phase7b_grid_baseline/**`, `results/hparam_search/phase7b_grid_ultra_low/**`) är accepterade inom delete-only scope.
 - Ingen övrig `results/**` execution ingår i D24.
+
+## D25 minimal delete execution tranche (2026-02-15)
+
+- Separat execution-kontrakt + rapport:
+  - `docs/ops/REPO_CLEANUP_D25_EXEC_CONTRACT_2026-02-15.md`
+  - `docs/ops/REPO_CLEANUP_D25_EXEC_REPORT_2026-02-15.md`
+- Scoped delete-only execution genomförs för exakt 10 filer:
+  - `results/backtests/tBTCUSD_1h_20251022_164122.json`
+  - `results/backtests/tBTCUSD_1h_20251022_164446.json`
+  - `results/backtests/tBTCUSD_1h_20251022_164752.json`
+  - `results/backtests/tBTCUSD_1h_20251022_165101.json`
+  - `results/backtests/tBTCUSD_1h_20251022_165813.json`
+  - `results/backtests/tBTCUSD_1h_20251022_170314.json`
+  - `results/backtests/tBTCUSD_1h_20251022_170619.json`
+  - `results/backtests/tBTCUSD_1h_20251022_170930.json`
+  - `results/backtests/tBTCUSD_1h_20251022_171438.json`
+  - `results/backtests/tBTCUSD_1h_20251022_171912.json`
+- Noterad residual risk i denna tranche:
+  - referenser i legacy run-artefakter (`results/hparam_search/phase7b_grid_simple/**`, `results/hparam_search/phase7b_grid_fixed/**`) är accepterade inom delete-only scope.
+- Ingen övrig `results/**` execution ingår i D25.

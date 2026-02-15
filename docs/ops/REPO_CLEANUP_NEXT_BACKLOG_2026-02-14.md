@@ -76,3 +76,17 @@ destruktiva steg är högre risk och fortsatt **föreslagna**.
   - `results/hparam_search/run_seeds/run_meta.json`
   - `archive/_orphaned/results/hparam_search/run_seeds/run_meta.json`
 - Ingen övrig `results/**` execution ingår i D7.
+
+## D8 minimal execution tranche (2026-02-15)
+
+- Separat execution-kontrakt + rapport:
+  - `docs/ops/REPO_CLEANUP_D8_EXEC_CONTRACT_2026-02-15.md`
+  - `docs/ops/REPO_CLEANUP_D8_EXEC_REPORT_2026-02-15.md`
+- Scoped move-only execution genomförs för exakt 3 filer:
+  - `results/hparam_search/run_test/run_meta.json`
+  - `results/hparam_search/run_20251227_180204/trial_001.log`
+  - `results/hparam_search/run_20251227_180204/trial_002.log`
+- Mål under:
+  - `archive/_orphaned/results/hparam_search/run_test/`
+  - `archive/_orphaned/results/hparam_search/run_20251227_180204/`
+- Ingen övrig `results/**` execution ingår i D8.

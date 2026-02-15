@@ -114,7 +114,7 @@ $Env:GENESIS_PRECOMPUTE_FEATURES='1'
 $Env:GENESIS_RANDOM_SEED='42'
 ```
 
-## 7) Pågående repo-cleanup (P0/P1/P2/P3/D1/D2/D3/D3A/D3B/D3C/D3D/D3E/D3F/D3G/D3H/D3I/D3J/D3K/D3L/D4A/D4B/D5/D6/D7/D8/D9/D10/D11/D12/D13/D14/D15/D16/D17/D18/D19/D20/D21/D22/D23/D24/D25/D26/D27/D28/D29/D30/D31/D32/D33/D34/D35/D36)
+## 7) Pågående repo-cleanup (P0/P1/P2/P3/D1/D2/D3/D3A/D3B/D3C/D3D/D3E/D3F/D3G/D3H/D3I/D3J/D3K/D3L/D4A/D4B/D5/D6/D7/D8/D9/D10/D11/D12/D13/D14/D15/D16/D17/D18/D19/D20/D21/D22/D23/D24/D25/D26/D27/D28/D29/D30/D31/D32/D33/D34/D35/D36/D37)
 
 Status per 2026-02-15:
 
@@ -175,6 +175,7 @@ Status per 2026-02-15:
 - D34 results minimal delete execution tranche: införd (delete-only, exakt 23 filer `results/hparam_search/run_20251227_180204/tBTCUSD_1h_63..85.json` ~188MB)
 - D35 results minimal delete execution tranche: införd (delete-only, exakt 1 run-dir `results/hparam_search/run_20251227_173827/**` ~13MB)
 - D36 scripts minimal delete execution tranche: införd (delete-only, exakt 2 filer `scripts/analyze_failures_temp.py` + `scripts/analyze_failures_temp_v2.py` ~1KB)
+- D37 data minimal delete execution tranche: införd (delete-only, exakt 5 filer `data/raw/bitfinex/candles/tBTCUSD_*_2025-10-*.parquet` ~746KB)
 
 Detaljer:
 
@@ -281,6 +282,8 @@ Detaljer:
 - `docs/ops/REPO_CLEANUP_D35_EXEC_REPORT_2026-02-15.md`
 - `docs/ops/REPO_CLEANUP_D36_EXEC_CONTRACT_2026-02-15.md`
 - `docs/ops/REPO_CLEANUP_D36_EXEC_REPORT_2026-02-15.md`
+- `docs/ops/REPO_CLEANUP_D37_EXEC_CONTRACT_2026-02-15.md`
+- `docs/ops/REPO_CLEANUP_D37_EXEC_REPORT_2026-02-15.md`
 
 ## 8) Referenser
 

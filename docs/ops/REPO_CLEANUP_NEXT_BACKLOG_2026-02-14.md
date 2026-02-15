@@ -524,3 +524,18 @@ destruktiva steg är högre risk och fortsatt **föreslagna**.
 - Noterad residual risk i denna tranche:
   - inga observerade runtime-risker; filerna var explicita deprecated one-off stubs.
 - Ingen övrig execution ingår i D36.
+
+## D37 minimal delete execution tranche (2026-02-15)
+
+- Separat execution-kontrakt + rapport:
+  - `docs/ops/REPO_CLEANUP_D37_EXEC_CONTRACT_2026-02-15.md`
+  - `docs/ops/REPO_CLEANUP_D37_EXEC_REPORT_2026-02-15.md`
+- Scoped delete-only execution genomförs för exakt 5 filer:
+  - `data/raw/bitfinex/candles/tBTCUSD_1D_2025-10-11.parquet`
+  - `data/raw/bitfinex/candles/tBTCUSD_1D_2025-10-27.parquet`
+  - `data/raw/bitfinex/candles/tBTCUSD_1h_2025-10-11.parquet`
+  - `data/raw/bitfinex/candles/tBTCUSD_3h_2025-10-11.parquet`
+  - `data/raw/bitfinex/candles/tBTCUSD_6h_2025-10-11.parquet`
+- Noterad residual risk i denna tranche:
+  - inga observerade runtime-risker; åtgärden avser endast äldre rådatafiler.
+- Ingen övrig execution ingår i D37.

@@ -462,3 +462,16 @@ destruktiva steg är högre risk och fortsatt **föreslagna**.
 - Noterad residual risk i denna tranche:
   - träffar observerades endast internt i målrun-dir samt i script-hjälptext, utan runtime-beroende.
 - Ingen övrig `results/**` execution ingår i D31.
+
+## D32 minimal delete execution tranche (2026-02-15)
+
+- Separat execution-kontrakt + rapport:
+  - `docs/ops/REPO_CLEANUP_D32_EXEC_CONTRACT_2026-02-15.md`
+  - `docs/ops/REPO_CLEANUP_D32_EXEC_REPORT_2026-02-15.md`
+- Scoped delete-only execution genomförs för exakt 31 filer:
+  - `results/hparam_search/run_20251227_180204/tBTCUSD_1h_1.json`
+  - ...
+  - `results/hparam_search/run_20251227_180204/tBTCUSD_1h_31.json`
+- Noterad residual risk i denna tranche:
+  - målrun-katalogen innehåller fortsatt stora artefakter; fler trancher krävs.
+- Ingen övrig `results/**` execution ingår i D32.

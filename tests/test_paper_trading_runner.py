@@ -6,6 +6,7 @@ Tests candle-close detection and idempotency logic without network calls.
 
 from __future__ import annotations
 
+from pathlib import Path
 from unittest.mock import Mock, patch
 
 import httpx
@@ -18,6 +19,7 @@ from paper_trading_runner import (
     map_policy_symbol_to_test_symbol,
     save_state,
     submit_paper_order,
+    validate_live_paper_guardrails,
 )
 
 # --- Timeframe Conversion Tests ---
@@ -246,6 +248,90 @@ def test_champion_verification():
     logger.error.assert_called()
 
 
+def test_validate_live_paper_guardrails_requires_execution_mode(tmp_path, monkeypatch):
+    from paper_trading_runner import RunnerConfig
+
+    monkeypatch.delenv("GENESIS_EXECUTION_MODE", raising=False)
+
+    config = RunnerConfig(
+        host="localhost",
+        port=8000,
+        symbol="tBTCUSD",
+        timeframe="1h",
+        poll_interval=1,
+        dry_run=False,
+        live_paper=True,
+        log_dir=tmp_path / "logs",
+        state_file=tmp_path / "runner_state.json",
+    )
+
+    issues = validate_live_paper_guardrails(config)
+    assert any("GENESIS_EXECUTION_MODE=paper_live" in issue for issue in issues)
+
+
+def test_validate_live_paper_guardrails_blocks_forbidden_results_namespace(monkeypatch):
+    from paper_trading_runner import RunnerConfig
+
+    monkeypatch.setenv("GENESIS_EXECUTION_MODE", "paper_live")
+
+    config = RunnerConfig(
+        host="localhost",
+        port=8000,
+        symbol="tBTCUSD",
+        timeframe="1h",
+        poll_interval=1,
+        dry_run=False,
+        live_paper=True,
+        log_dir=Path("results/hparam_search/paper_logs"),
+        state_file=Path("results/paper_live/runner_state.json"),
+    )
+
+    issues = validate_live_paper_guardrails(config)
+    assert any("forbidden root" in issue for issue in issues)
+
+
+def test_validate_live_paper_guardrails_blocks_non_paperlive_results_namespace(monkeypatch):
+    from paper_trading_runner import RunnerConfig
+
+    monkeypatch.setenv("GENESIS_EXECUTION_MODE", "paper_live")
+
+    config = RunnerConfig(
+        host="localhost",
+        port=8000,
+        symbol="tBTCUSD",
+        timeframe="1h",
+        poll_interval=1,
+        dry_run=False,
+        live_paper=True,
+        log_dir=Path("results/legacy_bucket/logs"),
+        state_file=Path("results/legacy_bucket/runner_state.json"),
+    )
+
+    issues = validate_live_paper_guardrails(config)
+    assert any("results/paper_live" in issue for issue in issues)
+
+
+def test_validate_live_paper_guardrails_skips_dry_run(monkeypatch):
+    from paper_trading_runner import RunnerConfig
+
+    monkeypatch.delenv("GENESIS_EXECUTION_MODE", raising=False)
+
+    config = RunnerConfig(
+        host="localhost",
+        port=8000,
+        symbol="tBTCUSD",
+        timeframe="1h",
+        poll_interval=1,
+        dry_run=True,
+        live_paper=False,
+        log_dir=Path("results/legacy_bucket/logs"),
+        state_file=Path("results/legacy_bucket/runner_state.json"),
+    )
+
+    issues = validate_live_paper_guardrails(config)
+    assert issues == []
+
+
 # --- Bug #1 Test: Candle Data Consistency ---
 
 
@@ -351,6 +437,7 @@ def test_order_submission_failure_causes_fail_closed_exit(tmp_path):
         patch("paper_trading_runner.evaluate_strategy") as mock_eval,
         patch("paper_trading_runner.submit_paper_order") as mock_submit,
         patch("paper_trading_runner.save_state") as mock_save,
+        patch.dict("os.environ", {"GENESIS_EXECUTION_MODE": "paper_live"}, clear=False),
     ):
 
         # Setup mocks
@@ -440,6 +527,7 @@ def test_order_submission_success_updates_candle_ts(tmp_path):
         patch("paper_trading_runner.submit_paper_order") as mock_submit,
         patch("paper_trading_runner.save_state") as mock_save,
         patch("paper_trading_runner.time.sleep"),
+        patch.dict("os.environ", {"GENESIS_EXECUTION_MODE": "paper_live"}, clear=False),
     ):  # Mock sleep to speed up test
 
         mock_client = Mock()

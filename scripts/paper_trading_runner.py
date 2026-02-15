@@ -27,6 +27,7 @@ Safety:
 import argparse
 import json
 import logging
+import os
 import signal
 import sys
 import time
@@ -56,6 +57,79 @@ class RunnerConfig:
     @property
     def api_base(self) -> str:
         return f"http://{self.host}:{self.port}"
+
+
+def _safe_resolve(path: Path) -> Path:
+    """Resolve path for guardrail checks without requiring path existence."""
+    try:
+        return path.expanduser().resolve()
+    except Exception:
+        return (Path.cwd() / path).resolve()
+
+
+def _is_subpath(path: Path, root: Path) -> bool:
+    """Return True if path is under root."""
+    try:
+        path.relative_to(root)
+        return True
+    except ValueError:
+        return False
+
+
+def validate_live_paper_guardrails(config: RunnerConfig) -> list[str]:
+    """Validate live-paper guardrails for mode and output path separation."""
+    if not config.live_paper:
+        return []
+
+    issues: list[str] = []
+    execution_mode = os.environ.get("GENESIS_EXECUTION_MODE", "").strip().lower()
+    if execution_mode != "paper_live":
+        issues.append("Live paper kräver GENESIS_EXECUTION_MODE=paper_live (fail-fast mode-gate).")
+
+    results_root = _safe_resolve(Path("results"))
+    paper_live_root = _safe_resolve(Path("results/paper_live"))
+    forbidden_roots = [
+        _safe_resolve(Path("results/hparam_search")),
+        _safe_resolve(Path("results/backtests")),
+    ]
+
+    path_targets = {
+        "log_dir": config.log_dir,
+        "state_file_parent": config.state_file.parent,
+    }
+
+    for name, raw_path in path_targets.items():
+        resolved = _safe_resolve(raw_path)
+
+        for forbidden in forbidden_roots:
+            if _is_subpath(resolved, forbidden):
+                issues.append(
+                    f"{name}={raw_path} är otillåten i live-paper (forbidden root: {forbidden})."
+                )
+
+        if _is_subpath(resolved, results_root) and not _is_subpath(resolved, paper_live_root):
+            issues.append(
+                f"{name}={raw_path} måste ligga under results/paper_live/** vid live-paper."
+            )
+
+    return issues
+
+
+def enforce_live_paper_guardrails(
+    config: RunnerConfig, logger: logging.Logger | None = None
+) -> None:
+    """Enforce live-paper guardrails; exits fail-closed on violations."""
+    issues = validate_live_paper_guardrails(config)
+    if not issues:
+        return
+
+    for issue in issues:
+        msg = f"FATAL guardrail violation: {issue}"
+        if logger is not None:
+            logger.error(msg)
+        else:
+            print(msg, file=sys.stderr)
+    raise SystemExit(1)
 
 
 # --- State Management ---
@@ -459,6 +533,8 @@ def _maybe_reset_pipeline_state(
 
 def run_loop(config: RunnerConfig, logger: logging.Logger, state: RunnerState) -> None:
     """Main polling loop."""
+    enforce_live_paper_guardrails(config, logger)
+
     logger.info("=" * 80)
     logger.info("Paper Trading Runner Started")
     logger.info(f"Symbol: {config.symbol}, Timeframe: {config.timeframe}")
@@ -650,14 +726,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--log-dir",
         type=Path,
-        default=Path("logs/paper_trading"),
-        help="Log directory (default: logs/paper_trading)",
+        default=Path("results/paper_live/logs"),
+        help="Log directory (default: results/paper_live/logs)",
     )
     parser.add_argument(
         "--state-file",
         type=Path,
-        default=Path("logs/paper_trading/runner_state.json"),
-        help="State file for idempotency (default: logs/paper_trading/runner_state.json)",
+        default=Path("results/paper_live/runner_state.json"),
+        help=("State file for idempotency " "(default: results/paper_live/runner_state.json)"),
     )
 
     args = parser.parse_args()
@@ -734,6 +810,9 @@ def main():
         log_dir=args.log_dir,
         state_file=args.state_file,
     )
+
+    # Enforce mode/path guardrails before initializing runtime resources.
+    enforce_live_paper_guardrails(config, logger=None)
 
     # Load state
     state = load_state(config.state_file, logger)

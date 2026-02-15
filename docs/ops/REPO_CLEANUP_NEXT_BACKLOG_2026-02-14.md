@@ -47,13 +47,22 @@ destruktiva steg är högre risk och fortsatt **föreslagna**.
 ## D4B policyspår (2026-02-14)
 
 - Beslutsunderlag för policyalternativ är framtaget i:
-	- `docs/ops/REPO_CLEANUP_D4B_POLICY_OPTIONS_2026-02-14.md`
+  - `docs/ops/REPO_CLEANUP_D4B_POLICY_OPTIONS_2026-02-14.md`
 - D4B i denna iteration är docs-only.
 - Ignore-policyändring är fortsatt **föreslagen** och kräver separat kontrakt + explicit godkännande.
 
-	## D5 out-of-band execution guide (2026-02-14)
+## D5 out-of-band execution guide (2026-02-14)
 
-	- Operativ vägledning är dokumenterad i:
-		- `docs/ops/REPO_CLEANUP_D5_OOB_EXECUTION_GUIDE_2026-02-14.md`
-	- D5 i denna iteration är docs-only.
-	- Git-spårad `results/**` execution är fortsatt **föreslagen** under nuvarande policy.
+- Operativ vägledning är dokumenterad i:
+  - `docs/ops/REPO_CLEANUP_D5_OOB_EXECUTION_GUIDE_2026-02-14.md`
+- D5 i denna iteration är docs-only.
+- Git-spårad `results/**` execution är fortsatt **föreslagen** under nuvarande policy.
+
+## D6 policy tranche (2026-02-15)
+
+- Separat policykontrakt + rapport:
+  - `docs/ops/REPO_CLEANUP_D6_POLICY_CONTRACT_2026-02-15.md`
+  - `docs/ops/REPO_CLEANUP_D6_POLICY_REPORT_2026-02-15.md`
+- Ignore-policy har justerats minimalt för att tillåta git-spårning av enbart:
+  - `archive/_orphaned/results/**`
+- Ingen `results/**` move/delete execution ingår i D6.

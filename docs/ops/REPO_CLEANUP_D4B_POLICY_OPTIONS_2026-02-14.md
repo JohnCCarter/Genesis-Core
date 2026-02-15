@@ -16,8 +16,8 @@ D4B i denna commit är docs-only. Ingen ignore-policy ändras här.
 
 ### Alternativ A — Selektiv spårning av curated bundles
 
-**Status:** `föreslagen`  
-**Risknivå:** medel  
+**Status:** `föreslagen`
+**Risknivå:** medel
 **Idé:** Behåll bred ignore för `results/**`, men tillåt explicit spårning av ett begränsat, reproducerbart delträd (t.ex. bundles/metadata).
 
 **Fördelar**
@@ -38,8 +38,8 @@ D4B i denna commit är docs-only. Ingen ignore-policy ändras här.
 
 ### Alternativ B — Full spårning av valda results-subträd
 
-**Status:** `föreslagen`  
-**Risknivå:** hög  
+**Status:** `föreslagen`
+**Risknivå:** hög
 **Idé:** Tillåt spårning av hela subträd under `results/` (ex. `results/hparam_search/<run>`).
 
 **Fördelar**
@@ -59,8 +59,8 @@ D4B i denna commit är docs-only. Ingen ignore-policy ändras här.
 
 ### Alternativ C — Ingen policyändring, fortsatt out-of-band
 
-**Status:** `föreslagen`  
-**Risknivå:** låg  
+**Status:** `föreslagen`
+**Risknivå:** låg
 **Idé:** Behåll nuvarande ignore-policy; hantera `results/**` endast via lokal drift och separat rapportering.
 
 **Fördelar**

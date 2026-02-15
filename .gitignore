@@ -231,6 +231,10 @@ bandit-report.json
 !results/*.md
 !results/archive/**
 
+# D6 policy tranche: allow git tracking only for archived orphaned results bundles
+!archive/_orphaned/results/
+!archive/_orphaned/results/**
+
 # Label cache (temporary, regenerate on demand)
 cache/
 cache/**

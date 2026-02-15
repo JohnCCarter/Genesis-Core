@@ -270,3 +270,14 @@ destruktiva steg är högre risk och fortsatt **föreslagna**.
 - Noterad residual risk i denna tranche:
   - basename-referenser i run-artefakter (`trial_036/037/038.json` och `_cache/*.json`) är accepterade inom move-only scope.
 - Ingen övrig `results/**` execution ingår i D20.
+
+## D21 minimal delete execution tranche (2026-02-15)
+
+- Separat execution-kontrakt + rapport:
+  - `docs/ops/REPO_CLEANUP_D21_EXEC_CONTRACT_2026-02-15.md`
+  - `docs/ops/REPO_CLEANUP_D21_EXEC_REPORT_2026-02-15.md`
+- Scoped delete-only execution genomförs för exakt 1 mapp:
+  - `results/hparam_search/phase7b_grid_3months/**`
+- Noterad bakgrund i denna tranche:
+  - kandidaten var tidigare dokumenterad som låg extern ref-risk i D4A.
+- Ingen övrig `results/**` execution ingår i D21.

@@ -66,3 +66,13 @@ destruktiva steg är högre risk och fortsatt **föreslagna**.
 - Ignore-policy har justerats minimalt för att tillåta git-spårning av enbart:
   - `archive/_orphaned/results/**`
 - Ingen `results/**` move/delete execution ingår i D6.
+
+## D7 minimal execution pilot (2026-02-15)
+
+- Separat execution-kontrakt + rapport:
+  - `docs/ops/REPO_CLEANUP_D7_EXEC_CONTRACT_2026-02-15.md`
+  - `docs/ops/REPO_CLEANUP_D7_EXEC_REPORT_2026-02-15.md`
+- Scoped move-only pilot genomförs för exakt 1 fil:
+  - `results/hparam_search/run_seeds/run_meta.json`
+  - `archive/_orphaned/results/hparam_search/run_seeds/run_meta.json`
+- Ingen övrig `results/**` execution ingår i D7.

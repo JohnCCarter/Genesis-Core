@@ -114,7 +114,7 @@ $Env:GENESIS_PRECOMPUTE_FEATURES='1'
 $Env:GENESIS_RANDOM_SEED='42'
 ```
 
-## 7) Pågående repo-cleanup (P0/P1/P2/P3/D1/D2/D3/D3A/D3B/D3C/D3D/D3E/D3F/D3G/D3H/D3I/D3J/D3K/D3L/D4A/D4B/D5/D6)
+## 7) Pågående repo-cleanup (P0/P1/P2/P3/D1/D2/D3/D3A/D3B/D3C/D3D/D3E/D3F/D3G/D3H/D3I/D3J/D3K/D3L/D4A/D4B/D5/D6/D7)
 
 Status per 2026-02-15:
 
@@ -145,6 +145,7 @@ Status per 2026-02-15:
 - D4B results policy options: införd (docs-only, policyändring fortsatt föreslagen)
 - D5 results out-of-band guide: införd (docs-only, execution fortsatt föreslagen)
 - D6 results policy-tranche: införd (tooling/docs-only, begränsad allowlist för `archive/_orphaned/results/**`, ingen execution)
+- D7 results minimal execution pilot: införd (move-only, exakt 1 fil till `archive/_orphaned/results/**`, ingen övrig execution)
 
 Detaljer:
 
@@ -191,6 +192,8 @@ Detaljer:
 - `docs/ops/REPO_CLEANUP_D5_OOB_EXECUTION_GUIDE_2026-02-14.md`
 - `docs/ops/REPO_CLEANUP_D6_POLICY_CONTRACT_2026-02-15.md`
 - `docs/ops/REPO_CLEANUP_D6_POLICY_REPORT_2026-02-15.md`
+- `docs/ops/REPO_CLEANUP_D7_EXEC_CONTRACT_2026-02-15.md`
+- `docs/ops/REPO_CLEANUP_D7_EXEC_REPORT_2026-02-15.md`
 
 ## 8) Referenser
 

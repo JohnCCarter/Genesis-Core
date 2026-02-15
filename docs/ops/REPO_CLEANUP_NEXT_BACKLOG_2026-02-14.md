@@ -512,3 +512,15 @@ destruktiva steg är högre risk och fortsatt **föreslagna**.
 - Noterad residual risk i denna tranche:
   - `results/hparam_search` innehåller fortsatt mindre run-kataloger och `storage`; vidare steg scopeas separat.
 - Ingen övrig `results/**` execution ingår i D35.
+
+## D36 minimal delete execution tranche (2026-02-15)
+
+- Separat execution-kontrakt + rapport:
+  - `docs/ops/REPO_CLEANUP_D36_EXEC_CONTRACT_2026-02-15.md`
+  - `docs/ops/REPO_CLEANUP_D36_EXEC_REPORT_2026-02-15.md`
+- Scoped delete-only execution genomförs för exakt 2 filer:
+  - `scripts/analyze_failures_temp.py`
+  - `scripts/analyze_failures_temp_v2.py`
+- Noterad residual risk i denna tranche:
+  - inga observerade runtime-risker; filerna var explicita deprecated one-off stubs.
+- Ingen övrig execution ingår i D36.

@@ -451,18 +451,18 @@ def test_engine_state_persistence(sample_candles_data):
     assert engine.bar_count > 0
 
 
-def test_engine_handles_pipeline_errors_gracefully(sample_candles_data):
-    """Test that engine continues on pipeline errors (robust)."""
+def test_engine_raises_on_pipeline_errors(sample_candles_data, monkeypatch):
+    """Backtest must fail if per-bar pipeline exceptions occurred."""
     engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m", warmup_bars=10)
-    engine.candles_df = sample_candles_data
+    engine.candles_df = sample_candles_data.head(20)
 
-    # Invalid config that might cause errors
-    configs = {"invalid_key": "invalid_value"}
+    def _raise_pipeline_error(*_args, **_kwargs):
+        raise ValueError("forced per-bar failure")
 
-    # Should not crash, should handle gracefully
-    results = engine.run(configs=configs)
+    monkeypatch.setattr("core.backtest.engine.evaluate_pipeline", _raise_pipeline_error)
 
-    assert "error" not in results  # Should complete despite errors
+    with pytest.raises(RuntimeError, match="per-bar evaluation errors"):
+        engine.run(configs={})
 
 
 def test_engine_with_verbose_mode(sample_candles_data, capsys):

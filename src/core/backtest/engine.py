@@ -808,6 +808,8 @@ class BacktestEngine:
             self.candles_df["volume"].values if "volume" in self.candles_df.columns else None
         )
         num_bars = len(self.candles_df)
+        per_bar_error_count = 0
+        first_per_bar_error: tuple[int, str] | None = None
 
         # Replay bars
         for i in range(num_bars):
@@ -998,6 +1000,9 @@ class BacktestEngine:
                 self.bar_count += 1
 
             except Exception as e:
+                per_bar_error_count += 1
+                if first_per_bar_error is None:
+                    first_per_bar_error = (i, f"{type(e).__name__}: {e}")
                 if verbose or _debug_backtest_enabled():
                     try:
                         import sys  # noqa: PLC0415
@@ -1016,6 +1021,16 @@ class BacktestEngine:
             pbar.update(1)
 
         pbar.close()
+
+        if per_bar_error_count > 0:
+            first_bar = first_per_bar_error[0] if first_per_bar_error else -1
+            first_error = first_per_bar_error[1] if first_per_bar_error else "unknown error"
+            error_msg = (
+                "Backtest aborted due to per-bar evaluation errors: "
+                f"count={per_bar_error_count}, first_at_bar={first_bar}, first_error={first_error}"
+            )
+            _LOGGER.error(error_msg)
+            raise RuntimeError(error_msg)
 
         # Report feature hit counts
         try:

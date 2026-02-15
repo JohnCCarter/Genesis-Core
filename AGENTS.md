@@ -114,7 +114,7 @@ $Env:GENESIS_PRECOMPUTE_FEATURES='1'
 $Env:GENESIS_RANDOM_SEED='42'
 ```
 
-## 7) Pågående repo-cleanup (P0/P1/P2/P3/D1/D2/D3/D3A/D3B/D3C/D3D/D3E/D3F/D3G/D3H/D3I/D3J/D3K/D3L/D4A/D4B/D5/D6/D7/D8/D9/D10/D11/D12/D13/D14/D15/D16/D17/D18/D19/D20/D21/D22/D23/D24/D25/D26)
+## 7) Pågående repo-cleanup (P0/P1/P2/P3/D1/D2/D3/D3A/D3B/D3C/D3D/D3E/D3F/D3G/D3H/D3I/D3J/D3K/D3L/D4A/D4B/D5/D6/D7/D8/D9/D10/D11/D12/D13/D14/D15/D16/D17/D18/D19/D20/D21/D22/D23/D24/D25/D26/D27)
 
 Status per 2026-02-15:
 
@@ -165,6 +165,7 @@ Status per 2026-02-15:
 - D24 results minimal delete execution tranche: införd (delete-only, exakt 10 filer `results/backtests/tBTCUSD_1h_20251022_160814..162341.json`)
 - D25 results minimal delete execution tranche: införd (delete-only, exakt 10 filer `results/backtests/tBTCUSD_1h_20251022_164122..171912.json`)
 - D26 results minimal delete execution tranche: införd (delete-only, exakt 7 filer `results/backtests/tBTCUSD_1h_20251022_172222..180346.json`)
+- D27 results minimal delete execution tranche: införd (delete-only, exakt 10 filer `results/backtests/tBTCUSD_1h_20251026_205559..20251027_230343.json`)
 
 Detaljer:
 
@@ -251,6 +252,8 @@ Detaljer:
 - `docs/ops/REPO_CLEANUP_D25_EXEC_REPORT_2026-02-15.md`
 - `docs/ops/REPO_CLEANUP_D26_EXEC_CONTRACT_2026-02-15.md`
 - `docs/ops/REPO_CLEANUP_D26_EXEC_REPORT_2026-02-15.md`
+- `docs/ops/REPO_CLEANUP_D27_EXEC_CONTRACT_2026-02-15.md`
+- `docs/ops/REPO_CLEANUP_D27_EXEC_REPORT_2026-02-15.md`
 
 ## 8) Referenser
 

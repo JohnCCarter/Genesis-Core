@@ -1,4 +1,4 @@
-# Deep Analysis Report — Genesis-Core (2026-02-15, rev 3.1)
+# Deep Analysis Report — Genesis-Core (2026-02-15, rev 3.2)
 
 Samlad rapport fran tre parallella agentanalyser, reviderad efter manuell
 verifiering. Utformad som stod for Opus 4.6 och Codex 5.3 i fortsatt
@@ -12,9 +12,9 @@ repo-cleanup (D39+).
 
 **Referenskontext:** D1-D38 genomforda (se AGENTS.md §7).
 
-**As-of (denna revision):** 2026-02-16, branch `feature/composable-strategy-phase2`, commit `4cff303`.
+**As-of (denna revision):** 2026-02-16, branch `feature/composable-strategy-phase2`, commit `d92240b`.
 Grundfynden i rapporten ar fortsatt baserade pa rev 2 (2026-02-15), men statusdrift for
-A4/A5 samt kanda stale-kandidater i Fas F har uppdaterats i denna revision.
+A1/A2/A3/A4/A5/A6 samt kanda stale-kandidater i Fas F har uppdaterats i denna revision.
 
 **Revideringslogg:**
 
@@ -29,6 +29,8 @@ A4/A5 samt kanda stale-kandidater i Fas F har uppdaterats i denna revision.
 - Rev 3.1 (2026-02-16): Spraklig fortydligning av statussemantik
   (observationsstatus vs implementationsstatus) samt fortydligad
   baseline-markering i sammanfattningstabeller.
+- Rev 3.2 (2026-02-16): Statusdrift uppdaterad for A1/A2/A3/A6 (nu inforda
+  i aktuell branch), samt justerad prioriteringstext i Fas A/sammanfattning.
 
 ---
 
@@ -385,15 +387,27 @@ Dessa paverkar RUNTIME BEHAVIOR och kraver full Opus 4.6 gate-process.
 
 **Uppdatering 2026-02-16 (statusdrift):**
 
+- A1 ar inford i aktuell branch via `src/core/backtest/engine.py`
+  (cache-key isoleras med `GENESIS_PRECOMPUTE_CONFIG_HASH`; verifierat med
+  `tests/test_precompute_cache_key.py`).
+- A2 ar inford i aktuell branch via `src/core/backtest/engine.py`
+  (per-bar exceptions ackumuleras och backtest failar explicit med `RuntimeError`; verifierat
+  med `tests/test_backtest_engine.py::test_engine_raises_on_pipeline_errors`).
+- A3 ar inford i aktuell branch via `src/core/indicators/vectorized.py`
+  (`calculate_adx_vectorized` alignad med referens-Wilder implementation; verifierat
+  med `tests/test_precompute_vs_runtime.py::test_vectorized_adx_matches_reference_from_warmup`).
 - A4 ar inford i aktuell arbetskopia via `src/core/strategy/decision.py`
   (sizing-fel ger nu explicit `RuntimeError` i stallet for tyst `size_base=0.0`).
 - A5 ar inford i aktuell arbetskopia via `src/core/strategy/decision.py`
   (HTF/LTF `*_CONTEXT_ERROR` blockeras explicit, med regressionsfall i tester).
+- A6 ar inford i aktuell branch via `src/core/strategy/features_asof.py`
+  (fib-fel ger explicit fallback-keyset + meta-status `FIB_FEATURES_CONTEXT_ERROR`; verifierat
+  med `tests/test_features_asof_fib_error_handling.py`).
 - Rev 2-tabellen ovan behalls for historisk sparbarhet av ursprungsfynd.
 
-**VARNING:** A1, A2, A3 paverkar direkt DETERMINISM och REPRODUCIBILITET.
-A2 kan orsaka att optimizer favoriserar trasiga configs.
-Dessa bor fixas FORE nasta Optuna-korning.
+**Historisk varning (rev 2-bas):** A1, A2, A3 paverkar direkt DETERMINISM och REPRODUCIBILITET.
+I rev 2-laget var dessa blockerande fore nasta Optuna-korning; i rev 3.2 ar de markerade som
+inforda i aktuell branch.
 
 **Borttagna fran Fas A (falsk_positiv / overdrivet):**
 
@@ -480,8 +494,8 @@ Per issue:
 6. Commit
 ```
 
-**Rekommenderad ordning (uppdaterad 2026-02-16):** A2 -> A1 -> A3 -> A6 -> A7-A10
-(A4 och A5 ar redan inforda i aktuell arbetskopia).
+**Rekommenderad ordning (uppdaterad 2026-02-16):** A7 -> A8 -> A9 -> A10
+(A1-A6 ar redan inforda i aktuell branch).
 
 ### Fas B-G (Cleanup) — Standardkontrakt per tranche
 
@@ -544,7 +558,7 @@ git-index-status (`git ls-files <path>`) for att undvika felaktiga
 
 | Kategori                                              | Volym              | Prioritet              |
 | ----------------------------------------------------- | ------------------ | ---------------------- |
-| Kodfix (Fas A) — verifierade runtime-risker           | 10 issues          | OMEDELBAR for A1-A3    |
+| Kodfix (Fas A) — verifierade runtime-risker           | 10 issues          | Nasta: A7-A10          |
 | Dead code (Fas B) — TEST_ONLY/ARCHIVE_ONLY/TRULY_DEAD | 8 moduler + tester | Fas B                  |
 | Script-arkivering (Fas C)                             | 30+ scripts        | Fas C                  |
 | Config cleanup (Fas D)                                | 100+ filer         | Fas D                  |
@@ -555,16 +569,12 @@ Obs: Volymtal i cleanup-tabellen ovan ar baseline fran rev 2. Aktuellt branch-la
 for stale-kandidater framgar i Fas F-notiserna.
 
 **Viktigaste insikten:**
-Kodfix (Fas A) bor prioriteras FORE fortsatt filstadning. Speciellt A2
-(per-bar exception swallowing — CRITICAL), A1 (precompute cache utan
-config-hash), och A3 (ADX divergens) paverkar direkt KVALITETEN PA
-OPTIMIZER-RESULTAT och bor fixas innan nasta Optuna-korning.
-
-Som status 2026-02-16 ar A4 och A5 inforda i aktuell arbetskopia; kvarvarande
-hogst prioriterade kodfixar ar framfor allt A2, A1 och A3.
+Kodfix (Fas A) bor fortsatt prioriteras FORE fortsatt filstadning, men statusdriften
+ar nu att A1-A6 ar inforda i aktuell branch. Kvarvarande Fas A-kandidater ar framfor
+allt A7-A10.
 
 ---
 
 _Rapport genererad 2026-02-15 av Claude Code (Opus 4.6) med tre parallella
-analysagenter. Rev 3.1 (2026-02-16) med tidsankrad statusuppdatering och
-forbattrad statussemantik._
+analysagenter. Rev 3.2 (2026-02-16) med tidsankrad statusuppdatering,
+forbattrad statussemantik och uppdaterad A1-A6 statusdrift._

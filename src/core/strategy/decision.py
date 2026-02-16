@@ -380,6 +380,11 @@ def decide(
             return levels[nearest]
         return None
 
+    def _is_context_error_reason(value: Any) -> bool:
+        if not isinstance(value, str):
+            return False
+        return value.strip().upper().endswith("_CONTEXT_ERROR")
+
     ltf_entry_cfg = (cfg.get("ltf_fib") or {}).get("entry") or {}
 
     def _prepare_override_context() -> dict[str, Any]:
@@ -561,6 +566,24 @@ def decide(
 
         missing_allowed = False
         if not htf_ctx.get("available"):
+            unavailable_reason = htf_ctx.get("reason")
+            if _is_context_error_reason(unavailable_reason):
+                state_out["htf_fib_entry_debug"] = {
+                    "reason": "CONTEXT_ERROR_BLOCK",
+                    "raw": htf_ctx,
+                }
+                reasons.append("HTF_FIB_CONTEXT_ERROR")
+                _log_decision_event(
+                    "HTF_FIB_BLOCK",
+                    reason="CONTEXT_ERROR",
+                    context_reason=unavailable_reason,
+                    candidate=candidate,
+                )
+                return "NONE", {
+                    "versions": versions,
+                    "reasons": reasons,
+                    "state_out": state_out,
+                }
             # Backwards compatible: configs may omit missing_policy or carry None.
             # Default to "pass" so older champions do not become no-trade configs.
             missing_policy = str(htf_entry_cfg.get("missing_policy") or "pass").lower()
@@ -804,6 +827,24 @@ def decide(
 
         missing_allowed_ltf = False
         if not ltf_ctx.get("available"):
+            unavailable_reason = ltf_ctx.get("reason")
+            if _is_context_error_reason(unavailable_reason):
+                state_out["ltf_fib_entry_debug"] = {
+                    "reason": "CONTEXT_ERROR_BLOCK",
+                    "raw": ltf_ctx,
+                }
+                reasons.append("LTF_FIB_CONTEXT_ERROR")
+                _log_decision_event(
+                    "LTF_FIB_BLOCK",
+                    reason="CONTEXT_ERROR",
+                    context_reason=unavailable_reason,
+                    candidate=candidate,
+                )
+                return "NONE", {
+                    "versions": versions,
+                    "reasons": reasons,
+                    "state_out": state_out,
+                }
             # Backwards compatible: configs may omit missing_policy or carry None.
             # Default to "pass" so older champions do not become no-trade configs.
             missing_policy = str(ltf_entry_cfg.get("missing_policy") or "pass").lower()
@@ -1053,8 +1094,14 @@ def decide(
         for thr_v, sz in sorted(risk_map, key=lambda x: float(x[0])):
             if conf_val_gate >= float(thr_v):
                 size_base = float(sz)
-    except Exception:
-        size_base = 0.0
+    except Exception as exc:
+        _LOG.exception(
+            "[DECISION] SIZING_RISK_MAP_ERROR candidate=%s confidence=%.6f risk_map=%s",
+            candidate,
+            conf_val_gate,
+            _sanitize_context(risk_map),
+        )
+        raise RuntimeError("Failed to compute size_base from risk_map") from exc
 
     # Apply a (0..1] scale if a scaled confidence view exists.
     size_scale = 1.0

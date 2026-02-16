@@ -84,3 +84,99 @@ def test_decide_gate_order_and_fail_safe():
         cfg=cfg,
     )
     assert a2 == "NONE" and "COOLDOWN_ACTIVE" in m2.get("reasons", [])
+
+
+def test_htf_context_error_blocks_even_when_missing_policy_pass() -> None:
+    cfg = {
+        "thresholds": {"entry_conf_overall": 0.6, "regime_proba": {"balanced": 0.55}},
+        "gates": {"cooldown_bars": 0},
+        "risk": {"risk_map": [[0.6, 0.01]]},
+        "htf_fib": {"entry": {"enabled": True, "missing_policy": "pass", "tolerance_atr": 1.0}},
+    }
+    action, meta = decide(
+        {},
+        probas={"buy": 0.9, "sell": 0.1},
+        confidence={"buy": 0.9, "sell": 0.1},
+        regime="balanced",
+        state={
+            "last_close": 100.0,
+            "current_atr": 1.0,
+            "htf_fib": {"available": False, "reason": "HTF_CONTEXT_ERROR"},
+        },
+        risk_ctx={},
+        cfg=cfg,
+    )
+    assert action == "NONE"
+    assert "HTF_FIB_CONTEXT_ERROR" in (meta.get("reasons") or [])
+
+
+def test_htf_unavailable_backcompat_still_passes_with_missing_policy_pass() -> None:
+    cfg = {
+        "thresholds": {"entry_conf_overall": 0.6, "regime_proba": {"balanced": 0.55}},
+        "gates": {"cooldown_bars": 0},
+        "risk": {"risk_map": [[0.6, 0.01]]},
+        "htf_fib": {"entry": {"enabled": True, "missing_policy": "pass", "tolerance_atr": 1.0}},
+    }
+    action, meta = decide(
+        {},
+        probas={"buy": 0.9, "sell": 0.1},
+        confidence={"buy": 0.9, "sell": 0.1},
+        regime="balanced",
+        state={
+            "last_close": 100.0,
+            "current_atr": 1.0,
+            "htf_fib": {"available": False, "reason": "HTF_DATA_NOT_FOUND"},
+        },
+        risk_ctx={},
+        cfg=cfg,
+    )
+    assert action == "LONG"
+    assert "HTF_FIB_CONTEXT_ERROR" not in (meta.get("reasons") or [])
+
+
+def test_ltf_context_error_blocks_even_when_missing_policy_pass() -> None:
+    cfg = {
+        "thresholds": {"entry_conf_overall": 0.6, "regime_proba": {"balanced": 0.55}},
+        "gates": {"cooldown_bars": 0},
+        "risk": {"risk_map": [[0.6, 0.01]]},
+        "ltf_fib": {"entry": {"enabled": True, "missing_policy": "pass", "tolerance_atr": 1.0}},
+    }
+    action, meta = decide(
+        {},
+        probas={"buy": 0.9, "sell": 0.1},
+        confidence={"buy": 0.9, "sell": 0.1},
+        regime="balanced",
+        state={
+            "last_close": 100.0,
+            "current_atr": 1.0,
+            "ltf_fib": {"available": False, "reason": "LTF_CONTEXT_ERROR"},
+        },
+        risk_ctx={},
+        cfg=cfg,
+    )
+    assert action == "NONE"
+    assert "LTF_FIB_CONTEXT_ERROR" in (meta.get("reasons") or [])
+
+
+def test_ltf_unavailable_backcompat_still_passes_with_missing_policy_pass() -> None:
+    cfg = {
+        "thresholds": {"entry_conf_overall": 0.6, "regime_proba": {"balanced": 0.55}},
+        "gates": {"cooldown_bars": 0},
+        "risk": {"risk_map": [[0.6, 0.01]]},
+        "ltf_fib": {"entry": {"enabled": True, "missing_policy": "pass", "tolerance_atr": 1.0}},
+    }
+    action, meta = decide(
+        {},
+        probas={"buy": 0.9, "sell": 0.1},
+        confidence={"buy": 0.9, "sell": 0.1},
+        regime="balanced",
+        state={
+            "last_close": 100.0,
+            "current_atr": 1.0,
+            "ltf_fib": {"available": False, "reason": "LTF_NO_SWINGS"},
+        },
+        risk_ctx={},
+        cfg=cfg,
+    )
+    assert action == "LONG"
+    assert "LTF_FIB_CONTEXT_ERROR" not in (meta.get("reasons") or [])

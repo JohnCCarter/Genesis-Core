@@ -82,6 +82,18 @@ _INDICATOR_CACHE_ENABLED = not env_flag_enabled(
 _PRECOMPUTE_DEBUG_ONCE = False
 _PRECOMPUTE_WARN_ONCE = False
 
+_FIB_FEATURE_FALLBACKS: dict[str, float] = {
+    "fib_dist_min_atr": 10.0,
+    "fib_dist_signed_atr": 0.0,
+    "fib_prox_score": 0.0,
+    "fib0618_prox_atr": 0.0,
+    "fib05_prox_atr": 0.0,
+    "swing_retrace_depth": 0.0,
+    "fib05_x_ema_slope": 0.0,
+    "fib_prox_x_adx": 0.0,
+    "fib05_x_rsi_inv": 0.0,
+}
+
 
 def _indicator_cache_lookup(key):
     if not _INDICATOR_CACHE_ENABLED:
@@ -585,6 +597,10 @@ def _extract_asof(
 
     # === FIBONACCI FEATURES (levels + distances/proximity) ===
     # Beräkna endast om vi har tillräckligt med data (kräver ATR, swing-detektion)
+    fib_feature_status: dict[str, Any] = {
+        "available": True,
+        "reason": "OK",
+    }
     try:
         fib_config = FibonacciConfig(atr_depth=3.0, max_swings=8, min_swings=1)
         # Avoid NumPy truth-value ambiguity on array slices
@@ -751,7 +767,13 @@ def _extract_asof(
             }
         )
     except Exception as exc:
-        # Om något går fel i fib-beräkning, behåll bas-features och fortsätt
+        # Om något går fel i fib-beräkning, sätt explicita fallback-värden
+        # för samtliga fib-relaterade features och exponera felstatus i meta.
+        features.update(_FIB_FEATURE_FALLBACKS)
+        fib_feature_status = {
+            "available": False,
+            "reason": "FIB_FEATURES_CONTEXT_ERROR",
+        }
         try:
             metrics.inc("feature_fib_errors")
         except Exception:  # nosec B110
@@ -848,6 +870,10 @@ def _extract_asof(
                 logger=_log,
             )
 
+    meta_reasons: list[str] = []
+    if not bool(fib_feature_status.get("available", True)):
+        meta_reasons.append(str(fib_feature_status.get("reason") or "FIB_FEATURES_CONTEXT_ERROR"))
+
     meta = {
         "versions": {
             "features_v15_highvol_optimized": True,
@@ -855,11 +881,12 @@ def _extract_asof(
             "features_v17_fibonacci_combinations": True,
             "htf_fibonacci_symmetric_chamoun": True,  # NEW: HTF context for symmetric exits
         },
-        "reasons": [],
+        "reasons": meta_reasons,
         "feature_count": len(features),
         "asof_bar": asof_bar,
         "uses_bars": [0, asof_bar],
         "total_bars_available": total_bars,
+        "fibonacci_features": fib_feature_status,
         "htf_fibonacci": htf_fibonacci_context,  # NEW: HTF context for exit logic
         "ltf_fibonacci": ltf_fibonacci_context,
         # Backcompat: current_atr aligns with features['atr_14'] (true ATR(14))

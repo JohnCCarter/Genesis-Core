@@ -1,4 +1,4 @@
-# Deep Analysis Report — Genesis-Core (2026-02-15, rev 2)
+# Deep Analysis Report — Genesis-Core (2026-02-15, rev 3.1)
 
 Samlad rapport fran tre parallella agentanalyser, reviderad efter manuell
 verifiering. Utformad som stod for Opus 4.6 och Codex 5.3 i fortsatt
@@ -12,6 +12,10 @@ repo-cleanup (D39+).
 
 **Referenskontext:** D1-D38 genomforda (se AGENTS.md §7).
 
+**As-of (denna revision):** 2026-02-16, branch `feature/composable-strategy-phase2`, commit `4cff303`.
+Grundfynden i rapporten ar fortsatt baserade pa rev 2 (2026-02-15), men statusdrift for
+A4/A5 samt kanda stale-kandidater i Fas F har uppdaterats i denna revision.
+
 **Revideringslogg:**
 
 - Rev 1 (2026-02-15): Ursprunglig rapport fran tre agenter.
@@ -19,6 +23,12 @@ repo-cleanup (D39+).
   FALSK_POSITIV, 2 findings markerade STALE, severity justerade, statuskolumn
   tillagd, git-index-bevis tillagt, kategorisering av dead code forfinad,
   Fas E (git hygien) borttagen (alla pastaenden verifierade som felaktiga).
+- Rev 3 (2026-02-16): Tidsankring med branch+commit, avvikelsegranskning av
+  statusdrift, samt tydlig uppdatering att A4/A5 ar inforda i aktuell
+  arbetskopia (ej inbakad i rev 2-basens prioriteringsordning).
+- Rev 3.1 (2026-02-16): Spraklig fortydligning av statussemantik
+  (observationsstatus vs implementationsstatus) samt fortydligad
+  baseline-markering i sammanfattningstabeller.
 
 ---
 
@@ -30,6 +40,11 @@ repo-cleanup (D39+).
 | DELVIS        | Korrekt observation men overdrivet/felangivet i severity/beskrivning |
 | FALSK_POSITIV | Pastaende stammer inte vid verifiering                               |
 | STALE         | Var sant men ar atgardat (D37/D38 eller tidigare)                    |
+| REDUNDANT     | Dubblett av annan finding, utan eget separat atgardsbehov            |
+
+**Tolkning:** Status i tabellerna avser **observationsstatus**.
+Implementationsstatus redovisas separat i statusdrift-notiser (med termer som
+`foreslagen`/`inford`).
 
 ---
 
@@ -337,6 +352,7 @@ Kandidater for arkivering till `scripts/archive/`:
 ### 3.8 results/ residual
 
 **results/hparam_search/** — phase7b*\* directories, run_20251226*\* directories
+(_historisk kandidatlista; se Fas F for uppdaterad STALE-markering i denna branch_)
 **results/backtests/** — orphaned equity CSV, gamla oktober-runs
 
 Behover verifieras mot git-index fore atgard.
@@ -366,6 +382,14 @@ Dessa paverkar RUNTIME BEHAVIOR och kraver full Opus 4.6 gate-process.
 | A8  | CR-4: Mode-validering inkonsistens        | engine.py:189-206        | MEDIUM   | VERIFIERAD |
 | A9  | SF-6: /evaluate dummy-data fallback       | server.py:626-639        | MEDIUM   | VERIFIERAD |
 | A10 | SF-7: paper_submit tyst symbol-byte       | server.py:814-817        | MEDIUM   | VERIFIERAD |
+
+**Uppdatering 2026-02-16 (statusdrift):**
+
+- A4 ar inford i aktuell arbetskopia via `src/core/strategy/decision.py`
+  (sizing-fel ger nu explicit `RuntimeError` i stallet for tyst `size_base=0.0`).
+- A5 ar inford i aktuell arbetskopia via `src/core/strategy/decision.py`
+  (HTF/LTF `*_CONTEXT_ERROR` blockeras explicit, med regressionsfall i tester).
+- Rev 2-tabellen ovan behalls for historisk sparbarhet av ursprungsfynd.
 
 **VARNING:** A1, A2, A3 paverkar direkt DETERMINISM och REPRODUCIBILITET.
 A2 kan orsaka att optimizer favoriserar trasiga configs.
@@ -430,14 +454,14 @@ exekvering och explicit git-index-bevis per kandidat.
 
 Varje punkt kraver `git ls-files`-bevis fore atgard:
 
-- results/hparam*search/phase7b*\* (7 dirs)
-- results/hparam*search/run_20251226*\* (4 dirs)
+- results/hparam*search/phase7b*\* (7 dirs) — STALE i denna branch (se AGENTS D21)
+- results/hparam*search/run_20251226*\* (4 dirs) — STALE i denna branch (se AGENTS D31)
 - results/backtests/ orphaned equity CSV
 - results/backtests/ oktober 2025 runs
 
 ### Fas G: Docs konsolidering
 
-- Flytta docs/ops/REPO*CLEANUP_D\**\*.md till docs/ops/archive/cleanup_2026-02/
+- Flytta docs/ops/REPO\*CLEANUP_D\*\*\*.md till docs/ops/archive/cleanup_2026-02/
 - Behall top-level summaries och backlog i docs/ops/
 
 ---
@@ -456,7 +480,8 @@ Per issue:
 6. Commit
 ```
 
-**Rekommenderad ordning:** A2 -> A1 -> A3 -> A4 -> A5 -> A6 -> A7-A10
+**Rekommenderad ordning (uppdaterad 2026-02-16):** A2 -> A1 -> A3 -> A6 -> A7-A10
+(A4 och A5 ar redan inforda i aktuell arbetskopia).
 
 ### Fas B-G (Cleanup) — Standardkontrakt per tranche
 
@@ -517,14 +542,17 @@ git-index-status (`git ls-files <path>`) for att undvika felaktiga
 
 ### Cleanup-kategorier
 
-| Kategori                                              | Volym              | Prioritet           |
-| ----------------------------------------------------- | ------------------ | ------------------- |
-| Kodfix (Fas A) — verifierade runtime-risker           | 10 issues          | OMEDELBAR for A1-A3 |
-| Dead code (Fas B) — TEST_ONLY/ARCHIVE_ONLY/TRULY_DEAD | 8 moduler + tester | Fas B               |
-| Script-arkivering (Fas C)                             | 30+ scripts        | Fas C               |
-| Config cleanup (Fas D)                                | 100+ filer         | Fas D               |
-| Results residual (Fas F)                              | 10+ dirs           | Fas F               |
-| Docs konsolidering (Fas G)                            | 100+ ops-docs      | Fas G               |
+| Kategori                                              | Volym              | Prioritet              |
+| ----------------------------------------------------- | ------------------ | ---------------------- |
+| Kodfix (Fas A) — verifierade runtime-risker           | 10 issues          | OMEDELBAR for A1-A3    |
+| Dead code (Fas B) — TEST_ONLY/ARCHIVE_ONLY/TRULY_DEAD | 8 moduler + tester | Fas B                  |
+| Script-arkivering (Fas C)                             | 30+ scripts        | Fas C                  |
+| Config cleanup (Fas D)                                | 100+ filer         | Fas D                  |
+| Results residual (Fas F, historisk baseline)          | 10+ dirs           | Fas F (se STALE-notis) |
+| Docs konsolidering (Fas G)                            | 100+ ops-docs      | Fas G                  |
+
+Obs: Volymtal i cleanup-tabellen ovan ar baseline fran rev 2. Aktuellt branch-lage
+for stale-kandidater framgar i Fas F-notiserna.
 
 **Viktigaste insikten:**
 Kodfix (Fas A) bor prioriteras FORE fortsatt filstadning. Speciellt A2
@@ -532,7 +560,11 @@ Kodfix (Fas A) bor prioriteras FORE fortsatt filstadning. Speciellt A2
 config-hash), och A3 (ADX divergens) paverkar direkt KVALITETEN PA
 OPTIMIZER-RESULTAT och bor fixas innan nasta Optuna-korning.
 
+Som status 2026-02-16 ar A4 och A5 inforda i aktuell arbetskopia; kvarvarande
+hogst prioriterade kodfixar ar framfor allt A2, A1 och A3.
+
 ---
 
 _Rapport genererad 2026-02-15 av Claude Code (Opus 4.6) med tre parallella
-analysagenter. Rev 2 efter manuell verifiering._
+analysagenter. Rev 3.1 (2026-02-16) med tidsankrad statusuppdatering och
+forbattrad statussemantik._

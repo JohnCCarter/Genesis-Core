@@ -189,11 +189,51 @@ def _compute_candles_hash(candles: dict[str, list[float] | np.ndarray], asof_bar
     """
     # Optional ultra-fast key for tight loops
     if str(os.environ.get("GENESIS_FAST_HASH", "")).strip().lower() in {"1", "true"}:
+
+        def _safe_value(series: list[float] | np.ndarray | None, idx: int) -> float:
+            if series is None or idx < 0:
+                return 0.0
+            try:
+                if len(series) <= idx:
+                    return 0.0
+                return float(series[idx])
+            except Exception:
+                return 0.0
+
         try:
-            last_close = float(candles["close"][asof_bar])
+            close = candles.get("close")
+            last_close = _safe_value(close, asof_bar)
+
+            # Backwards compatibility: keep legacy shape for close-only minimal inputs.
+            if set(candles.keys()) <= {"close"}:
+                return f"{asof_bar}:{last_close:.4f}"
+
+            close_len = int(len(close)) if close is not None else 0
+            c_prev = _safe_value(close, asof_bar - 1)
+            c_first = _safe_value(close, 0)
+            o_now = _safe_value(candles.get("open"), asof_bar)
+            h_now = _safe_value(candles.get("high"), asof_bar)
+            l_now = _safe_value(candles.get("low"), asof_bar)
+            v_now = _safe_value(candles.get("volume"), asof_bar)
+
+            import struct
+
+            payload = struct.pack(
+                "<qqddddddd",
+                int(asof_bar),
+                close_len,
+                last_close,
+                c_prev,
+                c_first,
+                o_now,
+                h_now,
+                l_now,
+                v_now,
+            )
+            digest = hashlib.blake2b(payload, digest_size=8).hexdigest()
+            return f"{asof_bar}:{last_close:.4f}:{digest}"
         except Exception:
-            last_close = 0.0
-        return f"{asof_bar}:{last_close:.4f}"
+            return f"{asof_bar}:0.0000"
 
     # Default deterministic key
     # NOTE: Avoid Python's built-in hash() here, because it is salted per process

@@ -403,6 +403,24 @@ Dessa paverkar RUNTIME BEHAVIOR och kraver full Opus 4.6 gate-process.
 - A6 ar inford i aktuell branch via `src/core/strategy/features_asof.py`
   (fib-fel ger explicit fallback-keyset + meta-status `FIB_FEATURES_CONTEXT_ERROR`; verifierat
   med `tests/test_features_asof_fib_error_handling.py`).
+- A7 ar inford i aktuell branch via `src/core/strategy/features_asof.py` (commit `c6632af`)
+  (fast-hash hardening minskar cache-kollisioner; verifierat med
+  `tests/test_features_asof_cache.py`).
+- A8 ar inford i aktuell branch via `src/core/backtest/engine.py` (commit `07bf05a`)
+  (mixed mode precompute/slow-window hard-failar utan explicit opt-in; verifierat med
+  `tests/test_backtest_engine.py::test_engine_precompute_without_fast_window_raises_when_mode_not_explicit`
+  och
+  `tests/test_backtest_engine.py::test_engine_precompute_without_fast_window_allowed_in_explicit_mode`).
+- A9 ar inford i aktuell branch via `src/core/server.py` (commit `51e11ff`)
+  (`/strategy/evaluate` har ingen dummy-data fallback langre; verifierat med
+  `tests/test_ui_endpoints.py::test_evaluate_missing_candles_returns_invalid_candles_error`,
+  `tests/test_ui_endpoints.py::test_evaluate_empty_candles_lists_returns_invalid_candles_error`
+  och
+  `tests/test_ui_endpoints.py::test_evaluate_invalid_candles_type_returns_invalid_candles_error`).
+- A10 ar inford i aktuell branch via `src/core/server.py` (commit `d886d89`)
+  (`/paper/submit` avvisar nu ogiltig symbol explicit i stallet for tyst symbol-byte; verifierat
+  med `tests/test_ui_endpoints.py::test_paper_submit_invalid_symbol_returns_pinned_payload`
+  och `tests/test_ui_endpoints.py::test_paper_submit_monkeypatched`).
 - Rev 2-tabellen ovan behalls for historisk sparbarhet av ursprungsfynd.
 
 **Historisk varning (rev 2-bas):** A1, A2, A3 paverkar direkt DETERMINISM och REPRODUCIBILITET.

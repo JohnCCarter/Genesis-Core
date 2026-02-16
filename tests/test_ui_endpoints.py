@@ -41,6 +41,74 @@ def test_ui_get_and_evaluate_post():
     assert "result" in data and "meta" in data
 
 
+def test_evaluate_missing_candles_returns_invalid_candles_error():
+    c = TestClient(app)
+    payload = {
+        "policy": {"symbol": "tBTCUSD", "timeframe": "1m"},
+        "configs": {},
+        "state": {},
+    }
+
+    r = c.post("/strategy/evaluate", json=payload)
+
+    assert r.status_code == 200
+    assert r.json() == {
+        "ok": False,
+        "error": {
+            "code": "INVALID_CANDLES",
+            "message": "candles must include non-empty equal-length open/high/low/close/volume arrays",
+        },
+    }
+
+
+def test_evaluate_empty_candles_lists_returns_invalid_candles_error():
+    c = TestClient(app)
+    payload = {
+        "policy": {"symbol": "tBTCUSD", "timeframe": "1m"},
+        "configs": {},
+        "candles": {
+            "open": [],
+            "high": [],
+            "low": [],
+            "close": [],
+            "volume": [],
+        },
+        "state": {},
+    }
+
+    r = c.post("/strategy/evaluate", json=payload)
+
+    assert r.status_code == 200
+    assert r.json() == {
+        "ok": False,
+        "error": {
+            "code": "INVALID_CANDLES",
+            "message": "candles must include non-empty equal-length open/high/low/close/volume arrays",
+        },
+    }
+
+
+def test_evaluate_invalid_candles_type_returns_invalid_candles_error():
+    c = TestClient(app)
+    payload = {
+        "policy": {"symbol": "tBTCUSD", "timeframe": "1m"},
+        "configs": {},
+        "candles": "not-a-dict",
+        "state": {},
+    }
+
+    r = c.post("/strategy/evaluate", json=payload)
+
+    assert r.status_code == 200
+    assert r.json() == {
+        "ok": False,
+        "error": {
+            "code": "INVALID_CANDLES",
+            "message": "candles must include non-empty equal-length open/high/low/close/volume arrays",
+        },
+    }
+
+
 def test_public_candles_endpoint_smoke(monkeypatch):
     from core.server import public_candles as pc
 

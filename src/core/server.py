@@ -625,13 +625,32 @@ def ui_page() -> str:
 
 @app.post("/strategy/evaluate")
 def strategy_evaluate(payload: dict = Body({})) -> dict:
-    candles = payload.get("candles") or {
-        "open": [1, 2, 3, 4],
-        "high": [2, 3, 4, 5],
-        "low": [0.5, 1.5, 2.5, 3.5],
-        "close": [1.5, 2.5, 3.5, 4.5],
-        "volume": [10, 11, 12, 13],
+    invalid_candles_error = {
+        "ok": False,
+        "error": {
+            "code": "INVALID_CANDLES",
+            "message": "candles must include non-empty equal-length open/high/low/close/volume arrays",
+        },
     }
+
+    required_keys = ("open", "high", "low", "close", "volume")
+    candles = payload.get("candles")
+    if not isinstance(candles, dict):
+        return invalid_candles_error
+
+    series_list: list[list] = []
+    for key in required_keys:
+        if key not in candles:
+            return invalid_candles_error
+        value = candles.get(key)
+        if not isinstance(value, list) or len(value) == 0:
+            return invalid_candles_error
+        series_list.append(value)
+
+    lengths = {len(v) for v in series_list}
+    if len(lengths) != 1:
+        return invalid_candles_error
+
     policy = payload.get("policy") or {"symbol": "tBTCUSD", "timeframe": "1m"}
     configs = payload.get("configs") or {}
     state = payload.get("state") or {}

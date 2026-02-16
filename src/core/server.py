@@ -824,16 +824,22 @@ async def paper_submit(payload: dict = Body(...)) -> dict:
     """Skicka en order till Bitfinex Paper (auth krävs via .env).
 
     OBS: Paper only – vi tillåter endast TEST-spotpar från whitelist.
-    Om indata-symbolen inte är whitelista: fallback till tTESTBTC:TESTUSD
-    för att undvika risk för verklig handel.
+    Icke-whitelistad symbol returnerar explicit invalid_symbol-svar.
 
       payload: {symbol, side:"LONG"|"SHORT"|"NONE", size:float, type?:"MARKET"|"LIMIT", price?:float}
     """
-    # Använd endast symboler från whitelist; annars fall tillbaka till standard TEST-par
-    requested_symbol_raw = str(payload.get("symbol") or "tTESTBTC:TESTUSD")
+    # Använd endast symboler från whitelist
+    requested_symbol_raw = str(payload.get("symbol") or "")
     key = requested_symbol_raw.upper()
     allowed_map = {s.upper(): s for s in TEST_SPOT_WHITELIST}
-    symbol = allowed_map.get(key, "tTESTBTC:TESTUSD")
+    symbol = allowed_map.get(key)
+    if symbol is None:
+        return {
+            "ok": False,
+            "error": "invalid_symbol",
+            "requested_symbol": requested_symbol_raw,
+            "message": "symbol must be one of TEST_SPOT_WHITELIST",
+        }
     side = str(payload.get("side") or "NONE").upper()
     size = float(payload.get("size") or 0.0)
     order_type = str(payload.get("type") or "MARKET").upper()

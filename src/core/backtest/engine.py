@@ -189,6 +189,7 @@ class BacktestEngine:
     def _validate_mode_consistency(self) -> None:
         """Validate that fast_window and GENESIS_PRECOMPUTE_FEATURES are consistent."""
         precompute = os.getenv("GENESIS_PRECOMPUTE_FEATURES") == "1"
+        mode_explicit = os.getenv("GENESIS_MODE_EXPLICIT") == "1"
 
         if self.fast_window and not precompute:
             raise ValueError(
@@ -198,9 +199,17 @@ class BacktestEngine:
             )
 
         if not self.fast_window and precompute:
+            if not mode_explicit:
+                raise ValueError(
+                    "BacktestEngine: GENESIS_PRECOMPUTE_FEATURES=1 with fast_window=False is "
+                    "not allowed unless GENESIS_MODE_EXPLICIT=1. "
+                    "Use fast_window=True for canonical mode, or set GENESIS_MODE_EXPLICIT=1 "
+                    "to acknowledge non-canonical execution."
+                )
+
             warnings.warn(
                 "BacktestEngine: GENESIS_PRECOMPUTE_FEATURES=1 is set but fast_window=False. "
-                "This creates inconsistent execution paths. Consider using fast_window=True for determinism.",
+                "Running in explicit non-canonical mode (GENESIS_MODE_EXPLICIT=1).",
                 UserWarning,
                 stacklevel=3,
             )

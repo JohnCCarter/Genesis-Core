@@ -57,6 +57,30 @@ def test_engine_initialization():
     assert engine.candles_df is None
 
 
+def test_engine_precompute_without_fast_window_raises_when_mode_not_explicit(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    """A8: mixed mode must hard-fail unless explicit mode is acknowledged."""
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "1")
+    monkeypatch.delenv("GENESIS_MODE_EXPLICIT", raising=False)
+
+    with pytest.raises(ValueError, match="GENESIS_MODE_EXPLICIT=1"):
+        BacktestEngine(symbol="tBTCUSD", timeframe="15m", fast_window=False)
+
+
+def test_engine_precompute_without_fast_window_allowed_in_explicit_mode(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    """A8: explicit mode keeps non-canonical path as opt-in with warning."""
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "1")
+    monkeypatch.setenv("GENESIS_MODE_EXPLICIT", "1")
+
+    with pytest.warns(UserWarning, match="explicit non-canonical mode"):
+        engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m", fast_window=False)
+
+    assert engine.fast_window is False
+
+
 def test_engine_load_data_missing_file():
     """Test engine fails gracefully when data file is missing."""
     engine = BacktestEngine(symbol="tNONEXISTENT", timeframe="1h")

@@ -9,11 +9,10 @@ tools:
   - edit
   - search
   - web
-  - github/*
+  - io.github.upstash/context7/*
+  - genesis-core-windows/*
   - chrome-devtools/*
   - postgres/*
-  - genesis-core-windows/*
-  - io.github.upstash/context7/*
   - vscode.mermaid-chat-features/renderMermaidDiagram
   - memory
   - github.vscode-pull-request-github/issue_fetch

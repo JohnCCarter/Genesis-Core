@@ -8,12 +8,12 @@ Industry standard for quantitative trading model validation.
 
 Usage:
     # Test model predictions
-    python scripts/calculate_ic_metrics.py \
+    python scripts/archive/analysis/calculate_ic_metrics.py \
       --model results/models/tBTCUSD_1h_v11_robust.json \
       --symbol tBTCUSD --timeframe 1h
 
     # Test individual features
-    python scripts/calculate_ic_metrics.py \
+    python scripts/archive/analysis/calculate_ic_metrics.py \
       --symbol tBTCUSD --timeframe 1h \
       --test-features
 """
@@ -29,7 +29,7 @@ import pandas as pd
 from scipy.stats import spearmanr
 
 # Add src to path
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "src"))
 
 from core.utils import get_candles_path
 from core.utils.data_loader import load_features

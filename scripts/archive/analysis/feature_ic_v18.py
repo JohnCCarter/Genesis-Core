@@ -3,7 +3,7 @@
 Quick IC ranking per feature for v18 feature sets.
 
 Usage:
-  python scripts/feature_ic_v18.py --symbol tBTCUSD --timeframes 1h 3h 6h 1D --horizon 10
+  python scripts/archive/analysis/feature_ic_v18.py --symbol tBTCUSD --timeframes 1h 3h 6h 1D --horizon 10
 """
 
 import argparse
@@ -16,7 +16,7 @@ import pandas as pd
 from scipy.stats import spearmanr
 
 # Make src importable
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "src"))
 
 from core.utils import get_candles_path
 from core.utils.data_loader import load_features

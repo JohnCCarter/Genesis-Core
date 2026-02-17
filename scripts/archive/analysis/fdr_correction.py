@@ -10,7 +10,7 @@ Methods:
 - Bonferroni: Very conservative, controls FWER (Family-Wise Error Rate)
 
 Usage:
-    python scripts/fdr_correction.py \
+    python scripts/archive/analysis/fdr_correction.py \
       --results results/ic_metrics/tBTCUSD_1h_feature_ic.json \
       --method benjamini-hochberg \
       --alpha 0.05

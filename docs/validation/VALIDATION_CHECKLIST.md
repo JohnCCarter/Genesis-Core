@@ -67,7 +67,7 @@ REQUIRED CHECKS:
 - [x] IC positive in >60% of periods
 ```
 
-**Status:** ✅ IMPLEMENTED (`scripts/calculate_ic_metrics.py`)
+**Status:** ✅ IMPLEMENTED (`scripts/archive/analysis/calculate_ic_metrics.py`)
 **Validated:** v12 model - IC: 0.0652, t-stat: 4.29, 69.5% positive
 
 ### ✅ IC Information Ratio (ICIR)
@@ -82,7 +82,7 @@ REQUIRED CHECKS:
 - [ ] ICIR > 1.0 (excellent)
 ```
 
-**Status:** ✅ IMPLEMENTED (`scripts/calculate_ic_metrics.py`)
+**Status:** ✅ IMPLEMENTED (`scripts/archive/analysis/calculate_ic_metrics.py`)
 **Validated:** v12 model - ICIR: 0.5587 (GOOD)
 
 ### ✅ Quintile Analysis (Q5-Q1 Spread)
@@ -163,7 +163,7 @@ REQUIRED CHECKS:
 - [ ] K-S test p-value > 0.05 (no significant drift)
 ```
 
-**Status:** ✅ IMPLEMENTED (`scripts/monitor_feature_drift.py`)
+**Status:** ✅ IMPLEMENTED (`scripts/archive/analysis/monitor_feature_drift.py`)
 
 ### ✅ Partial-IC Analysis
 
@@ -222,7 +222,7 @@ REQUIRED CHECKS:
 - [x] Document number of features tested
 ```
 
-**Status:** ✅ IMPLEMENTED (`scripts/fdr_correction.py`)
+**Status:** ✅ IMPLEMENTED (`scripts/archive/analysis/fdr_correction.py`)
 **Methods:** Benjamini-Hochberg, Bonferroni, Holm-Bonferroni
 
 ### ✅ Family-wise Error Rate (FWER)
@@ -236,7 +236,7 @@ REQUIRED CHECKS:
 - [x] OR: Use Holm-Bonferroni (less conservative)
 ```
 
-**Status:** ✅ IMPLEMENTED (`scripts/fdr_correction.py`)
+**Status:** ✅ IMPLEMENTED (`scripts/archive/analysis/fdr_correction.py`)
 **Methods:** Bonferroni and Holm-Bonferroni available
 
 ---
@@ -255,7 +255,7 @@ REQUIRED CHECKS:
 - [x] % positive windows > 60%
 ```
 
-**Status:** ✅ IMPLEMENTED (`scripts/calculate_ic_metrics.py`)
+**Status:** ✅ IMPLEMENTED (`scripts/archive/analysis/calculate_ic_metrics.py`)
 **Validated:** v12 model - Rolling mean: 0.0962, worst: -0.2962, 69.5% positive
 
 ### ✅ Worst-case Analysis
@@ -427,7 +427,7 @@ EXCEEDED BY: +13 points 🎉
 
 ### **P0 - CRITICAL (Must have for ANY production deployment)**
 
-1. ✅ IC / ICIR calculation → **DONE** (`scripts/calculate_ic_metrics.py`)
+1. ✅ IC / ICIR calculation → **DONE** (`scripts/archive/analysis/calculate_ic_metrics.py`)
 2. ✅ Quintile analysis (Q5-Q1 spread) → **DONE** (`scripts/analyze_quintiles.py`)
 3. ✅ Rolling window stability → **DONE** (in IC script)
 4. ⏳ Pre-commit objectives → **IN PROGRESS**
@@ -435,7 +435,7 @@ EXCEEDED BY: +13 points 🎉
 ### **P1 - HIGH (Needed for robust validation)**
 
 5. ⏳ Partial-IC for feature selection → **TODO**
-6. ✅ FDR control (multiple testing) → **DONE** (`scripts/fdr_correction.py`)
+6. ✅ FDR control (multiple testing) → **DONE** (`scripts/archive/analysis/fdr_correction.py`)
 7. ⏳ Stopping rules → **TODO**
 8. ⏳ Nested OOS implementation → **TODO**
 
@@ -443,7 +443,7 @@ EXCEEDED BY: +13 points 🎉
 
 9. ⏳ Automated model card generation → **TODO**
 10. ⏳ Championship ticket system → **TODO**
-11. ✅ FWER (Bonferroni correction) → **DONE** (`scripts/fdr_correction.py`)
+11. ✅ FWER (Bonferroni correction) → **DONE** (`scripts/archive/analysis/fdr_correction.py`)
 
 ---
 

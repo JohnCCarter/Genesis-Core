@@ -14,7 +14,7 @@ from pathlib import Path
 import pandas as pd
 
 # Add src to path
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "src"))
 
 from core.ml.label_cache import load_cached_labels
 

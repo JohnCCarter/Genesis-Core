@@ -10,7 +10,7 @@ Partial-IC(B | A) = IC(residual(B, A), returns)
 Where residual(B, A) is what remains of B after removing correlation with A.
 
 Usage:
-    python scripts/calculate_partial_ic.py --symbol tBTCUSD --timeframe 1h \\
+    python scripts/archive/analysis/calculate_partial_ic.py --symbol tBTCUSD --timeframe 1h \
         --regime HighVol --output results/partial_ic/highvol_partial_ic.json
 """
 
@@ -25,7 +25,7 @@ from scipy.stats import spearmanr
 from sklearn.linear_model import LinearRegression
 
 # Add src to path
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "src"))
 
 from core.utils import get_candles_path
 from core.utils.data_loader import load_features

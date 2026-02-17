@@ -13,15 +13,15 @@
 
 ### ✅ IMPLEMENTERAT (Phase-5)
 
-| Komponent                           | Status  | Fil                                | Testad |
-| ----------------------------------- | ------- | ---------------------------------- | ------ |
-| Purged WFCV                         | ✅ KLAR | `scripts/validate_purged_wfcv.py`  | ✅     |
-| Provenance Tracking                 | ✅ KLAR | `src/core/utils/provenance.py`     | ✅     |
-| Feature Drift (PSI/K-S)             | ✅ KLAR | `scripts/monitor_feature_drift.py` | ✅     |
-| Overfit Detection (Deflated Sharpe) | ✅ KLAR | `src/core/ml/overfit_detection.py` | ✅     |
-| Overfit Detection (PBO)             | ✅ KLAR | `src/core/ml/overfit_detection.py` | ✅     |
-| Regime Gates                        | ✅ KLAR | `scripts/validate_regime_gates.py` | ✅     |
-| Validation Config                   | ✅ KLAR | `config/validation_config.json`    | ✅     |
+| Komponent                           | Status  | Fil                                                 | Testad |
+| ----------------------------------- | ------- | --------------------------------------------------- | ------ |
+| Purged WFCV                         | ✅ KLAR | `scripts/validate_purged_wfcv.py`                   | ✅     |
+| Provenance Tracking                 | ✅ KLAR | `src/core/utils/provenance.py`                      | ✅     |
+| Feature Drift (PSI/K-S)             | ✅ KLAR | `scripts/archive/analysis/monitor_feature_drift.py` | ✅     |
+| Overfit Detection (Deflated Sharpe) | ✅ KLAR | `src/core/ml/overfit_detection.py`                  | ✅     |
+| Overfit Detection (PBO)             | ✅ KLAR | `src/core/ml/overfit_detection.py`                  | ✅     |
+| Regime Gates                        | ✅ KLAR | `scripts/validate_regime_gates.py`                  | ✅     |
+| Validation Config                   | ✅ KLAR | `config/validation_config.json`                     | ✅     |
 
 ### 📝 DOKUMENTERAT (Redo att implementera)
 
@@ -401,12 +401,12 @@ def find_optimal_temperature(val_logits, val_labels):
 
 ## 4. FEATURE & LABEL DRIFT MONITORING
 
-### ✅ STATUS: IMPLEMENTERAT (`scripts/monitor_feature_drift.py`)
+### ✅ STATUS: IMPLEMENTERAT (`scripts/archive/analysis/monitor_feature_drift.py`)
 
 ### A. Population Stability Index (PSI)
 
 ```python
-# scripts/monitor_feature_drift.py
+# scripts/archive/analysis/monitor_feature_drift.py
 
 def calculate_psi(expected, actual, bins=10):
     """
@@ -1877,7 +1877,6 @@ python scripts/validate_champion_complete.py \
 ### Pre-Deployment Validation
 
 - [ ] **Purged WFCV completed**
-
   - [ ] Embargo period = max holding period
   - [ ] Minimum 5 splits
   - [ ] Stability score > 0.70
@@ -1885,54 +1884,46 @@ python scripts/validate_champion_complete.py \
   - [ ] Purged overlapping samples
 
 - [ ] **Holdout evaluation completed**
-
   - [ ] 20% holdout set UNTOUCHED during training
   - [ ] Performance degradation < 10%
   - [ ] Holdout AUC > 0.65
   - [ ] Holdout Sharpe > 0.8
 
 - [ ] **Overfit detection completed**
-
   - [ ] Deflated Sharpe > 1.0
   - [ ] PBO score < 0.50
   - [ ] Multiple testing correction applied
 
 - [ ] **Regime gates passed**
-
   - [ ] Bear market Sharpe ≥ 0 (MUST protect capital)
   - [ ] Bull market Sharpe ≥ 1.0
   - [ ] Ranging market Sharpe ≥ 0.3
   - [ ] All regime gates PASSED
 
 - [ ] **Calibration verified**
-
   - [ ] ECE (Expected Calibration Error) < 0.15
   - [ ] Reliability diagram reviewed
   - [ ] Isotonic/Temperature calibration applied
 
 - [ ] **Drift monitoring setup**
-
   - [ ] PSI baseline calculated for all features
   - [ ] K-S test baseline established
   - [ ] Alert thresholds configured
   - [ ] Monitoring scripts scheduled
 
 - [ ] **Realistic backtest completed**
-
   - [ ] Transaction costs included (fees + slippage)
   - [ ] Latency simulation (execution delay)
   - [ ] Partial fill simulation
   - [ ] Volume impact considered
 
 - [ ] **Provenance & Reproducibility**
-
   - [ ] Data hash recorded
   - [ ] Config hash recorded
   - [ ] Environment captured
   - [ ] Reproducibility verified
 
 - [ ] **Documentation completed**
-
   - [ ] Model Card generated
   - [ ] Championship Ticket approved
   - [ ] Deployment plan documented
@@ -1947,14 +1938,12 @@ python scripts/validate_champion_complete.py \
 ### During Deployment
 
 - [ ] **Canary phase (3 days)**
-
   - [ ] 10% capital allocation
   - [ ] Daily performance monitoring
   - [ ] PSI check after each day
   - [ ] Success criteria met
 
 - [ ] **Paper-live phase (7 days)**
-
   - [ ] 50% capital allocation
   - [ ] Daily drift monitoring
   - [ ] Performance vs backtest comparison
@@ -2024,7 +2013,7 @@ IMMEDIATE stop trading if:
 1. ✅ **Purged WFCV** - Eliminera data leakage (`scripts/validate_purged_wfcv.py`)
 2. ✅ **Deflated Sharpe + PBO** - Detektera overfit (`src/core/ml/overfit_detection.py`)
 3. ✅ **Probability Calibration** - Redan implementerat! (`core/ml/calibration.py`)
-4. ✅ **Feature/Label Drift** - PSI & K-S monitoring (`scripts/monitor_feature_drift.py`)
+4. ✅ **Feature/Label Drift** - PSI & K-S monitoring (`scripts/archive/analysis/monitor_feature_drift.py`)
 5. ✅ **Regime Gates** - Hårda robustness requirements (`scripts/validate_regime_gates.py`)
 6. ✅ **Reproducerbarhet** - Data/config hashar (`src/core/utils/provenance.py`)
 
@@ -2055,13 +2044,11 @@ IMMEDIATE stop trading if:
 ### 🎯 Phase-6: Production Pipeline (Next Sprint)
 
 1. **Immediate Priority (Week 1-2)**
-
    - [ ] Skapa complete validation pipeline script
    - [ ] Implementera model card generator
    - [ ] Implementera championship ticket system
 
 2. **High Priority (Week 3-4)**
-
    - [ ] Implementera hysteresis & cooldown mechanism
    - [ ] Implementera transaction costs model
    - [ ] Setup canary deployment infrastructure

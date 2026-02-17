@@ -8,8 +8,8 @@ Since streaming mode causes non-deterministic results, we now ONLY use fast mode
 For simple backtesting, use: python scripts/run_backtest.py
 
 Usage (for legacy compatibility):
-    python scripts/compare_modes.py --trial 1032
-    python scripts/compare_modes.py --config config/strategy/champions/tBTCUSD_1h.json
+    python scripts/archive/analysis/compare_modes.py --trial 1032
+    python scripts/archive/analysis/compare_modes.py --config config/strategy/champions/tBTCUSD_1h.json
 """
 
 import argparse
@@ -27,7 +27,7 @@ warnings.warn(
 )
 
 # Add src to path
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "src"))
 
 from core.backtest.engine import BacktestEngine  # noqa: E402
 

@@ -28,7 +28,6 @@ src/core/indicators/ema.py
 src/core/indicators/exit_fibonacci.py
 src/core/indicators/fibonacci.py
 src/core/indicators/htf_fibonacci.py
-src/core/indicators/macd.py
 src/core/indicators/rsi.py
 src/core/indicators/vectorized.py
 src/core/indicators/volume.py
@@ -77,7 +76,6 @@ src/core/strategy/prob_model.py
 src/core/strategy/regime.py
 src/core/strategy/regime_unified.py
 src/core/strategy/schemas.py
-src/core/strategy/validation.py
 src/core/strategy/components/__init__.py
 src/core/strategy/components/atr_filter.py
 src/core/strategy/components/attribution.py
@@ -258,7 +256,6 @@ tests/test_triple_barrier.py
 tests/test_ui_endpoints.py
 tests/test_validate_optimizer_config.py
 tests/test_validate_registry_audit_ci.py
-tests/test_validation_min.py
 tests/test_visualization.py
 tests/test_volume.py
 tests/test_walk_forward.py

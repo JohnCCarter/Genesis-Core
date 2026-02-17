@@ -543,19 +543,18 @@ Algorithm (static; “import reachability”, not dynamic call reachability):
 Output snapshot (this workspace; AST import-graph reachability):
 
 ```text
-CORE_TOTAL 94
+CORE_TOTAL 92
 CORE_REACHABLE 81
-CORE_UNREACHABLE 13
+CORE_UNREACHABLE 11
 
 COUNTS:
-  NEVER_IMPORTED 5
-  TEST_ONLY 7
+  NEVER_IMPORTED 4
+  TEST_ONLY 6
   DEPRECATED_PATH 1
 
 TOP_UNREACHABLE:
   core.backtest.walk_forward [TEST_ONLY]
   core.config.validator [TEST_ONLY]
-  core.indicators.macd [NEVER_IMPORTED]
   core.io.bitfinex.ws_reconnect [TEST_ONLY]
   core.ml.overfit_detection [NEVER_IMPORTED]
   core.risk [TEST_ONLY]
@@ -565,7 +564,6 @@ TOP_UNREACHABLE:
   core.strategy.e2e [NEVER_IMPORTED]
   core.strategy.features [DEPRECATED_PATH]
   core.strategy.schemas [NEVER_IMPORTED]
-  core.strategy.validation [TEST_ONLY]
 ```
 
 ### Diagram 6 — Ghost map (broad run; no arrows)
@@ -573,7 +571,6 @@ TOP_UNREACHABLE:
 ```mermaid
 flowchart TB
   subgraph NEVER_IMPORTED[NEVER_IMPORTED (broad run)]
-    MACD[core.indicators.macd]
     OVR[core.ml.overfit_detection]
     SIZ[core.risk.sizing]
     E2E[core.strategy.e2e]
@@ -587,7 +584,6 @@ flowchart TB
     RISK[core.risk]
     RG[core.risk.guards]
     RPNL[core.risk.pnl]
-    VLD[core.strategy.validation]
   end
 
   subgraph DEPRECATED_PATH[DEPRECATED_PATH (broad run)]
@@ -606,9 +602,7 @@ Proof checklist (Diagram 6): no arrows.
 | `core.io.bitfinex.ws_reconnect`               | `TEST_ONLY`       | `tests/test_ws_reconnect.py:1-4` imports it                                                                                                                               | `rg -n 'core\.io\.bitfinex\.ws_reconnect' tests/test_ws_reconnect.py`                                                                  |
 | `core.risk.guards`                            | `TEST_ONLY`       | `tests/test_risk_guards.py:1-4` imports it                                                                                                                                | `rg -n 'core\.risk\.guards' tests/test_risk_guards.py`                                                                                 |
 | `core.risk.pnl`                               | `TEST_ONLY`       | `tests/test_risk_pnl.py:1-4` imports it                                                                                                                                   | `rg -n 'core\.risk\.pnl' tests/test_risk_pnl.py`                                                                                       |
-| `core.strategy.validation`                    | `TEST_ONLY`       | `tests/test_validation_min.py:1-4` imports it                                                                                                                             | `rg -n 'core\.strategy\.validation' tests/test_validation_min.py`                                                                      |
 | `core.backtest.walk_forward`                  | `TEST_ONLY`       | `tests/test_walk_forward.py:8-60` imports it via `src.core.backtest.walk_forward` (no runtime import-sites under `core.backtest.walk_forward`)                            | `rg -n 'src\.core\.backtest\.walk_forward' tests/test_walk_forward.py; rg -n 'core\.backtest\.walk_forward' -S src scripts mcp_server` |
-| `core.indicators.macd`                        | `NEVER_IMPORTED`  | no import-site in `src/`, `scripts/` (excluding `scripts/archive/`), or `mcp_server/` (note: used under `scripts/archive/` only)                                          | `rg -n 'core\.indicators\.macd' -S src scripts mcp_server; rg -n 'core\.indicators\.macd' scripts/archive`                             |
 | `core.ml.overfit_detection`                   | `NEVER_IMPORTED`  | no import-site in `src/`, `scripts/` (excluding `scripts/archive/`), or `mcp_server/` (note: referenced by docs/config; treat as “not wired” not “safe to delete”)        | `rg -n 'core\.ml\.overfit_detection' -S src scripts mcp_server`                                                                        |
 | `core.risk`                                   | `TEST_ONLY`       | `tests/test_risk_guards.py:1-4` imports `core.risk.guards`; `tests/test_risk_pnl.py:1-4` imports `core.risk.pnl` (this implicitly imports the `core.risk` package)        | `rg -n 'core\.risk\.guards' tests/test_risk_guards.py; rg -n 'core\.risk\.pnl' tests/test_risk_pnl.py`                                 |
 | `core.risk.sizing`                            | `NEVER_IMPORTED`  | no import-site in `src/`, `scripts/` (excluding `scripts/archive/`), `mcp_server/`, or `tests/`                                                                           | `rg -n 'core\.risk\.sizing' -S src scripts mcp_server tests`                                                                           |

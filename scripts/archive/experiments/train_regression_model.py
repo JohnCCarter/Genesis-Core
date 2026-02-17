@@ -6,7 +6,7 @@ Instead of binary classification (profit/loss), predicts continuous returns
 scaled by ATR for better risk-adjusted predictions.
 
 Usage:
-    python scripts/train_regression_model.py --symbol tBTCUSD --timeframe 1h \\
+    python scripts/train_regression_model.py --symbol tBTCUSD --timeframe 1h \
         --use-holdout --save-provenance
 """
 

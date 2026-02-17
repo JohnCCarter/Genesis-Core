@@ -551,6 +551,18 @@ def test_extract_results_path_from_log_parses_run_backtest_format(tmp_path: Path
     assert parsed == out_json
 
 
+def test_load_existing_trials_warns_on_corrupt_artifact(tmp_path: Path, caplog) -> None:
+    bad = tmp_path / "trial_001.json"
+    bad.write_text("{not valid json", encoding="utf-8")
+
+    with caplog.at_level("WARNING"):
+        loaded = runner._load_existing_trials(tmp_path)
+
+    assert loaded == {}
+    assert "Skipping unreadable trial artifact" in caplog.text
+    assert "trial_001.json" in caplog.text
+
+
 def test_run_trial_abort_payload_is_strict_json_and_includes_score_version(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

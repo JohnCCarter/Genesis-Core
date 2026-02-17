@@ -517,6 +517,50 @@ def test_engine_with_verbose_mode(sample_candles_data, capsys):
     )
 
 
+def test_engine_precompute_cache_write_failure_logs_warning(monkeypatch, caplog):
+    import numpy as np
+
+    dates = pd.date_range("2025-01-01", periods=80, freq="15min", tz="UTC")
+    df = pd.DataFrame(
+        {
+            "timestamp": dates,
+            "open": [100.0 + i * 0.1 for i in range(80)],
+            "high": [100.5 + i * 0.1 for i in range(80)],
+            "low": [99.5 + i * 0.1 for i in range(80)],
+            "close": [100.2 + i * 0.1 for i in range(80)],
+            "volume": [1000.0 + i for i in range(80)],
+        }
+    )
+
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "1")
+    engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m", fast_window=True)
+
+    original_exists = Path.exists
+
+    def _fake_exists(self: Path) -> bool:
+        if self.name == "tBTCUSD_15m_frozen.parquet" and "raw" in self.parts:
+            return True
+        return original_exists(self)
+
+    def _fake_read_parquet(_path, columns=None, **_kwargs):
+        if columns is None:
+            return df.copy()
+        return df[columns].copy()
+
+    def _raise_savez(*_args, **_kwargs):
+        raise RuntimeError("cache write failed")
+
+    monkeypatch.setattr(Path, "exists", _fake_exists)
+    monkeypatch.setattr(pd, "read_parquet", _fake_read_parquet)
+    monkeypatch.setattr(np, "savez_compressed", _raise_savez)
+
+    with caplog.at_level("WARNING"):
+        ok = engine.load_data()
+
+    assert ok is True
+    assert "Failed to write precompute cache" in caplog.text
+
+
 def test_engine_precompute_cache_hit_htf_mapping_does_not_require_local_fib_cfg(
     tmp_path, monkeypatch
 ):

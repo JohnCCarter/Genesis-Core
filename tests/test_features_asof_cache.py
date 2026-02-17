@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+
 
 def test_fast_hash_key_changes_with_dataset_state(monkeypatch) -> None:
     from core.strategy.features_asof import _compute_candles_hash
@@ -37,3 +39,17 @@ def test_fast_hash_close_only_input_keeps_legacy_shape(monkeypatch) -> None:
     key = _compute_candles_hash(candles, 1)
 
     assert key == "1:101.2346"
+
+
+def test_as_config_dict_logs_and_falls_back_on_model_dump_error(caplog) -> None:
+    from core.strategy.features_asof import _as_config_dict
+
+    class _BrokenConfig:
+        def model_dump(self):  # pragma: no cover - called by test
+            raise RuntimeError("boom")
+
+    with caplog.at_level(logging.WARNING):
+        out = _as_config_dict(_BrokenConfig())
+
+    assert out == {}
+    assert "model_dump fallback to empty dict" in caplog.text

@@ -731,8 +731,8 @@ def _load_existing_trials(run_dir: Path) -> dict[str, dict[str, Any]]:
             if params:
                 key = _trial_key(params)
                 existing[key] = trial_data
-        except (ValueError, OSError):
-            # Skip corrupted files silently
+        except (ValueError, OSError) as exc:
+            logger.warning("Skipping unreadable trial artifact %s: %s", trial_path.name, exc)
             continue
 
     return existing

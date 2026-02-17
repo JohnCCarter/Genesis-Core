@@ -180,3 +180,27 @@ def test_ltf_unavailable_backcompat_still_passes_with_missing_policy_pass() -> N
     )
     assert action == "LONG"
     assert "LTF_FIB_CONTEXT_ERROR" not in (meta.get("reasons") or [])
+
+
+def test_decide_state_out_isolated_from_nested_input_state() -> None:
+    state_in = {
+        "nested": {"values": [1, 2, 3]},
+        "last_action": "LONG",
+        "decision_steps": 0,
+    }
+
+    action, meta = decide(
+        {},
+        probas={"buy": 0.5, "sell": 0.5},
+        confidence={"buy": 0.5, "sell": 0.5},
+        regime="balanced",
+        state=state_in,
+        risk_ctx={},
+        cfg={},
+    )
+
+    assert action == "NONE"
+    state_out = meta.get("state_out", {})
+    assert state_out.get("nested") == state_in["nested"]
+    assert state_out.get("nested") is not state_in["nested"]
+    assert state_out.get("nested", {}).get("values") is not state_in["nested"]["values"]

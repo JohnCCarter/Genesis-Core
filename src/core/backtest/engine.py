@@ -549,8 +549,12 @@ class BacktestEngine:
                             fib_low_px=_np.asarray(sl_px, dtype=float),
                         )
                         _LOGGER.debug("Cached precomputed features: %s", cache_path.name)
-                    except Exception:  # nosec B110
-                        pass  # Ignore cache write errors (not critical)
+                    except Exception as cache_err:  # nosec B110
+                        _LOGGER.warning(
+                            "Failed to write precompute cache %s: %s",
+                            cache_path,
+                            cache_err,
+                        )
 
                     pre = {
                         "atr_14": atr_14,

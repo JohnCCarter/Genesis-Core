@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import logging
 import math
 from typing import Any, Literal
@@ -161,8 +162,8 @@ def decide(
     allow_ltf_override_cfg = bool(mtf_cfg.get("allow_ltf_override"))
     ltf_override_threshold = float(mtf_cfg.get("ltf_override_threshold", 0.85))
     adaptive_cfg = dict(mtf_cfg.get("ltf_override_adaptive") or {})
-    state_in = dict(state or {})
-    state_out: dict[str, Any] = dict(state_in)
+    state_in = copy.deepcopy(state or {})
+    state_out: dict[str, Any] = copy.deepcopy(state_in)
     override_state_in = state_in.get("ltf_override_state")
     override_state: dict[str, Any] = {}
     if isinstance(override_state_in, dict):

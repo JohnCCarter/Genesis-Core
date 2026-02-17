@@ -179,6 +179,21 @@ def test_runtime_endpoints_exist():
     assert r.status_code == 200
 
 
+def test_health_returns_503_when_config_read_fails(monkeypatch):
+    import core.server as srv
+
+    c = TestClient(app)
+
+    def _boom():
+        raise RuntimeError("config broken")
+
+    monkeypatch.setattr(srv._AUTH, "get", _boom)
+
+    r = c.get("/health")
+    assert r.status_code == 503
+    assert r.json() == {"status": "error", "config_version": None, "config_hash": None}
+
+
 def test_paper_submit_monkeypatched(monkeypatch):
     from core.server import paper_submit
 

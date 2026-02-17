@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 
 import httpx
 from fastapi import Body, FastAPI
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 
 from core.config.authority import ConfigAuthority
 from core.config.settings import get_settings
@@ -119,13 +119,17 @@ def paper_whitelist() -> dict:
     return {"symbols": sorted(TEST_SPOT_WHITELIST)}
 
 
-@app.get("/health")
-def health() -> dict:
+@app.get("/health", response_model=None)
+def health() -> dict | JSONResponse:
     try:
         _, h, v = _AUTH.get()
         return {"status": "ok", "config_version": v, "config_hash": h}
-    except Exception:
-        return {"status": "ok", "config_version": None, "config_hash": None}
+    except Exception as exc:
+        _LOGGER.warning("health_config_read_failed: %s", exc)
+        return JSONResponse(
+            status_code=503,
+            content={"status": "error", "config_version": None, "config_hash": None},
+        )
 
 
 @app.get("/observability/dashboard")

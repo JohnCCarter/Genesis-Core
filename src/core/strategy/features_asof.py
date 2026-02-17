@@ -64,7 +64,9 @@ def _as_config_dict(value: Any) -> dict[str, Any]:
     if hasattr(value, "model_dump"):
         try:
             return value.model_dump()  # type: ignore[return-value]
-        except Exception:
+        except Exception as exc:
+            if _log:
+                _log.warning("model_dump fallback to empty dict: %s", exc)
             return {}
     return {}
 
@@ -940,15 +942,10 @@ def _extract_asof(
 
     result = (features, meta)
 
-    # Cache the result with LRU eviction (OrderedDict maintains insertion order)
-    if len(_feature_cache) >= _MAX_CACHE_SIZE:
-        # Evict least recently used entry (first item in OrderedDict)
-        _feature_cache.popitem(last=False)
+    # Cache the result (OrderedDict + LRU eviction)
     _feature_cache[cache_key] = result
     # Move to end to mark as recently used (LRU behavior)
     _feature_cache.move_to_end(cache_key)
-    # Cache the result (with size limit to prevent memory issues)
-    _feature_cache[cache_key] = result
     # Enforce LRU size
     try:
         while len(_feature_cache) > _MAX_CACHE_SIZE:

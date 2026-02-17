@@ -1,4 +1,4 @@
-# Deep Analysis Report — Genesis-Core (2026-02-17, rev 3.3)
+# Deep Analysis Report — Genesis-Core (2026-02-17, rev 3.4)
 
 Samlad rapport fran tre parallella agentanalyser, reviderad efter manuell
 verifiering. Utformad som stod for Opus 4.6 och Codex 5.3 i fortsatt
@@ -12,9 +12,9 @@ repo-cleanup (D39+).
 
 **Referenskontext:** D1-D38 genomforda (se AGENTS.md §7).
 
-**As-of (denna revision):** 2026-02-17, branch `feature/composable-strategy-phase2`, commit `de9f417`.
+**As-of (denna revision):** 2026-02-17, branch `feature/composable-strategy-phase2`, commit `0615126`.
 Grundfynden i rapporten ar fortsatt baserade pa rev 2 (2026-02-15), men statusdrift for
-A1/A2/A3/A4/A5/A6 samt kanda stale-kandidater i Fas F har uppdaterats i denna revision.
+A1-A10 samt CR-1/CR-7/CR-8 och SF-9/SF-10/SF-12/SF-13 har uppdaterats i denna revision.
 
 **Revideringslogg:**
 
@@ -33,6 +33,9 @@ A1/A2/A3/A4/A5/A6 samt kanda stale-kandidater i Fas F har uppdaterats i denna re
   i aktuell branch), samt justerad prioriteringstext i Fas A/sammanfattning.
 - Rev 3.3 (2026-02-17): Docs-statussync kickoff; commit-anchor for A7-A10
   statusdrift verifierad mot `.git/logs/HEAD`, utan nya runtime-pastaenden.
+- Rev 3.4 (2026-02-17): Statusdrift synkad efter CRSF1 (commit `0615126`) for
+  CR-1/CR-7/CR-8 samt SF-9/SF-10/SF-12/SF-13, med testankare och oforandrad
+  observationsstatus i bas-tabeller.
 
 ---
 
@@ -387,7 +390,7 @@ Dessa paverkar RUNTIME BEHAVIOR och kraver full Opus 4.6 gate-process.
 | A9  | SF-6: /evaluate dummy-data fallback       | server.py:626-639        | MEDIUM   | VERIFIERAD |
 | A10 | SF-7: paper_submit tyst symbol-byte       | server.py:814-817        | MEDIUM   | VERIFIERAD |
 
-**Uppdatering 2026-02-16 (statusdrift):**
+**Uppdatering 2026-02-16 till 2026-02-17 (statusdrift):**
 
 - A1 ar inford i aktuell branch via `src/core/backtest/engine.py`
   (cache-key isoleras med `GENESIS_PRECOMPUTE_CONFIG_HASH`; verifierat med
@@ -423,11 +426,40 @@ Dessa paverkar RUNTIME BEHAVIOR och kraver full Opus 4.6 gate-process.
   (`/paper/submit` avvisar nu ogiltig symbol explicit i stallet for tyst symbol-byte; verifierat
   med `tests/test_ui_endpoints.py::test_paper_submit_invalid_symbol_returns_pinned_payload`
   och `tests/test_ui_endpoints.py::test_paper_submit_monkeypatched`).
+- CR-1/SF-14 ar inford i aktuell branch via `src/core/strategy/features_asof.py`
+  (commit `0615126`) (duplicerad feature-cache write borttagen; verifierat med
+  `tests/test_features_asof_cache.py`).
+- CR-7 ar inford i aktuell branch via `src/core/strategy/evaluate.py`
+  (commit `0615126`) (`cap_ratio < 1` hardenas till 1.0 for att undvika semantisk
+  avvikelse mot score-intervallet; verifierat med
+  `tests/test_evaluate_pipeline.py::test_volume_score_cap_ratio_floor_preserves_unit_interval_semantics`).
+- CR-8 ar inford i aktuell branch via `src/core/strategy/decision.py`
+  (commit `0615126`) (`override_state` deep-copy isolerar nested mutable state;
+  verifierat med `tests/test_decision.py::test_decide_returns_state_isolated_from_nested_mutation`).
+- SF-9 ar inford i aktuell branch via `src/core/optimizer/runner.py`
+  (commit `0615126`) (korrupta resume-artifakter loggas nu med varning i stallet
+  for tyst skip; verifierat med
+  `tests/test_optimizer_runner.py::test_load_existing_trials_logs_warning_for_invalid_artifacts`).
+- SF-10 ar inford i aktuell branch via `src/core/strategy/features_asof.py`
+  (commit `0615126`) (`_as_config_dict` varningsloggar vid `model_dump`-fel innan
+  fallback `{}`; verifierat med
+  `tests/test_features_asof_cache.py::test_as_config_dict_logs_warning_when_model_dump_fails`).
+- SF-12 ar inford i aktuell branch via `src/core/backtest/engine.py`
+  (commit `0615126`) (cache-write fel loggas nu med varning i stallet for tyst
+  swallow; verifierat med
+  `tests/test_backtest_engine.py::test_engine_logs_warning_when_precompute_cache_write_fails`).
+- SF-13 ar inford i aktuell branch via `src/core/server.py`
+  (commit `0615126`) (`/health` returnerar HTTP 503 + error-payload vid
+  config-lasfel i stallet for falskt `ok`; verifierat med
+  `tests/test_ui_endpoints.py::test_health_config_exception_returns_503_and_error_status`).
 - Rev 2-tabellen ovan behalls for historisk sparbarhet av ursprungsfynd.
 
 **Historisk varning (rev 2-bas):** A1, A2, A3 paverkar direkt DETERMINISM och REPRODUCIBILITET.
 I rev 2-laget var dessa blockerande fore nasta Optuna-korning; i rev 3.2 ar de markerade som
 inforda i aktuell branch.
+
+**Statusnotis (rev 3.4):** LAG/MEDEL-fynden CR-1, CR-7, CR-8, SF-9, SF-10,
+SF-12 och SF-13 ar nu ocksa markerade som inforda i aktuell branch via CRSF1.
 
 **Borttagna fran Fas A (falsk_positiv / overdrivet):**
 
@@ -514,8 +546,9 @@ Per issue:
 6. Commit
 ```
 
-**Rekommenderad ordning (uppdaterad 2026-02-16):** A7 -> A8 -> A9 -> A10
-(A1-A6 ar redan inforda i aktuell branch).
+**Rekommenderad ordning (uppdaterad 2026-02-17):** Fas A:s prioriterade
+kodfixar (A1-A10) ar inforda i aktuell branch; fortsatt arbete bor fokusera pa
+tranche-vis Fas B-G (no behavior change), med samma kontrakt/gate-disciplin.
 
 ### Fas B-G (Cleanup) — Standardkontrakt per tranche
 
@@ -589,12 +622,12 @@ Obs: Volymtal i cleanup-tabellen ovan ar baseline fran rev 2. Aktuellt branch-la
 for stale-kandidater framgar i Fas F-notiserna.
 
 **Viktigaste insikten:**
-Kodfix (Fas A) bor fortsatt prioriteras FORE fortsatt filstadning, men statussynk
-ar nu verifierad t.o.m. A10 i branchens statusdrift. Inga nya runtimepastaenden
-introduceras i rev 3.3.
+Statusdrift for kodfix ar nu synkad for A1-A10 samt CRSF1-fynden
+(CR-1/CR-7/CR-8/SF-9/SF-10/SF-12/SF-13) i branchens statusdrift. Darfor ligger
+fortsatt huvudfokus pa tranche-vis cleanup (Fas B-G) utan behavior drift.
 
 ---
 
 _Rapport genererad 2026-02-15 av Claude Code (Opus 4.6) med tre parallella
-analysagenter. Rev 3.3 (2026-02-17) med tidsankrad docs-statussync och
-verifierad commit-anchor for A7-A10 utan ny runtimeoverreach._
+analysagenter. Rev 3.4 (2026-02-17) med tidsankrad docs-statussync och
+verifierad commit-anchor for A1-A10 + CRSF1-statusdrift utan ny runtimeoverreach._

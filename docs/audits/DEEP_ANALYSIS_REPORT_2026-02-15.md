@@ -1,4 +1,4 @@
-# Deep Analysis Report — Genesis-Core (2026-02-15, rev 3.2)
+# Deep Analysis Report — Genesis-Core (2026-02-17, rev 3.3)
 
 Samlad rapport fran tre parallella agentanalyser, reviderad efter manuell
 verifiering. Utformad som stod for Opus 4.6 och Codex 5.3 i fortsatt
@@ -12,7 +12,7 @@ repo-cleanup (D39+).
 
 **Referenskontext:** D1-D38 genomforda (se AGENTS.md §7).
 
-**As-of (denna revision):** 2026-02-16, branch `feature/composable-strategy-phase2`, commit `d92240b`.
+**As-of (denna revision):** 2026-02-17, branch `feature/composable-strategy-phase2`, commit `de9f417`.
 Grundfynden i rapporten ar fortsatt baserade pa rev 2 (2026-02-15), men statusdrift for
 A1/A2/A3/A4/A5/A6 samt kanda stale-kandidater i Fas F har uppdaterats i denna revision.
 
@@ -31,6 +31,8 @@ A1/A2/A3/A4/A5/A6 samt kanda stale-kandidater i Fas F har uppdaterats i denna re
   baseline-markering i sammanfattningstabeller.
 - Rev 3.2 (2026-02-16): Statusdrift uppdaterad for A1/A2/A3/A6 (nu inforda
   i aktuell branch), samt justerad prioriteringstext i Fas A/sammanfattning.
+- Rev 3.3 (2026-02-17): Docs-statussync kickoff; commit-anchor for A7-A10
+  statusdrift verifierad mot `.git/logs/HEAD`, utan nya runtime-pastaenden.
 
 ---
 
@@ -574,25 +576,25 @@ git-index-status (`git ls-files <path>`) for att undvika felaktiga
 
 ### Cleanup-kategorier
 
-| Kategori                                              | Volym              | Prioritet              |
-| ----------------------------------------------------- | ------------------ | ---------------------- |
-| Kodfix (Fas A) — verifierade runtime-risker           | 10 issues          | Nasta: A7-A10          |
-| Dead code (Fas B) — TEST_ONLY/ARCHIVE_ONLY/TRULY_DEAD | 8 moduler + tester | Fas B                  |
-| Script-arkivering (Fas C)                             | 30+ scripts        | Fas C                  |
-| Config cleanup (Fas D)                                | 100+ filer         | Fas D                  |
-| Results residual (Fas F, historisk baseline)          | 10+ dirs           | Fas F (se STALE-notis) |
-| Docs konsolidering (Fas G)                            | 100+ ops-docs      | Fas G                  |
+| Kategori                                              | Volym              | Prioritet                     |
+| ----------------------------------------------------- | ------------------ | ----------------------------- |
+| Kodfix (Fas A) — verifierade runtime-risker           | 10 issues          | Statusdrift synkad t.o.m. A10 |
+| Dead code (Fas B) — TEST_ONLY/ARCHIVE_ONLY/TRULY_DEAD | 8 moduler + tester | Fas B                         |
+| Script-arkivering (Fas C)                             | 30+ scripts        | Fas C                         |
+| Config cleanup (Fas D)                                | 100+ filer         | Fas D                         |
+| Results residual (Fas F, historisk baseline)          | 10+ dirs           | Fas F (se STALE-notis)        |
+| Docs konsolidering (Fas G)                            | 100+ ops-docs      | Fas G                         |
 
 Obs: Volymtal i cleanup-tabellen ovan ar baseline fran rev 2. Aktuellt branch-lage
 for stale-kandidater framgar i Fas F-notiserna.
 
 **Viktigaste insikten:**
-Kodfix (Fas A) bor fortsatt prioriteras FORE fortsatt filstadning, men statusdriften
-ar nu att A1-A6 ar inforda i aktuell branch. Kvarvarande Fas A-kandidater ar framfor
-allt A7-A10.
+Kodfix (Fas A) bor fortsatt prioriteras FORE fortsatt filstadning, men statussynk
+ar nu verifierad t.o.m. A10 i branchens statusdrift. Inga nya runtimepastaenden
+introduceras i rev 3.3.
 
 ---
 
 _Rapport genererad 2026-02-15 av Claude Code (Opus 4.6) med tre parallella
-analysagenter. Rev 3.2 (2026-02-16) med tidsankrad statusuppdatering,
-forbattrad statussemantik och uppdaterad A1-A6 statusdrift._
+analysagenter. Rev 3.3 (2026-02-17) med tidsankrad docs-statussync och
+verifierad commit-anchor for A7-A10 utan ny runtimeoverreach._

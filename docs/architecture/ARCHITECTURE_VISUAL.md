@@ -543,19 +543,18 @@ Algorithm (static; “import reachability”, not dynamic call reachability):
 Output snapshot (this workspace; AST import-graph reachability):
 
 ```text
-CORE_TOTAL 91
+CORE_TOTAL 90
 CORE_REACHABLE 81
-CORE_UNREACHABLE 10
+CORE_UNREACHABLE 9
 
 COUNTS:
-  NEVER_IMPORTED 4
+  NEVER_IMPORTED 3
   TEST_ONLY 5
   DEPRECATED_PATH 1
 
 TOP_UNREACHABLE:
   core.config.validator [TEST_ONLY]
   core.io.bitfinex.ws_reconnect [TEST_ONLY]
-  core.ml.overfit_detection [NEVER_IMPORTED]
   core.risk [TEST_ONLY]
   core.risk.guards [TEST_ONLY]
   core.risk.pnl [TEST_ONLY]
@@ -570,7 +569,6 @@ TOP_UNREACHABLE:
 ```mermaid
 flowchart TB
   subgraph NEVER_IMPORTED[NEVER_IMPORTED (broad run)]
-    OVR[core.ml.overfit_detection]
     SIZ[core.risk.sizing]
     E2E[core.strategy.e2e]
     SCH[core.strategy.schemas]
@@ -600,7 +598,6 @@ Proof checklist (Diagram 6): no arrows.
 | `core.io.bitfinex.ws_reconnect`               | `TEST_ONLY`       | `tests/test_ws_reconnect.py:1-4` imports it                                                                                                                               | `rg -n 'core\.io\.bitfinex\.ws_reconnect' tests/test_ws_reconnect.py`                                                         |
 | `core.risk.guards`                            | `TEST_ONLY`       | `tests/test_risk_guards.py:1-4` imports it                                                                                                                                | `rg -n 'core\.risk\.guards' tests/test_risk_guards.py`                                                                        |
 | `core.risk.pnl`                               | `TEST_ONLY`       | `tests/test_risk_pnl.py:1-4` imports it                                                                                                                                   | `rg -n 'core\.risk\.pnl' tests/test_risk_pnl.py`                                                                              |
-| `core.ml.overfit_detection`                   | `NEVER_IMPORTED`  | no import-site in `src/`, `scripts/` (excluding `scripts/archive/`), or `mcp_server/` (note: referenced by docs/config; treat as “not wired” not “safe to delete”)        | `rg -n 'core\.ml\.overfit_detection' -S src scripts mcp_server`                                                               |
 | `core.risk`                                   | `TEST_ONLY`       | `tests/test_risk_guards.py:1-4` imports `core.risk.guards`; `tests/test_risk_pnl.py:1-4` imports `core.risk.pnl` (this implicitly imports the `core.risk` package)        | `rg -n 'core\.risk\.guards' tests/test_risk_guards.py; rg -n 'core\.risk\.pnl' tests/test_risk_pnl.py`                        |
 | `core.risk.sizing`                            | `NEVER_IMPORTED`  | no import-site in `src/`, `scripts/` (excluding `scripts/archive/`), `mcp_server/`, or `tests/`                                                                           | `rg -n 'core\.risk\.sizing' -S src scripts mcp_server tests`                                                                  |
 | `core.strategy.e2e` / `core.strategy.schemas` | `NEVER_IMPORTED`  | no import-site in `src/`, `scripts/` (excluding archive), or `mcp_server/`                                                                                                | `rg -n 'core\.strategy\.e2e' -S src scripts mcp_server; rg -n 'core\.strategy\.schemas' -S src scripts mcp_server`            |

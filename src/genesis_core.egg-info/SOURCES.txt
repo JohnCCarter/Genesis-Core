@@ -46,7 +46,6 @@ src/core/ml/evaluation.py
 src/core/ml/label_cache.py
 src/core/ml/labeling.py
 src/core/ml/labeling_fast.py
-src/core/ml/overfit_detection.py
 src/core/ml/visualization.py
 src/core/observability/metrics.py
 src/core/optimizer/__init__.py

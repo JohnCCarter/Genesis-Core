@@ -12,7 +12,6 @@ src/core/backtest/htf_exit_engine.py
 src/core/backtest/metrics.py
 src/core/backtest/position_tracker.py
 src/core/backtest/trade_logger.py
-src/core/backtest/walk_forward.py
 src/core/config/__init__.py
 src/core/config/authority.py
 src/core/config/schema.py
@@ -258,7 +257,6 @@ tests/test_validate_optimizer_config.py
 tests/test_validate_registry_audit_ci.py
 tests/test_visualization.py
 tests/test_volume.py
-tests/test_walk_forward.py
 tests/test_ws_candles_min.py
 tests/test_ws_public_min.py
 tests/test_ws_public_symbols.py

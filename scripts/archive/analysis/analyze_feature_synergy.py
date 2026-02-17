@@ -2,8 +2,8 @@
 Analyze feature correlation, redundancy, and synergistic effects.
 
 Usage:
-    python scripts/analyze_feature_synergy.py --symbol tBTCUSD --timeframe 1h
-    python scripts/analyze_feature_synergy.py --symbol tBTCUSD --timeframe 1h --model results/models/tBTCUSD_1h_v3_adaptive_6m.json
+    python scripts/archive/analysis/analyze_feature_synergy.py --symbol tBTCUSD --timeframe 1h
+    python scripts/archive/analysis/analyze_feature_synergy.py --symbol tBTCUSD --timeframe 1h --model results/models/tBTCUSD_1h_v3_adaptive_6m.json
 """
 
 import argparse

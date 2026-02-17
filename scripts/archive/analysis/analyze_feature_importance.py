@@ -2,8 +2,8 @@
 Analyze feature importance from trained ML models.
 
 Usage:
-    python scripts/analyze_feature_importance.py --model results/models/tBTCUSD_1h_v3_adaptive_6m.json
-    python scripts/analyze_feature_importance.py --model results/models/tBTCUSD_1h_v3_adaptive_6m.json --top-n 7
+    python scripts/archive/analysis/analyze_feature_importance.py --model results/models/tBTCUSD_1h_v3_adaptive_6m.json
+    python scripts/archive/analysis/analyze_feature_importance.py --model results/models/tBTCUSD_1h_v3_adaptive_6m.json --top-n 7
 """
 
 import argparse

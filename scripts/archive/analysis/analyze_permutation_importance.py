@@ -17,8 +17,8 @@ import pandas as pd
 from sklearn.inspection import permutation_importance
 from sklearn.linear_model import LogisticRegression
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+# Add src to path (preserve pre-move import behavior)
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "src"))
 
 from core.utils import get_candles_path
 from core.utils.data_loader import load_features

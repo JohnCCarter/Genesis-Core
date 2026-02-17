@@ -1,4 +1,5 @@
 # TECHNICAL INDICATORS REFERENCE GUIDE
+
 ## Trading Indicators Cheat Sheet för Feature Engineering
 
 **Skapad:** 2025-10-09
@@ -29,16 +30,19 @@
 **Best för:** Trend-following strategies, smoothing price action
 
 **Parametrar:**
+
 ```python
 ema_period: int = 20  # Vanliga: 9, 20, 50, 200
 ```
 
 **Timeframe Guidance:**
+
 - **1m-5m:** 9-20 period (snabb respons)
 - **15m-1h:** 20-50 period (balans)
 - **4h-1d:** 50-200 period (långsiktig trend)
 
 **Feature Ideas:**
+
 ```python
 # Basic
 ema_20 = ema(close, 20)
@@ -61,10 +65,12 @@ ema_alignment = (
 ```
 
 **Pros:**
+
 - ✅ Snabbare än SMA (reagerar mer på recent data)
 - ✅ Smooth, mindre noise än price
 
 **Cons:**
+
 - ❌ Lagging indicator (reagerar efter price movement)
 - ❌ Falskt signals i sideways markets
 
@@ -76,6 +82,7 @@ ema_alignment = (
 **Best för:** Divergence trading, momentum confirmation
 
 **Parametrar:**
+
 ```python
 fast_period: int = 12
 slow_period: int = 26
@@ -83,10 +90,12 @@ signal_period: int = 9
 ```
 
 **Timeframe Guidance:**
+
 - **1h-4h:** Standard (12, 26, 9) fungerar bra
 - **1d:** Kan öka till (26, 52, 18) för mindre noise
 
 **Feature Ideas:**
+
 ```python
 macd_line = ema(close, 12) - ema(close, 26)
 signal_line = ema(macd_line, 9)
@@ -99,10 +108,12 @@ macd_divergence = detect_divergence(close, macd_line)  # Custom function
 ```
 
 **Pros:**
+
 - ✅ Fångar momentum shifts tidigt
 - ✅ Works well med divergence analysis
 
 **Cons:**
+
 - ❌ Lagging (uses EMAs)
 - ❌ Många false signals i ranging markets
 
@@ -114,20 +125,24 @@ macd_divergence = detect_divergence(close, macd_line)  # Custom function
 **Best för:** Filter för trend vs ranging markets
 
 **Parametrar:**
+
 ```python
 adx_period: int = 14  # Standard
 ```
 
 **Interpretation:**
+
 - **ADX < 20:** Weak trend / ranging market
 - **ADX 20-25:** Emerging trend
 - **ADX > 25:** Strong trend
 - **ADX > 50:** Very strong trend
 
 **Timeframe Guidance:**
+
 - **All timeframes:** 14 period är standard och fungerar bra
 
 **Feature Ideas:**
+
 ```python
 adx = calculate_adx(high, low, close, 14)
 
@@ -144,10 +159,12 @@ trend_direction = (plus_di > minus_di).astype(int)
 ```
 
 **Pros:**
+
 - ✅ Excellent för att undvika ranging markets
 - ✅ Non-directional (works för both bull/bear)
 
 **Cons:**
+
 - ❌ Lagging indicator
 - ❌ Doesn't tell direction (behöver +DI/-DI)
 
@@ -161,21 +178,25 @@ trend_direction = (plus_di > minus_di).astype(int)
 **Best för:** Mean reversion, divergence trading
 
 **Parametrar:**
+
 ```python
 rsi_period: int = 14  # Standard
 ```
 
 **Interpretation:**
+
 - **RSI > 70:** Overbought (möjlig correction)
 - **RSI < 30:** Oversold (möjlig bounce)
 - **RSI 40-60:** Neutral zone
 
 **Timeframe Guidance:**
+
 - **1m-15m:** 9 period (snabbare signals)
 - **1h-4h:** 14 period (standard)
 - **1d:** 14-21 period (smooth)
 
 **Feature Ideas:**
+
 ```python
 rsi_14 = calculate_rsi(close, 14)
 
@@ -195,10 +216,12 @@ rsi_momentum = rsi_14 - rsi_14.shift(3)
 ```
 
 **Pros:**
+
 - ✅ Bounded (0-100), easy to interpret
 - ✅ Works well för mean reversion
 
 **Cons:**
+
 - ❌ Can stay overbought/oversold i strong trends
 - ❌ False signals i trending markets
 
@@ -210,21 +233,25 @@ rsi_momentum = rsi_14 - rsi_14.shift(3)
 **Best för:** Overbought/oversold, momentum shifts
 
 **Parametrar:**
+
 ```python
 k_period: int = 14  # %K period
 d_period: int = 3   # %D smoothing
 ```
 
 **Interpretation:**
+
 - **Stoch > 80:** Overbought
 - **Stoch < 20:** Oversold
 - **%K crosses %D:** Momentum shift
 
 **Timeframe Guidance:**
+
 - **1h-4h:** (14, 3) standard
 - **Fast Stochastic:** (5, 3) för snabbare signals
 
 **Feature Ideas:**
+
 ```python
 k_line = stochastic_k(high, low, close, 14)
 d_line = sma(k_line, 3)
@@ -236,10 +263,12 @@ stoch_cross = (k_line > d_line).astype(int)
 ```
 
 **Pros:**
+
 - ✅ Sensitiv till momentum changes
 - ✅ Good för range-bound markets
 
 **Cons:**
+
 - ❌ Very noisy i trending markets
 - ❌ Many false signals
 
@@ -251,11 +280,13 @@ stoch_cross = (k_line > d_line).astype(int)
 **Best för:** Momentum strength, velocity
 
 **Parametrar:**
+
 ```python
 roc_period: int = 9  # Lookback period
 ```
 
 **Feature Ideas:**
+
 ```python
 roc = ((close - close.shift(9)) / close.shift(9)) * 100
 
@@ -268,10 +299,12 @@ roc_acceleration = roc - roc.shift(3)
 ```
 
 **Pros:**
+
 - ✅ Direct measure of momentum
 - ✅ Unbounded (kan capture extremes)
 
 **Cons:**
+
 - ❌ Very volatile
 - ❌ No overbought/oversold levels
 
@@ -285,14 +318,17 @@ roc_acceleration = roc - roc.shift(3)
 **Best för:** Position sizing, stop-loss placement, volatility filtering
 
 **Parametrar:**
+
 ```python
 atr_period: int = 14  # Standard
 ```
 
 **Timeframe Guidance:**
+
 - **All timeframes:** 14 period är standard
 
 **Feature Ideas:**
+
 ```python
 atr_14 = calculate_atr(high, low, close, 14)
 
@@ -311,10 +347,12 @@ atr_change = (atr_14 - atr_14.shift(5)) / atr_14.shift(5)
 ```
 
 **Pros:**
+
 - ✅ Essential för risk management
 - ✅ Adaptive to market conditions
 
 **Cons:**
+
 - ❌ Lagging (moving average)
 - ❌ Doesn't predict direction
 
@@ -326,16 +364,19 @@ atr_change = (atr_14 - atr_14.shift(5)) / atr_14.shift(5)
 **Best för:** Mean reversion, breakout detection
 
 **Parametrar:**
+
 ```python
 bb_period: int = 20  # SMA period
 bb_std: float = 2.0  # Standard deviations
 ```
 
 **Timeframe Guidance:**
+
 - **1h-4h:** (20, 2.0) standard
 - **Higher TF:** Kan öka period till 50
 
 **Feature Ideas:**
+
 ```python
 bb_middle = sma(close, 20)
 bb_std = close.rolling(20).std()
@@ -357,11 +398,13 @@ bb_touch_lower = (close <= bb_lower * 1.01).astype(int)
 ```
 
 **Pros:**
+
 - ✅ Adapts to volatility
 - ✅ Visual och intuitive
 - ✅ **Redan implementerad i Genesis-Core!**
 
 **Cons:**
+
 - ❌ Lagging (uses SMA)
 - ❌ False breakouts
 
@@ -373,12 +416,14 @@ bb_touch_lower = (close <= bb_lower * 1.01).astype(int)
 **Best för:** Regime classification, risk adjustment
 
 **Parametrar:**
+
 ```python
 hv_period: int = 20  # Lookback period
 annualize: bool = True  # Convert to annual %
 ```
 
 **Feature Ideas:**
+
 ```python
 returns = close.pct_change()
 hist_vol = returns.rolling(20).std() * np.sqrt(252)  # Annualized
@@ -404,6 +449,7 @@ vol_regime = pd.cut(
 **Best för:** Breakout confirmation, divergence
 
 **Feature Ideas:**
+
 ```python
 volume_sma = volume.rolling(20).mean()
 
@@ -424,6 +470,7 @@ pv_divergence = (
 ```
 
 **Timeframe Guidance:**
+
 - **1h-4h:** Volume är mest reliable
 - **1m-15m:** Very noisy, use with caution
 
@@ -435,6 +482,7 @@ pv_divergence = (
 **Best för:** Trend confirmation, divergence
 
 **Feature Ideas:**
+
 ```python
 obv = calculate_obv(close, volume)
 
@@ -454,10 +502,12 @@ obv_divergence = detect_divergence(close, obv)
 **Best för:** Intraday support/resistance, institutional levels
 
 **Timeframe Guidance:**
+
 - **1m-1h:** Most useful intraday
 - **Daily reset:** VWAP resets varje dag
 
 **Feature Ideas:**
+
 ```python
 vwap = calculate_vwap(high, low, close, volume)
 
@@ -471,10 +521,12 @@ vwap_lower = vwap - vwap_std
 ```
 
 **Pros:**
+
 - ✅ Institutional reference point
 - ✅ Dynamic support/resistance
 
 **Cons:**
+
 - ❌ Primarily intraday tool
 - ❌ Requires volume data
 
@@ -488,11 +540,13 @@ vwap_lower = vwap - vwap_std
 **Best för:** Intraday trading, target levels
 
 **Parametrar:**
+
 ```python
 pivot_type: str = 'standard'  # standard, fibonacci, woodie, camarilla
 ```
 
 **Feature Ideas:**
+
 ```python
 pivot = (high_prev + low_prev + close_prev) / 3
 r1 = (2 * pivot) - low_prev
@@ -513,6 +567,7 @@ dist_to_s1 = (close - s1) / close
 **Best för:** Entry/exit points, breakout trading
 
 **Feature Ideas:**
+
 ```python
 # Recent swing highs/lows
 swing_high = close.rolling(10).max()
@@ -536,6 +591,7 @@ resistance_strength = count_touches(close, swing_high, tolerance=0.01)
 **Best för:** Trend filtering, confluence
 
 **Example (Trading 1h, using 4h HTF):**
+
 ```python
 # On 1h chart, calculate 4h indicators
 htf_ema_20 = resample_to_htf(close, '1h', '4h').rolling(20).mean()
@@ -549,11 +605,13 @@ htf_trend_aligned = (
 ```
 
 **Timeframe Ratios:**
+
 - **Trading 15m:** Use 1h HTF (4x)
 - **Trading 1h:** Use 4h HTF (4x)
 - **Trading 4h:** Use 1d HTF (6x)
 
 **Pros:**
+
 - ✅ Dramatically reduces false signals
 - ✅ Aligns med institutional flow
 
@@ -565,6 +623,7 @@ htf_trend_aligned = (
 **Best för:** High-confidence signals
 
 **Feature (redan i Genesis-Core!):**
+
 ```python
 trend_confluence = (
     (close > ema_20) +           # Price above EMA
@@ -586,6 +645,7 @@ trend_confluence = (
 ### 🎨 Recommended Feature Sets
 
 #### **Minimal Set (Current Genesis-Core)**
+
 ```python
 features = [
     'bb_position',        # Volatility-adjusted price position
@@ -596,6 +656,7 @@ features = [
 ```
 
 #### **Basic Trend-Following Set**
+
 ```python
 features = [
     'price_vs_ema',      # Trend position
@@ -609,6 +670,7 @@ features = [
 ```
 
 #### **Momentum + Mean Reversion Set**
+
 ```python
 features = [
     'rsi',               # Momentum
@@ -622,6 +684,7 @@ features = [
 ```
 
 #### **Robust Multi-Timeframe Set**
+
 ```python
 features = [
     # Current TF
@@ -644,6 +707,7 @@ features = [
 ```
 
 #### **Advanced Kitchen Sink**
+
 ```python
 features = [
     # Trend
@@ -686,24 +750,26 @@ features = [
 
 ### ⏰ Timeframe Selection Matrix
 
-| Timeframe | Pros | Cons | Recommended For |
-|-----------|------|------|----------------|
-| **1m** | Fast signals, many trades | Very noisy, high slippage | Scalping (NOT recommended för ML) |
-| **5m** | Decent signal count | Still noisy | Day trading |
-| **15m** | Balance speed/noise | Requires attention | Active trading |
-| **1h** | Good signal/noise ratio | Moderate trade frequency | Swing trading (RECOMMENDED) |
-| **4h** | Clean signals, stable | Fewer trades | Position trading (RECOMMENDED) |
-| **1d** | Very stable, low noise | Very few signals | Long-term (low frequency) |
+| Timeframe | Pros                      | Cons                      | Recommended For                   |
+| --------- | ------------------------- | ------------------------- | --------------------------------- |
+| **1m**    | Fast signals, many trades | Very noisy, high slippage | Scalping (NOT recommended för ML) |
+| **5m**    | Decent signal count       | Still noisy               | Day trading                       |
+| **15m**   | Balance speed/noise       | Requires attention        | Active trading                    |
+| **1h**    | Good signal/noise ratio   | Moderate trade frequency  | Swing trading (RECOMMENDED)       |
+| **4h**    | Clean signals, stable     | Fewer trades              | Position trading (RECOMMENDED)    |
+| **1d**    | Very stable, low noise    | Very few signals          | Long-term (low frequency)         |
 
 ### 🎯 Genesis-Core Recommendation
 
 **Primary Timeframe:** `1h` eller `4h`
+
 - ✅ Best signal/noise ratio för ML
 - ✅ Enough data för backtesting
 - ✅ Manageable trade frequency
 - ✅ Lower slippage impact
 
 **Current Issue:**
+
 - 1h med endast 3 features → Inte tillräckligt information
 - Förslag: Lägg till 4-7 features från "Robust Multi-Timeframe Set"
 
@@ -714,6 +780,7 @@ features = [
 ### ✅ Implementerade Features
 
 #### **1. bb_position**
+
 ```python
 # Bollinger Band Position (0-1 range)
 bb_position = (close - bb_lower) / (bb_upper - bb_lower)
@@ -722,11 +789,14 @@ bb_position = (close - bb_lower) / (bb_upper - bb_lower)
 # 0.5 = At middle (SMA20)
 # 1.0 = At upper band (overbought)
 ```
+
 **Analysis:**
+
 - ✅ Good: Volatility-adjusted, bounded
 - ⚠️ Limitation: Lagging, needs confirmation
 
 #### **2. trend_confluence**
+
 ```python
 # Multi-indicator trend agreement (0-1 range)
 trend_confluence = sum([
@@ -736,22 +806,28 @@ trend_confluence = sum([
     # ... more conditions
 ]) / total_conditions
 ```
+
 **Analysis:**
+
 - ✅ Good: Combines multiple signals
 - ❌ Problem: **CRITICAL DRIFT detected (PSI=0.305)**
 - 🔧 Fix: Recalculate eller ta bort denna feature
 
 #### **3. rsi**
+
 ```python
 rsi = calculate_rsi(close, 14)
 ```
+
 **Analysis:**
+
 - ✅ Good: Standard momentum indicator
 - ⚠️ Limitation: Alone är inte tillräckligt
 
 ### ❌ Current Issue
 
 **Problem:**
+
 ```
 Only 3 features → Low predictive power
 AUC = 0.49 (random guessing)
@@ -759,6 +835,7 @@ trend_confluence has CRITICAL drift
 ```
 
 **Solution:**
+
 ```
 Add 4-7 more features från "Robust Multi-Timeframe Set"
 → Target: 7-10 features för optimal balance
@@ -771,12 +848,14 @@ Add 4-7 more features från "Robust Multi-Timeframe Set"
 ### **Immediate Actions:**
 
 1. **Fix Drift Issue**
+
    ```python
    # Option A: Recalculate trend_confluence
    # Option B: Ta bort och ersätt med andra features
    ```
 
 2. **Add Essential Features**
+
    ```python
    # Minimum additions:
    - adx (trend strength filter)
@@ -786,6 +865,7 @@ Add 4-7 more features från "Robust Multi-Timeframe Set"
    ```
 
 3. **Test 4h Timeframe**
+
    ```bash
    # 4h kan ge mer stabila signals
    python scripts/precompute_features.py --symbol tBTCUSD --timeframe 4h
@@ -795,7 +875,7 @@ Add 4-7 more features från "Robust Multi-Timeframe Set"
 4. **Feature Importance Analysis**
    ```bash
    # Se vilka features är verkligen prediktiva
-   python scripts/analyze_feature_importance.py --symbol tBTCUSD --timeframe 1h
+    python scripts/archive/analysis/analyze_feature_importance.py --symbol tBTCUSD --timeframe 1h
    ```
 
 ---

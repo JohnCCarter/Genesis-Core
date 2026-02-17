@@ -152,7 +152,7 @@ REQUIRED CHECKS:
 - [ ] Feature synergy analysis completed
 ```
 
-**Status:** ✅ IMPLEMENTED (`scripts/analyze_feature_synergy.py`)
+**Status:** ✅ IMPLEMENTED (`scripts/archive/analysis/analyze_feature_synergy.py`)
 
 ### ✅ Feature Drift Monitoring
 

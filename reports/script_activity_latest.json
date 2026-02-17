@@ -1,0 +1,2750 @@
+{
+  "generated_at_utc": "2026-02-17T14:59:08.945707+00:00",
+  "classifier_version": "c7-v1",
+  "include_archive": false,
+  "thresholds": {
+    "ACTIVE": "score >= 8",
+    "REVIEW": "3 <= score < 8",
+    "STALE": "score < 3"
+  },
+  "summary": {
+    "total_scripts": 129,
+    "active": 15,
+    "review": 51,
+    "stale": 63
+  },
+  "scripts": [
+    {
+      "path": "scripts/train_model.py",
+      "status": "ACTIVE",
+      "score": 21,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 1,
+        "workflows": 0,
+        "tests": 1,
+        "docs_active": 3,
+        "docs_historical": 6,
+        "scripts_active": 4,
+        "scripts_archive": 2,
+        "other": 1
+      },
+      "notes": [
+        "runtime-referenser hittade",
+        "test-referenser hittade",
+        "refereras av aktiva scripts",
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/preflight_optuna_check.py",
+      "status": "ACTIVE",
+      "score": 18,
+      "days_since_last_commit": 19,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 1,
+        "workflows": 0,
+        "tests": 1,
+        "docs_active": 10,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 1
+      },
+      "notes": [
+        "runtime-referenser hittade",
+        "test-referenser hittade",
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/fetch_historical.py",
+      "status": "ACTIVE",
+      "score": 17,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 1,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 2,
+        "docs_historical": 8,
+        "scripts_active": 5,
+        "scripts_archive": 0,
+        "other": 2
+      },
+      "notes": [
+        "runtime-referenser hittade",
+        "refereras av aktiva scripts",
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/paper_trading_runner.py",
+      "status": "ACTIVE",
+      "score": 17,
+      "days_since_last_commit": 1,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 1,
+        "workflows": 0,
+        "tests": 1,
+        "docs_active": 6,
+        "docs_historical": 1,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "runtime-referenser hittade",
+        "test-referenser hittade",
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/precompute_features.py",
+      "status": "ACTIVE",
+      "score": 17,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 1,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 3,
+        "docs_historical": 3,
+        "scripts_active": 1,
+        "scripts_archive": 0,
+        "other": 2
+      },
+      "notes": [
+        "runtime-referenser hittade",
+        "refereras av aktiva scripts",
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/run_backtest.py",
+      "status": "ACTIVE",
+      "score": 17,
+      "days_since_last_commit": 26,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 3,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 32,
+        "docs_historical": 7,
+        "scripts_active": 7,
+        "scripts_archive": 0,
+        "other": 5
+      },
+      "notes": [
+        "runtime-referenser hittade",
+        "refereras av aktiva scripts",
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/extract_backtest_provenance.py",
+      "status": "ACTIVE",
+      "score": 14,
+      "days_since_last_commit": 33,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 1,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 1,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 1
+      },
+      "notes": [
+        "runtime-referenser hittade",
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/select_champion.py",
+      "status": "ACTIVE",
+      "score": 14,
+      "days_since_last_commit": 19,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 1,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 1,
+        "docs_historical": 5,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 1
+      },
+      "notes": [
+        "runtime-referenser hittade",
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/validate_optimizer_config.py",
+      "status": "ACTIVE",
+      "score": 14,
+      "days_since_last_commit": 19,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 1,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 8,
+        "docs_historical": 1,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 1
+      },
+      "notes": [
+        "runtime-referenser hittade",
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/build_auth_headers.py",
+      "status": "ACTIVE",
+      "score": 13,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 1,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 1,
+        "docs_historical": 3,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "runtime-referenser hittade",
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/optimizer.py",
+      "status": "ACTIVE",
+      "score": 13,
+      "days_since_last_commit": 32,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 1,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 10,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "runtime-referenser hittade",
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/validate_registry.py",
+      "status": "ACTIVE",
+      "score": 11,
+      "days_since_last_commit": 32,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 1,
+        "tests": 0,
+        "docs_active": 3,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "workflow-referenser hittade",
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/verify_mcp_installation.py",
+      "status": "ACTIVE",
+      "score": 11,
+      "days_since_last_commit": 12,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 1,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "runtime-referenser hittade",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/run_skill.py",
+      "status": "ACTIVE",
+      "score": 10,
+      "days_since_last_commit": 32,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 1,
+        "docs_active": 1,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 2
+      },
+      "notes": [
+        "test-referenser hittade",
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/precompute_features_v17.py",
+      "status": "ACTIVE",
+      "score": 9,
+      "days_since_last_commit": 19,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 1,
+        "docs_historical": 1,
+        "scripts_active": 4,
+        "scripts_archive": 1,
+        "other": 1
+      },
+      "notes": [
+        "refereras av aktiva scripts",
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/validate_data.py",
+      "status": "REVIEW",
+      "score": 7,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 3,
+        "scripts_active": 1,
+        "scripts_archive": 0,
+        "other": 2
+      },
+      "notes": [
+        "refereras av aktiva scripts",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/check_trial_config_equivalence.py",
+      "status": "REVIEW",
+      "score": 6,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 5,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 1
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/create_trial_208_config.py",
+      "status": "REVIEW",
+      "score": 6,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 1,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras av aktiva scripts",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/curate_features.py",
+      "status": "REVIEW",
+      "score": 6,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 1,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras av aktiva scripts",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/evaluate_model.py",
+      "status": "REVIEW",
+      "score": 6,
+      "days_since_last_commit": 19,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 1,
+        "docs_historical": 2,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 1
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/extract_optuna_blocks_top_trials.py",
+      "status": "REVIEW",
+      "score": 6,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 1,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras av aktiva scripts",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/precompute_features_v18.py",
+      "status": "REVIEW",
+      "score": 6,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 1,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras av aktiva scripts",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/sweep_optuna_holdout_top_trials.py",
+      "status": "REVIEW",
+      "score": 6,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 1,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras av aktiva scripts",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/validate_holdout.py",
+      "status": "REVIEW",
+      "score": 6,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 1,
+        "scripts_active": 1,
+        "scripts_archive": 1,
+        "other": 0
+      },
+      "notes": [
+        "refereras av aktiva scripts",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/validate_purged_wfcv.py",
+      "status": "REVIEW",
+      "score": 6,
+      "days_since_last_commit": 19,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 3,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 1
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/verify_exits_forced.py",
+      "status": "REVIEW",
+      "score": 6,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 1,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras av aktiva scripts",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/analyze_optuna_db.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 2,
+        "docs_historical": 2,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/analyze_optuna_run_identity.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 19,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 1,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/analyze_regime_performance.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 19,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 1,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/analyze_w2_exit_breakdown.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 1,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/apply_runtime_patch.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 3,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/backtest_with_fees.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 19,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 1,
+        "docs_historical": 1,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/benchmark_backtest.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 3,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/benchmark_numba_labeling.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 19,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 1,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/benchmark_optuna_performance.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 6,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/calculate_paper_trading_metrics.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 13,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 9,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/calibrate_fib_gates.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 1,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/curate_1d_candles.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 19,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 1,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/extract_ev_distribution.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 15,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 1,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/generate_meta_labels.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 19,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 2,
+        "docs_historical": 2,
+        "scripts_active": 0,
+        "scripts_archive": 1,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/hqt_audit_pf_first.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 13,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 2,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/optimize_ema_slope_params.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 19,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 1,
+        "docs_historical": 1,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/promote_v5a_to_champion.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 14,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 3,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/reproduce_trial_subprocess.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 2,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/run_champion_smoke.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 2,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/run_composable_backtest_no_fib.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 15,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 2,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/run_composable_backtest_phase2.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 15,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 1,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/run_composable_backtest_poc.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 18,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 2,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/run_extended_validation_2024.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 13,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 5,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/run_milestone3_exp1.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 14,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 3,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/run_milestone4_exp1.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 13,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 2,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/run_milestone4_exp2.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 13,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 2,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/sanity_check_evgate_percentiles.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 13,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 1,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/sanity_check_size_zero_reasons.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 13,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 3,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/scan_phase3_fine_runs.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 1,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/smoke_test_fixes.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 1,
+        "docs_historical": 2,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/summarize_hparam_results.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 1,
+        "docs_historical": 3,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/test_ws_public.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 1,
+        "docs_historical": 5,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/tune_confidence_threshold.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 19,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 1,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/tune_triple_barrier.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 19,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 2,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/validate_vectorized_features.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 19,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 1,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/validate_zero_trade_risk.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 1,
+        "docs_historical": 2,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/verify_candidate_exact.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 1,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/verify_config_loading.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 1,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/verify_fib_connection.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 1,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/verify_runner_fix.py",
+      "status": "REVIEW",
+      "score": 5,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 1,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/benchmark_performance.py",
+      "status": "STALE",
+      "score": 2,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 1,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 2
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "refereras främst i historiska/governance-dokument"
+      ]
+    },
+    {
+      "path": "scripts/calculate_ic_by_regime.py",
+      "status": "STALE",
+      "score": 2,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 1,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 1
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "refereras främst i historiska/governance-dokument"
+      ]
+    },
+    {
+      "path": "scripts/validate_all_indicators.py",
+      "status": "STALE",
+      "score": 2,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 2,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 1
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "refereras främst i historiska/governance-dokument"
+      ]
+    },
+    {
+      "path": "scripts/audit_optuna_objective_parity.py",
+      "status": "STALE",
+      "score": 1,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 1,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "refereras främst i historiska/governance-dokument"
+      ]
+    },
+    {
+      "path": "scripts/burn_in.py",
+      "status": "STALE",
+      "score": 1,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 1,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "refereras främst i historiska/governance-dokument"
+      ]
+    },
+    {
+      "path": "scripts/compare_htf_exits.py",
+      "status": "STALE",
+      "score": 1,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 1,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "refereras främst i historiska/governance-dokument"
+      ]
+    },
+    {
+      "path": "scripts/compare_modes.py",
+      "status": "STALE",
+      "score": 1,
+      "days_since_last_commit": 19,
+      "deprecated_marker": true,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 2,
+        "docs_historical": 1,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "refereras i aktiva docs",
+        "deprecated-markör i filinnehåll",
+        "nyligen ändrad (<90 dagar)"
+      ]
+    },
+    {
+      "path": "scripts/compare_swing_strategies.py",
+      "status": "STALE",
+      "score": 1,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 1,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "refereras främst i historiska/governance-dokument"
+      ]
+    },
+    {
+      "path": "scripts/migrate_model_structure.py",
+      "status": "STALE",
+      "score": 1,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 2,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "refereras främst i historiska/governance-dokument"
+      ]
+    },
+    {
+      "path": "scripts/parse_burnin_log.py",
+      "status": "STALE",
+      "score": 1,
+      "days_since_last_commit": 2,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 2,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "refereras främst i historiska/governance-dokument"
+      ]
+    },
+    {
+      "path": "scripts/precompute_features_fast.py",
+      "status": "STALE",
+      "score": 1,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 2,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "refereras främst i historiska/governance-dokument"
+      ]
+    },
+    {
+      "path": "scripts/repo_inventory_report.py",
+      "status": "STALE",
+      "score": 1,
+      "days_since_last_commit": 2,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 1,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "refereras främst i historiska/governance-dokument"
+      ]
+    },
+    {
+      "path": "scripts/smoke_submit_call.py",
+      "status": "STALE",
+      "score": 1,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 2,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "refereras främst i historiska/governance-dokument"
+      ]
+    },
+    {
+      "path": "scripts/smoke_submit_flow.py",
+      "status": "STALE",
+      "score": 1,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 2,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "refereras främst i historiska/governance-dokument"
+      ]
+    },
+    {
+      "path": "scripts/validate_v17_holdout.py",
+      "status": "STALE",
+      "score": 1,
+      "days_since_last_commit": 19,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 1,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "refereras främst i historiska/governance-dokument"
+      ]
+    },
+    {
+      "path": "scripts/analyze_gate_dominance.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 26,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/benchmark_features_modes.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/calculate_score_260.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/calculate_score_realistic.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/check_robustness_top_trials.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/cleanup_optimizer_configs.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/create_parity_test_config.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/create_trial_1381_config.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/create_trial_1940_config.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/curate_3h_candles.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 19,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/diag_trades.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/evaluate_all_models.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/freeze_data.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/get_trial_params.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/identify_config_difference.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/inspect_dates.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/inspect_trial_4.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/join_holdout_blocks.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/list_top_trials.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/monitor_optuna_study.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 19,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/optimize_htf_custom.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/organize_optuna_docs.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/phase2_metrics.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/profile_pipeline.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 19,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/reproduce_mismatch.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/reproduce_trial_from_merged_config.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/resample_1h_to_3h.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 35,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/resample_1h_to_6h.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/run_ltf_confidence_grid.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 19,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/run_optimizer_smoke.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 19,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/run_phase2c_extended.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 19,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/run_phase2d_corrected.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 19,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/run_phase3_fine.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/show_best_results.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/show_feature_loading_modes.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/show_loaded_model.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/show_v4_features_loading.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/simple_htf_integration_check.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/sync_precompute_and_train.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/trace_champion_loading.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/validate_atr_vectorized.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/validate_v17_ic.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 19,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/verify_async_candles.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/verify_exits_forced_v2.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/verify_exits_loose.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/verify_integration.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/verify_v17_htf_cols.py",
+      "status": "STALE",
+      "score": 0,
+      "days_since_last_commit": 39,
+      "deprecated_marker": false,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 0,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "nyligen ändrad (<90 dagar)",
+        "inga externa referenser hittade"
+      ]
+    },
+    {
+      "path": "scripts/classify_script_activity.py",
+      "status": "STALE",
+      "score": -3,
+      "days_since_last_commit": 0,
+      "deprecated_marker": true,
+      "refs": {
+        "runtime": 0,
+        "workflows": 0,
+        "tests": 0,
+        "docs_active": 0,
+        "docs_historical": 2,
+        "scripts_active": 0,
+        "scripts_archive": 0,
+        "other": 0
+      },
+      "notes": [
+        "deprecated-markör i filinnehåll",
+        "nyligen ändrad (<90 dagar)",
+        "refereras främst i historiska/governance-dokument"
+      ]
+    }
+  ]
+}

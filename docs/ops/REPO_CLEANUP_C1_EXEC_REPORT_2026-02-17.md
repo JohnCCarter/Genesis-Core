@@ -33,14 +33,14 @@ Genomföra en första låg-risk Fas C-tranche genom att flytta tre deprecated sc
 
 ## Gate results
 
-| Gate                     | BEFORE    | AFTER     | Notes |
-| ------------------------ | --------- | --------- | ----- |
-| pre-commit/lint          | `PASS`    | `PASS`    | `pre-commit run --files docs/ops/REPO_CLEANUP_C1_EXEC_CONTRACT_2026-02-17.md docs/ops/REPO_CLEANUP_C1_EXEC_REPORT_2026-02-17.md` passerade före och efter execution. |
-| smoke test               | `PASS`    | `PASS`    | `tests/test_import_smoke_backtest_optuna.py` (`.` `[100%]`) före och efter. |
-| determinism replay       | `PASS`    | `PASS`    | `tests/test_backtest_determinism_smoke.py` (`...` `[100%]`) före och efter. |
-| feature-cache invariance | `PASS`    | `PASS`    | `tests/test_feature_cache.py` + `tests/test_features_asof_cache_key_deterministic.py` (`......` `[100%]`) före och efter. |
-| pipeline invariant       | `PASS`    | `PASS`    | `tests/test_pipeline_fast_hash_guard.py` (`...` `[100%]`) före och efter. |
-| scope + reference checks | `PASS`    | `PASS`    | AFTER: `scripts/smoke_test.py`, `scripts/smoke_test_eth.py`, `scripts/submit_test.py` saknas i `scripts/`; scoped referenser kvar endast i allowlistad historik/governance (`docs/audits/**`, `docs/ops/**`). |
+| Gate                     | BEFORE | AFTER  | Notes                                                                                                                                                                                                         |
+| ------------------------ | ------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| pre-commit/lint          | `PASS` | `PASS` | `pre-commit run --files docs/ops/REPO_CLEANUP_C1_EXEC_CONTRACT_2026-02-17.md docs/ops/REPO_CLEANUP_C1_EXEC_REPORT_2026-02-17.md` passerade före och efter execution.                                          |
+| smoke test               | `PASS` | `PASS` | `tests/test_import_smoke_backtest_optuna.py` (`.` `[100%]`) före och efter.                                                                                                                                   |
+| determinism replay       | `PASS` | `PASS` | `tests/test_backtest_determinism_smoke.py` (`...` `[100%]`) före och efter.                                                                                                                                   |
+| feature-cache invariance | `PASS` | `PASS` | `tests/test_feature_cache.py` + `tests/test_features_asof_cache_key_deterministic.py` (`......` `[100%]`) före och efter.                                                                                     |
+| pipeline invariant       | `PASS` | `PASS` | `tests/test_pipeline_fast_hash_guard.py` (`...` `[100%]`) före och efter.                                                                                                                                     |
+| scope + reference checks | `PASS` | `PASS` | AFTER: `scripts/smoke_test.py`, `scripts/smoke_test_eth.py`, `scripts/submit_test.py` saknas i `scripts/`; scoped referenser kvar endast i allowlistad historik/governance (`docs/audits/**`, `docs/ops/**`). |
 
 ## Stop condition
 

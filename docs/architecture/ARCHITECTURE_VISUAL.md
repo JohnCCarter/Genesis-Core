@@ -543,19 +543,18 @@ Algorithm (static; “import reachability”, not dynamic call reachability):
 Output snapshot (this workspace; AST import-graph reachability):
 
 ```text
-CORE_TOTAL 97
+CORE_TOTAL 94
 CORE_REACHABLE 81
-CORE_UNREACHABLE 16
+CORE_UNREACHABLE 13
 
 COUNTS:
-  NEVER_IMPORTED 6
-  TEST_ONLY 9
+  NEVER_IMPORTED 5
+  TEST_ONLY 7
   DEPRECATED_PATH 1
 
 TOP_UNREACHABLE:
   core.backtest.walk_forward [TEST_ONLY]
   core.config.validator [TEST_ONLY]
-  core.indicators.fvg [TEST_ONLY]
   core.indicators.macd [NEVER_IMPORTED]
   core.io.bitfinex.ws_reconnect [TEST_ONLY]
   core.ml.overfit_detection [NEVER_IMPORTED]
@@ -564,8 +563,6 @@ TOP_UNREACHABLE:
   core.risk.pnl [TEST_ONLY]
   core.risk.sizing [NEVER_IMPORTED]
   core.strategy.e2e [NEVER_IMPORTED]
-  core.strategy.ema_cross [TEST_ONLY]
-  core.strategy.example [NEVER_IMPORTED]
   core.strategy.features [DEPRECATED_PATH]
   core.strategy.schemas [NEVER_IMPORTED]
   core.strategy.validation [TEST_ONLY]
@@ -580,19 +577,16 @@ flowchart TB
     OVR[core.ml.overfit_detection]
     SIZ[core.risk.sizing]
     E2E[core.strategy.e2e]
-    EX[core.strategy.example]
     SCH[core.strategy.schemas]
   end
 
   subgraph TEST_ONLY[TEST_ONLY (broad run)]
     WF[core.backtest.walk_forward]
     VAL[core.config.validator]
-    FVG[core.indicators.fvg]
     WSREC[core.io.bitfinex.ws_reconnect]
     RISK[core.risk]
     RG[core.risk.guards]
     RPNL[core.risk.pnl]
-    EMA[core.strategy.ema_cross]
     VLD[core.strategy.validation]
   end
 
@@ -605,22 +599,20 @@ Proof checklist (Diagram 6): no arrows.
 
 ### Evidence table (broad run unreachable modules)
 
-| Module / asset                                                          | Category          | Evidence (file:lines)                                                                                                                                                     | `rg` command                                                                                                                                                                  |
-| ----------------------------------------------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `core.strategy.features`                                                | `DEPRECATED_PATH` | `src/core/strategy/features.py:18-40` (docstring says `DEPRECATED`, delegates to ASOF) + `tests/test_dead_code_tripwires.py:8-46` (imports + asserts delegation behavior) | `rg -n 'DEPRECATED' src/core/strategy/features.py; rg -n 'import core\.strategy\.features' tests/test_dead_code_tripwires.py`                                                 |
-| `core.config.validator`                                                 | `TEST_ONLY`       | `tests/test_config_endpoints.py:1-5` imports it                                                                                                                           | `rg -n 'core\.config\.validator' tests/test_config_endpoints.py`                                                                                                              |
-| `core.indicators.fvg`                                                   | `TEST_ONLY`       | `tests/test_fvg.py:1-4` imports it                                                                                                                                        | `rg -n 'core\.indicators\.fvg' tests/test_fvg.py`                                                                                                                             |
-| `core.io.bitfinex.ws_reconnect`                                         | `TEST_ONLY`       | `tests/test_ws_reconnect.py:1-4` imports it                                                                                                                               | `rg -n 'core\.io\.bitfinex\.ws_reconnect' tests/test_ws_reconnect.py`                                                                                                         |
-| `core.risk.guards`                                                      | `TEST_ONLY`       | `tests/test_risk_guards.py:1-4` imports it                                                                                                                                | `rg -n 'core\.risk\.guards' tests/test_risk_guards.py`                                                                                                                        |
-| `core.risk.pnl`                                                         | `TEST_ONLY`       | `tests/test_risk_pnl.py:1-4` imports it                                                                                                                                   | `rg -n 'core\.risk\.pnl' tests/test_risk_pnl.py`                                                                                                                              |
-| `core.strategy.ema_cross`                                               | `TEST_ONLY`       | `tests/test_strategy_ema_cross.py:1-4` imports it                                                                                                                         | `rg -n 'core\.strategy\.ema_cross' tests/test_strategy_ema_cross.py`                                                                                                          |
-| `core.strategy.validation`                                              | `TEST_ONLY`       | `tests/test_validation_min.py:1-4` imports it                                                                                                                             | `rg -n 'core\.strategy\.validation' tests/test_validation_min.py`                                                                                                             |
-| `core.backtest.walk_forward`                                            | `TEST_ONLY`       | `tests/test_walk_forward.py:8-60` imports it via `src.core.backtest.walk_forward` (no runtime import-sites under `core.backtest.walk_forward`)                            | `rg -n 'src\.core\.backtest\.walk_forward' tests/test_walk_forward.py; rg -n 'core\.backtest\.walk_forward' -S src scripts mcp_server`                                        |
-| `core.indicators.macd`                                                  | `NEVER_IMPORTED`  | no import-site in `src/`, `scripts/` (excluding `scripts/archive/`), or `mcp_server/` (note: used under `scripts/archive/` only)                                          | `rg -n 'core\.indicators\.macd' -S src scripts mcp_server; rg -n 'core\.indicators\.macd' scripts/archive`                                                                    |
-| `core.ml.overfit_detection`                                             | `NEVER_IMPORTED`  | no import-site in `src/`, `scripts/` (excluding `scripts/archive/`), or `mcp_server/` (note: referenced by docs/config; treat as “not wired” not “safe to delete”)        | `rg -n 'core\.ml\.overfit_detection' -S src scripts mcp_server`                                                                                                               |
-| `core.risk`                                                             | `TEST_ONLY`       | `tests/test_risk_guards.py:1-4` imports `core.risk.guards`; `tests/test_risk_pnl.py:1-4` imports `core.risk.pnl` (this implicitly imports the `core.risk` package)        | `rg -n 'core\.risk\.guards' tests/test_risk_guards.py; rg -n 'core\.risk\.pnl' tests/test_risk_pnl.py`                                                                        |
-| `core.risk.sizing`                                                      | `NEVER_IMPORTED`  | no import-site in `src/`, `scripts/` (excluding `scripts/archive/`), `mcp_server/`, or `tests/`                                                                           | `rg -n 'core\.risk\.sizing' -S src scripts mcp_server tests`                                                                                                                  |
-| `core.strategy.e2e` / `core.strategy.example` / `core.strategy.schemas` | `NEVER_IMPORTED`  | no import-site in `src/`, `scripts/` (excluding archive), or `mcp_server/`                                                                                                | `rg -n 'core\.strategy\.e2e' -S src scripts mcp_server; rg -n 'core\.strategy\.example' -S src scripts mcp_server; rg -n 'core\.strategy\.schemas' -S src scripts mcp_server` |
+| Module / asset                                | Category          | Evidence (file:lines)                                                                                                                                                     | `rg` command                                                                                                                           |
+| --------------------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `core.strategy.features`                      | `DEPRECATED_PATH` | `src/core/strategy/features.py:18-40` (docstring says `DEPRECATED`, delegates to ASOF) + `tests/test_dead_code_tripwires.py:8-46` (imports + asserts delegation behavior) | `rg -n 'DEPRECATED' src/core/strategy/features.py; rg -n 'import core\.strategy\.features' tests/test_dead_code_tripwires.py`          |
+| `core.config.validator`                       | `TEST_ONLY`       | `tests/test_config_endpoints.py:1-5` imports it                                                                                                                           | `rg -n 'core\.config\.validator' tests/test_config_endpoints.py`                                                                       |
+| `core.io.bitfinex.ws_reconnect`               | `TEST_ONLY`       | `tests/test_ws_reconnect.py:1-4` imports it                                                                                                                               | `rg -n 'core\.io\.bitfinex\.ws_reconnect' tests/test_ws_reconnect.py`                                                                  |
+| `core.risk.guards`                            | `TEST_ONLY`       | `tests/test_risk_guards.py:1-4` imports it                                                                                                                                | `rg -n 'core\.risk\.guards' tests/test_risk_guards.py`                                                                                 |
+| `core.risk.pnl`                               | `TEST_ONLY`       | `tests/test_risk_pnl.py:1-4` imports it                                                                                                                                   | `rg -n 'core\.risk\.pnl' tests/test_risk_pnl.py`                                                                                       |
+| `core.strategy.validation`                    | `TEST_ONLY`       | `tests/test_validation_min.py:1-4` imports it                                                                                                                             | `rg -n 'core\.strategy\.validation' tests/test_validation_min.py`                                                                      |
+| `core.backtest.walk_forward`                  | `TEST_ONLY`       | `tests/test_walk_forward.py:8-60` imports it via `src.core.backtest.walk_forward` (no runtime import-sites under `core.backtest.walk_forward`)                            | `rg -n 'src\.core\.backtest\.walk_forward' tests/test_walk_forward.py; rg -n 'core\.backtest\.walk_forward' -S src scripts mcp_server` |
+| `core.indicators.macd`                        | `NEVER_IMPORTED`  | no import-site in `src/`, `scripts/` (excluding `scripts/archive/`), or `mcp_server/` (note: used under `scripts/archive/` only)                                          | `rg -n 'core\.indicators\.macd' -S src scripts mcp_server; rg -n 'core\.indicators\.macd' scripts/archive`                             |
+| `core.ml.overfit_detection`                   | `NEVER_IMPORTED`  | no import-site in `src/`, `scripts/` (excluding `scripts/archive/`), or `mcp_server/` (note: referenced by docs/config; treat as “not wired” not “safe to delete”)        | `rg -n 'core\.ml\.overfit_detection' -S src scripts mcp_server`                                                                        |
+| `core.risk`                                   | `TEST_ONLY`       | `tests/test_risk_guards.py:1-4` imports `core.risk.guards`; `tests/test_risk_pnl.py:1-4` imports `core.risk.pnl` (this implicitly imports the `core.risk` package)        | `rg -n 'core\.risk\.guards' tests/test_risk_guards.py; rg -n 'core\.risk\.pnl' tests/test_risk_pnl.py`                                 |
+| `core.risk.sizing`                            | `NEVER_IMPORTED`  | no import-site in `src/`, `scripts/` (excluding `scripts/archive/`), `mcp_server/`, or `tests/`                                                                           | `rg -n 'core\.risk\.sizing' -S src scripts mcp_server tests`                                                                           |
+| `core.strategy.e2e` / `core.strategy.schemas` | `NEVER_IMPORTED`  | no import-site in `src/`, `scripts/` (excluding archive), or `mcp_server/`                                                                                                | `rg -n 'core\.strategy\.e2e' -S src scripts mcp_server; rg -n 'core\.strategy\.schemas' -S src scripts mcp_server`                     |
 
 ### PATH_MISMATCH (non-Python assets)
 

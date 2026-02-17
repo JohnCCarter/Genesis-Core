@@ -63,8 +63,6 @@ Se `docs/architecture/ARCHITECTURE_VISUAL.md` för evidence-baserad arkitektur (
 
 - Strategi (rena funktioner)
   - Indikatorer (rena): `indicators/ema.py`, `indicators/atr.py`, `indicators/rsi.py`, `indicators/adx.py`
-  - EMA-cross mini i `strategy/ema_cross.py`
-  - Exempelstrategi i `strategy/example.py`
 
 - Kvalitet & CI
   - Pre-commit: black, ruff, bandit

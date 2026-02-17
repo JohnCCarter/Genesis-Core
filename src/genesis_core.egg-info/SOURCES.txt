@@ -27,7 +27,6 @@ src/core/indicators/derived_features.py
 src/core/indicators/ema.py
 src/core/indicators/exit_fibonacci.py
 src/core/indicators/fibonacci.py
-src/core/indicators/fvg.py
 src/core/indicators/htf_fibonacci.py
 src/core/indicators/macd.py
 src/core/indicators/rsi.py
@@ -66,9 +65,7 @@ src/core/strategy/champion_loader.py
 src/core/strategy/confidence.py
 src/core/strategy/decision.py
 src/core/strategy/e2e.py
-src/core/strategy/ema_cross.py
 src/core/strategy/evaluate.py
-src/core/strategy/example.py
 src/core/strategy/features.py
 src/core/strategy/features_asof.py
 src/core/strategy/fib_logging.py
@@ -169,7 +166,6 @@ tests/test_features_asof_fast_hash_env_case.py
 tests/test_fib_logging.py
 tests/test_fib_logging_env_flag.py
 tests/test_fibonacci.py
-tests/test_fvg.py
 tests/test_gate_dominance_utils.py
 tests/test_golden_trace_runtime_semantics.py
 tests/test_health.py
@@ -254,7 +250,6 @@ tests/test_run_skill_vertical_slice.py
 tests/test_runner_direct_includes_merged_config.py
 tests/test_scoring_v2.py
 tests/test_scrub_volatile_and_config_fingerprint.py
-tests/test_strategy_ema_cross.py
 tests/test_strategy_schemas.py
 tests/test_symbols.py
 tests/test_timeframe_month_alias.py

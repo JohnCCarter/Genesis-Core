@@ -60,7 +60,7 @@ def test_main_without_reveal(mock_settings, mock_nonce, capsys):
 
 
 def test_main_with_reveal(mock_settings, mock_nonce, capsys):
-    """Test main function with --reveal flag shows actual values."""
+    """Test main function with --reveal flag still masks sensitive values."""
     result = main(["auth/r/alerts", "--reveal"])
 
     assert result == 0
@@ -68,12 +68,13 @@ def test_main_with_reveal(mock_settings, mock_nonce, capsys):
     captured = capsys.readouterr()
     output = json.loads(captured.out)
 
-    # With --reveal, actual values should be shown
-    assert output["bfx-apikey"] == "test_api_key"
-    assert output["bfx-signature"] != "***"
+    # --reveal is ignored for security reasons
+    assert output["bfx-apikey"] == "***"
+    assert output["bfx-signature"] == "***"
     # Non-sensitive values should not be masked
     assert output["bfx-nonce"] == "1234567890000000"
     assert output["Content-Type"] == "application/json"
+    assert "ignoreras" in output["info"]
 
 
 def test_main_with_pretty(mock_settings, mock_nonce, capsys):
@@ -91,7 +92,7 @@ def test_main_with_pretty(mock_settings, mock_nonce, capsys):
 
 
 def test_main_with_reveal_and_pretty(mock_settings, mock_nonce, capsys):
-    """Test main function with both --reveal and --pretty flags."""
+    """Test main function with both --reveal and --pretty flags keeps masking."""
     result = main(["auth/r/alerts", "--reveal", "--pretty"])
 
     assert result == 0
@@ -101,9 +102,10 @@ def test_main_with_reveal_and_pretty(mock_settings, mock_nonce, capsys):
     assert "\n" in captured.out
     output = json.loads(captured.out)
 
-    # Should show actual values with --reveal
-    assert output["bfx-apikey"] == "test_api_key"
-    assert output["bfx-signature"] != "***"
+    # Should still mask values with --reveal
+    assert output["bfx-apikey"] == "***"
+    assert output["bfx-signature"] == "***"
+    assert "ignoreras" in output["info"]
 
 
 def test_main_with_body(mock_settings, mock_nonce, capsys):

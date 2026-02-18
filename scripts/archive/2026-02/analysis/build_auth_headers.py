@@ -48,7 +48,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--reveal",
         action="store_true",
-        help="Visa api-key/signature i klartext (VARNING: osäkert)",
+        help="Bakåtkompatibel flagga (ignoreras av säkerhetsskäl)",
     )
     parser.add_argument(
         "--pretty",
@@ -66,14 +66,14 @@ def main(argv: list[str] | None = None) -> int:
 
     headers = build_headers(args.endpoint, body)
 
+    out = {
+        key: ("***" if key in {"bfx-apikey", "bfx-signature"} else value)
+        for key, value in headers.items()
+    }
     if args.reveal:
-        out = headers
+        out["info"] = "--reveal ignoreras av säkerhetsskäl; hemligheter maskeras alltid."
     else:
-        out = {
-            key: ("***" if key in {"bfx-apikey", "bfx-signature"} else value)
-            for key, value in headers.items()
-        }
-        out["info"] = "Hemligheter maskeras som standard. Använd --reveal för att visa."
+        out["info"] = "Hemligheter maskeras som standard."
 
     print_data(out, args.pretty)
     return 0

@@ -22,8 +22,12 @@ Detta dokument beskriver hur script i `scripts/` organiseras, auditeras och avve
 3. Lämna wrapper på gamla pathen som:
    - skriver tydlig `DEPRECATED`-varning,
    - vidarebefordrar alla argument,
-   - returnerar samma exit code.
-4. Behåll wrapper i **2-4 veckor** innan eventuell borttagning i separat tranche/PR.
+
+- returnerar samma exit code,
+- loggar användning (en rad per körning) i `scripts/deprecated-usage.log`.
+
+4. **Radera tidigast efter 14 dagar** från deprecate-flytt.
+5. Under 14-dagarsfönstret ska gamla paths fortsätta fungera via wrappers.
 
 ## Kör scripts-audit
 
@@ -73,4 +77,19 @@ Wrapper-beteende per filtyp:
 3. Kör `deprecate_move.py` i dry-run.
 4. Kör skarp move + wrapper.
 5. Verifiera att befintliga anrop fortfarande fungerar.
-6. Vänta 2-4 veckor innan eventuell slutlig borttagning.
+6. Vänta minst 14 dagar innan eventuell slutlig borttagning.
+
+## Checklista för radering (efter deprecation window)
+
+1. Minst 14 dagar har passerat sedan flytt till `scripts/archive/YYYY-MM/...`.
+2. `scripts/deprecated-usage.log` visar **0 usage** för scriptets wrapper under hela 14-dagarsperioden.
+3. Externa triggers är verifierade innan radering:
+
+- Windows Task Scheduler
+- cron
+- CI schedules
+
+4. Radera i två steg:
+
+- först wrapper på gamla pathen,
+- därefter (valfritt) archive-kopian efter ytterligare grace-period.

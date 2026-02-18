@@ -104,17 +104,35 @@ def _python_wrapper(target_rel_from_source_parent: str, source_rel: str, target_
     return (
         "from __future__ import annotations\n"
         "\n"
+        "import json\n"
         "import runpy\n"
         "import sys\n"
+        "from datetime import UTC, datetime\n"
         "from pathlib import Path\n"
         "\n"
         "\n"
+        "def _log_deprecated_usage(wrapper: Path, target: Path) -> None:\n"
+        "    payload = {\n"
+        '        "timestamp": datetime.now(tz=UTC).isoformat(),\n'
+        '        "wrapper_path": wrapper.as_posix(),\n'
+        '        "target_path": target.as_posix(),\n'
+        "    }\n"
+        '    log_path = wrapper.parent / "deprecated-usage.log"\n'
+        "    try:\n"
+        '        with log_path.open("a", encoding="utf-8") as handle:\n'
+        '            handle.write(json.dumps(payload, ensure_ascii=False) + "\\n")\n'
+        "    except OSError:\n"
+        "        pass\n"
+        "\n"
+        "\n"
         "def main() -> int:\n"
-        f'    target = (Path(__file__).resolve().parent / "{target_rel_from_source_parent}").resolve()\n'
+        "    wrapper = Path(__file__).resolve()\n"
+        f'    target = (wrapper.parent / "{target_rel_from_source_parent}").resolve()\n'
         "    print(\n"
         f'        "[DEPRECATED] {source_rel} moved to {target_rel}.",\n'
         "        file=sys.stderr,\n"
         "    )\n"
+        "    _log_deprecated_usage(wrapper, target)\n"
         "    argv = sys.argv[:]\n"
         "    sys.argv = [str(target), *argv[1:]]\n"
         '    runpy.run_path(str(target), run_name="__main__")\n'

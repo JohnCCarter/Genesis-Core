@@ -1,42 +1,23 @@
-import shutil
+from __future__ import annotations
+
+import runpy
+import sys
 from pathlib import Path
 
 
-def cleanup_configs():
-    optimizer_dir = Path("config/optimizer")
-    archive_dir = optimizer_dir / "archive"
-    archive_dir.mkdir(exist_ok=True)
-
-    # Files to KEEP (Base versions and references)
-    keep_patterns = [
-        "tBTCUSD_1h_optuna_phase3_fine_v7.yaml",
-        "tBTCUSD_1h_optuna_phase3_wide_v7.yaml",
-        "tBTCUSD_1h_coarse_grid.yaml",
-        "archive",  # Don't move the archive folder itself
-    ]
-
-    print(f"Cleaning up {optimizer_dir}...")
-
-    count = 0
-    for file_path in optimizer_dir.iterdir():
-        if file_path.is_dir():
-            continue
-
-        filename = file_path.name
-
-        # Check if we should keep it
-        if filename in keep_patterns:
-            print(f"Keeping: {filename}")
-            continue
-
-        # Move to archive
-        target = archive_dir / filename
-        print(f"Archiving: {filename}")
-        shutil.move(str(file_path), str(target))
-        count += 1
-
-    print(f"Done. Archived {count} files.")
+def main() -> int:
+    target = (
+        Path(__file__).resolve().parent / "archive/2026-02/analysis/cleanup_optimizer_configs.py"
+    ).resolve()
+    print(
+        "[DEPRECATED] scripts/cleanup_optimizer_configs.py moved to scripts/archive/2026-02/analysis/cleanup_optimizer_configs.py.",
+        file=sys.stderr,
+    )
+    argv = sys.argv[:]
+    sys.argv = [str(target), *argv[1:]]
+    runpy.run_path(str(target), run_name="__main__")
+    return 0
 
 
 if __name__ == "__main__":
-    cleanup_configs()
+    raise SystemExit(main())

@@ -1,36 +1,23 @@
-"""Quickly inspect min/max timestamp for a curated candles parquet file.
-
-This is a manual helper script.
-"""
-
 from __future__ import annotations
 
+import runpy
 import sys
 from pathlib import Path
 
-import pandas as pd
 
-
-def _bootstrap_repo_root_on_path() -> None:
-    """Allow running the script from arbitrary working directories."""
-
-    repo_root = Path(__file__).resolve().parents[1]
-    if str(repo_root) not in sys.path:
-        sys.path.insert(0, str(repo_root))
-
-
-_bootstrap_repo_root_on_path()
-
-
-def main() -> None:
-    path = "data/curated/v1/candles/tBTCUSD_30m.parquet"
-    try:
-        df = pd.read_parquet(path)
-        print(f"Start: {df['timestamp'].min()}")
-        print(f"End:   {df['timestamp'].max()}")
-    except Exception as e:
-        print(e)
+def main() -> int:
+    target = (
+        Path(__file__).resolve().parent / "archive/2026-02/analysis/inspect_dates.py"
+    ).resolve()
+    print(
+        "[DEPRECATED] scripts/inspect_dates.py moved to scripts/archive/2026-02/analysis/inspect_dates.py.",
+        file=sys.stderr,
+    )
+    argv = sys.argv[:]
+    sys.argv = [str(target), *argv[1:]]
+    runpy.run_path(str(target), run_name="__main__")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

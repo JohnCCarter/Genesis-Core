@@ -1,46 +1,23 @@
-#!/usr/bin/env python3
-"""Flytta Optuna-relaterade dokument till docs/optuna/ mapp."""
+from __future__ import annotations
 
-import shutil
+import runpy
+import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-DOCS_DIR = ROOT / "docs"
-OPTUNA_DIR = DOCS_DIR / "optuna"
 
-# Dokument att flytta
-FILES_TO_MOVE = [
-    "OPTUNA_VS_BACKTEST_CONFIG_DIFFERENCE.md",
-    "OPTUNA_FIX_20251113.md",
-    "optuna_performance_improvements.md",
-    "OPTUNA_BEST_PRACTICES.md",
-    "OPTUNA_6MONTH_PROBLEM_REPORT.md",
-    "OPTUNA_FIX_SUMMARY.md",
-    "BREAKTHROUGH_CONFIG_20251113.md",
-    "PARITY_TEST_RESULTS_20251114.md",
-    "SCORE_AND_METRICS_ENHANCEMENT_20251114.md",
-]
+def main() -> int:
+    target = (
+        Path(__file__).resolve().parent / "archive/2026-02/analysis/organize_optuna_docs.py"
+    ).resolve()
+    print(
+        "[DEPRECATED] scripts/organize_optuna_docs.py moved to scripts/archive/2026-02/analysis/organize_optuna_docs.py.",
+        file=sys.stderr,
+    )
+    argv = sys.argv[:]
+    sys.argv = [str(target), *argv[1:]]
+    runpy.run_path(str(target), run_name="__main__")
+    return 0
 
-# Skapa optuna-mapp
-OPTUNA_DIR.mkdir(exist_ok=True)
-print(f"✓ Skapade/kontrollerade {OPTUNA_DIR}")
 
-# Flytta filer
-moved = []
-not_found = []
-
-for filename in FILES_TO_MOVE:
-    source = DOCS_DIR / filename
-    dest = OPTUNA_DIR / filename
-
-    if source.exists():
-        shutil.move(str(source), str(dest))
-        moved.append(filename)
-        print(f"✓ Flyttade {filename}")
-    else:
-        not_found.append(filename)
-        print(f"⚠ Hittade inte {filename}")
-
-print(f"\n✓ Flyttade {len(moved)} filer")
-if not_found:
-    print(f"⚠ {len(not_found)} filer hittades inte: {', '.join(not_found)}")
+if __name__ == "__main__":
+    raise SystemExit(main())

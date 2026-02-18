@@ -1,26 +1,23 @@
+from __future__ import annotations
+
+import runpy
 import sys
 from pathlib import Path
 
-# Add src to path
-repo_root = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(repo_root / "src"))
 
-from core.optimizer.runner import run_optimizer  # noqa: E402
-
-
-def main():
-    config_path = repo_root / "config" / "optimizer" / "tBTCUSD_1h_optuna_phase3_fine.yaml"
-
-    print("=" * 80)
-    print("Phase 3: Fine Tuning Optimization")
-    print("=" * 80)
-    print(f"Config: {config_path.name}")
-    print("Goal: Improve Profit Factor > 1.15 by refining exits and entries.")
-    print("Based on: Phase 2d (v6) results (Trades Unlocked, PF ~1.04)")
-    print("=" * 80)
-
-    run_optimizer(config_path)
+def main() -> int:
+    target = (
+        Path(__file__).resolve().parent / "archive/2026-02/analysis/run_phase3_fine.py"
+    ).resolve()
+    print(
+        "[DEPRECATED] scripts/run_phase3_fine.py moved to scripts/archive/2026-02/analysis/run_phase3_fine.py.",
+        file=sys.stderr,
+    )
+    argv = sys.argv[:]
+    sys.argv = [str(target), *argv[1:]]
+    runpy.run_path(str(target), run_name="__main__")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

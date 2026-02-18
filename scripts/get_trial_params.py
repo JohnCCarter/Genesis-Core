@@ -1,17 +1,23 @@
-import json
+from __future__ import annotations
 
-import optuna
+import runpy
+import sys
+from pathlib import Path
 
-storage = "sqlite:///results/hparam_search/storage/optuna_phase3_fine_v7_long_v2_until_20251222_newstudy_20251219_1627.db"
-study_name = "optuna_phase3_fine_v7_long_v2_until_20251222_newstudy_20251219_1627"
 
-try:
-    study = optuna.load_study(storage=storage, study_name=study_name)
-    target_trial = next((t for t in study.trials if t.number == 208), None)
+def main() -> int:
+    target = (
+        Path(__file__).resolve().parent / "archive/2026-02/analysis/get_trial_params.py"
+    ).resolve()
+    print(
+        "[DEPRECATED] scripts/get_trial_params.py moved to scripts/archive/2026-02/analysis/get_trial_params.py.",
+        file=sys.stderr,
+    )
+    argv = sys.argv[:]
+    sys.argv = [str(target), *argv[1:]]
+    runpy.run_path(str(target), run_name="__main__")
+    return 0
 
-    if target_trial:
-        print(json.dumps(target_trial.params, indent=2))
-    else:
-        print("Trial 208 not found")
-except Exception as e:
-    print(f"Error: {e}")
+
+if __name__ == "__main__":
+    raise SystemExit(main())

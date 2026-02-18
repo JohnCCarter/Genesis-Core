@@ -11,20 +11,18 @@ _TARGET = (
 
 
 def _load_target_exports() -> None:
-    """Load and expose target module symbols when imported as a module."""
+    """Load target code into this module namespace for monkeypatch compatibility."""
 
-    namespace = runpy.run_path(str(_TARGET), run_name="scripts.archive_compat.validate_registry")
-    skip = {"__name__", "__file__", "__package__", "__spec__", "__cached__", "__builtins__"}
-    for key, value in namespace.items():
-        if key not in skip:
-            globals()[key] = value
+    source = _TARGET.read_text(encoding="utf-8")
+    code = compile(source, str(_TARGET), "exec")
+    exec(code, globals())
 
 
 if __name__ != "__main__":
     _load_target_exports()
 
 
-def main() -> int:
+def _run_deprecated_cli() -> int:
     print(
         "[DEPRECATED] scripts/validate_registry.py moved to scripts/archive/2026-02/analysis/validate_registry.py.",
         file=sys.stderr,
@@ -36,4 +34,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(_run_deprecated_cli())

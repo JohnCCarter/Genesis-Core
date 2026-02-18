@@ -1,0 +1,140 @@
+#!/usr/bin/env python3
+"""Skapa Optuna-spec med alla parametrar fixerade för parity-test."""
+
+from pathlib import Path
+
+import yaml
+
+cfg = {
+    "meta": {
+        "symbol": "tBTCUSD",
+        "timeframe": "1h",
+        "snapshot_id": "tBTCUSD_1h_2024-10-22_2025-10-01_v1",
+        "warmup_bars": 150,
+        "runs": {
+            "strategy": "optuna",
+            "max_trials": 1,
+            "max_concurrent": 1,
+            "resume": False,
+            "use_sample_range": True,
+            "sample_start": "2024-10-22",
+            "sample_end": "2025-10-01",
+            "optuna": {
+                "storage": "sqlite:///results/hparam_search/storage/optuna_parity_test.db",
+                "study_name": "parity_test",
+                "bootstrap_random_trials": 0,
+                "bootstrap_seed": 42,
+                "sampler": {"name": "random", "kwargs": {}},
+                "pruner": {"name": "none", "kwargs": {}},
+                "heartbeat_interval": 60,
+                "heartbeat_grace_period": 180,
+                "dedup_guard_enabled": False,
+                "timeout_seconds": 3600,
+            },
+        },
+    },
+    "constraints": {
+        "min_trades": 1,
+        "min_profit_factor": 0.0,
+        "max_max_dd": 1.0,
+        "include_scoring_failures": False,
+    },
+    "parameters": {
+        "thresholds": {
+            "entry_conf_overall": {"type": "fixed", "value": 0.32},
+            "regime_proba": {
+                "balanced": {"type": "fixed", "value": 0.5},
+                "bull": {"type": "fixed", "value": 0.5},
+                "bear": {"type": "fixed", "value": 0.5},
+                "ranging": {"type": "fixed", "value": 0.5},
+            },
+            "signal_adaptation": {
+                "type": "fixed",
+                "value": {
+                    "atr_period": 14,
+                    "zones": {
+                        "low": {
+                            "entry_conf_overall": 0.25,
+                            "regime_proba": {
+                                "ranging": 0.45,
+                                "bull": 0.45,
+                                "bear": 0.45,
+                                "balanced": 0.45,
+                            },
+                        },
+                        "mid": {
+                            "entry_conf_overall": 0.28,
+                            "regime_proba": {
+                                "ranging": 0.5,
+                                "bull": 0.5,
+                                "bear": 0.5,
+                                "balanced": 0.5,
+                            },
+                        },
+                        "high": {
+                            "entry_conf_overall": 0.32,
+                            "regime_proba": {
+                                "ranging": 0.55,
+                                "bull": 0.55,
+                                "bear": 0.55,
+                                "balanced": 0.55,
+                            },
+                        },
+                    },
+                },
+            },
+        },
+        "risk": {
+            "risk_map": {
+                "type": "fixed",
+                "value": [[0.35, 0.015], [0.45, 0.025], [0.55, 0.035], [0.65, 0.045]],
+            }
+        },
+        "exit": {
+            "exit_conf_threshold": {"type": "fixed", "value": 0.35},
+            "max_hold_bars": {"type": "fixed", "value": 20},
+        },
+        "gates": {"hysteresis_steps": {"type": "fixed", "value": 2}},
+        "htf_exit_config": {
+            "enable_partials": {"type": "fixed", "value": True},
+            "enable_trailing": {"type": "fixed", "value": True},
+            "enable_structure_breaks": {"type": "fixed", "value": True},
+            "partial_1_pct": {"type": "fixed", "value": 0.5},
+            "partial_2_pct": {"type": "fixed", "value": 0.3},
+            "fib_threshold_atr": {"type": "fixed", "value": 0.7},
+            "trail_atr_multiplier": {"type": "fixed", "value": 2.0},
+        },
+        "htf_fib": {
+            "entry": {
+                "enabled": {"type": "fixed", "value": True},
+                "tolerance_atr": {"type": "fixed", "value": 0.6},
+            }
+        },
+        "ltf_fib": {
+            "entry": {
+                "enabled": {"type": "fixed", "value": True},
+                "tolerance_atr": {"type": "fixed", "value": 0.6},
+            }
+        },
+        "multi_timeframe": {
+            "use_htf_block": {"type": "fixed", "value": True},
+            "allow_ltf_override": {"type": "fixed", "value": True},
+            "ltf_override_adaptive": {
+                "type": "fixed",
+                "value": {
+                    "enabled": True,
+                    "window": 180,
+                    "percentile": 0.85,
+                    "min_floor": 0.5,
+                    "max_ceiling": 0.95,
+                    "fallback_threshold": 0.9,
+                    "regime_multipliers": {"bull": 0.95, "bear": 1.05},
+                },
+            },
+        },
+    },
+}
+
+output_path = Path("config/optimizer/tmp_parity_test.yaml")
+output_path.write_text(yaml.dump(cfg, allow_unicode=True, sort_keys=False), encoding="utf-8")
+print(f"✓ Parity test config skapad: {output_path}")

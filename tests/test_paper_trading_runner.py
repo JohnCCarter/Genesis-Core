@@ -14,6 +14,8 @@ import pytest
 from paper_trading_runner import (
     RunnerState,
     _timeframe_to_ms,
+    build_decision_context,
+    build_runner_contract_snapshot,
     fetch_latest_candle,
     load_state,
     map_policy_symbol_to_test_symbol,
@@ -50,6 +52,8 @@ def test_state_roundtrip(tmp_path):
         total_orders_submitted=10,
         last_heartbeat="2026-02-04T10:00:00Z",
         pipeline_state={"cooldown_remaining": 3, "last_action": "LONG"},
+        contract_snapshot={"contract_version": "paper_runner_stability_2026_02_19"},
+        quarantine={"active": True, "blocked_orders": 2},
     )
 
     # Save
@@ -64,6 +68,8 @@ def test_state_roundtrip(tmp_path):
     assert loaded.total_orders_submitted == state.total_orders_submitted
     assert loaded.last_heartbeat == state.last_heartbeat
     assert loaded.pipeline_state == state.pipeline_state
+    assert loaded.contract_snapshot == state.contract_snapshot
+    assert loaded.quarantine == state.quarantine
 
 
 def test_load_state_missing_file(tmp_path):
@@ -332,6 +338,184 @@ def test_validate_live_paper_guardrails_skips_dry_run(monkeypatch):
     assert issues == []
 
 
+def test_build_runner_contract_snapshot_primary_mode():
+    from paper_trading_runner import RunnerConfig
+
+    config = RunnerConfig(
+        host="localhost",
+        port=8000,
+        symbol="tBTCUSD",
+        timeframe="1h",
+        poll_interval=1,
+        dry_run=False,
+        live_paper=True,
+        log_dir=Path("results/paper_live/logs"),
+        state_file=Path("results/paper_live/runner_state.json"),
+    )
+
+    snapshot = build_runner_contract_snapshot(config)
+    assert snapshot["contract_version"] == "paper_runner_stability_2026_02_19"
+    assert snapshot["config_authority_mode"] == "champion_base_runtime_allowlist_override"
+    assert snapshot["path_contract_mode"] == "dual_primary_results_compat_logs"
+    assert snapshot["path_contract_active"] == "primary_results_paper_live"
+    assert snapshot["uncertain_order_policy"] == "quarantine_auto_clear_none"
+
+
+def test_build_runner_contract_snapshot_compat_mode():
+    from paper_trading_runner import RunnerConfig
+
+    config = RunnerConfig(
+        host="localhost",
+        port=8000,
+        symbol="tBTCUSD",
+        timeframe="1h",
+        poll_interval=1,
+        dry_run=True,
+        live_paper=False,
+        log_dir=Path("logs/paper_trading"),
+        state_file=Path("logs/paper_trading/runner_state.json"),
+    )
+
+    snapshot = build_runner_contract_snapshot(config)
+    assert snapshot["path_contract_mode"] == "dual_primary_results_compat_logs"
+    assert snapshot["path_contract_active"] == "compat_logs_paper_trading"
+
+
+def test_build_decision_context_contains_authority_and_quarantine_fields(tmp_path):
+    from paper_trading_runner import RunnerConfig
+
+    config = RunnerConfig(
+        host="localhost",
+        port=8000,
+        symbol="tBTCUSD",
+        timeframe="1h",
+        poll_interval=1,
+        dry_run=False,
+        live_paper=True,
+        log_dir=tmp_path,
+        state_file=tmp_path / "state.json",
+    )
+    state = RunnerState(
+        contract_snapshot={
+            "config_authority_mode": "champion_base_runtime_allowlist_override",
+            "uncertain_order_policy": "quarantine_auto_clear_none",
+        },
+        quarantine={"active": True, "blocked_orders": 7},
+    )
+
+    eval_resp = {
+        "meta": {
+            "champion": {
+                "source": "config\\strategy\\champions\\tBTCUSD_1h.json",
+            }
+        }
+    }
+
+    out = build_decision_context(
+        config,
+        state,
+        candle_ts=1704067200000,
+        action="LONG",
+        signal=1,
+        confidence=0.82,
+        eval_response=eval_resp,
+    )
+
+    assert out["symbol"] == "tBTCUSD"
+    assert out["timeframe"] == "1h"
+    assert out["mode"] == "live_paper"
+    assert out["action"] == "LONG"
+    assert out["champion_source"] == "config\\strategy\\champions\\tBTCUSD_1h.json"
+    assert out["config_authority_mode"] == "champion_base_runtime_allowlist_override"
+    assert out["uncertain_order_policy"] == "quarantine_auto_clear_none"
+    assert out["quarantine_active"] is True
+    assert out["quarantine_blocked_orders"] == 7
+
+
+def test_run_loop_emits_decision_context_log(tmp_path):
+    from paper_trading_runner import RunnerConfig, run_loop
+
+    with (
+        patch("paper_trading_runner.httpx.Client") as mock_client_class,
+        patch("paper_trading_runner.fetch_latest_candle") as mock_fetch,
+        patch("paper_trading_runner.evaluate_strategy") as mock_eval,
+        patch("paper_trading_runner.time.sleep"),
+    ):
+        mock_client = Mock()
+        mock_client_class.return_value = mock_client
+
+        startup_ts = 1704067200000
+        loop_ts = startup_ts + 3600000
+        mock_fetch.side_effect = [
+            {
+                "ts": startup_ts,
+                "open": 50000.0,
+                "close": 50100.0,
+                "high": 50200.0,
+                "low": 49900.0,
+                "volume": 100.5,
+                "_source": "latest",
+            },
+            {
+                "ts": loop_ts,
+                "open": 50100.0,
+                "close": 50200.0,
+                "high": 50300.0,
+                "low": 50000.0,
+                "volume": 100.5,
+                "_source": "latest",
+            },
+            None,
+        ]
+
+        mock_eval.side_effect = [
+            {
+                "result": {
+                    "action": "NONE",
+                    "signal": 0,
+                    "confidence": {"overall": 0.50},
+                },
+                "meta": {
+                    "champion": {"source": "config\\strategy\\champions\\tBTCUSD_1h.json"},
+                    "decision": {"size": 0.0},
+                },
+            },
+            {
+                "result": {
+                    "action": "NONE",
+                    "signal": 0,
+                    "confidence": {"overall": 0.49},
+                },
+                "meta": {
+                    "champion": {"source": "config\\strategy\\champions\\tBTCUSD_1h.json"},
+                    "decision": {"size": 0.0},
+                },
+            },
+        ]
+
+        config = RunnerConfig(
+            host="localhost",
+            port=8000,
+            symbol="tBTCUSD",
+            timeframe="1h",
+            poll_interval=1,
+            dry_run=True,
+            live_paper=False,
+            log_dir=tmp_path,
+            state_file=tmp_path / "state.json",
+        )
+
+        state = RunnerState()
+        logger = Mock()
+
+        run_loop(config, logger, state)
+
+        decision_ctx_logged = any(
+            "DECISION_CONTEXT" in str(call) for call in logger.info.call_args_list
+        )
+        assert decision_ctx_logged
+
+
 # --- Bug #1 Test: Candle Data Consistency ---
 
 
@@ -420,13 +604,13 @@ def test_fetch_candle_uses_correct_ohlcv_when_closed(mock_time):
     assert f"ts={candle_ts}" in debug_call
 
 
-# --- Bug #2 Test: Fail-Closed on Order Submission Failure ---
+# --- Bug #2 Test: Quarantine on Order Submission Failure ---
 
 
-def test_order_submission_failure_causes_fail_closed_exit(tmp_path):
+def test_order_submission_failure_enters_quarantine_and_clears_on_none(tmp_path):
     """
     Bug #2 regression test: Verify that order submission failure in live-paper mode
-    causes fail-closed exit (sys.exit(1)) and does NOT update last_processed_candle_ts.
+    enters quarantine, blocks new orders, and clears on action=NONE for a new candle.
     """
     from paper_trading_runner import RunnerConfig, RunnerState
 
@@ -437,6 +621,7 @@ def test_order_submission_failure_causes_fail_closed_exit(tmp_path):
         patch("paper_trading_runner.evaluate_strategy") as mock_eval,
         patch("paper_trading_runner.submit_paper_order") as mock_submit,
         patch("paper_trading_runner.save_state") as mock_save,
+        patch("paper_trading_runner.time.sleep"),
         patch.dict("os.environ", {"GENESIS_EXECUTION_MODE": "paper_live"}, clear=False),
     ):
 
@@ -444,31 +629,100 @@ def test_order_submission_failure_causes_fail_closed_exit(tmp_path):
         mock_client = Mock()
         mock_client_class.return_value = mock_client
 
-        candle_ts = 1704067200000
-        mock_fetch.return_value = {
-            "ts": candle_ts,
-            "open": 50000.0,
-            "close": 50100.0,
-            "high": 50200.0,
-            "low": 49900.0,
-            "volume": 100.5,
-            "_source": "latest",
-        }
+        startup_ts = 1704067200000
+        candle_1 = startup_ts + 3600000
+        candle_2 = startup_ts + 7200000
+        candle_3 = startup_ts + 10800000
 
-        # Evaluation returns BUY signal
-        mock_eval.return_value = {
-            "result": {
-                "action": "LONG",
-                "signal": 1,
-                "confidence": {"overall": 0.75},
+        mock_fetch.side_effect = [
+            {
+                "ts": startup_ts,
+                "open": 50000.0,
+                "close": 50100.0,
+                "high": 50200.0,
+                "low": 49900.0,
+                "volume": 100.5,
+                "_source": "latest",
             },
-            "meta": {
-                "champion": {"source": "config\\strategy\\champions\\tBTCUSD_1h.json"},
-                "decision": {"size": 0.01},
+            {
+                "ts": candle_1,
+                "open": 50100.0,
+                "close": 50200.0,
+                "high": 50300.0,
+                "low": 50000.0,
+                "volume": 100.5,
+                "_source": "latest",
             },
-        }
+            {
+                "ts": candle_2,
+                "open": 50200.0,
+                "close": 50300.0,
+                "high": 50400.0,
+                "low": 50100.0,
+                "volume": 100.5,
+                "_source": "latest",
+            },
+            {
+                "ts": candle_3,
+                "open": 50300.0,
+                "close": 50400.0,
+                "high": 50500.0,
+                "low": 50200.0,
+                "volume": 100.5,
+                "_source": "latest",
+            },
+        ]
 
-        # Order submission FAILS (returns None)
+        # Startup: LONG (verification path), then LONG/LONG/NONE in main loop.
+        mock_eval.side_effect = [
+            {
+                "result": {
+                    "action": "LONG",
+                    "signal": 1,
+                    "confidence": {"overall": 0.75},
+                },
+                "meta": {
+                    "champion": {"source": "config\\strategy\\champions\\tBTCUSD_1h.json"},
+                    "decision": {"size": 0.01},
+                },
+            },
+            {
+                "result": {
+                    "action": "LONG",
+                    "signal": 1,
+                    "confidence": {"overall": 0.75},
+                },
+                "meta": {
+                    "champion": {"source": "config\\strategy\\champions\\tBTCUSD_1h.json"},
+                    "decision": {"size": 0.01},
+                },
+            },
+            {
+                "result": {
+                    "action": "LONG",
+                    "signal": 1,
+                    "confidence": {"overall": 0.70},
+                },
+                "meta": {
+                    "champion": {"source": "config\\strategy\\champions\\tBTCUSD_1h.json"},
+                    "decision": {"size": 0.01},
+                },
+            },
+            {
+                "result": {
+                    "action": "NONE",
+                    "signal": 0,
+                    "confidence": {"overall": 0.40},
+                },
+                "meta": {
+                    "champion": {"source": "config\\strategy\\champions\\tBTCUSD_1h.json"},
+                    "decision": {"size": 0.00},
+                },
+            },
+        ]
+
+        # First order submission FAILS and activates quarantine.
+        # Subsequent LONG in quarantine must not trigger a new submit.
         mock_submit.return_value = None
 
         # Setup config and state
@@ -490,27 +744,31 @@ def test_order_submission_failure_causes_fail_closed_exit(tmp_path):
         # Import run_loop
         from paper_trading_runner import run_loop
 
-        # Run should exit with code 1 (fail-closed)
-        with pytest.raises(SystemExit) as exc_info:
-            run_loop(config, logger, state)
+        # Run loop exits naturally via mocked StopIteration after side effects are exhausted.
+        run_loop(config, logger, state)
 
-        # Verify exit code 1
-        assert exc_info.value.code == 1, "Should exit with code 1 on order submission failure"
+        # Submit should be attempted exactly once (first LONG only).
+        assert mock_submit.call_count == 1
 
-        # Verify that save_state was called (to persist state before exit)
-        assert mock_save.called, "State should be saved before fail-closed exit"
-
-        # Verify that last_processed_candle_ts was NOT updated
-        # Check the state object passed to save_state
+        # Verify final state persisted and quarantine is cleared by action=NONE.
         save_calls = mock_save.call_args_list
-        saved_state = save_calls[-1][0][0]  # First arg of last call
-        assert (
-            saved_state.last_processed_candle_ts != candle_ts
-        ), "Candle should NOT be marked as processed on order submission failure"
+        assert save_calls, "State should be persisted during quarantine handling"
+        final_state = save_calls[-1][0][0]
 
-        # Verify FATAL error was logged
-        fatal_logged = any("FATAL" in str(call) for call in logger.error.call_args_list)
-        assert fatal_logged, "FATAL error should be logged on order submission failure"
+        assert final_state.last_processed_candle_ts == candle_3
+        assert final_state.total_orders_submitted == 0
+        assert isinstance(final_state.quarantine, dict)
+        assert final_state.quarantine.get("active") is False
+        assert int(final_state.quarantine.get("blocked_orders", 0)) >= 2
+
+        blocked_logged = any(
+            "QUARANTINE_BLOCK" in str(call) for call in logger.warning.call_args_list
+        )
+        cleared_logged = any(
+            "QUARANTINE_CLEARED" in str(call) for call in logger.warning.call_args_list
+        )
+        assert blocked_logged
+        assert cleared_logged
 
 
 def test_order_submission_success_updates_candle_ts(tmp_path):

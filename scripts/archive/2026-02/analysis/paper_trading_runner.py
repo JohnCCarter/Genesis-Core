@@ -34,6 +34,7 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime, UTC
 from pathlib import Path
+from typing import Any
 
 import httpx
 
@@ -144,6 +145,8 @@ class RunnerState:
     total_orders_submitted: int = 0
     last_heartbeat: str | None = None
     pipeline_state: dict = field(default_factory=dict)
+    contract_snapshot: dict = field(default_factory=dict)
+    quarantine: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         return {
@@ -152,6 +155,8 @@ class RunnerState:
             "total_orders_submitted": self.total_orders_submitted,
             "last_heartbeat": self.last_heartbeat,
             "pipeline_state": self.pipeline_state,
+            "contract_snapshot": self.contract_snapshot,
+            "quarantine": self.quarantine,
         }
 
     @classmethod
@@ -162,7 +167,82 @@ class RunnerState:
             total_orders_submitted=data.get("total_orders_submitted", 0),
             last_heartbeat=data.get("last_heartbeat"),
             pipeline_state=data.get("pipeline_state") or {},
+            contract_snapshot=data.get("contract_snapshot") or {},
+            quarantine=data.get("quarantine") or {},
         )
+
+
+def _path_contract_active_mode(config: RunnerConfig) -> str:
+    """Classify active path mode for runner artifacts (observability only)."""
+    log_dir = _safe_resolve(config.log_dir)
+    state_parent = _safe_resolve(config.state_file.parent)
+
+    primary_root = _safe_resolve(Path("results/paper_live"))
+    compat_root = _safe_resolve(Path("logs/paper_trading"))
+
+    if _is_subpath(log_dir, primary_root) and _is_subpath(state_parent, primary_root):
+        return "primary_results_paper_live"
+    if _is_subpath(log_dir, compat_root) and _is_subpath(state_parent, compat_root):
+        return "compat_logs_paper_trading"
+    return "custom"
+
+
+def build_runner_contract_snapshot(config: RunnerConfig) -> dict[str, str]:
+    """Build additive observability metadata for runner stability contract."""
+    return {
+        "contract_version": "paper_runner_stability_2026_02_19",
+        "config_authority_mode": "champion_base_runtime_allowlist_override",
+        "path_contract_mode": "dual_primary_results_compat_logs",
+        "path_contract_active": _path_contract_active_mode(config),
+        "uncertain_order_policy": "quarantine_auto_clear_none",
+        "log_dir": str(config.log_dir),
+        "state_file": str(config.state_file),
+    }
+
+
+def _ensure_quarantine_state(state: RunnerState) -> dict:
+    """Ensure quarantine state exists with required keys."""
+    current = state.quarantine if isinstance(state.quarantine, dict) else {}
+    quarantine = dict(current)
+    quarantine.setdefault("active", False)
+    quarantine.setdefault("blocked_orders", 0)
+    state.quarantine = quarantine
+    return quarantine
+
+
+def build_decision_context(
+    config: RunnerConfig,
+    state: RunnerState,
+    *,
+    candle_ts: int,
+    action: str,
+    signal: Any,
+    confidence: float,
+    eval_response: dict,
+) -> dict[str, Any]:
+    """Build additive per-candle decision telemetry context."""
+    quarantine = _ensure_quarantine_state(state)
+    champion_source = (
+        ((eval_response.get("meta") or {}).get("champion") or {}).get("source")
+        if isinstance(eval_response, dict)
+        else None
+    )
+    snapshot = state.contract_snapshot if isinstance(state.contract_snapshot, dict) else {}
+
+    return {
+        "candle_ts": int(candle_ts),
+        "symbol": str(config.symbol),
+        "timeframe": str(config.timeframe),
+        "mode": "live_paper" if config.live_paper else "dry_run",
+        "action": str(action),
+        "signal": signal,
+        "confidence": float(confidence),
+        "champion_source": champion_source,
+        "config_authority_mode": snapshot.get("config_authority_mode"),
+        "uncertain_order_policy": snapshot.get("uncertain_order_policy"),
+        "quarantine_active": bool(quarantine.get("active", False)),
+        "quarantine_blocked_orders": int(quarantine.get("blocked_orders", 0)),
+    }
 
 
 def load_state(state_file: Path, logger: logging.Logger) -> RunnerState:
@@ -541,6 +621,16 @@ def run_loop(config: RunnerConfig, logger: logging.Logger, state: RunnerState) -
     logger.info(f"Poll interval: {config.poll_interval}s")
     logger.info(f"Mode: {'DRY-RUN (no orders)' if config.dry_run else 'LIVE PAPER TRADING'}")
     logger.info(f"State file: {config.state_file}")
+    contract_snapshot = build_runner_contract_snapshot(config)
+    logger.info("RUNNER_CONTRACT: %s", json.dumps(contract_snapshot, sort_keys=True))
+    state.contract_snapshot = dict(contract_snapshot)
+    quarantine = _ensure_quarantine_state(state)
+    if quarantine.get("active"):
+        logger.warning(
+            "QUARANTINE_RESUME: active=true, since_candle_ts=%s, blocked_orders=%s",
+            quarantine.get("since_candle_ts"),
+            quarantine.get("blocked_orders", 0),
+        )
     logger.info("=" * 80)
 
     # Setup HTTP client
@@ -652,27 +742,71 @@ def run_loop(config: RunnerConfig, logger: logging.Logger, state: RunnerState) -
                 f"EVALUATION: action={action}, signal={signal}, confidence={confidence:.3f}"
             )
 
+            decision_context = build_decision_context(
+                config,
+                state,
+                candle_ts=candle_ts,
+                action=action,
+                signal=signal,
+                confidence=confidence,
+                eval_response=eval_resp,
+            )
+            logger.info("DECISION_CONTEXT: %s", json.dumps(decision_context, sort_keys=True))
+
             # Submit order if action != NONE and live-paper mode
             if action != "NONE":
                 if config.live_paper:
-                    logger.info(f"Submitting {action} order...")
-                    order_resp = submit_paper_order(config, action, eval_resp, client, logger)
-                    if order_resp:
-                        logger.info(f"ORDER SUBMITTED: {order_resp}")
-                        state.total_orders_submitted += 1
-                    else:
-                        # CRITICAL: Order submission failed in uncertain state
-                        logger.error(
-                            f"FATAL: Order submission failed for candle {candle_ts}. "
-                            f"Fail-closed: Cannot proceed with uncertain order state. "
-                            f"Manual intervention required."
+                    quarantine = _ensure_quarantine_state(state)
+                    if quarantine.get("active"):
+                        quarantine["blocked_orders"] = int(quarantine.get("blocked_orders", 0)) + 1
+                        quarantine["last_update_utc"] = datetime.now(UTC).isoformat()
+                        quarantine["last_blocked_action"] = str(action)
+                        state.quarantine = quarantine
+                        logger.warning(
+                            "QUARANTINE_BLOCK: candle=%s action=%s blocked_orders=%s",
+                            candle_ts,
+                            action,
+                            quarantine["blocked_orders"],
                         )
-                        save_state(state, config.state_file, logger)  # Persist current state
-                        sys.exit(1)  # Fail-closed
+                    else:
+                        logger.info(f"Submitting {action} order...")
+                        order_resp = submit_paper_order(config, action, eval_resp, client, logger)
+                        if order_resp:
+                            logger.info(f"ORDER SUBMITTED: {order_resp}")
+                            state.total_orders_submitted += 1
+                        else:
+                            logger.error(
+                                "ORDER_SUBMIT_UNCERTAIN: failed at candle %s, "
+                                "entering quarantine mode until action=NONE on a new candle.",
+                                candle_ts,
+                            )
+                            quarantine = _ensure_quarantine_state(state)
+                            quarantine["active"] = True
+                            quarantine["reason"] = "order_submit_failed"
+                            quarantine["since_candle_ts"] = candle_ts
+                            quarantine["last_update_utc"] = datetime.now(UTC).isoformat()
+                            quarantine["last_error"] = "order_submit_failed"
+                            quarantine["last_attempted_action"] = str(action)
+                            quarantine["blocked_orders"] = (
+                                int(quarantine.get("blocked_orders", 0)) + 1
+                            )
+                            state.quarantine = quarantine
+                            save_state(state, config.state_file, logger)
                 else:
                     logger.info(f"DRY-RUN: Would submit {action} order (skipped)")
             else:
                 logger.info("Action=NONE. No order.")
+                if config.live_paper:
+                    quarantine = _ensure_quarantine_state(state)
+                    if quarantine.get("active"):
+                        quarantine["active"] = False
+                        quarantine["last_clear_candle_ts"] = candle_ts
+                        quarantine["last_clear_utc"] = datetime.now(UTC).isoformat()
+                        quarantine["last_update_utc"] = datetime.now(UTC).isoformat()
+                        state.quarantine = quarantine
+                        logger.warning(
+                            "QUARANTINE_CLEARED: candle=%s reason=action_none", candle_ts
+                        )
 
             # Mark candle as processed (only reached if order succeeded, dry-run, or NONE)
             state.last_processed_candle_ts = candle_ts

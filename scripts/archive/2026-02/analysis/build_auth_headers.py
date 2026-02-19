@@ -37,14 +37,14 @@ def print_data(data: dict, pretty: bool = False) -> None:
     print(json.dumps(data, indent=2 if pretty else None))  # nosec B101 - Säker loggning
 
 
-def build_redacted_output(headers: dict[str, str], reveal_requested: bool) -> dict[str, str]:
+def build_redacted_output(reveal_requested: bool) -> dict[str, str]:
     """Build output payload where secrets are always masked."""
 
     out = {
         "bfx-apikey": "***",
-        "bfx-nonce": headers.get("bfx-nonce", ""),
+        "bfx-nonce": "***",
         "bfx-signature": "***",
-        "Content-Type": headers.get("Content-Type", "application/json"),
+        "Content-Type": "application/json",
     }
     if reveal_requested:
         out["info"] = "--reveal ignoreras av säkerhetsskäl; hemligheter maskeras alltid."
@@ -80,9 +80,9 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Invalid JSON body: {e}", file=sys.stderr)
         return 2
 
-    headers = build_headers(args.endpoint, body)
+    _ = build_headers(args.endpoint, body)
 
-    out = build_redacted_output(headers, args.reveal)
+    out = build_redacted_output(args.reveal)
 
     print_data(out, args.pretty)
     return 0

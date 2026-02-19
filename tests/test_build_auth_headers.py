@@ -54,7 +54,7 @@ def test_main_without_reveal(mock_settings, mock_nonce, capsys):
     # Without --reveal, sensitive values should be masked by default
     assert output["bfx-apikey"] == "***"
     assert output["bfx-signature"] == "***"
-    assert output["bfx-nonce"] == "1234567890000000"
+    assert output["bfx-nonce"] == "***"
     assert output["Content-Type"] == "application/json"
     assert "info" in output
 
@@ -71,8 +71,7 @@ def test_main_with_reveal(mock_settings, mock_nonce, capsys):
     # --reveal is ignored for security reasons
     assert output["bfx-apikey"] == "***"
     assert output["bfx-signature"] == "***"
-    # Non-sensitive values should not be masked
-    assert output["bfx-nonce"] == "1234567890000000"
+    assert output["bfx-nonce"] == "***"
     assert output["Content-Type"] == "application/json"
     assert "ignoreras" in output["info"]
 

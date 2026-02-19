@@ -13,8 +13,8 @@ def mock_settings():
     """Mock settings with test API credentials."""
     with patch("scripts.build_auth_headers.get_settings") as mock:
         settings_obj = Mock()
-        settings_obj.BITFINEX_API_KEY = "test_api_key"
-        settings_obj.BITFINEX_API_SECRET = "test_api_secret"
+        settings_obj.BITFINEX_API_KEY = "dummy-key"  # pragma: allowlist secret
+        settings_obj.BITFINEX_API_SECRET = "dummy-secret"  # pragma: allowlist secret
         mock.return_value = settings_obj
         yield mock
 
@@ -31,15 +31,15 @@ def test_build_headers(mock_settings, mock_nonce):
     """Test that build_headers generates correct header structure."""
     headers = build_headers("auth/r/alerts", {})
 
-    assert "bfx-apikey" in headers
+    assert "bfx-apikey" in headers  # pragma: allowlist secret
     assert "bfx-nonce" in headers
-    assert "bfx-signature" in headers
+    assert "bfx-signature" in headers  # pragma: allowlist secret
     assert "Content-Type" in headers
 
-    assert headers["bfx-apikey"] == "test_api_key"
+    assert headers["bfx-apikey"] == "dummy-key"  # pragma: allowlist secret
     assert headers["bfx-nonce"] == "1234567890000000"
     assert headers["Content-Type"] == "application/json"
-    assert len(headers["bfx-signature"]) > 0  # Signature should be generated
+    assert len(headers["bfx-signature"]) > 0  # pragma: allowlist secret
 
 
 def test_main_without_reveal(mock_settings, mock_nonce, capsys):
@@ -52,8 +52,8 @@ def test_main_without_reveal(mock_settings, mock_nonce, capsys):
     output = json.loads(captured.out)
 
     # Without --reveal, sensitive values should be masked by default
-    assert output["bfx-apikey"] == "***"
-    assert output["bfx-signature"] == "***"
+    assert output["bfx-apikey"] == "***"  # pragma: allowlist secret
+    assert output["bfx-signature"] == "***"  # pragma: allowlist secret
     assert output["bfx-nonce"] == "***"
     assert output["Content-Type"] == "application/json"
     assert "info" in output
@@ -69,8 +69,8 @@ def test_main_with_reveal(mock_settings, mock_nonce, capsys):
     output = json.loads(captured.out)
 
     # --reveal is ignored for security reasons
-    assert output["bfx-apikey"] == "***"
-    assert output["bfx-signature"] == "***"
+    assert output["bfx-apikey"] == "***"  # pragma: allowlist secret
+    assert output["bfx-signature"] == "***"  # pragma: allowlist secret
     assert output["bfx-nonce"] == "***"
     assert output["Content-Type"] == "application/json"
     assert "ignoreras" in output["info"]
@@ -87,7 +87,7 @@ def test_main_with_pretty(mock_settings, mock_nonce, capsys):
     assert "\n" in captured.out
     output = json.loads(captured.out)
     # Without --reveal, values should be masked
-    assert output["bfx-apikey"] == "***"
+    assert output["bfx-apikey"] == "***"  # pragma: allowlist secret
 
 
 def test_main_with_reveal_and_pretty(mock_settings, mock_nonce, capsys):
@@ -102,8 +102,8 @@ def test_main_with_reveal_and_pretty(mock_settings, mock_nonce, capsys):
     output = json.loads(captured.out)
 
     # Should still mask values with --reveal
-    assert output["bfx-apikey"] == "***"
-    assert output["bfx-signature"] == "***"
+    assert output["bfx-apikey"] == "***"  # pragma: allowlist secret
+    assert output["bfx-signature"] == "***"  # pragma: allowlist secret
     assert "ignoreras" in output["info"]
 
 

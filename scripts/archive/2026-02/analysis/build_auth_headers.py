@@ -37,6 +37,22 @@ def print_data(data: dict, pretty: bool = False) -> None:
     print(json.dumps(data, indent=2 if pretty else None))  # nosec B101 - Säker loggning
 
 
+def build_redacted_output(headers: dict[str, str], reveal_requested: bool) -> dict[str, str]:
+    """Build output payload where secrets are always masked."""
+
+    out = {
+        "bfx-apikey": "***",
+        "bfx-nonce": headers.get("bfx-nonce", ""),
+        "bfx-signature": "***",
+        "Content-Type": headers.get("Content-Type", "application/json"),
+    }
+    if reveal_requested:
+        out["info"] = "--reveal ignoreras av säkerhetsskäl; hemligheter maskeras alltid."
+    else:
+        out["info"] = "Hemligheter maskeras som standard."
+    return out
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Build Bitfinex v2 auth headers")
     parser.add_argument("endpoint", help="Endpoint utan /v2/, t.ex. auth/r/alerts")
@@ -66,14 +82,7 @@ def main(argv: list[str] | None = None) -> int:
 
     headers = build_headers(args.endpoint, body)
 
-    out = {
-        key: ("***" if key in {"bfx-apikey", "bfx-signature"} else value)
-        for key, value in headers.items()
-    }
-    if args.reveal:
-        out["info"] = "--reveal ignoreras av säkerhetsskäl; hemligheter maskeras alltid."
-    else:
-        out["info"] = "Hemligheter maskeras som standard."
+    out = build_redacted_output(headers, args.reveal)
 
     print_data(out, args.pretty)
     return 0

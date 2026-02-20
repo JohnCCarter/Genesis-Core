@@ -166,12 +166,28 @@ Recommended environment variables:
 - `GENESIS_MCP_REMOTE_SAFE=1` (default) – read-only (no write/exec tools)
 - `GENESIS_MCP_REMOTE_ULTRA_SAFE=1` – exposes only `ping_tool` + connector stubs for debugging
 - `GENESIS_MCP_CONFIG_PATH=config/mcp_settings.remote_safe.json` – optional: load a tighter allowlist for remote usage
+- `GENESIS_MCP_REMOTE_GIT_MODE=1` – opt-in task-branch Git workflow tools with preview/confirm
 
 Reverse-proxy / port-forwarding note:
 
 - Ensure your public URL routes to the same `PORT` that the server binds to.
 - Prefer `GENESIS_MCP_REMOTE_SAFE=1` unless you explicitly need write/exec tools.
 - Prefer a separate remote config file via `GENESIS_MCP_CONFIG_PATH` so local stdio usage can remain full-featured.
+
+### Task-branch Git workflow mode (remote)
+
+When `GENESIS_MCP_REMOTE_GIT_MODE=1`, remote MCP exposes constrained Git workflow tools:
+
+- Create branch from `origin/feature/composable-strategy-phase2`
+- Stage/commit/push only on `chatgpt/*` task branches
+- Create PR to `feature/composable-strategy-phase2`
+- Block direct push to `feature/composable-strategy-phase2`, `main`, `master`
+- Block destructive workflows (force push/reset/clean/rebase/cherry-pick)
+- Mutating operations require `preview=true` first, then `confirm_token`
+
+Recommended config for this mode:
+
+- `GENESIS_MCP_CONFIG_PATH=config/mcp_settings.remote_git.json`
 
 ### CORS / “security status” note
 
@@ -200,13 +216,17 @@ Use this checklist when exposing `mcp_server.remote_server` via Cloudflare Tunne
 - Keep write/exec disabled:
   - `GENESIS_MCP_REMOTE_SAFE=1`
 - Use a dedicated remote allowlist:
-  - `GENESIS_MCP_CONFIG_PATH=config/mcp_settings.remote_safe.json`
+  - `GENESIS_MCP_CONFIG_PATH=config/mcp_settings.remote_safe.json` (or `config/mcp_settings.remote_git.json` when Git workflow mode is enabled)
+- Enable constrained Git workflow tools only when needed:
+  - `GENESIS_MCP_REMOTE_GIT_MODE=1`
 - Bind only to localhost on the origin machine (tunnel should connect to it):
   - `GENESIS_MCP_BIND_HOST=127.0.0.1`
 
 Tip: on Windows you can run the server without VS Code via Task Scheduler using:
 
 - `scripts/start_mcp_remote.ps1`
+- Example with task-branch Git workflow mode:
+  - `.\scripts\start_mcp_remote.ps1 -SafeRemoteMode 1 -UltraSafeRemoteMode 0 -GitWorkflowMode 1`
 
 **2) Cloudflare rules (avoid “enable cookies” / JS challenges)**
 
@@ -467,6 +487,25 @@ Get Git status information for the project.
 ```json
 {}
 ```
+
+### Remote-only: task-branch Git workflow tools (opt-in)
+
+When `GENESIS_MCP_REMOTE_GIT_MODE=1`, remote MCP additionally exposes:
+
+- `git_workflow` (generic operation router)
+- `git_create_task_branch`
+- `git_status`
+- `git_diff`
+- `git_log`
+- `git_add`
+- `git_commit`
+- `git_push_task_branch`
+- `git_create_pr`
+
+Mutating operations (`git_add`, `git_commit`, `git_push_task_branch`, `git_create_task_branch`, `git_create_pr`) require:
+
+1. `preview=true` call (returns `confirm_token`)
+2. second call with `confirm_token` to execute
 
 ## Available Resources
 

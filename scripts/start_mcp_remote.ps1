@@ -3,6 +3,7 @@ param(
   [string]$BindHost = "127.0.0.1",
   [string]$SafeRemoteMode = "1",
   [string]$UltraSafeRemoteMode = "0",
+  [string]$GitWorkflowMode = "0",
   [string]$ConfigPath = "",
   [string]$PythonExe = "",
   [switch]$DryRun
@@ -22,7 +23,11 @@ $repoRoot = Resolve-RepoRoot
 Set-Location $repoRoot
 
 if ([string]::IsNullOrWhiteSpace($ConfigPath)) {
-  $ConfigPath = Join-Path $repoRoot "config\\mcp_settings.remote_safe.json"
+  if ($GitWorkflowMode -eq "1") {
+    $ConfigPath = Join-Path $repoRoot "config\\mcp_settings.remote_git.json"
+  } else {
+    $ConfigPath = Join-Path $repoRoot "config\\mcp_settings.remote_safe.json"
+  }
 }
 
 if ([string]::IsNullOrWhiteSpace($PythonExe)) {
@@ -46,11 +51,13 @@ $env:GENESIS_MCP_PORT = "$Port"
 $env:GENESIS_MCP_BIND_HOST = $BindHost
 $env:GENESIS_MCP_REMOTE_SAFE = $SafeRemoteMode
 $env:GENESIS_MCP_REMOTE_ULTRA_SAFE = $UltraSafeRemoteMode
+$env:GENESIS_MCP_REMOTE_GIT_MODE = $GitWorkflowMode
 $env:GENESIS_MCP_CONFIG_PATH = $ConfigPath
 
 Write-Host "Repo: $repoRoot"
 Write-Host "Python: $PythonExe"
 Write-Host "MCP: http://$BindHost`:$Port  (public via your tunnel hostname)"
+Write-Host "Git workflow mode: $GitWorkflowMode"
 Write-Host "Config: $ConfigPath"
 Write-Host "Logs: $outLog ; $errLog"
 

@@ -1,6 +1,6 @@
 {
   "id": "backtest_run",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "title": "Standard backtest execution",
   "description": "Körning av manuell backtest med canonical mode och rätt miljövariabler. Säkerställer deterministiska och jämförbara resultat.",
   "status": "dev",
@@ -8,11 +8,13 @@
   "tags": ["backtest", "canonical", "determinism"],
   "rules": {
     "must": [
+      "Verifiera data window (symbol/timeframe/start/end) före körning.",
+      "Verifiera warmup_bars före körning (default 150 för 1h om inget annat anges).",
       "Sätt GENESIS_FAST_WINDOW=1 och GENESIS_PRECOMPUTE_FEATURES=1 för canonical mode.",
       "Sätt GENESIS_RANDOM_SEED=42 (eller annan explicit seed) för reproducerbarhet.",
       "Använd --fast-window och --precompute-features CLI-flaggor.",
       "Verifiera att backtest_info.execution_mode är '1/1' i resultat.",
-      "Spara resultat under results/backtests/ med timestamp i filnamn."
+      "Spara resultat under results/backtests/ med timestamp i filnamn och spårbar metadata (symbol/timeframe/start/end/warmup_bars/seed/execution_mode)."
     ],
     "must_not": [
       "Köra backtest utan att sätta execution mode explicit.",

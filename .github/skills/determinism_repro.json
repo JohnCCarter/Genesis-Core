@@ -1,6 +1,6 @@
 {
   "id": "determinism_repro",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "title": "Determinism & reproducibility",
   "description": "Säkerställer att samma input ger samma output och att reproducerbarhet verifieras.",
   "status": "dev",
@@ -10,12 +10,15 @@
     "must": [
       "Kör i canonical mode (1/1) för jämförelser.",
       "Använd samma seed och tidsfönster.",
+      "Använd samma symbol, timeframe och datafönster för jämförbara runs.",
+      "Bekräfta att warmup_bars och data-window är konsekventa innan slutsatser dras.",
       "Dubbelkör vid behov för att bekräfta identiskt resultat."
     ],
     "must_not": [
       "Blanda olika exekveringslägen i slutsatser.",
       "Jämför runs med olika seed utan att notera det.",
-      "Byta datafönster utan att ange avvikelse."
+      "Byta datafönster utan att ange avvikelse.",
+      "Dra inte slutsatser från runs med blandade warmup/data-window-villkor."
     ]
   },
   "references": [

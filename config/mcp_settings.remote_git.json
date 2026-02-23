@@ -2,7 +2,7 @@
   "server_name": "genesis-core",
   "version": "1.1.0",
   "features": {
-    "code_execution": false,
+    "code_execution": true,
     "file_operations": true,
     "git_integration": true
   },
@@ -18,10 +18,13 @@
       "config",
       "docs",
       "mcp_server",
+      "registry",
+      "results",
       "scripts",
       "src",
       ".gitignore",
       ".env.example",
+      "tmp",
       "tests"
     ],
     "blocked_patterns": [
@@ -35,6 +38,6 @@
       "dev.overrides.local.json"
     ],
     "execution_timeout_seconds": 30,
-    "max_file_size_mb": 5
+    "max_file_size_mb": 10
   }
 }

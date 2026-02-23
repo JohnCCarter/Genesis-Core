@@ -212,6 +212,18 @@ def validate_registry(repo_root: Path) -> RegistryValidationResult:
                     if ikey in compacts:
                         active_compacts.append((ikey, compacts[ikey]))
 
+        # Deduplicate active compacts after one-level pack expansion.
+        # Without this guard, the same compact can appear twice (direct + includes_compacts)
+        # and incorrectly trigger conflict_group enforcement.
+        deduped_active_compacts: list[tuple[tuple[str, str], dict]] = []
+        seen_compact_keys: set[tuple[str, str]] = set()
+        for key, compact in active_compacts:
+            if key in seen_compact_keys:
+                continue
+            seen_compact_keys.add(key)
+            deduped_active_compacts.append((key, compact))
+        active_compacts = deduped_active_compacts
+
         # Enforce compact conflicts per conflict_group with priority P0..P4.
         groups: dict[str, list[tuple[int, str]]] = {}
         for (rid, rver), compact in active_compacts:

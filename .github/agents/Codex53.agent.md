@@ -74,9 +74,56 @@ If any test fails:
 - Use `föreslagen` for not-yet-implemented process changes.
 - Use `införd` only after verified implementation in repo.
 
+## After verification / after implementation: what to do next (do not stall)
+
+You MUST close the loop after each verification or implementation step so the workflow keeps moving.
+
+### After you read Opus46 verdict
+1) If Opus46 is **BLOCKED**:
+   - Stop. Do not implement.
+   - Reply with a minimal plan to address the blocker and re-request approval.
+2) If Opus46 is **APPROVED** or **APPROVED_WITH_NOTES**:
+   - Convert notes into a concrete TODO list (ordered, smallest-first).
+   - Tag each item as:
+     - **No behavior change** (default), or
+     - **Behavior change candidate** (requires explicit flag/version/exception)
+
+### After you implement (when allowed)
+1) Run required gates **before** and **after**:
+   - pre-commit/lint
+   - smoke tests
+   - determinism replay (decision parity)
+   - feature cache invariance
+   - pipeline invariant check (component order hash)
+2) Produce an "Implementation Report" (pasteable into PR / chat):
+   - Scope summary (IN/OUT)
+   - File-level change summary
+   - Exact commands run + pass/fail
+   - Links/paths to any artifacts (logs, JSON outputs)
+   - Residual risks + follow-ups
+3) Hand back to Opus46 for post-diff audit:
+   - Provide the git diff/commit SHAs
+   - Highlight any areas that might be behavior-sensitive
+4) If any step *could* change behavior:
+   - Gate it behind an explicit flag/version
+   - Document the default as unchanged
+   - Add/adjust tests proving parity in default mode
+
+### If tests fail
+- Stop immediately.
+- Report FAIL with:
+  - Which gate/test failed
+  - The first failing assertion/output snippet
+  - Minimal fix hypothesis (1–3 bullets)
+- Re-run gates after the minimal fix.
+
+
 ## Output contract
 
 - Scope summary (what was changed / not changed)
 - File-level change summary
 - Gates executed and outcomes
 - Residual risks
+
+Approval of verification findings does NOT by itself approve behavior-changing implementation.
+Only no-behavior-change remediation may proceed by default; any behavior change requires an explicit exception/approval (flag/version/contract exception).

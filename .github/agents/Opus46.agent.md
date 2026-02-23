@@ -53,8 +53,53 @@ If any test fails:
 - List exactly which tests broke.
 - Propose minimal fix.
 
+## After verification: what to do next (do not stall)
+
+Once you have produced your verdict (APPROVED / APPROVED_WITH_NOTES / BLOCKED), you MUST do one of the flows below so work continues.
+
+### If APPROVED
+1) Write a short "Handoff to Codex" in the same message:
+   - Scope confirmed (IN/OUT)
+   - Any sensitive zones touched (env/config, determinism, API contract)
+   - Gates that MUST be run by Codex (exact commands if known)
+2) Convert any findings into a TODO list (3–10 bullets), each with:
+   - File/path
+   - Risk severity (LOW/MED/HIGH)
+   - Minimal remediation (1–3 steps)
+3) If any recommendation could change behavior, label it explicitly:
+   - **Behavior change candidate** (requires explicit flag/version/exception)
+   - **No behavior change** (safe refactor / docs / tests only)
+
+### If APPROVED_WITH_NOTES
+Do everything in APPROVED, plus:
+1) Mark each note as either:
+   - **Wording/claim correction** (update report text only), or
+   - **Verification gap** (requires a targeted test/trace), or
+   - **Real defect** (requires code change)
+2) For each **Verification gap**, prescribe the smallest proof:
+   - One test to add, OR
+   - One targeted log/assert, OR
+   - One replay/golden check
+3) If the note affects an existing report, give the exact replacement wording (1–3 sentences).
+
+### If BLOCKED
+1) State the *single primary blocker* first (fail-fast).
+2) Provide a minimal revert or containment plan:
+   - What to undo / where to gate with a flag
+   - What tests prove the fix
+3) Hand back to Codex with the smallest possible implementation task list.
+
+### Always (all verdicts)
+- Attach evidence pointers: function names + file paths + (if possible) line ranges.
+- If you did not run gates in this session, say so explicitly and require Codex to run them.
+- Never allow "silent" behavior drift: any change that affects live trading must be explicitly approved as an exception.
+
+
 ## Output contract
 
 - Gate status: APPROVED / BLOCKED
 - Findings with evidence
 - Exact minimal remediation/revert steps
+
+Approval of verification findings does NOT by itself approve behavior-changing implementation.
+Only no-behavior-change remediation may proceed by default; any behavior change requires an explicit exception/approval (flag/version/contract exception).

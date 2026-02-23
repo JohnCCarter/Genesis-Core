@@ -6,6 +6,7 @@ Replays historical candle data bar-by-bar through the existing strategy pipeline
 
 import hashlib
 import json
+import math
 import os
 import subprocess
 import warnings
@@ -1129,21 +1130,47 @@ class BacktestEngine:
         ):
             # Fast path: use precomputed HTF mapping
             try:
-                htf_fib_context = {
-                    "available": True,
-                    "levels": {
-                        0.382: self._precomputed_features["htf_fib_0382"][idx],
-                        0.5: self._precomputed_features["htf_fib_05"][idx],
-                        0.618: self._precomputed_features["htf_fib_0618"][idx],
-                    },
-                    "swing_high": self._precomputed_features.get(
-                        "htf_swing_high", [0.0] * (idx + 1)
-                    )[idx],
-                    "swing_low": self._precomputed_features.get("htf_swing_low", [0.0] * (idx + 1))[
-                        idx
-                    ],
-                }
-            except (IndexError, KeyError):
+
+                def _to_positive_finite(value: Any) -> float | None:
+                    try:
+                        parsed = float(value)
+                    except (TypeError, ValueError):
+                        return None
+                    if not math.isfinite(parsed) or parsed <= 0.0:
+                        return None
+                    return parsed
+
+                level_0382 = _to_positive_finite(self._precomputed_features["htf_fib_0382"][idx])
+                level_05 = _to_positive_finite(self._precomputed_features["htf_fib_05"][idx])
+                level_0618 = _to_positive_finite(self._precomputed_features["htf_fib_0618"][idx])
+                swing_high = _to_positive_finite(
+                    self._precomputed_features.get("htf_swing_high", [0.0] * (idx + 1))[idx]
+                )
+                swing_low = _to_positive_finite(
+                    self._precomputed_features.get("htf_swing_low", [0.0] * (idx + 1))[idx]
+                )
+
+                levels_complete = all(v is not None for v in (level_0382, level_05, level_0618))
+                swings_valid = (
+                    swing_high is not None
+                    and swing_low is not None
+                    and float(swing_high) > float(swing_low)
+                )
+
+                if levels_complete and swings_valid:
+                    htf_fib_context = {
+                        "available": True,
+                        "levels": {
+                            0.382: float(level_0382),
+                            0.5: float(level_05),
+                            0.618: float(level_0618),
+                        },
+                        "swing_high": float(swing_high),
+                        "swing_low": float(swing_low),
+                    }
+                else:
+                    htf_fib_context = {"available": False}
+            except (IndexError, KeyError, TypeError, ValueError):
                 htf_fib_context = {"available": False}
         else:
             # Fallback: use meta from evaluate_pipeline

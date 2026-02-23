@@ -254,7 +254,7 @@ def _extract_decision_reasons(eval_response: dict | None) -> list[str]:
     """Normalize decision reasons to a compact list of strings for telemetry/watchdog."""
     if not isinstance(eval_response, dict):
         return []
-    decision = ((eval_response.get("meta") or {}).get("decision") or {})
+    decision = (eval_response.get("meta") or {}).get("decision") or {}
     reasons = decision.get("reasons")
     if reasons is None:
         return []
@@ -778,9 +778,7 @@ def run_loop(config: RunnerConfig, logger: logging.Logger, state: RunnerState) -
     state.contract_snapshot = dict(contract_snapshot)
     quarantine = _ensure_quarantine_state(state)
     watchdog = _ensure_watchdog_state(state)
-    max_consecutive_none = _get_positive_int_env(
-        "GENESIS_RUNNER_MAX_CONSECUTIVE_NONE", 72, logger
-    )
+    max_consecutive_none = _get_positive_int_env("GENESIS_RUNNER_MAX_CONSECUTIVE_NONE", 72, logger)
     max_same_reason_streak = _get_positive_int_env(
         "GENESIS_RUNNER_MAX_SAME_REASON_STREAK", 48, logger
     )
@@ -888,8 +886,7 @@ def run_loop(config: RunnerConfig, logger: logging.Logger, state: RunnerState) -
                 )
                 if (
                     config.live_paper
-                    and int(watchdog["consecutive_eval_failures"])
-                    >= max_consecutive_eval_failures
+                    and int(watchdog["consecutive_eval_failures"]) >= max_consecutive_eval_failures
                 ):
                     logger.error(
                         "FATAL: Evaluation failed %s gånger i live-paper mode. Exiting.",

@@ -651,9 +651,7 @@ def test_run_loop_live_paper_fails_closed_on_eval_failure(tmp_path):
 
         assert exc.value.code == 1
         assert mock_save.called
-        assert any(
-            "FATAL: Evaluation failed" in str(call) for call in logger.error.call_args_list
-        )
+        assert any("FATAL: Evaluation failed" in str(call) for call in logger.error.call_args_list)
 
 
 def test_run_loop_emits_decision_context_log(tmp_path):

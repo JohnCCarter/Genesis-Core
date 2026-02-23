@@ -159,4 +159,3 @@ Utöver detta finns mindre förbättringspunkter kring regimdetektion, kvalitets
 - `decide()` och `compute_confidence()` tolererar `None`/sträng i probas/config utan crash.
 - Reproducerbar regim mellan fast-path och unified (eller dokumenterad och testad skillnad).
 - Nya enhetstester täcker minst 2 crash-scenarier.
-

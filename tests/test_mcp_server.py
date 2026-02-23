@@ -143,7 +143,9 @@ async def test_search_code_filename_query(config):
     """Filename/path queries should be discoverable via search_code."""
     result = await search_code("mcp_session_preflight.py", "*.py", config)
     assert result["success"] is True
-    assert any(match["file"].endswith("scripts/mcp_session_preflight.py") for match in result["matches"])
+    assert any(
+        match["file"].endswith("scripts/mcp_session_preflight.py") for match in result["matches"]
+    )
 
 
 @pytest.mark.asyncio

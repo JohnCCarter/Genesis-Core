@@ -148,4 +148,3 @@ Implementera små, isolerade förändringar som ökar tydlighet och minskar fals
 Ägare/kontext
 - `ConfigAuthority` använder repo-root resolution via `pyproject.toml` och skriver `config/runtime.json` + `logs/config_audit.jsonl`.
 - Runtime hash-kontrakt: `sha256(canonical_json(cfg))`.
-

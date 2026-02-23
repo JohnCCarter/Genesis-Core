@@ -93,9 +93,7 @@ def run_preflight(repo_root: Path) -> tuple[int, list[CheckResult]]:
 
     config_path = repo_root / DEFAULT_CONFIG_REL_PATH
     if not config_path.exists():
-        results.append(
-            CheckResult("FAIL", "config-file", f"Missing config file: {config_path}")
-        )
+        results.append(CheckResult("FAIL", "config-file", f"Missing config file: {config_path}"))
         return 2, results
 
     try:
@@ -122,9 +120,13 @@ def run_preflight(repo_root: Path) -> tuple[int, list[CheckResult]]:
 
     max_file_size = int(security.get("max_file_size_mb") or 0)
     if max_file_size >= 10:
-        results.append(CheckResult("PASS", "config-max-file-size", f"max_file_size_mb={max_file_size}"))
+        results.append(
+            CheckResult("PASS", "config-max-file-size", f"max_file_size_mb={max_file_size}")
+        )
     else:
-        results.append(CheckResult("WARN", "config-max-file-size", f"max_file_size_mb={max_file_size}"))
+        results.append(
+            CheckResult("WARN", "config-max-file-size", f"max_file_size_mb={max_file_size}")
+        )
 
     show = _run(
         [
@@ -231,7 +233,9 @@ def run_preflight(repo_root: Path) -> tuple[int, list[CheckResult]]:
         results.append(CheckResult("FAIL", "git-objects-exists", f"Missing {objects_dir}"))
     else:
         writable = os.access(objects_dir, os.W_OK)
-        results.append(CheckResult("PASS" if writable else "FAIL", "git-objects-writable", str(writable)))
+        results.append(
+            CheckResult("PASS" if writable else "FAIL", "git-objects-writable", str(writable))
+        )
 
     current_uid = os.getuid()
     owner_name = pwd.getpwuid(current_uid).pw_name

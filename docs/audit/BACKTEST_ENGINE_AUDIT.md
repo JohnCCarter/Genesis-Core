@@ -172,4 +172,3 @@ Stabilisera backtest-resultat mellan körningar och minska “surprise behavior�
 - Samma data+config ger samma resultat oavsett runner/manual.
 - HTF exits körs bara när HTF-context är faktiskt giltig.
 - Backtest felhantering är explicit och testad.
-

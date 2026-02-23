@@ -147,6 +147,7 @@ class RunnerState:
     pipeline_state: dict = field(default_factory=dict)
     contract_snapshot: dict = field(default_factory=dict)
     quarantine: dict = field(default_factory=dict)
+    watchdog: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         return {
@@ -157,6 +158,7 @@ class RunnerState:
             "pipeline_state": self.pipeline_state,
             "contract_snapshot": self.contract_snapshot,
             "quarantine": self.quarantine,
+            "watchdog": self.watchdog,
         }
 
     @classmethod
@@ -169,6 +171,7 @@ class RunnerState:
             pipeline_state=data.get("pipeline_state") or {},
             contract_snapshot=data.get("contract_snapshot") or {},
             quarantine=data.get("quarantine") or {},
+            watchdog=data.get("watchdog") or {},
         )
 
 
@@ -187,9 +190,14 @@ def _path_contract_active_mode(config: RunnerConfig) -> str:
     return "custom"
 
 
-def build_runner_contract_snapshot(config: RunnerConfig) -> dict[str, str]:
+def build_runner_contract_snapshot(
+    config: RunnerConfig,
+    *,
+    runtime_cfg_hash: str | None = None,
+    runtime_cfg_version: int | None = None,
+) -> dict[str, Any]:
     """Build additive observability metadata for runner stability contract."""
-    return {
+    snapshot: dict[str, Any] = {
         "contract_version": "paper_runner_stability_2026_02_19",
         "config_authority_mode": "champion_base_runtime_allowlist_override",
         "path_contract_mode": "dual_primary_results_compat_logs",
@@ -198,6 +206,11 @@ def build_runner_contract_snapshot(config: RunnerConfig) -> dict[str, str]:
         "log_dir": str(config.log_dir),
         "state_file": str(config.state_file),
     }
+    if runtime_cfg_hash:
+        snapshot["runtime_cfg_hash"] = runtime_cfg_hash
+    if runtime_cfg_version is not None:
+        snapshot["runtime_cfg_version"] = int(runtime_cfg_version)
+    return snapshot
 
 
 def _ensure_quarantine_state(state: RunnerState) -> dict:
@@ -208,6 +221,48 @@ def _ensure_quarantine_state(state: RunnerState) -> dict:
     quarantine.setdefault("blocked_orders", 0)
     state.quarantine = quarantine
     return quarantine
+
+
+def _ensure_watchdog_state(state: RunnerState) -> dict:
+    """Ensure watchdog counters exist with safe defaults."""
+    current = state.watchdog if isinstance(state.watchdog, dict) else {}
+    watchdog = dict(current)
+    watchdog.setdefault("consecutive_none_actions", 0)
+    watchdog.setdefault("same_reason_streak", 0)
+    watchdog.setdefault("last_primary_reason", "")
+    watchdog.setdefault("consecutive_eval_failures", 0)
+    state.watchdog = watchdog
+    return watchdog
+
+
+def _get_positive_int_env(name: str, default: int, logger: logging.Logger) -> int:
+    """Read positive integer env var with defensive fallback."""
+    raw = os.getenv(name)
+    if raw is None:
+        return int(default)
+    try:
+        value = int(str(raw).strip())
+        if value > 0:
+            return value
+    except Exception:
+        pass
+    logger.warning("Invalid %s=%r, fallback=%s", name, raw, default)
+    return int(default)
+
+
+def _extract_decision_reasons(eval_response: dict | None) -> list[str]:
+    """Normalize decision reasons to a compact list of strings for telemetry/watchdog."""
+    if not isinstance(eval_response, dict):
+        return []
+    decision = ((eval_response.get("meta") or {}).get("decision") or {})
+    reasons = decision.get("reasons")
+    if reasons is None:
+        return []
+    if isinstance(reasons, list):
+        return [str(r) for r in reasons][:8]
+    if isinstance(reasons, dict):
+        return [f"{k}={v}" for k, v in reasons.items()][:8]
+    return [str(reasons)]
 
 
 def build_decision_context(
@@ -227,6 +282,8 @@ def build_decision_context(
         if isinstance(eval_response, dict)
         else None
     )
+    decision_reasons = _extract_decision_reasons(eval_response)
+    primary_reason = decision_reasons[0] if decision_reasons else "<none>"
     snapshot = state.contract_snapshot if isinstance(state.contract_snapshot, dict) else {}
 
     return {
@@ -237,8 +294,12 @@ def build_decision_context(
         "action": str(action),
         "signal": signal,
         "confidence": float(confidence),
+        "decision_reasons": decision_reasons,
+        "primary_reason": primary_reason,
         "champion_source": champion_source,
         "config_authority_mode": snapshot.get("config_authority_mode"),
+        "runtime_cfg_hash": snapshot.get("runtime_cfg_hash"),
+        "runtime_cfg_version": snapshot.get("runtime_cfg_version"),
         "uncertain_order_policy": snapshot.get("uncertain_order_policy"),
         "quarantine_active": bool(quarantine.get("active", False)),
         "quarantine_blocked_orders": int(quarantine.get("blocked_orders", 0)),
@@ -370,6 +431,19 @@ def _load_runtime_cfg(
 
     Never raises to caller; returns None on HTTP/parsing/schema issues.
     """
+    cfg, _, _ = _load_runtime_cfg_envelope(config, client, logger)
+    return cfg
+
+
+def _load_runtime_cfg_envelope(
+    config: RunnerConfig,
+    client: httpx.Client,
+    logger: logging.Logger,
+) -> tuple[dict | None, str | None, int | None]:
+    """Best-effort load of runtime cfg + metadata (hash/version) from API.
+
+    Never raises to caller.
+    """
     try:
         url = f"{config.api_base}/config/runtime"
         resp = client.get(url, timeout=10.0)
@@ -379,27 +453,36 @@ def _load_runtime_cfg(
         if not isinstance(payload, dict):
             logger.warning("Runtime config schema mismatch: expected JSON object.")
             logger.debug("Runtime config payload type: %s", type(payload).__name__)
-            return None
+            return None, None, None
 
         cfg = payload.get("cfg")
-        if isinstance(cfg, dict):
-            return cfg
+        if not isinstance(cfg, dict):
+            logger.warning("Runtime config schema mismatch: missing dict key 'cfg'.")
+            logger.debug("Runtime config payload keys: %s", sorted(payload.keys()))
+            return None, None, None
 
-        logger.warning("Runtime config schema mismatch: missing dict key 'cfg'.")
-        logger.debug("Runtime config payload keys: %s", sorted(payload.keys()))
-        return None
+        cfg_hash = payload.get("hash")
+        version_raw = payload.get("version")
+        cfg_version: int | None = None
+        if version_raw is not None:
+            try:
+                cfg_version = int(version_raw)
+            except Exception:
+                logger.warning("Runtime config version is invalid: %r", version_raw)
+
+        return cfg, str(cfg_hash) if cfg_hash is not None else None, cfg_version
     except httpx.HTTPError as e:
         logger.warning("Failed to fetch runtime config from /config/runtime.")
         logger.debug("Runtime config HTTP error: %s", e)
-        return None
+        return None, None, None
     except (TypeError, ValueError) as e:
         logger.warning("Failed to parse runtime config response.")
         logger.debug("Runtime config parse error: %s", e)
-        return None
+        return None, None, None
     except Exception as e:
         logger.warning("Unexpected runtime config load failure.")
         logger.debug("Runtime config unexpected error: %s", e)
-        return None
+        return None, None, None
 
 
 def evaluate_strategy(
@@ -435,6 +518,11 @@ def evaluate_strategy(
         runtime_cfg = _load_runtime_cfg(config, client, logger)
         if isinstance(runtime_cfg, dict):
             payload["configs"] = runtime_cfg
+        elif config.live_paper:
+            logger.error(
+                "FATAL: runtime cfg unavailable in live-paper mode; stoppar evaluation fail-closed."
+            )
+            return None
 
         resp = client.post(url, json=payload, timeout=30.0)
         resp.raise_for_status()
@@ -666,10 +754,45 @@ def run_loop(config: RunnerConfig, logger: logging.Logger, state: RunnerState) -
     logger.info(f"Poll interval: {config.poll_interval}s")
     logger.info(f"Mode: {'DRY-RUN (no orders)' if config.dry_run else 'LIVE PAPER TRADING'}")
     logger.info(f"State file: {config.state_file}")
-    contract_snapshot = build_runner_contract_snapshot(config)
+
+    # Setup HTTP client early (needed by startup runtime-cfg gate)
+    client = httpx.Client()
+
+    runtime_cfg_hash: str | None = None
+    runtime_cfg_version: int | None = None
+    if config.live_paper:
+        startup_cfg, runtime_cfg_hash, runtime_cfg_version = _load_runtime_cfg_envelope(
+            config, client, logger
+        )
+        if not isinstance(startup_cfg, dict):
+            logger.error("FATAL: runtime cfg saknas vid startup i live-paper mode. Exiting.")
+            client.close()
+            sys.exit(1)
+
+    contract_snapshot = build_runner_contract_snapshot(
+        config,
+        runtime_cfg_hash=runtime_cfg_hash,
+        runtime_cfg_version=runtime_cfg_version,
+    )
     logger.info("RUNNER_CONTRACT: %s", json.dumps(contract_snapshot, sort_keys=True))
     state.contract_snapshot = dict(contract_snapshot)
     quarantine = _ensure_quarantine_state(state)
+    watchdog = _ensure_watchdog_state(state)
+    max_consecutive_none = _get_positive_int_env(
+        "GENESIS_RUNNER_MAX_CONSECUTIVE_NONE", 72, logger
+    )
+    max_same_reason_streak = _get_positive_int_env(
+        "GENESIS_RUNNER_MAX_SAME_REASON_STREAK", 48, logger
+    )
+    max_consecutive_eval_failures = _get_positive_int_env(
+        "GENESIS_RUNNER_MAX_CONSECUTIVE_EVAL_FAILURES", 1, logger
+    )
+    logger.info(
+        "RUNNER_WATCHDOG: max_none=%s max_same_reason=%s max_eval_failures=%s",
+        max_consecutive_none,
+        max_same_reason_streak,
+        max_consecutive_eval_failures,
+    )
     if quarantine.get("active"):
         logger.warning(
             "QUARANTINE_RESUME: active=true, since_candle_ts=%s, blocked_orders=%s",
@@ -677,9 +800,6 @@ def run_loop(config: RunnerConfig, logger: logging.Logger, state: RunnerState) -
             quarantine.get("blocked_orders", 0),
         )
     logger.info("=" * 80)
-
-    # Setup HTTP client
-    client = httpx.Client()
 
     # Verify champion on startup (use a real candles window)
     logger.info("Verifying champion loading...")
@@ -757,9 +877,32 @@ def run_loop(config: RunnerConfig, logger: logging.Logger, state: RunnerState) -
             # Evaluate strategy
             eval_resp = evaluate_strategy(config, candle_ts, state.pipeline_state, client, logger)
             if not eval_resp:
-                logger.error("Evaluation failed. Skipping this candle.")
+                watchdog = _ensure_watchdog_state(state)
+                watchdog["consecutive_eval_failures"] = (
+                    int(watchdog.get("consecutive_eval_failures", 0)) + 1
+                )
+                state.watchdog = watchdog
+                logger.error(
+                    "Evaluation failed (consecutive_eval_failures=%s).",
+                    watchdog["consecutive_eval_failures"],
+                )
+                if (
+                    config.live_paper
+                    and int(watchdog["consecutive_eval_failures"])
+                    >= max_consecutive_eval_failures
+                ):
+                    logger.error(
+                        "FATAL: Evaluation failed %s gånger i live-paper mode. Exiting.",
+                        watchdog["consecutive_eval_failures"],
+                    )
+                    save_state(state, config.state_file, logger)
+                    sys.exit(1)
                 time.sleep(config.poll_interval)
                 continue
+
+            watchdog = _ensure_watchdog_state(state)
+            watchdog["consecutive_eval_failures"] = 0
+            state.watchdog = watchdog
 
             # Verify champion
             if not verify_champion_loaded(eval_resp, logger):
@@ -797,6 +940,38 @@ def run_loop(config: RunnerConfig, logger: logging.Logger, state: RunnerState) -
                 eval_response=eval_resp,
             )
             logger.info("DECISION_CONTEXT: %s", json.dumps(decision_context, sort_keys=True))
+
+            # Watchdog: detect prolonged NONE loops with same dominant reason.
+            watchdog = _ensure_watchdog_state(state)
+            primary_reason = str(decision_context.get("primary_reason") or "<none>")
+            if action == "NONE":
+                watchdog["consecutive_none_actions"] = (
+                    int(watchdog.get("consecutive_none_actions", 0)) + 1
+                )
+                if primary_reason == str(watchdog.get("last_primary_reason") or ""):
+                    watchdog["same_reason_streak"] = int(watchdog.get("same_reason_streak", 0)) + 1
+                else:
+                    watchdog["same_reason_streak"] = 1
+                watchdog["last_primary_reason"] = primary_reason
+            else:
+                watchdog["consecutive_none_actions"] = 0
+                watchdog["same_reason_streak"] = 0
+                watchdog["last_primary_reason"] = primary_reason
+            state.watchdog = watchdog
+
+            if (
+                config.live_paper
+                and int(watchdog.get("consecutive_none_actions", 0)) >= max_consecutive_none
+                and int(watchdog.get("same_reason_streak", 0)) >= max_same_reason_streak
+            ):
+                logger.error(
+                    "FATAL: Watchdog tripped (consecutive_none=%s same_reason_streak=%s primary_reason=%s). Exiting.",
+                    watchdog.get("consecutive_none_actions"),
+                    watchdog.get("same_reason_streak"),
+                    watchdog.get("last_primary_reason"),
+                )
+                save_state(state, config.state_file, logger)
+                sys.exit(1)
 
             # Submit order if action != NONE and live-paper mode
             if action != "NONE":

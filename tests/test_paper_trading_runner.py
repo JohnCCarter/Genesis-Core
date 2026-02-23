@@ -56,6 +56,12 @@ def test_state_roundtrip(tmp_path):
         pipeline_state={"cooldown_remaining": 3, "last_action": "LONG"},
         contract_snapshot={"contract_version": "paper_runner_stability_2026_02_19"},
         quarantine={"active": True, "blocked_orders": 2},
+        watchdog={
+            "consecutive_none_actions": 11,
+            "same_reason_streak": 7,
+            "last_primary_reason": "ZONE:base@0.700",
+            "consecutive_eval_failures": 1,
+        },
     )
 
     # Save
@@ -72,6 +78,7 @@ def test_state_roundtrip(tmp_path):
     assert loaded.pipeline_state == state.pipeline_state
     assert loaded.contract_snapshot == state.contract_snapshot
     assert loaded.quarantine == state.quarantine
+    assert loaded.watchdog == state.watchdog
 
 
 def test_load_state_missing_file(tmp_path):
@@ -526,6 +533,8 @@ def test_build_decision_context_contains_authority_and_quarantine_fields(tmp_pat
     state = RunnerState(
         contract_snapshot={
             "config_authority_mode": "champion_base_runtime_allowlist_override",
+            "runtime_cfg_hash": "abc123",
+            "runtime_cfg_version": 6,
             "uncertain_order_policy": "quarantine_auto_clear_none",
         },
         quarantine={"active": True, "blocked_orders": 7},
@@ -535,7 +544,10 @@ def test_build_decision_context_contains_authority_and_quarantine_fields(tmp_pat
         "meta": {
             "champion": {
                 "source": "config\\strategy\\champions\\tBTCUSD_1h.json",
-            }
+            },
+            "decision": {
+                "reasons": ["ZONE:base@0.700", "ENTRY_LONG"],
+            },
         }
     }
 
@@ -554,10 +566,94 @@ def test_build_decision_context_contains_authority_and_quarantine_fields(tmp_pat
     assert out["mode"] == "live_paper"
     assert out["action"] == "LONG"
     assert out["champion_source"] == "config\\strategy\\champions\\tBTCUSD_1h.json"
+    assert out["decision_reasons"] == ["ZONE:base@0.700", "ENTRY_LONG"]
+    assert out["primary_reason"] == "ZONE:base@0.700"
     assert out["config_authority_mode"] == "champion_base_runtime_allowlist_override"
+    assert out["runtime_cfg_hash"] == "abc123"
+    assert out["runtime_cfg_version"] == 6
     assert out["uncertain_order_policy"] == "quarantine_auto_clear_none"
     assert out["quarantine_active"] is True
     assert out["quarantine_blocked_orders"] == 7
+
+
+def test_run_loop_live_paper_fails_closed_on_eval_failure(tmp_path):
+    from paper_trading_runner import RunnerConfig, run_loop
+
+    with (
+        patch("paper_trading_runner.httpx.Client") as mock_client_class,
+        patch("paper_trading_runner.fetch_latest_candle") as mock_fetch,
+        patch("paper_trading_runner.evaluate_strategy") as mock_eval,
+        patch("paper_trading_runner._load_runtime_cfg_envelope") as mock_runtime_env,
+        patch("paper_trading_runner.save_state") as mock_save,
+        patch("paper_trading_runner.time.sleep"),
+        patch.dict("os.environ", {"GENESIS_EXECUTION_MODE": "paper_live"}, clear=False),
+    ):
+        mock_client = Mock()
+        mock_client_class.return_value = mock_client
+
+        startup_ts = 1704067200000
+        loop_ts = startup_ts + 3600000
+        mock_fetch.side_effect = [
+            {
+                "ts": startup_ts,
+                "open": 50000.0,
+                "close": 50100.0,
+                "high": 50200.0,
+                "low": 49900.0,
+                "volume": 100.5,
+                "_source": "latest",
+            },
+            {
+                "ts": loop_ts,
+                "open": 50100.0,
+                "close": 50200.0,
+                "high": 50300.0,
+                "low": 50000.0,
+                "volume": 100.5,
+                "_source": "latest",
+            },
+        ]
+
+        mock_runtime_env.return_value = ({"thresholds": {}}, "abc123", 6)
+
+        mock_eval.side_effect = [
+            {
+                "result": {
+                    "action": "NONE",
+                    "signal": None,
+                    "confidence": {"overall": 0.50},
+                },
+                "meta": {
+                    "champion": {"source": "config\\strategy\\champions\\tBTCUSD_1h.json"},
+                    "decision": {"size": 0.0},
+                },
+            },
+            None,
+        ]
+
+        config = RunnerConfig(
+            host="localhost",
+            port=8000,
+            symbol="tBTCUSD",
+            timeframe="1h",
+            poll_interval=1,
+            dry_run=False,
+            live_paper=True,
+            log_dir=tmp_path,
+            state_file=tmp_path / "state.json",
+        )
+
+        state = RunnerState()
+        logger = Mock()
+
+        with pytest.raises(SystemExit) as exc:
+            run_loop(config, logger, state)
+
+        assert exc.value.code == 1
+        assert mock_save.called
+        assert any(
+            "FATAL: Evaluation failed" in str(call) for call in logger.error.call_args_list
+        )
 
 
 def test_run_loop_emits_decision_context_log(tmp_path):
@@ -747,6 +843,7 @@ def test_order_submission_failure_enters_quarantine_and_clears_on_none(tmp_path)
         patch("paper_trading_runner.httpx.Client") as mock_client_class,
         patch("paper_trading_runner.fetch_latest_candle") as mock_fetch,
         patch("paper_trading_runner.evaluate_strategy") as mock_eval,
+        patch("paper_trading_runner._load_runtime_cfg_envelope") as mock_runtime_env,
         patch("paper_trading_runner.submit_paper_order") as mock_submit,
         patch("paper_trading_runner.save_state") as mock_save,
         patch("paper_trading_runner.time.sleep"),
@@ -756,6 +853,7 @@ def test_order_submission_failure_enters_quarantine_and_clears_on_none(tmp_path)
         # Setup mocks
         mock_client = Mock()
         mock_client_class.return_value = mock_client
+        mock_runtime_env.return_value = ({"thresholds": {}}, "abc123", 6)
 
         startup_ts = 1704067200000
         candle_1 = startup_ts + 3600000
@@ -910,6 +1008,7 @@ def test_order_submission_success_updates_candle_ts(tmp_path):
         patch("paper_trading_runner.httpx.Client") as mock_client_class,
         patch("paper_trading_runner.fetch_latest_candle") as mock_fetch,
         patch("paper_trading_runner.evaluate_strategy") as mock_eval,
+        patch("paper_trading_runner._load_runtime_cfg_envelope") as mock_runtime_env,
         patch("paper_trading_runner.submit_paper_order") as mock_submit,
         patch("paper_trading_runner.save_state") as mock_save,
         patch("paper_trading_runner.time.sleep"),
@@ -918,6 +1017,7 @@ def test_order_submission_success_updates_candle_ts(tmp_path):
 
         mock_client = Mock()
         mock_client_class.return_value = mock_client
+        mock_runtime_env.return_value = ({"thresholds": {}}, "abc123", 6)
 
         candle_ts = 1704067200000
 

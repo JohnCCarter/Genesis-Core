@@ -204,3 +204,45 @@ def test_decide_state_out_isolated_from_nested_input_state() -> None:
     assert state_out.get("nested") == state_in["nested"]
     assert state_out.get("nested") is not state_in["nested"]
     assert state_out.get("nested", {}).get("values") is not state_in["nested"]["values"]
+
+
+def test_decide_handles_none_and_string_probas_without_typeerror() -> None:
+    cfg = {
+        "thresholds": {"entry_conf_overall": 0.7, "regime_proba": {"balanced": 0.7}},
+        "risk": {"risk_map": [[0.7, 0.01]]},
+        "gates": {"cooldown_bars": 0},
+    }
+
+    action, meta = decide(
+        {},
+        probas={"buy": None, "sell": "0.8"},
+        confidence={"buy": 0.1, "sell": "0.8"},
+        regime="balanced",
+        state={},
+        risk_ctx={},
+        cfg=cfg,
+    )
+
+    assert action == "SHORT"
+    assert isinstance(meta, dict)
+
+
+def test_decide_handles_non_numeric_confidence_without_typeerror() -> None:
+    cfg = {
+        "thresholds": {"entry_conf_overall": 0.7, "regime_proba": {"balanced": 0.7}},
+        "risk": {"risk_map": [[0.7, 0.01]]},
+        "gates": {"cooldown_bars": 0},
+    }
+
+    action, meta = decide(
+        {},
+        probas={"buy": "0.8", "sell": "0.1"},
+        confidence={"buy": "abc", "sell": None},
+        regime="balanced",
+        state={},
+        risk_ctx={},
+        cfg=cfg,
+    )
+
+    assert action == "NONE"
+    assert "CONF_TOO_LOW" in (meta.get("reasons") or [])

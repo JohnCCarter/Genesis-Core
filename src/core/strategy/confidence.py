@@ -233,8 +233,10 @@ def compute_confidence(
     - Clamp till [0, 1]
     - Returnera (confidences, meta) där meta innehåller versions och reasons
     """
-    p_buy = float(probas.get("buy", 0.0)) if probas else 0.0
-    p_sell = float(probas.get("sell", 0.0)) if probas else 0.0
+    p_buy_raw = _as_float(probas.get("buy", 0.0)) if probas else None
+    p_sell_raw = _as_float(probas.get("sell", 0.0)) if probas else None
+    p_buy = float(p_buy_raw) if p_buy_raw is not None else 0.0
+    p_sell = float(p_sell_raw) if p_sell_raw is not None else 0.0
 
     quality, quality_meta = _compute_quality_factor(
         atr_pct=atr_pct,

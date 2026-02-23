@@ -576,6 +576,74 @@ def test_build_decision_context_contains_authority_and_quarantine_fields(tmp_pat
     assert out["quarantine_blocked_orders"] == 7
 
 
+def test_build_decision_context_none_includes_observability_fields(tmp_path):
+    from paper_trading_runner import RunnerConfig
+
+    config = RunnerConfig(
+        host="localhost",
+        port=8000,
+        symbol="tBTCUSD",
+        timeframe="1h",
+        poll_interval=1,
+        dry_run=True,
+        live_paper=False,
+        log_dir=tmp_path,
+        state_file=tmp_path / "state.json",
+    )
+    state = RunnerState(
+        contract_snapshot={
+            "config_authority_mode": "champion_base_runtime_allowlist_override",
+            "uncertain_order_policy": "quarantine_auto_clear_none",
+        },
+        quarantine={"active": False, "blocked_orders": 0},
+    )
+
+    eval_resp = {
+        "result": {
+            "action": "NONE",
+            "signal": None,
+            "confidence": {"overall": 0.51},
+            "probas": {"buy": 0.61, "sell": 0.39},
+        },
+        "meta": {
+            "champion": {
+                "source": "config\\strategy\\champions\\tBTCUSD_1h.json",
+            },
+            "decision": {
+                "reasons": ["EV_NEG"],
+                "size": 0.0,
+                "state_out": {
+                    "regime_ok": False,
+                    "ev_value": -0.02,
+                    "min_ev": 0.01,
+                    "position_state": "flat",
+                },
+            },
+        },
+    }
+
+    out = build_decision_context(
+        config,
+        state,
+        candle_ts=1704067200000,
+        action="NONE",
+        signal=None,
+        confidence=0.51,
+        eval_response=eval_resp,
+    )
+
+    assert out["action"] == "NONE"
+    assert out["regime_ok"] is False
+    assert out["proba_long"] == pytest.approx(0.61)
+    assert out["proba_short"] == pytest.approx(0.39)
+    assert out["proba_gap"] == pytest.approx(0.22)
+    assert out["ev_value"] == pytest.approx(-0.02)
+    assert out["min_ev"] == pytest.approx(0.01)
+    assert out["computed_size"] == pytest.approx(0.0)
+    assert out["position_state"] == "flat"
+    assert out["gating_reason"] == "EV_NEG"
+
+
 def test_run_loop_live_paper_fails_closed_on_eval_failure(tmp_path):
     from paper_trading_runner import RunnerConfig, run_loop
 

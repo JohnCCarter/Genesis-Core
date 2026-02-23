@@ -265,6 +265,102 @@ def _extract_decision_reasons(eval_response: dict | None) -> list[str]:
     return [str(reasons)]
 
 
+def _to_optional_float(value: Any) -> float | None:
+    """Best-effort float conversion for observability payloads."""
+    try:
+        if value is None:
+            return None
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _build_none_action_observability(
+    eval_response: dict | None,
+    decision_reasons: list[str],
+) -> dict[str, Any]:
+    """Build additive observability fields for NONE actions only."""
+    if not isinstance(eval_response, dict):
+        return {
+            "regime_ok": None,
+            "proba_long": None,
+            "proba_short": None,
+            "proba_gap": None,
+            "ev_value": None,
+            "min_ev": None,
+            "computed_size": None,
+            "position_state": None,
+            "gating_reason": decision_reasons[0] if decision_reasons else None,
+        }
+
+    result = eval_response.get("result") if isinstance(eval_response.get("result"), dict) else {}
+    meta = eval_response.get("meta") if isinstance(eval_response.get("meta"), dict) else {}
+    decision = meta.get("decision") if isinstance(meta.get("decision"), dict) else {}
+    state_out = decision.get("state_out") if isinstance(decision.get("state_out"), dict) else {}
+    probas = result.get("probas") if isinstance(result.get("probas"), dict) else {}
+
+    proba_long = _to_optional_float(probas.get("buy"))
+    proba_short = _to_optional_float(probas.get("sell"))
+    proba_gap = (
+        abs(proba_long - proba_short)
+        if proba_long is not None and proba_short is not None
+        else None
+    )
+
+    ev_value = _to_optional_float(state_out.get("ev_value"))
+    if ev_value is None:
+        ev_value = _to_optional_float(decision.get("ev_value"))
+
+    min_ev = _to_optional_float(state_out.get("min_ev"))
+    if min_ev is None:
+        min_ev = _to_optional_float(decision.get("min_ev"))
+
+    computed_size = _to_optional_float(decision.get("size"))
+
+    position_state = state_out.get("position_state")
+    if position_state is None:
+        position_state = state_out.get("position")
+    if position_state is None:
+        position_state = state_out.get("current_position")
+
+    regime_ok_raw = state_out.get("regime_ok")
+    if regime_ok_raw is None:
+        regime_ok_raw = decision.get("regime_ok")
+    if regime_ok_raw is None:
+        veto_reason = str(decision.get("veto_reason") or "").upper()
+        reason_hits_regime = any("REGIME" in str(r).upper() for r in decision_reasons)
+        if "REGIME" in veto_reason or reason_hits_regime:
+            regime_ok_raw = False
+
+    regime_ok: bool | None = None
+    if isinstance(regime_ok_raw, bool):
+        regime_ok = regime_ok_raw
+    elif isinstance(regime_ok_raw, (int, float)):
+        regime_ok = bool(regime_ok_raw)
+    elif isinstance(regime_ok_raw, str):
+        token = regime_ok_raw.strip().lower()
+        if token in {"true", "1", "yes", "on", "ok", "pass"}:
+            regime_ok = True
+        elif token in {"false", "0", "no", "off"}:
+            regime_ok = False
+
+    gating_reason = decision_reasons[0] if decision_reasons else None
+    if gating_reason is None:
+        gating_reason = decision.get("veto_reason")
+
+    return {
+        "regime_ok": regime_ok,
+        "proba_long": proba_long,
+        "proba_short": proba_short,
+        "proba_gap": proba_gap,
+        "ev_value": ev_value,
+        "min_ev": min_ev,
+        "computed_size": computed_size,
+        "position_state": position_state,
+        "gating_reason": gating_reason,
+    }
+
+
 def build_decision_context(
     config: RunnerConfig,
     state: RunnerState,
@@ -286,7 +382,7 @@ def build_decision_context(
     primary_reason = decision_reasons[0] if decision_reasons else "<none>"
     snapshot = state.contract_snapshot if isinstance(state.contract_snapshot, dict) else {}
 
-    return {
+    decision_context = {
         "candle_ts": int(candle_ts),
         "symbol": str(config.symbol),
         "timeframe": str(config.timeframe),
@@ -304,6 +400,16 @@ def build_decision_context(
         "quarantine_active": bool(quarantine.get("active", False)),
         "quarantine_blocked_orders": int(quarantine.get("blocked_orders", 0)),
     }
+
+    if str(action).upper() == "NONE":
+        decision_context.update(
+            _build_none_action_observability(
+                eval_response=eval_response,
+                decision_reasons=decision_reasons,
+            )
+        )
+
+    return decision_context
 
 
 def load_state(state_file: Path, logger: logging.Logger) -> RunnerState:

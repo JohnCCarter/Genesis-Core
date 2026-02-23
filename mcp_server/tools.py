@@ -289,12 +289,31 @@ async def get_project_structure(config: MCPConfig) -> dict[str, Any]:
     try:
         from .utils import format_tree_structure
 
+        try:
+            max_lines_per_root = int(
+                os.environ.get("GENESIS_MCP_STRUCTURE_MAX_LINES_PER_ROOT", "60")
+            )
+        except ValueError:
+            max_lines_per_root = 60
+        max_lines_per_root = max(20, min(400, max_lines_per_root))
+
+        try:
+            max_total_lines = int(os.environ.get("GENESIS_MCP_STRUCTURE_MAX_TOTAL_LINES", "800"))
+        except ValueError:
+            max_total_lines = 800
+        max_total_lines = max(100, min(4000, max_total_lines))
+
         project_root = get_project_root()
         tree_lines = [str(project_root.name)]
 
         allowed_paths = config.security.allowed_paths or []
         if not allowed_paths:
-            tree_lines.extend(format_tree_structure(project_root, "", max_depth=5))
+            full_tree = format_tree_structure(project_root, "", max_depth=5)
+            if len(full_tree) > max_total_lines:
+                omitted = len(full_tree) - max_total_lines
+                full_tree = full_tree[:max_total_lines]
+                full_tree.append(f"... [truncated {omitted} lines]")
+            tree_lines.extend(full_tree)
         else:
             allowed_roots: list[Path] = []
             for allowed in allowed_paths:
@@ -349,14 +368,22 @@ async def get_project_structure(config: MCPConfig) -> dict[str, Any]:
                 if allowed_root.is_dir():
                     extension = "    " if is_last else "│   "
                     # Reserve one level for the allowed root itself.
-                    tree_lines.extend(
-                        format_tree_structure(
-                            allowed_root,
-                            prefix=extension,
-                            max_depth=4,
-                            current_depth=0,
-                        )
+                    children = format_tree_structure(
+                        allowed_root,
+                        prefix=extension,
+                        max_depth=4,
+                        current_depth=0,
                     )
+                    if len(children) > max_lines_per_root:
+                        omitted = len(children) - max_lines_per_root
+                        children = children[:max_lines_per_root]
+                        children.append(f"{extension}... [truncated {omitted} lines]")
+                    tree_lines.extend(children)
+
+        if len(tree_lines) > max_total_lines:
+            omitted = len(tree_lines) - max_total_lines
+            tree_lines = tree_lines[:max_total_lines]
+            tree_lines.append(f"... [truncated {omitted} lines]")
 
         structure = "\n".join(tree_lines)
 
@@ -383,6 +410,13 @@ async def search_code(query: str, file_pattern: str | None, config: MCPConfig) -
     try:
         project_root = get_project_root()
         matches = []
+        truncated = False
+
+        try:
+            max_matches = int(os.environ.get("GENESIS_MCP_SEARCH_MAX_MATCHES", "200"))
+        except ValueError:
+            max_matches = 200
+        max_matches = max(20, min(2000, max_matches))
 
         excluded_dirs = {
             ".git",
@@ -416,6 +450,10 @@ async def search_code(query: str, file_pattern: str | None, config: MCPConfig) -
 
         # Search in files
         for file_path in files:
+            if len(matches) >= max_matches:
+                truncated = True
+                break
+
             # Skip files in blocked patterns
             is_safe, _ = is_safe_path(file_path, config)
             if not is_safe:
@@ -434,13 +472,31 @@ async def search_code(query: str, file_pattern: str | None, config: MCPConfig) -
                                 "content": line.strip(),
                             }
                         )
+                        if len(matches) >= max_matches:
+                            truncated = True
+                            break
+
+                if truncated:
+                    break
 
             except (UnicodeDecodeError, PermissionError, OSError, ValueError):
                 # Skip files that can't be read
                 continue
 
-        logger.info(f"Search for '{query}' found {len(matches)} matches")
-        return {"success": True, "query": query, "matches": matches, "count": len(matches)}
+        logger.info(
+            "Search for '%s' found %d matches%s",
+            query,
+            len(matches),
+            " (truncated)" if truncated else "",
+        )
+        return {
+            "success": True,
+            "query": query,
+            "matches": matches,
+            "count": len(matches),
+            "truncated": truncated,
+            "max_matches": max_matches,
+        }
 
     except Exception as e:
         logger.error(f"Error searching code: {e}")

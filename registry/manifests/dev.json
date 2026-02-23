@@ -6,10 +6,7 @@
     { "id": "secrets_safety", "version": "1.0.0" },
     { "id": "plan_mode", "version": "1.0.0" },
     { "id": "determinism_repro", "version": "1.1.0" },
-    { "id": "risk_guards_audit", "version": "1.0.0" },
-    { "id": "paper_runner_ops", "version": "1.1.0" },
     { "id": "backtest_run", "version": "1.1.0" },
-    { "id": "feature_parity_check", "version": "1.1.0" },
     { "id": "decision_gate_debug", "version": "1.1.0" }
   ],
   "compacts": [{ "id": "stabilization_phase", "version": "1.0.0" }]

@@ -1,10 +1,5 @@
 {
   "registry_version": 1,
-  "skills": [
-    { "id": "python_engineering", "version": "1.1.0" },
-    { "id": "secrets_safety", "version": "1.0.0" },
-    { "id": "plan_mode", "version": "1.0.0" },
-    { "id": "decision_gate_debug", "version": "1.1.0" }
-  ],
+  "skills": [{ "id": "decision_gate_debug", "version": "1.1.0" }],
   "compacts": [{ "id": "stabilization_phase", "version": "1.0.0" }]
 }

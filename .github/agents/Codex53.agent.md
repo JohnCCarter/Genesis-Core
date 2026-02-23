@@ -6,13 +6,13 @@ tools:
   - execute
   - read
   - agent
+  - chrome-devtools/*
+  - postgres/*
   - edit
   - search
   - web
+  - github/*
   - io.github.upstash/context7/*
-  - genesis-core-windows/*
-  - chrome-devtools/*
-  - postgres/*
   - vscode.mermaid-chat-features/renderMermaidDiagram
   - memory
   - github.vscode-pull-request-github/issue_fetch

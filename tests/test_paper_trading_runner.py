@@ -12,10 +12,12 @@ from unittest.mock import Mock, patch
 import httpx
 import pytest
 from paper_trading_runner import (
+    RunnerConfig,
     RunnerState,
     _timeframe_to_ms,
     build_decision_context,
     build_runner_contract_snapshot,
+    evaluate_strategy,
     fetch_latest_candle,
     load_state,
     map_policy_symbol_to_test_symbol,
@@ -177,6 +179,132 @@ def test_fetch_latest_candle_http_error():
 
     assert candle is None
     logger.error.assert_called()
+
+
+# --- Evaluate Payload Config Forwarding Tests ---
+
+
+@patch("paper_trading_runner.fetch_candles_window")
+def test_evaluate_strategy_includes_runtime_cfg_when_available(mock_fetch_candles_window, tmp_path):
+    candles = {
+        "open": [1.0, 1.1],
+        "high": [1.2, 1.3],
+        "low": [0.9, 1.0],
+        "close": [1.1, 1.2],
+        "volume": [10.0, 11.0],
+    }
+    cfg = {"thresholds": {"entry_conf_overall": 0.24}}
+    state_in = {"cooldown_remaining": 3}
+    mock_fetch_candles_window.return_value = candles
+
+    runtime_resp = Mock()
+    runtime_resp.raise_for_status = Mock()
+    runtime_resp.json.return_value = {"cfg": cfg, "hash": "x", "version": 1}
+
+    eval_resp = {"ok": True, "result": {"action": "NONE"}}
+    evaluate_resp = Mock()
+    evaluate_resp.raise_for_status = Mock()
+    evaluate_resp.json.return_value = eval_resp
+
+    client = Mock(spec=httpx.Client)
+    client.get.return_value = runtime_resp
+    client.post.return_value = evaluate_resp
+    logger = Mock()
+
+    config = RunnerConfig(
+        host="localhost",
+        port=8000,
+        symbol="tBTCUSD",
+        timeframe="1h",
+        poll_interval=1,
+        dry_run=True,
+        live_paper=False,
+        log_dir=tmp_path,
+        state_file=tmp_path / "runner_state.json",
+    )
+
+    out = evaluate_strategy(
+        config,
+        candle_ts_ms=1704067200000,
+        state_in=state_in,
+        client=client,
+        logger=logger,
+    )
+
+    assert out == eval_resp
+    client.post.assert_called_once()
+
+    post_args, post_kwargs = client.post.call_args
+    assert post_args[0] == f"{config.api_base}/strategy/evaluate"
+
+    payload = post_kwargs["json"]
+    assert payload["configs"] == cfg
+    assert payload["policy"] == {
+        "symbol": config.symbol,
+        "timeframe": config.timeframe,
+    }
+    assert payload["candles"] == candles
+    assert payload["state"] == state_in
+
+
+@patch("paper_trading_runner.fetch_candles_window")
+def test_evaluate_strategy_omits_configs_when_runtime_unavailable(
+    mock_fetch_candles_window, tmp_path
+):
+    candles = {
+        "open": [1.0, 1.1],
+        "high": [1.2, 1.3],
+        "low": [0.9, 1.0],
+        "close": [1.1, 1.2],
+        "volume": [10.0, 11.0],
+    }
+    state_in = {"cooldown_remaining": 3}
+    mock_fetch_candles_window.return_value = candles
+
+    eval_resp = {"ok": True, "result": {"action": "NONE"}}
+    evaluate_resp = Mock()
+    evaluate_resp.raise_for_status = Mock()
+    evaluate_resp.json.return_value = eval_resp
+
+    client = Mock(spec=httpx.Client)
+    client.get.side_effect = httpx.HTTPError("runtime unavailable")
+    client.post.return_value = evaluate_resp
+    logger = Mock()
+
+    config = RunnerConfig(
+        host="localhost",
+        port=8000,
+        symbol="tBTCUSD",
+        timeframe="1h",
+        poll_interval=1,
+        dry_run=True,
+        live_paper=False,
+        log_dir=tmp_path,
+        state_file=tmp_path / "runner_state.json",
+    )
+
+    out = evaluate_strategy(
+        config,
+        candle_ts_ms=1704067200000,
+        state_in=state_in,
+        client=client,
+        logger=logger,
+    )
+
+    assert out == eval_resp
+    client.post.assert_called_once()
+
+    post_args, post_kwargs = client.post.call_args
+    assert post_args[0] == f"{config.api_base}/strategy/evaluate"
+
+    payload = post_kwargs["json"]
+    assert "configs" not in payload
+    assert payload["policy"] == {
+        "symbol": config.symbol,
+        "timeframe": config.timeframe,
+    }
+    assert payload["candles"] == candles
+    assert payload["state"] == state_in
 
 
 # --- Idempotency Tests ---

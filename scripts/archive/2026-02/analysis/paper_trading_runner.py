@@ -361,6 +361,47 @@ def _timeframe_to_ms(timeframe: str) -> int:
 # --- Strategy Evaluation ---
 
 
+def _load_runtime_cfg(
+    config: RunnerConfig,
+    client: httpx.Client,
+    logger: logging.Logger,
+) -> dict | None:
+    """Best-effort load of runtime config cfg dict from API.
+
+    Never raises to caller; returns None on HTTP/parsing/schema issues.
+    """
+    try:
+        url = f"{config.api_base}/config/runtime"
+        resp = client.get(url, timeout=10.0)
+        resp.raise_for_status()
+
+        payload = resp.json()
+        if not isinstance(payload, dict):
+            logger.warning("Runtime config schema mismatch: expected JSON object.")
+            logger.debug("Runtime config payload type: %s", type(payload).__name__)
+            return None
+
+        cfg = payload.get("cfg")
+        if isinstance(cfg, dict):
+            return cfg
+
+        logger.warning("Runtime config schema mismatch: missing dict key 'cfg'.")
+        logger.debug("Runtime config payload keys: %s", sorted(payload.keys()))
+        return None
+    except httpx.HTTPError as e:
+        logger.warning("Failed to fetch runtime config from /config/runtime.")
+        logger.debug("Runtime config HTTP error: %s", e)
+        return None
+    except (TypeError, ValueError) as e:
+        logger.warning("Failed to parse runtime config response.")
+        logger.debug("Runtime config parse error: %s", e)
+        return None
+    except Exception as e:
+        logger.warning("Unexpected runtime config load failure.")
+        logger.debug("Runtime config unexpected error: %s", e)
+        return None
+
+
 def evaluate_strategy(
     config: RunnerConfig,
     candle_ts_ms: int,
@@ -391,6 +432,10 @@ def evaluate_strategy(
             "candles": candles,
             "state": state_in or {},
         }
+        runtime_cfg = _load_runtime_cfg(config, client, logger)
+        if isinstance(runtime_cfg, dict):
+            payload["configs"] = runtime_cfg
+
         resp = client.post(url, json=payload, timeout=30.0)
         resp.raise_for_status()
         return resp.json()

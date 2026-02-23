@@ -411,6 +411,7 @@ async def search_code(query: str, file_pattern: str | None, config: MCPConfig) -
         project_root = get_project_root()
         matches = []
         truncated = False
+        query_lower = query.lower()
 
         try:
             max_matches = int(os.environ.get("GENESIS_MCP_SEARCH_MAX_MATCHES", "200"))
@@ -459,15 +460,28 @@ async def search_code(query: str, file_pattern: str | None, config: MCPConfig) -
             if not is_safe:
                 continue
 
+            relative_file = str(file_path.relative_to(project_root)).replace("\\", "/")
+            if query_lower and query_lower in relative_file.lower():
+                matches.append(
+                    {
+                        "file": relative_file,
+                        "line": 0,
+                        "content": "[path match]",
+                    }
+                )
+                if len(matches) >= max_matches:
+                    truncated = True
+                    break
+
             try:
                 with open(file_path, encoding="utf-8") as f:
                     lines = f.readlines()
 
                 for line_num, line in enumerate(lines, 1):
-                    if query.lower() in line.lower():
+                    if query_lower in line.lower():
                         matches.append(
                             {
-                                "file": str(file_path.relative_to(project_root)).replace("\\", "/"),
+                                "file": relative_file,
                                 "line": line_num,
                                 "content": line.strip(),
                             }

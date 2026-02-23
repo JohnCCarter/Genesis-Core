@@ -157,8 +157,10 @@ tests/test_feature_cache.py
 tests/test_feature_parity.py
 tests/test_feature_schema_contract_tBTCUSD_1h.py
 tests/test_features.py
+tests/test_features_asof_cache.py
 tests/test_features_asof_cache_key_deterministic.py
 tests/test_features_asof_fast_hash_env_case.py
+tests/test_features_asof_fib_error_handling.py
 tests/test_fib_logging.py
 tests/test_fib_logging_env_flag.py
 tests/test_fibonacci.py
@@ -188,8 +190,10 @@ tests/test_ltf_fibonacci_context.py
 tests/test_mcp_blocked_patterns_windows_path.py
 tests/test_mcp_config_env_override.py
 tests/test_mcp_git_status_remote_filters.py
+tests/test_mcp_git_workflow_tools.py
 tests/test_mcp_integration.py
 tests/test_mcp_remote_authorization.py
+tests/test_mcp_remote_git_workflow_confirm.py
 tests/test_mcp_resources.py
 tests/test_mcp_server.py
 tests/test_mcp_stdio_encoding.py

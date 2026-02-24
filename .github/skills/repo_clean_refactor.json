@@ -1,0 +1,30 @@
+{
+  "id": "repo_clean_refactor",
+  "version": "1.0.0",
+  "title": "Repo clean/refactor (no behavior change)",
+  "description": "Styr säkra repo-cleanup och strukturrefaktoreringar med strikt scope, minimal diff, verifieringsgates och tydlig återställningsplan.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "tags": ["cleanup", "refactor", "governance", "stabilization"],
+  "rules": {
+    "must": [
+      "Skapa commit-kontrakt med Scope IN/OUT och default NO BEHAVIOR CHANGE innan implementation.",
+      "Inventera ändringsvolym (antal filer, storlek, toppmappar) innan åtgärd.",
+      "Exkludera high-sensitivity-zoner om inte explicit godkända.",
+      "Håll diffen minimal och reversibel (preferera ignore + avindexering framför destruktiva raderingar).",
+      "Kör relevanta verifieringsgates före och efter ändring.",
+      "Rapportera exakt vad som ändrats, varför, och hur det återställs vid behov."
+    ],
+    "must_not": [
+      "Inför inte beteendeförändring i runtime-kod under cleanup/refactor utan explicit undantag.",
+      "Gör inte opportunistiska sidostädningar utanför godkänd scope.",
+      "Radera inte användardata eller resultatfiler utan spårbar policy och explicit beslut.",
+      "Claima inte införda processförändringar som blockerande utan verifierad konfiguration."
+    ]
+  },
+  "references": [
+    { "type": "doc", "value": "docs/templates/skills/repo_clean_refactor.md" },
+    { "type": "doc", "value": "docs/OPUS_46_GOVERNANCE.md" },
+    { "type": "file", "value": ".github/copilot-instructions.md" }
+  ]
+}

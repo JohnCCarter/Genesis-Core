@@ -1,0 +1,29 @@
+======================================================================
+Genesis-Core Backtest Runner
+======================================================================
+[MODE] GENESIS_FAST_WINDOW=1 GENESIS_PRECOMPUTE_FEATURES=1 GENESIS_RANDOM_SEED=42
+[CONFIG:champion] Using complete champion config (no runtime merge)
+Backtest:   0%|          | 0/193 [00:00<?]Backtest: 100%|##########| 193/193 [00:00<00:00]
+
+=== Backtest Metrics ===
+Symbol: tBTCUSD
+Timeframe: 1h
+Period: 2024-12-03 00:00:00+00:00 to 2024-12-11 00:00:00+00:00
+
+Total Return: 0.00%
+Total Trades: 0
+Win Rate: 0.0%
+Sharpe Ratio: 0.000
+Max Drawdown: 0.00%
+Profit Factor: 0.00
+
+Score: -100.2000
+[SAVED] Results: results\backtests\tBTCUSD_1h_20260121_093057.json
+[WARN] No trades to export
+[SAVED] Equity curve CSV: results\backtests\tBTCUSD_1h_equity_20260121_093057.csv
+
+[OK] Results saved:
+  json: results\backtests\tBTCUSD_1h_20260121_093057.json
+  equity_csv: results\backtests\tBTCUSD_1h_equity_20260121_093057.csv
+
+[SUCCESS] Backtest complete!

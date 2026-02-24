@@ -1,0 +1,258 @@
+{
+  "attempt_durations": [
+    34.44420340000943
+  ],
+  "attempts": 1,
+  "config_path": "trial_018_config.json",
+  "constraints": {
+    "ok": true,
+    "reasons": []
+  },
+  "duration_seconds": 34.4577258000063,
+  "log": "trial_018.log",
+  "merged_config": {
+    "ev": {
+      "R_default": 1.8
+    },
+    "exit": {
+      "enabled": true,
+      "exit_conf_threshold": 0.36,
+      "max_hold_bars": 9,
+      "regime_aware_exits": true,
+      "stop_loss_pct": 0.02,
+      "take_profit_pct": 0.05,
+      "trailing_stop_enabled": true,
+      "trailing_stop_pct": 0.011
+    },
+    "features": null,
+    "gates": {
+      "cooldown_bars": 2,
+      "hysteresis_steps": 3
+    },
+    "htf_exit_config": {
+      "enable_partials": true,
+      "enable_structure_breaks": true,
+      "enable_trailing": true,
+      "fib_threshold_atr": 1.1,
+      "partial_1_pct": 0.44,
+      "partial_2_pct": 0.4,
+      "swing_update_strategy": "fixed",
+      "trail_atr_multiplier": 1.8
+    },
+    "htf_fib": {
+      "entry": {
+        "enabled": true,
+        "long_max_level": 0.236,
+        "missing_policy": "pass",
+        "short_min_level": 0.35,
+        "tolerance_atr": 2.0
+      }
+    },
+    "ltf_fib": {
+      "entry": {
+        "enabled": true,
+        "long_max_level": 0.146,
+        "missing_policy": "pass",
+        "short_min_level": 0.236,
+        "tolerance_atr": 2.0
+      }
+    },
+    "multi_timeframe": {
+      "allow_ltf_override": true,
+      "htf_selector": {
+        "default_multiplier": null,
+        "default_timeframe": null,
+        "fallback_timeframe": "1D",
+        "mode": "fixed",
+        "per_timeframe": {
+          "1h": {
+            "multiplier": null,
+            "timeframe": "1D"
+          },
+          "6h": {
+            "multiplier": null,
+            "timeframe": "1D"
+          }
+        }
+      },
+      "ltf_override_adaptive": {
+        "enabled": true,
+        "fallback_threshold": null,
+        "max_ceiling": null,
+        "min_floor": null,
+        "min_history": 30,
+        "percentile": 0.85,
+        "regime_multipliers": {},
+        "window": 120
+      },
+      "ltf_override_threshold": 0.3,
+      "use_htf_block": true
+    },
+    "risk": {
+      "risk_map": [
+        [
+          0.6,
+          0.02
+        ],
+        [
+          0.7,
+          0.03
+        ],
+        [
+          0.8,
+          0.04
+        ],
+        [
+          0.9,
+          0.05
+        ]
+      ]
+    },
+    "thresholds": {
+      "entry_conf_overall": 0.26,
+      "min_edge": 0.01,
+      "regime_proba": {
+        "balanced": 0.6,
+        "bear": 0.48,
+        "bull": 0.52,
+        "ranging": 0.54
+      },
+      "signal_adaptation": {
+        "atr_period": 28,
+        "zones": {
+          "high": {
+            "entry_conf_overall": 0.44,
+            "pct": null,
+            "regime_proba": 0.61
+          },
+          "low": {
+            "entry_conf_overall": 0.25,
+            "pct": null,
+            "regime_proba": 0.38
+          },
+          "mid": {
+            "entry_conf_overall": 0.36,
+            "pct": null,
+            "regime_proba": 0.42
+          }
+        }
+      }
+    },
+    "warmup_bars": null
+  },
+  "parameters": {
+    "exit": {
+      "exit_conf_threshold": 0.36,
+      "max_hold_bars": 9,
+      "trailing_stop_pct": 0.011
+    },
+    "htf_exit_config": {
+      "enable_partials": true,
+      "enable_structure_breaks": true,
+      "enable_trailing": true,
+      "fib_threshold_atr": 1.1,
+      "partial_1_pct": 0.44,
+      "partial_2_pct": 0.4,
+      "swing_update_strategy": "fixed",
+      "trail_atr_multiplier": 1.8
+    },
+    "htf_fib": {
+      "entry": {
+        "enabled": true,
+        "long_max_level": 0.236,
+        "missing_policy": "pass",
+        "short_min_level": 0.35,
+        "tolerance_atr": 2.0
+      }
+    },
+    "ltf_fib": {
+      "entry": {
+        "enabled": true,
+        "long_max_level": 0.146,
+        "missing_policy": "pass",
+        "short_min_level": 0.236,
+        "tolerance_atr": 2.0
+      }
+    },
+    "multi_timeframe": {
+      "allow_ltf_override": true,
+      "htf_selector": {
+        "fallback_timeframe": "1D",
+        "mode": "fixed",
+        "per_timeframe": {
+          "1h": {
+            "multiplier": null,
+            "timeframe": "1D"
+          }
+        }
+      },
+      "ltf_override_threshold": 0.3,
+      "use_htf_block": true
+    },
+    "risk": {
+      "risk_map": [
+        [
+          0.6,
+          0.02
+        ],
+        [
+          0.7,
+          0.03
+        ],
+        [
+          0.8,
+          0.04
+        ],
+        [
+          0.9,
+          0.05
+        ]
+      ]
+    },
+    "thresholds": {
+      "entry_conf_overall": 0.26,
+      "min_edge": 0.01,
+      "regime_proba": {
+        "balanced": 0.6,
+        "bear": 0.48,
+        "bull": 0.52,
+        "ranging": 0.54
+      },
+      "signal_adaptation": {
+        "atr_period": 28,
+        "zones": {
+          "high": {
+            "entry_conf_overall": 0.44,
+            "regime_proba": 0.61
+          },
+          "low": {
+            "entry_conf_overall": 0.25,
+            "regime_proba": 0.38
+          },
+          "mid": {
+            "entry_conf_overall": 0.36,
+            "regime_proba": 0.42
+          }
+        }
+      }
+    }
+  },
+  "results_path": "tBTCUSD_1h_18.json",
+  "runtime_version": 23,
+  "score": {
+    "hard_failures": [],
+    "metrics": {
+      "max_drawdown": 0.02519224911732197,
+      "num_trades": 19,
+      "profit_factor": 1.2930826249480425,
+      "return_to_dd": 0.2630026852046411,
+      "sharpe_ratio": 0.10135930758351235,
+      "total_commission": 35.144284379999995,
+      "total_commission_pct": 0.0035144284379999995,
+      "total_return": 0.006625629164199928,
+      "win_rate": 0.3157894736842105
+    },
+    "score": 0.08952508173308305,
+    "score_version": "v1"
+  }
+}

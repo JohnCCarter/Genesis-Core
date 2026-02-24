@@ -1,0 +1,131 @@
+{
+  "FIXED": {
+    "config": {
+      "swing_update_strategy": "fixed",
+      "description": "Swing fixed at entry, never updated"
+    },
+    "metrics": {
+      "total_return": 0.0,
+      "total_return_pct": 0.0,
+      "total_pnl": 0.0,
+      "total_trades": 0,
+      "num_trades": 0,
+      "winning_trades": 0,
+      "losing_trades": 0,
+      "win_rate": 0.0,
+      "profit_factor": 0.0,
+      "gross_profit": 0.0,
+      "gross_loss": 0.0,
+      "avg_win": 0.0,
+      "avg_loss": 0.0,
+      "expectancy": 0.0,
+      "sharpe_ratio": 0.0,
+      "sortino_ratio": 0.0,
+      "max_drawdown": 0.0,
+      "max_drawdown_pct": 0.0,
+      "max_drawdown_usd": 0.0,
+      "returns_std": 0.0,
+      "avg_duration_hours": 0.0,
+      "avg_trade_duration_hours": 0.0,
+      "max_winning_streak": 0,
+      "max_losing_streak": 0,
+      "calmar_ratio": 0.0,
+      "trade_returns": []
+    },
+    "swing_updates": 0,
+    "partial_exits": 0,
+    "total_exits": 0,
+    "partial_rate": 0.0,
+    "trades": []
+  },
+  "DYNAMIC": {
+    "config": {
+      "swing_update_strategy": "dynamic",
+      "swing_update_params": {
+        "min_improvement_pct": 0.0,
+        "max_age_bars": 100,
+        "allow_worse_swing": true,
+        "log_updates": true
+      },
+      "description": "Update on every new validated swing"
+    },
+    "metrics": {
+      "total_return": 0.0,
+      "total_return_pct": 0.0,
+      "total_pnl": 0.0,
+      "total_trades": 0,
+      "num_trades": 0,
+      "winning_trades": 0,
+      "losing_trades": 0,
+      "win_rate": 0.0,
+      "profit_factor": 0.0,
+      "gross_profit": 0.0,
+      "gross_loss": 0.0,
+      "avg_win": 0.0,
+      "avg_loss": 0.0,
+      "expectancy": 0.0,
+      "sharpe_ratio": 0.0,
+      "sortino_ratio": 0.0,
+      "max_drawdown": 0.0,
+      "max_drawdown_pct": 0.0,
+      "max_drawdown_usd": 0.0,
+      "returns_std": 0.0,
+      "avg_duration_hours": 0.0,
+      "avg_trade_duration_hours": 0.0,
+      "max_winning_streak": 0,
+      "max_losing_streak": 0,
+      "calmar_ratio": 0.0,
+      "trade_returns": []
+    },
+    "swing_updates": 0,
+    "partial_exits": 0,
+    "total_exits": 0,
+    "partial_rate": 0.0,
+    "trades": []
+  },
+  "HYBRID": {
+    "config": {
+      "swing_update_strategy": "hybrid",
+      "swing_update_params": {
+        "min_improvement_pct": 0.02,
+        "max_age_bars": 30,
+        "allow_worse_swing": false,
+        "log_updates": true
+      },
+      "description": "Update only if 2%+ improvement"
+    },
+    "metrics": {
+      "total_return": 0.0,
+      "total_return_pct": 0.0,
+      "total_pnl": 0.0,
+      "total_trades": 0,
+      "num_trades": 0,
+      "winning_trades": 0,
+      "losing_trades": 0,
+      "win_rate": 0.0,
+      "profit_factor": 0.0,
+      "gross_profit": 0.0,
+      "gross_loss": 0.0,
+      "avg_win": 0.0,
+      "avg_loss": 0.0,
+      "expectancy": 0.0,
+      "sharpe_ratio": 0.0,
+      "sortino_ratio": 0.0,
+      "max_drawdown": 0.0,
+      "max_drawdown_pct": 0.0,
+      "max_drawdown_usd": 0.0,
+      "returns_std": 0.0,
+      "avg_duration_hours": 0.0,
+      "avg_trade_duration_hours": 0.0,
+      "max_winning_streak": 0,
+      "max_losing_streak": 0,
+      "calmar_ratio": 0.0,
+      "trade_returns": []
+    },
+    "swing_updates": 0,
+    "partial_exits": 0,
+    "total_exits": 0,
+    "partial_rate": 0.0,
+    "trades": []
+  }
+}

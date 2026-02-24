@@ -1,0 +1,85 @@
+{
+  "trial_id": 0,
+  "parameters": {
+    "thresholds": {
+      "entry_conf_overall": 0.22,
+      "regime_proba": {
+        "balanced": 0.46,
+        "bull": 0.5,
+        "bear": 0.44,
+        "ranging": 0.46
+      },
+      "min_edge": 0.012,
+      "signal_adaptation": {
+        "atr_period": 28,
+        "zones": {
+          "low": {
+            "entry_conf_overall": 0.28,
+            "regime_proba": 0.37
+          },
+          "mid": {
+            "entry_conf_overall": 0.29,
+            "regime_proba": 0.41
+          },
+          "high": {
+            "entry_conf_overall": 0.34,
+            "regime_proba": 0.61
+          }
+        }
+      }
+    },
+    "exit": {
+      "exit_conf_threshold": 0.44,
+      "max_hold_bars": 20,
+      "trailing_stop_pct": 0.01
+    },
+    "risk": {
+      "risk_map": [
+        [
+          0.6,
+          0.02
+        ],
+        [
+          0.7,
+          0.03
+        ],
+        [
+          0.8,
+          0.04
+        ],
+        [
+          0.9,
+          0.05
+        ]
+      ]
+    },
+    "htf_exit_config": {
+      "enable_partials": true,
+      "enable_trailing": true,
+      "enable_structure_breaks": true,
+      "partial_1_pct": 0.6,
+      "partial_2_pct": 0.5,
+      "fib_threshold_atr": 0.8,
+      "trail_atr_multiplier": 2.9
+    },
+    "multi_timeframe": {
+      "ltf_override_threshold": 0.45,
+      "ltf_override_adaptive": {
+        "percentile": 0.89
+      }
+    },
+    "htf_fib": {
+      "entry": {
+        "tolerance_atr": 3.75
+      }
+    },
+    "ltf_fib": {
+      "entry": {
+        "tolerance_atr": 1.5
+      }
+    }
+  },
+  "error": "unknown",
+  "log_path": "trial_001.log",
+  "attempts": 2
+}

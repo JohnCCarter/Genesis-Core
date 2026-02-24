@@ -1,0 +1,10 @@
+{
+  "effective_config_fingerprint": "182cb95f83f69a1f383265e94f466b61ffb91654418a49fb5b3ed8c356ad681c",
+  "end": "2024-06-30",
+  "events": 879,
+  "source_label": "config_file_complete:step9_min_edge_0p02__ltf_tol_0p8.json",
+  "start": "2024-01-02",
+  "symbol": "tBTCUSD",
+  "timeframe": "1h",
+  "warmup_bars": 150
+}

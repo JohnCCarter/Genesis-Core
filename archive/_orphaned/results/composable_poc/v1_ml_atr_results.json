@@ -1,0 +1,26 @@
+{
+  "config": "v1_ml_atr.yaml",
+  "description": "ML + ATR filter (min_ratio 1.0)",
+  "timestamp": "2026-01-30T11:52:42.627448",
+  "components": [
+    "ml_confidence",
+    "atr_filter"
+  ],
+  "tracker_stats": {
+    "total_decisions": 5,
+    "total_allowed": 3,
+    "total_vetoed": 2,
+    "component_stats": {
+      "ml_confidence": {
+        "evaluations": 5,
+        "vetoes": 1,
+        "avg_confidence": 0.6199999999999999
+      },
+      "atr_filter": {
+        "evaluations": 4,
+        "vetoes": 1,
+        "avg_confidence": 0.6250000000000001
+      }
+    }
+  }
+}

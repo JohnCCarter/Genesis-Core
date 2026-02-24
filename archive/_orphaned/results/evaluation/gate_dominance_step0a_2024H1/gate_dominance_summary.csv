@@ -1,0 +1,5 @@
+year,regime,blocker_reason,flat_bars,flat_bars_in_year_regime,share,max_streak,p95_streak,effective_config_fingerprint,source_label
+2024,BEAR,ZONE:high@0.300,12,12,1.0,5,5,a119c2b9910b6a695eb89fa3b71b2d67d878a9162b84e5705abffdb8d9a87b3a,config_file_complete:step0a_minimal_standalone_zones.json
+2024,BULL,HYST_WAIT,2,63,0.031746,1,1,a119c2b9910b6a695eb89fa3b71b2d67d878a9162b84e5705abffdb8d9a87b3a,config_file_complete:step0a_minimal_standalone_zones.json
+2024,BULL,ZONE:high@0.300,61,63,0.968254,11,7,a119c2b9910b6a695eb89fa3b71b2d67d878a9162b84e5705abffdb8d9a87b3a,config_file_complete:step0a_minimal_standalone_zones.json
+2024,RANGING,ZONE:high@0.300,63,63,1.0,17,7,a119c2b9910b6a695eb89fa3b71b2d67d878a9162b84e5705abffdb8d9a87b3a,config_file_complete:step0a_minimal_standalone_zones.json

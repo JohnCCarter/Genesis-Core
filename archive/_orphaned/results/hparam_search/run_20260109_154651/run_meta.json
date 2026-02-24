@@ -1,0 +1,76 @@
+{
+  "config_path": "config\\optimizer\\tBTCUSD_1h_optuna_ev_longrun_20260109_20260112.yaml",
+  "git_commit": "41fc7fe55d20773b9435ce13908453154e9df4c2",
+  "optuna": {
+    "best_trial_number": 13,
+    "best_value": 1.3136479949036923,
+    "direction": "maximize",
+    "n_trials": 1144,
+    "storage": "sqlite:///results/hparam_search/storage/optuna_tBTCUSD_1h_ev_longrun_20260109_20260112.db",
+    "study_name": "optuna_ev_longrun_20260109_20260112_explore2024_validate2025"
+  },
+  "raw_meta": {
+    "runs": {
+      "max_concurrent": 1,
+      "max_trials": null,
+      "optuna": {
+        "bootstrap_random_trials": 32,
+        "bootstrap_seed": 42,
+        "end_at": "2026-01-12T23:59:00",
+        "n_jobs": 1,
+        "pruner": {
+          "type": "none"
+        },
+        "sampler": {
+          "kwargs": {
+            "group": true,
+            "multivariate": true,
+            "n_ei_candidates": 96,
+            "n_startup_trials": 40,
+            "seed": 43
+          },
+          "type": "tpe"
+        },
+        "storage": "sqlite:///results/hparam_search/storage/optuna_tBTCUSD_1h_ev_longrun_20260109_20260112.db",
+        "study_name": "optuna_ev_longrun_20260109_20260112_explore2024_validate2025",
+        "timeout_seconds": 345600
+      },
+      "promotion": {
+        "enabled": false
+      },
+      "resume": true,
+      "sample_end": "2024-12-31",
+      "sample_start": "2024-01-02",
+      "strategy": "optuna",
+      "use_sample_range": true,
+      "validation": {
+        "constraints": {
+          "include_scoring_failures": false,
+          "max_max_dd": 0.12,
+          "min_profit_factor": 0.75,
+          "min_trades": 20,
+          "scoring_thresholds": {
+            "max_max_dd": 0.12,
+            "min_profit_factor": 0.75,
+            "min_trades": 20
+          }
+        },
+        "enabled": true,
+        "resume": false,
+        "sample_end": "2025-12-11",
+        "sample_start": "2025-01-01",
+        "top_n": 25,
+        "use_sample_range": true
+      }
+    },
+    "snapshot_id": "snap_tBTCUSD_2024-01-02_2025-12-11_v1",
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "warmup_bars": 150
+  },
+  "run_id": "run_20260109_154651",
+  "snapshot_id": "snap_tBTCUSD_2024-01-02_2025-12-11_v1",
+  "started_at": "2026-01-09T15:46:51.198098+00:00",
+  "symbol": "tBTCUSD",
+  "timeframe": "1h"
+}

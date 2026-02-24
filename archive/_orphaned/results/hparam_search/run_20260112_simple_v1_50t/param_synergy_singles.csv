@@ -1,0 +1,41 @@
+param,best_bin,best_bin_desc,best_median,best_count,lift_vs_baseline
+exit.exit_conf_threshold,bin_0,"(-inf, 0.34]",0.5350369499780181,16,0.2619009156397576
+htf_exit_config.partial_2_pct,bin_1,"(0.4, 0.45]",0.5350369499780181,9,0.2619009156397576
+thresholds.regime_proba.balanced,bin_0,"(-inf, 0.44]",0.5350369499780181,15,0.2619009156397576
+thresholds.signal_adaptation.zones.high.regime_proba,bin_1,"(0.46, 0.48]",0.5350369499780181,6,0.2619009156397576
+thresholds.signal_adaptation.zones.low.entry_conf_overall,bin_1,"(0.23, 0.25]",0.5350369499780181,11,0.2619009156397576
+thresholds.signal_adaptation.zones.low.regime_proba,bin_3,"(0.42, +inf)",0.5350369499780181,11,0.2619009156397576
+thresholds.signal_adaptation.zones.mid.entry_conf_overall,bin_1,"(0.3, 0.32]",0.5350369499780181,11,0.2619009156397576
+thresholds.signal_adaptation.zones.mid.regime_proba,bin_0,"(-inf, 0.38]",0.5350369499780181,14,0.2619009156397576
+htf_fib.entry.tolerance_atr,bin_2,"(3.5, 4.5]",0.4959526197587343,12,0.22281658542047378
+exit.max_hold_bars,bin_2,"(18, 22]",0.4568682895394504,13,0.1837322552011899
+ltf_fib.entry.tolerance_atr,bin_1,"(0.75, 1.25]",0.4568682895394504,15,0.1837322552011899
+multi_timeframe.ltf_override_threshold,bin_2,"(0.48, 0.54]",0.4568682895394504,13,0.1837322552011899
+thresholds.regime_proba.ranging,bin_0,"(-inf, 0.46]",0.4568682895394504,15,0.1837322552011899
+htf_exit_config.trail_atr_multiplier,bin_1,"(2.2, 2.7]",0.4058599150554608,14,0.13272388071720032
+thresholds.regime_proba.bull,bin_3,"(0.56, +inf)",0.40434175322277877,10,0.13120571888451826
+htf_exit_config.fib_threshold_atr,bin_2,"(0.9, 1]",0.38029960238991684,10,0.10716356805165633
+exit.trailing_stop_pct,bin_1,"(0.013, 0.016]",0.31181214164268256,15,0.03867610730442206
+thresholds.entry_conf_overall,bin_1,"(0.19, 0.25]",0.31181214164268256,15,0.03867610730442206
+thresholds.regime_proba.bear,bin_2,"(0.5, 0.54]",0.31181214164268256,9,0.03867610730442206
+thresholds.signal_adaptation.zones.high.entry_conf_overall,bin_1,"(0.36, 0.4]",0.31181214164268256,15,0.03867610730442206
+htf_exit_config.partial_1_pct,bin_2,"(0.52, 0.6]",0.29424751088779305,16,0.02111147654953255
+htf_exit_config.enable_partials,True,True,0.2731360343382605,50,0.0
+htf_exit_config.enable_structure_breaks,True,True,0.2731360343382605,50,0.0
+htf_exit_config.enable_trailing,True,True,0.2731360343382605,50,0.0
+htf_exit_config.swing_update_strategy,fixed,fixed,0.2731360343382605,50,0.0
+htf_fib.entry.enabled,True,True,0.2731360343382605,50,0.0
+htf_fib.entry.long_max_level,0.236,0.236,0.2731360343382605,50,0.0
+htf_fib.entry.missing_policy,pass,pass,0.2731360343382605,50,0.0
+htf_fib.entry.short_min_level,0.35,0.35,0.2731360343382605,50,0.0
+ltf_fib.entry.enabled,True,True,0.2731360343382605,50,0.0
+ltf_fib.entry.long_max_level,0.146,0.146,0.2731360343382605,50,0.0
+ltf_fib.entry.missing_policy,pass,pass,0.2731360343382605,50,0.0
+ltf_fib.entry.short_min_level,0.236,0.236,0.2731360343382605,50,0.0
+multi_timeframe.allow_ltf_override,True,True,0.2731360343382605,50,0.0
+multi_timeframe.htf_selector.fallback_timeframe,1D,1D,0.2731360343382605,50,0.0
+multi_timeframe.htf_selector.mode,fixed,fixed,0.2731360343382605,50,0.0
+multi_timeframe.htf_selector.per_timeframe.1h.timeframe,1D,1D,0.2731360343382605,50,0.0
+multi_timeframe.use_htf_block,True,True,0.2731360343382605,50,0.0
+thresholds.min_edge,0.01,0.01,0.2731360343382605,50,0.0
+thresholds.signal_adaptation.atr_period,28,28,0.2731360343382605,50,0.0

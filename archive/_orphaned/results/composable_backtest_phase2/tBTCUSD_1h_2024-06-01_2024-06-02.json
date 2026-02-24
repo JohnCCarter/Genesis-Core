@@ -1,0 +1,69 @@
+{
+  "backtest_info": {
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "start_date": "2024-06-01 00:00:00+00:00",
+    "end_date": "2024-06-02 00:00:00+00:00",
+    "bars_total": 25,
+    "bars_processed": 0,
+    "warmup_bars": 120,
+    "initial_capital": 10000.0,
+    "commission_rate": 0.001,
+    "slippage_rate": 0.0005,
+    "execution_mode": {
+      "fast_window": true,
+      "env_precompute_features": "1",
+      "precompute_enabled": true,
+      "precomputed_ready": true,
+      "mode_explicit": null
+    },
+    "htf": {
+      "env_htf_exits": null,
+      "use_new_exit_engine": true,
+      "htf_candles_loaded": false,
+      "htf_candles_source": null,
+      "htf_context_seen": false
+    },
+    "effective_config_fingerprint": "c69dba7751015abc6215a07bace62ff1f6599b0a1b1eff477428e3b4b6d6364e",
+    "git_hash": "17c7267724c7753d6e669ca78fdc2d3f7d9dfe3a",
+    "seed": "unknown",
+    "timestamp": "2026-01-30T12:34:08.190592"
+  },
+  "summary": {
+    "initial_capital": 10000.0,
+    "final_capital": 10000.0,
+    "total_return": 0.0,
+    "total_return_usd": 0.0,
+    "total_commission": 0.0,
+    "num_trades": 0,
+    "winning_trades": 0,
+    "losing_trades": 0,
+    "win_rate": 0,
+    "avg_win": 0,
+    "avg_loss": 0,
+    "profit_factor": Infinity,
+    "max_capital": 10000.0,
+    "min_capital": 10000.0,
+    "max_drawdown": 0.0
+  },
+  "metrics": {
+    "total_trades": 0,
+    "num_trades": 0,
+    "total_return": 0.0,
+    "total_return_pct": 0.0,
+    "win_rate": 0.0,
+    "profit_factor": Infinity,
+    "max_drawdown": 0.0
+  },
+  "trades": [],
+  "equity_curve": [],
+  "attribution": {
+    "total_decisions": 0,
+    "allowed": 0,
+    "vetoed": 0,
+    "allow_rate": 0.0,
+    "veto_counts": {},
+    "component_confidence": {},
+    "components": {}
+  }
+}

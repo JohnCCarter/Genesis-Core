@@ -1,0 +1,26 @@
+{
+  "config": "v2_ml_htf.yaml",
+  "description": "ML + HTF gate (trending/bull only)",
+  "timestamp": "2026-01-30T11:52:49.881282",
+  "components": [
+    "ml_confidence",
+    "htf_gate"
+  ],
+  "tracker_stats": {
+    "total_decisions": 5,
+    "total_allowed": 3,
+    "total_vetoed": 2,
+    "component_stats": {
+      "ml_confidence": {
+        "evaluations": 5,
+        "vetoes": 1,
+        "avg_confidence": 0.6199999999999999
+      },
+      "htf_gate": {
+        "evaluations": 4,
+        "vetoes": 1,
+        "avg_confidence": 0.75
+      }
+    }
+  }
+}

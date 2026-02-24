@@ -1,0 +1,26 @@
+param_a,param_b,best_bin_a,best_bin_a_desc,best_bin_b,best_bin_b_desc,best_median,best_count,synergy_vs_best_single
+exit.max_hold_bars,exit.trailing_stop_pct,bin_1,"(17, 20]",bin_0,"(-inf, 0.012]",1.1118734929402478,70,0.12398056938208757
+exit.max_hold_bars,htf_exit_config.trail_atr_multiplier,bin_3,"(23, +inf)",bin_2,"(3, 3.3]",1.1118734929402478,34,0.12398056938208757
+exit.trailing_stop_pct,htf_exit_config.trail_atr_multiplier,bin_2,"(0.015, 0.018]",bin_1,"(2.6, 3]",1.1118734929402478,59,0.12398056938208757
+htf_exit_config.partial_2_pct,htf_exit_config.trail_atr_multiplier,bin_0,"(-inf, 0.35]",bin_2,"(3, 3.3]",1.1118734929402478,75,0.12398056938208757
+exit.exit_conf_threshold,exit.max_hold_bars,bin_1,"(0.4, 0.42]",bin_2,"(20, 23]",1.3136479949036923,112,0.0
+exit.exit_conf_threshold,exit.trailing_stop_pct,bin_1,"(0.4, 0.42]",bin_2,"(0.015, 0.018]",1.3136479949036923,72,0.0
+exit.exit_conf_threshold,htf_exit_config.enable_partials,bin_1,"(0.4, 0.42]",True,True,1.3136479949036923,303,0.0
+exit.exit_conf_threshold,htf_exit_config.enable_structure_breaks,bin_1,"(0.4, 0.42]",True,True,1.3136479949036923,303,0.0
+exit.exit_conf_threshold,htf_exit_config.enable_trailing,bin_1,"(0.4, 0.42]",True,True,1.3136479949036923,303,0.0
+exit.exit_conf_threshold,htf_exit_config.fib_threshold_atr,bin_1,"(0.4, 0.42]",bin_3,"(0.85, +inf)",1.3136479949036923,58,0.0
+exit.exit_conf_threshold,htf_exit_config.partial_1_pct,bin_1,"(0.4, 0.42]",bin_0,"(-inf, 0.52]",1.3136479949036923,123,0.0
+exit.exit_conf_threshold,htf_exit_config.partial_2_pct,bin_1,"(0.4, 0.42]",bin_3,"(0.5, +inf)",1.3136479949036923,37,0.0
+exit.exit_conf_threshold,htf_exit_config.swing_update_strategy,bin_1,"(0.4, 0.42]",fixed,fixed,1.3136479949036923,303,0.0
+exit.exit_conf_threshold,htf_exit_config.trail_atr_multiplier,bin_1,"(0.4, 0.42]",bin_3,"(3.3, +inf)",1.3136479949036923,68,0.0
+exit.exit_conf_threshold,htf_fib.entry.enabled,bin_1,"(0.4, 0.42]",True,True,1.3136479949036923,303,0.0
+exit.max_hold_bars,htf_exit_config.enable_partials,bin_2,"(20, 23]",True,True,0.9878929235581603,373,0.0
+exit.max_hold_bars,htf_exit_config.enable_structure_breaks,bin_2,"(20, 23]",True,True,0.9878929235581603,373,0.0
+exit.max_hold_bars,htf_exit_config.enable_trailing,bin_2,"(20, 23]",True,True,0.9878929235581603,373,0.0
+exit.max_hold_bars,htf_exit_config.fib_threshold_atr,bin_2,"(20, 23]",bin_3,"(0.85, +inf)",0.9878929235581603,73,0.0
+exit.max_hold_bars,htf_exit_config.partial_1_pct,bin_2,"(20, 23]",bin_0,"(-inf, 0.52]",0.9878929235581603,150,0.0
+exit.max_hold_bars,htf_exit_config.partial_2_pct,bin_2,"(20, 23]",bin_3,"(0.5, +inf)",0.9878929235581603,42,0.0
+exit.max_hold_bars,htf_exit_config.swing_update_strategy,bin_2,"(20, 23]",fixed,fixed,0.9878929235581603,373,0.0
+exit.max_hold_bars,htf_fib.entry.enabled,bin_2,"(20, 23]",True,True,0.9878929235581603,373,0.0
+exit.trailing_stop_pct,htf_exit_config.enable_partials,bin_2,"(0.015, 0.018]",True,True,0.9878929235581603,259,0.0
+exit.trailing_stop_pct,htf_exit_config.enable_structure_breaks,bin_2,"(0.015, 0.018]",True,True,0.9878929235581603,259,0.0

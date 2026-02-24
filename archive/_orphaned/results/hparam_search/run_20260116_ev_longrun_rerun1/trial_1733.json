@@ -1,0 +1,103 @@
+{
+  "trial_id": "trial_1733",
+  "parameters": {
+    "thresholds": {
+      "entry_conf_overall": 0.27,
+      "min_edge": 0.01,
+      "regime_proba": {
+        "balanced": 0.5,
+        "bull": 0.6,
+        "bear": 0.42,
+        "ranging": 0.42
+      },
+      "signal_adaptation": {
+        "atr_period": 28,
+        "zones": {
+          "low": {
+            "entry_conf_overall": 0.26,
+            "regime_proba": 0.43
+          },
+          "mid": {
+            "entry_conf_overall": 0.3,
+            "regime_proba": 0.39
+          },
+          "high": {
+            "entry_conf_overall": 0.42,
+            "regime_proba": 0.53
+          }
+        }
+      }
+    },
+    "exit": {
+      "exit_conf_threshold": 0.4,
+      "max_hold_bars": 10,
+      "trailing_stop_pct": 0.017
+    },
+    "risk": {
+      "risk_map": [
+        [
+          0.6,
+          0.02
+        ],
+        [
+          0.7,
+          0.03
+        ],
+        [
+          0.8,
+          0.04
+        ],
+        [
+          0.9,
+          0.05
+        ]
+      ]
+    },
+    "multi_timeframe": {
+      "use_htf_block": true,
+      "allow_ltf_override": true,
+      "ltf_override_threshold": 0.34,
+      "htf_selector": {
+        "mode": "fixed",
+        "fallback_timeframe": "1D",
+        "per_timeframe": {
+          "1h": {
+            "timeframe": "1D",
+            "multiplier": null
+          }
+        }
+      }
+    },
+    "htf_fib": {
+      "entry": {
+        "enabled": true,
+        "missing_policy": "pass",
+        "tolerance_atr": 6.0,
+        "long_max_level": 0.236,
+        "short_min_level": 0.35
+      }
+    },
+    "ltf_fib": {
+      "entry": {
+        "enabled": true,
+        "missing_policy": "pass",
+        "tolerance_atr": 2.25,
+        "long_max_level": 0.146,
+        "short_min_level": 0.236
+      }
+    },
+    "htf_exit_config": {
+      "partial_1_pct": 0.6,
+      "partial_2_pct": 0.55,
+      "fib_threshold_atr": 0.75,
+      "trail_atr_multiplier": 3.3,
+      "enable_partials": true,
+      "enable_trailing": true,
+      "enable_structure_breaks": true,
+      "swing_update_strategy": "fixed"
+    }
+  },
+  "error": "unknown",
+  "log_path": "trial_1733.log",
+  "attempts": 2
+}

@@ -1,0 +1,94 @@
+================================================================================
+FEATURE SYNERGY & CORRELATION ANALYSIS
+================================================================================
+Model: tBTCUSD_1h.json
+Total features: 10
+
+## Individual Feature Performance (AUC when used alone)
+
+ 1. bb_position_inv_ma3  | AUC: 0.5345
+ 2. rsi_vol_interaction  | AUC: 0.5333
+ 3. rsi_inv_lag1         | AUC: 0.5311
+ 4. volatility_shift_ma3 | AUC: 0.5273
+ 5. fib05_x_rsi_inv      | AUC: 0.5181
+ 6. vol_regime           | AUC: 0.5173
+ 7. fib05_x_ema_slope    | AUC: 0.5150
+ 8. fib_prox_score       | AUC: 0.4966
+ 9. fib_prox_x_adx       | AUC: 0.4959
+10. fib05_prox_atr       | AUC: 0.4959
+
+================================================================================
+REDUNDANT FEATURES (High Correlation > 0.7)
+================================================================================
+
+  - rsi_inv_lag1         <-> bb_position_inv_ma3  | Correlation: -0.861
+  - rsi_inv_lag1         <-> rsi_vol_interaction  | Correlation: +0.911
+  - volatility_shift_ma3 <-> vol_regime           | Correlation: +0.774
+  - bb_position_inv_ma3  <-> rsi_vol_interaction  | Correlation: -0.821
+  - fib05_prox_atr       <-> fib_prox_score       | Correlation: +0.860
+  - fib05_prox_atr       <-> fib_prox_x_adx       | Correlation: +0.767
+  - fib_prox_score       <-> fib_prox_x_adx       | Correlation: +0.911
+  - fib05_x_ema_slope    <-> fib05_x_rsi_inv      | Correlation: -0.895
+
+**Recommendation:** Consider removing one from each pair to reduce redundancy.
+
+================================================================================
+SYNERGISTIC FEATURE PAIRS (Top 10 combinations)
+================================================================================
+
+ 1. bb_position_inv_ma3  + volatility_shift_ma3 | AUC: 0.5441
+ 2. rsi_vol_interaction  + volatility_shift_ma3 | AUC: 0.5398
+ 3. bb_position_inv_ma3  + vol_regime           | AUC: 0.5394
+ 4. rsi_inv_lag1         + volatility_shift_ma3 | AUC: 0.5389
+ 5. bb_position_inv_ma3  + fib_prox_x_adx       | AUC: 0.5361
+ 6. bb_position_inv_ma3  + fib_prox_score       | AUC: 0.5354
+ 7. bb_position_inv_ma3  + fib05_prox_atr       | AUC: 0.5350
+ 8. rsi_vol_interaction  + fib_prox_x_adx       | AUC: 0.5349
+ 9. bb_position_inv_ma3  + rsi_vol_interaction  | AUC: 0.5348
+10. bb_position_inv_ma3  + rsi_inv_lag1         | AUC: 0.5347
+
+================================================================================
+SYNERGY ANALYSIS (Pair AUC vs Individual AUC)
+================================================================================
+
+  bb_position_inv_ma3 + volatility_shift_ma3 | Pair: 0.5441 | Best solo: 0.5345 | Synergy: +0.0096
+  rsi_vol_interaction + volatility_shift_ma3 | Pair: 0.5398 | Best solo: 0.5333 | Synergy: +0.0065
+  bb_position_inv_ma3 + vol_regime      | Pair: 0.5394 | Best solo: 0.5345 | Synergy: +0.0049
+  rsi_inv_lag1    + volatility_shift_ma3 | Pair: 0.5389 | Best solo: 0.5311 | Synergy: +0.0077
+  bb_position_inv_ma3 + fib_prox_x_adx  | Pair: 0.5361 | Best solo: 0.5345 | Synergy: +0.0015
+  bb_position_inv_ma3 + fib_prox_score  | Pair: 0.5354 | Best solo: 0.5345 | Synergy: +0.0009
+  bb_position_inv_ma3 + fib05_prox_atr  | Pair: 0.5350 | Best solo: 0.5345 | Synergy: +0.0005
+  rsi_vol_interaction + fib_prox_x_adx  | Pair: 0.5349 | Best solo: 0.5333 | Synergy: +0.0016
+  bb_position_inv_ma3 + rsi_vol_interaction | Pair: 0.5348 | Best solo: 0.5345 | Synergy: +0.0003
+  bb_position_inv_ma3 + rsi_inv_lag1    | Pair: 0.5347 | Best solo: 0.5345 | Synergy: +0.0001
+
+================================================================================
+RECOMMENDATIONS
+================================================================================
+
+### 1. Remove Redundant Features:
+  - Remove rsi_inv_lag1 (keep bb_position_inv_ma3)
+  - Remove rsi_inv_lag1 (keep rsi_vol_interaction)
+  - Remove vol_regime (keep volatility_shift_ma3)
+  - Remove rsi_vol_interaction (keep bb_position_inv_ma3)
+  - Remove fib05_prox_atr (keep fib_prox_score)
+  - Remove fib05_prox_atr (keep fib_prox_x_adx)
+  - Remove fib_prox_x_adx (keep fib_prox_score)
+  - Remove fib05_x_ema_slope (keep fib05_x_rsi_inv)
+
+### 2. Prioritize Synergistic Pairs:
+  - Build features around top synergistic combinations
+  - Keep bb_position_inv_ma3 + volatility_shift_ma3 (AUC: 0.5441)
+  - Keep rsi_vol_interaction + volatility_shift_ma3 (AUC: 0.5398)
+  - Keep bb_position_inv_ma3 + vol_regime (AUC: 0.5394)
+
+### 3. Weak Standalone Features:
+  - Consider removing features with AUC < 0.52 (barely better than random):
+    - fib05_x_rsi_inv (AUC: 0.5181)
+    - vol_regime (AUC: 0.5173)
+    - fib05_x_ema_slope (AUC: 0.5150)
+    - fib_prox_score (AUC: 0.4966)
+    - fib_prox_x_adx (AUC: 0.4959)
+    - fib05_prox_atr (AUC: 0.4959)
+
+================================================================================

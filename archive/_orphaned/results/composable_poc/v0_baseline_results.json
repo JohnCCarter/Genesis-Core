@@ -1,0 +1,20 @@
+{
+  "config": "v0_baseline.yaml",
+  "description": "Baseline - ML confidence only (threshold 0.5)",
+  "timestamp": "2026-01-30T11:52:19.955507",
+  "components": [
+    "ml_confidence"
+  ],
+  "tracker_stats": {
+    "total_decisions": 5,
+    "total_allowed": 4,
+    "total_vetoed": 1,
+    "component_stats": {
+      "ml_confidence": {
+        "evaluations": 5,
+        "vetoes": 1,
+        "avg_confidence": 0.6199999999999999
+      }
+    }
+  }
+}

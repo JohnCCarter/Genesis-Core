@@ -1,0 +1,45 @@
+================================================================================
+FEATURE IMPORTANCE ANALYSIS
+================================================================================
+Model: tBTCUSD_1h.json
+Total features: 10
+
+## Combined Importance (Average of Buy & Sell)
+
+ 1. rsi_inv_lag1         | Avg: 1.1690 | Buy: 1.1690 | Sell: 1.1690
+ 2. volatility_shift_ma3 | Avg: 0.8205 | Buy: 0.8205 | Sell: 0.8205
+ 3. rsi_vol_interaction  | Avg: 0.7473 | Buy: 0.7473 | Sell: 0.7473
+ 4. bb_position_inv_ma3  | Avg: 0.5010 | Buy: 0.5010 | Sell: 0.5010
+ 5. vol_regime           | Avg: 0.2133 | Buy: 0.2133 | Sell: 0.2133
+ 6. fib_prox_score       | Avg: 0.1699 | Buy: 0.1699 | Sell: 0.1699
+ 7. fib05_prox_atr       | Avg: 0.1384 | Buy: 0.1384 | Sell: 0.1384
+ 8. fib_prox_x_adx       | Avg: 0.0587 | Buy: 0.0587 | Sell: 0.0587
+ 9. fib05_x_rsi_inv      | Avg: 0.0358 | Buy: 0.0358 | Sell: 0.0358
+10. fib05_x_ema_slope    | Avg: 0.0015 | Buy: 0.0015 | Sell: 0.0015
+
+================================================================================
+RECOMMENDATIONS
+================================================================================
+
+### Top 30 Features (Keep):
+  1. rsi_inv_lag1
+  2. volatility_shift_ma3
+  3. rsi_vol_interaction
+  4. bb_position_inv_ma3
+  5. vol_regime
+  6. fib_prox_score
+  7. fib05_prox_atr
+  8. fib_prox_x_adx
+  9. fib05_x_rsi_inv
+  10. fib05_x_ema_slope
+
+### Statistical Summary:
+  Mean importance: 0.3855
+  Median importance: 0.1916
+  Std deviation: 0.4029
+  Min importance: 0.0015
+  Max importance: 1.1690
+
+### Feature Groups:
+
+================================================================================

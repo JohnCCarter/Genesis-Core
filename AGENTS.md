@@ -150,5 +150,5 @@ Det här avsnittet är medvetet kort för att undvika dokumentdrift och duplicer
 - `.github/skills/repo_clean_refactor.json`
 - `docs/OPUS_46_GOVERNANCE.md`
 - `docs/history/AGENTS_HISTORY.md`
-- `CLAUDE.md`
+- `CLAUDE-LOCAL.md`
 - `docs/ops/TERMINAL_TOOL_ACCESS_PLAYBOOK_2026-02-14.md`

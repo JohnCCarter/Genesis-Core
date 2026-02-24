@@ -40,7 +40,7 @@ ROOT_CATEGORIES = {
         "AGENTS.md",
         "bandit.yaml",
         "CHANGELOG.md",
-        "CLAUDE.md",
+        "CLAUDE-LOCAL.md",
         "conftest.py",
         "dev.overrides.example.json",
         "pyproject.toml",

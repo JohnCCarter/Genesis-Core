@@ -117,7 +117,7 @@ def _is_text_file(path: Path) -> bool:
     suffix = path.suffix.lower()
     if suffix in TEXT_EXTENSIONS:
         return True
-    return path.name in {"README", "README.md", "AGENTS.md", "CLAUDE.md"}
+    return path.name in {"README", "README.md", "AGENTS.md", "CLAUDE-LOCAL.md"}
 
 
 def _read_text(path: Path) -> str:

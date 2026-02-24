@@ -256,7 +256,7 @@ Body: {"policy":{"symbol":"tBTCUSD","timeframe":"1h"}}
 **Inte dokumenterat i:**
 
 - `docs/paper_trading/README.md` - Nämner INTE att runner krävs
-- `CLAUDE.md` - Beskriver endpoints, men INTE autotrade-runner
+- `CLAUDE-LOCAL.md` - Beskriver endpoints, men INTE autotrade-runner
 - Pre-flight checklist - INGEN verifiering av autotrade-process
 
 **Discovery trigger:**

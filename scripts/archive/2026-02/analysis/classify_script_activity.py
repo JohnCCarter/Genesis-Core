@@ -93,7 +93,7 @@ def _reference_group(rel_path: str) -> str:
         if rel_path.startswith("scripts/archive/"):
             return "scripts_archive"
         return "scripts_active"
-    if rel_path in {"README.md", "AGENTS.md", "CLAUDE.md"}:
+    if rel_path in {"README.md", "AGENTS.md", "CLAUDE-LOCAL.md"}:
         return "docs_active"
     return "other"
 
@@ -101,7 +101,7 @@ def _reference_group(rel_path: str) -> str:
 def _is_text_candidate(path: Path) -> bool:
     if path.suffix.lower() in TEXT_SUFFIXES:
         return True
-    return path.name in {"README", "README.md", "AGENTS.md", "CLAUDE.md"}
+    return path.name in {"README", "README.md", "AGENTS.md", "CLAUDE-LOCAL.md"}
 
 
 def _load_text(path: Path) -> str:

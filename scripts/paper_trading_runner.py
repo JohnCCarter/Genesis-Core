@@ -32,7 +32,7 @@ import signal
 import sys
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -335,7 +335,7 @@ def _build_none_action_observability(
     regime_ok: bool | None = None
     if isinstance(regime_ok_raw, bool):
         regime_ok = regime_ok_raw
-    elif isinstance(regime_ok_raw, (int, float)):
+    elif isinstance(regime_ok_raw, int | float):
         regime_ok = bool(regime_ok_raw)
     elif isinstance(regime_ok_raw, str):
         token = regime_ok_raw.strip().lower()

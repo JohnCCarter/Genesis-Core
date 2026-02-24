@@ -288,7 +288,7 @@ def _print_results(results: Iterable[CheckResult], exit_code: int) -> None:
 
 
 def main() -> int:
-    repo_root = Path(__file__).resolve().parents[2]
+    repo_root = Path(__file__).resolve().parents[1]
     exit_code, results = run_preflight(repo_root)
     _print_results(results, exit_code)
     return exit_code

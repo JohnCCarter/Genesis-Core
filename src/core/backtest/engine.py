@@ -1251,14 +1251,30 @@ class BacktestEngine:
                 }
             )
 
-            signal_or_actions = self.htf_exit_engine.check_exits(
-                current_price=current_price,
-                position_size=float(position.current_size),
-                entry_price=float(position.entry_price),
-                side=side_int,
-                current_atr=current_atr,
-                htf_data=htf_data,
-            )
+            try:
+                signal_or_actions = self.htf_exit_engine.check_exits(
+                    current_price=current_price,
+                    position_size=float(position.current_size),
+                    entry_price=float(position.entry_price),
+                    side=side_int,
+                    current_atr=current_atr,
+                    htf_data=htf_data,
+                )
+            except TypeError as exc:
+                err = str(exc)
+                legacy_signature = (
+                    "unexpected keyword" in err
+                    or "required positional argument" in err
+                    or "positional arguments" in err
+                )
+                if not legacy_signature:
+                    raise
+                signal_or_actions = self.htf_exit_engine.check_exits(
+                    position,
+                    bar_data,
+                    htf_fib_context,
+                    indicators,
+                )
 
             # Some tests monkeypatch `check_exits` to return a list of ExitAction.
             # Accept that shape directly to keep `_check_htf_exit_conditions` focused on ATR/no-lookahead.

@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 
-_TARGET = (Path(__file__).resolve().parents[2] / "paper_trading_runner.py").resolve()
+_TARGET = (Path(__file__).resolve().parents[1] / "paper_trading_runner.py").resolve()
 
 
 def _load_target_exports() -> None:
@@ -22,7 +22,7 @@ if __name__ != "__main__":
 
 def _run_deprecated_cli() -> int:
     print(
-        "[DEPRECATED] scripts/run/paper_trading_runner.py points to root paper_trading_runner.py.",
+        "[DEPRECATED] scripts/run/paper_trading_runner.py points to scripts/paper_trading_runner.py.",
         file=sys.stderr,
     )
     argv = sys.argv[:]

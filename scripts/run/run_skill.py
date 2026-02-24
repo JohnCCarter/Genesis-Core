@@ -5,9 +5,7 @@ import sys
 from pathlib import Path
 
 
-_TARGET = (
-    Path(__file__).resolve().parent.parent / "archive/2026-02/analysis/run_skill.py"
-).resolve()
+_TARGET = (Path(__file__).resolve().parent.parent / "run_skill.py").resolve()
 
 
 def _load_target_exports() -> None:
@@ -26,7 +24,7 @@ if __name__ != "__main__":
 
 def main() -> int:
     print(
-        "[DEPRECATED] scripts/run_skill.py moved to scripts/archive/2026-02/analysis/run_skill.py.",
+        "[DEPRECATED] scripts/run/run_skill.py points to scripts/run_skill.py.",
         file=sys.stderr,
     )
     argv = sys.argv[:]

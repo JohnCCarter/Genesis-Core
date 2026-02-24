@@ -2,7 +2,7 @@
 #
 # Daily Health Check - Genesis Paper Trading
 #
-# Usage: ./scripts/daily_health_check.sh
+# Usage: ./scripts/ops/daily_health_check.sh
 # Schedule: Daily (cron or Task Scheduler)
 #
 

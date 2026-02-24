@@ -5,19 +5,16 @@ import sys
 from pathlib import Path
 
 _TARGET = (
-    Path(__file__).resolve().parent / "archive/2026-02/analysis/analyze_gate_dominance.py"
+    Path(__file__).resolve().parent.parent
+    / "archive/deprecated_2026-02/audit_optuna_objective_parity.py"
 ).resolve()
 
 
 def _load_target_exports() -> None:
-    """Load and expose target module symbols when imported as a module.
-
-    This preserves existing import semantics, e.g.:
-    `from scripts.analyze_gate_dominance import _percentile`.
-    """
+    """Expose archived target symbols when this wrapper is imported as module."""
 
     namespace = runpy.run_path(
-        str(_TARGET), run_name="scripts.archive_compat.analyze_gate_dominance"
+        str(_TARGET), run_name="scripts.archive_compat.audit_optuna_objective_parity"
     )
     skip = {"__name__", "__file__", "__package__", "__spec__", "__cached__", "__builtins__"}
     for key, value in namespace.items():
@@ -31,7 +28,7 @@ if __name__ != "__main__":
 
 def main() -> int:
     print(
-        "[DEPRECATED] scripts/analyze_gate_dominance.py moved to scripts/archive/2026-02/analysis/analyze_gate_dominance.py.",
+        "[DEPRECATED] scripts/audit_optuna_objective_parity.py moved to scripts/archive/deprecated_2026-02/audit_optuna_objective_parity.py.",
         file=sys.stderr,
     )
     argv = sys.argv[:]

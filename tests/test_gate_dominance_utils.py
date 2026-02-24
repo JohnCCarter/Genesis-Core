@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from scripts.analyze_gate_dominance import _percentile, select_blocker_reason
+from scripts.analyze.analyze_gate_dominance import _percentile, select_blocker_reason
 
 
 def test_select_blocker_reason_prefers_last_non_zone() -> None:

@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts import optimizer
-from scripts.optimizer import summarize_run
+from scripts.optimize import optimizer
+from scripts.optimize.optimizer import summarize_run
 
 
 @pytest.fixture()

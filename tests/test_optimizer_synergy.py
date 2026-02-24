@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from scripts.optimizer import _analyze_param_synergy, _flatten_scalar_params
+from scripts.optimize.optimizer import _analyze_param_synergy, _flatten_scalar_params
 
 
 def test_flatten_scalar_params_keeps_only_scalars() -> None:

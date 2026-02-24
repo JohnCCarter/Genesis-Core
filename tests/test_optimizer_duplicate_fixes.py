@@ -472,7 +472,7 @@ def test_objective_policy_expected_value_soft_constraints_penalty() -> None:
     stays consistent with the objective implementation.
     """
 
-    from scripts.audit_optuna_objective_parity import _expected_objective_value
+    from scripts.audit.audit_optuna_objective_parity import _expected_objective_value
 
     payload = {
         "trial_id": "trial_001",

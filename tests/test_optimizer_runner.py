@@ -342,7 +342,7 @@ def test_build_backtest_cmd_uses_sys_executable_and_module_invocation(tmp_path: 
     )
 
     assert cmd[0] == sys.executable
-    assert cmd[1:3] == ["-m", "scripts.run_backtest"]
+    assert cmd[1:3] == ["-m", "scripts.run.run_backtest"]
     assert "--fast-window" in cmd
     assert "--precompute-features" in cmd
     assert "--config-file" in cmd

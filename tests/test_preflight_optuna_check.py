@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 
 import pytest
 
-from scripts.preflight_optuna_check import (
+from scripts.preflight.preflight_optuna_check import (
     _parse_snapshot_date_range,
     _pick_data_file,
     check_champion_drift_smoke,
@@ -123,7 +123,7 @@ def test_requested_data_coverage_handles_tz_aware_parquet_range(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Regression test: preflight must not crash on tz-aware parquet timestamps."""
-    from scripts import preflight_optuna_check as preflight
+    from scripts.preflight import preflight_optuna_check as preflight
 
     # Pretend we found a data file, but avoid any real IO.
     monkeypatch.setattr(
@@ -150,7 +150,7 @@ def test_precompute_functionality_uses_pick_data_file_and_not_curated_path(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path,
 ) -> None:
-    from scripts import preflight_optuna_check as preflight
+    from scripts.preflight import preflight_optuna_check as preflight
 
     # Enable the check.
     monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "1")
@@ -205,7 +205,7 @@ def test_champion_drift_smoke_can_be_disabled(monkeypatch: pytest.MonkeyPatch) -
 
 def test_main_fails_when_timeout_check_fails(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
     # Regression test: preflight ska INTE säga OK om end_at/timeout-checken failar.
-    from scripts import preflight_optuna_check as preflight
+    from scripts.preflight import preflight_optuna_check as preflight
 
     cfg_path = tmp_path / "cfg.yaml"
     cfg_path.write_text(
@@ -261,9 +261,9 @@ parameters: {}
     )
 
     # main() importerar validate_config dynamiskt; injicera en stub så vi slipper beroenden.
-    stub = types.ModuleType("scripts.validate_optimizer_config")
+    stub = types.ModuleType("scripts.validate.validate_optimizer_config")
     stub.validate_config = lambda path: 0  # type: ignore[attr-defined]
-    monkeypatch.setitem(sys.modules, "scripts.validate_optimizer_config", stub)
+    monkeypatch.setitem(sys.modules, "scripts.validate.validate_optimizer_config", stub)
 
     # Kör som CLI.
     monkeypatch.setattr(sys, "argv", ["preflight_optuna_check.py", str(cfg_path)])

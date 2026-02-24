@@ -6,16 +6,14 @@ from pathlib import Path
 
 
 _TARGET = (
-    Path(__file__).resolve().parent / "archive/2026-02/analysis/extract_backtest_provenance.py"
+    Path(__file__).resolve().parent.parent / "archive/2026-02/analysis/run_skill.py"
 ).resolve()
 
 
 def _load_target_exports() -> None:
     """Load and expose target module symbols when imported as a module."""
 
-    namespace = runpy.run_path(
-        str(_TARGET), run_name="scripts.archive_compat.extract_backtest_provenance"
-    )
+    namespace = runpy.run_path(str(_TARGET), run_name="scripts.archive_compat.run_skill")
     skip = {"__name__", "__file__", "__package__", "__spec__", "__cached__", "__builtins__"}
     for key, value in namespace.items():
         if key not in skip:
@@ -28,7 +26,7 @@ if __name__ != "__main__":
 
 def main() -> int:
     print(
-        "[DEPRECATED] scripts/extract_backtest_provenance.py moved to scripts/archive/2026-02/analysis/extract_backtest_provenance.py.",
+        "[DEPRECATED] scripts/run_skill.py moved to scripts/archive/2026-02/analysis/run_skill.py.",
         file=sys.stderr,
     )
     argv = sys.argv[:]

@@ -5,13 +5,13 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from scripts.build_auth_headers import build_headers, main
+from scripts.build.build_auth_headers import build_headers, main
 
 
 @pytest.fixture()
 def mock_settings():
     """Mock settings with test API credentials."""
-    with patch("scripts.build_auth_headers.get_settings") as mock:
+    with patch("scripts.build.build_auth_headers.get_settings") as mock:
         settings_obj = Mock()
         settings_obj.BITFINEX_API_KEY = "test_api_key"
         settings_obj.BITFINEX_API_SECRET = "test_api_secret"
@@ -22,7 +22,7 @@ def mock_settings():
 @pytest.fixture()
 def mock_nonce():
     """Mock nonce to return a fixed value."""
-    with patch("scripts.build_auth_headers.get_nonce") as mock:
+    with patch("scripts.build.build_auth_headers.get_nonce") as mock:
         mock.return_value = "1234567890000000"
         yield mock
 
@@ -130,7 +130,7 @@ def test_main_with_invalid_json_body(mock_settings, mock_nonce, capsys):
 
 def test_build_headers_missing_credentials():
     """Test that build_headers raises error when credentials are missing."""
-    with patch("scripts.build_auth_headers.get_settings") as mock:
+    with patch("scripts.build.build_auth_headers.get_settings") as mock:
         settings_obj = Mock()
         settings_obj.BITFINEX_API_KEY = None
         settings_obj.BITFINEX_API_SECRET = None

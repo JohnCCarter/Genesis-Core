@@ -1,7 +1,7 @@
 #!/bin/bash
 # preflight_smoke_test.sh - 5-minute pre-flight smoke test for paper trading runner
 #
-# Usage: ./scripts/preflight_smoke_test.sh
+# Usage: ./scripts/preflight/preflight_smoke_test.sh
 #
 # Verifies:
 #   1. API server on port 8000 responds to /health
@@ -239,7 +239,7 @@ if [ "$FAILED" -eq 0 ]; then
   echo "  1. Monitor logs: tail -f $LOG_FILE"
   echo "  2. Wait for first candle close (top of next hour)"
   echo "  3. Run acceptance checks after 24h:"
-  echo "     ./scripts/dry_run_acceptance.sh"
+  echo "     ./scripts/preflight/dry_run_acceptance.sh"
   echo ""
   exit 0
 else

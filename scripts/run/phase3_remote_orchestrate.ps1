@@ -210,7 +210,7 @@ $remoteBody = @'
         sleep "$PREFLIGHT_WAIT_SECONDS"
 
         echo "[remote] running preflight..."
-        bash ./scripts/preflight_smoke_test.sh
+        bash ./scripts/preflight/preflight_smoke_test.sh
 
         LATEST_LOG=$(ls -1t logs/paper_trading/runner_*.log 2>/dev/null | head -1 || true)
         echo "[remote] latest runner log: ${LATEST_LOG:-<none>}"
@@ -219,7 +219,7 @@ $remoteBody = @'
         DELAY_SECS=$((ACCEPTANCE_DELAY_HOURS * 3600))
         OUT="logs/paper_trading/acceptance_check_${TS}.txt"
         echo "[remote] scheduling acceptance in ${ACCEPTANCE_DELAY_HOURS}h -> $OUT"
-        nohup bash -lc "sleep ${DELAY_SECS}; cd \"$REPO_DIR\"; bash ./scripts/dry_run_acceptance.sh" >"$OUT" 2>&1 </dev/null &
+        nohup bash -lc "sleep ${DELAY_SECS}; cd \"$REPO_DIR\"; bash ./scripts/preflight/dry_run_acceptance.sh" >"$OUT" 2>&1 </dev/null &
         echo $! >"${OUT}.pid"
         fi
 

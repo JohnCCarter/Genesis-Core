@@ -5,7 +5,9 @@ import sys
 from pathlib import Path
 
 
-_TARGET = (Path(__file__).resolve().parent / "archive/2026-02/analysis/optimizer.py").resolve()
+_TARGET = (
+    Path(__file__).resolve().parent.parent / "archive/2026-02/analysis/validate_registry.py"
+).resolve()
 
 
 def _load_target_exports() -> None:
@@ -22,7 +24,7 @@ if __name__ != "__main__":
 
 def _run_deprecated_cli() -> int:
     print(
-        "[DEPRECATED] scripts/optimizer.py moved to scripts/archive/2026-02/analysis/optimizer.py.",
+        "[DEPRECATED] scripts/validate_registry.py moved to scripts/archive/2026-02/analysis/validate_registry.py.",
         file=sys.stderr,
     )
     argv = sys.argv[:]

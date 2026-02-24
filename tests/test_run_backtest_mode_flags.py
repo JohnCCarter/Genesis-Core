@@ -4,7 +4,7 @@ import importlib
 
 import pytest
 
-_run_backtest = importlib.import_module("scripts.run_backtest")
+_run_backtest = importlib.import_module("scripts.run.run_backtest")
 _resolve = _run_backtest._resolve_mode_env_overrides
 
 

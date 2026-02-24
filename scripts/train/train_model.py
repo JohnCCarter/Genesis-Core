@@ -291,7 +291,9 @@ def save_model_and_metrics(
     }
 
 
-_TARGET = (Path(__file__).resolve().parent / "archive/2026-02/analysis/train_model.py").resolve()
+_TARGET = (
+    Path(__file__).resolve().parent.parent / "archive/2026-02/analysis/train_model.py"
+).resolve()
 
 
 def _load_target_exports() -> None:

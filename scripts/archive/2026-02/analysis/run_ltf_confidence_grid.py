@@ -34,7 +34,7 @@ def _default_run_id() -> str:
 
 def main() -> int:
     from core.optimizer.runner import run_optimizer
-    from scripts.optimizer import summarize_run
+    from scripts.optimize.optimizer import summarize_run
 
     parser = argparse.ArgumentParser(
         description="Snabb grid för att analysera LTF-confidence vs HTF-gate"

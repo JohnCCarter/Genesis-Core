@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from scripts.extract_backtest_provenance import extract_provenance
+from scripts.extract.extract_backtest_provenance import extract_provenance
 
 
 def test_extract_provenance_minimal_payload() -> None:

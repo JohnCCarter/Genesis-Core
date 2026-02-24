@@ -1606,7 +1606,7 @@ def _build_backtest_cmd(
     cmd = [
         sys.executable,
         "-m",
-        "scripts.run_backtest",
+        "scripts.run.run_backtest",
         "--symbol",
         trial.symbol,
         "--timeframe",

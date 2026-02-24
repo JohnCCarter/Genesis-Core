@@ -7,7 +7,7 @@ try:
 except ImportError:  # pragma: no cover
     optuna = None
 
-import scripts.run_backtest as run_backtest
+import scripts.run.run_backtest as run_backtest
 
 
 @pytest.mark.skipif(optuna is None, reason="optuna not installed")

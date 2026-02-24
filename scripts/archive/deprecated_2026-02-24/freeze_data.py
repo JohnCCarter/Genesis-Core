@@ -23,9 +23,9 @@ def _log_deprecated_usage(wrapper: Path, target: Path) -> None:
 
 def main() -> int:
     wrapper = Path(__file__).resolve()
-    target = (wrapper.parent / "archive/2026-02/analysis/freeze_data.py").resolve()
+    target = (wrapper.parent / "archive/deprecated_2026-02/freeze_data.py").resolve()
     print(
-        "[DEPRECATED] scripts/freeze_data.py moved to scripts/archive/2026-02/analysis/freeze_data.py.",
+        "[DEPRECATED] scripts/freeze_data.py moved to scripts/archive/deprecated_2026-02/freeze_data.py.",
         file=sys.stderr,
     )
     _log_deprecated_usage(wrapper, target)

@@ -1048,7 +1048,7 @@ def main() -> int:
     # 11. Champion-validering
     print("11. Champion-validering:")
     try:
-        from scripts.validate_optimizer_config import validate_config
+        from scripts.validate.validate_optimizer_config import validate_config
 
         val_result = validate_config(args.config)
         if val_result != 0:

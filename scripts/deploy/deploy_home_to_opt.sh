@@ -119,7 +119,7 @@ rsync "${RSYNC_ARGS[@]}" "$SRC_REPO/" "$DST_REPO/"
 echo "[deploy] sync complete"
 
 if (( REGENERATE_ENV == 1 )); then
-	GEN_SCRIPT="$DST_REPO/scripts/generate_env_systemd.sh"
+	GEN_SCRIPT="$DST_REPO/scripts/deploy/generate_env_systemd.sh"
 	if [[ -x "$GEN_SCRIPT" && -f "$DST_REPO/.env" ]]; then
 		echo "[deploy] regenerating .env.systemd"
 		"$GEN_SCRIPT" "$DST_REPO/.env" "$DST_REPO/.env.systemd"

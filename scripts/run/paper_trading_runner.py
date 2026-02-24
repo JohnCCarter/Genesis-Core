@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 _TARGET = (
-    Path(__file__).resolve().parent / "archive/2026-02/analysis/build_auth_headers.py"
+    Path(__file__).resolve().parent.parent / "archive/2026-02/analysis/paper_trading_runner.py"
 ).resolve()
 
 
@@ -24,7 +24,7 @@ if __name__ != "__main__":
 
 def _run_deprecated_cli() -> int:
     print(
-        "[DEPRECATED] scripts/build_auth_headers.py moved to scripts/archive/2026-02/analysis/build_auth_headers.py.",
+        "[DEPRECATED] scripts/paper_trading_runner.py moved to scripts/archive/2026-02/analysis/paper_trading_runner.py.",
         file=sys.stderr,
     )
     argv = sys.argv[:]

@@ -47,11 +47,11 @@ echo "Root: $ROOT"
 echo "Report: $REPORT"
 
 [[ -d "$ROOT" ]] || fail "missing root: $ROOT"
-[[ -x "$ROOT/scripts/generate_env_systemd.sh" ]] || fail "missing generator: $ROOT/scripts/generate_env_systemd.sh"
+[[ -x "$ROOT/scripts/deploy/generate_env_systemd.sh" ]] || fail "missing generator: $ROOT/scripts/deploy/generate_env_systemd.sh"
 [[ -x "$ROOT/scripts/wait_for_paper.sh" ]] || fail "missing wait script: $ROOT/scripts/wait_for_paper.sh"
 
 echo "--- 1) Environment & config ---"
-"$ROOT/scripts/generate_env_systemd.sh" "$ROOT/.env" "$ROOT/.env.systemd" || fail "generate .env.systemd failed"
+"$ROOT/scripts/deploy/generate_env_systemd.sh" "$ROOT/.env" "$ROOT/.env.systemd" || fail "generate .env.systemd failed"
 pass ".env.systemd regenerated"
 
 hex="$(head -c 3 "$ROOT/.env.systemd" | od -An -tx1 | tr -d ' \n')"

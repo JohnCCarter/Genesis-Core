@@ -7,11 +7,10 @@ from pathlib import Path
 
 def main() -> int:
     target = (
-        Path(__file__).resolve().parent
-        / "archive/2026-02/analysis/sweep_optuna_holdout_top_trials.py"
+        Path(__file__).resolve().parent / "archive/deprecated_2026-02/sync_precompute_and_train.py"
     ).resolve()
     print(
-        "[DEPRECATED] scripts/sweep_optuna_holdout_top_trials.py moved to scripts/archive/2026-02/analysis/sweep_optuna_holdout_top_trials.py.",
+        "[DEPRECATED] scripts/sync_precompute_and_train.py moved to scripts/archive/deprecated_2026-02/sync_precompute_and_train.py.",
         file=sys.stderr,
     )
     argv = sys.argv[:]

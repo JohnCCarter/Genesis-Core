@@ -4,16 +4,17 @@ import runpy
 import sys
 from pathlib import Path
 
+
 _TARGET = (
-    Path(__file__).resolve().parent / "archive/2026-02/analysis/audit_optuna_objective_parity.py"
+    Path(__file__).resolve().parent.parent / "archive/2026-02/analysis/promote_v5a_to_champion.py"
 ).resolve()
 
 
 def _load_target_exports() -> None:
-    """Expose archived target symbols when this wrapper is imported as module."""
+    """Load and expose target module symbols when imported as a module."""
 
     namespace = runpy.run_path(
-        str(_TARGET), run_name="scripts.archive_compat.audit_optuna_objective_parity"
+        str(_TARGET), run_name="scripts.archive_compat.promote_v5a_to_champion"
     )
     skip = {"__name__", "__file__", "__package__", "__spec__", "__cached__", "__builtins__"}
     for key, value in namespace.items():
@@ -27,7 +28,7 @@ if __name__ != "__main__":
 
 def main() -> int:
     print(
-        "[DEPRECATED] scripts/audit_optuna_objective_parity.py moved to scripts/archive/2026-02/analysis/audit_optuna_objective_parity.py.",
+        "[DEPRECATED] scripts/promote_v5a_to_champion.py moved to scripts/archive/2026-02/analysis/promote_v5a_to_champion.py.",
         file=sys.stderr,
     )
     argv = sys.argv[:]

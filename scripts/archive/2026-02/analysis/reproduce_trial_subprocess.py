@@ -38,7 +38,7 @@ def reproduce_trial():
     cmd = [
         sys.executable,
         "-m",
-        "scripts.run_backtest",
+        "scripts.run.run_backtest",
         "--symbol",
         "tBTCUSD",
         "--timeframe",

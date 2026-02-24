@@ -1,7 +1,7 @@
 #!/bin/bash
 # capture_phase3_snapshot.sh - Capture Phase 3 runtime snapshot without stopping processes
 #
-# Usage: ./scripts/capture_phase3_snapshot.sh
+# Usage: ./scripts/run/capture_phase3_snapshot.sh
 #
 # Creates timestamped snapshot in logs/paper_trading/snapshots/ with:
 #   - System info (date, hostname)
@@ -126,13 +126,13 @@ STATE_FILE="logs/paper_trading/runner_state.json"
     echo "========================================"
     echo ""
 
-    if [ -f "./scripts/preflight_smoke_test.sh" ]; then
-        echo "$ ./scripts/preflight_smoke_test.sh"
+    if [ -f "./scripts/preflight/preflight_smoke_test.sh" ]; then
+        echo "$ ./scripts/preflight/preflight_smoke_test.sh"
         echo ""
 
         # Capture output and exit code
         set +e
-        PREFLIGHT_OUTPUT=$(./scripts/preflight_smoke_test.sh 2>&1)
+        PREFLIGHT_OUTPUT=$(./scripts/preflight/preflight_smoke_test.sh 2>&1)
         PREFLIGHT_EXIT=$?
         set -e
 
@@ -146,7 +146,7 @@ STATE_FILE="logs/paper_trading/runner_state.json"
             echo "Status: FAIL ✗"
         fi
     else
-        echo "(preflight script not found: ./scripts/preflight_smoke_test.sh)"
+        echo "(preflight script not found: ./scripts/preflight/preflight_smoke_test.sh)"
     fi
     echo ""
 

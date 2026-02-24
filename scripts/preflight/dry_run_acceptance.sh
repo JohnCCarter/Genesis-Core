@@ -1,7 +1,7 @@
 #!/bin/bash
 # dry_run_acceptance.sh - Automated acceptance check for Phase 3 dry-run
 #
-# Usage: ./scripts/dry_run_acceptance.sh
+# Usage: ./scripts/preflight/dry_run_acceptance.sh
 #
 # Verifies:
 #   - Candle uniqueness (no duplicates)

@@ -1,11 +1,0 @@
-======================================================================
-Genesis-Core Backtest Runner
-======================================================================
-[MODE] GENESIS_FAST_WINDOW=1 GENESIS_PRECOMPUTE_FEATURES=1 GENESIS_RANDOM_SEED=42
-[CONFIG:champion] Using complete champion config (no runtime merge)
-[Optuna] Pruning enabled for trial 3829
-Backtest:   0%|          | 0/8735 [00:00<?]Backtest:   2%|1         | 171/8735 [00:00<00:05]C:\Users\fa06662\Projects\Genesis-Core\.venv\Lib\site-packages\optuna\trial\_trial.py:503: UserWarning: The reported value is ignored because this `step` 200 is already reported.
-  warnings.warn(
-Backtest:   2%|2         | 200/8735 [00:20<00:05]Backtest:   2%|2         | 200/8735 [00:28<20:05]
-
-[ERROR] Backtest failed: pruned

@@ -120,6 +120,7 @@ You MUST close the loop after each verification or implementation step so the wo
   - Which gate/test failed
   - The first failing assertion/output snippet
   - Minimal fix hypothesis (1–3 bullets)
+- If failure root cause is script-path migration/import path drift, restore the script to its primary canonical path instead of adding new mapping/wrapper indirection.
 - Re-run gates after the minimal fix.
 
 ## Output contract

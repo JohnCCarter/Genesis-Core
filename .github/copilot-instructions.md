@@ -19,6 +19,7 @@ Use this as the default operating contract for all non-trivial changes.
 - Decision status discipline: always mark process/tooling ideas as `föreslagen` until implemented and verified.
 - Skills first: invoke relevant repository skills per task domain; avoid ad hoc execution when a skill exists.
 - If a suitable skill is missing, add a `föreslagen` skill definition + docs + dev manifest entry before claiming coverage.
+- If tests fail due to script path migration/import drift, restore scripts to their primary canonical paths instead of introducing new mapping/wrapper indirection.
 
 ## Roles and responsibilities
 

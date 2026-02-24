@@ -54,6 +54,7 @@ If any test fails:
 - Report FAIL.
 - List exactly which tests broke.
 - Propose minimal fix.
+- If failure root cause is script-path migration/import path drift, require restoration to the primary canonical script path instead of approving new mapping/wrapper indirection.
 
 ## After verification: what to do next (do not stall)
 

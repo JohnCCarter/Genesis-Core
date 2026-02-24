@@ -1,6 +1,6 @@
 # README for AI Agents (Active Guide)
 
-## Last update: 2026-02-14
+## Last update: 2026-02-24
 
 Detta dokument är den **aktiva driftguiden** för agentarbete i Genesis-Core.
 
@@ -14,6 +14,12 @@ Om en regelkonflikt uppstår gäller denna prioritet:
 2. `.github/copilot-instructions.md`
 3. `docs/OPUS_46_GOVERNANCE.md`
 4. `AGENTS.md`
+
+## 0) Scope för instruktioner (viktigt)
+
+- Använd repo-lokala styrdokument i detta repo.
+- Använd **inte** global workstation-kontext som policykälla för repo-beslut.
+- Repo-specifika regler har alltid företräde för implementation/review här.
 
 ## 1) Aktiv arbetsmodell
 
@@ -66,6 +72,12 @@ Commitmeddelande ska inkludera:
 - Använd `införd` först efter verifierad implementation i detta repo.
 - Påstå inte att blockerande CI/pre-commit är aktiv om konfigurationen inte finns och är validerad.
 
+## 3.1) Skills-first policy
+
+- Invokera relevanta repo-skills för uppgiftens domän innan ad hoc-exekvering.
+- Om lämplig skill saknas: skapa en `föreslagen` skill (JSON + docs + dev-manifest) innan process-coverage påstås.
+- Skill-policy är normativ för både implementering och governance-review.
+
 ## 4) High-sensitivity zones (extra strikt)
 
 Ändringar i dessa zoner kräver striktare review och deterministisk verifiering:
@@ -114,183 +126,28 @@ $Env:GENESIS_PRECOMPUTE_FEATURES='1'
 $Env:GENESIS_RANDOM_SEED='42'
 ```
 
-## 7) Pågående repo-cleanup (P0/P1/P2/P3/D1/D2/D3/D3A/D3B/D3C/D3D/D3E/D3F/D3G/D3H/D3I/D3J/D3K/D3L/D4A/D4B/D5/D6/D7/D8/D9/D10/D11/D12/D13/D14/D15/D16/D17/D18/D19/D20/D21/D22/D23/D24/D25/D26/D27/D28/D29/D30/D31/D32/D33/D34/D35/D36/D37/D38)
+## 7) Repo-cleanup (komprimerad status)
 
-Status per 2026-02-15:
+Aktuell policy:
 
-- Fokus: governance/docs-konsolidering
-- `results/**`: ingen flytt/radering i P0
-- Root-artefakter: inventeras, ingen destruktiv åtgärd i P0
-- `AGENTS.md`: delad i aktiv guide + historikfil
-- P1 tooling-inventering: införd (icke-destruktiv)
-- P2 destruktiv cleanup: föreslagen (kräver separat kontrakt + retention policy + dry-run + explicit godkännande)
-- P3 dry-run-scope: införd (icke-destruktiv, docs-only)
-- P3 dry-run-rapport: införd (icke-destruktiv, docs-only)
-- D1 root-artefaktflytt: införd (destruktiv, move-only, 3 filer)
-- D2 root-output hardening: införd (tooling, styrd output-path för burnin_summary)
-- D3 större destruktiva scope (results/scripts): föreslagen (högre risk, kräver kandidatvis kontrakt)
-- D3A debug-script move-only: införd (6 lågkopplade script)
-- D3B debug-script move-only: införd (3 refererade script, docs-impact dokumenterad)
-- D3C test-script move-only: införd (7 lågkopplade testprototyper)
-- D3D mixad low-ref move-only: införd (2 diagnose + 1 test-script)
-- D3E mixad low-ref move-only: införd (3 diagnose + 2 test-script)
-- D3F test low-ref move-only: införd (3 test-script)
-- D3G test low-ref move-only: införd (2 test-script)
-- D3H test move-only: införd (1 test-script)
-- D3I test move-only: införd (3 test-script)
-- D3J diagnose move-only: införd (1 diagnose-script)
-- D3K diagnose move-only: införd (1 diagnose-script + 1 scopead .github-referensfil)
-- D3L diagnose move-only: införd (1 diagnose-script)
-- D4A results trackability blocker: införd (docs-only, execution fortsatt föreslagen)
-- D4B results policy options: införd (docs-only, policyändring fortsatt föreslagen)
-- D5 results out-of-band guide: införd (docs-only, execution fortsatt föreslagen)
-- D6 results policy-tranche: införd (tooling/docs-only, begränsad allowlist för `archive/_orphaned/results/**`, ingen execution)
-- D7 results minimal execution pilot: införd (move-only, exakt 1 fil till `archive/_orphaned/results/**`, ingen övrig execution)
-- D8 results minimal execution tranche: införd (move-only, exakt 3 filer till `archive/_orphaned/results/**`, ingen övrig execution)
-- D9 results minimal execution tranche: införd (move-only, exakt 3 filer till `archive/_orphaned/results/**`, plus scopead newline/format-normalisering för 3 orphaned filer)
-- D10 results minimal execution tranche: införd (move-only, exakt 3 filer till `archive/_orphaned/results/**`, ingen övrig execution)
-- D11 results minimal execution tranche: införd (move-only, exakt 3 filer till `archive/_orphaned/results/**`, plus scopead newline-normalisering för 6 orphaned filer)
-- D12 results minimal execution tranche: införd (move-only, exakt 3 filer till `archive/_orphaned/results/**`, plus scopead newline-normalisering för 3 orphaned filer)
-- D13 results minimal execution tranche: införd (move-only, exakt 3 filer till `archive/_orphaned/results/**`, plus scopead newline-normalisering för 3 orphaned filer)
-- D14 results minimal execution tranche: införd (move-only, exakt 3 filer till `archive/_orphaned/results/**`, plus scopead newline-normalisering för 3 orphaned filer)
-- D15 results minimal execution tranche: införd (move-only, exakt 3 filer till `archive/_orphaned/results/**`, plus scopead newline-normalisering för 3 orphaned filer)
-- D16 results minimal execution tranche: införd (move-only, exakt 3 filer till `archive/_orphaned/results/**`, ingen övrig execution)
-- D17 results minimal execution tranche: införd (move-only, exakt 3 filer till `archive/_orphaned/results/**`, ingen övrig execution)
-- D18 results minimal execution tranche: införd (move-only, exakt 3 filer till `archive/_orphaned/results/**`, plus scopead newline-normalisering för 5 carry-forward filer)
-- D19 results minimal execution tranche: införd (move-only, exakt 3 filer till `archive/_orphaned/results/**`, ingen övrig execution)
-- D20 results minimal execution tranche: införd (move-only, exakt 3 filer till `archive/_orphaned/results/**`, ingen övrig execution)
-- D21 results minimal delete execution tranche: införd (delete-only, exakt 1 mapp `results/hparam_search/phase7b_grid_3months/**`)
-- D22 results minimal delete execution tranche: införd (delete-only, exakt 3 filer `results/backtests/tBTCUSD_1h_20251022_152515/152517/152519.json`)
-- D23 results minimal delete execution tranche: införd (delete-only, exakt 10 filer `results/backtests/tBTCUSD_1h_20251022_153336..160723.json`)
-- D24 results minimal delete execution tranche: införd (delete-only, exakt 10 filer `results/backtests/tBTCUSD_1h_20251022_160814..162341.json`)
-- D25 results minimal delete execution tranche: införd (delete-only, exakt 10 filer `results/backtests/tBTCUSD_1h_20251022_164122..171912.json`)
-- D26 results minimal delete execution tranche: införd (delete-only, exakt 7 filer `results/backtests/tBTCUSD_1h_20251022_172222..180346.json`)
-- D27 results minimal delete execution tranche: införd (delete-only, exakt 10 filer `results/backtests/tBTCUSD_1h_20251026_205559..20251027_230343.json`)
-- D28 results minimal delete execution tranche: införd (delete-only, exakt 10 filer `results/backtests/tBTCUSD_1h_20251225_171516..180544.json`)
-- D29 results minimal delete execution tranche: införd (delete-only, exakt 10 filer `results/backtests/tBTCUSD_1h_20251225_180629..182253.json`)
-- D30 results minimal delete execution tranche: införd (delete-only, exakt 10 filer `results/backtests/tBTCUSD_1h_20251225_182338..185329.json`)
-- D31 results minimal delete execution tranche: införd (delete-only, exakt 1 run-dir `results/hparam_search/run_20251226_173828/**` ~255MB)
-- D32 results minimal delete execution tranche: införd (delete-only, exakt 31 filer `results/hparam_search/run_20251227_180204/tBTCUSD_1h_1..31.json` ~250MB)
-- D33 results minimal delete execution tranche: införd (delete-only, exakt 31 filer `results/hparam_search/run_20251227_180204/tBTCUSD_1h_32..62.json` ~251MB)
-- D34 results minimal delete execution tranche: införd (delete-only, exakt 23 filer `results/hparam_search/run_20251227_180204/tBTCUSD_1h_63..85.json` ~188MB)
-- D35 results minimal delete execution tranche: införd (delete-only, exakt 1 run-dir `results/hparam_search/run_20251227_173827/**` ~13MB)
-- D36 scripts minimal delete execution tranche: införd (delete-only, exakt 2 filer `scripts/analyze_failures_temp.py` + `scripts/analyze_failures_temp_v2.py` ~1KB)
-- D37 data minimal delete execution tranche: införd (delete-only, exakt 5 filer `data/raw/bitfinex/candles/tBTCUSD_*_2025-10-*.parquet` ~746KB)
-- D38 root-db minimal move execution tranche: införd (move-only, exakt 2 filer `optimizer_phase7b.db` + `optuna_search.db` till `results/hparam_search/storage/**` ~248KB)
+- `AGENTS.md` ska vara kort och operativ; historik och långa körloggar hör hemma i `docs/history/**` och `docs/ops/**`.
+- Cleanup med destruktiv effekt kräver **separat commit-kontrakt**, explicit scope, och verifierad gate-körning.
+- Nya cleanup-trancher ska inte dokumenteras som långa inline-listor här; länka i stället till kontrakt/rapport under `docs/ops/`.
 
-Detaljer:
+Operativt läge (2026-02):
 
-- `docs/ops/REPO_CLEANUP_P0_CONTRACT_2026-02-14.md`
-- `docs/ops/ROOT_ARTIFACT_INVENTORY_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_P1_TOOLING_CONTRACT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_P2_CONTRACT_2026-02-14.md`
-- `docs/ops/REPO_RETENTION_POLICY_DRAFT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_P3_DRYRUN_CONTRACT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_P3_DRYRUN_SCOPE_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_P3_DRYRUN_REPORT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D1_EXEC_CONTRACT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D1_EXEC_REPORT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D2_HARDEN_CONTRACT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D2_HARDEN_REPORT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_NEXT_BACKLOG_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D3A_EXEC_CONTRACT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D3A_EXEC_REPORT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D3B_EXEC_CONTRACT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D3B_EXEC_REPORT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D3C_EXEC_CONTRACT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D3C_EXEC_REPORT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D3D_EXEC_CONTRACT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D3D_EXEC_REPORT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D3E_EXEC_CONTRACT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D3E_EXEC_REPORT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D3F_EXEC_CONTRACT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D3F_EXEC_REPORT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D3G_EXEC_CONTRACT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D3G_EXEC_REPORT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D3H_EXEC_CONTRACT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D3H_EXEC_REPORT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D3I_EXEC_CONTRACT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D3I_EXEC_REPORT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D3J_EXEC_CONTRACT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D3J_EXEC_REPORT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D3K_EXEC_CONTRACT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D3K_EXEC_REPORT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D3L_EXEC_CONTRACT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D3L_EXEC_REPORT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D4A_TRACKABILITY_CONTRACT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D4A_TRACKABILITY_REPORT_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D4B_POLICY_OPTIONS_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D5_OOB_EXECUTION_GUIDE_2026-02-14.md`
-- `docs/ops/REPO_CLEANUP_D6_POLICY_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D6_POLICY_REPORT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D7_EXEC_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D7_EXEC_REPORT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D8_EXEC_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D8_EXEC_REPORT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D9_EXEC_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D9_EXEC_REPORT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D10_EXEC_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D10_EXEC_REPORT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D11_EXEC_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D11_EXEC_REPORT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D12_EXEC_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D12_EXEC_REPORT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D13_EXEC_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D13_EXEC_REPORT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D14_EXEC_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D14_EXEC_REPORT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D15_EXEC_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D15_EXEC_REPORT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D16_EXEC_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D16_EXEC_REPORT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D17_EXEC_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D17_EXEC_REPORT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D18_EXEC_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D18_EXEC_REPORT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D19_EXEC_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D19_EXEC_REPORT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D20_EXEC_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D20_EXEC_REPORT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D21_EXEC_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D21_EXEC_REPORT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D22_EXEC_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D22_EXEC_REPORT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D23_EXEC_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D23_EXEC_REPORT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D24_EXEC_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D24_EXEC_REPORT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D25_EXEC_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D25_EXEC_REPORT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D26_EXEC_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D26_EXEC_REPORT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D27_EXEC_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D27_EXEC_REPORT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D28_EXEC_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D28_EXEC_REPORT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D29_EXEC_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D29_EXEC_REPORT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D30_EXEC_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D30_EXEC_REPORT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D31_EXEC_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D31_EXEC_REPORT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D32_EXEC_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D32_EXEC_REPORT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D33_EXEC_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D33_EXEC_REPORT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D34_EXEC_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D34_EXEC_REPORT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D35_EXEC_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D35_EXEC_REPORT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D36_EXEC_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D36_EXEC_REPORT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D37_EXEC_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D37_EXEC_REPORT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D38_EXEC_CONTRACT_2026-02-15.md`
-- `docs/ops/REPO_CLEANUP_D38_EXEC_REPORT_2026-02-15.md`
+- Governance/docs-konsolidering genomförd.
+- Historiska detaljer för tidigare trancher finns i `docs/ops/REPO_CLEANUP_*`.
+- Aktiv backlogg för nästa steg finns i `docs/ops/REPO_CLEANUP_NEXT_BACKLOG_2026-02-14.md`.
+
+Det här avsnittet är medvetet kort för att undvika dokumentdrift och duplicerad historik.
 
 ## 8) Referenser
 
 - `.github/copilot-instructions.md`
+- `.github/agents/Codex53.agent.md`
+- `.github/agents/Opus46.agent.md`
+- `.github/skills/repo_clean_refactor.json`
 - `docs/OPUS_46_GOVERNANCE.md`
 - `docs/history/AGENTS_HISTORY.md`
 - `CLAUDE.md`

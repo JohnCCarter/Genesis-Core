@@ -96,7 +96,6 @@ test_optuna*.db
 optuna_*.db
 
 # Security & Sensitive files
-.env
 .env.local
 .env.development
 .env.test
@@ -133,11 +132,8 @@ config/runtime.local.json
 node_modules/
 
 # Build artifacts
-dist/
-build/
 !scripts/build/
 !scripts/build/**
-*.egg-info/
 
 # Temporary files
 *.tmp
@@ -224,9 +220,6 @@ results/evaluation/**/*.jsonl
 results/evaluation/**/*.ndjson
 
 # CI artifacts
-bandit-report.txt
-bandit-report.json
-
 # Keep results documentation and archives
 !results/README.md
 !results/**/README.md

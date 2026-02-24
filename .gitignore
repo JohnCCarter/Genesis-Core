@@ -135,6 +135,8 @@ node_modules/
 # Build artifacts
 dist/
 build/
+!scripts/build/
+!scripts/build/**
 *.egg-info/
 
 # Temporary files

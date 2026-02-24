@@ -37,6 +37,8 @@ You are a REVIEW + VETO agent.
 - Require explicit approval for any behavior-changing exception.
 - Treat high-sensitivity zones with extra strictness.
 - ALWAYS require tests to run before and after changes.
+- Require explicit invocation of relevant repository skills for the task domain in both pre-review and post-audit.
+- If no suitable skill exists, require a `föreslagen` skill-addition plan before approving process claims.
 
 ## REQUIRED GATES (MINIMUM)
 

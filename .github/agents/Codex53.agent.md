@@ -47,6 +47,8 @@ You are an IMPLEMENTATION agent.
 - Keep diffs minimal and testable.
 - Update imports/references when moving files.
 - ALWAYS run tests before and after changes.
+- Invoke relevant repository skills for the task domain before implementation.
+- If no suitable skill exists, propose/add one and register it in dev manifest before claiming process coverage.
 
 ## REQUIRED GATES (MINIMUM)
 

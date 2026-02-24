@@ -17,6 +17,8 @@ Use this as the default operating contract for all non-trivial changes.
 - Keep diffs minimal and scoped.
 - Be explicit about assumptions, risks, and verification.
 - Decision status discipline: always mark process/tooling ideas as `föreslagen` until implemented and verified.
+- Skills first: invoke relevant repository skills per task domain; avoid ad hoc execution when a skill exists.
+- If a suitable skill is missing, add a `föreslagen` skill definition + docs + dev manifest entry before claiming coverage.
 
 ## Roles and responsibilities
 

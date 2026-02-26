@@ -4,6 +4,7 @@ import os
 from typing import Any
 
 from core.observability.metrics import metrics
+from core.strategy import regime_intelligence as _regime_intelligence
 from core.strategy.champion_loader import ChampionLoader
 from core.strategy.confidence import compute_confidence
 from core.strategy.decision import decide
@@ -112,89 +113,33 @@ def compute_htf_regime(
     htf_fib_data: dict[str, Any] | None,
     current_price: float | None = None,
 ) -> str:
-    """Compute regime from HTF (1D) Fibonacci context for defensive sizing.
+    """Compatibility wrapper for HTF regime logic.
 
-    This function derives a regime classification from the HTF swing structure
-    to enable position size adjustments when the higher timeframe is bearish.
-
-    The regime is determined by the relationship between current price and
-    HTF Fibonacci levels:
-    - "bull": Price above 0.618 retracement (strong uptrend structure)
-    - "bear": Price below 0.382 retracement (strong downtrend structure)
-    - "ranging": Price between 0.382 and 0.618 (consolidation)
-    - "unknown": Insufficient HTF data available
-
-    Args:
-        htf_fib_data: HTF Fibonacci context dict from features_asof, containing
-            keys like 'swing_high', 'swing_low', 'levels', 'available'.
-        current_price: Current LTF close price for regime determination.
-
-    Returns:
-        Regime string: "bull", "bear", "ranging", or "unknown".
-
-    Note:
-        This is intentionally separate from LTF regime detection (EMA-based).
-        HTF regime changes slowly (~days) and provides "early warning" for
-        position sizing adjustments before LTF signals deteriorate.
-
-    Example:
-        >>> htf_data = {"available": True, "swing_high": 100000, "swing_low": 80000}
-        >>> compute_htf_regime(htf_data, current_price=95000)
-        'bull'  # Price in upper part of swing range
-
-    See also:
-        - decision.py: htf_regime_size_multipliers config
-        - decision.py: volatility_sizing config
-        - AGENTS.md: Section "HTF-Regim + Volatilitet styr Sizing"
+    Keep this symbol local in evaluate.py for tests/monkeypatching parity.
     """
-    if not htf_fib_data or not isinstance(htf_fib_data, dict):
-        return "unknown"
 
-    if not htf_fib_data.get("available"):
-        return "unknown"
-
-    if current_price is None or current_price <= 0:
-        return "unknown"
-
-    # Extract swing bounds from HTF context
-    swing_high = _safe_float(htf_fib_data.get("swing_high"))
-    swing_low = _safe_float(htf_fib_data.get("swing_low"))
-
-    if swing_high is None or swing_low is None:
-        return "unknown"
-
-    if swing_high <= swing_low:
-        return "unknown"
-
-    # Calculate position within swing range (0 = at low, 1 = at high)
-    swing_range = swing_high - swing_low
-    position_in_range = (current_price - swing_low) / swing_range
-
-    # Classify based on position in swing range
-    # These thresholds align with Fibonacci retracement levels
-    if position_in_range >= 0.618:
-        return "bull"
-    elif position_in_range <= 0.382:
-        return "bear"
-    else:
-        return "ranging"
+    return _regime_intelligence.compute_htf_regime(
+        htf_fib_data,
+        current_price=current_price,
+    )
 
 
 def _detect_shadow_regime_from_regime_module(candles: dict[str, Any]) -> str | None:
-    """Compute regime.py observer value in shadow-only mode.
+    """Compatibility wrapper for shadow observer logic.
 
-    IMPORTANT:
-    - This observer is intentionally non-authoritative in T1.
-    - `detect_regime_unified` in evaluate_pipeline remains the decision-path authority.
-    - The returned value must never be fed into prediction, confidence, or decision inputs.
+    Keep this symbol local in evaluate.py for tests/monkeypatching parity.
     """
 
-    try:
-        from core.strategy.regime import detect_regime_from_candles
+    return _regime_intelligence.detect_shadow_regime_from_regime_module(candles)
 
-        return str(detect_regime_from_candles(candles))
-    except Exception:
-        return None
+
+def _detect_authoritative_regime(candles: dict[str, Any], configs: dict[str, Any]) -> str:
+    """Compatibility wrapper for authoritative regime detection.
+
+    Authority remains `regime_unified.detect_regime_unified` inside the delegated module path.
+    """
+
+    return _regime_intelligence.detect_authoritative_regime(candles, configs)
 
 
 def evaluate_pipeline(
@@ -262,47 +207,9 @@ def evaluate_pipeline(
     if metrics_enabled:
         metrics.event("features_ok", {"keys": list(feats.keys())})
 
-    # Detect regime BEFORE prediction (needed for regime-aware calibration)
-    # Use unified regime detection (EMA-based, matches calibration analysis)
-    from core.strategy.regime_unified import detect_regime_unified
-
-    # Fast-path: use precomputed EMA50 if present.
-    # IMPORTANT: In backtests/optimizer we feed a *windowed* candles dict (e.g. last 200 bars)
-    # but `precomputed_features` contains full-series arrays. In that mode, index EMA by
-    # `_global_index` (injected by BacktestEngine) rather than `len(closes)-1`.
-    pre = dict(configs.get("precomputed_features") or {})
-    ema50 = pre.get("ema_50")
-    closes = candles.get("close") if isinstance(candles, dict) else None
-
-    ema_idx: int | None = None
-    if "_global_index" in configs:
-        try:
-            ema_idx = int(configs.get("_global_index"))
-        except (TypeError, ValueError):
-            ema_idx = None
-    if ema_idx is None and closes is not None:
-        ema_idx = len(closes) - 1
-
-    if (
-        isinstance(ema50, list | tuple)
-        and (closes is not None)
-        and (ema_idx is not None)
-        and 0 <= ema_idx < len(ema50)
-    ):
-        current_price = float(closes[-1])
-        current_ema = float(ema50[ema_idx])
-        if current_ema != 0:
-            trend = (current_price - current_ema) / current_ema
-            if trend > 0.02:
-                current_regime = "bull"
-            elif trend < -0.02:
-                current_regime = "bear"
-            else:
-                current_regime = "ranging"
-        else:
-            current_regime = "balanced"
-    else:
-        current_regime = detect_regime_unified(candles, ema_period=50)
+    # Detect regime BEFORE prediction (needed for regime-aware calibration).
+    # Authority remains detect_regime_unified in delegated regime_intelligence path.
+    current_regime = _detect_authoritative_regime(candles, configs)
 
     # Shadow-only observer path (T2): compute regime.py signal for observability only.
     # Authority for decision path remains `detect_regime_unified` above.

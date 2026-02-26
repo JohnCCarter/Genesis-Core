@@ -38,6 +38,14 @@ AUDIT_LOG = _REPO_ROOT / "logs" / "config_audit.jsonl"
 MAX_AUDIT_SIZE = 5 * 1024 * 1024  # 5 MB
 SEED_PATH = _REPO_ROOT / "config" / "runtime.seed.json"
 
+_AUTHORITY_MODE_ALLOWED = {"legacy", "regime_module"}
+_AUTHORITY_MODE_CANONICAL_PATH = (
+    "multi_timeframe",
+    "regime_intelligence",
+    "authority_mode",
+)
+_AUTHORITY_MODE_ALIAS_PATH = ("regime_unified", "authority_mode")
+
 
 def _json_dumps_canonical(data: dict[str, Any]) -> str:
     return json.dumps(data, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
@@ -51,6 +59,102 @@ def _deep_merge_dicts(base: dict[str, Any], override: dict[str, Any]) -> dict[st
         else:
             merged[key] = value
     return merged
+
+
+def _normalize_authority_mode(value: Any) -> str | None:
+    if value is None:
+        return None
+    normalized = str(value).strip().lower()
+    return normalized if normalized in _AUTHORITY_MODE_ALLOWED else None
+
+
+def _has_nested_key(data: dict[str, Any], path: tuple[str, ...]) -> bool:
+    cur: Any = data
+    for key in path[:-1]:
+        if not isinstance(cur, dict) or key not in cur:
+            return False
+        cur = cur[key]
+    return isinstance(cur, dict) and path[-1] in cur
+
+
+def _get_nested_value(data: dict[str, Any], path: tuple[str, ...]) -> Any:
+    cur: Any = data
+    for key in path:
+        if not isinstance(cur, dict):
+            return None
+        cur = cur.get(key)
+    return cur
+
+
+def _set_nested_value(data: dict[str, Any], path: tuple[str, ...], value: Any) -> None:
+    cur: Any = data
+    for key in path[:-1]:
+        nxt = cur.get(key)
+        if not isinstance(nxt, dict):
+            nxt = {}
+            cur[key] = nxt
+        cur = nxt
+    cur[path[-1]] = value
+
+
+def _delete_nested_key(data: dict[str, Any], path: tuple[str, ...]) -> None:
+    cur: Any = data
+    parents: list[tuple[dict[str, Any], str]] = []
+    for key in path[:-1]:
+        if not isinstance(cur, dict) or key not in cur:
+            return
+        parents.append((cur, key))
+        cur = cur[key]
+    if not isinstance(cur, dict) or path[-1] not in cur:
+        return
+    del cur[path[-1]]
+
+    # prune empty containers from leaf to root
+    for parent, key in reversed(parents):
+        child = parent.get(key)
+        if isinstance(child, dict) and not child:
+            del parent[key]
+        else:
+            break
+
+
+def _canonicalize_authority_mode_alias(patch: dict[str, Any]) -> dict[str, Any]:
+    """Normalize compatibility alias to canonical authority path.
+
+    Deterministic precedence:
+    - canonical key wins when both canonical and alias are present;
+    - invalid canonical value is never rescued by alias.
+    """
+
+    normalized_patch = dict(patch or {})
+
+    alias_present = _has_nested_key(normalized_patch, _AUTHORITY_MODE_ALIAS_PATH)
+    if alias_present:
+        alias_root = normalized_patch.get("regime_unified")
+        if not isinstance(alias_root, dict):
+            raise ValueError("non_whitelisted_field:regime_unified")
+        if any(key != "authority_mode" for key in alias_root.keys()):
+            raise ValueError("non_whitelisted_field:regime_unified")
+
+    canonical_present = _has_nested_key(normalized_patch, _AUTHORITY_MODE_CANONICAL_PATH)
+
+    if canonical_present:
+        canonical_raw = _get_nested_value(normalized_patch, _AUTHORITY_MODE_CANONICAL_PATH)
+        canonical_mode = _normalize_authority_mode(canonical_raw)
+        if canonical_mode is None:
+            raise ValueError("invalid_value:regime_intelligence.authority_mode")
+        _set_nested_value(normalized_patch, _AUTHORITY_MODE_CANONICAL_PATH, canonical_mode)
+    elif alias_present:
+        alias_raw = _get_nested_value(normalized_patch, _AUTHORITY_MODE_ALIAS_PATH)
+        alias_mode = _normalize_authority_mode(alias_raw)
+        if alias_mode is None:
+            raise ValueError("invalid_value:regime_unified.authority_mode")
+        _set_nested_value(normalized_patch, _AUTHORITY_MODE_CANONICAL_PATH, alias_mode)
+
+    if alias_present:
+        _delete_nested_key(normalized_patch, _AUTHORITY_MODE_ALIAS_PATH)
+
+    return normalized_patch
 
 
 class ConfigAuthority:
@@ -93,7 +197,11 @@ class ConfigAuthority:
         return RuntimeSnapshot(version=version, hash=h, cfg=cfg)
 
     def validate(self, proposal: dict[str, Any]) -> RuntimeConfig:
-        return RuntimeConfig(**proposal)
+        normalized = dict(proposal or {})
+        if "cfg" in normalized and isinstance(normalized["cfg"], dict):
+            normalized = dict(normalized["cfg"])
+        normalized = _canonicalize_authority_mode_alias(normalized)
+        return RuntimeConfig(**normalized)
 
     def get(self) -> tuple[RuntimeConfig, str, int]:
         snap = self.load()
@@ -168,6 +276,7 @@ class ConfigAuthority:
         normalized_patch = dict(patch or {})
         if "cfg" in normalized_patch and isinstance(normalized_patch["cfg"], dict):
             normalized_patch = dict(normalized_patch["cfg"])
+        normalized_patch = _canonicalize_authority_mode_alias(normalized_patch)
 
         # whitelist enforcement (path-based)
         def _enforce_whitelist(p: dict[str, Any]) -> None:

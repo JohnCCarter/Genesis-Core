@@ -90,6 +90,7 @@ def test_evaluate_pipeline_regime_uses_global_index_for_precomputed_ema50(monkey
 
     assert captured["regime"] == "bull"
     assert result["regime"] == "bull"
+    assert _meta["observability"]["shadow_regime"]["authority_mode_source"] == "default_legacy"
 
 
 def test_evaluate_pipeline_regime_module_authority_ignores_precomputed_global_index(monkeypatch):
@@ -170,3 +171,7 @@ def test_evaluate_pipeline_regime_module_authority_ignores_precomputed_global_in
     assert captured["regime"] == "bear"
     assert result["regime"] == "bear"
     assert meta["observability"]["shadow_regime"]["authority_mode"] == "regime_module"
+    assert (
+        meta["observability"]["shadow_regime"]["authority_mode_source"]
+        == "multi_timeframe.regime_intelligence.authority_mode"
+    )

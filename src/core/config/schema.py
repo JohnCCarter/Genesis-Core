@@ -148,6 +148,16 @@ class RegimeIntelligenceConfig(RuntimeSection):
     authority_mode: Literal["legacy", "regime_module"] = Field(default="legacy")
 
 
+class RegimeUnifiedAliasConfig(RuntimeSection):
+    """Compatibility alias for authority mode during SSOT migration.
+
+    Canonical path remains:
+    `multi_timeframe.regime_intelligence.authority_mode`.
+    """
+
+    authority_mode: Literal["legacy", "regime_module"] = Field(default="legacy")
+
+
 class MultiTimeframeConfig(RuntimeSection):
     use_htf_block: bool = Field(default=True)
     allow_ltf_override: bool = Field(default=False)
@@ -265,6 +275,8 @@ class RuntimeConfig(RuntimeSection):
     htf_fib: FibConfig | None = None
     ltf_fib: FibConfig | None = None
     features: FeaturesConfig | None = None
+    # Compatibility alias input only (must not persist in canonical runtime payload).
+    regime_unified: RegimeUnifiedAliasConfig | None = Field(default=None, exclude=True)
 
     def model_dump_canonical(self) -> dict[str, Any]:
         """Dump in a stable, hash-friendly form (tuples → lists)."""

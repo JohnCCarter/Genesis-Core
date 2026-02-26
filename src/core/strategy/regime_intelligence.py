@@ -5,6 +5,11 @@ from typing import Any
 _AUTHORITY_MODE_LEGACY = "legacy"
 _AUTHORITY_MODE_REGIME_MODULE = "regime_module"
 _ALLOWED_AUTHORITY_MODES = {_AUTHORITY_MODE_LEGACY, _AUTHORITY_MODE_REGIME_MODULE}
+_AUTHORITY_MODE_SOURCE_CANONICAL = "multi_timeframe.regime_intelligence.authority_mode"
+_AUTHORITY_MODE_SOURCE_ALIAS = "regime_unified.authority_mode"
+_AUTHORITY_MODE_SOURCE_DEFAULT = "default_legacy"
+_AUTHORITY_MODE_SOURCE_CANONICAL_INVALID_FALLBACK = "canonical_invalid_fallback_legacy"
+_AUTHORITY_MODE_SOURCE_ALIAS_INVALID_FALLBACK = "alias_invalid_fallback_legacy"
 
 
 def _safe_float(value: Any) -> float | None:
@@ -60,19 +65,51 @@ def detect_shadow_regime_from_regime_module(candles: dict[str, Any]) -> str | No
         return None
 
 
+def _normalize_authority_mode(value: Any) -> str | None:
+    normalized = str(value).strip().lower() if value is not None else _AUTHORITY_MODE_LEGACY
+    return normalized if normalized in _ALLOWED_AUTHORITY_MODES else None
+
+
+def resolve_authority_mode_with_source(configs: dict[str, Any] | None) -> tuple[str, str]:
+    """Resolve authority mode + source with deterministic precedence.
+
+    Precedence contract:
+    1) `multi_timeframe.regime_intelligence.authority_mode` (canonical)
+    2) `regime_unified.authority_mode` (compatibility alias)
+    3) default legacy fallback
+
+    If canonical key is present but invalid, fallback is always legacy even when alias is valid.
+    """
+
+    cfg = dict(configs or {})
+
+    mtf = cfg.get("multi_timeframe")
+    regime_intelligence_cfg = mtf.get("regime_intelligence") if isinstance(mtf, dict) else None
+    canonical_present = isinstance(regime_intelligence_cfg, dict) and (
+        "authority_mode" in regime_intelligence_cfg
+    )
+    if canonical_present:
+        canonical_mode = _normalize_authority_mode(regime_intelligence_cfg.get("authority_mode"))
+        if canonical_mode is not None:
+            return canonical_mode, _AUTHORITY_MODE_SOURCE_CANONICAL
+        return _AUTHORITY_MODE_LEGACY, _AUTHORITY_MODE_SOURCE_CANONICAL_INVALID_FALLBACK
+
+    alias_cfg = cfg.get("regime_unified")
+    alias_present = isinstance(alias_cfg, dict) and ("authority_mode" in alias_cfg)
+    if alias_present:
+        alias_mode = _normalize_authority_mode(alias_cfg.get("authority_mode"))
+        if alias_mode is not None:
+            return alias_mode, _AUTHORITY_MODE_SOURCE_ALIAS
+        return _AUTHORITY_MODE_LEGACY, _AUTHORITY_MODE_SOURCE_ALIAS_INVALID_FALLBACK
+
+    return _AUTHORITY_MODE_LEGACY, _AUTHORITY_MODE_SOURCE_DEFAULT
+
+
 def resolve_authority_mode(configs: dict[str, Any] | None) -> str:
     """Resolve configured regime authority mode with safe legacy fallback."""
 
-    cfg = dict(configs or {})
-    mtf = cfg.get("multi_timeframe")
-    if not isinstance(mtf, dict):
-        return _AUTHORITY_MODE_LEGACY
-    regime_intelligence_cfg = mtf.get("regime_intelligence")
-    if not isinstance(regime_intelligence_cfg, dict):
-        return _AUTHORITY_MODE_LEGACY
-    raw = regime_intelligence_cfg.get("authority_mode")
-    mode = str(raw).strip().lower() if raw is not None else _AUTHORITY_MODE_LEGACY
-    return mode if mode in _ALLOWED_AUTHORITY_MODES else _AUTHORITY_MODE_LEGACY
+    mode, _source = resolve_authority_mode_with_source(configs)
+    return mode
 
 
 def _detect_authoritative_regime_legacy(
@@ -122,7 +159,8 @@ def detect_authoritative_regime(
     """Return authoritative regime for evaluate decision path.
 
     Default authority path is legacy (precomputed EMA50 / regime_unified).
-    When configured with `multi_timeframe.regime_intelligence.authority_mode=regime_module`,
+    When configured with `multi_timeframe.regime_intelligence.authority_mode=regime_module`
+    (or compatibility alias `regime_unified.authority_mode=regime_module`),
     authority switches explicitly to `regime.detect_regime_from_candles`.
     """
     authority_mode = resolve_authority_mode(configs)

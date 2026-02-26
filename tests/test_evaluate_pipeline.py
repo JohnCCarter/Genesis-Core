@@ -249,3 +249,122 @@ def test_evaluate_pipeline_authority_mode_regime_module_is_deterministic(
     assert shadow_obs_b["authoritative_source"] == "regime.detect_regime_from_candles"
     assert shadow_obs_a["decision_input"] is False
     assert shadow_obs_b["decision_input"] is False
+
+
+def test_evaluate_pipeline_authority_mode_alias_only_is_deterministic(
+    monkeypatch,
+    sample_policy: dict[str, Any],
+    sample_configs: dict[str, Any],
+    small_candle_history: dict[str, Any],
+) -> None:
+    from core.strategy import evaluate as ev
+    from core.strategy import regime_intelligence as ri
+    from core.strategy import regime_unified as ru
+
+    monkeypatch.setattr(ru, "detect_regime_unified", lambda *_a, **_k: "bear")
+    monkeypatch.setattr(ri, "detect_shadow_regime_from_regime_module", lambda *_a, **_k: "bull")
+
+    cfg = deepcopy(sample_configs)
+    cfg.pop("precomputed_features", None)
+    cfg.pop("_global_index", None)
+    cfg["regime_unified"] = {"authority_mode": "regime_module"}
+
+    result_a, meta_a = ev.evaluate_pipeline(
+        small_candle_history,
+        policy=sample_policy,
+        configs=deepcopy(cfg),
+    )
+    result_b, meta_b = ev.evaluate_pipeline(
+        small_candle_history,
+        policy=sample_policy,
+        configs=deepcopy(cfg),
+    )
+
+    assert result_a["regime"] == "bull"
+    assert result_b["regime"] == "bull"
+    assert {
+        "action": result_a["action"],
+        "confidence": result_a["confidence"],
+        "regime": result_a["regime"],
+    } == {
+        "action": result_b["action"],
+        "confidence": result_b["confidence"],
+        "regime": result_b["regime"],
+    }
+    shadow_obs_a = meta_a["observability"]["shadow_regime"]
+    shadow_obs_b = meta_b["observability"]["shadow_regime"]
+    assert shadow_obs_a["authority_mode"] == "regime_module"
+    assert shadow_obs_b["authority_mode"] == "regime_module"
+    assert shadow_obs_a["authority_mode_source"] == "regime_unified.authority_mode"
+    assert shadow_obs_b["authority_mode_source"] == "regime_unified.authority_mode"
+    assert shadow_obs_a["decision_input"] is False
+    assert shadow_obs_b["decision_input"] is False
+
+
+def test_evaluate_pipeline_authority_mode_conflict_canonical_wins(
+    monkeypatch,
+    sample_policy: dict[str, Any],
+    sample_configs: dict[str, Any],
+    small_candle_history: dict[str, Any],
+) -> None:
+    from core.strategy import evaluate as ev
+    from core.strategy import regime_intelligence as ri
+    from core.strategy import regime_unified as ru
+
+    monkeypatch.setattr(ru, "detect_regime_unified", lambda *_a, **_k: "ranging")
+    monkeypatch.setattr(ri, "detect_shadow_regime_from_regime_module", lambda *_a, **_k: "bull")
+
+    cfg = deepcopy(sample_configs)
+    cfg.pop("precomputed_features", None)
+    cfg.pop("_global_index", None)
+    cfg.setdefault("multi_timeframe", {})["regime_intelligence"] = {"authority_mode": "legacy"}
+    cfg["regime_unified"] = {"authority_mode": "regime_module"}
+
+    result, meta = ev.evaluate_pipeline(
+        small_candle_history,
+        policy=sample_policy,
+        configs=cfg,
+    )
+
+    assert result["regime"] == "ranging"
+    shadow_obs = meta["observability"]["shadow_regime"]
+    assert shadow_obs["authority_mode"] == "legacy"
+    assert (
+        shadow_obs["authority_mode_source"] == "multi_timeframe.regime_intelligence.authority_mode"
+    )
+    assert shadow_obs["authoritative_source"] == "regime_unified.detect_regime_unified"
+
+
+def test_evaluate_pipeline_canonical_invalid_alias_valid_falls_back_to_legacy(
+    monkeypatch,
+    sample_policy: dict[str, Any],
+    sample_configs: dict[str, Any],
+    small_candle_history: dict[str, Any],
+) -> None:
+    from core.strategy import evaluate as ev
+    from core.strategy import regime_intelligence as ri
+    from core.strategy import regime_unified as ru
+
+    monkeypatch.setattr(ru, "detect_regime_unified", lambda *_a, **_k: "ranging")
+    monkeypatch.setattr(ri, "detect_shadow_regime_from_regime_module", lambda *_a, **_k: "bull")
+
+    cfg = deepcopy(sample_configs)
+    cfg.pop("precomputed_features", None)
+    cfg.pop("_global_index", None)
+    cfg.setdefault("multi_timeframe", {})["regime_intelligence"] = {
+        "authority_mode": "invalid_mode_xyz"
+    }
+    cfg["regime_unified"] = {"authority_mode": "regime_module"}
+
+    result, meta = ev.evaluate_pipeline(
+        small_candle_history,
+        policy=sample_policy,
+        configs=cfg,
+    )
+
+    assert result["regime"] == "ranging"
+    shadow_obs = meta["observability"]["shadow_regime"]
+    assert shadow_obs["authority_mode"] == "legacy"
+    assert shadow_obs["authority_mode_source"] == "canonical_invalid_fallback_legacy"
+    assert shadow_obs["authoritative_source"] == "regime_unified.detect_regime_unified"
+    assert shadow_obs["decision_input"] is False

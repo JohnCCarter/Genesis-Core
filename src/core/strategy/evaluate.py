@@ -209,7 +209,9 @@ def evaluate_pipeline(
 
     # Detect regime BEFORE prediction (needed for regime-aware calibration).
     # Authority path is config-gated in delegated regime_intelligence module.
-    authority_mode = _regime_intelligence.resolve_authority_mode(configs)
+    authority_mode, authority_mode_source = _regime_intelligence.resolve_authority_mode_with_source(
+        configs
+    )
     authoritative_source = (
         "regime.detect_regime_from_candles"
         if authority_mode == "regime_module"
@@ -428,6 +430,7 @@ def evaluate_pipeline(
                 "authoritative_source": authoritative_source,
                 "shadow_source": "regime.detect_regime_from_candles",
                 "authority_mode": authority_mode,
+                "authority_mode_source": authority_mode_source,
                 "authority": regime,
                 "shadow": shadow_regime,
                 "mismatch": shadow_regime_mismatch,

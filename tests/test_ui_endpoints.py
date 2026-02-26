@@ -46,6 +46,7 @@ def test_ui_get_and_evaluate_post():
     shadow_regime = observability.get("shadow_regime")
     assert isinstance(shadow_regime, dict)
     assert "authority_mode" in shadow_regime
+    assert "authority_mode_source" in shadow_regime
 
 
 def test_evaluate_missing_candles_returns_invalid_candles_error():

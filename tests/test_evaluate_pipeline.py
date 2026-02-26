@@ -70,14 +70,14 @@ def test_evaluate_pipeline_shadow_regime_observer_preserves_default_parity(
         return "bear"
 
     monkeypatch.setattr(ev, "_detect_shadow_regime_from_regime_module", _shadow_bull)
-    result_shadow_bull, _meta_shadow_bull = ev.evaluate_pipeline(
+    result_shadow_bull, meta_shadow_bull = ev.evaluate_pipeline(
         small_candle_history,
         policy=sample_policy,
         configs=deepcopy(base_configs),
     )
 
     monkeypatch.setattr(ev, "_detect_shadow_regime_from_regime_module", _shadow_bear)
-    result_shadow_bear, _meta_shadow_bear = ev.evaluate_pipeline(
+    result_shadow_bear, meta_shadow_bear = ev.evaluate_pipeline(
         small_candle_history,
         policy=sample_policy,
         configs=deepcopy(base_configs),
@@ -97,3 +97,15 @@ def test_evaluate_pipeline_shadow_regime_observer_preserves_default_parity(
     assert projection_bull == projection_bear
     assert projection_bull["regime"] == "ranging"
     assert observed_shadow_values == ["bull", "bear"]
+
+    shadow_obs_bull = meta_shadow_bull["observability"]["shadow_regime"]
+    shadow_obs_bear = meta_shadow_bear["observability"]["shadow_regime"]
+
+    assert shadow_obs_bull["authority"] == "ranging"
+    assert shadow_obs_bear["authority"] == "ranging"
+    assert shadow_obs_bull["shadow"] == "bull"
+    assert shadow_obs_bear["shadow"] == "bear"
+    assert shadow_obs_bull["mismatch"] is True
+    assert shadow_obs_bear["mismatch"] is True
+    assert shadow_obs_bull["decision_input"] is False
+    assert shadow_obs_bear["decision_input"] is False

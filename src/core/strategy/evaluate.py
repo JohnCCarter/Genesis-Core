@@ -304,9 +304,12 @@ def evaluate_pipeline(
     else:
         current_regime = detect_regime_unified(candles, ema_period=50)
 
-    # Shadow-only observer path (T1): compute regime.py signal but keep it non-authoritative.
+    # Shadow-only observer path (T2): compute regime.py signal for observability only.
     # Authority for decision path remains `detect_regime_unified` above.
-    _detect_shadow_regime_from_regime_module(candles)
+    shadow_regime = _detect_shadow_regime_from_regime_module(candles)
+    shadow_regime_mismatch: bool | None = None
+    if shadow_regime is not None:
+        shadow_regime_mismatch = str(shadow_regime) != str(current_regime)
 
     # symbol/timeframe kan plockas från configs eller policy; defaulta till tBTCUSD/1m
     symbol = policy.get("symbol", "tBTCUSD")
@@ -506,6 +509,16 @@ def evaluate_pipeline(
         "decision": action_meta,
         "champion": {
             "source": configs.get("meta", {}).get("champion_source"),
+        },
+        "observability": {
+            "shadow_regime": {
+                "authoritative_source": "regime_unified.detect_regime_unified",
+                "shadow_source": "regime.detect_regime_from_candles",
+                "authority": regime,
+                "shadow": shadow_regime,
+                "mismatch": shadow_regime_mismatch,
+                "decision_input": False,
+            }
         },
     }
     return result, meta

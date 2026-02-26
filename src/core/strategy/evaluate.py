@@ -180,6 +180,23 @@ def compute_htf_regime(
         return "ranging"
 
 
+def _detect_shadow_regime_from_regime_module(candles: dict[str, Any]) -> str | None:
+    """Compute regime.py observer value in shadow-only mode.
+
+    IMPORTANT:
+    - This observer is intentionally non-authoritative in T1.
+    - `detect_regime_unified` in evaluate_pipeline remains the decision-path authority.
+    - The returned value must never be fed into prediction, confidence, or decision inputs.
+    """
+
+    try:
+        from core.strategy.regime import detect_regime_from_candles
+
+        return str(detect_regime_from_candles(candles))
+    except Exception:
+        return None
+
+
 def evaluate_pipeline(
     candles: dict[str, Any],
     *,
@@ -286,6 +303,10 @@ def evaluate_pipeline(
             current_regime = "balanced"
     else:
         current_regime = detect_regime_unified(candles, ema_period=50)
+
+    # Shadow-only observer path (T1): compute regime.py signal but keep it non-authoritative.
+    # Authority for decision path remains `detect_regime_unified` above.
+    _detect_shadow_regime_from_regime_module(candles)
 
     # symbol/timeframe kan plockas från configs eller policy; defaulta till tBTCUSD/1m
     symbol = policy.get("symbol", "tBTCUSD")

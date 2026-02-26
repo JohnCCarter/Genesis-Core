@@ -156,6 +156,51 @@ def test_evaluate_pipeline_authority_mode_legacy_off_parity(
     assert meta_legacy["observability"]["shadow_regime"]["authority_mode"] == "legacy"
 
 
+def test_evaluate_pipeline_invalid_authority_mode_falls_back_to_legacy_with_default_parity(
+    monkeypatch,
+    sample_policy: dict[str, Any],
+    sample_configs: dict[str, Any],
+    small_candle_history: dict[str, Any],
+) -> None:
+    from core.strategy import evaluate as ev
+    from core.strategy import regime_unified as ru
+
+    monkeypatch.setattr(ru, "detect_regime_unified", lambda *_a, **_k: "ranging")
+
+    base_configs = deepcopy(sample_configs)
+    base_configs.pop("precomputed_features", None)
+    base_configs.pop("_global_index", None)
+    base_configs.setdefault("multi_timeframe", {})
+
+    invalid_mode_configs = deepcopy(base_configs)
+    invalid_mode_configs["multi_timeframe"]["regime_intelligence"] = {
+        "authority_mode": "invalid_mode_xyz"
+    }
+
+    result_default, meta_default = ev.evaluate_pipeline(
+        small_candle_history,
+        policy=sample_policy,
+        configs=deepcopy(base_configs),
+    )
+    result_invalid, meta_invalid = ev.evaluate_pipeline(
+        small_candle_history,
+        policy=sample_policy,
+        configs=deepcopy(invalid_mode_configs),
+    )
+
+    assert {
+        "action": result_default["action"],
+        "confidence": result_default["confidence"],
+        "regime": result_default["regime"],
+    } == {
+        "action": result_invalid["action"],
+        "confidence": result_invalid["confidence"],
+        "regime": result_invalid["regime"],
+    }
+    assert meta_default["observability"]["shadow_regime"]["authority_mode"] == "legacy"
+    assert meta_invalid["observability"]["shadow_regime"]["authority_mode"] == "legacy"
+
+
 def test_evaluate_pipeline_authority_mode_regime_module_is_deterministic(
     monkeypatch,
     sample_policy: dict[str, Any],

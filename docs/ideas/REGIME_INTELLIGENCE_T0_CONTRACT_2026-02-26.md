@@ -53,6 +53,8 @@ Category: `docs`
 ## 6) Skills-first policy note
 
 - Relevant repo skills must be invoked before implementation in non-doc tranches.
+- `feature_parity_check` is a **policy attestation** skill in current repo state; expected
+  outcome is `STOP`/`no_steps` and is **not** interpreted as gate failure.
 - If a suitable skill is missing, it is marked **`föreslagen`** until added and verified.
 - This T0 artifact does **not** claim new skill coverage as `införd`.
 

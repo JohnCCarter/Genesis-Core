@@ -1,0 +1,37 @@
+# Phase 3 EVGate Calibration: v4b min_ev=0.13 (~10% target veto)
+# Goal: Calibrate EVGate with p90 threshold
+#
+# Changes from v4a:
+#   - EVGate: min_ev=0.13 (target ~10% veto, p90 of EV distribution)
+#   - RegimeFilter: Keep relaxed (all regimes)
+#   - Cooldown: Keep min_bars=24 (unchanged)
+
+components:
+  - type: ml_confidence
+    params:
+      threshold: 0.24  # Baseline threshold (unchanged)
+
+  - type: regime_filter
+    params:
+      allowed_regimes: ["trending", "bull", "balanced", "bear", "ranging"]
+      # Keep relaxed (all regimes allowed)
+
+  - type: ev_gate
+    params:
+      min_ev: 0.13  # TUNED: p90 threshold (~10% veto target)
+
+  - type: cooldown
+    params:
+      min_bars_between_trades: 24  # 24 hours for 1h timeframe (unchanged)
+
+# Test period: 2024-01-01 to 2024-03-31 (Q1 2024)
+#
+# Expected behavior:
+#   - EVGate veto_rate: target ~10% (p90 of EV distribution)
+#   - CooldownComponent veto_rate: ~17% (from v4a baseline)
+#   - Trade count: target 12-15 (lightly filtered vs v4a: 15)
+#
+# Analysis value:
+#   - Calibrate EVGate impact on trade count
+#   - Measure veto rate vs EV distribution percentile
+#   - Conservative threshold (only filters top 10% worst EV)

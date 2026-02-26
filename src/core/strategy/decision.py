@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import logging
 import math
 from typing import Any, Literal
@@ -159,10 +160,10 @@ def decide(
     policy_timeframe = str(policy.get("timeframe") or "UNKNOWN")
     use_htf_block = bool(mtf_cfg.get("use_htf_block", True))
     allow_ltf_override_cfg = bool(mtf_cfg.get("allow_ltf_override"))
-    ltf_override_threshold = float(mtf_cfg.get("ltf_override_threshold", 0.85))
+    ltf_override_threshold = safe_float(mtf_cfg.get("ltf_override_threshold", 0.85), 0.85)
     adaptive_cfg = dict(mtf_cfg.get("ltf_override_adaptive") or {})
-    state_in = dict(state or {})
-    state_out: dict[str, Any] = dict(state_in)
+    state_in = copy.deepcopy(state or {})
+    state_out: dict[str, Any] = copy.deepcopy(state_in)
     override_state_in = state_in.get("ltf_override_state")
     override_state: dict[str, Any] = {}
     if isinstance(override_state_in, dict):
@@ -183,9 +184,9 @@ def decide(
             "reasons": reasons,
             "state_out": state_out,
         }
-    p_buy = float(probas.get("buy", 0.0))
-    p_sell = float(probas.get("sell", 0.0))
-    R = float((cfg.get("ev") or {}).get("R_default") or 1.0)
+    p_buy = safe_float(probas.get("buy", 0.0), 0.0)
+    p_sell = safe_float(probas.get("sell", 0.0), 0.0)
+    R = safe_float((cfg.get("ev") or {}).get("R_default") or 1.0, 1.0)
 
     # EV check: Must have positive EV for EITHER long or short
     # (Don't block shorts just because long EV is negative!)
@@ -243,7 +244,7 @@ def decide(
 
     # Determine ATR-adapted thresholds if available
     adaptation_cfg = thresholds_cfg.get("signal_adaptation") or {}
-    default_thr = float(thresholds_cfg.get("entry_conf_overall", 0.7))
+    default_thr = safe_float(thresholds_cfg.get("entry_conf_overall", 0.7), 0.7)
 
     atr = state_in.get("current_atr") if adaptation_cfg else None
     atr_percentiles = state_in.get("atr_percentiles") if adaptation_cfg else None
@@ -256,8 +257,9 @@ def decide(
         # Zone determination: use percentiles thresholds stored in state
         if atr is not None:
             atr_p = atr_percentiles.get(str(atr_period)) or atr_percentiles.get(atr_period) or {}
-            p40 = float(atr_p.get("p40", atr))
-            p80 = float(atr_p.get("p80", atr))
+            atr_safe = safe_float(atr, 0.0)
+            p40 = safe_float(atr_p.get("p40", atr_safe), atr_safe)
+            p80 = safe_float(atr_p.get("p80", atr_safe), atr_safe)
             if atr <= p40:
                 zone_name = "low"
             elif atr <= p80:
@@ -268,7 +270,7 @@ def decide(
         zone_cfg = zones.get(zone_name or "") or {}
         zone_entry = zone_cfg.get("entry_conf_overall")
         if zone_entry is not None:
-            default_thr = float(zone_entry)
+            default_thr = safe_float(zone_entry, default_thr)
         zone_regime = zone_cfg.get("regime_proba") or {}
 
         zone_meta = atr_percentiles.get(str(atr_period)) or atr_percentiles.get(atr_period) or {}
@@ -293,9 +295,9 @@ def decide(
 
     thresholds = zone_regime or thresholds_cfg.get("regime_proba", {})
     if isinstance(thresholds, float | int):
-        thr = float(thresholds)
+        thr = safe_float(thresholds, default_thr)
     else:
-        thr = float(thresholds.get(regime_str, default_thr))
+        thr = safe_float(thresholds.get(regime_str, default_thr), default_thr)
 
     buy_pass = p_buy >= thr and long_allowed
     sell_pass = p_sell >= thr and short_allowed
@@ -380,6 +382,11 @@ def decide(
             return levels[nearest]
         return None
 
+    def _is_context_error_reason(value: Any) -> bool:
+        if not isinstance(value, str):
+            return False
+        return value.strip().upper().endswith("_CONTEXT_ERROR")
+
     ltf_entry_cfg = (cfg.get("ltf_fib") or {}).get("entry") or {}
 
     def _prepare_override_context() -> dict[str, Any]:
@@ -388,7 +395,7 @@ def decide(
         if not confidence or not isinstance(confidence, dict):
             return {}
         conf_key = "buy" if candidate == "LONG" else "sell"
-        conf_val = float(confidence.get(conf_key, 0.0))
+        conf_val = safe_float(confidence.get(conf_key, 0.0), 0.0)
         history_window = max(1, int(adaptive_cfg.get("window", 120)))
         history_key = f"{conf_key.lower()}_history"
         history = list(override_state.get(history_key) or [])
@@ -407,12 +414,18 @@ def decide(
                 _compute_percentile(history, percentile_q) if len(history) >= min_history else None
             )
             fallback = adaptive_cfg.get("fallback_threshold")
-            base_threshold = float(
-                raw_threshold
-                if raw_threshold is not None
-                else (fallback if fallback is not None else ltf_override_threshold)
+            base_threshold = safe_float(
+                (
+                    raw_threshold
+                    if raw_threshold is not None
+                    else (fallback if fallback is not None else ltf_override_threshold)
+                ),
+                ltf_override_threshold,
             )
-            multiplier = float((adaptive_cfg.get("regime_multipliers") or {}).get(regime_str, 1.0))
+            multiplier = safe_float(
+                (adaptive_cfg.get("regime_multipliers") or {}).get(regime_str, 1.0),
+                1.0,
+            )
             effective_threshold = base_threshold * multiplier
             min_floor = adaptive_cfg.get("min_floor")
             max_ceiling = adaptive_cfg.get("max_ceiling")
@@ -456,7 +469,7 @@ def decide(
         if not isinstance(context, dict):
             return False
 
-        conf_val = float(context.get("conf_val", 0.0))
+        conf_val = safe_float(context.get("conf_val", 0.0), 0.0)
         reason_label = str(payload.get("reason", "HTF_BLOCK"))
 
         def _apply_override(source: str, extra: dict[str, Any]) -> bool:
@@ -480,7 +493,10 @@ def decide(
             )
             return True
 
-        effective_threshold = float(context.get("effective_threshold", ltf_override_threshold))
+        effective_threshold = safe_float(
+            context.get("effective_threshold", ltf_override_threshold),
+            ltf_override_threshold,
+        )
         adaptive_debug = context.get("adaptive_debug")
 
         if allow_ltf_override_cfg and conf_val >= effective_threshold:
@@ -495,8 +511,8 @@ def decide(
 
         override_cfg = ltf_entry_cfg.get("override_confidence") or {}
         if override_cfg.get("enabled"):
-            min_conf = float(override_cfg.get("min", 0.0))
-            max_conf = float(override_cfg.get("max", 1.0))
+            min_conf = safe_float(override_cfg.get("min", 0.0), 0.0)
+            max_conf = safe_float(override_cfg.get("max", 1.0), 1.0)
             if min_conf <= conf_val <= max_conf:
                 return _apply_override(
                     "ltf_entry_range",
@@ -522,7 +538,10 @@ def decide(
     else:
         fallback_conf = None
         if confidence and isinstance(confidence, dict):
-            fallback_conf = float(confidence.get("buy" if candidate == "LONG" else "sell", 0.0))
+            fallback_conf = safe_float(
+                confidence.get("buy" if candidate == "LONG" else "sell", 0.0),
+                0.0,
+            )
         state_out["ltf_override_debug"] = {
             "candidate": candidate,
             "confidence": fallback_conf,
@@ -561,6 +580,24 @@ def decide(
 
         missing_allowed = False
         if not htf_ctx.get("available"):
+            unavailable_reason = htf_ctx.get("reason")
+            if _is_context_error_reason(unavailable_reason):
+                state_out["htf_fib_entry_debug"] = {
+                    "reason": "CONTEXT_ERROR_BLOCK",
+                    "raw": htf_ctx,
+                }
+                reasons.append("HTF_FIB_CONTEXT_ERROR")
+                _log_decision_event(
+                    "HTF_FIB_BLOCK",
+                    reason="CONTEXT_ERROR",
+                    context_reason=unavailable_reason,
+                    candidate=candidate,
+                )
+                return "NONE", {
+                    "versions": versions,
+                    "reasons": reasons,
+                    "state_out": state_out,
+                }
             # Backwards compatible: configs may omit missing_policy or carry None.
             # Default to "pass" so older champions do not become no-trade configs.
             missing_policy = str(htf_entry_cfg.get("missing_policy") or "pass").lower()
@@ -804,6 +841,24 @@ def decide(
 
         missing_allowed_ltf = False
         if not ltf_ctx.get("available"):
+            unavailable_reason = ltf_ctx.get("reason")
+            if _is_context_error_reason(unavailable_reason):
+                state_out["ltf_fib_entry_debug"] = {
+                    "reason": "CONTEXT_ERROR_BLOCK",
+                    "raw": ltf_ctx,
+                }
+                reasons.append("LTF_FIB_CONTEXT_ERROR")
+                _log_decision_event(
+                    "LTF_FIB_BLOCK",
+                    reason="CONTEXT_ERROR",
+                    context_reason=unavailable_reason,
+                    candidate=candidate,
+                )
+                return "NONE", {
+                    "versions": versions,
+                    "reasons": reasons,
+                    "state_out": state_out,
+                }
             # Backwards compatible: configs may omit missing_policy or carry None.
             # Default to "pass" so older champions do not become no-trade configs.
             missing_policy = str(ltf_entry_cfg.get("missing_policy") or "pass").lower()
@@ -940,8 +995,8 @@ def decide(
             "reasons": reasons,
             "state_out": state_out,
         }
-    c_buy = float(confidence.get("buy", 0.0))
-    c_sell = float(confidence.get("sell", 0.0))
+    c_buy = safe_float(confidence.get("buy", 0.0), 0.0)
+    c_sell = safe_float(confidence.get("sell", 0.0), 0.0)
     conf_thr = default_thr
 
     # Check confidence threshold
@@ -1053,18 +1108,27 @@ def decide(
         for thr_v, sz in sorted(risk_map, key=lambda x: float(x[0])):
             if conf_val_gate >= float(thr_v):
                 size_base = float(sz)
-    except Exception:
-        size_base = 0.0
+    except Exception as exc:
+        _LOG.exception(
+            "[DECISION] SIZING_RISK_MAP_ERROR candidate=%s confidence=%.6f risk_map=%s",
+            candidate,
+            conf_val_gate,
+            _sanitize_context(risk_map),
+        )
+        raise RuntimeError("Failed to compute size_base from risk_map") from exc
 
     # Apply a (0..1] scale if a scaled confidence view exists.
     size_scale = 1.0
     try:
         if conf_val_gate > 0.0:
             if candidate == "LONG" and "buy_scaled" in confidence:
-                c_scaled = float(confidence.get("buy_scaled") or conf_val_gate)
+                c_scaled = safe_float(confidence.get("buy_scaled") or conf_val_gate, conf_val_gate)
                 size_scale = c_scaled / conf_val_gate
             elif candidate == "SHORT" and "sell_scaled" in confidence:
-                c_scaled = float(confidence.get("sell_scaled") or conf_val_gate)
+                c_scaled = safe_float(
+                    confidence.get("sell_scaled") or conf_val_gate,
+                    conf_val_gate,
+                )
                 size_scale = c_scaled / conf_val_gate
     except Exception:
         size_scale = 1.0

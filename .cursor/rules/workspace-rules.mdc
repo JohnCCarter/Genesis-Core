@@ -59,10 +59,24 @@ Genesis-Core is a Python 3.11+ FastAPI trading system with:
 4. **Commit**: Descriptive messages (`feat:`/`fix:`/`security:`). Update `.gitignore` first.
 5. **Docs**: Check existing `README.md`/`AGENTS.md` before creating new ones.
 
+## Commit Contract & Gate Order (SSOT alignment)
+
+- **Commit-kategorier (exakt)**: `security | docs | tooling | refactor(server) | api | obs`
+- **Default constraint**: `NO BEHAVIOR CHANGE`
+- **Gate-order (obligatorisk andemening)**:
+  1. Opus plan review (pre-code)
+  2. Codex implementation
+  3. Opus diff-audit (post-code)
+  4. gates green
+  5. commit
+- **Kommunikation/language**: Behåll svensk språkpreferens och stabiliseringsintention.
+
 ## Repo Governance: Agents, Skills, Registry
 
-- **Repo-local subagents** live under `.github/agents/` and define bounded roles (planning, audit, governance QA, ops runs).
-  Prefer these over editing any editor/extension-bundled agent files.
+- **Repo-local agents** live under `.github/agents/` with two bounded roles:
+  - `Codex53` (Agent + Plan + Doer)
+  - `Opus46` (Subagent + Reviewer + Risk-auditor)
+    Prefer these over editing any editor/extension-bundled agent files.
 - **Skills** are defined under `.github/skills/` and referenced by repo governance (do not duplicate skill sources elsewhere).
 - **Registry** lives under `registry/` (manifests/schemas/compacts/audit). If you change registry content, run
   `python scripts/validate_registry.py` and follow any audit requirements documented under `registry/`.

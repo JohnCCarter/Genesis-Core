@@ -1,6 +1,6 @@
 {
   "id": "feature_parity_check",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "title": "Feature computation parity validation",
   "description": "Verifierar att feature-beräkningar är identiska mellan live trading, backtest och precompute modes. Kritiskt för att säkerställa att ML-träning och live trading använder samma features.",
   "status": "dev",
@@ -8,6 +8,9 @@
   "tags": ["features", "parity", "validation", "testing"],
   "rules": {
     "must": [
+      "Lista feature-namn och version för parity-ytan som valideras.",
+      "Ange källa/beräkning för varje feature som ingår i parity-kontrollen.",
+      "Identifiera konsumenter (model/decision/etc.) för features i scope.",
       "Kör tests/test_feature_parity.py efter ändringar i feature-logik.",
       "Kör tests/test_precompute_vs_runtime.py för att verifiera precompute-cache.",
       "Förstå off-by-one offset mellan live (now_index-1) och backtest (now_index).",
@@ -15,6 +18,9 @@
       "Regenerera v17 features med scripts/precompute_features_v17.py vid schema-ändringar."
     ],
     "must_not": [
+      "Lämna oklara eller odokumenterade features.",
+      "Blanda olika feature-versioner utan spårning.",
+      "Utelämna beroenden.",
       "Ändra indicator-logik utan att köra parity-tester.",
       "Mixa extract_features() och calculate_all_features_vectorized() utan att förstå semantiken.",
       "Använda lookahead bias i feature-beräkningar.",
@@ -41,6 +47,10 @@
     {
       "type": "doc",
       "value": "docs/features/FEATURE_COMPUTATION_MODES.md"
+    },
+    {
+      "type": "doc",
+      "value": "docs/templates/skills/feature_inventory.md"
     }
   ]
 }

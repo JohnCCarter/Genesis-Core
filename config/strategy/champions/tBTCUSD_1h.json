@@ -1,272 +1,170 @@
 {
-  "created_at": "2025-12-27T00:00:00Z",
-  "run_id": "run_20251226_173828",
-  "trial_id": 2,
-  "git_commit": "2c106374a64970f6d0e10b09550bd73b4687ec6c",
-  "snapshot_id": "snap_tBTCUSD_2024-01-01_2024-12-31_v1",
+  "created_at": "2026-02-03T13:11:04.317790Z",
+  "run_id": "milestone3_v5a",
+  "trial_id": "sizing_exp1",
+  "git_commit": "986bd277f47fc1de27e05bd528032e5a23e91524",
+  "snapshot_id": "snap_tBTCUSD_2024-01-01_2024-12-31_phase3",
   "symbol": "tBTCUSD",
   "timeframe": "1h",
-  "score": 0.4607531755909482,
+  "score": 0.0,
   "metrics": {
-    "total_return": 0.025505729460000112,
-    "profit_factor": 1.526671327651447,
-    "max_drawdown": 0.04038926522440986,
-    "win_rate": 0.5185185185185185,
-    "num_trades": 27,
-    "sharpe_ratio": 0.15885449415662278,
-    "return_to_dd": 0.6314977338232274,
-    "total_commission": 77.33864026,
-    "total_commission_pct": 0.007733864026000001
+    "total_return": -0.00030890013698881377,
+    "profit_factor": 1.450201270477175,
+    "max_drawdown": 0.01249676919291543,
+    "win_rate": 0.6561743341404358,
+    "num_trades": 413,
+    "sharpe_ratio": null,
+    "return_to_dd": null,
+    "total_commission": 141.29943276990008,
+    "total_commission_pct": 0.014129943276990008
   },
   "constraints": {
     "hard_failures": [],
     "raw": {
-      "source": "optuna",
-      "run_dir": "results/hparam_search/run_20251226_173828",
-      "trial_file": "trial_002.json",
-      "results_path": "results/hparam_search/run_20251226_173828/tBTCUSD_1h_2.json"
+      "source": "phase3_milestone3",
+      "run_dir": "results/milestone3",
+      "results_path": "results\\milestone3\\v5a_sizing_exp1_full2024_20260203_110625.json"
     }
   },
   "metadata": {
-    "note": "Promoted from Optuna run_20251226_173828 trial_002. Stored as complete champion (merged_config) for reproducibility.",
-    "oos_check": {
-      "window": "2025-01-01..2025-10-10",
-      "total_return": -0.0143,
-      "profit_factor": 1.04,
-      "max_drawdown": 0.0386,
-      "num_trades": 47,
-      "results_path": "results/backtests/tBTCUSD_1h_20251227_171742.json"
+    "note": "Phase 3 Milestone 3 baseline. Composable strategy with risk_map threshold 0.53. Paper trading champion from 2026-02-03.",
+    "phase": "phase3_milestone3",
+    "baseline": "v5a_sizing_exp1",
+    "robustness": {
+      "pf_without_top1": 1.4,
+      "pf_without_top3": 1.3,
+      "top1_concentration_pct": -1014.7,
+      "top5_concentration_pct": -4665.8
+    },
+    "quarterly": {
+      "Q1_2024": {
+        "pf": 1.57,
+        "trades": 80
+      },
+      "Q2_2024": {
+        "pf": 1.35,
+        "trades": 104
+      },
+      "Q3_2024": {
+        "pf": 1.3,
+        "trades": 120
+      },
+      "Q4_2024": {
+        "pf": 1.69,
+        "trades": 86
+      }
+    }
+  },
+  "merged_config": {
+    "components": [
+      {
+        "type": "ml_confidence",
+        "params": {
+          "threshold": 0.24
+        }
+      },
+      {
+        "type": "regime_filter",
+        "params": {
+          "allowed_regimes": [
+            "trending",
+            "bull",
+            "balanced",
+            "bear",
+            "ranging"
+          ]
+        }
+      },
+      {
+        "type": "ev_gate",
+        "params": {
+          "min_ev": 0.0
+        }
+      },
+      {
+        "type": "cooldown",
+        "params": {
+          "min_bars_between_trades": 24
+        }
+      }
+    ],
+    "risk": {
+      "risk_map": [
+        [
+          0.53,
+          0.005
+        ],
+        [
+          0.7,
+          0.008
+        ],
+        [
+          0.8,
+          0.01
+        ],
+        [
+          0.9,
+          0.012
+        ]
+      ],
+      "risk_cap_pct": 0.012,
+      "symbol_portfolio_cap_pct": 0.025
     }
   },
   "cfg": {
-    "thresholds": {
-      "entry_conf_overall": 0.24,
-      "regime_proba": {
-        "balanced": 0.46,
-        "bull": 0.5,
-        "bear": 0.44,
-        "ranging": 0.46
-      },
-      "signal_adaptation": {
-        "atr_period": 28,
-        "zones": {
-          "low": {
-            "entry_conf_overall": 0.25,
-            "regime_proba": 0.36
-          },
-          "mid": {
-            "entry_conf_overall": 0.32,
-            "regime_proba": 0.44
-          },
-          "high": {
-            "entry_conf_overall": 0.38,
-            "regime_proba": 0.56
-          }
+    "components": [
+      {
+        "type": "ml_confidence",
+        "params": {
+          "threshold": 0.24
         }
       },
-      "min_edge": 0.01
-    },
-    "gates": {
-      "hysteresis_steps": 2,
-      "cooldown_bars": 0
-    },
+      {
+        "type": "regime_filter",
+        "params": {
+          "allowed_regimes": [
+            "trending",
+            "bull",
+            "balanced",
+            "bear",
+            "ranging"
+          ]
+        }
+      },
+      {
+        "type": "ev_gate",
+        "params": {
+          "min_ev": 0.0
+        }
+      },
+      {
+        "type": "cooldown",
+        "params": {
+          "min_bars_between_trades": 24
+        }
+      }
+    ],
     "risk": {
       "risk_map": [
-        [0.6, 0.02],
-        [0.7, 0.03],
-        [0.8, 0.04],
-        [0.9, 0.05]
+        [
+          0.53,
+          0.005
+        ],
+        [
+          0.7,
+          0.008
+        ],
+        [
+          0.8,
+          0.01
+        ],
+        [
+          0.9,
+          0.012
+        ]
       ],
-      "regime_size_multipliers": {
-        "bull": 0.7,
-        "ranging": 0.5
-      }
-    },
-    "ev": {
-      "R_default": 1.8
-    },
-    "exit": {
-      "enabled": true,
-      "max_hold_bars": 12,
-      "stop_loss_pct": 0.03,
-      "take_profit_pct": 0.05,
-      "exit_conf_threshold": 0.46,
-      "regime_aware_exits": true,
-      "trailing_stop_enabled": true,
-      "trailing_stop_pct": 0.015
-    },
-    "multi_timeframe": {
-      "use_htf_block": true,
-      "allow_ltf_override": true,
-      "ltf_override_threshold": 0.36,
-      "ltf_override_adaptive": {
-        "enabled": true,
-        "window": 120,
-        "percentile": 0.85,
-        "min_history": 30,
-        "min_floor": null,
-        "max_ceiling": null,
-        "fallback_threshold": null,
-        "regime_multipliers": {}
-      },
-      "htf_selector": {
-        "mode": "fixed",
-        "default_timeframe": null,
-        "default_multiplier": null,
-        "fallback_timeframe": "1D",
-        "per_timeframe": {
-          "1h": {
-            "timeframe": "1D"
-          },
-          "6h": {
-            "timeframe": "1D"
-          }
-        }
-      }
-    },
-    "warmup_bars": 150,
-    "htf_exit_config": {
-      "enable_partials": true,
-      "enable_trailing": true,
-      "enable_structure_breaks": true,
-      "partial_1_pct": 0.6,
-      "partial_2_pct": 0.5,
-      "fib_threshold_atr": 0.8,
-      "trail_atr_multiplier": 2.9,
-      "swing_update_strategy": "fixed"
-    },
-    "htf_fib": {
-      "entry": {
-        "enabled": true,
-        "tolerance_atr": 4.5,
-        "long_max_level": 0.236,
-        "short_min_level": 0.35
-      }
-    },
-    "ltf_fib": {
-      "entry": {
-        "enabled": true,
-        "tolerance_atr": 1.5,
-        "long_max_level": 0.146,
-        "short_min_level": 0.236
-      }
-    },
-    "features": null
-  },
-  "merged_config": {
-    "thresholds": {
-      "entry_conf_overall": 0.24,
-      "regime_proba": {
-        "balanced": 0.46,
-        "bull": 0.5,
-        "bear": 0.44,
-        "ranging": 0.46
-      },
-      "signal_adaptation": {
-        "atr_period": 28,
-        "zones": {
-          "low": {
-            "entry_conf_overall": 0.25,
-            "regime_proba": 0.36
-          },
-          "mid": {
-            "entry_conf_overall": 0.32,
-            "regime_proba": 0.44
-          },
-          "high": {
-            "entry_conf_overall": 0.38,
-            "regime_proba": 0.56
-          }
-        }
-      },
-      "min_edge": 0.01
-    },
-    "gates": {
-      "hysteresis_steps": 2,
-      "cooldown_bars": 0
-    },
-    "risk": {
-      "risk_map": [
-        [0.6, 0.02],
-        [0.7, 0.03],
-        [0.8, 0.04],
-        [0.9, 0.05]
-      ],
-      "regime_size_multipliers": {
-        "bull": 0.7,
-        "ranging": 0.5
-      }
-    },
-    "ev": {
-      "R_default": 1.8
-    },
-    "exit": {
-      "enabled": true,
-      "max_hold_bars": 12,
-      "stop_loss_pct": 0.03,
-      "take_profit_pct": 0.05,
-      "exit_conf_threshold": 0.46,
-      "regime_aware_exits": true,
-      "trailing_stop_enabled": true,
-      "trailing_stop_pct": 0.015
-    },
-    "multi_timeframe": {
-      "use_htf_block": true,
-      "allow_ltf_override": true,
-      "ltf_override_threshold": 0.36,
-      "ltf_override_adaptive": {
-        "enabled": true,
-        "window": 120,
-        "percentile": 0.85,
-        "min_history": 30,
-        "min_floor": null,
-        "max_ceiling": null,
-        "fallback_threshold": null,
-        "regime_multipliers": {}
-      },
-      "htf_selector": {
-        "mode": "fixed",
-        "default_timeframe": null,
-        "default_multiplier": null,
-        "fallback_timeframe": "1D",
-        "per_timeframe": {
-          "1h": {
-            "timeframe": "1D"
-          },
-          "6h": {
-            "timeframe": "1D"
-          }
-        }
-      }
-    },
-    "warmup_bars": 150,
-    "htf_exit_config": {
-      "enable_partials": true,
-      "enable_trailing": true,
-      "enable_structure_breaks": true,
-      "partial_1_pct": 0.6,
-      "partial_2_pct": 0.5,
-      "fib_threshold_atr": 0.8,
-      "trail_atr_multiplier": 2.9,
-      "swing_update_strategy": "fixed"
-    },
-    "htf_fib": {
-      "entry": {
-        "enabled": true,
-        "tolerance_atr": 4.5,
-        "long_max_level": 0.236,
-        "short_min_level": 0.35
-      }
-    },
-    "ltf_fib": {
-      "entry": {
-        "enabled": true,
-        "tolerance_atr": 1.5,
-        "long_max_level": 0.146,
-        "short_min_level": 0.236
-      }
-    },
-    "features": null
-  },
-  "runtime_version": 22
+      "risk_cap_pct": 0.012,
+      "symbol_portfolio_cap_pct": 0.025
+    }
+  }
 }

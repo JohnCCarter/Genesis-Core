@@ -1,13 +1,5 @@
-#!/usr/bin/env pwsh
-# Quick fetch för trend-following hypotes test (see AGENTS.md for current notes)
-# Note: Using 3h and 6h instead of 4h (4h not supported by Bitfinex API)
-Write-Host "Fetching 3h, 6h + 1D for trend-following test..." -ForegroundColor Cyan
-Write-Host "Note: 4h is NOT supported by Bitfinex. Using 3h and 6h instead." -ForegroundColor Yellow
-
-.\scripts\fetch_all_data.ps1 `
-    -Symbols "tBTCUSD" `
-    -Timeframes "3h,6h,1D" `
-    -Months 12
-
-Write-Host "`nNext: Run feature analysis to check if trend features have positive IC!" -ForegroundColor Green
-Write-Host "python scripts/comprehensive_feature_analysis.py --symbol tBTCUSD --timeframe 6h" -ForegroundColor Yellow
+Write-Warning "[DEPRECATED] scripts/fetch_trend_test.ps1 moved to scripts/archive/2026-02/analysis/fetch_trend_test.ps1."
+$target = Join-Path $PSScriptRoot 'archive\2026-02\analysis\fetch_trend_test.ps1'
+$resolvedTarget = (Resolve-Path $target).Path
+& $resolvedTarget @args
+exit $LASTEXITCODE

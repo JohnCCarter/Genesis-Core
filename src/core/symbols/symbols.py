@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 from core.utils.logging_redaction import get_logger
 
 _LOGGER = get_logger(__name__)
 
 
-class SymbolMode(str, Enum):
+class SymbolMode(StrEnum):
     REALISTIC = "realistic"
     SYNTHETIC = "synthetic"
 

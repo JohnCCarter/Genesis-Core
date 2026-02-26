@@ -4,12 +4,12 @@ from contextlib import asynccontextmanager
 
 import httpx
 from fastapi import Body, FastAPI
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 
 from core.config.authority import ConfigAuthority
 from core.config.settings import get_settings
 from core.io.bitfinex import read_helpers as bfx_read
-from core.io.bitfinex.exchange_client import get_exchange_client
+from core.io.bitfinex.exchange_client import aclose_http_client, get_exchange_client
 from core.observability.metrics import get_dashboard
 from core.server_config_api import router as config_router
 from core.strategy.evaluate import evaluate_pipeline
@@ -43,6 +43,10 @@ async def lifespan(app: FastAPI):
     yield
 
     # Shutdown (cleanup if needed)
+    try:
+        await aclose_http_client()
+    except Exception as e:
+        _LOGGER.debug("shutdown_close_http_client_error: %s", e)
 
 
 app = FastAPI(lifespan=lifespan)
@@ -115,13 +119,17 @@ def paper_whitelist() -> dict:
     return {"symbols": sorted(TEST_SPOT_WHITELIST)}
 
 
-@app.get("/health")
-def health() -> dict:
+@app.get("/health", response_model=None)
+def health() -> dict | JSONResponse:
     try:
         _, h, v = _AUTH.get()
         return {"status": "ok", "config_version": v, "config_hash": h}
-    except Exception:
-        return {"status": "ok", "config_version": None, "config_hash": None}
+    except Exception as exc:
+        _LOGGER.warning("health_config_read_failed: %s", exc)
+        return JSONResponse(
+            status_code=503,
+            content={"status": "error", "config_version": None, "config_hash": None},
+        )
 
 
 @app.get("/observability/dashboard")
@@ -621,13 +629,32 @@ def ui_page() -> str:
 
 @app.post("/strategy/evaluate")
 def strategy_evaluate(payload: dict = Body({})) -> dict:
-    candles = payload.get("candles") or {
-        "open": [1, 2, 3, 4],
-        "high": [2, 3, 4, 5],
-        "low": [0.5, 1.5, 2.5, 3.5],
-        "close": [1.5, 2.5, 3.5, 4.5],
-        "volume": [10, 11, 12, 13],
+    invalid_candles_error = {
+        "ok": False,
+        "error": {
+            "code": "INVALID_CANDLES",
+            "message": "candles must include non-empty equal-length open/high/low/close/volume arrays",
+        },
     }
+
+    required_keys = ("open", "high", "low", "close", "volume")
+    candles = payload.get("candles")
+    if not isinstance(candles, dict):
+        return invalid_candles_error
+
+    series_list: list[list] = []
+    for key in required_keys:
+        if key not in candles:
+            return invalid_candles_error
+        value = candles.get(key)
+        if not isinstance(value, list) or len(value) == 0:
+            return invalid_candles_error
+        series_list.append(value)
+
+    lengths = {len(v) for v in series_list}
+    if len(lengths) != 1:
+        return invalid_candles_error
+
     policy = payload.get("policy") or {"symbol": "tBTCUSD", "timeframe": "1m"}
     configs = payload.get("configs") or {}
     state = payload.get("state") or {}
@@ -801,16 +828,22 @@ async def paper_submit(payload: dict = Body(...)) -> dict:
     """Skicka en order till Bitfinex Paper (auth krävs via .env).
 
     OBS: Paper only – vi tillåter endast TEST-spotpar från whitelist.
-    Om indata-symbolen inte är whitelista: fallback till tTESTBTC:TESTUSD
-    för att undvika risk för verklig handel.
+    Icke-whitelistad symbol returnerar explicit invalid_symbol-svar.
 
       payload: {symbol, side:"LONG"|"SHORT"|"NONE", size:float, type?:"MARKET"|"LIMIT", price?:float}
     """
-    # Använd endast symboler från whitelist; annars fall tillbaka till standard TEST-par
-    requested_symbol_raw = str(payload.get("symbol") or "tTESTBTC:TESTUSD")
+    # Använd endast symboler från whitelist
+    requested_symbol_raw = str(payload.get("symbol") or "")
     key = requested_symbol_raw.upper()
     allowed_map = {s.upper(): s for s in TEST_SPOT_WHITELIST}
-    symbol = allowed_map.get(key, "tTESTBTC:TESTUSD")
+    symbol = allowed_map.get(key)
+    if symbol is None:
+        return {
+            "ok": False,
+            "error": "invalid_symbol",
+            "requested_symbol": requested_symbol_raw,
+            "message": "symbol must be one of TEST_SPOT_WHITELIST",
+        }
     side = str(payload.get("side") or "NONE").upper()
     size = float(payload.get("size") or 0.0)
     order_type = str(payload.get("type") or "MARKET").upper()
@@ -880,9 +913,12 @@ async def paper_submit(payload: dict = Body(...)) -> dict:
                 usd_avail = avail_by_ccy.get("USD", 0.0) or avail_by_ccy.get("TESTUSD", 0.0) or 0.0
                 px = None
                 try:
-                    r = httpx.get(f"https://api-pub.bitfinex.com/v2/ticker/{real_sym}", timeout=5)
-                    r.raise_for_status()
-                    arr = r.json()
+                    resp = await get_exchange_client().public_request(
+                        method="GET",
+                        endpoint=f"ticker/{real_sym}",
+                        timeout=5,
+                    )
+                    arr = resp.json()
                     if isinstance(arr, list) and len(arr) >= 7:
                         px = float(arr[6])
                 except Exception:
@@ -1022,9 +1058,12 @@ async def paper_estimate(symbol: str) -> dict:
     # Hämta senaste pris
     try:
         real_sym = _real_from_test(sym)
-        r = httpx.get(f"https://api-pub.bitfinex.com/v2/ticker/{real_sym}", timeout=5)
-        r.raise_for_status()
-        arr = r.json()
+        resp = await get_exchange_client().public_request(
+            method="GET",
+            endpoint=f"ticker/{real_sym}",
+            timeout=5,
+        )
+        arr = resp.json()
         if isinstance(arr, list) and len(arr) >= 7:
             last_price = float(arr[6])
     except Exception:

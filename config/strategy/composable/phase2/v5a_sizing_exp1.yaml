@@ -1,0 +1,44 @@
+# Phase 3 Milestone 3 - Experiment 3.1: Sizing Policy Tuning
+# Goal: Increase trade frequency via risk_map adjustment (config-only)
+#
+# Single change from v4a:
+#   - risk.risk_map: Lower first threshold 0.6 → 0.53 (careful reduction)
+#     Target: More signals qualify for non-zero size
+#
+# All other settings unchanged from v4a baseline:
+#   - Components: ml_confidence (0.24), all regimes, EVGate (0.0), Cooldown (24)
+#   - No changes to ATR zones, rounding, or other sizing params
+
+components:
+  - type: ml_confidence
+    params:
+      threshold: 0.24  # Unchanged from v4a
+
+  - type: regime_filter
+    params:
+      allowed_regimes: ["trending", "bull", "balanced", "bear", "ranging"]
+      # Unchanged: All regimes allowed
+
+  - type: ev_gate
+    params:
+      min_ev: 0.0  # Unchanged: Still permissive
+
+  - type: cooldown
+    params:
+      min_bars_between_trades: 24  # Unchanged: 24 hours for 1h timeframe
+
+# NEW: Explicit risk_map override (default was [0.6, 0.005], ...)
+risk:
+  risk_map:
+    - [0.53, 0.005]  # TUNED: Lower first threshold (was 0.6)
+    - [0.7, 0.008]   # Unchanged
+    - [0.8, 0.01]    # Unchanged
+    - [0.9, 0.012]   # Unchanged
+  risk_cap_pct: 0.012  # Unchanged
+  symbol_portfolio_cap_pct: 0.025  # Unchanged
+
+# Experiment 3.1 hypothesis:
+#   - Lower confidence threshold → more signals qualify for sizing
+#   - Expected: Increase from 63 → ~80-100 trades/year
+#   - Expected: Improve PF robustness (PF without top-3 >= 1.2)
+#   - Risk: Must maintain PF quality and MaxDD sanity

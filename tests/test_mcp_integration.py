@@ -185,9 +185,12 @@ async def test_security_workflow(config):
         # 1. Try to read a blocked file
         env_result = await read_file(".env", config)
         assert env_result["success"] is False
+        err = (env_result.get("error") or "").lower()
         assert (
-            "blocked pattern" in env_result["error"].lower()
-            or "blocked" in env_result["error"].lower()
+            "blocked pattern" in err
+            or "blocked" in err
+            or "allowed_paths" in err
+            or "not within allowed" in err
         )
 
         # 2. Try to access .git directory

@@ -25,21 +25,26 @@ For ChatGPT “Connect to MCP” / remote linking you should run the HTTP server
 ```bash
 # Start the MCP server (Streamable HTTP transport)
 # The MCP endpoint is POST /mcp
-$env:PORT=8000
+$env:GENESIS_MCP_PORT=3333
 $env:GENESIS_MCP_REMOTE_SAFE=1
+$env:GENESIS_MCP_REMOTE_ULTRA_SAFE=0
+$env:GENESIS_MCP_CONFIG_PATH='config/mcp_settings.remote_safe.json'
 python -m mcp_server.remote_server
 ```
 
 Environment variables:
 
-- `PORT` (default: 8000) — set this to match your tunnel/forwarding target (e.g. 3333).
+- `GENESIS_MCP_PORT` / `MCP_PORT` / `PORT` (default: 8000) — set this to match your tunnel/forwarding target (e.g. 3333).
 - `GENESIS_MCP_REMOTE_SAFE` (default: 1) — read-only mode (no write/execute tools).
-- `GENESIS_MCP_REMOTE_ULTRA_SAFE` (default: 0) — exposes only `ping_tool` + connector stubs.
+- `GENESIS_MCP_REMOTE_ULTRA_SAFE` (default: 0) — if set to `1`, exposes only `ping_tool` + connector stubs.
+- `GENESIS_MCP_REMOTE_TOKEN` (default: unset) — if set, `/mcp` requires either `Authorization: Bearer <token>` or `X-Genesis-MCP-Token: <token>`.
+- `GENESIS_MCP_CONFIG_PATH` / `MCP_CONFIG_PATH` (default: unset) — if set, overrides which MCP config JSON file is loaded (use this to run a tighter allowlist for remote).
 - `GENESIS_MCP_DEBUG_ROUTES` (default: 0) — prints registered routes on startup.
 
 Remote endpoints:
 
 - `GET /healthz` — returns `OK` (basic reachability check)
+- `GET /privacy-policy` — privacy policy (public, used by GPT Builder validation)
 - `POST /mcp` — MCP endpoint used by ChatGPT connector
 
 Tunnel/proxy note (important):
@@ -56,6 +61,26 @@ Reverse-proxy / port-forwarding note:
 - If you expose this server outside localhost, use a reverse proxy / tunnel of your choice.
 - Ensure the public URL routes to the same local `PORT` that `mcp_server.remote_server` binds.
 - Treat any public MCP URL as sensitive; prefer `GENESIS_MCP_REMOTE_SAFE=1`.
+
+Linux/systemd note (recommended):
+
+- For systemd services, avoid reading `.env` directly.
+- Generate a systemd-safe env file and point `EnvironmentFile` to it:
+
+```bash
+./scripts/generate_env_systemd.sh /opt/genesis/Genesis-Core/.env /opt/genesis/Genesis-Core/.env.systemd
+```
+
+- Use in unit file:
+
+```ini
+EnvironmentFile=/opt/genesis/Genesis-Core/.env.systemd
+```
+
+- After changing `.env`:
+  1. Regenerate `.env.systemd`
+  2. `sudo systemctl daemon-reload`
+  3. `sudo systemctl restart genesis-mcp`
 
 End-to-end checklist (ChatGPT “Connect to MCP”):
 
@@ -100,6 +125,9 @@ Security notes:
 - When you do not actively need project tools, consider `GENESIS_MCP_REMOTE_ULTRA_SAFE=1`.
 - Reduce `allowed_paths` in `config/mcp_settings.json` to the minimum required (avoid `"."` if
   you only need a subset like `docs/`).
+- If you want SAFE read-only _with real file access_, keep `GENESIS_MCP_REMOTE_SAFE=1` and ensure `GENESIS_MCP_REMOTE_ULTRA_SAFE=0`.
+- If you enable `GENESIS_MCP_REMOTE_TOKEN`, remember that some clients (including ChatGPT “Connect to MCP”) may not support custom headers.
+  In that case, enforce auth at the reverse proxy (e.g. Cloudflare Access) instead of relying on header injection.
 
 “Private” access:
 
@@ -159,7 +187,7 @@ pytest tests/test_mcp_server.py tests/test_mcp_resources.py -v
 
 ## Documentation
 
-See [`docs/mcp_server_guide.md`](../docs/mcp_server_guide.md) for complete documentation including:
+See [`docs/mcp/mcp_server_guide.md`](../docs/mcp/mcp_server_guide.md) for complete documentation including:
 
 - Detailed tool descriptions with examples
 - Security features and best practices
@@ -183,4 +211,73 @@ All operations are logged to `logs/mcp_server.log` with timestamps and detailed 
 
 ## Support
 
-For issues or questions, see the [full documentation](../docs/mcp_server_guide.md) or check the logs at `logs/mcp_server.log`.
+For issues or questions, see the [full documentation](../docs/mcp/mcp_server_guide.md) or check the logs at `logs/mcp_server.log`.
+
+## Example: Running the Remote Server with PowerShell
+
+Local-only note (important): The configuration below enables **write_file** and **execute_python** over HTTP.
+Do not expose this on the public Internet. If you must access it remotely, put it behind a strong reverse-proxy
+auth layer (e.g. Cloudflare Access) and keep a tight `allowed_paths` allowlist.
+
+```powershell
+$Env:GENESIS_MCP_PORT = '3333'
+$Env:GENESIS_MCP_REMOTE_SAFE = '1'
+$Env:GENESIS_MCP_REMOTE_ULTRA_SAFE = '0'
+python -m mcp_server.remote_server
+
+# Optional but recommended if any proxying is involved:
+# $Env:GENESIS_MCP_REMOTE_TOKEN = '<long-random-token>'
+
+& 'C:\Users\fa06662\Projects\Genesis-Core\.venv\Scripts\python.exe' -m mcp_server.remote_server
+```
+
+## Keep Remote MCP Running (Windows Task Scheduler)
+
+If you want the remote MCP to stay active without VS Code, run `mcp_server.remote_server` as a background
+process using Task Scheduler.
+
+Recommended approach: use the repo script `scripts/start_mcp_remote.ps1` (sets safe env vars and redirects
+stdout/stderr to `logs/`).
+
+### If Task Scheduler is blocked (no admin)
+
+If you can't create a Scheduled Task due to permissions, you can still auto-start the remote MCP on
+logon using the Windows **Startup** folder:
+
+- Script: `scripts/start_mcp_remote_startup.cmd`
+- Installed copy:
+  - `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\Genesis-Core MCP Remote.cmd`
+
+To disable it: delete the `.cmd` file from the Startup folder.
+
+### Manual Task Scheduler steps
+
+1. Open **Task Scheduler** → **Create Task…**
+2. **General**
+   - Run whether user is logged on or not
+   - Run with highest privileges (recommended for reliability)
+3. **Triggers**
+   - New… → **At startup**
+4. **Actions**
+   - New… → _Start a program_
+   - Program/script: `powershell.exe`
+   - Add arguments:
+     - `-NoProfile -ExecutionPolicy Bypass -File "C:\Users\fa06662\Projects\Genesis-Core\scripts\start_mcp_remote.ps1" -Port 3333`
+   - Start in:
+     - `C:\Users\fa06662\Projects\Genesis-Core`
+5. **Settings**
+   - If the task fails, restart every: 1 minute (or similar)
+
+Verify:
+
+- `https://<your-host>/healthz` returns `OK`
+- `POST https://<your-host>/mcp` supports `tools/list`
+
+Logs:
+
+- `logs/mcp_remote_stdout.log`
+- `logs/mcp_remote_stderr.log`
+
+Tip: sanity-check the script without starting the server:
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start_mcp_remote.ps1 -DryRun`

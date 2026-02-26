@@ -1,5 +1,23 @@
+from __future__ import annotations
+
+import hashlib
 import time
 from typing import Any
+
+PIPELINE_COMPONENT_ORDER: tuple[str, ...] = (
+    "features",
+    "proba",
+    "confidence",
+    "regime",
+    "decision",
+)
+
+
+def pipeline_component_order_hash(components: tuple[str, ...] | list[str] | None = None) -> str:
+    """Return a stable hash for pipeline component order contract."""
+    order = components or PIPELINE_COMPONENT_ORDER
+    normalized = "|".join(str(part).strip().lower() for part in order)
+    return hashlib.sha256(normalized.encode("utf-8")).hexdigest()[:16]
 
 
 class Metrics:

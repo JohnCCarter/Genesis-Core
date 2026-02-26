@@ -1,6 +1,7 @@
 import os
 
 import core.pipeline as pipeline_mod
+from core.observability.metrics import PIPELINE_COMPONENT_ORDER, pipeline_component_order_hash
 
 
 def test_pipeline_forces_fast_hash_off_in_canonical_mode(monkeypatch):
@@ -40,3 +41,15 @@ def test_pipeline_allows_fast_hash_in_explicit_mode(monkeypatch):
     pipeline_mod.GenesisPipeline().setup_environment(seed=42)
 
     assert os.environ.get("GENESIS_FAST_HASH") == "1"
+
+
+def test_pipeline_component_order_hash_contract_is_stable():
+    expected_order = (
+        "features",
+        "proba",
+        "confidence",
+        "regime",
+        "decision",
+    )
+    assert PIPELINE_COMPONENT_ORDER == expected_order
+    assert pipeline_component_order_hash() == "200a25070a6f7fe4"

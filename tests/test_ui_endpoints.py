@@ -41,6 +41,74 @@ def test_ui_get_and_evaluate_post():
     assert "result" in data and "meta" in data
 
 
+def test_evaluate_missing_candles_returns_invalid_candles_error():
+    c = TestClient(app)
+    payload = {
+        "policy": {"symbol": "tBTCUSD", "timeframe": "1m"},
+        "configs": {},
+        "state": {},
+    }
+
+    r = c.post("/strategy/evaluate", json=payload)
+
+    assert r.status_code == 200
+    assert r.json() == {
+        "ok": False,
+        "error": {
+            "code": "INVALID_CANDLES",
+            "message": "candles must include non-empty equal-length open/high/low/close/volume arrays",
+        },
+    }
+
+
+def test_evaluate_empty_candles_lists_returns_invalid_candles_error():
+    c = TestClient(app)
+    payload = {
+        "policy": {"symbol": "tBTCUSD", "timeframe": "1m"},
+        "configs": {},
+        "candles": {
+            "open": [],
+            "high": [],
+            "low": [],
+            "close": [],
+            "volume": [],
+        },
+        "state": {},
+    }
+
+    r = c.post("/strategy/evaluate", json=payload)
+
+    assert r.status_code == 200
+    assert r.json() == {
+        "ok": False,
+        "error": {
+            "code": "INVALID_CANDLES",
+            "message": "candles must include non-empty equal-length open/high/low/close/volume arrays",
+        },
+    }
+
+
+def test_evaluate_invalid_candles_type_returns_invalid_candles_error():
+    c = TestClient(app)
+    payload = {
+        "policy": {"symbol": "tBTCUSD", "timeframe": "1m"},
+        "configs": {},
+        "candles": "not-a-dict",
+        "state": {},
+    }
+
+    r = c.post("/strategy/evaluate", json=payload)
+
+    assert r.status_code == 200
+    assert r.json() == {
+        "ok": False,
+        "error": {
+            "code": "INVALID_CANDLES",
+            "message": "candles must include non-empty equal-length open/high/low/close/volume arrays",
+        },
+    }
+
+
 def test_public_candles_endpoint_smoke(monkeypatch):
     from core.server import public_candles as pc
 
@@ -57,12 +125,16 @@ def test_public_candles_endpoint_smoke(monkeypatch):
     def fake_get(url, params=None, timeout=10):  # noqa: ARG001
         return DummyResp()
 
+    class DummyEC:
+        async def public_request(self, **kwargs):  # noqa: D401, ARG002
+            return fake_get("unused")
+
     import asyncio
 
     import core.server as srv
 
-    orig = srv.httpx.get
-    srv.httpx.get = fake_get  # type: ignore
+    orig = srv.get_exchange_client
+    srv.get_exchange_client = lambda: DummyEC()  # type: ignore
     try:
         out = asyncio.get_event_loop().run_until_complete(
             pc(symbol="tBTCUSD", timeframe="1m", limit=1)
@@ -70,7 +142,7 @@ def test_public_candles_endpoint_smoke(monkeypatch):
         assert set(out.keys()) == {"open", "high", "low", "close", "volume"}
         assert out["open"] and out["close"]
     finally:
-        srv.httpx.get = orig  # type: ignore
+        srv.get_exchange_client = orig  # type: ignore
 
 
 def test_auth_check_uses_helpers(monkeypatch):
@@ -107,6 +179,21 @@ def test_runtime_endpoints_exist():
     assert r.status_code == 200
 
 
+def test_health_returns_503_when_config_read_fails(monkeypatch):
+    import core.server as srv
+
+    c = TestClient(app)
+
+    def _boom():
+        raise RuntimeError("config broken")
+
+    monkeypatch.setattr(srv._AUTH, "get", _boom)
+
+    r = c.get("/health")
+    assert r.status_code == 503
+    assert r.json() == {"status": "error", "config_version": None, "config_hash": None}
+
+
 def test_paper_submit_monkeypatched(monkeypatch):
     from core.server import paper_submit
 
@@ -129,15 +216,38 @@ def test_paper_submit_monkeypatched(monkeypatch):
         import asyncio
 
         out = asyncio.get_event_loop().run_until_complete(
-            paper_submit({"symbol": "tBTCUSD", "side": "LONG", "size": 0.003, "type": "MARKET"})
+            paper_submit(
+                {
+                    "symbol": "tTESTBTC:TESTUSD",
+                    "side": "LONG",
+                    "size": 0.003,
+                    "type": "MARKET",
+                }
+            )
         )
         assert out.get("ok") is True and out.get("exchange") == "bitfinex"
-        # Säkerhet: paper-trading ska aldrig acceptera icke-TEST symboler.
-        # En icke-whitelistad symbol måste klampas till ett TEST-par.
+        # Säkerhet: paper-trading ska acceptera giltig whitelist-symbol oförändrad.
         req = out.get("request") or {}
         assert req.get("symbol") == "tTESTBTC:TESTUSD"
     finally:
         srv.get_exchange_client = orig_get  # type: ignore
+
+
+def test_paper_submit_invalid_symbol_returns_pinned_payload(monkeypatch):
+    import asyncio
+
+    from core.server import paper_submit
+
+    out = asyncio.get_event_loop().run_until_complete(
+        paper_submit({"symbol": "tBTCUSD", "side": "LONG", "size": 0.003, "type": "MARKET"})
+    )
+
+    assert out == {
+        "ok": False,
+        "error": "invalid_symbol",
+        "requested_symbol": "tBTCUSD",
+        "message": "symbol must be one of TEST_SPOT_WHITELIST",
+    }
 
 
 def test_debug_auth_masked():

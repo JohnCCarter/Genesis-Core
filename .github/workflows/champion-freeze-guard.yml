@@ -1,0 +1,118 @@
+name: Champion Freeze Guard
+
+# Enforces frozen champion config during paper trading period.
+# Blocks ANY changes to config/strategy/champions/ on ALL branches.
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches-ignore:
+      - "archive/**"
+      - "Archive/**"
+  pull_request:
+    branches-ignore:
+      - "archive/**"
+      - "Archive/**"
+
+jobs:
+  check-champion-freeze:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if in freeze period
+        id: check-period
+        run: |
+          # Paper trading freeze period configuration
+          # Format: YYYY-MM-DD (UTC dates)
+          # Start date moved to 2026-02-04 to allow champion structure fix on 2026-02-03
+          FREEZE_START="2026-02-04"
+          FREEZE_END="2026-03-17"
+
+          # Get current date in UTC
+          CURRENT_DATE=$(date -u +%Y-%m-%d)
+
+          # Convert to epoch seconds for comparison
+          FREEZE_START_EPOCH=$(date -d "$FREEZE_START" +%s)
+          FREEZE_END_EPOCH=$(date -d "$FREEZE_END" +%s)
+          CURRENT_EPOCH=$(date -d "$CURRENT_DATE" +%s)
+
+          # Check if we're in freeze period
+          if [ "$CURRENT_EPOCH" -ge "$FREEZE_START_EPOCH" ] && [ "$CURRENT_EPOCH" -le "$FREEZE_END_EPOCH" ]; then
+            echo "in_freeze=true" >> $GITHUB_OUTPUT
+            echo "freeze_start=$FREEZE_START" >> $GITHUB_OUTPUT
+            echo "freeze_end=$FREEZE_END" >> $GITHUB_OUTPUT
+            echo "::notice::Champion freeze period active: $FREEZE_START to $FREEZE_END"
+          else
+            echo "in_freeze=false" >> $GITHUB_OUTPUT
+            echo "::notice::Not in champion freeze period (active: $FREEZE_START to $FREEZE_END)"
+          fi
+
+      - name: Check for champion changes (PR)
+        if: steps.check-period.outputs.in_freeze == 'true' && github.event_name == 'pull_request'
+        run: |
+          echo "Checking for changes to config/strategy/champions/ in PR..."
+
+          # Fetch base branch
+          git fetch --no-tags origin ${{ github.base_ref }}
+
+          # Check if any files in champions/ were modified
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- config/strategy/champions/)
+
+          if [ -n "$CHANGED_FILES" ]; then
+            echo "::error::CHAMPION FREEZE VIOLATION detected!"
+            echo "::error::The following champion files were modified during paper trading freeze period:"
+            echo "$CHANGED_FILES" | while read file; do
+              echo "::error::  - $file"
+            done
+            echo "::error::Freeze period: ${{ steps.check-period.outputs.freeze_start }} to ${{ steps.check-period.outputs.freeze_end }}"
+            echo "::error::Champion configs are FROZEN during paper trading. All changes must wait until freeze ends."
+            echo "::error::If you need to make urgent changes, update FREEZE_END date in .github/workflows/champion-freeze-guard.yml"
+            exit 1
+          else
+            echo "::notice::No champion changes detected. Check passed."
+          fi
+
+      - name: Check for champion changes (push)
+        if: steps.check-period.outputs.in_freeze == 'true' && github.event_name != 'pull_request'
+        run: |
+          echo "Checking for changes to config/strategy/champions/ in push..."
+
+          # For push events, check against previous commit
+          # If this is the first commit, HEAD~1 won't exist, so we skip
+          if git rev-parse HEAD~1 >/dev/null 2>&1; then
+            CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD -- config/strategy/champions/)
+
+            if [ -n "$CHANGED_FILES" ]; then
+              echo "::error::CHAMPION FREEZE VIOLATION detected!"
+              echo "::error::The following champion files were modified during paper trading freeze period:"
+              echo "$CHANGED_FILES" | while read file; do
+                echo "::error::  - $file"
+              done
+              echo "::error::Freeze period: ${{ steps.check-period.outputs.freeze_start }} to ${{ steps.check-period.outputs.freeze_end }}"
+              echo "::error::Champion configs are FROZEN during paper trading. All changes must wait until freeze ends."
+              echo "::error::If you need to make urgent changes, update FREEZE_END date in .github/workflows/champion-freeze-guard.yml"
+              exit 1
+            else
+              echo "::notice::No champion changes detected. Check passed."
+            fi
+          else
+            echo "::notice::First commit or no previous commit found. Skipping check."
+          fi
+
+      - name: Summary
+        if: always()
+        run: |
+          if [ "${{ steps.check-period.outputs.in_freeze }}" == "true" ]; then
+            echo "Champion Freeze Guard: ACTIVE"
+            echo "Freeze period: ${{ steps.check-period.outputs.freeze_start }} to ${{ steps.check-period.outputs.freeze_end }}"
+            echo "Protected path: config/strategy/champions/"
+            echo "Enforcement: ALL branches"
+          else
+            echo "Champion Freeze Guard: INACTIVE (not in freeze period)"
+          fi

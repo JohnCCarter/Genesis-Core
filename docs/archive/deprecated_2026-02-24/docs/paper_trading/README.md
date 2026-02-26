@@ -1,0 +1,293 @@
+# Paper Trading Documentation
+
+## Overview
+
+Paper trading validation period for Genesis-Core champion strategy v5a.
+
+**Period:** 2026-02-04 to 2026-03-17 (6 weeks)
+**Champion:** v5a_sizing_exp1 (tBTCUSD_1h)
+**Status:** ✅ **ACTIVE** (started 2026-02-04 09:29 UTC)
+
+**Remote (Azure VM) ops:** See `docs/paper_trading/operations_summary.md` ("Remote deployment" section) and the daily summaries.
+
+## Artefakt-cykel
+
+### Daglig (Automated)
+
+**Health/Runtime Snapshot:**
+
+- Script: `scripts/daily_health_check.sh`
+- Output: `logs/paper_trading/daily_snapshots/health_YYYYMMDD.json`
+- Content: Server health, runtime config, git status, uptime
+- Schedule: Daily 00:00 UTC (cron/Task Scheduler)
+
+### Veckovis (Manual/Automated)
+
+**Metrics Report:**
+
+- Script: `scripts/calculate_paper_trading_metrics.py`
+- Output: `docs/paper_trading/weekly_reports/week_N_YYYYMMDD.md`
+- Content: Trades, PF, WR, DD, commission, criteria evaluation
+- Schedule: Every Monday (end of week)
+- Documentation: `docs/paper_trading/weekly_metrics.md`
+
+### Kontinuerlig
+
+**Server Logs:**
+
+- Location: `logs/paper_trading/server_YYYYMMDD.log`
+- Rotation: Daily (automatic by filename)
+- Retention: Keep last 30 days
+- Monitor: Tail for errors, NONE actions, decision reasons
+
+**Evaluate Responses:**
+
+- Location: `logs/paper_trading/evaluate_response_*.json`
+- Saved: On-demand or scheduled intervals
+- Purpose: Audit champion loading, decision quality
+
+## Pre-Flight Checklist
+
+All items verified and complete:
+
+- [x] Champion file exists: `config/strategy/champions/tBTCUSD_1h.json`
+- [x] Champion structure valid (merged_config key present)
+- [x] FREEZE_START date set: 2026-02-04
+- [x] Freeze-guard CI workflow active
+- [x] Lint errors resolved (commit 2ca031c)
+- [x] Manual gate applied (GitHub Actions degraded - incident f314nlctbfs5)
+- [x] POST /strategy/evaluate verified (champion loads, not baseline)
+- [x] Server running with logging enabled (PID recorded in snapshot)
+- [x] First evaluate snapshot captured (logs/paper_trading/evaluate_response_20260204_092959.json)
+
+**Status:** ✅ All pre-flight checks PASSED (2026-02-04 09:29 UTC)
+
+## Champion Details
+
+**File:** `config/strategy/champions/tBTCUSD_1h.json`
+
+**Metadata:**
+
+- Run ID: milestone3_v5a
+- Trial ID: sizing_exp1
+- Git commit: 986bd277f47fc1de27e05bd528032e5a23e91524
+- Created: 2026-02-03T13:11:04.317790Z
+- Phase: phase3_milestone3
+
+**Configuration:**
+
+- Symbol: tBTCUSD (TEST symbol: tTESTBTC:TESTUSD)
+- Timeframe: 1h
+- Composable: true (4 components)
+
+**Components:**
+
+1. ml_confidence (threshold: 0.24)
+2. regime_filter (allowed: all regimes)
+3. ev_gate (min_ev: 0.0)
+4. cooldown (min_bars_between_trades: 24)
+
+**Risk Management:**
+
+- Risk map first entry: [0.53, 0.005] ← 53% confidence = 0.5% risk
+- Risk cap: 1.2%
+- Symbol portfolio cap: 2.5%
+
+**Historical Performance (Backtest 2024):**
+
+- Total return: -0.03% (after commissions)
+- Profit factor: 1.45
+- Max drawdown: 1.25%
+- Win rate: 65.6%
+- Num trades: 413
+- Total commission: 1.41%
+
+**Quarterly Breakdown:**
+
+- Q1 2024: PF 1.57, 80 trades
+- Q2 2024: PF 1.35, 104 trades
+- Q3 2024: PF 1.30, 120 trades
+- Q4 2024: PF 1.69, 86 trades
+
+**Robustness Metrics:**
+
+- PF without top 1 trade: 1.40
+- PF without top 3 trades: 1.30
+- Top 1 concentration: -1014.7%
+- Top 5 concentration: -4665.8%
+
+## Verification Steps
+
+### 1. Champion Loading Verification
+
+Test that champion loads correctly (not baseline fallback):
+
+```bash
+curl -X POST http://localhost:8000/strategy/evaluate \
+  -H "Content-Type: application/json" \
+  -d '{"policy": {"symbol": "tBTCUSD", "timeframe": "1h"}}'
+```
+
+**Expected response includes:**
+
+- `champion.source` = `"champion"` (NOT "baseline")
+- `merged_config.risk.risk_map[0]` = `[0.53, 0.005]`
+- `merged_config.components` = array of 4 components
+- `composable` = `true`
+
+### 2. Server Start with Logging
+
+```bash
+cd C:\Users\fa06662\Projects\Genesis-Core
+. .venv\Scripts\Activate.ps1
+
+# Set environment
+$Env:SYMBOL_MODE='realistic'
+$Env:LOG_LEVEL='INFO'
+
+# Start server with logging
+uvicorn core.server:app --app-dir src --port 8000 --log-level info 2>&1 | Tee-Object -FilePath logs\paper_trading_server_$(Get-Date -Format 'yyyyMMdd_HHmmss').log
+```
+
+### 3. First Evaluate Snapshot
+
+Capture first evaluation response as baseline artifact:
+
+```bash
+$timestamp = Get-Date -Format 'yyyyMMdd_HHmmss'
+curl -X POST http://localhost:8000/strategy/evaluate \
+  -H "Content-Type: application/json" \
+  -d '{"policy": {"symbol": "tBTCUSD", "timeframe": "1h"}}' \
+  | Out-File -FilePath "docs\paper_trading\evaluate_snapshot_${timestamp}.json"
+```
+
+## Expected Artifacts
+
+### Daily Artifacts
+
+1. **Server logs:** `logs/paper_trading_server_YYYYMMDD_HHMMSS.log`
+2. **Evaluate snapshots:** `docs/paper_trading/evaluate_snapshot_YYYYMMDD_HHMMSS.json`
+3. **Trade decisions:** Logged in server output when action != NONE
+
+### Weekly Artifacts
+
+1. **Weekly report:** Generated by `scripts/calculate_paper_trading_metrics.py`
+2. **Metrics summary:** PF, win rate, drawdown, trade count
+3. **Criteria evaluation:** Primary and secondary criteria pass/fail
+
+### End-of-Period Artifacts
+
+1. **Final report:** 6-week summary
+2. **Champion promotion decision:** Promote to live or iterate
+3. **Lessons learned:** Document deviations, surprises, process improvements
+
+## Safety Constraints
+
+### Symbol Restriction
+
+Paper trading MUST use TEST symbols only:
+
+- Real symbol: `tBTCUSD`
+- Mapped to: `tTESTBTC:TESTUSD` (when SYMBOL_MODE=realistic)
+- Enforced in: `src/core/symbols/symbols.py` (`SymbolMapper`)
+
+### Freeze Rules
+
+During freeze period (2026-02-04 to 2026-03-17):
+
+- NO changes to `config/strategy/champions/*.json`
+- CI workflow `champion-freeze-guard.yml` blocks violations
+- Exception: Critical security/data-loss fixes only
+
+### Configuration Immutability
+
+Champion config is frozen:
+
+- `merged_config` must match validation run
+- Risk map cannot be adjusted
+- Component params cannot be tuned
+- Any deviation = new validation required
+
+## Monitoring
+
+### Key Metrics (Weekly Check)
+
+**Primary Criteria (must pass):**
+
+1. Profit Factor ≥ 1.3
+2. Max Drawdown ≤ 3%
+3. Win Rate ≥ 50%
+4. Min Trades ≥ 10/week
+
+**Secondary Criteria (monitor):**
+
+5. Sharpe Ratio ≥ 1.0 (if calculable)
+6. Return/DD ≥ 5.0
+7. Commission % ≤ 2%
+
+### Red Flags
+
+Stop paper trading if:
+
+- 2 consecutive weeks fail primary criteria
+- Single week with DD > 5%
+- Champion loading fails (baseline fallback detected)
+- Unexpected errors in strategy pipeline
+
+## Troubleshooting
+
+### Champion not loading
+
+**Symptom:** Response shows `champion.source = "baseline"`
+
+**Fix:**
+
+1. Verify `config/strategy/champions/tBTCUSD_1h.json` exists
+2. Check file has top-level `merged_config` key
+3. Restart server
+4. Check logs for ChampionLoader errors
+
+### No trades generated
+
+**Symptom:** Weeks pass with 0 trades
+
+**Diagnosis:**
+
+1. Check decision logging: `grep "action_none" server.log`
+2. Look for gate reasons: HTF_FIB_BLOCK, PROBA_BLOCK, etc.
+3. Verify model exists: `config/models/tBTCUSD_1h/`
+4. Check feature computation: `GENESIS_FAST_WINDOW=1`, `GENESIS_PRECOMPUTE_FEATURES=1`
+
+### Orders rejected
+
+**Symptom:** Bitfinex rejects paper orders
+
+**Diagnosis:**
+
+1. Verify TEST symbol used (not real tBTCUSD)
+2. Check API permissions for paper trading
+3. Verify order size within limits
+4. Check nonce freshness
+
+## Contact
+
+For questions or issues during paper trading:
+
+- Check `docs/daily_summaries/` for daily status
+- Review Known Issues in latest summary
+- Escalate blocking issues immediately (freeze period is time-limited)
+
+## References
+
+- Champion promotion: `docs/daily_summaries/daily_summary_2026-02-03.md`
+- Freeze guard: `.github/workflows/champion-freeze-guard.yml`
+- Known issues: `docs/daily_summaries/daily_summary_2026-02-03.md` (Known Issues section)
+- Validation results: `results/milestone3/v5a_sizing_exp1_full2024_20260203_110625.json`
+
+**Phase 3 ops docs:**
+
+- Runbook: `docs/paper_trading/phase3_runbook.md`
+- Runner deployment: `docs/paper_trading/runner_deployment.md`
+- Server persistence: `docs/paper_trading/server_setup.md`
+- Operations summary: `docs/paper_trading/operations_summary.md`
+- Daily summaries (incl. Azure/remote notes): `docs/paper_trading/daily_summaries/`

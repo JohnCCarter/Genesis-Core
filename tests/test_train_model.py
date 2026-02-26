@@ -10,7 +10,7 @@ import pandas as pd
 import pytest
 from sklearn.linear_model import LogisticRegression
 
-from scripts.train_model import (
+from scripts.train.train_model import (
     align_features_with_labels,
     convert_to_model_json,
     generate_training_labels,
@@ -72,7 +72,7 @@ class TestLoadFeaturesAndPrices:
                     return Path(x)
                 return Path(x)
 
-            with patch("scripts.train_model.Path", side_effect=path_side_effect):
+            with patch("scripts.train.train_model.Path", side_effect=path_side_effect):
                 with patch("core.utils.data_loader.Path", side_effect=path_side_effect):
                     features, prices, candles = load_features_and_prices("tBTCUSD", "15m")
 
@@ -95,7 +95,7 @@ class TestLoadFeaturesAndPrices:
                     return Path(x)
                 return Path(x)
 
-            with patch("scripts.train_model.Path", side_effect=path_side_effect):
+            with patch("scripts.train.train_model.Path", side_effect=path_side_effect):
                 with patch("core.utils.data_loader.Path", side_effect=path_side_effect):
                     with pytest.raises(FileNotFoundError, match="Features not found"):
                         load_features_and_prices("tBTCUSD", "15m")
@@ -126,7 +126,7 @@ class TestLoadFeaturesAndPrices:
                     return Path(x)
                 return Path(x)
 
-            with patch("scripts.train_model.Path", side_effect=path_side_effect):
+            with patch("scripts.train.train_model.Path", side_effect=path_side_effect):
                 with patch("core.utils.data_loader.Path", side_effect=path_side_effect):
                     with pytest.raises(FileNotFoundError, match="Candles file not found"):
                         load_features_and_prices("tBTCUSD", "15m")
@@ -179,7 +179,7 @@ class TestLoadFeaturesAndPrices:
                     return Path(x)
                 return Path(x)
 
-            with patch("scripts.train_model.Path", side_effect=path_side_effect):
+            with patch("scripts.train.train_model.Path", side_effect=path_side_effect):
                 with patch("core.utils.data_loader.Path", side_effect=path_side_effect):
                     with pytest.raises(ValueError, match="length mismatch"):
                         load_features_and_prices("tBTCUSD", "15m")
@@ -539,7 +539,7 @@ class TestIntegration:
                     return Path(x)
                 return Path(x)
 
-            with patch("scripts.train_model.Path", side_effect=path_side_effect):
+            with patch("scripts.train.train_model.Path", side_effect=path_side_effect):
                 with patch("core.utils.data_loader.Path", side_effect=path_side_effect):
                     # Load data
                     features_df, close_prices, candles_df = load_features_and_prices(

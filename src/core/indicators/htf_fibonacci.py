@@ -122,7 +122,7 @@ def load_candles_data(symbol: str, timeframe: str) -> pd.DataFrame:
             f"No candle parquet found for {symbol} {tf_cache}. Tried: {', '.join(str(p) for p in tried)}"
         )
 
-    df = pd.read_parquet(path)
+    df = pd.read_parquet(path, engine="pyarrow")
     if "timestamp" in df.columns:
         df["timestamp"] = pd.to_datetime(df["timestamp"], utc=True, errors="coerce")
     _candles_cache[cache_key] = df

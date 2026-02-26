@@ -8,7 +8,11 @@ from pathlib import Path
 
 
 def _repo_root() -> Path:
-    return Path(__file__).resolve().parents[1]
+    here = Path(__file__).resolve()
+    for candidate in [here, *here.parents]:
+        if (candidate / "pyproject.toml").exists() and (candidate / "src").exists():
+            return candidate
+    raise RuntimeError("Could not locate repository root from script path")
 
 
 # Ensure repo root and src/ are importable when executing from scripts/.

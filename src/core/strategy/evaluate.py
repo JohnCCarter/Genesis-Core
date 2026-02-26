@@ -82,7 +82,9 @@ def _volume_score_from_candles(
 
     ratio = v_now / median
     cap_ratio = float(cap_ratio) if cap_ratio is not None else 3.0
-    cap_ratio = 1.0 if cap_ratio <= 0 else cap_ratio
+    # cap_ratio is an outlier cap; values below 1 would artificially penalize
+    # normal/median volume and violate the intended semantics.
+    cap_ratio = 1.0 if cap_ratio < 1.0 else cap_ratio
     # Cap extreme outliers but don't penalize typical/median volume.
     ratio = min(ratio, cap_ratio)
     score = ratio

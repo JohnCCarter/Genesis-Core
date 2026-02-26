@@ -1,0 +1,19 @@
+# POC Config v2 - ML + HTF
+# Tests if HTF gate adds value on top of ML
+
+symbol: tBTCUSD
+timeframe: 1h
+start_date: "2024-06-01"
+end_date: "2024-08-01"
+
+components:
+  - type: ml_confidence
+    params:
+      threshold: 0.5
+  - type: htf_gate
+    params:
+      required_regimes:
+        - trending
+        - bull
+
+description: "ML + HTF gate (trending/bull only)"

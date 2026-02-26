@@ -1,6 +1,6 @@
 {
   "id": "python_engineering",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "title": "Python engineering (3.11+)",
   "description": "Kodstandard för Genesis-Core: typade funktioner, små diffar, ruff/black/pytest först, och inga hemligheter i repo.",
   "status": "dev",
@@ -9,11 +9,14 @@
   "rules": {
     "must": [
       "Använd Python 3.11+ och moderna type hints (X | None).",
+      "Håll refactors små, fokuserade och avgränsade.",
       "Skriv enhetstester för ny logik.",
-      "Kör ruff + pytest innan merge."
+      "Kör ruff + pytest innan merge.",
+      "Kör bandit -r src -c bandit.yaml innan merge."
     ],
     "must_not": [
       "Lägg aldrig in secrets i repo (.env ska vara gitignored).",
+      "Ändra inte beteende utan explicit specifikation.",
       "Skapa inte experimentell kod på mainline utan specifikation."
     ]
   },

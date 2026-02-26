@@ -52,9 +52,10 @@ def test_runtime_endpoints_do_not_leak_exceptions(monkeypatch):
         raise RuntimeError("some internal SECRET_SHOULD_NOT_LEAK")
 
     monkeypatch.setattr(api.authority, "propose_update", _boom)
-    monkeypatch.delenv("BEARER_TOKEN", raising=False)
+    monkeypatch.setenv("BEARER_TOKEN", "test-secret")
     r = c.post(
         "/config/runtime/propose",
+        headers={"Authorization": "Bearer test-secret"},
         json={
             "patch": {"thresholds": {"entry_conf_overall": 0.6}},
             "actor": "test",

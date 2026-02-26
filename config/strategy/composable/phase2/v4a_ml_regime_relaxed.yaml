@@ -1,0 +1,40 @@
+# Phase 3 Tuned Config: v4a ML + Relaxed Regime (EV still tandlös)
+# Goal: Isolate RegimeFilter tuning effect before EVGate tuning
+#
+# Changes from v3:
+#   - RegimeFilter: Add "bear" and "ranging" (all regimes allowed)
+#     Target: Reduce veto rate from 80.7% to ~40-60%
+#   - EVGate: Keep min_ev=0.0 (tandlös, for comparison)
+#   - Cooldown: Unchanged
+
+components:
+  - type: ml_confidence
+    params:
+      threshold: 0.24  # Baseline threshold (unchanged)
+
+  - type: regime_filter
+    params:
+      allowed_regimes: ["trending", "bull", "balanced", "bear", "ranging"]
+      # TUNED: All regimes allowed (vs v3: only trending/bull/balanced)
+      # This isolates the regime filter tuning effect
+
+  - type: ev_gate
+    params:
+      min_ev: 0.0  # UNCHANGED: Still tandlös (for incremental analysis)
+
+  - type: cooldown
+    params:
+      min_bars_between_trades: 24  # 24 hours for 1h timeframe (unchanged)
+
+# Test period: 2024-01-01 to 2024-03-31 (Q1 2024)
+#
+# Expected behavior:
+#   - Incremental test: v3 → v4a shows pure regime filter relaxation effect
+#   - Trade count: target 5-15 (more than v3: 1, less than v0: 18)
+#   - RegimeFilter veto_rate: target ~40-60% (vs v3: 80.7%)
+#   - EVGate veto_rate: still 0% (tandlös)
+#
+# Analysis value:
+#   Compare v3 → v4a → v4 to separate:
+#   - RegimeFilter tuning impact (v3 → v4a)
+#   - EVGate tuning impact (v4a → v4)

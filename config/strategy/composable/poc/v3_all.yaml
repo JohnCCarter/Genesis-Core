@@ -1,0 +1,22 @@
+# POC Config v3 - All components
+# Tests if combining all filters improves results
+
+symbol: tBTCUSD
+timeframe: 1h
+start_date: "2024-06-01"
+end_date: "2024-08-01"
+
+components:
+  - type: ml_confidence
+    params:
+      threshold: 0.5
+  - type: atr_filter
+    params:
+      min_ratio: 1.0
+  - type: htf_gate
+    params:
+      required_regimes:
+        - trending
+        - bull
+
+description: "All components: ML + ATR + HTF"

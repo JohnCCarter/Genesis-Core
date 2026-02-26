@@ -57,6 +57,30 @@ def test_engine_initialization():
     assert engine.candles_df is None
 
 
+def test_engine_precompute_without_fast_window_raises_when_mode_not_explicit(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    """A8: mixed mode must hard-fail unless explicit mode is acknowledged."""
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "1")
+    monkeypatch.delenv("GENESIS_MODE_EXPLICIT", raising=False)
+
+    with pytest.raises(ValueError, match="GENESIS_MODE_EXPLICIT=1"):
+        BacktestEngine(symbol="tBTCUSD", timeframe="15m", fast_window=False)
+
+
+def test_engine_precompute_without_fast_window_allowed_in_explicit_mode(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    """A8: explicit mode keeps non-canonical path as opt-in with warning."""
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "1")
+    monkeypatch.setenv("GENESIS_MODE_EXPLICIT", "1")
+
+    with pytest.warns(UserWarning, match="explicit non-canonical mode"):
+        engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m", fast_window=False)
+
+    assert engine.fast_window is False
+
+
 def test_engine_load_data_missing_file():
     """Test engine fails gracefully when data file is missing."""
     engine = BacktestEngine(symbol="tNONEXISTENT", timeframe="1h")
@@ -234,6 +258,113 @@ def test_engine_does_not_print_htf_unavailable_debug(monkeypatch):
         entry_price=100.0,
         timestamp=datetime(2025, 1, 1),
     )
+
+
+def test_check_htf_exit_invalid_precomputed_context_forces_unavailable(sample_candles_data):
+    """Regression: invalid precomputed HTF values must not be exposed as available context."""
+    engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m")
+    engine.candles_df = sample_candles_data
+    engine._prepare_numpy_arrays()
+
+    engine.position_tracker.position = Position(
+        symbol="tBTCUSD",
+        side="LONG",
+        initial_size=1.0,
+        current_size=1.0,
+        entry_price=100.0,
+        entry_time=datetime(2025, 1, 1),
+    )
+
+    engine._precomputed_features = {
+        "htf_fib_0382": [0.0],
+        "htf_fib_05": [float("nan")],
+        "htf_fib_0618": [101.0],
+        "htf_swing_high": [0.0],
+        "htf_swing_low": [99.0],
+    }
+
+    captured_context: dict = {}
+
+    def _fake_check_exits(_position, _bar_data, htf_context, _indicators):
+        captured_context["value"] = htf_context
+        return []
+
+    engine.htf_exit_engine.check_exits = _fake_check_exits
+
+    reason = engine._check_htf_exit_conditions(
+        current_price=100.0,
+        timestamp=datetime(2025, 1, 1),
+        bar_data={
+            "timestamp": datetime(2025, 1, 1),
+            "open": 100.0,
+            "high": 101.0,
+            "low": 99.0,
+            "close": 100.0,
+            "volume": 1000.0,
+        },
+        result={"features": {}, "confidence": 1.0, "regime": "NEUTRAL"},
+        meta={"decision": {"state_out": {}}},
+        configs={"exit": {"enabled": True}},
+        bar_index=0,
+    )
+
+    assert reason is None
+    assert captured_context["value"]["available"] is False
+    assert engine._htf_context_seen is False
+
+
+def test_check_htf_exit_valid_precomputed_context_remains_available(sample_candles_data):
+    """Regression: valid precomputed HTF values should still be forwarded as available."""
+    engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m")
+    engine.candles_df = sample_candles_data
+    engine._prepare_numpy_arrays()
+
+    engine.position_tracker.position = Position(
+        symbol="tBTCUSD",
+        side="LONG",
+        initial_size=1.0,
+        current_size=1.0,
+        entry_price=100.0,
+        entry_time=datetime(2025, 1, 1),
+    )
+
+    engine._precomputed_features = {
+        "htf_fib_0382": [99.5],
+        "htf_fib_05": [100.0],
+        "htf_fib_0618": [100.5],
+        "htf_swing_high": [102.0],
+        "htf_swing_low": [98.0],
+    }
+
+    captured_context: dict = {}
+
+    def _fake_check_exits(_position, _bar_data, htf_context, _indicators):
+        captured_context["value"] = htf_context
+        return []
+
+    engine.htf_exit_engine.check_exits = _fake_check_exits
+
+    reason = engine._check_htf_exit_conditions(
+        current_price=100.0,
+        timestamp=datetime(2025, 1, 1),
+        bar_data={
+            "timestamp": datetime(2025, 1, 1),
+            "open": 100.0,
+            "high": 101.0,
+            "low": 99.0,
+            "close": 100.0,
+            "volume": 1000.0,
+        },
+        result={"features": {}, "confidence": 1.0, "regime": "NEUTRAL"},
+        meta={"decision": {"state_out": {}}},
+        configs={"exit": {"enabled": True}},
+        bar_index=0,
+    )
+
+    assert reason is None
+    assert captured_context["value"]["available"] is True
+    assert captured_context["value"]["levels"][0.5] == pytest.approx(100.0)
+    assert engine._htf_context_seen is True
 
 
 def test_engine_run_with_minimal_data(sample_candles_data):
@@ -451,18 +582,18 @@ def test_engine_state_persistence(sample_candles_data):
     assert engine.bar_count > 0
 
 
-def test_engine_handles_pipeline_errors_gracefully(sample_candles_data):
-    """Test that engine continues on pipeline errors (robust)."""
+def test_engine_raises_on_pipeline_errors(sample_candles_data, monkeypatch):
+    """Backtest must fail if per-bar pipeline exceptions occurred."""
     engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m", warmup_bars=10)
-    engine.candles_df = sample_candles_data
+    engine.candles_df = sample_candles_data.head(20)
 
-    # Invalid config that might cause errors
-    configs = {"invalid_key": "invalid_value"}
+    def _raise_pipeline_error(*_args, **_kwargs):
+        raise ValueError("forced per-bar failure")
 
-    # Should not crash, should handle gracefully
-    results = engine.run(configs=configs)
+    monkeypatch.setattr("core.backtest.engine.evaluate_pipeline", _raise_pipeline_error)
 
-    assert "error" not in results  # Should complete despite errors
+    with pytest.raises(RuntimeError, match="per-bar evaluation errors"):
+        engine.run(configs={})
 
 
 def test_engine_with_verbose_mode(sample_candles_data, capsys):
@@ -491,6 +622,50 @@ def test_engine_with_verbose_mode(sample_candles_data, capsys):
         or "Running" in captured.err
         or "Running" in captured.out
     )
+
+
+def test_engine_precompute_cache_write_failure_logs_warning(monkeypatch, caplog):
+    import numpy as np
+
+    dates = pd.date_range("2025-01-01", periods=80, freq="15min", tz="UTC")
+    df = pd.DataFrame(
+        {
+            "timestamp": dates,
+            "open": [100.0 + i * 0.1 for i in range(80)],
+            "high": [100.5 + i * 0.1 for i in range(80)],
+            "low": [99.5 + i * 0.1 for i in range(80)],
+            "close": [100.2 + i * 0.1 for i in range(80)],
+            "volume": [1000.0 + i for i in range(80)],
+        }
+    )
+
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "1")
+    engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m", fast_window=True)
+
+    original_exists = Path.exists
+
+    def _fake_exists(self: Path) -> bool:
+        if self.name == "tBTCUSD_15m_frozen.parquet" and "raw" in self.parts:
+            return True
+        return original_exists(self)
+
+    def _fake_read_parquet(_path, columns=None, **_kwargs):
+        if columns is None:
+            return df.copy()
+        return df[columns].copy()
+
+    def _raise_savez(*_args, **_kwargs):
+        raise RuntimeError("cache write failed")
+
+    monkeypatch.setattr(Path, "exists", _fake_exists)
+    monkeypatch.setattr(pd, "read_parquet", _fake_read_parquet)
+    monkeypatch.setattr(np, "savez_compressed", _raise_savez)
+
+    with caplog.at_level("WARNING"):
+        ok = engine.load_data()
+
+    assert ok is True
+    assert "Failed to write precompute cache" in caplog.text
 
 
 def test_engine_precompute_cache_hit_htf_mapping_does_not_require_local_fib_cfg(

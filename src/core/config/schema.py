@@ -26,9 +26,14 @@ class SignalAdaptationZone(RuntimeSection):
         if isinstance(v, dict):
             out: dict[str, float] = {}
             for k, val in (v or {}).items():
-                out[str(k)] = float(val)
+                try:
+                    out[str(k)] = float(val)
+                except (TypeError, ValueError) as exc:
+                    raise ValueError(
+                        f"regime_proba values must be float-convertible (key={k!r}, value={val!r})"
+                    ) from exc
             return out
-        raise TypeError("regime_proba must be a dict[str, float] or a float")
+        raise ValueError("regime_proba must be a dict[str, float] or a float")
 
 
 class SignalAdaptationConfig(RuntimeSection):
@@ -53,9 +58,14 @@ class Thresholds(RuntimeSection):
         if isinstance(v, dict):
             out: dict[str, float] = {}
             for k, val in (v or {}).items():
-                out[str(k)] = float(val)
+                try:
+                    out[str(k)] = float(val)
+                except (TypeError, ValueError) as exc:
+                    raise ValueError(
+                        f"regime_proba values must be float-convertible (key={k!r}, value={val!r})"
+                    ) from exc
             return out
-        raise TypeError("regime_proba must be a dict[str, float] or a float")
+        raise ValueError("regime_proba must be a dict[str, float] or a float")
 
 
 class Gates(RuntimeSection):
@@ -72,8 +82,17 @@ class Risk(RuntimeSection):
     @classmethod
     def _validate_risk_map(_cls, v: Any) -> list[tuple[float, float]]:
         out: list[tuple[float, float]] = []
-        for item in v or []:
-            thr, sz = (float(item[0]), float(item[1]))
+        if v is None:
+            return out
+        if not isinstance(v, list | tuple):
+            raise ValueError("risk_map must be a list of (threshold, size) pairs")
+        for item in v:
+            try:
+                thr, sz = (float(item[0]), float(item[1]))
+            except (TypeError, ValueError, IndexError) as exc:
+                raise ValueError(
+                    f"risk_map items must be (threshold, size) pairs, got {item!r}"
+                ) from exc
             out.append((thr, sz))
         return out
 
@@ -149,7 +168,10 @@ class FeaturePercentileRange(RuntimeSection):
     @field_validator("low", "high")
     @classmethod
     def _coerce(_cls, v: Any) -> float:
-        return float(v)
+        try:
+            return float(v)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"percentile bounds must be numeric, got {v!r}") from exc
 
 
 class FeaturesConfig(RuntimeSection):

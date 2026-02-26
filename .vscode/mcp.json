@@ -16,6 +16,16 @@
   "servers": {
     "genesis-core": {
       "args": ["-m", "mcp_server.server"],
+      "command": ".venv/bin/python",
+      "env": {
+        "GENESIS_FAST_HASH": "0",
+        "GENESIS_FAST_WINDOW": "1",
+        "GENESIS_PRECOMPUTE_FEATURES": "1"
+      },
+      "type": "stdio"
+    },
+    "genesis-core-windows": {
+      "args": ["-m", "mcp_server.server"],
       "command": ".venv/Scripts/python.exe",
       "env": {
         "GENESIS_FAST_HASH": "0",

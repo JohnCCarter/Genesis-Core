@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from scripts.validate_optimizer_config import normalize_champion_payload
+from scripts.validate.validate_optimizer_config import normalize_champion_payload
 
 
 def test_normalize_champion_payload_prefers_cfg() -> None:

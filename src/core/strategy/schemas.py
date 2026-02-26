@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 FIB_KEYS: tuple[float, ...] = (0.382, 0.5, 0.618, 0.786)
 
@@ -18,7 +18,8 @@ class HtfFibContext(BaseModel):
     source: str = "unknown"
     timestamp: str | None = None
 
-    @validator("levels", pre=True)
+    @field_validator("levels", mode="before")
+    @classmethod
     def _coerce_levels(_cls, value: object) -> dict[float, float]:
         """Tillåt både str- och float-nycklar och filtrera bort ogiltiga värden."""
         out: dict[float, float] = {}

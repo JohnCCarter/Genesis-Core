@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import hashlib
+import hmac
 import importlib
 import json
 import logging
 import os
+import secrets
+import time
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
@@ -15,11 +19,14 @@ if TYPE_CHECKING:
     )
 
 
-from .config import load_config
+from .config import get_project_root, load_config
 from .tools import (
+    GIT_WORKFLOW_MUTATING_OPERATIONS,
+    GIT_WORKFLOW_SUPPORTED_OPERATIONS,
     execute_python,
     get_git_status,
     get_project_structure,
+    git_workflow_operation,
     list_directory,
     read_file,
     search_code,
@@ -96,6 +103,208 @@ SAFE_REMOTE_MODE = os.environ.get("GENESIS_MCP_REMOTE_SAFE", "1") != "0"
 # This mode exposes only extremely low-risk tools (e.g. ping) and connector stubs.
 ULTRA_SAFE_REMOTE_MODE = os.environ.get("GENESIS_MCP_REMOTE_ULTRA_SAFE", "0") == "1"
 
+# Opt-in git workflow mode for task-branch + PR flow.
+GIT_WORKFLOW_REMOTE_MODE = os.environ.get("GENESIS_MCP_REMOTE_GIT_MODE", "0") == "1"
+
+# Optional shared-secret guard for remote usage.
+# Only enforced when a non-empty token is set.
+REMOTE_TOKEN = (os.environ.get("GENESIS_MCP_REMOTE_TOKEN") or "").strip() or None
+
+# Secure-by-default: remote requests must be authorized unless explicitly overridden.
+# NOTE: If a token is configured, authorization is always required.
+ALLOW_UNAUTH_REMOTE = (os.environ.get("GENESIS_MCP_REMOTE_ALLOW_UNAUTH") or "").strip() == "1"
+REMOTE_AUTH_REQUIRED = REMOTE_TOKEN is not None or not ALLOW_UNAUTH_REMOTE
+
+
+def _env_int(name: str, default: int) -> int:
+    raw = (os.environ.get(name) or "").strip()
+    if not raw:
+        return default
+    try:
+        return int(raw)
+    except ValueError:
+        return default
+
+
+_CONFIRM_TOKEN_TTL_SECONDS = max(
+    30,
+    min(
+        1800,
+        _env_int("GENESIS_MCP_CONFIRM_TTL_SECONDS", 120),
+    ),
+)
+_CONFIRM_TOKEN_STORE: dict[str, dict[str, Any]] = {}
+
+
+def _stable_json(value: Any) -> str:
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+
+
+def _confirm_payload_hash(payload: dict[str, Any]) -> str:
+    return hashlib.sha256(_stable_json(payload).encode("utf-8")).hexdigest()
+
+
+def _cleanup_confirm_tokens(*, now_ts: float | None = None) -> None:
+    now = time.time() if now_ts is None else now_ts
+    expired = [
+        token
+        for token, data in _CONFIRM_TOKEN_STORE.items()
+        if float(data.get("expires_at") or 0) <= now
+    ]
+    for token in expired:
+        _CONFIRM_TOKEN_STORE.pop(token, None)
+
+
+def _issue_confirm_token(*, action: str, payload: dict[str, Any]) -> str:
+    _cleanup_confirm_tokens()
+    token = secrets.token_urlsafe(24)
+    now = time.time()
+    _CONFIRM_TOKEN_STORE[token] = {
+        "action": action,
+        "payload_hash": _confirm_payload_hash(payload),
+        "issued_at": now,
+        "expires_at": now + _CONFIRM_TOKEN_TTL_SECONDS,
+    }
+    return token
+
+
+def _consume_confirm_token(*, token: str, action: str, payload: dict[str, Any]) -> tuple[bool, str]:
+    _cleanup_confirm_tokens()
+    entry = _CONFIRM_TOKEN_STORE.get(token)
+    if not entry:
+        return False, "Invalid or expired confirm_token"
+
+    if entry.get("action") != action:
+        return False, "confirm_token action mismatch"
+
+    expected_hash = entry.get("payload_hash")
+    actual_hash = _confirm_payload_hash(payload)
+    if expected_hash != actual_hash:
+        _CONFIRM_TOKEN_STORE.pop(token, None)
+        return False, "Repository state or operation arguments changed since preview"
+
+    _CONFIRM_TOKEN_STORE.pop(token, None)
+    return True, ""
+
+
+async def _dispatch_git_workflow(
+    *,
+    operation: str,
+    preview: bool,
+    confirm_token: str | None,
+    task_slug: str | None = None,
+    task_branch: str | None = None,
+    date_utc: str | None = None,
+    pathspecs: list[str] | None = None,
+    commit_message: str | None = None,
+    pr_title: str | None = None,
+    pr_body: str | None = None,
+    log_limit: int | None = None,
+    diff_ref: str | None = None,
+) -> dict[str, Any]:
+    if operation not in GIT_WORKFLOW_SUPPORTED_OPERATIONS:
+        return {
+            "success": False,
+            "error": (
+                "Unsupported git operation. Allowed: "
+                + ", ".join(sorted(GIT_WORKFLOW_SUPPORTED_OPERATIONS))
+            ),
+        }
+
+    mutating = operation in GIT_WORKFLOW_MUTATING_OPERATIONS
+    dry_run_result = await git_workflow_operation(
+        operation=operation,
+        config=CONFIG,
+        dry_run=True,
+        task_slug=task_slug,
+        task_branch=task_branch,
+        date_utc=date_utc,
+        pathspecs=pathspecs,
+        commit_message=commit_message,
+        pr_title=pr_title,
+        pr_body=pr_body,
+        log_limit=log_limit,
+        diff_ref=diff_ref,
+    )
+    if not dry_run_result.get("success"):
+        return dry_run_result
+
+    confirmation_payload = {
+        "operation": operation,
+        "normalized_args": dry_run_result.get("normalized_args") or {},
+        "state": dry_run_result.get("state") or {},
+    }
+
+    if mutating:
+        if preview:
+            token = _issue_confirm_token(action="git_workflow", payload=confirmation_payload)
+            result = dict(dry_run_result)
+            result.update(
+                {
+                    "confirmation_required": True,
+                    "confirm_token": token,
+                    "confirm_ttl_seconds": _CONFIRM_TOKEN_TTL_SECONDS,
+                }
+            )
+            return result
+
+        if not confirm_token:
+            return {
+                "success": False,
+                "operation": operation,
+                "error": "This operation is mutating. Run with preview=true to receive confirm_token.",
+            }
+
+        ok, reason = _consume_confirm_token(
+            token=confirm_token,
+            action="git_workflow",
+            payload=confirmation_payload,
+        )
+        if not ok:
+            return {"success": False, "operation": operation, "error": reason}
+
+    elif preview:
+        return dry_run_result
+
+    result = await git_workflow_operation(
+        operation=operation,
+        config=CONFIG,
+        dry_run=False,
+        task_slug=task_slug,
+        task_branch=task_branch,
+        date_utc=date_utc,
+        pathspecs=pathspecs,
+        commit_message=commit_message,
+        pr_title=pr_title,
+        pr_body=pr_body,
+        log_limit=log_limit,
+        diff_ref=diff_ref,
+    )
+    result["preview"] = False
+    if mutating:
+        result["confirmation_required"] = False
+    return result
+
+
+def _load_privacy_policy_text() -> str:
+    """Load privacy policy text from docs, with a safe fallback."""
+
+    # Canonical location (docs were reorganized into category subfolders).
+    # Keep a legacy fallback for older checkouts.
+    policy_paths = [
+        get_project_root() / "docs" / "mcp" / "privacy-policy.md",
+        get_project_root() / "docs" / "privacy-policy.md",
+    ]
+
+    for policy_path in policy_paths:
+        try:
+            return policy_path.read_text(encoding="utf-8")
+        except Exception:
+            continue
+
+    return "Privacy policy not found."
+
+
 _HAS_FASTMCP = _FastMCP is not None and _TransportSecuritySettings is not None
 
 if _HAS_FASTMCP:
@@ -132,6 +341,7 @@ async def ping_tool(**kwargs: Any) -> dict[str, Any]:
         "pong": True,
         "safe_remote_mode": SAFE_REMOTE_MODE,
         "ultra_safe_remote_mode": ULTRA_SAFE_REMOTE_MODE,
+        "git_workflow_remote_mode": GIT_WORKFLOW_REMOTE_MODE,
     }
 
 
@@ -185,7 +395,155 @@ if not ULTRA_SAFE_REMOTE_MODE:
 
     @mcp.tool()
     async def get_git_status_tool(**kwargs: Any) -> dict[str, Any]:
-        return await get_git_status(CONFIG)
+        return await get_git_status(CONFIG, apply_security_filters=True)
+
+
+if GIT_WORKFLOW_REMOTE_MODE and not ULTRA_SAFE_REMOTE_MODE:
+
+    @mcp.tool()
+    async def git_workflow(
+        operation: str,
+        preview: bool = False,
+        confirm_token: str | None = None,
+        task_slug: str | None = None,
+        task_branch: str | None = None,
+        date_utc: str | None = None,
+        pathspecs: list[str] | None = None,
+        commit_message: str | None = None,
+        pr_title: str | None = None,
+        pr_body: str | None = None,
+        log_limit: int | None = None,
+        diff_ref: str | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        return await _dispatch_git_workflow(
+            operation=operation,
+            preview=preview,
+            confirm_token=confirm_token,
+            task_slug=task_slug,
+            task_branch=task_branch,
+            date_utc=date_utc,
+            pathspecs=pathspecs,
+            commit_message=commit_message,
+            pr_title=pr_title,
+            pr_body=pr_body,
+            log_limit=log_limit,
+            diff_ref=diff_ref,
+        )
+
+    @mcp.tool()
+    async def git_create_task_branch(
+        task_slug: str,
+        preview: bool = False,
+        confirm_token: str | None = None,
+        task_branch: str | None = None,
+        date_utc: str | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        return await _dispatch_git_workflow(
+            operation="create_task_branch",
+            preview=preview,
+            confirm_token=confirm_token,
+            task_slug=task_slug,
+            task_branch=task_branch,
+            date_utc=date_utc,
+        )
+
+    @mcp.tool()
+    async def git_status(
+        preview: bool = False,
+        confirm_token: str | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        return await _dispatch_git_workflow(
+            operation="git_status",
+            preview=preview,
+            confirm_token=confirm_token,
+        )
+
+    @mcp.tool()
+    async def git_diff(
+        preview: bool = False,
+        confirm_token: str | None = None,
+        diff_ref: str | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        return await _dispatch_git_workflow(
+            operation="git_diff",
+            preview=preview,
+            confirm_token=confirm_token,
+            diff_ref=diff_ref,
+        )
+
+    @mcp.tool()
+    async def git_log(
+        preview: bool = False,
+        confirm_token: str | None = None,
+        log_limit: int | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        return await _dispatch_git_workflow(
+            operation="git_log",
+            preview=preview,
+            confirm_token=confirm_token,
+            log_limit=log_limit,
+        )
+
+    @mcp.tool()
+    async def git_add(
+        pathspecs: list[str] | None = None,
+        preview: bool = False,
+        confirm_token: str | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        return await _dispatch_git_workflow(
+            operation="git_add",
+            preview=preview,
+            confirm_token=confirm_token,
+            pathspecs=pathspecs,
+        )
+
+    @mcp.tool()
+    async def git_commit(
+        commit_message: str,
+        preview: bool = False,
+        confirm_token: str | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        return await _dispatch_git_workflow(
+            operation="git_commit",
+            preview=preview,
+            confirm_token=confirm_token,
+            commit_message=commit_message,
+        )
+
+    @mcp.tool()
+    async def git_push_task_branch(
+        preview: bool = False,
+        confirm_token: str | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        return await _dispatch_git_workflow(
+            operation="git_push_task_branch",
+            preview=preview,
+            confirm_token=confirm_token,
+        )
+
+    @mcp.tool()
+    async def git_create_pr(
+        preview: bool = False,
+        confirm_token: str | None = None,
+        pr_title: str | None = None,
+        pr_body: str | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        return await _dispatch_git_workflow(
+            operation="create_pr",
+            preview=preview,
+            confirm_token=confirm_token,
+            pr_title=pr_title,
+            pr_body=pr_body,
+        )
 
 
 # -----------------------------------------------------------------------------
@@ -265,6 +623,38 @@ async def fetch(
         "url": f"file://{path}",
         "metadata": {},
     }
+
+
+def _is_authorized_remote_request(*, authorization: str | None, token_header: str | None) -> bool:
+    """Validate remote auth headers against REMOTE_TOKEN.
+
+    Accepted forms:
+    - Authorization: Bearer <token>
+    - X-Genesis-MCP-Token: <token>
+
+    If remote auth is disabled (explicit override), all requests are authorized.
+    Otherwise, requests are authorized only when they present a valid token.
+    """
+
+    if not REMOTE_AUTH_REQUIRED:
+        return True
+
+    if REMOTE_TOKEN is None:
+        return False
+
+    presented: str | None = None
+    if authorization:
+        auth = authorization.strip()
+        if auth.lower().startswith("bearer "):
+            presented = auth[7:].strip()
+
+    if not presented and token_header:
+        presented = token_header.strip()
+
+    if not presented:
+        return False
+
+    return hmac.compare_digest(presented, REMOTE_TOKEN)
 
 
 def _wrap_sse_send_for_proxy(*, send, pad_bytes: bytes):
@@ -355,6 +745,10 @@ def _build_sse_app():
             if "code" in safe:
                 code = safe.get("code")
                 safe["code"] = f"<redacted len={len(code) if isinstance(code, str) else 'n/a'}>"
+        if tool_name in {"git_workflow", "git_commit", "git_create_pr"}:
+            if "pr_body" in safe:
+                body = safe.get("pr_body")
+                safe["pr_body"] = f"<redacted len={len(body) if isinstance(body, str) else 'n/a'}>"
         return safe
 
     tools: list[Tool] = [
@@ -433,6 +827,128 @@ def _build_sse_app():
             ]
         )
 
+    if GIT_WORKFLOW_REMOTE_MODE and not ULTRA_SAFE_REMOTE_MODE:
+        tools.extend(
+            [
+                Tool(
+                    name="git_workflow",
+                    description=(
+                        "Constrained git workflow for task-branch + PR. "
+                        "Mutating operations require preview=true first."
+                    ),
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "operation": {"type": "string"},
+                            "preview": {"type": "boolean"},
+                            "confirm_token": {"type": "string"},
+                            "task_slug": {"type": "string"},
+                            "task_branch": {"type": "string"},
+                            "date_utc": {"type": "string"},
+                            "pathspecs": {"type": "array", "items": {"type": "string"}},
+                            "commit_message": {"type": "string"},
+                            "pr_title": {"type": "string"},
+                            "pr_body": {"type": "string"},
+                            "log_limit": {"type": "integer"},
+                            "diff_ref": {"type": "string"},
+                        },
+                        "required": ["operation"],
+                    },
+                ),
+                Tool(
+                    name="git_create_task_branch",
+                    description="Create task branch chatgpt/YYYYMMDD-task-slug from origin base branch.",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "task_slug": {"type": "string"},
+                            "task_branch": {"type": "string"},
+                            "date_utc": {"type": "string"},
+                            "preview": {"type": "boolean"},
+                            "confirm_token": {"type": "string"},
+                        },
+                        "required": ["task_slug"],
+                    },
+                ),
+                Tool(
+                    name="git_status",
+                    description="Get repository status via constrained workflow endpoint.",
+                    inputSchema={"type": "object", "properties": {"preview": {"type": "boolean"}}},
+                ),
+                Tool(
+                    name="git_diff",
+                    description="Get git diff for current branch.",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "diff_ref": {"type": "string"},
+                            "preview": {"type": "boolean"},
+                        },
+                    },
+                ),
+                Tool(
+                    name="git_log",
+                    description="Get git log --oneline with configurable limit.",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "log_limit": {"type": "integer"},
+                            "preview": {"type": "boolean"},
+                        },
+                    },
+                ),
+                Tool(
+                    name="git_add",
+                    description="Stage files on task branch. Requires preview + confirm.",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "pathspecs": {"type": "array", "items": {"type": "string"}},
+                            "preview": {"type": "boolean"},
+                            "confirm_token": {"type": "string"},
+                        },
+                    },
+                ),
+                Tool(
+                    name="git_commit",
+                    description="Commit staged changes on task branch. Requires preview + confirm.",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "commit_message": {"type": "string"},
+                            "preview": {"type": "boolean"},
+                            "confirm_token": {"type": "string"},
+                        },
+                        "required": ["commit_message"],
+                    },
+                ),
+                Tool(
+                    name="git_push_task_branch",
+                    description="Push current task branch to origin. Requires preview + confirm.",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "preview": {"type": "boolean"},
+                            "confirm_token": {"type": "string"},
+                        },
+                    },
+                ),
+                Tool(
+                    name="git_create_pr",
+                    description="Create PR from current task branch to base branch. Requires preview + confirm.",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "pr_title": {"type": "string"},
+                            "pr_body": {"type": "string"},
+                            "preview": {"type": "boolean"},
+                            "confirm_token": {"type": "string"},
+                        },
+                    },
+                ),
+            ]
+        )
+
     if not SAFE_REMOTE_MODE:
         tools.extend(
             [
@@ -475,6 +991,7 @@ def _build_sse_app():
                     "pong": True,
                     "safe_remote_mode": SAFE_REMOTE_MODE,
                     "ultra_safe_remote_mode": ULTRA_SAFE_REMOTE_MODE,
+                    "git_workflow_remote_mode": GIT_WORKFLOW_REMOTE_MODE,
                 }
             elif name == "search":
                 result = await search(
@@ -498,7 +1015,79 @@ def _build_sse_app():
                     CONFIG,
                 )
             elif name == "get_git_status":
-                result = await get_git_status(CONFIG)
+                result = await get_git_status(CONFIG, apply_security_filters=True)
+            elif GIT_WORKFLOW_REMOTE_MODE and name == "git_workflow":
+                result = await _dispatch_git_workflow(
+                    operation=str(arguments.get("operation", "")),
+                    preview=bool(arguments.get("preview", False)),
+                    confirm_token=arguments.get("confirm_token"),
+                    task_slug=arguments.get("task_slug"),
+                    task_branch=arguments.get("task_branch"),
+                    date_utc=arguments.get("date_utc"),
+                    pathspecs=arguments.get("pathspecs"),
+                    commit_message=arguments.get("commit_message"),
+                    pr_title=arguments.get("pr_title"),
+                    pr_body=arguments.get("pr_body"),
+                    log_limit=arguments.get("log_limit"),
+                    diff_ref=arguments.get("diff_ref"),
+                )
+            elif GIT_WORKFLOW_REMOTE_MODE and name == "git_create_task_branch":
+                result = await _dispatch_git_workflow(
+                    operation="create_task_branch",
+                    preview=bool(arguments.get("preview", False)),
+                    confirm_token=arguments.get("confirm_token"),
+                    task_slug=arguments.get("task_slug"),
+                    task_branch=arguments.get("task_branch"),
+                    date_utc=arguments.get("date_utc"),
+                )
+            elif GIT_WORKFLOW_REMOTE_MODE and name == "git_status":
+                result = await _dispatch_git_workflow(
+                    operation="git_status",
+                    preview=bool(arguments.get("preview", False)),
+                    confirm_token=arguments.get("confirm_token"),
+                )
+            elif GIT_WORKFLOW_REMOTE_MODE and name == "git_diff":
+                result = await _dispatch_git_workflow(
+                    operation="git_diff",
+                    preview=bool(arguments.get("preview", False)),
+                    confirm_token=arguments.get("confirm_token"),
+                    diff_ref=arguments.get("diff_ref"),
+                )
+            elif GIT_WORKFLOW_REMOTE_MODE and name == "git_log":
+                result = await _dispatch_git_workflow(
+                    operation="git_log",
+                    preview=bool(arguments.get("preview", False)),
+                    confirm_token=arguments.get("confirm_token"),
+                    log_limit=arguments.get("log_limit"),
+                )
+            elif GIT_WORKFLOW_REMOTE_MODE and name == "git_add":
+                result = await _dispatch_git_workflow(
+                    operation="git_add",
+                    preview=bool(arguments.get("preview", False)),
+                    confirm_token=arguments.get("confirm_token"),
+                    pathspecs=arguments.get("pathspecs"),
+                )
+            elif GIT_WORKFLOW_REMOTE_MODE and name == "git_commit":
+                result = await _dispatch_git_workflow(
+                    operation="git_commit",
+                    preview=bool(arguments.get("preview", False)),
+                    confirm_token=arguments.get("confirm_token"),
+                    commit_message=arguments.get("commit_message"),
+                )
+            elif GIT_WORKFLOW_REMOTE_MODE and name == "git_push_task_branch":
+                result = await _dispatch_git_workflow(
+                    operation="git_push_task_branch",
+                    preview=bool(arguments.get("preview", False)),
+                    confirm_token=arguments.get("confirm_token"),
+                )
+            elif GIT_WORKFLOW_REMOTE_MODE and name == "git_create_pr":
+                result = await _dispatch_git_workflow(
+                    operation="create_pr",
+                    preview=bool(arguments.get("preview", False)),
+                    confirm_token=arguments.get("confirm_token"),
+                    pr_title=arguments.get("pr_title"),
+                    pr_body=arguments.get("pr_body"),
+                )
             elif SAFE_REMOTE_MODE:
                 result = {"success": False, "error": "SAFE_REMOTE_MODE blocks this tool"}
             elif name == "write_file":
@@ -543,6 +1132,29 @@ def _build_sse_app():
         This is a pragmatic fallback for environments where long-lived SSE streams
         are unreliable through certain proxies/tunnels.
         """
+
+        if REMOTE_AUTH_REQUIRED:
+            # Avoid reading/consuming request body before auth.
+            for k, v in scope.get("headers") or []:
+                if k.lower() == b"authorization":
+                    auth_header = v.decode("utf-8", errors="ignore")
+                    break
+            else:
+                auth_header = None
+
+            for k, v in scope.get("headers") or []:
+                if k.lower() == b"x-genesis-mcp-token":
+                    token_header = v.decode("utf-8", errors="ignore")
+                    break
+            else:
+                token_header = None
+
+            if not _is_authorized_remote_request(
+                authorization=auth_header,
+                token_header=token_header,
+            ):
+                await Response("Unauthorized", status_code=401)(scope, receive, send)
+                return
 
         request = Request(scope, receive)
         try:
@@ -650,6 +1262,7 @@ def _build_sse_app():
             return await JSONResponse(_err(JSONRPC_INTERNAL_ERROR, str(e)))(scope, receive, send)
 
     healthz_resp = PlainTextResponse("OK")
+    privacy_resp = PlainTextResponse(_load_privacy_policy_text())
     root_resp = PlainTextResponse(
         "Genesis-Core MCP server is running. Use POST /mcp (streamable HTTP) or GET /sse (legacy SSE)."
     )
@@ -664,6 +1277,22 @@ def _build_sse_app():
         normalized = path.rstrip("/")
 
         method = scope.get("method")
+
+        if REMOTE_AUTH_REQUIRED and normalized not in {"/healthz", "/privacy-policy"}:
+            auth_header = None
+            token_header = None
+            for k, v in scope.get("headers") or []:
+                lk = k.lower()
+                if lk == b"authorization":
+                    auth_header = v.decode("utf-8", errors="ignore")
+                elif lk == b"x-genesis-mcp-token":
+                    token_header = v.decode("utf-8", errors="ignore")
+            if not _is_authorized_remote_request(
+                authorization=auth_header,
+                token_header=token_header,
+            ):
+                await PlainTextResponse("Unauthorized", status_code=401)(scope, receive, send)
+                return
 
         def _query_has_session_id() -> bool:
             # Legacy HTTP+SSE transport uses session_id in query string.
@@ -727,6 +1356,10 @@ def _build_sse_app():
             await healthz_resp(scope, receive, send)
             return
 
+        if normalized == "/privacy-policy":
+            await privacy_resp(scope, receive, send)
+            return
+
         if normalized == "":
             if method in {"GET", "HEAD"}:
                 await root_resp(scope, receive, send)
@@ -761,10 +1394,28 @@ def _build_asgi_app():
     if not _HAS_FASTMCP:
         return _build_sse_app()
 
+    from starlette.middleware.base import BaseHTTPMiddleware
     from starlette.middleware.cors import CORSMiddleware
     from starlette.responses import PlainTextResponse
 
     app = mcp.streamable_http_app()
+
+    if REMOTE_AUTH_REQUIRED:
+
+        class _RemoteTokenMiddleware(BaseHTTPMiddleware):
+            async def dispatch(self, request, call_next):
+                if request.url.path in {"/healthz", "/privacy-policy"}:
+                    return await call_next(request)
+
+                if not _is_authorized_remote_request(
+                    authorization=request.headers.get("authorization"),
+                    token_header=request.headers.get("x-genesis-mcp-token"),
+                ):
+                    return PlainTextResponse("Unauthorized", status_code=401)
+
+                return await call_next(request)
+
+        app.add_middleware(_RemoteTokenMiddleware)
 
     app.add_middleware(
         CORSMiddleware,
@@ -797,6 +1448,11 @@ def _build_asgi_app():
         return PlainTextResponse("OK")
 
     app.add_route("/healthz", healthz, methods=["GET"])
+
+    async def privacy_policy(request):
+        return PlainTextResponse(_load_privacy_policy_text())
+
+    app.add_route("/privacy-policy", privacy_policy, methods=["GET"])
 
     async def root(request):
         return PlainTextResponse("Genesis-Core MCP is running. Use POST /mcp")

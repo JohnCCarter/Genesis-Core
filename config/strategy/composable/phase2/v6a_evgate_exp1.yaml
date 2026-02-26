@@ -1,0 +1,50 @@
+# Phase 3 Milestone 4 - Experiment 4.1: EVGate Quality Tuning
+# Goal: Improve PF via EVGate filtering without sacrificing robustness
+#
+# Single change from v5a (sizing baseline):
+#   - EVGate: min_ev 0.0 → 0.05 (careful threshold, target ~15-25% veto rate)
+#
+# All other settings unchanged from v5a:
+#   - risk.risk_map: [0.53, ...] (locked from Milestone 3)
+#   - Components: ml_confidence (0.24), all regimes, Cooldown (24)
+#
+# Hypothesis:
+#   - Filter out bottom ~20% of signals by EV
+#   - Expected: 413 → ~330 trades (20% reduction)
+#   - Expected: PF 1.45 → 1.50+ (quality improvement)
+#   - Guard: PF utan top-3 must stay >= 1.25
+
+components:
+  - type: ml_confidence
+    params:
+      threshold: 0.24  # Unchanged from v5a
+
+  - type: regime_filter
+    params:
+      allowed_regimes: ["trending", "bull", "balanced", "bear", "ranging"]
+      # Unchanged: All regimes allowed
+
+  - type: ev_gate
+    params:
+      min_ev: 0.05  # TUNED: Careful threshold (was 0.0 in v5a)
+
+  - type: cooldown
+    params:
+      min_bars_between_trades: 24  # Unchanged: 24 hours for 1h timeframe
+
+# Risk config (LOCKED from Milestone 3, unchanged)
+risk:
+  risk_map:
+    - [0.53, 0.005]  # Unchanged from v5a
+    - [0.7, 0.008]   # Unchanged
+    - [0.8, 0.01]    # Unchanged
+    - [0.9, 0.012]   # Unchanged
+  risk_cap_pct: 0.012  # Unchanged
+  symbol_portfolio_cap_pct: 0.025  # Unchanged
+
+# Experiment 4.1 hypothesis:
+#   - EVGate veto rate: ~15-25% of component-allowed signals
+#   - Trade count: 413 → ~330 (20% reduction)
+#   - PF improvement: 1.45 → 1.50+ (better edge per trade)
+#   - Robustness guard: PF utan top-3 >= 1.25 (maintain buffer)
+#   - Concentration guard: top-1 < 30% (maintain diversification)

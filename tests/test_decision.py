@@ -84,3 +84,165 @@ def test_decide_gate_order_and_fail_safe():
         cfg=cfg,
     )
     assert a2 == "NONE" and "COOLDOWN_ACTIVE" in m2.get("reasons", [])
+
+
+def test_htf_context_error_blocks_even_when_missing_policy_pass() -> None:
+    cfg = {
+        "thresholds": {"entry_conf_overall": 0.6, "regime_proba": {"balanced": 0.55}},
+        "gates": {"cooldown_bars": 0},
+        "risk": {"risk_map": [[0.6, 0.01]]},
+        "htf_fib": {"entry": {"enabled": True, "missing_policy": "pass", "tolerance_atr": 1.0}},
+    }
+    action, meta = decide(
+        {},
+        probas={"buy": 0.9, "sell": 0.1},
+        confidence={"buy": 0.9, "sell": 0.1},
+        regime="balanced",
+        state={
+            "last_close": 100.0,
+            "current_atr": 1.0,
+            "htf_fib": {"available": False, "reason": "HTF_CONTEXT_ERROR"},
+        },
+        risk_ctx={},
+        cfg=cfg,
+    )
+    assert action == "NONE"
+    assert "HTF_FIB_CONTEXT_ERROR" in (meta.get("reasons") or [])
+
+
+def test_htf_unavailable_backcompat_still_passes_with_missing_policy_pass() -> None:
+    cfg = {
+        "thresholds": {"entry_conf_overall": 0.6, "regime_proba": {"balanced": 0.55}},
+        "gates": {"cooldown_bars": 0},
+        "risk": {"risk_map": [[0.6, 0.01]]},
+        "htf_fib": {"entry": {"enabled": True, "missing_policy": "pass", "tolerance_atr": 1.0}},
+    }
+    action, meta = decide(
+        {},
+        probas={"buy": 0.9, "sell": 0.1},
+        confidence={"buy": 0.9, "sell": 0.1},
+        regime="balanced",
+        state={
+            "last_close": 100.0,
+            "current_atr": 1.0,
+            "htf_fib": {"available": False, "reason": "HTF_DATA_NOT_FOUND"},
+        },
+        risk_ctx={},
+        cfg=cfg,
+    )
+    assert action == "LONG"
+    assert "HTF_FIB_CONTEXT_ERROR" not in (meta.get("reasons") or [])
+
+
+def test_ltf_context_error_blocks_even_when_missing_policy_pass() -> None:
+    cfg = {
+        "thresholds": {"entry_conf_overall": 0.6, "regime_proba": {"balanced": 0.55}},
+        "gates": {"cooldown_bars": 0},
+        "risk": {"risk_map": [[0.6, 0.01]]},
+        "ltf_fib": {"entry": {"enabled": True, "missing_policy": "pass", "tolerance_atr": 1.0}},
+    }
+    action, meta = decide(
+        {},
+        probas={"buy": 0.9, "sell": 0.1},
+        confidence={"buy": 0.9, "sell": 0.1},
+        regime="balanced",
+        state={
+            "last_close": 100.0,
+            "current_atr": 1.0,
+            "ltf_fib": {"available": False, "reason": "LTF_CONTEXT_ERROR"},
+        },
+        risk_ctx={},
+        cfg=cfg,
+    )
+    assert action == "NONE"
+    assert "LTF_FIB_CONTEXT_ERROR" in (meta.get("reasons") or [])
+
+
+def test_ltf_unavailable_backcompat_still_passes_with_missing_policy_pass() -> None:
+    cfg = {
+        "thresholds": {"entry_conf_overall": 0.6, "regime_proba": {"balanced": 0.55}},
+        "gates": {"cooldown_bars": 0},
+        "risk": {"risk_map": [[0.6, 0.01]]},
+        "ltf_fib": {"entry": {"enabled": True, "missing_policy": "pass", "tolerance_atr": 1.0}},
+    }
+    action, meta = decide(
+        {},
+        probas={"buy": 0.9, "sell": 0.1},
+        confidence={"buy": 0.9, "sell": 0.1},
+        regime="balanced",
+        state={
+            "last_close": 100.0,
+            "current_atr": 1.0,
+            "ltf_fib": {"available": False, "reason": "LTF_NO_SWINGS"},
+        },
+        risk_ctx={},
+        cfg=cfg,
+    )
+    assert action == "LONG"
+    assert "LTF_FIB_CONTEXT_ERROR" not in (meta.get("reasons") or [])
+
+
+def test_decide_state_out_isolated_from_nested_input_state() -> None:
+    state_in = {
+        "nested": {"values": [1, 2, 3]},
+        "last_action": "LONG",
+        "decision_steps": 0,
+    }
+
+    action, meta = decide(
+        {},
+        probas={"buy": 0.5, "sell": 0.5},
+        confidence={"buy": 0.5, "sell": 0.5},
+        regime="balanced",
+        state=state_in,
+        risk_ctx={},
+        cfg={},
+    )
+
+    assert action == "NONE"
+    state_out = meta.get("state_out", {})
+    assert state_out.get("nested") == state_in["nested"]
+    assert state_out.get("nested") is not state_in["nested"]
+    assert state_out.get("nested", {}).get("values") is not state_in["nested"]["values"]
+
+
+def test_decide_handles_none_and_string_probas_without_typeerror() -> None:
+    cfg = {
+        "thresholds": {"entry_conf_overall": 0.7, "regime_proba": {"balanced": 0.7}},
+        "risk": {"risk_map": [[0.7, 0.01]]},
+        "gates": {"cooldown_bars": 0},
+    }
+
+    action, meta = decide(
+        {},
+        probas={"buy": None, "sell": "0.8"},
+        confidence={"buy": 0.1, "sell": "0.8"},
+        regime="balanced",
+        state={},
+        risk_ctx={},
+        cfg=cfg,
+    )
+
+    assert action == "SHORT"
+    assert isinstance(meta, dict)
+
+
+def test_decide_handles_non_numeric_confidence_without_typeerror() -> None:
+    cfg = {
+        "thresholds": {"entry_conf_overall": 0.7, "regime_proba": {"balanced": 0.7}},
+        "risk": {"risk_map": [[0.7, 0.01]]},
+        "gates": {"cooldown_bars": 0},
+    }
+
+    action, meta = decide(
+        {},
+        probas={"buy": "0.8", "sell": "0.1"},
+        confidence={"buy": "abc", "sell": None},
+        regime="balanced",
+        state={},
+        risk_ctx={},
+        cfg=cfg,
+    )
+
+    assert action == "NONE"
+    assert "CONF_TOO_LOW" in (meta.get("reasons") or [])

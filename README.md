@@ -47,7 +47,11 @@ python -m mcp_server.server
 Se:
 
 - `mcp_server/README.md` (operativ guide)
-- `docs/mcp_server_guide.md` (projekt-specifik guide)
+- `docs/mcp/mcp_server_guide.md` (projekt-specifik guide)
+
+## Scripts: audit och livscykel
+
+För inventering, deprecate-flytt och policy för scripts, se `scripts/README.md`.
 
 ## Execution mode policy (canonical för quality decisions) 2025-12-18
 

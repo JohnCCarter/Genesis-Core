@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-import scripts.validate_registry as vr
+import scripts.validate.validate_registry as vr
 
 
 def _git(cwd: Path, *args: str) -> str:

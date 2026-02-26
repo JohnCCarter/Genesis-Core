@@ -132,3 +132,19 @@ def test_compute_confidence_v2_preserves_buy_sell_order_when_not_saturated():
     conf, _ = compute_confidence(probs, data_quality=0.8, config=cfg)
     # Since both are scaled by same Q, buy should remain >= sell (no inversion)
     assert conf["buy"] >= conf["sell"]
+
+
+def test_compute_confidence_handles_none_and_numeric_string_probas() -> None:
+    conf, meta = compute_confidence({"buy": None, "sell": "0.7"})
+
+    assert isinstance(conf, dict)
+    assert isinstance(meta, dict)
+    assert conf["buy"] == pytest.approx(0.0)
+    assert conf["sell"] == pytest.approx(0.7)
+
+
+def test_compute_confidence_handles_non_numeric_string_probas() -> None:
+    conf, _ = compute_confidence({"buy": "abc", "sell": "0.2"})
+
+    assert conf["buy"] == pytest.approx(0.0)
+    assert conf["sell"] == pytest.approx(0.2)

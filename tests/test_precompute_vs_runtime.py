@@ -17,6 +17,7 @@ from core.indicators.bollinger import bollinger_bands
 from core.indicators.ema import calculate_ema
 from core.indicators.fibonacci import FibonacciConfig, detect_swing_points
 from core.indicators.rsi import calculate_rsi
+from core.indicators.vectorized import calculate_adx_vectorized
 from core.strategy.features_asof import extract_features_backtest
 
 SAMPLE_PATH = Path("tests/data/tBTCUSD_1h_sample.parquet")
@@ -117,3 +118,31 @@ def test_precompute_features_match_runtime():
             atol=1e-9,
             err_msg=f"Feature mismatch with precompute for {col}",
         )
+
+
+def test_vectorized_adx_matches_reference_from_warmup() -> None:
+    candles = _load_candles(SAMPLE_PATH)
+    period = 14
+
+    high = pd.Series(candles["high"], dtype=float)
+    low = pd.Series(candles["low"], dtype=float)
+    close = pd.Series(candles["close"], dtype=float)
+
+    adx_vectorized = calculate_adx_vectorized(high, low, close, period=period).to_numpy(dtype=float)
+    adx_reference = (
+        np.asarray(
+            calculate_adx(candles["high"], candles["low"], candles["close"], period=period),
+            dtype=float,
+        )
+        / 100.0
+    )
+
+    assert len(adx_vectorized) == len(adx_reference)
+    start_idx = 2 * period - 2
+    np.testing.assert_allclose(
+        adx_vectorized[start_idx:],
+        adx_reference[start_idx:],
+        rtol=1e-12,
+        atol=1e-12,
+        err_msg="Vectorized ADX diverges from reference Wilder ADX",
+    )

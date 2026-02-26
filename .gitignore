@@ -45,6 +45,18 @@ venv.bak/
 *.swo
 *~
 
+# AI coding assistant skills (generated local config, do not commit)
+.cursor/skills/
+.claude/skills/
+.codex/skills/
+.opencode/skills/
+.agents/skills/
+.agent/skills/
+
+# Local Copilot/CLI artifacts (do not commit)
+/.github/copilot-instructions.md.CLI
+/Copilot CLI*.zip
+
 # OS
 .DS_Store
 .DS_Store?
@@ -84,7 +96,6 @@ test_optuna*.db
 optuna_*.db
 
 # Security & Sensitive files
-.env
 .env.local
 .env.development
 .env.test
@@ -121,9 +132,8 @@ config/runtime.local.json
 node_modules/
 
 # Build artifacts
-dist/
-build/
-*.egg-info/
+!scripts/build/
+!scripts/build/**
 
 # Temporary files
 *.tmp
@@ -163,6 +173,7 @@ tmp/**
 # Local binaries / tunnel helpers (do not commit)
 cloudflared*.exe
 cloudflared*.exe.exe
+*.msi
 
 # Temporary config artifacts (generated)
 config/tmp/champion_current_as_cfg*.json
@@ -209,14 +220,16 @@ results/evaluation/**/*.jsonl
 results/evaluation/**/*.ndjson
 
 # CI artifacts
-bandit-report.txt
-bandit-report.json
-
 # Keep results documentation and archives
 !results/README.md
 !results/**/README.md
 !results/*.md
 !results/archive/**
+
+# Archived orphaned artifacts (local retention only, do not track in git)
+archive/_orphaned/
+archive/_orphaned/**
+!archive/_orphaned/**/README.md
 
 # Label cache (temporary, regenerate on demand)
 cache/

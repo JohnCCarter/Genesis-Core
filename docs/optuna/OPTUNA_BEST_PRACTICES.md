@@ -405,6 +405,14 @@ export OPTUNA_MAX_DUPLICATE_STREAK=200
 python -m core.optimizer.runner config.yaml
 ```
 
+### SQLite + concurrency (praktiska guardrails)
+
+- SQLite skalar dåligt med hög parallellism. Håll `GENESIS_MAX_CONCURRENT` lågt (typiskt **1–2**) om du använder SQLite storage.
+- I Genesis-Core injiceras en SQLite `connect_args.timeout` i Optuna RDBStorage för att minska omedelbara "database is locked"-fails, men det ersätter inte behovet av låg parallellism.
+- Windows: undvik `GENESIS_IN_PROCESS=1` när du kör med `n_jobs>1`/hög parallellism; använd default (`GENESIS_IN_PROCESS=0`).
+- Om du ser symptom som konstiga race-effekter, saknade loggar eller intermittent fil-/IO-problem: sätt `GENESIS_FORCE_SHELL=1` för att forcera subprocess-exekvering av backtester (på bekostnad av lite overhead).
+- Om du behöver >2 workers stabilt: överväg att byta storage till Postgres i stället för SQLite.
+
 **Canonical mode note: 2025-12-18** Optuna/Validate/champion decisions run in canonical "1/1" mode.
 If you run a manual debug backtest in 0/0, treat it as debug-only and do not compare it to Optuna results.
 To allow 0/0 explicitly, set `GENESIS_MODE_EXPLICIT=1` and use the backtest CLI flags

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from core.strategy.evaluate import evaluate_pipeline
+from core.strategy.evaluate import _volume_score_from_candles, evaluate_pipeline
 
 
 def test_evaluate_pipeline_returns_meta(
@@ -26,3 +26,11 @@ def test_evaluate_pipeline_returns_meta(
     assert "regime" in meta
     assert "decision" in meta
     assert "champion" in meta
+
+
+def test_volume_score_cap_ratio_below_one_does_not_penalize_normal_volume() -> None:
+    candles = {"volume": [100.0] * 60}
+
+    score = _volume_score_from_candles(candles, window=50, cap_ratio=0.5)
+
+    assert score == 1.0

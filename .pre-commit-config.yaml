@@ -31,7 +31,6 @@ repos:
         args: [--maxkb=1000]
       - id: check-merge-conflict
       - id: check-yaml
-        exclude: ^\.github/.*\.md$
       - id: end-of-file-fixer
         exclude: ^src/genesis_core\.egg-info/
       - id: trailing-whitespace

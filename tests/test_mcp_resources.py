@@ -35,7 +35,7 @@ async def test_get_documentation(config):
 @pytest.mark.asyncio
 async def test_get_documentation_in_docs_dir(config):
     """Test getting documentation from docs directory."""
-    result = await get_documentation("mcp_server_guide.md", config)
+    result = await get_documentation("mcp/mcp_server_guide.md", config)
     assert result["success"] is True
     assert "Genesis-Core MCP Server Guide" in result["content"]
 

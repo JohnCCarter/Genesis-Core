@@ -1,0 +1,52 @@
+# Phase 3 Milestone 4 - Experiment 4.2: ml_confidence Quality Tuning
+# Goal: Improve PF via ml_confidence filtering without sacrificing robustness
+#
+# Single change from v5a (sizing baseline):
+#   - ml_confidence: threshold 0.24 → 0.26 (careful increase)
+#
+# All other settings unchanged from v5a:
+#   - risk.risk_map: [0.53, ...] (locked from Milestone 3)
+#   - EVGate: min_ev 0.0 (deprioritized after Exp 4.1 failure)
+#   - Components: all regimes, Cooldown (24)
+#
+# Hypothesis:
+#   - Filter out bottom ~10-15% of signals by ml_confidence
+#   - Expected: 413 → ~350-370 trades (10-15% reduction)
+#   - Expected: PF 1.45 → 1.50+ (quality improvement)
+#   - Guard: PF utan top-3 must stay >= 1.25 (CRITICAL)
+
+components:
+  - type: ml_confidence
+    params:
+      threshold: 0.26  # TUNED: Increased from 0.24 (careful step)
+
+  - type: regime_filter
+    params:
+      allowed_regimes: ["trending", "bull", "balanced", "bear", "ranging"]
+      # Unchanged: All regimes allowed
+
+  - type: ev_gate
+    params:
+      min_ev: 0.0  # Unchanged: Deprioritized (Exp 4.1 showed EV is noisy)
+
+  - type: cooldown
+    params:
+      min_bars_between_trades: 24  # Unchanged: 24 hours for 1h timeframe
+
+# Risk config (LOCKED from Milestone 3, unchanged)
+risk:
+  risk_map:
+    - [0.53, 0.005]  # Unchanged from v5a
+    - [0.7, 0.008]   # Unchanged
+    - [0.8, 0.01]    # Unchanged
+    - [0.9, 0.012]   # Unchanged
+  risk_cap_pct: 0.012  # Unchanged
+  symbol_portfolio_cap_pct: 0.025  # Unchanged
+
+# Experiment 4.2 hypothesis:
+#   - ml_confidence is more direct proxy for trade quality than EV
+#   - Threshold 0.26 should filter ~10-15% of signals (less aggressive than EVGate)
+#   - Trade count: 413 → ~350-370 (modest reduction)
+#   - PF improvement: 1.45 → 1.50+ (better edge per trade)
+#   - Robustness guard: PF utan top-3 >= 1.25 (CRITICAL - auto-reject if fails)
+#   - Stop criterion: If PF utan top-3 < 1.25, STOP and accept v5a as final

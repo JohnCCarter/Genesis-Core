@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from core.strategy.decision import decide
 
 
@@ -228,3 +230,26 @@ def test_regime_size_multiplier_scales_size_only():
 
     # Debug signal should be present.
     assert (m_rng.get("state_out") or {}).get("size_regime_mult") == 0.5
+
+
+def test_sizing_risk_map_error_is_not_silent_zero() -> None:
+    cfg = {
+        "thresholds": {
+            "entry_conf_overall": 0.6,
+            "min_edge": 0.0,
+        },
+        "risk": {
+            "risk_map": ["invalid"],
+        },
+    }
+
+    with pytest.raises(RuntimeError, match="size_base"):
+        decide(
+            {},
+            probas={"buy": 0.9, "sell": 0.1},
+            confidence={"buy": 0.9, "sell": 0.1},
+            regime="balanced",
+            state={},
+            risk_ctx={},
+            cfg=cfg,
+        )

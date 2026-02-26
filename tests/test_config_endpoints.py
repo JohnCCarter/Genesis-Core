@@ -30,6 +30,19 @@ def test_config_endpoints():
     r = c.post("/config/runtime/validate", json=bad_rt)
     assert r.status_code == 200 and r.json().get("valid") is False
 
+    good_authority_mode = {
+        "multi_timeframe": {"regime_intelligence": {"authority_mode": "regime_module"}}
+    }
+    bad_authority_mode = {
+        "multi_timeframe": {"regime_intelligence": {"authority_mode": "invalid_mode"}}
+    }
+
+    r = c.post("/config/runtime/validate", json=good_authority_mode)
+    assert r.status_code == 200 and r.json().get("valid") is True
+
+    r = c.post("/config/runtime/validate", json=bad_authority_mode)
+    assert r.status_code == 200 and r.json().get("valid") is False
+
     # runtime get
     r = c.get("/config/runtime")
     assert r.status_code == 200

@@ -208,7 +208,13 @@ def evaluate_pipeline(
         metrics.event("features_ok", {"keys": list(feats.keys())})
 
     # Detect regime BEFORE prediction (needed for regime-aware calibration).
-    # Authority remains detect_regime_unified in delegated regime_intelligence path.
+    # Authority path is config-gated in delegated regime_intelligence module.
+    authority_mode = _regime_intelligence.resolve_authority_mode(configs)
+    authoritative_source = (
+        "regime.detect_regime_from_candles"
+        if authority_mode == "regime_module"
+        else "regime_unified.detect_regime_unified"
+    )
     current_regime = _detect_authoritative_regime(candles, configs)
 
     # Shadow-only observer path (T2): compute regime.py signal for observability only.
@@ -419,8 +425,9 @@ def evaluate_pipeline(
         },
         "observability": {
             "shadow_regime": {
-                "authoritative_source": "regime_unified.detect_regime_unified",
+                "authoritative_source": authoritative_source,
                 "shadow_source": "regime.detect_regime_from_candles",
+                "authority_mode": authority_mode,
                 "authority": regime,
                 "shadow": shadow_regime,
                 "mismatch": shadow_regime_mismatch,

@@ -38,3 +38,43 @@ def test_only_whitelisted_keys_change(tmp_path: Path) -> None:
         auth.propose_update(
             {"features": {"percentiles": {"rsi": [-1, 1]}}}, actor="t", expected_version=0
         )
+
+
+def test_multi_timeframe_regime_intelligence_authority_mode_whitelisted(tmp_path: Path) -> None:
+    path = tmp_path / "runtime.json"
+    auth = ConfigAuthority(path)
+
+    snap = auth.propose_update(
+        {"multi_timeframe": {"regime_intelligence": {"authority_mode": "regime_module"}}},
+        actor="t",
+        expected_version=0,
+    )
+
+    assert snap.version == 1
+    assert snap.cfg.multi_timeframe.regime_intelligence.authority_mode == "regime_module"
+
+
+def test_multi_timeframe_regime_intelligence_authority_mode_strict_value(tmp_path: Path) -> None:
+    path = tmp_path / "runtime.json"
+    auth = ConfigAuthority(path)
+
+    with pytest.raises(ValueError):
+        auth.propose_update(
+            {"multi_timeframe": {"regime_intelligence": {"authority_mode": "invalid_mode"}}},
+            actor="t",
+            expected_version=0,
+        )
+
+
+def test_multi_timeframe_regime_intelligence_rejects_non_whitelisted_nested_keys(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "runtime.json"
+    auth = ConfigAuthority(path)
+
+    with pytest.raises(ValueError):
+        auth.propose_update(
+            {"multi_timeframe": {"regime_intelligence": {"authority_mode": "legacy", "extra": 1}}},
+            actor="t",
+            expected_version=0,
+        )

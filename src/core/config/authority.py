@@ -189,6 +189,7 @@ class ConfigAuthority:
                         "ltf_override_threshold",
                         "ltf_override_adaptive",
                         "htf_selector",
+                        "regime_intelligence",
                     }
                     if any(subk not in allowed for subk in v.keys()):
                         raise ValueError("non_whitelisted_field:multi_timeframe")
@@ -243,6 +244,24 @@ class ConfigAuthority:
                                     raise ValueError(
                                         "non_whitelisted_field:htf_selector.per_timeframe.rule"
                                     )
+                    regime_intelligence_cfg = v.get("regime_intelligence")
+                    if regime_intelligence_cfg is not None:
+                        if not isinstance(regime_intelligence_cfg, dict):
+                            raise ValueError("non_whitelisted_field:regime_intelligence")
+                        allowed_regime_intelligence = {"authority_mode"}
+                        if any(
+                            subk not in allowed_regime_intelligence
+                            for subk in regime_intelligence_cfg.keys()
+                        ):
+                            raise ValueError("non_whitelisted_field:regime_intelligence")
+                        authority_mode = regime_intelligence_cfg.get("authority_mode")
+                        if authority_mode is not None and str(
+                            authority_mode
+                        ).strip().lower() not in {
+                            "legacy",
+                            "regime_module",
+                        }:
+                            raise ValueError("invalid_value:regime_intelligence.authority_mode")
 
         _enforce_whitelist(normalized_patch)
 

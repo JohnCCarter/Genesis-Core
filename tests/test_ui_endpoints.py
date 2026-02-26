@@ -38,7 +38,7 @@ def test_ui_get_and_evaluate_post():
     r2 = c.post("/strategy/evaluate", json=payload)
     assert r2.status_code == 200
     data = r2.json()
-    assert "result" in data and "meta" in data
+    assert set(data.keys()) == {"result", "meta"}
 
 
 def test_evaluate_missing_candles_returns_invalid_candles_error():

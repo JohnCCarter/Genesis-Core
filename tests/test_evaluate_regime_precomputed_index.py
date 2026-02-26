@@ -90,3 +90,83 @@ def test_evaluate_pipeline_regime_uses_global_index_for_precomputed_ema50(monkey
 
     assert captured["regime"] == "bull"
     assert result["regime"] == "bull"
+
+
+def test_evaluate_pipeline_regime_module_authority_ignores_precomputed_global_index(monkeypatch):
+    """When authority_mode=regime_module, legacy precomputed EMA/index path must be bypassed."""
+
+    monkeypatch.setenv("GENESIS_DISABLE_METRICS", "1")
+
+    from core.strategy import evaluate as ev
+    from core.strategy import regime_intelligence as ri
+
+    captured: dict[str, str | None] = {"regime": None}
+
+    class _DummyChampion:
+        config: dict = {}
+        source: str = "dummy"
+
+    monkeypatch.setattr(ev.champion_loader, "load_cached", lambda *_a, **_k: _DummyChampion())
+
+    def fake_extract_features(*_a, **_k):
+        feats = {"atr_14": 1.0}
+        meta = {
+            "current_atr_used": 1.0,
+            "atr_percentiles": None,
+            "htf_fibonacci": {"available": False},
+            "ltf_fibonacci": {"available": False},
+        }
+        return feats, meta
+
+    monkeypatch.setattr(ev, "extract_features_backtest", fake_extract_features)
+
+    def fake_predict_proba_for(_symbol, _timeframe, _feats, *, regime=None):
+        captured["regime"] = str(regime) if regime is not None else None
+        return {"up": 0.5, "down": 0.5}, {"schema": [], "versions": {}}
+
+    monkeypatch.setattr(ev, "predict_proba_for", fake_predict_proba_for)
+    monkeypatch.setattr(
+        ev,
+        "compute_confidence",
+        lambda *_a, **_k: ({"buy": 0.0, "sell": 0.0, "overall": 0.0}, {}),
+    )
+    monkeypatch.setattr(ev, "log_fib_flow", lambda *_a, **_k: None)
+    monkeypatch.setattr(
+        ev,
+        "decide",
+        lambda *_a, **_k: ("NONE", {"size": 0.0, "reasons": [], "state_out": {}}),
+    )
+    monkeypatch.setattr(ri, "detect_shadow_regime_from_regime_module", lambda *_a, **_k: "bear")
+
+    window_len = 200
+    candles = {
+        "open": [1.0] * window_len,
+        "high": [2.0] * window_len,
+        "low": [0.5] * window_len,
+        "close": [1000.0] * window_len,
+        "volume": [1.0] * window_len,
+        "timestamp": list(range(window_len)),
+    }
+
+    ema50 = [1000.0] * 600
+    ema50[window_len - 1] = 800.0
+    ema50[500] = 900.0
+
+    configs = {
+        "_global_index": 500,
+        "precomputed_features": {"ema_50": ema50},
+        "quality": {"pipeline": {}},
+        "meta": {},
+        "multi_timeframe": {"regime_intelligence": {"authority_mode": "regime_module"}},
+    }
+
+    result, meta = ev.evaluate_pipeline(
+        candles,
+        policy={"symbol": "tBTCUSD", "timeframe": "1h"},
+        configs=configs,
+        state={},
+    )
+
+    assert captured["regime"] == "bear"
+    assert result["regime"] == "bear"
+    assert meta["observability"]["shadow_regime"]["authority_mode"] == "regime_module"

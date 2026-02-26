@@ -2,6 +2,10 @@ from __future__ import annotations
 
 from typing import Any
 
+_AUTHORITY_MODE_LEGACY = "legacy"
+_AUTHORITY_MODE_REGIME_MODULE = "regime_module"
+_ALLOWED_AUTHORITY_MODES = {_AUTHORITY_MODE_LEGACY, _AUTHORITY_MODE_REGIME_MODULE}
+
 
 def _safe_float(value: Any) -> float | None:
     if value is None:
@@ -56,14 +60,25 @@ def detect_shadow_regime_from_regime_module(candles: dict[str, Any]) -> str | No
         return None
 
 
-def detect_authoritative_regime(
+def resolve_authority_mode(configs: dict[str, Any] | None) -> str:
+    """Resolve configured regime authority mode with safe legacy fallback."""
+
+    cfg = dict(configs or {})
+    mtf = cfg.get("multi_timeframe")
+    if not isinstance(mtf, dict):
+        return _AUTHORITY_MODE_LEGACY
+    regime_intelligence_cfg = mtf.get("regime_intelligence")
+    if not isinstance(regime_intelligence_cfg, dict):
+        return _AUTHORITY_MODE_LEGACY
+    raw = regime_intelligence_cfg.get("authority_mode")
+    mode = str(raw).strip().lower() if raw is not None else _AUTHORITY_MODE_LEGACY
+    return mode if mode in _ALLOWED_AUTHORITY_MODES else _AUTHORITY_MODE_LEGACY
+
+
+def _detect_authoritative_regime_legacy(
     candles: dict[str, Any],
     configs: dict[str, Any],
 ) -> str:
-    """Return authoritative regime for evaluate decision path.
-
-    Authority remains `regime_unified.detect_regime_unified`.
-    """
     pre = dict(configs.get("precomputed_features") or {})
     ema50 = pre.get("ema_50")
     closes = candles.get("close") if isinstance(candles, dict) else None
@@ -98,3 +113,24 @@ def detect_authoritative_regime(
     from core.strategy import regime_unified as _regime_unified
 
     return _regime_unified.detect_regime_unified(candles, ema_period=50)
+
+
+def detect_authoritative_regime(
+    candles: dict[str, Any],
+    configs: dict[str, Any],
+) -> str:
+    """Return authoritative regime for evaluate decision path.
+
+    Default authority path is legacy (precomputed EMA50 / regime_unified).
+    When configured with `multi_timeframe.regime_intelligence.authority_mode=regime_module`,
+    authority switches explicitly to `regime.detect_regime_from_candles`.
+    """
+    authority_mode = resolve_authority_mode(configs)
+    if authority_mode == _AUTHORITY_MODE_REGIME_MODULE:
+        observed = detect_shadow_regime_from_regime_module(candles)
+        normalized = str(observed).strip().lower() if observed is not None else ""
+        if normalized in {"bull", "bear", "ranging", "balanced"}:
+            return normalized
+        return "balanced"
+
+    return _detect_authoritative_regime_legacy(candles, configs)

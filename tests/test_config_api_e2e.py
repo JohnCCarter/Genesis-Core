@@ -16,7 +16,10 @@ def test_runtime_endpoints_e2e(monkeypatch):
     v0 = int(data["version"]) or 0
 
     # Validate good patch
-    r = c.post("/config/runtime/validate", json={"thresholds": {"entry_conf_overall": 0.6}})
+    r = c.post(
+        "/config/runtime/validate",
+        json={"multi_timeframe": {"regime_intelligence": {"authority_mode": "regime_module"}}},
+    )
     assert r.status_code == 200
     assert r.json().get("valid") is True
 
@@ -25,7 +28,9 @@ def test_runtime_endpoints_e2e(monkeypatch):
     r = c.post(
         "/config/runtime/propose",
         json={
-            "patch": {"thresholds": {"entry_conf_overall": 0.6}},
+            "patch": {
+                "multi_timeframe": {"regime_intelligence": {"authority_mode": "regime_module"}}
+            },
             "actor": "test",
             "expected_version": v0,
         },
@@ -37,7 +42,9 @@ def test_runtime_endpoints_e2e(monkeypatch):
         "/config/runtime/propose",
         headers={"Authorization": "Bearer test-secret"},
         json={
-            "patch": {"thresholds": {"entry_conf_overall": 0.6}},
+            "patch": {
+                "multi_timeframe": {"regime_intelligence": {"authority_mode": "regime_module"}}
+            },
             "actor": "test",
             "expected_version": v0,
         },
@@ -45,3 +52,10 @@ def test_runtime_endpoints_e2e(monkeypatch):
     assert r.status_code == 200
     out = r.json()
     assert int(out.get("version", -1)) == v0 + 1
+    assert (
+        out.get("cfg", {})
+        .get("multi_timeframe", {})
+        .get("regime_intelligence", {})
+        .get("authority_mode")
+        == "regime_module"
+    )

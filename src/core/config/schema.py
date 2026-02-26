@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -144,6 +144,10 @@ class HTFSelectorConfig(RuntimeSection):
     per_timeframe: dict[str, HTFSelectorRule] = Field(default_factory=dict)
 
 
+class RegimeIntelligenceConfig(RuntimeSection):
+    authority_mode: Literal["legacy", "regime_module"] = Field(default="legacy")
+
+
 class MultiTimeframeConfig(RuntimeSection):
     use_htf_block: bool = Field(default=True)
     allow_ltf_override: bool = Field(default=False)
@@ -152,6 +156,7 @@ class MultiTimeframeConfig(RuntimeSection):
         default_factory=LTFOverrideAdaptiveConfig
     )
     htf_selector: HTFSelectorConfig = Field(default_factory=HTFSelectorConfig)
+    regime_intelligence: RegimeIntelligenceConfig = Field(default_factory=RegimeIntelligenceConfig)
 
 
 class FeaturePercentileRange(RuntimeSection):

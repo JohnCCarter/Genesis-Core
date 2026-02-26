@@ -37,6 +37,10 @@ def test_config_endpoints():
     bad_authority_mode = {
         "multi_timeframe": {"regime_intelligence": {"authority_mode": "invalid_mode"}}
     }
+    bad_authority_mode_alias_non_dict = {"regime_unified": "regime_module"}
+    bad_authority_mode_alias_extra_key = {
+        "regime_unified": {"authority_mode": "regime_module", "extra": 1}
+    }
     bad_conflicting_authority_mode = {
         "multi_timeframe": {"regime_intelligence": {"authority_mode": "invalid_mode"}},
         "regime_unified": {"authority_mode": "regime_module"},
@@ -49,6 +53,12 @@ def test_config_endpoints():
     assert r.status_code == 200 and r.json().get("valid") is True
 
     r = c.post("/config/runtime/validate", json=bad_authority_mode)
+    assert r.status_code == 200 and r.json().get("valid") is False
+
+    r = c.post("/config/runtime/validate", json=bad_authority_mode_alias_non_dict)
+    assert r.status_code == 200 and r.json().get("valid") is False
+
+    r = c.post("/config/runtime/validate", json=bad_authority_mode_alias_extra_key)
     assert r.status_code == 200 and r.json().get("valid") is False
 
     r = c.post("/config/runtime/validate", json=bad_conflicting_authority_mode)

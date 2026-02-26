@@ -128,13 +128,18 @@ def _canonicalize_authority_mode_alias(patch: dict[str, Any]) -> dict[str, Any]:
 
     normalized_patch = dict(patch or {})
 
-    alias_present = _has_nested_key(normalized_patch, _AUTHORITY_MODE_ALIAS_PATH)
-    if alias_present:
-        alias_root = normalized_patch.get("regime_unified")
+    alias_root_present = "regime_unified" in normalized_patch
+    alias_root = normalized_patch.get("regime_unified") if alias_root_present else None
+    if alias_root_present:
         if not isinstance(alias_root, dict):
             raise ValueError("non_whitelisted_field:regime_unified")
-        if any(key != "authority_mode" for key in alias_root.keys()):
+        if set(alias_root.keys()) != {"authority_mode"}:
             raise ValueError("non_whitelisted_field:regime_unified")
+
+    alias_present = alias_root_present and _has_nested_key(
+        normalized_patch,
+        _AUTHORITY_MODE_ALIAS_PATH,
+    )
 
     canonical_present = _has_nested_key(normalized_patch, _AUTHORITY_MODE_CANONICAL_PATH)
 

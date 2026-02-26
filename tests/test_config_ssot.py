@@ -100,6 +100,34 @@ def test_regime_unified_alias_only_is_canonicalized_before_persist(tmp_path: Pat
     assert cfg["multi_timeframe"]["regime_intelligence"]["authority_mode"] == "regime_module"
 
 
+def test_regime_unified_alias_non_dict_is_rejected(tmp_path: Path) -> None:
+    path = tmp_path / "runtime.json"
+    auth = ConfigAuthority(path)
+
+    with pytest.raises(ValueError):
+        auth.validate({"regime_unified": "legacy"})
+
+    with pytest.raises(ValueError):
+        auth.propose_update(
+            {"regime_unified": "legacy"},
+            actor="t",
+            expected_version=0,
+        )
+
+
+def test_regime_unified_alias_extra_key_is_rejected(tmp_path: Path) -> None:
+    path = tmp_path / "runtime.json"
+    auth = ConfigAuthority(path)
+
+    payload = {"regime_unified": {"authority_mode": "legacy", "extra": 1}}
+
+    with pytest.raises(ValueError):
+        auth.validate(payload)
+
+    with pytest.raises(ValueError):
+        auth.propose_update(payload, actor="t", expected_version=0)
+
+
 def test_regime_unified_alias_conflict_uses_canonical_value(tmp_path: Path) -> None:
     path = tmp_path / "runtime.json"
     auth = ConfigAuthority(path)

@@ -83,6 +83,7 @@ def test_runtime_endpoints_e2e_regime_unified_alias_bridge(monkeypatch):
         .get("authority_mode")
         == "regime_module"
     )
+    assert "regime_unified" not in (body.get("cfg", {}) or {})
 
     monkeypatch.setenv("BEARER_TOKEN", "test-secret")
 

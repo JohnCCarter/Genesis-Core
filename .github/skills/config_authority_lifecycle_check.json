@@ -1,6 +1,6 @@
 {
   "governance": {
-    "skill_type": "RUNNER",
+    "skill_type": "SPEC",
     "contract_owner": "opus-4.6",
     "implementation_owner": "codex-5.3",
     "pass_definition_locked": true,

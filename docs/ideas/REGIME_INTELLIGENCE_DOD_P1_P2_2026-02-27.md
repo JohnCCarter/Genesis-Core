@@ -34,6 +34,21 @@ P1 is done when all items below are true:
 - golden window parity in OFF-mode versus baseline (identical actions/sizes/reasons)
 - governance review confirms no runtime-default drift
 
+### Frozen golden-window specification (P1 OFF parity)
+
+For P1 evidence, the golden window is frozen as an immutable comparison spec:
+
+- Window spec ID: `ri_p1_off_parity_v1`
+- Comparison mode: OFF/default behavior only (no rollout behavior enabled).
+- Baseline comparator: the latest approved P1 baseline artifact for the same window spec ID.
+- Inputs that must be identical between baseline and candidate runs:
+   - symbol set
+   - timeframe set
+   - start/end UTC range
+   - runtime config source + commit SHA
+   - canonical determinism flag: `GENESIS_FAST_HASH=0`
+- Change control: any change to the golden window requires an explicit contract exception and a new window spec ID.
+
 ## "Klar" for P2/v2 (behavior-change)
 
 P2/v2 is done only when all items below are true:

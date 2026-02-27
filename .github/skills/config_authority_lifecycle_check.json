@@ -1,0 +1,48 @@
+{
+  "id": "config_authority_lifecycle_check",
+  "version": "1.0.0",
+  "title": "Config authority lifecycle attestation",
+  "description": "Executable lifecycle attestation for canonical+alias authority mode validation and deterministic reject paths.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "tags": ["config", "authority", "lifecycle", "attestation"],
+  "steps": [
+    {
+      "id": "authority_lifecycle_selectors",
+      "type": "pytest_selectors",
+      "args": {
+        "selectors": [
+          "tests/test_config_ssot.py::test_regime_unified_alias_only_is_canonicalized_before_persist",
+          "tests/test_config_ssot.py::test_regime_unified_alias_non_dict_is_rejected",
+          "tests/test_config_ssot.py::test_regime_unified_alias_extra_key_is_rejected",
+          "tests/test_config_api_e2e.py::test_runtime_endpoints_e2e_regime_unified_alias_bridge"
+        ]
+      }
+    }
+  ],
+  "rules": {
+    "must": [
+      "Kör canonical + alias authority_mode-checkar via samma valideringsyta.",
+      "Lås deterministic reject-paths för malformed alias payloads.",
+      "Verifiera att alias bridge normaliseras till canonical representation."
+    ],
+    "must_not": [
+      "Ändra runtime defaults eller API-contract i denna skill.",
+      "Använda denna skill som ersättning för determinism/invarians-gates."
+    ]
+  },
+  "references": [
+    {
+      "type": "file",
+      "value": "tests/test_config_ssot.py"
+    },
+    {
+      "type": "file",
+      "value": "tests/test_config_api_e2e.py"
+    },
+    {
+      "type": "doc",
+      "value": "docs/ideas/REGIME_INTELLIGENCE_T8_CONTRACT_2026-02-26.md"
+    }
+  ]
+}

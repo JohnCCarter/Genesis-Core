@@ -1,15 +1,19 @@
 # REGIME INTELLIGENCE T8 CONTRACT (Lifecycle Attestation + Validation Surface Rollout)
 
 Date: 2026-02-26
-Category: `api`
-Status: **T0–T7 införd (implemented), T8A–T8B delvis införd (shadow_error_rate + authority_mode_source-invariant executable), övriga T8-delar föreslagen.**
+Category: `tooling`
+Status: **T0–T7 införd (implemented), T8A–T8C delvis införd (shadow_error_rate + authority_mode_source-invariant executable + lifecycle skill executable), övriga T8-delar föreslagen.**
 
 ## 1) Commit contract
 
 ### Scope IN (strict)
 
 - `docs/ideas/REGIME_INTELLIGENCE_T8_CONTRACT_2026-02-26.md`
-- `tests/test_evaluate_pipeline.py`
+- `scripts/run_skill.py`
+- `.github/skills/config_authority_lifecycle_check.json`
+- `registry/manifests/dev.json`
+- `registry/schemas/skill.schema.json`
+- `tests/test_run_skill_vertical_slice.py`
 
 ### Scope OUT (strict)
 
@@ -20,7 +24,7 @@ Status: **T0–T7 införd (implemented), T8A–T8B delvis införd (shadow_error_
 ### Constraints
 
 - Default mode: **NO BEHAVIOR CHANGE**.
-- T8A is a docs+tests tranche; no runtime behavior may be changed in this contract commit.
+- T8C is a tooling+docs+tests tranche; no runtime/API behavior may be changed in this contract commit.
 - Enable-switch semantics are locked: explicit `ON` enables rollout; default `OFF` keeps legacy/default behavior unchanged.
 
 ## 2) T8 objective
@@ -49,12 +53,14 @@ Define and freeze rollout intent for lifecycle attestation and validation surfac
   `tests/test_evaluate_pipeline.py::test_evaluate_pipeline_authority_mode_source_invariant_contract`.
 - `shadow_error_rate` gate is **införd** as executable pytest evidence in T8A via
   `tests/test_evaluate_pipeline.py::test_evaluate_pipeline_shadow_error_rate_contract`.
+- `config_authority_lifecycle_check` gate is **införd** as executable skill evidence in T8C via
+  `python scripts/run_skill.py --skill config_authority_lifecycle_check --manifest dev --dry-run`.
 - `feature_parity_check` remains policy-attestation semantics (`STOP` / `no_steps`) and is not, by itself, a tranche failure.
 
 ## 5) Skill-first note
 
 - Skill-first policy remains in effect for lifecycle/authority attestation work.
-- `config_authority_lifecycle_check` remains **föreslagen** as dedicated lifecycle-attestation skill.
+- `config_authority_lifecycle_check` is **införd** as dedicated lifecycle-attestation skill (`.github/skills/config_authority_lifecycle_check.json`).
 - Dedicated `shadow_error_rate` skill/check remains **föreslagen** until an executable skill definition is added.
 
 ## 6) PRE/POST gate commands (exact)
@@ -70,6 +76,7 @@ Define and freeze rollout intent for lifecycle attestation and validation surfac
 7. `pytest -q tests/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable`
 8. `pytest -q tests/test_evaluate_pipeline.py::test_evaluate_pipeline_shadow_error_rate_contract`
 9. `pytest -q tests/test_evaluate_pipeline.py::test_evaluate_pipeline_authority_mode_source_invariant_contract`
+10. `python scripts/run_skill.py --skill config_authority_lifecycle_check --manifest dev --dry-run`
 
 ### POST gates
 
@@ -82,6 +89,7 @@ Define and freeze rollout intent for lifecycle attestation and validation surfac
 7. `pytest -q tests/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable`
 8. `pytest -q tests/test_evaluate_pipeline.py::test_evaluate_pipeline_shadow_error_rate_contract`
 9. `pytest -q tests/test_evaluate_pipeline.py::test_evaluate_pipeline_authority_mode_source_invariant_contract`
+10. `python scripts/run_skill.py --skill config_authority_lifecycle_check --manifest dev --dry-run`
 
 ## 7) Done criteria
 

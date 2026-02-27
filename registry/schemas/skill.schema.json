@@ -46,7 +46,11 @@
           },
           "type": {
             "type": "string",
-            "enum": ["registry_validate", "compare_backtest_results"]
+            "enum": [
+              "registry_validate",
+              "compare_backtest_results",
+              "pytest_selectors"
+            ]
           },
           "args": {
             "type": "object",

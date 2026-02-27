@@ -49,6 +49,18 @@ For P1 evidence, the golden window is frozen as an immutable comparison spec:
    - canonical determinism flag: `GENESIS_FAST_HASH=0`
 - Change control: any change to the golden window requires an explicit contract exception and a new window spec ID.
 
+### P1 OFF-mode parity pass/fail contract
+
+For the frozen golden window (`ri_p1_off_parity_v1`), parity is evaluated as follows:
+
+- PASS requires all of the following:
+   - identical action sequence versus baseline (same action labels per decision row)
+   - identical reason payload versus baseline (same canonical reason strings)
+   - identical size values versus baseline with strict tolerance: $|\Delta| \le 1\mathrm{e}{-12}$
+   - no added/missing decision rows versus baseline
+- FAIL is triggered by any single mismatch above.
+- No manual override is allowed for P1 OFF-mode parity verdicts.
+
 ## "Klar" for P2/v2 (behavior-change)
 
 P2/v2 is done only when all items below are true:

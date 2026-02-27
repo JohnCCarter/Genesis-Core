@@ -2,7 +2,7 @@
 
 Date: 2026-02-26
 Category: `tooling`
-Status: **T0–T7 införd (implemented), T8A–T8D införd (shadow_error_rate executable + authority_mode_source-invariant executable + lifecycle skill executable + dedicated shadow_error_rate skill executable), övriga T8-delar föreslagen.**
+Status: **T0–T7 införd (implemented), T8A–T8E införd (shadow_error_rate executable + authority_mode_source-invariant executable + lifecycle skill executable + dedicated shadow_error_rate skill executable + feature_parity_check executable).**
 
 ## 1) Commit contract
 
@@ -55,7 +55,8 @@ Define and freeze rollout intent for lifecycle attestation and validation surfac
   `tests/test_evaluate_pipeline.py::test_evaluate_pipeline_shadow_error_rate_contract`.
 - `config_authority_lifecycle_check` gate is **införd** as executable skill evidence in T8C via
   `python scripts/run_skill.py --skill config_authority_lifecycle_check --manifest dev --dry-run`.
-- `feature_parity_check` remains policy-attestation semantics (`STOP` / `no_steps`) and is not, by itself, a tranche failure.
+- `feature_parity_check` gate is **införd** as executable skill evidence in T8E via
+  `python scripts/run_skill.py --skill feature_parity_check --manifest dev --dry-run`.
 
 ## 5) Skill-first note
 
@@ -63,6 +64,8 @@ Define and freeze rollout intent for lifecycle attestation and validation surfac
 - `config_authority_lifecycle_check` is **införd** as dedicated lifecycle-attestation skill (`.github/skills/config_authority_lifecycle_check.json`).
 - `shadow_error_rate_check` is **införd** as dedicated executable shadow_error_rate skill/check (`.github/skills/shadow_error_rate_check.json`) via
   `python scripts/run_skill.py --skill shadow_error_rate_check --manifest dev --dry-run`.
+- `feature_parity_check` is **införd** as dedicated executable feature parity skill/check (`.github/skills/feature_parity_check.json`) via
+  `python scripts/run_skill.py --skill feature_parity_check --manifest dev --dry-run`.
 
 ## 6) PRE/POST gate commands (exact)
 

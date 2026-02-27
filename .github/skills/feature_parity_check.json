@@ -19,12 +19,23 @@
     ]
   },
   "id": "feature_parity_check",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "title": "Feature computation parity validation",
   "description": "Verifierar att feature-beräkningar är identiska mellan live trading, backtest och precompute modes. Kritiskt för att säkerställa att ML-träning och live trading använder samma features.",
   "status": "dev",
   "owners": ["fa06662"],
   "tags": ["features", "parity", "validation", "testing"],
+  "steps": [
+    {
+      "id": "feature_parity_selector",
+      "type": "pytest_selectors",
+      "args": {
+        "selectors": [
+          "tests/test_feature_parity.py::test_runtime_vs_precomputed_features"
+        ]
+      }
+    }
+  ],
   "rules": {
     "must": [
       "Lista feature-namn och version för parity-ytan som valideras.",

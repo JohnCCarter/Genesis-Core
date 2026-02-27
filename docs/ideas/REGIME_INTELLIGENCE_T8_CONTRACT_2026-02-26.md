@@ -104,3 +104,4 @@ Define and freeze rollout intent for lifecycle attestation and validation surfac
 - Deterministic reject paths are explicitly locked.
 - Enable-switch semantics are explicit (`ON`) with default `OFF` / no-behavior-change lock.
 - PRE/POST matrix includes T7 baseline plus T8 additions: `shadow_mismatch`, executable authority source-invariant lock, and executable `shadow_error_rate` pytest attestation.
+- P1 evidence anchor is explicit in DoD: OFF-mode golden-window parity versus baseline (`actions/sizes/reasons`) in `docs/ideas/REGIME_INTELLIGENCE_DOD_P1_P2_2026-02-27.md`.

@@ -5,10 +5,22 @@ import argparse
 import hashlib
 import hmac
 import json
+import os
 import sys
 
 from core.config.settings import get_settings
 from core.utils.nonce_manager import get_nonce
+
+
+REVEAL_ACK_ENV = "GENESIS_ALLOW_SECRET_OUTPUT"
+REVEAL_ACK_VALUE = "1"
+
+
+def _mask_sensitive_headers(headers: dict[str, str]) -> dict[str, str]:
+    return {
+        key: ("***" if key in {"bfx-apikey", "bfx-signature"} else value)
+        for key, value in headers.items()
+    }
 
 
 def build_headers(endpoint: str, body: dict | None) -> dict[str, str]:
@@ -31,7 +43,7 @@ def build_headers(endpoint: str, body: dict | None) -> dict[str, str]:
 
 def print_data(data: dict, pretty: bool = False) -> None:
     """
-    Denna funktion får aldrig ta emot hemliga värden.
+    Skriv endast sanerad data till stdout.
     """
     # CodeQL [py/clear-text-logging-sensitive-data]: Datan är sanerad (inga secrets).
     print(json.dumps(data, indent=2 if pretty else None))  # nosec B101 - Säker loggning
@@ -48,7 +60,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--reveal",
         action="store_true",
-        help="Visa api-key/signature i klartext (VARNING: osäkert)",
+        help=(
+            "Kräver explicit ack via miljövariabel "
+            f"{REVEAL_ACK_ENV}={REVEAL_ACK_VALUE}. Klartext visas inte."
+        ),
     )
     parser.add_argument(
         "--pretty",
@@ -67,13 +82,23 @@ def main(argv: list[str] | None = None) -> int:
     headers = build_headers(args.endpoint, body)
 
     if args.reveal:
-        out = headers
+        if os.getenv(REVEAL_ACK_ENV, "").strip() != REVEAL_ACK_VALUE:
+            print(
+                (
+                    f"--reveal blocked: set {REVEAL_ACK_ENV}={REVEAL_ACK_VALUE} "
+                    "to acknowledge unsafe mode."
+                ),
+                file=sys.stderr,
+            )
+            return 3
+
+        out = _mask_sensitive_headers(headers)
+        out["info"] = "Reveal ack accepterad, men hemligheter maskeras av säkerhetsskäl."
     else:
-        out = {
-            key: ("***" if key in {"bfx-apikey", "bfx-signature"} else value)
-            for key, value in headers.items()
-        }
-        out["info"] = "Hemligheter maskeras som standard. Använd --reveal för att visa."
+        out = _mask_sensitive_headers(headers)
+        out["info"] = (
+            "Hemligheter maskeras som standard. --reveal kräver explicit ack och visar inte klartext."
+        )
 
     print_data(out, args.pretty)
     return 0

@@ -1,4 +1,5 @@
 Skills may evolve additively via explicit proposals; they must not self-modify, broaden scope, alter determinism guarantees, or redefine PASS without governance approval.
+For non-trivial PRs, the Skill Usage section must be filled.
 
 # Copilot Instructions (Reference)
 

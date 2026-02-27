@@ -415,3 +415,102 @@ def test_evaluate_pipeline_shadow_error_rate_contract(
     shadow_error_rate = sum(1 for m in mismatches if m) / len(mismatches)
     assert shadow_error_rate == 0.5
     assert 0.0 <= shadow_error_rate <= 1.0
+
+
+def test_evaluate_pipeline_authority_mode_source_invariant_contract(
+    monkeypatch,
+    sample_policy: dict[str, Any],
+    sample_configs: dict[str, Any],
+    small_candle_history: dict[str, Any],
+) -> None:
+    """T8B executable attestation for authority source invariants.
+
+    Contract:
+    - `authority_mode_source` must stay within the allowed deterministic set,
+    - each fixed config scenario must resolve to an exact expected source.
+    """
+
+    from core.strategy import evaluate as ev
+    from core.strategy import regime_intelligence as ri
+    from core.strategy import regime_unified as ru
+
+    monkeypatch.setattr(ru, "detect_regime_unified", lambda *_a, **_k: "ranging")
+    monkeypatch.setattr(ri, "detect_shadow_regime_from_regime_module", lambda *_a, **_k: "bull")
+
+    allowed_sources = {
+        "multi_timeframe.regime_intelligence.authority_mode",
+        "regime_unified.authority_mode",
+        "default_legacy",
+        "canonical_invalid_fallback_legacy",
+        "alias_invalid_fallback_legacy",
+    }
+
+    scenarios = [
+        (
+            "default",
+            {},
+            "default_legacy",
+            "legacy",
+        ),
+        (
+            "canonical_legacy",
+            {"multi_timeframe": {"regime_intelligence": {"authority_mode": "legacy"}}},
+            "multi_timeframe.regime_intelligence.authority_mode",
+            "legacy",
+        ),
+        (
+            "alias_regime_module",
+            {"regime_unified": {"authority_mode": "regime_module"}},
+            "regime_unified.authority_mode",
+            "regime_module",
+        ),
+        (
+            "canonical_invalid_alias_valid",
+            {
+                "multi_timeframe": {"regime_intelligence": {"authority_mode": "invalid_mode_xyz"}},
+                "regime_unified": {"authority_mode": "regime_module"},
+            },
+            "canonical_invalid_fallback_legacy",
+            "legacy",
+        ),
+        (
+            "alias_invalid_only",
+            {"regime_unified": {"authority_mode": "invalid_mode_xyz"}},
+            "alias_invalid_fallback_legacy",
+            "legacy",
+        ),
+    ]
+
+    def _merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
+        merged = deepcopy(base)
+        for key, value in override.items():
+            if isinstance(merged.get(key), dict) and isinstance(value, dict):
+                merged[key] = _merge(merged[key], value)
+            else:
+                merged[key] = deepcopy(value)
+        return merged
+
+    for _name, override_cfg, expected_source, expected_mode in scenarios:
+        cfg = deepcopy(sample_configs)
+        cfg.pop("precomputed_features", None)
+        cfg.pop("_global_index", None)
+
+        if isinstance(cfg.get("multi_timeframe"), dict):
+            cfg["multi_timeframe"] = deepcopy(cfg["multi_timeframe"])
+            cfg["multi_timeframe"].pop("regime_intelligence", None)
+        cfg.pop("regime_unified", None)
+
+        cfg = _merge(cfg, override_cfg)
+
+        _result, meta = ev.evaluate_pipeline(
+            small_candle_history,
+            policy=sample_policy,
+            configs=cfg,
+        )
+        shadow_obs = meta["observability"]["shadow_regime"]
+
+        source = shadow_obs["authority_mode_source"]
+        assert source in allowed_sources
+        assert source == expected_source
+        assert shadow_obs["authority_mode"] == expected_mode
+        assert shadow_obs["decision_input"] is False

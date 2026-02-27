@@ -2,7 +2,7 @@
 
 Date: 2026-02-26
 Category: `api`
-Status: **T0–T7 införd (implemented), T8A delvis införd (shadow_error_rate executable), övriga T8-delar föreslagen.**
+Status: **T0–T7 införd (implemented), T8A–T8B delvis införd (shadow_error_rate + authority_mode_source-invariant executable), övriga T8-delar föreslagen.**
 
 ## 1) Commit contract
 
@@ -45,7 +45,8 @@ Define and freeze rollout intent for lifecycle attestation and validation surfac
 
 - T7 baseline gates are **införd** and remain mandatory baseline in T8 PRE/POST matrix.
 - `shadow_mismatch` gate is required as T8 rollout evidence for lifecycle attestation.
-- Unknown invariant gate is interpreted as the authority source-invariant lock.
+- Authority source-invariant lock is **införd** as executable pytest evidence in T8B via
+  `tests/test_evaluate_pipeline.py::test_evaluate_pipeline_authority_mode_source_invariant_contract`.
 - `shadow_error_rate` gate is **införd** as executable pytest evidence in T8A via
   `tests/test_evaluate_pipeline.py::test_evaluate_pipeline_shadow_error_rate_contract`.
 - `feature_parity_check` remains policy-attestation semantics (`STOP` / `no_steps`) and is not, by itself, a tranche failure.
@@ -60,31 +61,27 @@ Define and freeze rollout intent for lifecycle attestation and validation surfac
 
 ### PRE gates
 
-1. `pre-commit run --files src/core/config/authority.py tests/test_config_ssot.py tests/test_config_api_e2e.py tests/test_config_endpoints.py docs/ideas/REGIME_INTELLIGENCE_T8_CONTRACT_2026-02-26.md`
+1. `pre-commit run --files tests/test_evaluate_pipeline.py docs/ideas/REGIME_INTELLIGENCE_T8_CONTRACT_2026-02-26.md`
 2. `python scripts/run_skill.py --skill feature_parity_check --manifest dev`
 3. `python scripts/run_skill.py --skill genesis_backtest_verify --manifest stable`
 4. `pytest -q tests/test_import_smoke_backtest_optuna.py`
 5. `pytest -q tests/test_backtest_determinism_smoke.py`
 6. `pytest -q tests/test_features_asof_cache_key_deterministic.py`
 7. `pytest -q tests/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable`
-8. `pytest -q tests/test_evaluate_pipeline.py tests/test_evaluate_regime_precomputed_index.py tests/test_config_ssot.py tests/test_config_api_e2e.py tests/test_config_endpoints.py tests/test_ui_endpoints.py::test_ui_get_and_evaluate_post`
-9. `pytest -q tests/test_evaluate_pipeline.py::test_evaluate_pipeline_shadow_regime_observer_preserves_default_parity`
-10. `pytest -q tests/test_evaluate_pipeline.py::test_evaluate_pipeline_canonical_invalid_alias_valid_falls_back_to_legacy tests/test_evaluate_regime_precomputed_index.py::test_evaluate_pipeline_regime_uses_global_index_for_precomputed_ema50`
-11. `pytest -q tests/test_evaluate_pipeline.py::test_evaluate_pipeline_shadow_error_rate_contract`
+8. `pytest -q tests/test_evaluate_pipeline.py::test_evaluate_pipeline_shadow_error_rate_contract`
+9. `pytest -q tests/test_evaluate_pipeline.py::test_evaluate_pipeline_authority_mode_source_invariant_contract`
 
 ### POST gates
 
-1. `pre-commit run --files src/core/config/authority.py tests/test_config_ssot.py tests/test_config_api_e2e.py tests/test_config_endpoints.py docs/ideas/REGIME_INTELLIGENCE_T8_CONTRACT_2026-02-26.md`
+1. `pre-commit run --files tests/test_evaluate_pipeline.py docs/ideas/REGIME_INTELLIGENCE_T8_CONTRACT_2026-02-26.md`
 2. `python scripts/run_skill.py --skill feature_parity_check --manifest dev`
 3. `python scripts/run_skill.py --skill genesis_backtest_verify --manifest stable`
 4. `pytest -q tests/test_import_smoke_backtest_optuna.py`
 5. `pytest -q tests/test_backtest_determinism_smoke.py`
 6. `pytest -q tests/test_features_asof_cache_key_deterministic.py`
 7. `pytest -q tests/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable`
-8. `pytest -q tests/test_evaluate_pipeline.py tests/test_evaluate_regime_precomputed_index.py tests/test_config_ssot.py tests/test_config_api_e2e.py tests/test_config_endpoints.py tests/test_ui_endpoints.py::test_ui_get_and_evaluate_post`
-9. `pytest -q tests/test_evaluate_pipeline.py::test_evaluate_pipeline_shadow_regime_observer_preserves_default_parity`
-10. `pytest -q tests/test_evaluate_pipeline.py::test_evaluate_pipeline_canonical_invalid_alias_valid_falls_back_to_legacy tests/test_evaluate_regime_precomputed_index.py::test_evaluate_pipeline_regime_uses_global_index_for_precomputed_ema50`
-11. `pytest -q tests/test_evaluate_pipeline.py::test_evaluate_pipeline_shadow_error_rate_contract`
+8. `pytest -q tests/test_evaluate_pipeline.py::test_evaluate_pipeline_shadow_error_rate_contract`
+9. `pytest -q tests/test_evaluate_pipeline.py::test_evaluate_pipeline_authority_mode_source_invariant_contract`
 
 ## 7) Done criteria
 
@@ -92,4 +89,4 @@ Define and freeze rollout intent for lifecycle attestation and validation surfac
 - Single validation surface requirement is documented for canonical/alias/invalid/default authority resolve paths.
 - Deterministic reject paths are explicitly locked.
 - Enable-switch semantics are explicit (`ON`) with default `OFF` / no-behavior-change lock.
-- PRE/POST matrix includes T7 baseline plus T8 additions: `shadow_mismatch`, unknown source-invariant, and executable `shadow_error_rate` pytest attestation.
+- PRE/POST matrix includes T7 baseline plus T8 additions: `shadow_mismatch`, executable authority source-invariant lock, and executable `shadow_error_rate` pytest attestation.

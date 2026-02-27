@@ -42,11 +42,11 @@ For P1 evidence, the golden window is frozen as an immutable comparison spec:
 - Comparison mode: OFF/default behavior only (no rollout behavior enabled).
 - Baseline comparator: the latest approved P1 baseline artifact for the same window spec ID.
 - Inputs that must be identical between baseline and candidate runs:
-   - symbol set
-   - timeframe set
-   - start/end UTC range
-   - runtime config source + commit SHA
-   - canonical determinism flag: `GENESIS_FAST_HASH=0`
+  - symbol set
+  - timeframe set
+  - start/end UTC range
+  - runtime config source + commit SHA
+  - canonical determinism flag: `GENESIS_FAST_HASH=0`
 - Change control: any change to the golden window requires an explicit contract exception and a new window spec ID.
 
 ### P1 OFF-mode parity pass/fail contract
@@ -54,12 +54,57 @@ For P1 evidence, the golden window is frozen as an immutable comparison spec:
 For the frozen golden window (`ri_p1_off_parity_v1`), parity is evaluated as follows:
 
 - PASS requires all of the following:
-   - identical action sequence versus baseline (same action labels per decision row)
-   - identical reason payload versus baseline (same canonical reason strings)
-   - identical size values versus baseline with strict tolerance: $|\Delta| \le 1\mathrm{e}{-12}$
-   - no added/missing decision rows versus baseline
+  - identical action sequence versus baseline (same action labels per decision row)
+  - identical reason payload versus baseline (same canonical reason strings)
+  - identical size values versus baseline with strict tolerance: $|\Delta| \le 1\mathrm{e}{-12}$
+  - no added/missing decision rows versus baseline
 - FAIL is triggered by any single mismatch above.
 - No manual override is allowed for P1 OFF-mode parity verdicts.
+
+### P1 evidence artifact format (locked minimum)
+
+P1 OFF-mode parity evidence must be recorded in a machine-readable artifact:
+
+- Artifact location: `results/evaluation/ri_p1_off_parity_v1_<run_id>.json`
+- Required fields:
+  - `window_spec_id` (must equal `ri_p1_off_parity_v1`)
+  - `run_id`
+  - `git_sha`
+  - `mode` (must be OFF/default)
+  - `symbols`
+  - `timeframes`
+  - `start_utc`
+  - `end_utc`
+  - `baseline_artifact_ref`
+  - `parity_verdict` (`PASS` or `FAIL`)
+  - `action_mismatch_count`
+  - `reason_mismatch_count`
+  - `size_mismatch_count`
+  - `size_tolerance` (must be `1e-12`)
+- Optional human summary pointer: `docs/daily_summaries/*` with `run_id` and `git_sha`.
+
+### P1 sign-off checklist (required)
+
+P1 may be marked "klar" only when all checklist items are true:
+
+- golden-window spec ID and inputs match the frozen definition
+- OFF-mode parity verdict is `PASS` under the pass/fail contract above
+- required PRE/POST gates are green for the tranche
+- evidence artifact exists and includes all required fields
+- governance review confirms no runtime-default behavior drift
+
+### P1 evidence test/skill IDs (minimum map)
+
+Minimum executable evidence set for P1 sign-off:
+
+- `tests/test_import_smoke_backtest_optuna.py`
+- `tests/test_backtest_determinism_smoke.py`
+- `tests/test_features_asof_cache_key_deterministic.py`
+- `tests/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable`
+- `tests/test_evaluate_pipeline.py::test_evaluate_pipeline_shadow_error_rate_contract`
+- `tests/test_evaluate_pipeline.py::test_evaluate_pipeline_authority_mode_source_invariant_contract`
+- `python scripts/run_skill.py --skill feature_parity_check --manifest dev --dry-run`
+- `python scripts/run_skill.py --skill config_authority_lifecycle_check --manifest dev --dry-run`
 
 ## "Klar" for P2/v2 (behavior-change)
 

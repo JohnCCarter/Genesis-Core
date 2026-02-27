@@ -4,6 +4,8 @@ Date: 2026-02-26
 Category: `tooling`
 Status: **T0–T7 införd (implemented), T8A–T8E införd (shadow_error_rate executable + authority_mode_source-invariant executable + lifecycle skill executable + dedicated shadow_error_rate skill executable + feature_parity_check executable).**
 
+DoD reference: `docs/ideas/REGIME_INTELLIGENCE_DOD_P1_P2_2026-02-27.md`
+
 ## 1) Commit contract
 
 ### Scope IN (strict)

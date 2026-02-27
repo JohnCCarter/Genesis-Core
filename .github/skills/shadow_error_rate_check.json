@@ -1,0 +1,59 @@
+{
+  "governance": {
+    "skill_type": "SPEC",
+    "contract_owner": "opus-4.6",
+    "implementation_owner": "codex-5.3",
+    "pass_definition_locked": true,
+    "scope_locked": true,
+    "evolution_mode": "additive_only",
+    "forbidden": [
+      "runtime_default_drift",
+      "api_contract_drift",
+      "scope_broadening",
+      "weakening_must_not_rules"
+    ],
+    "stop_conditions": [
+      "detected_default_drift",
+      "detected_contract_drift",
+      "attempted_scope_change"
+    ]
+  },
+  "id": "shadow_error_rate_check",
+  "version": "1.0.0",
+  "title": "Shadow error rate executable attestation",
+  "description": "Executable shadow_error_rate contract check via dedicated skill selector.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "tags": ["regime-intelligence", "shadow", "error-rate", "attestation"],
+  "steps": [
+    {
+      "id": "shadow_error_rate_selector",
+      "type": "pytest_selectors",
+      "args": {
+        "selectors": [
+          "tests/test_evaluate_pipeline.py::test_evaluate_pipeline_shadow_error_rate_contract"
+        ]
+      }
+    }
+  ],
+  "rules": {
+    "must": [
+      "Köra dedikerat shadow_error_rate-kontrakt via pytest selector.",
+      "Behålla NO BEHAVIOR CHANGE i default-flöde."
+    ],
+    "must_not": [
+      "Ändra runtime defaults, API-contract eller gate-definitioner.",
+      "Ersätta determinism- och invariansgates i T7-baslinjen."
+    ]
+  },
+  "references": [
+    {
+      "type": "file",
+      "value": "tests/test_evaluate_pipeline.py"
+    },
+    {
+      "type": "doc",
+      "value": "docs/ideas/REGIME_INTELLIGENCE_T8_CONTRACT_2026-02-26.md"
+    }
+  ]
+}

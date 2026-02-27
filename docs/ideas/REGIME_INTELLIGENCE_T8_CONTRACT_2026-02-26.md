@@ -2,7 +2,7 @@
 
 Date: 2026-02-26
 Category: `tooling`
-Status: **T0–T7 införd (implemented), T8A–T8C delvis införd (shadow_error_rate + authority_mode_source-invariant executable + lifecycle skill executable), övriga T8-delar föreslagen.**
+Status: **T0–T7 införd (implemented), T8A–T8D införd (shadow_error_rate executable + authority_mode_source-invariant executable + lifecycle skill executable + dedicated shadow_error_rate skill executable), övriga T8-delar föreslagen.**
 
 ## 1) Commit contract
 
@@ -61,7 +61,8 @@ Define and freeze rollout intent for lifecycle attestation and validation surfac
 
 - Skill-first policy remains in effect for lifecycle/authority attestation work.
 - `config_authority_lifecycle_check` is **införd** as dedicated lifecycle-attestation skill (`.github/skills/config_authority_lifecycle_check.json`).
-- Dedicated `shadow_error_rate` skill/check remains **föreslagen** until an executable skill definition is added.
+- `shadow_error_rate_check` is **införd** as dedicated executable shadow_error_rate skill/check (`.github/skills/shadow_error_rate_check.json`) via
+  `python scripts/run_skill.py --skill shadow_error_rate_check --manifest dev --dry-run`.
 
 ## 6) PRE/POST gate commands (exact)
 

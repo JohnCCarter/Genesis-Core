@@ -31,6 +31,7 @@ P1 is done when all items below are true:
 - feature cache invariance test
 - pipeline invariant hash test
 - relevant evaluate/shadow contract tests
+- golden window parity in OFF-mode versus baseline (identical actions/sizes/reasons)
 - governance review confirms no runtime-default drift
 
 ## "Klar" for P2/v2 (behavior-change)

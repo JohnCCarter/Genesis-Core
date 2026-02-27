@@ -98,7 +98,8 @@ ignore = [
 [tool.black]
 line-length = 100
 target-version = ['py311']
-extend-exclude = '(\.ipynb$|^tmp/|^results/|^cache/|^data/|^archive/|^logs/|^reports/)'
+extend-exclude = '(\.ipynb$|^tmp/|^results/|^cache/|^data/|^archive/|^logs/|^reports/|^scripts/archive/)'
+force-exclude = '(^|[\\/])(archive|scripts[\\/]archive|scripts[\\/]_archive|scripts[\\/]archive_local)([\\/]|$)'
 
 [tool.bandit]
 # Keep in sync with bandit.yaml (single-policy, two entry points)

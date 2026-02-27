@@ -368,3 +368,50 @@ def test_evaluate_pipeline_canonical_invalid_alias_valid_falls_back_to_legacy(
     assert shadow_obs["authority_mode_source"] == "canonical_invalid_fallback_legacy"
     assert shadow_obs["authoritative_source"] == "regime_unified.detect_regime_unified"
     assert shadow_obs["decision_input"] is False
+
+
+def test_evaluate_pipeline_shadow_error_rate_contract(
+    monkeypatch,
+    sample_policy: dict[str, Any],
+    sample_configs: dict[str, Any],
+    small_candle_history: dict[str, Any],
+) -> None:
+    """T8A executable attestation for deterministic shadow mismatch rate.
+
+    Contract:
+    - rate must be deterministic for fixed input/observer sequence,
+    - rate must remain bounded in [0,1].
+    """
+
+    from core.strategy import evaluate as ev
+    from core.strategy import regime_unified as ru
+
+    monkeypatch.setattr(ru, "detect_regime_unified", lambda *_a, **_k: "ranging")
+
+    shadow_sequence = ["ranging", "bull", "ranging", "bear"]
+
+    def _shadow_sequence(_candles: dict[str, Any]) -> str:
+        if not shadow_sequence:
+            raise AssertionError("shadow sequence exhausted unexpectedly")
+        return shadow_sequence.pop(0)
+
+    monkeypatch.setattr(ev, "_detect_shadow_regime_from_regime_module", _shadow_sequence)
+
+    cfg = deepcopy(sample_configs)
+    cfg.pop("precomputed_features", None)
+    cfg.pop("_global_index", None)
+
+    mismatches: list[bool] = []
+    for _ in range(4):
+        _result, meta = ev.evaluate_pipeline(
+            small_candle_history,
+            policy=sample_policy,
+            configs=deepcopy(cfg),
+        )
+        mismatch = meta["observability"]["shadow_regime"]["mismatch"]
+        assert isinstance(mismatch, bool)
+        mismatches.append(mismatch)
+
+    shadow_error_rate = sum(1 for m in mismatches if m) / len(mismatches)
+    assert shadow_error_rate == 0.5
+    assert 0.0 <= shadow_error_rate <= 1.0

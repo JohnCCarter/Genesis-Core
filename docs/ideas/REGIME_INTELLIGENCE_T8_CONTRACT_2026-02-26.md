@@ -1,25 +1,26 @@
 # REGIME INTELLIGENCE T8 CONTRACT (Lifecycle Attestation + Validation Surface Rollout)
 
 Date: 2026-02-26
-Category: `docs`
-Status: **T0–T7 införd (implemented), T8 föreslagen (proposed).**
+Category: `api`
+Status: **T0–T7 införd (implemented), T8A delvis införd (shadow_error_rate executable), övriga T8-delar föreslagen.**
 
 ## 1) Commit contract
 
 ### Scope IN (strict)
 
-- `docs/ideas/REGIME_INTELLIGENCE_T8_CONTRACT_2026-02-26.md` (new)
+- `docs/ideas/REGIME_INTELLIGENCE_T8_CONTRACT_2026-02-26.md`
+- `tests/test_evaluate_pipeline.py`
 
 ### Scope OUT (strict)
 
-- All existing source, test, config, workflow, and runtime files.
+- All existing source, config, workflow, and runtime files.
 - Any change to endpoint contracts, response envelopes, or runtime defaults.
 - Any change under `config/strategy/champions/*` and `.github/workflows/champion-freeze-guard.yml`.
 
 ### Constraints
 
 - Default mode: **NO BEHAVIOR CHANGE**.
-- T8 is a docs-only tranche; no implementation behavior may be changed in this contract commit.
+- T8A is a docs+tests tranche; no runtime behavior may be changed in this contract commit.
 - Enable-switch semantics are locked: explicit `ON` enables rollout; default `OFF` keeps legacy/default behavior unchanged.
 
 ## 2) T8 objective
@@ -45,14 +46,15 @@ Define and freeze rollout intent for lifecycle attestation and validation surfac
 - T7 baseline gates are **införd** and remain mandatory baseline in T8 PRE/POST matrix.
 - `shadow_mismatch` gate is required as T8 rollout evidence for lifecycle attestation.
 - Unknown invariant gate is interpreted as the authority source-invariant lock.
-- `shadow_error_rate` is **föreslagen** in T8 and explicitly non-executable in this tranche; its absence as executable evidence is not, by itself, a T8 failure.
+- `shadow_error_rate` gate is **införd** as executable pytest evidence in T8A via
+  `tests/test_evaluate_pipeline.py::test_evaluate_pipeline_shadow_error_rate_contract`.
 - `feature_parity_check` remains policy-attestation semantics (`STOP` / `no_steps`) and is not, by itself, a tranche failure.
 
 ## 5) Skill-first note
 
 - Skill-first policy remains in effect for lifecycle/authority attestation work.
 - `config_authority_lifecycle_check` remains **föreslagen** as dedicated lifecycle-attestation skill.
-- `shadow_error_rate` attestation skill/check is **föreslagen** and non-executable in T8.
+- Dedicated `shadow_error_rate` skill/check remains **föreslagen** until an executable skill definition is added.
 
 ## 6) PRE/POST gate commands (exact)
 
@@ -68,8 +70,7 @@ Define and freeze rollout intent for lifecycle attestation and validation surfac
 8. `pytest -q tests/test_evaluate_pipeline.py tests/test_evaluate_regime_precomputed_index.py tests/test_config_ssot.py tests/test_config_api_e2e.py tests/test_config_endpoints.py tests/test_ui_endpoints.py::test_ui_get_and_evaluate_post`
 9. `pytest -q tests/test_evaluate_pipeline.py::test_evaluate_pipeline_shadow_regime_observer_preserves_default_parity`
 10. `pytest -q tests/test_evaluate_pipeline.py::test_evaluate_pipeline_canonical_invalid_alias_valid_falls_back_to_legacy tests/test_evaluate_regime_precomputed_index.py::test_evaluate_pipeline_regime_uses_global_index_for_precomputed_ema50`
-
-FÖRESLAGEN (ej körbar i T8): shadow_error_rate gate (saknar införd executable skill/check).
+11. `pytest -q tests/test_evaluate_pipeline.py::test_evaluate_pipeline_shadow_error_rate_contract`
 
 ### POST gates
 
@@ -83,8 +84,7 @@ FÖRESLAGEN (ej körbar i T8): shadow_error_rate gate (saknar införd executable
 8. `pytest -q tests/test_evaluate_pipeline.py tests/test_evaluate_regime_precomputed_index.py tests/test_config_ssot.py tests/test_config_api_e2e.py tests/test_config_endpoints.py tests/test_ui_endpoints.py::test_ui_get_and_evaluate_post`
 9. `pytest -q tests/test_evaluate_pipeline.py::test_evaluate_pipeline_shadow_regime_observer_preserves_default_parity`
 10. `pytest -q tests/test_evaluate_pipeline.py::test_evaluate_pipeline_canonical_invalid_alias_valid_falls_back_to_legacy tests/test_evaluate_regime_precomputed_index.py::test_evaluate_pipeline_regime_uses_global_index_for_precomputed_ema50`
-
-FÖRESLAGEN (ej körbar i T8): shadow_error_rate gate (saknar införd executable skill/check).
+11. `pytest -q tests/test_evaluate_pipeline.py::test_evaluate_pipeline_shadow_error_rate_contract`
 
 ## 7) Done criteria
 
@@ -92,4 +92,4 @@ FÖRESLAGEN (ej körbar i T8): shadow_error_rate gate (saknar införd executable
 - Single validation surface requirement is documented for canonical/alias/invalid/default authority resolve paths.
 - Deterministic reject paths are explicitly locked.
 - Enable-switch semantics are explicit (`ON`) with default `OFF` / no-behavior-change lock.
-- PRE/POST matrix includes T7 baseline plus T8 additions: `shadow_mismatch`, unknown source-invariant, and `shadow_error_rate` marked **föreslagen/non-executable**.
+- PRE/POST matrix includes T7 baseline plus T8 additions: `shadow_mismatch`, unknown source-invariant, and executable `shadow_error_rate` pytest attestation.

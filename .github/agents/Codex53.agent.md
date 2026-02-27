@@ -33,6 +33,8 @@ tools:
   - todo
 ---
 
+Skills may evolve additively via explicit proposals; they must not self-modify, broaden scope, alter determinism guarantees, or redefine PASS without governance approval.
+
 # Role
 
 Execute approved commit-contracts with minimal, scoped diffs.

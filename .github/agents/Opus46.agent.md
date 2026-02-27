@@ -13,6 +13,8 @@ tools:
   - todo
 ---
 
+Skills may evolve additively via explicit proposals; they must not self-modify, broaden scope, alter determinism guarantees, or redefine PASS without governance approval.
+
 # Role
 
 Review and enforce governance gates before and after implementation.

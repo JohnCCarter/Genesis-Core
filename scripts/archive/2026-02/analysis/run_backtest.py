@@ -18,10 +18,10 @@ try:
 except ImportError:  # pragma: no cover - numpy optional in some envs
     np = None
 
-try:  # pragma: no cover - torch optional
-    import torch
-except ImportError:
-    torch = None
+# torch is intentionally optional and currently not used in this module.
+# Avoid importing it during test collection, since some Windows environments
+# can fail DLL initialization even when CPU-only torch is installed.
+torch = None
 
 
 def _find_repo_root(start: Path) -> Path:

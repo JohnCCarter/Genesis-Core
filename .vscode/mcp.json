@@ -1,47 +1,39 @@
 {
-  "inputs": [
-    {
-      "description": "API key for authentication",
-      "id": "CONTEXT7_API_KEY",
-      "password": true,
-      "type": "promptString"
-    },
-    {
-      "description": "Client IP encryption key for Context7 MCP (prevents startup warning that can break stdio)",
-      "id": "CLIENT_IP_ENCRYPTION_KEY",
-      "password": true,
-      "type": "promptString"
-    }
-  ],
-  "servers": {
+  "mcpServers": {
     "genesis-core": {
-      "args": ["-m", "mcp_server.server"],
+      "args": [
+        "-m",
+        "mcp_server.server"
+      ],
       "command": ".venv/bin/python",
       "env": {
         "GENESIS_FAST_HASH": "0",
         "GENESIS_FAST_WINDOW": "1",
         "GENESIS_PRECOMPUTE_FEATURES": "1"
-      },
-      "type": "stdio"
+      }
     },
     "genesis-core-windows": {
-      "args": ["-m", "mcp_server.server"],
+      "args": [
+        "-m",
+        "mcp_server.server"
+      ],
       "command": ".venv/Scripts/python.exe",
       "env": {
         "GENESIS_FAST_HASH": "0",
         "GENESIS_FAST_WINDOW": "1",
         "GENESIS_PRECOMPUTE_FEATURES": "1"
-      },
-      "type": "stdio"
+      }
     },
     "io.github.upstash/context7": {
-      "args": ["-y", "@upstash/context7-mcp@1.0.31"],
+      "args": [
+        "-y",
+        "@upstash/context7-mcp@1.0.31"
+      ],
       "command": "npx",
       "env": {
-        "CLIENT_IP_ENCRYPTION_KEY": "${input:CLIENT_IP_ENCRYPTION_KEY}",
-        "CONTEXT7_API_KEY": "${input:CONTEXT7_API_KEY}"
-      },
-      "type": "stdio"
+        "CLIENT_IP_ENCRYPTION_KEY": "${env:CLIENT_IP_ENCRYPTION_KEY}",
+        "CONTEXT7_API_KEY": "${env:CONTEXT7_API_KEY}"
+      }
     }
   }
 }

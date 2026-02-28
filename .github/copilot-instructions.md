@@ -1,9 +1,6 @@
-Skills may evolve additively via explicit proposals; they must not self-modify, broaden scope, alter determinism guarantees, or redefine PASS without governance approval.
-For non-trivial PRs, the Skill Usage section must be filled.
-
 # Copilot Instructions (Reference)
 
-Last update: 2026-02-14
+Last update: 2026-02-28
 
 This file is the practical reference for collaboration between:
 
@@ -11,6 +8,30 @@ This file is the practical reference for collaboration between:
 - Opus 4.6 (Subagent + Reviewer + Risk-auditor)
 
 Use this as the default operating contract for all non-trivial changes.
+
+## Applicability and scope
+
+- Skills may evolve additively via explicit proposals; they must not self-modify, broaden scope, alter determinism guarantees, or redefine PASS without governance approval.
+- For non-trivial PRs, the Skill Usage section must be filled.
+- Non-trivial and high-sensitivity changes must use the full gated protocol in this file.
+- Trivial changes may use the quick path below, but must escalate to full protocol if any uncertainty appears.
+
+## Quick path for trivial changes
+
+A change is trivial only if all conditions are true:
+
+- Touches at most 2 files.
+- No runtime behavior change (docs/comments/metadata/editor config only).
+- No dependency, API contract, env/config semantics, or schema interpretation changes.
+- No files in high-sensitivity zones are touched.
+
+Quick path steps:
+
+1. Define Scope IN/OUT in 1-3 bullets.
+2. Apply minimal diff.
+3. Run relevant minimal checks (for docs/config, at least file validation/lint if available).
+4. Self-review for hidden behavior impact.
+5. If any doubt exists, stop and switch to the full gated protocol with Opus review.
 
 ## Core principles
 
@@ -39,7 +60,7 @@ Codex must:
 
 Codex must not:
 
-- Start implementation before Opus approves contract + plan.
+- Start non-trivial implementation before Opus approves contract + plan.
 - Add opportunistic cleanups outside scope.
 - Introduce logic changes in refactor-only work.
 - Present proposed process changes as if they are already implemented.
@@ -59,7 +80,16 @@ Opus must:
 3. Enforce contract and veto on violations.
 4. Specify minimal reverts/adjustments when blocking.
 
-## Mandatory gated commit protocol (every commit)
+## Opus engagement matrix (when Opus is required)
+
+| Change class | Typical examples | Opus pre-code review | Opus post-code audit | Required path |
+| --- | --- | --- | --- | --- |
+| Trivial docs/metadata | README text, comment typo, editor metadata | Optional | Optional | Quick path |
+| Non-trivial low-risk | Test harness/tooling/script updates | Required | Required | Full gated protocol |
+| Runtime/contract touching | API, config/env parsing, execution logic | Required | Required | Full protocol + strict verification |
+| High-sensitivity zones | `src/core/strategy/*`, `src/core/backtest/*`, `src/core/optimizer/*`, runtime/config authority, paper/live edges | Required | Required (blocking authority) | Full protocol, deterministic evidence mandatory |
+
+## Mandatory gated commit protocol (default for non-trivial commits)
 
 ### 1) Commit contract (before work)
 
@@ -150,11 +180,11 @@ For docs-only commits, use a reduced gate set defined in contract.
 
 ## Source of truth
 
-If any conflict appears, follow this precedence:
+Deterministic precedence for this repository:
 
 1. Explicit user request for the current task
 2. This file (`.github/copilot-instructions.md`)
 3. `docs/OPUS_46_GOVERNANCE.md`
 4. `AGENTS.md`
 
-When uncertain, pause and request clarification before implementing.
+When uncertain or if multiple instructions still conflict, pause and request clarification before implementing.

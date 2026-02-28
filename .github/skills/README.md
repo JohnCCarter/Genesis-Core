@@ -1,5 +1,7 @@
 # Skill Governance Charter (A′ additive-only)
 
+Last update: 2026-02-28
+
 ## Purpose
 
 This charter defines how JSON skills are governed in Genesis-Core to allow controlled autonomy without contract drift.
@@ -8,6 +10,21 @@ This charter defines how JSON skills are governed in Genesis-Core to allow contr
 - **Codex 5.3** is the **RUNNER owner** (implementation/execution authority).
 
 The system is **A′ (additive-only)**: skills may propose additive improvements, but may not mutate PASS definitions or broaden scope.
+
+## Operational alignment and precedence
+
+This charter governs **skill evolution**. Day-to-day implementation protocol is defined in
+`.github/copilot-instructions.md` (including quick path, full gated protocol, and Opus engagement matrix).
+
+If instruction conflicts appear, use repository precedence:
+
+1. Explicit user request for the current task
+2. `.github/copilot-instructions.md`
+3. `docs/OPUS_46_GOVERNANCE.md`
+4. `AGENTS.md`
+
+Quick path is allowed only for trivial changes per `.github/copilot-instructions.md`.
+If quick-path eligibility is uncertain, escalate to full protocol and governance review.
 
 ## Skill families
 
@@ -71,6 +88,7 @@ Not allowed:
 - **PATCH**: additive metadata/evidence improvements; no PASS/scope changes.
 - **MINOR**: additive capabilities that remain contract-compatible and governance-approved.
 - **MAJOR**: any intentional contract/PASS/scope break (requires explicit approved contract exception).
+  The exception must be traceable in commit-contract and Opus verdict evidence.
 
 ## Research isolation and promotion
 

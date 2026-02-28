@@ -48,11 +48,14 @@ You are an IMPLEMENTATION agent.
 - Default mode is NO BEHAVIOR CHANGE unless explicitly overridden.
 - Keep diffs minimal and testable.
 - Update imports/references when moving files.
-- ALWAYS run tests before and after changes.
+- For non-trivial or high-sensitivity changes, run full required gates before and after changes.
+- For trivial quick-path changes, run minimal checks per `.github/copilot-instructions.md` and escalate on doubt.
 - Invoke relevant repository skills for the task domain before implementation.
 - If no suitable skill exists, propose/add one and register it in dev manifest before claiming process coverage.
 
-## REQUIRED GATES (MINIMUM)
+## REQUIRED GATES (MINIMUM FOR NON-TRIVIAL/HIGH-SENSITIVITY)
+
+For trivial quick-path changes, use the reduced validation path in `.github/copilot-instructions.md`.
 
 - pre-commit eller lint
 - smoke tests
@@ -69,7 +72,8 @@ If any test fails:
 
 ## Must not
 
-- Begin implementation before Opus46 approves contract + plan.
+- Begin non-trivial implementation before Opus46 approves contract + plan.
+- Skip Opus escalation when quick-path eligibility is uncertain.
 - Perform opportunistic cleanup outside scope.
 - Claim process changes are implemented unless verified.
 
@@ -95,12 +99,9 @@ You MUST close the loop after each verification or implementation step so the wo
 
 ### After you implement (when allowed)
 
-1. Run required gates **before** and **after**:
-   - pre-commit/lint
-   - smoke tests
-   - determinism replay (decision parity)
-   - feature cache invariance
-   - pipeline invariant check (component order hash)
+1. Run gates according to the selected path:
+   - Non-trivial/high-sensitivity: run full required gates **before** and **after**.
+   - Trivial quick-path: run minimal checks from `.github/copilot-instructions.md`; escalate to full protocol on uncertainty.
 2. Produce an "Implementation Report" (pasteable into PR / chat):
    - Scope summary (IN/OUT)
    - File-level change summary

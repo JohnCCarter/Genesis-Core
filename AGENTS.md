@@ -82,7 +82,7 @@ Skills must never:
 
 1. Runtime Engine
 2. Governance Layer
-3. `agents.md` (Constitution)
+3. `AGENTS.md` (Constitution)
 4. Skills (SPEC only)
 5. Agent Execution Layer
 

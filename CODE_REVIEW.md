@@ -327,10 +327,21 @@ Engine-klassen hanterar både beräkningslogik, caching och filskrivning.
 - Regressionstester för specifika buggar
 - Test-to-source-ratio: 0.92 (22K test / 24K src)
 
-### 5.2 Observationer
+### 5.2 Testresultat
 
-- `pytest` är inte installerat i denna miljö — kunde inte verifiera att testerna passerar
-- `ruff check src/` passerade utan fel
+**pytest:** 894 passed, 2 failed, 4 errors, 16 skipped (47.55s)
+
+| Status | Detalj |
+|:---|:---|
+| 894 passed | Hela testsviten |
+| 2 failed | `test_validate_registry_audit_ci.py` — registry audit-tester |
+| 4 errors | `test_mcp_git_workflow_tools.py` — kräver specifik git-miljösetup |
+| 16 skipped | Villkorade tester (nätverks-/miljöberoende) |
+
+### 5.3 Linting & Säkerhetsskanning
+
+- `ruff check src/` — 0 fel
+- `bandit -r src/ -c bandit.yaml` — 0 problem i 18 784 rader (med repots konfigurerade excludes: B110, B311, B324, B112, B101, B404, B603)
 
 ---
 
@@ -379,9 +390,9 @@ JSON serialiseras och hashas för varje trial. Cachning finns men kan optimeras 
 - `.secrets.baseline` konfigurerat
 
 ### Observation
-- Ruff passerar utan fel ✅
-- Bandit ej installerat i denna miljö (men konfigurerat i CI)
-- pytest ej installerat i denna miljö
+- Ruff passerar utan fel
+- Bandit passerar utan problem (med repots bandit.yaml-excludes)
+- `.gitignore` hade en bugg: `!scripts/build/**` negerade `__pycache__`-ignore — fixat
 
 ---
 
@@ -418,4 +429,4 @@ JSON serialiseras och hashas för varje trial. Cachning finns men kan optimeras 
 
 ---
 
-*Granskningen genomfördes med manuell kodanalys, Ruff linting och parallell djupdykning i kritiska filer.*
+*Granskningen genomfördes med manuell kodanalys, Ruff linting, Bandit säkerhetsskanning, pytest-körning och parallell djupdykning i kritiska filer.*

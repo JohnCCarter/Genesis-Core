@@ -6,6 +6,7 @@ Provides resources that can be accessed by AI assistants for context.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 import shutil
@@ -173,15 +174,20 @@ async def get_git_status_resource(config: MCPConfig) -> dict[str, Any]:
                 env=git_env,
             )
 
+        async def _git_async(
+            args: list[str], *, timeout: int = timeout_s
+        ) -> subprocess.CompletedProcess[str]:
+            return await asyncio.to_thread(_git, args, timeout=timeout)
+
         try:
-            inside = _git(["rev-parse", "--is-inside-work-tree"])
+            inside = await _git_async(["rev-parse", "--is-inside-work-tree"])
         except subprocess.TimeoutExpired:
             return {"success": False, "error": "git rev-parse timed out"}
         if inside.returncode != 0 or inside.stdout.strip().lower() != "true":
             return {"success": False, "error": "Not a git repository"}
 
         try:
-            branch_res = _git(["rev-parse", "--abbrev-ref", "HEAD"])
+            branch_res = await _git_async(["rev-parse", "--abbrev-ref", "HEAD"])
         except subprocess.TimeoutExpired:
             return {"success": False, "error": "git branch query timed out"}
         current_branch = branch_res.stdout.strip() or "HEAD"
@@ -189,7 +195,7 @@ async def get_git_status_resource(config: MCPConfig) -> dict[str, Any]:
         untracked_included = True
         status_timed_out = False
         try:
-            status_res = _git(["status", "--porcelain"])
+            status_res = await _git_async(["status", "--porcelain"])
         except subprocess.TimeoutExpired:
             # On large working trees, enumerating untracked files can be very slow on Windows.
             # Retry with untracked disabled to keep the MCP server responsive.
@@ -197,7 +203,7 @@ async def get_git_status_resource(config: MCPConfig) -> dict[str, Any]:
             status_timed_out = True
             untracked_included = False
             try:
-                status_res = _git(["status", "--porcelain", "--untracked-files=no"])
+                status_res = await _git_async(["status", "--porcelain", "--untracked-files=no"])
             except subprocess.TimeoutExpired:
                 return {
                     "success": False,

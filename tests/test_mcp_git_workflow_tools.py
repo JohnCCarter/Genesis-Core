@@ -174,3 +174,70 @@ async def test_create_pr_falls_back_without_gh(
     assert res["created"] is False
     assert "compare_url" in res
     assert "feature%2Fcomposable-strategy-phase2" in (res["compare_url"] or "")
+
+
+@pytest.mark.asyncio
+async def test_create_pr_with_gh_uses_thread_boundary(
+    git_repo: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    config = _test_config()
+
+    create_branch = await git_workflow_operation(
+        "create_task_branch",
+        config,
+        dry_run=False,
+        task_slug="pr-thread-boundary",
+        date_utc="20260219",
+    )
+    assert create_branch["success"] is True
+
+    _git(git_repo, "remote", "set-url", "origin", "https://github.com/JohnCCarter/Genesis-Core.git")
+
+    thread_funcs: list[object] = []
+
+    async def fake_to_thread(func, *args, **kwargs):  # type: ignore[no-untyped-def]
+        thread_funcs.append(func)
+        return func(*args, **kwargs)
+
+    real_which = shutil.which
+    real_run = subprocess.run
+
+    def fake_which(name: str) -> str | None:
+        if name == "gh":
+            return "gh"
+        return real_which(name)
+
+    def fake_run(args, capture_output, text, check, timeout=None, **kwargs):  # type: ignore[no-untyped-def]
+        cmd = list(args)
+        if cmd and cmd[0] == "gh":
+            return subprocess.CompletedProcess(
+                args=cmd,
+                returncode=0,
+                stdout="https://example.invalid/pr/1\n",
+                stderr="",
+            )
+        return real_run(
+            args,
+            capture_output=capture_output,
+            text=text,
+            check=check,
+            timeout=timeout,
+            **kwargs,
+        )
+
+    monkeypatch.setattr(tools_mod.asyncio, "to_thread", fake_to_thread)
+    monkeypatch.setattr(tools_mod.shutil, "which", fake_which)
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    res = await git_workflow_operation(
+        "create_pr",
+        config,
+        dry_run=False,
+        pr_title="chore: async boundary",
+        pr_body="body",
+    )
+
+    assert res["success"] is True
+    assert res["created"] is True
+    assert res["pr_url"] == "https://example.invalid/pr/1"
+    assert any(func is fake_run for func in thread_funcs)

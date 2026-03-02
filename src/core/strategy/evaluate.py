@@ -11,6 +11,7 @@ from core.strategy.decision import decide
 from core.strategy.features_asof import extract_features_backtest, extract_features_live
 from core.strategy.fib_logging import log_fib_flow
 from core.strategy.prob_model import predict_proba_for
+from core.utils.dict_merge import deep_merge_dicts
 from core.utils.env_flags import env_flag_enabled
 
 champion_loader = ChampionLoader()
@@ -100,13 +101,7 @@ def _volume_score_from_candles(
 
 def _deep_merge(base: dict, override: dict) -> dict:
     """Deep merge override into base, recursively merging nested dicts."""
-    merged = dict(base)
-    for key, value in (override or {}).items():
-        if key in merged and isinstance(merged[key], dict) and isinstance(value, dict):
-            merged[key] = _deep_merge(merged[key], value)
-        else:
-            merged[key] = value
-    return merged
+    return deep_merge_dicts(base, override)
 
 
 def compute_htf_regime(

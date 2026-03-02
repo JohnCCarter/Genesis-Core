@@ -19,6 +19,13 @@ import core.optimizer.runner as runner
 from core.optimizer.runner import run_optimizer
 
 
+def _nested_level(depth: int, leaf: dict[str, Any]) -> dict[str, Any]:
+    node: dict[str, Any] = dict(leaf)
+    for i in reversed(range(depth)):
+        node = {f"k{i}": node}
+    return node
+
+
 @pytest.fixture()
 def search_config_tmp(tmp_path: Path) -> Path:
     config = {
@@ -312,6 +319,49 @@ def test_trial_requests_htf_exits_detects_htf_exit_config() -> None:
     assert runner._trial_requests_htf_exits({"htf_exit_config": {}}) is False
     assert runner._trial_requests_htf_exits({"htf_exit_config": None}) is False
     assert runner._trial_requests_htf_exits({}) is False
+
+
+def test_optimizer_deep_merge_deep_nested_parity_and_immutability() -> None:
+    depth = 120
+    base = {
+        "root": _nested_level(
+            depth,
+            {
+                "shared": {"a": 1},
+                "base_only": True,
+            },
+        ),
+        "list_value": [1, 2],
+    }
+    override = {
+        "root": _nested_level(
+            depth,
+            {
+                "shared": {"b": 2},
+                "override_only": True,
+            },
+        ),
+        "list_value": [9],
+    }
+
+    base_before = json.loads(json.dumps(base))
+    override_before = json.loads(json.dumps(override))
+
+    merged = runner._deep_merge(base, override)
+
+    leaf = merged["root"]
+    for i in range(depth):
+        leaf = leaf[f"k{i}"]
+
+    assert leaf == {
+        "shared": {"a": 1, "b": 2},
+        "base_only": True,
+        "override_only": True,
+    }
+    assert merged["list_value"] == [9]
+
+    assert base == base_before
+    assert override == override_before
 
 
 def test_build_backtest_cmd_uses_sys_executable_and_module_invocation(tmp_path: Path) -> None:

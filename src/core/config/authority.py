@@ -10,6 +10,7 @@ from typing import Any
 from pydantic import ValidationError
 
 from core.config.schema import RuntimeConfig, RuntimeSnapshot
+from core.utils.dict_merge import deep_merge_dicts
 from core.utils.logging_redaction import get_logger
 
 _LOGGER = get_logger(__name__)
@@ -52,13 +53,7 @@ def _json_dumps_canonical(data: dict[str, Any]) -> str:
 
 
 def _deep_merge_dicts(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
-    merged = dict(base)
-    for key, value in (override or {}).items():
-        if key in merged and isinstance(merged[key], dict) and isinstance(value, dict):
-            merged[key] = _deep_merge_dicts(merged[key], value)
-        else:
-            merged[key] = value
-    return merged
+    return deep_merge_dicts(base, override)
 
 
 def _normalize_authority_mode(value: Any) -> str | None:

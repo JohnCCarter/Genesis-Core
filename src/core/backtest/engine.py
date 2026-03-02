@@ -19,6 +19,7 @@ from tqdm import tqdm
 
 from core.backtest.htf_exit_engine import ExitAction
 from core.backtest.htf_exit_engine import HTFFibonacciExitEngine as LegacyExitEngine
+from core.utils.dict_merge import deep_merge_dicts
 from core.utils.env_flags import env_flag_enabled
 from core.utils.logging_redaction import get_logger
 
@@ -217,13 +218,7 @@ class BacktestEngine:
 
     def _deep_merge(self, base: dict, override: dict) -> dict:
         """Deep merge override dict into base dict, preserving nested structures."""
-        merged = dict(base)
-        for key, value in (override or {}).items():
-            if key in merged and isinstance(merged[key], dict) and isinstance(value, dict):
-                merged[key] = self._deep_merge(merged[key], value)
-            else:
-                merged[key] = value
-        return merged
+        return deep_merge_dicts(base, override)
 
     def _config_fingerprint(self, configs: dict[str, Any]) -> str:
         """Return a stable fingerprint of the effective config used by the backtest.

@@ -2,14 +2,15 @@ from __future__ import annotations
 
 from typing import Any
 
-_AUTHORITY_MODE_LEGACY = "legacy"
-_AUTHORITY_MODE_REGIME_MODULE = "regime_module"
-_ALLOWED_AUTHORITY_MODES = {_AUTHORITY_MODE_LEGACY, _AUTHORITY_MODE_REGIME_MODULE}
-_AUTHORITY_MODE_SOURCE_CANONICAL = "multi_timeframe.regime_intelligence.authority_mode"
-_AUTHORITY_MODE_SOURCE_ALIAS = "regime_unified.authority_mode"
-_AUTHORITY_MODE_SOURCE_DEFAULT = "default_legacy"
-_AUTHORITY_MODE_SOURCE_CANONICAL_INVALID_FALLBACK = "canonical_invalid_fallback_legacy"
-_AUTHORITY_MODE_SOURCE_ALIAS_INVALID_FALLBACK = "alias_invalid_fallback_legacy"
+from core.config.authority_mode_resolver import (
+    AUTHORITY_MODE_REGIME_MODULE as _AUTHORITY_MODE_REGIME_MODULE,
+)
+from core.config.authority_mode_resolver import (
+    resolve_authority_mode_permissive as _resolve_authority_mode_permissive,
+)
+from core.config.authority_mode_resolver import (
+    resolve_authority_mode_with_source_permissive as _resolve_authority_mode_with_source_permissive,
+)
 
 
 def _safe_float(value: Any) -> float | None:
@@ -65,51 +66,14 @@ def detect_shadow_regime_from_regime_module(candles: dict[str, Any]) -> str | No
         return None
 
 
-def _normalize_authority_mode(value: Any) -> str | None:
-    normalized = str(value).strip().lower() if value is not None else _AUTHORITY_MODE_LEGACY
-    return normalized if normalized in _ALLOWED_AUTHORITY_MODES else None
-
-
 def resolve_authority_mode_with_source(configs: dict[str, Any] | None) -> tuple[str, str]:
-    """Resolve authority mode + source with deterministic precedence.
-
-    Precedence contract:
-    1) `multi_timeframe.regime_intelligence.authority_mode` (canonical)
-    2) `regime_unified.authority_mode` (compatibility alias)
-    3) default legacy fallback
-
-    If canonical key is present but invalid, fallback is always legacy even when alias is valid.
-    """
-
-    cfg = dict(configs or {})
-
-    mtf = cfg.get("multi_timeframe")
-    regime_intelligence_cfg = mtf.get("regime_intelligence") if isinstance(mtf, dict) else None
-    canonical_present = isinstance(regime_intelligence_cfg, dict) and (
-        "authority_mode" in regime_intelligence_cfg
-    )
-    if canonical_present:
-        canonical_mode = _normalize_authority_mode(regime_intelligence_cfg.get("authority_mode"))
-        if canonical_mode is not None:
-            return canonical_mode, _AUTHORITY_MODE_SOURCE_CANONICAL
-        return _AUTHORITY_MODE_LEGACY, _AUTHORITY_MODE_SOURCE_CANONICAL_INVALID_FALLBACK
-
-    alias_cfg = cfg.get("regime_unified")
-    alias_present = isinstance(alias_cfg, dict) and ("authority_mode" in alias_cfg)
-    if alias_present:
-        alias_mode = _normalize_authority_mode(alias_cfg.get("authority_mode"))
-        if alias_mode is not None:
-            return alias_mode, _AUTHORITY_MODE_SOURCE_ALIAS
-        return _AUTHORITY_MODE_LEGACY, _AUTHORITY_MODE_SOURCE_ALIAS_INVALID_FALLBACK
-
-    return _AUTHORITY_MODE_LEGACY, _AUTHORITY_MODE_SOURCE_DEFAULT
+    return _resolve_authority_mode_with_source_permissive(configs)
 
 
 def resolve_authority_mode(configs: dict[str, Any] | None) -> str:
     """Resolve configured regime authority mode with safe legacy fallback."""
 
-    mode, _source = resolve_authority_mode_with_source(configs)
-    return mode
+    return _resolve_authority_mode_permissive(configs)
 
 
 def _detect_authoritative_regime_legacy(

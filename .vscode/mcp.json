@@ -1,5 +1,5 @@
 {
-  "mcpServers": {
+  "servers": {
     "genesis-core": {
       "args": [
         "-m",

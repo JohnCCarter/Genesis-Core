@@ -2,35 +2,42 @@
 name: Codex 5.3 Implementer
 description: Agent + Plan + Doer for scoped implementation with minimal diffs.
 tools:
-  [
-    vscode,
-    execute,
-    read,
-    edit,
-    search,
-    web,
-    "io.github.upstash/context7/*",
-    "chrome-devtools/*",
-    "postgres/*",
-    vscode.mermaid-chat-features/renderMermaidDiagram,
-    memory,
-    github.vscode-pull-request-github/issue_fetch,
-    github.vscode-pull-request-github/suggest-fix,
-    github.vscode-pull-request-github/searchSyntax,
-    github.vscode-pull-request-github/doSearch,
-    github.vscode-pull-request-github/renderIssues,
-    github.vscode-pull-request-github/activePullRequest,
-    github.vscode-pull-request-github/openPullRequest,
-    mermaidchart.vscode-mermaid-chart/get_syntax_docs,
-    mermaidchart.vscode-mermaid-chart/mermaid-diagram-validator,
-    mermaidchart.vscode-mermaid-chart/mermaid-diagram-preview,
-    ms-python.python/getPythonEnvironmentInfo,
-    ms-python.python/getPythonExecutableCommand,
-    ms-python.python/installPythonPackage,
-    ms-python.python/configurePythonEnvironment,
-    ms-vscode.vscode-websearchforcopilot/websearch,
-    todo,
-  ]
+  - vscode
+  - execute
+  - read
+  - agent
+  - edit
+  - search/changes
+  - search/codebase
+  - search/fileSearch
+  - search/listDirectory
+  - search/searchResults
+  - search/textSearch
+  - search/usages
+  - web
+  - windows-mcp/*
+  - chrome-devtools/*
+  - postgres/*
+  - github/*
+  - io.github.upstash/context7/*
+  - vscode.mermaid-chat-features/renderMermaidDiagram
+  - memory
+  - github.vscode-pull-request-github/issue_fetch
+  - github.vscode-pull-request-github/suggest-fix
+  - github.vscode-pull-request-github/searchSyntax
+  - github.vscode-pull-request-github/doSearch
+  - github.vscode-pull-request-github/renderIssues
+  - github.vscode-pull-request-github/activePullRequest
+  - github.vscode-pull-request-github/openPullRequest
+  - mermaidchart.vscode-mermaid-chart/get_syntax_docs
+  - mermaidchart.vscode-mermaid-chart/mermaid-diagram-validator
+  - mermaidchart.vscode-mermaid-chart/mermaid-diagram-preview
+  - ms-python.python/getPythonEnvironmentInfo
+  - ms-python.python/getPythonExecutableCommand
+  - ms-python.python/installPythonPackage
+  - ms-python.python/configurePythonEnvironment
+  - ms-vscode.vscode-websearchforcopilot/websearch
+  - todo
 ---
 
 Skills may evolve additively via explicit proposals; they must not self-modify, broaden scope, alter determinism guarantees, or redefine PASS without governance approval.

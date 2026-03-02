@@ -10,7 +10,8 @@
     { "id": "decision_gate_debug", "version": "1.1.0" },
     { "id": "repo_clean_refactor", "version": "1.0.0" },
     { "id": "config_authority_lifecycle_check", "version": "1.0.0" },
-    { "id": "shadow_error_rate_check", "version": "1.0.0" }
+    { "id": "shadow_error_rate_check", "version": "1.0.0" },
+    { "id": "genesis_backtest_verify", "version": "1.0.0" }
   ],
   "compacts": [{ "id": "stabilization_phase", "version": "1.0.0" }]
 }

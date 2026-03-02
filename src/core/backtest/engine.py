@@ -19,6 +19,7 @@ from tqdm import tqdm
 
 from core.backtest.htf_exit_engine import ExitAction
 from core.backtest.htf_exit_engine import HTFFibonacciExitEngine as LegacyExitEngine
+from core.config.merge_policy import resolve_champion_merge_for_engine
 from core.utils.dict_merge import deep_merge_dicts
 from core.utils.env_flags import env_flag_enabled
 from core.utils.logging_redaction import get_logger
@@ -770,7 +771,8 @@ class BacktestEngine:
         configs = copy.deepcopy(configs) if configs else {}
 
         meta = configs.setdefault("meta", {})
-        skip_champion_merge = bool(meta.get("skip_champion_merge"))
+        merge_resolution = resolve_champion_merge_for_engine(meta)
+        skip_champion_merge = not merge_resolution.should_merge
 
         champion_cfg = None
         if not skip_champion_merge:

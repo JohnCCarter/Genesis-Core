@@ -46,6 +46,7 @@ CONFIG_DIR.mkdir(exist_ok=True)
 from core.backtest.metrics import calculate_metrics, print_metrics_report  # noqa: E402
 from core.backtest.trade_logger import TradeLogger  # noqa: E402
 from core.config.authority import ConfigAuthority  # noqa: E402
+from core.config.merge_policy import resolve_runtime_merge_decision  # noqa: E402
 from core.optimizer.scoring import score_backtest  # noqa: E402
 from core.pipeline import GenesisPipeline  # noqa: E402
 from core.utils.diffing import (  # noqa: E402
@@ -342,7 +343,10 @@ def main():
 
             # Check if this is a complete champion (has merged_config)
             merged_config_from_file = override_payload.get("merged_config")
-            if merged_config_from_file is not None:
+            runtime_merge_resolution = resolve_runtime_merge_decision(
+                has_merged_config=merged_config_from_file is not None
+            )
+            if not runtime_merge_resolution.use_runtime_merge:
                 # Complete champion - use merged_config directly, no runtime merge
                 is_complete_champion = True
                 print("[CONFIG:champion] Using complete champion config (no runtime merge)")

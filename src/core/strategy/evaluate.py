@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 from typing import Any
 
+from core.config.merge_policy import resolve_champion_merge_for_evaluate
 from core.observability.metrics import metrics
 from core.strategy import regime_intelligence as _regime_intelligence
 from core.strategy.champion_loader import ChampionLoader
@@ -160,7 +161,8 @@ def evaluate_pipeline(
     # treat `configs` as the *authoritative* config. Do NOT merge in the active
     # champion, otherwise results become dependent on whichever champion file is
     # currently active (non-reproducible and extremely confusing).
-    force_backtest_mode = "_global_index" in configs
+    merge_resolution = resolve_champion_merge_for_evaluate(configs)
+    force_backtest_mode = not merge_resolution.should_merge
 
     timeframe = policy.get("timeframe", "1m")
     symbol = policy.get("symbol", "tBTCUSD")

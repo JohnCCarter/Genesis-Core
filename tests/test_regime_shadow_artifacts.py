@@ -225,3 +225,50 @@ def test_regime_shadow_artifacts_smoke(
     assert sum(int(v) for v in loaded_histogram.values()) == len(samples)
     assert loaded_quantiles["total"] == len(samples)
     assert loaded_quantiles["p80"] == loaded_quantiles["top20_threshold"]
+
+
+def test_regime_shadow_artifacts_writes_files_when_env_set(
+    monkeypatch,
+    tmp_path: Path,
+    sample_policy: dict[str, Any],
+    sample_configs: dict[str, Any],
+    small_candle_history: dict[str, Any],
+) -> None:
+    """Contract-check: evidence files are produced only in explicit opt-in mode."""
+
+    evidence_dir = tmp_path / "ri_evidence"
+    monkeypatch.setenv("REGIME_EVIDENCE_DIR", str(evidence_dir))
+
+    test_regime_shadow_artifacts_smoke(
+        monkeypatch=monkeypatch,
+        sample_policy=sample_policy,
+        sample_configs=sample_configs,
+        small_candle_history=small_candle_history,
+    )
+
+    histogram_path = evidence_dir / "clarity_histogram.json"
+    quantiles_path = evidence_dir / "clarity_quantiles.json"
+    samples_path = evidence_dir / "shadow_samples.ndjson"
+
+    assert histogram_path.exists()
+    assert quantiles_path.exists()
+    assert samples_path.exists()
+
+    histogram = json.loads(histogram_path.read_text(encoding="utf-8"))
+    quantiles = json.loads(quantiles_path.read_text(encoding="utf-8"))
+    ndjson_rows = [line for line in samples_path.read_text(encoding="utf-8").splitlines() if line]
+
+    assert set(histogram.keys()) == {
+        "0-9",
+        "10-19",
+        "20-29",
+        "30-39",
+        "40-49",
+        "50-59",
+        "60-69",
+        "70-79",
+        "80-89",
+        "90-100",
+    }
+    assert int(quantiles["total"]) == len(ndjson_rows)
+    assert len(ndjson_rows) >= 50

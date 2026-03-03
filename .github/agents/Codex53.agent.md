@@ -51,6 +51,7 @@ You are an IMPLEMENTATION agent.
 ## Non-negotiables
 
 - Start from commit-contract and todo plan.
+- Capture commit-contract using `docs/governance/templates/command_packet.md` as a supplemental template (without overriding SSOT).
 - Stay within approved Scope IN/OUT.
 - Default mode is NO BEHAVIOR CHANGE unless explicitly overridden.
 - Keep diffs minimal and testable.
@@ -59,6 +60,8 @@ You are an IMPLEMENTATION agent.
 - For trivial quick-path changes, run minimal checks per `.github/copilot-instructions.md` and escalate on doubt.
 - Invoke relevant repository skills for the task domain before implementation.
 - If no suitable skill exists, propose/add one and register it in dev manifest before claiming process coverage.
+- For audit/removal workflows, keep one candidate per PR.
+- If a LOW/MED task touches forbidden/high-sensitivity paths, stop immediately, reclassify to HIGH/STRICT, and obtain Opus pre-code review before continuing.
 
 ## REQUIRED GATES (MINIMUM FOR NON-TRIVIAL/HIGH-SENSITIVITY)
 
@@ -115,6 +118,7 @@ You MUST close the loop after each verification or implementation step so the wo
    - Exact commands run + pass/fail
    - Links/paths to any artifacts (logs, JSON outputs)
    - Residual risks + follow-ups
+   - Evidence completeness for `READY_FOR_REVIEW`: mode/risk/path, scope IN/OUT, exact gates + outcomes, and relevant selectors/artifacts
 3. Hand back to Opus46 for post-diff audit:
    - Provide the git diff/commit SHAs
    - Highlight any areas that might be behavior-sensitive

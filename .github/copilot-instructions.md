@@ -15,6 +15,7 @@ Use this as the default operating contract for all non-trivial changes.
 - For non-trivial PRs, the Skill Usage section must be filled.
 - Non-trivial and high-sensitivity changes must use the full gated protocol in this file.
 - Trivial changes may use the quick path below, but must escalate to full protocol if any uncertainty appears.
+- `docs/governance/README.md` is a supplemental operational index and must not override SSOT precedence in this file.
 
 ## Quick path for trivial changes
 
@@ -32,6 +33,7 @@ Quick path steps:
 3. Run relevant minimal checks (for docs/config, at least file validation/lint if available).
 4. Self-review for hidden behavior impact.
 5. If any doubt exists, stop and switch to the full gated protocol with Opus review.
+6. If any high-sensitivity/forbidden path is touched in LOW/MED context, stop immediately, reclassify to HIGH/STRICT, and restart with Opus pre-code review.
 
 ## Core principles
 
@@ -45,6 +47,8 @@ Quick path steps:
 - If a suitable skill is missing, add a `föreslagen` skill definition + docs + dev manifest entry before claiming coverage.
 - If tests fail due to script path migration/import drift, restore scripts to their primary canonical paths instead of introducing new mapping/wrapper indirection.
 - Use only repo-local instruction sources for this repository; ignore workstation-level `~/.claude/CLAUDE.md` as policy input.
+- For audit/removal workflows, enforce one-candidate-per-PR to preserve deterministic traceability.
+- `READY_FOR_REVIEW` may only be claimed when evidence is complete: mode/risk/path, scope IN/OUT, exact gates + outcomes, and relevant selectors/artifacts.
 
 ## Roles and responsibilities
 
@@ -82,12 +86,12 @@ Opus must:
 
 ## Opus engagement matrix (when Opus is required)
 
-| Change class | Typical examples | Opus pre-code review | Opus post-code audit | Required path |
-| --- | --- | --- | --- | --- |
-| Trivial docs/metadata | README text, comment typo, editor metadata | Optional | Optional | Quick path |
-| Non-trivial low-risk | Test harness/tooling/script updates | Required | Required | Full gated protocol |
-| Runtime/contract touching | API, config/env parsing, execution logic | Required | Required | Full protocol + strict verification |
-| High-sensitivity zones | `src/core/strategy/*`, `src/core/backtest/*`, `src/core/optimizer/*`, runtime/config authority, paper/live edges | Required | Required (blocking authority) | Full protocol, deterministic evidence mandatory |
+| Change class              | Typical examples                                                                                                 | Opus pre-code review | Opus post-code audit          | Required path                                   |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------- | -------------------- | ----------------------------- | ----------------------------------------------- |
+| Trivial docs/metadata     | README text, comment typo, editor metadata                                                                       | Optional             | Optional                      | Quick path                                      |
+| Non-trivial low-risk      | Test harness/tooling/script updates                                                                              | Required             | Required                      | Full gated protocol                             |
+| Runtime/contract touching | API, config/env parsing, execution logic                                                                         | Required             | Required                      | Full protocol + strict verification             |
+| High-sensitivity zones    | `src/core/strategy/*`, `src/core/backtest/*`, `src/core/optimizer/*`, runtime/config authority, paper/live edges | Required             | Required (blocking authority) | Full protocol, deterministic evidence mandatory |
 
 ## Mandatory gated commit protocol (default for non-trivial commits)
 

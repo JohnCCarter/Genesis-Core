@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import ast
 from datetime import UTC, datetime
+from pathlib import Path
 
 import pytest
 
@@ -152,3 +154,41 @@ def test_backtest_engine_warns_on_unknown_htf_exit_env_flag(
     )
 
     assert any("GENESIS_HTF_EXITS expected '0' or '1'" in rec.message for rec in caplog.records)
+
+
+def test_runtime_source_must_not_import_core_config_validator() -> None:
+    """Tripwire: runtime source får inte bero på core.config.validator."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    src_root = repo_root / "src"
+    validator_path = (src_root / "core" / "config" / "validator.py").resolve()
+
+    violations: list[str] = []
+
+    for py_file in src_root.rglob("*.py"):
+        resolved = py_file.resolve()
+        if resolved == validator_path:
+            continue
+
+        tree = ast.parse(py_file.read_text(encoding="utf-8"), filename=str(py_file))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    if alias.name == "core.config.validator" or alias.name.startswith(
+                        "core.config.validator."
+                    ):
+                        violations.append(f"{py_file}:{node.lineno} imports {alias.name}")
+            elif isinstance(node, ast.ImportFrom):
+                module = node.module or ""
+                if module == "core.config.validator" or module.startswith("core.config.validator."):
+                    violations.append(f"{py_file}:{node.lineno} imports from {module}")
+                elif module == "core.config":
+                    for alias in node.names:
+                        if alias.name == "validator":
+                            violations.append(
+                                f"{py_file}:{node.lineno} imports validator from core.config"
+                            )
+
+    assert not violations, "Runtime source must not import core.config.validator:\n" + "\n".join(
+        violations
+    )

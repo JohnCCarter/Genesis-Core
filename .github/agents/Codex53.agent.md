@@ -2,42 +2,46 @@
 name: Codex 5.3 Implementer
 description: Agent + Plan + Doer for scoped implementation with minimal diffs.
 tools:
-  - vscode
-  - execute
-  - read
-  - agent
-  - edit
-  - search/changes
-  - search/codebase
-  - search/fileSearch
-  - search/listDirectory
-  - search/searchResults
-  - search/textSearch
-  - search/usages
-  - web
-  - windows-mcp/*
-  - chrome-devtools/*
-  - postgres/*
-  - github/*
-  - io.github.upstash/context7/*
-  - vscode.mermaid-chat-features/renderMermaidDiagram
-  - memory
-  - github.vscode-pull-request-github/issue_fetch
-  - github.vscode-pull-request-github/suggest-fix
-  - github.vscode-pull-request-github/searchSyntax
-  - github.vscode-pull-request-github/doSearch
-  - github.vscode-pull-request-github/renderIssues
-  - github.vscode-pull-request-github/activePullRequest
-  - github.vscode-pull-request-github/openPullRequest
-  - mermaidchart.vscode-mermaid-chart/get_syntax_docs
-  - mermaidchart.vscode-mermaid-chart/mermaid-diagram-validator
-  - mermaidchart.vscode-mermaid-chart/mermaid-diagram-preview
-  - ms-python.python/getPythonEnvironmentInfo
-  - ms-python.python/getPythonExecutableCommand
-  - ms-python.python/installPythonPackage
-  - ms-python.python/configurePythonEnvironment
-  - ms-vscode.vscode-websearchforcopilot/websearch
-  - todo
+  [
+    vscode/getProjectSetupInfo,
+    vscode/installExtension,
+    vscode/newWorkspace,
+    vscode/openSimpleBrowser,
+    vscode/runCommand,
+    vscode/askQuestions,
+    vscode/vscodeAPI,
+    vscode/extensions,
+    execute,
+    read,
+    agent,
+    edit,
+    search,
+    web,
+    "io.github.upstash/context7/*",
+    "github/*",
+    "io.github.wonderwhy-er/desktop-commander/*",
+    "chrome-devtools/*",
+    "postgres/*",
+    "windows-mcp/*",
+    vscode.mermaid-chat-features/renderMermaidDiagram,
+    memory,
+    github.vscode-pull-request-github/issue_fetch,
+    github.vscode-pull-request-github/suggest-fix,
+    github.vscode-pull-request-github/searchSyntax,
+    github.vscode-pull-request-github/doSearch,
+    github.vscode-pull-request-github/renderIssues,
+    github.vscode-pull-request-github/activePullRequest,
+    github.vscode-pull-request-github/openPullRequest,
+    mermaidchart.vscode-mermaid-chart/get_syntax_docs,
+    mermaidchart.vscode-mermaid-chart/mermaid-diagram-validator,
+    mermaidchart.vscode-mermaid-chart/mermaid-diagram-preview,
+    ms-python.python/getPythonEnvironmentInfo,
+    ms-python.python/getPythonExecutableCommand,
+    ms-python.python/installPythonPackage,
+    ms-python.python/configurePythonEnvironment,
+    ms-vscode.vscode-websearchforcopilot/websearch,
+    todo,
+  ]
 ---
 
 Skills may evolve additively via explicit proposals; they must not self-modify, broaden scope, alter determinism guarantees, or redefine PASS without governance approval.
@@ -157,13 +161,14 @@ Deterministic resolution logic (A/B/C/D):
    - Allowed values: `STRICT`, `RESEARCH`, `SANDBOX`
    - Invalid value => fail-closed to `STRICT`
 2. B) Branch mapping (exact):
-   - `main -> STRICT`
+   - `master -> STRICT`
    - `release/* -> STRICT`
    - `champion/* -> STRICT`
    - `feature/* -> RESEARCH`
    - `research/* -> RESEARCH`
    - `sandbox/* -> SANDBOX`
    - `spike/* -> SANDBOX`
+
 3. C) Freeze escalation (force `STRICT` regardless of prior resolution):
    - Touched path under `config/strategy/champions/`, OR
    - `.github/workflows/champion-freeze-guard.yml` modified
@@ -199,7 +204,7 @@ Policy blocks:
 - Must NOT modify `config/strategy/champions/`.
 - Must NOT modify freeze guard workflows.
 - Must NOT modify `runtime.json` (if production-critical).
-- Cannot be merged to `main` without passing STRICT gates.
+- Cannot be merged to `master` without passing STRICT gates.
 
 Hard constraints:
 

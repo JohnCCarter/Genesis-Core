@@ -74,6 +74,9 @@ Genesis-Core is a Python 3.11+ FastAPI trading system with:
 
 ## Repo Governance: Agents, Skills, Registry
 
+- For governance tasks, keep planning/review inside the Codex/Opus workflow (same contract path).
+- Avoid switching to VS Code built-in `Plan` mode for repository governance execution.
+
 - **Cursor (this IDE)**: agent roles are exposed as **skills** under `.cursor/skills/`:
   - `codex-implementer` (implementation; invoke via `/codex-implementer`)
   - `opus-reviewer` (governance review; invoke via `/opus-reviewer`)

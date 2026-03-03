@@ -41,6 +41,7 @@ Genesis-Core/
 - Day-to-day operational protocol is defined in `.github/copilot-instructions.md`.
 - Trivial docs/metadata updates may use the quick path defined in `.github/copilot-instructions.md`.
 - Non-trivial or high-sensitivity changes must use full gated protocol with Opus pre/post review.
+- For governance execution, keep planning/review inside the Codex/Opus contract path (do not switch to VS Code built-in `Plan` mode).
 
 Conflict precedence:
 

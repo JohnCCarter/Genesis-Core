@@ -8,6 +8,8 @@
 - **Content**: Language choice, Plan Mode triggers, working principles
 - **Usage**: Applied everywhere to ensure consistent collaboration style
 
+For governance work in this repository, planning should stay within the Codex/Opus workflow rather than VS Code built-in `Plan` mode.
+
 ### `workspace-rules.mdc` (Genesis-Core Rules)
 
 - **Purpose**: Project-specific technical rules
@@ -109,4 +111,4 @@ Suggested order:
 
 ---
 
-**Last Updated**: 2026-02-28
+**Last Updated**: 2026-03-03

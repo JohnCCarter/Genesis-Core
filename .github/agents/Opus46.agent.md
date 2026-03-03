@@ -131,13 +131,14 @@ Deterministic resolution logic (A/B/C/D):
    - Allowed values: `STRICT`, `RESEARCH`, `SANDBOX`
    - Invalid value => fail-closed to `STRICT`
 2. B) Branch mapping (exact):
-   - `main -> STRICT`
+   - `master -> STRICT`
    - `release/* -> STRICT`
    - `champion/* -> STRICT`
    - `feature/* -> RESEARCH`
    - `research/* -> RESEARCH`
    - `sandbox/* -> SANDBOX`
    - `spike/* -> SANDBOX`
+
 3. C) Freeze escalation (force `STRICT` regardless of prior resolution):
    - Touched path under `config/strategy/champions/`, OR
    - `.github/workflows/champion-freeze-guard.yml` modified
@@ -173,7 +174,7 @@ Policy blocks:
 - Must NOT modify `config/strategy/champions/`.
 - Must NOT modify freeze guard workflows.
 - Must NOT modify `runtime.json` (if production-critical).
-- Cannot be merged to `main` without passing STRICT gates.
+- Cannot be merged to `master` without passing STRICT gates.
 
 Hard constraints:
 

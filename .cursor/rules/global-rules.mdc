@@ -34,6 +34,8 @@ Proactively suggest activating Plan Mode when:
 
 **Suggestion Request**: "Tips: Vill du att jag aktiverar Plan Mode för detta? Det är en större/komplex uppgift där du kanske vill se planen först."
 
+For Genesis-Core governance work, keep planning inside the Codex/Opus workflow and do not switch to VS Code built-in `Plan` mode.
+
 ## Response Format
 
 - **Language**: Swedish with clear structure.

@@ -25,7 +25,7 @@ If `GENESIS_GOV_MODE` is set:
 
 ### B) Branch mapping (exact)
 
-- `main -> STRICT`
+- `master -> STRICT`
 - `release/* -> STRICT`
 - `champion/* -> STRICT`
 - `feature/* -> RESEARCH`
@@ -58,7 +58,7 @@ Every response must begin with this exact format:
 
 Examples:
 
-- `Mode: STRICT (source=branch:main)`
+- `Mode: STRICT (source=branch:master)`
 - `Mode: RESEARCH (source=branch:feature/composable-v2)`
 - `Mode: STRICT (source=freeze-signal)`
 - `Mode: SANDBOX (source=branch:spike/idea-x)`
@@ -89,7 +89,7 @@ Examples:
 - Must NOT modify `config/strategy/champions/`.
 - Must NOT modify freeze guard workflows.
 - Must NOT modify `runtime.json` (if production-critical).
-- Cannot be merged to `main` without passing STRICT gates.
+- Cannot be merged to `master` without passing STRICT gates.
 
 ## Constraints
 

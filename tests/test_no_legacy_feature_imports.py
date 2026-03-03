@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import ast
-import re
 from pathlib import Path
 
 
@@ -13,10 +12,6 @@ def test_no_imports_of_core_strategy_features_module() -> None:
     """
 
     repo_root = Path(__file__).resolve().parents[1]
-    patterns = [
-        re.compile(r"^\s*from\s+core\.strategy\.features\s+import\s+", re.MULTILINE),
-        re.compile(r"^\s*import\s+core\.strategy\.features\b", re.MULTILINE),
-    ]
 
     # Explicit allow-list: this test imports the legacy module intentionally to enforce delegation.
     allow_list = {
@@ -42,10 +37,27 @@ def test_no_imports_of_core_strategy_features_module() -> None:
             except UnicodeDecodeError:
                 text = path.read_text(encoding="utf-8", errors="ignore")
 
-            if any(p.search(text) for p in patterns):
-                offenders.append(rel_path)
+            try:
+                tree = ast.parse(text, filename=rel_path)
+            except SyntaxError:
+                continue
 
-    assert offenders == [], "Legacy-import hittad: \n" + "\n".join(offenders)
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Import):
+                    for alias in node.names:
+                        imported = alias.name
+                        if imported == "core.strategy.features" or imported.startswith(
+                            "core.strategy.features."
+                        ):
+                            offenders.append(f"{rel_path}:{node.lineno} import {imported}")
+                elif isinstance(node, ast.ImportFrom):
+                    module = node.module or ""
+                    if module == "core.strategy.features" or module.startswith(
+                        "core.strategy.features."
+                    ):
+                        offenders.append(f"{rel_path}:{node.lineno} from {module}")
+
+    assert offenders == [], "Legacy-import hittad:\n" + "\n".join(offenders)
 
 
 def test_no_imports_of_deprecated_features_asof_extract_features_wrapper() -> None:

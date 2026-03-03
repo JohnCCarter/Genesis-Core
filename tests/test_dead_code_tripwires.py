@@ -48,6 +48,48 @@ def test_deprecated_features_module_delegates_to_features_asof(
     assert meta is sentinel_meta
 
 
+def test_deprecated_features_module_ast_delegation_contract() -> None:
+    """Tripwire: legacy-shim ska vara en ren delegator till features_asof."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    shim_path = repo_root / "src" / "core" / "strategy" / "features.py"
+
+    tree = ast.parse(shim_path.read_text(encoding="utf-8"), filename=str(shim_path))
+
+    has_expected_import = False
+    extract_fn: ast.FunctionDef | None = None
+    public_functions: list[str] = []
+
+    for node in tree.body:
+        if isinstance(node, ast.ImportFrom) and node.module == "core.strategy.features_asof":
+            if any(
+                alias.name == "extract_features" and alias.asname == "_extract_features_asof"
+                for alias in node.names
+            ):
+                has_expected_import = True
+        elif isinstance(node, ast.FunctionDef):
+            if not node.name.startswith("_"):
+                public_functions.append(node.name)
+            if node.name == "extract_features":
+                extract_fn = node
+
+    assert has_expected_import, "Expected shim import alias from features_asof to exist"
+    assert public_functions == [
+        "extract_features"
+    ], "Legacy shim should expose only extract_features as public function"
+    assert extract_fn is not None, "Expected extract_features to exist in legacy shim"
+
+    returns = [node for node in ast.walk(extract_fn) if isinstance(node, ast.Return)]
+    assert returns, "Expected extract_features to have a return statement"
+
+    return_expr = returns[-1].value
+    assert isinstance(return_expr, ast.Call), "Expected final return to call delegator"
+    assert isinstance(return_expr.func, ast.Name), "Expected delegator call by local alias"
+    assert (
+        return_expr.func.id == "_extract_features_asof"
+    ), "Expected final return to delegate to _extract_features_asof"
+
+
 def test_position_tracker_does_not_use_legacy_close_method(monkeypatch: pytest.MonkeyPatch) -> None:
     """Runtime-bevis: legacy-symbolen finns inte och _close_position är enda close-path.
 

@@ -13,6 +13,18 @@ This document defines what "klar" means for Regime Intelligence in two phases:
 
 It exists to prevent interpretation drift between agents and reviews.
 
+## Repository status snapshot (NON-NORMATIVE)
+
+As of 2026-03-03:
+
+- P1 implementation (shadow/foundation) is merged on `master`.
+- P1 formal sign-off evidence remains pending until a valid OFF-mode parity artifact
+  (`ri_p1_off_parity_v1`) is produced with `parity_verdict=PASS` against an approved
+  baseline reference and required gate evidence is attached.
+- P2/v2 is not started in production mode; any behavior change remains flag/version-gated.
+
+This snapshot is informational only. Normative pass/fail criteria remain the sections below.
+
 ## "Klar" for P1 (shadow/foundation)
 
 P1 is done when all items below are true:
@@ -151,4 +163,23 @@ P2/v2 is done only when all items below are true:
 This appendix is NON-NORMATIVE / EXAMPLE ONLY. The contract sections above are normative.
 If example conflicts with contract, contract wins.
 
-Mini example evidence artifact row (single-line): {"window_spec_id":"ri_p1_off_parity_v1","run_id":"ri-20260227-001","git_sha":"334fb0e6","mode":"OFF","symbols":["tTESTBTC:TESTUSD"],"timeframes":["1h"],"start_utc":"2025-01-01T00:00:00Z","end_utc":"2025-01-31T23:59:59Z","baseline_artifact_ref":"results/evaluation/ri_p1_off_parity_v1_baseline.json","parity_verdict":"PASS","action_mismatch_count":0,"reason_mismatch_count":0,"size_mismatch_count":0,"size_tolerance":"1e-12"}
+Mini example evidence artifact row (single-line):
+
+```json
+{
+  "window_spec_id": "ri_p1_off_parity_v1",
+  "run_id": "ri-20260227-001",
+  "git_sha": "334fb0e6",
+  "mode": "OFF",
+  "symbols": ["tTESTBTC:TESTUSD"],
+  "timeframes": ["1h"],
+  "start_utc": "2025-01-01T00:00:00Z",
+  "end_utc": "2025-01-31T23:59:59Z",
+  "baseline_artifact_ref": "results/evaluation/ri_p1_off_parity_v1_baseline.json",
+  "parity_verdict": "PASS",
+  "action_mismatch_count": 0,
+  "reason_mismatch_count": 0,
+  "size_mismatch_count": 0,
+  "size_tolerance": "1e-12"
+}
+```

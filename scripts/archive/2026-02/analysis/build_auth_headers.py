@@ -14,11 +14,15 @@ from core.utils.nonce_manager import get_nonce
 
 REVEAL_ACK_ENV = "GENESIS_ALLOW_SECRET_OUTPUT"
 REVEAL_ACK_VALUE = "1"
+SENSITIVE_HEADER_KEYS = {"bfx-apikey", "bfx-signature"}
 
 
 def _mask_sensitive_headers(headers: dict[str, str]) -> dict[str, str]:
+    """
+    Mask known sensitive header values so that no secrets are printed.
+    """
     return {
-        key: ("***" if key in {"bfx-apikey", "bfx-signature"} else value)
+        key: ("***" if key.lower() in SENSITIVE_HEADER_KEYS else value)
         for key, value in headers.items()
     }
 

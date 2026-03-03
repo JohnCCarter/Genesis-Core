@@ -47,20 +47,39 @@ def test_deprecated_features_module_delegates_to_features_asof(
 
 
 def test_position_tracker_does_not_use_legacy_close_method(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Runtime-bevis: PositionTracker ska inte använda _close_position_legacy().
+    """Runtime-bevis: legacy-symbolen finns inte och _close_position är enda close-path.
 
-    Vi installerar en tripwire som kastar om legacy-metoden anropas och kör en
-    minimal sequence som öppnar + stänger en position via nuvarande publika API.
+    Testet verifierar explicit att `_close_position_legacy` inte längre existerar,
+    samt att opposite-signal close går via `_close_position` och därefter
+    `close_position_with_reason(..., reason="OPPOSITE_SIGNAL")`.
     """
 
     from core.backtest.position_tracker import PositionTracker
 
+    assert not hasattr(PositionTracker, "_close_position_legacy")
+
     pt = PositionTracker(initial_capital=1000.0)
 
-    def _boom(*args, **kwargs):  # type: ignore[no-untyped-def]
-        raise AssertionError("_close_position_legacy() should not be called")
+    calls = {
+        "_close_position": 0,
+        "close_position_with_reason": 0,
+        "reasons": [],
+    }
 
-    monkeypatch.setattr(pt, "_close_position_legacy", _boom)
+    original_close_position = pt._close_position
+    original_close_with_reason = pt.close_position_with_reason
+
+    def _wrapped_close_position(price: float, timestamp: datetime):
+        calls["_close_position"] += 1
+        return original_close_position(price, timestamp)
+
+    def _wrapped_close_with_reason(price: float, timestamp: datetime, reason: str = "MANUAL"):
+        calls["close_position_with_reason"] += 1
+        calls["reasons"].append(reason)
+        return original_close_with_reason(price, timestamp, reason=reason)
+
+    monkeypatch.setattr(pt, "_close_position", _wrapped_close_position)
+    monkeypatch.setattr(pt, "close_position_with_reason", _wrapped_close_with_reason)
 
     ts0 = datetime(2020, 1, 1, tzinfo=UTC)
     ts1 = datetime(2020, 1, 2, tzinfo=UTC)
@@ -80,6 +99,9 @@ def test_position_tracker_does_not_use_legacy_close_method(monkeypatch: pytest.M
     # Ensure we recorded at least one trade
     assert len(pt.trades) >= 1
     assert any(t.exit_reason == "OPPOSITE_SIGNAL" for t in pt.trades)
+    assert calls["_close_position"] == 1
+    assert calls["close_position_with_reason"] == 1
+    assert calls["reasons"] == ["OPPOSITE_SIGNAL"]
 
 
 def test_backtest_engine_prefers_new_htf_exit_engine_when_config_present_and_env_unset(

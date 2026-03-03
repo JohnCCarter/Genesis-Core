@@ -461,57 +461,6 @@ class PositionTracker:
         original_notional = self.position.initial_size * self.position.entry_price
         return (total_pnl / original_notional) * 100 if original_notional > 0 else 0.0
 
-    def _close_position_legacy(self, price: float, timestamp: datetime):
-        """LEGACY: Close the current position (kept for compatibility)."""
-        if self.position is None:
-            return
-
-        # Apply slippage
-        effective_price = price * (
-            1 - self.slippage_rate if self.position.side == "LONG" else 1 + self.slippage_rate
-        )
-
-        # Calculate PnL
-        if self.position.side == "LONG":
-            pnl = (effective_price - self.position.entry_price) * self.position.size
-        else:  # SHORT
-            pnl = (self.position.entry_price - effective_price) * self.position.size
-
-        # Calculate commission
-        notional = self.position.size * effective_price
-        commission = notional * self.commission_rate
-        self.total_commission += commission
-
-        # Update capital
-        self.capital += pnl - commission
-
-        # Calculate PnL percentage
-        entry_notional = self.position.size * self.position.entry_price
-        pnl_pct = (pnl / entry_notional) * 100 if entry_notional > 0 else 0
-
-        # Record trade
-        trade = Trade(
-            symbol=self.position.symbol,
-            side=self.position.side,
-            size=self.position.size,
-            entry_price=self.position.entry_price,
-            entry_time=self.position.entry_time,
-            entry_regime=self.position.entry_regime,
-            exit_price=effective_price,
-            exit_time=timestamp,
-            pnl=pnl,
-            pnl_pct=pnl_pct,
-            commission=commission,
-        )
-        self.trades.append(trade)
-
-        # Clear position
-        self.position = None
-
-        # Update statistics
-        self.max_capital = max(self.max_capital, self.capital)
-        self.min_capital = min(self.min_capital, self.capital)
-
     def update_equity(self, price: float, timestamp: datetime):
         """Update equity curve with current market price."""
         unrealized_pnl = 0.0

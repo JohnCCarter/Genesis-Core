@@ -1,3 +1,9 @@
+"""Legacy compatibility shim för feature extraction.
+
+Denna modul är en legacy-only yta och ska finnas kvar för bakåtkompatibilitet.
+Intern runtime-kod ska importera från `core.strategy.features_asof` (SSOT).
+"""
+
 from __future__ import annotations
 
 import warnings
@@ -5,6 +11,8 @@ from collections.abc import Iterable
 from typing import Any
 
 from core.strategy.features_asof import extract_features as _extract_features_asof
+
+__all__ = ["extract_features"]
 
 
 def extract_features(

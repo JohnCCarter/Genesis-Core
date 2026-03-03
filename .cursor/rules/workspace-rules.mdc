@@ -7,25 +7,25 @@ alwaysApply: true
 ## Stabilization Phase Policy
 
 **Code stability > New features**. Every line of code must either:
-✅ Solve a concrete problem OR ✅ Increase reliability, performance, or readability
+Solve a concrete problem OR increase reliability, performance, or readability
 
 ### Change Policy
 
-- **Bug fixes**: ✅ Always allowed - Write test immediately after.
-- **Refactoring**: ✅ Small, documented steps without behavior change.
-- **New features/modules**: ⚠️ Only after clear specification and justification.
-- **Experimental code**: 🚫 Separate branch only.
-- **Magic optimizations**: 🚫 Measure first, implement after.
+- **Bug fixes**: Allowed - Write test immediately after.
+- **Refactoring**: Allowed - Small, documented steps without behavior change.
+- **New features/modules**: Only after clear specification and justification.
+- **Experimental code**: Use separate branch only.
+- **Magic optimizations**: Measure first, implement after.
 
 ### Green-Light Checklist
 
 Before any merge:
 
-1. ✅ Solves a defined need/problem
-2. ✅ Does not unexpectedly affect other parts
-3. ✅ Has unit tests or validated measurement
-4. ✅ Is documented (docstring with purpose & usage)
-5. ✅ Passes Ruff + pytest without warnings
+1. Solves a defined need/problem
+2. Does not unexpectedly affect other parts
+3. Has unit tests or validated measurement
+4. Is documented (docstring with purpose & usage)
+5. Passes Ruff + pytest without warnings
 
 ## Project Context
 
@@ -63,20 +63,25 @@ Genesis-Core is a Python 3.11+ FastAPI trading system with:
 
 - **Commit-kategorier (exakt)**: `security | docs | tooling | refactor(server) | api | obs`
 - **Default constraint**: `NO BEHAVIOR CHANGE`
-- **Gate-order (obligatorisk andemening)**:
+- **Gate-order (obligatorisk för non-trivial/högkänslig ändring)**:
   1. Opus plan review (pre-code)
   2. Codex implementation
   3. Opus diff-audit (post-code)
   4. gates green
   5. commit
+- **Trivial docs/metadata**: följ quick path i `.github/copilot-instructions.md`; eskalera till full gate-order vid osäkerhet.
 - **Kommunikation/language**: Behåll svensk språkpreferens och stabiliseringsintention.
 
 ## Repo Governance: Agents, Skills, Registry
 
-- **Repo-local agents** live under `.github/agents/` with two bounded roles:
-  - `Codex53` (Agent + Plan + Doer)
-  - `Opus46` (Subagent + Reviewer + Risk-auditor)
-    Prefer these over editing any editor/extension-bundled agent files.
+- **Cursor (this IDE)**: agent roles are exposed as **skills** under `.cursor/skills/`:
+  - `codex-implementer` (implementation; invoke via `/codex-implementer`)
+  - `opus-reviewer` (governance review; invoke via `/opus-reviewer`)
+  Keep these in sync with the canonical agent definitions below.
+- **GitHub Copilot (VS Code)**: repo-local **agents** live under `.github/agents/` with two bounded roles:
+  - `Codex53` (Agent + Plan + Doer) — `Codex53.agent.md`
+  - `Opus46` (Subagent + Reviewer + Risk-auditor) — `Opus46.agent.md`
+  Prefer these over editing any editor/extension-bundled agent files when using VS Code.
 - **Skills** are defined under `.github/skills/` and referenced by repo governance (do not duplicate skill sources elsewhere).
 - **Registry** lives under `registry/` (manifests/schemas/compacts/audit). If you change registry content, run
   `python scripts/validate_registry.py` and follow any audit requirements documented under `registry/`.

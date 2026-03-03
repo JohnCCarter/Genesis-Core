@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pytest
 
+import mcp_server.tools as tools_mod
 from mcp_server.config import load_config
 from mcp_server.resources import (
     get_config_resource,
@@ -143,6 +144,41 @@ async def test_get_git_status_tool_rev_parse_timeout(monkeypatch, config):
     result = await get_git_status(config)
     assert result["success"] is False
     assert "rev-parse" in result["error"]
+
+
+@pytest.mark.asyncio
+async def test_get_git_status_tool_uses_thread_boundary(monkeypatch, config):
+    """Git status tool should route blocking git calls via asyncio.to_thread."""
+
+    def _cp(args: list[str], stdout: str = "", stderr: str = "", returncode: int = 0):
+        return subprocess.CompletedProcess(
+            args=args, returncode=returncode, stdout=stdout, stderr=stderr
+        )
+
+    thread_calls: list[str] = []
+
+    async def fake_to_thread(func, *args, **kwargs):  # type: ignore[no-untyped-def]
+        thread_calls.append(getattr(func, "__name__", str(func)))
+        return func(*args, **kwargs)
+
+    def fake_run(args, capture_output, text, check, timeout=None, **kwargs):  # type: ignore[no-untyped-def]
+        cmd = list(args)[3:]
+        if cmd[:2] == ["rev-parse", "--is-inside-work-tree"]:
+            return _cp(list(args), stdout="true\n")
+        if cmd[:3] == ["rev-parse", "--abbrev-ref", "HEAD"]:
+            return _cp(list(args), stdout="Phase-7e\n")
+        if cmd[:2] == ["status", "--porcelain"]:
+            return _cp(list(args), stdout=" M README.md\n")
+        if cmd[:3] == ["config", "--get", "remote.origin.url"]:
+            return _cp(list(args), stdout="https://example.invalid/repo.git\n")
+        return _cp(list(args), returncode=1, stderr="unexpected")
+
+    monkeypatch.setattr(tools_mod.asyncio, "to_thread", fake_to_thread)
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    result = await get_git_status(config)
+    assert result["success"] is True
+    assert "_run_git_command" in thread_calls
 
 
 @pytest.mark.asyncio

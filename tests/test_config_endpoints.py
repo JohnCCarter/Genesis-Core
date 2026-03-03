@@ -30,6 +30,40 @@ def test_config_endpoints():
     r = c.post("/config/runtime/validate", json=bad_rt)
     assert r.status_code == 200 and r.json().get("valid") is False
 
+    good_authority_mode = {
+        "multi_timeframe": {"regime_intelligence": {"authority_mode": "regime_module"}}
+    }
+    good_authority_mode_alias = {"regime_unified": {"authority_mode": "regime_module"}}
+    bad_authority_mode = {
+        "multi_timeframe": {"regime_intelligence": {"authority_mode": "invalid_mode"}}
+    }
+    bad_authority_mode_alias_non_dict = {"regime_unified": "regime_module"}
+    bad_authority_mode_alias_extra_key = {
+        "regime_unified": {"authority_mode": "regime_module", "extra": 1}
+    }
+    bad_conflicting_authority_mode = {
+        "multi_timeframe": {"regime_intelligence": {"authority_mode": "invalid_mode"}},
+        "regime_unified": {"authority_mode": "regime_module"},
+    }
+
+    r = c.post("/config/runtime/validate", json=good_authority_mode)
+    assert r.status_code == 200 and r.json().get("valid") is True
+
+    r = c.post("/config/runtime/validate", json=good_authority_mode_alias)
+    assert r.status_code == 200 and r.json().get("valid") is True
+
+    r = c.post("/config/runtime/validate", json=bad_authority_mode)
+    assert r.status_code == 200 and r.json().get("valid") is False
+
+    r = c.post("/config/runtime/validate", json=bad_authority_mode_alias_non_dict)
+    assert r.status_code == 200 and r.json().get("valid") is False
+
+    r = c.post("/config/runtime/validate", json=bad_authority_mode_alias_extra_key)
+    assert r.status_code == 200 and r.json().get("valid") is False
+
+    r = c.post("/config/runtime/validate", json=bad_conflicting_authority_mode)
+    assert r.status_code == 200 and r.json().get("valid") is False
+
     # runtime get
     r = c.get("/config/runtime")
     assert r.status_code == 200

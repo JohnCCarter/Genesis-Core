@@ -3,13 +3,16 @@ from __future__ import annotations
 import os
 from typing import Any
 
+from core.config.merge_policy import resolve_champion_merge_for_evaluate
 from core.observability.metrics import metrics
+from core.strategy import regime_intelligence as _regime_intelligence
 from core.strategy.champion_loader import ChampionLoader
 from core.strategy.confidence import compute_confidence
 from core.strategy.decision import decide
 from core.strategy.features_asof import extract_features_backtest, extract_features_live
 from core.strategy.fib_logging import log_fib_flow
 from core.strategy.prob_model import predict_proba_for
+from core.utils.dict_merge import deep_merge_dicts
 from core.utils.env_flags import env_flag_enabled
 
 champion_loader = ChampionLoader()
@@ -99,85 +102,40 @@ def _volume_score_from_candles(
 
 def _deep_merge(base: dict, override: dict) -> dict:
     """Deep merge override into base, recursively merging nested dicts."""
-    merged = dict(base)
-    for key, value in (override or {}).items():
-        if key in merged and isinstance(merged[key], dict) and isinstance(value, dict):
-            merged[key] = _deep_merge(merged[key], value)
-        else:
-            merged[key] = value
-    return merged
+    return deep_merge_dicts(base, override)
 
 
 def compute_htf_regime(
     htf_fib_data: dict[str, Any] | None,
     current_price: float | None = None,
 ) -> str:
-    """Compute regime from HTF (1D) Fibonacci context for defensive sizing.
+    """Compatibility wrapper for HTF regime logic.
 
-    This function derives a regime classification from the HTF swing structure
-    to enable position size adjustments when the higher timeframe is bearish.
-
-    The regime is determined by the relationship between current price and
-    HTF Fibonacci levels:
-    - "bull": Price above 0.618 retracement (strong uptrend structure)
-    - "bear": Price below 0.382 retracement (strong downtrend structure)
-    - "ranging": Price between 0.382 and 0.618 (consolidation)
-    - "unknown": Insufficient HTF data available
-
-    Args:
-        htf_fib_data: HTF Fibonacci context dict from features_asof, containing
-            keys like 'swing_high', 'swing_low', 'levels', 'available'.
-        current_price: Current LTF close price for regime determination.
-
-    Returns:
-        Regime string: "bull", "bear", "ranging", or "unknown".
-
-    Note:
-        This is intentionally separate from LTF regime detection (EMA-based).
-        HTF regime changes slowly (~days) and provides "early warning" for
-        position sizing adjustments before LTF signals deteriorate.
-
-    Example:
-        >>> htf_data = {"available": True, "swing_high": 100000, "swing_low": 80000}
-        >>> compute_htf_regime(htf_data, current_price=95000)
-        'bull'  # Price in upper part of swing range
-
-    See also:
-        - decision.py: htf_regime_size_multipliers config
-        - decision.py: volatility_sizing config
-        - AGENTS.md: Section "HTF-Regim + Volatilitet styr Sizing"
+    Keep this symbol local in evaluate.py for tests/monkeypatching parity.
     """
-    if not htf_fib_data or not isinstance(htf_fib_data, dict):
-        return "unknown"
 
-    if not htf_fib_data.get("available"):
-        return "unknown"
+    return _regime_intelligence.compute_htf_regime(
+        htf_fib_data,
+        current_price=current_price,
+    )
 
-    if current_price is None or current_price <= 0:
-        return "unknown"
 
-    # Extract swing bounds from HTF context
-    swing_high = _safe_float(htf_fib_data.get("swing_high"))
-    swing_low = _safe_float(htf_fib_data.get("swing_low"))
+def _detect_shadow_regime_from_regime_module(candles: dict[str, Any]) -> str | None:
+    """Compatibility wrapper for shadow observer logic.
 
-    if swing_high is None or swing_low is None:
-        return "unknown"
+    Keep this symbol local in evaluate.py for tests/monkeypatching parity.
+    """
 
-    if swing_high <= swing_low:
-        return "unknown"
+    return _regime_intelligence.detect_shadow_regime_from_regime_module(candles)
 
-    # Calculate position within swing range (0 = at low, 1 = at high)
-    swing_range = swing_high - swing_low
-    position_in_range = (current_price - swing_low) / swing_range
 
-    # Classify based on position in swing range
-    # These thresholds align with Fibonacci retracement levels
-    if position_in_range >= 0.618:
-        return "bull"
-    elif position_in_range <= 0.382:
-        return "bear"
-    else:
-        return "ranging"
+def _detect_authoritative_regime(candles: dict[str, Any], configs: dict[str, Any]) -> str:
+    """Compatibility wrapper for authoritative regime detection.
+
+    Authority remains `regime_unified.detect_regime_unified` inside the delegated module path.
+    """
+
+    return _regime_intelligence.detect_authoritative_regime(candles, configs)
 
 
 def evaluate_pipeline(
@@ -203,7 +161,8 @@ def evaluate_pipeline(
     # treat `configs` as the *authoritative* config. Do NOT merge in the active
     # champion, otherwise results become dependent on whichever champion file is
     # currently active (non-reproducible and extremely confusing).
-    force_backtest_mode = "_global_index" in configs
+    merge_resolution = resolve_champion_merge_for_evaluate(configs)
+    force_backtest_mode = not merge_resolution.should_merge
 
     timeframe = policy.get("timeframe", "1m")
     symbol = policy.get("symbol", "tBTCUSD")
@@ -245,47 +204,24 @@ def evaluate_pipeline(
     if metrics_enabled:
         metrics.event("features_ok", {"keys": list(feats.keys())})
 
-    # Detect regime BEFORE prediction (needed for regime-aware calibration)
-    # Use unified regime detection (EMA-based, matches calibration analysis)
-    from core.strategy.regime_unified import detect_regime_unified
+    # Detect regime BEFORE prediction (needed for regime-aware calibration).
+    # Authority path is config-gated in delegated regime_intelligence module.
+    authority_mode, authority_mode_source = _regime_intelligence.resolve_authority_mode_with_source(
+        configs
+    )
+    authoritative_source = (
+        "regime.detect_regime_from_candles"
+        if authority_mode == "regime_module"
+        else "regime_unified.detect_regime_unified"
+    )
+    current_regime = _detect_authoritative_regime(candles, configs)
 
-    # Fast-path: use precomputed EMA50 if present.
-    # IMPORTANT: In backtests/optimizer we feed a *windowed* candles dict (e.g. last 200 bars)
-    # but `precomputed_features` contains full-series arrays. In that mode, index EMA by
-    # `_global_index` (injected by BacktestEngine) rather than `len(closes)-1`.
-    pre = dict(configs.get("precomputed_features") or {})
-    ema50 = pre.get("ema_50")
-    closes = candles.get("close") if isinstance(candles, dict) else None
-
-    ema_idx: int | None = None
-    if "_global_index" in configs:
-        try:
-            ema_idx = int(configs.get("_global_index"))
-        except (TypeError, ValueError):
-            ema_idx = None
-    if ema_idx is None and closes is not None:
-        ema_idx = len(closes) - 1
-
-    if (
-        isinstance(ema50, list | tuple)
-        and (closes is not None)
-        and (ema_idx is not None)
-        and 0 <= ema_idx < len(ema50)
-    ):
-        current_price = float(closes[-1])
-        current_ema = float(ema50[ema_idx])
-        if current_ema != 0:
-            trend = (current_price - current_ema) / current_ema
-            if trend > 0.02:
-                current_regime = "bull"
-            elif trend < -0.02:
-                current_regime = "bear"
-            else:
-                current_regime = "ranging"
-        else:
-            current_regime = "balanced"
-    else:
-        current_regime = detect_regime_unified(candles, ema_period=50)
+    # Shadow-only observer path (T2): compute regime.py signal for observability only.
+    # Authority for decision path remains `detect_regime_unified` above.
+    shadow_regime = _detect_shadow_regime_from_regime_module(candles)
+    shadow_regime_mismatch: bool | None = None
+    if shadow_regime is not None:
+        shadow_regime_mismatch = str(shadow_regime) != str(current_regime)
 
     # symbol/timeframe kan plockas från configs eller policy; defaulta till tBTCUSD/1m
     symbol = policy.get("symbol", "tBTCUSD")
@@ -485,6 +421,18 @@ def evaluate_pipeline(
         "decision": action_meta,
         "champion": {
             "source": configs.get("meta", {}).get("champion_source"),
+        },
+        "observability": {
+            "shadow_regime": {
+                "authoritative_source": authoritative_source,
+                "shadow_source": "regime.detect_regime_from_candles",
+                "authority_mode": authority_mode,
+                "authority_mode_source": authority_mode_source,
+                "authority": regime,
+                "shadow": shadow_regime,
+                "mismatch": shadow_regime_mismatch,
+                "decision_input": False,
+            }
         },
     }
     return result, meta

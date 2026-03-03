@@ -1,4 +1,23 @@
 {
+  "governance": {
+    "skill_type": "SPEC",
+    "contract_owner": "opus-4.6",
+    "implementation_owner": "codex-5.3",
+    "pass_definition_locked": true,
+    "scope_locked": true,
+    "evolution_mode": "additive_only",
+    "forbidden": [
+      "runtime_default_drift",
+      "api_contract_drift",
+      "scope_broadening",
+      "weakening_must_not_rules"
+    ],
+    "stop_conditions": [
+      "detected_default_drift",
+      "detected_contract_drift",
+      "attempted_scope_change"
+    ]
+  },
   "id": "decision_gate_debug",
   "version": "1.1.0",
   "title": "Decision gate debugging workflow",

@@ -568,6 +568,24 @@ def _run_git_command(
     )
 
 
+async def _run_git_command_async(
+    git_exe: str,
+    *,
+    project_root: Path,
+    args: list[str],
+    timeout_s: int,
+    git_env: dict[str, str],
+) -> subprocess.CompletedProcess[str]:
+    return await asyncio.to_thread(
+        _run_git_command,
+        git_exe,
+        project_root=project_root,
+        args=args,
+        timeout_s=timeout_s,
+        git_env=git_env,
+    )
+
+
 def _git_repo_state(
     *,
     git_exe: str,
@@ -620,6 +638,42 @@ def _git_repo_state(
         "head_sha": head_res.stdout.strip(),
         "remote_url": remote_url,
     }
+
+
+async def _git_repo_state_async(
+    *,
+    git_exe: str,
+    project_root: Path,
+    timeout_s: int,
+    git_env: dict[str, str],
+) -> dict[str, Any]:
+    return await asyncio.to_thread(
+        _git_repo_state,
+        git_exe=git_exe,
+        project_root=project_root,
+        timeout_s=timeout_s,
+        git_env=git_env,
+    )
+
+
+async def _run_subprocess_command_async(
+    *,
+    args: list[str],
+    timeout_s: int,
+    env: dict[str, str],
+    cwd: Path,
+) -> subprocess.CompletedProcess[str]:
+    return await asyncio.to_thread(
+        subprocess.run,
+        args,
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=timeout_s,
+        stdin=subprocess.DEVNULL,
+        env=env,
+        cwd=str(cwd),
+    )
 
 
 def _sanitize_task_slug(task_slug: str) -> str:
@@ -737,7 +791,7 @@ async def get_git_status(
         git_env = _build_git_env()
 
         try:
-            inside = _run_git_command(
+            inside = await _run_git_command_async(
                 git_exe,
                 project_root=project_root,
                 args=["rev-parse", "--is-inside-work-tree"],
@@ -750,7 +804,7 @@ async def get_git_status(
             return {"success": False, "error": "Not a git repository"}
 
         try:
-            branch_res = _run_git_command(
+            branch_res = await _run_git_command_async(
                 git_exe,
                 project_root=project_root,
                 args=["rev-parse", "--abbrev-ref", "HEAD"],
@@ -764,7 +818,7 @@ async def get_git_status(
         untracked_included = True
         status_timed_out = False
         try:
-            status_res = _run_git_command(
+            status_res = await _run_git_command_async(
                 git_exe,
                 project_root=project_root,
                 args=["status", "--porcelain"],
@@ -776,7 +830,7 @@ async def get_git_status(
             status_timed_out = True
             untracked_included = False
             try:
-                status_res = _run_git_command(
+                status_res = await _run_git_command_async(
                     git_exe,
                     project_root=project_root,
                     args=["status", "--porcelain", "--untracked-files=no"],
@@ -810,7 +864,7 @@ async def get_git_status(
 
         remote_url: str | None
         try:
-            remote_res = _run_git_command(
+            remote_res = await _run_git_command_async(
                 git_exe,
                 project_root=project_root,
                 args=["config", "--get", "remote.origin.url"],
@@ -868,7 +922,7 @@ async def get_git_repo_state(config: MCPConfig) -> dict[str, Any]:
         if not git_exe:
             return {"success": False, "error": "git executable not found on PATH"}
 
-        state = _git_repo_state(
+        state = await _git_repo_state_async(
             git_exe=git_exe,
             project_root=get_project_root(),
             timeout_s=_git_timeout_seconds(config),
@@ -920,7 +974,7 @@ async def git_workflow_operation(
     mutating = operation in GIT_WORKFLOW_MUTATING_OPERATIONS
 
     try:
-        state = _git_repo_state(
+        state = await _git_repo_state_async(
             git_exe=git_exe,
             project_root=project_root,
             timeout_s=timeout_s,
@@ -973,7 +1027,7 @@ async def git_workflow_operation(
                     },
                 }
 
-            log_res = _run_git_command(
+            log_res = await _run_git_command_async(
                 git_exe,
                 project_root=project_root,
                 args=["log", "--oneline", f"-n{limit}"],
@@ -1017,7 +1071,7 @@ async def git_workflow_operation(
                     },
                 }
 
-            diff_res = _run_git_command(
+            diff_res = await _run_git_command_async(
                 git_exe,
                 project_root=project_root,
                 args=args,
@@ -1087,7 +1141,7 @@ async def git_workflow_operation(
                     },
                 }
 
-            fetch_res = _run_git_command(
+            fetch_res = await _run_git_command_async(
                 git_exe,
                 project_root=project_root,
                 args=["fetch", "origin", "--prune"],
@@ -1101,7 +1155,7 @@ async def git_workflow_operation(
                     "error": (fetch_res.stderr or fetch_res.stdout).strip() or "git fetch failed",
                 }
 
-            local_branch_check = _run_git_command(
+            local_branch_check = await _run_git_command_async(
                 git_exe,
                 project_root=project_root,
                 args=["show-ref", "--verify", "--quiet", f"refs/heads/{next_branch}"],
@@ -1115,7 +1169,7 @@ async def git_workflow_operation(
                     "error": f"Local branch already exists: {next_branch}",
                 }
 
-            remote_branch_check = _run_git_command(
+            remote_branch_check = await _run_git_command_async(
                 git_exe,
                 project_root=project_root,
                 args=["show-ref", "--verify", "--quiet", f"refs/remotes/origin/{next_branch}"],
@@ -1129,7 +1183,7 @@ async def git_workflow_operation(
                     "error": f"Remote branch already exists: origin/{next_branch}",
                 }
 
-            base_check = _run_git_command(
+            base_check = await _run_git_command_async(
                 git_exe,
                 project_root=project_root,
                 args=["show-ref", "--verify", "--quiet", f"refs/remotes/origin/{base_branch}"],
@@ -1143,7 +1197,7 @@ async def git_workflow_operation(
                     "error": f"Base branch not found on origin: {base_branch}",
                 }
 
-            checkout_res = _run_git_command(
+            checkout_res = await _run_git_command_async(
                 git_exe,
                 project_root=project_root,
                 args=["checkout", "-b", next_branch, f"origin/{base_branch}"],
@@ -1203,7 +1257,7 @@ async def git_workflow_operation(
                     },
                 }
 
-            add_res = _run_git_command(
+            add_res = await _run_git_command_async(
                 git_exe,
                 project_root=project_root,
                 args=["add", "--", *normalized_pathspecs],
@@ -1217,7 +1271,7 @@ async def git_workflow_operation(
                     "error": (add_res.stderr or add_res.stdout).strip() or "git add failed",
                 }
 
-            staged_res = _run_git_command(
+            staged_res = await _run_git_command_async(
                 git_exe,
                 project_root=project_root,
                 args=["diff", "--name-only", "--cached"],
@@ -1270,7 +1324,7 @@ async def git_workflow_operation(
                     },
                 }
 
-            staged_quiet = _run_git_command(
+            staged_quiet = await _run_git_command_async(
                 git_exe,
                 project_root=project_root,
                 args=["diff", "--cached", "--quiet"],
@@ -1284,7 +1338,7 @@ async def git_workflow_operation(
                     "error": "No staged changes to commit",
                 }
 
-            commit_res = _run_git_command(
+            commit_res = await _run_git_command_async(
                 git_exe,
                 project_root=project_root,
                 args=["commit", "-m", message],
@@ -1299,7 +1353,7 @@ async def git_workflow_operation(
                     or "git commit failed",
                 }
 
-            new_head = _run_git_command(
+            new_head = await _run_git_command_async(
                 git_exe,
                 project_root=project_root,
                 args=["rev-parse", "HEAD"],
@@ -1346,7 +1400,7 @@ async def git_workflow_operation(
                     },
                 }
 
-            push_res = _run_git_command(
+            push_res = await _run_git_command_async(
                 git_exe,
                 project_root=project_root,
                 args=["push", "-u", "origin", current_branch],
@@ -1432,8 +1486,8 @@ async def git_workflow_operation(
 
             gh_exe = shutil.which("gh")
             if gh_exe:
-                pr_res = subprocess.run(
-                    [
+                pr_res = await _run_subprocess_command_async(
+                    args=[
                         gh_exe,
                         "pr",
                         "create",
@@ -1446,13 +1500,9 @@ async def git_workflow_operation(
                         "--body",
                         body,
                     ],
-                    capture_output=True,
-                    text=True,
-                    check=False,
-                    timeout=timeout_s,
-                    stdin=subprocess.DEVNULL,
+                    timeout_s=timeout_s,
                     env=git_env,
-                    cwd=str(project_root),
+                    cwd=project_root,
                 )
                 if pr_res.returncode == 0:
                     return {
@@ -1510,7 +1560,7 @@ async def git_workflow_operation(
                     },
                 }
 
-            pull_res = _run_git_command(
+            pull_res = await _run_git_command_async(
                 git_exe,
                 project_root=project_root,
                 args=["pull", "--ff-only", "origin", current_branch],

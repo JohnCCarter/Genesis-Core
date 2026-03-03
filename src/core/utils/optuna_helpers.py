@@ -80,7 +80,8 @@ def set_global_seeds(seed: int = 42) -> None:
     np.random.seed(seed)
     # Only effective for child processes started after this point.
     os.environ["PYTHONHASHSEED"] = str(seed)
-    # Torch (optional)
+    # Torch (optional). Some Windows environments raise OSError (WinError 1114)
+    # even when torch is installed; seeding should still continue for Python/NumPy.
     try:  # pragma: no cover
         import torch
 
@@ -88,8 +89,8 @@ def set_global_seeds(seed: int = 42) -> None:
         torch.cuda.manual_seed_all(seed)
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False
-    except ImportError:
-        LOGGER.debug("PyTorch not installed; skipping torch seed setup")
+    except (ImportError, OSError) as exc:
+        LOGGER.debug("PyTorch unavailable (%s); skipping torch seed setup", exc)
 
 
 # --- Storage ----------------------------------------------------------------

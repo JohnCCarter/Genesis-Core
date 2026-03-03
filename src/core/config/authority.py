@@ -9,7 +9,9 @@ from typing import Any
 
 from pydantic import ValidationError
 
+from core.config.authority_mode_resolver import canonicalize_authority_mode_alias_strict
 from core.config.schema import RuntimeConfig, RuntimeSnapshot
+from core.utils.dict_merge import deep_merge_dicts
 from core.utils.logging_redaction import get_logger
 
 _LOGGER = get_logger(__name__)
@@ -44,13 +46,11 @@ def _json_dumps_canonical(data: dict[str, Any]) -> str:
 
 
 def _deep_merge_dicts(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
-    merged = dict(base)
-    for key, value in (override or {}).items():
-        if key in merged and isinstance(merged[key], dict) and isinstance(value, dict):
-            merged[key] = _deep_merge_dicts(merged[key], value)
-        else:
-            merged[key] = value
-    return merged
+    return deep_merge_dicts(base, override)
+
+
+def _canonicalize_authority_mode_alias(patch: dict[str, Any]) -> dict[str, Any]:
+    return canonicalize_authority_mode_alias_strict(patch)
 
 
 class ConfigAuthority:
@@ -93,7 +93,11 @@ class ConfigAuthority:
         return RuntimeSnapshot(version=version, hash=h, cfg=cfg)
 
     def validate(self, proposal: dict[str, Any]) -> RuntimeConfig:
-        return RuntimeConfig(**proposal)
+        normalized = dict(proposal or {})
+        if "cfg" in normalized and isinstance(normalized["cfg"], dict):
+            normalized = dict(normalized["cfg"])
+        normalized = _canonicalize_authority_mode_alias(normalized)
+        return RuntimeConfig(**normalized)
 
     def get(self) -> tuple[RuntimeConfig, str, int]:
         snap = self.load()
@@ -168,6 +172,7 @@ class ConfigAuthority:
         normalized_patch = dict(patch or {})
         if "cfg" in normalized_patch and isinstance(normalized_patch["cfg"], dict):
             normalized_patch = dict(normalized_patch["cfg"])
+        normalized_patch = _canonicalize_authority_mode_alias(normalized_patch)
 
         # whitelist enforcement (path-based)
         def _enforce_whitelist(p: dict[str, Any]) -> None:
@@ -189,6 +194,7 @@ class ConfigAuthority:
                         "ltf_override_threshold",
                         "ltf_override_adaptive",
                         "htf_selector",
+                        "regime_intelligence",
                     }
                     if any(subk not in allowed for subk in v.keys()):
                         raise ValueError("non_whitelisted_field:multi_timeframe")
@@ -243,6 +249,24 @@ class ConfigAuthority:
                                     raise ValueError(
                                         "non_whitelisted_field:htf_selector.per_timeframe.rule"
                                     )
+                    regime_intelligence_cfg = v.get("regime_intelligence")
+                    if regime_intelligence_cfg is not None:
+                        if not isinstance(regime_intelligence_cfg, dict):
+                            raise ValueError("non_whitelisted_field:regime_intelligence")
+                        allowed_regime_intelligence = {"authority_mode"}
+                        if any(
+                            subk not in allowed_regime_intelligence
+                            for subk in regime_intelligence_cfg.keys()
+                        ):
+                            raise ValueError("non_whitelisted_field:regime_intelligence")
+                        authority_mode = regime_intelligence_cfg.get("authority_mode")
+                        if authority_mode is not None and str(
+                            authority_mode
+                        ).strip().lower() not in {
+                            "legacy",
+                            "regime_module",
+                        }:
+                            raise ValueError("invalid_value:regime_intelligence.authority_mode")
 
         _enforce_whitelist(normalized_patch)
 

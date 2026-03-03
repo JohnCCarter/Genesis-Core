@@ -29,6 +29,33 @@ pre-commit run --all-files
 python -m pytest
 ```
 
+## Miljösynk vid dependency-andringar
+
+Om `pyproject.toml` har uppdaterats, synka alltid aktiv Python-miljo innan tester:
+
+```powershell
+. .\.venv\Scripts\Activate.ps1
+python -m pip install -e ".[dev]"
+```
+
+Snabbkontroll av faktisk miljo:
+
+```powershell
+python -c "import sys; print(sys.executable)"
+python -m pip show genesis-core
+```
+
+Vanligt symptom pa miljodrift:
+
+- `ModuleNotFoundError` for paket som finns i `pyproject.toml`
+- `pip show genesis-core` visar en aldre version an repo-versionen
+
+Atgard:
+
+1. Aktivera projektets virtuella miljo.
+2. Kor `python -m pip install -e ".[dev]"` igen.
+3. Kor om `python -m pytest`.
+
 ## Secrets / .env
 
 - Lägg **aldrig** `.env` i git.

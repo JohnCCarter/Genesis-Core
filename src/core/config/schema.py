@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -144,6 +144,20 @@ class HTFSelectorConfig(RuntimeSection):
     per_timeframe: dict[str, HTFSelectorRule] = Field(default_factory=dict)
 
 
+class RegimeIntelligenceConfig(RuntimeSection):
+    authority_mode: Literal["legacy", "regime_module"] = Field(default="legacy")
+
+
+class RegimeUnifiedAliasConfig(RuntimeSection):
+    """Compatibility alias for authority mode during SSOT migration.
+
+    Canonical path remains:
+    `multi_timeframe.regime_intelligence.authority_mode`.
+    """
+
+    authority_mode: Literal["legacy", "regime_module"] = Field(default="legacy")
+
+
 class MultiTimeframeConfig(RuntimeSection):
     use_htf_block: bool = Field(default=True)
     allow_ltf_override: bool = Field(default=False)
@@ -152,6 +166,7 @@ class MultiTimeframeConfig(RuntimeSection):
         default_factory=LTFOverrideAdaptiveConfig
     )
     htf_selector: HTFSelectorConfig = Field(default_factory=HTFSelectorConfig)
+    regime_intelligence: RegimeIntelligenceConfig = Field(default_factory=RegimeIntelligenceConfig)
 
 
 class FeaturePercentileRange(RuntimeSection):
@@ -260,6 +275,8 @@ class RuntimeConfig(RuntimeSection):
     htf_fib: FibConfig | None = None
     ltf_fib: FibConfig | None = None
     features: FeaturesConfig | None = None
+    # Compatibility alias input only (must not persist in canonical runtime payload).
+    regime_unified: RegimeUnifiedAliasConfig | None = Field(default=None, exclude=True)
 
     def model_dump_canonical(self) -> dict[str, Any]:
         """Dump in a stable, hash-friendly form (tuples → lists)."""

@@ -31,10 +31,12 @@ try:
     import pandas as pd  # type: ignore
 except Exception:  # pragma: no cover - pandas not strictly required
     pd = None  # type: ignore
+
 from core.optimizer.champion import ChampionCandidate, ChampionManager
 from core.optimizer.constraints import enforce_constraints
 from core.optimizer.param_transforms import transform_parameters
 from core.optimizer.scoring import MetricThresholds, score_backtest
+from core.utils.dict_merge import deep_merge_dicts
 from core.utils.diffing import summarize_metrics_diff
 from core.utils.diffing.canonical import canonicalize_config
 from core.utils.diffing.optuna_guard import estimate_zero_trade
@@ -888,31 +890,8 @@ def _serialize_meta(meta_payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def _deep_merge(base: dict, override: dict) -> dict:
-    """Deep merge override dict into base dict.
-
-    Performance optimization: Iterative implementation to avoid recursion depth limits
-    and function call overhead.
-    """
-    if not override:
-        return dict(base)
-
-    merged = dict(base)
-    stack = [(merged, override)]
-
-    while stack:
-        current_base, current_override = stack.pop()
-        for key, value in current_override.items():
-            if (
-                key in current_base
-                and isinstance(current_base[key], dict)
-                and isinstance(value, dict)
-            ):
-                current_base[key] = dict(current_base[key])
-                stack.append((current_base[key], value))
-            else:
-                current_base[key] = value
-
-    return merged
+    """Deep merge override dict into base dict via shared helper."""
+    return deep_merge_dicts(base, override)
 
 
 def _expand_value(node: Any) -> list[Any]:

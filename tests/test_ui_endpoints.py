@@ -38,7 +38,15 @@ def test_ui_get_and_evaluate_post():
     r2 = c.post("/strategy/evaluate", json=payload)
     assert r2.status_code == 200
     data = r2.json()
-    assert "result" in data and "meta" in data
+    assert set(data.keys()) == {"result", "meta"}
+    meta = data["meta"]
+    assert isinstance(meta, dict)
+    observability = meta.get("observability")
+    assert isinstance(observability, dict)
+    shadow_regime = observability.get("shadow_regime")
+    assert isinstance(shadow_regime, dict)
+    assert "authority_mode" in shadow_regime
+    assert "authority_mode_source" in shadow_regime
 
 
 def test_evaluate_missing_candles_returns_invalid_candles_error():

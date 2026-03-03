@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -206,6 +207,60 @@ def _step_compare_backtests(*, baseline_path: Path, candidate_path: Path) -> tup
     }
 
 
+def _tail_lines(text: str, *, max_lines: int = 20) -> str:
+    lines = [ln for ln in text.splitlines() if ln.strip()]
+    if len(lines) <= max_lines:
+        return "\n".join(lines)
+    return "\n".join(lines[-max_lines:])
+
+
+def _validate_pytest_selectors_args(sargs: dict) -> tuple[bool, dict, list[str], list[str]]:
+    selectors = sargs.get("selectors")
+    pytest_args = sargs.get("pytest_args", [])
+
+    if (
+        not isinstance(selectors, list)
+        or not selectors
+        or any(not isinstance(s, str) or not s.strip() for s in selectors)
+    ):
+        return False, {"reason": "invalid_selectors"}, [], []
+
+    if not isinstance(pytest_args, list) or any(not isinstance(a, str) for a in pytest_args):
+        return False, {"reason": "invalid_pytest_args"}, [], []
+
+    return True, {}, [s.strip() for s in selectors], pytest_args
+
+
+def _step_pytest_selectors(
+    *, selectors: list[str], pytest_args: list[str] | None = None
+) -> tuple[bool, dict]:
+    if not selectors:
+        return False, {"reason": "missing_selectors"}
+
+    cmd = [sys.executable, "-m", "pytest", "-q"]
+    if pytest_args:
+        cmd.extend(pytest_args)
+    cmd.extend(selectors)
+
+    proc = subprocess.run(
+        cmd,
+        cwd=_repo_root(),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    details: dict[str, object] = {
+        "command": cmd,
+        "returncode": proc.returncode,
+    }
+    if proc.stdout:
+        details["stdout_tail"] = _tail_lines(proc.stdout)
+    if proc.stderr:
+        details["stderr_tail"] = _tail_lines(proc.stderr)
+
+    return proc.returncode == 0, details
+
+
 def main(argv: list[str]) -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--skill", required=True, help="Skill id")
@@ -377,6 +432,15 @@ def main(argv: list[str]) -> int:
                     baseline_path=_repo_root() / baseline,
                     candidate_path=_repo_root() / candidate,
                 )
+        elif stype == "pytest_selectors":
+            is_valid, detail, selectors, pytest_args = _validate_pytest_selectors_args(sargs)
+            if is_valid:
+                ok, detail = _step_pytest_selectors(
+                    selectors=selectors,
+                    pytest_args=pytest_args,
+                )
+            else:
+                ok = False
         else:
             ok, detail = False, {"reason": f"unknown_step_type:{stype!r}"}
 

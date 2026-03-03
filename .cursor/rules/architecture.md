@@ -35,6 +35,20 @@ Genesis-Core/
 └── tmp/                # Local scratch space
 ```
 
+## Governance and Operating Contract
+
+- Constitutional governance boundaries are defined in `AGENTS.md`.
+- Day-to-day operational protocol is defined in `.github/copilot-instructions.md`.
+- Trivial docs/metadata updates may use the quick path defined in `.github/copilot-instructions.md`.
+- Non-trivial or high-sensitivity changes must use full gated protocol with Opus pre/post review.
+
+Conflict precedence:
+
+1. Explicit user request for the current task
+2. `.github/copilot-instructions.md`
+3. `docs/OPUS_46_GOVERNANCE.md`
+4. `AGENTS.md`
+
 ## Strategy Pipeline
 
 1. **Feature Extraction** (P1): EMA delta percentage + RSI from candles
@@ -97,6 +111,13 @@ Note: This model registry is separate from the repo governance registry under to
 - `/config/runtime` - Get SSOT config
 - `/config/runtime/validate` - Validate SSOT config
 - `/config/runtime/propose` - Propose SSOT changes (Bearer)
+
+## Changelog Policy
+
+- `CHANGELOG.md` is a maintained, human-readable history from the current baseline forward.
+- `CHANGELOG.md` is informational and not a policy source of truth.
+- Legacy changelog marker: `docs/archive/CHANGELOG-legacy.md`.
+- Full historical changelog content remains available in git history.
 
 ## Troubleshooting Guide
 

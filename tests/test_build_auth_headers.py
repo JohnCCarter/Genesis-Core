@@ -60,20 +60,16 @@ def test_main_without_reveal(mock_settings, mock_nonce, capsys):
 
 
 def test_main_with_reveal(mock_settings, mock_nonce, capsys):
-    """Test main function with --reveal flag shows actual values."""
+    """Test main function with --reveal flag is blocked without explicit ack."""
     result = main(["auth/r/alerts", "--reveal"])
 
-    assert result == 0
+    assert result == 3
 
     captured = capsys.readouterr()
-    output = json.loads(captured.out)
-
-    # With --reveal, actual values should be shown
-    assert output["bfx-apikey"] == "test_api_key"
-    assert output["bfx-signature"] != "***"
-    # Non-sensitive values should not be masked
-    assert output["bfx-nonce"] == "1234567890000000"
-    assert output["Content-Type"] == "application/json"
+    assert captured.out == ""
+    assert "--reveal blocked" in captured.err
+    assert "test_api_key" not in captured.err
+    assert "test_api_secret" not in captured.err
 
 
 def test_main_with_pretty(mock_settings, mock_nonce, capsys):
@@ -91,19 +87,46 @@ def test_main_with_pretty(mock_settings, mock_nonce, capsys):
 
 
 def test_main_with_reveal_and_pretty(mock_settings, mock_nonce, capsys):
-    """Test main function with both --reveal and --pretty flags."""
+    """Test reveal+pretty is blocked without explicit ack."""
     result = main(["auth/r/alerts", "--reveal", "--pretty"])
+
+    assert result == 3
+
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "--reveal blocked" in captured.err
+
+
+def test_main_with_reveal_and_ack_masks_sensitive_values(
+    mock_settings, mock_nonce, capsys, monkeypatch
+):
+    """Test reveal mode with explicit ack still masks secrets for safe logging."""
+    monkeypatch.setenv("GENESIS_ALLOW_SECRET_OUTPUT", "1")
+
+    result = main(["auth/r/alerts", "--reveal"])
 
     assert result == 0
 
     captured = capsys.readouterr()
-    # Should be pretty-printed
-    assert "\n" in captured.out
     output = json.loads(captured.out)
 
-    # Should show actual values with --reveal
-    assert output["bfx-apikey"] == "test_api_key"
-    assert output["bfx-signature"] != "***"
+    assert output["bfx-apikey"] == "***"
+    assert output["bfx-signature"] == "***"
+    assert output["bfx-nonce"] == "1234567890000000"
+    assert output["Content-Type"] == "application/json"
+    assert "info" in output
+
+
+def test_main_with_reveal_and_wrong_ack_is_blocked(mock_settings, mock_nonce, capsys, monkeypatch):
+    """Test reveal mode stays blocked when ack env var has incorrect value."""
+    monkeypatch.setenv("GENESIS_ALLOW_SECRET_OUTPUT", "0")
+
+    result = main(["auth/r/alerts", "--reveal"])
+
+    assert result == 3
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "--reveal blocked" in captured.err
 
 
 def test_main_with_body(mock_settings, mock_nonce, capsys):

@@ -4,8 +4,66 @@
   "title": "Genesis-Core Skill",
   "type": "object",
   "additionalProperties": false,
-  "required": ["id", "version", "title", "description", "status", "owners"],
+  "required": [
+    "governance",
+    "id",
+    "version",
+    "title",
+    "description",
+    "status",
+    "owners"
+  ],
   "properties": {
+    "governance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "skill_type",
+        "contract_owner",
+        "implementation_owner",
+        "pass_definition_locked",
+        "scope_locked",
+        "evolution_mode",
+        "forbidden",
+        "stop_conditions"
+      ],
+      "properties": {
+        "skill_type": {
+          "type": "string",
+          "enum": ["SPEC", "RUNNER", "PLAYBOOK"]
+        },
+        "contract_owner": {
+          "type": "string",
+          "const": "opus-4.6"
+        },
+        "implementation_owner": {
+          "type": "string",
+          "const": "codex-5.3"
+        },
+        "pass_definition_locked": {
+          "type": "boolean",
+          "const": true
+        },
+        "scope_locked": {
+          "type": "boolean",
+          "const": true
+        },
+        "evolution_mode": {
+          "type": "string",
+          "const": "additive_only"
+        },
+        "forbidden": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1
+        },
+        "stop_conditions": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1
+        }
+      }
+    },
     "id": {
       "type": "string",
       "pattern": "^[a-z][a-z0-9_\\-]{2,63}$"
@@ -46,7 +104,11 @@
           },
           "type": {
             "type": "string",
-            "enum": ["registry_validate", "compare_backtest_results"]
+            "enum": [
+              "registry_validate",
+              "compare_backtest_results",
+              "pytest_selectors"
+            ]
           },
           "args": {
             "type": "object",

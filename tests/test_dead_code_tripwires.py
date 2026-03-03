@@ -161,11 +161,16 @@ def test_runtime_source_must_not_import_core_config_validator() -> None:
 
     repo_root = Path(__file__).resolve().parents[1]
     src_root = repo_root / "src"
+    assert src_root.exists(), f"Expected source root to exist: {src_root}"
+
+    py_files = list(src_root.rglob("*.py"))
+    assert py_files, f"Expected at least one Python file under: {src_root}"
+
     validator_path = (src_root / "core" / "config" / "validator.py").resolve()
 
     violations: list[str] = []
 
-    for py_file in src_root.rglob("*.py"):
+    for py_file in py_files:
         resolved = py_file.resolve()
         if resolved == validator_path:
             continue
@@ -187,6 +192,12 @@ def test_runtime_source_must_not_import_core_config_validator() -> None:
                         if alias.name == "validator":
                             violations.append(
                                 f"{py_file}:{node.lineno} imports validator from core.config"
+                            )
+                elif node.level > 0 and module == "config":
+                    for alias in node.names:
+                        if alias.name == "validator":
+                            violations.append(
+                                f"{py_file}:{node.lineno} imports validator from relative {'.' * node.level}{module}"
                             )
 
     assert not violations, "Runtime source must not import core.config.validator:\n" + "\n".join(

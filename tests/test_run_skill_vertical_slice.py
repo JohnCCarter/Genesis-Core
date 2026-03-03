@@ -111,6 +111,32 @@ def test_run_skill_feature_parity_check_pass(tmp_path: Path) -> None:
     assert "[SKILL] PASS" in proc.stdout
 
 
+def test_run_skill_ri_off_parity_artifact_check_pass(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    script = repo_root / "scripts" / "run_skill.py"
+
+    proc = subprocess.run(
+        [
+            sys.executable,
+            str(script),
+            "--skill",
+            "ri_off_parity_artifact_check",
+            "--manifest",
+            "dev",
+            "--dry-run",
+            "--audit-file",
+            str(tmp_path / "audit.jsonl"),
+        ],
+        cwd=repo_root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert proc.returncode == 0, proc.stdout + "\n" + proc.stderr
+    assert "[SKILL] PASS" in proc.stdout
+
+
 def test_validate_pytest_selectors_args_rejects_invalid_selectors() -> None:
     ok, detail, selectors, pytest_args = run_skill._validate_pytest_selectors_args(
         {"selectors": []}

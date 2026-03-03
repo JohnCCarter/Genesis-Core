@@ -1,0 +1,71 @@
+{
+  "governance": {
+    "skill_type": "SPEC",
+    "contract_owner": "opus-4.6",
+    "implementation_owner": "codex-5.3",
+    "pass_definition_locked": true,
+    "scope_locked": true,
+    "evolution_mode": "additive_only",
+    "forbidden": [
+      "runtime_default_drift",
+      "api_contract_drift",
+      "scope_broadening",
+      "weakening_must_not_rules"
+    ],
+    "stop_conditions": [
+      "detected_default_drift",
+      "detected_contract_drift",
+      "attempted_scope_change"
+    ]
+  },
+  "id": "ri_off_parity_artifact_check",
+  "version": "1.0.0",
+  "title": "RI P1 OFF parity artifact attestation",
+  "description": "Executable attestation for RI P1 OFF parity helper and locked artifact field contract.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "tags": [
+    "regime-intelligence",
+    "parity",
+    "off-mode",
+    "artifact",
+    "attestation"
+  ],
+  "steps": [
+    {
+      "id": "ri_off_parity_selector",
+      "type": "pytest_selectors",
+      "args": {
+        "selectors": [
+          "tests/test_compare_backtest_results.py::test_compare_ri_p1_off_parity_rows_pass_order_insensitive",
+          "tests/test_compare_backtest_results.py::test_build_ri_p1_off_parity_artifact_required_fields"
+        ]
+      }
+    }
+  ],
+  "rules": {
+    "must": [
+      "Köra OFF parity-attestation via dedikerade selectors.",
+      "Behålla NO BEHAVIOR CHANGE i default-flöde.",
+      "Låsa artifact-fält enligt P1 OFF DoD-kontraktet."
+    ],
+    "must_not": [
+      "Ändra runtime defaults, API-contract eller determinism-gates.",
+      "Ersätta determinism- och invariansgates med endast skill-körning."
+    ]
+  },
+  "references": [
+    {
+      "type": "file",
+      "value": "tests/test_compare_backtest_results.py"
+    },
+    {
+      "type": "file",
+      "value": "tools/compare_backtest_results.py"
+    },
+    {
+      "type": "doc",
+      "value": "docs/ideas/REGIME_INTELLIGENCE_DOD_P1_P2_2026-02-27.md"
+    }
+  ]
+}

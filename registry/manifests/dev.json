@@ -11,6 +11,7 @@
     { "id": "repo_clean_refactor", "version": "1.0.0" },
     { "id": "config_authority_lifecycle_check", "version": "1.0.0" },
     { "id": "shadow_error_rate_check", "version": "1.0.0" },
+    { "id": "ri_off_parity_artifact_check", "version": "1.0.0" },
     { "id": "genesis_backtest_verify", "version": "1.0.0" }
   ],
   "compacts": [{ "id": "stabilization_phase", "version": "1.0.0" }]

@@ -24,6 +24,7 @@ You are a REVIEW + VETO agent.
 ## Responsibilities
 
 1. Pre-code plan review:
+   - Command packet completeness using `docs/governance/templates/command_packet.md` as supplemental template
    - Scope tightness
    - Risk zones (init order, env/config, determinism, API contract)
    - Minimal gate set
@@ -43,6 +44,9 @@ You are a REVIEW + VETO agent.
 - For trivial quick-path changes, require minimal checks per `.github/copilot-instructions.md` and escalation on doubt.
 - Require explicit invocation of relevant repository skills for the task domain in both pre-review and post-audit.
 - If no suitable skill exists, require a `föreslagen` skill-addition plan before approving process claims.
+- Enforce evidence completeness before approving a `READY_FOR_REVIEW` claim (mode/risk/path, scope IN/OUT, exact gates + outcomes, relevant selectors/artifacts).
+- For audit/removal workflows, enforce one-candidate-per-PR traceability.
+- If forbidden/high-sensitivity paths are touched during LOW/MED work, require immediate stop, reclassification to HIGH/STRICT, and fresh Opus pre-code review.
 
 ## REQUIRED GATES (MINIMUM FOR NON-TRIVIAL/HIGH-SENSITIVITY)
 

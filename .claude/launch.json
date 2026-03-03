@@ -1,0 +1,32 @@
+{
+  "configurations": [
+    {
+      "name": "fastapi",
+      "port": 8000,
+      "runtimeArgs": [
+        "-m",
+        "uvicorn",
+        "core.server:app",
+        "--reload",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "8000"
+      ],
+      "runtimeExecutable": ".venv/Scripts/python.exe"
+    },
+    {
+      "name": "mcp-remote",
+      "port": 3333,
+      "runtimeArgs": ["-m", "mcp_server.remote_server"],
+      "runtimeExecutable": ".venv/Scripts/python.exe"
+    },
+    {
+      "name": "paper-trading",
+      "port": 9999,
+      "runtimeArgs": ["paper_trading_runner.py", "--dry-run"],
+      "runtimeExecutable": ".venv/Scripts/python.exe"
+    }
+  ],
+  "version": "0.0.1"
+}

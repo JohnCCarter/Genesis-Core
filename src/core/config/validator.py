@@ -1,3 +1,10 @@
+"""Legacy test helpers for config schema checks and top-level diffing.
+
+This module is intentionally test-only in current architecture.
+Runtime config validation must go through ``ConfigAuthority.validate`` via
+``core.server_config_api``.
+"""
+
 from __future__ import annotations
 
 import json

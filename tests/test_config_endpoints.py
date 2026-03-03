@@ -70,6 +70,37 @@ def test_config_endpoints():
     assert set(r.json().keys()) >= {"cfg", "version", "hash"}
 
 
+def test_runtime_validate_uses_config_authority_validate(monkeypatch):
+    c = TestClient(app)
+
+    import core.server_config_api as api
+
+    calls = {"n": 0, "payload": None}
+
+    class _FakeCfg:
+        def model_dump_canonical(self):
+            return {"_source": "authority.validate"}
+
+    def _fake_validate(payload):
+        calls["n"] += 1
+        calls["payload"] = payload
+        return _FakeCfg()
+
+    monkeypatch.setattr(api.authority, "validate", _fake_validate)
+
+    payload = {"thresholds": {"entry_conf_overall": 0.61}}
+    r = c.post("/config/runtime/validate", json=payload)
+
+    assert r.status_code == 200
+    assert r.json() == {
+        "valid": True,
+        "errors": [],
+        "cfg": {"_source": "authority.validate"},
+    }
+    assert calls["n"] == 1
+    assert calls["payload"] == payload
+
+
 def test_runtime_endpoints_do_not_leak_exceptions(monkeypatch):
     c = TestClient(app)
 

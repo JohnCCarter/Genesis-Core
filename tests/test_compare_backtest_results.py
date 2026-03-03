@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 from tools.compare_backtest_results import (
     build_ri_p1_off_parity_artifact,
     compare_backtest_payloads,
     compare_ri_p1_off_parity_rows,
+    main,
 )
 
 
@@ -171,3 +173,139 @@ def test_build_ri_p1_off_parity_artifact_required_fields() -> None:
     assert artifact["reason_mismatch_count"] == 0
     assert artifact["size_mismatch_count"] == 0
     assert artifact["size_tolerance"] == "1e-12"
+
+
+def test_main_legacy_compare_path_unchanged(tmp_path: Path, capsys) -> None:
+    baseline = {
+        "score": 1.0,
+        "summary": {
+            "total_return": 0.1,
+            "profit_factor": 1.2,
+            "max_drawdown": 0.05,
+            "total_trades": 10,
+        },
+    }
+    candidate = json.loads(json.dumps(baseline))
+
+    baseline_path = tmp_path / "baseline.json"
+    candidate_path = tmp_path / "candidate.json"
+    baseline_path.write_text(json.dumps(baseline), encoding="utf-8")
+    candidate_path.write_text(json.dumps(candidate), encoding="utf-8")
+
+    rc = main([str(baseline_path), str(candidate_path), "--json"])
+    assert rc == 0
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["status"] == "PASS"
+    assert "baseline_metrics" in payload
+    assert "candidate_metrics" in payload
+    assert "deltas" in payload
+
+
+def test_main_ri_off_parity_pass_writes_default_artifact(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    baseline_rows = [
+        {"row_id": 1, "action": "LONG", "reason": ["ENTRY_LONG"], "size": 1.0},
+        {"row_id": 2, "action": "NONE", "reason": "COOLDOWN", "size": 0.0},
+    ]
+    candidate_rows = [
+        {"row_id": 2, "action": "NONE", "reason": "COOLDOWN", "size": 0.0},
+        {"row_id": 1, "action": "LONG", "reason": ["ENTRY_LONG"], "size": 1.0},
+    ]
+
+    baseline_path = tmp_path / "baseline_rows.json"
+    candidate_path = tmp_path / "candidate_rows.ndjson"
+
+    baseline_path.write_text(json.dumps(baseline_rows), encoding="utf-8")
+    with candidate_path.open("w", encoding="utf-8") as handle:
+        for row in candidate_rows:
+            handle.write(json.dumps(row, separators=(",", ":"), sort_keys=True))
+            handle.write("\n")
+
+    monkeypatch.chdir(tmp_path)
+    run_id = "ri-20260303-002"
+    rc = main(
+        [
+            str(baseline_path),
+            str(candidate_path),
+            "--ri-off-parity",
+            "--run-id",
+            run_id,
+            "--git-sha",
+            "abc1234",
+            "--symbols",
+            "tTESTBTC:TESTUSD",
+            "--timeframes",
+            "1h",
+            "--start-utc",
+            "2025-01-01T00:00:00Z",
+            "--end-utc",
+            "2025-01-31T23:59:59Z",
+            "--baseline-artifact-ref",
+            "results/evaluation/ri_p1_off_parity_v1_baseline.json",
+            "--json",
+        ]
+    )
+
+    assert rc == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["status"] == "PASS"
+
+    artifact_path = Path(payload["artifact_path"])
+    assert artifact_path == Path("results/evaluation") / f"ri_p1_off_parity_v1_{run_id}.json"
+    assert artifact_path.exists()
+
+    artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
+    assert artifact["window_spec_id"] == "ri_p1_off_parity_v1"
+    assert artifact["parity_verdict"] == "PASS"
+
+
+def test_main_ri_off_parity_fail_returns_1(tmp_path: Path, capsys) -> None:
+    baseline_rows = [{"row_id": 1, "action": "LONG", "reason": "ENTRY_LONG", "size": 1.0}]
+    candidate_rows = [{"row_id": 1, "action": "SHORT", "reason": "ENTRY_LONG", "size": 1.0}]
+
+    baseline_path = tmp_path / "baseline_rows.json"
+    candidate_path = tmp_path / "candidate_rows.json"
+    baseline_path.write_text(json.dumps(baseline_rows), encoding="utf-8")
+    candidate_path.write_text(json.dumps(candidate_rows), encoding="utf-8")
+
+    rc = main(
+        [
+            str(baseline_path),
+            str(candidate_path),
+            "--ri-off-parity",
+            "--run-id",
+            "ri-20260303-003",
+            "--git-sha",
+            "abc1234",
+            "--symbols",
+            "tTESTBTC:TESTUSD",
+            "--timeframes",
+            "1h",
+            "--start-utc",
+            "2025-01-01T00:00:00Z",
+            "--end-utc",
+            "2025-01-31T23:59:59Z",
+            "--baseline-artifact-ref",
+            "results/evaluation/ri_p1_off_parity_v1_baseline.json",
+        ]
+    )
+
+    assert rc == 1
+    text = capsys.readouterr().out
+    assert "[RI-OFF-PARITY] FAIL" in text
+
+
+def test_main_ri_off_parity_missing_required_args_returns_2(tmp_path: Path, capsys) -> None:
+    baseline_path = tmp_path / "baseline_rows.json"
+    candidate_path = tmp_path / "candidate_rows.json"
+    baseline_path.write_text("[]", encoding="utf-8")
+    candidate_path.write_text("[]", encoding="utf-8")
+
+    rc = main([str(baseline_path), str(candidate_path), "--ri-off-parity"])
+    assert rc == 2
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["failure"] == "INPUT_INVALID_SHAPE"
+    assert "Missing required args for --ri-off-parity" in payload["message"]

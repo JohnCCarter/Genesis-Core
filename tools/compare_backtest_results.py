@@ -63,6 +63,53 @@ def _load_json(path: Path) -> object:
         raise ValueError(f"Invalid JSON in {path}: {e}") from e
 
 
+def _load_rows(path: Path) -> list[dict[str, Any]]:
+    """Load decision rows from either JSON-array file or NDJSON file."""
+
+    text: str
+    try:
+        text = path.read_text(encoding="utf-8")
+    except FileNotFoundError as e:
+        raise FileNotFoundError(f"Missing input file: {path}") from e
+
+    try:
+        payload = json.loads(text)
+        if not isinstance(payload, list):
+            raise ValueError(f"Row file must be a JSON array of objects: {path}")
+        if any(not isinstance(row, dict) for row in payload):
+            raise ValueError(f"Row file contains non-object entries: {path}")
+        return payload
+    except json.JSONDecodeError:
+        pass
+
+    rows: list[dict[str, Any]] = []
+    for idx, line in enumerate(text.splitlines(), start=1):
+        raw = line.strip()
+        if not raw:
+            continue
+        try:
+            row = json.loads(raw)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid NDJSON in {path} at line {idx}: {e}") from e
+        if not isinstance(row, dict):
+            raise ValueError(f"NDJSON row must be an object in {path} at line {idx}")
+        rows.append(row)
+
+    if rows:
+        return rows
+
+    raise ValueError(f"Could not parse row file as JSON array or NDJSON: {path}")
+
+
+def _parse_csv_values(raw: str) -> list[str]:
+    return [segment.strip() for segment in (raw or "").split(",") if segment.strip()]
+
+
+def _write_json(path: Path, payload: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+
+
 def _dig(obj: object, dotted_path: str) -> object:
     cur = obj
     for part in dotted_path.split("."):
@@ -440,7 +487,104 @@ def main(argv: list[str]) -> int:
     p.add_argument("candidate", type=Path)
     p.add_argument("--mode", default="strict", choices=["strict", "report"])
     p.add_argument("--json", action="store_true", help="Print machine-readable JSON result")
+    p.add_argument(
+        "--ri-off-parity",
+        action="store_true",
+        help="Run RI P1 OFF parity mode and emit parity artifact payload.",
+    )
+    p.add_argument("--run-id", default="")
+    p.add_argument("--git-sha", default="")
+    p.add_argument("--symbols", default="")
+    p.add_argument("--timeframes", default="")
+    p.add_argument("--start-utc", default="")
+    p.add_argument("--end-utc", default="")
+    p.add_argument("--baseline-artifact-ref", default="")
+    p.add_argument("--artifact-out", type=Path, default=None)
+    p.add_argument("--size-tolerance", type=float, default=1e-12)
     args = p.parse_args(argv)
+
+    if args.ri_off_parity:
+        symbols = _parse_csv_values(args.symbols)
+        timeframes = _parse_csv_values(args.timeframes)
+        missing_args: list[str] = []
+        if not args.run_id.strip():
+            missing_args.append("--run-id")
+        if not args.git_sha.strip():
+            missing_args.append("--git-sha")
+        if not symbols:
+            missing_args.append("--symbols")
+        if not timeframes:
+            missing_args.append("--timeframes")
+        if not args.start_utc.strip():
+            missing_args.append("--start-utc")
+        if not args.end_utc.strip():
+            missing_args.append("--end-utc")
+        if not args.baseline_artifact_ref.strip():
+            missing_args.append("--baseline-artifact-ref")
+        if missing_args:
+            out = {
+                "status": "FAIL",
+                "failure": CompareFailure.INPUT_INVALID_SHAPE,
+                "message": (
+                    "Missing required args for --ri-off-parity: " + ", ".join(missing_args)
+                ),
+            }
+            print(json.dumps(out, sort_keys=True))
+            return 2
+
+        try:
+            baseline_rows = _load_rows(args.baseline)
+            candidate_rows = _load_rows(args.candidate)
+            artifact = build_ri_p1_off_parity_artifact(
+                run_id=args.run_id,
+                git_sha=args.git_sha,
+                symbols=symbols,
+                timeframes=timeframes,
+                start_utc=args.start_utc,
+                end_utc=args.end_utc,
+                baseline_artifact_ref=args.baseline_artifact_ref,
+                baseline_rows=baseline_rows,
+                candidate_rows=candidate_rows,
+                size_tolerance=args.size_tolerance,
+            )
+        except FileNotFoundError as e:
+            out = {
+                "status": "FAIL",
+                "failure": CompareFailure.INPUT_MISSING,
+                "message": str(e),
+            }
+            print(json.dumps(out, sort_keys=True))
+            return 2
+        except ValueError as e:
+            out = {
+                "status": "FAIL",
+                "failure": CompareFailure.INPUT_INVALID_JSON,
+                "message": str(e),
+            }
+            print(json.dumps(out, sort_keys=True))
+            return 2
+
+        artifact_out = args.artifact_out
+        if artifact_out is None:
+            artifact_out = (
+                Path("results") / "evaluation" / f"ri_p1_off_parity_v1_{args.run_id}.json"
+            )
+
+        _write_json(artifact_out, artifact)
+
+        payload = {
+            "status": artifact["parity_verdict"],
+            "artifact_path": str(artifact_out),
+            "artifact": artifact,
+        }
+
+        if args.json:
+            print(json.dumps(payload, indent=2, sort_keys=True))
+        else:
+            print(f"[RI-OFF-PARITY] {artifact['parity_verdict']}")
+            print(f"[RI-OFF-PARITY] artifact={artifact_out}")
+
+        return 0 if artifact["parity_verdict"] == "PASS" else 1
 
     try:
         baseline = _load_json(args.baseline)

@@ -5,6 +5,7 @@ import logging
 import math
 from typing import Any, Literal
 
+from core.strategy import regime_intelligence as _regime_intelligence
 from core.strategy.fib_logging import log_fib_flow
 from core.utils.logging_redaction import get_logger
 
@@ -1094,6 +1095,17 @@ def decide(
             "state_out": state_out,
         }
 
+    ri_cfg = dict((cfg.get("multi_timeframe") or {}).get("regime_intelligence") or {})
+    clarity_cfg = dict(ri_cfg.get("clarity_score") or {})
+    ri_enabled = bool(ri_cfg.get("enabled", False))
+    ri_version = str(ri_cfg.get("version") or "legacy")
+    clarity_enabled = (
+        ri_enabled and ri_version.lower() == "v2" and bool(clarity_cfg.get("enabled", False))
+    )
+    authority_mode, authority_mode_source = _regime_intelligence.resolve_authority_mode_with_source(
+        cfg
+    )
+
     # 10) Sizing (baserat på risk_map och vald confidence)
     #
     # Default: use the same confidence used for entry gating.
@@ -1211,6 +1223,62 @@ def decide(
     combined_mult = size_scale * regime_mult * htf_regime_mult * vol_size_mult
     combined_mult = max(min_size_mult, combined_mult)
     size = float(size_base * combined_mult)
+    size_pre_clarity = size
+
+    clarity_multiplier = 1.0
+    clarity_payload: dict[str, Any] = {
+        "enabled": clarity_enabled,
+        "apply": "sizing_only",
+        "version": ri_version,
+        "score": None,
+        "raw": None,
+        "components": None,
+        "weights": None,
+        "weights_version": None,
+        "round_policy": None,
+        "multiplier": clarity_multiplier,
+        "size_before": size_pre_clarity,
+        "size_after": size,
+    }
+    if clarity_enabled:
+        min_mult = safe_float(clarity_cfg.get("size_multiplier_min", 0.5), 0.5)
+        max_mult = safe_float(clarity_cfg.get("size_multiplier_max", 1.0), 1.0)
+        if max_mult < min_mult:
+            min_mult, max_mult = max_mult, min_mult
+        min_mult = max(0.0, min(1.0, min_mult))
+        max_mult = max(0.0, min(1.0, max_mult))
+
+        clarity = _regime_intelligence.compute_clarity_score_v1(
+            confidence_gate=conf_val_gate,
+            edge=abs(p_buy - p_sell),
+            max_ev=max_ev,
+            r_default=R,
+            candidate=candidate,
+            regime=regime_str,
+            weights=clarity_cfg.get("weights_v1"),
+            weights_version=str(clarity_cfg.get("weights_version") or "weights_v1"),
+        )
+        clarity_score = int(clarity["clarity_score"])
+        clarity_multiplier = min_mult + ((max_mult - min_mult) * (clarity_score / 100.0))
+        clarity_multiplier = max(0.0, min(1.0, clarity_multiplier))
+        size = float(size * clarity_multiplier)
+
+        clarity_payload = {
+            "enabled": True,
+            "apply": "sizing_only",
+            "version": ri_version,
+            "score": clarity_score,
+            "raw": float(clarity["clarity_raw"]),
+            "components": dict(clarity["components"]),
+            "weights": dict(clarity["weights"]),
+            "weights_version": str(clarity["weights_version"]),
+            "round_policy": str(clarity["round_policy"]),
+            "multiplier": clarity_multiplier,
+            "size_before": size_pre_clarity,
+            "size_after": size,
+            "multiplier_min": min_mult,
+            "multiplier_max": max_mult,
+        }
 
     state_out["confidence_gate"] = conf_val_gate
     state_out["size_base"] = size_base
@@ -1219,6 +1287,21 @@ def decide(
     state_out["size_htf_regime_mult"] = htf_regime_mult
     state_out["size_vol_mult"] = vol_size_mult
     state_out["size_combined_mult"] = combined_mult
+    state_out["ri_flag_enabled"] = ri_enabled
+    state_out["ri_version"] = ri_version
+    state_out["authority_mode"] = authority_mode
+    state_out["authority_mode_source"] = authority_mode_source
+    state_out["ri_clarity_enabled"] = bool(clarity_payload.get("enabled"))
+    state_out["ri_clarity_apply"] = clarity_payload.get("apply")
+    state_out["ri_clarity_multiplier"] = clarity_payload.get("multiplier")
+    state_out["ri_clarity_score"] = clarity_payload.get("score")
+    state_out["ri_clarity_raw"] = clarity_payload.get("raw")
+    state_out["ri_clarity_components"] = clarity_payload.get("components")
+    state_out["ri_clarity_weights"] = clarity_payload.get("weights")
+    state_out["ri_clarity_weights_version"] = clarity_payload.get("weights_version")
+    state_out["ri_clarity_round_policy"] = clarity_payload.get("round_policy")
+    state_out["size_before_ri_clarity"] = clarity_payload.get("size_before")
+    state_out["size_after_ri_clarity"] = clarity_payload.get("size_after")
 
     if size <= 0.0:
         _log_decision_event(

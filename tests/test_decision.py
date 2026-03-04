@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+from copy import deepcopy
+
+import pytest
+
 from core.strategy.decision import decide
 
 
@@ -246,3 +250,109 @@ def test_decide_handles_non_numeric_confidence_without_typeerror() -> None:
 
     assert action == "NONE"
     assert "CONF_TOO_LOW" in (meta.get("reasons") or [])
+
+
+def test_clarity_score_v2_on_round_policy_tie_half_even_deterministic() -> None:
+    cfg_off = {
+        "ev": {"R_default": 1.0},
+        "thresholds": {"entry_conf_overall": 0.5, "regime_proba": {"bull": 0.6}},
+        "gates": {"cooldown_bars": 0, "hysteresis_steps": 1},
+        "risk": {"risk_map": [[0.5, 1.0]]},
+        "multi_timeframe": {
+            "regime_intelligence": {
+                "enabled": False,
+                "version": "v2",
+                "clarity_score": {
+                    "enabled": True,
+                    "weights_version": "weights_v1",
+                    "weights_v1": {
+                        "confidence": 1.0,
+                        "edge": 0.0,
+                        "ev": 0.0,
+                        "regime_alignment": 0.0,
+                    },
+                    "size_multiplier_min": 0.5,
+                    "size_multiplier_max": 1.0,
+                },
+            }
+        },
+    }
+    cfg_on = deepcopy(cfg_off)
+    cfg_on["multi_timeframe"]["regime_intelligence"]["enabled"] = True
+
+    kwargs = {
+        "policy": {},
+        "probas": {"buy": 0.8, "sell": 0.2},
+        "confidence": {"buy": 0.505, "sell": 0.2},
+        "regime": "bull",
+        "state": {},
+        "risk_ctx": {},
+    }
+
+    action_off, meta_off = decide(cfg=cfg_off, **kwargs)
+    action_on_1, meta_on_1 = decide(cfg=cfg_on, **kwargs)
+    action_on_2, meta_on_2 = decide(cfg=cfg_on, **kwargs)
+
+    assert action_off == "LONG"
+    assert action_on_1 == "LONG"
+    assert action_on_2 == "LONG"
+    assert meta_on_1.get("reasons") == meta_on_2.get("reasons") == meta_off.get("reasons")
+
+    state_on_1 = meta_on_1.get("state_out", {})
+    state_on_2 = meta_on_2.get("state_out", {})
+
+    assert float(meta_on_1["size"]) == pytest.approx(float(meta_on_2["size"]))
+    assert float(meta_on_1["size"]) < float(meta_off["size"])
+    assert state_on_1.get("ri_clarity_enabled") is True
+    assert state_on_1.get("ri_clarity_apply") == "sizing_only"
+    assert state_on_1.get("ri_clarity_round_policy") == "half_even"
+    assert state_on_1.get("ri_clarity_score") == 50
+    assert float(state_on_1.get("ri_clarity_raw")) == pytest.approx(0.505)
+    assert state_on_1.get("ri_clarity_score") == state_on_2.get("ri_clarity_score")
+
+
+def test_clarity_score_v2_off_preserves_legacy_path() -> None:
+    cfg_base = {
+        "ev": {"R_default": 1.0},
+        "thresholds": {"entry_conf_overall": 0.6, "regime_proba": {"bull": 0.6}},
+        "gates": {"cooldown_bars": 0, "hysteresis_steps": 1},
+        "risk": {"risk_map": [[0.6, 0.8], [0.7, 1.0]]},
+    }
+    cfg_off = deepcopy(cfg_base)
+    cfg_off["multi_timeframe"] = {
+        "regime_intelligence": {
+            "enabled": False,
+            "version": "v2",
+            "clarity_score": {
+                "enabled": True,
+                "weights_version": "weights_v1",
+                "weights_v1": {
+                    "confidence": 0.5,
+                    "edge": 0.2,
+                    "ev": 0.2,
+                    "regime_alignment": 0.1,
+                },
+            },
+        }
+    }
+
+    kwargs = {
+        "policy": {},
+        "probas": {"buy": 0.75, "sell": 0.25},
+        "confidence": {"buy": 0.75, "sell": 0.25},
+        "regime": "bull",
+        "state": {},
+        "risk_ctx": {},
+    }
+
+    action_base, meta_base = decide(cfg=cfg_base, **kwargs)
+    action_off, meta_off = decide(cfg=cfg_off, **kwargs)
+
+    assert action_base == action_off == "LONG"
+    assert meta_base.get("reasons") == meta_off.get("reasons")
+    assert float(meta_base["size"]) == pytest.approx(float(meta_off["size"]))
+
+    state_off = meta_off.get("state_out", {})
+    assert state_off.get("ri_flag_enabled") is False
+    assert state_off.get("ri_clarity_enabled") is False
+    assert state_off.get("ri_clarity_score") is None

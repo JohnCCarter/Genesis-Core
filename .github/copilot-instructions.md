@@ -46,6 +46,7 @@ Quick path steps:
 - Skills first: invoke relevant repository skills per task domain; avoid ad hoc execution when a skill exists.
 - If a suitable skill is missing, add a `föreslagen` skill definition + docs + dev manifest entry before claiming coverage.
 - If tests fail due to script path migration/import drift, restore scripts to their primary canonical paths instead of introducing new mapping/wrapper indirection.
+- Always restore scripts to their canonical subfolder under `scripts/` as a direct file move; do not create copies, wrappers, mappings, or archive indirection shims.
 - Use only repo-local instruction sources for this repository; ignore workstation-level `~/.claude/CLAUDE.md` as policy input.
 - For audit/removal workflows, enforce one-candidate-per-PR to preserve deterministic traceability.
 - `READY_FOR_REVIEW` may only be claimed when evidence is complete: mode/risk/path, scope IN/OUT, exact gates + outcomes, and relevant selectors/artifacts.

@@ -310,6 +310,8 @@ def compare_ri_p1_off_parity_rows(
             if b_row.reason != c_row.reason:
                 reason_mismatch_count += 1
 
+            if b_row.size is None and c_row.size is None:
+                continue
             if b_row.size is None or c_row.size is None:
                 size_mismatch_count += 1
             elif abs(c_row.size - b_row.size) > size_tolerance:

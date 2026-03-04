@@ -127,6 +127,32 @@ def test_compare_ri_p1_off_parity_rows_fail_size_tolerance_breach() -> None:
     assert result.size_mismatch_count == 1
 
 
+def test_compare_ri_p1_off_parity_rows_pass_when_both_sizes_none() -> None:
+    baseline_rows = [{"row_id": 1, "action": "NONE", "reason": "NO_ENTRY", "size": None}]
+    candidate_rows = [{"row_id": 1, "action": "NONE", "reason": "NO_ENTRY", "size": None}]
+
+    result = compare_ri_p1_off_parity_rows(
+        baseline_rows=baseline_rows,
+        candidate_rows=candidate_rows,
+    )
+
+    assert result.parity_verdict == "PASS"
+    assert result.size_mismatch_count == 0
+
+
+def test_compare_ri_p1_off_parity_rows_fail_when_only_one_size_none() -> None:
+    baseline_rows = [{"row_id": 1, "action": "NONE", "reason": "NO_ENTRY", "size": None}]
+    candidate_rows = [{"row_id": 1, "action": "NONE", "reason": "NO_ENTRY", "size": 0.0}]
+
+    result = compare_ri_p1_off_parity_rows(
+        baseline_rows=baseline_rows,
+        candidate_rows=candidate_rows,
+    )
+
+    assert result.parity_verdict == "FAIL"
+    assert result.size_mismatch_count == 1
+
+
 def test_compare_ri_p1_off_parity_rows_fail_missing_row() -> None:
     baseline_rows = [
         {"row_id": 1, "action": "LONG", "reason": "ENTRY_LONG", "size": 1.0},

@@ -60,6 +60,7 @@ You are an IMPLEMENTATION agent.
 - Default mode is NO BEHAVIOR CHANGE unless explicitly overridden.
 - Keep diffs minimal and testable.
 - Update imports/references when moving files.
+- Restore scripts to their canonical subfolder under `scripts/` by direct move only; do not introduce copies, wrappers, mappings, or archive indirection.
 - For non-trivial or high-sensitivity changes, run full required gates before and after changes.
 - For trivial quick-path changes, run minimal checks per `.github/copilot-instructions.md` and escalate on doubt.
 - Invoke relevant repository skills for the task domain before implementation.

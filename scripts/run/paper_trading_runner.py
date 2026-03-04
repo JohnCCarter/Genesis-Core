@@ -4,7 +4,6 @@ import runpy
 import sys
 from pathlib import Path
 
-
 _TARGET = (Path(__file__).resolve().parents[1] / "paper_trading_runner.py").resolve()
 
 

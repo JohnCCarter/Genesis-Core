@@ -4,7 +4,6 @@ import runpy
 import sys
 from pathlib import Path
 
-
 _TARGET = (
     Path(__file__).resolve().parent.parent / "archive/2026-02/analysis/preflight_optuna_check.py"
 ).resolve()

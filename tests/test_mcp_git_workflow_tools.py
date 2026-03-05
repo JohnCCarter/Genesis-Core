@@ -85,6 +85,34 @@ async def test_create_task_branch_from_base_branch(git_repo: Path) -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("input_limit", "expected_limit"),
+    [
+        (None, 20),
+        (0, 1),
+        (201, 200),
+        (20, 20),
+    ],
+)
+async def test_git_log_dry_run_normalizes_log_limit(
+    git_repo: Path, input_limit: int | None, expected_limit: int
+) -> None:
+    config = _test_config()
+
+    result = await git_workflow_operation(
+        "git_log",
+        config,
+        dry_run=True,
+        log_limit=input_limit,
+    )
+
+    assert result["success"] is True
+    assert result["preview"] is True
+    assert result["normalized_args"]["log_limit"] == expected_limit
+    assert result["commands"][0] == ["git", "log", "--oneline", f"-n{expected_limit}"]
+
+
+@pytest.mark.asyncio
 async def test_push_to_protected_branch_is_blocked(git_repo: Path) -> None:
     config = _test_config()
     _git(git_repo, "checkout", "feature/composable-strategy-phase2")

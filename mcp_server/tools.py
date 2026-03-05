@@ -736,11 +736,6 @@ def _normalize_git_pathspecs(pathspecs: list[str] | str | None) -> list[str]:
     return cleaned
 
 
-def _normalize_log_limit(limit: int | None) -> int:
-    raw = 20 if limit is None else int(limit)
-    return max(1, min(200, raw))
-
-
 def _normalize_github_web_base(remote_url: str | None) -> str | None:
     if not remote_url:
         return None
@@ -1019,7 +1014,8 @@ async def git_workflow_operation(
             return status
 
         if operation == "git_log":
-            limit = _normalize_log_limit(log_limit)
+            raw_limit = 20 if log_limit is None else int(log_limit)
+            limit = max(1, min(200, raw_limit))
             normalized_args["log_limit"] = limit
             preview_commands.append(["git", "log", "--oneline", f"-n{limit}"])
             if dry_run:

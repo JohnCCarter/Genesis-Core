@@ -9,12 +9,6 @@ Bug #1 root cause: record_trade() was called based on action from evaluate_pipel
 trades" where Cooldown state updated for signals that BacktestEngine rejected.
 """
 
-import sys
-from pathlib import Path
-
-# Add src to path for imports
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
-
 from core.strategy.components.cooldown import CooldownComponent
 
 

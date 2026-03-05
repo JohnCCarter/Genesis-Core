@@ -25,7 +25,7 @@ async def test_ws_public_timeout():
 
     orig_connect = mod.websockets.connect
 
-    def fake_connect(*args, **kwargs):  # noqa: D401, ARG002
+    def fake_connect(*_args, **_kwargs):  # noqa: D401
         return DummyWS()
 
     mod.websockets.connect = fake_connect  # type: ignore

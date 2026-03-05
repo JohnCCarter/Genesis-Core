@@ -101,3 +101,50 @@ def test_check_swing_updates_reads_producer_schema_and_keeps_0786_level():
     assert pos.exit_swing_low == 80.0
     assert set(pos.exit_fib_levels.keys()) == {0.786, 0.618, 0.5, 0.382}
     assert pos.exit_swing_timestamp == new_ctx["last_update"]
+
+
+def test_check_partial_exits_tp1_uses_padding_semantics():
+    engine = HTFFibonacciExitEngine(config={})
+    pos = _make_position()
+
+    position_id = f"{pos.symbol}_{pos.entry_time.isoformat()}"
+    engine.triggered_exits[position_id] = set()
+
+    current_bar = {
+        "open": 104.6,
+        "high": 104.7,
+        "low": 104.6,
+        "close": 104.65,
+    }
+    atr = 10.0
+    htf_levels = {0.382: 105.0}
+
+    actions = engine._check_partial_exits(pos, current_bar, atr, htf_levels, position_id)
+
+    assert len(actions) == 1
+    assert actions[0].action == "PARTIAL"
+    assert actions[0].reason == "TP1_0382"
+    assert actions[0].size == pos.current_size * engine.partial_1_pct
+
+
+def test_check_partial_exits_tp1_outside_padding_does_not_trigger():
+    engine = HTFFibonacciExitEngine(config={})
+    pos = _make_position()
+
+    position_id = f"{pos.symbol}_{pos.entry_time.isoformat()}"
+    engine.triggered_exits[position_id] = set()
+
+    # Target=105.0 and ATR=10.0 => pad=max(0.05*10, 0.0005*105)=0.5
+    # With high=104.49 and low=104.4, target is just outside upper boundary (104.99).
+    current_bar = {
+        "open": 104.4,
+        "high": 104.49,
+        "low": 104.4,
+        "close": 104.45,
+    }
+    atr = 10.0
+    htf_levels = {0.382: 105.0}
+
+    actions = engine._check_partial_exits(pos, current_bar, atr, htf_levels, position_id)
+
+    assert actions == []

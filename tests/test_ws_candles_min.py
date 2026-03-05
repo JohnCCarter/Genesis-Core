@@ -6,7 +6,7 @@ from core.io.bitfinex.ws_public import one_message_candles
 
 
 @pytest.mark.asyncio
-async def test_ws_candles_timeout(monkeypatch):
+async def test_ws_candles_timeout():
     class DummyWS:
         async def recv(self):  # noqa: D401
             import asyncio
@@ -17,7 +17,7 @@ async def test_ws_candles_timeout(monkeypatch):
         async def __aenter__(self):  # noqa: D401
             return self
 
-        async def __aexit__(self, exc_type, exc, tb):  # noqa: D401, ARG002
+        async def __aexit__(self, _exc_type, _exc, _tb):  # noqa: D401
             return False
 
         async def send(self, _):  # noqa: D401, ARG002

@@ -4,7 +4,7 @@ from core.io.bitfinex.exchange_client import get_exchange_client
 
 
 @pytest.mark.asyncio
-async def test_build_and_request_smoke(monkeypatch):
+async def test_build_and_request_smoke():
     ec = get_exchange_client()
 
     class DummyResponse:

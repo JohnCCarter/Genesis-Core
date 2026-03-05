@@ -6,8 +6,6 @@ import threading
 import time
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from core.optimizer.runner import _get_default_config
 
 
@@ -129,7 +127,3 @@ class TestDefaultConfigCaching:
             # This is acceptable because _deep_merge creates a new dict anyway.
             # Document this behavior:
             assert config1["test"] == "config"
-
-
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"])

@@ -123,7 +123,3 @@ def test_cache_increased_size():
 
     # Should be larger than old size (was 100, now 500)
     assert features_asof._MAX_CACHE_SIZE >= 500, "Cache size should be increased for backtests"
-
-
-if __name__ == "__main__":
-    pytest.main([__file__, "-v", "-s"])

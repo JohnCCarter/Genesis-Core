@@ -635,7 +635,3 @@ def test_optimizer_warns_on_narrow_space(tmp_path: Path, capsys):
         captured = capsys.readouterr()
         assert "Search space warnings" in captured.out
         assert "small" in captured.out.lower()
-
-
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"])

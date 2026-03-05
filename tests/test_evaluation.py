@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from src.core.ml.evaluation import (
+from core.ml.evaluation import (
     evaluate_binary_classification,
     evaluate_calibration,
     evaluate_trading_performance,

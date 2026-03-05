@@ -4,7 +4,7 @@ Tests for exit Fibonacci calculator module.
 
 import pytest
 
-from src.core.indicators.exit_fibonacci import (
+from core.indicators.exit_fibonacci import (
     calculate_exit_fibonacci_levels,
     calculate_swing_improvement,
     format_exit_levels_for_display,
@@ -328,7 +328,3 @@ class TestChamounSymmetry:
         # All levels should be between swing_low and swing_high
         for _level, price in exit_levels.items():
             assert swing_low < price < swing_high
-
-
-if __name__ == "__main__":
-    pytest.main([__file__])

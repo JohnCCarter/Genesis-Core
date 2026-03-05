@@ -8,7 +8,6 @@ import time
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from core.indicators.volume import (
     calculate_volume_ema,
@@ -188,10 +187,6 @@ class TestHTFFibonacciOptimizations:
         assert "htf_fib_0618" in result.columns
         assert "htf_swing_high" in result.columns
         assert "htf_swing_age_bars" in result.columns
-
-
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"])
 
 
 class TestBacktestLoopPerformance:

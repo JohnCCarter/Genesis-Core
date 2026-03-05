@@ -85,6 +85,40 @@ async def test_create_task_branch_from_base_branch(git_repo: Path) -> None:
 
 
 @pytest.mark.asyncio
+async def test_create_task_branch_rejects_slug_without_alnum(git_repo: Path) -> None:
+    config = _test_config()
+
+    result = await git_workflow_operation(
+        "create_task_branch",
+        config,
+        dry_run=True,
+        task_slug="---!!!---",
+        date_utc="20260219",
+    )
+
+    assert result["success"] is False
+    assert result["operation"] == "create_task_branch"
+    assert result["error"] == "task_slug must include at least one alphanumeric character"
+
+
+@pytest.mark.asyncio
+async def test_create_task_branch_rejects_invalid_date_format(git_repo: Path) -> None:
+    config = _test_config()
+
+    result = await git_workflow_operation(
+        "create_task_branch",
+        config,
+        dry_run=True,
+        task_slug="valid-slug",
+        date_utc="2026-02-19",
+    )
+
+    assert result["success"] is False
+    assert result["operation"] == "create_task_branch"
+    assert result["error"] == "date_utc must use YYYYMMDD format"
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("input_limit", "expected_limit"),
     [

@@ -685,11 +685,6 @@ async def _run_subprocess_command_async(
     )
 
 
-def _sanitize_task_slug(task_slug: str) -> str:
-    normalized = re.sub(r"[^a-z0-9]+", "-", task_slug.strip().lower()).strip("-")
-    return normalized
-
-
 def _normalize_task_branch(
     *, task_slug: str | None, task_branch: str | None, date_utc: str | None
 ) -> str:
@@ -699,7 +694,7 @@ def _normalize_task_branch(
     if not task_slug:
         raise ValueError("task_slug is required when task_branch is not provided")
 
-    slug = _sanitize_task_slug(task_slug)
+    slug = re.sub(r"[^a-z0-9]+", "-", task_slug.strip().lower()).strip("-")
     if not slug:
         raise ValueError("task_slug must include at least one alphanumeric character")
 

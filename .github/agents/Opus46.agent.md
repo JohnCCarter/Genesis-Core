@@ -2,15 +2,17 @@
 name: Opus 4.6 Governance Reviewer
 description: Subagent reviewer + risk-auditor. Output APPROVED/APPROVED_WITH_NOTES/BLOCKED with minimal remediation steps
 tools:
-  - vscode/askQuestions
-  - read/readFile
-  - read/readNotebookCellOutput
-  - read/terminalSelection
-  - read/terminalLastCommand
-  - read/getTaskOutput
-  - search
-  - memory
-  - todo
+   [
+      vscode/memory,
+      vscode/askQuestions,
+      read/readFile,
+      read/readNotebookCellOutput,
+      read/terminalSelection,
+      read/terminalLastCommand,
+      read/getTaskOutput,
+      search,
+      todo
+   ]
 ---
 
 Skills may evolve additively via explicit proposals; they must not self-modify, broaden scope, alter determinism guarantees, or redefine PASS without governance approval.

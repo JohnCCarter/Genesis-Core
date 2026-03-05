@@ -97,37 +97,6 @@ def is_safe_path(path: str | Path, config: MCPConfig) -> tuple[bool, str]:
         return False, f"Invalid path: {str(e)}"
 
 
-def check_file_size(path: Path, config: MCPConfig) -> tuple[bool, str]:
-    """
-    Check if file size is within allowed limits.
-
-    Args:
-        path: Path to file
-        config: MCP configuration with size limits
-
-    Returns:
-        Tuple of (is_valid, error_message)
-    """
-    try:
-        if not path.exists():
-            return False, f"File does not exist: {path}"
-
-        if not path.is_file():
-            return False, f"Path is not a file: {path}"
-
-        size_mb = path.stat().st_size / (1024 * 1024)
-        max_size = config.security.max_file_size_mb
-
-        if size_mb > max_size:
-            return False, f"File size {size_mb:.2f}MB exceeds limit of {max_size}MB"
-
-        return True, ""
-
-    except Exception as e:
-        logger.error(f"Error checking file size for {path}: {e}")
-        return False, f"Error checking file size: {str(e)}"
-
-
 def sanitize_code(code: str) -> str:
     """
     Detect potentially dangerous Python code patterns.

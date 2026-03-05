@@ -19,7 +19,7 @@ from typing import Any
 from urllib.parse import quote, urlsplit, urlunsplit
 
 from .config import MCPConfig, get_project_root
-from .utils import check_file_size, is_safe_path, sanitize_code
+from .utils import is_safe_path, sanitize_code
 
 logger = logging.getLogger(__name__)
 
@@ -81,9 +81,18 @@ async def read_file(file_path: str, config: MCPConfig) -> dict[str, Any]:
             return {"success": False, "error": f"Path is not a file: {file_path}"}
 
         # Check file size
-        is_valid_size, size_error = check_file_size(path_obj, config)
-        if not is_valid_size:
-            return {"success": False, "error": size_error}
+        try:
+            size_mb = path_obj.stat().st_size / (1024 * 1024)
+            max_size = config.security.max_file_size_mb
+
+            if size_mb > max_size:
+                return {
+                    "success": False,
+                    "error": f"File size {size_mb:.2f}MB exceeds limit of {max_size}MB",
+                }
+        except Exception as e:
+            logger.error(f"Error checking file size for {path_obj}: {e}")
+            return {"success": False, "error": f"Error checking file size: {str(e)}"}
 
         # Read file content (no external deps; avoid aiofiles requirement)
         content = await asyncio.to_thread(path_obj.read_text, encoding="utf-8")

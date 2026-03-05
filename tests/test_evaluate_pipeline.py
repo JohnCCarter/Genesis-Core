@@ -3,6 +3,8 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import Any
 
+import pytest
+
 from core.strategy.evaluate import _volume_score_from_candles, evaluate_pipeline
 
 
@@ -514,3 +516,107 @@ def test_evaluate_pipeline_authority_mode_source_invariant_contract(
         assert source == expected_source
         assert shadow_obs["authority_mode"] == expected_mode
         assert shadow_obs["decision_input"] is False
+
+
+def test_evaluate_pipeline_ri_v2_clarity_on_changes_sizing_only_and_logs(
+    monkeypatch,
+    sample_policy: dict[str, Any],
+    sample_configs: dict[str, Any],
+    small_candle_history: dict[str, Any],
+) -> None:
+    from core.strategy import evaluate as ev
+    from core.strategy import regime_unified as ru
+
+    monkeypatch.setattr(ru, "detect_regime_unified", lambda *_a, **_k: "bull")
+    monkeypatch.setattr(
+        ev,
+        "predict_proba_for",
+        lambda *_a, **_k: ({"buy": 0.8, "sell": 0.2}, {"versions": {"proba": "stub"}}),
+    )
+
+    def _confidence_stub(
+        _probas: dict[str, float],
+        *,
+        atr_pct: float | None = None,
+        spread_bp: float | None = None,
+        volume_score: float | None = None,
+        data_quality: float | None = None,
+        config: dict[str, Any] | None = None,
+    ) -> tuple[dict[str, float], dict[str, Any]]:
+        _ = (atr_pct, spread_bp, volume_score, data_quality)
+        mode = "raw" if bool((config or {}).get("enabled") is False) else "scaled"
+        return {"buy": 0.8, "sell": 0.2, "overall": 0.8}, {"mode": mode}
+
+    monkeypatch.setattr(ev, "compute_confidence", _confidence_stub)
+
+    cfg_base = deepcopy(sample_configs)
+    cfg_base.pop("precomputed_features", None)
+    cfg_base.pop("_global_index", None)
+    cfg_base.setdefault("thresholds", {})["entry_conf_overall"] = 0.6
+    cfg_base["thresholds"]["regime_proba"] = {"bull": 0.6, "balanced": 0.6}
+    cfg_base.setdefault("ev", {})["R_default"] = 1.0
+    cfg_base.setdefault("gates", {})["cooldown_bars"] = 0
+    cfg_base["gates"]["hysteresis_steps"] = 1
+    cfg_base.setdefault("risk", {})["risk_map"] = [[0.6, 1.0]]
+    cfg_base["htf_fib"] = {"entry": {"enabled": False}}
+    cfg_base["ltf_fib"] = {"entry": {"enabled": False}}
+    cfg_base["quality"] = {"apply": "sizing_only"}
+    cfg_base.setdefault("multi_timeframe", {})["use_htf_block"] = False
+
+    cfg_off = deepcopy(cfg_base)
+    cfg_off["multi_timeframe"]["regime_intelligence"] = {
+        "enabled": False,
+        "version": "v2",
+        "clarity_score": {
+            "enabled": True,
+            "weights_version": "weights_v1",
+            "weights_v1": {
+                "confidence": 0.5,
+                "edge": 0.2,
+                "ev": 0.2,
+                "regime_alignment": 0.1,
+            },
+            "size_multiplier_min": 0.5,
+            "size_multiplier_max": 1.0,
+        },
+    }
+
+    cfg_on = deepcopy(cfg_off)
+    cfg_on["multi_timeframe"]["regime_intelligence"]["enabled"] = True
+
+    result_off, meta_off = ev.evaluate_pipeline(
+        small_candle_history,
+        policy=sample_policy,
+        configs=cfg_off,
+    )
+    result_on_1, meta_on_1 = ev.evaluate_pipeline(
+        small_candle_history,
+        policy=sample_policy,
+        configs=cfg_on,
+    )
+    result_on_2, meta_on_2 = ev.evaluate_pipeline(
+        small_candle_history,
+        policy=sample_policy,
+        configs=cfg_on,
+    )
+
+    assert result_off["action"] == result_on_1["action"] == result_on_2["action"] == "LONG"
+    assert meta_off["decision"]["reasons"] == meta_on_1["decision"]["reasons"]
+    assert meta_on_1["decision"]["reasons"] == meta_on_2["decision"]["reasons"]
+
+    size_off = float(meta_off["decision"]["size"])
+    size_on_1 = float(meta_on_1["decision"]["size"])
+    size_on_2 = float(meta_on_2["decision"]["size"])
+    assert size_on_1 == pytest.approx(size_on_2)
+    assert size_on_1 < size_off
+
+    state_off = meta_off["decision"]["state_out"]
+    state_on = meta_on_1["decision"]["state_out"]
+    assert state_off["ri_clarity_enabled"] is False
+    assert state_on["ri_clarity_enabled"] is True
+    assert state_on["ri_clarity_apply"] == "sizing_only"
+    assert state_on["ri_clarity_round_policy"] == "half_even"
+    assert isinstance(state_on["ri_clarity_score"], int)
+    assert 0 <= state_on["ri_clarity_score"] <= 100
+    assert state_on["size_after_ri_clarity"] == pytest.approx(size_on_1)
+    assert state_on["size_before_ri_clarity"] > state_on["size_after_ri_clarity"]

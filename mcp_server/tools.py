@@ -736,7 +736,7 @@ def _normalize_git_pathspecs(pathspecs: list[str] | str | None) -> list[str]:
     return cleaned
 
 
-def _normalize_github_web_base(remote_url: str | None) -> str | None:
+def _build_compare_url(remote_url: str | None, *, base_branch: str, head_branch: str) -> str | None:
     if not remote_url:
         return None
 
@@ -749,18 +749,14 @@ def _normalize_github_web_base(remote_url: str | None) -> str | None:
         try:
             host_and_path = remote.split("@", 1)[1]
             host, path = host_and_path.split(":", 1)
-            return f"https://{host}/{path}"
+            web_base = f"https://{host}/{path}"
         except Exception:
             return None
+    elif remote.startswith("https://") or remote.startswith("http://"):
+        web_base = remote
+    else:
+        return None
 
-    if remote.startswith("https://") or remote.startswith("http://"):
-        return remote
-
-    return None
-
-
-def _build_compare_url(remote_url: str | None, *, base_branch: str, head_branch: str) -> str | None:
-    web_base = _normalize_github_web_base(remote_url)
     if not web_base:
         return None
     return (

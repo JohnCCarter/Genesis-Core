@@ -269,3 +269,37 @@ async def test_create_pr_with_gh_uses_thread_boundary(
     assert res["created"] is True
     assert res["pr_url"] == "https://example.invalid/pr/1"
     assert any(func is fake_run for func in thread_funcs)
+
+
+@pytest.mark.parametrize(
+    ("remote_url", "expected_base"),
+    [
+        (
+            "https://github.com/JohnCCarter/Genesis-Core.git",
+            "https://github.com/JohnCCarter/Genesis-Core",
+        ),
+        (
+            "git@github.com:JohnCCarter/Genesis-Core.git",
+            "https://github.com/JohnCCarter/Genesis-Core",
+        ),
+        (None, None),
+        ("file:///tmp/origin.git", None),
+    ],
+)
+def test_build_compare_url_normalizes_supported_and_invalid_remotes(
+    remote_url: str | None, expected_base: str | None
+) -> None:
+    url = tools_mod._build_compare_url(  # noqa: SLF001 - internal helper parity contract
+        remote_url,
+        base_branch="feature/composable-strategy-phase2",
+        head_branch="chatgpt/20260219-task",
+    )
+
+    if expected_base is None:
+        assert url is None
+        return
+
+    assert url is not None
+    assert url.startswith(expected_base + "/compare/")
+    assert "feature%2Fcomposable-strategy-phase2" in url
+    assert "chatgpt%2F20260219-task" in url

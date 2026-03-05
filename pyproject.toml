@@ -111,3 +111,20 @@ addopts = "-q"
 pythonpath = ["src"]
 testpaths = ["tests"]
 norecursedirs = ["scripts", "cache", "data", "results", "logs", "archive", "tmp", ".venv"]
+
+[tool.vulture]
+paths = ["src/core", "mcp_server", "scripts", "tests"]
+exclude = [
+  ".venv/",
+  "archive/",
+  "artifacts/",
+  "cache/",
+  "data/",
+  "logs/",
+  "results/",
+  "tmp/",
+  "reports/",
+  "scripts/archive/",
+]
+min_confidence = 80
+sort_by_size = true

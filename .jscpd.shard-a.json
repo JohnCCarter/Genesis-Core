@@ -1,0 +1,27 @@
+{
+  "threshold": 2,
+  "minTokens": 60,
+  "reporters": ["console", "json"],
+  "output": "reports/jscpd/shard-a",
+  "absolute": true,
+  "gitignore": true,
+  "path": ["scripts", "scripts/archive"],
+  "ignore": [
+    "**/.venv/**",
+    "**/artifacts/**",
+    "**/cache/**",
+    "**/data/**",
+    "**/logs/**",
+    "**/results/**",
+    "**/tmp/**",
+    "**/reports/**",
+    "**/__pycache__/**"
+  ],
+  "formatsExts": {
+    "python": ["py"],
+    "json": ["json"],
+    "yaml": ["yaml", "yml"],
+    "markdown": ["md"],
+    "shellscript": ["sh", "ps1", "bash"]
+  }
+}

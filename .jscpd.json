@@ -1,0 +1,30 @@
+{
+  "threshold": 2,
+  "minTokens": 80,
+  "reporters": ["console", "json"],
+  "output": "reports/jscpd",
+  "absolute": true,
+  "gitignore": true,
+  "path": ["src", "mcp_server", "scripts", "tests"],
+  "ignore": [
+    "**/.venv/**",
+    "**/archive/**",
+    "**/artifacts/**",
+    "**/cache/**",
+    "**/data/**",
+    "**/logs/**",
+    "**/results/**",
+    "**/tmp/**",
+    "**/reports/**",
+    "**/scripts/archive/**",
+    "**/__pycache__/**"
+  ],
+  "formatsExts": {
+    "python": ["py"],
+    "javascript": ["js", "mjs", "cjs"],
+    "typescript": ["ts", "tsx"],
+    "json": ["json"],
+    "yaml": ["yaml", "yml"],
+    "markdown": ["md"]
+  }
+}

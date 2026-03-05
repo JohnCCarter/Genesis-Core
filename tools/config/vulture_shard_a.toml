@@ -1,0 +1,15 @@
+[tool.vulture]
+paths = ["scripts", "scripts/archive"]
+exclude = [
+  ".venv/",
+  "artifacts/",
+  "cache/",
+  "data/",
+  "logs/",
+  "results/",
+  "tmp/",
+  "reports/",
+  "__pycache__/"
+]
+min_confidence = 80
+sort_by_size = true

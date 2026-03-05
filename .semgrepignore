@@ -1,0 +1,17 @@
+# Genesis-Core Semgrep ignore (HARD baseline)
+# Default profile excludes archive/generated artifacts to reduce noise and risk.
+# For Shard A targeted archive review, use the command profile in
+# `tools/config/cleanup_scan_profiles.md`.
+
+.venv/
+/archive/
+artifacts/
+cache/
+data/
+logs/
+results/
+tmp/
+reports/
+registry/fixtures/
+__pycache__/
+*.ipynb

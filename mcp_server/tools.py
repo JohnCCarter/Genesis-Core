@@ -563,71 +563,6 @@ async def _run_git_command_async(
     )
 
 
-def _git_repo_state(
-    *,
-    git_exe: str,
-    project_root: Path,
-    timeout_s: int,
-    git_env: dict[str, str],
-) -> dict[str, Any]:
-    inside = _run_git_command(
-        git_exe,
-        project_root=project_root,
-        args=["rev-parse", "--is-inside-work-tree"],
-        timeout_s=timeout_s,
-        git_env=git_env,
-    )
-    if inside.returncode != 0 or inside.stdout.strip().lower() != "true":
-        return {"success": False, "error": "Not a git repository"}
-
-    branch_res = _run_git_command(
-        git_exe,
-        project_root=project_root,
-        args=["rev-parse", "--abbrev-ref", "HEAD"],
-        timeout_s=timeout_s,
-        git_env=git_env,
-    )
-    if branch_res.returncode != 0:
-        return {"success": False, "error": "Unable to resolve current git branch"}
-
-    head_res = _run_git_command(
-        git_exe,
-        project_root=project_root,
-        args=["rev-parse", "HEAD"],
-        timeout_s=timeout_s,
-        git_env=git_env,
-    )
-    if head_res.returncode != 0:
-        return {"success": False, "error": "Unable to resolve HEAD commit"}
-
-    remote_res = _run_git_command(
-        git_exe,
-        project_root=project_root,
-        args=["config", "--get", "remote.origin.url"],
-        timeout_s=timeout_s,
-        git_env=git_env,
-    )
-    remote_url = remote_res.stdout.strip() or None
-    if remote_url and "://" in remote_url:
-        try:
-            parts = urlsplit(remote_url)
-            netloc = parts.netloc
-            if "@" in netloc:
-                netloc = netloc.split("@", 1)[1]
-                remote_url = urlunsplit(
-                    (parts.scheme, netloc, parts.path, parts.query, parts.fragment)
-                )
-        except Exception:
-            pass
-
-    return {
-        "success": True,
-        "branch": branch_res.stdout.strip() or "HEAD",
-        "head_sha": head_res.stdout.strip(),
-        "remote_url": remote_url,
-    }
-
-
 def _build_compare_url(remote_url: str | None, *, base_branch: str, head_branch: str) -> str | None:
     if not remote_url:
         return None
@@ -832,14 +767,65 @@ async def get_git_repo_state(config: MCPConfig) -> dict[str, Any]:
         git_env.setdefault("GIT_TERMINAL_PROMPT", "0")
         git_env.setdefault("GCM_INTERACTIVE", "Never")
 
-        state = await asyncio.to_thread(
-            _git_repo_state,
-            git_exe=git_exe,
-            project_root=get_project_root(),
-            timeout_s=max(1, min(30, int(config.security.execution_timeout_seconds or 5))),
+        timeout_s = max(1, min(30, int(config.security.execution_timeout_seconds or 5)))
+        project_root = get_project_root()
+
+        inside = await _run_git_command_async(
+            git_exe,
+            project_root=project_root,
+            args=["rev-parse", "--is-inside-work-tree"],
+            timeout_s=timeout_s,
             git_env=git_env,
         )
-        return state
+        if inside.returncode != 0 or inside.stdout.strip().lower() != "true":
+            return {"success": False, "error": "Not a git repository"}
+
+        branch_res = await _run_git_command_async(
+            git_exe,
+            project_root=project_root,
+            args=["rev-parse", "--abbrev-ref", "HEAD"],
+            timeout_s=timeout_s,
+            git_env=git_env,
+        )
+        if branch_res.returncode != 0:
+            return {"success": False, "error": "Unable to resolve current git branch"}
+
+        head_res = await _run_git_command_async(
+            git_exe,
+            project_root=project_root,
+            args=["rev-parse", "HEAD"],
+            timeout_s=timeout_s,
+            git_env=git_env,
+        )
+        if head_res.returncode != 0:
+            return {"success": False, "error": "Unable to resolve HEAD commit"}
+
+        remote_res = await _run_git_command_async(
+            git_exe,
+            project_root=project_root,
+            args=["config", "--get", "remote.origin.url"],
+            timeout_s=timeout_s,
+            git_env=git_env,
+        )
+        remote_url = remote_res.stdout.strip() or None
+        if remote_url and "://" in remote_url:
+            try:
+                parts = urlsplit(remote_url)
+                netloc = parts.netloc
+                if "@" in netloc:
+                    netloc = netloc.split("@", 1)[1]
+                    remote_url = urlunsplit(
+                        (parts.scheme, netloc, parts.path, parts.query, parts.fragment)
+                    )
+            except Exception:
+                pass
+
+        return {
+            "success": True,
+            "branch": branch_res.stdout.strip() or "HEAD",
+            "head_sha": head_res.stdout.strip(),
+            "remote_url": remote_url,
+        }
     except Exception as e:
         logger.error(f"Error getting git repo state: {e}")
         return {"success": False, "error": f"Error getting git repo state: {str(e)}"}
@@ -887,19 +873,58 @@ async def git_workflow_operation(
     mutating = operation in GIT_WORKFLOW_MUTATING_OPERATIONS
 
     try:
-        state = await asyncio.to_thread(
-            _git_repo_state,
+        inside = await _run_git_command_async(
             git_exe=git_exe,
             project_root=project_root,
+            args=["rev-parse", "--is-inside-work-tree"],
             timeout_s=timeout_s,
             git_env=git_env,
         )
-        if not state.get("success"):
-            return state
+        if inside.returncode != 0 or inside.stdout.strip().lower() != "true":
+            return {"success": False, "error": "Not a git repository"}
 
-        current_branch = str(state.get("branch") or "HEAD")
-        head_sha = str(state.get("head_sha") or "")
-        remote_url = state.get("remote_url")
+        branch_res = await _run_git_command_async(
+            git_exe,
+            project_root=project_root,
+            args=["rev-parse", "--abbrev-ref", "HEAD"],
+            timeout_s=timeout_s,
+            git_env=git_env,
+        )
+        if branch_res.returncode != 0:
+            return {"success": False, "error": "Unable to resolve current git branch"}
+
+        head_res = await _run_git_command_async(
+            git_exe,
+            project_root=project_root,
+            args=["rev-parse", "HEAD"],
+            timeout_s=timeout_s,
+            git_env=git_env,
+        )
+        if head_res.returncode != 0:
+            return {"success": False, "error": "Unable to resolve HEAD commit"}
+
+        remote_res = await _run_git_command_async(
+            git_exe,
+            project_root=project_root,
+            args=["config", "--get", "remote.origin.url"],
+            timeout_s=timeout_s,
+            git_env=git_env,
+        )
+        remote_url = remote_res.stdout.strip() or None
+        if remote_url and "://" in remote_url:
+            try:
+                parts = urlsplit(remote_url)
+                netloc = parts.netloc
+                if "@" in netloc:
+                    netloc = netloc.split("@", 1)[1]
+                    remote_url = urlunsplit(
+                        (parts.scheme, netloc, parts.path, parts.query, parts.fragment)
+                    )
+            except Exception:
+                pass
+
+        current_branch = branch_res.stdout.strip() or "HEAD"
+        head_sha = head_res.stdout.strip()
 
         preview_commands: list[list[str]] = []
         normalized_args: dict[str, Any] = {}

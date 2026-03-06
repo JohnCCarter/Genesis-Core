@@ -23,6 +23,10 @@ TEST_SYMBOL = "tTEST"
 TEST_TIMEFRAME = "1h"
 TEST_SNAPSHOT_ID = "tTEST_1h_20240101_20240201_v1"
 TEST_RUN_ID = "run_test"
+TEST_START_DATE = "2024-01-01"
+TEST_END_DATE = "2024-01-02"
+TEST_RUN_META_SNAPSHOT_ID = "snap_A"
+TEST_CFG_FILENAME = "cfg.yaml"
 
 
 def _nested_level(depth: int, leaf: dict[str, Any]) -> dict[str, Any]:
@@ -460,14 +464,14 @@ def test_build_backtest_cmd_uses_sys_executable_and_module_invocation(tmp_path: 
         timeframe=TEST_TIMEFRAME,
         warmup_bars=50,
         parameters={},
-        start_date="2024-01-01",
-        end_date="2024-01-02",
+        start_date=TEST_START_DATE,
+        end_date=TEST_END_DATE,
     )
 
     cmd = runner._build_backtest_cmd(
         trial,
-        start_date="2024-01-01",
-        end_date="2024-01-02",
+        start_date=TEST_START_DATE,
+        end_date=TEST_END_DATE,
         capital_default=10_000.0,
         commission_default=0.002,
         slippage_default=0.0,
@@ -560,8 +564,8 @@ def test_run_trial_uses_scoring_thresholds_from_constraints(
         timeframe=TEST_TIMEFRAME,
         warmup_bars=1,
         parameters=_entry_conf_params(0.4),
-        start_date="2024-01-01",
-        end_date="2024-01-02",
+        start_date=TEST_START_DATE,
+        end_date=TEST_END_DATE,
     )
 
     seen: dict[str, Any] = {}
@@ -674,8 +678,8 @@ def test_run_trial_abort_payload_is_strict_json_and_includes_score_version(
         timeframe=TEST_TIMEFRAME,
         warmup_bars=1,
         parameters={"thresholds": {"entry_conf_overall": 0.35}},
-        start_date="2024-01-01",
-        end_date="2024-01-02",
+        start_date=TEST_START_DATE,
+        end_date=TEST_END_DATE,
     )
 
     def fake_run_backtest_direct(*_args: Any, **_kwargs: Any) -> tuple[int, str, dict[str, Any]]:
@@ -731,11 +735,11 @@ def test_ensure_run_metadata_mismatch_is_fail_fast(
 
     run_dir = tmp_path / "run"
     run_dir.mkdir(parents=True, exist_ok=True)
-    config_path = tmp_path / "cfg.yaml"
+    config_path = tmp_path / TEST_CFG_FILENAME
     config_path.write_text("meta: {}\n", encoding="utf-8")
 
     meta = {
-        "snapshot_id": "snap_A",
+        "snapshot_id": TEST_RUN_META_SNAPSHOT_ID,
         "symbol": TEST_SYMBOL,
         "timeframe": TEST_TIMEFRAME,
     }
@@ -768,11 +772,11 @@ def test_ensure_run_metadata_backfills_missing_fields(
 
     run_dir = tmp_path / "run"
     run_dir.mkdir(parents=True, exist_ok=True)
-    config_path = tmp_path / "cfg.yaml"
+    config_path = tmp_path / TEST_CFG_FILENAME
     config_path.write_text("meta: {}\n", encoding="utf-8")
 
     meta = {
-        "snapshot_id": "snap_A",
+        "snapshot_id": TEST_RUN_META_SNAPSHOT_ID,
         "symbol": TEST_SYMBOL,
         "timeframe": TEST_TIMEFRAME,
     }
@@ -780,7 +784,7 @@ def test_ensure_run_metadata_backfills_missing_fields(
 
     # Older/partial run_meta.json missing key fields should be backfilled.
     (run_dir / "run_meta.json").write_text(
-        json.dumps({"run_id": run_id, "snapshot_id": "snap_A"}),
+        json.dumps({"run_id": run_id, "snapshot_id": TEST_RUN_META_SNAPSHOT_ID}),
         encoding="utf-8",
     )
 

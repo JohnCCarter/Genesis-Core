@@ -27,22 +27,6 @@ class CheckResult:
     detail: str
 
 
-def _iter_git_owner_anomalies(git_dir: Path, expected_uid: int, limit: int = 20) -> list[Path]:
-    anomalies: list[Path] = []
-    for root, dirs, files in os.walk(git_dir):
-        root_path = Path(root)
-        for entry_name in [*dirs, *files]:
-            entry = root_path / entry_name
-            try:
-                if entry.lstat().st_uid != expected_uid:
-                    anomalies.append(entry)
-                    if len(anomalies) >= limit:
-                        return anomalies
-            except OSError:
-                continue
-    return anomalies
-
-
 def run_preflight(repo_root: Path) -> tuple[int, list[CheckResult]]:
     results: list[CheckResult] = []
 
@@ -215,7 +199,21 @@ def run_preflight(repo_root: Path) -> tuple[int, list[CheckResult]]:
 
     current_uid = os.getuid()
     owner_name = pwd.getpwuid(current_uid).pw_name
-    anomalies = _iter_git_owner_anomalies(git_dir, expected_uid=current_uid, limit=20)
+    anomalies: list[Path] = []
+    limit = 20
+    for root, dirs, files in os.walk(git_dir):
+        root_path = Path(root)
+        for entry_name in [*dirs, *files]:
+            entry = root_path / entry_name
+            try:
+                if entry.lstat().st_uid != current_uid:
+                    anomalies.append(entry)
+                    if len(anomalies) >= limit:
+                        break
+            except OSError:
+                continue
+        if len(anomalies) >= limit:
+            break
     if anomalies:
         sample = ", ".join(str(p.relative_to(repo_root)) for p in anomalies[:5])
         results.append(

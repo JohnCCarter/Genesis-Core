@@ -664,10 +664,6 @@ def _normalize_task_branch(
     return f"{GIT_WORKFLOW_TASK_BRANCH_PREFIX}{date_token}-{slug}"
 
 
-def _is_task_branch(branch_name: str) -> bool:
-    return branch_name.startswith(GIT_WORKFLOW_TASK_BRANCH_PREFIX)
-
-
 def _normalize_git_pathspecs(pathspecs: list[str] | str | None) -> list[str]:
     if not pathspecs:
         return ["."]
@@ -1057,7 +1053,7 @@ async def git_workflow_operation(
             except ValueError as exc:
                 return {"success": False, "operation": operation, "error": str(exc)}
 
-            if not _is_task_branch(next_branch):
+            if not next_branch.startswith(GIT_WORKFLOW_TASK_BRANCH_PREFIX):
                 return {
                     "success": False,
                     "operation": operation,
@@ -1177,7 +1173,7 @@ async def git_workflow_operation(
             }
 
         if operation == "git_add":
-            if not _is_task_branch(current_branch):
+            if not current_branch.startswith(GIT_WORKFLOW_TASK_BRANCH_PREFIX):
                 return {
                     "success": False,
                     "operation": operation,
@@ -1248,7 +1244,7 @@ async def git_workflow_operation(
             }
 
         if operation == "git_commit":
-            if not _is_task_branch(current_branch):
+            if not current_branch.startswith(GIT_WORKFLOW_TASK_BRANCH_PREFIX):
                 return {
                     "success": False,
                     "operation": operation,
@@ -1332,7 +1328,7 @@ async def git_workflow_operation(
                     "operation": operation,
                     "error": f"Direct push to protected branch is blocked: {current_branch}",
                 }
-            if not _is_task_branch(current_branch):
+            if not current_branch.startswith(GIT_WORKFLOW_TASK_BRANCH_PREFIX):
                 return {
                     "success": False,
                     "operation": operation,
@@ -1385,7 +1381,7 @@ async def git_workflow_operation(
                     "operation": operation,
                     "error": f"PR source branch must not be protected: {current_branch}",
                 }
-            if not _is_task_branch(current_branch):
+            if not current_branch.startswith(GIT_WORKFLOW_TASK_BRANCH_PREFIX):
                 return {
                     "success": False,
                     "operation": operation,

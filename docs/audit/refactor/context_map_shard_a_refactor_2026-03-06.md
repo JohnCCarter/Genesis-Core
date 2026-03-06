@@ -1,10 +1,10 @@
-## Context Map — Shard A Refactor Kickoff
+## Context Map — Shard A Refactor Batch 2
 
 ### Files to modify first
 
-| File                           | Purpose                         | Change candidate                                                              |
-| ------------------------------ | ------------------------------- | ----------------------------------------------------------------------------- |
-| `scripts/train/train_model.py` | Script-layer training utilities | Reduce structural duplication and improve readability without behavior change |
+| File                           | Purpose                         | Change candidate                                                                                                    |
+| ------------------------------ | ------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `scripts/train/train_model.py` | Script-layer training utilities | Continue structural dedupe: consolidate repeated metrics-payload and JSON-write scaffolding without behavior change |
 
 ### Dependencies (read/verify)
 
@@ -42,3 +42,11 @@
 - [ ] Breaking behavior in script helper outputs
 - [ ] Drift in error wording that tests assert on
 - [ ] Accidental scope expansion into `tests/**` edits without approval
+
+### Batch 2 target details
+
+- Keep runtime outputs and file payload contracts identical.
+- No changes to CLI default behavior, env/config interpretation, or exit codes.
+- Preferred changes:
+  - helper extraction for repeated metrics dictionary construction
+  - helper extraction for repeated JSON dump-to-file paths

@@ -644,26 +644,6 @@ def _git_repo_state(
     }
 
 
-async def _run_subprocess_command_async(
-    *,
-    args: list[str],
-    timeout_s: int,
-    env: dict[str, str],
-    cwd: Path,
-) -> subprocess.CompletedProcess[str]:
-    return await asyncio.to_thread(
-        subprocess.run,
-        args,
-        capture_output=True,
-        text=True,
-        check=False,
-        timeout=timeout_s,
-        stdin=subprocess.DEVNULL,
-        env=env,
-        cwd=str(cwd),
-    )
-
-
 def _normalize_task_branch(
     *, task_slug: str | None, task_branch: str | None, date_utc: str | None
 ) -> str:
@@ -1465,7 +1445,8 @@ async def git_workflow_operation(
 
             gh_exe = shutil.which("gh")
             if gh_exe:
-                pr_res = await _run_subprocess_command_async(
+                pr_res = await asyncio.to_thread(
+                    subprocess.run,
                     args=[
                         gh_exe,
                         "pr",
@@ -1479,9 +1460,13 @@ async def git_workflow_operation(
                         "--body",
                         body,
                     ],
-                    timeout_s=timeout_s,
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                    timeout=timeout_s,
+                    stdin=subprocess.DEVNULL,
                     env=git_env,
-                    cwd=project_root,
+                    cwd=str(project_root),
                 )
                 if pr_res.returncode == 0:
                     return {

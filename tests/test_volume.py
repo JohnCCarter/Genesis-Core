@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import math
 
+import pytest
+
 from core.indicators.volume import (
     calculate_volume_ema,
     calculate_volume_sma,
@@ -13,6 +15,90 @@ from core.indicators.volume import (
     volume_spike,
     volume_trend,
 )
+
+
+@pytest.mark.parametrize(
+    "indicator",
+    [volume_change, volume_spike, volume_trend],
+    ids=["volume_change", "volume_spike", "volume_trend"],
+)
+def test_empty_input_indicators_return_empty_list(indicator):
+    """Shared parity test for indicators with empty-input default behavior."""
+    assert indicator([]) == []
+
+
+@pytest.mark.parametrize(
+    ("indicator", "close", "volume", "expected"),
+    [
+        (volume_price_divergence, [100.0, 101.0], [1000.0], []),
+        (volume_price_divergence, [], [], []),
+        (obv, [100.0, 101.0], [1000.0], []),
+        (obv, [], [], []),
+    ],
+    ids=[
+        "volume_price_divergence_mismatched_lengths",
+        "volume_price_divergence_empty_input",
+        "obv_mismatched_lengths",
+        "obv_empty_input",
+    ],
+)
+def test_two_input_indicator_guardrails(indicator, close, volume, expected):
+    """Shared guardrail parity tests for two-input volume indicators."""
+    assert indicator(close, volume) == expected
+
+
+@pytest.mark.parametrize(
+    ("func", "args", "expected"),
+    [
+        (volume_change, ([1000, 2000], 0), []),
+        (volume_change, ([1000, 2000], -1), []),
+        (volume_spike, ([1000, 2000], 0), []),
+        (volume_spike, ([1000, 2000], 5, -1.0), []),
+        (calculate_volume_ema, ([100, 200], 0), []),
+    ],
+    ids=[
+        "volume_change_invalid_period_zero",
+        "volume_change_invalid_period_negative",
+        "volume_spike_invalid_period_zero",
+        "volume_spike_invalid_threshold_negative",
+        "volume_ema_invalid_period_zero",
+    ],
+)
+def test_invalid_parameter_guardrails(func, args, expected):
+    """Shared parity tests for invalid-parameter guardrails."""
+    assert func(*args) == expected
+
+
+@pytest.mark.parametrize(
+    ("func", "args", "expected"),
+    [
+        (calculate_volume_ema, ([], 5), []),
+        (calculate_volume_sma, ([], 5), []),
+    ],
+    ids=[
+        "volume_ema_empty_input",
+        "volume_sma_empty_input",
+    ],
+)
+def test_moving_average_empty_input_guardrails(func, args, expected):
+    """Shared parity tests for moving-average empty-input guardrails."""
+    assert func(*args) == expected
+
+
+@pytest.mark.parametrize(
+    ("func", "args", "expected"),
+    [
+        (volume_change, ([1000.0, 2000.0], 5), []),
+        (volume_price_divergence, ([100.0, 101.0], [1000.0, 1100.0], 5), []),
+    ],
+    ids=[
+        "volume_change_insufficient_data",
+        "volume_price_divergence_insufficient_data",
+    ],
+)
+def test_insufficient_data_guardrails(func, args, expected):
+    """Shared parity tests for insufficient-data guardrails."""
+    assert func(*args) == expected
 
 
 class TestVolumeChange:
@@ -44,21 +130,6 @@ class TestVolumeChange:
         # change = (1000-1750)/1750 = -0.428...
         assert vc[4] < 0
         assert abs(vc[4] - (-0.428571)) < 0.001
-
-    def test_empty_input(self):
-        """Test with empty input."""
-        assert volume_change([]) == []
-
-    def test_invalid_period(self):
-        """Test with invalid period."""
-        assert volume_change([1000, 2000], 0) == []
-        assert volume_change([1000, 2000], -1) == []
-
-    def test_insufficient_data(self):
-        """Test with insufficient data."""
-        volume = [1000.0, 2000.0]
-        period = 5
-        assert volume_change(volume, period) == []
 
 
 class TestVolumeSpike:
@@ -104,16 +175,6 @@ class TestVolumeSpike:
         spikes_15 = volume_spike(volume, period, threshold=1.5)
         # 1600 < 1.5*1150=1725
         assert spikes_15[4] is False
-
-    def test_empty_input(self):
-        """Test with empty input."""
-        assert volume_spike([]) == []
-
-    def test_invalid_params(self):
-        """Test with invalid parameters."""
-        volume = [1000, 2000]
-        assert volume_spike(volume, 0) == []
-        assert volume_spike(volume, 5, -1.0) == []
 
 
 class TestVolumeTrend:
@@ -167,10 +228,6 @@ class TestVolumeTrend:
         # All should be NaN (not enough data for slow period)
         assert all(math.isnan(x) for x in trend)
 
-    def test_empty_input(self):
-        """Test with empty input."""
-        assert volume_trend([]) == []
-
 
 class TestVolumeEMA:
     """Test volume EMA calculation."""
@@ -197,14 +254,6 @@ class TestVolumeEMA:
 
         # After initialization, all values should be 100.0
         assert all(abs(ema[i] - 100.0) < 0.01 for i in range(4, 10))
-
-    def test_empty_input(self):
-        """Test with empty input."""
-        assert calculate_volume_ema([], 5) == []
-
-    def test_invalid_period(self):
-        """Test with invalid period."""
-        assert calculate_volume_ema([100, 200], 0) == []
 
 
 class TestVolumePriceDivergence:
@@ -247,95 +296,45 @@ class TestVolumePriceDivergence:
         assert not math.isnan(div[-1])
         assert div[-1] < 0.1
 
-    def test_mismatched_lengths(self):
-        """Test with mismatched input lengths."""
-        close = [100.0, 101.0]
-        volume = [1000.0]
-        assert volume_price_divergence(close, volume) == []
-
-    def test_insufficient_data(self):
-        """Test with insufficient data."""
-        close = [100.0, 101.0]
-        volume = [1000.0, 1100.0]
-        lookback = 5
-        assert volume_price_divergence(close, volume, lookback) == []
-
-    def test_empty_input(self):
-        """Test with empty input."""
-        assert volume_price_divergence([], []) == []
-
 
 class TestOBV:
     """Test On-Balance Volume indicator."""
 
-    def test_basic_obv_accumulation(self):
-        """Test OBV with price going up (accumulation)."""
-        close = [100.0, 101.0, 102.0, 103.0, 104.0]
-        volume = [1000.0, 1000.0, 1000.0, 1000.0, 1000.0]
-
+    @pytest.mark.parametrize(
+        ("close", "volume", "expected"),
+        [
+            (
+                [100.0, 101.0, 102.0, 103.0, 104.0],
+                [1000.0, 1000.0, 1000.0, 1000.0, 1000.0],
+                [1000.0, 2000.0, 3000.0, 4000.0, 5000.0],
+            ),
+            (
+                [104.0, 103.0, 102.0, 101.0, 100.0],
+                [1000.0, 1000.0, 1000.0, 1000.0, 1000.0],
+                [1000.0, 0.0, -1000.0, -2000.0, -3000.0],
+            ),
+            (
+                [100.0, 100.0, 100.0, 100.0],
+                [1000.0, 1000.0, 1000.0, 1000.0],
+                [1000.0, 1000.0, 1000.0, 1000.0],
+            ),
+            (
+                [100.0, 102.0, 101.0, 103.0, 102.0],
+                [1000.0, 2000.0, 1500.0, 2500.0, 1000.0],
+                [1000.0, 3000.0, 1500.0, 4000.0, 3000.0],
+            ),
+        ],
+        ids=[
+            "basic_obv_accumulation",
+            "obv_distribution",
+            "obv_unchanged_price",
+            "obv_mixed_movement",
+        ],
+    )
+    def test_obv_scenarios(self, close, volume, expected):
+        """Test OBV scenario parity via full sequence equality."""
         obv_vals = obv(close, volume)
-
-        # OBV should increase with each price increase
-        assert obv_vals[0] == 1000.0
-        assert obv_vals[1] == 2000.0
-        assert obv_vals[2] == 3000.0
-        assert obv_vals[3] == 4000.0
-        assert obv_vals[4] == 5000.0
-
-    def test_obv_distribution(self):
-        """Test OBV with price going down (distribution)."""
-        close = [104.0, 103.0, 102.0, 101.0, 100.0]
-        volume = [1000.0, 1000.0, 1000.0, 1000.0, 1000.0]
-
-        obv_vals = obv(close, volume)
-
-        # OBV should decrease with each price decrease
-        assert obv_vals[0] == 1000.0
-        assert obv_vals[1] == 0.0
-        assert obv_vals[2] == -1000.0
-        assert obv_vals[3] == -2000.0
-        assert obv_vals[4] == -3000.0
-
-    def test_obv_unchanged_price(self):
-        """Test OBV when price is unchanged."""
-        close = [100.0, 100.0, 100.0, 100.0]
-        volume = [1000.0, 1000.0, 1000.0, 1000.0]
-
-        obv_vals = obv(close, volume)
-
-        # OBV should stay constant when price unchanged
-        assert obv_vals[0] == 1000.0
-        assert obv_vals[1] == 1000.0
-        assert obv_vals[2] == 1000.0
-        assert obv_vals[3] == 1000.0
-
-    def test_obv_mixed_movement(self):
-        """Test OBV with mixed price movements."""
-        close = [100.0, 102.0, 101.0, 103.0, 102.0]
-        volume = [1000.0, 2000.0, 1500.0, 2500.0, 1000.0]
-
-        obv_vals = obv(close, volume)
-
-        # Initialt OBV-värde.
-        assert obv_vals[0] == 1000.0
-        # Efter uppgång ska OBV öka med andra volymvärdet.
-        assert obv_vals[1] == 3000.0
-        # Efter nedgång ska OBV minska med tredje volymvärdet.
-        assert obv_vals[2] == 1500.0
-        # Ny uppgång ska ge nästa tydliga ökning.
-        assert obv_vals[3] == 4000.0
-        # Avslutande nedgång ska reducera OBV.
-        assert obv_vals[4] == 3000.0
-
-    def test_obv_empty_input(self):
-        """Test with empty input."""
-        assert obv([], []) == []
-
-    def test_obv_mismatched_lengths(self):
-        """Test with mismatched input lengths."""
-        close = [100.0, 101.0]
-        volume = [1000.0]
-        assert obv(close, volume) == []
+        assert obv_vals == expected
 
 
 class TestVolumeSMA:
@@ -356,10 +355,6 @@ class TestVolumeSMA:
 
         # SMA at index 3: (2000+3000+4000)/3 = 3000
         assert sma[3] == 3000.0
-
-    def test_empty_input(self):
-        """Test with empty input."""
-        assert calculate_volume_sma([], 5) == []
 
 
 class TestVolumeIntegration:

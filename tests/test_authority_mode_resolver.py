@@ -49,51 +49,58 @@ def test_authority_mode_precedence_matrix_parity(
     assert resolve_authority_mode_with_source(cfg) == expected
 
 
-def test_strict_vs_permissive_asymmetry_canonical_none_value() -> None:
-    cfg = {"multi_timeframe": {"regime_intelligence": {"authority_mode": None}}}
-
+@pytest.mark.parametrize(
+    ("cfg", "expected_source", "expected_error"),
+    [
+        (
+            {"multi_timeframe": {"regime_intelligence": {"authority_mode": None}}},
+            AUTHORITY_MODE_SOURCE_CANONICAL,
+            "invalid_value:regime_intelligence.authority_mode",
+        ),
+        (
+            {"regime_unified": {"authority_mode": None}},
+            AUTHORITY_MODE_SOURCE_ALIAS,
+            "invalid_value:regime_unified.authority_mode",
+        ),
+    ],
+)
+def test_strict_vs_permissive_asymmetry_none_value(
+    cfg: dict[str, object], expected_source: str, expected_error: str
+) -> None:
     assert resolve_authority_mode_with_source_permissive(cfg) == (
         "legacy",
-        AUTHORITY_MODE_SOURCE_CANONICAL,
+        expected_source,
     )
 
     with pytest.raises(ValueError) as exc:
         canonicalize_authority_mode_alias_strict(cfg)
-    assert str(exc.value) == "invalid_value:regime_intelligence.authority_mode"
+    assert str(exc.value) == expected_error
 
 
-def test_strict_vs_permissive_asymmetry_alias_none_value() -> None:
-    cfg = {"regime_unified": {"authority_mode": None}}
-
-    assert resolve_authority_mode_with_source_permissive(cfg) == (
-        "legacy",
-        AUTHORITY_MODE_SOURCE_ALIAS,
-    )
-
-    with pytest.raises(ValueError) as exc:
-        canonicalize_authority_mode_alias_strict(cfg)
-    assert str(exc.value) == "invalid_value:regime_unified.authority_mode"
-
-
-def test_strict_alias_only_is_canonicalized() -> None:
-    out = canonicalize_authority_mode_alias_strict(
-        {"regime_unified": {"authority_mode": "regime_module"}}
-    )
-
-    assert "regime_unified" not in out
-    assert out == {"multi_timeframe": {"regime_intelligence": {"authority_mode": "regime_module"}}}
-
-
-def test_strict_conflict_canonical_wins() -> None:
-    out = canonicalize_authority_mode_alias_strict(
-        {
-            "multi_timeframe": {"regime_intelligence": {"authority_mode": "legacy"}},
-            "regime_unified": {"authority_mode": "regime_module"},
-        }
-    )
+@pytest.mark.parametrize(
+    ("payload", "expected"),
+    [
+        (
+            {"regime_unified": {"authority_mode": "regime_module"}},
+            {"multi_timeframe": {"regime_intelligence": {"authority_mode": "regime_module"}}},
+        ),
+        (
+            {
+                "multi_timeframe": {"regime_intelligence": {"authority_mode": "legacy"}},
+                "regime_unified": {"authority_mode": "regime_module"},
+            },
+            {"multi_timeframe": {"regime_intelligence": {"authority_mode": "legacy"}}},
+        ),
+    ],
+    ids=["alias_only_is_canonicalized", "canonical_wins_conflict"],
+)
+def test_strict_canonicalization_normalization_cases(
+    payload: dict[str, object], expected: dict[str, object]
+) -> None:
+    out = canonicalize_authority_mode_alias_strict(payload)
 
     assert "regime_unified" not in out
-    assert out == {"multi_timeframe": {"regime_intelligence": {"authority_mode": "legacy"}}}
+    assert out == expected
 
 
 @pytest.mark.parametrize(

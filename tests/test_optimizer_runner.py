@@ -31,6 +31,13 @@ def _write_run_meta(run_dir: Path, run_meta_payload: dict[str, Any]) -> None:
     (run_dir / "run_meta.json").write_text(json.dumps(run_meta_payload), encoding="utf-8")
 
 
+def _base_run_meta_payload() -> dict[str, Any]:
+    return {
+        "git_commit": "abc123",
+        "snapshot_id": "tTEST_1h_20240101_20240201_v1",
+    }
+
+
 def _make_optuna_test_config(
     *,
     max_trials: int,
@@ -160,10 +167,7 @@ def test_run_optimizer_updates_champion(
     tmp_path: Path, search_config_tmp: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     results_root = tmp_path / "results" / "hparam_search"
-    run_meta_payload = {
-        "git_commit": "abc123",
-        "snapshot_id": "tTEST_1h_20240101_20240201_v1",
-    }
+    run_meta_payload = _base_run_meta_payload()
 
     trial_queue = {
         1: {
@@ -272,10 +276,7 @@ def test_run_optimizer_validation_stage_promotes_validation_best(tmp_path: Path)
     config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
 
     results_root = tmp_path / "results" / "hparam_search"
-    run_meta_payload = {
-        "git_commit": "abc123",
-        "snapshot_id": "tTEST_1h_20240101_20240201_v1",
-    }
+    run_meta_payload = _base_run_meta_payload()
 
     def fake_run_trial(*args: Any, **kwargs: Any) -> dict[str, Any]:
         trial_cfg = args[0]
@@ -458,10 +459,7 @@ def test_run_optimizer_promotion_negative_cases_do_not_write_champion(
     current_score: float | None,
 ) -> None:
     results_root = tmp_path / "results" / "hparam_search"
-    run_meta_payload = {
-        "git_commit": "abc123",
-        "snapshot_id": "tTEST_1h_20240101_20240201_v1",
-    }
+    run_meta_payload = _base_run_meta_payload()
 
     def fake_run_trial(*_args: Any, **kwargs: Any) -> dict[str, Any]:
         return {
@@ -784,10 +782,7 @@ def test_run_optimizer_optuna_strategy(tmp_path: Path) -> None:
     config_path = tmp_path / "optuna.yaml"
     config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
 
-    run_meta_payload = {
-        "git_commit": "abc123",
-        "snapshot_id": "tTEST_1h_20240101_20240201_v1",
-    }
+    run_meta_payload = _base_run_meta_payload()
 
     def fake_make_trial(idx: int, params: dict[str, Any]) -> dict[str, Any]:
         return {

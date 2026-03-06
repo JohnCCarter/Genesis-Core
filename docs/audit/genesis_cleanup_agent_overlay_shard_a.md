@@ -69,6 +69,11 @@ If usage exists -> KEEP or REFACTOR (not DELETE).
 
 Small, atomic commits only. Examples:
 
+Batch size guideline:
+
+- 3–10 related deletions per commit.
+- Never mix unrelated cleanup types in the same commit.
+
 - `chore(cleanup): remove dead script`
 - `chore(cleanup): merge duplicate script logic`
 - `chore(cleanup): move canonical script from archive`

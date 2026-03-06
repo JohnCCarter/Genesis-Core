@@ -65,14 +65,6 @@ def _read_proc_environ(pid: int) -> dict[str, str]:
     return env
 
 
-def _mask(value: str | None) -> str:
-    if not value:
-        return "<missing>"
-    if len(value) <= 8:
-        return "<set>"
-    return f"<set len={len(value)}>"
-
-
 def run_preflight(repo_root: Path) -> tuple[int, list[CheckResult]]:
     results: list[CheckResult] = []
 
@@ -213,7 +205,11 @@ def run_preflight(repo_root: Path) -> tuple[int, list[CheckResult]]:
         CheckResult(
             "PASS" if token_ok else "FAIL",
             "env-remote-token",
-            _mask(token),
+            (
+                "<missing>"
+                if not token
+                else ("<set>" if len(token) <= 8 else f"<set len={len(token)}>")
+            ),
         )
     )
 

@@ -1,31 +1,57 @@
-Plan: Shadow artifact pytest (P1 OFF)
-Målet är att lägga till ett minimalt, test-only shadow artifact-smoke i OFF-läge utan produktionsdrift. Vi återanvänder samma eval-path som befintliga kontraktstester i test_evaluate_pipeline.py via evaluate_pipeline i evaluate.py. Testet i ny fil tests/test_regime_shadow_artifacts.py extraherar befintliga regim-/observability-fält och beräknar en test-lokal clarity_score från confidence.overall (int clamp 0–100), validerar kvalitet, och skriver artifacts endast när REGIME_EVIDENCE_DIR är satt. Ingen ändring i core-semantik, inga nya dependencies, inga champions/config-ingrepp.
+# Handoff till nästa agent
 
-Steps
+Datum: 2026-03-06
+Repo: `JohnCCarter/Genesis-Core`
+Workspace: `c:\Users\fa06662\Projects\Genesis-Core-refactor-b`
+Branch: `feature/refactor-tests-structure-b`
+HEAD: `570b707b`
 
-Skapa tests/test_regime_shadow_artifacts.py med testet test_regime_shadow_artifacts_smoke.
-Återanvänd eval-harnessmönster från test_evaluate_pipeline.py (test_evaluate_pipeline_shadow_error_rate_contract, test_evaluate_pipeline_authority_mode_source_invariant_contract) för deterministisk monkeypatch och stabil config-normalisering.
-Kör P1 OFF-mode i testet (ingen parity-assert här), samla samples från result/meta:
-labels: både authoritative (result["regime"]) och shadow (meta["observability"]["shadow_regime"]["shadow"])
-clarity: test-projektion från confidence till int i [0,100].
-Implementera valideringar i testet:
-sample_count: prefererat >=200, fallback >=50 vid begränsat underlag
-alla clarity_score är heltal i [0,100]
-labels finns per sample.
-Implementera opt-in artifact write via REGIME_EVIDENCE_DIR:
-clarity_histogram.json (10-bins: 0–9 … 90–100)
-clarity_quantiles.json (p50, p80, p90, p95, top20_threshold, mean, std, total)
-shadow_samples.ndjson (minst: symbol, timeframe, bar_index/timestamp, regime_label(s), clarity_score; optional components om tillgängliga).
-Verifiera att .gitignore redan täcker artifacts (den gör det; ingen ändring behövs).
-Kör testet i båda lägena (unset/set REGIME_EVIDENCE_DIR) och kontrollera filskapande endast i set-läget.
-Verification
+## Sammanfattning av klart arbete
 
-Unset env: kör pytest -q tests/test_regime_shadow_artifacts.py::test_regime_shadow_artifacts_smoke och verifiera pass utan filskrivning.
-Set env: sätt REGIME_EVIDENCE_DIR till temp-katalog, kör samma test, verifiera att exakt tre artifacts finns och att innehållsvalidering passerar.
-Kör även baseline-gates som redan används i trancherna: import smoke, determinism smoke, feature cache invariance, pipeline hash invariant.
-Decisions
+- Refactor-spåret för Shard B (tests/docs) fortsatte efter cleanup-fasen.
+- Senaste två pushade commits:
+  - `88f8186e` — `tooling(tests): dedupe authority and volume guardrail tests`
+  - `570b707b` — `docs(audit): add step2 command packet artifact`
+- Governance blocker kring out-of-scope artifact (`scripts/build/__pycache__/`) hanterades:
+  - artifact borttagen
+  - snabb omverifiering körd
+  - post-audit från Opus: **APPROVED**
 
-Clarity-källa: test-projektion (inte nytt runtimefält).
-Label-källa i samples: både shadow + authoritative.
-Tröskelpolicy: prefer 200, fallback 50.
-Filform: exakt leverabel enligt spec (tests/test_regime_shadow_artifacts.py, test_regime_shadow_artifacts_smoke).
+## Nuvarande status
+
+- `git status`: rent (inga unstaged/staged kvar).
+- Lokal och remote branch är synkade (`origin/feature/refactor-tests-structure-b`).
+- Kvarvarande ignorerade filer (`.venv`, `__pycache__`, caches/logs/tmp etc.) är förväntade och inte del av commit-scope.
+
+## Filer i scope för senaste refactorbatch
+
+- `tests/test_authority_mode_resolver.py`
+- `tests/test_volume.py`
+- `docs/audit/refactor/command_packet_shard_b_refactor_2026-03-06_batch2.md`
+- `docs/audit/refactor/command_packet_shard_b_refactor_2026-03-06_step2.md`
+
+## Verifiering som redan finns
+
+- Dokumenterat i batch2-packet:
+  - targeted suite: `52 passed`
+  - OBV selector: `4 passed`
+  - pre-commit: PASS
+  - ruff: PASS
+  - full pytest: `981 passed`
+  - selector suite (determinism/cache/pipeline/smoke): `15 passed`
+  - quick revalidation efter artifact-cleanup: `tests/test_volume.py` => `38 passed`
+
+## Rekommenderat nästa steg
+
+1. Öppna/uppdatera PR från `feature/refactor-tests-structure-b` mot `master`.
+2. Klistra in evidens från `docs/audit/refactor/command_packet_shard_b_refactor_2026-03-06_batch2.md` i PR-beskrivningen.
+3. Om ny refactorbatch startas:
+   - skapa nytt command packet (eller explicit batch3-sektion)
+   - håll strict Scope IN/OUT till test/docs
+   - kör samma gate- och selectorstack enligt RESEARCH-mode.
+
+## Viktigt för kontinuitet
+
+- Ingen ändring i produktionskod var avsedd eller gjord i senaste batch.
+- Cleanup-dokument i `docs/audit/cleanup/` har inte skrivits om för refactorhistorik.
+- Arbete har hållits inom no-behavior-change för denna tranche.

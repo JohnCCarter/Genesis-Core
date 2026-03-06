@@ -24,7 +24,7 @@
     {
       "name": "paper-trading",
       "port": 9999,
-      "runtimeArgs": ["paper_trading_runner.py", "--dry-run"],
+      "runtimeArgs": ["scripts/paper_trading_runner.py", "--dry-run"],
       "runtimeExecutable": ".venv/Scripts/python.exe"
     }
   ],

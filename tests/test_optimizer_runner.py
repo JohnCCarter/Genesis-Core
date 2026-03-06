@@ -73,6 +73,9 @@ def _make_optuna_test_config(
     }
 
 
+_OPTUNA_SKIP = pytest.mark.skipif(not runner.OPTUNA_AVAILABLE, reason="Optuna ej installerat")
+
+
 @pytest.fixture()
 def search_config_tmp(tmp_path: Path) -> Path:
     config = {
@@ -776,7 +779,7 @@ def test_verify_or_set_optuna_study_score_version(monkeypatch: pytest.MonkeyPatc
     assert s3.user_attrs.get("genesis_score_version") == "v1"
 
 
-@pytest.mark.skipif(not runner.OPTUNA_AVAILABLE, reason="Optuna ej installerat")
+@_OPTUNA_SKIP
 def test_run_optimizer_optuna_strategy(tmp_path: Path) -> None:
     config = _make_optuna_test_config(max_trials=2, resume=False, storage=None)
     config_path = tmp_path / "optuna.yaml"
@@ -835,7 +838,7 @@ def test_run_optimizer_optuna_strategy(tmp_path: Path) -> None:
     create_study.assert_called_once()
 
 
-@pytest.mark.skipif(not runner.OPTUNA_AVAILABLE, reason="Optuna ej installerat")
+@_OPTUNA_SKIP
 def test_run_optimizer_validation_fallback_reads_from_optuna_storage(tmp_path: Path) -> None:
     config = _make_optuna_test_config(
         max_trials=0,

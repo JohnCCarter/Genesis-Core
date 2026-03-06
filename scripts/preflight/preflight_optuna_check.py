@@ -64,7 +64,7 @@ def check_optuna_installed() -> tuple[bool, str]:
 def check_storage_writable(storage: str | None) -> tuple[bool, str]:
     """Kontrollera att Optuna-storage är skrivbart."""
     if not storage or not storage.startswith("sqlite:///"):
-        return True, f"[WARN] Storage-format: {storage} (förväntar sqlite:/// )"
+        return True, f"[WARN] Storage-format: {storage} (förväntar sqlite:///)"
 
     db_path = Path(storage.replace("sqlite:///", ""))
     try:

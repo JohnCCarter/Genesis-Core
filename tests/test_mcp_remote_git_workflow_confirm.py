@@ -21,6 +21,7 @@ async def test_mutating_git_workflow_requires_preview_token(
         dry_run=False,
         **kwargs,
     ):
+        _ = config
         if dry_run:
             return {
                 "success": True,
@@ -82,8 +83,9 @@ async def test_non_mutating_git_workflow_runs_without_token(
         config,
         *,
         dry_run=False,
-        **kwargs,
+        **_kwargs,
     ):
+        _ = config
         if dry_run:
             return {
                 "success": True,

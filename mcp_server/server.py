@@ -96,7 +96,7 @@ from mcp_server.tools import (
     search_code,
     write_file,
 )
-from mcp_server.utils import setup_logging
+from mcp_server.utils import safe_args_for_logging, setup_logging
 
 logger = logging.getLogger(__name__)
 
@@ -246,24 +246,7 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
         List of TextContent with the tool result
     """
     try:
-
-        def _safe_args_for_logging(tool_name: str, args: dict[str, Any]) -> dict[str, Any]:
-            """Return a redacted view of tool arguments to avoid logging secrets/content."""
-            safe: dict[str, Any] = dict(args or {})
-            if tool_name in {"write_file", "execute_python"}:
-                if "content" in safe:
-                    content = safe.get("content")
-                    safe["content"] = (
-                        f"<redacted len={len(content) if isinstance(content, str) else 'n/a'}>"
-                    )
-                if "code" in safe:
-                    code = safe.get("code")
-                    safe["code"] = f"<redacted len={len(code) if isinstance(code, str) else 'n/a'}>"
-            return safe
-
-        logger.info(
-            f"Tool called: {name} with arguments: {_safe_args_for_logging(name, arguments)}"
-        )
+        logger.info(f"Tool called: {name} with arguments: {safe_args_for_logging(name, arguments)}")
 
         # Route to appropriate tool handler
         if name == "read_file":

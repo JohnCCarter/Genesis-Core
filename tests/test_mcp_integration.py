@@ -29,7 +29,9 @@ from mcp_server.tools import (
 
 
 def _cp(args: list[str], stdout: str = "", stderr: str = "", returncode: int = 0):
-    return subprocess.CompletedProcess(args=args, returncode=returncode, stdout=stdout, stderr=stderr)
+    return subprocess.CompletedProcess(
+        args=args, returncode=returncode, stdout=stdout, stderr=stderr
+    )
 
 
 @pytest.fixture

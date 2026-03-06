@@ -43,18 +43,6 @@ def _iter_git_owner_anomalies(git_dir: Path, expected_uid: int, limit: int = 20)
     return anomalies
 
 
-def _read_proc_environ(pid: int) -> dict[str, str]:
-    env_path = Path(f"/proc/{pid}/environ")
-    raw = env_path.read_bytes().split(b"\x00")
-    env: dict[str, str] = {}
-    for item in raw:
-        if not item or b"=" not in item:
-            continue
-        key_b, value_b = item.split(b"=", 1)
-        env[key_b.decode("utf-8", errors="ignore")] = value_b.decode("utf-8", errors="ignore")
-    return env
-
-
 def run_preflight(repo_root: Path) -> tuple[int, list[CheckResult]]:
     results: list[CheckResult] = []
 
@@ -159,7 +147,14 @@ def run_preflight(repo_root: Path) -> tuple[int, list[CheckResult]]:
         return 2, results
 
     try:
-        env = _read_proc_environ(pid)
+        env_path = Path(f"/proc/{pid}/environ")
+        raw = env_path.read_bytes().split(b"\x00")
+        env: dict[str, str] = {}
+        for item in raw:
+            if not item or b"=" not in item:
+                continue
+            key_b, value_b = item.split(b"=", 1)
+            env[key_b.decode("utf-8", errors="ignore")] = value_b.decode("utf-8", errors="ignore")
     except Exception as exc:  # noqa: BLE001
         results.append(CheckResult("FAIL", "proc-environ", str(exc)))
         return 2, results

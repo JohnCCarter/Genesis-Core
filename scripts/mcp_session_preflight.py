@@ -37,11 +37,6 @@ def _parse_systemctl_show_output(text: str) -> dict[str, str]:
     return values
 
 
-def _load_json(path: Path) -> dict:
-    with path.open("r", encoding="utf-8") as handle:
-        return json.load(handle)
-
-
 def _iter_git_owner_anomalies(git_dir: Path, expected_uid: int, limit: int = 20) -> list[Path]:
     anomalies: list[Path] = []
     for root, dirs, files in os.walk(git_dir):
@@ -87,7 +82,8 @@ def run_preflight(repo_root: Path) -> tuple[int, list[CheckResult]]:
         return 2, results
 
     try:
-        cfg = _load_json(config_path)
+        with config_path.open("r", encoding="utf-8") as handle:
+            cfg = json.load(handle)
     except Exception as exc:  # noqa: BLE001
         results.append(CheckResult("FAIL", "config-json", f"Invalid JSON: {exc}"))
         return 2, results

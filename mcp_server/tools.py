@@ -526,11 +526,6 @@ async def search_code(query: str, file_pattern: str | None, config: MCPConfig) -
         return {"success": False, "error": f"Error searching code: {str(e)}"}
 
 
-def _git_timeout_seconds(config: MCPConfig) -> int:
-    timeout_s = int(config.security.execution_timeout_seconds or 5)
-    return max(1, min(30, timeout_s))
-
-
 def _build_git_env() -> dict[str, str]:
     git_env = dict(os.environ)
     git_env.setdefault("GIT_TERMINAL_PROMPT", "0")
@@ -782,7 +777,9 @@ async def get_git_status(
         if not git_exe:
             return {"success": False, "error": "git executable not found on PATH"}
 
-        timeout_s = max(1, min(15, _git_timeout_seconds(config)))
+        timeout_s = max(
+            1, min(15, max(1, min(30, int(config.security.execution_timeout_seconds or 5))))
+        )
         git_env = _build_git_env()
 
         try:
@@ -920,7 +917,7 @@ async def get_git_repo_state(config: MCPConfig) -> dict[str, Any]:
         state = await _git_repo_state_async(
             git_exe=git_exe,
             project_root=get_project_root(),
-            timeout_s=_git_timeout_seconds(config),
+            timeout_s=max(1, min(30, int(config.security.execution_timeout_seconds or 5))),
             git_env=_build_git_env(),
         )
         return state
@@ -964,7 +961,7 @@ async def git_workflow_operation(
         return {"success": False, "error": "git executable not found on PATH"}
 
     project_root = get_project_root()
-    timeout_s = _git_timeout_seconds(config)
+    timeout_s = max(1, min(30, int(config.security.execution_timeout_seconds or 5)))
     git_env = _build_git_env()
     mutating = operation in GIT_WORKFLOW_MUTATING_OPERATIONS
 

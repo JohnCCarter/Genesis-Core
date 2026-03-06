@@ -4,9 +4,8 @@ Tests for Fibonacci indicator module.
 
 import numpy as np
 import pandas as pd
-import pytest
 
-from src.core.indicators.fibonacci import (
+from core.indicators.fibonacci import (
     FibonacciConfig,
     calculate_atr,
     calculate_fibonacci_features,
@@ -193,7 +192,3 @@ class TestVectorizedFeatures:
         retrace_values = features_df["swing_retrace_depth"]
         assert all(retrace_values >= 0.0)
         assert all(retrace_values <= 1.0)
-
-
-if __name__ == "__main__":
-    pytest.main([__file__])

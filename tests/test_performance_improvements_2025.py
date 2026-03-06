@@ -8,7 +8,6 @@ import time
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from core.indicators.htf_fibonacci import _to_series
 from core.strategy.champion_loader import ChampionLoader
@@ -219,7 +218,3 @@ class TestPandasSeriesOptimization:
         speedup = time_list / time_series
         # Should be at least 2x faster since we skip 3 Series creations
         assert speedup > 2.0, f"Expected >2x speedup, got {speedup:.2f}x"
-
-
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"])

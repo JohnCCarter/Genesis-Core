@@ -10,6 +10,7 @@ Covers:
 """
 
 import re
+from contextlib import suppress
 
 import pytest
 
@@ -162,10 +163,8 @@ class TestConfigMutationIsolation:
 
         # Engine.run() will inject _global_index, meta keys, etc.
         # We don't need it to succeed — just not crash and not mutate.
-        try:
+        with suppress(Exception):
             engine.run(configs=original_configs)
-        except Exception:
-            pass  # data loading may fail in test env — that's fine
 
         assert original_configs == snapshot, (
             "engine.run() must not mutate the caller's configs dict. "

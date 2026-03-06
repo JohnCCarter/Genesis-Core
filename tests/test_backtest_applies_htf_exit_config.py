@@ -15,6 +15,7 @@ class _DummyChampionCfg:
 def test_backtest_engine_applies_htf_exit_config(monkeypatch):
     # Stub pipeline evaluation to avoid pulling in full strategy/model stack.
     def _fake_evaluate_pipeline(*, candles, policy, configs, state):
+        _ = (candles, policy, configs, state)
         # Minimal structure expected by BacktestEngine.run()
         result = {"action": "NONE", "confidence": 0.5, "regime": "BALANCED", "features": {}}
         meta = {"decision": {"size": 0.0, "reasons": [], "state_out": {}}, "features": {}}

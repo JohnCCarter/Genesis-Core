@@ -57,7 +57,7 @@ def test_mode_flags_fails_when_fast_hash_enabled_and_strict(
     assert "FAST_HASH" in msg
 
 
-def test_storage_resume_warns_when_storage_null(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_storage_resume_warns_when_storage_null() -> None:
     ok, msg = check_storage_resume_sanity(
         storage=None,
         allow_resume=True,
@@ -127,12 +127,14 @@ def test_requested_data_coverage_handles_tz_aware_parquet_range(
 
     # Pretend we found a data file, but avoid any real IO.
     monkeypatch.setattr(
-        preflight, "_pick_data_file", lambda symbol, timeframe: preflight.ROOT / "dummy.parquet"
+        preflight,
+        "_pick_data_file",
+        lambda *_args, **_kwargs: preflight.ROOT / "dummy.parquet",
     )
     monkeypatch.setattr(
         preflight,
         "_get_time_range_from_parquet",
-        lambda path: (
+        lambda *_args, **_kwargs: (
             datetime(2024, 1, 1, tzinfo=UTC),
             datetime(2024, 12, 31, tzinfo=UTC),
         ),
@@ -158,12 +160,12 @@ def test_precompute_functionality_uses_pick_data_file_and_not_curated_path(
     # Provide a fake data file via the repo's selection mechanism.
     dummy_data = tmp_path / "dummy.parquet"
     dummy_data.write_bytes(b"not-a-parquet")
-    monkeypatch.setattr(preflight, "_pick_data_file", lambda symbol, timeframe: dummy_data)
+    monkeypatch.setattr(preflight, "_pick_data_file", lambda *_args, **_kwargs: dummy_data)
 
     # Stub BacktestEngine import used inside the function.
     stub_engine = types.ModuleType("core.backtest.engine")
 
-    class DummyEngine:  # noqa: D401
+    class DummyEngine:
         def __init__(
             self,
             symbol: str,
@@ -176,6 +178,7 @@ def test_precompute_functionality_uses_pick_data_file_and_not_curated_path(
         ) -> None:
             self.symbol = symbol
             self.timeframe = timeframe
+            _ = (initial_capital, commission_rate, slippage_rate, warmup_bars, fast_window)
             self.precompute_features = False
             self.candles_df = [0] * 200
             self._precomputed_features = {
@@ -222,47 +225,75 @@ parameters: {}
     # Isolera testet från miljö/beroenden: patcha bort alla andra checks.
     monkeypatch.setattr(preflight, "maybe_load_dotenv", lambda: (True, "[OK]"))
     monkeypatch.setattr(preflight, "check_optuna_installed", lambda: (True, "[OK]"))
-    monkeypatch.setattr(preflight, "check_storage_writable", lambda storage: (True, "[OK]"))
     monkeypatch.setattr(
-        preflight, "check_study_resume", lambda storage, study_name, allow_resume: (True, "[OK]")
+        preflight,
+        "check_storage_writable",
+        lambda *_args, **_kwargs: (True, "[OK]"),
     )
-    monkeypatch.setattr(preflight, "check_sampler_settings", lambda optuna_cfg: (True, "[OK]"))
+    monkeypatch.setattr(
+        preflight,
+        "check_study_resume",
+        lambda *_args, **_kwargs: (True, "[OK]"),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "check_sampler_settings",
+        lambda *_args, **_kwargs: (True, "[OK]"),
+    )
     monkeypatch.setattr(preflight, "check_duplicate_guard", lambda: (True, "[OK]"))
 
     # Detta är den enda check vi vill att ska faila.
     monkeypatch.setattr(
         preflight,
         "check_timeout_config",
-        lambda max_trials, timeout_seconds, end_at: (False, "[FAIL] end_at ligger i dåtiden"),
+        lambda *_args, **_kwargs: (False, "[FAIL] end_at ligger i dåtiden"),
     )
 
     monkeypatch.setattr(preflight, "check_mode_flags_consistency", lambda: (True, "[OK]"))
     monkeypatch.setattr(
         preflight,
         "check_storage_resume_sanity",
-        lambda storage, allow_resume, n_jobs, max_concurrent: (True, "[OK]"),
-    )
-    monkeypatch.setattr(preflight, "check_parameters_valid", lambda parameters: (True, "[OK]"))
-    monkeypatch.setattr(
-        preflight, "check_snapshot_exists", lambda snapshot_id, symbol, timeframe: (True, "[OK]")
+        lambda *_args, **_kwargs: (True, "[OK]"),
     )
     monkeypatch.setattr(
-        preflight, "check_htf_requirements", lambda meta, parameters: (True, "[OK]")
-    )
-    monkeypatch.setattr(preflight, "check_date_source", lambda meta, runs_cfg: (True, "[OK]"))
-    monkeypatch.setattr(
-        preflight, "check_requested_data_coverage", lambda meta, runs_cfg: (True, "[OK]")
+        preflight,
+        "check_parameters_valid",
+        lambda *_args, **_kwargs: (True, "[OK]"),
     )
     monkeypatch.setattr(
-        preflight, "check_champion_drift_smoke", lambda symbol, timeframe: (True, "[OK]")
+        preflight,
+        "check_snapshot_exists",
+        lambda *_args, **_kwargs: (True, "[OK]"),
     )
     monkeypatch.setattr(
-        preflight, "check_precompute_functionality", lambda symbol, timeframe: (True, "[OK]")
+        preflight,
+        "check_htf_requirements",
+        lambda *_args, **_kwargs: (True, "[OK]"),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "check_date_source",
+        lambda *_args, **_kwargs: (True, "[OK]"),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "check_requested_data_coverage",
+        lambda *_args, **_kwargs: (True, "[OK]"),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "check_champion_drift_smoke",
+        lambda *_args, **_kwargs: (True, "[OK]"),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "check_precompute_functionality",
+        lambda *_args, **_kwargs: (True, "[OK]"),
     )
 
     # main() importerar validate_config dynamiskt; injicera en stub så vi slipper beroenden.
     stub = types.ModuleType("scripts.validate.validate_optimizer_config")
-    stub.validate_config = lambda path: 0  # type: ignore[attr-defined]
+    stub.validate_config = lambda *_args, **_kwargs: 0  # type: ignore[attr-defined]
     monkeypatch.setitem(sys.modules, "scripts.validate.validate_optimizer_config", stub)
 
     # Kör som CLI.

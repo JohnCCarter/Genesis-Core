@@ -92,10 +92,6 @@ class HookEventSink:
         """Get events that have valid timestamps."""
         return [e for e in self.events if e["timestamp"] is not None]
 
-    def get_events_by_action(self, action: str) -> list[dict]:
-        """Get events with specific action."""
-        return [e for e in self.events if e["action"] == action]
-
 
 class TestInvariantA:
     """
@@ -112,7 +108,7 @@ class TestInvariantA:
         os.environ["GENESIS_PRECOMPUTE_FEATURES"] = "1"
 
         # Identity hook (no-op)
-        def identity_hook(result, meta, candles):
+        def identity_hook(result, meta, _candles):
             return result, meta
 
         # Run both engines
@@ -141,7 +137,7 @@ class TestInvariantA:
         os.environ["GENESIS_PRECOMPUTE_FEATURES"] = "1"
 
         # Identity hook
-        def identity_hook(result, meta, candles):
+        def identity_hook(result, meta, _candles):
             return result, meta
 
         # Run both engines
@@ -183,7 +179,7 @@ class TestInvariantA:
         os.environ["GENESIS_PRECOMPUTE_FEATURES"] = "1"
 
         # Identity hook
-        def identity_hook(result, meta, candles):
+        def identity_hook(result, meta, _candles):
             return result, meta
 
         # Run both engines

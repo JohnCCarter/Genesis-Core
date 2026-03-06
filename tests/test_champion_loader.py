@@ -64,7 +64,7 @@ def test_load_cached(champions_dir: Path) -> None:
     assert cfg1.checksum == cfg2.checksum
 
 
-def test_load_reload_on_change(champions_dir: Path, tmp_path: Path) -> None:
+def test_load_reload_on_change(champions_dir: Path) -> None:
     import time
 
     loader = ChampionLoader(champions_dir=champions_dir)

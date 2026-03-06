@@ -88,7 +88,7 @@ def test_estimate_search_space_nested():
 
     assert result["discrete_params"] == 3
     # entry_conf: 3 steps (0.3, 0.4, 0.5), exit_conf: 1, multiplier: 3
-    # Total: 3 * 1 * 3 = 9
+    # Diskret kombinationsrymd ska summera till nio alternativ.
     assert result["total_discrete_combinations"] == 9
 
 
@@ -123,7 +123,7 @@ def test_duplicate_tracking_in_objective(tmp_path: Path):
     trial_idx = [0]
 
     def mock_make_trial(
-        idx: int, params: dict[str, Any], **kwargs
+        _idx: int, params: dict[str, Any], **_kwargs
     ) -> dict[str, Any]:  # Accept optuna_context
         result = trial_results[trial_idx[0]].copy()
         result["parameters"] = params
@@ -151,7 +151,7 @@ def test_duplicate_tracking_in_objective(tmp_path: Path):
         # Track calls to objective
         objective_calls = []
 
-        def mock_optimize(objective, **kwargs):
+        def mock_optimize(objective, **_kwargs):
             # Simulate calling objective 3 times
             for i in range(3):
                 trial = MagicMock()
@@ -217,7 +217,7 @@ def test_duplicate_guard_precheck_marks_skipped_and_records_payload(tmp_path: Pa
     run_dir = tmp_path / "test_run"
     run_dir.mkdir(parents=True)
 
-    def mock_make_trial(idx: int, params: dict[str, Any], **kwargs) -> dict[str, Any]:
+    def mock_make_trial(idx: int, params: dict[str, Any], **_kwargs) -> dict[str, Any]:
         return {
             "trial_id": f"trial_{idx:03d}",
             "parameters": params,
@@ -242,7 +242,7 @@ def test_duplicate_guard_precheck_marks_skipped_and_records_payload(tmp_path: Pa
     study.trials = []
     study.best_trials = []
 
-    def mock_optimize(objective, **kwargs):
+    def mock_optimize(objective, **_kwargs):
         for i in range(2):
             trial = MagicMock()
             trial.number = i
@@ -304,7 +304,7 @@ def test_pruned_payload_is_marked_pruned(tmp_path: Path):
     run_dir = tmp_path / "test_run"
     run_dir.mkdir(parents=True)
 
-    def mock_make_trial(idx: int, params: dict[str, Any], **kwargs) -> dict[str, Any]:
+    def mock_make_trial(idx: int, params: dict[str, Any], **_kwargs) -> dict[str, Any]:
         return {
             "trial_id": f"trial_{idx:03d}",
             "parameters": params,
@@ -331,7 +331,7 @@ def test_pruned_payload_is_marked_pruned(tmp_path: Path):
         mock_study.trials = []
         mock_study.best_trials = []
 
-        def mock_optimize(objective, **kwargs):
+        def mock_optimize(objective, **_kwargs):
             trial = MagicMock()
             trial.number = 0
             trial._trial_id = 123
@@ -388,6 +388,7 @@ def test_best_trial_payload_saved_on_constraints_soft_fail(tmp_path):
     parameters_spec = {"foo": {"type": "fixed", "value": 1}}
 
     def make_trial(trial_number, parameters, optuna_context=None):
+        _ = optuna_context
         # Return a payload that triggers the soft-constraints early return path.
         return {
             "trial_id": f"trial_{trial_number:03d}",
@@ -439,6 +440,7 @@ def test_abort_heuristic_payload_not_double_penalized(tmp_path):
     parameters_spec = {"foo": {"type": "fixed", "value": 1}}
 
     def make_trial(trial_number, parameters, optuna_context=None):
+        _ = optuna_context
         return {
             "trial_id": f"trial_{trial_number:03d}",
             "parameters": parameters,
@@ -500,6 +502,7 @@ def test_end_at_sets_effective_timeout(tmp_path: Path):
     study.best_trials = []
 
     def mock_optimize(objective, **kwargs):
+        _ = objective
         captured.update(kwargs)
 
     study.optimize = mock_optimize
@@ -519,7 +522,7 @@ def test_end_at_sets_effective_timeout(tmp_path: Path):
 
     params_spec = {"param1": {"type": "fixed", "value": 1}}
 
-    def make_trial(idx: int, params: dict[str, Any], **kwargs) -> dict[str, Any]:
+    def make_trial(idx: int, params: dict[str, Any], **_kwargs) -> dict[str, Any]:
         return {
             "trial_id": f"trial_{idx:03d}",
             "parameters": params,
@@ -635,7 +638,3 @@ def test_optimizer_warns_on_narrow_space(tmp_path: Path, capsys):
         captured = capsys.readouterr()
         assert "Search space warnings" in captured.out
         assert "small" in captured.out.lower()
-
-
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"])

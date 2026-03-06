@@ -46,7 +46,7 @@ def test_decision_row_capture_hook_respects_upstream_hook_output() -> None:
     meta = {"decision": {"size": 0.3, "reasons": ["ENTRY_LONG"]}}
     candles = {"timestamp": ["2025-01-01T01:00:00Z"], "bar_index": 7}
 
-    def upstream_hook(result_in: dict, meta_in: dict, candles_in: dict):
+    def upstream_hook(result_in: dict, meta_in: dict, _candles_in: dict):
         result_in["action"] = "NONE"
         meta_in["decision"]["reasons"] = ["UPSTREAM_VETO"]
         return result_in, meta_in

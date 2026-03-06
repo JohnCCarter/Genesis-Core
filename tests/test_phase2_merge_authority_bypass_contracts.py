@@ -91,18 +91,18 @@ def test_champion_merge_bypass_contract_backtest_vs_live(monkeypatch) -> None:
     monkeypatch.setattr(
         evaluate_mod.champion_loader,
         "load_cached",
-        lambda symbol, timeframe: dummy_champion,
+        lambda _symbol, _timeframe: dummy_champion,
     )
 
     captured: dict[str, dict[str, Any]] = {}
 
-    def fake_extract_features_backtest(
-        candles, asof_bar, *, config, timeframe, symbol
-    ):  # noqa: ARG001
+    def fake_extract_features_backtest(candles, asof_bar, *, config, timeframe, symbol):
+        _ = (candles, asof_bar, timeframe, symbol)
         captured["backtest"] = config
         return {}, {}
 
-    def fake_extract_features_live(candles, *, config, timeframe, symbol):  # noqa: ARG001
+    def fake_extract_features_live(candles, *, config, timeframe, symbol):
+        _ = (candles, timeframe, symbol)
         captured["live"] = config
         return {}, {}
 
@@ -111,17 +111,17 @@ def test_champion_merge_bypass_contract_backtest_vs_live(monkeypatch) -> None:
     monkeypatch.setattr(
         evaluate_mod,
         "predict_proba_for",
-        lambda *args, **kwargs: ({"buy": 0.6, "sell": 0.4}, {"schema": [], "versions": {}}),
+        lambda *_args, **_kwargs: ({"buy": 0.6, "sell": 0.4}, {"schema": [], "versions": {}}),
     )
     monkeypatch.setattr(
         evaluate_mod,
         "compute_confidence",
-        lambda *args, **kwargs: ({"buy": 0.6, "sell": 0.4, "overall": 0.6}, {"versions": {}}),
+        lambda *_args, **_kwargs: ({"buy": 0.6, "sell": 0.4, "overall": 0.6}, {"versions": {}}),
     )
     monkeypatch.setattr(
         evaluate_mod,
         "decide",
-        lambda *args, **kwargs: ("NONE", {"versions": {}, "reasons": [], "state_out": {}}),
+        lambda *_args, **_kwargs: ("NONE", {"versions": {}, "reasons": [], "state_out": {}}),
     )
 
     candles = _minimal_candles()

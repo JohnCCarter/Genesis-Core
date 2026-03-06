@@ -11,7 +11,7 @@ def _dummy_objective(trial):  # pragma: no cover
     return 0.0
 
 
-def test_resume_signature_mismatch_raises_when_existing_signature_present(monkeypatch):
+def test_resume_signature_mismatch_raises_when_existing_signature_present():
     optuna = pytest.importorskip("optuna")
 
     from core.optimizer.runner import _verify_or_set_optuna_study_signature

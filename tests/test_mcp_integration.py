@@ -107,6 +107,7 @@ async def test_get_git_status_tool_fallback_timeout(monkeypatch, config):
         )
 
     def fake_run(args, capture_output, text, check, timeout=None, **kwargs):  # type: ignore[no-untyped-def]
+        _ = (capture_output, text, check, kwargs)
         cmd = list(args)[3:]
 
         if cmd[:2] == ["rev-parse", "--is-inside-work-tree"]:
@@ -162,6 +163,7 @@ async def test_get_git_status_tool_uses_thread_boundary(monkeypatch, config):
         return func(*args, **kwargs)
 
     def fake_run(args, capture_output, text, check, timeout=None, **kwargs):  # type: ignore[no-untyped-def]
+        _ = (capture_output, text, check, timeout, kwargs)
         cmd = list(args)[3:]
         if cmd[:2] == ["rev-parse", "--is-inside-work-tree"]:
             return _cp(list(args), stdout="true\n")

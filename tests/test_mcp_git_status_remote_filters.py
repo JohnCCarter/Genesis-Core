@@ -40,6 +40,7 @@ async def test_get_git_status_apply_security_filters_hides_blocked_and_redacts_r
         env=None,
         **kwargs,
     ):
+        _ = (capture_output, text, check, timeout, stdin, env, kwargs)
         cmd = list(args)[3:]
 
         if cmd[:2] == ["rev-parse", "--is-inside-work-tree"]:

@@ -153,6 +153,7 @@ def test_run_optimizer_updates_champion(
     created_run_dir: Path | None = None
 
     def fake_run_trial(*args: Any, **kwargs: Any) -> dict[str, Any]:
+        _ = args
         index = kwargs.get("index")
         return trial_queue.get(
             index,
@@ -841,6 +842,7 @@ def test_run_optimizer_optuna_strategy(tmp_path: Path) -> None:
         study_mock.best_value = 1.0
 
         def optuna_objective_side_effect(objective, **kwargs):
+            _ = kwargs
             # Simulate Optuna calling the objective with the mocked trial
             score = objective(trial_mock)
             # Manually update trial state as Optuna would
@@ -939,6 +941,7 @@ def test_run_optimizer_validation_fallback_reads_from_optuna_storage(tmp_path: P
     study_mock = SimpleNamespace(trials=[trial_a, trial_b])
 
     def fake_run_trial(*args: Any, **kwargs: Any) -> dict[str, Any]:
+        _ = kwargs
         trial_cfg = args[0]
         params = getattr(trial_cfg, "parameters", {}) or {}
         entry_conf = params.get("thresholds", {}).get("entry_conf_overall")

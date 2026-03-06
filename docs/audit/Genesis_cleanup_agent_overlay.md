@@ -250,8 +250,7 @@ Recommended execution path:
 
 - `scripts/run/cleanup_orchestrate.ps1 -Mode shard-a` (for Shard A)
 - `scripts/run/cleanup_orchestrate.ps1 -Mode hard` (for full cleanup profiles)
-
-If shard touches high-sensitivity paths, also run:
+  If shard touches high-sensitivity paths, also run:
 
 - determinism replay selector
 - feature cache invariance selector

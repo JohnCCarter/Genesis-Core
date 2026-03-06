@@ -316,15 +316,15 @@ class TestOBV:
 
         obv_vals = obv(close, volume)
 
-        # Start: 1000
+        # Initialt OBV-värde.
         assert obv_vals[0] == 1000.0
-        # Up: 1000 + 2000 = 3000
+        # Efter uppgång ska OBV öka med andra volymvärdet.
         assert obv_vals[1] == 3000.0
-        # Down: 3000 - 1500 = 1500
+        # Efter nedgång ska OBV minska med tredje volymvärdet.
         assert obv_vals[2] == 1500.0
-        # Up: 1500 + 2500 = 4000
+        # Ny uppgång ska ge nästa tydliga ökning.
         assert obv_vals[3] == 4000.0
-        # Down: 4000 - 1000 = 3000
+        # Avslutande nedgång ska reducera OBV.
         assert obv_vals[4] == 3000.0
 
     def test_obv_empty_input(self):

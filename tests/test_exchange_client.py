@@ -4,7 +4,7 @@ from core.io.bitfinex.exchange_client import get_exchange_client
 
 
 @pytest.mark.asyncio
-async def test_build_and_request_smoke(monkeypatch):
+async def test_build_and_request_smoke():
     ec = get_exchange_client()
 
     class DummyResponse:
@@ -22,11 +22,12 @@ async def test_build_and_request_smoke(monkeypatch):
         def text(self):
             return self._text
 
-    async def dummy_post(url, headers=None, content=None):  # noqa: ARG001
+    async def dummy_post(url, headers=None, content=None, timeout=None):
+        _ = (url, headers, content, timeout)
         return DummyResponse(200, "{}")
 
     class DummyClient:
-        async def aclose(self):  # noqa: D401
+        async def aclose(self):
             return None
 
         post = staticmethod(dummy_post)
@@ -52,7 +53,7 @@ async def test_aclose_http_client_resets_global_client() -> None:
     closed = {"ok": False}
 
     class DummyClient:
-        async def aclose(self):  # noqa: D401
+        async def aclose(self):
             closed["ok"] = True
 
     orig = mod._HTTP_CLIENT

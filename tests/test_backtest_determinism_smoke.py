@@ -24,7 +24,8 @@ def test_backtest_engine_is_deterministic_across_two_runs(monkeypatch):
     """
 
     # Deterministic, side-effect free pipeline stub.
-    def _fake_evaluate_pipeline(*, candles, policy, configs, state):  # noqa: ARG001
+    def _fake_evaluate_pipeline(*, candles, policy, configs, state):
+        _ = (candles, policy, configs, state)
         # Always return NONE so no trades occur; determinism should still hold.
         result = {"action": "NONE", "confidence": {"overall": 0.5}, "regime": {"name": "BALANCED"}}
         meta = {"decision": {"size": 0.0, "reasons": [], "state_out": {}}, "features": {}}
@@ -68,7 +69,8 @@ def test_backtest_engine_is_deterministic_with_one_trade(monkeypatch):
     Exit logic is disabled to keep the scenario minimal and deterministic.
     """
 
-    def _fake_evaluate_pipeline(*, candles, policy, configs, state):  # noqa: ARG001
+    def _fake_evaluate_pipeline(*, candles, policy, configs, state):
+        _ = (candles, policy, configs)
         # Use state to ensure exactly one entry.
         already_entered = bool((state or {}).get("entered"))
         if already_entered:
@@ -121,7 +123,8 @@ def test_backtest_engine_is_deterministic_with_explicit_exit_reason(monkeypatch)
     specific timestamp, so we exercise the exit/close_position_with_reason path.
     """
 
-    def _fake_evaluate_pipeline(*, candles, policy, configs, state):  # noqa: ARG001
+    def _fake_evaluate_pipeline(*, candles, policy, configs, state):
+        _ = (candles, policy, configs)
         already_entered = bool((state or {}).get("entered"))
         if already_entered:
             result = {"action": "NONE", "confidence": 0.5, "regime": "BALANCED"}
@@ -147,7 +150,8 @@ def test_backtest_engine_is_deterministic_with_explicit_exit_reason(monkeypatch)
 
     def _fake_check_htf_exit_conditions(
         self, *, current_price, timestamp, bar_data, result, meta, configs, bar_index=None
-    ):  # noqa: ARG001
+    ):
+        _ = (self, current_price, bar_data, result, meta, configs, bar_index)
         if timestamp == exit_ts:
             return "TEST_EXIT"
         return None

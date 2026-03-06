@@ -707,18 +707,26 @@ async def get_git_status(
             remote_url = None
 
         if apply_security_filters:
+            filtered_modified_files: list[str] = []
+            for path in modified_files:
+                is_safe, _ = is_safe_path(path, config)
+                if is_safe:
+                    filtered_modified_files.append(path)
+            modified_files = filtered_modified_files
 
-            def _filter_paths(paths: list[str]) -> list[str]:
-                visible: list[str] = []
-                for p in paths:
-                    ok, _ = is_safe_path(p, config)
-                    if ok:
-                        visible.append(p)
-                return visible
+            filtered_staged_files: list[str] = []
+            for path in staged_files:
+                is_safe, _ = is_safe_path(path, config)
+                if is_safe:
+                    filtered_staged_files.append(path)
+            staged_files = filtered_staged_files
 
-            modified_files = _filter_paths(modified_files)
-            staged_files = _filter_paths(staged_files)
-            untracked_files = _filter_paths(untracked_files)
+            filtered_untracked_files: list[str] = []
+            for path in untracked_files:
+                is_safe, _ = is_safe_path(path, config)
+                if is_safe:
+                    filtered_untracked_files.append(path)
+            untracked_files = filtered_untracked_files
 
         if remote_url and "://" in remote_url:
             try:

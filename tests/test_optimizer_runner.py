@@ -56,6 +56,14 @@ def _configure_manager(
     return manager_instance
 
 
+def _entry_conf_params(value: float) -> dict[str, Any]:
+    return {"thresholds": {"entry_conf_overall": value}}
+
+
+def _ok_constraints() -> dict[str, Any]:
+    return {"ok": True, "reasons": []}
+
+
 def _make_fake_ensure_writer(
     run_meta_payload: dict[str, Any],
     on_run_dir: Callable[[Path], None] | None = None,
@@ -212,18 +220,18 @@ def test_run_optimizer_updates_champion(
     trial_queue = {
         1: {
             "trial_id": "trial_001",
-            "parameters": {"thresholds": {"entry_conf_overall": 0.4}},
+            "parameters": _entry_conf_params(0.4),
             "score": {
                 "score": 120.0,
                 "metrics": {"sharpe_ratio": 0.5},
                 "hard_failures": [],
             },
-            "constraints": {"ok": True, "reasons": []},
+            "constraints": _ok_constraints(),
             "results_path": "test_results.json",
         },
         2: {
             "trial_id": "trial_002",
-            "parameters": {"thresholds": {"entry_conf_overall": 0.5}},
+            "parameters": _entry_conf_params(0.5),
             "score": {
                 "score": 80.0,
                 "metrics": {"sharpe_ratio": 0.2},
@@ -261,8 +269,8 @@ def test_run_optimizer_updates_champion(
         patch(
             "core.optimizer.runner.expand_parameters",
             return_value=[
-                {"thresholds": {"entry_conf_overall": 0.4}},
-                {"thresholds": {"entry_conf_overall": 0.5}},
+                _entry_conf_params(0.4),
+                _entry_conf_params(0.5),
             ],
         ),
         patch("core.optimizer.runner.run_trial", side_effect=fake_run_trial),
@@ -330,7 +338,7 @@ def test_run_optimizer_validation_stage_promotes_validation_best(tmp_path: Path)
                     "trial_id": "trial_001",
                     "parameters": params,
                     "score": {"score": 120.0, "metrics": {"num_trades": 10}, "hard_failures": []},
-                    "constraints": {"ok": True, "reasons": []},
+                    "constraints": _ok_constraints(),
                     "results_path": "explore_good.json",
                 }
             return {
@@ -351,14 +359,14 @@ def test_run_optimizer_validation_stage_promotes_validation_best(tmp_path: Path)
                 "trial_id": "trial_001",
                 "parameters": params,
                 "score": {"score": 90.0, "metrics": {"num_trades": 15}, "hard_failures": []},
-                "constraints": {"ok": True, "reasons": []},
+                "constraints": _ok_constraints(),
                 "results_path": "val_ok_04.json",
             }
         return {
             "trial_id": "trial_002",
             "parameters": params,
             "score": {"score": 130.0, "metrics": {"num_trades": 20}, "hard_failures": []},
-            "constraints": {"ok": True, "reasons": []},
+            "constraints": _ok_constraints(),
             "results_path": "val_best_05.json",
         }
 
@@ -370,8 +378,8 @@ def test_run_optimizer_validation_stage_promotes_validation_best(tmp_path: Path)
         patch(
             "core.optimizer.runner.expand_parameters",
             return_value=[
-                {"thresholds": {"entry_conf_overall": 0.4}},
-                {"thresholds": {"entry_conf_overall": 0.5}},
+                _entry_conf_params(0.4),
+                _entry_conf_params(0.5),
             ],
         ),
         patch("core.optimizer.runner.run_trial", side_effect=fake_run_trial),
@@ -500,9 +508,9 @@ def test_run_optimizer_promotion_negative_cases_do_not_write_champion(
     def fake_run_trial(*_args: Any, **kwargs: Any) -> dict[str, Any]:
         return {
             "trial_id": f"trial_{kwargs.get('index', 1):03d}",
-            "parameters": {"thresholds": {"entry_conf_overall": 0.4}},
+            "parameters": _entry_conf_params(0.4),
             "score": {"score": trial_score, "metrics": {"num_trades": 10}, "hard_failures": []},
-            "constraints": {"ok": True, "reasons": []},
+            "constraints": _ok_constraints(),
             "results_path": results_path,
         }
 
@@ -517,7 +525,7 @@ def test_run_optimizer_promotion_negative_cases_do_not_write_champion(
         patch("core.optimizer.runner.RESULTS_DIR", results_root),
         patch(
             "core.optimizer.runner.expand_parameters",
-            return_value=[{"thresholds": {"entry_conf_overall": 0.4}}],
+            return_value=[_entry_conf_params(0.4)],
         ),
         patch("core.optimizer.runner.run_trial", side_effect=fake_run_trial),
         patch("core.optimizer.runner._ensure_run_metadata", side_effect=fake_ensure),
@@ -546,7 +554,7 @@ def test_run_trial_uses_scoring_thresholds_from_constraints(
         symbol="tTEST",
         timeframe="1h",
         warmup_bars=1,
-        parameters={"thresholds": {"entry_conf_overall": 0.4}},
+        parameters=_entry_conf_params(0.4),
         start_date="2024-01-01",
         end_date="2024-01-02",
     )
@@ -616,7 +624,7 @@ def test_run_trial_uses_scoring_thresholds_from_constraints(
     cfg = json.loads((tmp_path / "trial_001_config.json").read_text(encoding="utf-8"))
     assert cfg.get("run_id") == "run_test"
     assert cfg.get("trial_id") == "trial_001"
-    assert cfg.get("parameters") == {"thresholds": {"entry_conf_overall": 0.4}}
+    assert cfg.get("parameters") == _entry_conf_params(0.4)
     assert cfg.get("score_version") == "v2"
     assert cfg.get("trial_key") == runner._trial_key(trial.parameters)
     assert cfg.get("param_signature") == runner.param_signature(trial.parameters)
@@ -824,7 +832,7 @@ def test_run_optimizer_optuna_strategy(tmp_path: Path) -> None:
             "parameters": params,
             "results_path": "dummy.json",
             "score": {"score": 1.0, "metrics": {}, "hard_failures": []},
-            "constraints": {"ok": True, "reasons": []},
+            "constraints": _ok_constraints(),
         }
 
     with (
@@ -833,9 +841,7 @@ def test_run_optimizer_optuna_strategy(tmp_path: Path) -> None:
         patch("core.optimizer.runner._create_optuna_study") as create_study,
         patch("core.optimizer.runner.run_trial") as mock_run_trial,
     ):
-        mock_run_trial.return_value = fake_make_trial(
-            1, {"thresholds": {"entry_conf_overall": 0.4}}
-        )
+        mock_run_trial.return_value = fake_make_trial(1, _entry_conf_params(0.4))
         ensure_meta.side_effect = lambda run_dir, *_: _write_run_meta(run_dir, run_meta_payload)
 
         study_mock = MagicMock()
@@ -912,9 +918,9 @@ def test_run_optimizer_validation_fallback_reads_from_optuna_storage(tmp_path: P
         user_attrs={
             "result_payload": {
                 "trial_id": "trial_a",
-                "parameters": {"thresholds": {"entry_conf_overall": 0.4}},
+                "parameters": _entry_conf_params(0.4),
                 "score": {"score": 10.0, "metrics": {}, "hard_failures": []},
-                "constraints": {"ok": True, "reasons": []},
+                "constraints": _ok_constraints(),
             }
         },
     )
@@ -923,9 +929,9 @@ def test_run_optimizer_validation_fallback_reads_from_optuna_storage(tmp_path: P
         user_attrs={
             "result_payload": {
                 "trial_id": "trial_b",
-                "parameters": {"thresholds": {"entry_conf_overall": 0.5}},
+                "parameters": _entry_conf_params(0.5),
                 "score": {"score": 7.0, "metrics": {}, "hard_failures": []},
-                "constraints": {"ok": True, "reasons": []},
+                "constraints": _ok_constraints(),
             }
         },
     )
@@ -945,7 +951,7 @@ def test_run_optimizer_validation_fallback_reads_from_optuna_storage(tmp_path: P
                 "metrics": {},
                 "hard_failures": [],
             },
-            "constraints": {"ok": True, "reasons": []},
+            "constraints": _ok_constraints(),
             "results_path": "val.json",
         }
 

@@ -25,14 +25,13 @@ def test_evaluate_pipeline_does_not_merge_champion_in_backtest_mode(monkeypatch)
     monkeypatch.setattr(
         evaluate_mod.champion_loader,
         "load_cached",
-        lambda symbol, timeframe: dummy_champion,
+        lambda *_args, **_kwargs: dummy_champion,
     )
 
     captured: dict[str, object] = {}
 
-    def fake_extract_features_backtest(
-        candles, asof_bar, *, config, timeframe, symbol
-    ):  # noqa: ARG001
+    def fake_extract_features_backtest(candles, asof_bar, *, config, timeframe, symbol):
+        _ = (candles, timeframe, symbol)
         captured["config"] = config
         captured["asof_bar"] = asof_bar
         return {}, {}
@@ -41,17 +40,20 @@ def test_evaluate_pipeline_does_not_merge_champion_in_backtest_mode(monkeypatch)
     monkeypatch.setattr(
         evaluate_mod,
         "predict_proba_for",
-        lambda *args, **kwargs: ({"buy": 0.6, "sell": 0.4}, {"schema": [], "versions": {}}),
+        lambda *_args, **_kwargs: ({"buy": 0.6, "sell": 0.4}, {"schema": [], "versions": {}}),
     )
     monkeypatch.setattr(
         evaluate_mod,
         "compute_confidence",
-        lambda *args, **kwargs: ({"buy": 0.6, "sell": 0.4, "overall": 0.6}, {"versions": {}}),
+        lambda *_args, **_kwargs: (
+            {"buy": 0.6, "sell": 0.4, "overall": 0.6},
+            {"versions": {}},
+        ),
     )
     monkeypatch.setattr(
         evaluate_mod,
         "decide",
-        lambda *args, **kwargs: ("NONE", {"versions": {}, "reasons": [], "state_out": {}}),
+        lambda *_args, **_kwargs: ("NONE", {"versions": {}, "reasons": [], "state_out": {}}),
     )
 
     candles = _minimal_candles()
@@ -84,12 +86,13 @@ def test_evaluate_pipeline_merges_champion_in_live_mode(monkeypatch):
     monkeypatch.setattr(
         evaluate_mod.champion_loader,
         "load_cached",
-        lambda symbol, timeframe: dummy_champion,
+        lambda *_args, **_kwargs: dummy_champion,
     )
 
     captured: dict[str, object] = {}
 
-    def fake_extract_features_live(candles, *, config, timeframe, symbol):  # noqa: ARG001
+    def fake_extract_features_live(candles, *, config, timeframe, symbol):
+        _ = (candles, timeframe, symbol)
         captured["config"] = config
         return {}, {}
 
@@ -97,17 +100,20 @@ def test_evaluate_pipeline_merges_champion_in_live_mode(monkeypatch):
     monkeypatch.setattr(
         evaluate_mod,
         "predict_proba_for",
-        lambda *args, **kwargs: ({"buy": 0.6, "sell": 0.4}, {"schema": [], "versions": {}}),
+        lambda *_args, **_kwargs: ({"buy": 0.6, "sell": 0.4}, {"schema": [], "versions": {}}),
     )
     monkeypatch.setattr(
         evaluate_mod,
         "compute_confidence",
-        lambda *args, **kwargs: ({"buy": 0.6, "sell": 0.4, "overall": 0.6}, {"versions": {}}),
+        lambda *_args, **_kwargs: (
+            {"buy": 0.6, "sell": 0.4, "overall": 0.6},
+            {"versions": {}},
+        ),
     )
     monkeypatch.setattr(
         evaluate_mod,
         "decide",
-        lambda *args, **kwargs: ("NONE", {"versions": {}, "reasons": [], "state_out": {}}),
+        lambda *_args, **_kwargs: ("NONE", {"versions": {}, "reasons": [], "state_out": {}}),
     )
 
     candles = _minimal_candles()

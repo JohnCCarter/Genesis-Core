@@ -11,7 +11,6 @@ from unittest.mock import Mock, patch
 
 import httpx
 import pytest
-
 from paper_trading_runner import (
     RunnerConfig,
     RunnerState,

@@ -8,10 +8,46 @@ import fnmatch
 import logging
 import re
 from pathlib import Path
+from typing import Any
 
 from .config import MCPConfig, get_project_root
 
 logger = logging.getLogger(__name__)
+
+
+_CONTENT_CODE_REDACT_TOOLS = {"write_file", "execute_python"}
+_PR_BODY_REDACT_TOOLS = {"git_workflow", "git_commit", "git_create_pr"}
+
+
+def safe_args_for_logging(
+    tool_name: str,
+    args: dict[str, Any],
+    *,
+    redact_pr_body: bool = False,
+) -> dict[str, Any]:
+    """Return a redacted view of tool arguments for safe logging.
+
+    Semantics are intentionally strict to preserve backward compatibility:
+    - For write/execute tools, redact ``content`` and ``code`` when present.
+    - Optionally redact ``pr_body`` for git workflow tools.
+    - Keep all other keys/values unchanged.
+    """
+
+    safe: dict[str, Any] = dict(args or {})
+
+    def _redacted_len(value: Any) -> str:
+        return f"<redacted len={len(value) if isinstance(value, str) else 'n/a'}>"
+
+    if tool_name in _CONTENT_CODE_REDACT_TOOLS:
+        if "content" in safe:
+            safe["content"] = _redacted_len(safe.get("content"))
+        if "code" in safe:
+            safe["code"] = _redacted_len(safe.get("code"))
+
+    if redact_pr_body and tool_name in _PR_BODY_REDACT_TOOLS and "pr_body" in safe:
+        safe["pr_body"] = _redacted_len(safe.get("pr_body"))
+
+    return safe
 
 
 def is_safe_path(path: str | Path, config: MCPConfig) -> tuple[bool, str]:

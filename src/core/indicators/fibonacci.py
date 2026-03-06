@@ -240,34 +240,6 @@ def detect_swing_points(
     return high_indices, low_indices, high_prices, low_prices
 
 
-def _clean_swing_points(
-    swing_points: list[tuple[int, float]], max_lookback: int
-) -> list[tuple[int, float]]:
-    """
-    Remove overlapping swing points, keeping the most recent.
-
-    NOTE: This function is kept for backward compatibility or external usage,
-    but detect_swing_points now uses inline optimized logic.
-    """
-    if not swing_points:
-        return []
-
-    # Sort by index
-    swing_points = sorted(swing_points, key=lambda x: x[0])
-
-    # Remove points outside lookback window
-    latest_idx = swing_points[-1][0]
-    swing_points = [(idx, price) for idx, price in swing_points if latest_idx - idx <= max_lookback]
-
-    # Remove overlaps (keep most recent)
-    cleaned = []
-    for idx, price in swing_points:
-        if not cleaned or idx - cleaned[-1][0] > 10:  # Minimum 10 bars apart
-            cleaned.append((idx, price))
-
-    return cleaned
-
-
 def calculate_fibonacci_levels(
     swing_highs: list[float], swing_lows: list[float], levels: list[float]
 ) -> list[float]:

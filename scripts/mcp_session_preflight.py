@@ -12,7 +12,6 @@ import json
 import os
 import pwd
 import subprocess
-from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -239,7 +238,9 @@ def run_preflight(repo_root: Path) -> tuple[int, list[CheckResult]]:
     return exit_code, results
 
 
-def _print_results(results: Iterable[CheckResult], exit_code: int) -> None:
+def main() -> int:
+    repo_root = Path(__file__).resolve().parents[1]
+    exit_code, results = run_preflight(repo_root)
     print("=" * 72)
     print("Genesis MCP Session Preflight")
     print("=" * 72)
@@ -259,12 +260,6 @@ def _print_results(results: Iterable[CheckResult], exit_code: int) -> None:
     else:
         print("PRECHECK RESULT: BLOCKED (critical failures found)")
     print("=" * 72)
-
-
-def main() -> int:
-    repo_root = Path(__file__).resolve().parents[1]
-    exit_code, results = run_preflight(repo_root)
-    _print_results(results, exit_code)
     return exit_code
 
 

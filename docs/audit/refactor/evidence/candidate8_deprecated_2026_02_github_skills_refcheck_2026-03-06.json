@@ -1,0 +1,9 @@
+{
+  "scan_scope": [
+    ".github/skills"
+  ],
+  "target_count": 5,
+  "paths_with_hits": 0,
+  "total_hits": 0,
+  "hits": []
+}

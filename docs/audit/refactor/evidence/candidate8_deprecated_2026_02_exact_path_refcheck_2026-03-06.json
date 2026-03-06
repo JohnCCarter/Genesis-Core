@@ -1,0 +1,21 @@
+{
+  "scan_scope": [
+    "src",
+    "scripts",
+    "tests",
+    "config",
+    "mcp_server",
+    ".github/workflows"
+  ],
+  "target_count": 5,
+  "paths_with_hits": 0,
+  "total_hits": 0,
+  "hits": [],
+  "targets": [
+    "scripts/archive/deprecated_2026-02/diagnose_optuna_issues.py",
+    "scripts/archive/deprecated_2026-02/diagnose_zero_trades.py",
+    "scripts/archive/deprecated_2026-02/freeze_data.py",
+    "scripts/archive/deprecated_2026-02/sweep_optuna_holdout_top_trials.py",
+    "scripts/archive/deprecated_2026-02/sync_precompute_and_train.py"
+  ]
+}

@@ -1,0 +1,5 @@
+scripts/archive/deprecated_2026-02/diagnose_optuna_issues.py
+scripts/archive/deprecated_2026-02/diagnose_zero_trades.py
+scripts/archive/deprecated_2026-02/freeze_data.py
+scripts/archive/deprecated_2026-02/sweep_optuna_holdout_top_trials.py
+scripts/archive/deprecated_2026-02/sync_precompute_and_train.py

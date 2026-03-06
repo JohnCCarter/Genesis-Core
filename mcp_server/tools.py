@@ -635,30 +635,6 @@ def _git_repo_state(
     }
 
 
-def _normalize_task_branch(
-    *, task_slug: str | None, task_branch: str | None, date_utc: str | None
-) -> str:
-    if task_branch:
-        return task_branch.strip()
-
-    if not task_slug:
-        raise ValueError("task_slug is required when task_branch is not provided")
-
-    slug = re.sub(r"[^a-z0-9]+", "-", task_slug.strip().lower()).strip("-")
-    if not slug:
-        raise ValueError("task_slug must include at least one alphanumeric character")
-
-    if date_utc:
-        try:
-            date_token = dt.datetime.strptime(date_utc, "%Y%m%d").strftime("%Y%m%d")
-        except ValueError as exc:
-            raise ValueError("date_utc must use YYYYMMDD format") from exc
-    else:
-        date_token = dt.datetime.now(dt.UTC).strftime("%Y%m%d")
-
-    return f"{GIT_WORKFLOW_TASK_BRANCH_PREFIX}{date_token}-{slug}"
-
-
 def _build_compare_url(remote_url: str | None, *, base_branch: str, head_branch: str) -> str | None:
     if not remote_url:
         return None
@@ -1032,11 +1008,27 @@ async def git_workflow_operation(
 
         if operation == "create_task_branch":
             try:
-                next_branch = _normalize_task_branch(
-                    task_slug=task_slug,
-                    task_branch=task_branch,
-                    date_utc=date_utc,
-                )
+                if task_branch:
+                    next_branch = task_branch.strip()
+                else:
+                    if not task_slug:
+                        raise ValueError("task_slug is required when task_branch is not provided")
+
+                    slug = re.sub(r"[^a-z0-9]+", "-", task_slug.strip().lower()).strip("-")
+                    if not slug:
+                        raise ValueError(
+                            "task_slug must include at least one alphanumeric character"
+                        )
+
+                    if date_utc:
+                        try:
+                            date_token = dt.datetime.strptime(date_utc, "%Y%m%d").strftime("%Y%m%d")
+                        except ValueError as exc:
+                            raise ValueError("date_utc must use YYYYMMDD format") from exc
+                    else:
+                        date_token = dt.datetime.now(dt.UTC).strftime("%Y%m%d")
+
+                    next_branch = f"{GIT_WORKFLOW_TASK_BRANCH_PREFIX}{date_token}-{slug}"
             except ValueError as exc:
                 return {"success": False, "operation": operation, "error": str(exc)}
 

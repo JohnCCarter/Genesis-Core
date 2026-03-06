@@ -208,8 +208,7 @@ def test_run_optimizer_updates_champion(
     def fake_ensure(run_dir: Path, *_args: Any, **_kwargs: Any) -> None:
         nonlocal created_run_dir
         created_run_dir = run_dir
-        run_dir.mkdir(parents=True, exist_ok=True)
-        (run_dir / "run_meta.json").write_text(json.dumps(run_meta_payload), encoding="utf-8")
+        _write_run_meta(run_dir, run_meta_payload)
 
     with (
         patch.dict(os.environ, {"GENESIS_MAX_CONCURRENT": "1"}),
@@ -324,8 +323,7 @@ def test_run_optimizer_validation_stage_promotes_validation_best(tmp_path: Path)
         }
 
     def fake_ensure(run_dir: Path, *_args: Any, **_kwargs: Any) -> None:
-        run_dir.mkdir(parents=True, exist_ok=True)
-        (run_dir / "run_meta.json").write_text(json.dumps(run_meta_payload), encoding="utf-8")
+        _write_run_meta(run_dir, run_meta_payload)
 
     with (
         patch.dict(os.environ, {"GENESIS_MAX_CONCURRENT": "1"}),
@@ -475,8 +473,7 @@ def test_run_optimizer_promotion_negative_cases_do_not_write_champion(
         }
 
     def fake_ensure(run_dir: Path, *_args: Any, **_kwargs: Any) -> None:
-        run_dir.mkdir(parents=True, exist_ok=True)
-        (run_dir / "run_meta.json").write_text(json.dumps(run_meta_payload), encoding="utf-8")
+        _write_run_meta(run_dir, run_meta_payload)
 
     cfg = yaml.safe_load(search_config_tmp.read_text(encoding="utf-8"))
     cfg["meta"]["runs"]["promotion"] = promotion_cfg

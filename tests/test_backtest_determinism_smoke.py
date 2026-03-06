@@ -148,6 +148,7 @@ def test_backtest_engine_is_deterministic_with_explicit_exit_reason(monkeypatch)
     def _fake_check_htf_exit_conditions(
         self, *, current_price, timestamp, bar_data, result, meta, configs, bar_index=None
     ):  # noqa: ARG001
+        _ = (self, current_price, bar_data, result, meta, configs, bar_index)
         if timestamp == exit_ts:
             return "TEST_EXIT"
         return None

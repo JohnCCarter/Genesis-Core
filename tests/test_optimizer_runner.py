@@ -40,6 +40,22 @@ def _results_root(tmp_path: Path) -> Path:
     return tmp_path / "results" / "hparam_search"
 
 
+def _champions_dir(tmp_path: Path) -> Path:
+    return tmp_path / "champions"
+
+
+def _configure_manager(
+    manager_cls: Any,
+    *,
+    current: Any = None,
+    should_replace: bool = True,
+) -> Any:
+    manager_instance = manager_cls.return_value
+    manager_instance.load_current.return_value = current
+    manager_instance.should_replace.return_value = should_replace
+    return manager_instance
+
+
 def _make_fake_ensure_writer(
     run_meta_payload: dict[str, Any],
     on_run_dir: Callable[[Path], None] | None = None,
@@ -252,12 +268,10 @@ def test_run_optimizer_updates_champion(
         patch("core.optimizer.runner.run_trial", side_effect=fake_run_trial),
         patch("core.optimizer.runner._ensure_run_metadata", side_effect=fake_ensure),
         patch("core.optimizer.runner.ChampionManager") as manager_cls,
-        patch("core.strategy.champion_loader.CHAMPIONS_DIR", tmp_path / "champions"),
+        patch("core.strategy.champion_loader.CHAMPIONS_DIR", _champions_dir(tmp_path)),
     ):
         monkeypatch.setenv("GENESIS_MAX_CONCURRENT", "1")
-        manager_instance = manager_cls.return_value
-        manager_instance.load_current.return_value = None
-        manager_instance.should_replace.return_value = True
+        manager_instance = _configure_manager(manager_cls)
 
         results = run_optimizer(search_config_tmp, run_id="run_test")
 
@@ -363,11 +377,9 @@ def test_run_optimizer_validation_stage_promotes_validation_best(tmp_path: Path)
         patch("core.optimizer.runner.run_trial", side_effect=fake_run_trial),
         patch("core.optimizer.runner._ensure_run_metadata", side_effect=fake_ensure),
         patch("core.optimizer.runner.ChampionManager") as manager_cls,
-        patch("core.strategy.champion_loader.CHAMPIONS_DIR", tmp_path / "champions"),
+        patch("core.strategy.champion_loader.CHAMPIONS_DIR", _champions_dir(tmp_path)),
     ):
-        manager_instance = manager_cls.return_value
-        manager_instance.load_current.return_value = None
-        manager_instance.should_replace.return_value = True
+        manager_instance = _configure_manager(manager_cls)
 
         results = run_optimizer(config_path, run_id="run_test")
 
@@ -510,13 +522,12 @@ def test_run_optimizer_promotion_negative_cases_do_not_write_champion(
         patch("core.optimizer.runner.run_trial", side_effect=fake_run_trial),
         patch("core.optimizer.runner._ensure_run_metadata", side_effect=fake_ensure),
         patch("core.optimizer.runner.ChampionManager") as manager_cls,
-        patch("core.strategy.champion_loader.CHAMPIONS_DIR", tmp_path / "champions"),
+        patch("core.strategy.champion_loader.CHAMPIONS_DIR", _champions_dir(tmp_path)),
     ):
-        manager_instance = manager_cls.return_value
-        manager_instance.load_current.return_value = (
-            None if current_score is None else MagicMock(score=current_score)
+        manager_instance = _configure_manager(
+            manager_cls,
+            current=None if current_score is None else MagicMock(score=current_score),
         )
-        manager_instance.should_replace.return_value = True
 
         results = run_optimizer(search_config_tmp, run_id="run_test")
 

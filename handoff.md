@@ -1,31 +1,93 @@
-Plan: Shadow artifact pytest (P1 OFF)
-Målet är att lägga till ett minimalt, test-only shadow artifact-smoke i OFF-läge utan produktionsdrift. Vi återanvänder samma eval-path som befintliga kontraktstester i test_evaluate_pipeline.py via evaluate_pipeline i evaluate.py. Testet i ny fil tests/test_regime_shadow_artifacts.py extraherar befintliga regim-/observability-fält och beräknar en test-lokal clarity_score från confidence.overall (int clamp 0–100), validerar kvalitet, och skriver artifacts endast när REGIME_EVIDENCE_DIR är satt. Ingen ändring i core-semantik, inga nya dependencies, inga champions/config-ingrepp.
+# Handoff — Cleanup Core Audit (Shard C)
 
-Steps
+## Snapshot
 
-Skapa tests/test_regime_shadow_artifacts.py med testet test_regime_shadow_artifacts_smoke.
-Återanvänd eval-harnessmönster från test_evaluate_pipeline.py (test_evaluate_pipeline_shadow_error_rate_contract, test_evaluate_pipeline_authority_mode_source_invariant_contract) för deterministisk monkeypatch och stabil config-normalisering.
-Kör P1 OFF-mode i testet (ingen parity-assert här), samla samples från result/meta:
-labels: både authoritative (result["regime"]) och shadow (meta["observability"]["shadow_regime"]["shadow"])
-clarity: test-projektion från confidence till int i [0,100].
-Implementera valideringar i testet:
-sample_count: prefererat >=200, fallback >=50 vid begränsat underlag
-alla clarity_score är heltal i [0,100]
-labels finns per sample.
-Implementera opt-in artifact write via REGIME_EVIDENCE_DIR:
-clarity_histogram.json (10-bins: 0–9 … 90–100)
-clarity_quantiles.json (p50, p80, p90, p95, top20_threshold, mean, std, total)
-shadow_samples.ndjson (minst: symbol, timeframe, bar_index/timestamp, regime_label(s), clarity_score; optional components om tillgängliga).
-Verifiera att .gitignore redan täcker artifacts (den gör det; ingen ändring behövs).
-Kör testet i båda lägena (unset/set REGIME_EVIDENCE_DIR) och kontrollera filskapande endast i set-läget.
-Verification
+- **Datum:** 2026-03-06
+- **Branch:** `feature/cleanup-core-audit`
+- **HEAD:** `a664ed7d`
+- **Mode:** RESEARCH (`feature/*`)
+- **Repo state vid överlämning:** ren working tree (inga staged/unstaged ändringar)
 
-Unset env: kör pytest -q tests/test_regime_shadow_artifacts.py::test_regime_shadow_artifacts_smoke och verifiera pass utan filskrivning.
-Set env: sätt REGIME_EVIDENCE_DIR till temp-katalog, kör samma test, verifiera att exakt tre artifacts finns och att innehållsvalidering passerar.
-Kör även baseline-gates som redan används i trancherna: import smoke, determinism smoke, feature cache invariance, pipeline hash invariant.
-Decisions
+## Vad som nyligen levererats
 
-Clarity-källa: test-projektion (inte nytt runtimefält).
-Label-källa i samples: både shadow + authoritative.
-Tröskelpolicy: prefer 200, fallback 50.
-Filform: exakt leverabel enligt spec (tests/test_regime_shadow_artifacts.py, test_regime_shadow_artifacts_smoke).
+Senaste commits (nyast först):
+
+1. `a664ed7d` — `refactor(cleanup): inline git status path filtering`
+2. `3992a117` — `refactor(cleanup): inline preflight print helper in main`
+3. `0c9122aa` — `refactor: inline git owner anomaly helper`
+4. `1e7187c7` — `refactor: inline proc environ reader helper`
+5. `930aff2e` — `refactor: inline git repo state helper`
+6. `7b16435b` — `refactor: inline git environment helper`
+7. `59978886` — `refactor: inline task branch normalization helper`
+
+Alla batches kördes med:
+
+- Opus pre-code review
+- pre-gates
+- minimal diff (no behavior change)
+- post-gates
+- Opus post-diff review
+- commit/push
+
+## Viktiga verifierade facts för nästa agent
+
+1. **Skill-invocation i detta cleanup-spår**
+   - `repo_clean_refactor` och `python_engineering` ger `STOP: no executable steps` (förväntat SPEC-beteende).
+   - Ska ändå dokumenteras som evidens i command packet.
+
+2. **Korrekt smoke-selector för preflight-filen**
+   - `tests/test_mcp_session_preflight.py` finns inte.
+   - Använd istället `tests/test_mcp_server.py` med filter för `mcp_session_preflight` när relevant.
+
+3. **Återkommande hygien-fallgrop**
+   - `scripts/build/__pycache__/...pyc` dyker upp återkommande efter test/lint-körningar.
+   - Rensa innan post-audit/commit för att undvika scope-drift.
+
+## Kvarvarande arbete (praktiskt)
+
+### A) Snäv wrapper-cleanup i aktivt spår
+
+Kvarvarande privata helper-kandidater i `mcp_server/tools.py`:
+
+- `_is_within` (nested i `get_project_structure`) — **lägst risk** för nästa batch
+- `_run_git_command`
+- `_run_git_command_async`
+- `_build_compare_url` _(obs: har direkt internhelper-test i `tests/test_mcp_git_workflow_tools.py`)_
+
+Rekommenderad nästa batch: `_is_within`.
+
+### B) Bredare shard-C cleanup (verktygsfynd)
+
+- Senaste JSCPD-report visar **6 klonfynd / 100 duplicerade rader** (~0.58%).
+- Vulture gav **0 rader** i senaste mätningen.
+- Radon visar många komplexitetsfynd, men dessa är inte per automatik no-behavior-change-kandidater.
+
+## Standard-gates som använts i cleanup-batcher
+
+Minst detta set (anpassa målfil + relevanta tests):
+
+1. `black --check <target_file>`
+2. `ruff check <target_file>`
+3. `bandit -q -c bandit.yaml <target_file>`
+4. Relevanta måltester (t.ex. `tests/test_mcp_git_status_remote_filters.py`, `tests/test_mcp_server.py`)
+5. `tests/test_backtest_determinism_smoke.py`
+6. `tests/test_feature_cache.py`
+7. `tests/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable`
+
+## Arbetsmönster som ska fortsätta (governance)
+
+1. Lås command packet (mode/risk/path/scope/base SHA)
+2. Kör skill-evidens (STOP/no_steps är OK för SPEC-skills)
+3. Opus pre-code verdict
+4. Pre-gates
+5. Minimal diff (1 kandidat per batch)
+6. Post-gates
+7. Opus post-diff verdict
+8. Commit/push
+
+## Förslag på omedelbar start för nästa agent
+
+1. Välj kandidat: `_is_within` i `mcp_server/tools.py`.
+2. Lås Batch 22 command packet (LOW risk, no behavior change, scope IN = endast `mcp_server/tools.py`).
+3. Kör ovan gate-stack före/efter.
+4. Säkerställ att inga `__pycache__`-artefakter följer med in i commit.

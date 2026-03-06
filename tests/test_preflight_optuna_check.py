@@ -165,7 +165,7 @@ def test_precompute_functionality_uses_pick_data_file_and_not_curated_path(
     # Stub BacktestEngine import used inside the function.
     stub_engine = types.ModuleType("core.backtest.engine")
 
-    class DummyEngine:  # noqa: D401
+    class DummyEngine:
         def __init__(
             self,
             symbol: str,

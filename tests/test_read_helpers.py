@@ -9,10 +9,10 @@ async def test_helpers_smoke():
         def __init__(self):
             self.text = "[]"
 
-        def json(self):  # noqa: D401
+        def json(self):
             return []
 
-    async def dummy_signed_request(**kwargs):  # noqa: ARG001
+    async def dummy_signed_request(**_kwargs):
         return DummyResp()
 
     from core.io.bitfinex import exchange_client as mod
@@ -20,10 +20,10 @@ async def test_helpers_smoke():
     orig_get = mod.get_exchange_client
 
     class DummyEC:
-        async def signed_request(self, **kwargs):  # noqa: D401, ARG002
+        async def signed_request(self, **_kwargs):
             return DummyResp()
 
-    def fake_get_ec():  # noqa: D401
+    def fake_get_ec():
         return DummyEC()
 
     # Patch symbol i read_helpers så anropet använder DummyEC

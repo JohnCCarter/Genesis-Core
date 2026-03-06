@@ -88,7 +88,7 @@ def test_estimate_search_space_nested():
 
     assert result["discrete_params"] == 3
     # entry_conf: 3 steps (0.3, 0.4, 0.5), exit_conf: 1, multiplier: 3
-    # Total: 3 * 1 * 3 = 9
+    # Diskret kombinationsrymd ska summera till nio alternativ.
     assert result["total_discrete_combinations"] == 9
 
 

@@ -533,22 +533,6 @@ def _build_git_env() -> dict[str, str]:
     return git_env
 
 
-def _redact_remote_url(remote_url: str | None) -> str | None:
-    if not remote_url or "://" not in remote_url:
-        return remote_url
-
-    try:
-        parts = urlsplit(remote_url)
-        netloc = parts.netloc
-        if "@" in netloc:
-            netloc = netloc.split("@", 1)[1]
-            return urlunsplit((parts.scheme, netloc, parts.path, parts.query, parts.fragment))
-    except Exception:
-        pass
-
-    return remote_url
-
-
 def _run_git_command(
     git_exe: str,
     *,
@@ -630,7 +614,18 @@ def _git_repo_state(
         timeout_s=timeout_s,
         git_env=git_env,
     )
-    remote_url = _redact_remote_url(remote_res.stdout.strip() or None)
+    remote_url = remote_res.stdout.strip() or None
+    if remote_url and "://" in remote_url:
+        try:
+            parts = urlsplit(remote_url)
+            netloc = parts.netloc
+            if "@" in netloc:
+                netloc = netloc.split("@", 1)[1]
+                remote_url = urlunsplit(
+                    (parts.scheme, netloc, parts.path, parts.query, parts.fragment)
+                )
+        except Exception:
+            pass
 
     return {
         "success": True,
@@ -819,7 +814,17 @@ async def get_git_status(
             staged_files = _filter_paths(staged_files)
             untracked_files = _filter_paths(untracked_files)
 
-        remote_url = _redact_remote_url(remote_url)
+        if remote_url and "://" in remote_url:
+            try:
+                parts = urlsplit(remote_url)
+                netloc = parts.netloc
+                if "@" in netloc:
+                    netloc = netloc.split("@", 1)[1]
+                    remote_url = urlunsplit(
+                        (parts.scheme, netloc, parts.path, parts.query, parts.fragment)
+                    )
+            except Exception:
+                pass
 
         is_dirty = bool(modified_files or staged_files or untracked_files)
 

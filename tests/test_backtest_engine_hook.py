@@ -69,7 +69,7 @@ class TestEvaluationHook:
         os.environ["GENESIS_FAST_WINDOW"] = "1"
         os.environ["GENESIS_PRECOMPUTE_FEATURES"] = "1"
 
-        def veto_all_hook(result, meta, candles):
+        def veto_all_hook(result, meta, _candles):
             """Hook that vetos all trades."""
             result["action"] = "NONE"
             return result, meta
@@ -134,7 +134,7 @@ class TestEvaluationHook:
         os.environ["GENESIS_FAST_WINDOW"] = "1"
         os.environ["GENESIS_PRECOMPUTE_FEATURES"] = "1"
 
-        def identity_hook(result, meta, candles):
+        def identity_hook(result, meta, _candles):
             """Hook that does nothing."""
             return result, meta
 

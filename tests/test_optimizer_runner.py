@@ -26,6 +26,46 @@ def _nested_level(depth: int, leaf: dict[str, Any]) -> dict[str, Any]:
     return node
 
 
+def _write_run_meta(run_dir: Path, run_meta_payload: dict[str, Any]) -> None:
+    run_dir.mkdir(parents=True, exist_ok=True)
+    (run_dir / "run_meta.json").write_text(json.dumps(run_meta_payload), encoding="utf-8")
+
+
+def _make_optuna_test_config(
+    *,
+    max_trials: int,
+    resume: bool,
+    storage: str | None,
+    validation: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    runs_cfg: dict[str, Any] = {
+        "strategy": "optuna",
+        "max_trials": max_trials,
+        "max_concurrent": 1,
+        "resume": resume,
+        "optuna": {"storage": storage, "study_name": "test-study"},
+    }
+    if validation is not None:
+        runs_cfg["validation"] = validation
+
+    return {
+        "meta": {
+            "symbol": "tTEST",
+            "timeframe": "1h",
+            "snapshot_id": "tTEST_1h_20240101_20240201_v1",
+            "runs": runs_cfg,
+        },
+        "parameters": {
+            "thresholds": {
+                "entry_conf_overall": {
+                    "type": "grid",
+                    "values": [0.4, 0.5],
+                }
+            }
+        },
+    }
+
+
 @pytest.fixture()
 def search_config_tmp(tmp_path: Path) -> Path:
     config = {
@@ -743,28 +783,7 @@ def test_verify_or_set_optuna_study_score_version(monkeypatch: pytest.MonkeyPatc
 
 @pytest.mark.skipif(not runner.OPTUNA_AVAILABLE, reason="Optuna ej installerat")
 def test_run_optimizer_optuna_strategy(tmp_path: Path) -> None:
-    config = {
-        "meta": {
-            "symbol": "tTEST",
-            "timeframe": "1h",
-            "snapshot_id": "tTEST_1h_20240101_20240201_v1",
-            "runs": {
-                "strategy": "optuna",
-                "max_trials": 2,
-                "max_concurrent": 1,
-                "resume": False,
-                "optuna": {"storage": None, "study_name": "test-study"},
-            },
-        },
-        "parameters": {
-            "thresholds": {
-                "entry_conf_overall": {
-                    "type": "grid",
-                    "values": [0.4, 0.5],
-                }
-            }
-        },
-    }
+    config = _make_optuna_test_config(max_trials=2, resume=False, storage=None)
     config_path = tmp_path / "optuna.yaml"
     config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
 
@@ -791,10 +810,7 @@ def test_run_optimizer_optuna_strategy(tmp_path: Path) -> None:
         mock_run_trial.return_value = fake_make_trial(
             1, {"thresholds": {"entry_conf_overall": 0.4}}
         )
-        ensure_meta.side_effect = lambda run_dir, *_: (
-            run_dir.mkdir(parents=True, exist_ok=True),
-            (run_dir / "run_meta.json").write_text(json.dumps(run_meta_payload), encoding="utf-8"),
-        )
+        ensure_meta.side_effect = lambda run_dir, *_: _write_run_meta(run_dir, run_meta_payload)
 
         study_mock = MagicMock()
         trial_mock = MagicMock()
@@ -829,29 +845,12 @@ def test_run_optimizer_optuna_strategy(tmp_path: Path) -> None:
 
 @pytest.mark.skipif(not runner.OPTUNA_AVAILABLE, reason="Optuna ej installerat")
 def test_run_optimizer_validation_fallback_reads_from_optuna_storage(tmp_path: Path) -> None:
-    config = {
-        "meta": {
-            "symbol": "tTEST",
-            "timeframe": "1h",
-            "snapshot_id": "tTEST_1h_20240101_20240201_v1",
-            "runs": {
-                "strategy": "optuna",
-                "max_trials": 0,
-                "max_concurrent": 1,
-                "resume": True,
-                "optuna": {"storage": "sqlite:///dummy.db", "study_name": "test-study"},
-                "validation": {"enabled": True, "top_n": 2, "use_sample_range": False},
-            },
-        },
-        "parameters": {
-            "thresholds": {
-                "entry_conf_overall": {
-                    "type": "grid",
-                    "values": [0.4, 0.5],
-                }
-            }
-        },
-    }
+    config = _make_optuna_test_config(
+        max_trials=0,
+        resume=True,
+        storage="sqlite:///dummy.db",
+        validation={"enabled": True, "top_n": 2, "use_sample_range": False},
+    )
     config_path = tmp_path / "optuna_validate_only.yaml"
     config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
 
@@ -874,8 +873,7 @@ def test_run_optimizer_validation_fallback_reads_from_optuna_storage(tmp_path: P
     def fake_ensure(run_dir: Path, *_args: Any, **_kwargs: Any) -> None:
         nonlocal created_run_dir
         created_run_dir = run_dir
-        run_dir.mkdir(parents=True, exist_ok=True)
-        (run_dir / "run_meta.json").write_text(json.dumps(run_meta_payload), encoding="utf-8")
+        _write_run_meta(run_dir, run_meta_payload)
 
     # Two explore payloads living in Optuna storage
     from types import SimpleNamespace

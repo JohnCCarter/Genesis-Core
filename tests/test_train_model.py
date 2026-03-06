@@ -72,16 +72,18 @@ class TestLoadFeaturesAndPrices:
                     return Path(x)
                 return Path(x)
 
-            with patch("scripts.train.train_model.Path", side_effect=path_side_effect):
-                with patch("core.utils.data_loader.Path", side_effect=path_side_effect):
-                    features, prices, candles = load_features_and_prices("tBTCUSD", "15m")
+            with (
+                patch("scripts.train.train_model.Path", side_effect=path_side_effect),
+                patch("core.utils.data_loader.Path", side_effect=path_side_effect),
+            ):
+                features, prices, candles = load_features_and_prices("tBTCUSD", "15m")
 
-                    assert len(features) == 10
-                    assert len(prices) == 10
-                    assert len(candles) == 10
-                    assert "ema_delta_pct" in features.columns
-                    assert "rsi" in features.columns
-                    assert all(isinstance(p, int | float) for p in prices)
+                assert len(features) == 10
+                assert len(prices) == 10
+                assert len(candles) == 10
+                assert "ema_delta_pct" in features.columns
+                assert "rsi" in features.columns
+                assert all(isinstance(p, int | float) for p in prices)
 
     def test_load_features_file_not_found(self):
         """Test error when features file doesn't exist."""
@@ -95,10 +97,12 @@ class TestLoadFeaturesAndPrices:
                     return Path(x)
                 return Path(x)
 
-            with patch("scripts.train.train_model.Path", side_effect=path_side_effect):
-                with patch("core.utils.data_loader.Path", side_effect=path_side_effect):
-                    with pytest.raises(FileNotFoundError, match="Features not found"):
-                        load_features_and_prices("tBTCUSD", "15m")
+            with (
+                patch("scripts.train.train_model.Path", side_effect=path_side_effect),
+                patch("core.utils.data_loader.Path", side_effect=path_side_effect),
+                pytest.raises(FileNotFoundError, match="Features not found"),
+            ):
+                load_features_and_prices("tBTCUSD", "15m")
 
     def test_load_candles_file_not_found(self):
         """Test error when candles file doesn't exist."""
@@ -126,10 +130,12 @@ class TestLoadFeaturesAndPrices:
                     return Path(x)
                 return Path(x)
 
-            with patch("scripts.train.train_model.Path", side_effect=path_side_effect):
-                with patch("core.utils.data_loader.Path", side_effect=path_side_effect):
-                    with pytest.raises(FileNotFoundError, match="Candles file not found"):
-                        load_features_and_prices("tBTCUSD", "15m")
+            with (
+                patch("scripts.train.train_model.Path", side_effect=path_side_effect),
+                patch("core.utils.data_loader.Path", side_effect=path_side_effect),
+                pytest.raises(FileNotFoundError, match="Candles file not found"),
+            ):
+                load_features_and_prices("tBTCUSD", "15m")
 
     def test_load_length_mismatch(self):
         """Test error when features and candles have different lengths."""
@@ -179,10 +185,12 @@ class TestLoadFeaturesAndPrices:
                     return Path(x)
                 return Path(x)
 
-            with patch("scripts.train.train_model.Path", side_effect=path_side_effect):
-                with patch("core.utils.data_loader.Path", side_effect=path_side_effect):
-                    with pytest.raises(ValueError, match="length mismatch"):
-                        load_features_and_prices("tBTCUSD", "15m")
+            with (
+                patch("scripts.train.train_model.Path", side_effect=path_side_effect),
+                patch("core.utils.data_loader.Path", side_effect=path_side_effect),
+                pytest.raises(ValueError, match="length mismatch"),
+            ):
+                load_features_and_prices("tBTCUSD", "15m")
 
 
 class TestGenerateTrainingLabels:
@@ -539,56 +547,54 @@ class TestIntegration:
                     return Path(x)
                 return Path(x)
 
-            with patch("scripts.train.train_model.Path", side_effect=path_side_effect):
-                with patch("core.utils.data_loader.Path", side_effect=path_side_effect):
-                    # Load data
-                    features_df, close_prices, candles_df = load_features_and_prices(
-                        "tBTCUSD", "15m"
-                    )
+            with (
+                patch("scripts.train.train_model.Path", side_effect=path_side_effect),
+                patch("core.utils.data_loader.Path", side_effect=path_side_effect),
+            ):
+                # Load data
+                features_df, close_prices, candles_df = load_features_and_prices("tBTCUSD", "15m")
 
-                    # Generate labels
-                    labels = generate_training_labels(close_prices, lookahead_bars=5)
+                # Generate labels
+                labels = generate_training_labels(close_prices, lookahead_bars=5)
 
-                    # Align data
-                    start_idx, end_idx = align_features_with_labels(len(features_df), labels)
+                # Align data
+                start_idx, end_idx = align_features_with_labels(len(features_df), labels)
 
-                    # Extract features
-                    aligned_features = features_df.iloc[start_idx:end_idx]
-                    aligned_labels = np.array(labels[start_idx:end_idx])
+                # Extract features
+                aligned_features = features_df.iloc[start_idx:end_idx]
+                aligned_labels = np.array(labels[start_idx:end_idx])
 
-                    feature_columns = [
-                        col for col in aligned_features.columns if col != "timestamp"
-                    ]
-                    X = aligned_features[feature_columns].values
+                feature_columns = [col for col in aligned_features.columns if col != "timestamp"]
+                X = aligned_features[feature_columns].values
 
-                    # Split data
-                    X_train, X_val, X_test, y_train, y_val, y_test, holdout_indices = (
-                        split_data_chronological(X, aligned_labels)
-                    )
+                # Split data
+                X_train, X_val, X_test, y_train, y_val, y_test, holdout_indices = (
+                    split_data_chronological(X, aligned_labels)
+                )
 
-                    # Train models
-                    buy_model, sell_model, metrics = train_buy_sell_models(
-                        X_train, y_train, X_val, y_val, feature_columns, fast_mode=True
-                    )
+                # Train models
+                buy_model, sell_model, metrics = train_buy_sell_models(
+                    X_train, y_train, X_val, y_val, feature_columns, fast_mode=True
+                )
 
-                    # Convert to JSON
-                    model_json = convert_to_model_json(buy_model, sell_model, feature_columns, "v2")
+                # Convert to JSON
+                model_json = convert_to_model_json(buy_model, sell_model, feature_columns, "v2")
 
-                    # Save results
-                    output_dir = Path(temp_dir) / "results"
-                    file_paths = save_model_and_metrics(
-                        model_json, metrics, "tBTCUSD", "15m", "v2", output_dir
-                    )
+                # Save results
+                output_dir = Path(temp_dir) / "results"
+                file_paths = save_model_and_metrics(
+                    model_json, metrics, "tBTCUSD", "15m", "v2", output_dir
+                )
 
-                    # Verify results
-                    assert len(X_train) > 0
-                    assert len(X_val) > 0
-                    assert len(X_test) > 0
-                    assert isinstance(buy_model, LogisticRegression)
-                    assert isinstance(sell_model, LogisticRegression)
-                    assert "buy_model" in metrics
-                    assert "sell_model" in metrics
-                    assert model_json["version"] == "v2"
-                    assert model_json["schema"] == feature_columns
-                    assert Path(file_paths["model_path"]).exists()
-                    assert Path(file_paths["metrics_path"]).exists()
+                # Verify results
+                assert len(X_train) > 0
+                assert len(X_val) > 0
+                assert len(X_test) > 0
+                assert isinstance(buy_model, LogisticRegression)
+                assert isinstance(sell_model, LogisticRegression)
+                assert "buy_model" in metrics
+                assert "sell_model" in metrics
+                assert model_json["version"] == "v2"
+                assert model_json["schema"] == feature_columns
+                assert Path(file_paths["model_path"]).exists()
+                assert Path(file_paths["metrics_path"]).exists()

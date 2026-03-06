@@ -332,11 +332,11 @@ def test_idempotency_skips_processed_candles(tmp_path):
 
     # Try to process candle 900 (older than last processed)
     assert loaded.last_processed_candle_ts == 1000
-    should_skip = 900 <= loaded.last_processed_candle_ts
+    should_skip = loaded.last_processed_candle_ts >= 900
     assert should_skip is True
 
     # Try to process candle 1100 (newer than last processed)
-    should_skip = 1100 <= loaded.last_processed_candle_ts
+    should_skip = loaded.last_processed_candle_ts >= 1100
     assert should_skip is False
 
 

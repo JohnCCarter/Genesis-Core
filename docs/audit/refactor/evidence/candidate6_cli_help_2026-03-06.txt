@@ -1,0 +1,11 @@
+[DEPRECATED] scripts/audit/audit_optuna_objective_parity.py moved to scripts/archive/deprecated_2026-02/audit_optuna_objective_parity.py.
+usage: audit_optuna_objective_parity.py [-h] [--run-id RUN_ID] [--run-dir RUN_DIR] [--eps EPS]
+                                        [--constraint-soft-penalty CONSTRAINT_SOFT_PENALTY]
+
+options:
+  -h, --help            show this help message and exit
+  --run-id RUN_ID
+  --run-dir RUN_DIR
+  --eps EPS
+  --constraint-soft-penalty CONSTRAINT_SOFT_PENALTY
+                        Must match GENESIS_CONSTRAINT_SOFT_PENALTY if you override it.

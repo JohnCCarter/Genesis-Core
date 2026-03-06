@@ -1,0 +1,822 @@
+.................................................................................sssss.sssssss.................. [ 11%]
+Windows fatal exception: access violation
+
+Thread 0x0000d7b4 (most recent call first):
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 331 in wait
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 629 in wait
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1045 in _bootstrap_inner
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1002 in _bootstrap
+
+Current thread 0x0000a940 (most recent call first):
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\__init__.py", line 257 in _load_dll_libraries
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\__init__.py", line 281 in <module>
+  File "<frozen importlib._bootstrap>", line 241 in _call_with_frames_removed
+  File "<frozen importlib._bootstrap_external>", line 940 in exec_module
+  File "<frozen importlib._bootstrap>", line 690 in _load_unlocked
+  File "<frozen importlib._bootstrap>", line 1147 in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 1176 in _find_and_load
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\src\core\utils\optuna_helpers.py", line 86 in set_global_seeds
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\src\core\pipeline.py", line 59 in setup_environment
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\tests\test_canonical_mode_policy.py", line 20 in test_pipeline_enforces_canonical_mode_by_default
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\python.py", line 157 in pytest_pyfunc_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\python.py", line 1671 in runtest
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 178 in pytest_runtest_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 246 in <lambda>
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 344 in from_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 245 in call_and_report
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 136 in runtestprotocol
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 117 in pytest_runtest_protocol
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 367 in pytest_runtestloop
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 343 in _main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 289 in wrap_session
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 336 in pytest_cmdline_main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 175 in main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 201 in console_main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Scripts\pytest.exe\__main__.py", line 7 in <module>
+  File "<frozen runpy>", line 88 in _run_code
+  File "<frozen runpy>", line 198 in _run_module_as_main
+Windows fatal exception: access violation
+
+Thread 0x0000d7b4 (most recent call first):
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 331 in wait
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 629 in wait
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1045 in _bootstrap_inner
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1002 in _bootstrap
+
+Current thread 0x0000a940 (most recent call first):
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\__init__.py", line 257 in _load_dll_libraries
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\__init__.py", line 281 in <module>
+  File "<frozen importlib._bootstrap>", line 241 in _call_with_frames_removed
+  File "<frozen importlib._bootstrap_external>", line 940 in exec_module
+  File "<frozen importlib._bootstrap>", line 690 in _load_unlocked
+  File "<frozen importlib._bootstrap>", line 1147 in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 1176 in _find_and_load
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\src\core\utils\optuna_helpers.py", line 86 in set_global_seeds
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\src\core\pipeline.py", line 59 in setup_environment
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\tests\test_canonical_mode_policy.py", line 34 in test_pipeline_respects_explicit_debug_mode
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\python.py", line 157 in pytest_pyfunc_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\python.py", line 1671 in runtest
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 178 in pytest_runtest_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 246 in <lambda>
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 344 in from_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 245 in call_and_report
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 136 in runtestprotocol
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 117 in pytest_runtest_protocol
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 367 in pytest_runtestloop
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 343 in _main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 289 in wrap_session
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 336 in pytest_cmdline_main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 175 in main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 201 in console_main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Scripts\pytest.exe\__main__.py", line 7 in <module>
+  File "<frozen runpy>", line 88 in _run_code
+  File "<frozen runpy>", line 198 in _run_module_as_main
+................................................................................................................ [ 22%]
+...................................s............................................................................ [ 33%]
+................................................................................................................ [ 44%]
+................................................................................................................ [ 56%]
+Windows fatal exception: access violation
+
+Thread 0x0000d7b4 (most recent call first):
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 331 in wait
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 629 in wait
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1045 in _bootstrap_inner
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1002 in _bootstrap
+
+Current thread 0x0000a940 (most recent call first):
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\__init__.py", line 257 in _load_dll_libraries
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\__init__.py", line 281 in <module>
+  File "<frozen importlib._bootstrap>", line 241 in _call_with_frames_removed
+  File "<frozen importlib._bootstrap_external>", line 940 in exec_module
+  File "<frozen importlib._bootstrap>", line 690 in _load_unlocked
+  File "<frozen importlib._bootstrap>", line 1147 in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 1176 in _find_and_load
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\src\core\utils\optuna_helpers.py", line 86 in set_global_seeds
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\src\core\pipeline.py", line 59 in setup_environment
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\src\core\optimizer\runner.py", line 1378 in _run_backtest_direct
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\tests\test_optimizer_direct_execution_canonical_guard.py", line 64 in test_direct_execution_fails_fast_when_canonical_precompute_missing
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\python.py", line 157 in pytest_pyfunc_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\python.py", line 1671 in runtest
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 178 in pytest_runtest_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 246 in <lambda>
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 344 in from_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 245 in call_and_report
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 136 in runtestprotocol
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 117 in pytest_runtest_protocol
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 367 in pytest_runtestloop
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 343 in _main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 289 in wrap_session
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 336 in pytest_cmdline_main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 175 in main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 201 in console_main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Scripts\pytest.exe\__main__.py", line 7 in <module>
+  File "<frozen runpy>", line 88 in _run_code
+  File "<frozen runpy>", line 198 in _run_module_as_main
+Windows fatal exception: access violation
+
+Thread 0x0000d7b4 (most recent call first):
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 331 in wait
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 629 in wait
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1045 in _bootstrap_inner
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1002 in _bootstrap
+
+Current thread 0x0000a940 (most recent call first):
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\__init__.py", line 257 in _load_dll_libraries
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\__init__.py", line 281 in <module>
+  File "<frozen importlib._bootstrap>", line 241 in _call_with_frames_removed
+  File "<frozen importlib._bootstrap_external>", line 940 in exec_module
+  File "<frozen importlib._bootstrap>", line 690 in _load_unlocked
+  File "<frozen importlib._bootstrap>", line 1147 in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 1176 in _find_and_load
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\src\core\utils\optuna_helpers.py", line 86 in set_global_seeds
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\src\core\optimizer\runner.py", line 1380 in _run_backtest_direct
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\tests\test_optimizer_direct_execution_canonical_guard.py", line 114 in test_direct_execution_does_not_enable_precompute_when_env_is_zero_and_setup_env_missing
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\python.py", line 157 in pytest_pyfunc_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\python.py", line 1671 in runtest
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 178 in pytest_runtest_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 246 in <lambda>
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 344 in from_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 245 in call_and_report
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 136 in runtestprotocol
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 117 in pytest_runtest_protocol
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 367 in pytest_runtestloop
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 343 in _main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 289 in wrap_session
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 336 in pytest_cmdline_main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 175 in main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 201 in console_main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Scripts\pytest.exe\__main__.py", line 7 in <module>
+  File "<frozen runpy>", line 88 in _run_code
+  File "<frozen runpy>", line 198 in _run_module_as_main
+Windows fatal exception: access violation
+
+Thread 0x0000d7b4 (most recent call first):
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 331 in wait
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 629 in wait
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1045 in _bootstrap_inner
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1002 in _bootstrap
+
+Current thread 0x0000a940 (most recent call first):
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\__init__.py", line 257 in _load_dll_libraries
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\__init__.py", line 281 in <module>
+  File "<frozen importlib._bootstrap>", line 241 in _call_with_frames_removed
+  File "<frozen importlib._bootstrap_external>", line 940 in exec_module
+  File "<frozen importlib._bootstrap>", line 690 in _load_unlocked
+  File "<frozen importlib._bootstrap>", line 1147 in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 1176 in _find_and_load
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\src\core\utils\optuna_helpers.py", line 86 in set_global_seeds
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\src\core\optimizer\runner.py", line 3156 in run_optimizer
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\tests\test_optimizer_duplicate_fixes.py", line 636 in test_optimizer_warns_on_narrow_space
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\python.py", line 157 in pytest_pyfunc_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\python.py", line 1671 in runtest
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 178 in pytest_runtest_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 246 in <lambda>
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 344 in from_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 245 in call_and_report
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 136 in runtestprotocol
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 117 in pytest_runtest_protocol
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 367 in pytest_runtestloop
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 343 in _main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 289 in wrap_session
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 336 in pytest_cmdline_main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 175 in main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 201 in console_main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Scripts\pytest.exe\__main__.py", line 7 in <module>
+  File "<frozen runpy>", line 88 in _run_code
+  File "<frozen runpy>", line 198 in _run_module_as_main
+Windows fatal exception: access violation
+
+Thread 0x0000d7b4 (most recent call first):
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 331 in wait
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 629 in wait
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1045 in _bootstrap_inner
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1002 in _bootstrap
+
+Current thread 0x0000a940 (most recent call first):
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\__init__.py", line 257 in _load_dll_libraries
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\__init__.py", line 281 in <module>
+  File "<frozen importlib._bootstrap>", line 241 in _call_with_frames_removed
+  File "<frozen importlib._bootstrap_external>", line 940 in exec_module
+  File "<frozen importlib._bootstrap>", line 690 in _load_unlocked
+  File "<frozen importlib._bootstrap>", line 1147 in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 1176 in _find_and_load
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\src\core\utils\optuna_helpers.py", line 86 in set_global_seeds
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\src\core\optimizer\runner.py", line 3156 in run_optimizer
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\tests\test_optimizer_runner.py", line 194 in test_run_optimizer_updates_champion
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\python.py", line 157 in pytest_pyfunc_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\python.py", line 1671 in runtest
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 178 in pytest_runtest_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 246 in <lambda>
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 344 in from_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 245 in call_and_report
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 136 in runtestprotocol
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 117 in pytest_runtest_protocol
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 367 in pytest_runtestloop
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 343 in _main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 289 in wrap_session
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 336 in pytest_cmdline_main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 175 in main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 201 in console_main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Scripts\pytest.exe\__main__.py", line 7 in <module>
+  File "<frozen runpy>", line 88 in _run_code
+  File "<frozen runpy>", line 198 in _run_module_as_main
+Windows fatal exception: access violation
+
+Thread 0x0000d7b4 (most recent call first):
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 331 in wait
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 629 in wait
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1045 in _bootstrap_inner
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1002 in _bootstrap
+
+Current thread 0x0000a940 (most recent call first):
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\__init__.py", line 257 in _load_dll_libraries
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\__init__.py", line 281 in <module>
+  File "<frozen importlib._bootstrap>", line 241 in _call_with_frames_removed
+  File "<frozen importlib._bootstrap_external>", line 940 in exec_module
+  File "<frozen importlib._bootstrap>", line 690 in _load_unlocked
+  File "<frozen importlib._bootstrap>", line 1147 in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 1176 in _find_and_load
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\src\core\utils\optuna_helpers.py", line 86 in set_global_seeds
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\src\core\optimizer\runner.py", line 3156 in run_optimizer
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\tests\test_optimizer_runner.py", line 309 in test_run_optimizer_validation_stage_promotes_validation_best
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\python.py", line 157 in pytest_pyfunc_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\python.py", line 1671 in runtest
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 178 in pytest_runtest_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 246 in <lambda>
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 344 in from_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 245 in call_and_report
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 136 in runtestprotocol
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 117 in pytest_runtest_protocol
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 367 in pytest_runtestloop
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 343 in _main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 289 in wrap_session
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 336 in pytest_cmdline_main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 175 in main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 201 in console_main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Scripts\pytest.exe\__main__.py", line 7 in <module>
+  File "<frozen runpy>", line 88 in _run_code
+  File "<frozen runpy>", line 198 in _run_module_as_main
+................................................................................................................ [ 67%]
+Windows fatal exception: access violation
+
+Thread 0x0000d7b4 (most recent call first):
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 331 in wait
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 629 in wait
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1045 in _bootstrap_inner
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1002 in _bootstrap
+
+Current thread 0x0000a940 (most recent call first):
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\__init__.py", line 257 in _load_dll_libraries
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\__init__.py", line 281 in <module>
+  File "<frozen importlib._bootstrap>", line 241 in _call_with_frames_removed
+  File "<frozen importlib._bootstrap_external>", line 940 in exec_module
+  File "<frozen importlib._bootstrap>", line 690 in _load_unlocked
+  File "<frozen importlib._bootstrap>", line 1147 in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 1176 in _find_and_load
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\src\core\utils\optuna_helpers.py", line 86 in set_global_seeds
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\src\core\optimizer\runner.py", line 3156 in run_optimizer
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\tests\test_optimizer_runner.py", line 449 in test_run_optimizer_promotion_disabled_does_not_write_champion
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\python.py", line 157 in pytest_pyfunc_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\python.py", line 1671 in runtest
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 178 in pytest_runtest_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 246 in <lambda>
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 344 in from_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 245 in call_and_report
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 136 in runtestprotocol
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 117 in pytest_runtest_protocol
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 367 in pytest_runtestloop
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 343 in _main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 289 in wrap_session
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 336 in pytest_cmdline_main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 175 in main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 201 in console_main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Scripts\pytest.exe\__main__.py", line 7 in <module>
+  File "<frozen runpy>", line 88 in _run_code
+  File "<frozen runpy>", line 198 in _run_module_as_main
+Windows fatal exception: access violation
+
+Thread 0x0000d7b4 (most recent call first):
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 331 in wait
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 629 in wait
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1045 in _bootstrap_inner
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1002 in _bootstrap
+
+Current thread 0x0000a940 (most recent call first):
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\__init__.py", line 257 in _load_dll_libraries
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\__init__.py", line 281 in <module>
+  File "<frozen importlib._bootstrap>", line 241 in _call_with_frames_removed
+  File "<frozen importlib._bootstrap_external>", line 940 in exec_module
+  File "<frozen importlib._bootstrap>", line 690 in _load_unlocked
+  File "<frozen importlib._bootstrap>", line 1147 in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 1176 in _find_and_load
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\src\core\utils\optuna_helpers.py", line 86 in set_global_seeds
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\src\core\optimizer\runner.py", line 3156 in run_optimizer
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\tests\test_optimizer_runner.py", line 497 in test_run_optimizer_promotion_min_improvement_blocks_small_gain
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\python.py", line 157 in pytest_pyfunc_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\python.py", line 1671 in runtest
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 178 in pytest_runtest_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 246 in <lambda>
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 344 in from_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 245 in call_and_report
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 136 in runtestprotocol
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 117 in pytest_runtest_protocol
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 367 in pytest_runtestloop
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 343 in _main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 289 in wrap_session
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 336 in pytest_cmdline_main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 175 in main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 201 in console_main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Scripts\pytest.exe\__main__.py", line 7 in <module>
+  File "<frozen runpy>", line 88 in _run_code
+  File "<frozen runpy>", line 198 in _run_module_as_main
+Windows fatal exception: access violation
+
+Thread 0x0000d7b4 (most recent call first):
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 331 in wait
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 629 in wait
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1045 in _bootstrap_inner
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1002 in _bootstrap
+
+Current thread 0x0000a940 (most recent call first):
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\__init__.py", line 257 in _load_dll_libraries
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\__init__.py", line 281 in <module>
+  File "<frozen importlib._bootstrap>", line 241 in _call_with_frames_removed
+  File "<frozen importlib._bootstrap_external>", line 940 in exec_module
+  File "<frozen importlib._bootstrap>", line 690 in _load_unlocked
+  File "<frozen importlib._bootstrap>", line 1147 in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 1176 in _find_and_load
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\src\core\utils\optuna_helpers.py", line 86 in set_global_seeds
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\src\core\optimizer\runner.py", line 3156 in run_optimizer
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\tests\test_optimizer_runner.py", line 857 in test_run_optimizer_optuna_strategy
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\python.py", line 157 in pytest_pyfunc_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\python.py", line 1671 in runtest
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 178 in pytest_runtest_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 246 in <lambda>
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 344 in from_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 245 in call_and_report
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 136 in runtestprotocol
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 117 in pytest_runtest_protocol
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 367 in pytest_runtestloop
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 343 in _main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 289 in wrap_session
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 336 in pytest_cmdline_main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 175 in main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 201 in console_main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Scripts\pytest.exe\__main__.py", line 7 in <module>
+  File "<frozen runpy>", line 88 in _run_code
+  File "<frozen runpy>", line 198 in _run_module_as_main
+Windows fatal exception: access violation
+
+Thread 0x0000d7b4 (most recent call first):
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 331 in wait
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 629 in wait
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1045 in _bootstrap_inner
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1002 in _bootstrap
+
+Current thread 0x0000a940 (most recent call first):
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\__init__.py", line 257 in _load_dll_libraries
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\__init__.py", line 281 in <module>
+  File "<frozen importlib._bootstrap>", line 241 in _call_with_frames_removed
+  File "<frozen importlib._bootstrap_external>", line 940 in exec_module
+  File "<frozen importlib._bootstrap>", line 690 in _load_unlocked
+  File "<frozen importlib._bootstrap>", line 1147 in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 1176 in _find_and_load
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\src\core\utils\optuna_helpers.py", line 86 in set_global_seeds
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\src\core\optimizer\runner.py", line 3156 in run_optimizer
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\tests\test_optimizer_runner.py", line 970 in test_run_optimizer_validation_fallback_reads_from_optuna_storage
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\python.py", line 157 in pytest_pyfunc_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\python.py", line 1671 in runtest
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 178 in pytest_runtest_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 246 in <lambda>
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 344 in from_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 245 in call_and_report
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 136 in runtestprotocol
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 117 in pytest_runtest_protocol
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 367 in pytest_runtestloop
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 343 in _main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 289 in wrap_session
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 336 in pytest_cmdline_main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 175 in main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 201 in console_main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Scripts\pytest.exe\__main__.py", line 7 in <module>
+  File "<frozen runpy>", line 88 in _run_code
+  File "<frozen runpy>", line 198 in _run_module_as_main
+Windows fatal exception: access violation
+
+Thread 0x0000d7b4 (most recent call first):
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 331 in wait
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 629 in wait
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1045 in _bootstrap_inner
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1002 in _bootstrap
+
+Current thread 0x0000a940 (most recent call first):
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\__init__.py", line 257 in _load_dll_libraries
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\__init__.py", line 281 in <module>
+  File "<frozen importlib._bootstrap>", line 241 in _call_with_frames_removed
+  File "<frozen importlib._bootstrap_external>", line 940 in exec_module
+  File "<frozen importlib._bootstrap>", line 690 in _load_unlocked
+  File "<frozen importlib._bootstrap>", line 1147 in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 1176 in _find_and_load
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\src\core\utils\optuna_helpers.py", line 86 in set_global_seeds
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\src\core\pipeline.py", line 59 in setup_environment
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\tests\test_pipeline_fast_hash_guard.py", line 15 in test_pipeline_forces_fast_hash_off_in_canonical_mode
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\python.py", line 157 in pytest_pyfunc_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\python.py", line 1671 in runtest
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 178 in pytest_runtest_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 246 in <lambda>
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 344 in from_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 245 in call_and_report
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 136 in runtestprotocol
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 117 in pytest_runtest_protocol
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 367 in pytest_runtestloop
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 343 in _main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 289 in wrap_session
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 336 in pytest_cmdline_main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 175 in main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 201 in console_main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Scripts\pytest.exe\__main__.py", line 7 in <module>
+  File "<frozen runpy>", line 88 in _run_code
+  File "<frozen runpy>", line 198 in _run_module_as_main
+Windows fatal exception: access violation
+
+Thread 0x0000d7b4 (most recent call first):
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 331 in wait
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 629 in wait
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1045 in _bootstrap_inner
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1002 in _bootstrap
+
+Current thread 0x0000a940 (most recent call first):
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\__init__.py", line 257 in _load_dll_libraries
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\__init__.py", line 281 in <module>
+  File "<frozen importlib._bootstrap>", line 241 in _call_with_frames_removed
+  File "<frozen importlib._bootstrap_external>", line 940 in exec_module
+  File "<frozen importlib._bootstrap>", line 690 in _load_unlocked
+  File "<frozen importlib._bootstrap>", line 1147 in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 1176 in _find_and_load
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\src\core\utils\optuna_helpers.py", line 86 in set_global_seeds
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\src\core\pipeline.py", line 59 in setup_environment
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\tests\test_pipeline_fast_hash_guard.py", line 28 in test_pipeline_forces_fast_hash_off_in_canonical_mode_case_insensitive
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\python.py", line 157 in pytest_pyfunc_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\python.py", line 1671 in runtest
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 178 in pytest_runtest_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 246 in <lambda>
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 344 in from_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 245 in call_and_report
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 136 in runtestprotocol
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 117 in pytest_runtest_protocol
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 367 in pytest_runtestloop
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 343 in _main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 289 in wrap_session
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 336 in pytest_cmdline_main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 175 in main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 201 in console_main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Scripts\pytest.exe\__main__.py", line 7 in <module>
+  File "<frozen runpy>", line 88 in _run_code
+  File "<frozen runpy>", line 198 in _run_module_as_main
+Windows fatal exception: access violation
+
+Thread 0x0000d7b4 (most recent call first):
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 331 in wait
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 629 in wait
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1045 in _bootstrap_inner
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1002 in _bootstrap
+
+Current thread 0x0000a940 (most recent call first):
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\__init__.py", line 257 in _load_dll_libraries
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\__init__.py", line 281 in <module>
+  File "<frozen importlib._bootstrap>", line 241 in _call_with_frames_removed
+  File "<frozen importlib._bootstrap_external>", line 940 in exec_module
+  File "<frozen importlib._bootstrap>", line 690 in _load_unlocked
+  File "<frozen importlib._bootstrap>", line 1147 in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 1176 in _find_and_load
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\src\core\utils\optuna_helpers.py", line 86 in set_global_seeds
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\src\core\pipeline.py", line 59 in setup_environment
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\tests\test_pipeline_fast_hash_guard.py", line 41 in test_pipeline_allows_fast_hash_in_explicit_mode
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\python.py", line 157 in pytest_pyfunc_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\python.py", line 1671 in runtest
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 178 in pytest_runtest_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 246 in <lambda>
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 344 in from_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 245 in call_and_report
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 136 in runtestprotocol
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 117 in pytest_runtest_protocol
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 367 in pytest_runtestloop
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 343 in _main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 289 in wrap_session
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 336 in pytest_cmdline_main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 175 in main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 201 in console_main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Scripts\pytest.exe\__main__.py", line 7 in <module>
+  File "<frozen runpy>", line 88 in _run_code
+  File "<frozen runpy>", line 198 in _run_module_as_main
+................................................................................................................ [ 78%]
+Windows fatal exception: access violation
+
+Thread 0x0000d7b4 (most recent call first):
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 331 in wait
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 629 in wait
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\tqdm\_monitor.py", line 60 in run
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1045 in _bootstrap_inner
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1002 in _bootstrap
+
+Current thread 0x0000a940 (most recent call first):
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\__init__.py", line 257 in _load_dll_libraries
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\__init__.py", line 281 in <module>
+  File "<frozen importlib._bootstrap>", line 241 in _call_with_frames_removed
+  File "<frozen importlib._bootstrap_external>", line 940 in exec_module
+  File "<frozen importlib._bootstrap>", line 690 in _load_unlocked
+  File "<frozen importlib._bootstrap>", line 1147 in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 1176 in _find_and_load
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\src\core\utils\optuna_helpers.py", line 86 in set_global_seeds
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\src\core\optimizer\runner.py", line 1380 in _run_backtest_direct
+  File "C:\Users\salib\Desktop\Repos\Genesis-Core\tests\test_runner_direct_includes_merged_config.py", line 89 in test_run_backtest_direct_includes_merged_config
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\python.py", line 157 in pytest_pyfunc_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\python.py", line 1671 in runtest
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 178 in pytest_runtest_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 246 in <lambda>
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 344 in from_call
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 245 in call_and_report
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 136 in runtestprotocol
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\runner.py", line 117 in pytest_runtest_protocol
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 367 in pytest_runtestloop
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 343 in _main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 289 in wrap_session
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\main.py", line 336 in pytest_cmdline_main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 175 in main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\_pytest\config\__init__.py", line 201 in console_main
+  File "C:\Users\salib\AppData\Local\Programs\Python\Python311\Scripts\pytest.exe\__main__.py", line 7 in <module>
+  File "<frozen runpy>", line 88 in _run_code
+  File "<frozen runpy>", line 198 in _run_module_as_main
+................................................................................s............................... [ 89%]
+.......................................................................................s............             [100%]
+================================================== warnings summary ===================================================
+tests/test_dead_code_tripwires.py::test_deprecated_features_module_delegates_to_features_asof
+  C:\Users\salib\Desktop\Repos\Genesis-Core\tests\test_dead_code_tripwires.py:44: DeprecationWarning: core.strategy.features.extract_features õr deprecated; anvõnd core.strategy.features_asof. (Det hõr anropet delegaterar nu till SSOT.)
+    feats, meta = legacy.extract_features(candles, config={}, timeframe="1h", symbol="tBTCUSD")
+
+tests/test_evaluation.py::TestEvaluateBinaryClassification::test_single_class_handling
+  C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\sklearn\metrics\_ranking.py:424: UndefinedMetricWarning: Only one class is present in y_true. ROC AUC score is not defined in that case.
+    warnings.warn(
+
+tests/test_evaluation.py::TestEvaluateBinaryClassification::test_single_class_handling
+  C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\sklearn\metrics\_ranking.py:1192: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+    warnings.warn(
+
+tests/test_evaluation.py::TestEvaluateBinaryClassification::test_single_class_handling
+  C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\sklearn\metrics\_classification.py:534: UserWarning: A single label was found in 'y_true' and 'y_pred'. For the confusion matrix to have the correct shape, use the 'labels' parameter to pass all known labels.
+    warnings.warn(
+
+tests/test_optimizer_duplicate_fixes.py::test_best_trial_payload_saved_on_constraints_soft_fail
+tests/test_optimizer_duplicate_fixes.py::test_abort_heuristic_payload_not_double_penalized
+  C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\optuna\_experimental.py:33: ExperimentalWarning: Argument ``heartbeat_interval`` is an experimental feature. The interface can change in the future.
+    optuna_warn(
+
+tests/test_optimizer_duplicate_fixes.py::test_tpe_sampler_defaults
+  C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\optuna\_experimental.py:33: ExperimentalWarning: Argument ``multivariate`` is an experimental feature. The interface can change in the future.
+    optuna_warn(
+
+tests/test_optimizer_duplicate_fixes.py::test_tpe_sampler_defaults
+tests/test_optimizer_duplicate_fixes.py::test_tpe_sampler_respects_user_config
+  C:\Users\salib\AppData\Local\Programs\Python\Python311\Lib\site-packages\optuna\_experimental.py:33: ExperimentalWarning: Argument ``constant_liar`` is an experimental feature. The interface can change in the future.
+    optuna_warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html

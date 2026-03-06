@@ -1,0 +1,17 @@
+{
+  "scripts_total_files": 300,
+  "scripts_archive_files": 220,
+  "scripts_non_archive_files": 80,
+  "extensions_all": {
+    ".sh": 9,
+    ".py": 234,
+    ".ps1": 8,
+    ".pyc": 44,
+    ".json": 2,
+    ".md": 3
+  },
+  "extensions_archive": {
+    ".py": 218,
+    ".json": 2
+  }
+}

@@ -1,0 +1,882 @@
+[
+  {
+    "file": "archive/2026-02/analysis/analyze_optuna_db.py",
+    "external_ref_hits": 1
+  },
+  {
+    "file": "archive/2026-02/analysis/analyze_optuna_run_identity.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/analyze_regime_performance.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/analyze_w2_exit_breakdown.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/apply_runtime_patch.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/backtest_with_fees.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/benchmark_backtest.py",
+    "external_ref_hits": 1
+  },
+  {
+    "file": "archive/2026-02/analysis/benchmark_features_modes.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/benchmark_numba_labeling.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/benchmark_optuna_performance.py",
+    "external_ref_hits": 9
+  },
+  {
+    "file": "archive/2026-02/analysis/benchmark_performance.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/burn_in.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/calculate_ic_by_regime.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/calculate_paper_trading_metrics.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/2026-02/analysis/calculate_score_260.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/calculate_score_realistic.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/calibrate_fib_gates.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/check_robustness_top_trials.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/check_trial_config_equivalence.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/2026-02/analysis/classify_script_activity.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/cleanup_optimizer_configs.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/create_parity_test_config.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/create_trial_1381_config.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/create_trial_1940_config.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/create_trial_208_config.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/curate_1d_candles.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/curate_3h_candles.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/curate_features.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/diag_trades.py",
+    "external_ref_hits": 6
+  },
+  {
+    "file": "archive/2026-02/analysis/evaluate_all_models.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/2026-02/analysis/evaluate_model.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/extract_ev_distribution.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/2026-02/analysis/extract_optuna_blocks_top_trials.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/2026-02/analysis/generate_meta_labels.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/get_trial_params.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/hqt_audit_pf_first.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/identify_config_difference.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/2026-02/analysis/inspect_dates.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/inspect_trial_4.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/join_holdout_blocks.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/list_top_trials.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/migrate_model_structure.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/monitor_optuna_study.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/2026-02/analysis/optimize_ema_slope_params.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/optimize_htf_custom.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/organize_optuna_docs.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/parse_burnin_log.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/phase2_metrics.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/2026-02/analysis/precompute_features.py",
+    "external_ref_hits": 2
+  },
+  {
+    "file": "archive/2026-02/analysis/precompute_features_fast.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/precompute_features_v17.py",
+    "external_ref_hits": 9
+  },
+  {
+    "file": "archive/2026-02/analysis/precompute_features_v18.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/2026-02/analysis/profile_pipeline.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/2026-02/analysis/repo_inventory_report.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/2026-02/analysis/reproduce_mismatch.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/2026-02/analysis/reproduce_trial_from_merged_config.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/2026-02/analysis/reproduce_trial_subprocess.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/2026-02/analysis/resample_1h_to_3h.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/2026-02/analysis/resample_1h_to_6h.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/2026-02/analysis/run_champion_smoke.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/run_composable_backtest_no_fib.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/run_composable_backtest_phase2.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/run_composable_backtest_poc.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/run_extended_validation_2024.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/run_ltf_confidence_grid.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/2026-02/analysis/run_milestone3_exp1.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/run_milestone4_exp1.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/run_milestone4_exp2.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/run_optimizer_smoke.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/2026-02/analysis/run_phase2c_extended.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/2026-02/analysis/run_phase2d_corrected.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/2026-02/analysis/run_phase3_fine.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/2026-02/analysis/sanity_check_evgate_percentiles.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/2026-02/analysis/sanity_check_size_zero_reasons.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/scan_phase3_fine_runs.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/select_champion.py",
+    "external_ref_hits": 1
+  },
+  {
+    "file": "archive/2026-02/analysis/show_best_results.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/2026-02/analysis/show_feature_loading_modes.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/2026-02/analysis/show_loaded_model.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/2026-02/analysis/show_v4_features_loading.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/2026-02/analysis/simple_htf_integration_check.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/2026-02/analysis/smoke_submit_call.py",
+    "external_ref_hits": 2
+  },
+  {
+    "file": "archive/2026-02/analysis/smoke_submit_flow.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/smoke_test_fixes.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/2026-02/analysis/summarize_hparam_results.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/2026-02/analysis/test_ws_public.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/trace_champion_loading.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/2026-02/analysis/tune_confidence_threshold.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/2026-02/analysis/tune_triple_barrier.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/validate_all_indicators.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/validate_atr_vectorized.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/validate_data.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/2026-02/analysis/validate_holdout.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/validate_purged_wfcv.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/validate_v17_holdout.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/validate_v17_ic.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/validate_vectorized_features.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/validate_zero_trade_risk.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/verify_async_candles.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/verify_candidate_exact.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/verify_config_loading.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/verify_exits_forced.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/verify_exits_forced_v2.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/verify_exits_loose.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/verify_fib_connection.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/verify_integration.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/verify_mcp_installation.py",
+    "external_ref_hits": 2
+  },
+  {
+    "file": "archive/2026-02/analysis/verify_runner_fix.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/2026-02/analysis/verify_v17_htf_cols.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/analysis/analyze_feature_importance.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/analysis/analyze_feature_synergy.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/analysis/analyze_permutation_importance.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/analysis/benchmark_optimizations.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/analysis/calculate_ic_metrics.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/analysis/calculate_partial_ic.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/analysis/compare_htf_exits.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/analysis/compare_modes.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/analysis/compare_swing_strategies.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/analysis/fdr_correction.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/analysis/feature_ic_v18.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/analysis/monitor_feature_drift.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/debug/debug_bb.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/debug/debug_trial_1032.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/debug/inspect_ui.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/debug/reliability.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/debug/2026-02-14/debug_config_merge.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/debug/2026-02-14/debug_decision_pipeline.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/debug/2026-02-14/debug_htf_exit_usage.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/debug/2026-02-14/debug_htf_loading.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/debug/2026-02-14/debug_mcp_tunnel.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/debug/2026-02-14/debug_model_bias.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/debug/2026-02-14/debug_param_transforms.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/debug/2026-02-14/debug_strategy_signals.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/debug/2026-02-14/debug_swing_detection.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/debug/2026-02-14/diagnose_cooldown_vetoes.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/debug/2026-02-14/diagnose_execution_gap_v2.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/debug/2026-02-14/diagnose_execution_layer_gap.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/debug/2026-02-14/diagnose_feature_parity.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/debug/2026-02-14/diagnose_fib_flow.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/debug/2026-02-14/diagnose_ml_probas.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/debug/2026-02-14/diagnose_optuna_issues.py",
+    "external_ref_hits": 10
+  },
+  {
+    "file": "archive/debug/2026-02-14/diagnose_zero_trades.py",
+    "external_ref_hits": 2
+  },
+  {
+    "file": "archive/debug/legacy_data/analyze_calibration_by_regime.py",
+    "external_ref_hits": 2
+  },
+  {
+    "file": "archive/debug/legacy_data/analyze_fibonacci_bear_regime.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/debug/legacy_data/analyze_quintiles.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/debug/legacy_data/calibrate_by_regime.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/debug/legacy_data/calibrate_model.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/debug/legacy_data/comprehensive_feature_analysis.py",
+    "external_ref_hits": 2
+  },
+  {
+    "file": "archive/debug/legacy_data/debug_backtest_30m.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/debug/legacy_data/inspect_candle_data.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/debug/legacy_data/quick_test_regime_thresholds.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/debug/legacy_data/restructure_data_layers.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/debug/legacy_data/test_dynamic_exits_optimized.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/debug/legacy_data/test_fibonacci_combinations.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/debug/legacy_data/test_regime_calib_realdata.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/debug/legacy_data/test_regime_thresholds.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/debug/legacy_data/test_static_frozen_exits_optimized.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/debug/legacy_data/validate_candle_integrity.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/debug/legacy_data/validate_regime_gates.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/deprecated_2026-02/diagnose_optuna_issues.py",
+    "external_ref_hits": 10
+  },
+  {
+    "file": "archive/deprecated_2026-02/diagnose_zero_trades.py",
+    "external_ref_hits": 2
+  },
+  {
+    "file": "archive/deprecated_2026-02/freeze_data.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/deprecated_2026-02/sweep_optuna_holdout_top_trials.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/deprecated_2026-02/sync_precompute_and_train.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/experiments/filter_model_features.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/experiments/probe_min_order_sizes.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/experiments/probe_min_order_sizes_live.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/experiments/run_timeframe_sweep.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/experiments/train_meta_model.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/experiments/train_regression_model.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/model_registry_update/analyze_full_registry.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/model_registry_update/analyze_tbtcusd_models.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/model_registry_update/cleanup_old_models.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/model_registry_update/cleanup_tbtcusd_metrics.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/model_registry_update/cleanup_tbtcusd_models.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/model_registry_update/complete_model_registry_update.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/model_registry_update/create_advanced_models.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/model_registry_update/execute_model_registry_update.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/model_registry_update/fix_timeframe_4h.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/model_registry_update/model_update_plan.json",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/model_registry_update/tbtcusd_cleanup_plan.json",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/model_registry_update/update_model_registry_plan.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/model_registry_update/update_registry_mapping.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/model_registry_update/verify_model_registry.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/test_prototypes/simple_model_test.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/test_prototypes/smoke_test.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/test_prototypes/smoke_test_eth.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/test_prototypes/submit_test.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/test_prototypes/test_1d_current.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/test_prototypes/test_1d_model_only.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/test_prototypes/test_1d_optimizations.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/test_prototypes/test_1h_confidence_50.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/test_prototypes/test_1h_trend_favoring.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/test_prototypes/test_6h_backtest.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/test_prototypes/test_6h_current.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/test_prototypes/test_6h_model_only.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/test_prototypes/test_6h_optimized.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/test_prototypes/test_backtest_new_models.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/test_prototypes/test_new_models.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/test_prototypes/test_optimized_configs_v2.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/test_prototypes/test_trend_favoring.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/test_prototypes/2026-02-14/test_6h_original_model.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/test_prototypes/2026-02-14/test_abort_heuristic.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/test_prototypes/2026-02-14/test_deep_merge.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/test_prototypes/2026-02-14/test_exit_fibonacci.py",
+    "external_ref_hits": 1
+  },
+  {
+    "file": "archive/test_prototypes/2026-02-14/test_fibonacci_exits_real_backtest.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/test_prototypes/2026-02-14/test_frozen_exit_context.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/test_prototypes/2026-02-14/test_htf_exit_engine.py",
+    "external_ref_hits": 4
+  },
+  {
+    "file": "archive/test_prototypes/2026-02-14/test_htf_fibonacci_mapping.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/test_prototypes/2026-02-14/test_htf_simple_validation.py",
+    "external_ref_hits": 2
+  },
+  {
+    "file": "archive/test_prototypes/2026-02-14/test_local_keepalive.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/test_prototypes/2026-02-14/test_model_on_training_data.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/test_prototypes/2026-02-14/test_optuna_cache_reuse.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/test_prototypes/2026-02-14/test_partial_exit_infrastructure.py",
+    "external_ref_hits": 3
+  },
+  {
+    "file": "archive/test_prototypes/2026-02-14/test_post_local.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/test_prototypes/2026-02-14/test_rest_auth.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/test_prototypes/2026-02-14/test_rest_public.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/test_prototypes/2026-02-14/test_sse_local.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/test_prototypes/2026-02-14/test_static_frozen_exits.py",
+    "external_ref_hits": 0
+  },
+  {
+    "file": "archive/test_prototypes/2026-02-14/test_ws_auth.py",
+    "external_ref_hits": 0
+  }
+]

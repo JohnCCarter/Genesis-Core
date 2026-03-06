@@ -1,0 +1,9 @@
+{
+  "wrapper_only_count": 2,
+  "wrapper_only_files": [
+    "archive/deprecated_2026-02/diagnose_optuna_issues.py",
+    "archive/deprecated_2026-02/diagnose_zero_trades.py"
+  ],
+  "archive_replaced_by_active_count": 0,
+  "archive_replaced_by_active_files": []
+}

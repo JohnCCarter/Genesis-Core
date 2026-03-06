@@ -1,0 +1,2 @@
+[32mJSON report saved to docs\audit\refactor\evidence\jscpd_scripts_2026-03-06\jscpd-report.json[39m
+[3m[90mDetection time:[39m[23m: 1.192s

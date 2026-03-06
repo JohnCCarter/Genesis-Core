@@ -1,0 +1,170 @@
+[
+  {
+    "family": "<root-file>",
+    "path": "scripts/weekend_bot_gate.sh",
+    "last_commit_date": "2026-02-24",
+    "last_commit_age_days": 10,
+    "commit_count": 2
+  },
+  {
+    "family": "__pycache__",
+    "path": "scripts/__pycache__",
+    "last_commit_date": "",
+    "last_commit_age_days": null,
+    "commit_count": 0
+  },
+  {
+    "family": "analyze",
+    "path": "scripts/analyze",
+    "last_commit_date": "2026-03-06",
+    "last_commit_age_days": 0,
+    "commit_count": 2
+  },
+  {
+    "family": "archive/2026-02",
+    "path": "scripts/archive/2026-02",
+    "last_commit_date": "2026-03-06",
+    "last_commit_age_days": 0,
+    "commit_count": 43
+  },
+  {
+    "family": "archive/analysis",
+    "path": "scripts/archive/analysis",
+    "last_commit_date": "2026-02-17",
+    "last_commit_age_days": 17,
+    "commit_count": 3
+  },
+  {
+    "family": "archive/debug",
+    "path": "scripts/archive/debug",
+    "last_commit_date": "2026-02-17",
+    "last_commit_age_days": 17,
+    "commit_count": 10
+  },
+  {
+    "family": "archive/deprecated_2026-02",
+    "path": "scripts/archive/deprecated_2026-02",
+    "last_commit_date": "2026-03-06",
+    "last_commit_age_days": 0,
+    "commit_count": 19
+  },
+  {
+    "family": "archive/experiments",
+    "path": "scripts/archive/experiments",
+    "last_commit_date": "2026-02-17",
+    "last_commit_age_days": 17,
+    "commit_count": 2
+  },
+  {
+    "family": "archive/model_registry_update",
+    "path": "scripts/archive/model_registry_update",
+    "last_commit_date": "2026-01-09",
+    "last_commit_age_days": 56,
+    "commit_count": 1
+  },
+  {
+    "family": "archive/test_prototypes",
+    "path": "scripts/archive/test_prototypes",
+    "last_commit_date": "2026-03-05",
+    "last_commit_age_days": 1,
+    "commit_count": 10
+  },
+  {
+    "family": "audit",
+    "path": "scripts/audit",
+    "last_commit_date": "2026-03-06",
+    "last_commit_age_days": 0,
+    "commit_count": 2
+  },
+  {
+    "family": "build",
+    "path": "scripts/build",
+    "last_commit_date": "2026-03-06",
+    "last_commit_age_days": 0,
+    "commit_count": 2
+  },
+  {
+    "family": "deploy",
+    "path": "scripts/deploy",
+    "last_commit_date": "2026-02-24",
+    "last_commit_age_days": 10,
+    "commit_count": 1
+  },
+  {
+    "family": "docs",
+    "path": "scripts/docs",
+    "last_commit_date": "2026-03-06",
+    "last_commit_age_days": 0,
+    "commit_count": 2
+  },
+  {
+    "family": "extract",
+    "path": "scripts/extract",
+    "last_commit_date": "2026-03-06",
+    "last_commit_age_days": 0,
+    "commit_count": 4
+  },
+  {
+    "family": "fetch",
+    "path": "scripts/fetch",
+    "last_commit_date": "2026-03-06",
+    "last_commit_age_days": 0,
+    "commit_count": 2
+  },
+  {
+    "family": "mcp",
+    "path": "scripts/mcp",
+    "last_commit_date": "2026-02-24",
+    "last_commit_age_days": 10,
+    "commit_count": 2
+  },
+  {
+    "family": "ops",
+    "path": "scripts/ops",
+    "last_commit_date": "2026-02-24",
+    "last_commit_age_days": 10,
+    "commit_count": 1
+  },
+  {
+    "family": "optimize",
+    "path": "scripts/optimize",
+    "last_commit_date": "2026-03-06",
+    "last_commit_age_days": 0,
+    "commit_count": 3
+  },
+  {
+    "family": "preflight",
+    "path": "scripts/preflight",
+    "last_commit_date": "2026-03-06",
+    "last_commit_age_days": 0,
+    "commit_count": 4
+  },
+  {
+    "family": "promote",
+    "path": "scripts/promote",
+    "last_commit_date": "2026-03-06",
+    "last_commit_age_days": 0,
+    "commit_count": 3
+  },
+  {
+    "family": "run",
+    "path": "scripts/run",
+    "last_commit_date": "2026-03-06",
+    "last_commit_age_days": 0,
+    "commit_count": 7
+  },
+  {
+    "family": "train",
+    "path": "scripts/train",
+    "last_commit_date": "2026-03-06",
+    "last_commit_age_days": 0,
+    "commit_count": 3
+  },
+  {
+    "family": "validate",
+    "path": "scripts/validate",
+    "last_commit_date": "2026-03-06",
+    "last_commit_age_days": 0,
+    "commit_count": 4
+  }
+]

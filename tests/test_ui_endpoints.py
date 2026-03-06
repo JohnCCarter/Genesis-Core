@@ -130,11 +130,11 @@ def test_public_candles_endpoint_smoke():
         def json(self):
             return self._json
 
-    def fake_get(url, params=None, timeout=10):  # noqa: ARG001
+    def fake_get(_url, _params=None, _timeout=10):
         return DummyResp()
 
     class DummyEC:
-        async def public_request(self, **kwargs):  # noqa: D401, ARG002
+        async def public_request(self, **_kwargs):
             return fake_get("unused")
 
     import asyncio
@@ -213,7 +213,7 @@ def test_paper_submit_monkeypatched():
             return {"status": "OK"}
 
     class DummyEC:
-        async def signed_request(self, **kwargs):  # noqa: D401, ARG002
+        async def signed_request(self, **_kwargs):
             return DummyResp()
 
     import core.server as srv

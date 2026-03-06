@@ -9,7 +9,7 @@ def test_sign_v2_delegates_to_exchange_client(monkeypatch) -> None:
     calls: list[tuple[str, dict]] = []
 
     class DummyEC:
-        def _build_headers(self, endpoint: str, body: dict | None) -> dict[str, str]:  # noqa: D401
+        def _build_headers(self, endpoint: str, body: dict | None) -> dict[str, str]:
             calls.append((endpoint, dict(body or {})))
             return {"bfx-apikey": "k", "bfx-nonce": "1", "bfx-signature": "s"}
 
@@ -27,7 +27,7 @@ def test_post_auth_routes_through_exchange_client_signed_request(monkeypatch) ->
         SYMBOL_MODE = "realistic"
 
     class DummyEC:
-        async def signed_request(self, **kwargs):  # noqa: D401, ARG002
+        async def signed_request(self, **kwargs):
             signed_calls.append(dict(kwargs))
             return object()
 

@@ -403,8 +403,21 @@ def test_build_backtest_cmd_uses_sys_executable_and_module_invocation(tmp_path: 
     assert cmd[pruner_idx + 1] == "none"
 
 
-def test_run_optimizer_promotion_disabled_does_not_write_champion(
-    tmp_path: Path, search_config_tmp: Path
+@pytest.mark.parametrize(
+    ("promotion_cfg", "trial_score", "results_path", "current_score"),
+    [
+        ({"enabled": False}, 120.0, "explore_good.json", None),
+        ({"enabled": True, "min_improvement": 5.0}, 102.0, "explore_ok.json", 100.0),
+    ],
+    ids=["promotion_disabled", "promotion_min_improvement_blocks_small_gain"],
+)
+def test_run_optimizer_promotion_negative_cases_do_not_write_champion(
+    tmp_path: Path,
+    search_config_tmp: Path,
+    promotion_cfg: dict[str, Any],
+    trial_score: float,
+    results_path: str,
+    current_score: float | None,
 ) -> None:
     results_root = tmp_path / "results" / "hparam_search"
     run_meta_payload = {
@@ -416,18 +429,17 @@ def test_run_optimizer_promotion_disabled_does_not_write_champion(
         return {
             "trial_id": f"trial_{kwargs.get('index', 1):03d}",
             "parameters": {"thresholds": {"entry_conf_overall": 0.4}},
-            "score": {"score": 120.0, "metrics": {"num_trades": 10}, "hard_failures": []},
+            "score": {"score": trial_score, "metrics": {"num_trades": 10}, "hard_failures": []},
             "constraints": {"ok": True, "reasons": []},
-            "results_path": "explore_good.json",
+            "results_path": results_path,
         }
 
     def fake_ensure(run_dir: Path, *_args: Any, **_kwargs: Any) -> None:
         run_dir.mkdir(parents=True, exist_ok=True)
         (run_dir / "run_meta.json").write_text(json.dumps(run_meta_payload), encoding="utf-8")
 
-    # Patch the config file to disable promotion.
     cfg = yaml.safe_load(search_config_tmp.read_text(encoding="utf-8"))
-    cfg["meta"]["runs"]["promotion"] = {"enabled": False}
+    cfg["meta"]["runs"]["promotion"] = promotion_cfg
     search_config_tmp.write_text(yaml.safe_dump(cfg), encoding="utf-8")
 
     with (
@@ -443,55 +455,9 @@ def test_run_optimizer_promotion_disabled_does_not_write_champion(
         patch("core.strategy.champion_loader.CHAMPIONS_DIR", tmp_path / "champions"),
     ):
         manager_instance = manager_cls.return_value
-        manager_instance.load_current.return_value = None
-        manager_instance.should_replace.return_value = True
-
-        results = run_optimizer(search_config_tmp, run_id="run_test")
-
-        assert len(results) == 1
-        manager_instance.write_champion.assert_not_called()
-
-
-def test_run_optimizer_promotion_min_improvement_blocks_small_gain(
-    tmp_path: Path, search_config_tmp: Path
-) -> None:
-    results_root = tmp_path / "results" / "hparam_search"
-    run_meta_payload = {
-        "git_commit": "abc123",
-        "snapshot_id": "tTEST_1h_20240101_20240201_v1",
-    }
-
-    def fake_run_trial(*_args: Any, **kwargs: Any) -> dict[str, Any]:
-        return {
-            "trial_id": f"trial_{kwargs.get('index', 1):03d}",
-            "parameters": {"thresholds": {"entry_conf_overall": 0.4}},
-            "score": {"score": 102.0, "metrics": {"num_trades": 10}, "hard_failures": []},
-            "constraints": {"ok": True, "reasons": []},
-            "results_path": "explore_ok.json",
-        }
-
-    def fake_ensure(run_dir: Path, *_args: Any, **_kwargs: Any) -> None:
-        run_dir.mkdir(parents=True, exist_ok=True)
-        (run_dir / "run_meta.json").write_text(json.dumps(run_meta_payload), encoding="utf-8")
-
-    cfg = yaml.safe_load(search_config_tmp.read_text(encoding="utf-8"))
-    cfg["meta"]["runs"]["promotion"] = {"enabled": True, "min_improvement": 5.0}
-    search_config_tmp.write_text(yaml.safe_dump(cfg), encoding="utf-8")
-
-    with (
-        patch.dict(os.environ, {"GENESIS_MAX_CONCURRENT": "1"}),
-        patch("core.optimizer.runner.RESULTS_DIR", results_root),
-        patch(
-            "core.optimizer.runner.expand_parameters",
-            return_value=[{"thresholds": {"entry_conf_overall": 0.4}}],
-        ),
-        patch("core.optimizer.runner.run_trial", side_effect=fake_run_trial),
-        patch("core.optimizer.runner._ensure_run_metadata", side_effect=fake_ensure),
-        patch("core.optimizer.runner.ChampionManager") as manager_cls,
-        patch("core.strategy.champion_loader.CHAMPIONS_DIR", tmp_path / "champions"),
-    ):
-        manager_instance = manager_cls.return_value
-        manager_instance.load_current.return_value = MagicMock(score=100.0)
+        manager_instance.load_current.return_value = (
+            None if current_score is None else MagicMock(score=current_score)
+        )
         manager_instance.should_replace.return_value = True
 
         results = run_optimizer(search_config_tmp, run_id="run_test")

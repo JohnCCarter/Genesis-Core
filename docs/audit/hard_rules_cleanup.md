@@ -157,7 +157,7 @@ Commits:
 
 - small and atomic
 - one cleanup intent per commit
-- batch size guideline: **3–10 related deletions per commit**
+- batch size guideline: 3–10 related deletions per commit
 - never mix unrelated cleanup types in the same commit
 - clear message prefix: `chore(cleanup): ...`
 

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import runpy
 import sys
 from pathlib import Path
 
@@ -291,41 +290,13 @@ def save_model_and_metrics(
     }
 
 
-_TARGET = (
-    Path(__file__).resolve().parent.parent / "archive/2026-02/analysis/train_model.py"
-).resolve()
-
-
-def _load_target_exports() -> None:
-    """Load target code into this module namespace for monkeypatch compatibility."""
-
-    source = _TARGET.read_text(encoding="utf-8")
-    code = compile(source, str(_TARGET), "exec")
-    exec(code, globals())
-
-
-if __name__ != "__main__":
-    if _TARGET.exists():
-        _load_target_exports()
-
-
 def _run_deprecated_cli() -> int:
-    if not _TARGET.exists():
-        print(
-            "[DEPRECATED] scripts/train_model.py archive target saknas; "
-            "import-kompatibilitetsläge används.",
-            file=sys.stderr,
-        )
-        return 1
-
     print(
-        "[DEPRECATED] scripts/train_model.py moved to scripts/archive/2026-02/analysis/train_model.py.",
+        "[DEPRECATED] scripts/train/train_model.py has no standalone CLI entrypoint; "
+        "import and call module functions instead.",
         file=sys.stderr,
     )
-    argv = sys.argv[:]
-    sys.argv = [str(_TARGET), *argv[1:]]
-    runpy.run_path(str(_TARGET), run_name="__main__")
-    return 0
+    return 1
 
 
 if __name__ == "__main__":

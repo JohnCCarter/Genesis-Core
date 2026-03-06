@@ -206,7 +206,9 @@ def main() -> int:
         print(f"[OK] Python: {python_exe}")
         print(f"[OK] Command: {' '.join(cmd)}")
 
-        proc = subprocess.run(cmd, cwd=str(repo_root), env=env)
+        # Rationale: command is passed as argv list (no shell), python executable is sys.executable,
+        # and env overrides are constrained to explicit GENESIS_* flags for reproducible backtest parity.
+        proc = subprocess.run(cmd, cwd=str(repo_root), env=env)  # nosemgrep: python.lang.security.audit.dangerous-subprocess-use-tainted-env-args.dangerous-subprocess-use-tainted-env-args
         return int(proc.returncode)
 
 

@@ -1238,7 +1238,7 @@ def setup_logging(log_dir: Path) -> logging.Logger:
     return logger
 
 
-def handle_shutdown(signum, frame, logger: logging.Logger):
+def handle_shutdown(signum, _frame, logger: logging.Logger):
     """Handle shutdown signals."""
     logger.info(f"Received signal {signum}. Shutting down...")
     sys.exit(0)

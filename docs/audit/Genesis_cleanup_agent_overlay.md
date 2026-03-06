@@ -50,35 +50,6 @@ Forbidden:
 
 ---
 
-# Tool Profiles (Explicit Reference)
-
-Use these as authoritative references for cleanup tooling:
-
-- Profile definitions and execution order: `tools/config/cleanup_scan_profiles.md`
-- Orchestrated implementation entrypoint: `scripts/run/cleanup_orchestrate.ps1`
-
-Mandatory order:
-
-1. Run hard discovery first (`-Mode hard` / `Invoke-HardProfile`).
-2. Triage findings (`DELETE` / `KEEP` / `ALLOWLIST` / `REFACTOR`).
-3. Run shard-specific profile (`-Mode shard-a|shard-b|shard-c`).
-
-Required tool family per profile:
-
-- **Semgrep**
-- **JSCPD**
-- **Vulture**
-- **Radon (cc)**
-
-The orchestration script maps these tools via:
-
-- `Invoke-HardProfile`
-- `Invoke-ShardAProfile`
-- `Invoke-ShardBProfile`
-- `Invoke-ShardCProfile`
-
----
-
 # Shards
 
 ## Shard A — Scripts
@@ -204,11 +175,11 @@ rg "<symbol_name>" .
 
 Search for:
 
-- imports
-- function calls
-- decorators
-- registries
-- dynamic loading
+imports
+function calls
+decorators
+registries
+dynamic loading
 
 And verify dynamic references in:
 
@@ -225,7 +196,9 @@ If usage found → **KEEP**
 
 Commits must be **small and atomic**
 
-- Batch size guideline: **3–10 related deletions per commit**
+Batch size guideline:
+
+- 3–10 related deletions per commit.
 - Never mix unrelated cleanup types in the same commit.
 
 Examples:
@@ -266,7 +239,18 @@ pre-commit run --all-files
 pytest
 ruff check .
 
-If shard touches high-sensitivity paths, also run:
+For cleanup scanning, you MUST also run the cleanup profile tools (per `tools/config/cleanup_scan_profiles.md`), either directly or via `scripts/run/cleanup_orchestrate.ps1`:
+
+- semgrep
+- jscpd
+- vulture
+- radon
+
+Recommended execution path:
+
+- `scripts/run/cleanup_orchestrate.ps1 -Mode shard-a` (for Shard A)
+- `scripts/run/cleanup_orchestrate.ps1 -Mode hard` (for full cleanup profiles)
+  If shard touches high-sensitivity paths, also run:
 
 - determinism replay selector
 - feature cache invariance selector

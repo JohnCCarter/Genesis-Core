@@ -95,9 +95,7 @@ def compute_fibonacci_features(candles: pd.DataFrame) -> pd.DataFrame:
     ].copy()
 
 
-def compute_combos(
-    base_df: pd.DataFrame, fib_df: pd.DataFrame, candles: pd.DataFrame, timeframe: str
-) -> pd.DataFrame:
+def compute_combos(fib_df: pd.DataFrame, candles: pd.DataFrame, timeframe: str) -> pd.DataFrame:
     EMA_PARAMS = {"30m": (50, 20), "1h": (20, 5)}
     ema_period, lookback = EMA_PARAMS.get(timeframe, (20, 5))
 
@@ -144,7 +142,7 @@ def compute_v18(symbol: str, timeframe: str) -> pd.DataFrame:
 
     base = compute_base_features(candles)
     fib = compute_fibonacci_features(candles)
-    combos = compute_combos(base, fib, candles, timeframe)
+    combos = compute_combos(fib, candles, timeframe)
 
     merged = pd.concat([base, fib, combos], axis=1)
     return merged[ALL_COLUMNS]

@@ -644,22 +644,6 @@ def _git_repo_state(
     }
 
 
-async def _git_repo_state_async(
-    *,
-    git_exe: str,
-    project_root: Path,
-    timeout_s: int,
-    git_env: dict[str, str],
-) -> dict[str, Any]:
-    return await asyncio.to_thread(
-        _git_repo_state,
-        git_exe=git_exe,
-        project_root=project_root,
-        timeout_s=timeout_s,
-        git_env=git_env,
-    )
-
-
 async def _run_subprocess_command_async(
     *,
     args: list[str],
@@ -914,7 +898,8 @@ async def get_git_repo_state(config: MCPConfig) -> dict[str, Any]:
         if not git_exe:
             return {"success": False, "error": "git executable not found on PATH"}
 
-        state = await _git_repo_state_async(
+        state = await asyncio.to_thread(
+            _git_repo_state,
             git_exe=git_exe,
             project_root=get_project_root(),
             timeout_s=max(1, min(30, int(config.security.execution_timeout_seconds or 5))),
@@ -966,7 +951,8 @@ async def git_workflow_operation(
     mutating = operation in GIT_WORKFLOW_MUTATING_OPERATIONS
 
     try:
-        state = await _git_repo_state_async(
+        state = await asyncio.to_thread(
+            _git_repo_state,
             git_exe=git_exe,
             project_root=project_root,
             timeout_s=timeout_s,

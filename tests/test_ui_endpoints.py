@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pytest
 from fastapi.testclient import TestClient
 
 from core.server import app
@@ -49,72 +50,51 @@ def test_ui_get_and_evaluate_post():
     assert "authority_mode_source" in shadow_regime
 
 
-def test_evaluate_missing_candles_returns_invalid_candles_error():
+INVALID_CANDLES_RESPONSE = {
+    "ok": False,
+    "error": {
+        "code": "INVALID_CANDLES",
+        "message": "candles must include non-empty equal-length open/high/low/close/volume arrays",
+    },
+}
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {
+            "policy": {"symbol": "tBTCUSD", "timeframe": "1m"},
+            "configs": {},
+            "state": {},
+        },
+        {
+            "policy": {"symbol": "tBTCUSD", "timeframe": "1m"},
+            "configs": {},
+            "candles": {
+                "open": [],
+                "high": [],
+                "low": [],
+                "close": [],
+                "volume": [],
+            },
+            "state": {},
+        },
+        {
+            "policy": {"symbol": "tBTCUSD", "timeframe": "1m"},
+            "configs": {},
+            "candles": "not-a-dict",
+            "state": {},
+        },
+    ],
+    ids=["missing-candles", "empty-candle-lists", "invalid-candles-type"],
+)
+def test_evaluate_invalid_candles_variants_return_invalid_candles_error(payload):
     c = TestClient(app)
-    payload = {
-        "policy": {"symbol": "tBTCUSD", "timeframe": "1m"},
-        "configs": {},
-        "state": {},
-    }
 
     r = c.post("/strategy/evaluate", json=payload)
 
     assert r.status_code == 200
-    assert r.json() == {
-        "ok": False,
-        "error": {
-            "code": "INVALID_CANDLES",
-            "message": "candles must include non-empty equal-length open/high/low/close/volume arrays",
-        },
-    }
-
-
-def test_evaluate_empty_candles_lists_returns_invalid_candles_error():
-    c = TestClient(app)
-    payload = {
-        "policy": {"symbol": "tBTCUSD", "timeframe": "1m"},
-        "configs": {},
-        "candles": {
-            "open": [],
-            "high": [],
-            "low": [],
-            "close": [],
-            "volume": [],
-        },
-        "state": {},
-    }
-
-    r = c.post("/strategy/evaluate", json=payload)
-
-    assert r.status_code == 200
-    assert r.json() == {
-        "ok": False,
-        "error": {
-            "code": "INVALID_CANDLES",
-            "message": "candles must include non-empty equal-length open/high/low/close/volume arrays",
-        },
-    }
-
-
-def test_evaluate_invalid_candles_type_returns_invalid_candles_error():
-    c = TestClient(app)
-    payload = {
-        "policy": {"symbol": "tBTCUSD", "timeframe": "1m"},
-        "configs": {},
-        "candles": "not-a-dict",
-        "state": {},
-    }
-
-    r = c.post("/strategy/evaluate", json=payload)
-
-    assert r.status_code == 200
-    assert r.json() == {
-        "ok": False,
-        "error": {
-            "code": "INVALID_CANDLES",
-            "message": "candles must include non-empty equal-length open/high/low/close/volume arrays",
-        },
-    }
+    assert r.json() == INVALID_CANDLES_RESPONSE
 
 
 def test_public_candles_endpoint_smoke():

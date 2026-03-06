@@ -18,6 +18,10 @@ from mcp_server.resources import (
 )
 
 
+def _cp(args: list[str], stdout: str = "", stderr: str = "", returncode: int = 0):
+    return subprocess.CompletedProcess(args=args, returncode=returncode, stdout=stdout, stderr=stderr)
+
+
 @pytest.fixture
 def config():
     """Load test configuration."""
@@ -83,11 +87,6 @@ async def test_get_git_status_resource(config):
 async def test_get_git_status_resource_fallback_timeout(monkeypatch, config):
     """If `git status --porcelain` is slow, we should fallback to skipping untracked."""
 
-    def _cp(args: list[str], stdout: str = "", stderr: str = "", returncode: int = 0):
-        return subprocess.CompletedProcess(
-            args=args, returncode=returncode, stdout=stdout, stderr=stderr
-        )
-
     def fake_run(args, capture_output, text, check, timeout=None, **kwargs):  # type: ignore[no-untyped-def]
         _ = (capture_output, text, check, kwargs)
         # args is like: ["git", "-C", <root>, ...]
@@ -131,11 +130,6 @@ async def test_get_git_status_resource_rev_parse_timeout(monkeypatch, config):
 @pytest.mark.asyncio
 async def test_get_git_status_resource_uses_thread_boundary(monkeypatch, config):
     """Git status resource should route blocking git calls via asyncio.to_thread."""
-
-    def _cp(args: list[str], stdout: str = "", stderr: str = "", returncode: int = 0):
-        return subprocess.CompletedProcess(
-            args=args, returncode=returncode, stdout=stdout, stderr=stderr
-        )
 
     thread_calls: list[str] = []
 

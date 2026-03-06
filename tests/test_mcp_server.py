@@ -5,6 +5,7 @@ Tests for MCP Server functionality
 from __future__ import annotations
 
 import re
+from pathlib import Path
 
 import pytest
 from pydantic import AnyUrl, TypeAdapter
@@ -117,7 +118,7 @@ async def test_get_project_structure(config):
     assert result["success"] is True
     assert "structure" in result
     assert "src" in result["structure"]
-    assert "Genesis-Core" in result["structure"]
+    assert Path.cwd().name in result["structure"]
 
 
 @pytest.mark.asyncio

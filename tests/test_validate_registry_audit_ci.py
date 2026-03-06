@@ -20,22 +20,7 @@ def _git(cwd: Path, *args: str) -> str:
     return proc.stdout.strip()
 
 
-@pytest.mark.skipif(
-    subprocess.run(["git", "--version"], capture_output=True).returncode != 0,
-    reason="git is required for audit CI validation tests",
-)
-def test_validate_registry_audit_single_commit_stable_change_allows_base_sha(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """CI audit rule must support PRs where stable.json + audit entry are in same single commit.
-
-    This happens in squash-import style PRs. The rule should then require:
-    - action='break_glass_override'
-    - commit_sha points to base_ref (not HEAD)
-    - approved_by is present
-    """
-
+def _bootstrap_registry_repo(tmp_path: Path) -> tuple[Path, Path, Path, Path, str]:
     repo = tmp_path
     _git(repo, "init")
     _git(repo, "checkout", "-b", "master")
@@ -60,6 +45,26 @@ def test_validate_registry_audit_single_commit_stable_change_allows_base_sha(
     _git(repo, "add", "registry/manifests/stable.json", "registry/manifests/dev.json")
     _git(repo, "commit", "-m", "base")
     base_sha = _git(repo, "rev-parse", "HEAD")
+    return repo, manifests, audit_dir, stable_path, base_sha
+
+
+@pytest.mark.skipif(
+    subprocess.run(["git", "--version"], capture_output=True).returncode != 0,
+    reason="git is required for audit CI validation tests",
+)
+def test_validate_registry_audit_single_commit_stable_change_allows_base_sha(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """CI audit rule must support PRs where stable.json + audit entry are in same single commit.
+
+    This happens in squash-import style PRs. The rule should then require:
+    - action='break_glass_override'
+    - commit_sha points to base_ref (not HEAD)
+    - approved_by is present
+    """
+
+    repo, _, audit_dir, stable_path, base_sha = _bootstrap_registry_repo(tmp_path)
 
     # Single commit that changes stable manifest and adds audit entry.
     stable_path.write_text(
@@ -113,30 +118,7 @@ def test_validate_registry_audit_allows_matching_entry_not_last_line(
     passera även om ytterligare entries finns efter den.
     """
 
-    repo = tmp_path
-    _git(repo, "init")
-    _git(repo, "checkout", "-b", "master")
-    _git(repo, "config", "user.email", "ci@example.test")
-    _git(repo, "config", "user.name", "CI")
-
-    manifests = repo / "registry" / "manifests"
-    manifests.mkdir(parents=True, exist_ok=True)
-    audit_dir = repo / "registry" / "audit"
-    audit_dir.mkdir(parents=True, exist_ok=True)
-
-    stable_path = manifests / "stable.json"
-    stable_path.write_text(
-        '{"registry_version":1,"skills":[],"compacts":[]}',
-        encoding="utf-8",
-    )
-    (manifests / "dev.json").write_text(
-        '{"registry_version":1,"skills":[],"compacts":[]}',
-        encoding="utf-8",
-    )
-
-    _git(repo, "add", "registry/manifests/stable.json", "registry/manifests/dev.json")
-    _git(repo, "commit", "-m", "base")
-    base_sha = _git(repo, "rev-parse", "HEAD")
+    repo, _, audit_dir, stable_path, base_sha = _bootstrap_registry_repo(tmp_path)
 
     # Commit 1: change stable manifest.
     stable_path.write_text(

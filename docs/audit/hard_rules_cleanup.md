@@ -4,11 +4,13 @@
 
 This file is the **shared non-negotiable baseline** for all cleanup windows (A/B/C).
 Use this together with shard-specific files:
+
 - `genesis_cleanup_agent_overlay_shard_a.md`
 - `genesis_cleanup_agent_overlay_shard_b.md`
 - `genesis_cleanup_agent_overlay_shard_c.md`
 
 Rule of thumb:
+
 - **Shared baseline = identical in all windows**
 - **Shard overlay = scope and task deltas only**
 
@@ -27,6 +29,7 @@ Rule of thumb:
 ## 2) Authority / Precedence
 
 Use this precedence in conflicts:
+
 1. Explicit user request for current task
 2. `.github/copilot-instructions.md`
 3. `docs/OPUS_46_GOVERNANCE.md`
@@ -38,6 +41,7 @@ Use this precedence in conflicts:
 ## 3) Branch & Workspace Isolation
 
 Mandatory:
+
 - Never run cleanup work from `master`.
 - Use shard branch naming pattern:
   - `feature/cleanup-scripts-audit`
@@ -46,6 +50,7 @@ Mandatory:
 - Use separate worktree per shard.
 
 Recommended mapping:
+
 - Window A -> `Genesis-Core-shard-a`
 - Window B -> `Genesis-Core-shard-b`
 - Window C -> `Genesis-Core-shard-c`
@@ -55,12 +60,14 @@ Recommended mapping:
 ## 4) Allowed vs Forbidden Change Types
 
 Allowed:
+
 - remove dead imports
 - remove truly unused private helpers/functions
 - merge obvious duplicates
 - delete wrappers with proven no-value and no behavior drift
 
 Forbidden:
+
 - introducing new abstractions/helpers during cleanup
 - architecture boundary changes
 - broad auto-fix across large areas
@@ -72,6 +79,7 @@ Forbidden:
 ## 5) Evidence Requirement (Before DELETE/REFACTOR)
 
 For each candidate symbol/file:
+
 1. Search usages (`imports`, `calls`, decorators, registries)
 2. Check dynamic references (`importlib`, `getattr`, string dispatch)
 3. Check config/registry/entrypoint links
@@ -80,6 +88,7 @@ For each candidate symbol/file:
 If any active usage found -> **KEEP** or **REFACTOR carefully**.
 
 Decision classes:
+
 - `DELETE`
 - `KEEP`
 - `ALLOWLIST`
@@ -90,16 +99,21 @@ Decision classes:
 ## 6) Tooling Guardrails (Damage Minimization)
 
 ### Project venv (stable runtime/tooling)
+
 Use repo `.venv` for:
+
 - `pre-commit`, `ruff`, `black`, `pytest`, `bandit`, `detect-secrets`
 - plus lightweight Python static checks used in repo workflows
 
 ### Isolated tool venv (heavy analyzers)
+
 Use isolated tool environment for analyzers that can cause dependency drift:
+
 - `semgrep`
 - optional heavy extras
 
 Current verified absolute paths:
+
 - Semgrep: `C:\Users\fa06662\AppData\Local\DevTools\pytools\Scripts\semgrep.exe`
 - JSCPD: `C:\Users\fa06662\AppData\Local\Programs\nodejs\jscpd.cmd`
 
@@ -122,11 +136,13 @@ Do **not** install heavy analyzer stacks into project `.venv` unless explicitly 
 ## 8) Minimum Gates
 
 Run before finalizing shard changes:
+
 - `pre-commit run --all-files`
 - `ruff check .`
 - `pytest`
 
 If touching high-sensitivity zones, also run:
+
 - determinism replay selector
 - feature cache invariance selector
 - pipeline hash/invariant selector
@@ -138,6 +154,7 @@ No green gates -> no merge claim.
 ## 9) Commit/PR Discipline
 
 Commits:
+
 - small and atomic
 - one cleanup intent per commit
 - clear message prefix: `chore(cleanup): ...`
@@ -146,6 +163,7 @@ Commits:
   - Never mix unrelated cleanup types in the same commit.
 
 PR:
+
 - one shard per PR
 - include findings addressed + evidence + rationale
 - explicitly state no-behavior-change claim (or exception)
@@ -155,6 +173,7 @@ PR:
 ## 10) Stop Conditions
 
 Stop immediately if:
+
 - scope is unclear
 - dynamic usage cannot be disproven
 - candidate touches architecture boundaries
@@ -181,6 +200,7 @@ Gate results:
 Use this baseline in all windows, then add shard overlay rules.
 
 In short:
+
 - **Common hard rules everywhere**
 - **Shard-specific scope and task deltas per window**
 - **Fail closed when uncertain**

@@ -32,10 +32,6 @@ from tools.compare_backtest_results import (  # noqa: E402
 )
 
 
-def _load_json(path: Path) -> object:
-    return json.loads(path.read_text(encoding="utf-8"))
-
-
 def _write_jsonl_line(path: Path, obj: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a", encoding="utf-8") as f:
@@ -130,19 +126,19 @@ def _check_compact_conflicts(active: list[tuple[tuple[str, str], dict]]) -> list
 def _resolve_registry(manifest: str) -> tuple[dict, dict[str, dict], dict[str, dict]]:
     root = _repo_root()
     manifest_path = root / "registry" / "manifests" / f"{manifest}.json"
-    manifest_obj = _load_json(manifest_path)
+    manifest_obj = json.loads(manifest_path.read_text(encoding="utf-8"))
     if not isinstance(manifest_obj, dict):
         raise ValueError(f"manifest must be a JSON object: {manifest_path}")
 
     skills: dict[str, dict] = {}
     for p in (root / ".github" / "skills").glob("*.json"):
-        obj = _load_json(p)
+        obj = json.loads(p.read_text(encoding="utf-8"))
         if isinstance(obj, dict) and isinstance(obj.get("id"), str):
             skills[obj["id"]] = obj
 
     compacts: dict[str, dict] = {}
     for p in (root / "registry" / "compacts").glob("*.json"):
-        obj = _load_json(p)
+        obj = json.loads(p.read_text(encoding="utf-8"))
         if isinstance(obj, dict) and isinstance(obj.get("id"), str):
             compacts[obj["id"]] = obj
 
@@ -192,8 +188,8 @@ def _step_registry_validate() -> tuple[bool, dict]:
 
 
 def _step_compare_backtests(*, baseline_path: Path, candidate_path: Path) -> tuple[bool, dict]:
-    baseline = _load_json(baseline_path)
-    candidate = _load_json(candidate_path)
+    baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
+    candidate = json.loads(candidate_path.read_text(encoding="utf-8"))
 
     cmp: CompareResult = compare_backtest_payloads(
         baseline=baseline, candidate=candidate, mode="strict"

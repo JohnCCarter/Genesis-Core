@@ -53,19 +53,7 @@ class Thresholds(RuntimeSection):
     def _validate_regime(_cls, v: Any) -> dict[str, float] | float:
         if v is None:
             return {"balanced": 0.58}
-        if isinstance(v, float | int):
-            return float(v)
-        if isinstance(v, dict):
-            out: dict[str, float] = {}
-            for k, val in (v or {}).items():
-                try:
-                    out[str(k)] = float(val)
-                except (TypeError, ValueError) as exc:
-                    raise ValueError(
-                        f"regime_proba values must be float-convertible (key={k!r}, value={val!r})"
-                    ) from exc
-            return out
-        raise ValueError("regime_proba must be a dict[str, float] or a float")
+        return SignalAdaptationZone._validate_regime(v)
 
 
 class Gates(RuntimeSection):

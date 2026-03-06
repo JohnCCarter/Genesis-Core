@@ -136,12 +136,12 @@ _CONFIRM_TOKEN_TTL_SECONDS = max(
 _CONFIRM_TOKEN_STORE: dict[str, dict[str, Any]] = {}
 
 
-def _stable_json(value: Any) -> str:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
-
-
 def _confirm_payload_hash(payload: dict[str, Any]) -> str:
-    return hashlib.sha256(_stable_json(payload).encode("utf-8")).hexdigest()
+    return hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode(
+            "utf-8"
+        )
+    ).hexdigest()
 
 
 def _cleanup_confirm_tokens(*, now_ts: float | None = None) -> None:

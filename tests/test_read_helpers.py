@@ -12,9 +12,6 @@ async def test_helpers_smoke():
         def json(self):
             return []
 
-    async def dummy_signed_request(**_kwargs):
-        return DummyResp()
-
     from core.io.bitfinex import exchange_client as mod
 
     orig_get = mod.get_exchange_client

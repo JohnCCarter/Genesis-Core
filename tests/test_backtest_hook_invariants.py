@@ -92,10 +92,6 @@ class HookEventSink:
         """Get events that have valid timestamps."""
         return [e for e in self.events if e["timestamp"] is not None]
 
-    def get_events_by_action(self, action: str) -> list[dict]:
-        """Get events with specific action."""
-        return [e for e in self.events if e["action"] == action]
-
 
 class TestInvariantA:
     """

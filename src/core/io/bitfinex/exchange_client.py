@@ -18,12 +18,6 @@ _BASE_URL = "https://api.bitfinex.com"
 _LOGGER = get_logger(__name__)
 
 
-def _default_httpx_limits() -> httpx.Limits:
-    """Default connection pool limits for Bitfinex REST."""
-
-    return httpx.Limits(max_connections=20, max_keepalive_connections=10)
-
-
 async def aclose_http_client() -> None:
     """Close the shared HTTP client (if created).
 
@@ -46,7 +40,7 @@ def _get_http_client() -> httpx.AsyncClient:
     if _HTTP_CLIENT is None:
         _HTTP_CLIENT = httpx.AsyncClient(
             timeout=httpx.Timeout(10.0, connect=5.0, pool=5.0),
-            limits=_default_httpx_limits(),
+            limits=httpx.Limits(max_connections=20, max_keepalive_connections=10),
         )
     return _HTTP_CLIENT
 

@@ -27,16 +27,6 @@ class CheckResult:
     detail: str
 
 
-def _run(cmd: list[str]) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        cmd,
-        capture_output=True,
-        text=True,
-        check=False,
-        stdin=subprocess.DEVNULL,
-    )
-
-
 def _parse_systemctl_show_output(text: str) -> dict[str, str]:
     values: dict[str, str] = {}
     for line in text.splitlines():
@@ -128,7 +118,7 @@ def run_preflight(repo_root: Path) -> tuple[int, list[CheckResult]]:
             CheckResult("WARN", "config-max-file-size", f"max_file_size_mb={max_file_size}")
         )
 
-    show = _run(
+    show = subprocess.run(
         [
             "systemctl",
             "--no-pager",
@@ -142,7 +132,11 @@ def run_preflight(repo_root: Path) -> tuple[int, list[CheckResult]]:
             "WorkingDirectory",
             "-p",
             "ExecStart",
-        ]
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+        stdin=subprocess.DEVNULL,
     )
     if show.returncode != 0:
         results.append(

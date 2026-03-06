@@ -8,7 +8,6 @@ import time
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from core.indicators.volume import (
     calculate_volume_ema,
@@ -190,10 +189,6 @@ class TestHTFFibonacciOptimizations:
         assert "htf_swing_age_bars" in result.columns
 
 
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"])
-
-
 class TestBacktestLoopPerformance:
     """Test backtest loop performance optimizations."""
 
@@ -320,10 +315,7 @@ class TestCopyOptimizations:
         # Primitives don't need deepcopy
         primitives = [1, 2.5, "test", True, None]
         for v in primitives:
-            if isinstance(v, dict | list):
-                result = copy.deepcopy(v)
-            else:
-                result = v
+            result = copy.deepcopy(v) if isinstance(v, dict | list) else v
             assert result == v
 
         # Mutable containers do need deepcopy

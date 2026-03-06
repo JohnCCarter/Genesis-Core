@@ -78,6 +78,7 @@ def run_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
 
 
 def test_summarize_run(run_dir: Path) -> None:
+    _ = run_dir
     summary = summarize_run("run_test")
     assert summary["meta"]["symbol"] == "tTEST"
     assert summary["counts"]["total"] == 3

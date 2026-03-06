@@ -23,7 +23,7 @@ from mcp_server.utils import is_safe_path
 
 
 @pytest.mark.asyncio
-async def test_read_resource_accepts_anyurl(config):
+async def test_read_resource_accepts_anyurl():
     """read_resource must tolerate pydantic AnyUrl (some MCP clients pass this type)."""
     from mcp_server.server import read_resource
 

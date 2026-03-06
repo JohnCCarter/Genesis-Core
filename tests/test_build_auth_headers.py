@@ -29,6 +29,7 @@ def mock_nonce():
 
 def test_build_headers(mock_settings, mock_nonce):
     """Test that build_headers generates correct header structure."""
+    _ = (mock_settings, mock_nonce)
     headers = build_headers("auth/r/alerts", {})
 
     assert "bfx-apikey" in headers
@@ -44,6 +45,7 @@ def test_build_headers(mock_settings, mock_nonce):
 
 def test_main_without_reveal(mock_settings, mock_nonce, capsys):
     """Test main function without --reveal flag masks sensitive values by default."""
+    _ = (mock_settings, mock_nonce)
     result = main(["auth/r/alerts"])
 
     assert result == 0
@@ -61,6 +63,7 @@ def test_main_without_reveal(mock_settings, mock_nonce, capsys):
 
 def test_main_with_reveal(mock_settings, mock_nonce, capsys):
     """Test main function with --reveal flag is blocked without explicit ack."""
+    _ = (mock_settings, mock_nonce)
     result = main(["auth/r/alerts", "--reveal"])
 
     assert result == 3
@@ -74,6 +77,7 @@ def test_main_with_reveal(mock_settings, mock_nonce, capsys):
 
 def test_main_with_pretty(mock_settings, mock_nonce, capsys):
     """Test main function with --pretty flag formats JSON nicely."""
+    _ = (mock_settings, mock_nonce)
     result = main(["auth/r/alerts", "--pretty"])
 
     assert result == 0
@@ -88,6 +92,7 @@ def test_main_with_pretty(mock_settings, mock_nonce, capsys):
 
 def test_main_with_reveal_and_pretty(mock_settings, mock_nonce, capsys):
     """Test reveal+pretty is blocked without explicit ack."""
+    _ = (mock_settings, mock_nonce)
     result = main(["auth/r/alerts", "--reveal", "--pretty"])
 
     assert result == 3
@@ -101,6 +106,7 @@ def test_main_with_reveal_and_ack_masks_sensitive_values(
     mock_settings, mock_nonce, capsys, monkeypatch
 ):
     """Test reveal mode with explicit ack still masks secrets for safe logging."""
+    _ = (mock_settings, mock_nonce)
     monkeypatch.setenv("GENESIS_ALLOW_SECRET_OUTPUT", "1")
 
     result = main(["auth/r/alerts", "--reveal"])
@@ -119,6 +125,7 @@ def test_main_with_reveal_and_ack_masks_sensitive_values(
 
 def test_main_with_reveal_and_wrong_ack_is_blocked(mock_settings, mock_nonce, capsys, monkeypatch):
     """Test reveal mode stays blocked when ack env var has incorrect value."""
+    _ = (mock_settings, mock_nonce)
     monkeypatch.setenv("GENESIS_ALLOW_SECRET_OUTPUT", "0")
 
     result = main(["auth/r/alerts", "--reveal"])
@@ -131,6 +138,7 @@ def test_main_with_reveal_and_wrong_ack_is_blocked(mock_settings, mock_nonce, ca
 
 def test_main_with_body(mock_settings, mock_nonce, capsys):
     """Test main function with custom JSON body."""
+    _ = (mock_settings, mock_nonce)
     body_json = '{"type":"test","data":123}'
     result = main(["auth/r/alerts", "--body", body_json])
 
@@ -143,6 +151,7 @@ def test_main_with_body(mock_settings, mock_nonce, capsys):
 
 def test_main_with_invalid_json_body(mock_settings, mock_nonce, capsys):
     """Test main function with invalid JSON body returns error."""
+    _ = (mock_settings, mock_nonce)
     result = main(["auth/r/alerts", "--body", "{invalid json}"])
 
     assert result == 2  # Error code for invalid JSON

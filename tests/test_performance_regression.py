@@ -7,7 +7,6 @@ These tests verify that critical performance improvements are maintained.
 import time
 
 import pandas as pd
-import pytest
 
 from core.indicators.fibonacci import FibonacciConfig, detect_swing_points
 
@@ -107,7 +106,3 @@ class TestSwingDetectionPerformance:
 
         # Verify same results
         assert total_pandas == total_numpy
-
-
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"])

@@ -1,15 +1,10 @@
 """Test performance improvements for model-training pipeline optimizations."""
 
-# Add src to path
-import sys
 import time
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import pytest
-
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 # Import the module (not individual globals).
 # Some tests (e.g. env-flag parsing) reload this module at runtime; importing
@@ -123,7 +118,3 @@ def test_cache_increased_size():
 
     # Should be larger than old size (was 100, now 500)
     assert features_asof._MAX_CACHE_SIZE >= 500, "Cache size should be increased for backtests"
-
-
-if __name__ == "__main__":
-    pytest.main([__file__, "-v", "-s"])

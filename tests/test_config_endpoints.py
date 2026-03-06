@@ -113,7 +113,7 @@ def test_runtime_endpoints_do_not_leak_exceptions(monkeypatch):
     # propose should not leak runtime exceptions
     import core.server_config_api as api
 
-    def _boom(*args, **kwargs):  # noqa: ARG001
+    def _boom(*_args, **_kwargs):
         raise RuntimeError("some internal SECRET_SHOULD_NOT_LEAK")
 
     monkeypatch.setattr(api.authority, "propose_update", _boom)

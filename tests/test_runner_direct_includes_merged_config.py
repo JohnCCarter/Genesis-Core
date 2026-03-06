@@ -22,6 +22,7 @@ class _DummyEngine:
         return True
 
     def run(self, *, policy=None, configs=None, verbose=False, pruning_callback=None, **_kwargs):
+        _ = (policy, verbose, pruning_callback)
         self.last_configs = configs
         return {"metrics": {"num_trades": 0}}
 
@@ -39,6 +40,7 @@ class _DummyPipeline:
         end_date: str | None,
         warmup_bars: int,
     ):
+        _ = (symbol, timeframe, start_date, end_date)
         self.engine.warmup_bars = warmup_bars
         return self.engine
 

@@ -8,8 +8,10 @@ This protects against dependency drift where modules import third-party packages
 that are only declared in optional extras.
 """
 
+import importlib
+
 
 def test_imports_for_backtest_and_optuna_smoke() -> None:
-    import core.backtest.engine  # noqa: F401
-    import core.optimizer.runner  # noqa: F401
-    import core.pipeline  # noqa: F401
+    importlib.import_module("core.backtest.engine")
+    importlib.import_module("core.optimizer.runner")
+    importlib.import_module("core.pipeline")

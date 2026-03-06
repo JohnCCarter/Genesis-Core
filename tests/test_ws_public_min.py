@@ -4,28 +4,28 @@ from core.io.bitfinex.ws_public import one_message_ticker
 
 
 @pytest.mark.asyncio
-async def test_ws_public_timeout(monkeypatch):
+async def test_ws_public_timeout():
     class DummyWS:
-        async def recv(self):  # noqa: D401
+        async def recv(self):
             import asyncio
 
             await asyncio.sleep(0.2)
             return "{}"
 
-        async def __aenter__(self):  # noqa: D401
+        async def __aenter__(self):
             return self
 
-        async def __aexit__(self, exc_type, exc, tb):  # noqa: D401, ARG002
+        async def __aexit__(self, _exc_type, _exc, _tb):
             return False
 
-        async def send(self, _):  # noqa: D401, ARG002
+        async def send(self, _):
             return None
 
     import core.io.bitfinex.ws_public as mod
 
     orig_connect = mod.websockets.connect
 
-    def fake_connect(*args, **kwargs):  # noqa: D401, ARG002
+    def fake_connect(*_args, **_kwargs):
         return DummyWS()
 
     mod.websockets.connect = fake_connect  # type: ignore

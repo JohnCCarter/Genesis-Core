@@ -40,7 +40,7 @@ def test_direct_execution_fails_fast_when_canonical_precompute_missing(monkeypat
     # Patch engine creation to return a stub where precompute never becomes available.
     monkeypatch.setattr(
         "core.pipeline.GenesisPipeline.create_engine",
-        lambda self, **kwargs: _StubEngine(),
+        lambda *_args, **_kwargs: _StubEngine(),
     )
 
     # Minimal config payload expected by _run_backtest_direct.
@@ -92,7 +92,7 @@ def test_direct_execution_does_not_enable_precompute_when_env_is_zero_and_setup_
     engine = _StubEnginePrecomputeFlag()
     monkeypatch.setattr(
         "core.pipeline.GenesisPipeline.create_engine",
-        lambda self, **kwargs: engine,
+        lambda *_args, **_kwargs: engine,
     )
 
     config_path = tmp_path / "trial_config.json"

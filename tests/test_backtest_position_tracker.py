@@ -186,7 +186,7 @@ def test_commission_deduction():
         action="LONG", size=0.1, price=100.0, timestamp=timestamp, symbol="tBTCUSD"
     )
 
-    # Commission: 0.1 * 100 * 0.001 = 0.01
+    # Förväntad provision för öppningen i detta scenario.
     expected_commission = 0.01
     assert abs(tracker.total_commission - expected_commission) < 0.0001
     assert tracker.capital == initial_capital - expected_commission
@@ -227,7 +227,7 @@ def test_get_summary():
         action="SHORT", size=0.1, price=110.0, timestamp=timestamp, symbol="tBTCUSD"
     )
 
-    # Trade 2: SHORT 110 -> 115 (loss)
+    # Andra affären ska ge ett förlustutfall.
     tracker.execute_action(
         action="LONG", size=0.1, price=115.0, timestamp=timestamp, symbol="tBTCUSD"
     )

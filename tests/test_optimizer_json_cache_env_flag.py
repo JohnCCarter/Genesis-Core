@@ -8,7 +8,7 @@ import core.optimizer.runner as runner
 def _install_counting_loader(monkeypatch) -> dict[str, int]:
     calls = {"n": 0}
 
-    def _fake_load_json_with_retries(_path: Path, retries: int = 3, delay: float = 0.1):
+    def _fake_load_json_with_retries(_path: Path, _retries: int = 3, _delay: float = 0.1):
         calls["n"] += 1
         return {"ok": True}
 

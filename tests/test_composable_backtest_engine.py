@@ -1,6 +1,7 @@
 """Integration tests for ComposableBacktestEngine."""
 
 import os
+from contextlib import suppress
 
 import pandas as pd
 import pytest
@@ -34,13 +35,14 @@ class TestComposableBacktestEngine:
         """
 
         class AlwaysVeto(StrategyComponent):
-            def name(self) -> str:  # noqa: D401
+            def name(self) -> str:
                 return "AlwaysVeto"
 
-            def evaluate(self, context: dict) -> ComponentResult:
+            def evaluate(self, _context: dict) -> ComponentResult:
                 return ComponentResult(allowed=False, confidence=0.0, reason="ALWAYS_VETO")
 
         def stub_evaluate_pipeline(*, candles, policy, configs, state):
+            _ = (candles, policy, configs, state)
             # Minimal structure that BacktestEngine expects.
             result = {
                 "action": "NONE",
@@ -195,11 +197,9 @@ class TestComposableBacktestEngine:
         )
 
         # Even if run fails, pipeline should be restored
-        try:
+        with suppress(Exception):
             engine.load_data()
             engine.run()
-        except Exception:
-            pass  # Ignore errors (data may not exist)
 
         # Check that pipeline is restored
         assert evaluate_module.evaluate_pipeline is original_pipeline

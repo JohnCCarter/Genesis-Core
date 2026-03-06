@@ -41,10 +41,10 @@ class _FakeClient:
 
 
 class _FakeLogger:
-    def error(self, *args, **kwargs):
+    def error(self, *_args, **_kwargs):
         return None
 
-    def warning(self, *args, **kwargs):
+    def warning(self, *_args, **_kwargs):
         return None
 
 

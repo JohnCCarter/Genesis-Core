@@ -1,31 +1,57 @@
-Plan: Shadow artifact pytest (P1 OFF)
-Målet är att lägga till ett minimalt, test-only shadow artifact-smoke i OFF-läge utan produktionsdrift. Vi återanvänder samma eval-path som befintliga kontraktstester i test_evaluate_pipeline.py via evaluate_pipeline i evaluate.py. Testet i ny fil tests/test_regime_shadow_artifacts.py extraherar befintliga regim-/observability-fält och beräknar en test-lokal clarity_score från confidence.overall (int clamp 0–100), validerar kvalitet, och skriver artifacts endast när REGIME_EVIDENCE_DIR är satt. Ingen ändring i core-semantik, inga nya dependencies, inga champions/config-ingrepp.
+# Handoff — Shard A Refactor (2026-03-06)
 
-Steps
+## Session summary
 
-Skapa tests/test_regime_shadow_artifacts.py med testet test_regime_shadow_artifacts_smoke.
-Återanvänd eval-harnessmönster från test_evaluate_pipeline.py (test_evaluate_pipeline_shadow_error_rate_contract, test_evaluate_pipeline_authority_mode_source_invariant_contract) för deterministisk monkeypatch och stabil config-normalisering.
-Kör P1 OFF-mode i testet (ingen parity-assert här), samla samples från result/meta:
-labels: både authoritative (result["regime"]) och shadow (meta["observability"]["shadow_regime"]["shadow"])
-clarity: test-projektion från confidence till int i [0,100].
-Implementera valideringar i testet:
-sample_count: prefererat >=200, fallback >=50 vid begränsat underlag
-alla clarity_score är heltal i [0,100]
-labels finns per sample.
-Implementera opt-in artifact write via REGIME_EVIDENCE_DIR:
-clarity_histogram.json (10-bins: 0–9 … 90–100)
-clarity_quantiles.json (p50, p80, p90, p95, top20_threshold, mean, std, total)
-shadow_samples.ndjson (minst: symbol, timeframe, bar_index/timestamp, regime_label(s), clarity_score; optional components om tillgängliga).
-Verifiera att .gitignore redan täcker artifacts (den gör det; ingen ändring behövs).
-Kör testet i båda lägena (unset/set REGIME_EVIDENCE_DIR) och kontrollera filskapande endast i set-läget.
-Verification
+- Repository: `JohnCCarter/Genesis-Core`
+- Working directory: `c:\Users\fa06662\Projects\Genesis-Core-refactor-a`
+- Branch: `feature/refactor-scripts-structure-a`
+- Mode: `RESEARCH` (source=branch `feature/*`)
+- Latest pushed commit: `0e900bf8dfe23f6f83426f817d752e9c5172f677`
+- Commit message: `docs(audit): separate cleanup history and shard-a refactor governance`
 
-Unset env: kör pytest -q tests/test_regime_shadow_artifacts.py::test_regime_shadow_artifacts_smoke och verifiera pass utan filskrivning.
-Set env: sätt REGIME_EVIDENCE_DIR till temp-katalog, kör samma test, verifiera att exakt tre artifacts finns och att innehållsvalidering passerar.
-Kör även baseline-gates som redan används i trancherna: import smoke, determinism smoke, feature cache invariance, pipeline hash invariant.
-Decisions
+## What was completed
 
-Clarity-källa: test-projektion (inte nytt runtimefält).
-Label-källa i samples: både shadow + authoritative.
-Tröskelpolicy: prefer 200, fallback 50.
-Filform: exakt leverabel enligt spec (tests/test_regime_shadow_artifacts.py, test_regime_shadow_artifacts_smoke).
+Documentation for Shard A refactor governance was finalized and separated from cleanup history.
+
+Committed files:
+
+- `docs/audit/cleanup/readme.md`
+- `docs/audit/refactor/command_packet_refactor_docs_2026-03-06.md`
+- `docs/audit/refactor/context_map_refactor_docs_2026-03-06.md`
+- `docs/audit/refactor/genesis_refactor_agent_overlay_shard_a.md`
+- `docs/audit/refactor/hard_rules_refactor.md`
+- `docs/audit/refactor/readme.md`
+
+## Current workspace state
+
+- Branch is pushed to origin.
+- `git status -sb` showed no pending tracked changes at handoff time.
+- Cleanup historical docs for Shard A remain intact under:
+  - `docs/audit/cleanup/hard_rules_cleanup.md`
+  - `docs/audit/cleanup/Genesis_cleanup_agent_overlay.md`
+  - `docs/audit/cleanup/genesis_cleanup_agent_overlay_shard_a.md`
+
+## Important governance context for next agent
+
+- Active refactor overlay (Shard A):
+  - `docs/audit/refactor/genesis_refactor_agent_overlay_shard_a.md`
+- Shared refactor baseline:
+  - `docs/audit/refactor/hard_rules_refactor.md`
+- Refactor docs index:
+  - `docs/audit/refactor/readme.md`
+- Scope lock for Shard A refactor remains:
+  - `scripts/**`
+- Outside scope only read/search/usage verification is allowed.
+
+## Suggested next step (implementation)
+
+Start Shard A refactor Batch 1 in `scripts/**` with minimal, no-behavior-change diffs, using:
+
+- `docs/audit/refactor/command_packet_shard_a_refactor_2026-03-06.md`
+- `docs/audit/refactor/context_map_shard_a_refactor_2026-03-06.md`
+
+Apply required validation gates per overlay before finalizing implementation changes.
+
+## Notes / open caveats
+
+- `genesis_cleanup_agent_overlay_shard_c.md` was referenced by cleanup hard-rules text but was not present in this workspace snapshot. This did not block Shard A documentation work.

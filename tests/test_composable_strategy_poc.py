@@ -14,7 +14,7 @@ class DummyPassComponent(StrategyComponent):
     def name(self) -> str:
         return "dummy_pass"
 
-    def evaluate(self, context: dict) -> ComponentResult:
+    def evaluate(self, _context: dict) -> ComponentResult:
         return ComponentResult(allowed=True, confidence=0.8, metadata={"test": "pass"})
 
 
@@ -24,7 +24,7 @@ class DummyVetoComponent(StrategyComponent):
     def name(self) -> str:
         return "dummy_veto"
 
-    def evaluate(self, context: dict) -> ComponentResult:
+    def evaluate(self, _context: dict) -> ComponentResult:
         return ComponentResult(
             allowed=False, confidence=0.2, reason="TEST_VETO", metadata={"test": "veto"}
         )
@@ -36,7 +36,7 @@ class DummyLowConfidenceComponent(StrategyComponent):
     def name(self) -> str:
         return "dummy_low_conf"
 
-    def evaluate(self, context: dict) -> ComponentResult:
+    def evaluate(self, _context: dict) -> ComponentResult:
         return ComponentResult(allowed=True, confidence=0.3, metadata={"test": "low"})
 
 

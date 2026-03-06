@@ -135,7 +135,7 @@ async def test_get_project_structure(config):
     assert result["success"] is True
     assert "structure" in result
     assert "src" in result["structure"]
-    assert "Genesis-Core" in result["structure"]
+    assert Path(result["root"]).name in result["structure"]
 
 
 @pytest.mark.asyncio
@@ -241,6 +241,7 @@ def test_remote_token_auth_accepts_bearer_or_header(monkeypatch):
     import mcp_server.remote_server as remote
 
     monkeypatch.setattr(remote, "REMOTE_TOKEN", "s3cr3t")
+    monkeypatch.setattr(remote, "REMOTE_AUTH_REQUIRED", True)
 
     assert (
         remote._is_authorized_remote_request(authorization="Bearer s3cr3t", token_header=None)

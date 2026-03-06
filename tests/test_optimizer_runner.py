@@ -31,6 +31,10 @@ def _write_run_meta(run_dir: Path, run_meta_payload: dict[str, Any]) -> None:
     (run_dir / "run_meta.json").write_text(json.dumps(run_meta_payload), encoding="utf-8")
 
 
+def _write_yaml(path: Path, payload: dict[str, Any]) -> None:
+    path.write_text(yaml.safe_dump(payload), encoding="utf-8")
+
+
 def _base_run_meta_payload() -> dict[str, Any]:
     return {
         "git_commit": "abc123",
@@ -99,7 +103,7 @@ def search_config_tmp(tmp_path: Path) -> Path:
         },
     }
     config_path = tmp_path / "search.yaml"
-    config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
+    _write_yaml(config_path, config)
     return config_path
 
 
@@ -276,7 +280,7 @@ def test_run_optimizer_validation_stage_promotes_validation_best(tmp_path: Path)
         },
     }
     config_path = tmp_path / "search_with_validation.yaml"
-    config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
+    _write_yaml(config_path, config)
 
     results_root = tmp_path / "results" / "hparam_search"
     run_meta_payload = _base_run_meta_payload()
@@ -783,7 +787,7 @@ def test_verify_or_set_optuna_study_score_version(monkeypatch: pytest.MonkeyPatc
 def test_run_optimizer_optuna_strategy(tmp_path: Path) -> None:
     config = _make_optuna_test_config(max_trials=2, resume=False, storage=None)
     config_path = tmp_path / "optuna.yaml"
-    config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
+    _write_yaml(config_path, config)
 
     run_meta_payload = _base_run_meta_payload()
 
@@ -847,7 +851,7 @@ def test_run_optimizer_validation_fallback_reads_from_optuna_storage(tmp_path: P
         validation={"enabled": True, "top_n": 2, "use_sample_range": False},
     )
     config_path = tmp_path / "optuna_validate_only.yaml"
-    config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
+    _write_yaml(config_path, config)
 
     results_root = tmp_path / "results" / "hparam_search"
     run_meta_payload = {

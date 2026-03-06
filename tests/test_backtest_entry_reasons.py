@@ -23,7 +23,8 @@ def test_backtest_entry_reasons_attached_to_trade(monkeypatch):
 
     reasons = ["R1", "R2"]
 
-    def _fake_evaluate_pipeline(*, candles, policy, configs, state):  # noqa: ARG001
+    def _fake_evaluate_pipeline(*, candles, policy, configs, state):
+        _ = (candles, policy, configs)
         already_entered = bool((state or {}).get("entered"))
         if already_entered:
             result = {"action": "NONE", "confidence": 0.5, "regime": "BALANCED"}

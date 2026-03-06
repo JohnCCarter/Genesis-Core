@@ -118,7 +118,7 @@ class TestChampionDecisionMatrix:
 
         score = matrix.calculate_score(metrics)
 
-        # Expected: (0.5 * 0.5 + 0.625 * 0.5) * 10 = 5.625
+        # Resultatet ska landa nära den manuellt härledda mellannivån.
         assert 5.6 <= score <= 5.7
 
     def test_calculate_score_dict_input(self):

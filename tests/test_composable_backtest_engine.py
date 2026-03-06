@@ -34,7 +34,7 @@ class TestComposableBacktestEngine:
         """
 
         class AlwaysVeto(StrategyComponent):
-            def name(self) -> str:  # noqa: D401
+            def name(self) -> str:
                 return "AlwaysVeto"
 
             def evaluate(self, _context: dict) -> ComponentResult:

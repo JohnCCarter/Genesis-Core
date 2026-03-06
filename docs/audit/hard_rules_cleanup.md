@@ -141,6 +141,9 @@ Commits:
 - small and atomic
 - one cleanup intent per commit
 - clear message prefix: `chore(cleanup): ...`
+- Batch size guideline:
+  - 3–10 related deletions per commit.
+  - Never mix unrelated cleanup types in the same commit.
 
 PR:
 - one shard per PR

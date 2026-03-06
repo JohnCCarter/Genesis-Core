@@ -40,3 +40,8 @@ Använd script-entrypoint ovan som SSOT vid körning, inte ad-hoc kommandon.
 - `pre-commit run --all-files`
 - `ruff check .`
 - relevanta pytest-selectors för berörd scope
+
+## Commit Batch Guideline
+
+- 3–10 related deletions per commit.
+- Never mix unrelated cleanup types in the same commit.

@@ -51,5 +51,5 @@ def test_pipeline_component_order_hash_contract_is_stable():
         "regime",
         "decision",
     )
-    assert PIPELINE_COMPONENT_ORDER == expected_order
+    assert expected_order == PIPELINE_COMPONENT_ORDER
     assert pipeline_component_order_hash() == "200a25070a6f7fe4"

@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import sys
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, patch
@@ -33,6 +34,22 @@ def _write_run_meta(run_dir: Path, run_meta_payload: dict[str, Any]) -> None:
 
 def _write_yaml(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(yaml.safe_dump(payload), encoding="utf-8")
+
+
+def _results_root(tmp_path: Path) -> Path:
+    return tmp_path / "results" / "hparam_search"
+
+
+def _make_fake_ensure_writer(
+    run_meta_payload: dict[str, Any],
+    on_run_dir: Callable[[Path], None] | None = None,
+) -> Callable[..., None]:
+    def fake_ensure(run_dir: Path, *_args: Any, **_kwargs: Any) -> None:
+        if on_run_dir is not None:
+            on_run_dir(run_dir)
+        _write_run_meta(run_dir, run_meta_payload)
+
+    return fake_ensure
 
 
 def _base_run_meta_payload() -> dict[str, Any]:
@@ -173,7 +190,7 @@ def test_collect_comparability_warnings_detects_drift_without_raising() -> None:
 def test_run_optimizer_updates_champion(
     tmp_path: Path, search_config_tmp: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    results_root = tmp_path / "results" / "hparam_search"
+    results_root = _results_root(tmp_path)
     run_meta_payload = _base_run_meta_payload()
 
     trial_queue = {
@@ -216,10 +233,11 @@ def test_run_optimizer_updates_champion(
             },
         )
 
-    def fake_ensure(run_dir: Path, *_args: Any, **_kwargs: Any) -> None:
+    def _capture_run_dir(run_dir: Path) -> None:
         nonlocal created_run_dir
         created_run_dir = run_dir
-        _write_run_meta(run_dir, run_meta_payload)
+
+    fake_ensure = _make_fake_ensure_writer(run_meta_payload, _capture_run_dir)
 
     with (
         patch.dict(os.environ, {"GENESIS_MAX_CONCURRENT": "1"}),
@@ -282,7 +300,7 @@ def test_run_optimizer_validation_stage_promotes_validation_best(tmp_path: Path)
     config_path = tmp_path / "search_with_validation.yaml"
     _write_yaml(config_path, config)
 
-    results_root = tmp_path / "results" / "hparam_search"
+    results_root = _results_root(tmp_path)
     run_meta_payload = _base_run_meta_payload()
 
     def fake_run_trial(*args: Any, **kwargs: Any) -> dict[str, Any]:
@@ -330,8 +348,7 @@ def test_run_optimizer_validation_stage_promotes_validation_best(tmp_path: Path)
             "results_path": "val_best_05.json",
         }
 
-    def fake_ensure(run_dir: Path, *_args: Any, **_kwargs: Any) -> None:
-        _write_run_meta(run_dir, run_meta_payload)
+    fake_ensure = _make_fake_ensure_writer(run_meta_payload)
 
     with (
         patch.dict(os.environ, {"GENESIS_MAX_CONCURRENT": "1"}),
@@ -465,7 +482,7 @@ def test_run_optimizer_promotion_negative_cases_do_not_write_champion(
     results_path: str,
     current_score: float | None,
 ) -> None:
-    results_root = tmp_path / "results" / "hparam_search"
+    results_root = _results_root(tmp_path)
     run_meta_payload = _base_run_meta_payload()
 
     def fake_run_trial(*_args: Any, **kwargs: Any) -> dict[str, Any]:
@@ -477,8 +494,7 @@ def test_run_optimizer_promotion_negative_cases_do_not_write_champion(
             "results_path": results_path,
         }
 
-    def fake_ensure(run_dir: Path, *_args: Any, **_kwargs: Any) -> None:
-        _write_run_meta(run_dir, run_meta_payload)
+    fake_ensure = _make_fake_ensure_writer(run_meta_payload)
 
     cfg = yaml.safe_load(search_config_tmp.read_text(encoding="utf-8"))
     cfg["meta"]["runs"]["promotion"] = promotion_cfg
@@ -853,7 +869,7 @@ def test_run_optimizer_validation_fallback_reads_from_optuna_storage(tmp_path: P
     config_path = tmp_path / "optuna_validate_only.yaml"
     _write_yaml(config_path, config)
 
-    results_root = tmp_path / "results" / "hparam_search"
+    results_root = _results_root(tmp_path)
     run_meta_payload = {
         "git_commit": "abc123",
         "snapshot_id": "tTEST_1h_20240101_20240201_v1",
@@ -869,10 +885,11 @@ def test_run_optimizer_validation_fallback_reads_from_optuna_storage(tmp_path: P
 
     created_run_dir: Path | None = None
 
-    def fake_ensure(run_dir: Path, *_args: Any, **_kwargs: Any) -> None:
+    def _capture_run_dir(run_dir: Path) -> None:
         nonlocal created_run_dir
         created_run_dir = run_dir
-        _write_run_meta(run_dir, run_meta_payload)
+
+    fake_ensure = _make_fake_ensure_writer(run_meta_payload, _capture_run_dir)
 
     # Two explore payloads living in Optuna storage
     from types import SimpleNamespace

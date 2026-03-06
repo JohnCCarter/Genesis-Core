@@ -1,0 +1,9 @@
+# candidate10 path refcheck
+timestamp_utc=2026-03-06T23:19:37Z
+base_sha=71789f38841548c5d9d2a0484c13975b916c456e
+scan_roots=src,scripts,tests,config,mcp_server,.github
+exclude_glob=!scripts/archive/**
+command=C:\Users\salib\AppData\Local\Programs\Cursor\resources\app\node_modules\@vscode\ripgrep\bin\rg.exe -n "scripts/archive/model_registry_update/|analyze_full_registry\\.py|analyze_tbtcusd_models\\.py|cleanup_old_models\\.py|cleanup_tbtcusd_metrics\\.py|cleanup_tbtcusd_models\\.py|complete_model_registry_update\\.py|create_advanced_models\\.py|execute_model_registry_update\\.py|fix_timeframe_4h\\.py|model_update_plan\\.json|tbtcusd_cleanup_plan\\.json|update_model_registry_plan\\.py|update_registry_mapping\\.py|verify_model_registry\\.py" src scripts tests config mcp_server .github -g "!scripts/archive/**"
+
+# results
+NO_MATCHES

@@ -1,0 +1,13 @@
+[COMMAND] pre-commit run --all-files
+black....................................................................Passed
+ruff.....................................................................Passed
+Detect secrets...........................................................Passed
+check for added large files..............................................Passed
+check for merge conflicts................................................Passed
+check yaml...............................................................Passed
+fix end of files.........................................................Passed
+trim trailing whitespace.................................................Passed
+check json...............................................................Passed
+
+[COMMAND] pytest -q tests/test_import_smoke_backtest_optuna.py tests/test_backtest_determinism_smoke.py tests/test_feature_cache.py tests/test_features_asof_cache_key_deterministic.py tests/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable
+...........                                                              [100%]

@@ -16,7 +16,7 @@
 
 ```powershell
 # Hämta minimal data för att börja (5-10 sekunder)
-.\scripts\fetch_quick_start.ps1
+.\scripts\fetch\fetch_quick_start.ps1
 ```
 
 **Vad hämtas:**
@@ -34,7 +34,7 @@
 python scripts/precompute_features_v17.py --symbol tBTCUSD --timeframe 1h
 
 # 2. Train model
-python scripts/train_model.py --symbol tBTCUSD --timeframe 1h --use-holdout
+python scripts/train/train_model.py --symbol tBTCUSD --timeframe 1h --use-holdout
 ```
 
 ---
@@ -45,7 +45,7 @@ python scripts/train_model.py --symbol tBTCUSD --timeframe 1h --use-holdout
 
 ```powershell
 # Starta innan du går och lägga dig (~10-15 min)
-.\scripts\fetch_overnight.ps1
+.\scripts\fetch\fetch_overnight.ps1
 ```
 
 **Vad hämtas:**
@@ -70,20 +70,20 @@ python scripts/train_model.py --symbol tBTCUSD --timeframe 1h --use-holdout
 
 ```powershell
 # Exempel 1: Bara 6h och 1D för BTC (för trend-following)
-.\scripts\fetch_all_data.ps1 `
+.\scripts\fetch\fetch_all_data.ps1 `
     -Symbols "tBTCUSD" `
     -Timeframes "6h,1D" `
     -Months 18
 
 # Exempel 2: Top 5 crypto på 1h timeframe
-.\scripts\fetch_all_data.ps1 `
+.\scripts\fetch\fetch_all_data.ps1 `
     -Symbols "tBTCUSD,tETHUSD,tSOLUSD,tADAUSD,tDOGEUSD" `
     -Timeframes "1h" `
     -Months 18
 
 # Exempel 3: Full dataset (16 symboler, alla major timeframes)
 # ⚠️ VARNING: Tar 30-60 minuter!
-.\scripts\fetch_all_data.ps1 `
+.\scripts\fetch\fetch_all_data.ps1 `
     -Symbols "tBTCUSD,tETHUSD,tSOLUSD,tADAUSD,tDOGEUSD,tALGOUSD,tAVAXUSD,tDOTUSD,tLTCUSD,tAPTUSD,tEOSUSD,tFILUSD,tNEARUSD,tXAUTUSD,tXTZUSD,tXRPUSD" `
     -Timeframes "1m,5m,15m,1h,6h,1D" `
     -Months 18
@@ -175,7 +175,7 @@ python scripts/precompute_features_v17.py --symbol tBTCUSD --timeframe 1h
 **3. Train model:**
 
 ```powershell
-python scripts/train_model.py --symbol tBTCUSD --timeframe 1h --use-holdout --save-provenance
+python scripts/train/train_model.py --symbol tBTCUSD --timeframe 1h --use-holdout --save-provenance
 ```
 
 **4. Run comprehensive analysis:**
@@ -228,7 +228,7 @@ Solution: This is OK! Script overwrites existing files.
 
 - `README.agents.md` - Full ML pipeline workflow
 - `data/DATA_FORMAT.md` - Data format specifications
-- `scripts/fetch_historical.py` - Individual fetch script (advanced use)
+- `scripts/fetch/fetch_historical.py` - Individual fetch script (advanced use)
 - `AGENTS.md` - Current project status, deliverables and next steps
 
 ---

@@ -24,7 +24,7 @@ Write-Host "========================================`n" -ForegroundColor Magenta
 $startTime = Get-Date
 
 # Fetch all data using batch script
-.\scripts\fetch_all_data.ps1 `
+.\scripts\fetch\fetch_all_data.ps1 `
     -Symbols "tBTCUSD,tETHUSD" `
     -Timeframes "1m,5m,15m,1h,6h,1D" `
     -Months 18

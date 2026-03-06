@@ -4,7 +4,7 @@
 Write-Host "Fetching 3h, 6h + 1D for trend-following test..." -ForegroundColor Cyan
 Write-Host "Note: 4h is NOT supported by Bitfinex. Using 3h and 6h instead." -ForegroundColor Yellow
 
-.\scripts\fetch_all_data.ps1 `
+.\scripts\fetch\fetch_all_data.ps1 `
     -Symbols "tBTCUSD" `
     -Timeframes "3h,6h,1D" `
     -Months 12

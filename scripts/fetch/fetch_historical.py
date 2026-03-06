@@ -3,8 +3,8 @@
 Fetch historical candle data from Bitfinex and save to Parquet.
 
 Usage:
-    python scripts/fetch_historical.py --symbol tBTCUSD --timeframe 1m --months 1
-    python scripts/fetch_historical.py --symbol tETHUSD --timeframe 1h --months 6
+    python scripts/fetch/fetch_historical.py --symbol tBTCUSD --timeframe 1m --months 1
+    python scripts/fetch/fetch_historical.py --symbol tETHUSD --timeframe 1h --months 6
 """
 
 import argparse

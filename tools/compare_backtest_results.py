@@ -101,11 +101,6 @@ def _load_rows(path: Path) -> list[dict[str, Any]]:
     raise ValueError(f"Could not parse row file as JSON array or NDJSON: {path}")
 
 
-def _write_json(path: Path, payload: dict[str, Any]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
-
-
 def _dig(obj: object, dotted_path: str) -> object:
     cur = obj
     for part in dotted_path.split("."):
@@ -572,7 +567,11 @@ def main(argv: list[str]) -> int:
                 Path("results") / "evaluation" / f"ri_p1_off_parity_v1_{args.run_id}.json"
             )
 
-        _write_json(artifact_out, artifact)
+        artifact_out.parent.mkdir(parents=True, exist_ok=True)
+        artifact_out.write_text(
+            json.dumps(artifact, indent=2, sort_keys=True),
+            encoding="utf-8",
+        )
 
         payload = {
             "status": artifact["parity_verdict"],

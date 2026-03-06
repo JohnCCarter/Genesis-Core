@@ -101,10 +101,6 @@ def _load_rows(path: Path) -> list[dict[str, Any]]:
     raise ValueError(f"Could not parse row file as JSON array or NDJSON: {path}")
 
 
-def _parse_csv_values(raw: str) -> list[str]:
-    return [segment.strip() for segment in (raw or "").split(",") if segment.strip()]
-
-
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
@@ -506,8 +502,12 @@ def main(argv: list[str]) -> int:
     args = p.parse_args(argv)
 
     if args.ri_off_parity:
-        symbols = _parse_csv_values(args.symbols)
-        timeframes = _parse_csv_values(args.timeframes)
+        symbols = [
+            segment.strip() for segment in (args.symbols or "").split(",") if segment.strip()
+        ]
+        timeframes = [
+            segment.strip() for segment in (args.timeframes or "").split(",") if segment.strip()
+        ]
         missing_args: list[str] = []
         if not args.run_id.strip():
             missing_args.append("--run-id")

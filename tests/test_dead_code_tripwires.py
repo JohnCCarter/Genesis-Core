@@ -28,7 +28,7 @@ def test_deprecated_features_module_delegates_to_features_asof(
 
     calls: dict[str, int] = {"n": 0}
 
-    def _fake_asof(*args, **kwargs):  # type: ignore[no-untyped-def]
+    def _fake_asof(*_args, **_kwargs):  # type: ignore[no-untyped-def]
         calls["n"] += 1
         return sentinel_features, sentinel_meta
 

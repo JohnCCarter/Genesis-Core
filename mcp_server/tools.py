@@ -342,27 +342,34 @@ async def get_project_structure(config: MCPConfig) -> dict[str, Any]:
             allowed_dir_roots = [p for p in allowed_roots if p.is_dir()]
             allowed_file_roots = [p for p in allowed_roots if p.is_file()]
 
-            # Keep only top-most allowed directories (avoid duplicating nested roots).
-            def _is_within(child: Path, parent: Path) -> bool:
-                try:
-                    child.relative_to(parent)
-                    return True
-                except Exception:
-                    return False
-
             minimal_dir_roots: list[Path] = []
             for candidate in allowed_dir_roots:
-                if any(
-                    candidate != parent and _is_within(candidate, parent)
-                    for parent in allowed_dir_roots
-                ):
+                candidate_has_parent = False
+                for parent in allowed_dir_roots:
+                    if candidate == parent:
+                        continue
+                    try:
+                        candidate.relative_to(parent)
+                        candidate_has_parent = True
+                        break
+                    except Exception:
+                        continue
+                if candidate_has_parent:
                     continue
                 minimal_dir_roots.append(candidate)
 
             # Keep only allowed files not already covered by an allowed directory root.
             minimal_file_roots: list[Path] = []
             for f in allowed_file_roots:
-                if any(_is_within(f, d) for d in minimal_dir_roots):
+                file_is_covered = False
+                for d in minimal_dir_roots:
+                    try:
+                        f.relative_to(d)
+                        file_is_covered = True
+                        break
+                    except Exception:
+                        continue
+                if file_is_covered:
                     continue
                 minimal_file_roots.append(f)
 

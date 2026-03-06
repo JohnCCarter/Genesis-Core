@@ -12,6 +12,6 @@ import importlib
 
 
 def test_imports_for_backtest_and_optuna_smoke() -> None:
-    assert importlib.import_module("core.backtest.engine") is not None
-    assert importlib.import_module("core.optimizer.runner") is not None
-    assert importlib.import_module("core.pipeline") is not None
+    importlib.import_module("core.backtest.engine")
+    importlib.import_module("core.optimizer.runner")
+    importlib.import_module("core.pipeline")

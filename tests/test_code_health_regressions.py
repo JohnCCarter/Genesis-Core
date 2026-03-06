@@ -22,42 +22,34 @@ import pytest
 class TestDirectionAwareMLConfidence:
     """Ensure ComponentContextBuilder + MLConfidenceComponent respect action direction."""
 
-    @pytest.mark.parametrize(
-        ("action", "probas", "confidence", "expected_action_conf", "expected_legacy_conf"),
-        [
-            (
-                "SHORT",
-                {"buy": 0.20, "sell": 0.80},
-                {"buy": 0.25, "sell": 0.85},
-                0.85,
-                0.25,
-            ),
-            (
-                "LONG",
-                {"buy": 0.70, "sell": 0.30},
-                {"buy": 0.75, "sell": 0.35},
-                0.75,
-                0.75,
-            ),
-        ],
-    )
-    def test_action_maps_to_directional_confidence(
-        self,
-        action: str,
-        probas: dict[str, float],
-        confidence: dict[str, float],
-        expected_action_conf: float,
-        expected_legacy_conf: float,
-    ):
-        """LONG/SHORT should map to the correct side-specific confidence."""
+    def test_short_action_uses_sell_confidence(self):
+        """SHORT action should map sell-side confidence, not buy-side."""
         from core.strategy.components.context_builder import ComponentContextBuilder
 
-        result = {"action": action, "probas": probas, "confidence": confidence}
+        result = {
+            "action": "SHORT",
+            "probas": {"buy": 0.20, "sell": 0.80},
+            "confidence": {"buy": 0.25, "sell": 0.85},
+        }
         ctx = ComponentContextBuilder.build(result, meta={})
 
-        assert ctx["ml_confidence_for_action"] == expected_action_conf
-        # backward-compat key should still map to LONG side confidence
-        assert ctx["ml_confidence"] == expected_legacy_conf
+        assert ctx["ml_confidence_for_action"] == 0.85, "SHORT should use sell-side confidence"
+        # backward-compat key should still be LONG side
+        assert ctx["ml_confidence"] == 0.25
+
+    def test_long_action_uses_buy_confidence(self):
+        """LONG action should map buy-side confidence."""
+        from core.strategy.components.context_builder import ComponentContextBuilder
+
+        result = {
+            "action": "LONG",
+            "probas": {"buy": 0.70, "sell": 0.30},
+            "confidence": {"buy": 0.75, "sell": 0.35},
+        }
+        ctx = ComponentContextBuilder.build(result, meta={})
+
+        assert ctx["ml_confidence_for_action"] == 0.75
+        assert ctx["ml_confidence"] == 0.75
 
     def test_ml_component_prefers_direction_aware_key(self):
         """MLConfidenceComponent should use ml_confidence_for_action over ml_confidence."""

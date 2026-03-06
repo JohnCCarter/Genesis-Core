@@ -76,3 +76,14 @@
 
 - **Implementation Report**
 - **PR evidence template**
+
+### Gate evidence artifacts
+
+- Ref check: `tmp/candidate4_active_ref_check.txt` (contains command + `exit_code: 1`).
+- Pre-commit: `tmp/candidate4_precommit.txt`
+- Ruff: `tmp/candidate4_ruff.txt`
+- Smoke selector: `tmp/candidate4_smoke.txt`
+- Determinism selector: `tmp/candidate4_determinism.txt`
+- Feature cache selectors: `tmp/candidate4_cache.txt`
+- Pipeline selector: `tmp/candidate4_pipeline.txt`
+- Full pytest: `tmp/pytest_candidate4_full.txt`

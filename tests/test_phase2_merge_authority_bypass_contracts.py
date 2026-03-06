@@ -96,14 +96,13 @@ def test_champion_merge_bypass_contract_backtest_vs_live(monkeypatch) -> None:
 
     captured: dict[str, dict[str, Any]] = {}
 
-    def fake_extract_features_backtest(
-        candles, asof_bar, *, config, timeframe, symbol
-    ):  # noqa: ARG001
+    def fake_extract_features_backtest(candles, asof_bar, *, config, timeframe, symbol):
         _ = (candles, asof_bar, timeframe, symbol)
         captured["backtest"] = config
         return {}, {}
 
-    def fake_extract_features_live(candles, *, config, timeframe, symbol):  # noqa: ARG001
+    def fake_extract_features_live(candles, *, config, timeframe, symbol):
+        _ = (candles, timeframe, symbol)
         captured["live"] = config
         return {}, {}
 

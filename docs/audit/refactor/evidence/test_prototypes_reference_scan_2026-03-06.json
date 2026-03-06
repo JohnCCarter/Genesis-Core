@@ -1,0 +1,196 @@
+{
+  "total_hit_files": 12,
+  "hit_files": [
+    {
+      "file": "docs/audit/refactor/shard_a_breadth_audit_report_2026-03-06.md",
+      "matches": [
+        "archive/test_prototypes"
+      ],
+      "match_count": 1
+    },
+    {
+      "file": "docs/audit/refactor/evidence/shard_a_archive_external_refscan_2026-03-06.json",
+      "matches": [
+        "archive/test_prototypes",
+        "simple_model_test.py",
+        "smoke_test.py",
+        "smoke_test_eth.py",
+        "submit_test.py",
+        "test_1d_current.py",
+        "test_1d_model_only.py",
+        "test_1d_optimizations.py",
+        "test_1h_confidence_50.py",
+        "test_1h_trend_favoring.py",
+        "test_6h_backtest.py",
+        "test_6h_current.py",
+        "test_6h_model_only.py",
+        "test_6h_optimized.py",
+        "test_6h_original_model.py",
+        "test_abort_heuristic.py",
+        "test_backtest_new_models.py",
+        "test_deep_merge.py",
+        "test_exit_fibonacci.py",
+        "test_fibonacci_exits_real_backtest.py",
+        "test_frozen_exit_context.py",
+        "test_htf_exit_engine.py",
+        "test_htf_fibonacci_mapping.py",
+        "test_htf_simple_validation.py",
+        "test_local_keepalive.py",
+        "test_model_on_training_data.py",
+        "test_new_models.py",
+        "test_optimized_configs_v2.py",
+        "test_optuna_cache_reuse.py",
+        "test_partial_exit_infrastructure.py"
+      ],
+      "match_count": 37
+    },
+    {
+      "file": "docs/audit/refactor/evidence/shard_a_archive_external_refscan_final_2026-03-06.json",
+      "matches": [
+        "archive/test_prototypes",
+        "simple_model_test.py",
+        "smoke_test.py",
+        "smoke_test_eth.py",
+        "submit_test.py",
+        "test_1d_current.py",
+        "test_1d_model_only.py",
+        "test_1d_optimizations.py",
+        "test_1h_confidence_50.py",
+        "test_1h_trend_favoring.py",
+        "test_6h_backtest.py",
+        "test_6h_current.py",
+        "test_6h_model_only.py",
+        "test_6h_optimized.py",
+        "test_6h_original_model.py",
+        "test_abort_heuristic.py",
+        "test_backtest_new_models.py",
+        "test_deep_merge.py",
+        "test_exit_fibonacci.py",
+        "test_fibonacci_exits_real_backtest.py",
+        "test_frozen_exit_context.py",
+        "test_htf_exit_engine.py",
+        "test_htf_fibonacci_mapping.py",
+        "test_htf_simple_validation.py",
+        "test_local_keepalive.py",
+        "test_model_on_training_data.py",
+        "test_new_models.py",
+        "test_optimized_configs_v2.py",
+        "test_optuna_cache_reuse.py",
+        "test_partial_exit_infrastructure.py"
+      ],
+      "match_count": 37
+    },
+    {
+      "file": "docs/audit/refactor/evidence/shard_a_archive_external_refscan_final_summary_2026-03-06.json",
+      "matches": [
+        "archive/test_prototypes"
+      ],
+      "match_count": 1
+    },
+    {
+      "file": "docs/audit/refactor/evidence/shard_a_archive_external_refscan_summary_2026-03-06.json",
+      "matches": [
+        "archive/test_prototypes"
+      ],
+      "match_count": 1
+    },
+    {
+      "file": "docs/audit/refactor/evidence/shard_a_breadth_grouping_2026-03-06.json",
+      "matches": [
+        "archive/test_prototypes",
+        "simple_model_test.py",
+        "smoke_test.py",
+        "smoke_test_eth.py",
+        "submit_test.py",
+        "test_1d_current.py",
+        "test_1d_model_only.py",
+        "test_1d_optimizations.py",
+        "test_1h_confidence_50.py",
+        "test_1h_trend_favoring.py",
+        "test_6h_backtest.py",
+        "test_6h_current.py",
+        "test_6h_model_only.py",
+        "test_6h_optimized.py",
+        "test_6h_original_model.py",
+        "test_abort_heuristic.py",
+        "test_backtest_new_models.py",
+        "test_deep_merge.py",
+        "test_exit_fibonacci.py",
+        "test_fibonacci_exits_real_backtest.py",
+        "test_frozen_exit_context.py",
+        "test_htf_exit_engine.py",
+        "test_htf_fibonacci_mapping.py",
+        "test_htf_simple_validation.py",
+        "test_local_keepalive.py",
+        "test_model_on_training_data.py",
+        "test_new_models.py",
+        "test_optimized_configs_v2.py",
+        "test_optuna_cache_reuse.py",
+        "test_partial_exit_infrastructure.py"
+      ],
+      "match_count": 37
+    },
+    {
+      "file": "docs/audit/refactor/evidence/shard_a_breadth_inventory_2026-03-06.json",
+      "matches": [
+        "archive/test_prototypes"
+      ],
+      "match_count": 1
+    },
+    {
+      "file": "docs/audit/refactor/evidence/shard_a_git_history_families_2026-03-06.json",
+      "matches": [
+        "archive/test_prototypes",
+        "scripts/archive/test_prototypes"
+      ],
+      "match_count": 2
+    },
+    {
+      "file": "docs/audit/refactor/evidence/test_prototypes_review_snapshot_2026-03-06.json",
+      "matches": [
+        "test_1d_optimizations.py",
+        "test_6h_backtest.py",
+        "test_6h_current.py",
+        "test_6h_original_model.py",
+        "test_abort_heuristic.py",
+        "test_deep_merge.py",
+        "test_exit_fibonacci.py",
+        "test_fibonacci_exits_real_backtest.py",
+        "test_frozen_exit_context.py",
+        "test_htf_exit_engine.py",
+        "test_htf_fibonacci_mapping.py",
+        "test_static_frozen_exits.py"
+      ],
+      "match_count": 12
+    },
+    {
+      "file": "docs/fibonacci/HTF_FIBONACCI_EXITS_SUMMARY.md",
+      "matches": [
+        "test_htf_exit_engine.py",
+        "test_htf_fibonacci_mapping.py",
+        "test_htf_simple_validation.py",
+        "test_partial_exit_infrastructure.py"
+      ],
+      "match_count": 4
+    },
+    {
+      "file": "docs/optuna/CACHE_REUSE_FIX_20251120.md",
+      "matches": [
+        "test_optuna_cache_reuse.py"
+      ],
+      "match_count": 1
+    },
+    {
+      "file": "src/genesis_core.egg-info/SOURCES.txt",
+      "matches": [
+        "test_exit_fibonacci.py",
+        "test_htf_exit_engine.py"
+      ],
+      "match_count": 2
+    }
+  ],
+  "top_level_counts": {
+    "docs": 11,
+    "src": 1
+  }
+}

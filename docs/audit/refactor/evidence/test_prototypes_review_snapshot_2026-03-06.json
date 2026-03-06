@@ -1,0 +1,41 @@
+{
+  "stats": {
+    "file_count": 36,
+    "subdir_count": 1,
+    "uses_sys_path_hack": 23,
+    "uses_core_imports": 32,
+    "has_main_block": 35,
+    "writes_output_files": 6,
+    "mentions_backtest": 21
+  },
+  "examples": {
+    "sys_path_hack": [
+      "test_6h_original_model.py",
+      "test_abort_heuristic.py",
+      "test_deep_merge.py",
+      "test_exit_fibonacci.py",
+      "test_fibonacci_exits_real_backtest.py",
+      "test_frozen_exit_context.py",
+      "test_htf_exit_engine.py",
+      "test_htf_fibonacci_mapping.py"
+    ],
+    "core_imports": [
+      "test_6h_original_model.py",
+      "test_abort_heuristic.py",
+      "test_deep_merge.py",
+      "test_exit_fibonacci.py",
+      "test_fibonacci_exits_real_backtest.py",
+      "test_frozen_exit_context.py",
+      "test_htf_exit_engine.py",
+      "test_htf_fibonacci_mapping.py"
+    ],
+    "writes_output": [
+      "test_6h_original_model.py",
+      "test_fibonacci_exits_real_backtest.py",
+      "test_static_frozen_exits.py",
+      "test_1d_optimizations.py",
+      "test_6h_backtest.py",
+      "test_6h_current.py"
+    ]
+  }
+}

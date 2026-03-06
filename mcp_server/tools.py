@@ -664,24 +664,6 @@ def _normalize_task_branch(
     return f"{GIT_WORKFLOW_TASK_BRANCH_PREFIX}{date_token}-{slug}"
 
 
-def _normalize_git_pathspecs(pathspecs: list[str] | str | None) -> list[str]:
-    if not pathspecs:
-        return ["."]
-
-    if isinstance(pathspecs, str):
-        pathspecs = [pathspecs]
-
-    cleaned = [p.strip() for p in pathspecs if isinstance(p, str) and p.strip()]
-    if not cleaned:
-        return ["."]
-
-    for pathspec in cleaned:
-        if pathspec.startswith("-"):
-            raise ValueError("pathspec entries must not begin with '-'")
-
-    return cleaned
-
-
 def _build_compare_url(remote_url: str | None, *, base_branch: str, head_branch: str) -> str | None:
     if not remote_url:
         return None
@@ -1180,7 +1162,18 @@ async def git_workflow_operation(
                     "error": "git_add is only allowed on chatgpt/* task branches",
                 }
 
-            normalized_pathspecs = _normalize_git_pathspecs(pathspecs)
+            if not pathspecs:
+                normalized_pathspecs = ["."]
+            else:
+                raw_pathspecs = [pathspecs] if isinstance(pathspecs, str) else pathspecs
+                cleaned = [p.strip() for p in raw_pathspecs if isinstance(p, str) and p.strip()]
+                if not cleaned:
+                    normalized_pathspecs = ["."]
+                else:
+                    for pathspec in cleaned:
+                        if pathspec.startswith("-"):
+                            raise ValueError("pathspec entries must not begin with '-'")
+                    normalized_pathspecs = cleaned
             for pathspec in normalized_pathspecs:
                 if pathspec in {".", "./"}:
                     continue

@@ -112,7 +112,7 @@ class TestInvariantA:
         os.environ["GENESIS_PRECOMPUTE_FEATURES"] = "1"
 
         # Identity hook (no-op)
-        def identity_hook(result, meta, candles):
+        def identity_hook(result, meta, _candles):
             return result, meta
 
         # Run both engines
@@ -141,7 +141,7 @@ class TestInvariantA:
         os.environ["GENESIS_PRECOMPUTE_FEATURES"] = "1"
 
         # Identity hook
-        def identity_hook(result, meta, candles):
+        def identity_hook(result, meta, _candles):
             return result, meta
 
         # Run both engines
@@ -183,7 +183,7 @@ class TestInvariantA:
         os.environ["GENESIS_PRECOMPUTE_FEATURES"] = "1"
 
         # Identity hook
-        def identity_hook(result, meta, candles):
+        def identity_hook(result, meta, _candles):
             return result, meta
 
         # Run both engines

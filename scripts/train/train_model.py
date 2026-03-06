@@ -24,6 +24,31 @@ __all__ = [
     "train_buy_sell_models",
 ]
 
+_FAST_MODEL_KWARGS = {
+    "C": 1.0,
+    "penalty": "l2",
+    "solver": "lbfgs",
+    "max_iter": 1000,
+    "random_state": 42,
+}
+
+
+def _new_fast_logistic_model() -> LogisticRegression:
+    """Build the canonical fast-mode logistic regression model."""
+
+    return LogisticRegression(**_FAST_MODEL_KWARGS)
+
+
+def _evaluate_validation_metrics(
+    model: LogisticRegression,
+    X_val: np.ndarray,
+    y_val: np.ndarray,
+) -> tuple[float, float]:
+    """Return validation log loss and AUC for a fitted binary classifier."""
+
+    pred_proba = model.predict_proba(X_val)[:, 1]
+    return log_loss(y_val, pred_proba), roc_auc_score(y_val, pred_proba)
+
 
 def load_features_and_prices(
     symbol: str, timeframe: str, feature_version: str = "v17"
@@ -129,30 +154,14 @@ def train_buy_sell_models(
     sell_y_val = 1 - y_val
 
     if fast_mode:
-        buy_model = LogisticRegression(
-            C=1.0,
-            penalty="l2",
-            solver="lbfgs",
-            max_iter=1000,
-            random_state=42,
-        )
+        buy_model = _new_fast_logistic_model()
         buy_model.fit(X_train, buy_y_train)
 
-        sell_model = LogisticRegression(
-            C=1.0,
-            penalty="l2",
-            solver="lbfgs",
-            max_iter=1000,
-            random_state=42,
-        )
+        sell_model = _new_fast_logistic_model()
         sell_model.fit(X_train, sell_y_train)
 
-        buy_pred_proba = buy_model.predict_proba(X_val)[:, 1]
-        sell_pred_proba = sell_model.predict_proba(X_val)[:, 1]
-        buy_log_loss_val = log_loss(buy_y_val, buy_pred_proba)
-        sell_log_loss_val = log_loss(sell_y_val, sell_pred_proba)
-        buy_auc = roc_auc_score(buy_y_val, buy_pred_proba)
-        sell_auc = roc_auc_score(sell_y_val, sell_pred_proba)
+        buy_log_loss_val, buy_auc = _evaluate_validation_metrics(buy_model, X_val, buy_y_val)
+        sell_log_loss_val, sell_auc = _evaluate_validation_metrics(sell_model, X_val, sell_y_val)
 
         metrics = {
             "buy_model": {

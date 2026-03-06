@@ -1,0 +1,25 @@
+candidate: candidate9_batch_delete_archive_analysis
+date: 2026-03-07
+branch: feature/refactor-archive-analysis-batch-delete
+base_sha: 17c938e7e8d2e43f2446ce50581f20d81b88b952
+
+name-status:
+M docs/archive/deprecated_2026-02-24/docs/features/INDICATORS_REFERENCE.md
+M docs/archive/deprecated_2026-02-24/docs/validation/ADVANCED_VALIDATION_PRODUCTION.md
+M docs/archive/deprecated_2026-02-24/docs/validation/VALIDATION_CHECKLIST.md
+D scripts/archive/analysis/analyze_feature_importance.py
+D scripts/archive/analysis/analyze_feature_synergy.py
+D scripts/archive/analysis/analyze_permutation_importance.py
+D scripts/archive/analysis/benchmark_optimizations.py
+D scripts/archive/analysis/calculate_ic_metrics.py
+D scripts/archive/analysis/calculate_partial_ic.py
+D scripts/archive/analysis/compare_htf_exits.py
+D scripts/archive/analysis/compare_modes.py
+D scripts/archive/analysis/compare_swing_strategies.py
+D scripts/archive/analysis/fdr_correction.py
+D scripts/archive/analysis/feature_ic_v18.py
+D scripts/archive/analysis/monitor_feature_drift.py
+
+wrapper-status:
+MISSING scripts/archive/deprecated_2026-02/compare_swing_strategies.py
+MISSING scripts/archive/deprecated_2026-02/monitor_feature_drift.py

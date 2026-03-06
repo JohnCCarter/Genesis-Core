@@ -872,11 +872,10 @@ Add 4-7 more features från "Robust Multi-Timeframe Set"
    python scripts/train_model.py --symbol tBTCUSD --timeframe 4h --version v12_4h
    ```
 
-4. **Feature Importance Analysis**
-   ```bash
-   # Se vilka features är verkligen prediktiva
-    python scripts/archive/analysis/analyze_feature_importance.py --symbol tBTCUSD --timeframe 1h
-   ```
+4. **Feature Importance Analysis (historisk referens)**
+    ```text
+    Tidigare archive-skript borttaget i archive-cleanup.
+    ```
 
 ---
 

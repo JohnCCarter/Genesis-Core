@@ -89,6 +89,9 @@ If usage exists -> KEEP or REFACTOR (not DELETE).
 
 Small, atomic commits only. Examples:
 
+- Batch size guideline: **3–10 related deletions per commit**
+- Never mix unrelated cleanup types in the same commit.
+
 - `chore(cleanup): remove dead test helper`
 - `chore(cleanup): merge duplicate fixtures`
 - `chore(cleanup): remove redundant imports in tests`

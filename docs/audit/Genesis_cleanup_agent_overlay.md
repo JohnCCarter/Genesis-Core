@@ -225,6 +225,9 @@ If usage found → **KEEP**
 
 Commits must be **small and atomic**
 
+- Batch size guideline: **3–10 related deletions per commit**
+- Never mix unrelated cleanup types in the same commit.
+
 Examples:
 
 chore(cleanup): remove unused helper functions

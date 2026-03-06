@@ -75,6 +75,7 @@ def test_run_trial_uses_cache(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setenv("GENESIS_FORCE_SHELL", "1")
 
     def fake_exec_backtest(cmd, cwd, env, log_path):
+        _ = (cwd, env)
         call_count["runs"] += 1
         symbol = cmd[cmd.index("--symbol") + 1]
         timeframe = cmd[cmd.index("--timeframe") + 1]

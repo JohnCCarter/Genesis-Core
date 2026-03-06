@@ -526,13 +526,6 @@ async def search_code(query: str, file_pattern: str | None, config: MCPConfig) -
         return {"success": False, "error": f"Error searching code: {str(e)}"}
 
 
-def _build_git_env() -> dict[str, str]:
-    git_env = dict(os.environ)
-    git_env.setdefault("GIT_TERMINAL_PROMPT", "0")
-    git_env.setdefault("GCM_INTERACTIVE", "Never")
-    return git_env
-
-
 def _run_git_command(
     git_exe: str,
     *,
@@ -689,7 +682,9 @@ async def get_git_status(
         timeout_s = max(
             1, min(15, max(1, min(30, int(config.security.execution_timeout_seconds or 5))))
         )
-        git_env = _build_git_env()
+        git_env = dict(os.environ)
+        git_env.setdefault("GIT_TERMINAL_PROMPT", "0")
+        git_env.setdefault("GCM_INTERACTIVE", "Never")
 
         try:
             inside = await _run_git_command_async(
@@ -833,12 +828,16 @@ async def get_git_repo_state(config: MCPConfig) -> dict[str, Any]:
         if not git_exe:
             return {"success": False, "error": "git executable not found on PATH"}
 
+        git_env = dict(os.environ)
+        git_env.setdefault("GIT_TERMINAL_PROMPT", "0")
+        git_env.setdefault("GCM_INTERACTIVE", "Never")
+
         state = await asyncio.to_thread(
             _git_repo_state,
             git_exe=git_exe,
             project_root=get_project_root(),
             timeout_s=max(1, min(30, int(config.security.execution_timeout_seconds or 5))),
-            git_env=_build_git_env(),
+            git_env=git_env,
         )
         return state
     except Exception as e:
@@ -882,7 +881,9 @@ async def git_workflow_operation(
 
     project_root = get_project_root()
     timeout_s = max(1, min(30, int(config.security.execution_timeout_seconds or 5)))
-    git_env = _build_git_env()
+    git_env = dict(os.environ)
+    git_env.setdefault("GIT_TERMINAL_PROMPT", "0")
+    git_env.setdefault("GCM_INTERACTIVE", "Never")
     mutating = operation in GIT_WORKFLOW_MUTATING_OPERATIONS
 
     try:

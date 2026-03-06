@@ -117,7 +117,7 @@ def test_evaluate_invalid_candles_type_returns_invalid_candles_error():
     }
 
 
-def test_public_candles_endpoint_smoke(monkeypatch):
+def test_public_candles_endpoint_smoke():
     from core.server import public_candles as pc
 
     class DummyResp:
@@ -153,7 +153,7 @@ def test_public_candles_endpoint_smoke(monkeypatch):
         srv.get_exchange_client = orig  # type: ignore
 
 
-def test_auth_check_uses_helpers(monkeypatch):
+def test_auth_check_uses_helpers():
     from core.server import auth_check
 
     async def fake_wallets():
@@ -202,7 +202,7 @@ def test_health_returns_503_when_config_read_fails(monkeypatch):
     assert r.json() == {"status": "error", "config_version": None, "config_hash": None}
 
 
-def test_paper_submit_monkeypatched(monkeypatch):
+def test_paper_submit_monkeypatched():
     from core.server import paper_submit
 
     class DummyResp:
@@ -241,7 +241,7 @@ def test_paper_submit_monkeypatched(monkeypatch):
         srv.get_exchange_client = orig_get  # type: ignore
 
 
-def test_paper_submit_invalid_symbol_returns_pinned_payload(monkeypatch):
+def test_paper_submit_invalid_symbol_returns_pinned_payload():
     import asyncio
 
     from core.server import paper_submit

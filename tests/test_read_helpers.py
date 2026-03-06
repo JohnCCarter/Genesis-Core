@@ -4,7 +4,7 @@ from core.io.bitfinex import read_helpers as rh
 
 
 @pytest.mark.asyncio
-async def test_helpers_smoke(monkeypatch):
+async def test_helpers_smoke():
     class DummyResp:
         def __init__(self):
             self.text = "[]"

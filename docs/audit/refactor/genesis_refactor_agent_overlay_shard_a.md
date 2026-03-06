@@ -5,21 +5,26 @@
 - **Shard:** A — Scripts
 - **Phase:** Refactor (post-cleanup)
 - **Allowed edit scope (Scope IN):**
-  - `scripts/**`
-  - `scripts/archive/**`
+  - `scripts/**` (includes archived subpaths under `scripts/`)
 - **Forbidden edit scope (Scope OUT):** all other paths
-- Outside Scope IN you may only do read/search/usage verification.
+- Outside Scope IN you may only:
+  - read files
+  - search code
+  - verify usage
 
 Never perform refactor execution from `master`.
 
 ## Phase Status
 
 - Cleanup phase is **completed and locked**.
+- Refactor baseline for this phase is defined in:
+  - `docs/audit/refactor/hard_rules_refactor.md`
 - Cleanup governance documents are historical records and must remain unchanged:
-  - `docs/audit/hard_rules_cleanup.md`
-  - `docs/audit/Genesis_cleanup_agent_overlay.md`
-  - `docs/audit/genesis_cleanup_agent_overlay_shard_a.md`
+  - `docs/audit/cleanup/hard_rules_cleanup.md`
+  - `docs/audit/cleanup/Genesis_cleanup_agent_overlay.md`
+  - `docs/audit/cleanup/genesis_cleanup_agent_overlay_shard_a.md`
 - This phase focuses on **maintainability improvements** with preserved runtime behavior.
+- Architecture boundaries must remain intact.
 
 ## Mission
 
@@ -43,6 +48,7 @@ SSOT precedence:
 5. Respect architecture boundaries
 6. Fail closed if impact is unclear
 7. Production behavior must not change
+8. Preserve determinism and runtime invariants
 
 ## Shard Scope Map (Unchanged)
 
@@ -57,10 +63,12 @@ This overlay applies to **Shard A** only.
 Primary goals:
 
 - reduce duplication
-- simplify complex logic
-- improve naming and structure
-- consolidate duplicated utilities
+- simplify complex functions
+- improve naming consistency
+- consolidate duplicated implementations and utilities
+- remove unnecessary wrappers
 - improve readability and maintainability
+- simplify control flow where safe
 
 Allowed examples (when behavior parity is preserved):
 
@@ -144,7 +152,9 @@ Example commit prefixes:
 ## Forbidden Actions
 
 - modifying production behavior
+- changing architecture boundaries
 - introducing new architecture layers
+- introducing new abstractions during refactor
 - expanding scope outside shard boundaries
 - mixing feature development into refactor work
 - broad automated rewrites without evidence

@@ -549,10 +549,6 @@ def _redact_remote_url(remote_url: str | None) -> str | None:
     return remote_url
 
 
-def _git_executable() -> str | None:
-    return shutil.which("git")
-
-
 def _run_git_command(
     git_exe: str,
     *,
@@ -737,7 +733,7 @@ async def get_git_status(
 
         project_root = get_project_root()
 
-        git_exe = _git_executable()
+        git_exe = shutil.which("git")
         if not git_exe:
             return {"success": False, "error": "git executable not found on PATH"}
 
@@ -874,7 +870,7 @@ async def get_git_repo_state(config: MCPConfig) -> dict[str, Any]:
         if not config.features.git_integration:
             return {"success": False, "error": "Git integration is disabled"}
 
-        git_exe = _git_executable()
+        git_exe = shutil.which("git")
         if not git_exe:
             return {"success": False, "error": "git executable not found on PATH"}
 
@@ -921,7 +917,7 @@ async def git_workflow_operation(
             ),
         }
 
-    git_exe = _git_executable()
+    git_exe = shutil.which("git")
     if not git_exe:
         return {"success": False, "error": "git executable not found on PATH"}
 

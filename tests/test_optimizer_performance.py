@@ -262,6 +262,7 @@ class TestSuggestParametersPerformance:
             def suggest_float(
                 self, name: str, low: float, high: float, step: float = None, log: bool = False
             ) -> float:
+                _ = (name, high, log)
                 return low + step if step else low
 
         trial = MockTrial()

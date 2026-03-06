@@ -1,6 +1,7 @@
 """Integration tests for ComposableBacktestEngine."""
 
 import os
+from contextlib import suppress
 
 import pandas as pd
 import pytest
@@ -196,11 +197,9 @@ class TestComposableBacktestEngine:
         )
 
         # Even if run fails, pipeline should be restored
-        try:
+        with suppress(Exception):
             engine.load_data()
             engine.run()
-        except Exception:
-            pass  # Ignore errors (data may not exist)
 
         # Check that pipeline is restored
         assert evaluate_module.evaluate_pipeline is original_pipeline

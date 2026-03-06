@@ -27,16 +27,6 @@ class CheckResult:
     detail: str
 
 
-def _parse_systemctl_show_output(text: str) -> dict[str, str]:
-    values: dict[str, str] = {}
-    for line in text.splitlines():
-        if "=" not in line:
-            continue
-        key, value = line.split("=", 1)
-        values[key.strip()] = value.strip()
-    return values
-
-
 def _iter_git_owner_anomalies(git_dir: Path, expected_uid: int, limit: int = 20) -> list[Path]:
     anomalies: list[Path] = []
     for root, dirs, files in os.walk(git_dir):
@@ -132,7 +122,12 @@ def run_preflight(repo_root: Path) -> tuple[int, list[CheckResult]]:
         )
         return 2, results
 
-    svc = _parse_systemctl_show_output(show.stdout)
+    svc: dict[str, str] = {}
+    for line in show.stdout.splitlines():
+        if "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        svc[key.strip()] = value.strip()
     active = svc.get("ActiveState") == "active"
     results.append(CheckResult("PASS" if active else "FAIL", "service-active", str(active)))
 

@@ -19,6 +19,11 @@ except ImportError:
 import core.optimizer.runner as runner
 from core.optimizer.runner import run_optimizer
 
+TEST_SYMBOL = "tTEST"
+TEST_TIMEFRAME = "1h"
+TEST_SNAPSHOT_ID = "tTEST_1h_20240101_20240201_v1"
+TEST_RUN_ID = "run_test"
+
 
 def _nested_level(depth: int, leaf: dict[str, Any]) -> dict[str, Any]:
     node: dict[str, Any] = dict(leaf)
@@ -79,7 +84,7 @@ def _make_fake_ensure_writer(
 def _base_run_meta_payload() -> dict[str, Any]:
     return {
         "git_commit": "abc123",
-        "snapshot_id": "tTEST_1h_20240101_20240201_v1",
+        "snapshot_id": TEST_SNAPSHOT_ID,
     }
 
 
@@ -102,9 +107,9 @@ def _make_optuna_test_config(
 
     return {
         "meta": {
-            "symbol": "tTEST",
-            "timeframe": "1h",
-            "snapshot_id": "tTEST_1h_20240101_20240201_v1",
+            "symbol": TEST_SYMBOL,
+            "timeframe": TEST_TIMEFRAME,
+            "snapshot_id": TEST_SNAPSHOT_ID,
             "runs": runs_cfg,
         },
         "parameters": {
@@ -125,9 +130,9 @@ _OPTUNA_SKIP = pytest.mark.skipif(not runner.OPTUNA_AVAILABLE, reason="Optuna ej
 def search_config_tmp(tmp_path: Path) -> Path:
     config = {
         "meta": {
-            "symbol": "tTEST",
-            "timeframe": "1h",
-            "snapshot_id": "tTEST_1h_20240101_20240201_v1",
+            "symbol": TEST_SYMBOL,
+            "timeframe": TEST_TIMEFRAME,
+            "snapshot_id": TEST_SNAPSHOT_ID,
             "warmup_bars": 50,
             "runs": {
                 "max_trials": 2,
@@ -281,12 +286,12 @@ def test_run_optimizer_updates_champion(
         monkeypatch.setenv("GENESIS_MAX_CONCURRENT", "1")
         manager_instance = _configure_manager(manager_cls)
 
-        results = run_optimizer(search_config_tmp, run_id="run_test")
+        results = run_optimizer(search_config_tmp, run_id=TEST_RUN_ID)
 
         assert len(results) == 2
         manager_instance.write_champion.assert_called_once()
         call_kwargs = manager_instance.write_champion.call_args.kwargs
-        assert call_kwargs["run_id"] == "run_test"
+        assert call_kwargs["run_id"] == TEST_RUN_ID
         assert call_kwargs["candidate"].score == pytest.approx(120.0)
         assert call_kwargs["snapshot_id"] == run_meta_payload["snapshot_id"]
 
@@ -294,9 +299,9 @@ def test_run_optimizer_updates_champion(
 def test_run_optimizer_validation_stage_promotes_validation_best(tmp_path: Path) -> None:
     config = {
         "meta": {
-            "symbol": "tTEST",
-            "timeframe": "1h",
-            "snapshot_id": "tTEST_1h_20240101_20240201_v1",
+            "symbol": TEST_SYMBOL,
+            "timeframe": TEST_TIMEFRAME,
+            "snapshot_id": TEST_SNAPSHOT_ID,
             "warmup_bars": 50,
             "runs": {
                 "max_trials": 2,
@@ -389,7 +394,7 @@ def test_run_optimizer_validation_stage_promotes_validation_best(tmp_path: Path)
     ):
         manager_instance = _configure_manager(manager_cls)
 
-        results = run_optimizer(config_path, run_id="run_test")
+        results = run_optimizer(config_path, run_id=TEST_RUN_ID)
 
         # 2 explore + 2 validation
         assert len(results) == 4
@@ -450,9 +455,9 @@ def test_optimizer_deep_merge_deep_nested_parity_and_immutability() -> None:
 
 def test_build_backtest_cmd_uses_sys_executable_and_module_invocation(tmp_path: Path) -> None:
     trial = runner.TrialConfig(
-        snapshot_id="tTEST_1h_20240101_20240201_v1",
-        symbol="tTEST",
-        timeframe="1h",
+        snapshot_id=TEST_SNAPSHOT_ID,
+        symbol=TEST_SYMBOL,
+        timeframe=TEST_TIMEFRAME,
         warmup_bars=50,
         parameters={},
         start_date="2024-01-01",
@@ -537,7 +542,7 @@ def test_run_optimizer_promotion_negative_cases_do_not_write_champion(
             current=None if current_score is None else MagicMock(score=current_score),
         )
 
-        results = run_optimizer(search_config_tmp, run_id="run_test")
+        results = run_optimizer(search_config_tmp, run_id=TEST_RUN_ID)
 
         assert len(results) == 1
         manager_instance.write_champion.assert_not_called()
@@ -550,9 +555,9 @@ def test_run_trial_uses_scoring_thresholds_from_constraints(
     monkeypatch.delenv("GENESIS_FORCE_SHELL", raising=False)
 
     trial = runner.TrialConfig(
-        snapshot_id="tTEST_1h_20240101_20240201_v1",
-        symbol="tTEST",
-        timeframe="1h",
+        snapshot_id=TEST_SNAPSHOT_ID,
+        symbol=TEST_SYMBOL,
+        timeframe=TEST_TIMEFRAME,
         warmup_bars=1,
         parameters=_entry_conf_params(0.4),
         start_date="2024-01-01",
@@ -603,7 +608,7 @@ def test_run_trial_uses_scoring_thresholds_from_constraints(
     ):
         payload = runner.run_trial(
             trial,
-            run_id="run_test",
+            run_id=TEST_RUN_ID,
             index=1,
             run_dir=tmp_path,
             allow_resume=False,
@@ -622,7 +627,7 @@ def test_run_trial_uses_scoring_thresholds_from_constraints(
 
     # Trial artifacts must be forensically bound to parameters + score_version.
     cfg = json.loads((tmp_path / "trial_001_config.json").read_text(encoding="utf-8"))
-    assert cfg.get("run_id") == "run_test"
+    assert cfg.get("run_id") == TEST_RUN_ID
     assert cfg.get("trial_id") == "trial_001"
     assert cfg.get("parameters") == _entry_conf_params(0.4)
     assert cfg.get("score_version") == "v2"
@@ -664,9 +669,9 @@ def test_run_trial_abort_payload_is_strict_json_and_includes_score_version(
     monkeypatch.delenv("GENESIS_FORCE_SHELL", raising=False)
 
     trial = runner.TrialConfig(
-        snapshot_id="tTEST_1h_20240101_20240201_v1",
-        symbol="tTEST",
-        timeframe="1h",
+        snapshot_id=TEST_SNAPSHOT_ID,
+        symbol=TEST_SYMBOL,
+        timeframe=TEST_TIMEFRAME,
         warmup_bars=1,
         parameters={"thresholds": {"entry_conf_overall": 0.35}},
         start_date="2024-01-01",
@@ -694,7 +699,7 @@ def test_run_trial_abort_payload_is_strict_json_and_includes_score_version(
     ):
         payload = runner.run_trial(
             trial,
-            run_id="run_test",
+            run_id=TEST_RUN_ID,
             index=1,
             run_dir=tmp_path,
             allow_resume=False,
@@ -731,10 +736,10 @@ def test_ensure_run_metadata_mismatch_is_fail_fast(
 
     meta = {
         "snapshot_id": "snap_A",
-        "symbol": "tTEST",
-        "timeframe": "1h",
+        "symbol": TEST_SYMBOL,
+        "timeframe": TEST_TIMEFRAME,
     }
-    run_id = "run_test"
+    run_id = TEST_RUN_ID
 
     # Match everything except snapshot_id (guard should fail-fast).
     (run_dir / "run_meta.json").write_text(
@@ -743,8 +748,8 @@ def test_ensure_run_metadata_mismatch_is_fail_fast(
                 "run_id": run_id,
                 "config_path": str(config_path),
                 "snapshot_id": "snap_B",
-                "symbol": "tTEST",
-                "timeframe": "1h",
+                "symbol": TEST_SYMBOL,
+                "timeframe": TEST_TIMEFRAME,
                 "score_version": "v1",
             }
         ),
@@ -768,10 +773,10 @@ def test_ensure_run_metadata_backfills_missing_fields(
 
     meta = {
         "snapshot_id": "snap_A",
-        "symbol": "tTEST",
-        "timeframe": "1h",
+        "symbol": TEST_SYMBOL,
+        "timeframe": TEST_TIMEFRAME,
     }
-    run_id = "run_test"
+    run_id = TEST_RUN_ID
 
     # Older/partial run_meta.json missing key fields should be backfilled.
     (run_dir / "run_meta.json").write_text(
@@ -784,8 +789,8 @@ def test_ensure_run_metadata_backfills_missing_fields(
     updated = json.loads((run_dir / "run_meta.json").read_text(encoding="utf-8"))
     assert updated.get("run_id") == run_id
     assert updated.get("config_path") == str(config_path)
-    assert updated.get("symbol") == "tTEST"
-    assert updated.get("timeframe") == "1h"
+    assert updated.get("symbol") == TEST_SYMBOL
+    assert updated.get("timeframe") == TEST_TIMEFRAME
     assert updated.get("score_version") == "v2"
     assert updated.get("raw_meta") == meta
     assert updated.get("updated_at")
@@ -889,7 +894,7 @@ def test_run_optimizer_validation_fallback_reads_from_optuna_storage(tmp_path: P
     results_root = _results_root(tmp_path)
     run_meta_payload = {
         "git_commit": "abc123",
-        "snapshot_id": "tTEST_1h_20240101_20240201_v1",
+        "snapshot_id": TEST_SNAPSHOT_ID,
         "optuna": {
             "study_name": "test-study",
             "storage": "sqlite:///dummy.db",

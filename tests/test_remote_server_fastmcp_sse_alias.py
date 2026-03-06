@@ -17,7 +17,7 @@ def test_fastmcp_mode_supports_sse_alias_get_and_post(monkeypatch):
 
     inner_app = Starlette()
 
-    async def mcp_endpoint(request):  # type: ignore[no-untyped-def]
+    async def mcp_endpoint(_request):  # type: ignore[no-untyped-def]
         return PlainTextResponse("OK")
 
     inner_app.add_route("/mcp", mcp_endpoint, methods=["GET", "POST"])

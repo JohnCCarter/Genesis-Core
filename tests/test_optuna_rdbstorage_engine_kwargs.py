@@ -20,6 +20,7 @@ def test_create_optuna_study_injects_sqlite_timeout_engine_kwargs(monkeypatch) -
             failed_trial_callback=None,
             skip_table_creation: bool = False,
         ) -> None:
+            _ = (skip_compatibility_check, failed_trial_callback, skip_table_creation)
             calls["url"] = url
             calls["engine_kwargs"] = engine_kwargs
             calls["heartbeat_interval"] = heartbeat_interval
@@ -68,6 +69,7 @@ def test_create_optuna_study_injects_sqlite_timeout_without_heartbeat(monkeypatc
             failed_trial_callback=None,
             skip_table_creation: bool = False,
         ) -> None:
+            _ = (skip_compatibility_check, failed_trial_callback, skip_table_creation)
             calls["url"] = url
             calls["engine_kwargs"] = engine_kwargs
             calls["heartbeat_interval"] = heartbeat_interval
@@ -116,12 +118,19 @@ def test_create_optuna_study_does_not_inject_timeout_for_non_sqlite(monkeypatch)
             failed_trial_callback=None,
             skip_table_creation: bool = False,
         ) -> None:
+            _ = (
+                skip_compatibility_check,
+                heartbeat_interval,
+                grace_period,
+                failed_trial_callback,
+                skip_table_creation,
+            )
             calls["url"] = url
             calls["engine_kwargs"] = engine_kwargs
 
     monkeypatch.setattr(runner, "RDBStorage", FakeRDBStorage)
 
-    def fake_create_study(**kwargs):
+    def fake_create_study(**_kwargs):
         return object()
 
     monkeypatch.setattr(runner.optuna, "create_study", fake_create_study)

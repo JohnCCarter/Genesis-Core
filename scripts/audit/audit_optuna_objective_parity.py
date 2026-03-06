@@ -28,7 +28,7 @@ if __name__ != "__main__":
 
 def main() -> int:
     print(
-        "[DEPRECATED] scripts/audit_optuna_objective_parity.py moved to scripts/archive/deprecated_2026-02/audit_optuna_objective_parity.py.",
+        "[DEPRECATED] scripts/audit/audit_optuna_objective_parity.py moved to scripts/archive/deprecated_2026-02/audit_optuna_objective_parity.py.",
         file=sys.stderr,
     )
     argv = sys.argv[:]

@@ -3,8 +3,8 @@
 This is a lightweight CI gate for Alternative A (repo SSOT).
 
 Usage:
-  python scripts/validate_registry.py
-    python scripts/validate_registry.py --ci-diff-base origin/master
+    python scripts/validate/validate_registry.py
+        python scripts/validate/validate_registry.py --ci-diff-base origin/master
 
 CI rule (optional): if stable manifest changed vs base, require an audit entry in
 `registry/audit/break_glass.jsonl` that references the commit which changed the stable manifest.

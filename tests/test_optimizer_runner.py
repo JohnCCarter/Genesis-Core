@@ -183,6 +183,18 @@ def _set_score_env_with_run_meta_guard(
     monkeypatch.delenv("GENESIS_ALLOW_RUN_META_MISMATCH", raising=False)
 
 
+def _max_concurrent_env_patch() -> Any:
+    return patch.dict(os.environ, {"GENESIS_MAX_CONCURRENT": "1"})
+
+
+def _results_dir_patch(results_dir: Path) -> Any:
+    return patch("core.optimizer.runner.RESULTS_DIR", results_dir)
+
+
+def _champions_dir_patch(tmp_path: Path) -> Any:
+    return patch("core.strategy.champion_loader.CHAMPIONS_DIR", _champions_dir(tmp_path))
+
+
 _OPTUNA_SKIP = pytest.mark.skipif(not runner.OPTUNA_AVAILABLE, reason="Optuna ej installerat")
 
 
@@ -329,8 +341,8 @@ def test_run_optimizer_updates_champion(
     fake_ensure = _make_fake_ensure_writer(run_meta_payload, _capture_run_dir)
 
     with (
-        patch.dict(os.environ, {"GENESIS_MAX_CONCURRENT": "1"}),
-        patch("core.optimizer.runner.RESULTS_DIR", results_root),
+        _max_concurrent_env_patch(),
+        _results_dir_patch(results_root),
         patch(
             "core.optimizer.runner.expand_parameters",
             return_value=_entry_conf_default_grid(),
@@ -338,7 +350,7 @@ def test_run_optimizer_updates_champion(
         patch("core.optimizer.runner.run_trial", side_effect=fake_run_trial),
         patch("core.optimizer.runner._ensure_run_metadata", side_effect=fake_ensure),
         patch("core.optimizer.runner.ChampionManager") as manager_cls,
-        patch("core.strategy.champion_loader.CHAMPIONS_DIR", _champions_dir(tmp_path)),
+        _champions_dir_patch(tmp_path),
     ):
         monkeypatch.setenv("GENESIS_MAX_CONCURRENT", "1")
         manager_instance = _configure_manager(manager_cls)
@@ -435,8 +447,8 @@ def test_run_optimizer_validation_stage_promotes_validation_best(tmp_path: Path)
     fake_ensure = _make_fake_ensure_writer(run_meta_payload)
 
     with (
-        patch.dict(os.environ, {"GENESIS_MAX_CONCURRENT": "1"}),
-        patch("core.optimizer.runner.RESULTS_DIR", results_root),
+        _max_concurrent_env_patch(),
+        _results_dir_patch(results_root),
         patch(
             "core.optimizer.runner.expand_parameters",
             return_value=_entry_conf_default_grid(),
@@ -444,7 +456,7 @@ def test_run_optimizer_validation_stage_promotes_validation_best(tmp_path: Path)
         patch("core.optimizer.runner.run_trial", side_effect=fake_run_trial),
         patch("core.optimizer.runner._ensure_run_metadata", side_effect=fake_ensure),
         patch("core.optimizer.runner.ChampionManager") as manager_cls,
-        patch("core.strategy.champion_loader.CHAMPIONS_DIR", _champions_dir(tmp_path)),
+        _champions_dir_patch(tmp_path),
     ):
         manager_instance = _configure_manager(manager_cls)
 
@@ -572,8 +584,8 @@ def test_run_optimizer_promotion_negative_cases_do_not_write_champion(
     search_config_tmp.write_text(yaml.safe_dump(cfg), encoding="utf-8")
 
     with (
-        patch.dict(os.environ, {"GENESIS_MAX_CONCURRENT": "1"}),
-        patch("core.optimizer.runner.RESULTS_DIR", results_root),
+        _max_concurrent_env_patch(),
+        _results_dir_patch(results_root),
         patch(
             "core.optimizer.runner.expand_parameters",
             return_value=[_entry_conf_params(0.4)],
@@ -581,7 +593,7 @@ def test_run_optimizer_promotion_negative_cases_do_not_write_champion(
         patch("core.optimizer.runner.run_trial", side_effect=fake_run_trial),
         patch("core.optimizer.runner._ensure_run_metadata", side_effect=fake_ensure),
         patch("core.optimizer.runner.ChampionManager") as manager_cls,
-        patch("core.strategy.champion_loader.CHAMPIONS_DIR", _champions_dir(tmp_path)),
+        _champions_dir_patch(tmp_path),
     ):
         manager_instance = _configure_manager(
             manager_cls,
@@ -825,7 +837,7 @@ def test_run_optimizer_optuna_strategy(tmp_path: Path) -> None:
         }
 
     with (
-        patch("core.optimizer.runner.RESULTS_DIR", tmp_path / "results"),
+        _results_dir_patch(tmp_path / "results"),
         patch("core.optimizer.runner._ensure_run_metadata") as ensure_meta,
         patch("core.optimizer.runner._create_optuna_study") as create_study,
         patch("core.optimizer.runner.run_trial") as mock_run_trial,
@@ -945,7 +957,7 @@ def test_run_optimizer_validation_fallback_reads_from_optuna_storage(tmp_path: P
         }
 
     with (
-        patch("core.optimizer.runner.RESULTS_DIR", results_root),
+        _results_dir_patch(results_root),
         patch("core.optimizer.runner._ensure_run_metadata", side_effect=fake_ensure),
         patch("core.optimizer.runner._run_optuna", return_value=[]),
         patch("optuna.load_study", return_value=study_mock) as load_study,

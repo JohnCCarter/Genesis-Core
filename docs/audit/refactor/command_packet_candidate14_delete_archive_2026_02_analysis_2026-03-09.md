@@ -39,6 +39,8 @@ Inga ändringar i `src/**`, `config/**`, `tests/**` (förutom exekvering), `mcp_
 - Manifest: `docs/audit/refactor/evidence/candidate14_archive_2026_02_analysis_manifest_2026-03-09.txt`
 - Exact-path refcheck JSON: `docs/audit/refactor/evidence/candidate14_archive_2026_02_analysis_exact_path_refcheck_2026-03-09.json`
 - Refcheck TXT summary: `docs/audit/refactor/evidence/candidate14_archive_2026_02_analysis_path_refcheck_2026-03-09.txt`
+- Scope-drift proof: `docs/audit/refactor/evidence/candidate14_post_delete_scope_drift_2026-03-09.txt`
+- Gate transcript: `docs/audit/refactor/evidence/candidate14_gate_transcript_2026-03-09.txt`
 
 ### Skill usage (explicit)
 

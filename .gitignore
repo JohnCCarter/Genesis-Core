@@ -144,8 +144,6 @@ scripts/build/__pycache__/
 *.bak
 *.orig
 .agent-locks/
-tmp/*.txt
-tmp/*.md
 
 # Local env tooling
 .envrc
@@ -221,13 +219,6 @@ results/**/
 # Canary logs (append-only)
 results/evaluation/**/*.jsonl
 results/evaluation/**/*.ndjson
-
-# CI artifacts
-# Keep results documentation and archives
-!results/README.md
-!results/**/README.md
-!results/*.md
-!results/archive/**
 
 # Archived orphaned artifacts (local retention only, do not track in git)
 archive/_orphaned/

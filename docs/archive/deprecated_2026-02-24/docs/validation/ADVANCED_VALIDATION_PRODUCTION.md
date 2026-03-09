@@ -13,15 +13,15 @@
 
 ### ✅ IMPLEMENTERAT (Phase-5)
 
-| Komponent                           | Status  | Fil                                                 | Testad |
-| ----------------------------------- | ------- | --------------------------------------------------- | ------ |
-| Purged WFCV                         | ✅ KLAR | `scripts/validate_purged_wfcv.py`                   | ✅     |
-| Provenance Tracking                 | ✅ KLAR | `src/core/utils/provenance.py`                      | ✅     |
-| Feature Drift (PSI/K-S)             | ✅ KLAR | `scripts/archive/analysis/monitor_feature_drift.py` | ✅     |
-| Overfit Detection (Deflated Sharpe) | ✅ KLAR | `src/core/ml/overfit_detection.py`                  | ✅     |
-| Overfit Detection (PBO)             | ✅ KLAR | `src/core/ml/overfit_detection.py`                  | ✅     |
-| Regime Gates                        | ✅ KLAR | `scripts/validate_regime_gates.py`                  | ✅     |
-| Validation Config                   | ✅ KLAR | `config/validation_config.json`                     | ✅     |
+| Komponent                           | Status  | Fil                                | Testad |
+| ----------------------------------- | ------- | ---------------------------------- | ------ |
+| Purged WFCV                         | ✅ KLAR | `scripts/validate_purged_wfcv.py`  | ✅     |
+| Provenance Tracking                 | ✅ KLAR | `src/core/utils/provenance.py`     | ✅     |
+| Feature Drift (PSI/K-S)             | ✅ KLAR | Historisk implementation           | ✅     |
+| Overfit Detection (Deflated Sharpe) | ✅ KLAR | `src/core/ml/overfit_detection.py` | ✅     |
+| Overfit Detection (PBO)             | ✅ KLAR | `src/core/ml/overfit_detection.py` | ✅     |
+| Regime Gates                        | ✅ KLAR | `scripts/validate_regime_gates.py` | ✅     |
+| Validation Config                   | ✅ KLAR | `config/validation_config.json`    | ✅     |
 
 ### 📝 DOKUMENTERAT (Redo att implementera)
 
@@ -401,12 +401,12 @@ def find_optimal_temperature(val_logits, val_labels):
 
 ## 4. FEATURE & LABEL DRIFT MONITORING
 
-### ✅ STATUS: IMPLEMENTERAT (`scripts/archive/analysis/monitor_feature_drift.py`)
+### ✅ STATUS: IMPLEMENTERAT (historisk implementation)
 
 ### A. Population Stability Index (PSI)
 
 ```python
-# scripts/archive/analysis/monitor_feature_drift.py
+# monitor_feature_drift.py (historisk referens)
 
 def calculate_psi(expected, actual, bins=10):
     """
@@ -2013,7 +2013,7 @@ IMMEDIATE stop trading if:
 1. ✅ **Purged WFCV** - Eliminera data leakage (`scripts/validate_purged_wfcv.py`)
 2. ✅ **Deflated Sharpe + PBO** - Detektera overfit (`src/core/ml/overfit_detection.py`)
 3. ✅ **Probability Calibration** - Redan implementerat! (`core/ml/calibration.py`)
-4. ✅ **Feature/Label Drift** - PSI & K-S monitoring (`scripts/archive/analysis/monitor_feature_drift.py`)
+4. ✅ **Feature/Label Drift** - PSI & K-S monitoring
 5. ✅ **Regime Gates** - Hårda robustness requirements (`scripts/validate_regime_gates.py`)
 6. ✅ **Reproducerbarhet** - Data/config hashar (`src/core/utils/provenance.py`)
 

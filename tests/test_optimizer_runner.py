@@ -203,6 +203,18 @@ def _ensure_run_metadata_side_effect_patch(side_effect: Any) -> Any:
     return patch("core.optimizer.runner._ensure_run_metadata", side_effect=side_effect)
 
 
+def _default_config_patch() -> Any:
+    return patch("core.optimizer.runner._get_default_config", return_value={})
+
+
+def _default_runtime_version_patch() -> Any:
+    return patch("core.optimizer.runner._get_default_runtime_version", return_value=1)
+
+
+def _run_backtest_direct_side_effect_patch(side_effect: Any) -> Any:
+    return patch("core.optimizer.runner._run_backtest_direct", side_effect=side_effect)
+
+
 def _optimizer_test_context(tmp_path: Path) -> tuple[Path, dict[str, Any]]:
     return _results_root(tmp_path), _base_run_meta_payload()
 
@@ -651,10 +663,10 @@ def test_run_trial_uses_scoring_thresholds_from_constraints(
         return (0, "", _backtest_payload(10))
 
     with (
-        patch("core.optimizer.runner._get_default_config", return_value={}),
-        patch("core.optimizer.runner._get_default_runtime_version", return_value=1),
+        _default_config_patch(),
+        _default_runtime_version_patch(),
         patch("core.optimizer.runner._check_abort_heuristic", return_value={"ok": True}),
-        patch("core.optimizer.runner._run_backtest_direct", side_effect=fake_run_backtest_direct),
+        _run_backtest_direct_side_effect_patch(fake_run_backtest_direct),
         patch("core.optimizer.runner.score_backtest", side_effect=fake_score_backtest),
     ):
         payload = runner.run_trial(
@@ -724,9 +736,9 @@ def test_run_trial_abort_payload_is_strict_json_and_includes_score_version(
         return (0, "", _backtest_payload(0, profit_factor=float("inf")))
 
     with (
-        patch("core.optimizer.runner._get_default_config", return_value={}),
-        patch("core.optimizer.runner._get_default_runtime_version", return_value=1),
-        patch("core.optimizer.runner._run_backtest_direct", side_effect=fake_run_backtest_direct),
+        _default_config_patch(),
+        _default_runtime_version_patch(),
+        _run_backtest_direct_side_effect_patch(fake_run_backtest_direct),
     ):
         payload = runner.run_trial(
             trial,

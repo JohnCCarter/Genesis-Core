@@ -1,0 +1,35 @@
+mode=RESEARCH
+candidate=sync_feature_with_master_candidate15
+branch=feature/refactor-scripts-structure-a
+base_sha=c31bc3d9
+merge_commit=4ff54857
+
+pre_skill_evidence:
+- repo_clean_refactor: STOP (skill has no executable steps)
+- python_engineering: STOP (skill has no executable steps)
+
+pre_gates:
+- python -m pre_commit run --all-files: PASS
+- python -m pytest -q tests/test_import_smoke_backtest_optuna.py: PASS
+- python -m pytest -q tests/test_backtest_determinism_smoke.py: PASS
+- python -m pytest -q tests/test_feature_cache.py tests/test_features_asof_cache.py tests/test_features_asof_cache_key_deterministic.py: PASS
+- python -m pytest -q tests/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable: PASS
+
+merge_operation:
+- git merge --no-ff origin/master
+- conflicts resolved with master-first policy for docs-only files:
+  - docs/audit/cleanup/hard_rules_cleanup.md
+  - handoff.md
+
+freeze_mode_check_post_merge:
+- touched config/strategy/champions/**: NO
+- touched .github/workflows/champion-freeze-guard.yml: NO
+- strict_escalation_triggered: NO
+
+post_skill_evidence:
+- repo_clean_refactor: STOP (skill has no executable steps)
+- python_engineering: STOP (skill has no executable steps)
+
+merge_readiness_vs_master:
+- rev-list origin/master...HEAD: left=0 right=33
+- interpretation: branch is fully synced with master and ahead by feature commits only

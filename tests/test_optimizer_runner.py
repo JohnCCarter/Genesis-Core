@@ -195,6 +195,14 @@ def _champions_dir_patch(tmp_path: Path) -> Any:
     return patch("core.strategy.champion_loader.CHAMPIONS_DIR", _champions_dir(tmp_path))
 
 
+def _run_trial_side_effect_patch(side_effect: Any) -> Any:
+    return patch("core.optimizer.runner.run_trial", side_effect=side_effect)
+
+
+def _ensure_run_metadata_side_effect_patch(side_effect: Any) -> Any:
+    return patch("core.optimizer.runner._ensure_run_metadata", side_effect=side_effect)
+
+
 def _optimizer_test_context(tmp_path: Path) -> tuple[Path, dict[str, Any]]:
     return _results_root(tmp_path), _base_run_meta_payload()
 
@@ -354,8 +362,8 @@ def test_run_optimizer_updates_champion(
             "core.optimizer.runner.expand_parameters",
             return_value=_entry_conf_default_grid(),
         ),
-        patch("core.optimizer.runner.run_trial", side_effect=fake_run_trial),
-        patch("core.optimizer.runner._ensure_run_metadata", side_effect=fake_ensure),
+        _run_trial_side_effect_patch(fake_run_trial),
+        _ensure_run_metadata_side_effect_patch(fake_ensure),
         patch("core.optimizer.runner.ChampionManager") as manager_cls,
         _champions_dir_patch(tmp_path),
     ):
@@ -459,8 +467,8 @@ def test_run_optimizer_validation_stage_promotes_validation_best(tmp_path: Path)
             "core.optimizer.runner.expand_parameters",
             return_value=_entry_conf_default_grid(),
         ),
-        patch("core.optimizer.runner.run_trial", side_effect=fake_run_trial),
-        patch("core.optimizer.runner._ensure_run_metadata", side_effect=fake_ensure),
+        _run_trial_side_effect_patch(fake_run_trial),
+        _ensure_run_metadata_side_effect_patch(fake_ensure),
         patch("core.optimizer.runner.ChampionManager") as manager_cls,
         _champions_dir_patch(tmp_path),
     ):
@@ -595,8 +603,8 @@ def test_run_optimizer_promotion_negative_cases_do_not_write_champion(
             "core.optimizer.runner.expand_parameters",
             return_value=[_entry_conf_params(0.4)],
         ),
-        patch("core.optimizer.runner.run_trial", side_effect=fake_run_trial),
-        patch("core.optimizer.runner._ensure_run_metadata", side_effect=fake_ensure),
+        _run_trial_side_effect_patch(fake_run_trial),
+        _ensure_run_metadata_side_effect_patch(fake_ensure),
         patch("core.optimizer.runner.ChampionManager") as manager_cls,
         _champions_dir_patch(tmp_path),
     ):
@@ -963,10 +971,10 @@ def test_run_optimizer_validation_fallback_reads_from_optuna_storage(tmp_path: P
 
     with (
         _results_dir_patch(results_root),
-        patch("core.optimizer.runner._ensure_run_metadata", side_effect=fake_ensure),
+        _ensure_run_metadata_side_effect_patch(fake_ensure),
         patch("core.optimizer.runner._run_optuna", return_value=[]),
         patch("optuna.load_study", return_value=study_mock) as load_study,
-        patch("core.optimizer.runner.run_trial", side_effect=fake_run_trial),
+        _run_trial_side_effect_patch(fake_run_trial),
     ):
         selected = runner._select_top_n_from_optuna_storage(run_meta_payload, top_n=2)
         assert len(selected) == 2

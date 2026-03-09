@@ -97,7 +97,7 @@ UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/optimization/PHASE2D_SUMMARY_2
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/optimization/PHASE3_FINE_TUNING_LOG.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/optimization/PHASE3_FIX_AND_RESULTS_20251121.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/optimization/PHASE3_WIDE_FAIL_ANALYSIS_20251125.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/optimization/run_20251208_140048_summary.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/optimization/run_20251208_140048_summary.md	.md	Deprecated run summary artifact with no active external refs outside archive/audit.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_runtime_snapshot_template.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_summaries/day0_summary_2026-02-04.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_summaries/day2_summary_2026-02-06.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
@@ -108,16 +108,16 @@ UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/paper_trading/dry_run_acceptan
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/paper_trading/phase3_blocker_autotrade_runner_missing_2026-02-04.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/paper_trading/README.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/paper_trading/weekly_metrics.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/performance/IMPROVEMENTS_2025_11_21.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/performance/OPTIMIZATION_20251126.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/performance/OPTIMIZATION_STATUS_20251126.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/performance/IMPROVEMENTS_2025_11_21.md	.md	Deprecated dated performance snapshot with no active external refs outside archive/audit.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/performance/OPTIMIZATION_20251126.md	.md	Deprecated dated optimization snapshot with no active external refs outside archive/audit.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/performance/OPTIMIZATION_STATUS_20251126.md	.md	Deprecated dated optimization status snapshot with no active external refs outside archive/audit.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/performance/OPTUNA_FINAL_REPORT.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/performance/OPTUNA_IMPROVEMENTS_SUMMARY.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/performance/OPTUNA_IMPROVEMENTS_SUMMARY.md	.md	Deprecated summary artifact with no active external refs outside archive/audit.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/performance/OPTUNA_OPTIMIZATIONS.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/performance/performance_analysis.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/performance/performance_analysis.md	.md	Deprecated analysis snapshot with no active external refs outside archive/audit.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/performance/PERFORMANCE_GUIDE.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/performance/performance_optimization_summary.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/performance/PERFORMANCE_OPTIMIZATION_SUMMARY_.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/performance/performance_optimization_summary.md	.md	Deprecated optimization summary snapshot with no active external refs outside archive/audit.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/performance/PERFORMANCE_OPTIMIZATION_SUMMARY_.md	.md	Deprecated duplicate-style summary artifact with no active external refs outside archive/audit.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/PORTING.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/risk/RISK_LOG.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/risk/RISK_MAP_CONFIDENCE_TUNING.md	.md	No explicit external reference outside archive/audit; semantic retention review required.

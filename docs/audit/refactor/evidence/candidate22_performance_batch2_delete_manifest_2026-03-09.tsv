@@ -1,0 +1,9 @@
+candidate	path	ext	reason
+candidate22	docs/archive/deprecated_2026-02-24/docs/performance/IMPROVEMENTS_2025_11_21.md	.md	Deprecated dated performance status snapshot; no external refs outside archive/audit.
+candidate22	docs/archive/deprecated_2026-02-24/docs/performance/OPTIMIZATION_20251126.md	.md	Deprecated dated optimization status snapshot; no external refs outside archive/audit.
+candidate22	docs/archive/deprecated_2026-02-24/docs/performance/OPTIMIZATION_STATUS_20251126.md	.md	Deprecated dated optimization status snapshot; no external refs outside archive/audit.
+candidate22	docs/archive/deprecated_2026-02-24/docs/performance/OPTUNA_IMPROVEMENTS_SUMMARY.md	.md	Deprecated summary artifact; no external refs outside archive/audit.
+candidate22	docs/archive/deprecated_2026-02-24/docs/performance/performance_analysis.md	.md	Deprecated analysis snapshot with no active external references.
+candidate22	docs/archive/deprecated_2026-02-24/docs/performance/performance_optimization_summary.md	.md	Deprecated optimization summary snapshot; no external refs outside archive/audit.
+candidate22	docs/archive/deprecated_2026-02-24/docs/performance/PERFORMANCE_OPTIMIZATION_SUMMARY_.md	.md	Deprecated duplicate-style summary artifact; no external refs outside archive/audit.
+candidate22	docs/archive/deprecated_2026-02-24/docs/optimization/run_20251208_140048_summary.md	.md	Deprecated run summary artifact; no external refs outside archive/audit.

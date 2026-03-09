@@ -1,0 +1,20 @@
+timestamp: 2026-03-09
+branch: feature/docs-archive-review-2026-03-09
+method: exact filename/path scan over text-like files (.md/.py/.json/.yaml/.yml/.toml/.txt/.ps1/.sh/.ini/.cfg)
+
+in_scope_refcheck:
+  PASS_NO_EXTERNAL_HITS:
+    - docs/archive/deprecated_2026-02-24/docs/performance/IMPROVEMENTS_2025_11_21.md
+    - docs/archive/deprecated_2026-02-24/docs/performance/OPTIMIZATION_20251126.md
+    - docs/archive/deprecated_2026-02-24/docs/performance/OPTIMIZATION_STATUS_20251126.md
+    - docs/archive/deprecated_2026-02-24/docs/performance/OPTUNA_IMPROVEMENTS_SUMMARY.md
+    - docs/archive/deprecated_2026-02-24/docs/performance/performance_analysis.md
+    - docs/archive/deprecated_2026-02-24/docs/performance/performance_optimization_summary.md
+    - docs/archive/deprecated_2026-02-24/docs/performance/PERFORMANCE_OPTIMIZATION_SUMMARY_.md
+    - docs/archive/deprecated_2026-02-24/docs/optimization/run_20251208_140048_summary.md
+
+excluded_due_to_external_ref:
+  - path: docs/archive/deprecated_2026-02-24/docs/performance/OPTUNA_OPTIMIZATIONS.md
+    external_hit: docs/optuna/OPTUNA_OPTIMIZATION_ANALYSIS.md
+
+result: PASS_FOR_IN_SCOPE_FILES

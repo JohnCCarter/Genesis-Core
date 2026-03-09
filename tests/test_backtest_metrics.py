@@ -4,8 +4,17 @@ import numpy as np
 import pandas as pd
 
 from core.backtest.metrics import (
+    calculate_backtest_metrics,
     calculate_metrics,
 )
+
+
+def _trades_from_return_series(returns: pd.Series) -> list[dict[str, float]]:
+    return [{"pnl": float(returns.iloc[i]) * 10000} for i in range(len(returns))]
+
+
+def _trades_from_pnl_list(pnl_list: list[float]) -> list[dict[str, float]]:
+    return [{"pnl": pnl} for pnl in pnl_list]
 
 
 def test_calculate_sharpe_positive():
@@ -14,10 +23,8 @@ def test_calculate_sharpe_positive():
     np.random.seed(42)
     returns = pd.Series(np.random.normal(0.005, 0.01, 100))  # Higher mean for stable test
 
-    from core.backtest.metrics import calculate_backtest_metrics
-
     # Create mock trades for testing
-    mock_trades = [{"pnl": float(returns.iloc[i]) * 10000} for i in range(len(returns))]
+    mock_trades = _trades_from_return_series(returns)
     metrics = calculate_backtest_metrics(mock_trades, 10000)
     sharpe = metrics["sharpe_ratio"]
 
@@ -31,10 +38,8 @@ def test_calculate_sharpe_zero_std():
     """Test Sharpe ratio when returns have zero std (edge case)."""
     returns = pd.Series([0.0] * 100)  # No variance
 
-    from core.backtest.metrics import calculate_backtest_metrics
-
     # Create mock trades for testing
-    mock_trades = [{"pnl": float(returns.iloc[i]) * 10000} for i in range(len(returns))]
+    mock_trades = _trades_from_return_series(returns)
     metrics = calculate_backtest_metrics(mock_trades, 10000)
     sharpe = metrics["sharpe_ratio"]
 
@@ -45,10 +50,8 @@ def test_calculate_sharpe_empty():
     """Test Sharpe ratio with empty series."""
     returns = pd.Series([])
 
-    from core.backtest.metrics import calculate_backtest_metrics
-
     # Create mock trades for testing
-    mock_trades = [{"pnl": float(returns.iloc[i]) * 10000} for i in range(len(returns))]
+    mock_trades = _trades_from_return_series(returns)
     metrics = calculate_backtest_metrics(mock_trades, 10000)
     sharpe = metrics["sharpe_ratio"]
 
@@ -60,10 +63,8 @@ def test_calculate_sortino():
     # Mix of positive and negative returns
     returns = pd.Series([0.01, 0.02, -0.01, 0.015, -0.005, 0.01])
 
-    from core.backtest.metrics import calculate_backtest_metrics
-
     # Create mock trades for testing
-    mock_trades = [{"pnl": float(returns.iloc[i]) * 10000} for i in range(len(returns))]
+    mock_trades = _trades_from_return_series(returns)
     metrics = calculate_backtest_metrics(mock_trades, 10000)
     sortino = metrics.get("sortino_ratio", 0.0)
 
@@ -75,10 +76,8 @@ def test_calculate_sortino_no_downside():
     """Test Sortino when there are no negative returns."""
     returns = pd.Series([0.01, 0.02, 0.015, 0.01])  # All positive
 
-    from core.backtest.metrics import calculate_backtest_metrics
-
     # Create mock trades for testing
-    mock_trades = [{"pnl": float(returns.iloc[i]) * 10000} for i in range(len(returns))]
+    mock_trades = _trades_from_return_series(returns)
     metrics = calculate_backtest_metrics(mock_trades, 10000)
     sortino = metrics.get("sortino_ratio", 0.0)
 
@@ -94,10 +93,8 @@ def test_calculate_streaks():
     # Pattern: win, win, loss, win, loss, loss, loss, win
     pnl_list = [10, 5, -3, 8, -2, -4, -1, 6]
 
-    from core.backtest.metrics import calculate_backtest_metrics
-
     # Create mock trades for testing
-    mock_trades = [{"pnl": pnl} for pnl in pnl_list]
+    mock_trades = _trades_from_pnl_list(pnl_list)
     metrics = calculate_backtest_metrics(mock_trades, 10000)
     max_wins = metrics.get("max_winning_streak", 0)
     max_losses = metrics.get("max_losing_streak", 0)
@@ -110,10 +107,8 @@ def test_calculate_streaks_all_wins():
     """Test streaks when all trades are wins."""
     pnl_list = [10, 5, 8, 3]
 
-    from core.backtest.metrics import calculate_backtest_metrics
-
     # Create mock trades for testing
-    mock_trades = [{"pnl": pnl} for pnl in pnl_list]
+    mock_trades = _trades_from_pnl_list(pnl_list)
     metrics = calculate_backtest_metrics(mock_trades, 10000)
     max_wins = metrics.get("max_winning_streak", 0)
     max_losses = metrics.get("max_losing_streak", 0)
@@ -126,10 +121,8 @@ def test_calculate_streaks_empty():
     """Test streaks with empty list."""
     pnl_list = []
 
-    from core.backtest.metrics import calculate_backtest_metrics
-
     # Create mock trades for testing
-    mock_trades = [{"pnl": pnl} for pnl in pnl_list]
+    mock_trades = _trades_from_pnl_list(pnl_list)
     metrics = calculate_backtest_metrics(mock_trades, 10000)
     max_wins = metrics.get("max_winning_streak", 0)
     max_losses = metrics.get("max_losing_streak", 0)

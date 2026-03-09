@@ -21,6 +21,25 @@ from scripts.train.train_model import (
 )
 
 
+def _path_side_effect_factory(temp_path: Path):
+    def path_side_effect(x):
+        if isinstance(x, str):
+            if x.startswith("data/"):
+                return temp_path / x
+            return Path(x)
+        return Path(x)
+
+    return path_side_effect
+
+
+def _prepare_feature_and_candle_dirs(temp_path: Path) -> tuple[Path, Path]:
+    features_dir = temp_path / "data" / "features"
+    candles_dir = temp_path / "data" / "candles"
+    features_dir.mkdir(parents=True)
+    candles_dir.mkdir(parents=True)
+    return features_dir, candles_dir
+
+
 class TestLoadFeaturesAndPrices:
     """Tests for loading features and prices."""
 
@@ -53,24 +72,16 @@ class TestLoadFeaturesAndPrices:
             candles_df.to_parquet(candles_path)
 
             # Create data directory structure
-            data_dir = temp_path / "data" / "features"
-            data_dir.mkdir(parents=True)
-            candles_dir = temp_path / "data" / "candles"
-            candles_dir.mkdir(parents=True)
+            features_dir, candles_dir = _prepare_feature_and_candle_dirs(temp_path)
 
             # Move files to correct locations
-            features_path = data_dir / "tBTCUSD_15m_features.parquet"
+            features_path = features_dir / "tBTCUSD_15m_features.parquet"
             features_df.to_parquet(features_path)
             candles_path = candles_dir / "tBTCUSD_15m.parquet"
             candles_df.to_parquet(candles_path)
 
             # Mock the data directory for both modules
-            def path_side_effect(x):
-                if isinstance(x, str):
-                    if x.startswith("data/"):
-                        return temp_path / x
-                    return Path(x)
-                return Path(x)
+            path_side_effect = _path_side_effect_factory(temp_path)
 
             with (
                 patch("scripts.train.train_model.Path", side_effect=path_side_effect),
@@ -90,12 +101,7 @@ class TestLoadFeaturesAndPrices:
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
 
-            def path_side_effect(x):
-                if isinstance(x, str):
-                    if x.startswith("data/"):
-                        return temp_path / x
-                    return Path(x)
-                return Path(x)
+            path_side_effect = _path_side_effect_factory(temp_path)
 
             with (
                 patch("scripts.train.train_model.Path", side_effect=path_side_effect),
@@ -123,12 +129,7 @@ class TestLoadFeaturesAndPrices:
             features_path = data_dir / "tBTCUSD_15m_features.parquet"
             features_df.to_parquet(features_path)
 
-            def path_side_effect(x):
-                if isinstance(x, str):
-                    if x.startswith("data/"):
-                        return temp_path / x
-                    return Path(x)
-                return Path(x)
+            path_side_effect = _path_side_effect_factory(temp_path)
 
             with (
                 patch("scripts.train.train_model.Path", side_effect=path_side_effect),
@@ -166,11 +167,7 @@ class TestLoadFeaturesAndPrices:
             candles_df.to_parquet(candles_path)
 
             # Create data directory structure
-            data_dir = temp_path / "data"
-            features_dir = data_dir / "features"
-            candles_dir = data_dir / "candles"
-            features_dir.mkdir(parents=True)
-            candles_dir.mkdir(parents=True)
+            features_dir, candles_dir = _prepare_feature_and_candle_dirs(temp_path)
 
             # Move files to correct locations
             features_path = features_dir / "tBTCUSD_15m_features.parquet"
@@ -178,12 +175,7 @@ class TestLoadFeaturesAndPrices:
             features_df.to_parquet(features_path)
             candles_df.to_parquet(candles_path)
 
-            def path_side_effect(x):
-                if isinstance(x, str):
-                    if x.startswith("data/"):
-                        return temp_path / x
-                    return Path(x)
-                return Path(x)
+            path_side_effect = _path_side_effect_factory(temp_path)
 
             with (
                 patch("scripts.train.train_model.Path", side_effect=path_side_effect),
@@ -528,24 +520,16 @@ class TestIntegration:
             candles_df.to_parquet(candles_path)
 
             # Create data directory structure
-            data_dir = temp_path / "data" / "features"
-            data_dir.mkdir(parents=True)
-            candles_dir = temp_path / "data" / "candles"
-            candles_dir.mkdir(parents=True)
+            features_dir, candles_dir = _prepare_feature_and_candle_dirs(temp_path)
 
             # Move files to correct locations
-            features_path = data_dir / "tBTCUSD_15m_features.parquet"
+            features_path = features_dir / "tBTCUSD_15m_features.parquet"
             features_df.to_parquet(features_path)
             candles_path = candles_dir / "tBTCUSD_15m.parquet"
             candles_df.to_parquet(candles_path)
 
             # Mock the data directory for both modules
-            def path_side_effect(x):
-                if isinstance(x, str):
-                    if x.startswith("data/"):
-                        return temp_path / x
-                    return Path(x)
-                return Path(x)
+            path_side_effect = _path_side_effect_factory(temp_path)
 
             with (
                 patch("scripts.train.train_model.Path", side_effect=path_side_effect),

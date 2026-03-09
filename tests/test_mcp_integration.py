@@ -28,6 +28,12 @@ from mcp_server.tools import (
 )
 
 
+def _cp(args: list[str], stdout: str = "", stderr: str = "", returncode: int = 0):
+    return subprocess.CompletedProcess(
+        args=args, returncode=returncode, stdout=stdout, stderr=stderr
+    )
+
+
 @pytest.fixture
 def config():
     """Load test configuration."""
@@ -101,11 +107,6 @@ async def test_resource_workflow(config):
 async def test_get_git_status_tool_fallback_timeout(monkeypatch, config):
     """Tool should not hang if untracked scanning is slow."""
 
-    def _cp(args: list[str], stdout: str = "", stderr: str = "", returncode: int = 0):
-        return subprocess.CompletedProcess(
-            args=args, returncode=returncode, stdout=stdout, stderr=stderr
-        )
-
     def fake_run(args, capture_output, text, check, timeout=None, **kwargs):  # type: ignore[no-untyped-def]
         _ = (capture_output, text, check, kwargs)
         cmd = list(args)[3:]
@@ -150,11 +151,6 @@ async def test_get_git_status_tool_rev_parse_timeout(monkeypatch, config):
 @pytest.mark.asyncio
 async def test_get_git_status_tool_uses_thread_boundary(monkeypatch, config):
     """Git status tool should route blocking git calls via asyncio.to_thread."""
-
-    def _cp(args: list[str], stdout: str = "", stderr: str = "", returncode: int = 0):
-        return subprocess.CompletedProcess(
-            args=args, returncode=returncode, stdout=stdout, stderr=stderr
-        )
 
     thread_calls: list[str] = []
 

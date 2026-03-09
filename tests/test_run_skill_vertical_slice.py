@@ -4,21 +4,25 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 from scripts import run_skill
 
 
-def test_run_skill_stable_vertical_slice_pass(tmp_path: Path) -> None:
+def _run_skill_dry_run(
+    tmp_path: Path, *, skill: str, manifest: str
+) -> subprocess.CompletedProcess[str]:
     repo_root = Path(__file__).resolve().parents[1]
     script = repo_root / "scripts" / "run_skill.py"
 
-    proc = subprocess.run(
+    return subprocess.run(
         [
             sys.executable,
             str(script),
             "--skill",
-            "genesis_backtest_verify",
+            skill,
             "--manifest",
-            "stable",
+            manifest,
             "--dry-run",
             "--audit-file",
             str(tmp_path / "audit.jsonl"),
@@ -29,109 +33,19 @@ def test_run_skill_stable_vertical_slice_pass(tmp_path: Path) -> None:
         check=False,
     )
 
-    assert proc.returncode == 0, proc.stdout + "\n" + proc.stderr
-    assert "[SKILL] PASS" in proc.stdout
 
-
-def test_run_skill_config_authority_lifecycle_check_pass(tmp_path: Path) -> None:
-    repo_root = Path(__file__).resolve().parents[1]
-    script = repo_root / "scripts" / "run_skill.py"
-
-    proc = subprocess.run(
-        [
-            sys.executable,
-            str(script),
-            "--skill",
-            "config_authority_lifecycle_check",
-            "--manifest",
-            "dev",
-            "--dry-run",
-            "--audit-file",
-            str(tmp_path / "audit.jsonl"),
-        ],
-        cwd=repo_root,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-
-    assert proc.returncode == 0, proc.stdout + "\n" + proc.stderr
-    assert "[SKILL] PASS" in proc.stdout
-
-
-def test_run_skill_shadow_error_rate_check_pass(tmp_path: Path) -> None:
-    repo_root = Path(__file__).resolve().parents[1]
-    script = repo_root / "scripts" / "run_skill.py"
-
-    proc = subprocess.run(
-        [
-            sys.executable,
-            str(script),
-            "--skill",
-            "shadow_error_rate_check",
-            "--manifest",
-            "dev",
-            "--dry-run",
-            "--audit-file",
-            str(tmp_path / "audit.jsonl"),
-        ],
-        cwd=repo_root,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-
-    assert proc.returncode == 0, proc.stdout + "\n" + proc.stderr
-    assert "[SKILL] PASS" in proc.stdout
-
-
-def test_run_skill_feature_parity_check_pass(tmp_path: Path) -> None:
-    repo_root = Path(__file__).resolve().parents[1]
-    script = repo_root / "scripts" / "run_skill.py"
-
-    proc = subprocess.run(
-        [
-            sys.executable,
-            str(script),
-            "--skill",
-            "feature_parity_check",
-            "--manifest",
-            "dev",
-            "--dry-run",
-            "--audit-file",
-            str(tmp_path / "audit.jsonl"),
-        ],
-        cwd=repo_root,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-
-    assert proc.returncode == 0, proc.stdout + "\n" + proc.stderr
-    assert "[SKILL] PASS" in proc.stdout
-
-
-def test_run_skill_ri_off_parity_artifact_check_pass(tmp_path: Path) -> None:
-    repo_root = Path(__file__).resolve().parents[1]
-    script = repo_root / "scripts" / "run_skill.py"
-
-    proc = subprocess.run(
-        [
-            sys.executable,
-            str(script),
-            "--skill",
-            "ri_off_parity_artifact_check",
-            "--manifest",
-            "dev",
-            "--dry-run",
-            "--audit-file",
-            str(tmp_path / "audit.jsonl"),
-        ],
-        cwd=repo_root,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+@pytest.mark.parametrize(
+    ("skill", "manifest"),
+    [
+        ("genesis_backtest_verify", "stable"),
+        ("config_authority_lifecycle_check", "dev"),
+        ("shadow_error_rate_check", "dev"),
+        ("feature_parity_check", "dev"),
+        ("ri_off_parity_artifact_check", "dev"),
+    ],
+)
+def test_run_skill_vertical_slice_pass(tmp_path: Path, skill: str, manifest: str) -> None:
+    proc = _run_skill_dry_run(tmp_path, skill=skill, manifest=manifest)
 
     assert proc.returncode == 0, proc.stdout + "\n" + proc.stderr
     assert "[SKILL] PASS" in proc.stdout

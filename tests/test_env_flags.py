@@ -2,25 +2,30 @@ from __future__ import annotations
 
 import importlib
 
+import pytest
+
 from core.strategy import evaluate as evaluate_mod
 from core.utils.env_flags import env_flag_enabled
 
 
-def test_env_flag_enabled_semantics() -> None:
-    assert env_flag_enabled(None, default=False) is False
-    assert env_flag_enabled(None, default=True) is True
-
-    assert env_flag_enabled("", default=False) is False
-    assert env_flag_enabled("   ", default=True) is True
-
-    assert env_flag_enabled("0", default=True) is False
-    assert env_flag_enabled("false", default=True) is False
-    assert env_flag_enabled("off", default=True) is False
-    assert env_flag_enabled("no", default=True) is False
-
-    assert env_flag_enabled("1", default=False) is True
-    assert env_flag_enabled("true", default=False) is True
-    assert env_flag_enabled("YES", default=False) is True
+@pytest.mark.parametrize(
+    ("value", "default", "expected"),
+    [
+        pytest.param(None, False, False, id="none-default-false"),
+        pytest.param(None, True, True, id="none-default-true"),
+        pytest.param("", False, False, id="empty-default-false"),
+        pytest.param("   ", True, True, id="whitespace-default-true"),
+        pytest.param("0", True, False, id="zero-false"),
+        pytest.param("false", True, False, id="false-token"),
+        pytest.param("off", True, False, id="off-token"),
+        pytest.param("no", True, False, id="no-token"),
+        pytest.param("1", False, True, id="one-true"),
+        pytest.param("true", False, True, id="true-token"),
+        pytest.param("YES", False, True, id="yes-token-uppercase"),
+    ],
+)
+def test_env_flag_enabled_semantics(value, default, expected) -> None:
+    assert env_flag_enabled(value, default=default) is expected
 
 
 def test_metrics_disable_flag_parsing(monkeypatch) -> None:

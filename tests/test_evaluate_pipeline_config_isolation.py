@@ -17,10 +17,10 @@ def _minimal_candles() -> dict:
     }
 
 
-def test_evaluate_pipeline_does_not_merge_champion_in_backtest_mode(monkeypatch):
+def _patch_champion_loader(monkeypatch, *, source: str = "dummy"):
     dummy_champion = SimpleNamespace(
         config={"champion_only": {"sentinel": True}, "thresholds": {"entry_conf_overall": 0.11}},
-        source="dummy",
+        source=source,
     )
     monkeypatch.setattr(
         evaluate_mod.champion_loader,
@@ -28,15 +28,8 @@ def test_evaluate_pipeline_does_not_merge_champion_in_backtest_mode(monkeypatch)
         lambda *_args, **_kwargs: dummy_champion,
     )
 
-    captured: dict[str, object] = {}
 
-    def fake_extract_features_backtest(candles, asof_bar, *, config, timeframe, symbol):
-        _ = (candles, timeframe, symbol)
-        captured["config"] = config
-        captured["asof_bar"] = asof_bar
-        return {}, {}
-
-    monkeypatch.setattr(evaluate_mod, "extract_features_backtest", fake_extract_features_backtest)
+def _patch_common_pipeline_stubs(monkeypatch) -> None:
     monkeypatch.setattr(
         evaluate_mod,
         "predict_proba_for",
@@ -55,6 +48,21 @@ def test_evaluate_pipeline_does_not_merge_champion_in_backtest_mode(monkeypatch)
         "decide",
         lambda *_args, **_kwargs: ("NONE", {"versions": {}, "reasons": [], "state_out": {}}),
     )
+
+
+def test_evaluate_pipeline_does_not_merge_champion_in_backtest_mode(monkeypatch):
+    _patch_champion_loader(monkeypatch, source="dummy")
+
+    captured: dict[str, object] = {}
+
+    def fake_extract_features_backtest(candles, asof_bar, *, config, timeframe, symbol):
+        _ = (candles, timeframe, symbol)
+        captured["config"] = config
+        captured["asof_bar"] = asof_bar
+        return {}, {}
+
+    monkeypatch.setattr(evaluate_mod, "extract_features_backtest", fake_extract_features_backtest)
+    _patch_common_pipeline_stubs(monkeypatch)
 
     candles = _minimal_candles()
     configs = {
@@ -79,15 +87,7 @@ def test_evaluate_pipeline_does_not_merge_champion_in_backtest_mode(monkeypatch)
 
 
 def test_evaluate_pipeline_merges_champion_in_live_mode(monkeypatch):
-    dummy_champion = SimpleNamespace(
-        config={"champion_only": {"sentinel": True}, "thresholds": {"entry_conf_overall": 0.11}},
-        source="dummy",
-    )
-    monkeypatch.setattr(
-        evaluate_mod.champion_loader,
-        "load_cached",
-        lambda *_args, **_kwargs: dummy_champion,
-    )
+    _patch_champion_loader(monkeypatch, source="dummy")
 
     captured: dict[str, object] = {}
 
@@ -97,24 +97,7 @@ def test_evaluate_pipeline_merges_champion_in_live_mode(monkeypatch):
         return {}, {}
 
     monkeypatch.setattr(evaluate_mod, "extract_features_live", fake_extract_features_live)
-    monkeypatch.setattr(
-        evaluate_mod,
-        "predict_proba_for",
-        lambda *_args, **_kwargs: ({"buy": 0.6, "sell": 0.4}, {"schema": [], "versions": {}}),
-    )
-    monkeypatch.setattr(
-        evaluate_mod,
-        "compute_confidence",
-        lambda *_args, **_kwargs: (
-            {"buy": 0.6, "sell": 0.4, "overall": 0.6},
-            {"versions": {}},
-        ),
-    )
-    monkeypatch.setattr(
-        evaluate_mod,
-        "decide",
-        lambda *_args, **_kwargs: ("NONE", {"versions": {}, "reasons": [], "state_out": {}}),
-    )
+    _patch_common_pipeline_stubs(monkeypatch)
 
     candles = _minimal_candles()
     configs = {

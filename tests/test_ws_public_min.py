@@ -1,10 +1,17 @@
 import pytest
 
-from core.io.bitfinex.ws_public import one_message_ticker
+from core.io.bitfinex.ws_public import one_message_candles, one_message_ticker
 
 
 @pytest.mark.asyncio
-async def test_ws_public_timeout():
+@pytest.mark.parametrize(
+    "ws_reader",
+    [
+        pytest.param(one_message_ticker, id="ticker"),
+        pytest.param(one_message_candles, id="candles"),
+    ],
+)
+async def test_ws_public_timeout(ws_reader):
     class DummyWS:
         async def recv(self):
             import asyncio
@@ -30,7 +37,7 @@ async def test_ws_public_timeout():
 
     mod.websockets.connect = fake_connect  # type: ignore
     try:
-        out = await one_message_ticker(timeout=0.1)
+        out = await ws_reader(timeout=0.1)
         assert out["ok"] is False and out["error"] == "timeout"
     finally:
         mod.websockets.connect = orig_connect  # type: ignore

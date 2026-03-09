@@ -9,13 +9,17 @@ from core.strategy.model_registry import ModelRegistry
 from core.utils import get_candles_path, is_case_sensitive_directory
 
 
+def _setup_candles_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    monkeypatch.chdir(tmp_path)
+    candles_dir = Path("data/curated/v1/candles")
+    candles_dir.mkdir(parents=True, exist_ok=True)
+    return candles_dir
+
+
 def test_get_candles_path_accepts_1M_and_1mo_aliases(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.chdir(tmp_path)
-
-    candles_dir = Path("data/curated/v1/candles")
-    candles_dir.mkdir(parents=True, exist_ok=True)
+    candles_dir = _setup_candles_dir(tmp_path, monkeypatch)
 
     expected = candles_dir / "tBTCUSD_1mo.parquet"
     expected.write_bytes(b"")
@@ -27,10 +31,7 @@ def test_get_candles_path_accepts_1M_and_1mo_aliases(
 def test_get_candles_path_falls_back_to_legacy_1M_only_on_case_sensitive_fs(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.chdir(tmp_path)
-
-    candles_dir = Path("data/curated/v1/candles")
-    candles_dir.mkdir(parents=True, exist_ok=True)
+    candles_dir = _setup_candles_dir(tmp_path, monkeypatch)
 
     # Only create the legacy/Bitfinex-style filename.
     legacy = candles_dir / "tBTCUSD_1M.parquet"

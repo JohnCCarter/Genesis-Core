@@ -7,15 +7,15 @@ import pandas as pd
 from core.backtest.engine import BacktestEngine
 
 
-def test_precompute_cache_key_changes_with_date_window(monkeypatch) -> None:
-    # Ensure engine init doesn't warn/error due to mixed-mode env.
+def _make_engine(monkeypatch) -> BacktestEngine:
     monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "0")
+    return BacktestEngine(symbol="tBTCUSD", timeframe="1h", warmup_bars=0, fast_window=False)
 
-    engine = BacktestEngine(symbol="tBTCUSD", timeframe="1h", warmup_bars=0, fast_window=False)
 
-    df_a = pd.DataFrame(
+def _sample_ohlcv(start: str) -> pd.DataFrame:
+    return pd.DataFrame(
         {
-            "timestamp": pd.date_range("2024-01-01", periods=10, freq="h"),
+            "timestamp": pd.date_range(start, periods=10, freq="h"),
             "open": [1.0] * 10,
             "high": [1.0] * 10,
             "low": [1.0] * 10,
@@ -23,16 +23,13 @@ def test_precompute_cache_key_changes_with_date_window(monkeypatch) -> None:
             "volume": [1.0] * 10,
         }
     )
-    df_b = pd.DataFrame(
-        {
-            "timestamp": pd.date_range("2024-02-01", periods=10, freq="h"),
-            "open": [1.0] * 10,
-            "high": [1.0] * 10,
-            "low": [1.0] * 10,
-            "close": [1.0] * 10,
-            "volume": [1.0] * 10,
-        }
-    )
+
+
+def test_precompute_cache_key_changes_with_date_window(monkeypatch) -> None:
+    engine = _make_engine(monkeypatch)
+
+    df_a = _sample_ohlcv("2024-01-01")
+    df_b = _sample_ohlcv("2024-02-01")
 
     key_a = engine._precompute_cache_key(df_a)
     key_b = engine._precompute_cache_key(df_b)
@@ -43,19 +40,8 @@ def test_precompute_cache_key_changes_with_date_window(monkeypatch) -> None:
 
 
 def test_precompute_cache_key_legacy_shape_when_config_hash_unset_or_empty(monkeypatch) -> None:
-    monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "0")
-
-    engine = BacktestEngine(symbol="tBTCUSD", timeframe="1h", warmup_bars=0, fast_window=False)
-    df = pd.DataFrame(
-        {
-            "timestamp": pd.date_range("2024-03-01", periods=10, freq="h"),
-            "open": [1.0] * 10,
-            "high": [1.0] * 10,
-            "low": [1.0] * 10,
-            "close": [1.0] * 10,
-            "volume": [1.0] * 10,
-        }
-    )
+    engine = _make_engine(monkeypatch)
+    df = _sample_ohlcv("2024-03-01")
 
     monkeypatch.delenv("GENESIS_PRECOMPUTE_CONFIG_HASH", raising=False)
     key_unset = engine._precompute_cache_key(df)
@@ -70,19 +56,8 @@ def test_precompute_cache_key_legacy_shape_when_config_hash_unset_or_empty(monke
 
 
 def test_precompute_cache_key_changes_with_non_empty_config_hash(monkeypatch) -> None:
-    monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "0")
-
-    engine = BacktestEngine(symbol="tBTCUSD", timeframe="1h", warmup_bars=0, fast_window=False)
-    df = pd.DataFrame(
-        {
-            "timestamp": pd.date_range("2024-03-01", periods=10, freq="h"),
-            "open": [1.0] * 10,
-            "high": [1.0] * 10,
-            "low": [1.0] * 10,
-            "close": [1.0] * 10,
-            "volume": [1.0] * 10,
-        }
-    )
+    engine = _make_engine(monkeypatch)
+    df = _sample_ohlcv("2024-03-01")
 
     monkeypatch.setenv("GENESIS_PRECOMPUTE_CONFIG_HASH", "cfg-A:atr=14")
     key_a = engine._precompute_cache_key(df)

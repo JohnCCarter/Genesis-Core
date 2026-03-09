@@ -64,8 +64,10 @@ These are **candidates only**; final classification requires owner review + usag
 - `tests/backtest/test_backtest_debug_env_flag.py` _(moved in BT5)_
 - `tests/backtest/test_backtest_applies_htf_exit_config.py` _(moved in BT6)_
 
-Guardrail: keep selector-anchored files (`test_backtest_determinism_smoke.py`,
-`test_backtest_hook_invariants.py`) at current paths until dedicated docs/contracts update batch.
+- `tests/backtest/test_backtest_hook_invariants.py` _(moved in BT7)_
+
+Guardrail: keep selector-anchored file `test_backtest_determinism_smoke.py` at current path
+until dedicated docs/contracts update batch.
 
 ## Proposed Target Layout (incremental)
 

@@ -69,6 +69,10 @@ def _entry_conf_params(value: float) -> dict[str, Any]:
     return {"thresholds": {"entry_conf_overall": value}}
 
 
+def _entry_conf_default_grid() -> list[dict[str, Any]]:
+    return [_entry_conf_params(0.4), _entry_conf_params(0.5)]
+
+
 def _ok_constraints() -> dict[str, Any]:
     return {"ok": True, "reasons": []}
 
@@ -165,6 +169,18 @@ def _backtest_payload(num_trades: int, *, profit_factor: float | None = None) ->
         "merged_config": {},
         "runtime_version": 1,
     }
+
+
+def _set_score_env_with_shell(monkeypatch: pytest.MonkeyPatch, *, score_version: str) -> None:
+    monkeypatch.setenv("GENESIS_SCORE_VERSION", score_version)
+    monkeypatch.delenv("GENESIS_FORCE_SHELL", raising=False)
+
+
+def _set_score_env_with_run_meta_guard(
+    monkeypatch: pytest.MonkeyPatch, *, score_version: str
+) -> None:
+    monkeypatch.setenv("GENESIS_SCORE_VERSION", score_version)
+    monkeypatch.delenv("GENESIS_ALLOW_RUN_META_MISMATCH", raising=False)
 
 
 _OPTUNA_SKIP = pytest.mark.skipif(not runner.OPTUNA_AVAILABLE, reason="Optuna ej installerat")
@@ -317,10 +333,7 @@ def test_run_optimizer_updates_champion(
         patch("core.optimizer.runner.RESULTS_DIR", results_root),
         patch(
             "core.optimizer.runner.expand_parameters",
-            return_value=[
-                _entry_conf_params(0.4),
-                _entry_conf_params(0.5),
-            ],
+            return_value=_entry_conf_default_grid(),
         ),
         patch("core.optimizer.runner.run_trial", side_effect=fake_run_trial),
         patch("core.optimizer.runner._ensure_run_metadata", side_effect=fake_ensure),
@@ -426,10 +439,7 @@ def test_run_optimizer_validation_stage_promotes_validation_best(tmp_path: Path)
         patch("core.optimizer.runner.RESULTS_DIR", results_root),
         patch(
             "core.optimizer.runner.expand_parameters",
-            return_value=[
-                _entry_conf_params(0.4),
-                _entry_conf_params(0.5),
-            ],
+            return_value=_entry_conf_default_grid(),
         ),
         patch("core.optimizer.runner.run_trial", side_effect=fake_run_trial),
         patch("core.optimizer.runner._ensure_run_metadata", side_effect=fake_ensure),
@@ -587,8 +597,7 @@ def test_run_optimizer_promotion_negative_cases_do_not_write_champion(
 def test_run_trial_uses_scoring_thresholds_from_constraints(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setenv("GENESIS_SCORE_VERSION", "v2")
-    monkeypatch.delenv("GENESIS_FORCE_SHELL", raising=False)
+    _set_score_env_with_shell(monkeypatch, score_version="v2")
 
     trial = _trial_config(parameters=_entry_conf_params(0.4))
 
@@ -682,8 +691,7 @@ def test_load_existing_trials_warns_on_corrupt_artifact(tmp_path: Path, caplog) 
 def test_run_trial_abort_payload_is_strict_json_and_includes_score_version(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setenv("GENESIS_SCORE_VERSION", "v1")
-    monkeypatch.delenv("GENESIS_FORCE_SHELL", raising=False)
+    _set_score_env_with_shell(monkeypatch, score_version="v1")
 
     trial = _trial_config(parameters={"thresholds": {"entry_conf_overall": 0.35}})
 
@@ -724,8 +732,7 @@ def test_run_trial_abort_payload_is_strict_json_and_includes_score_version(
 def test_ensure_run_metadata_mismatch_is_fail_fast(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setenv("GENESIS_SCORE_VERSION", "v1")
-    monkeypatch.delenv("GENESIS_ALLOW_RUN_META_MISMATCH", raising=False)
+    _set_score_env_with_run_meta_guard(monkeypatch, score_version="v1")
 
     run_dir, config_path, meta, run_id = _prepare_run_meta_test_context(tmp_path)
 
@@ -751,8 +758,7 @@ def test_ensure_run_metadata_mismatch_is_fail_fast(
 def test_ensure_run_metadata_backfills_missing_fields(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setenv("GENESIS_SCORE_VERSION", "v2")
-    monkeypatch.delenv("GENESIS_ALLOW_RUN_META_MISMATCH", raising=False)
+    _set_score_env_with_run_meta_guard(monkeypatch, score_version="v2")
 
     run_dir, config_path, meta, run_id = _prepare_run_meta_test_context(tmp_path)
 

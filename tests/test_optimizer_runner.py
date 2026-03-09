@@ -215,6 +215,14 @@ def _run_backtest_direct_side_effect_patch(side_effect: Any) -> Any:
     return patch("core.optimizer.runner._run_backtest_direct", side_effect=side_effect)
 
 
+def _expand_parameters_patch(values: list[dict[str, Any]]) -> Any:
+    return patch("core.optimizer.runner.expand_parameters", return_value=values)
+
+
+def _champion_manager_patch() -> Any:
+    return patch("core.optimizer.runner.ChampionManager")
+
+
 def _optimizer_test_context(tmp_path: Path) -> tuple[Path, dict[str, Any]]:
     return _results_root(tmp_path), _base_run_meta_payload()
 
@@ -370,13 +378,10 @@ def test_run_optimizer_updates_champion(
     with (
         _max_concurrent_env_patch(),
         _results_dir_patch(results_root),
-        patch(
-            "core.optimizer.runner.expand_parameters",
-            return_value=_entry_conf_default_grid(),
-        ),
+        _expand_parameters_patch(_entry_conf_default_grid()),
         _run_trial_side_effect_patch(fake_run_trial),
         _ensure_run_metadata_side_effect_patch(fake_ensure),
-        patch("core.optimizer.runner.ChampionManager") as manager_cls,
+        _champion_manager_patch() as manager_cls,
         _champions_dir_patch(tmp_path),
     ):
         monkeypatch.setenv("GENESIS_MAX_CONCURRENT", "1")
@@ -475,13 +480,10 @@ def test_run_optimizer_validation_stage_promotes_validation_best(tmp_path: Path)
     with (
         _max_concurrent_env_patch(),
         _results_dir_patch(results_root),
-        patch(
-            "core.optimizer.runner.expand_parameters",
-            return_value=_entry_conf_default_grid(),
-        ),
+        _expand_parameters_patch(_entry_conf_default_grid()),
         _run_trial_side_effect_patch(fake_run_trial),
         _ensure_run_metadata_side_effect_patch(fake_ensure),
-        patch("core.optimizer.runner.ChampionManager") as manager_cls,
+        _champion_manager_patch() as manager_cls,
         _champions_dir_patch(tmp_path),
     ):
         manager_instance = _configure_manager(manager_cls)
@@ -611,13 +613,10 @@ def test_run_optimizer_promotion_negative_cases_do_not_write_champion(
     with (
         _max_concurrent_env_patch(),
         _results_dir_patch(results_root),
-        patch(
-            "core.optimizer.runner.expand_parameters",
-            return_value=[_entry_conf_params(0.4)],
-        ),
+        _expand_parameters_patch([_entry_conf_params(0.4)]),
         _run_trial_side_effect_patch(fake_run_trial),
         _ensure_run_metadata_side_effect_patch(fake_ensure),
-        patch("core.optimizer.runner.ChampionManager") as manager_cls,
+        _champion_manager_patch() as manager_cls,
         _champions_dir_patch(tmp_path),
     ):
         manager_instance = _configure_manager(

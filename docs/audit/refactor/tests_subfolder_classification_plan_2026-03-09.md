@@ -57,8 +57,8 @@ These are **candidates only**; final classification requires owner review + usag
 
 ### Candidate active backtest tests (new bucket)
 
-- `tests/backtest/test_backtest_trade_logger.py` *(moved in BT1)*
-- `tests/test_backtest_metrics.py`
+- `tests/backtest/test_backtest_trade_logger.py` _(moved in BT1)_
+- `tests/backtest/test_backtest_metrics.py` _(moved in BT2)_
 - `tests/test_backtest_position_tracker.py`
 - `tests/test_backtest_entry_reasons.py`
 - `tests/test_backtest_debug_env_flag.py`

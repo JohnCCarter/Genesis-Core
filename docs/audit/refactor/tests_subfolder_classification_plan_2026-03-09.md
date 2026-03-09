@@ -47,7 +47,7 @@ No behavior/runtime code change is intended; this is a structural test-layout mi
 
 ### Candidate experimental / one-off / temporary (manual review required)
 
-- `tests/test_components_poc.py`
+- `tests/experiments/test_components_poc.py` _(moved in Phase 2A batch 1)_
 - `tests/test_composable_strategy_poc.py`
 - `tests/test_e2e_pipeline.py`
 - `tests/test_performance_improvements.py`

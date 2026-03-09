@@ -60,7 +60,7 @@ These are **candidates only**; final classification requires owner review + usag
 - `tests/backtest/test_backtest_trade_logger.py` _(moved in BT1)_
 - `tests/backtest/test_backtest_metrics.py` _(moved in BT2)_
 - `tests/backtest/test_backtest_position_tracker.py` _(moved in BT3)_
-- `tests/test_backtest_entry_reasons.py`
+- `tests/backtest/test_backtest_entry_reasons.py` _(moved in BT4)_
 - `tests/test_backtest_debug_env_flag.py`
 - `tests/test_backtest_applies_htf_exit_config.py`
 

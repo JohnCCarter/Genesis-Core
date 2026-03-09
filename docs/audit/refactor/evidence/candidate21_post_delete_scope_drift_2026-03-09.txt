@@ -1,0 +1,23 @@
+timestamp: 2026-03-09 15:35:51+01:00
+branch: feature/docs-archive-review-2026-03-09
+expected_delete_count: 2
+expected_deletes:
+  docs/archive/deprecated_2026-02-24/docs/performance/feature_caching_optimization.md
+  docs/archive/deprecated_2026-02-24/docs/performance/IMPROVEMENTS_2025_11_25.md
+changed_files:
+  docs/archive/deprecated_2026-02-24/docs/performance/feature_caching_optimization.md
+  docs/archive/deprecated_2026-02-24/docs/performance/IMPROVEMENTS_2025_11_25.md
+  docs/audit/refactor/command_packet_candidate21_delete_docs_archive_performance_pilot_2026-03-09.md
+  docs/audit/refactor/evidence/candidate21_gate_transcript_2026-03-09.md
+  docs/audit/refactor/evidence/candidate21_performance_pilot_delete_manifest_2026-03-09.tsv
+  docs/audit/refactor/evidence/candidate21_performance_pilot_implementation_report_2026-03-09.md
+  docs/audit/refactor/evidence/candidate21_performance_pilot_path_refcheck_2026-03-09.txt
+  docs/audit/refactor/evidence/candidate21_post_delete_scope_drift_2026-03-09.txt
+  docs/audit/refactor/evidence/candidate21_pr_evidence_template_2026-03-09.md
+  docs/audit/refactor/evidence/docs_archive_triage_matrix_2026-03-09.tsv
+  docs/audit/refactor/evidence/docs_archive_triage_performance_pilot_decision_2026-03-09.md
+  docs/audit/refactor/evidence/docs_archive_triage_summary_2026-03-09.txt
+changed_file_count: 12
+delete_coverage: PASS_ALL_EXPECTED_DELETES_REMOVED
+scope_guard: PASS_NO_CHANGES_OUTSIDE_SCOPE_IN
+result: PASS_SCOPE_MATCH

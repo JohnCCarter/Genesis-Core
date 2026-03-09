@@ -1,0 +1,3 @@
+﻿action	path	reason
+DELETE	docs/archive/deprecated_2026-02-24/docs/performance/feature_caching_optimization.md	Deprecated performance pilot doc with no active external refs outside archive/audit.
+DELETE	docs/archive/deprecated_2026-02-24/docs/performance/IMPROVEMENTS_2025_11_25.md	Deprecated performance pilot doc with no active external refs outside archive/audit.

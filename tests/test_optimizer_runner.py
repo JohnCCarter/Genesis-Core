@@ -141,6 +141,32 @@ def _make_optuna_test_config(
     }
 
 
+def _trial_config(*, parameters: dict[str, Any], warmup_bars: int = 1) -> runner.TrialConfig:
+    return runner.TrialConfig(
+        snapshot_id=TEST_SNAPSHOT_ID,
+        symbol=TEST_SYMBOL,
+        timeframe=TEST_TIMEFRAME,
+        warmup_bars=warmup_bars,
+        parameters=parameters,
+        start_date=TEST_START_DATE,
+        end_date=TEST_END_DATE,
+    )
+
+
+def _backtest_payload(num_trades: int, *, profit_factor: float | None = None) -> dict[str, Any]:
+    metrics: dict[str, Any] = {"num_trades": num_trades}
+    if profit_factor is not None:
+        metrics["profit_factor"] = profit_factor
+    return {
+        "summary": {"initial_capital": 10000.0},
+        "trades": [],
+        "equity_curve": [],
+        "metrics": metrics,
+        "merged_config": {},
+        "runtime_version": 1,
+    }
+
+
 _OPTUNA_SKIP = pytest.mark.skipif(not runner.OPTUNA_AVAILABLE, reason="Optuna ej installerat")
 
 
@@ -472,15 +498,7 @@ def test_optimizer_deep_merge_deep_nested_parity_and_immutability() -> None:
 
 
 def test_build_backtest_cmd_uses_sys_executable_and_module_invocation(tmp_path: Path) -> None:
-    trial = runner.TrialConfig(
-        snapshot_id=TEST_SNAPSHOT_ID,
-        symbol=TEST_SYMBOL,
-        timeframe=TEST_TIMEFRAME,
-        warmup_bars=50,
-        parameters={},
-        start_date=TEST_START_DATE,
-        end_date=TEST_END_DATE,
-    )
+    trial = _trial_config(parameters={}, warmup_bars=50)
 
     cmd = runner._build_backtest_cmd(
         trial,
@@ -572,15 +590,7 @@ def test_run_trial_uses_scoring_thresholds_from_constraints(
     monkeypatch.setenv("GENESIS_SCORE_VERSION", "v2")
     monkeypatch.delenv("GENESIS_FORCE_SHELL", raising=False)
 
-    trial = runner.TrialConfig(
-        snapshot_id=TEST_SNAPSHOT_ID,
-        symbol=TEST_SYMBOL,
-        timeframe=TEST_TIMEFRAME,
-        warmup_bars=1,
-        parameters=_entry_conf_params(0.4),
-        start_date=TEST_START_DATE,
-        end_date=TEST_END_DATE,
-    )
+    trial = _trial_config(parameters=_entry_conf_params(0.4))
 
     seen: dict[str, Any] = {}
 
@@ -604,18 +614,7 @@ def test_run_trial_uses_scoring_thresholds_from_constraints(
         }
 
     def fake_run_backtest_direct(*_args: Any, **_kwargs: Any) -> tuple[int, str, dict[str, Any]]:
-        return (
-            0,
-            "",
-            {
-                "summary": {"initial_capital": 10000.0},
-                "trades": [],
-                "equity_curve": [],
-                "metrics": {"num_trades": 10},
-                "merged_config": {},
-                "runtime_version": 1,
-            },
-        )
+        return (0, "", _backtest_payload(10))
 
     with (
         patch("core.optimizer.runner._get_default_config", return_value={}),
@@ -686,29 +685,10 @@ def test_run_trial_abort_payload_is_strict_json_and_includes_score_version(
     monkeypatch.setenv("GENESIS_SCORE_VERSION", "v1")
     monkeypatch.delenv("GENESIS_FORCE_SHELL", raising=False)
 
-    trial = runner.TrialConfig(
-        snapshot_id=TEST_SNAPSHOT_ID,
-        symbol=TEST_SYMBOL,
-        timeframe=TEST_TIMEFRAME,
-        warmup_bars=1,
-        parameters={"thresholds": {"entry_conf_overall": 0.35}},
-        start_date=TEST_START_DATE,
-        end_date=TEST_END_DATE,
-    )
+    trial = _trial_config(parameters={"thresholds": {"entry_conf_overall": 0.35}})
 
     def fake_run_backtest_direct(*_args: Any, **_kwargs: Any) -> tuple[int, str, dict[str, Any]]:
-        return (
-            0,
-            "",
-            {
-                "summary": {"initial_capital": 10000.0},
-                "trades": [],
-                "equity_curve": [],
-                "metrics": {"num_trades": 0, "profit_factor": float("inf")},
-                "merged_config": {},
-                "runtime_version": 1,
-            },
-        )
+        return (0, "", _backtest_payload(0, profit_factor=float("inf")))
 
     with (
         patch("core.optimizer.runner._get_default_config", return_value={}),

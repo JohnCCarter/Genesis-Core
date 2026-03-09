@@ -51,9 +51,21 @@ No behavior/runtime code change is intended; this is a structural test-layout mi
 - `tests/experiments/test_composable_strategy_poc.py` _(moved in Phase 2A batch 2)_
 - `tests/experiments/test_e2e_pipeline.py` _(moved in Phase 2A batch 3A)_
 - `tests/experiments/test_performance_improvements.py` _(moved in Phase 2A batch 3B)_
-- `tests/experiments/test_performance_improvements_2025.py` *(moved in Phase 2A batch 3C)*
+- `tests/experiments/test_performance_improvements_2025.py` _(moved in Phase 2A batch 3C)_
 
 These are **candidates only**; final classification requires owner review + usage check in active docs/contracts.
+
+### Candidate active backtest tests (new bucket)
+
+- `tests/backtest/test_backtest_trade_logger.py` *(moved in BT1)*
+- `tests/test_backtest_metrics.py`
+- `tests/test_backtest_position_tracker.py`
+- `tests/test_backtest_entry_reasons.py`
+- `tests/test_backtest_debug_env_flag.py`
+- `tests/test_backtest_applies_htf_exit_config.py`
+
+Guardrail: keep selector-anchored files (`test_backtest_determinism_smoke.py`,
+`test_backtest_hook_invariants.py`) at current paths until dedicated docs/contracts update batch.
 
 ## Proposed Target Layout (incremental)
 
@@ -100,5 +112,5 @@ If any batch breaks discovery or tooling:
 
 - Classification artifact exists and is reviewed.
 - Path-sensitive reference inventory is documented.
-- No file moves performed yet.
+- Initial low-risk move batches are completed with gate evidence.
 - Phase-2 move checklist is approved before implementation.

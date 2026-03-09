@@ -50,7 +50,7 @@ No behavior/runtime code change is intended; this is a structural test-layout mi
 - `tests/experiments/test_components_poc.py` _(moved in Phase 2A batch 1)_
 - `tests/experiments/test_composable_strategy_poc.py` _(moved in Phase 2A batch 2)_
 - `tests/experiments/test_e2e_pipeline.py` _(moved in Phase 2A batch 3A)_
-- `tests/test_performance_improvements.py`
+- `tests/experiments/test_performance_improvements.py` _(moved in Phase 2A batch 3B)_
 - `tests/test_performance_improvements_2025.py`
 
 These are **candidates only**; final classification requires owner review + usage check in active docs/contracts.

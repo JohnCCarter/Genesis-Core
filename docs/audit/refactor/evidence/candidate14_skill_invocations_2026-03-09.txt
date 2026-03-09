@@ -1,0 +1,14 @@
+candidate=delete_archive_2026_02_analysis_subset
+mode=RESEARCH
+
+command=python scripts/run_skill.py --skill repo_clean_refactor --manifest dev --dry-run
+result=[AUDIT] Triggered: OK
+result=[AUDIT] Verified: STOP
+result=[AUDIT] Result: STOP
+result=[SKILL] STOP: skill has no executable steps
+
+command=python scripts/run_skill.py --skill python_engineering --manifest dev --dry-run
+result=[AUDIT] Triggered: OK
+result=[AUDIT] Verified: STOP
+result=[AUDIT] Result: STOP
+result=[SKILL] STOP: skill has no executable steps

@@ -71,7 +71,7 @@ when shadow observer is active but ignored for decision-path inputs.
 
 1. `pre-commit run --files src/core/strategy/evaluate.py src/core/strategy/regime.py tests/test_evaluate_pipeline.py tests/test_evaluate_regime_precomputed_index.py tests/test_regime.py docs/ideas/REGIME_INTELLIGENCE_T1_CONTRACT_2026-02-26.md`
 2. `pytest -q tests/test_import_smoke_backtest_optuna.py`
-3. `pytest -q tests/test_backtest_determinism_smoke.py`
+3. `pytest -q tests/backtest/test_backtest_determinism_smoke.py`
 4. `pytest -q tests/test_features_asof_cache_key_deterministic.py`
 5. `pytest -q tests/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable`
 
@@ -79,7 +79,7 @@ when shadow observer is active but ignored for decision-path inputs.
 
 1. `pre-commit run --files src/core/strategy/evaluate.py src/core/strategy/regime.py tests/test_evaluate_pipeline.py tests/test_evaluate_regime_precomputed_index.py tests/test_regime.py docs/ideas/REGIME_INTELLIGENCE_T1_CONTRACT_2026-02-26.md`
 2. `pytest -q tests/test_import_smoke_backtest_optuna.py`
-3. `pytest -q tests/test_backtest_determinism_smoke.py`
+3. `pytest -q tests/backtest/test_backtest_determinism_smoke.py`
 4. `pytest -q tests/test_features_asof_cache_key_deterministic.py`
 5. `pytest -q tests/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable`
 6. `pytest -q tests/test_evaluate_pipeline.py tests/test_evaluate_regime_precomputed_index.py tests/test_regime.py`

@@ -68,7 +68,8 @@ These are **candidates only**; final classification requires owner review + usag
 - `tests/backtest/test_backtest_determinism_smoke.py` _(moved in BT8)_
 
 Guardrail: selector-ankrade backtesttester är nu flyttade till `tests/backtest/`.
-Historikharmonisering för äldre docs/contracts (`docs/ideas/REGIME_INTELLIGENCE_T0_*` .. `T8_*`) körs i separat batch.
+Historikharmonisering för `docs/ideas/REGIME_INTELLIGENCE_T0_*` .. `T8_*` är genomförd i BT9-batchen.
+Referenser till `tests/test_backtest_determinism_smoke.py` är uppdaterade till `tests/backtest/test_backtest_determinism_smoke.py`.
 
 ## Proposed Target Layout (incremental)
 

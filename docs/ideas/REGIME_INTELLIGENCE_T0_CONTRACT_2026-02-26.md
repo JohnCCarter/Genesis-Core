@@ -69,7 +69,7 @@ Category: `docs`
 
 1. `pre-commit run --files docs/ideas/REGIME_INTELLIGENCE_DESIGN_2026-02-23.md docs/Genesis-Core-Regime-Intelligence-V1-Design-Document.md docs/ideas/REGIME_INTELLIGENCE_T0_CONTRACT_2026-02-26.md`
 2. `pytest -q tests/test_import_smoke_backtest_optuna.py`
-3. `pytest -q tests/test_backtest_determinism_smoke.py`
+3. `pytest -q tests/backtest/test_backtest_determinism_smoke.py`
 4. `pytest -q tests/test_features_asof_cache_key_deterministic.py`
 5. `pytest -q tests/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable`
 
@@ -77,7 +77,7 @@ Category: `docs`
 
 1. `pre-commit run --files docs/ideas/REGIME_INTELLIGENCE_DESIGN_2026-02-23.md docs/Genesis-Core-Regime-Intelligence-V1-Design-Document.md docs/ideas/REGIME_INTELLIGENCE_T0_CONTRACT_2026-02-26.md`
 2. `pytest -q tests/test_import_smoke_backtest_optuna.py`
-3. `pytest -q tests/test_backtest_determinism_smoke.py`
+3. `pytest -q tests/backtest/test_backtest_determinism_smoke.py`
 4. `pytest -q tests/test_features_asof_cache_key_deterministic.py`
 5. `pytest -q tests/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable`
 

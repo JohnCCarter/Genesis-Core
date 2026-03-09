@@ -12,7 +12,6 @@ import json
 import os
 import pwd
 import subprocess
-from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -27,67 +26,6 @@ class CheckResult:
     detail: str
 
 
-def _run(cmd: list[str]) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        cmd,
-        capture_output=True,
-        text=True,
-        check=False,
-        stdin=subprocess.DEVNULL,
-    )
-
-
-def _parse_systemctl_show_output(text: str) -> dict[str, str]:
-    values: dict[str, str] = {}
-    for line in text.splitlines():
-        if "=" not in line:
-            continue
-        key, value = line.split("=", 1)
-        values[key.strip()] = value.strip()
-    return values
-
-
-def _load_json(path: Path) -> dict:
-    with path.open("r", encoding="utf-8") as handle:
-        return json.load(handle)
-
-
-def _iter_git_owner_anomalies(git_dir: Path, expected_uid: int, limit: int = 20) -> list[Path]:
-    anomalies: list[Path] = []
-    for root, dirs, files in os.walk(git_dir):
-        root_path = Path(root)
-        for entry_name in [*dirs, *files]:
-            entry = root_path / entry_name
-            try:
-                if entry.lstat().st_uid != expected_uid:
-                    anomalies.append(entry)
-                    if len(anomalies) >= limit:
-                        return anomalies
-            except OSError:
-                continue
-    return anomalies
-
-
-def _read_proc_environ(pid: int) -> dict[str, str]:
-    env_path = Path(f"/proc/{pid}/environ")
-    raw = env_path.read_bytes().split(b"\x00")
-    env: dict[str, str] = {}
-    for item in raw:
-        if not item or b"=" not in item:
-            continue
-        key_b, value_b = item.split(b"=", 1)
-        env[key_b.decode("utf-8", errors="ignore")] = value_b.decode("utf-8", errors="ignore")
-    return env
-
-
-def _mask(value: str | None) -> str:
-    if not value:
-        return "<missing>"
-    if len(value) <= 8:
-        return "<set>"
-    return f"<set len={len(value)}>"
-
-
 def run_preflight(repo_root: Path) -> tuple[int, list[CheckResult]]:
     results: list[CheckResult] = []
 
@@ -97,7 +35,8 @@ def run_preflight(repo_root: Path) -> tuple[int, list[CheckResult]]:
         return 2, results
 
     try:
-        cfg = _load_json(config_path)
+        with config_path.open("r", encoding="utf-8") as handle:
+            cfg = json.load(handle)
     except Exception as exc:  # noqa: BLE001
         results.append(CheckResult("FAIL", "config-json", f"Invalid JSON: {exc}"))
         return 2, results
@@ -128,7 +67,7 @@ def run_preflight(repo_root: Path) -> tuple[int, list[CheckResult]]:
             CheckResult("WARN", "config-max-file-size", f"max_file_size_mb={max_file_size}")
         )
 
-    show = _run(
+    show = subprocess.run(
         [
             "systemctl",
             "--no-pager",
@@ -142,7 +81,11 @@ def run_preflight(repo_root: Path) -> tuple[int, list[CheckResult]]:
             "WorkingDirectory",
             "-p",
             "ExecStart",
-        ]
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+        stdin=subprocess.DEVNULL,
     )
     if show.returncode != 0:
         results.append(
@@ -150,7 +93,12 @@ def run_preflight(repo_root: Path) -> tuple[int, list[CheckResult]]:
         )
         return 2, results
 
-    svc = _parse_systemctl_show_output(show.stdout)
+    svc: dict[str, str] = {}
+    for line in show.stdout.splitlines():
+        if "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        svc[key.strip()] = value.strip()
     active = svc.get("ActiveState") == "active"
     results.append(CheckResult("PASS" if active else "FAIL", "service-active", str(active)))
 
@@ -182,7 +130,14 @@ def run_preflight(repo_root: Path) -> tuple[int, list[CheckResult]]:
         return 2, results
 
     try:
-        env = _read_proc_environ(pid)
+        env_path = Path(f"/proc/{pid}/environ")
+        raw = env_path.read_bytes().split(b"\x00")
+        env: dict[str, str] = {}
+        for item in raw:
+            if not item or b"=" not in item:
+                continue
+            key_b, value_b = item.split(b"=", 1)
+            env[key_b.decode("utf-8", errors="ignore")] = value_b.decode("utf-8", errors="ignore")
     except Exception as exc:  # noqa: BLE001
         results.append(CheckResult("FAIL", "proc-environ", str(exc)))
         return 2, results
@@ -223,7 +178,11 @@ def run_preflight(repo_root: Path) -> tuple[int, list[CheckResult]]:
         CheckResult(
             "PASS" if token_ok else "FAIL",
             "env-remote-token",
-            _mask(token),
+            (
+                "<missing>"
+                if not token
+                else ("<set>" if len(token) <= 8 else f"<set len={len(token)}>")
+            ),
         )
     )
 
@@ -239,7 +198,21 @@ def run_preflight(repo_root: Path) -> tuple[int, list[CheckResult]]:
 
     current_uid = os.getuid()
     owner_name = pwd.getpwuid(current_uid).pw_name
-    anomalies = _iter_git_owner_anomalies(git_dir, expected_uid=current_uid, limit=20)
+    anomalies: list[Path] = []
+    limit = 20
+    for root, dirs, files in os.walk(git_dir):
+        root_path = Path(root)
+        for entry_name in [*dirs, *files]:
+            entry = root_path / entry_name
+            try:
+                if entry.lstat().st_uid != current_uid:
+                    anomalies.append(entry)
+                    if len(anomalies) >= limit:
+                        break
+            except OSError:
+                continue
+        if len(anomalies) >= limit:
+            break
     if anomalies:
         sample = ", ".join(str(p.relative_to(repo_root)) for p in anomalies[:5])
         results.append(
@@ -265,7 +238,9 @@ def run_preflight(repo_root: Path) -> tuple[int, list[CheckResult]]:
     return exit_code, results
 
 
-def _print_results(results: Iterable[CheckResult], exit_code: int) -> None:
+def main() -> int:
+    repo_root = Path(__file__).resolve().parents[1]
+    exit_code, results = run_preflight(repo_root)
     print("=" * 72)
     print("Genesis MCP Session Preflight")
     print("=" * 72)
@@ -285,12 +260,6 @@ def _print_results(results: Iterable[CheckResult], exit_code: int) -> None:
     else:
         print("PRECHECK RESULT: BLOCKED (critical failures found)")
     print("=" * 72)
-
-
-def main() -> int:
-    repo_root = Path(__file__).resolve().parents[1]
-    exit_code, results = run_preflight(repo_root)
-    _print_results(results, exit_code)
     return exit_code
 
 

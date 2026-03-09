@@ -85,6 +85,68 @@ async def test_create_task_branch_from_base_branch(git_repo: Path) -> None:
 
 
 @pytest.mark.asyncio
+async def test_create_task_branch_rejects_slug_without_alnum(git_repo: Path) -> None:
+    config = _test_config()
+
+    result = await git_workflow_operation(
+        "create_task_branch",
+        config,
+        dry_run=True,
+        task_slug="---!!!---",
+        date_utc="20260219",
+    )
+
+    assert result["success"] is False
+    assert result["operation"] == "create_task_branch"
+    assert result["error"] == "task_slug must include at least one alphanumeric character"
+
+
+@pytest.mark.asyncio
+async def test_create_task_branch_rejects_invalid_date_format(git_repo: Path) -> None:
+    config = _test_config()
+
+    result = await git_workflow_operation(
+        "create_task_branch",
+        config,
+        dry_run=True,
+        task_slug="valid-slug",
+        date_utc="2026-02-19",
+    )
+
+    assert result["success"] is False
+    assert result["operation"] == "create_task_branch"
+    assert result["error"] == "date_utc must use YYYYMMDD format"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("input_limit", "expected_limit"),
+    [
+        (None, 20),
+        (0, 1),
+        (201, 200),
+        (20, 20),
+    ],
+)
+async def test_git_log_dry_run_normalizes_log_limit(
+    git_repo: Path, input_limit: int | None, expected_limit: int
+) -> None:
+    config = _test_config()
+
+    result = await git_workflow_operation(
+        "git_log",
+        config,
+        dry_run=True,
+        log_limit=input_limit,
+    )
+
+    assert result["success"] is True
+    assert result["preview"] is True
+    assert result["normalized_args"]["log_limit"] == expected_limit
+    assert result["commands"][0] == ["git", "log", "--oneline", f"-n{expected_limit}"]
+
+
+@pytest.mark.asyncio
 async def test_push_to_protected_branch_is_blocked(git_repo: Path) -> None:
     config = _test_config()
     _git(git_repo, "checkout", "feature/composable-strategy-phase2")
@@ -241,3 +303,37 @@ async def test_create_pr_with_gh_uses_thread_boundary(
     assert res["created"] is True
     assert res["pr_url"] == "https://example.invalid/pr/1"
     assert any(func is fake_run for func in thread_funcs)
+
+
+@pytest.mark.parametrize(
+    ("remote_url", "expected_base"),
+    [
+        (
+            "https://github.com/JohnCCarter/Genesis-Core.git",
+            "https://github.com/JohnCCarter/Genesis-Core",
+        ),
+        (
+            "git@github.com:JohnCCarter/Genesis-Core.git",
+            "https://github.com/JohnCCarter/Genesis-Core",
+        ),
+        (None, None),
+        ("file:///tmp/origin.git", None),
+    ],
+)
+def test_build_compare_url_normalizes_supported_and_invalid_remotes(
+    remote_url: str | None, expected_base: str | None
+) -> None:
+    url = tools_mod._build_compare_url(  # noqa: SLF001 - internal helper parity contract
+        remote_url,
+        base_branch="feature/composable-strategy-phase2",
+        head_branch="chatgpt/20260219-task",
+    )
+
+    if expected_base is None:
+        assert url is None
+        return
+
+    assert url is not None
+    assert url.startswith(expected_base + "/compare/")
+    assert "feature%2Fcomposable-strategy-phase2" in url
+    assert "chatgpt%2F20260219-task" in url

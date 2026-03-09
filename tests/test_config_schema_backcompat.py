@@ -40,6 +40,18 @@ def test_validate_accepts_scalar_top_level_regime_proba() -> None:
     assert cfg.thresholds.regime_proba == 0.5
 
 
+def test_validate_top_level_regime_proba_none_uses_balanced_default() -> None:
+    proposal = {
+        "thresholds": {
+            "entry_conf_overall": 0.3,
+            "regime_proba": None,
+        }
+    }
+
+    cfg = ConfigAuthority().validate(proposal)
+    assert cfg.thresholds.regime_proba == {"balanced": 0.58}
+
+
 def test_fib_entry_missing_policy_defaults_to_pass_for_backcompat() -> None:
     """Back-compat: older champions/configs omitted fib.entry.missing_policy.
 

@@ -19,7 +19,7 @@ from typing import Any
 from urllib.parse import quote, urlsplit, urlunsplit
 
 from .config import MCPConfig, get_project_root
-from .utils import check_file_size, is_safe_path, sanitize_code
+from .utils import is_safe_path, sanitize_code
 
 logger = logging.getLogger(__name__)
 
@@ -81,9 +81,18 @@ async def read_file(file_path: str, config: MCPConfig) -> dict[str, Any]:
             return {"success": False, "error": f"Path is not a file: {file_path}"}
 
         # Check file size
-        is_valid_size, size_error = check_file_size(path_obj, config)
-        if not is_valid_size:
-            return {"success": False, "error": size_error}
+        try:
+            size_mb = path_obj.stat().st_size / (1024 * 1024)
+            max_size = config.security.max_file_size_mb
+
+            if size_mb > max_size:
+                return {
+                    "success": False,
+                    "error": f"File size {size_mb:.2f}MB exceeds limit of {max_size}MB",
+                }
+        except Exception as e:
+            logger.error(f"Error checking file size for {path_obj}: {e}")
+            return {"success": False, "error": f"Error checking file size: {str(e)}"}
 
         # Read file content (no external deps; avoid aiofiles requirement)
         content = await asyncio.to_thread(path_obj.read_text, encoding="utf-8")
@@ -333,27 +342,34 @@ async def get_project_structure(config: MCPConfig) -> dict[str, Any]:
             allowed_dir_roots = [p for p in allowed_roots if p.is_dir()]
             allowed_file_roots = [p for p in allowed_roots if p.is_file()]
 
-            # Keep only top-most allowed directories (avoid duplicating nested roots).
-            def _is_within(child: Path, parent: Path) -> bool:
-                try:
-                    child.relative_to(parent)
-                    return True
-                except Exception:
-                    return False
-
             minimal_dir_roots: list[Path] = []
             for candidate in allowed_dir_roots:
-                if any(
-                    candidate != parent and _is_within(candidate, parent)
-                    for parent in allowed_dir_roots
-                ):
+                candidate_has_parent = False
+                for parent in allowed_dir_roots:
+                    if candidate == parent:
+                        continue
+                    try:
+                        candidate.relative_to(parent)
+                        candidate_has_parent = True
+                        break
+                    except Exception:
+                        continue
+                if candidate_has_parent:
                     continue
                 minimal_dir_roots.append(candidate)
 
             # Keep only allowed files not already covered by an allowed directory root.
             minimal_file_roots: list[Path] = []
             for f in allowed_file_roots:
-                if any(_is_within(f, d) for d in minimal_dir_roots):
+                file_is_covered = False
+                for d in minimal_dir_roots:
+                    try:
+                        f.relative_to(d)
+                        file_is_covered = True
+                        break
+                    except Exception:
+                        continue
+                if file_is_covered:
                     continue
                 minimal_file_roots.append(f)
 
@@ -517,38 +533,6 @@ async def search_code(query: str, file_pattern: str | None, config: MCPConfig) -
         return {"success": False, "error": f"Error searching code: {str(e)}"}
 
 
-def _git_timeout_seconds(config: MCPConfig) -> int:
-    timeout_s = int(config.security.execution_timeout_seconds or 5)
-    return max(1, min(30, timeout_s))
-
-
-def _build_git_env() -> dict[str, str]:
-    git_env = dict(os.environ)
-    git_env.setdefault("GIT_TERMINAL_PROMPT", "0")
-    git_env.setdefault("GCM_INTERACTIVE", "Never")
-    return git_env
-
-
-def _redact_remote_url(remote_url: str | None) -> str | None:
-    if not remote_url or "://" not in remote_url:
-        return remote_url
-
-    try:
-        parts = urlsplit(remote_url)
-        netloc = parts.netloc
-        if "@" in netloc:
-            netloc = netloc.split("@", 1)[1]
-            return urlunsplit((parts.scheme, netloc, parts.path, parts.query, parts.fragment))
-    except Exception:
-        pass
-
-    return remote_url
-
-
-def _git_executable() -> str | None:
-    return shutil.which("git")
-
-
 def _run_git_command(
     git_exe: str,
     *,
@@ -586,153 +570,7 @@ async def _run_git_command_async(
     )
 
 
-def _git_repo_state(
-    *,
-    git_exe: str,
-    project_root: Path,
-    timeout_s: int,
-    git_env: dict[str, str],
-) -> dict[str, Any]:
-    inside = _run_git_command(
-        git_exe,
-        project_root=project_root,
-        args=["rev-parse", "--is-inside-work-tree"],
-        timeout_s=timeout_s,
-        git_env=git_env,
-    )
-    if inside.returncode != 0 or inside.stdout.strip().lower() != "true":
-        return {"success": False, "error": "Not a git repository"}
-
-    branch_res = _run_git_command(
-        git_exe,
-        project_root=project_root,
-        args=["rev-parse", "--abbrev-ref", "HEAD"],
-        timeout_s=timeout_s,
-        git_env=git_env,
-    )
-    if branch_res.returncode != 0:
-        return {"success": False, "error": "Unable to resolve current git branch"}
-
-    head_res = _run_git_command(
-        git_exe,
-        project_root=project_root,
-        args=["rev-parse", "HEAD"],
-        timeout_s=timeout_s,
-        git_env=git_env,
-    )
-    if head_res.returncode != 0:
-        return {"success": False, "error": "Unable to resolve HEAD commit"}
-
-    remote_res = _run_git_command(
-        git_exe,
-        project_root=project_root,
-        args=["config", "--get", "remote.origin.url"],
-        timeout_s=timeout_s,
-        git_env=git_env,
-    )
-    remote_url = _redact_remote_url(remote_res.stdout.strip() or None)
-
-    return {
-        "success": True,
-        "branch": branch_res.stdout.strip() or "HEAD",
-        "head_sha": head_res.stdout.strip(),
-        "remote_url": remote_url,
-    }
-
-
-async def _git_repo_state_async(
-    *,
-    git_exe: str,
-    project_root: Path,
-    timeout_s: int,
-    git_env: dict[str, str],
-) -> dict[str, Any]:
-    return await asyncio.to_thread(
-        _git_repo_state,
-        git_exe=git_exe,
-        project_root=project_root,
-        timeout_s=timeout_s,
-        git_env=git_env,
-    )
-
-
-async def _run_subprocess_command_async(
-    *,
-    args: list[str],
-    timeout_s: int,
-    env: dict[str, str],
-    cwd: Path,
-) -> subprocess.CompletedProcess[str]:
-    return await asyncio.to_thread(
-        subprocess.run,
-        args,
-        capture_output=True,
-        text=True,
-        check=False,
-        timeout=timeout_s,
-        stdin=subprocess.DEVNULL,
-        env=env,
-        cwd=str(cwd),
-    )
-
-
-def _sanitize_task_slug(task_slug: str) -> str:
-    normalized = re.sub(r"[^a-z0-9]+", "-", task_slug.strip().lower()).strip("-")
-    return normalized
-
-
-def _normalize_task_branch(
-    *, task_slug: str | None, task_branch: str | None, date_utc: str | None
-) -> str:
-    if task_branch:
-        return task_branch.strip()
-
-    if not task_slug:
-        raise ValueError("task_slug is required when task_branch is not provided")
-
-    slug = _sanitize_task_slug(task_slug)
-    if not slug:
-        raise ValueError("task_slug must include at least one alphanumeric character")
-
-    if date_utc:
-        try:
-            date_token = dt.datetime.strptime(date_utc, "%Y%m%d").strftime("%Y%m%d")
-        except ValueError as exc:
-            raise ValueError("date_utc must use YYYYMMDD format") from exc
-    else:
-        date_token = dt.datetime.now(dt.UTC).strftime("%Y%m%d")
-
-    return f"{GIT_WORKFLOW_TASK_BRANCH_PREFIX}{date_token}-{slug}"
-
-
-def _is_task_branch(branch_name: str) -> bool:
-    return branch_name.startswith(GIT_WORKFLOW_TASK_BRANCH_PREFIX)
-
-
-def _normalize_git_pathspecs(pathspecs: list[str] | str | None) -> list[str]:
-    if not pathspecs:
-        return ["."]
-
-    if isinstance(pathspecs, str):
-        pathspecs = [pathspecs]
-
-    cleaned = [p.strip() for p in pathspecs if isinstance(p, str) and p.strip()]
-    if not cleaned:
-        return ["."]
-
-    for pathspec in cleaned:
-        if pathspec.startswith("-"):
-            raise ValueError("pathspec entries must not begin with '-'")
-
-    return cleaned
-
-
-def _normalize_log_limit(limit: int | None) -> int:
-    raw = 20 if limit is None else int(limit)
-    return max(1, min(200, raw))
-
-
-def _normalize_github_web_base(remote_url: str | None) -> str | None:
+def _build_compare_url(remote_url: str | None, *, base_branch: str, head_branch: str) -> str | None:
     if not remote_url:
         return None
 
@@ -745,18 +583,14 @@ def _normalize_github_web_base(remote_url: str | None) -> str | None:
         try:
             host_and_path = remote.split("@", 1)[1]
             host, path = host_and_path.split(":", 1)
-            return f"https://{host}/{path}"
+            web_base = f"https://{host}/{path}"
         except Exception:
             return None
+    elif remote.startswith("https://") or remote.startswith("http://"):
+        web_base = remote
+    else:
+        return None
 
-    if remote.startswith("https://") or remote.startswith("http://"):
-        return remote
-
-    return None
-
-
-def _build_compare_url(remote_url: str | None, *, base_branch: str, head_branch: str) -> str | None:
-    web_base = _normalize_github_web_base(remote_url)
     if not web_base:
         return None
     return (
@@ -783,12 +617,16 @@ async def get_git_status(
 
         project_root = get_project_root()
 
-        git_exe = _git_executable()
+        git_exe = shutil.which("git")
         if not git_exe:
             return {"success": False, "error": "git executable not found on PATH"}
 
-        timeout_s = max(1, min(15, _git_timeout_seconds(config)))
-        git_env = _build_git_env()
+        timeout_s = max(
+            1, min(15, max(1, min(30, int(config.security.execution_timeout_seconds or 5))))
+        )
+        git_env = dict(os.environ)
+        git_env.setdefault("GIT_TERMINAL_PROMPT", "0")
+        git_env.setdefault("GCM_INTERACTIVE", "Never")
 
         try:
             inside = await _run_git_command_async(
@@ -876,20 +714,38 @@ async def get_git_status(
             remote_url = None
 
         if apply_security_filters:
+            filtered_modified_files: list[str] = []
+            for path in modified_files:
+                is_safe, _ = is_safe_path(path, config)
+                if is_safe:
+                    filtered_modified_files.append(path)
+            modified_files = filtered_modified_files
 
-            def _filter_paths(paths: list[str]) -> list[str]:
-                visible: list[str] = []
-                for p in paths:
-                    ok, _ = is_safe_path(p, config)
-                    if ok:
-                        visible.append(p)
-                return visible
+            filtered_staged_files: list[str] = []
+            for path in staged_files:
+                is_safe, _ = is_safe_path(path, config)
+                if is_safe:
+                    filtered_staged_files.append(path)
+            staged_files = filtered_staged_files
 
-            modified_files = _filter_paths(modified_files)
-            staged_files = _filter_paths(staged_files)
-            untracked_files = _filter_paths(untracked_files)
+            filtered_untracked_files: list[str] = []
+            for path in untracked_files:
+                is_safe, _ = is_safe_path(path, config)
+                if is_safe:
+                    filtered_untracked_files.append(path)
+            untracked_files = filtered_untracked_files
 
-        remote_url = _redact_remote_url(remote_url)
+        if remote_url and "://" in remote_url:
+            try:
+                parts = urlsplit(remote_url)
+                netloc = parts.netloc
+                if "@" in netloc:
+                    netloc = netloc.split("@", 1)[1]
+                    remote_url = urlunsplit(
+                        (parts.scheme, netloc, parts.path, parts.query, parts.fragment)
+                    )
+            except Exception:
+                pass
 
         is_dirty = bool(modified_files or staged_files or untracked_files)
 
@@ -918,17 +774,73 @@ async def get_git_repo_state(config: MCPConfig) -> dict[str, Any]:
         if not config.features.git_integration:
             return {"success": False, "error": "Git integration is disabled"}
 
-        git_exe = _git_executable()
+        git_exe = shutil.which("git")
         if not git_exe:
             return {"success": False, "error": "git executable not found on PATH"}
 
-        state = await _git_repo_state_async(
-            git_exe=git_exe,
-            project_root=get_project_root(),
-            timeout_s=_git_timeout_seconds(config),
-            git_env=_build_git_env(),
+        git_env = dict(os.environ)
+        git_env.setdefault("GIT_TERMINAL_PROMPT", "0")
+        git_env.setdefault("GCM_INTERACTIVE", "Never")
+
+        timeout_s = max(1, min(30, int(config.security.execution_timeout_seconds or 5)))
+        project_root = get_project_root()
+
+        inside = await _run_git_command_async(
+            git_exe,
+            project_root=project_root,
+            args=["rev-parse", "--is-inside-work-tree"],
+            timeout_s=timeout_s,
+            git_env=git_env,
         )
-        return state
+        if inside.returncode != 0 or inside.stdout.strip().lower() != "true":
+            return {"success": False, "error": "Not a git repository"}
+
+        branch_res = await _run_git_command_async(
+            git_exe,
+            project_root=project_root,
+            args=["rev-parse", "--abbrev-ref", "HEAD"],
+            timeout_s=timeout_s,
+            git_env=git_env,
+        )
+        if branch_res.returncode != 0:
+            return {"success": False, "error": "Unable to resolve current git branch"}
+
+        head_res = await _run_git_command_async(
+            git_exe,
+            project_root=project_root,
+            args=["rev-parse", "HEAD"],
+            timeout_s=timeout_s,
+            git_env=git_env,
+        )
+        if head_res.returncode != 0:
+            return {"success": False, "error": "Unable to resolve HEAD commit"}
+
+        remote_res = await _run_git_command_async(
+            git_exe,
+            project_root=project_root,
+            args=["config", "--get", "remote.origin.url"],
+            timeout_s=timeout_s,
+            git_env=git_env,
+        )
+        remote_url = remote_res.stdout.strip() or None
+        if remote_url and "://" in remote_url:
+            try:
+                parts = urlsplit(remote_url)
+                netloc = parts.netloc
+                if "@" in netloc:
+                    netloc = netloc.split("@", 1)[1]
+                    remote_url = urlunsplit(
+                        (parts.scheme, netloc, parts.path, parts.query, parts.fragment)
+                    )
+            except Exception:
+                pass
+
+        return {
+            "success": True,
+            "branch": branch_res.stdout.strip() or "HEAD",
+            "head_sha": head_res.stdout.strip(),
+            "remote_url": remote_url,
+        }
     except Exception as e:
         logger.error(f"Error getting git repo state: {e}")
         return {"success": False, "error": f"Error getting git repo state: {str(e)}"}
@@ -964,28 +876,70 @@ async def git_workflow_operation(
             ),
         }
 
-    git_exe = _git_executable()
+    git_exe = shutil.which("git")
     if not git_exe:
         return {"success": False, "error": "git executable not found on PATH"}
 
     project_root = get_project_root()
-    timeout_s = _git_timeout_seconds(config)
-    git_env = _build_git_env()
+    timeout_s = max(1, min(30, int(config.security.execution_timeout_seconds or 5)))
+    git_env = dict(os.environ)
+    git_env.setdefault("GIT_TERMINAL_PROMPT", "0")
+    git_env.setdefault("GCM_INTERACTIVE", "Never")
     mutating = operation in GIT_WORKFLOW_MUTATING_OPERATIONS
 
     try:
-        state = await _git_repo_state_async(
+        inside = await _run_git_command_async(
             git_exe=git_exe,
             project_root=project_root,
+            args=["rev-parse", "--is-inside-work-tree"],
             timeout_s=timeout_s,
             git_env=git_env,
         )
-        if not state.get("success"):
-            return state
+        if inside.returncode != 0 or inside.stdout.strip().lower() != "true":
+            return {"success": False, "error": "Not a git repository"}
 
-        current_branch = str(state.get("branch") or "HEAD")
-        head_sha = str(state.get("head_sha") or "")
-        remote_url = state.get("remote_url")
+        branch_res = await _run_git_command_async(
+            git_exe,
+            project_root=project_root,
+            args=["rev-parse", "--abbrev-ref", "HEAD"],
+            timeout_s=timeout_s,
+            git_env=git_env,
+        )
+        if branch_res.returncode != 0:
+            return {"success": False, "error": "Unable to resolve current git branch"}
+
+        head_res = await _run_git_command_async(
+            git_exe,
+            project_root=project_root,
+            args=["rev-parse", "HEAD"],
+            timeout_s=timeout_s,
+            git_env=git_env,
+        )
+        if head_res.returncode != 0:
+            return {"success": False, "error": "Unable to resolve HEAD commit"}
+
+        remote_res = await _run_git_command_async(
+            git_exe,
+            project_root=project_root,
+            args=["config", "--get", "remote.origin.url"],
+            timeout_s=timeout_s,
+            git_env=git_env,
+        )
+        remote_url = remote_res.stdout.strip() or None
+        if remote_url and "://" in remote_url:
+            try:
+                parts = urlsplit(remote_url)
+                netloc = parts.netloc
+                if "@" in netloc:
+                    netloc = netloc.split("@", 1)[1]
+                    remote_url = urlunsplit(
+                        (parts.scheme, netloc, parts.path, parts.query, parts.fragment)
+                    )
+            except Exception:
+                pass
+
+        current_branch = branch_res.stdout.strip() or "HEAD"
+        head_sha = head_res.stdout.strip()
 
         preview_commands: list[list[str]] = []
         normalized_args: dict[str, Any] = {}
@@ -1010,7 +964,8 @@ async def git_workflow_operation(
             return status
 
         if operation == "git_log":
-            limit = _normalize_log_limit(log_limit)
+            raw_limit = 20 if log_limit is None else int(log_limit)
+            limit = max(1, min(200, raw_limit))
             normalized_args["log_limit"] = limit
             preview_commands.append(["git", "log", "--oneline", f"-n{limit}"])
             if dry_run:
@@ -1094,15 +1049,31 @@ async def git_workflow_operation(
 
         if operation == "create_task_branch":
             try:
-                next_branch = _normalize_task_branch(
-                    task_slug=task_slug,
-                    task_branch=task_branch,
-                    date_utc=date_utc,
-                )
+                if task_branch:
+                    next_branch = task_branch.strip()
+                else:
+                    if not task_slug:
+                        raise ValueError("task_slug is required when task_branch is not provided")
+
+                    slug = re.sub(r"[^a-z0-9]+", "-", task_slug.strip().lower()).strip("-")
+                    if not slug:
+                        raise ValueError(
+                            "task_slug must include at least one alphanumeric character"
+                        )
+
+                    if date_utc:
+                        try:
+                            date_token = dt.datetime.strptime(date_utc, "%Y%m%d").strftime("%Y%m%d")
+                        except ValueError as exc:
+                            raise ValueError("date_utc must use YYYYMMDD format") from exc
+                    else:
+                        date_token = dt.datetime.now(dt.UTC).strftime("%Y%m%d")
+
+                    next_branch = f"{GIT_WORKFLOW_TASK_BRANCH_PREFIX}{date_token}-{slug}"
             except ValueError as exc:
                 return {"success": False, "operation": operation, "error": str(exc)}
 
-            if not _is_task_branch(next_branch):
+            if not next_branch.startswith(GIT_WORKFLOW_TASK_BRANCH_PREFIX):
                 return {
                     "success": False,
                     "operation": operation,
@@ -1222,14 +1193,25 @@ async def git_workflow_operation(
             }
 
         if operation == "git_add":
-            if not _is_task_branch(current_branch):
+            if not current_branch.startswith(GIT_WORKFLOW_TASK_BRANCH_PREFIX):
                 return {
                     "success": False,
                     "operation": operation,
                     "error": "git_add is only allowed on chatgpt/* task branches",
                 }
 
-            normalized_pathspecs = _normalize_git_pathspecs(pathspecs)
+            if not pathspecs:
+                normalized_pathspecs = ["."]
+            else:
+                raw_pathspecs = [pathspecs] if isinstance(pathspecs, str) else pathspecs
+                cleaned = [p.strip() for p in raw_pathspecs if isinstance(p, str) and p.strip()]
+                if not cleaned:
+                    normalized_pathspecs = ["."]
+                else:
+                    for pathspec in cleaned:
+                        if pathspec.startswith("-"):
+                            raise ValueError("pathspec entries must not begin with '-'")
+                    normalized_pathspecs = cleaned
             for pathspec in normalized_pathspecs:
                 if pathspec in {".", "./"}:
                     continue
@@ -1293,7 +1275,7 @@ async def git_workflow_operation(
             }
 
         if operation == "git_commit":
-            if not _is_task_branch(current_branch):
+            if not current_branch.startswith(GIT_WORKFLOW_TASK_BRANCH_PREFIX):
                 return {
                     "success": False,
                     "operation": operation,
@@ -1377,7 +1359,7 @@ async def git_workflow_operation(
                     "operation": operation,
                     "error": f"Direct push to protected branch is blocked: {current_branch}",
                 }
-            if not _is_task_branch(current_branch):
+            if not current_branch.startswith(GIT_WORKFLOW_TASK_BRANCH_PREFIX):
                 return {
                     "success": False,
                     "operation": operation,
@@ -1430,7 +1412,7 @@ async def git_workflow_operation(
                     "operation": operation,
                     "error": f"PR source branch must not be protected: {current_branch}",
                 }
-            if not _is_task_branch(current_branch):
+            if not current_branch.startswith(GIT_WORKFLOW_TASK_BRANCH_PREFIX):
                 return {
                     "success": False,
                     "operation": operation,
@@ -1486,7 +1468,8 @@ async def git_workflow_operation(
 
             gh_exe = shutil.which("gh")
             if gh_exe:
-                pr_res = await _run_subprocess_command_async(
+                pr_res = await asyncio.to_thread(
+                    subprocess.run,
                     args=[
                         gh_exe,
                         "pr",
@@ -1500,9 +1483,13 @@ async def git_workflow_operation(
                         "--body",
                         body,
                     ],
-                    timeout_s=timeout_s,
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                    timeout=timeout_s,
+                    stdin=subprocess.DEVNULL,
                     env=git_env,
-                    cwd=project_root,
+                    cwd=str(project_root),
                 )
                 if pr_res.returncode == 0:
                     return {

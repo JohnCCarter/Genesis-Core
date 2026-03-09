@@ -31,6 +31,7 @@ MANIFEST
 .venv/
 .venv_*/
 .venv-*/
+.tools-venv/
 env/
 venv/
 ENV/
@@ -135,6 +136,7 @@ node_modules/
 # Build artifacts
 !scripts/build/
 !scripts/build/**
+scripts/build/__pycache__/
 
 # Temporary files
 *.tmp

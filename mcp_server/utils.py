@@ -8,10 +8,46 @@ import fnmatch
 import logging
 import re
 from pathlib import Path
+from typing import Any
 
 from .config import MCPConfig, get_project_root
 
 logger = logging.getLogger(__name__)
+
+
+_CONTENT_CODE_REDACT_TOOLS = {"write_file", "execute_python"}
+_PR_BODY_REDACT_TOOLS = {"git_workflow", "git_commit", "git_create_pr"}
+
+
+def safe_args_for_logging(
+    tool_name: str,
+    args: dict[str, Any],
+    *,
+    redact_pr_body: bool = False,
+) -> dict[str, Any]:
+    """Return a redacted view of tool arguments for safe logging.
+
+    Semantics are intentionally strict to preserve backward compatibility:
+    - For write/execute tools, redact ``content`` and ``code`` when present.
+    - Optionally redact ``pr_body`` for git workflow tools.
+    - Keep all other keys/values unchanged.
+    """
+
+    safe: dict[str, Any] = dict(args or {})
+
+    def _redacted_len(value: Any) -> str:
+        return f"<redacted len={len(value) if isinstance(value, str) else 'n/a'}>"
+
+    if tool_name in _CONTENT_CODE_REDACT_TOOLS:
+        if "content" in safe:
+            safe["content"] = _redacted_len(safe.get("content"))
+        if "code" in safe:
+            safe["code"] = _redacted_len(safe.get("code"))
+
+    if redact_pr_body and tool_name in _PR_BODY_REDACT_TOOLS and "pr_body" in safe:
+        safe["pr_body"] = _redacted_len(safe.get("pr_body"))
+
+    return safe
 
 
 def is_safe_path(path: str | Path, config: MCPConfig) -> tuple[bool, str]:
@@ -95,37 +131,6 @@ def is_safe_path(path: str | Path, config: MCPConfig) -> tuple[bool, str]:
     except Exception as e:
         logger.error(f"Error validating path {path}: {e}")
         return False, f"Invalid path: {str(e)}"
-
-
-def check_file_size(path: Path, config: MCPConfig) -> tuple[bool, str]:
-    """
-    Check if file size is within allowed limits.
-
-    Args:
-        path: Path to file
-        config: MCP configuration with size limits
-
-    Returns:
-        Tuple of (is_valid, error_message)
-    """
-    try:
-        if not path.exists():
-            return False, f"File does not exist: {path}"
-
-        if not path.is_file():
-            return False, f"Path is not a file: {path}"
-
-        size_mb = path.stat().st_size / (1024 * 1024)
-        max_size = config.security.max_file_size_mb
-
-        if size_mb > max_size:
-            return False, f"File size {size_mb:.2f}MB exceeds limit of {max_size}MB"
-
-        return True, ""
-
-    except Exception as e:
-        logger.error(f"Error checking file size for {path}: {e}")
-        return False, f"Error checking file size: {str(e)}"
 
 
 def sanitize_code(code: str) -> str:

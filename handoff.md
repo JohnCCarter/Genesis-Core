@@ -1,57 +1,93 @@
-# Handoff — Shard A Refactor (2026-03-06)
+# Handoff — Cleanup Core Audit (Shard C)
 
-## Session summary
+## Snapshot
 
-- Repository: `JohnCCarter/Genesis-Core`
-- Working directory: `c:\Users\fa06662\Projects\Genesis-Core-refactor-a`
-- Branch: `feature/refactor-scripts-structure-a`
-- Mode: `RESEARCH` (source=branch `feature/*`)
-- Latest pushed commit: `0e900bf8dfe23f6f83426f817d752e9c5172f677`
-- Commit message: `docs(audit): separate cleanup history and shard-a refactor governance`
+- **Datum:** 2026-03-06
+- **Branch:** `feature/cleanup-core-audit`
+- **HEAD:** `a664ed7d`
+- **Mode:** RESEARCH (`feature/*`)
+- **Repo state vid överlämning:** ren working tree (inga staged/unstaged ändringar)
 
-## What was completed
+## Vad som nyligen levererats
 
-Documentation for Shard A refactor governance was finalized and separated from cleanup history.
+Senaste commits (nyast först):
 
-Committed files:
+1. `a664ed7d` — `refactor(cleanup): inline git status path filtering`
+2. `3992a117` — `refactor(cleanup): inline preflight print helper in main`
+3. `0c9122aa` — `refactor: inline git owner anomaly helper`
+4. `1e7187c7` — `refactor: inline proc environ reader helper`
+5. `930aff2e` — `refactor: inline git repo state helper`
+6. `7b16435b` — `refactor: inline git environment helper`
+7. `59978886` — `refactor: inline task branch normalization helper`
 
-- `docs/audit/cleanup/readme.md`
-- `docs/audit/refactor/command_packet_refactor_docs_2026-03-06.md`
-- `docs/audit/refactor/context_map_refactor_docs_2026-03-06.md`
-- `docs/audit/refactor/genesis_refactor_agent_overlay_shard_a.md`
-- `docs/audit/refactor/hard_rules_refactor.md`
-- `docs/audit/refactor/readme.md`
+Alla batches kördes med:
 
-## Current workspace state
+- Opus pre-code review
+- pre-gates
+- minimal diff (no behavior change)
+- post-gates
+- Opus post-diff review
+- commit/push
 
-- Branch is pushed to origin.
-- `git status -sb` showed no pending tracked changes at handoff time.
-- Cleanup historical docs for Shard A remain intact under:
-  - `docs/audit/cleanup/hard_rules_cleanup.md`
-  - `docs/audit/cleanup/Genesis_cleanup_agent_overlay.md`
-  - `docs/audit/cleanup/genesis_cleanup_agent_overlay_shard_a.md`
+## Viktiga verifierade facts för nästa agent
 
-## Important governance context for next agent
+1. **Skill-invocation i detta cleanup-spår**
+   - `repo_clean_refactor` och `python_engineering` ger `STOP: no executable steps` (förväntat SPEC-beteende).
+   - Ska ändå dokumenteras som evidens i command packet.
 
-- Active refactor overlay (Shard A):
-  - `docs/audit/refactor/genesis_refactor_agent_overlay_shard_a.md`
-- Shared refactor baseline:
-  - `docs/audit/refactor/hard_rules_refactor.md`
-- Refactor docs index:
-  - `docs/audit/refactor/readme.md`
-- Scope lock for Shard A refactor remains:
-  - `scripts/**`
-- Outside scope only read/search/usage verification is allowed.
+2. **Korrekt smoke-selector för preflight-filen**
+   - `tests/test_mcp_session_preflight.py` finns inte.
+   - Använd istället `tests/test_mcp_server.py` med filter för `mcp_session_preflight` när relevant.
 
-## Suggested next step (implementation)
+3. **Återkommande hygien-fallgrop**
+   - `scripts/build/__pycache__/...pyc` dyker upp återkommande efter test/lint-körningar.
+   - Rensa innan post-audit/commit för att undvika scope-drift.
 
-Start Shard A refactor Batch 1 in `scripts/**` with minimal, no-behavior-change diffs, using:
+## Kvarvarande arbete (praktiskt)
 
-- `docs/audit/refactor/command_packet_shard_a_refactor_2026-03-06.md`
-- `docs/audit/refactor/context_map_shard_a_refactor_2026-03-06.md`
+### A) Snäv wrapper-cleanup i aktivt spår
 
-Apply required validation gates per overlay before finalizing implementation changes.
+Kvarvarande privata helper-kandidater i `mcp_server/tools.py`:
 
-## Notes / open caveats
+- `_is_within` (nested i `get_project_structure`) — **lägst risk** för nästa batch
+- `_run_git_command`
+- `_run_git_command_async`
+- `_build_compare_url` _(obs: har direkt internhelper-test i `tests/test_mcp_git_workflow_tools.py`)_
 
-- `genesis_cleanup_agent_overlay_shard_c.md` was referenced by cleanup hard-rules text but was not present in this workspace snapshot. This did not block Shard A documentation work.
+Rekommenderad nästa batch: `_is_within`.
+
+### B) Bredare shard-C cleanup (verktygsfynd)
+
+- Senaste JSCPD-report visar **6 klonfynd / 100 duplicerade rader** (~0.58%).
+- Vulture gav **0 rader** i senaste mätningen.
+- Radon visar många komplexitetsfynd, men dessa är inte per automatik no-behavior-change-kandidater.
+
+## Standard-gates som använts i cleanup-batcher
+
+Minst detta set (anpassa målfil + relevanta tests):
+
+1. `black --check <target_file>`
+2. `ruff check <target_file>`
+3. `bandit -q -c bandit.yaml <target_file>`
+4. Relevanta måltester (t.ex. `tests/test_mcp_git_status_remote_filters.py`, `tests/test_mcp_server.py`)
+5. `tests/test_backtest_determinism_smoke.py`
+6. `tests/test_feature_cache.py`
+7. `tests/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable`
+
+## Arbetsmönster som ska fortsätta (governance)
+
+1. Lås command packet (mode/risk/path/scope/base SHA)
+2. Kör skill-evidens (STOP/no_steps är OK för SPEC-skills)
+3. Opus pre-code verdict
+4. Pre-gates
+5. Minimal diff (1 kandidat per batch)
+6. Post-gates
+7. Opus post-diff verdict
+8. Commit/push
+
+## Förslag på omedelbar start för nästa agent
+
+1. Välj kandidat: `_is_within` i `mcp_server/tools.py`.
+2. Lås Batch 22 command packet (LOW risk, no behavior change, scope IN = endast `mcp_server/tools.py`).
+3. Kör ovan gate-stack före/efter.
+4. Säkerställ att inga `__pycache__`-artefakter följer med in i commit.

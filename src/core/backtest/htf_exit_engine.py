@@ -19,32 +19,6 @@ from core.indicators.exit_fibonacci import (
 )
 
 
-def crossed_target(
-    high: float,
-    low: float,
-    target: float,
-    atr: float,
-    pct_pad: float = 0.0005,
-    atr_pad: float = 0.05,
-) -> bool:
-    """
-    Check if price crossed target level with padding.
-
-    Args:
-        high: Bar high price
-        low: Bar low price
-        target: Target level to check
-        atr: Current ATR for padding
-        pct_pad: Percentage padding (default 0.05%)
-        atr_pad: ATR-based padding (default 0.05 ATR)
-
-    Returns:
-        True if target was crossed within padding
-    """
-    pad = max(atr_pad * max(atr, 1e-9), pct_pad * target)
-    return (low - pad) <= target <= (high + pad)
-
-
 @dataclass
 class ExitAction:
     """Represents an exit action to be executed."""
@@ -241,9 +215,13 @@ class HTFFibonacciExitEngine:
 
         if position.side == "LONG":
             # TP1: Near 0.382 (HTF)?
+            tp1_target = htf_levels.get(0.382)
+            tp1_pad = max(0.05 * max(atr, 1e-9), 0.0005 * tp1_target) if tp1_target else 0.0
             if (
-                htf_levels.get(0.382)
-                and crossed_target(current_bar["high"], current_bar["low"], htf_levels[0.382], atr)
+                tp1_target
+                and (
+                    (current_bar["low"] - tp1_pad) <= tp1_target <= (current_bar["high"] + tp1_pad)
+                )
                 and "TP1_0382" not in self.triggered_exits[position_id]
             ):
 

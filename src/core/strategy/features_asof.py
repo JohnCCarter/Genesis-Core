@@ -183,6 +183,17 @@ def _log_precompute_status(
     )
 
 
+def _safe_series_value(series: list[float] | np.ndarray | None, idx: int) -> float:
+    if series is None or idx < 0:
+        return 0.0
+    try:
+        if len(series) <= idx:
+            return 0.0
+        return float(series[idx])
+    except Exception:
+        return 0.0
+
+
 def _compute_candles_hash(candles: dict[str, list[float] | np.ndarray], asof_bar: int) -> str:
     """Compute a cache key for candles up to asof_bar.
 
@@ -191,32 +202,21 @@ def _compute_candles_hash(candles: dict[str, list[float] | np.ndarray], asof_bar
     """
     # Optional ultra-fast key for tight loops
     if str(os.environ.get("GENESIS_FAST_HASH", "")).strip().lower() in {"1", "true"}:
-
-        def _safe_value(series: list[float] | np.ndarray | None, idx: int) -> float:
-            if series is None or idx < 0:
-                return 0.0
-            try:
-                if len(series) <= idx:
-                    return 0.0
-                return float(series[idx])
-            except Exception:
-                return 0.0
-
         try:
             close = candles.get("close")
-            last_close = _safe_value(close, asof_bar)
+            last_close = _safe_series_value(close, asof_bar)
 
             # Backwards compatibility: keep legacy shape for close-only minimal inputs.
             if set(candles.keys()) <= {"close"}:
                 return f"{asof_bar}:{last_close:.4f}"
 
             close_len = int(len(close)) if close is not None else 0
-            c_prev = _safe_value(close, asof_bar - 1)
-            c_first = _safe_value(close, 0)
-            o_now = _safe_value(candles.get("open"), asof_bar)
-            h_now = _safe_value(candles.get("high"), asof_bar)
-            l_now = _safe_value(candles.get("low"), asof_bar)
-            v_now = _safe_value(candles.get("volume"), asof_bar)
+            c_prev = _safe_series_value(close, asof_bar - 1)
+            c_first = _safe_series_value(close, 0)
+            o_now = _safe_series_value(candles.get("open"), asof_bar)
+            h_now = _safe_series_value(candles.get("high"), asof_bar)
+            l_now = _safe_series_value(candles.get("low"), asof_bar)
+            v_now = _safe_series_value(candles.get("volume"), asof_bar)
 
             import struct
 
@@ -247,21 +247,11 @@ def _compute_candles_hash(candles: dict[str, list[float] | np.ndarray], asof_bar
         high = candles.get("high")
         low = candles.get("low")
 
-        def _safe_value(series: list[float] | np.ndarray | None, idx: int) -> float:
-            if series is None or idx < 0:
-                return 0.0
-            try:
-                if len(series) <= idx:
-                    return 0.0
-                return float(series[idx])
-            except Exception:
-                return 0.0
-
         # Sample points: current, -1, -10, -50
-        c_now = _safe_value(close, asof_bar)
-        c_prev = _safe_value(close, asof_bar - 1)
-        h_now = _safe_value(high, asof_bar)
-        l_now = _safe_value(low, asof_bar)
+        c_now = _safe_series_value(close, asof_bar)
+        c_prev = _safe_series_value(close, asof_bar - 1)
+        h_now = _safe_series_value(high, asof_bar)
+        l_now = _safe_series_value(low, asof_bar)
 
         import struct
 

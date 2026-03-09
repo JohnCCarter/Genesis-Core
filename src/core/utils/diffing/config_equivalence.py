@@ -13,13 +13,9 @@ class ConfigDiffItem:
     results: Any
 
 
-def _format_path(parts: tuple[str, ...]) -> str:
-    return ".".join(parts)
-
-
 def _deep_diff(a: Any, b: Any, *, path: tuple[str, ...] = (), out: list[ConfigDiffItem]) -> None:
     if type(a) is not type(b):
-        out.append(ConfigDiffItem(path=_format_path(path), trial=a, results=b))
+        out.append(ConfigDiffItem(path=".".join(path), trial=a, results=b))
         return
 
     if isinstance(a, dict):
@@ -28,7 +24,7 @@ def _deep_diff(a: Any, b: Any, *, path: tuple[str, ...] = (), out: list[ConfigDi
             if key not in a:
                 out.append(
                     ConfigDiffItem(
-                        path=_format_path(path + (key,)),
+                        path=".".join(path + (key,)),
                         trial=None,
                         results=b[key],
                     )
@@ -36,7 +32,7 @@ def _deep_diff(a: Any, b: Any, *, path: tuple[str, ...] = (), out: list[ConfigDi
             elif key not in b:
                 out.append(
                     ConfigDiffItem(
-                        path=_format_path(path + (key,)),
+                        path=".".join(path + (key,)),
                         trial=a[key],
                         results=None,
                     )
@@ -52,7 +48,7 @@ def _deep_diff(a: Any, b: Any, *, path: tuple[str, ...] = (), out: list[ConfigDi
             if idx >= len(a):
                 out.append(
                     ConfigDiffItem(
-                        path=_format_path(path + (key,)),
+                        path=".".join(path + (key,)),
                         trial=None,
                         results=b[idx],
                     )
@@ -60,7 +56,7 @@ def _deep_diff(a: Any, b: Any, *, path: tuple[str, ...] = (), out: list[ConfigDi
             elif idx >= len(b):
                 out.append(
                     ConfigDiffItem(
-                        path=_format_path(path + (key,)),
+                        path=".".join(path + (key,)),
                         trial=a[idx],
                         results=None,
                     )
@@ -70,7 +66,7 @@ def _deep_diff(a: Any, b: Any, *, path: tuple[str, ...] = (), out: list[ConfigDi
         return
 
     if a != b:
-        out.append(ConfigDiffItem(path=_format_path(path), trial=a, results=b))
+        out.append(ConfigDiffItem(path=".".join(path), trial=a, results=b))
 
 
 def _extract_effective_config(payload: dict[str, Any]) -> dict[str, Any] | None:

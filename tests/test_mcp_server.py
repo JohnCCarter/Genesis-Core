@@ -5,6 +5,7 @@ Tests for MCP Server functionality
 from __future__ import annotations
 
 import re
+from pathlib import Path
 
 import pytest
 from pydantic import AnyUrl, TypeAdapter
@@ -55,6 +56,23 @@ async def test_read_file_not_exists(config):
     result = await read_file("src/nonexistent_file.txt", config)
     assert result["success"] is False
     assert "does not exist" in result["error"]
+
+
+@pytest.mark.asyncio
+async def test_read_file_stat_exception_returns_size_check_error(config, monkeypatch):
+    """read_file should preserve size-check error semantics when stat() fails."""
+
+    monkeypatch.setattr(Path, "exists", lambda _self: True)
+    monkeypatch.setattr(Path, "is_file", lambda _self: True)
+
+    def _raise_stat(_self):
+        raise OSError("stat exploded")
+
+    monkeypatch.setattr(Path, "stat", _raise_stat)
+
+    result = await read_file("README.md", config)
+    assert result["success"] is False
+    assert result["error"] == "Error checking file size: stat exploded"
 
 
 @pytest.mark.asyncio
@@ -117,7 +135,7 @@ async def test_get_project_structure(config):
     assert result["success"] is True
     assert "structure" in result
     assert "src" in result["structure"]
-    assert "Genesis-Core" in result["structure"]
+    assert Path(result["root"]).name in result["structure"]
 
 
 @pytest.mark.asyncio
@@ -223,6 +241,7 @@ def test_remote_token_auth_accepts_bearer_or_header(monkeypatch):
     import mcp_server.remote_server as remote
 
     monkeypatch.setattr(remote, "REMOTE_TOKEN", "s3cr3t")
+    monkeypatch.setattr(remote, "REMOTE_AUTH_REQUIRED", True)
 
     assert (
         remote._is_authorized_remote_request(authorization="Bearer s3cr3t", token_header=None)

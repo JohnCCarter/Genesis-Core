@@ -1,0 +1,8 @@
+﻿timestamp: 2026-03-09 13:56:16+01:00
+branch: feature/docs-archive-review-2026-03-09
+head_sha: 386a71b5
+manifest: docs/audit/refactor/evidence/candidate18_daily_summaries_delete_manifest_2026-03-09.tsv
+targets: 34
+missing_paths: 0
+external_ref_hit_paths: 0
+status: PASS_NO_ACTIVE_REFS

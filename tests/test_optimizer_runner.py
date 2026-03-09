@@ -4,6 +4,7 @@ import json
 import os
 import sys
 from collections.abc import Callable
+from contextlib import ExitStack, contextmanager
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, patch
@@ -223,6 +224,26 @@ def _champion_manager_patch() -> Any:
     return patch("core.optimizer.runner.ChampionManager")
 
 
+@contextmanager
+def _champion_test_patch_context(
+    *,
+    results_root: Path,
+    expand_values: list[dict[str, Any]],
+    run_trial_side_effect: Any,
+    ensure_run_metadata_side_effect: Any,
+    tmp_path: Path,
+) -> Any:
+    with ExitStack() as stack:
+        stack.enter_context(_max_concurrent_env_patch())
+        stack.enter_context(_results_dir_patch(results_root))
+        stack.enter_context(_expand_parameters_patch(expand_values))
+        stack.enter_context(_run_trial_side_effect_patch(run_trial_side_effect))
+        stack.enter_context(_ensure_run_metadata_side_effect_patch(ensure_run_metadata_side_effect))
+        manager_cls = stack.enter_context(_champion_manager_patch())
+        stack.enter_context(_champions_dir_patch(tmp_path))
+        yield manager_cls
+
+
 def _optimizer_test_context(tmp_path: Path) -> tuple[Path, dict[str, Any]]:
     return _results_root(tmp_path), _base_run_meta_payload()
 
@@ -375,15 +396,13 @@ def test_run_optimizer_updates_champion(
 
     fake_ensure = _make_fake_ensure_writer(run_meta_payload, _capture_run_dir)
 
-    with (
-        _max_concurrent_env_patch(),
-        _results_dir_patch(results_root),
-        _expand_parameters_patch(_entry_conf_default_grid()),
-        _run_trial_side_effect_patch(fake_run_trial),
-        _ensure_run_metadata_side_effect_patch(fake_ensure),
-        _champion_manager_patch() as manager_cls,
-        _champions_dir_patch(tmp_path),
-    ):
+    with _champion_test_patch_context(
+        results_root=results_root,
+        expand_values=_entry_conf_default_grid(),
+        run_trial_side_effect=fake_run_trial,
+        ensure_run_metadata_side_effect=fake_ensure,
+        tmp_path=tmp_path,
+    ) as manager_cls:
         monkeypatch.setenv("GENESIS_MAX_CONCURRENT", "1")
         manager_instance = _configure_manager(manager_cls)
 
@@ -477,15 +496,13 @@ def test_run_optimizer_validation_stage_promotes_validation_best(tmp_path: Path)
 
     fake_ensure = _make_fake_ensure_writer(run_meta_payload)
 
-    with (
-        _max_concurrent_env_patch(),
-        _results_dir_patch(results_root),
-        _expand_parameters_patch(_entry_conf_default_grid()),
-        _run_trial_side_effect_patch(fake_run_trial),
-        _ensure_run_metadata_side_effect_patch(fake_ensure),
-        _champion_manager_patch() as manager_cls,
-        _champions_dir_patch(tmp_path),
-    ):
+    with _champion_test_patch_context(
+        results_root=results_root,
+        expand_values=_entry_conf_default_grid(),
+        run_trial_side_effect=fake_run_trial,
+        ensure_run_metadata_side_effect=fake_ensure,
+        tmp_path=tmp_path,
+    ) as manager_cls:
         manager_instance = _configure_manager(manager_cls)
 
         results = _run_optimizer_with_test_id(config_path)
@@ -610,15 +627,13 @@ def test_run_optimizer_promotion_negative_cases_do_not_write_champion(
     cfg["meta"]["runs"]["promotion"] = promotion_cfg
     search_config_tmp.write_text(yaml.safe_dump(cfg), encoding="utf-8")
 
-    with (
-        _max_concurrent_env_patch(),
-        _results_dir_patch(results_root),
-        _expand_parameters_patch([_entry_conf_params(0.4)]),
-        _run_trial_side_effect_patch(fake_run_trial),
-        _ensure_run_metadata_side_effect_patch(fake_ensure),
-        _champion_manager_patch() as manager_cls,
-        _champions_dir_patch(tmp_path),
-    ):
+    with _champion_test_patch_context(
+        results_root=results_root,
+        expand_values=[_entry_conf_params(0.4)],
+        run_trial_side_effect=fake_run_trial,
+        ensure_run_metadata_side_effect=fake_ensure,
+        tmp_path=tmp_path,
+    ) as manager_cls:
         manager_instance = _configure_manager(
             manager_cls,
             current=None if current_score is None else MagicMock(score=current_score),

@@ -1,0 +1,17 @@
+mode=RESEARCH
+candidate=delete_archive_debug_subset_except_diagnose_zero_trades
+base_sha=7b81170f4583cbb6fd7f2a6eb8d0cdac0a8c593e
+
+command=git grep -n --fixed-strings "<path>" -- . ":(exclude)scripts/archive/debug/*" ":(exclude)docs/**"
+scan_surfaces=repo (excluding scripts/archive/debug and docs)
+manifest=docs/audit/refactor/evidence/candidate11_debug_subset_manifest_2026-03-09.txt
+excluded_path=scripts/archive/debug/2026-02-14/diagnose_zero_trades.py
+
+summary:
+- target_count=37
+- paths_with_hits=0
+- total_hits=0
+
+excluded_path_hits:
+.github/skills/decision_gate_debug.json:35:      "Använd scripts/archive/debug/2026-02-14/diagnose_zero_trades.py för strukturerad analys."
+.github/skills/decision_gate_debug.json:57:      "value": "scripts/archive/debug/2026-02-14/diagnose_zero_trades.py"

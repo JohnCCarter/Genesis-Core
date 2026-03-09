@@ -1,0 +1,44 @@
+mode=RESEARCH
+candidate=delete_archive_debug_subset_except_diagnose_zero_trades
+base_sha=7b81170f4583cbb6fd7f2a6eb8d0cdac0a8c593e
+
+skill_invocation:
+- C:/Users/fa06662/Projects/Genesis-Core/.venv/Scripts/python.exe scripts/run_skill.py --skill repo_clean_refactor --manifest dev --dry-run
+  [AUDIT] Triggered: OK
+  [AUDIT] Verified: STOP
+  [AUDIT] Result: STOP
+  [SKILL] STOP: skill has no executable steps
+- C:/Users/fa06662/Projects/Genesis-Core/.venv/Scripts/python.exe scripts/run_skill.py --skill python_engineering --manifest dev --dry-run
+  [AUDIT] Triggered: OK
+  [AUDIT] Verified: STOP
+  [AUDIT] Result: STOP
+  [SKILL] STOP: skill has no executable steps
+
+gates:
+- pre-commit run --all-files
+  black....................................................Passed
+  ruff.....................................................Passed
+  Detect secrets...........................................Passed
+  check for added large files..............................Passed
+  check for merge conflicts................................Passed
+  check yaml...............................................Passed
+  fix end of files.........................................Passed
+  trim trailing whitespace.................................Passed
+  check json...............................................Passed
+
+- pytest -q tests/test_import_smoke_backtest_optuna.py
+  .                                                                        [100%]
+
+- pytest -q tests/test_backtest_determinism_smoke.py
+  ...                                                                      [100%]
+
+- pytest -q tests/test_feature_cache.py tests/test_features_asof_cache.py tests/test_features_asof_cache_key_deterministic.py
+  .........                                                                [100%]
+
+- pytest -q tests/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable
+  .                                                                        [100%]
+
+manifest_parity:
+- manifest_targets=37
+- existing_after_delete=0
+- excluded_exists=True

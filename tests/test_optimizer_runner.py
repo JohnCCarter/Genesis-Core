@@ -195,6 +195,14 @@ def _champions_dir_patch(tmp_path: Path) -> Any:
     return patch("core.strategy.champion_loader.CHAMPIONS_DIR", _champions_dir(tmp_path))
 
 
+def _optimizer_test_context(tmp_path: Path) -> tuple[Path, dict[str, Any]]:
+    return _results_root(tmp_path), _base_run_meta_payload()
+
+
+def _run_optimizer_with_test_id(search_config_path: Path) -> list[dict[str, Any]]:
+    return run_optimizer(search_config_path, run_id=TEST_RUN_ID)
+
+
 _OPTUNA_SKIP = pytest.mark.skipif(not runner.OPTUNA_AVAILABLE, reason="Optuna ej installerat")
 
 
@@ -291,8 +299,7 @@ def test_collect_comparability_warnings_detects_drift_without_raising() -> None:
 def test_run_optimizer_updates_champion(
     tmp_path: Path, search_config_tmp: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    results_root = _results_root(tmp_path)
-    run_meta_payload = _base_run_meta_payload()
+    results_root, run_meta_payload = _optimizer_test_context(tmp_path)
 
     trial_queue = {
         1: {
@@ -355,7 +362,7 @@ def test_run_optimizer_updates_champion(
         monkeypatch.setenv("GENESIS_MAX_CONCURRENT", "1")
         manager_instance = _configure_manager(manager_cls)
 
-        results = run_optimizer(search_config_tmp, run_id=TEST_RUN_ID)
+        results = _run_optimizer_with_test_id(search_config_tmp)
 
         assert len(results) == 2
         manager_instance.write_champion.assert_called_once()
@@ -396,8 +403,7 @@ def test_run_optimizer_validation_stage_promotes_validation_best(tmp_path: Path)
     config_path = tmp_path / "search_with_validation.yaml"
     _write_yaml(config_path, config)
 
-    results_root = _results_root(tmp_path)
-    run_meta_payload = _base_run_meta_payload()
+    results_root, run_meta_payload = _optimizer_test_context(tmp_path)
 
     def fake_run_trial(*args: Any, **kwargs: Any) -> dict[str, Any]:
         trial_cfg = args[0]
@@ -460,7 +466,7 @@ def test_run_optimizer_validation_stage_promotes_validation_best(tmp_path: Path)
     ):
         manager_instance = _configure_manager(manager_cls)
 
-        results = run_optimizer(config_path, run_id=TEST_RUN_ID)
+        results = _run_optimizer_with_test_id(config_path)
 
         # 2 explore + 2 validation
         assert len(results) == 4
@@ -565,8 +571,7 @@ def test_run_optimizer_promotion_negative_cases_do_not_write_champion(
     results_path: str,
     current_score: float | None,
 ) -> None:
-    results_root = _results_root(tmp_path)
-    run_meta_payload = _base_run_meta_payload()
+    results_root, run_meta_payload = _optimizer_test_context(tmp_path)
 
     def fake_run_trial(*_args: Any, **kwargs: Any) -> dict[str, Any]:
         return {
@@ -600,7 +605,7 @@ def test_run_optimizer_promotion_negative_cases_do_not_write_champion(
             current=None if current_score is None else MagicMock(score=current_score),
         )
 
-        results = run_optimizer(search_config_tmp, run_id=TEST_RUN_ID)
+        results = _run_optimizer_with_test_id(search_config_tmp)
 
         assert len(results) == 1
         manager_instance.write_champion.assert_not_called()

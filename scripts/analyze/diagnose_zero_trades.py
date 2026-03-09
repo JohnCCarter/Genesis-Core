@@ -13,6 +13,8 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
+LEGACY_DEBUG_BASE = Path(__file__).resolve().parent.parent / "archive" / "debug"
+
 
 def analyze_trial_log(log_path: Path) -> dict[str, Any]:
     """Analyze a trial's backtest log to extract decision gate statistics."""
@@ -175,7 +177,7 @@ def diagnose_zero_trade_trial(run_dir: Path, trial_id: str) -> dict[str, Any]:
     # Get results path
     results_path = trial_data.get("results_path")
     if results_path:
-        results_full_path = Path(__file__).parent.parent / "results" / "backtests" / results_path
+        results_full_path = LEGACY_DEBUG_BASE / "results" / "backtests" / results_path
     else:
         results_full_path = None
 
@@ -350,7 +352,7 @@ def main():
 
     # If just the run_id is given, prepend the results path
     if not run_dir.exists():
-        run_dir = Path(__file__).parent.parent / "results" / "hparam_search" / run_path
+        run_dir = LEGACY_DEBUG_BASE / "results" / "hparam_search" / run_path
 
     if not run_dir.exists():
         print(f"ERROR: Run directory not found: {run_dir}")

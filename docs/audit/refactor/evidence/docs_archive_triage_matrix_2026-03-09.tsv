@@ -33,6 +33,12 @@ DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/daily_summaries/daily_s
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/daily_summaries/daily_summary_2026-02-03.md	.md	No active external references outside archive/audit; dated operational snapshots in deprecated archive subtree.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/daily_summaries/daily_summary_2026-02-11.md	.md	No active external references outside archive/audit; dated operational snapshots in deprecated archive subtree.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/daily_summaries/daily_summary_2026-02-12.md	.md	No active external references outside archive/audit; dated operational snapshots in deprecated archive subtree.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/validation/AB_QUALITY_V2_PHASE7E.md	.md	Deprecated validation archive document with no active external refs outside archive/audit.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/validation/ADVANCED_VALIDATION_PRODUCTION.md	.md	Deprecated validation archive document with no active external refs outside archive/audit.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/validation/CONFIG_LOADING_VERIFICATION_20251114.md	.md	Deprecated validation archive document with no active external refs outside archive/audit.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/validation/PARITY_TEST_20251125.md	.md	Deprecated validation archive document with no active external refs outside archive/audit.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/validation/VALIDATION_CHECKLIST.md	.md	Deprecated validation archive document with no active external refs outside archive/audit.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/validation/VALIDATION_VS_BACKTEST_EXPLAINED.md	.md	Deprecated validation archive document with no active external refs outside archive/audit.
 DELETE_CANDIDATE	docs/archive/phase6/DOCUMENTATION_ANALYSIS.md	.md	Superseded/meta archive document with no active external refs outside archive/audit.
 DELETE_CANDIDATE	docs/archive/phase6/ORIGINAL_REPO_MENTIONS.md	.md	Superseded/meta archive document with no active external refs outside archive/audit.
 DELETE_CANDIDATE	docs/archive/phase6/TODO.md	.md	Superseded/meta archive document with no active external refs outside archive/audit.
@@ -120,9 +126,3 @@ UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/runtime/RUNTIME_PATCH_WORKFLOW
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/strategy/STRATEGY_PROBABILITY_AND_REGIME.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/templates/PIPELINE_CHANGE_REVIEW.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/templates/skills/_skill_template.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/validation/AB_QUALITY_V2_PHASE7E.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/validation/ADVANCED_VALIDATION_PRODUCTION.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/validation/CONFIG_LOADING_VERIFICATION_20251114.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/validation/PARITY_TEST_20251125.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/validation/VALIDATION_CHECKLIST.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/validation/VALIDATION_VS_BACKTEST_EXPLAINED.md	.md	No explicit external reference outside archive/audit; semantic retention review required.

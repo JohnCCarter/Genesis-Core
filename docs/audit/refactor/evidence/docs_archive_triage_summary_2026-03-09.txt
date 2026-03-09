@@ -1,8 +1,8 @@
-﻿timestamp: 2026-03-09 14:11:52+01:00
+﻿timestamp: 2026-03-09 14:36:32+01:00
 branch: feature/docs-archive-review-2026-03-09
 total_files: 127
-class_delete_candidate: 38
+class_delete_candidate: 44
 class_keep: 8
-class_uncertain: 81
+class_uncertain: 75
 matrix_file: docs/audit/refactor/evidence/docs_archive_triage_matrix_2026-03-09.tsv
-batch_last_updated: phase6_and_legacy_core
+batch_last_updated: validation_batch_candidate20

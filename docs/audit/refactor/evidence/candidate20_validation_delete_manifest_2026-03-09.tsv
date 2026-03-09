@@ -1,0 +1,7 @@
+﻿action	path	reason
+DELETE	docs/archive/deprecated_2026-02-24/docs/validation/AB_QUALITY_V2_PHASE7E.md	Deprecated validation archive document with no active external refs outside archive/audit.
+DELETE	docs/archive/deprecated_2026-02-24/docs/validation/ADVANCED_VALIDATION_PRODUCTION.md	Deprecated validation archive document with no active external refs outside archive/audit.
+DELETE	docs/archive/deprecated_2026-02-24/docs/validation/CONFIG_LOADING_VERIFICATION_20251114.md	Deprecated validation archive document with no active external refs outside archive/audit.
+DELETE	docs/archive/deprecated_2026-02-24/docs/validation/PARITY_TEST_20251125.md	Deprecated validation archive document with no active external refs outside archive/audit.
+DELETE	docs/archive/deprecated_2026-02-24/docs/validation/VALIDATION_CHECKLIST.md	Deprecated validation archive document with no active external refs outside archive/audit.
+DELETE	docs/archive/deprecated_2026-02-24/docs/validation/VALIDATION_VS_BACKTEST_EXPLAINED.md	Deprecated validation archive document with no active external refs outside archive/audit.

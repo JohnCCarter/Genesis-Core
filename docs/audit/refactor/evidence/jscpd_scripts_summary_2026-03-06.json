@@ -1,0 +1,9 @@
+{
+  "total_lines": 5005,
+  "total_tokens": 39385,
+  "clones_detected": 0,
+  "duplicated_lines": 0,
+  "duplicated_tokens": 0,
+  "percentage": 0,
+  "top_file_pairs_by_clone_hits": []
+}

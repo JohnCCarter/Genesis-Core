@@ -1,0 +1,50 @@
+{
+  "scripts_total_files": 301,
+  "scripts_archive_files": 221,
+  "scripts_non_archive_files": 80,
+  "extensions_all": {
+    ".py": 235,
+    ".pyc": 44,
+    ".sh": 9,
+    ".ps1": 8,
+    ".md": 3,
+    ".json": 2
+  },
+  "extensions_archive": {
+    ".py": 219,
+    ".json": 2
+  },
+  "extensions_non_archive": {
+    ".pyc": 44,
+    ".py": 16,
+    ".sh": 9,
+    ".ps1": 8,
+    ".md": 3
+  },
+  "family_counts": {
+    "archive/2026-02": 109,
+    "archive/debug": 38,
+    "archive/test_prototypes": 36,
+    "__pycache__": 35,
+    "archive/model_registry_update": 14,
+    "archive/analysis": 12,
+    "<root-file>": 7,
+    "archive/deprecated_2026-02": 6,
+    "archive/experiments": 6,
+    "run": 6,
+    "fetch": 5,
+    "preflight": 4,
+    "validate": 4,
+    "docs": 3,
+    "analyze": 2,
+    "audit": 2,
+    "deploy": 2,
+    "extract": 2,
+    "optimize": 2,
+    "train": 2,
+    "build": 1,
+    "mcp": 1,
+    "ops": 1,
+    "promote": 1
+  }
+}

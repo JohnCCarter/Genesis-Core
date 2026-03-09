@@ -1,0 +1,228 @@
+﻿## git diff --name-status
+D	scripts/archive/2026-02/analysis/analyze_optuna_db.py
+D	scripts/archive/2026-02/analysis/analyze_optuna_run_identity.py
+D	scripts/archive/2026-02/analysis/analyze_regime_performance.py
+D	scripts/archive/2026-02/analysis/analyze_w2_exit_breakdown.py
+D	scripts/archive/2026-02/analysis/apply_runtime_patch.py
+D	scripts/archive/2026-02/analysis/backtest_with_fees.py
+D	scripts/archive/2026-02/analysis/benchmark_backtest.py
+D	scripts/archive/2026-02/analysis/benchmark_features_modes.py
+D	scripts/archive/2026-02/analysis/benchmark_numba_labeling.py
+D	scripts/archive/2026-02/analysis/benchmark_optuna_performance.py
+D	scripts/archive/2026-02/analysis/benchmark_performance.py
+D	scripts/archive/2026-02/analysis/burn_in.py
+D	scripts/archive/2026-02/analysis/calculate_ic_by_regime.py
+D	scripts/archive/2026-02/analysis/calculate_paper_trading_metrics.py
+D	scripts/archive/2026-02/analysis/calculate_score_260.py
+D	scripts/archive/2026-02/analysis/calculate_score_realistic.py
+D	scripts/archive/2026-02/analysis/calibrate_fib_gates.py
+D	scripts/archive/2026-02/analysis/check_robustness_top_trials.py
+D	scripts/archive/2026-02/analysis/check_trial_config_equivalence.py
+D	scripts/archive/2026-02/analysis/classify_script_activity.py
+D	scripts/archive/2026-02/analysis/cleanup_optimizer_configs.py
+D	scripts/archive/2026-02/analysis/create_parity_test_config.py
+D	scripts/archive/2026-02/analysis/create_trial_1381_config.py
+D	scripts/archive/2026-02/analysis/create_trial_1940_config.py
+D	scripts/archive/2026-02/analysis/create_trial_208_config.py
+D	scripts/archive/2026-02/analysis/curate_1d_candles.py
+D	scripts/archive/2026-02/analysis/curate_3h_candles.py
+D	scripts/archive/2026-02/analysis/curate_features.py
+D	scripts/archive/2026-02/analysis/diag_trades.py
+D	scripts/archive/2026-02/analysis/evaluate_all_models.py
+D	scripts/archive/2026-02/analysis/evaluate_model.py
+D	scripts/archive/2026-02/analysis/extract_ev_distribution.py
+D	scripts/archive/2026-02/analysis/extract_optuna_blocks_top_trials.py
+D	scripts/archive/2026-02/analysis/generate_meta_labels.py
+D	scripts/archive/2026-02/analysis/get_trial_params.py
+D	scripts/archive/2026-02/analysis/hqt_audit_pf_first.py
+D	scripts/archive/2026-02/analysis/identify_config_difference.py
+D	scripts/archive/2026-02/analysis/inspect_dates.py
+D	scripts/archive/2026-02/analysis/inspect_trial_4.py
+D	scripts/archive/2026-02/analysis/join_holdout_blocks.py
+D	scripts/archive/2026-02/analysis/list_top_trials.py
+D	scripts/archive/2026-02/analysis/migrate_model_structure.py
+D	scripts/archive/2026-02/analysis/monitor_optuna_study.py
+D	scripts/archive/2026-02/analysis/optimize_ema_slope_params.py
+D	scripts/archive/2026-02/analysis/optimize_htf_custom.py
+D	scripts/archive/2026-02/analysis/organize_optuna_docs.py
+D	scripts/archive/2026-02/analysis/parse_burnin_log.py
+D	scripts/archive/2026-02/analysis/phase2_metrics.py
+D	scripts/archive/2026-02/analysis/precompute_features.py
+D	scripts/archive/2026-02/analysis/precompute_features_fast.py
+D	scripts/archive/2026-02/analysis/precompute_features_v17.py
+D	scripts/archive/2026-02/analysis/precompute_features_v18.py
+D	scripts/archive/2026-02/analysis/profile_pipeline.py
+D	scripts/archive/2026-02/analysis/repo_inventory_report.py
+D	scripts/archive/2026-02/analysis/reproduce_mismatch.py
+D	scripts/archive/2026-02/analysis/reproduce_trial_from_merged_config.py
+D	scripts/archive/2026-02/analysis/reproduce_trial_subprocess.py
+D	scripts/archive/2026-02/analysis/resample_1h_to_3h.py
+D	scripts/archive/2026-02/analysis/resample_1h_to_6h.py
+D	scripts/archive/2026-02/analysis/run_champion_smoke.py
+D	scripts/archive/2026-02/analysis/run_composable_backtest_no_fib.py
+D	scripts/archive/2026-02/analysis/run_composable_backtest_phase2.py
+D	scripts/archive/2026-02/analysis/run_composable_backtest_poc.py
+D	scripts/archive/2026-02/analysis/run_extended_validation_2024.py
+D	scripts/archive/2026-02/analysis/run_ltf_confidence_grid.py
+D	scripts/archive/2026-02/analysis/run_milestone3_exp1.py
+D	scripts/archive/2026-02/analysis/run_milestone4_exp1.py
+D	scripts/archive/2026-02/analysis/run_milestone4_exp2.py
+D	scripts/archive/2026-02/analysis/run_optimizer_smoke.py
+D	scripts/archive/2026-02/analysis/run_phase2c_extended.py
+D	scripts/archive/2026-02/analysis/run_phase2d_corrected.py
+D	scripts/archive/2026-02/analysis/run_phase3_fine.py
+D	scripts/archive/2026-02/analysis/sanity_check_evgate_percentiles.py
+D	scripts/archive/2026-02/analysis/sanity_check_size_zero_reasons.py
+D	scripts/archive/2026-02/analysis/scan_phase3_fine_runs.py
+D	scripts/archive/2026-02/analysis/select_champion.py
+D	scripts/archive/2026-02/analysis/show_best_results.py
+D	scripts/archive/2026-02/analysis/show_feature_loading_modes.py
+D	scripts/archive/2026-02/analysis/show_loaded_model.py
+D	scripts/archive/2026-02/analysis/show_v4_features_loading.py
+D	scripts/archive/2026-02/analysis/simple_htf_integration_check.py
+D	scripts/archive/2026-02/analysis/smoke_submit_call.py
+D	scripts/archive/2026-02/analysis/smoke_submit_flow.py
+D	scripts/archive/2026-02/analysis/smoke_test_fixes.py
+D	scripts/archive/2026-02/analysis/summarize_hparam_results.py
+D	scripts/archive/2026-02/analysis/test_ws_public.py
+D	scripts/archive/2026-02/analysis/trace_champion_loading.py
+D	scripts/archive/2026-02/analysis/tune_confidence_threshold.py
+D	scripts/archive/2026-02/analysis/tune_triple_barrier.py
+D	scripts/archive/2026-02/analysis/validate_all_indicators.py
+D	scripts/archive/2026-02/analysis/validate_atr_vectorized.py
+D	scripts/archive/2026-02/analysis/validate_data.py
+D	scripts/archive/2026-02/analysis/validate_holdout.py
+D	scripts/archive/2026-02/analysis/validate_purged_wfcv.py
+D	scripts/archive/2026-02/analysis/validate_v17_holdout.py
+D	scripts/archive/2026-02/analysis/validate_v17_ic.py
+D	scripts/archive/2026-02/analysis/validate_vectorized_features.py
+D	scripts/archive/2026-02/analysis/validate_zero_trade_risk.py
+D	scripts/archive/2026-02/analysis/verify_async_candles.py
+D	scripts/archive/2026-02/analysis/verify_candidate_exact.py
+D	scripts/archive/2026-02/analysis/verify_config_loading.py
+D	scripts/archive/2026-02/analysis/verify_exits_forced.py
+D	scripts/archive/2026-02/analysis/verify_exits_forced_v2.py
+D	scripts/archive/2026-02/analysis/verify_exits_loose.py
+D	scripts/archive/2026-02/analysis/verify_fib_connection.py
+D	scripts/archive/2026-02/analysis/verify_integration.py
+D	scripts/archive/2026-02/analysis/verify_mcp_installation.py
+D	scripts/archive/2026-02/analysis/verify_runner_fix.py
+D	scripts/archive/2026-02/analysis/verify_v17_htf_cols.py
+
+## git status --short
+ D scripts/archive/2026-02/analysis/analyze_optuna_db.py
+ D scripts/archive/2026-02/analysis/analyze_optuna_run_identity.py
+ D scripts/archive/2026-02/analysis/analyze_regime_performance.py
+ D scripts/archive/2026-02/analysis/analyze_w2_exit_breakdown.py
+ D scripts/archive/2026-02/analysis/apply_runtime_patch.py
+ D scripts/archive/2026-02/analysis/backtest_with_fees.py
+ D scripts/archive/2026-02/analysis/benchmark_backtest.py
+ D scripts/archive/2026-02/analysis/benchmark_features_modes.py
+ D scripts/archive/2026-02/analysis/benchmark_numba_labeling.py
+ D scripts/archive/2026-02/analysis/benchmark_optuna_performance.py
+ D scripts/archive/2026-02/analysis/benchmark_performance.py
+ D scripts/archive/2026-02/analysis/burn_in.py
+ D scripts/archive/2026-02/analysis/calculate_ic_by_regime.py
+ D scripts/archive/2026-02/analysis/calculate_paper_trading_metrics.py
+ D scripts/archive/2026-02/analysis/calculate_score_260.py
+ D scripts/archive/2026-02/analysis/calculate_score_realistic.py
+ D scripts/archive/2026-02/analysis/calibrate_fib_gates.py
+ D scripts/archive/2026-02/analysis/check_robustness_top_trials.py
+ D scripts/archive/2026-02/analysis/check_trial_config_equivalence.py
+ D scripts/archive/2026-02/analysis/classify_script_activity.py
+ D scripts/archive/2026-02/analysis/cleanup_optimizer_configs.py
+ D scripts/archive/2026-02/analysis/create_parity_test_config.py
+ D scripts/archive/2026-02/analysis/create_trial_1381_config.py
+ D scripts/archive/2026-02/analysis/create_trial_1940_config.py
+ D scripts/archive/2026-02/analysis/create_trial_208_config.py
+ D scripts/archive/2026-02/analysis/curate_1d_candles.py
+ D scripts/archive/2026-02/analysis/curate_3h_candles.py
+ D scripts/archive/2026-02/analysis/curate_features.py
+ D scripts/archive/2026-02/analysis/diag_trades.py
+ D scripts/archive/2026-02/analysis/evaluate_all_models.py
+ D scripts/archive/2026-02/analysis/evaluate_model.py
+ D scripts/archive/2026-02/analysis/extract_ev_distribution.py
+ D scripts/archive/2026-02/analysis/extract_optuna_blocks_top_trials.py
+ D scripts/archive/2026-02/analysis/generate_meta_labels.py
+ D scripts/archive/2026-02/analysis/get_trial_params.py
+ D scripts/archive/2026-02/analysis/hqt_audit_pf_first.py
+ D scripts/archive/2026-02/analysis/identify_config_difference.py
+ D scripts/archive/2026-02/analysis/inspect_dates.py
+ D scripts/archive/2026-02/analysis/inspect_trial_4.py
+ D scripts/archive/2026-02/analysis/join_holdout_blocks.py
+ D scripts/archive/2026-02/analysis/list_top_trials.py
+ D scripts/archive/2026-02/analysis/migrate_model_structure.py
+ D scripts/archive/2026-02/analysis/monitor_optuna_study.py
+ D scripts/archive/2026-02/analysis/optimize_ema_slope_params.py
+ D scripts/archive/2026-02/analysis/optimize_htf_custom.py
+ D scripts/archive/2026-02/analysis/organize_optuna_docs.py
+ D scripts/archive/2026-02/analysis/parse_burnin_log.py
+ D scripts/archive/2026-02/analysis/phase2_metrics.py
+ D scripts/archive/2026-02/analysis/precompute_features.py
+ D scripts/archive/2026-02/analysis/precompute_features_fast.py
+ D scripts/archive/2026-02/analysis/precompute_features_v17.py
+ D scripts/archive/2026-02/analysis/precompute_features_v18.py
+ D scripts/archive/2026-02/analysis/profile_pipeline.py
+ D scripts/archive/2026-02/analysis/repo_inventory_report.py
+ D scripts/archive/2026-02/analysis/reproduce_mismatch.py
+ D scripts/archive/2026-02/analysis/reproduce_trial_from_merged_config.py
+ D scripts/archive/2026-02/analysis/reproduce_trial_subprocess.py
+ D scripts/archive/2026-02/analysis/resample_1h_to_3h.py
+ D scripts/archive/2026-02/analysis/resample_1h_to_6h.py
+ D scripts/archive/2026-02/analysis/run_champion_smoke.py
+ D scripts/archive/2026-02/analysis/run_composable_backtest_no_fib.py
+ D scripts/archive/2026-02/analysis/run_composable_backtest_phase2.py
+ D scripts/archive/2026-02/analysis/run_composable_backtest_poc.py
+ D scripts/archive/2026-02/analysis/run_extended_validation_2024.py
+ D scripts/archive/2026-02/analysis/run_ltf_confidence_grid.py
+ D scripts/archive/2026-02/analysis/run_milestone3_exp1.py
+ D scripts/archive/2026-02/analysis/run_milestone4_exp1.py
+ D scripts/archive/2026-02/analysis/run_milestone4_exp2.py
+ D scripts/archive/2026-02/analysis/run_optimizer_smoke.py
+ D scripts/archive/2026-02/analysis/run_phase2c_extended.py
+ D scripts/archive/2026-02/analysis/run_phase2d_corrected.py
+ D scripts/archive/2026-02/analysis/run_phase3_fine.py
+ D scripts/archive/2026-02/analysis/sanity_check_evgate_percentiles.py
+ D scripts/archive/2026-02/analysis/sanity_check_size_zero_reasons.py
+ D scripts/archive/2026-02/analysis/scan_phase3_fine_runs.py
+ D scripts/archive/2026-02/analysis/select_champion.py
+ D scripts/archive/2026-02/analysis/show_best_results.py
+ D scripts/archive/2026-02/analysis/show_feature_loading_modes.py
+ D scripts/archive/2026-02/analysis/show_loaded_model.py
+ D scripts/archive/2026-02/analysis/show_v4_features_loading.py
+ D scripts/archive/2026-02/analysis/simple_htf_integration_check.py
+ D scripts/archive/2026-02/analysis/smoke_submit_call.py
+ D scripts/archive/2026-02/analysis/smoke_submit_flow.py
+ D scripts/archive/2026-02/analysis/smoke_test_fixes.py
+ D scripts/archive/2026-02/analysis/summarize_hparam_results.py
+ D scripts/archive/2026-02/analysis/test_ws_public.py
+ D scripts/archive/2026-02/analysis/trace_champion_loading.py
+ D scripts/archive/2026-02/analysis/tune_confidence_threshold.py
+ D scripts/archive/2026-02/analysis/tune_triple_barrier.py
+ D scripts/archive/2026-02/analysis/validate_all_indicators.py
+ D scripts/archive/2026-02/analysis/validate_atr_vectorized.py
+ D scripts/archive/2026-02/analysis/validate_data.py
+ D scripts/archive/2026-02/analysis/validate_holdout.py
+ D scripts/archive/2026-02/analysis/validate_purged_wfcv.py
+ D scripts/archive/2026-02/analysis/validate_v17_holdout.py
+ D scripts/archive/2026-02/analysis/validate_v17_ic.py
+ D scripts/archive/2026-02/analysis/validate_vectorized_features.py
+ D scripts/archive/2026-02/analysis/validate_zero_trade_risk.py
+ D scripts/archive/2026-02/analysis/verify_async_candles.py
+ D scripts/archive/2026-02/analysis/verify_candidate_exact.py
+ D scripts/archive/2026-02/analysis/verify_config_loading.py
+ D scripts/archive/2026-02/analysis/verify_exits_forced.py
+ D scripts/archive/2026-02/analysis/verify_exits_forced_v2.py
+ D scripts/archive/2026-02/analysis/verify_exits_loose.py
+ D scripts/archive/2026-02/analysis/verify_fib_connection.py
+ D scripts/archive/2026-02/analysis/verify_integration.py
+ D scripts/archive/2026-02/analysis/verify_mcp_installation.py
+ D scripts/archive/2026-02/analysis/verify_runner_fix.py
+ D scripts/archive/2026-02/analysis/verify_v17_htf_cols.py
+?? docs/audit/refactor/command_packet_candidate14_delete_archive_2026_02_analysis_2026-03-09.md
+?? docs/audit/refactor/evidence/candidate14_archive_2026_02_analysis_exact_path_refcheck_2026-03-09.json
+?? docs/audit/refactor/evidence/candidate14_archive_2026_02_analysis_manifest_2026-03-09.txt
+?? docs/audit/refactor/evidence/candidate14_archive_2026_02_analysis_path_refcheck_2026-03-09.txt
+?? docs/audit/refactor/evidence/candidate14_delete_patch_2026-03-09.diff
+?? docs/audit/refactor/evidence/candidate14_post_delete_scope_drift_2026-03-09.txt
+?? docs/audit/refactor/evidence/candidate14_skill_invocations_2026-03-09.txt

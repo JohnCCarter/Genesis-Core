@@ -1,0 +1,35 @@
+{
+  "archive_total_files": 220,
+  "archive_unused_like_files": 155,
+  "archive_unused_like_ratio": 0.7045,
+  "by_family": {
+    "archive/2026-02": {
+      "total": 109,
+      "unused_like": 68
+    },
+    "archive/analysis": {
+      "total": 12,
+      "unused_like": 10
+    },
+    "archive/debug": {
+      "total": 38,
+      "unused_like": 26
+    },
+    "archive/deprecated_2026-02": {
+      "total": 5,
+      "unused_like": 3
+    },
+    "archive/experiments": {
+      "total": 6,
+      "unused_like": 4
+    },
+    "archive/model_registry_update": {
+      "total": 14,
+      "unused_like": 14
+    },
+    "archive/test_prototypes": {
+      "total": 36,
+      "unused_like": 30
+    }
+  }
+}

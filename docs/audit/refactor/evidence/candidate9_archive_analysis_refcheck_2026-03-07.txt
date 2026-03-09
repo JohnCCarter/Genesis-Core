@@ -1,0 +1,5 @@
+candidate: candidate9_batch_delete_archive_analysis
+date: 2026-03-07
+check: basename reference scan outside scripts/archive, docs/archive, docs/audit
+pattern: analyze_feature_importance.py|analyze_feature_synergy.py|analyze_permutation_importance.py|benchmark_optimizations.py|calculate_ic_metrics.py|calculate_partial_ic.py|compare_htf_exits.py|compare_modes.py|compare_swing_strategies.py|fdr_correction.py|feature_ic_v18.py|monitor_feature_drift.py
+result: NO_MATCHES_OUTSIDE_ARCHIVE_AUDIT

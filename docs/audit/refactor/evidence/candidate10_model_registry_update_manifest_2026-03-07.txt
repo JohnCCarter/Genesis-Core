@@ -1,0 +1,14 @@
+scripts/archive/model_registry_update/analyze_full_registry.py
+scripts/archive/model_registry_update/analyze_tbtcusd_models.py
+scripts/archive/model_registry_update/cleanup_old_models.py
+scripts/archive/model_registry_update/cleanup_tbtcusd_metrics.py
+scripts/archive/model_registry_update/cleanup_tbtcusd_models.py
+scripts/archive/model_registry_update/complete_model_registry_update.py
+scripts/archive/model_registry_update/create_advanced_models.py
+scripts/archive/model_registry_update/execute_model_registry_update.py
+scripts/archive/model_registry_update/fix_timeframe_4h.py
+scripts/archive/model_registry_update/model_update_plan.json
+scripts/archive/model_registry_update/tbtcusd_cleanup_plan.json
+scripts/archive/model_registry_update/update_model_registry_plan.py
+scripts/archive/model_registry_update/update_registry_mapping.py
+scripts/archive/model_registry_update/verify_model_registry.py

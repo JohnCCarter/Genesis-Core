@@ -1,0 +1,244 @@
+{
+  "statistics": {
+    "detectionDate": "2026-03-06T20:43:58.954Z",
+    "formats": {
+      "python": {
+        "sources": {
+          "C:/Users/salib/Desktop/Repos/Genesis-Core/scripts/validate/validate_registry.py": {
+            "lines": 293,
+            "tokens": 2054,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "C:/Users/salib/Desktop/Repos/Genesis-Core/scripts/validate/validate_optimizer_config.py": {
+            "lines": 415,
+            "tokens": 3226,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "C:/Users/salib/Desktop/Repos/Genesis-Core/scripts/train/train_model.py": {
+            "lines": 311,
+            "tokens": 2352,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "C:/Users/salib/Desktop/Repos/Genesis-Core/scripts/run/run_backtest.py": {
+            "lines": 691,
+            "tokens": 5258,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "C:/Users/salib/Desktop/Repos/Genesis-Core/scripts/run/paper_trading_runner.py": {
+            "lines": 33,
+            "tokens": 239,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "C:/Users/salib/Desktop/Repos/Genesis-Core/scripts/promote/promote_v5a_to_champion.py": {
+            "lines": 209,
+            "tokens": 1551,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "C:/Users/salib/Desktop/Repos/Genesis-Core/scripts/optimize/optimizer.py": {
+            "lines": 709,
+            "tokens": 6183,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "C:/Users/salib/Desktop/Repos/Genesis-Core/scripts/fetch/fetch_historical.py": {
+            "lines": 401,
+            "tokens": 2629,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "C:/Users/salib/Desktop/Repos/Genesis-Core/scripts/extract/extract_backtest_provenance.py": {
+            "lines": 148,
+            "tokens": 1085,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "C:/Users/salib/Desktop/Repos/Genesis-Core/scripts/audit/audit_optuna_objective_parity.py": {
+            "lines": 40,
+            "tokens": 287,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "C:/Users/salib/Desktop/Repos/Genesis-Core/scripts/analyze/analyze_gate_dominance.py": {
+            "lines": 482,
+            "tokens": 4260,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "C:/Users/salib/Desktop/Repos/Genesis-Core/scripts/run_skill.py": {
+            "lines": 480,
+            "tokens": 4492,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "C:/Users/salib/Desktop/Repos/Genesis-Core/scripts/mcp_session_preflight.py": {
+            "lines": 297,
+            "tokens": 2466,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          }
+        },
+        "total": {
+          "lines": 4509,
+          "tokens": 36082,
+          "sources": 13,
+          "clones": 0,
+          "duplicatedLines": 0,
+          "duplicatedTokens": 0,
+          "percentage": 0,
+          "percentageTokens": 0,
+          "newDuplicatedLines": 0,
+          "newClones": 0
+        }
+      },
+      "markdown": {
+        "sources": {
+          "C:/Users/salib/Desktop/Repos/Genesis-Core/scripts/docs/TIMEFRAMES_REFERENCE.md": {
+            "lines": 173,
+            "tokens": 1148,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "C:/Users/salib/Desktop/Repos/Genesis-Core/scripts/docs/README.md": {
+            "lines": 92,
+            "tokens": 706,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "C:/Users/salib/Desktop/Repos/Genesis-Core/scripts/docs/DATA_FETCH_GUIDE.md": {
+            "lines": 231,
+            "tokens": 1449,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          }
+        },
+        "total": {
+          "lines": 496,
+          "tokens": 3303,
+          "sources": 3,
+          "clones": 0,
+          "duplicatedLines": 0,
+          "duplicatedTokens": 0,
+          "percentage": 0,
+          "percentageTokens": 0,
+          "newDuplicatedLines": 0,
+          "newClones": 0
+        }
+      }
+    },
+    "total": {
+      "lines": 5005,
+      "tokens": 39385,
+      "sources": 16,
+      "clones": 0,
+      "duplicatedLines": 0,
+      "duplicatedTokens": 0,
+      "percentage": 0,
+      "percentageTokens": 0,
+      "newDuplicatedLines": 0,
+      "newClones": 0
+    }
+  },
+  "duplicates": []
+}

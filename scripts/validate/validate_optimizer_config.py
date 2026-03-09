@@ -9,7 +9,7 @@ champion-konfigurationen för att säkerställa att:
 4. Kritiska parametrar inte är utelämnade
 
 Användning:
-    python scripts/validate_optimizer_config.py config/optimizer/tBTCUSD_1h_optuna_fib_tune.yaml
+    python scripts/validate/validate_optimizer_config.py config/optimizer/tBTCUSD_1h_optuna_fib_tune.yaml
 """
 
 from __future__ import annotations

@@ -1,0 +1,22 @@
+commit=5c0afb7a1eaa50348d2171c13d381e7c67e54788
+subject=merge: integrate feature/refactor-scripts-structure-a-next into feature/refactor-scripts-structure-a
+
+M	docs/archive/deprecated_2026-02-24/docs/features/INDICATORS_REFERENCE.md
+M	docs/archive/deprecated_2026-02-24/docs/validation/ADVANCED_VALIDATION_PRODUCTION.md
+M	docs/archive/deprecated_2026-02-24/docs/validation/VALIDATION_CHECKLIST.md
+A	docs/audit/refactor/candidate9_archive_analysis_delete_signoff_2026-03-07.md
+A	docs/audit/refactor/command_packet_candidate9_batch_delete_archive_analysis_2026-03-07.md
+A	docs/audit/refactor/evidence/candidate9_archive_analysis_manifest_2026-03-07.txt
+A	docs/audit/refactor/evidence/candidate9_archive_analysis_refcheck_2026-03-07.txt
+D	scripts/archive/analysis/analyze_feature_importance.py
+D	scripts/archive/analysis/analyze_feature_synergy.py
+D	scripts/archive/analysis/analyze_permutation_importance.py
+D	scripts/archive/analysis/benchmark_optimizations.py
+D	scripts/archive/analysis/calculate_ic_metrics.py
+D	scripts/archive/analysis/calculate_partial_ic.py
+D	scripts/archive/analysis/compare_htf_exits.py
+D	scripts/archive/analysis/compare_modes.py
+D	scripts/archive/analysis/compare_swing_strategies.py
+D	scripts/archive/analysis/fdr_correction.py
+D	scripts/archive/analysis/feature_ic_v18.py
+D	scripts/archive/analysis/monitor_feature_drift.py

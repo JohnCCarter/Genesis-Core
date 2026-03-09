@@ -59,7 +59,7 @@ foreach ($symbol in $symbolList) {
 
         try {
             # Run fetch script
-            python scripts/fetch_historical.py `
+            python scripts/fetch/fetch_historical.py `
                 --symbol $symbol `
                 --timeframe $timeframe `
                 --months $Months
@@ -70,28 +70,29 @@ foreach ($symbol in $symbolList) {
             if ($LASTEXITCODE -eq 0) {
                 Write-Host "  ✅ Success ($([math]::Round($duration, 1))s)`n" -ForegroundColor Green
                 $results += [PSCustomObject]@{
-                    Symbol = $symbol
+                    Symbol    = $symbol
                     Timeframe = $timeframe
-                    Status = "✅ Success"
-                    Duration = "$([math]::Round($duration, 1))s"
+                    Status    = "✅ Success"
+                    Duration  = "$([math]::Round($duration, 1))s"
                 }
-            } else {
+            }
+            else {
                 Write-Host "  ❌ Failed (exit code: $LASTEXITCODE)`n" -ForegroundColor Red
                 $results += [PSCustomObject]@{
-                    Symbol = $symbol
+                    Symbol    = $symbol
                     Timeframe = $timeframe
-                    Status = "❌ Failed"
-                    Duration = "$([math]::Round($duration, 1))s"
+                    Status    = "❌ Failed"
+                    Duration  = "$([math]::Round($duration, 1))s"
                 }
             }
         }
         catch {
             Write-Host "  ❌ Error: $($_.Exception.Message)`n" -ForegroundColor Red
             $results += [PSCustomObject]@{
-                Symbol = $symbol
+                Symbol    = $symbol
                 Timeframe = $timeframe
-                Status = "❌ Error"
-                Duration = "N/A"
+                Status    = "❌ Error"
+                Duration  = "N/A"
             }
         }
     }
@@ -121,12 +122,13 @@ Write-Host "2. Precompute features (vectorized - FAST!):"
 Write-Host "   python scripts/precompute_features_v17.py --symbol tBTCUSD --timeframe 1h"
 Write-Host ""
 Write-Host "3. Train model:"
-Write-Host "   python scripts/train_model.py --symbol tBTCUSD --timeframe 1h --use-holdout"
+Write-Host "   python scripts/train/train_model.py --symbol tBTCUSD --timeframe 1h --use-holdout"
 Write-Host ""
 
 # Exit with error code if any job failed
 if ($results | Where-Object { $_.Status -ne '✅ Success' }) {
     exit 1
-} else {
+}
+else {
     exit 0
 }

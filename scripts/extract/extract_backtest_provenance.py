@@ -8,8 +8,8 @@ so audit reports can cite reproducible evidence without manual scrolling.
 
 Usage
 -----
-python scripts/extract_backtest_provenance.py results/backtests/tBTCUSD_1h_20260112_142153.json
-python scripts/extract_backtest_provenance.py --format md results/backtests/*.json
+python scripts/extract/extract_backtest_provenance.py results/backtests/tBTCUSD_1h_20260112_142153.json
+python scripts/extract/extract_backtest_provenance.py --format md results/backtests/*.json
 
 Notes
 -----

@@ -92,6 +92,20 @@ def _base_run_meta_payload() -> dict[str, Any]:
     }
 
 
+def _prepare_run_meta_test_context(tmp_path: Path) -> tuple[Path, Path, dict[str, Any], str]:
+    run_dir = tmp_path / "run"
+    run_dir.mkdir(parents=True, exist_ok=True)
+    config_path = tmp_path / TEST_CFG_FILENAME
+    config_path.write_text("meta: {}\n", encoding="utf-8")
+    meta = {
+        "snapshot_id": TEST_RUN_META_SNAPSHOT_ID,
+        "symbol": TEST_SYMBOL,
+        "timeframe": TEST_TIMEFRAME,
+    }
+    run_id = TEST_RUN_ID
+    return run_dir, config_path, meta, run_id
+
+
 def _make_optuna_test_config(
     *,
     max_trials: int,
@@ -733,17 +747,7 @@ def test_ensure_run_metadata_mismatch_is_fail_fast(
     monkeypatch.setenv("GENESIS_SCORE_VERSION", "v1")
     monkeypatch.delenv("GENESIS_ALLOW_RUN_META_MISMATCH", raising=False)
 
-    run_dir = tmp_path / "run"
-    run_dir.mkdir(parents=True, exist_ok=True)
-    config_path = tmp_path / TEST_CFG_FILENAME
-    config_path.write_text("meta: {}\n", encoding="utf-8")
-
-    meta = {
-        "snapshot_id": TEST_RUN_META_SNAPSHOT_ID,
-        "symbol": TEST_SYMBOL,
-        "timeframe": TEST_TIMEFRAME,
-    }
-    run_id = TEST_RUN_ID
+    run_dir, config_path, meta, run_id = _prepare_run_meta_test_context(tmp_path)
 
     # Match everything except snapshot_id (guard should fail-fast).
     (run_dir / "run_meta.json").write_text(
@@ -770,17 +774,7 @@ def test_ensure_run_metadata_backfills_missing_fields(
     monkeypatch.setenv("GENESIS_SCORE_VERSION", "v2")
     monkeypatch.delenv("GENESIS_ALLOW_RUN_META_MISMATCH", raising=False)
 
-    run_dir = tmp_path / "run"
-    run_dir.mkdir(parents=True, exist_ok=True)
-    config_path = tmp_path / TEST_CFG_FILENAME
-    config_path.write_text("meta: {}\n", encoding="utf-8")
-
-    meta = {
-        "snapshot_id": TEST_RUN_META_SNAPSHOT_ID,
-        "symbol": TEST_SYMBOL,
-        "timeframe": TEST_TIMEFRAME,
-    }
-    run_id = TEST_RUN_ID
+    run_dir, config_path, meta, run_id = _prepare_run_meta_test_context(tmp_path)
 
     # Older/partial run_meta.json missing key fields should be backfilled.
     (run_dir / "run_meta.json").write_text(

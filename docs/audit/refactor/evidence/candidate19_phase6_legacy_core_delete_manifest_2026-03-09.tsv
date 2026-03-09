@@ -1,0 +1,5 @@
+action	path	reason
+DELETE	docs/archive/phase6/DOCUMENTATION_ANALYSIS.md	Superseded/meta archive document with no active external refs outside archive/audit.
+DELETE	docs/archive/phase6/ORIGINAL_REPO_MENTIONS.md	Superseded/meta archive document with no active external refs outside archive/audit.
+DELETE	docs/archive/phase6/TODO.md	Superseded/meta archive document with no active external refs outside archive/audit.
+DELETE	docs/archive/STRATEGY_SPEC_phase3.md	Superseded/meta archive document with no active external refs outside archive/audit.

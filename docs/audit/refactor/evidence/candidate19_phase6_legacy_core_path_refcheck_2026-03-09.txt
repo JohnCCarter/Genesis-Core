@@ -1,0 +1,11 @@
+timestamp: 2026-03-09 14:14:55+01:00
+branch: feature/docs-archive-review-2026-03-09
+scope_files: 7
+NO_HIT	docs/archive/phase6/DOCUMENTATION_ANALYSIS.md
+NO_HIT	docs/archive/phase6/ORIGINAL_REPO_MENTIONS.md
+NO_HIT	docs/archive/phase6/TODO.md
+NO_HIT	docs/archive/STRATEGY_SPEC_phase3.md
+NO_HIT	docs/archive/phase6/README.md
+NO_HIT	docs/archive/phase6/PHASE-6_LEARNINGS.md
+NO_HIT	docs/archive/original_genesis/GENESIS_FEATURES.md
+result: PASS_NO_ACTIVE_REFS_OUTSIDE_ARCHIVE_AUDIT

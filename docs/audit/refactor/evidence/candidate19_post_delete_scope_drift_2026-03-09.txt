@@ -1,0 +1,17 @@
+timestamp: 2026-03-09 14:22:50+01:00
+branch: feature/docs-archive-review-2026-03-09
+expected_delete_count: 4
+expected_deletes:
+  docs/archive/phase6/DOCUMENTATION_ANALYSIS.md
+  docs/archive/phase6/ORIGINAL_REPO_MENTIONS.md
+  docs/archive/phase6/TODO.md
+  docs/archive/STRATEGY_SPEC_phase3.md
+changed_files:
+  docs/archive/STRATEGY_SPEC_phase3.md
+  docs/archive/phase6/DOCUMENTATION_ANALYSIS.md
+  docs/archive/phase6/ORIGINAL_REPO_MENTIONS.md
+  docs/archive/phase6/TODO.md
+  docs/audit/refactor/evidence/docs_archive_triage_matrix_2026-03-09.tsv
+  docs/audit/refactor/evidence/docs_archive_triage_summary_2026-03-09.txt
+delete_coverage: PASS_ALL_EXPECTED_DELETES_REMOVED
+result: PASS_SCOPE_MATCH_MANUAL_REVIEW_REQUIRED

@@ -33,7 +33,14 @@ DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/daily_summaries/daily_s
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/daily_summaries/daily_summary_2026-02-03.md	.md	No active external references outside archive/audit; dated operational snapshots in deprecated archive subtree.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/daily_summaries/daily_summary_2026-02-11.md	.md	No active external references outside archive/audit; dated operational snapshots in deprecated archive subtree.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/daily_summaries/daily_summary_2026-02-12.md	.md	No active external references outside archive/audit; dated operational snapshots in deprecated archive subtree.
+DELETE_CANDIDATE	docs/archive/phase6/DOCUMENTATION_ANALYSIS.md	.md	Superseded/meta archive document with no active external refs outside archive/audit.
+DELETE_CANDIDATE	docs/archive/phase6/ORIGINAL_REPO_MENTIONS.md	.md	Superseded/meta archive document with no active external refs outside archive/audit.
+DELETE_CANDIDATE	docs/archive/phase6/TODO.md	.md	Superseded/meta archive document with no active external refs outside archive/audit.
+DELETE_CANDIDATE	docs/archive/STRATEGY_SPEC_phase3.md	.md	Superseded/meta archive document with no active external refs outside archive/audit.
 KEEP	docs/archive/CHANGELOG-legacy.md	.md	Explicitly referenced outside docs/archive.
+KEEP	docs/archive/original_genesis/GENESIS_FEATURES.md	.md	Historical reference/index with long-term context value.
+KEEP	docs/archive/phase6/PHASE-6_LEARNINGS.md	.md	Historical reference/index with long-term context value.
+KEEP	docs/archive/phase6/README.md	.md	Historical reference/index with long-term context value.
 KEEP	docs/archive/quarantine/non_markdown/deprecated_2026-02-24/analysis/optimization_analysis.ipynb	.ipynb	Quarantined non-markdown artifact under governed path.
 KEEP	docs/archive/quarantine/non_markdown/deprecated_2026-02-24/analysis/optimization_analysis.py	.py	Quarantined non-markdown artifact under governed path.
 KEEP	docs/archive/quarantine/non_markdown/deprecated_2026-02-24/analysis/optimization_v4_analysis.ipynb	.ipynb	Quarantined non-markdown artifact under governed path.
@@ -119,10 +126,3 @@ UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/validation/CONFIG_LOADING_VERI
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/validation/PARITY_TEST_20251125.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/validation/VALIDATION_CHECKLIST.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/validation/VALIDATION_VS_BACKTEST_EXPLAINED.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/original_genesis/GENESIS_FEATURES.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/phase6/DOCUMENTATION_ANALYSIS.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/phase6/ORIGINAL_REPO_MENTIONS.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/phase6/PHASE-6_LEARNINGS.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/phase6/README.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/phase6/TODO.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/STRATEGY_SPEC_phase3.md	.md	No explicit external reference outside archive/audit; semantic retention review required.

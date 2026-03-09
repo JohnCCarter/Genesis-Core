@@ -1,0 +1,21 @@
+Candidate16 External Reference Scan (2026-03-09)
+
+Scope:
+- archive/2025-11-03/**
+- archive/model_optimization/**
+
+Search patterns:
+- archive/2025-11-03
+- archive\\2025-11-03
+- archive/model_optimization
+- archive\\model_optimization
+
+Method:
+- Repository-wide text search with ignored files included.
+
+Result:
+- No matches found outside archive scope.
+
+Interpretation:
+- No explicit non-archive string references were detected for these archive roots at scan time.
+- Candidate16 can proceed with path curation if exact old->new mapping is provided per batch.

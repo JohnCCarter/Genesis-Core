@@ -1,0 +1,82 @@
+﻿Candidate16 Archive Inventory (2026-03-09)
+
+Counts by extension:
+- .json: 50
+- .py: 12
+- .yaml: 8
+- .backup: 1
+- .md: 1
+
+All files (relative paths):
+archive\2025-11-03\config_models\backup_old_models\tADAUSD.json
+archive\2025-11-03\config_models\backup_old_models\tALGOUSD.json
+archive\2025-11-03\config_models\backup_old_models\tAPTUSD.json
+archive\2025-11-03\config_models\backup_old_models\tAVAXUSD.json
+archive\2025-11-03\config_models\backup_old_models\tBTCUSD.json
+archive\2025-11-03\config_models\backup_old_models\tDOGEUSD.json
+archive\2025-11-03\config_models\backup_old_models\tDOTUSD.json
+archive\2025-11-03\config_models\backup_old_models\tEOSUSD.json
+archive\2025-11-03\config_models\backup_old_models\tETHUSD.json
+archive\2025-11-03\config_models\backup_old_models\tFILUSD.json
+archive\2025-11-03\config_models\backup_old_models\tLTCUSD.json
+archive\2025-11-03\config_models\backup_old_models\tNEARUSD.json
+archive\2025-11-03\config_models\backup_old_models\tSOLUSD.json
+archive\2025-11-03\config_models\backup_old_models\tXAUTUSD.json
+archive\2025-11-03\config_models\backup_old_models\tXTZUSD.json
+archive\2025-11-03\config_models\backup_tbtcusd_metrics\tBTCUSD_1h_v10_final_baseline_metrics.json
+archive\2025-11-03\config_models\backup_tbtcusd_metrics\tBTCUSD_1h_v10_optimized_metrics.json
+archive\2025-11-03\config_models\backup_tbtcusd_metrics\tBTCUSD_1h_v7_final_top7_6m_metrics.json
+archive\2025-11-03\config_models\backup_tbtcusd_metrics\tBTCUSD_30m_v3_metrics.json
+archive\2025-11-03\config_models\backup_tbtcusd_outdated\tBTCUSD_1h_v10_final.json
+archive\2025-11-03\config_models\backup_tbtcusd_outdated\tBTCUSD_1h_v10_final_baseline.json
+archive\2025-11-03\config_models\backup_tbtcusd_outdated\tBTCUSD_1h_v10_optimized.json
+archive\2025-11-03\config_models\backup_tbtcusd_outdated\tBTCUSD_30m_v3.json
+archive\2025-11-03\config_models\backup_tbtcusd_outdated\tBTCUSD_6h_v3.json
+archive\2025-11-03\config_models\registry.json.backup
+archive\2025-11-03\config_models\v7_final_top7_6m.json\tBTCUSD_1h_v3.json
+archive\2025-11-03\config_models\v7_final_top7_6m.json\tBTCUSD_1h_v3_metrics.json
+archive\2025-11-03\debug_scripts\debug_decide.py
+archive\2025-11-03\debug_scripts\debug_htf_levels.py
+archive\2025-11-03\debug_scripts\test_cache_key_match.py
+archive\2025-11-03\debug_scripts\test_normalize_float.py
+archive\2025-11-03\debug_scripts\test_optuna_exact_1_3months.py
+archive\2025-11-03\debug_scripts\test_optuna_float_values.py
+archive\2025-11-03\debug_scripts\test_trial_timing.py
+archive\2025-11-03\docs\THRESHOLD_OPTIMIZATION_RESULTS.md
+archive\2025-11-03\models_trimmed\tBTCUSD_1h_v3.json
+archive\2025-11-03\models_trimmed\tBTCUSD_1h_v3_metrics.json
+archive\2025-11-03\models_trimmed\tBTCUSD_1h_v3_top_v18.json
+archive\2025-11-03\models_trimmed\tBTCUSD_1h_v3_top_v18_metrics.json
+archive\2025-11-03\models_trimmed\tBTCUSD_1h_v3_top6_v18.json
+archive\2025-11-03\models_trimmed\tBTCUSD_1h_v4.json
+archive\2025-11-03\models_trimmed\tBTCUSD_1h_v4_metrics.json
+archive\2025-11-03\models_trimmed\tBTCUSD_3h_v3_top_v18.json
+archive\2025-11-03\models_trimmed\tBTCUSD_3h_v3_top_v18_metrics.json
+archive\2025-11-03\models_trimmed\tBTCUSD_3h_v3_top6_v18.json
+archive\2025-11-03\models_trimmed\tBTCUSD_3h_v3_top8_v18.json
+archive\2025-11-03\models_trimmed\tBTCUSD_6h_v3_top_v18.json
+archive\2025-11-03\models_trimmed\tBTCUSD_6h_v3_top_v18_metrics.json
+archive\2025-11-03\models_trimmed\tBTCUSD_6h_v3_top6_v18.json
+archive\2025-11-03\models_trimmed\tBTCUSD_6h_v3_top8_v18.json
+archive\2025-11-03\optimizer_configs\tBTCUSD_1h_champion_clone_grid.yaml
+archive\2025-11-03\optimizer_configs\tBTCUSD_1h_champion_clone_grid_quick.yaml
+archive\2025-11-03\optimizer_configs\tBTCUSD_1h_exact_optuna.yaml
+archive\2025-11-03\optimizer_configs\tBTCUSD_1h_fib_grid.yaml
+archive\2025-11-03\optimizer_configs\tBTCUSD_1h_new_optuna.yaml
+archive\2025-11-03\optimizer_configs\tBTCUSD_1h_new_optuna_clean.yaml
+archive\2025-11-03\optimizer_configs\tBTCUSD_1h_optuna_fib_tune_quick.yaml
+archive\2025-11-03\optimizer_configs\tBTCUSD_1h_search.yaml
+archive\2025-11-03\scripts\decision_backup.py
+archive\2025-11-03\scripts\tmp_reason_counts.py
+archive\2025-11-03\tmp_configs\tmp_aggressive_candidate.json
+archive\2025-11-03\tmp_configs\tmp_champion_clone.json
+archive\2025-11-03\tmp_configs\tmp_htf_edge.json
+archive\2025-11-03\tmp_configs\tmp_ltf_only.json
+archive\2025-11-03\tmp_configs\tmp_no_htf.json
+archive\2025-11-03\tmp_configs\tmp_relaxed_combo.json
+archive\2025-11-03\tmp_configs\tmp_relaxed_combo_ltf.json
+archive\2025-11-03\tmp_configs\tmp_threshold_relax.json
+archive\model_optimization\1d_optimization_summary.py
+archive\model_optimization\1d_optimized_configs.json
+archive\model_optimization\optimize_1d_config.py
+archive\model_optimization\update_1d_config.py

@@ -1,8 +1,8 @@
-﻿timestamp: 2026-03-10 09:45:00+01:00
+﻿timestamp: 2026-03-10 10:25:00+01:00
 branch: feature/docs-archive-review-2026-03-09
 total_files: 127
-class_delete_candidate: 65
+class_delete_candidate: 73
 class_keep: 8
-class_uncertain: 54
+class_uncertain: 46
 matrix_file: docs/audit/refactor/evidence/docs_archive_triage_matrix_2026-03-09.tsv
-batch_last_updated: paper_trading_templates_batch_candidate23
+batch_last_updated: optuna_phase_batch_candidate24

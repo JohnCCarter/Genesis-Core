@@ -1,0 +1,9 @@
+candidate	path	ext	reason
+candidate24	docs/archive/deprecated_2026-02-24/docs/optimization/optimization_v4_summary.md	.md	Deprecated optimization summary artifact with no active exact-path external refs.
+candidate24	docs/archive/deprecated_2026-02-24/docs/optimization/PHASE2D_SUMMARY_20251121.md	.md	Deprecated phase summary artifact with no active exact-path external refs.
+candidate24	docs/archive/deprecated_2026-02-24/docs/optimization/PHASE3_FIX_AND_RESULTS_20251121.md	.md	Deprecated phase fix/results artifact with no active exact-path external refs.
+candidate24	docs/archive/deprecated_2026-02-24/docs/optimization/PHASE3_WIDE_FAIL_ANALYSIS_20251125.md	.md	Deprecated fail-analysis artifact with no active exact-path external refs.
+candidate24	docs/archive/deprecated_2026-02-24/docs/optimization/PHASE3_FINE_TUNING_LOG.md	.md	Deprecated fine-tuning log artifact with no active exact-path external refs.
+candidate24	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE4_EXP1_REPORT.md	.md	Deprecated milestone experiment report with no active exact-path external refs.
+candidate24	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE4_EXP2_REPORT.md	.md	Deprecated milestone experiment report with no active exact-path external refs.
+candidate24	docs/archive/deprecated_2026-02-24/docs/performance/OPTUNA_FINAL_REPORT.md	.md	Deprecated Optuna final report with no active exact-path external refs.

@@ -81,8 +81,8 @@ UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE2_HQT
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE3_CLOSURE.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE3_EXP1_REPORT.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE4_CLOSURE.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE4_EXP1_REPORT.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE4_EXP2_REPORT.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE4_EXP1_REPORT.md	.md	Deprecated milestone experiment report with no active exact-path external refs.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE4_EXP2_REPORT.md	.md	Deprecated milestone experiment report with no active exact-path external refs.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_PAPER_TRADING_SETUP.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/fibonacci/FIBONACCI_COMBINATION_ANALYSIS.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/fibonacci/FIBONACCI_FRAKTAL_EXITS_IMPLEMENTATION_NEXT_PLAN.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
@@ -91,12 +91,12 @@ UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/fibonacci/HTF_EXIT_CONTEXT_BUG
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/ideas/fvg-fib.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/mcp/privacy-policy.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/optimization/OPTIMIZATION_SUMMARY.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/optimization/optimization_v4_summary.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/optimization/optimization_v4_summary.md	.md	Deprecated optimization summary artifact with no active exact-path external refs.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/optimization/optimizer.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/optimization/PHASE2D_SUMMARY_20251121.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/optimization/PHASE3_FINE_TUNING_LOG.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/optimization/PHASE3_FIX_AND_RESULTS_20251121.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/optimization/PHASE3_WIDE_FAIL_ANALYSIS_20251125.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/optimization/PHASE2D_SUMMARY_20251121.md	.md	Deprecated phase summary artifact with no active exact-path external refs.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/optimization/PHASE3_FINE_TUNING_LOG.md	.md	Deprecated fine-tuning log artifact with no active exact-path external refs.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/optimization/PHASE3_FIX_AND_RESULTS_20251121.md	.md	Deprecated phase fix/results artifact with no active exact-path external refs.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/optimization/PHASE3_WIDE_FAIL_ANALYSIS_20251125.md	.md	Deprecated fail-analysis artifact with no active exact-path external refs.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/optimization/run_20251208_140048_summary.md	.md	Deprecated run summary artifact with no active external refs outside archive/audit.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_runtime_snapshot_template.md	.md	Deprecated paper-trading template snapshot with no active exact-path external refs.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_summaries/day0_summary_2026-02-04.md	.md	Deprecated daily summary snapshot with no active exact-path external refs.
@@ -111,7 +111,7 @@ DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/paper_trading/weekly_me
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/performance/IMPROVEMENTS_2025_11_21.md	.md	Deprecated dated performance snapshot with no active external refs outside archive/audit.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/performance/OPTIMIZATION_20251126.md	.md	Deprecated dated optimization snapshot with no active external refs outside archive/audit.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/performance/OPTIMIZATION_STATUS_20251126.md	.md	Deprecated dated optimization status snapshot with no active external refs outside archive/audit.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/performance/OPTUNA_FINAL_REPORT.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/performance/OPTUNA_FINAL_REPORT.md	.md	Deprecated Optuna final report with no active exact-path external refs.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/performance/OPTUNA_IMPROVEMENTS_SUMMARY.md	.md	Deprecated summary artifact with no active external refs outside archive/audit.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/performance/OPTUNA_OPTIMIZATIONS.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/performance/performance_analysis.md	.md	Deprecated analysis snapshot with no active external refs outside archive/audit.

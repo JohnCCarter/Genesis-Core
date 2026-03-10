@@ -1,0 +1,29 @@
+timestamp: 2026-03-10 11:18:31+01:00
+branch: feature/docs-archive-review-2026-03-09
+expected_delete_count: 4
+expected_deletes:
+  docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_summaries/README.md
+  docs/archive/deprecated_2026-02-24/docs/PORTING.md
+  docs/archive/deprecated_2026-02-24/docs/roadmap/STABILIZATION_PLAN_9_STEPS.md
+  docs/archive/deprecated_2026-02-24/docs/runtime/RUNTIME_PATCH_WORKFLOW.md
+changed_file_count: 16
+changed_files:
+  docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_summaries/README.md
+  docs/archive/deprecated_2026-02-24/docs/PORTING.md
+  docs/archive/deprecated_2026-02-24/docs/roadmap/STABILIZATION_PLAN_9_STEPS.md
+  docs/archive/deprecated_2026-02-24/docs/runtime/RUNTIME_PATCH_WORKFLOW.md
+  docs/audit/refactor/evidence/docs_archive_triage_matrix_2026-03-09.tsv
+  docs/audit/refactor/evidence/docs_archive_triage_summary_2026-03-09.txt
+  docs/audit/refactor/command_packet_candidate29_delete_docs_archive_meta_ops_batch_2026-03-10.md
+  docs/audit/refactor/evidence/docs_archive_triage_meta_ops_batch_candidate29_decision_2026-03-10.md
+  docs/audit/refactor/evidence/candidate29_meta_ops_delete_manifest_2026-03-10.tsv
+  docs/audit/refactor/evidence/candidate29_meta_ops_path_refcheck_2026-03-10.txt
+  docs/audit/refactor/evidence/candidate29_skill_invocation_2026-03-10.txt
+  docs/audit/refactor/evidence/candidate29_post_delete_scope_drift_2026-03-10.txt
+  docs/audit/refactor/evidence/candidate29_gate_transcript_2026-03-10.md
+  docs/audit/refactor/evidence/candidate29_gate_raw_output_2026-03-10.txt
+  docs/audit/refactor/evidence/candidate29_meta_ops_implementation_report_2026-03-10.md
+  docs/audit/refactor/evidence/candidate29_pr_evidence_template_2026-03-10.md
+delete_coverage: PASS_ALL_EXPECTED_DELETES_REMOVED
+scope_guard: PASS_NO_CHANGES_OUTSIDE_SCOPE_IN
+result: PASS_SCOPE_MATCH

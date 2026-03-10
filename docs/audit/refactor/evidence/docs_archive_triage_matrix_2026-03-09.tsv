@@ -103,7 +103,7 @@ DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_sum
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_summaries/day2_summary_2026-02-06.md	.md	Deprecated daily summary snapshot with no active exact-path external refs.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_summaries/day3_summary_2026-02-11.md	.md	Deprecated daily summary snapshot with no active exact-path external refs.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_summaries/day4_summary_2026-02-12.md	.md	Deprecated daily summary snapshot with no active exact-path external refs.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_summaries/README.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_summaries/README.md	.md	Deprecated daily summaries index with no active exact-path external refs.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/paper_trading/dry_run_acceptance_checklist.md	.md	Deprecated process checklist snapshot with no active exact-path external refs.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/paper_trading/phase3_blocker_autotrade_runner_missing_2026-02-04.md	.md	Deprecated blocker note in archive subtree with no active exact-path external refs.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/paper_trading/README.md	.md	Deprecated archive README under paper_trading subtree with no active exact-path external refs.
@@ -118,11 +118,11 @@ DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/performance/performance
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/performance/PERFORMANCE_GUIDE.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/performance/performance_optimization_summary.md	.md	Deprecated optimization summary snapshot with no active external refs outside archive/audit.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/performance/PERFORMANCE_OPTIMIZATION_SUMMARY_.md	.md	Deprecated duplicate-style summary artifact with no active external refs outside archive/audit.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/PORTING.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/PORTING.md	.md	Deprecated porting note with no active exact-path external refs.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/risk/RISK_LOG.md	.md	Deprecated risk log with no active exact-path external refs.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/risk/RISK_MAP_CONFIDENCE_TUNING.md	.md	Deprecated confidence tuning risk map with no active exact-path external refs.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/roadmap/STABILIZATION_PLAN_9_STEPS.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/runtime/RUNTIME_PATCH_WORKFLOW.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/roadmap/STABILIZATION_PLAN_9_STEPS.md	.md	Deprecated stabilization roadmap with no active exact-path external refs.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/runtime/RUNTIME_PATCH_WORKFLOW.md	.md	Deprecated runtime patch workflow with no active exact-path external refs.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/strategy/STRATEGY_PROBABILITY_AND_REGIME.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/templates/PIPELINE_CHANGE_REVIEW.md	.md	Deprecated template artifact with no active exact-path external refs.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/templates/skills/_skill_template.md	.md	Deprecated skill template artifact with no active exact-path external refs.

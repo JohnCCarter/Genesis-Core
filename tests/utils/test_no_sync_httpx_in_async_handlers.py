@@ -42,7 +42,7 @@ def _find_sync_httpx_calls_in_async_functions(source: str) -> list[tuple[str, in
 
 
 def test_no_sync_httpx_calls_in_async_handlers() -> None:
-    path = Path(__file__).resolve().parents[1] / "src" / "core" / "server.py"
+    path = Path(__file__).resolve().parents[2] / "src" / "core" / "server.py"
     src = path.read_text(encoding="utf-8")
 
     hits = _find_sync_httpx_calls_in_async_functions(src)

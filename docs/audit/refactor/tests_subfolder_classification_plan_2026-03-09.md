@@ -92,6 +92,24 @@ These are **candidates only**; final classification requires owner review + usag
 - `tests/utils/test_decision_edge.py` _(moved in BT30)_
 - `tests/utils/test_decision_matrix.py` _(moved in BT31)_
 - `tests/utils/test_triple_barrier.py` _(moved in BT32)_
+- `tests/utils/test_account_endpoints.py` _(moved in BT37)_
+- `tests/utils/test_config_api_e2e.py` _(moved in BT42)_
+- `tests/utils/test_config_endpoints.py` _(moved in BT47)_
+- `tests/utils/test_ui_endpoints.py` _(moved in BT52)_
+- `tests/utils/test_ws_public_min.py` _(moved in BT57)_
+- `tests/utils/test_mcp_structure_allowlist.py` _(moved in BT62)_
+- `tests/utils/test_mcp_stdio_encoding.py` _(moved in BT67)_
+- `tests/utils/test_mcp_server.py` _(moved in BT72)_
+- `tests/utils/test_mcp_resources.py` _(moved in BT77)_
+- `tests/utils/test_mcp_remote_git_workflow_confirm.py` _(moved in BT82)_
+- `tests/utils/test_mcp_remote_authorization.py` _(moved in BT87)_
+- `tests/utils/test_mcp_logging_redaction.py` _(moved in BT92)_
+- `tests/utils/test_mcp_integration.py` _(moved in BT97)_
+- `tests/utils/test_mcp_git_workflow_tools.py` _(moved in BT102)_
+- `tests/utils/test_mcp_git_status_remote_filters.py` _(moved in BT107)_
+- `tests/utils/test_mcp_config_env_override.py` _(moved in BT112)_
+- `tests/utils/test_remote_server_fastmcp_sse_alias.py` _(moved in BT117)_
+- `tests/utils/test_no_sync_httpx_in_async_handlers.py` _(moved in BT122)_
 
 Guardrail: selector-ankrade backtesttester är nu flyttade till `tests/backtest/`.
 Historikharmonisering för `docs/ideas/REGIME_INTELLIGENCE_T0_*` .. `T8_*` är genomförd i BT9-batchen.

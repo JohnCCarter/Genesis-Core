@@ -69,6 +69,10 @@ These are **candidates only**; final classification requires owner review + usag
 - `tests/backtest/test_backtest_engine_hook.py` _(moved in BT10)_
 - `tests/backtest/test_backtest_engine.py` _(moved in BT11)_
 
+### Candidate utility tests (new bucket)
+
+- `tests/utils/test_backoff_util.py` _(moved in BT12)_
+
 Guardrail: selector-ankrade backtesttester är nu flyttade till `tests/backtest/`.
 Historikharmonisering för `docs/ideas/REGIME_INTELLIGENCE_T0_*` .. `T8_*` är genomförd i BT9-batchen.
 Referenser till `tests/test_backtest_determinism_smoke.py` är uppdaterade till `tests/backtest/test_backtest_determinism_smoke.py`.

@@ -16,7 +16,7 @@ def test_repo_model_registry_avoids_unsafe_1M_filenames() -> None:
     - Separate tests simulate legacy/unsafe registry entries to verify warning behavior.
     """
 
-    repo_root = Path(__file__).resolve().parents[1]
+    repo_root = Path(__file__).resolve().parents[2]
     registry_path = repo_root / "config" / "models" / "registry.json"
     data = json.loads(registry_path.read_text(encoding="utf-8"))
 

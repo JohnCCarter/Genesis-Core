@@ -6,7 +6,7 @@ from core.governance.registry import validate_registry
 
 
 def _repo_root() -> Path:
-    return Path(__file__).resolve().parents[1]
+    return Path(__file__).resolve().parents[2]
 
 
 def _copy_schemas(repo_root: Path, dst_root: Path) -> None:

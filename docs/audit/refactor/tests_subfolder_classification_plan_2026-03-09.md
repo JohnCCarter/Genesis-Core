@@ -75,6 +75,7 @@ These are **candidates only**; final classification requires owner review + usag
 - `tests/utils/test_build_auth_headers.py` _(moved in BT13)_
 - `tests/utils/test_gate_dominance_utils.py` _(moved in BT14)_
 - `tests/utils/test_dict_merge_stack_safe.py` _(moved in BT15)_
+- `tests/utils/test_read_helpers.py` _(moved in BT16)_
 
 Guardrail: selector-ankrade backtesttester är nu flyttade till `tests/backtest/`.
 Historikharmonisering för `docs/ideas/REGIME_INTELLIGENCE_T0_*` .. `T8_*` är genomförd i BT9-batchen.

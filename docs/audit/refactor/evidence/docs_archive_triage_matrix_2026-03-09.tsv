@@ -53,15 +53,15 @@ KEEP	docs/archive/quarantine/non_markdown/deprecated_2026-02-24/analysis/optimiz
 KEEP	docs/archive/quarantine/non_markdown/deprecated_2026-02-24/analysis/optimization_analysis.py	.py	Quarantined non-markdown artifact under governed path.
 KEEP	docs/archive/quarantine/non_markdown/deprecated_2026-02-24/analysis/optimization_v4_analysis.ipynb	.ipynb	Quarantined non-markdown artifact under governed path.
 KEEP	docs/archive/quarantine/non_markdown/deprecated_2026-02-24/analysis/optimization_v4_analysis.py	.py	Quarantined non-markdown artifact under governed path.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/analysis/CONCURRENCY_DUPLICATES_ANALYSIS.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/analysis/FEATURE_INDICATOR_AUDIT_PROMPT.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/analysis/FEATURE_INDICATOR_AUDIT_RUNBOOK.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/analysis/INVESTIGATION_COMPLETE.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/analysis/RUNTIME_REALITY_MAP.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/analysis/SYMMETRIC_CHAMOUN_TIMEFRAME_ANALYSIS.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/calibration/PROBABILITY_THRESHOLD_FIX_20251117.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/analysis/CONCURRENCY_DUPLICATES_ANALYSIS.md	.md	Deprecated investigation report with no active exact-path external refs.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/analysis/FEATURE_INDICATOR_AUDIT_PROMPT.md	.md	Deprecated audit prompt with no active exact-path external refs.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/analysis/FEATURE_INDICATOR_AUDIT_RUNBOOK.md	.md	Deprecated audit runbook with no active exact-path external refs.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/analysis/INVESTIGATION_COMPLETE.md	.md	Deprecated investigation completion report with no active exact-path external refs.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/analysis/RUNTIME_REALITY_MAP.md	.md	Deprecated runtime analysis map with no active exact-path external refs.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/analysis/SYMMETRIC_CHAMOUN_TIMEFRAME_ANALYSIS.md	.md	Deprecated timeframe analysis report with no active exact-path external refs.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/calibration/PROBABILITY_THRESHOLD_FIX_20251117.md	.md	Deprecated calibration fix note with no active exact-path external refs.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/config/CHAMPION_REPRODUCIBILITY.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/data/DATA_STORAGE_STRATEGY.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/data/DATA_STORAGE_STRATEGY.md	.md	Deprecated data strategy note with no active exact-path external refs.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/exit_logic/EXIT_LOGIC_IMPLEMENTATION.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/exit_logic/EXIT_LOGIC_RESULTS_CRITICAL_ANALYSIS.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/features/COMPOSABLE_STRATEGY_PHASE2_RESULTS.md	.md	Deprecated phase2 composable strategy results with no active exact-path external refs.
@@ -119,8 +119,8 @@ UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/performance/PERFORMANCE_GUIDE.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/performance/performance_optimization_summary.md	.md	Deprecated optimization summary snapshot with no active external refs outside archive/audit.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/performance/PERFORMANCE_OPTIMIZATION_SUMMARY_.md	.md	Deprecated duplicate-style summary artifact with no active external refs outside archive/audit.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/PORTING.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/risk/RISK_LOG.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/risk/RISK_MAP_CONFIDENCE_TUNING.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/risk/RISK_LOG.md	.md	Deprecated risk log with no active exact-path external refs.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/risk/RISK_MAP_CONFIDENCE_TUNING.md	.md	Deprecated confidence tuning risk map with no active exact-path external refs.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/roadmap/STABILIZATION_PLAN_9_STEPS.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/runtime/RUNTIME_PATCH_WORKFLOW.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/strategy/STRATEGY_PROBABILITY_AND_REGIME.md	.md	No explicit external reference outside archive/audit; semantic retention review required.

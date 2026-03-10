@@ -1,19 +1,19 @@
 # COMMAND PACKET
 
 - **Mode:** `RESEARCH` — source: `docs/governance_mode.md` (`branch: feature/tests-subfolder-classification`)
-- **Risk:** `LOW` — why: path-only relocation av en utility-test utan aktiva docs-referenser.
+- **Risk:** `LOW` — why: test-only relocation av en utility-test + minimal detect-secrets-remediation, utan aktiva docs-referenser.
 - **Required Path:** `Full`
-- **Objective:** Relocate `test_build_auth_headers.py` to `tests/utils/` with no behavior change.
+- **Objective:** Relocate `test_build_auth_headers.py` to `tests/utils/` med no-behavior-change och minimal secrets-hook-remediation i testfilen.
 - **Candidate:** `tests/test_build_auth_headers.py -> tests/utils/test_build_auth_headers.py`
 - **Base SHA:** `25d643e8`
 - **Category:** `tooling`
-- **Constraints:** `NO BEHAVIOR CHANGE` (enbart filflytt + planrad/paket; ingen runtime/API/env/config-semantik ändras).
+- **Constraints:** `NO BEHAVIOR CHANGE` (testflytt + minimal test-only remediation + packet; ingen runtime/API/env/config-semantik ändras).
 - **Done criteria:** Samtliga listade gates gröna + Implementation Report + PR evidence template.
 
 ## COMMAND PACKET (template alignment v1.1)
 
 - **Mode:** `RESEARCH` — source: `docs/governance_mode.md`
-- **Risk:** `LOW` — why: single-candidate move, 0 non-archive docs refs for old path
+- **Risk:** `LOW` — why: single-candidate test move + minimal secrets-hook remediation, 0 non-archive docs refs for old path
 - **Required Path:** `Full`
 - **Objective:** Continue utils-category migration with low-friction candidate.
 - **Candidate:** `test_build_auth_headers.py`

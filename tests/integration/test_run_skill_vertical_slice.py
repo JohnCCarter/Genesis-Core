@@ -66,7 +66,7 @@ def test_validate_pytest_selectors_args_rejects_invalid_pytest_args() -> None:
     ok, detail, selectors, pytest_args = run_skill._validate_pytest_selectors_args(
         {
             "selectors": [
-                "tests/test_config_ssot.py::test_regime_unified_alias_non_dict_is_rejected"
+                "tests/governance/test_config_ssot.py::test_regime_unified_alias_non_dict_is_rejected"
             ],
             "pytest_args": ["-k", 1],
         }

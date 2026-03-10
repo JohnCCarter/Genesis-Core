@@ -39,11 +39,11 @@ def test_no_imports_of_core_strategy_features_module() -> None:
     men ingen kod ska importera den (annars riskerar vi olika feature-set i olika flöden).
     """
 
-    repo_root = Path(__file__).resolve().parents[1]
+    repo_root = Path(__file__).resolve().parents[2]
 
     # Explicit allow-list: this test imports the legacy module intentionally to enforce delegation.
     allow_list = {
-        "tests/test_dead_code_tripwires.py",
+        "tests/governance/test_dead_code_tripwires.py",
     }
 
     offenders: list[str] = []
@@ -73,7 +73,7 @@ def test_no_imports_of_deprecated_features_asof_extract_features_wrapper() -> No
     men all intern kod ska använda `extract_features_live` eller `extract_features_backtest`.
     """
 
-    repo_root = Path(__file__).resolve().parents[1]
+    repo_root = Path(__file__).resolve().parents[2]
 
     # Explicit allow-list:
     # - `core.strategy.features` är en deprecated modul som avsiktligt delegerar till wrappern.

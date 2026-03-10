@@ -51,7 +51,7 @@ def test_deprecated_features_module_delegates_to_features_asof(
 def test_deprecated_features_module_ast_delegation_contract() -> None:
     """Tripwire: legacy-shim ska vara en ren delegator till features_asof."""
 
-    repo_root = Path(__file__).resolve().parents[1]
+    repo_root = Path(__file__).resolve().parents[2]
     shim_path = repo_root / "src" / "core" / "strategy" / "features.py"
 
     tree = ast.parse(shim_path.read_text(encoding="utf-8"), filename=str(shim_path))
@@ -201,7 +201,7 @@ def test_backtest_engine_warns_on_unknown_htf_exit_env_flag(
 def test_runtime_source_must_not_import_core_config_validator() -> None:
     """Tripwire: runtime source får inte bero på core.config.validator."""
 
-    repo_root = Path(__file__).resolve().parents[1]
+    repo_root = Path(__file__).resolve().parents[2]
     src_root = repo_root / "src"
     assert src_root.exists(), f"Expected source root to exist: {src_root}"
 

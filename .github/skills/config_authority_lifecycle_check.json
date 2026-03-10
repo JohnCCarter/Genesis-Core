@@ -31,9 +31,9 @@
       "type": "pytest_selectors",
       "args": {
         "selectors": [
-          "tests/test_config_ssot.py::test_regime_unified_alias_only_is_canonicalized_before_persist",
-          "tests/test_config_ssot.py::test_regime_unified_alias_non_dict_is_rejected",
-          "tests/test_config_ssot.py::test_regime_unified_alias_extra_key_is_rejected",
+          "tests/governance/test_config_ssot.py::test_regime_unified_alias_only_is_canonicalized_before_persist",
+          "tests/governance/test_config_ssot.py::test_regime_unified_alias_non_dict_is_rejected",
+          "tests/governance/test_config_ssot.py::test_regime_unified_alias_extra_key_is_rejected",
           "tests/integration/test_config_api_e2e.py::test_runtime_endpoints_e2e_regime_unified_alias_bridge"
         ]
       }
@@ -53,7 +53,7 @@
   "references": [
     {
       "type": "file",
-      "value": "tests/test_config_ssot.py"
+      "value": "tests/governance/test_config_ssot.py"
     },
     {
       "type": "file",

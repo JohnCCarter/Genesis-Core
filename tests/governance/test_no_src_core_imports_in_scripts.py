@@ -12,7 +12,7 @@ def test_no_src_core_imports_in_scripts() -> None:
     inte ska blockera aktiv utveckling.
     """
 
-    repo_root = Path(__file__).resolve().parents[1]
+    repo_root = Path(__file__).resolve().parents[2]
     scripts_dir = repo_root / "scripts"
     if not scripts_dir.exists():
         return

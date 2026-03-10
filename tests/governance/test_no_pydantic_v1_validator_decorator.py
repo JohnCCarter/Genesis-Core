@@ -9,7 +9,7 @@ def test_no_pydantic_v1_validator_decorator_in_src() -> None:
     Pydantic v2 recommends `@field_validator` / `@model_validator` instead.
     """
 
-    repo_root = Path(__file__).resolve().parents[1]
+    repo_root = Path(__file__).resolve().parents[2]
     src_root = repo_root / "src"
 
     forbidden_substrings = (

@@ -1,0 +1,12 @@
+candidate	path	ext	reason
+candidate23	docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_runtime_snapshot_template.md	.md	Deprecated paper-trading template snapshot with no active exact-path external refs.
+candidate23	docs/archive/deprecated_2026-02-24/docs/paper_trading/dry_run_acceptance_checklist.md	.md	Deprecated process checklist snapshot with no active exact-path external refs.
+candidate23	docs/archive/deprecated_2026-02-24/docs/paper_trading/phase3_blocker_autotrade_runner_missing_2026-02-04.md	.md	Deprecated blocker note in archive subtree with no active exact-path external refs.
+candidate23	docs/archive/deprecated_2026-02-24/docs/paper_trading/README.md	.md	Deprecated archive README under paper_trading subtree with no active exact-path external refs.
+candidate23	docs/archive/deprecated_2026-02-24/docs/paper_trading/weekly_metrics.md	.md	Deprecated metrics snapshot with no active exact-path external refs.
+candidate23	docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_summaries/day0_summary_2026-02-04.md	.md	Deprecated daily summary snapshot with no active exact-path external refs.
+candidate23	docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_summaries/day2_summary_2026-02-06.md	.md	Deprecated daily summary snapshot with no active exact-path external refs.
+candidate23	docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_summaries/day3_summary_2026-02-11.md	.md	Deprecated daily summary snapshot with no active exact-path external refs.
+candidate23	docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_summaries/day4_summary_2026-02-12.md	.md	Deprecated daily summary snapshot with no active exact-path external refs.
+candidate23	docs/archive/deprecated_2026-02-24/docs/templates/PIPELINE_CHANGE_REVIEW.md	.md	Deprecated template artifact with no active exact-path external refs.
+candidate23	docs/archive/deprecated_2026-02-24/docs/templates/skills/_skill_template.md	.md	Deprecated skill template artifact with no active exact-path external refs.

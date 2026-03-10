@@ -1,0 +1,27 @@
+timestamp: 2026-03-10
+branch: feature/docs-archive-review-2026-03-09
+method: exact full-path scan over text-like files (.md/.py/.json/.yaml/.yml/.toml/.txt/.ps1/.sh/.ini/.cfg)
+
+in_scope_refcheck:
+  PASS_NO_EXTERNAL_HITS:
+    - docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_runtime_snapshot_template.md
+    - docs/archive/deprecated_2026-02-24/docs/paper_trading/dry_run_acceptance_checklist.md
+    - docs/archive/deprecated_2026-02-24/docs/paper_trading/phase3_blocker_autotrade_runner_missing_2026-02-04.md
+    - docs/archive/deprecated_2026-02-24/docs/paper_trading/README.md
+    - docs/archive/deprecated_2026-02-24/docs/paper_trading/weekly_metrics.md
+    - docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_summaries/day0_summary_2026-02-04.md
+    - docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_summaries/day2_summary_2026-02-06.md
+    - docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_summaries/day3_summary_2026-02-11.md
+    - docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_summaries/day4_summary_2026-02-12.md
+    - docs/archive/deprecated_2026-02-24/docs/templates/PIPELINE_CHANGE_REVIEW.md
+    - docs/archive/deprecated_2026-02-24/docs/templates/skills/_skill_template.md
+
+result: PASS_FOR_IN_SCOPE_FILES
+
+supplemental_scan:
+  method: additional deprecated-fragment + relative-fragment + basename scan
+  findings:
+    external_exact_path_hits: 0 for all 11 files
+    external_deprecated_fragment_hits: 0 for all 11 files
+    external_relative_or_basename_hits: present for some paper_trading names (e.g. README, weekly_metrics, day2/day3 summaries), but these do not reference deprecated archive full paths and are treated as non-blocking context mentions.
+  conclusion: No external blockers outside docs/archive + docs/audit for Candidate23 in-scope files.

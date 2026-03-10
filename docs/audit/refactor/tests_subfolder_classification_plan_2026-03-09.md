@@ -79,6 +79,7 @@ These are **candidates only**; final classification requires owner review + usag
 - `tests/utils/test_nonce.py` _(moved in BT17)_
 - `tests/utils/test_logging_redaction.py` _(moved in BT18)_
 - `tests/utils/test_symbols.py` _(moved in BT19)_
+- `tests/utils/test_mcp_blocked_patterns_windows_path.py` _(moved in BT20)_
 
 Guardrail: selector-ankrade backtesttester är nu flyttade till `tests/backtest/`.
 Historikharmonisering för `docs/ideas/REGIME_INTELLIGENCE_T0_*` .. `T8_*` är genomförd i BT9-batchen.

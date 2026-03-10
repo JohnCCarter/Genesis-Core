@@ -92,6 +92,23 @@ These are **candidates only**; final classification requires owner review + usag
 - `tests/utils/test_decision_edge.py` _(moved in BT30)_
 - `tests/utils/test_decision_matrix.py` _(moved in BT31)_
 - `tests/utils/test_rest_auth_routes_to_exchange_client.py` _(moved in BT36)_
+- `tests/utils/test_authority_mode_resolver.py` _(moved in BT46)_
+- `tests/utils/test_canonical_mode_policy.py` _(moved in BT47)_
+- `tests/utils/test_champion_loader.py` _(moved in BT48)_
+- `tests/utils/test_code_health_regressions.py` _(moved in BT49)_
+- `tests/utils/test_dead_code_tripwires.py` _(moved in BT50)_
+- `tests/utils/test_no_legacy_feature_imports.py` _(moved in BT51)_
+- `tests/utils/test_no_pydantic_v1_validator_decorator.py` _(moved in BT52)_
+- `tests/utils/test_no_src_core_imports_in_scripts.py` _(moved in BT53)_
+- `tests/utils/test_no_sync_httpx_in_async_handlers.py` _(moved in BT54)_
+- `tests/utils/test_merge_policy_resolver.py` _(moved in BT55)_
+- `tests/utils/test_model_registry_min.py` _(moved in BT56)_
+- `tests/utils/test_model_registry_registry_json_hygiene.py` _(moved in BT57)_
+- `tests/utils/test_registry_validator.py` _(moved in BT58)_
+- `tests/utils/test_validate_registry_audit_ci.py` _(moved in BT59)_
+- `tests/utils/test_phase2_merge_authority_bypass_contracts.py` _(moved in BT60)_
+- `tests/utils/test_pipeline_fast_hash_guard.py` _(moved in BT61)_
+- `tests/utils/test_golden_trace_runtime_semantics.py` _(moved in BT62)_
 
 Guardrail: selector-ankrade backtesttester är nu flyttade till `tests/backtest/`.
 Historikharmonisering för `docs/ideas/REGIME_INTELLIGENCE_T0_*` .. `T8_*` är genomförd i BT9-batchen.

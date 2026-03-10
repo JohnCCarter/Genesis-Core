@@ -1,0 +1,6 @@
+candidate	source_path	destination_path	action	reason
+candidate32	docs/archive/deprecated_2026-02-24/docs/config/CHAMPION_REPRODUCIBILITY.md	docs/config/CHAMPION_REPRODUCIBILITY.md	MOVE	Retained archive doc promoted to active config docs path.
+candidate32	docs/archive/deprecated_2026-02-24/docs/mcp/privacy-policy.md	docs/mcp/privacy-policy.md	MOVE	Retained archive doc promoted to active mcp docs path.
+candidate32	docs/archive/deprecated_2026-02-24/docs/optimization/optimizer.md	docs/optimization/optimizer.md	MOVE	Retained archive doc promoted to active optimization docs path.
+candidate32	docs/archive/deprecated_2026-02-24/docs/performance/OPTUNA_OPTIMIZATIONS.md	docs/performance/OPTUNA_OPTIMIZATIONS.md	MOVE	Retained archive doc promoted to active performance docs path.
+candidate32	docs/archive/deprecated_2026-02-24/docs/performance/PERFORMANCE_GUIDE.md	docs/performance/PERFORMANCE_GUIDE.md	MOVE	Retained archive doc promoted to active performance docs path.

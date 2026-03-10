@@ -1,0 +1,34 @@
+timestamp: 2026-03-10 12:25:00+01:00
+method: source existence + destination collision check
+result: PASS_SAFE_TO_MOVE
+
+FILE: docs/archive/deprecated_2026-02-24/docs/config/CHAMPION_REPRODUCIBILITY.md
+source_exists: true
+destination: docs/config/CHAMPION_REPRODUCIBILITY.md
+destination_exists: false
+---
+FILE: docs/archive/deprecated_2026-02-24/docs/mcp/privacy-policy.md
+source_exists: true
+destination: docs/mcp/privacy-policy.md
+destination_exists: false
+---
+FILE: docs/archive/deprecated_2026-02-24/docs/optimization/optimizer.md
+source_exists: true
+destination: docs/optimization/optimizer.md
+destination_exists: false
+---
+FILE: docs/archive/deprecated_2026-02-24/docs/performance/OPTUNA_OPTIMIZATIONS.md
+source_exists: true
+destination: docs/performance/OPTUNA_OPTIMIZATIONS.md
+destination_exists: false
+---
+FILE: docs/archive/deprecated_2026-02-24/docs/performance/PERFORMANCE_GUIDE.md
+source_exists: true
+destination: docs/performance/PERFORMANCE_GUIDE.md
+destination_exists: false
+---
+summary:
+  checked_files: 5
+  source_exists_count: 5
+  destination_available_count: 5
+  result: PASS_FOR_IN_SCOPE_FILES

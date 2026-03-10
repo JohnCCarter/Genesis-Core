@@ -89,6 +89,7 @@ These are **candidates only**; final classification requires owner review + usag
 - `tests/utils/test_confidence.py` _(moved in BT27)_
 - `tests/utils/test_cooldown.py` _(moved in BT28)_
 - `tests/utils/test_indicators_rsi_adx.py` _(moved in BT29)_
+- `tests/utils/test_decision_edge.py` _(moved in BT30)_
 
 Guardrail: selector-ankrade backtesttester är nu flyttade till `tests/backtest/`.
 Historikharmonisering för `docs/ideas/REGIME_INTELLIGENCE_T0_*` .. `T8_*` är genomförd i BT9-batchen.

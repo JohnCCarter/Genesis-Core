@@ -1,0 +1,52 @@
+timestamp: 2026-03-10 12:20:00+01:00
+method: exact-path check outside docs/archive/** and docs/audit/** + semantic reference audit
+result: PASS_FOR_KEEP_RECLASSIFICATION
+
+FILE: docs/archive/deprecated_2026-02-24/docs/config/CHAMPION_REPRODUCIBILITY.md
+exists: true
+exact_path_hits_excluding_self: 0
+external_hits: []
+semantic_evidence:
+  - docs/optuna/CACHE_REUSE_FIX_20251120.md:347 references docs/config/CHAMPION_REPRODUCIBILITY.md
+  - active_path_exists docs/config/CHAMPION_REPRODUCIBILITY.md = false
+---
+FILE: docs/archive/deprecated_2026-02-24/docs/mcp/privacy-policy.md
+exists: true
+exact_path_hits_excluding_self: 0
+external_hits: []
+semantic_evidence:
+  - mcp_server/remote_server.py:296 references docs/mcp/privacy-policy.md
+  - mcp_server/remote_server.py:297 references docs/privacy-policy.md
+  - active_path_exists docs/mcp/privacy-policy.md = false
+  - active_path_exists docs/privacy-policy.md = false
+---
+FILE: docs/archive/deprecated_2026-02-24/docs/optimization/optimizer.md
+exists: true
+exact_path_hits_excluding_self: 0
+external_hits: []
+semantic_evidence:
+  - src/core/strategy/Phase-7a.md:70 references docs/optimizer.md
+  - src/core/strategy/Phase-7a.md:71 references docs/optimizer.md
+  - active_path_exists docs/optimizer.md = false
+---
+FILE: docs/archive/deprecated_2026-02-24/docs/performance/OPTUNA_OPTIMIZATIONS.md
+exists: true
+exact_path_hits_excluding_self: 0
+external_hits: []
+semantic_evidence:
+  - active_path_exists docs/optuna/OPTUNA_OPTIMIZATIONS.md = true
+  - retained to avoid ambiguity while unresolved references to missing performance guide path remain
+---
+FILE: docs/archive/deprecated_2026-02-24/docs/performance/PERFORMANCE_GUIDE.md
+exists: true
+exact_path_hits_excluding_self: 0
+external_hits: []
+semantic_evidence:
+  - docs/mcp/mcp_server_guide.md:524 references genesis://docs/performance/PERFORMANCE_GUIDE.md
+  - active_path_exists docs/performance/PERFORMANCE_GUIDE.md = false
+---
+summary:
+  checked_files: 5
+  exact_path_pass_files: 5
+  semantic_keep_required_files: 5
+  result: PASS_FOR_IN_SCOPE_FILES

@@ -1,0 +1,26 @@
+timestamp: 2026-03-10 12:20:00+01:00
+branch: feature/docs-archive-review-2026-03-09
+expected_resolution_count: 5
+expected_keep_paths:
+  docs/archive/deprecated_2026-02-24/docs/config/CHAMPION_REPRODUCIBILITY.md
+  docs/archive/deprecated_2026-02-24/docs/mcp/privacy-policy.md
+  docs/archive/deprecated_2026-02-24/docs/optimization/optimizer.md
+  docs/archive/deprecated_2026-02-24/docs/performance/OPTUNA_OPTIMIZATIONS.md
+  docs/archive/deprecated_2026-02-24/docs/performance/PERFORMANCE_GUIDE.md
+changed_file_count: 12
+changed_files:
+  docs/audit/refactor/evidence/docs_archive_triage_matrix_2026-03-09.tsv
+  docs/audit/refactor/evidence/docs_archive_triage_summary_2026-03-09.txt
+  docs/audit/refactor/command_packet_candidate31_resolve_docs_archive_uncertain_keep_batch_2026-03-10.md
+  docs/audit/refactor/evidence/docs_archive_triage_uncertain_keep_batch_candidate31_decision_2026-03-10.md
+  docs/audit/refactor/evidence/candidate31_uncertain_keep_manifest_2026-03-10.tsv
+  docs/audit/refactor/evidence/candidate31_uncertain_retention_refcheck_2026-03-10.txt
+  docs/audit/refactor/evidence/candidate31_skill_invocation_2026-03-10.txt
+  docs/audit/refactor/evidence/candidate31_post_resolution_scope_drift_2026-03-10.txt
+  docs/audit/refactor/evidence/candidate31_gate_transcript_2026-03-10.md
+  docs/audit/refactor/evidence/candidate31_gate_raw_output_2026-03-10.txt
+  docs/audit/refactor/evidence/candidate31_uncertain_keep_implementation_report_2026-03-10.md
+  docs/audit/refactor/evidence/candidate31_pr_evidence_template_2026-03-10.md
+resolution_coverage: PASS_ALL_EXPECTED_UNCERTAIN_RECLASSIFIED_TO_KEEP
+scope_guard: PASS_NO_CHANGES_OUTSIDE_SCOPE_IN
+result: PASS_SCOPE_MATCH

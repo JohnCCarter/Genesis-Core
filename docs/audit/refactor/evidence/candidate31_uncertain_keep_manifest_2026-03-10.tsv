@@ -1,0 +1,6 @@
+candidate	path	action	reason
+candidate31	docs/archive/deprecated_2026-02-24/docs/config/CHAMPION_REPRODUCIBILITY.md	KEEP	Referenced from active optuna governance docs while active target path docs/config/CHAMPION_REPRODUCIBILITY.md is missing.
+candidate31	docs/archive/deprecated_2026-02-24/docs/mcp/privacy-policy.md	KEEP	MCP server checks active privacy policy paths (docs/mcp/privacy-policy.md and docs/privacy-policy.md), both currently missing.
+candidate31	docs/archive/deprecated_2026-02-24/docs/optimization/optimizer.md	KEEP	Active strategy plan references docs/optimizer.md, which is currently missing.
+candidate31	docs/archive/deprecated_2026-02-24/docs/performance/OPTUNA_OPTIMIZATIONS.md	KEEP	Active counterpart exists in docs/optuna and retention avoids ambiguity while unresolved stale references remain.
+candidate31	docs/archive/deprecated_2026-02-24/docs/performance/PERFORMANCE_GUIDE.md	KEEP	Referenced by active docs via genesis://docs/performance/PERFORMANCE_GUIDE.md while active path is missing.

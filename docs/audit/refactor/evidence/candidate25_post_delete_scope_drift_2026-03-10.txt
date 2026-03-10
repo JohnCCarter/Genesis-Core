@@ -1,0 +1,40 @@
+timestamp: 2026-03-10 09:43:36+01:00
+branch: feature/docs-archive-review-2026-03-09
+expected_delete_count: 10
+expected_deletes:
+  docs/archive/deprecated_2026-02-24/docs/features/PHASE3_ADJUSTMENTS_SUMMARY.md
+  docs/archive/deprecated_2026-02-24/docs/features/PHASE3_BUG1_FIX_SUMMARY.md
+  docs/archive/deprecated_2026-02-24/docs/features/PHASE3_BUG2_FIX_SUMMARY.md
+  docs/archive/deprecated_2026-02-24/docs/features/PHASE3_KNOWN_ISSUES.md
+  docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE1_BLOCKER_INVESTIGATION.md
+  docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE1_CLOSURE.md
+  docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE2_HQT_AUDIT.md
+  docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE3_CLOSURE.md
+  docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE3_EXP1_REPORT.md
+  docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE4_CLOSURE.md
+changed_file_count: 21
+changed_files:
+  docs/archive/deprecated_2026-02-24/docs/features/PHASE3_ADJUSTMENTS_SUMMARY.md
+  docs/archive/deprecated_2026-02-24/docs/features/PHASE3_BUG1_FIX_SUMMARY.md
+  docs/archive/deprecated_2026-02-24/docs/features/PHASE3_BUG2_FIX_SUMMARY.md
+  docs/archive/deprecated_2026-02-24/docs/features/PHASE3_KNOWN_ISSUES.md
+  docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE1_BLOCKER_INVESTIGATION.md
+  docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE1_CLOSURE.md
+  docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE2_HQT_AUDIT.md
+  docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE3_CLOSURE.md
+  docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE3_EXP1_REPORT.md
+  docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE4_CLOSURE.md
+  docs/audit/refactor/evidence/docs_archive_triage_matrix_2026-03-09.tsv
+  docs/audit/refactor/evidence/docs_archive_triage_summary_2026-03-09.txt
+  docs/audit/refactor/command_packet_candidate25_delete_docs_archive_phase3_features_batch_2026-03-10.md
+  docs/audit/refactor/evidence/docs_archive_triage_phase3_features_batch_candidate25_decision_2026-03-10.md
+  docs/audit/refactor/evidence/candidate25_phase3_features_delete_manifest_2026-03-10.tsv
+  docs/audit/refactor/evidence/candidate25_phase3_features_path_refcheck_2026-03-10.txt
+  docs/audit/refactor/evidence/candidate25_skill_invocation_2026-03-10.txt
+  docs/audit/refactor/evidence/candidate25_post_delete_scope_drift_2026-03-10.txt
+  docs/audit/refactor/evidence/candidate25_gate_transcript_2026-03-10.md
+  docs/audit/refactor/evidence/candidate25_phase3_features_implementation_report_2026-03-10.md
+  docs/audit/refactor/evidence/candidate25_pr_evidence_template_2026-03-10.md
+delete_coverage: PASS_ALL_EXPECTED_DELETES_REMOVED
+scope_guard: PASS_NO_CHANGES_OUTSIDE_SCOPE_IN
+result: PASS_SCOPE_MATCH

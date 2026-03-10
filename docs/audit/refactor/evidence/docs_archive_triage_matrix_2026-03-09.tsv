@@ -71,16 +71,16 @@ UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/features/FEATURES_V17_VALIDATI
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/features/GENESIS-CORE_FEATURES.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/features/INDICATORS_REFERENCE.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/features/MILESTONE3_VALIDATION_COMPLETE.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_ADJUSTMENTS_SUMMARY.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_BUG1_FIX_SUMMARY.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_BUG2_FIX_SUMMARY.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_KNOWN_ISSUES.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE1_BLOCKER_INVESTIGATION.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE1_CLOSURE.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE2_HQT_AUDIT.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE3_CLOSURE.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE3_EXP1_REPORT.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE4_CLOSURE.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_ADJUSTMENTS_SUMMARY.md	.md	Deprecated phase3 adjustments summary with no active exact-path external refs.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_BUG1_FIX_SUMMARY.md	.md	Deprecated phase3 bugfix summary with no active exact-path external refs.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_BUG2_FIX_SUMMARY.md	.md	Deprecated phase3 bugfix summary with no active exact-path external refs.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_KNOWN_ISSUES.md	.md	Deprecated known-issues report with no active exact-path external refs.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE1_BLOCKER_INVESTIGATION.md	.md	Deprecated milestone blocker investigation with no active exact-path external refs.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE1_CLOSURE.md	.md	Deprecated milestone closure report with no active exact-path external refs.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE2_HQT_AUDIT.md	.md	Deprecated milestone audit report with no active exact-path external refs.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE3_CLOSURE.md	.md	Deprecated milestone closure report with no active exact-path external refs.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE3_EXP1_REPORT.md	.md	Deprecated milestone experiment report with no active exact-path external refs.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE4_CLOSURE.md	.md	Deprecated milestone closure report with no active exact-path external refs.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE4_EXP1_REPORT.md	.md	Deprecated milestone experiment report with no active exact-path external refs.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE4_EXP2_REPORT.md	.md	Deprecated milestone experiment report with no active exact-path external refs.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_PAPER_TRADING_SETUP.md	.md	No explicit external reference outside archive/audit; semantic retention review required.

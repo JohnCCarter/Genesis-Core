@@ -1,0 +1,11 @@
+candidate	path	ext	reason
+candidate25	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_ADJUSTMENTS_SUMMARY.md	.md	Deprecated phase3 adjustments summary with no active exact-path external refs.
+candidate25	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_BUG1_FIX_SUMMARY.md	.md	Deprecated phase3 bugfix summary with no active exact-path external refs.
+candidate25	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_BUG2_FIX_SUMMARY.md	.md	Deprecated phase3 bugfix summary with no active exact-path external refs.
+candidate25	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_KNOWN_ISSUES.md	.md	Deprecated known-issues report with no active exact-path external refs.
+candidate25	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE1_BLOCKER_INVESTIGATION.md	.md	Deprecated milestone blocker investigation with no active exact-path external refs.
+candidate25	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE1_CLOSURE.md	.md	Deprecated milestone closure report with no active exact-path external refs.
+candidate25	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE2_HQT_AUDIT.md	.md	Deprecated milestone audit report with no active exact-path external refs.
+candidate25	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE3_CLOSURE.md	.md	Deprecated milestone closure report with no active exact-path external refs.
+candidate25	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE3_EXP1_REPORT.md	.md	Deprecated milestone experiment report with no active exact-path external refs.
+candidate25	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE4_CLOSURE.md	.md	Deprecated milestone closure report with no active exact-path external refs.

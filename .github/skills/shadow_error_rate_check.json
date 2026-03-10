@@ -31,7 +31,7 @@
       "type": "pytest_selectors",
       "args": {
         "selectors": [
-          "tests/test_evaluate_pipeline.py::test_evaluate_pipeline_shadow_error_rate_contract"
+          "tests/backtest/test_evaluate_pipeline.py::test_evaluate_pipeline_shadow_error_rate_contract"
         ]
       }
     }
@@ -49,7 +49,7 @@
   "references": [
     {
       "type": "file",
-      "value": "tests/test_evaluate_pipeline.py"
+      "value": "tests/backtest/test_evaluate_pipeline.py"
     },
     {
       "type": "doc",

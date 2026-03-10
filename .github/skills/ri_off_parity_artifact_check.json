@@ -37,8 +37,8 @@
       "type": "pytest_selectors",
       "args": {
         "selectors": [
-          "tests/test_compare_backtest_results.py::test_compare_ri_p1_off_parity_rows_pass_order_insensitive",
-          "tests/test_compare_backtest_results.py::test_build_ri_p1_off_parity_artifact_required_fields"
+          "tests/backtest/test_compare_backtest_results.py::test_compare_ri_p1_off_parity_rows_pass_order_insensitive",
+          "tests/backtest/test_compare_backtest_results.py::test_build_ri_p1_off_parity_artifact_required_fields"
         ]
       }
     }
@@ -57,7 +57,7 @@
   "references": [
     {
       "type": "file",
-      "value": "tests/test_compare_backtest_results.py"
+      "value": "tests/backtest/test_compare_backtest_results.py"
     },
     {
       "type": "file",

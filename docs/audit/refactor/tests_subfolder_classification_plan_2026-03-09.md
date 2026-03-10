@@ -144,6 +144,7 @@ These are **candidates only**; final classification requires owner review + usag
 - `tests/utils/test_htf_selector.py` _(moved in BT34)_
 - `tests/utils/test_ltf_fibonacci_context.py` _(moved in BT34)_
 - `tests/utils/test_exit_fibonacci.py` _(moved in BT34)_
+- `tests/utils/test_exchange_client.py` _(moved in BT35)_
 
 Guardrail: selector-ankrade backtesttester är nu flyttade till `tests/backtest/`.
 Historikharmonisering för `docs/ideas/REGIME_INTELLIGENCE_T0_*` .. `T8_*` är genomförd i BT9-batchen.

@@ -81,7 +81,7 @@ Outcome:
 
 - `pre-commit run --all-files` → PASS
 - `pytest -q tests/test_import_smoke_backtest_optuna.py` → PASS
-- `pytest -q tests/test_backtest_determinism_smoke.py` → PASS
+- `pytest -q tests/backtest/test_backtest_determinism_smoke.py` → PASS
 - `pytest -q tests/test_features_asof_cache_key_deterministic.py` → PASS
 - `pytest -q tests/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable` → PASS
 - `pytest -q tests/test_evaluate_pipeline.py::test_evaluate_pipeline_shadow_error_rate_contract` → PASS
@@ -98,7 +98,7 @@ Outcome:
 
 - `pre-commit run --all-files` → PASS
 - `pytest -q tests/test_import_smoke_backtest_optuna.py` → PASS
-- `pytest -q tests/test_backtest_determinism_smoke.py` → PASS
+- `pytest -q tests/backtest/test_backtest_determinism_smoke.py` → PASS
 - `pytest -q tests/test_features_asof_cache_key_deterministic.py` → PASS
 - `pytest -q tests/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable` → PASS
 - `pytest -q tests/test_evaluate_pipeline.py::test_evaluate_pipeline_shadow_error_rate_contract` → PASS

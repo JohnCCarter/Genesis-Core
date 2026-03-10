@@ -15,7 +15,7 @@ DoD reference: `docs/ideas/REGIME_INTELLIGENCE_DOD_P1_P2_2026-02-27.md`
 - `.github/skills/config_authority_lifecycle_check.json`
 - `registry/manifests/dev.json`
 - `registry/schemas/skill.schema.json`
-- `tests/test_run_skill_vertical_slice.py`
+- `tests/integration/test_run_skill_vertical_slice.py`
 
 ### Scope OUT (strict)
 
@@ -77,7 +77,7 @@ Define and freeze rollout intent for lifecycle attestation and validation surfac
 2. `python scripts/run_skill.py --skill feature_parity_check --manifest dev`
 3. `python scripts/run_skill.py --skill genesis_backtest_verify --manifest stable`
 4. `pytest -q tests/test_import_smoke_backtest_optuna.py`
-5. `pytest -q tests/test_backtest_determinism_smoke.py`
+5. `pytest -q tests/backtest/test_backtest_determinism_smoke.py`
 6. `pytest -q tests/test_features_asof_cache_key_deterministic.py`
 7. `pytest -q tests/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable`
 8. `pytest -q tests/test_evaluate_pipeline.py::test_evaluate_pipeline_shadow_error_rate_contract`
@@ -90,7 +90,7 @@ Define and freeze rollout intent for lifecycle attestation and validation surfac
 2. `python scripts/run_skill.py --skill feature_parity_check --manifest dev`
 3. `python scripts/run_skill.py --skill genesis_backtest_verify --manifest stable`
 4. `pytest -q tests/test_import_smoke_backtest_optuna.py`
-5. `pytest -q tests/test_backtest_determinism_smoke.py`
+5. `pytest -q tests/backtest/test_backtest_determinism_smoke.py`
 6. `pytest -q tests/test_features_asof_cache_key_deterministic.py`
 7. `pytest -q tests/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable`
 8. `pytest -q tests/test_evaluate_pipeline.py::test_evaluate_pipeline_shadow_error_rate_contract`

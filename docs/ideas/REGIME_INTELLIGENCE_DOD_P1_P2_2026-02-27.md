@@ -110,7 +110,7 @@ P1 may be marked "klar" only when all checklist items are true:
 Minimum executable evidence set for P1 sign-off:
 
 - `tests/test_import_smoke_backtest_optuna.py`
-- `tests/test_backtest_determinism_smoke.py`
+- `tests/backtest/test_backtest_determinism_smoke.py`
 - `tests/test_features_asof_cache_key_deterministic.py`
 - `tests/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable`
 - `tests/test_evaluate_pipeline.py::test_evaluate_pipeline_shadow_error_rate_contract`

@@ -252,7 +252,7 @@ För att garantera att alla pipelines producerar identiska features lades två p
 1. `tests/test_feature_parity.py`
    - Kör `_extract_asof()` bar-för-bar och jämför mot v17-featurefiler.
    - Dataset: `tests/data/tBTCUSD_1h_sample.parquet` + `tests/data/tBTCUSD_1h_features_v17.parquet` (200 barer, december 2024).
-2. `tests/test_precompute_vs_runtime.py`
+2. `tests/integration/test_precompute_vs_runtime.py`
    - Bygger `precomputed_features` exakt som `BacktestEngine` och validerar att `_extract_asof()` med/utan precompute ger samma resultat.
 
 ### Precompute-scriptet
@@ -270,7 +270,7 @@ Det betyder att v17-featurefilerna är bit-exakta mot runtime (ingen längre avv
 | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
 | Uppdatera hela v17-filen | `python scripts/precompute_features_v17.py --symbol tBTCUSD --timeframe 1h`                                                             |
 | Snabb sample (200 bar)   | `python scripts/precompute_features_v17.py --symbol tBTCUSD --timeframe 1h --candles-file tests/data/tBTCUSD_1h_sample.parquet --quiet` |
-| Paritetskontroll         | `python -m pytest tests/test_feature_parity.py tests/test_precompute_vs_runtime.py`                                                     |
+| Paritetskontroll         | `python -m pytest tests/test_feature_parity.py tests/integration/test_precompute_vs_runtime.py`                                                     |
 
 Alla ändringar ovan säkerställer att:
 

@@ -70,7 +70,7 @@ Minst detta set (anpassa målfil + relevanta tests):
 2. `ruff check <target_file>`
 3. `bandit -q -c bandit.yaml <target_file>`
 4. Relevanta måltester (t.ex. `tests/test_mcp_git_status_remote_filters.py`, `tests/test_mcp_server.py`)
-5. `tests/test_backtest_determinism_smoke.py`
+5. `tests/backtest/test_backtest_determinism_smoke.py`
 6. `tests/test_feature_cache.py`
 7. `tests/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable`
 

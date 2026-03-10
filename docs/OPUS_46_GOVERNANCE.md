@@ -314,7 +314,7 @@ bandit -r src -c bandit.yaml
 
 # Unit tests (critical paths only — subset, not full)
 pytest tests/test_config_schema.py -q
-pytest tests/test_backtest_engine.py::test_mode_enforcement -q
+pytest tests/backtest/test_backtest_engine.py::test_mode_enforcement -q
 pytest tests/test_decision_logic.py -q
 pytest tests/test_feature_pipeline.py -q
 pytest tests/test_optimizer_runner.py -q

@@ -114,7 +114,7 @@ Skill runs are supplemental evidence and must not replace determinism/invariance
 
 1. `pre-commit run --files <touched files>`
 2. `pytest -q tests/test_import_smoke_backtest_optuna.py`
-3. `pytest -q tests/test_backtest_determinism_smoke.py`
+3. `pytest -q tests/backtest/test_backtest_determinism_smoke.py`
 4. `pytest -q tests/test_features_asof_cache_key_deterministic.py`
 5. `pytest -q tests/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable`
 6. `pytest -q tests/test_evaluate_pipeline.py::test_evaluate_pipeline_shadow_error_rate_contract`

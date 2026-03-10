@@ -1,8 +1,8 @@
-﻿timestamp: 2026-03-10 10:38:32+01:00
+﻿timestamp: 2026-03-10 11:00:09+01:00
 branch: feature/docs-archive-review-2026-03-09
 total_files: 127
-class_delete_candidate: 101
+class_delete_candidate: 108
 class_keep: 8
-class_uncertain: 18
+class_uncertain: 11
 matrix_file: docs/audit/refactor/evidence/docs_archive_triage_matrix_2026-03-09.tsv
-batch_last_updated: analysis_calibration_risk_batch_candidate27
+batch_last_updated: fibonacci_exit_logic_batch_candidate28

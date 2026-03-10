@@ -1,0 +1,44 @@
+timestamp: 2026-03-10 10:56:14+01:00
+method: git grep exact-path check outside docs/archive/** and docs/audit/**
+result: PASS_NO_EXTERNAL_HITS
+
+FILE: docs/archive/deprecated_2026-02-24/docs/fibonacci/FIBONACCI_COMBINATION_ANALYSIS.md
+exists: true
+exact_path_hits_excluding_self: 0
+external_hits: []
+---
+FILE: docs/archive/deprecated_2026-02-24/docs/fibonacci/FIBONACCI_FRAKTAL_EXITS_IMPLEMENTATION_PLAN.md
+exists: true
+exact_path_hits_excluding_self: 0
+external_hits: []
+---
+FILE: docs/archive/deprecated_2026-02-24/docs/fibonacci/FIBONACCI_FRAKTAL_EXITS_IMPLEMENTATION_NEXT_PLAN.md
+exists: true
+exact_path_hits_excluding_self: 0
+external_hits: []
+---
+FILE: docs/archive/deprecated_2026-02-24/docs/fibonacci/HTF_EXIT_CONTEXT_BUG.md
+exists: true
+exact_path_hits_excluding_self: 0
+external_hits: []
+---
+FILE: docs/archive/deprecated_2026-02-24/docs/exit_logic/EXIT_LOGIC_IMPLEMENTATION.md
+exists: true
+exact_path_hits_excluding_self: 0
+external_hits: []
+---
+FILE: docs/archive/deprecated_2026-02-24/docs/exit_logic/EXIT_LOGIC_RESULTS_CRITICAL_ANALYSIS.md
+exists: true
+exact_path_hits_excluding_self: 0
+external_hits: []
+---
+FILE: docs/archive/deprecated_2026-02-24/docs/ideas/fvg-fib.md
+exists: true
+exact_path_hits_excluding_self: 0
+external_hits: []
+---
+summary:
+  checked_files: 7
+  pass_files: 7
+  fail_files: 0
+  result: PASS_FOR_IN_SCOPE_FILES

@@ -1,0 +1,8 @@
+candidate	path	ext	reason
+candidate28	docs/archive/deprecated_2026-02-24/docs/fibonacci/FIBONACCI_COMBINATION_ANALYSIS.md	.md	Deprecated fibonacci analysis with no active exact-path external refs.
+candidate28	docs/archive/deprecated_2026-02-24/docs/fibonacci/FIBONACCI_FRAKTAL_EXITS_IMPLEMENTATION_PLAN.md	.md	Deprecated fibonacci implementation plan with no active exact-path external refs.
+candidate28	docs/archive/deprecated_2026-02-24/docs/fibonacci/FIBONACCI_FRAKTAL_EXITS_IMPLEMENTATION_NEXT_PLAN.md	.md	Deprecated fibonacci next-plan document with no active exact-path external refs.
+candidate28	docs/archive/deprecated_2026-02-24/docs/fibonacci/HTF_EXIT_CONTEXT_BUG.md	.md	Deprecated HTF exit bug note with no active exact-path external refs.
+candidate28	docs/archive/deprecated_2026-02-24/docs/exit_logic/EXIT_LOGIC_IMPLEMENTATION.md	.md	Deprecated exit-logic implementation note with no active exact-path external refs.
+candidate28	docs/archive/deprecated_2026-02-24/docs/exit_logic/EXIT_LOGIC_RESULTS_CRITICAL_ANALYSIS.md	.md	Deprecated exit-logic critical analysis with no active exact-path external refs.
+candidate28	docs/archive/deprecated_2026-02-24/docs/ideas/fvg-fib.md	.md	Deprecated FVG/Fibonacci concept note with no active exact-path external refs.

@@ -7,14 +7,17 @@ import pytest
 
 from scripts.build.build_auth_headers import build_headers, main
 
+MOCK_API_TOKEN_A = "credential_alpha"
+MOCK_API_TOKEN_B = "credential_beta"
+
 
 @pytest.fixture()
 def mock_settings():
     """Mock settings with test API credentials."""
     with patch("scripts.build.build_auth_headers.get_settings") as mock:
         settings_obj = Mock()
-        settings_obj.BITFINEX_API_KEY = "test_api_key"
-        settings_obj.BITFINEX_API_SECRET = "test_api_secret"
+        settings_obj.BITFINEX_API_KEY = MOCK_API_TOKEN_A  # pragma: allowlist secret
+        settings_obj.BITFINEX_API_SECRET = MOCK_API_TOKEN_B  # pragma: allowlist secret
         mock.return_value = settings_obj
         yield mock
 
@@ -37,7 +40,7 @@ def test_build_headers(mock_settings, mock_nonce):
     assert "bfx-signature" in headers
     assert "Content-Type" in headers
 
-    assert headers["bfx-apikey"] == "test_api_key"
+    assert headers["bfx-apikey"] == MOCK_API_TOKEN_A
     assert headers["bfx-nonce"] == "1234567890000000"
     assert headers["Content-Type"] == "application/json"
     assert len(headers["bfx-signature"]) > 0  # Signature should be generated
@@ -71,8 +74,8 @@ def test_main_with_reveal(mock_settings, mock_nonce, capsys):
     captured = capsys.readouterr()
     assert captured.out == ""
     assert "--reveal blocked" in captured.err
-    assert "test_api_key" not in captured.err
-    assert "test_api_secret" not in captured.err
+    assert MOCK_API_TOKEN_A not in captured.err
+    assert MOCK_API_TOKEN_B not in captured.err
 
 
 def test_main_with_pretty(mock_settings, mock_nonce, capsys):

@@ -1,0 +1,19 @@
+timestamp: 2026-03-10 11:49:21+01:00
+method: rg exact-path check outside docs/archive/** and docs/audit/**
+result: PASS_NO_EXTERNAL_HITS
+
+FILE: docs/archive/deprecated_2026-02-24/docs/optimization/OPTIMIZATION_SUMMARY.md
+exists: true
+exact_path_hits_excluding_self: 0
+external_hits: []
+---
+FILE: docs/archive/deprecated_2026-02-24/docs/strategy/STRATEGY_PROBABILITY_AND_REGIME.md
+exists: true
+exact_path_hits_excluding_self: 0
+external_hits: []
+---
+summary:
+  checked_files: 2
+  pass_files: 2
+  fail_files: 0
+  result: PASS_FOR_IN_SCOPE_FILES

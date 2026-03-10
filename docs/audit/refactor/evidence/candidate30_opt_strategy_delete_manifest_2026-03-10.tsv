@@ -1,0 +1,3 @@
+candidate	path	ext	reason
+candidate30	docs/archive/deprecated_2026-02-24/docs/optimization/OPTIMIZATION_SUMMARY.md	.md	Deprecated optimization summary with no active exact-path external refs.
+candidate30	docs/archive/deprecated_2026-02-24/docs/strategy/STRATEGY_PROBABILITY_AND_REGIME.md	.md	Deprecated strategy probability/regime note with no active exact-path external refs.

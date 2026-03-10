@@ -1,8 +1,8 @@
-﻿timestamp: 2026-03-10 11:18:31+01:00
+﻿timestamp: 2026-03-10 11:54:05+01:00
 branch: feature/docs-archive-review-2026-03-09
 total_files: 127
-class_delete_candidate: 112
+class_delete_candidate: 114
 class_keep: 8
-class_uncertain: 7
+class_uncertain: 5
 matrix_file: docs/audit/refactor/evidence/docs_archive_triage_matrix_2026-03-09.tsv
-batch_last_updated: meta_ops_batch_candidate29
+batch_last_updated: opt_strategy_batch_candidate30

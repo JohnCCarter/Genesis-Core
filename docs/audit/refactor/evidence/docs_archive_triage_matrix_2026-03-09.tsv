@@ -90,7 +90,7 @@ DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/fibonacci/FIBONACCI_FRA
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/fibonacci/HTF_EXIT_CONTEXT_BUG.md	.md	Deprecated HTF exit bug note with no active exact-path external refs.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/ideas/fvg-fib.md	.md	Deprecated FVG/Fibonacci concept note with no active exact-path external refs.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/mcp/privacy-policy.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/optimization/OPTIMIZATION_SUMMARY.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/optimization/OPTIMIZATION_SUMMARY.md	.md	Deprecated optimization summary with no active exact-path external refs.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/optimization/optimization_v4_summary.md	.md	Deprecated optimization summary artifact with no active exact-path external refs.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/optimization/optimizer.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/optimization/PHASE2D_SUMMARY_20251121.md	.md	Deprecated phase summary artifact with no active exact-path external refs.
@@ -123,6 +123,6 @@ DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/risk/RISK_LOG.md	.md	De
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/risk/RISK_MAP_CONFIDENCE_TUNING.md	.md	Deprecated confidence tuning risk map with no active exact-path external refs.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/roadmap/STABILIZATION_PLAN_9_STEPS.md	.md	Deprecated stabilization roadmap with no active exact-path external refs.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/runtime/RUNTIME_PATCH_WORKFLOW.md	.md	Deprecated runtime patch workflow with no active exact-path external refs.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/strategy/STRATEGY_PROBABILITY_AND_REGIME.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/strategy/STRATEGY_PROBABILITY_AND_REGIME.md	.md	Deprecated strategy probability/regime note with no active exact-path external refs.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/templates/PIPELINE_CHANGE_REVIEW.md	.md	Deprecated template artifact with no active exact-path external refs.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/templates/skills/_skill_template.md	.md	Deprecated skill template artifact with no active exact-path external refs.

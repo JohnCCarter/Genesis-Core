@@ -1,0 +1,40 @@
+timestamp: 2026-03-10 10:40:35+01:00
+branch: feature/docs-archive-review-2026-03-09
+expected_delete_count: 10
+expected_deletes:
+  docs/archive/deprecated_2026-02-24/docs/analysis/CONCURRENCY_DUPLICATES_ANALYSIS.md
+  docs/archive/deprecated_2026-02-24/docs/analysis/FEATURE_INDICATOR_AUDIT_PROMPT.md
+  docs/archive/deprecated_2026-02-24/docs/analysis/FEATURE_INDICATOR_AUDIT_RUNBOOK.md
+  docs/archive/deprecated_2026-02-24/docs/analysis/INVESTIGATION_COMPLETE.md
+  docs/archive/deprecated_2026-02-24/docs/analysis/RUNTIME_REALITY_MAP.md
+  docs/archive/deprecated_2026-02-24/docs/analysis/SYMMETRIC_CHAMOUN_TIMEFRAME_ANALYSIS.md
+  docs/archive/deprecated_2026-02-24/docs/calibration/PROBABILITY_THRESHOLD_FIX_20251117.md
+  docs/archive/deprecated_2026-02-24/docs/data/DATA_STORAGE_STRATEGY.md
+  docs/archive/deprecated_2026-02-24/docs/risk/RISK_LOG.md
+  docs/archive/deprecated_2026-02-24/docs/risk/RISK_MAP_CONFIDENCE_TUNING.md
+changed_file_count: 21
+changed_files:
+  docs/archive/deprecated_2026-02-24/docs/analysis/CONCURRENCY_DUPLICATES_ANALYSIS.md
+  docs/archive/deprecated_2026-02-24/docs/analysis/FEATURE_INDICATOR_AUDIT_PROMPT.md
+  docs/archive/deprecated_2026-02-24/docs/analysis/FEATURE_INDICATOR_AUDIT_RUNBOOK.md
+  docs/archive/deprecated_2026-02-24/docs/analysis/INVESTIGATION_COMPLETE.md
+  docs/archive/deprecated_2026-02-24/docs/analysis/RUNTIME_REALITY_MAP.md
+  docs/archive/deprecated_2026-02-24/docs/analysis/SYMMETRIC_CHAMOUN_TIMEFRAME_ANALYSIS.md
+  docs/archive/deprecated_2026-02-24/docs/calibration/PROBABILITY_THRESHOLD_FIX_20251117.md
+  docs/archive/deprecated_2026-02-24/docs/data/DATA_STORAGE_STRATEGY.md
+  docs/archive/deprecated_2026-02-24/docs/risk/RISK_LOG.md
+  docs/archive/deprecated_2026-02-24/docs/risk/RISK_MAP_CONFIDENCE_TUNING.md
+  docs/audit/refactor/evidence/docs_archive_triage_matrix_2026-03-09.tsv
+  docs/audit/refactor/evidence/docs_archive_triage_summary_2026-03-09.txt
+  docs/audit/refactor/command_packet_candidate27_delete_docs_archive_analysis_calibration_risk_batch_2026-03-10.md
+  docs/audit/refactor/evidence/docs_archive_triage_analysis_calibration_risk_batch_candidate27_decision_2026-03-10.md
+  docs/audit/refactor/evidence/candidate27_analysis_calibration_risk_delete_manifest_2026-03-10.tsv
+  docs/audit/refactor/evidence/candidate27_analysis_calibration_risk_path_refcheck_2026-03-10.txt
+  docs/audit/refactor/evidence/candidate27_skill_invocation_2026-03-10.txt
+  docs/audit/refactor/evidence/candidate27_post_delete_scope_drift_2026-03-10.txt
+  docs/audit/refactor/evidence/candidate27_gate_transcript_2026-03-10.md
+  docs/audit/refactor/evidence/candidate27_analysis_calibration_risk_implementation_report_2026-03-10.md
+  docs/audit/refactor/evidence/candidate27_pr_evidence_template_2026-03-10.md
+delete_coverage: PASS_ALL_EXPECTED_DELETES_REMOVED
+scope_guard: PASS_NO_CHANGES_OUTSIDE_SCOPE_IN
+result: PASS_SCOPE_MATCH

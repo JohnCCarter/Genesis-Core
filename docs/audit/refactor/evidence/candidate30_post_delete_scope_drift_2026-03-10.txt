@@ -1,0 +1,25 @@
+timestamp: 2026-03-10 11:54:05+01:00
+branch: feature/docs-archive-review-2026-03-09
+expected_delete_count: 2
+expected_deletes:
+  docs/archive/deprecated_2026-02-24/docs/optimization/OPTIMIZATION_SUMMARY.md
+  docs/archive/deprecated_2026-02-24/docs/strategy/STRATEGY_PROBABILITY_AND_REGIME.md
+changed_file_count: 14
+changed_files:
+  docs/archive/deprecated_2026-02-24/docs/optimization/OPTIMIZATION_SUMMARY.md
+  docs/archive/deprecated_2026-02-24/docs/strategy/STRATEGY_PROBABILITY_AND_REGIME.md
+  docs/audit/refactor/evidence/docs_archive_triage_matrix_2026-03-09.tsv
+  docs/audit/refactor/evidence/docs_archive_triage_summary_2026-03-09.txt
+  docs/audit/refactor/command_packet_candidate30_delete_docs_archive_opt_strategy_batch_2026-03-10.md
+  docs/audit/refactor/evidence/docs_archive_triage_opt_strategy_batch_candidate30_decision_2026-03-10.md
+  docs/audit/refactor/evidence/candidate30_opt_strategy_delete_manifest_2026-03-10.tsv
+  docs/audit/refactor/evidence/candidate30_opt_strategy_path_refcheck_2026-03-10.txt
+  docs/audit/refactor/evidence/candidate30_skill_invocation_2026-03-10.txt
+  docs/audit/refactor/evidence/candidate30_post_delete_scope_drift_2026-03-10.txt
+  docs/audit/refactor/evidence/candidate30_gate_transcript_2026-03-10.md
+  docs/audit/refactor/evidence/candidate30_gate_raw_output_2026-03-10.txt
+  docs/audit/refactor/evidence/candidate30_opt_strategy_implementation_report_2026-03-10.md
+  docs/audit/refactor/evidence/candidate30_pr_evidence_template_2026-03-10.md
+delete_coverage: PASS_ALL_EXPECTED_DELETES_REMOVED
+scope_guard: PASS_NO_CHANGES_OUTSIDE_SCOPE_IN
+result: PASS_SCOPE_MATCH

@@ -1,0 +1,5 @@
+candidate	path	ext	reason
+candidate29	docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_summaries/README.md	.md	Deprecated daily summaries index with no active exact-path external refs.
+candidate29	docs/archive/deprecated_2026-02-24/docs/PORTING.md	.md	Deprecated porting note with no active exact-path external refs.
+candidate29	docs/archive/deprecated_2026-02-24/docs/roadmap/STABILIZATION_PLAN_9_STEPS.md	.md	Deprecated stabilization roadmap with no active exact-path external refs.
+candidate29	docs/archive/deprecated_2026-02-24/docs/runtime/RUNTIME_PATCH_WORKFLOW.md	.md	Deprecated runtime patch workflow with no active exact-path external refs.

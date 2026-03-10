@@ -1,0 +1,22 @@
+timestamp: 2026-03-09 14:45:40+01:00
+branch: feature/docs-archive-review-2026-03-09
+expected_delete_count: 6
+expected_deletes:
+  docs/archive/deprecated_2026-02-24/docs/validation/AB_QUALITY_V2_PHASE7E.md
+  docs/archive/deprecated_2026-02-24/docs/validation/ADVANCED_VALIDATION_PRODUCTION.md
+  docs/archive/deprecated_2026-02-24/docs/validation/CONFIG_LOADING_VERIFICATION_20251114.md
+  docs/archive/deprecated_2026-02-24/docs/validation/PARITY_TEST_20251125.md
+  docs/archive/deprecated_2026-02-24/docs/validation/VALIDATION_CHECKLIST.md
+  docs/archive/deprecated_2026-02-24/docs/validation/VALIDATION_VS_BACKTEST_EXPLAINED.md
+changed_files:
+  docs/archive/deprecated_2026-02-24/docs/validation/AB_QUALITY_V2_PHASE7E.md
+  docs/archive/deprecated_2026-02-24/docs/validation/ADVANCED_VALIDATION_PRODUCTION.md
+  docs/archive/deprecated_2026-02-24/docs/validation/CONFIG_LOADING_VERIFICATION_20251114.md
+  docs/archive/deprecated_2026-02-24/docs/validation/PARITY_TEST_20251125.md
+  docs/archive/deprecated_2026-02-24/docs/validation/VALIDATION_CHECKLIST.md
+  docs/archive/deprecated_2026-02-24/docs/validation/VALIDATION_VS_BACKTEST_EXPLAINED.md
+  docs/audit/refactor/evidence/docs_archive_triage_matrix_2026-03-09.tsv
+  docs/audit/refactor/evidence/docs_archive_triage_summary_2026-03-09.txt
+delete_coverage: PASS_ALL_EXPECTED_DELETES_REMOVED
+scope_guard: PASS_NO_CHANGES_OUTSIDE_SCOPE_IN
+result: PASS_SCOPE_MATCH

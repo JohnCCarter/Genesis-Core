@@ -1,0 +1,8 @@
+﻿timestamp: 2026-03-09 13:59:01+01:00
+branch: feature/docs-archive-review-2026-03-09
+head_sha: 386a71b5
+manifest_targets: 34
+deleted_targets: 34
+missing_count: 0
+extra_count: 0
+status: PASS_SCOPE_MATCH

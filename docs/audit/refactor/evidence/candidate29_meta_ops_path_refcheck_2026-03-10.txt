@@ -1,0 +1,29 @@
+timestamp: 2026-03-10 11:18:31+01:00
+method: git grep exact-path check outside docs/archive/** and docs/audit/**
+result: PASS_NO_EXTERNAL_HITS
+
+FILE: docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_summaries/README.md
+exists: true
+exact_path_hits_excluding_self: 0
+external_hits: []
+---
+FILE: docs/archive/deprecated_2026-02-24/docs/PORTING.md
+exists: true
+exact_path_hits_excluding_self: 0
+external_hits: []
+---
+FILE: docs/archive/deprecated_2026-02-24/docs/roadmap/STABILIZATION_PLAN_9_STEPS.md
+exists: true
+exact_path_hits_excluding_self: 0
+external_hits: []
+---
+FILE: docs/archive/deprecated_2026-02-24/docs/runtime/RUNTIME_PATCH_WORKFLOW.md
+exists: true
+exact_path_hits_excluding_self: 0
+external_hits: []
+---
+summary:
+  checked_files: 4
+  pass_files: 4
+  fail_files: 0
+  result: PASS_FOR_IN_SCOPE_FILES

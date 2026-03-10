@@ -1,0 +1,93 @@
+# Candidate29 raw gate output excerpts (2026-03-10)
+
+Branch: feature/docs-archive-review-2026-03-09
+Mode: RESEARCH
+Python: C:/Users/fa06662/Projects/Genesis-Core/.venv/Scripts/python.exe
+
+## Pre-gates
+
+[1] python -m pre_commit run --all-files
+black....................................................................Passed
+ruff.....................................................................Passed
+Detect secrets...........................................................Passed
+check for added large files..............................................Passed
+check for merge conflicts................................................Passed
+check yaml...............................................................Passed
+fix end of files.........................................................Passed
+trim trailing whitespace.................................................Passed
+check json...............................................................Passed
+
+[2] python -m pytest -q tests/test_backtest_determinism_smoke.py
+...                                                                      [100%]
+
+[3] python -m pytest -q tests/test_feature_cache.py
+.....                                                                    [100%]
+
+[4] python -m pytest -q tests/test_pipeline_fast_hash_guard.py::test_pipeline_fast_hash_guard
+...                                                                      [100%]
+
+[5] python -m pytest -q tests/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable
+.                                                                        [100%]
+
+[6] python scripts/run/run_backtest.py --help
+usage: run_backtest.py [-h] --symbol SYMBOL --timeframe TIMEFRAME ...
+
+## Post-gates
+
+[1] python -m pre_commit run --all-files
+black....................................................................Passed
+ruff.....................................................................Passed
+Detect secrets...........................................................Passed
+check for added large files..............................................Passed
+check for merge conflicts................................................Passed
+check yaml...............................................................Passed
+fix end of files.........................................................Passed
+trim trailing whitespace.................................................Passed
+check json...............................................................Passed
+
+[2] python -m pytest -q tests/test_backtest_determinism_smoke.py
+...                                                                      [100%]
+
+[3] python -m pytest -q tests/test_feature_cache.py
+.....                                                                    [100%]
+
+[4] python -m pytest -q tests/test_pipeline_fast_hash_guard.py::test_pipeline_fast_hash_guard
+...                                                                      [100%]
+
+[5] python -m pytest -q tests/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable
+.                                                                        [100%]
+
+[6] python scripts/run/run_backtest.py --help
+usage: run_backtest.py [-h] --symbol SYMBOL --timeframe TIMEFRAME ...
+
+Result: all six pre-gates and all six post-gates completed successfully (exit code 0).
+
+## Final revalidation after audit-note closure
+
+[1] python -m pre_commit run --all-files
+black....................................................................Passed
+ruff.....................................................................Passed
+Detect secrets...........................................................Passed
+check for added large files..............................................Passed
+check for merge conflicts................................................Passed
+check yaml...............................................................Passed
+fix end of files.........................................................Passed
+trim trailing whitespace.................................................Passed
+check json...............................................................Passed
+
+[2] python -m pytest -q tests/test_backtest_determinism_smoke.py
+...                                                                      [100%]
+
+[3] python -m pytest -q tests/test_feature_cache.py
+.....                                                                    [100%]
+
+[4] python -m pytest -q tests/test_pipeline_fast_hash_guard.py::test_pipeline_fast_hash_guard
+...                                                                      [100%]
+
+[5] python -m pytest -q tests/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable
+.                                                                        [100%]
+
+[6] python scripts/run/run_backtest.py --help
+usage: run_backtest.py [-h] --symbol SYMBOL --timeframe TIMEFRAME ...
+
+Final revalidation result: PASS (all six commands exit code 0).

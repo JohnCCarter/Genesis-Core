@@ -1,0 +1,14 @@
+﻿candidate: docs_archive_nonmd_curation_candidate17
+timestamp: 2026-03-09 13:19:13+01:00
+branch: feature/docs-archive-review-2026-03-09
+base_sha: e1947604
+mode: RESEARCH
+skill_usage: context-map + refactor-plan (loaded and applied for sequencing/governance prep)
+reference_scan_command: git grep -n -E "optimization_analysis\\.ipynb|optimization_analysis\\.py|optimization_v4_analysis\\.ipynb|optimization_v4_analysis\\.py" -- . ":!docs/archive/**" ":!docs/audit/**"
+reference_scan_exit_code: 1
+reference_scan_status: PASS_NO_ACTIVE_REFS
+pre_move_hashes:
+SHA256	C:\Users\fa06662\Projects\Genesis-Core-refactor-a\docs\archive\deprecated_2026-02-24\docs\analysis\optimization_analysis.ipynb	4D42909F0D3B6FFA481C22BD55E7ED91C75F75831E34089DB25D09921BF37A89
+SHA256	C:\Users\fa06662\Projects\Genesis-Core-refactor-a\docs\archive\deprecated_2026-02-24\docs\analysis\optimization_analysis.py	2C5FA63F6BCF267CC07DD18A93D1A32B8B3C069446FCDAA9A0812448A87E2C75
+SHA256	C:\Users\fa06662\Projects\Genesis-Core-refactor-a\docs\archive\deprecated_2026-02-24\docs\analysis\optimization_v4_analysis.ipynb	A54ABE0A39ECB91F355C7C53088643A10E6A20F7616FE4B8B74005962A742675
+SHA256	C:\Users\fa06662\Projects\Genesis-Core-refactor-a\docs\archive\deprecated_2026-02-24\docs\analysis\optimization_v4_analysis.py	B3A935739D6FC41538932C919057B1DC000B8988359D56694A156BC4CB907B28

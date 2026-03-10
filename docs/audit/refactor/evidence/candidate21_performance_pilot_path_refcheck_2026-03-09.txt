@@ -1,0 +1,6 @@
+﻿timestamp: 2026-03-09 15:09:47+01:00
+branch: feature/docs-archive-review-2026-03-09
+scope_files: 2
+NO_HIT	docs/archive/deprecated_2026-02-24/docs/performance/feature_caching_optimization.md
+NO_HIT	docs/archive/deprecated_2026-02-24/docs/performance/IMPROVEMENTS_2025_11_25.md
+result: PASS_NO_ACTIVE_REFS_OUTSIDE_ARCHIVE_AUDIT

@@ -1,0 +1,36 @@
+timestamp: 2026-03-09
+branch: feature/docs-archive-review-2026-03-09
+expected_delete_count: 8
+expected_deletes:
+  docs/archive/deprecated_2026-02-24/docs/performance/IMPROVEMENTS_2025_11_21.md
+  docs/archive/deprecated_2026-02-24/docs/performance/OPTIMIZATION_20251126.md
+  docs/archive/deprecated_2026-02-24/docs/performance/OPTIMIZATION_STATUS_20251126.md
+  docs/archive/deprecated_2026-02-24/docs/performance/OPTUNA_IMPROVEMENTS_SUMMARY.md
+  docs/archive/deprecated_2026-02-24/docs/performance/performance_analysis.md
+  docs/archive/deprecated_2026-02-24/docs/performance/performance_optimization_summary.md
+  docs/archive/deprecated_2026-02-24/docs/performance/PERFORMANCE_OPTIMIZATION_SUMMARY_.md
+  docs/archive/deprecated_2026-02-24/docs/optimization/run_20251208_140048_summary.md
+changed_file_count: 19
+changed_files:
+  docs/archive/deprecated_2026-02-24/docs/optimization/run_20251208_140048_summary.md
+  docs/archive/deprecated_2026-02-24/docs/performance/IMPROVEMENTS_2025_11_21.md
+  docs/archive/deprecated_2026-02-24/docs/performance/OPTIMIZATION_20251126.md
+  docs/archive/deprecated_2026-02-24/docs/performance/OPTIMIZATION_STATUS_20251126.md
+  docs/archive/deprecated_2026-02-24/docs/performance/OPTUNA_IMPROVEMENTS_SUMMARY.md
+  docs/archive/deprecated_2026-02-24/docs/performance/PERFORMANCE_OPTIMIZATION_SUMMARY_.md
+  docs/archive/deprecated_2026-02-24/docs/performance/performance_analysis.md
+  docs/archive/deprecated_2026-02-24/docs/performance/performance_optimization_summary.md
+  docs/audit/refactor/evidence/docs_archive_triage_matrix_2026-03-09.tsv
+  docs/audit/refactor/evidence/docs_archive_triage_summary_2026-03-09.txt
+  docs/audit/refactor/command_packet_candidate22_delete_docs_archive_performance_batch2_2026-03-09.md
+  docs/audit/refactor/evidence/candidate22_performance_batch2_delete_manifest_2026-03-09.tsv
+  docs/audit/refactor/evidence/candidate22_performance_batch2_path_refcheck_2026-03-09.txt
+  docs/audit/refactor/evidence/candidate22_skill_invocation_2026-03-09.txt
+  docs/audit/refactor/evidence/candidate22_gate_transcript_2026-03-09.md
+  docs/audit/refactor/evidence/candidate22_performance_batch2_implementation_report_2026-03-09.md
+  docs/audit/refactor/evidence/candidate22_post_delete_scope_drift_2026-03-09.txt
+  docs/audit/refactor/evidence/candidate22_pr_evidence_template_2026-03-09.md
+  docs/audit/refactor/evidence/docs_archive_triage_performance_batch2_decision_2026-03-09.md
+delete_coverage: PASS_ALL_EXPECTED_DELETES_REMOVED
+scope_guard: PASS_NO_CHANGES_OUTSIDE_SCOPE_IN
+result: PASS_SCOPE_MATCH

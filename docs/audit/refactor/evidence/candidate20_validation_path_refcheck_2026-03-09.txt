@@ -1,0 +1,10 @@
+﻿timestamp: 2026-03-09 14:36:32+01:00
+branch: feature/docs-archive-review-2026-03-09
+scope_files: 6
+NO_HIT	docs/archive/deprecated_2026-02-24/docs/validation/AB_QUALITY_V2_PHASE7E.md
+NO_HIT	docs/archive/deprecated_2026-02-24/docs/validation/ADVANCED_VALIDATION_PRODUCTION.md
+NO_HIT	docs/archive/deprecated_2026-02-24/docs/validation/CONFIG_LOADING_VERIFICATION_20251114.md
+NO_HIT	docs/archive/deprecated_2026-02-24/docs/validation/PARITY_TEST_20251125.md
+NO_HIT	docs/archive/deprecated_2026-02-24/docs/validation/VALIDATION_CHECKLIST.md
+NO_HIT	docs/archive/deprecated_2026-02-24/docs/validation/VALIDATION_VS_BACKTEST_EXPLAINED.md
+result: PASS_NO_ACTIVE_REFS_OUTSIDE_ARCHIVE_AUDIT

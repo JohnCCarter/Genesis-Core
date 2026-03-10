@@ -1,0 +1,42 @@
+timestamp: 2026-03-10 08:17:51+01:00
+branch: feature/docs-archive-review-2026-03-09
+expected_delete_count: 11
+expected_deletes:
+  docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_runtime_snapshot_template.md
+  docs/archive/deprecated_2026-02-24/docs/paper_trading/dry_run_acceptance_checklist.md
+  docs/archive/deprecated_2026-02-24/docs/paper_trading/phase3_blocker_autotrade_runner_missing_2026-02-04.md
+  docs/archive/deprecated_2026-02-24/docs/paper_trading/README.md
+  docs/archive/deprecated_2026-02-24/docs/paper_trading/weekly_metrics.md
+  docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_summaries/day0_summary_2026-02-04.md
+  docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_summaries/day2_summary_2026-02-06.md
+  docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_summaries/day3_summary_2026-02-11.md
+  docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_summaries/day4_summary_2026-02-12.md
+  docs/archive/deprecated_2026-02-24/docs/templates/PIPELINE_CHANGE_REVIEW.md
+  docs/archive/deprecated_2026-02-24/docs/templates/skills/_skill_template.md
+changed_file_count: 22
+changed_files:
+  docs/archive/deprecated_2026-02-24/docs/paper_trading/README.md
+  docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_runtime_snapshot_template.md
+  docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_summaries/day0_summary_2026-02-04.md
+  docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_summaries/day2_summary_2026-02-06.md
+  docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_summaries/day3_summary_2026-02-11.md
+  docs/archive/deprecated_2026-02-24/docs/paper_trading/daily_summaries/day4_summary_2026-02-12.md
+  docs/archive/deprecated_2026-02-24/docs/paper_trading/dry_run_acceptance_checklist.md
+  docs/archive/deprecated_2026-02-24/docs/paper_trading/phase3_blocker_autotrade_runner_missing_2026-02-04.md
+  docs/archive/deprecated_2026-02-24/docs/paper_trading/weekly_metrics.md
+  docs/archive/deprecated_2026-02-24/docs/templates/PIPELINE_CHANGE_REVIEW.md
+  docs/archive/deprecated_2026-02-24/docs/templates/skills/_skill_template.md
+  docs/audit/refactor/evidence/docs_archive_triage_matrix_2026-03-09.tsv
+  docs/audit/refactor/evidence/docs_archive_triage_summary_2026-03-09.txt
+  docs/audit/refactor/command_packet_candidate23_delete_docs_archive_paper_trading_templates_batch_2026-03-10.md
+  docs/audit/refactor/evidence/candidate23_gate_transcript_2026-03-10.md
+  docs/audit/refactor/evidence/candidate23_paper_trading_templates_delete_manifest_2026-03-10.tsv
+  docs/audit/refactor/evidence/candidate23_paper_trading_templates_implementation_report_2026-03-10.md
+  docs/audit/refactor/evidence/candidate23_paper_trading_templates_path_refcheck_2026-03-10.txt
+  docs/audit/refactor/evidence/candidate23_post_delete_scope_drift_2026-03-10.txt
+  docs/audit/refactor/evidence/candidate23_pr_evidence_template_2026-03-10.md
+  docs/audit/refactor/evidence/candidate23_skill_invocation_2026-03-10.txt
+  docs/audit/refactor/evidence/docs_archive_triage_paper_trading_templates_batch_candidate23_decision_2026-03-10.md
+delete_coverage: PASS_ALL_EXPECTED_DELETES_REMOVED
+scope_guard: PASS_NO_CHANGES_OUTSIDE_SCOPE_IN
+result: PASS_SCOPE_MATCH

@@ -1,0 +1,16 @@
+timestamp: 2026-03-10
+branch: feature/docs-archive-review-2026-03-09
+method: exact full-path scan over text-like files (.md/.py/.json/.yaml/.yml/.toml/.txt/.ps1/.sh/.ini/.cfg)
+
+in_scope_refcheck:
+  PASS_NO_EXTERNAL_HITS:
+    - docs/archive/deprecated_2026-02-24/docs/optimization/optimization_v4_summary.md
+    - docs/archive/deprecated_2026-02-24/docs/optimization/PHASE2D_SUMMARY_20251121.md
+    - docs/archive/deprecated_2026-02-24/docs/optimization/PHASE3_FIX_AND_RESULTS_20251121.md
+    - docs/archive/deprecated_2026-02-24/docs/optimization/PHASE3_WIDE_FAIL_ANALYSIS_20251125.md
+    - docs/archive/deprecated_2026-02-24/docs/optimization/PHASE3_FINE_TUNING_LOG.md
+    - docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE4_EXP1_REPORT.md
+    - docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE4_EXP2_REPORT.md
+    - docs/archive/deprecated_2026-02-24/docs/performance/OPTUNA_FINAL_REPORT.md
+
+result: PASS_FOR_IN_SCOPE_FILES

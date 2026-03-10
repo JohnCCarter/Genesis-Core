@@ -1,0 +1,37 @@
+timestamp: 2026-03-10 08:37:52+01:00
+branch: feature/docs-archive-review-2026-03-09
+expected_delete_count: 8
+expected_deletes:
+  docs/archive/deprecated_2026-02-24/docs/optimization/optimization_v4_summary.md
+  docs/archive/deprecated_2026-02-24/docs/optimization/PHASE2D_SUMMARY_20251121.md
+  docs/archive/deprecated_2026-02-24/docs/optimization/PHASE3_FIX_AND_RESULTS_20251121.md
+  docs/archive/deprecated_2026-02-24/docs/optimization/PHASE3_WIDE_FAIL_ANALYSIS_20251125.md
+  docs/archive/deprecated_2026-02-24/docs/optimization/PHASE3_FINE_TUNING_LOG.md
+  docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE4_EXP1_REPORT.md
+  docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE4_EXP2_REPORT.md
+  docs/archive/deprecated_2026-02-24/docs/performance/OPTUNA_FINAL_REPORT.md
+changed_file_count: 19
+changed_files:
+  docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE4_EXP1_REPORT.md
+  docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE4_EXP2_REPORT.md
+  docs/archive/deprecated_2026-02-24/docs/optimization/PHASE2D_SUMMARY_20251121.md
+  docs/archive/deprecated_2026-02-24/docs/optimization/PHASE3_FINE_TUNING_LOG.md
+  docs/archive/deprecated_2026-02-24/docs/optimization/PHASE3_FIX_AND_RESULTS_20251121.md
+  docs/archive/deprecated_2026-02-24/docs/optimization/PHASE3_WIDE_FAIL_ANALYSIS_20251125.md
+  docs/archive/deprecated_2026-02-24/docs/optimization/optimization_v4_summary.md
+  docs/archive/deprecated_2026-02-24/docs/performance/OPTUNA_FINAL_REPORT.md
+  docs/audit/refactor/evidence/docs_archive_triage_matrix_2026-03-09.tsv
+  docs/audit/refactor/evidence/docs_archive_triage_summary_2026-03-09.txt
+  docs/audit/refactor/command_packet_candidate24_delete_docs_archive_optuna_phase_batch_2026-03-10.md
+  docs/audit/refactor/evidence/candidate24_gate_transcript_2026-03-10.md
+  docs/audit/refactor/evidence/candidate24_optuna_phase_delete_manifest_2026-03-10.tsv
+  docs/audit/refactor/evidence/candidate24_optuna_phase_implementation_report_2026-03-10.md
+  docs/audit/refactor/evidence/candidate24_optuna_phase_path_refcheck_2026-03-10.txt
+  docs/audit/refactor/evidence/candidate24_post_delete_scope_drift_2026-03-10.txt
+  docs/audit/refactor/evidence/candidate24_pr_evidence_template_2026-03-10.md
+  docs/audit/refactor/evidence/candidate24_skill_invocation_2026-03-10.txt
+  docs/audit/refactor/evidence/docs_archive_triage_optuna_phase_batch_candidate24_decision_2026-03-10.md
+delete_coverage: PASS_ALL_EXPECTED_DELETES_REMOVED
+scope_guard: PASS_NO_CHANGES_OUTSIDE_SCOPE_IN
+result: PASS_SCOPE_MATCH
+note: REVIEW_REQUIRED_SCOPE_ISSUE was a false-positive from naive FAIL_ string match against file name PHASE3_WIDE_FAIL_ANALYSIS_20251125.md.

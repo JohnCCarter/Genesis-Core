@@ -1,0 +1,36 @@
+timestamp: 2026-03-10 10:07:41+01:00
+branch: feature/docs-archive-review-2026-03-09
+expected_delete_count: 8
+expected_deletes:
+  docs/archive/deprecated_2026-02-24/docs/features/COMPOSABLE_STRATEGY_PHASE2_RESULTS.md
+  docs/archive/deprecated_2026-02-24/docs/features/COMPOSABLE_STRATEGY_POC_RESULTS.md
+  docs/archive/deprecated_2026-02-24/docs/features/COMPOSABLE_STRATEGY_PROJECT.md
+  docs/archive/deprecated_2026-02-24/docs/features/FEATURES_V17_VALIDATION_REPORT.md
+  docs/archive/deprecated_2026-02-24/docs/features/GENESIS-CORE_FEATURES.md
+  docs/archive/deprecated_2026-02-24/docs/features/INDICATORS_REFERENCE.md
+  docs/archive/deprecated_2026-02-24/docs/features/MILESTONE3_VALIDATION_COMPLETE.md
+  docs/archive/deprecated_2026-02-24/docs/features/PHASE3_PAPER_TRADING_SETUP.md
+changed_file_count: 19
+changed_files:
+  docs/archive/deprecated_2026-02-24/docs/features/COMPOSABLE_STRATEGY_PHASE2_RESULTS.md
+  docs/archive/deprecated_2026-02-24/docs/features/COMPOSABLE_STRATEGY_POC_RESULTS.md
+  docs/archive/deprecated_2026-02-24/docs/features/COMPOSABLE_STRATEGY_PROJECT.md
+  docs/archive/deprecated_2026-02-24/docs/features/FEATURES_V17_VALIDATION_REPORT.md
+  docs/archive/deprecated_2026-02-24/docs/features/GENESIS-CORE_FEATURES.md
+  docs/archive/deprecated_2026-02-24/docs/features/INDICATORS_REFERENCE.md
+  docs/archive/deprecated_2026-02-24/docs/features/MILESTONE3_VALIDATION_COMPLETE.md
+  docs/archive/deprecated_2026-02-24/docs/features/PHASE3_PAPER_TRADING_SETUP.md
+  docs/audit/refactor/evidence/docs_archive_triage_matrix_2026-03-09.tsv
+  docs/audit/refactor/evidence/docs_archive_triage_summary_2026-03-09.txt
+  docs/audit/refactor/command_packet_candidate26_delete_docs_archive_features_semantic_batch_2026-03-10.md
+  docs/audit/refactor/evidence/docs_archive_triage_features_semantic_batch_candidate26_decision_2026-03-10.md
+  docs/audit/refactor/evidence/candidate26_features_semantic_delete_manifest_2026-03-10.tsv
+  docs/audit/refactor/evidence/candidate26_features_semantic_path_refcheck_2026-03-10.txt
+  docs/audit/refactor/evidence/candidate26_skill_invocation_2026-03-10.txt
+  docs/audit/refactor/evidence/candidate26_post_delete_scope_drift_2026-03-10.txt
+  docs/audit/refactor/evidence/candidate26_gate_transcript_2026-03-10.md
+  docs/audit/refactor/evidence/candidate26_features_semantic_implementation_report_2026-03-10.md
+  docs/audit/refactor/evidence/candidate26_pr_evidence_template_2026-03-10.md
+delete_coverage: PASS_ALL_EXPECTED_DELETES_REMOVED
+scope_guard: PASS_NO_CHANGES_OUTSIDE_SCOPE_IN
+result: PASS_SCOPE_MATCH

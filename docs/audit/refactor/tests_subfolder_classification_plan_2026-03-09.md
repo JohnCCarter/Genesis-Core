@@ -83,6 +83,7 @@ These are **candidates only**; final classification requires owner review + usag
 - `tests/utils/test_pydantic_validator_exception_types.py` _(moved in BT21)_
 - `tests/utils/test_health.py` _(moved in BT22)_
 - `tests/utils/test_ev_gate.py` _(moved in BT23)_
+- `tests/utils/test_env_flags.py` _(moved in BT24)_
 
 Guardrail: selector-ankrade backtesttester är nu flyttade till `tests/backtest/`.
 Historikharmonisering för `docs/ideas/REGIME_INTELLIGENCE_T0_*` .. `T8_*` är genomförd i BT9-batchen.

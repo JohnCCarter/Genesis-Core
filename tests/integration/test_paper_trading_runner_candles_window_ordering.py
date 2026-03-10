@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 def _load_runner_module():
-    repo_root = Path(__file__).resolve().parents[1]
+    repo_root = Path(__file__).resolve().parents[2]
     runner_path = repo_root / "scripts" / "paper_trading_runner.py"
     spec = importlib.util.spec_from_file_location("paper_trading_runner", runner_path)
     assert spec is not None

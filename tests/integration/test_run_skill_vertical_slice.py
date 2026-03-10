@@ -12,7 +12,7 @@ from scripts import run_skill
 def _run_skill_dry_run(
     tmp_path: Path, *, skill: str, manifest: str
 ) -> subprocess.CompletedProcess[str]:
-    repo_root = Path(__file__).resolve().parents[1]
+    repo_root = Path(__file__).resolve().parents[2]
     script = repo_root / "scripts" / "run_skill.py"
 
     return subprocess.run(

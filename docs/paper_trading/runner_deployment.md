@@ -626,10 +626,10 @@ python scripts/paper_trading_runner.py --live-paper
 
 ```powershell
 # Run all runner tests
-pytest tests/test_paper_trading_runner.py -v
+pytest tests/integration/test_paper_trading_runner.py -v
 
 # Run specific test
-pytest tests/test_paper_trading_runner.py::test_idempotency_skips_processed_candles -v
+pytest tests/integration/test_paper_trading_runner.py::test_idempotency_skips_processed_candles -v
 ```
 
 **Test coverage:**
@@ -945,7 +945,7 @@ python scripts/paper_trading_runner.py --live-paper
 ## References
 
 - **Runner source:** `scripts/paper_trading_runner.py`
-- **Runner tests:** `tests/test_paper_trading_runner.py`
+- **Runner tests:** `tests/integration/test_paper_trading_runner.py`
 - **Operations summary:** `docs/paper_trading/operations_summary.md`
 - **Weekly metrics:** `docs/paper_trading/weekly_metrics.md`
 - **Server setup:** `docs/paper_trading/server_setup.md`

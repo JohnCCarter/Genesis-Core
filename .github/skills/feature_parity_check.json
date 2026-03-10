@@ -42,7 +42,7 @@
       "Ange källa/beräkning för varje feature som ingår i parity-kontrollen.",
       "Identifiera konsumenter (model/decision/etc.) för features i scope.",
       "Kör tests/test_feature_parity.py efter ändringar i feature-logik.",
-      "Kör tests/test_precompute_vs_runtime.py för att verifiera precompute-cache.",
+      "Kör tests/integration/test_precompute_vs_runtime.py för att verifiera precompute-cache.",
       "Förstå off-by-one offset mellan live (now_index-1) och backtest (now_index).",
       "Använd _extract_asof() för backtest, inte extract_features() direkt.",
       "Regenerera v17 features med scripts/precompute_features_v17.py vid schema-ändringar."
@@ -64,7 +64,7 @@
     },
     {
       "type": "file",
-      "value": "tests/test_precompute_vs_runtime.py"
+      "value": "tests/integration/test_precompute_vs_runtime.py"
     },
     {
       "type": "file",

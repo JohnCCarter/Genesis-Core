@@ -116,6 +116,34 @@ These are **candidates only**; final classification requires owner review + usag
 - `tests/utils/test_preflight_optuna_check.py` _(moved in BT33)_
 - `tests/utils/test_train_model.py` _(moved in BT33)_
 - `tests/utils/test_validate_optimizer_config.py` _(moved in BT33)_
+- `tests/utils/test_regime_filter.py` _(moved in BT34)_
+- `tests/utils/test_feature_cache.py` _(moved in BT34)_
+- `tests/utils/test_feature_parity.py` _(moved in BT34)_
+- `tests/utils/test_feature_schema_contract_tBTCUSD_1h.py` _(moved in BT34)_
+- `tests/utils/test_features.py` _(moved in BT34)_
+- `tests/utils/test_features_asof_cache.py` _(moved in BT34)_
+- `tests/utils/test_features_asof_cache_key_deterministic.py` _(moved in BT34)_
+- `tests/utils/test_features_asof_fast_hash_env_case.py` _(moved in BT34)_
+- `tests/utils/test_features_asof_fib_error_handling.py` _(moved in BT34)_
+- `tests/utils/test_fibonacci.py` _(moved in BT34)_
+- `tests/utils/test_fib_logging.py` _(moved in BT34)_
+- `tests/utils/test_fib_logging_env_flag.py` _(moved in BT34)_
+- `tests/utils/test_htf_exit_atr_no_lookahead.py` _(moved in BT34)_
+- `tests/utils/test_htf_exit_engine.py` _(moved in BT34)_
+- `tests/utils/test_htf_exit_engine_htf_context_schema.py` _(moved in BT34)_
+- `tests/utils/test_htf_exit_engine_selection.py` _(moved in BT34)_
+- `tests/utils/test_htf_exit_engine_swing_update_updates_exit_ctx.py` _(moved in BT34)_
+- `tests/utils/test_htf_fibonacci.py` _(moved in BT34)_
+- `tests/utils/test_htf_fibonacci_asof_levels.py` _(moved in BT34)_
+- `tests/utils/test_htf_fibonacci_context_edge_cases_table.py` _(moved in BT34)_
+- `tests/utils/test_htf_fibonacci_context_invalid_swing_bounds.py` _(moved in BT34)_
+- `tests/utils/test_htf_fibonacci_context_levels_completeness.py` _(moved in BT34)_
+- `tests/utils/test_htf_fibonacci_context_requires_reference_ts.py` _(moved in BT34)_
+- `tests/utils/test_htf_fibonacci_context_timeframe_aliases.py` _(moved in BT34)_
+- `tests/utils/test_htf_fibonacci_mapping_age_hours.py` _(moved in BT34)_
+- `tests/utils/test_htf_selector.py` _(moved in BT34)_
+- `tests/utils/test_ltf_fibonacci_context.py` _(moved in BT34)_
+- `tests/utils/test_exit_fibonacci.py` _(moved in BT34)_
 
 Guardrail: selector-ankrade backtesttester är nu flyttade till `tests/backtest/`.
 Historikharmonisering för `docs/ideas/REGIME_INTELLIGENCE_T0_*` .. `T8_*` är genomförd i BT9-batchen.

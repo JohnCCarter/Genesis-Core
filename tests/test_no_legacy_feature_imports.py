@@ -77,10 +77,10 @@ def test_no_imports_of_deprecated_features_asof_extract_features_wrapper() -> No
 
     # Explicit allow-list:
     # - `core.strategy.features` är en deprecated modul som avsiktligt delegerar till wrappern.
-    # - `tests/test_features.py` täcker wrapperns bakåtkompat (och ska inte blockas av guardrailen).
+    # - `tests/utils/test_features.py` täcker wrapperns bakåtkompat (och ska inte blockas av guardrailen).
     allow_list = {
         "src/core/strategy/features.py",
-        "tests/test_features.py",
+        "tests/utils/test_features.py",
     }
 
     offenders: list[str] = []

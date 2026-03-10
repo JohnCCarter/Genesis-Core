@@ -1,0 +1,49 @@
+timestamp: 2026-03-10 10:00:08+01:00
+method: git grep exact-path check outside docs/archive/** and docs/audit/**
+result: PASS_NO_EXTERNAL_HITS
+
+FILE: docs/archive/deprecated_2026-02-24/docs/features/COMPOSABLE_STRATEGY_PHASE2_RESULTS.md
+exists: true
+exact_path_hits_excluding_self: 0
+external_hits: []
+---
+FILE: docs/archive/deprecated_2026-02-24/docs/features/COMPOSABLE_STRATEGY_POC_RESULTS.md
+exists: true
+exact_path_hits_excluding_self: 0
+external_hits: []
+---
+FILE: docs/archive/deprecated_2026-02-24/docs/features/COMPOSABLE_STRATEGY_PROJECT.md
+exists: true
+exact_path_hits_excluding_self: 0
+external_hits: []
+---
+FILE: docs/archive/deprecated_2026-02-24/docs/features/FEATURES_V17_VALIDATION_REPORT.md
+exists: true
+exact_path_hits_excluding_self: 0
+external_hits: []
+---
+FILE: docs/archive/deprecated_2026-02-24/docs/features/GENESIS-CORE_FEATURES.md
+exists: true
+exact_path_hits_excluding_self: 0
+external_hits: []
+---
+FILE: docs/archive/deprecated_2026-02-24/docs/features/INDICATORS_REFERENCE.md
+exists: true
+exact_path_hits_excluding_self: 0
+external_hits: []
+---
+FILE: docs/archive/deprecated_2026-02-24/docs/features/MILESTONE3_VALIDATION_COMPLETE.md
+exists: true
+exact_path_hits_excluding_self: 0
+external_hits: []
+---
+FILE: docs/archive/deprecated_2026-02-24/docs/features/PHASE3_PAPER_TRADING_SETUP.md
+exists: true
+exact_path_hits_excluding_self: 0
+external_hits: []
+---
+summary:
+  checked_files: 8
+  pass_files: 8
+  fail_files: 0
+  result: PASS_FOR_IN_SCOPE_FILES

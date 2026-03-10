@@ -64,13 +64,13 @@ UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/config/CHAMPION_REPRODUCIBILIT
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/data/DATA_STORAGE_STRATEGY.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/exit_logic/EXIT_LOGIC_IMPLEMENTATION.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/exit_logic/EXIT_LOGIC_RESULTS_CRITICAL_ANALYSIS.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/features/COMPOSABLE_STRATEGY_PHASE2_RESULTS.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/features/COMPOSABLE_STRATEGY_POC_RESULTS.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/features/COMPOSABLE_STRATEGY_PROJECT.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/features/FEATURES_V17_VALIDATION_REPORT.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/features/GENESIS-CORE_FEATURES.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/features/INDICATORS_REFERENCE.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/features/MILESTONE3_VALIDATION_COMPLETE.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/features/COMPOSABLE_STRATEGY_PHASE2_RESULTS.md	.md	Deprecated phase2 composable strategy results with no active exact-path external refs.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/features/COMPOSABLE_STRATEGY_POC_RESULTS.md	.md	Deprecated composable strategy POC results with no active exact-path external refs.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/features/COMPOSABLE_STRATEGY_PROJECT.md	.md	Deprecated composable strategy project document with no active exact-path external refs.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/features/FEATURES_V17_VALIDATION_REPORT.md	.md	Deprecated v17 validation report with no active exact-path external refs.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/features/GENESIS-CORE_FEATURES.md	.md	Deprecated features overview with no active exact-path external refs.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/features/INDICATORS_REFERENCE.md	.md	Deprecated indicators reference with no active exact-path external refs.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/features/MILESTONE3_VALIDATION_COMPLETE.md	.md	Deprecated milestone validation snapshot with no active exact-path external refs.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_ADJUSTMENTS_SUMMARY.md	.md	Deprecated phase3 adjustments summary with no active exact-path external refs.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_BUG1_FIX_SUMMARY.md	.md	Deprecated phase3 bugfix summary with no active exact-path external refs.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_BUG2_FIX_SUMMARY.md	.md	Deprecated phase3 bugfix summary with no active exact-path external refs.
@@ -83,7 +83,7 @@ DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTO
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE4_CLOSURE.md	.md	Deprecated milestone closure report with no active exact-path external refs.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE4_EXP1_REPORT.md	.md	Deprecated milestone experiment report with no active exact-path external refs.
 DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_MILESTONE4_EXP2_REPORT.md	.md	Deprecated milestone experiment report with no active exact-path external refs.
-UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_PAPER_TRADING_SETUP.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
+DELETE_CANDIDATE	docs/archive/deprecated_2026-02-24/docs/features/PHASE3_PAPER_TRADING_SETUP.md	.md	Deprecated paper trading setup note with no active exact-path external refs.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/fibonacci/FIBONACCI_COMBINATION_ANALYSIS.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/fibonacci/FIBONACCI_FRAKTAL_EXITS_IMPLEMENTATION_NEXT_PLAN.md	.md	No explicit external reference outside archive/audit; semantic retention review required.
 UNCERTAIN	docs/archive/deprecated_2026-02-24/docs/fibonacci/FIBONACCI_FRAKTAL_EXITS_IMPLEMENTATION_PLAN.md	.md	No explicit external reference outside archive/audit; semantic retention review required.

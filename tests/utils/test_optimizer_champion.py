@@ -99,6 +99,6 @@ def test_write_champion_creates_backup(tmp_champion_dir: Path) -> None:
 
 def test_default_champions_dir_points_to_repo_config() -> None:
     manager = ChampionManager()
-    repo_root = Path(__file__).resolve().parents[1]
+    repo_root = Path(__file__).resolve().parents[2]
     expected = repo_root / "config" / "strategy" / "champions"
     assert manager.champions_dir.resolve() == expected.resolve()

@@ -15,7 +15,7 @@ DoD reference: `docs/ideas/REGIME_INTELLIGENCE_DOD_P1_P2_2026-02-27.md`
 - `.github/skills/config_authority_lifecycle_check.json`
 - `registry/manifests/dev.json`
 - `registry/schemas/skill.schema.json`
-- `tests/test_run_skill_vertical_slice.py`
+- `tests/integration/test_run_skill_vertical_slice.py`
 
 ### Scope OUT (strict)
 

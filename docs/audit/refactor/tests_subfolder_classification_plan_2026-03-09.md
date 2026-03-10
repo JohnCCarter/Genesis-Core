@@ -91,23 +91,31 @@ These are **candidates only**; final classification requires owner review + usag
 - `tests/utils/test_indicators_rsi_adx.py` _(moved in BT29)_
 - `tests/utils/test_decision_edge.py` _(moved in BT30)_
 - `tests/utils/test_decision_matrix.py` _(moved in BT31)_
+- `tests/utils/test_triple_barrier.py` _(moved in BT32)_
 - `tests/utils/test_strategy_schemas.py` _(moved in BT33)_
-- `tests/utils/test_optimizer_champion.py` _(moved in BT43)_
-- `tests/utils/test_optimizer_cli.py` _(moved in BT48)_
-- `tests/utils/test_optimizer_direct_execution_canonical_guard.py` _(moved in BT53)_
-- `tests/utils/test_optimizer_duplicate_fixes.py` _(moved in BT58)_
-- `tests/utils/test_optimizer_json_cache_env_flag.py` _(moved in BT63)_
-- `tests/utils/test_optimizer_param_transforms.py` _(moved in BT68)_
-- `tests/utils/test_optimizer_performance.py` _(moved in BT73)_
-- `tests/utils/test_optimizer_runner.py` _(moved in BT78)_
-- `tests/utils/test_optimizer_synergy.py` _(moved in BT83)_
-- `tests/utils/test_optuna_config_cache.py` _(moved in BT88)_
-- `tests/utils/test_optuna_rdbstorage_engine_kwargs.py` _(moved in BT93)_
-- `tests/utils/test_optuna_resume_signature.py` _(moved in BT98)_
-- `tests/utils/test_preflight_optuna_check.py` _(moved in BT103)_
-- `tests/utils/test_train_model.py` _(moved in BT108)_
-- `tests/utils/test_validate_optimizer_config.py` _(moved in BT113)_
-- `tests/utils/test_run_skill_vertical_slice.py` _(moved in BT118)_
+- `tests/utils/test_mcp_config_env_override.py` _(moved in BT32)_
+- `tests/utils/test_mcp_logging_redaction.py` _(moved in BT32)_
+- `tests/utils/test_mcp_resources.py` _(moved in BT32)_
+- `tests/utils/test_mcp_server.py` _(moved in BT32)_
+- `tests/utils/test_mcp_stdio_encoding.py` _(moved in BT32)_
+- `tests/utils/test_no_sync_httpx_in_async_handlers.py` _(moved in BT32)_
+- `tests/utils/test_remote_server_fastmcp_sse_alias.py` _(moved in BT32)_
+- `tests/utils/test_ws_public_min.py` _(moved in BT32)_
+- `tests/utils/test_optimizer_champion.py` _(moved in BT33)_
+- `tests/utils/test_optimizer_cli.py` _(moved in BT33)_
+- `tests/utils/test_optimizer_direct_execution_canonical_guard.py` _(moved in BT33)_
+- `tests/utils/test_optimizer_duplicate_fixes.py` _(moved in BT33)_
+- `tests/utils/test_optimizer_json_cache_env_flag.py` _(moved in BT33)_
+- `tests/utils/test_optimizer_param_transforms.py` _(moved in BT33)_
+- `tests/utils/test_optimizer_performance.py` _(moved in BT33)_
+- `tests/utils/test_optimizer_runner.py` _(moved in BT33)_
+- `tests/utils/test_optimizer_synergy.py` _(moved in BT33)_
+- `tests/utils/test_optuna_config_cache.py` _(moved in BT33)_
+- `tests/utils/test_optuna_rdbstorage_engine_kwargs.py` _(moved in BT33)_
+- `tests/utils/test_optuna_resume_signature.py` _(moved in BT33)_
+- `tests/utils/test_preflight_optuna_check.py` _(moved in BT33)_
+- `tests/utils/test_train_model.py` _(moved in BT33)_
+- `tests/utils/test_validate_optimizer_config.py` _(moved in BT33)_
 
 Guardrail: selector-ankrade backtesttester är nu flyttade till `tests/backtest/`.
 Historikharmonisering för `docs/ideas/REGIME_INTELLIGENCE_T0_*` .. `T8_*` är genomförd i BT9-batchen.

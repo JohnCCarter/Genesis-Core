@@ -52,6 +52,12 @@ from core.strategy.features_asof_parts.logging_utils import (
 from core.strategy.features_asof_parts.precompute_utils import (
     remap_precomputed_features as _remap_precomputed_features_impl,
 )
+from core.strategy.features_asof_parts.result_cache_utils import (
+    feature_result_cache_lookup as _feature_result_cache_lookup_impl,
+)
+from core.strategy.features_asof_parts.result_cache_utils import (
+    feature_result_cache_store as _feature_result_cache_store_impl,
+)
 from core.strategy.fib_logging import log_fib_flow
 from core.strategy.htf_selector import select_htf_timeframe
 from core.utils.diffing.feature_cache import IndicatorCache, make_indicator_fingerprint
@@ -140,6 +146,14 @@ def _compute_candles_hash(candles: dict[str, list[float] | np.ndarray], asof_bar
     return _compute_candles_hash_impl(candles, asof_bar)
 
 
+def _feature_cache_lookup(cache_key: str):
+    return _feature_result_cache_lookup_impl(_feature_cache, cache_key)
+
+
+def _feature_cache_store(cache_key: str, result: tuple[dict[str, float], dict[str, Any]]) -> None:
+    _feature_result_cache_store_impl(_feature_cache, cache_key, result, _MAX_CACHE_SIZE)
+
+
 def _extract_asof(
     candles: dict[str, list[float]],
     asof_bar: int,
@@ -168,14 +182,10 @@ def _extract_asof(
     """
     # Check cache first (optimization: avoid recomputing features for same data)
     cache_key = _compute_candles_hash(candles, asof_bar)
-    if cache_key in _feature_cache:
+    cached_value = _feature_cache_lookup(cache_key)
+    if cached_value is not None:
         metrics.inc("feature_cache_hit")
-        value = _feature_cache[cache_key]
-        try:
-            _feature_cache.move_to_end(cache_key)  # LRU
-        except Exception:  # nosec B110
-            pass  # Cache error non-critical
-        return value
+        return cached_value
 
     metrics.inc("feature_cache_miss")
 
@@ -801,17 +811,7 @@ def _extract_asof(
     result = (features, meta)
 
     # Cache the result (OrderedDict + LRU eviction)
-    _feature_cache[cache_key] = result
-    # Move to end to mark as recently used (LRU behavior)
-    _feature_cache.move_to_end(cache_key)
-    # Enforce LRU size
-    try:
-        while len(_feature_cache) > _MAX_CACHE_SIZE:
-            _feature_cache.popitem(last=False)
-    except Exception:
-        # Fallback: simple FIFO eviction if OrderedDict semantics unavailable
-        if len(_feature_cache) > _MAX_CACHE_SIZE:
-            _feature_cache.pop(next(iter(_feature_cache)))
+    _feature_cache_store(cache_key, result)
 
     return result
 

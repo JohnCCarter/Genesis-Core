@@ -1,11 +1,12 @@
-## Context Map — features_asof modul-split (slice-4)
+## Context Map — features_asof modul-split (slice-5)
 
 ### Files to modify
 
-| File                                                     | Purpose                     | Changes Needed                                                          |
-| -------------------------------------------------------- | --------------------------- | ----------------------------------------------------------------------- |
-| `src/core/strategy/features_asof.py`                     | SSOT for feature extraction | Keep facade/API, delegate selected helper wrappers to extracted modules |
-| `src/core/strategy/features_asof_parts/logging_utils.py` | New extracted helper module | Host stateless precompute-status logging support logic                  |
+| File                                                          | Purpose                     | Changes Needed                                                                              |
+| ------------------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------- |
+| `src/core/strategy/features_asof.py`                          | SSOT for feature extraction | Keep facade/API, delegate only result-cache LRU mechanics to extracted internal helper      |
+| `src/core/strategy/features_asof_parts/result_cache_utils.py` | New extracted helper module | Host stateless feature-result-cache lookup/store/eviction mechanics                         |
+| `tests/utils/test_features_asof_cache.py`                     | Focused cache semantics     | Prove MRU move-on-hit, bounded eviction, and overwrite semantics without return-value drift |
 
 ### Dependencies (may need updates)
 
@@ -17,13 +18,14 @@
 
 ### Test files
 
-| Test                                                   | Coverage                                                  |
-| ------------------------------------------------------ | --------------------------------------------------------- |
-| `tests/utils/test_features_asof_precompute_logging.py` | Once-state/log-wrapper semantics                          |
-| `tests/utils/test_features_asof_fast_hash_env_case.py` | Fast-hash env behavior                                    |
-| `tests/utils/test_env_flags.py`                        | Import-time env flag ownership remains in `features_asof` |
-| `tests/backtest/test_backtest_determinism_smoke.py`    | Determinism replay selector                               |
-| `tests/governance/test_pipeline_fast_hash_guard.py`    | Pipeline invariant selector                               |
+| Test                                                        | Coverage                                                 |
+| ----------------------------------------------------------- | -------------------------------------------------------- |
+| `tests/utils/test_features_asof_cache.py`                   | LRU semantics for local feature-result-cache             |
+| `tests/utils/test_feature_parity.py`                        | Runtime vs precomputed parity remains unchanged          |
+| `tests/integration/test_precompute_vs_runtime.py`           | Precompute/runtime feature equivalence remains unchanged |
+| `tests/utils/test_features_asof_cache_key_deterministic.py` | Cache-key determinism remains unchanged                  |
+| `tests/backtest/test_backtest_determinism_smoke.py`         | Determinism replay selector                              |
+| `tests/governance/test_pipeline_fast_hash_guard.py`         | Pipeline invariant selector                              |
 
 ### Reference patterns
 
@@ -38,10 +40,10 @@
 - [ ] Database migrations needed
 - [ ] Configuration changes required
 
-### Slice-4 decision
+### Slice-5 decision
 
 - Extract pure helper logic incrementally (no decision logic / no indicator math flow changes).
-- Slice-4 extracts `_log_precompute_status` support logic into `features_asof_parts/logging_utils.py` while preserving logger ownership and `_PRECOMPUTE_DEBUG_ONCE` state ownership in `features_asof.py`.
+- Slice-5 extracts only feature-result-cache LRU mechanics into `features_asof_parts/result_cache_utils.py` while preserving cache-key ownership, metrics ownership, `_feature_cache` ownership, and default runtime behavior in `features_asof.py`.
 - `features_asof_parts` is internal-only modularization support; public import surface remains `core.strategy.features_asof`.
 - Keep import path `core.strategy.features_asof` as the only public SSOT.
 - Use dedicated task folder `docs/audit/refactor/features_asof/` for governance artifacts.

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from collections import OrderedDict
 
 
 def test_fast_hash_key_changes_with_dataset_state(monkeypatch) -> None:
@@ -113,3 +114,47 @@ def test_indicator_cache_wrappers_are_noop_when_disabled() -> None:
     finally:
         features_asof._indicator_cache = original_cache
         features_asof._INDICATOR_CACHE_ENABLED = original_enabled
+
+
+def test_feature_result_cache_lookup_moves_hit_to_mru_end() -> None:
+    from core.strategy.features_asof_parts.result_cache_utils import feature_result_cache_lookup
+
+    first = ({"f": 1.0}, {"m": 1})
+    second = ({"f": 2.0}, {"m": 2})
+    cache = OrderedDict(
+        [
+            ("oldest", first),
+            ("newest", second),
+        ]
+    )
+
+    result = feature_result_cache_lookup(cache, "oldest")
+
+    assert result is first
+    assert list(cache.keys()) == ["newest", "oldest"]
+
+
+def test_feature_result_cache_store_enforces_size_and_overwrite_semantics() -> None:
+    from core.strategy.features_asof_parts.result_cache_utils import feature_result_cache_store
+
+    first = ({"f": 1.0}, {"m": 1})
+    second = ({"f": 2.0}, {"m": 2})
+    third = ({"f": 3.0}, {"m": 3})
+    updated_second = ({"f": 22.0}, {"m": 22})
+    cache = OrderedDict(
+        [
+            ("k1", first),
+            ("k2", second),
+        ]
+    )
+
+    feature_result_cache_store(cache, "k2", updated_second, 2)
+    assert len(cache) == 2
+    assert cache["k2"] is updated_second
+    assert list(cache.keys()) == ["k1", "k2"]
+
+    feature_result_cache_store(cache, "k3", third, 2)
+    assert len(cache) == 2
+    assert list(cache.keys()) == ["k2", "k3"]
+    assert "k1" not in cache
+    assert cache["k3"] is third

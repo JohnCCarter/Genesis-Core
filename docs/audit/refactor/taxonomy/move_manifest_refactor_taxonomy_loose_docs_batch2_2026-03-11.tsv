@@ -1,0 +1,11 @@
+﻿# source\ttarget
+docs/audit/refactor/debug_subset_delete_signoff_2026-03-09.md	docs/audit/refactor/candidates/debug_subset_delete_signoff_2026-03-09.md
+docs/audit/refactor/deprecated_2026_02_subset_delete_signoff_2026-03-06.md	docs/audit/refactor/candidates/deprecated_2026_02_subset_delete_signoff_2026-03-06.md
+docs/audit/refactor/experiments_subset_delete_signoff_2026-03-06.md	docs/audit/refactor/candidates/experiments_subset_delete_signoff_2026-03-06.md
+docs/audit/refactor/genesis_refactor_agent_overlay_shard_a.md	docs/audit/refactor/overlays/genesis_refactor_agent_overlay_shard_a.md
+docs/audit/refactor/genesis_refactor_agent_overlay_shard_c.md	docs/audit/refactor/overlays/genesis_refactor_agent_overlay_shard_c.md
+docs/audit/refactor/model_registry_update_subset_delete_signoff_2026-03-07.md	docs/audit/refactor/candidates/model_registry_update_subset_delete_signoff_2026-03-07.md
+docs/audit/refactor/shard_a_breadth_audit_report_2026-03-06.md	docs/audit/refactor/reports/shard_a_breadth_audit_report_2026-03-06.md
+docs/audit/refactor/test_prototypes_delete_signoff_2026-03-06.md	docs/audit/refactor/candidates/test_prototypes_delete_signoff_2026-03-06.md
+docs/audit/refactor/test_prototypes_review_2026-03-06.md	docs/audit/refactor/candidates/test_prototypes_review_2026-03-06.md
+docs/audit/refactor/tests_subfolder_classification_plan_2026-03-09.md	docs/audit/refactor/tests_subfolder_classification/tests_subfolder_classification_plan_2026-03-09.md

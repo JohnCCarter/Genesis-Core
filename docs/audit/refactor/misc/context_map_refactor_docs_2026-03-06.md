@@ -1,4 +1,4 @@
-## Context Map — Refactor Docs Track (Batch 1)
+﻿## Context Map â€” Refactor Docs Track (Batch 1)
 
 ### Files to modify
 
@@ -14,7 +14,7 @@
 | ------------------------------------------------------------------- | ------------------------------------------------------------ |
 | `docs/audit/refactor/command_packet_shard_a_refactor_2026-03-06.md` | Existing script-focused contract (historical/parallel track) |
 | `docs/audit/refactor/context_map_shard_a_refactor_2026-03-06.md`    | Existing script-focused context map                          |
-| `docs/audit/refactor/genesis_refactor_agent_overlay_shard_a.md`     | Shard A overlay policy                                       |
+| `docs/audit/refactor/overlays/genesis_refactor_agent_overlay_shard_a.md`     | Shard A overlay policy                                       |
 | `docs/audit/cleanup/*`                                              | Historical baseline; read-only in this batch                 |
 
 ### Risks

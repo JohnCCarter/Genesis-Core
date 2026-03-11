@@ -4,7 +4,7 @@
 - **Risk:** `HIGH` — why: touches `src/core/strategy/*` (high-sensitivity zone)
 - **Required Path:** `Full` (high-sensitivity path under `src/core/strategy/*`)
 - **Objective:** Continue no-behavior-change modular split of `features_asof.py` with facade preserved.
-- **Candidate:** `features_asof-modul-split (slice-3)`
+- **Candidate:** `features_asof-modul-split (slice-4)`
 - **Base SHA:** `34848989`
 - **Category:** `refactor(server)`
 - **Constraints:** `NO BEHAVIOR CHANGE` (default behavior and public API must remain unchanged)
@@ -13,13 +13,8 @@
 
 - **Scope IN:**
   - `src/core/strategy/features_asof.py`
-  - `src/core/strategy/features_asof_parts/__init__.py` (new)
-  - `src/core/strategy/features_asof_parts/hash_utils.py` (new)
-  - `src/core/strategy/features_asof_parts/precompute_utils.py` (new)
-  - `src/core/strategy/features_asof_parts/cache_utils.py` (new)
-  - `tests/utils/test_features_asof_cache.py`
-  - `tests/utils/test_features_asof_cache_key_deterministic.py`
-  - `tests/utils/test_features_asof_fast_hash_env_case.py`
+  - `src/core/strategy/features_asof_parts/logging_utils.py` (new)
+  - `tests/utils/test_features_asof_precompute_logging.py`
   - `docs/audit/refactor/features_asof/context_map_features_asof_modul_split_2026-03-11.md`
   - `docs/audit/refactor/features_asof/command_packet_features_asof_modul_split_2026-03-11.md`
 - **Scope OUT:**
@@ -40,6 +35,7 @@
   - `python -m pytest -q tests/utils/test_features_asof_fast_hash_env_case.py`
   - `python -m pytest -q tests/utils/test_features.py::test_compute_candles_hash_accepts_numpy_arrays`
   - `python -m pytest -q tests/utils/test_env_flags.py::test_indicator_cache_disable_flag_parsing`
+  - `python -m pytest -q tests/utils/test_features_asof_precompute_logging.py`
 
 ## Stop Conditions
 
@@ -58,6 +54,7 @@
 - `context-map` skill loaded and applied for dependency/test surface verification.
 - `refactor-plan` skill loaded and applied for phased no-behavior-change extraction sequencing.
 - `features_asof_parts` is an internal extraction package. Public strategy import surface remains `core.strategy.features_asof`; package exports exist only to support local modularization and must not be treated as a stable external API.
+- Slice-4 extracts only `_log_precompute_status` support logic into `src/core/strategy/features_asof_parts/logging_utils.py`. Public strategy import surface remains `core.strategy.features_asof`. `features_asof_parts/__init__.py` remains unchanged.
 
 ## Gate outcomes (executed)
 
@@ -70,5 +67,5 @@
 - `python -m pytest -q tests/utils/test_features.py::test_compute_candles_hash_accepts_numpy_arrays` — **PASS**
 - `python -m pytest -q tests/utils/test_env_flags.py::test_indicator_cache_disable_flag_parsing` — **PASS**
 - `python -m pytest -q tests/integration/test_precompute_vs_runtime.py` — **PASS**
-- `python -m black --check src/core/strategy/features_asof_parts/hash_utils.py src/core/strategy/features_asof_parts/precompute_utils.py src/core/strategy/features_asof_parts/cache_utils.py src/core/strategy/features_asof_parts/__init__.py` — **PASS**
-- `python -m ruff check src/core/strategy/features_asof_parts/hash_utils.py src/core/strategy/features_asof_parts/precompute_utils.py src/core/strategy/features_asof_parts/cache_utils.py src/core/strategy/features_asof_parts/__init__.py` — **PASS**
+- `python -m pytest -q tests/utils/test_features_asof_precompute_logging.py` — **PASS**
+- `formatting/linting covered by python -m pre_commit run --all-files` — **PASS**

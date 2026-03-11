@@ -46,6 +46,9 @@ from core.strategy.features_asof_parts.hash_utils import (
 from core.strategy.features_asof_parts.hash_utils import (
     safe_series_value as _safe_series_value_impl,
 )
+from core.strategy.features_asof_parts.logging_utils import (
+    log_precompute_status as _log_precompute_status_impl,
+)
 from core.strategy.features_asof_parts.precompute_utils import (
     remap_precomputed_features as _remap_precomputed_features_impl,
 )
@@ -118,21 +121,14 @@ def _remap_precomputed_features(
 def _log_precompute_status(
     use_precompute: bool, pre: dict[str, Any], lookup_idx: int, window_start_idx: int
 ) -> None:
-    """Loggar en engångsrad som visar om precompute-data är laddad."""
     global _PRECOMPUTE_DEBUG_ONCE
-    if _PRECOMPUTE_DEBUG_ONCE or not _log:
-        return
-    _PRECOMPUTE_DEBUG_ONCE = True
-    try:
-        keys_sample = sorted(pre.keys())[:10]
-    except Exception:
-        keys_sample = []
-    _log.debug(
-        "precompute_status use_precompute=%s lookup_idx=%s window_start_idx=%s pre_keys=%s",
+    _PRECOMPUTE_DEBUG_ONCE = _log_precompute_status_impl(
+        _PRECOMPUTE_DEBUG_ONCE,
+        _log,
         use_precompute,
+        pre,
         lookup_idx,
         window_start_idx,
-        keys_sample,
     )
 
 

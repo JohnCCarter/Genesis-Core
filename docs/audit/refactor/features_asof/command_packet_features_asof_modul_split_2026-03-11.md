@@ -4,8 +4,8 @@
 - **Risk:** `HIGH` — why: touches `src/core/strategy/*` (high-sensitivity zone)
 - **Required Path:** `Full` (high-sensitivity path under `src/core/strategy/*`)
 - **Objective:** Continue no-behavior-change modular split of `features_asof.py` with facade preserved.
-- **Candidate:** `features_asof-modul-split (slice-9)`
-- **Base SHA:** `438edf78`
+- **Candidate:** `features_asof-modul-split (slice-10)`
+- **Base SHA:** `7591a931`
 - **Category:** `refactor(server)`
 - **Constraints:** `NO BEHAVIOR CHANGE` (default behavior and public API must remain unchanged)
 
@@ -13,13 +13,15 @@
 
 - **Scope IN:**
   - `src/core/strategy/features_asof.py`
-  - `src/core/strategy/features_asof_parts/fibonacci_context_utils.py`
+  - `src/core/strategy/features_asof_parts/fibonacci_feature_utils.py` (new)
   - `tests/utils/test_features_asof_fib_error_handling.py`
   - `docs/audit/refactor/features_asof/context_map_features_asof_modul_split_2026-03-11.md`
   - `docs/audit/refactor/features_asof/command_packet_features_asof_modul_split_2026-03-11.md`
 - **Scope OUT:**
   - all non-listed `src/**` files
   - `src/core/strategy/htf_selector.py`
+  - `src/core/strategy/features_asof_parts/fibonacci_context_utils.py`
+  - `src/core/strategy/features_asof_parts/__init__.py`
   - `config/**`, `.github/workflows/**`, `mcp_server/**`, `scripts/**`
   - runtime/config authority paths and freeze-sensitive workflow files
 - **Expected changed files:** 5
@@ -37,7 +39,7 @@
 - `python -m pytest -q tests/utils/test_features.py::test_extract_features_stub_shapes`
 - `python -m pytest -q tests/integration/test_model_schema_compat.py::test_feature_extraction_covers_all_model_schema_keys`
 - focused slice tests:
-  - `python -m pytest -q tests/utils/test_features_asof_fib_error_handling.py -k "htf_context_error"`
+  - `python -m pytest -q tests/utils/test_features_asof_fib_error_handling.py::test_fibonacci_feature_error_exposes_meta_and_fallbacks`
 
 ## Stop Conditions
 
@@ -58,7 +60,7 @@
 - repo-local skill spec `feature_parity_check` reviewed and applied for runtime/precompute parity selectors and feature-surface guardrails.
 - repo-local skill spec `repo_clean_refactor` reviewed and applied for strict scope, minimal diff, and reversible no-behavior-change sequencing.
 - `features_asof_parts` is an internal extraction package. Public strategy import surface remains `core.strategy.features_asof`; package exports exist only to support local modularization and must not be treated as a stable external API.
-- Slice-9 extracts only the HTF fibonacci context orchestration into `src/core/strategy/features_asof_parts/fibonacci_context_utils.py`. Public facade remains `core.strategy.features_asof`; no runtime behavior, cache ownership, metrics ownership, env/config interpretation, selector-meta retention semantics, or public API may change.
+- Slice-10 extracts only the remaining Fibonacci feature engine into `src/core/strategy/features_asof_parts/fibonacci_feature_utils.py`. Helper must preserve exact fallback values, exact failure reason string, `metrics.inc("feature_fib_errors")`, and warning logging, while facade remains the sole public surface and retains only feature merge plus final meta assembly.
 
 ## Gate outcomes (executed)
 
@@ -71,4 +73,4 @@
 - `python -m pytest -q tests/utils/test_features.py::test_extract_features_stub_shapes` — **PASS**
 - `python -m pytest -q tests/integration/test_model_schema_compat.py::test_feature_extraction_covers_all_model_schema_keys` — **PASS**
 - `python -m pytest -q tests/governance/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable` — **PASS**
-- `python -m pytest -q tests/utils/test_features_asof_fib_error_handling.py -k "htf_context_error"` — **PASS**
+- `python -m pytest -q tests/utils/test_features_asof_fib_error_handling.py::test_fibonacci_feature_error_exposes_meta_and_fallbacks` — **PASS**

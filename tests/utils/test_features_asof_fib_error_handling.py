@@ -26,6 +26,23 @@ def _synthetic_candles(*, n: int = 260, seed: int = 7) -> dict[str, list[float]]
 
 def test_fibonacci_feature_error_exposes_meta_and_fallbacks(monkeypatch) -> None:
     candles = _synthetic_candles()
+    expected_features = {
+        "rsi_inv_lag1",
+        "volatility_shift_ma3",
+        "bb_position_inv_ma3",
+        "rsi_vol_interaction",
+        "vol_regime",
+        "atr_14",
+        "fib_dist_min_atr",
+        "fib_dist_signed_atr",
+        "fib_prox_score",
+        "fib0618_prox_atr",
+        "fib05_prox_atr",
+        "swing_retrace_depth",
+        "fib05_x_ema_slope",
+        "fib_prox_x_adx",
+        "fib05_x_rsi_inv",
+    }
 
     def _raise_detect(*_args, **_kwargs):
         raise RuntimeError("forced swing failure")
@@ -62,6 +79,8 @@ def test_fibonacci_feature_error_exposes_meta_and_fallbacks(monkeypatch) -> None
     assert fib_status.get("available") is False
     assert fib_status.get("reason") == "FIB_FEATURES_CONTEXT_ERROR"
     assert "FIB_FEATURES_CONTEXT_ERROR" in (meta.get("reasons") or [])
+    assert set(feats.keys()) == expected_features
+    assert meta.get("feature_count") == 15
 
 
 def test_ltf_context_error_exposes_meta_without_changing_feature_shape(monkeypatch) -> None:

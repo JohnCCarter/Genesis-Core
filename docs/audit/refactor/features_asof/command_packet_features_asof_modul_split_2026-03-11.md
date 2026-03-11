@@ -4,8 +4,8 @@
 - **Risk:** `HIGH` — why: touches `src/core/strategy/*` (high-sensitivity zone)
 - **Required Path:** `Full` (high-sensitivity path under `src/core/strategy/*`)
 - **Objective:** Continue no-behavior-change modular split of `features_asof.py` with facade preserved.
-- **Candidate:** `features_asof-modul-split (slice-6)`
-- **Base SHA:** `9bb6fd73`
+- **Candidate:** `features_asof-modul-split (slice-7)`
+- **Base SHA:** `42f26f82`
 - **Category:** `refactor(server)`
 - **Constraints:** `NO BEHAVIOR CHANGE` (default behavior and public API must remain unchanged)
 
@@ -13,7 +13,7 @@
 
 - **Scope IN:**
   - `src/core/strategy/features_asof.py`
-  - `src/core/strategy/features_asof_parts/numeric_utils.py` (new)
+  - `src/core/strategy/features_asof_parts/atr_percentile_utils.py` (new)
   - `tests/utils/test_features_asof_cache.py`
   - `docs/audit/refactor/features_asof/context_map_features_asof_modul_split_2026-03-11.md`
   - `docs/audit/refactor/features_asof/command_packet_features_asof_modul_split_2026-03-11.md`
@@ -32,9 +32,9 @@
 - `python -m pytest -q tests/utils/test_feature_cache.py tests/utils/diffing/test_feature_cache.py tests/utils/test_features_asof_cache.py tests/utils/test_features_asof_cache_key_deterministic.py`
 - `python -m pytest -q tests/utils/test_feature_parity.py::test_runtime_vs_precomputed_features`
 - `python -m pytest -q tests/integration/test_precompute_vs_runtime.py::test_precompute_features_match_runtime`
-- `python -m pytest -q tests/governance/test_pipeline_fast_hash_guard.py`
+- `python -m pytest -q tests/governance/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable`
 - focused slice tests:
-  - `python -m pytest -q tests/utils/test_features_asof_cache.py -k "clip_feature_value or clip_wrapper"`
+  - `python -m pytest -q tests/utils/test_features_asof_cache.py -k "atr_percentiles"`
 
 ## Stop Conditions
 
@@ -52,8 +52,10 @@
 
 - `context-map` skill loaded and applied for dependency/test surface verification.
 - `refactor-plan` skill loaded and applied for phased no-behavior-change extraction sequencing.
+- repo-local skill spec `feature_parity_check` reviewed and applied for runtime/precompute parity selectors and feature-surface guardrails.
+- repo-local skill spec `repo_clean_refactor` reviewed and applied for strict scope, minimal diff, and reversible no-behavior-change sequencing.
 - `features_asof_parts` is an internal extraction package. Public strategy import surface remains `core.strategy.features_asof`; package exports exist only to support local modularization and must not be treated as a stable external API.
-- Slice-6 extracts only the internal numeric clamp/NaN-normalization helper from `_extract_asof()` into `src/core/strategy/features_asof_parts/numeric_utils.py`. Public facade remains `core.strategy.features_asof`, and no runtime behavior, cache ownership, metrics ownership, or public API may change.
+- Slice-7 extracts only the internal ATR percentile metadata helper from `_extract_asof()` into `src/core/strategy/features_asof_parts/atr_percentile_utils.py`. Public facade remains `core.strategy.features_asof`; no runtime behavior, cache ownership, metrics ownership, env/config interpretation, or public API may change.
 
 ## Gate outcomes (executed)
 
@@ -63,5 +65,5 @@
 - `python -m pytest -q tests/utils/test_feature_cache.py tests/utils/diffing/test_feature_cache.py tests/utils/test_features_asof_cache.py tests/utils/test_features_asof_cache_key_deterministic.py` — **PASS**
 - `python -m pytest -q tests/utils/test_feature_parity.py::test_runtime_vs_precomputed_features` — **PASS**
 - `python -m pytest -q tests/integration/test_precompute_vs_runtime.py::test_precompute_features_match_runtime` — **PASS**
-- `python -m pytest -q tests/governance/test_pipeline_fast_hash_guard.py` — **PASS**
-- `python -m pytest -q tests/utils/test_features_asof_cache.py -k "clip_feature_value or clip_wrapper"` — **PASS**
+- `python -m pytest -q tests/governance/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable` — **PASS**
+- `python -m pytest -q tests/utils/test_features_asof_cache.py -k "atr_percentiles"` — **PASS**

@@ -33,6 +33,9 @@ from core.indicators.fibonacci import (
 from core.indicators.htf_fibonacci import get_htf_fibonacci_context, get_ltf_fibonacci_context
 from core.indicators.rsi import calculate_rsi
 from core.observability.metrics import metrics
+from core.strategy.features_asof_parts.atr_percentile_utils import (
+    build_atr_percentiles as _build_atr_percentiles_impl,
+)
 from core.strategy.features_asof_parts.cache_utils import (
     indicator_cache_lookup as _indicator_cache_lookup_impl,
 )
@@ -151,6 +154,12 @@ def _compute_candles_hash(candles: dict[str, list[float] | np.ndarray], asof_bar
 
 def _clip(x: float, lo: float, hi: float) -> float:
     return _clip_feature_value_impl(x, lo, hi)
+
+
+def _build_atr_percentiles(
+    atr_source: list[float] | np.ndarray | None,
+) -> dict[str, dict[str, float]]:
+    return _build_atr_percentiles_impl(atr_source)
 
 
 def _feature_cache_lookup(cache_key: str):
@@ -472,30 +481,9 @@ def _extract_asof(
     vol_regime = 1.0 if vol_shift_current > 1.0 else 0.0
 
     # === BUILD FEATURES DICT ===
-    atr_percentiles: dict[str, dict[str, float]] = {}
-
     # Use atr_window_56 if available (fast path), otherwise atr_vals (slow path)
     atr_source = atr_window_56 if atr_window_56 else atr_vals
-
-    if atr_source:
-        atr_arr = np.asarray(atr_source, dtype=float)
-        n_atr = atr_arr.size
-        for period in (14, 28, 56):
-            if n_atr >= period:
-                window = atr_arr[-period:]
-                # Performance: compute both percentiles in one call (2x faster)
-                p40, p80 = np.percentile(window, [40, 80])
-                atr_percentiles[str(period)] = {
-                    "p40": float(p40),
-                    "p80": float(p80),
-                }
-            else:
-                # Fallback for insufficient data
-                atr_percentiles[str(period)] = {"p40": 1.0, "p80": 1.0}
-    else:
-        # No ATR data
-        for period in (14, 28, 56):
-            atr_percentiles[str(period)] = {"p40": 1.0, "p80": 1.0}
+    atr_percentiles = _build_atr_percentiles(atr_source)
 
     features = {
         "rsi_inv_lag1": _clip(rsi_inv_lag1, -1.0, 1.0),

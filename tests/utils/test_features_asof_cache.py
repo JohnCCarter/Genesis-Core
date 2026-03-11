@@ -4,6 +4,8 @@ import logging
 import math
 from collections import OrderedDict
 
+import numpy as np
+
 
 def test_fast_hash_key_changes_with_dataset_state(monkeypatch) -> None:
     from core.strategy.features_asof import _compute_candles_hash
@@ -86,6 +88,55 @@ def test_clip_wrapper_matches_internal_numeric_helper() -> None:
             assert helper_value == 0.0
         else:
             assert wrapper_value == helper_value
+
+
+def test_build_atr_percentiles_defaults_without_source() -> None:
+    from core.strategy.features_asof_parts.atr_percentile_utils import build_atr_percentiles
+
+    expected = {
+        "14": {"p40": 1.0, "p80": 1.0},
+        "28": {"p40": 1.0, "p80": 1.0},
+        "56": {"p40": 1.0, "p80": 1.0},
+    }
+
+    assert build_atr_percentiles(None) == expected
+    assert build_atr_percentiles([]) == expected
+
+
+def test_build_atr_percentiles_defaults_only_missing_periods() -> None:
+    from core.strategy.features_asof_parts.atr_percentile_utils import build_atr_percentiles
+
+    atr_source = list(range(1, 21))
+
+    result = build_atr_percentiles(atr_source)
+    expected_14 = np.percentile(np.asarray(atr_source[-14:], dtype=float), [40, 80])
+
+    assert set(result.keys()) == {"14", "28", "56"}
+    assert result["14"] == {"p40": float(expected_14[0]), "p80": float(expected_14[1])}
+    assert result["28"] == {"p40": 1.0, "p80": 1.0}
+    assert result["56"] == {"p40": 1.0, "p80": 1.0}
+
+
+def test_build_atr_percentiles_uses_trailing_window_per_period() -> None:
+    from core.strategy.features_asof import _build_atr_percentiles
+    from core.strategy.features_asof_parts.atr_percentile_utils import build_atr_percentiles
+
+    atr_source = np.asarray([-1000.0] * 20 + list(range(1, 61)), dtype=float)
+
+    wrapper_result = _build_atr_percentiles(atr_source)
+    helper_result = build_atr_percentiles(atr_source)
+
+    expected = {
+        str(period): {
+            "p40": float(np.percentile(atr_source[-period:], 40)),
+            "p80": float(np.percentile(atr_source[-period:], 80)),
+        }
+        for period in (14, 28, 56)
+    }
+
+    assert wrapper_result == helper_result
+    assert helper_result == expected
+    assert helper_result["56"]["p40"] > -1000.0
 
 
 def test_indicator_cache_wrappers_delegate_when_enabled() -> None:

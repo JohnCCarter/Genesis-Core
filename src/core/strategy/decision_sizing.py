@@ -1,0 +1,201 @@
+from __future__ import annotations
+
+from collections.abc import Callable
+from typing import Any
+
+from core.strategy import regime_intelligence as _regime_intelligence
+from core.strategy.decision_gates import Action, safe_float
+
+
+def apply_sizing(
+    *,
+    candidate: Action,
+    confidence: dict[str, float],
+    regime: str | None,
+    htf_regime: str | None,
+    state_in: dict[str, Any],
+    state_out: dict[str, Any],
+    cfg: dict[str, Any],
+    p_buy: float,
+    p_sell: float,
+    r_default: float,
+    max_ev: float,
+    logger: Any,
+    sanitize_context: Callable[[Any], Any],
+) -> tuple[float, float]:
+    ri_cfg = dict((cfg.get("multi_timeframe") or {}).get("regime_intelligence") or {})
+    clarity_cfg = dict(ri_cfg.get("clarity_score") or {})
+    ri_enabled = bool(ri_cfg.get("enabled", False))
+    ri_version = str(ri_cfg.get("version") or "legacy")
+    clarity_enabled = (
+        ri_enabled and ri_version.lower() == "v2" and bool(clarity_cfg.get("enabled", False))
+    )
+    authority_mode, authority_mode_source = _regime_intelligence.resolve_authority_mode_with_source(
+        cfg
+    )
+
+    risk_map = (cfg.get("risk") or {}).get("risk_map", [])
+    c_buy = safe_float(confidence.get("buy", 0.0), 0.0)
+    c_sell = safe_float(confidence.get("sell", 0.0), 0.0)
+    conf_val_gate = c_buy if candidate == "LONG" else c_sell
+
+    size_base = 0.0
+    try:
+        for thr_v, sz in sorted(risk_map, key=lambda item: float(item[0])):
+            if conf_val_gate >= float(thr_v):
+                size_base = float(sz)
+    except Exception as exc:
+        logger.exception(
+            "[DECISION] SIZING_RISK_MAP_ERROR candidate=%s confidence=%.6f risk_map=%s",
+            candidate,
+            conf_val_gate,
+            sanitize_context(risk_map),
+        )
+        raise RuntimeError("Failed to compute size_base from risk_map") from exc
+
+    size_scale = 1.0
+    try:
+        if conf_val_gate > 0.0:
+            if candidate == "LONG" and "buy_scaled" in confidence:
+                c_scaled = safe_float(confidence.get("buy_scaled") or conf_val_gate, conf_val_gate)
+                size_scale = c_scaled / conf_val_gate
+            elif candidate == "SHORT" and "sell_scaled" in confidence:
+                c_scaled = safe_float(
+                    confidence.get("sell_scaled") or conf_val_gate,
+                    conf_val_gate,
+                )
+                size_scale = c_scaled / conf_val_gate
+    except Exception:
+        size_scale = 1.0
+    size_scale = max(0.0, min(1.0, size_scale))
+
+    regime_mult = 1.0
+    try:
+        rm = (cfg.get("risk") or {}).get("regime_size_multipliers") or {}
+        if isinstance(rm, dict):
+            regime_key = str(regime or "").strip()
+            regime_mult = float(
+                rm.get(regime_key)
+                if regime_key in rm
+                else (
+                    rm.get(regime_key.lower())
+                    if regime_key.lower() in rm
+                    else rm.get(regime_key.upper()) if regime_key.upper() in rm else 1.0
+                )
+            )
+    except Exception:
+        regime_mult = 1.0
+    regime_mult = max(0.0, min(1.0, regime_mult))
+
+    htf_regime_mult = 1.0
+    try:
+        hrm = (cfg.get("risk") or {}).get("htf_regime_size_multipliers") or {}
+        if isinstance(hrm, dict) and htf_regime:
+            htf_key = str(htf_regime).strip().lower()
+            htf_regime_mult = float(hrm.get(htf_key, 1.0))
+    except Exception:
+        htf_regime_mult = 1.0
+    htf_regime_mult = max(0.0, min(1.0, htf_regime_mult))
+
+    vol_size_mult = 1.0
+    try:
+        vol_cfg = (cfg.get("risk") or {}).get("volatility_sizing") or {}
+        if vol_cfg.get("enabled"):
+            threshold = float(vol_cfg.get("high_vol_threshold", 80))
+            multiplier = float(vol_cfg.get("high_vol_multiplier", 0.7))
+            atr_period = str(vol_cfg.get("atr_period", 14))
+            atr_pct = state_in.get("atr_percentiles", {})
+            current_p = atr_pct.get(atr_period, {})
+            current_atr = state_in.get("current_atr")
+            p_threshold = current_p.get("p80") if threshold >= 80 else current_p.get("p40")
+            if current_atr is not None and p_threshold is not None and current_atr > p_threshold:
+                vol_size_mult = multiplier
+    except Exception:
+        vol_size_mult = 1.0
+    vol_size_mult = max(0.0, min(1.0, vol_size_mult))
+
+    min_size_mult = float((cfg.get("risk") or {}).get("min_combined_multiplier", 0.1))
+    combined_mult = size_scale * regime_mult * htf_regime_mult * vol_size_mult
+    combined_mult = max(min_size_mult, combined_mult)
+    size = float(size_base * combined_mult)
+    size_pre_clarity = size
+
+    clarity_multiplier = 1.0
+    clarity_payload: dict[str, Any] = {
+        "enabled": clarity_enabled,
+        "apply": "sizing_only",
+        "version": ri_version,
+        "score": None,
+        "raw": None,
+        "components": None,
+        "weights": None,
+        "weights_version": None,
+        "round_policy": None,
+        "multiplier": clarity_multiplier,
+        "size_before": size_pre_clarity,
+        "size_after": size,
+    }
+    if clarity_enabled:
+        min_mult = safe_float(clarity_cfg.get("size_multiplier_min", 0.5), 0.5)
+        max_mult = safe_float(clarity_cfg.get("size_multiplier_max", 1.0), 1.0)
+        if max_mult < min_mult:
+            min_mult, max_mult = max_mult, min_mult
+        min_mult = max(0.0, min(1.0, min_mult))
+        max_mult = max(0.0, min(1.0, max_mult))
+
+        clarity = _regime_intelligence.compute_clarity_score_v1(
+            confidence_gate=conf_val_gate,
+            edge=abs(p_buy - p_sell),
+            max_ev=max_ev,
+            r_default=r_default,
+            candidate=candidate,
+            regime=str(regime or "balanced"),
+            weights=clarity_cfg.get("weights_v1"),
+            weights_version=str(clarity_cfg.get("weights_version") or "weights_v1"),
+        )
+        clarity_score = int(clarity["clarity_score"])
+        clarity_multiplier = min_mult + ((max_mult - min_mult) * (clarity_score / 100.0))
+        clarity_multiplier = max(0.0, min(1.0, clarity_multiplier))
+        size = float(size * clarity_multiplier)
+
+        clarity_payload = {
+            "enabled": True,
+            "apply": "sizing_only",
+            "version": ri_version,
+            "score": clarity_score,
+            "raw": float(clarity["clarity_raw"]),
+            "components": dict(clarity["components"]),
+            "weights": dict(clarity["weights"]),
+            "weights_version": str(clarity["weights_version"]),
+            "round_policy": str(clarity["round_policy"]),
+            "multiplier": clarity_multiplier,
+            "size_before": size_pre_clarity,
+            "size_after": size,
+            "multiplier_min": min_mult,
+            "multiplier_max": max_mult,
+        }
+
+    state_out["confidence_gate"] = conf_val_gate
+    state_out["size_base"] = size_base
+    state_out["size_scale"] = size_scale
+    state_out["size_regime_mult"] = regime_mult
+    state_out["size_htf_regime_mult"] = htf_regime_mult
+    state_out["size_vol_mult"] = vol_size_mult
+    state_out["size_combined_mult"] = combined_mult
+    state_out["ri_flag_enabled"] = ri_enabled
+    state_out["ri_version"] = ri_version
+    state_out["authority_mode"] = authority_mode
+    state_out["authority_mode_source"] = authority_mode_source
+    state_out["ri_clarity_enabled"] = bool(clarity_payload.get("enabled"))
+    state_out["ri_clarity_apply"] = clarity_payload.get("apply")
+    state_out["ri_clarity_multiplier"] = clarity_payload.get("multiplier")
+    state_out["ri_clarity_score"] = clarity_payload.get("score")
+    state_out["ri_clarity_raw"] = clarity_payload.get("raw")
+    state_out["ri_clarity_components"] = clarity_payload.get("components")
+    state_out["ri_clarity_weights"] = clarity_payload.get("weights")
+    state_out["ri_clarity_weights_version"] = clarity_payload.get("weights_version")
+    state_out["ri_clarity_round_policy"] = clarity_payload.get("round_policy")
+    state_out["size_before_ri_clarity"] = clarity_payload.get("size_before")
+    state_out["size_after_ri_clarity"] = clarity_payload.get("size_after")
+
+    return size, conf_val_gate

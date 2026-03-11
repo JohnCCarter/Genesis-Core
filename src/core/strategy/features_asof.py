@@ -33,6 +33,12 @@ from core.indicators.fibonacci import (
 from core.indicators.htf_fibonacci import get_htf_fibonacci_context, get_ltf_fibonacci_context
 from core.indicators.rsi import calculate_rsi
 from core.observability.metrics import metrics
+from core.strategy.features_asof_parts.cache_utils import (
+    indicator_cache_lookup as _indicator_cache_lookup_impl,
+)
+from core.strategy.features_asof_parts.cache_utils import (
+    indicator_cache_store as _indicator_cache_store_impl,
+)
 from core.strategy.features_asof_parts.hash_utils import as_config_dict as _as_config_dict_impl
 from core.strategy.features_asof_parts.hash_utils import (
     compute_candles_hash as _compute_candles_hash_impl,
@@ -96,14 +102,11 @@ _FIB_FEATURE_FALLBACKS: dict[str, float] = {
 
 
 def _indicator_cache_lookup(key):
-    if not _INDICATOR_CACHE_ENABLED:
-        return None
-    return _indicator_cache.lookup(key)
+    return _indicator_cache_lookup_impl(_indicator_cache, _INDICATOR_CACHE_ENABLED, key)
 
 
 def _indicator_cache_store(key, value):
-    if _INDICATOR_CACHE_ENABLED:
-        _indicator_cache.store(key, value)
+    _indicator_cache_store_impl(_indicator_cache, _INDICATOR_CACHE_ENABLED, key, value)
 
 
 def _remap_precomputed_features(

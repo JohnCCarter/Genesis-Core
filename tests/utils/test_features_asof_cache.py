@@ -53,3 +53,63 @@ def test_as_config_dict_logs_and_falls_back_on_model_dump_error(caplog) -> None:
 
     assert out == {}
     assert "model_dump fallback to empty dict" in caplog.text
+
+
+def test_indicator_cache_wrappers_delegate_when_enabled() -> None:
+    from core.strategy.features_asof import _indicator_cache_lookup, _indicator_cache_store
+
+    class _FakeCache:
+        def __init__(self) -> None:
+            self.items = {}
+
+        def lookup(self, key):
+            return self.items.get(key)
+
+        def store(self, key, value) -> None:
+            self.items[key] = value
+
+    import core.strategy.features_asof as features_asof
+
+    original_cache = features_asof._indicator_cache
+    original_enabled = features_asof._INDICATOR_CACHE_ENABLED
+    fake_cache = _FakeCache()
+    try:
+        features_asof._indicator_cache = fake_cache
+        features_asof._INDICATOR_CACHE_ENABLED = True
+
+        assert _indicator_cache_lookup("missing") is None
+        _indicator_cache_store("answer", 42)
+        assert _indicator_cache_lookup("answer") == 42
+    finally:
+        features_asof._indicator_cache = original_cache
+        features_asof._INDICATOR_CACHE_ENABLED = original_enabled
+
+
+def test_indicator_cache_wrappers_are_noop_when_disabled() -> None:
+    from core.strategy.features_asof import _indicator_cache_lookup, _indicator_cache_store
+
+    class _FakeCache:
+        def __init__(self) -> None:
+            self.store_calls = 0
+
+        def lookup(self, key):
+            raise AssertionError("lookup should not be called when cache is disabled")
+
+        def store(self, key, value) -> None:
+            self.store_calls += 1
+
+    import core.strategy.features_asof as features_asof
+
+    original_cache = features_asof._indicator_cache
+    original_enabled = features_asof._INDICATOR_CACHE_ENABLED
+    fake_cache = _FakeCache()
+    try:
+        features_asof._indicator_cache = fake_cache
+        features_asof._INDICATOR_CACHE_ENABLED = False
+
+        assert _indicator_cache_lookup("anything") is None
+        _indicator_cache_store("answer", 42)
+        assert fake_cache.store_calls == 0
+    finally:
+        features_asof._indicator_cache = original_cache
+        features_asof._INDICATOR_CACHE_ENABLED = original_enabled

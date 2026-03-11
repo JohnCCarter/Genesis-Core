@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from types import SimpleNamespace
 
 import numpy as np
 
@@ -102,3 +103,70 @@ def test_ltf_context_error_exposes_meta_without_changing_feature_shape(monkeypat
     assert ltf_status.get("reason") == "LTF_CONTEXT_ERROR"
     assert set(feats.keys()) == expected_features
     assert meta.get("feature_count") == 15
+
+
+def test_htf_context_error_retains_selector_meta_without_changing_feature_shape(
+    monkeypatch,
+) -> None:
+    candles = _synthetic_candles()
+
+    def _raise_htf(*_args, **_kwargs):
+        raise RuntimeError("forced htf failure")
+
+    expected_features = {
+        "rsi_inv_lag1",
+        "volatility_shift_ma3",
+        "bb_position_inv_ma3",
+        "rsi_vol_interaction",
+        "vol_regime",
+        "atr_14",
+        "fib_dist_min_atr",
+        "fib_dist_signed_atr",
+        "fib_prox_score",
+        "fib0618_prox_atr",
+        "fib05_prox_atr",
+        "swing_retrace_depth",
+        "fib05_x_ema_slope",
+        "fib_prox_x_adx",
+        "fib05_x_rsi_inv",
+    }
+
+    configs = [
+        {
+            "thresholds": {"signal_adaptation": {"atr_period": 14}},
+            "multi_timeframe": {
+                "htf_selector": {
+                    "mode": "fixed",
+                    "per_timeframe": {"1h": {"timeframe": "6h"}},
+                }
+            },
+        },
+        SimpleNamespace(
+            multi_timeframe={
+                "htf_selector": {
+                    "mode": "fixed",
+                    "per_timeframe": {"1h": {"timeframe": "6h"}},
+                }
+            }
+        ),
+    ]
+
+    monkeypatch.setattr(features_asof, "get_htf_fibonacci_context", _raise_htf)
+
+    for config in configs:
+        feats, meta = features_asof.extract_features_backtest(
+            candles,
+            asof_bar=len(candles["close"]) - 1,
+            timeframe="1h",
+            symbol="tBTCUSD",
+            config=config,
+        )
+
+        htf_status = meta.get("htf_fibonacci") or {}
+        selector_meta = meta.get("htf_selector") or {}
+        assert htf_status.get("available") is False
+        assert htf_status.get("reason") == "HTF_CONTEXT_ERROR"
+        assert "selector" not in htf_status
+        assert selector_meta.get("selected") == "6h"
+        assert set(feats.keys()) == expected_features
+        assert meta.get("feature_count") == 15

@@ -1,12 +1,12 @@
-## Context Map — features_asof modul-split (slice-8)
+## Context Map — features_asof modul-split (slice-9)
 
 ### Files to modify
 
-| File                                                               | Purpose                     | Changes Needed                                                                                                    |
-| ------------------------------------------------------------------ | --------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `src/core/strategy/features_asof.py`                               | SSOT for feature extraction | Keep facade/API, replace inline LTF fibonacci context block with a thin module-level wrapper delegating to helper |
-| `src/core/strategy/features_asof_parts/fibonacci_context_utils.py` | New extracted helper module | Host stateless LTF fibonacci context orchestration with exact fallback and logging semantics                      |
-| `tests/utils/test_features_asof_fib_error_handling.py`             | Focused LTF fallback proof  | Prove `LTF_CONTEXT_ERROR` fallback at features_asof facade level without feature-shape drift                      |
+| File                                                               | Purpose                     | Changes Needed                                                                                                                          |
+| ------------------------------------------------------------------ | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/core/strategy/features_asof.py`                               | SSOT for feature extraction | Keep facade/API, replace inline HTF fibonacci context block with a thin module-level wrapper delegating to helper                       |
+| `src/core/strategy/features_asof_parts/fibonacci_context_utils.py` | Existing internal helper    | Extend helper module with HTF fibonacci context orchestration while preserving selector-meta retention, fallback, and logging semantics |
+| `tests/utils/test_features_asof_fib_error_handling.py`             | Focused HTF fallback proof  | Prove `HTF_CONTEXT_ERROR` fallback at features_asof facade level without feature-shape drift and with selector-meta retained            |
 
 ### Dependencies (may need updates)
 
@@ -18,26 +18,26 @@
 
 ### Test files
 
-| Test                                                                                                       | Coverage                                                               |
-| ---------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `tests/utils/test_features_asof_fib_error_handling.py`                                                     | Facade-level LTF fallback semantics and existing fib fallback coverage |
-| `tests/utils/test_feature_parity.py`                                                                       | Runtime vs precomputed parity remains unchanged                        |
-| `tests/integration/test_precompute_vs_runtime.py`                                                          | Precompute/runtime feature equivalence remains unchanged               |
-| `tests/utils/test_features_asof_cache_key_deterministic.py`                                                | Cache-key determinism remains unchanged                                |
-| `tests/utils/test_features.py::test_extract_features_stub_shapes`                                          | Feature shape remains unchanged                                        |
-| `tests/integration/test_model_schema_compat.py::test_feature_extraction_covers_all_model_schema_keys`      | Model schema compatibility remains unchanged                           |
-| `tests/backtest/test_backtest_determinism_smoke.py`                                                        | Determinism replay selector                                            |
-| `tests/governance/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable` | Pipeline invariant selector                                            |
+| Test                                                                                                       | Coverage                                                                                             |
+| ---------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `tests/utils/test_features_asof_fib_error_handling.py`                                                     | Facade-level HTF fallback semantics, selector-meta retention, and existing fib/LTF fallback coverage |
+| `tests/utils/test_feature_parity.py`                                                                       | Runtime vs precomputed parity remains unchanged                                                      |
+| `tests/integration/test_precompute_vs_runtime.py`                                                          | Precompute/runtime feature equivalence remains unchanged                                             |
+| `tests/utils/test_features_asof_cache_key_deterministic.py`                                                | Cache-key determinism remains unchanged                                                              |
+| `tests/utils/test_features.py::test_extract_features_stub_shapes`                                          | Feature shape remains unchanged                                                                      |
+| `tests/integration/test_model_schema_compat.py::test_feature_extraction_covers_all_model_schema_keys`      | Model schema compatibility remains unchanged                                                         |
+| `tests/backtest/test_backtest_determinism_smoke.py`                                                        | Determinism replay selector                                                                          |
+| `tests/governance/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable` | Pipeline invariant selector                                                                          |
 
 ### Reference patterns
 
-| File                                                            | Pattern                                                               |
-| --------------------------------------------------------------- | --------------------------------------------------------------------- |
-| `src/core/strategy/components/*.py`                             | Small focused modules with clear responsibility boundaries            |
-| `src/core/strategy/features.py`                                 | Facade/delegation pattern preserving API surface                      |
-| `src/core/strategy/features_asof_parts/atr_percentile_utils.py` | Small extracted helper with thin facade wrapper in `features_asof.py` |
-| `src/core/strategy/features_asof_parts/result_cache_utils.py`   | Stateless internal helper module pattern for extracted logic          |
-| `src/core/strategy/features_asof_parts/numeric_utils.py`        | Small extracted helper with thin facade wrapper in `features_asof.py` |
+| File                                                               | Pattern                                                               |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| `src/core/strategy/components/*.py`                                | Small focused modules with clear responsibility boundaries            |
+| `src/core/strategy/features.py`                                    | Facade/delegation pattern preserving API surface                      |
+| `src/core/strategy/features_asof_parts/atr_percentile_utils.py`    | Small extracted helper with thin facade wrapper in `features_asof.py` |
+| `src/core/strategy/features_asof_parts/fibonacci_context_utils.py` | Internal orchestration helper with injected dependencies              |
+| `src/core/strategy/features_asof_parts/result_cache_utils.py`      | Stateless internal helper module pattern for extracted logic          |
 
 ### Risk assessment
 
@@ -45,10 +45,10 @@
 - [ ] Database migrations needed
 - [ ] Configuration changes required
 
-### Slice-8 decision
+### Slice-9 decision
 
 - Extract pure helper logic incrementally (no decision logic / no indicator math flow changes).
-- Slice-8 extracts only the LTF fibonacci context orchestration into `features_asof_parts/fibonacci_context_utils.py` while preserving call sites, fallback reason, logging semantics, cache ownership, metrics ownership, meta keys, and default runtime behavior in `features_asof.py`.
+- Slice-9 extracts only the HTF fibonacci context orchestration into `features_asof_parts/fibonacci_context_utils.py` while preserving call sites, selector config resolution, selector-meta retention, fallback reason, logging semantics, cache ownership, metrics ownership, meta keys, and default runtime behavior in `features_asof.py`.
 - `features_asof_parts` is internal-only modularization support; public import surface remains `core.strategy.features_asof`.
 - Keep import path `core.strategy.features_asof` as the only public SSOT.
 - `src/core/strategy/features_asof_parts/__init__.py` remains unchanged because no package-root export is required for this slice.

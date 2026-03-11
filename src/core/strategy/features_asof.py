@@ -43,6 +43,9 @@ from core.strategy.features_asof_parts.cache_utils import (
     indicator_cache_store as _indicator_cache_store_impl,
 )
 from core.strategy.features_asof_parts.fibonacci_context_utils import (
+    build_htf_fibonacci_context as _build_htf_fibonacci_context_impl,
+)
+from core.strategy.features_asof_parts.fibonacci_context_utils import (
     build_ltf_fibonacci_context as _build_ltf_fibonacci_context_impl,
 )
 from core.strategy.features_asof_parts.hash_utils import as_config_dict as _as_config_dict_impl
@@ -183,6 +186,31 @@ def _build_ltf_fibonacci_context(
         atr_values,
         symbol,
         get_ltf_fibonacci_context,
+        log_fib_flow,
+        _log,
+    )
+
+
+def _build_htf_fibonacci_context(
+    candles: dict[str, Any],
+    highs: list[float] | np.ndarray,
+    lows: list[float] | np.ndarray,
+    closes: list[float] | np.ndarray,
+    timeframe: str | None,
+    symbol: str | None,
+    config: dict[str, Any] | None = None,
+) -> tuple[dict[str, Any], dict[str, Any] | None]:
+    return _build_htf_fibonacci_context_impl(
+        candles,
+        highs,
+        lows,
+        closes,
+        timeframe,
+        symbol,
+        config,
+        _as_config_dict,
+        select_htf_timeframe,
+        get_htf_fibonacci_context,
         log_fib_flow,
         _log,
     )
@@ -711,55 +739,15 @@ def _extract_asof(
     htf_fibonacci_context = {}
     htf_selector_meta: dict[str, Any] | None = None
     if timeframe in ["1h", "30m", "6h", "15m"]:
-        try:
-            _candles_for_htf = {
-                "high": highs.tolist() if isinstance(highs, np.ndarray) else highs,
-                "low": lows.tolist() if isinstance(lows, np.ndarray) else lows,
-                "close": closes.tolist() if isinstance(closes, np.ndarray) else closes,
-                "timestamp": candles.get("timestamp") if isinstance(candles, dict) else None,
-            }
-            mtf_cfg_value = None
-            if hasattr(config, "multi_timeframe"):
-                mtf_cfg_value = config.multi_timeframe
-            elif isinstance(config, dict):
-                mtf_cfg_value = (config or {}).get("multi_timeframe")
-            multi_timeframe_cfg = _as_config_dict(mtf_cfg_value)
-            selector_cfg = multi_timeframe_cfg.get("htf_selector")
-            if not selector_cfg and multi_timeframe_cfg.get("htf_timeframe"):
-                selector_cfg = {
-                    "mode": "fixed",
-                    "per_timeframe": multi_timeframe_cfg.get("htf_timeframe", {}),
-                }
-            htf_timeframe, htf_selector_meta = select_htf_timeframe(timeframe or "", selector_cfg)
-            htf_fibonacci_context = get_htf_fibonacci_context(
-                _candles_for_htf,
-                timeframe=timeframe,
-                symbol=symbol or "tBTCUSD",
-                htf_timeframe=htf_timeframe,
-            )
-            if htf_selector_meta:
-                htf_fibonacci_context["selector"] = htf_selector_meta
-            log_fib_flow(
-                "[FIB-FLOW] HTF fibonacci context created: symbol=%s timeframe=%s htf_tf=%s available=%s",
-                symbol or "tBTCUSD",
-                timeframe,
-                htf_timeframe,
-                htf_fibonacci_context.get("available", False),
-                logger=_log,
-            )
-        except Exception as e:
-            # Don't fail feature extraction if HTF context unavailable
-            htf_fibonacci_context = {
-                "available": False,
-                "reason": "HTF_CONTEXT_ERROR",
-            }
-            log_fib_flow(
-                "[FIB-FLOW] HTF fibonacci context failed: symbol=%s timeframe=%s error=%s",
-                symbol or "tBTCUSD",
-                timeframe,
-                str(e),
-                logger=_log,
-            )
+        htf_fibonacci_context, htf_selector_meta = _build_htf_fibonacci_context(
+            candles,
+            highs,
+            lows,
+            closes,
+            timeframe,
+            symbol,
+            config,
+        )
 
     # === Same timeframe Fibonacci context for entry/exit logic ===
     ltf_fibonacci_context = {}

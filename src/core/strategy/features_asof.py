@@ -12,7 +12,6 @@ This eliminates all ambiguity between live and backtest modes.
 
 from __future__ import annotations
 
-import hashlib
 import os
 from bisect import bisect_right
 from collections import OrderedDict
@@ -34,6 +33,16 @@ from core.indicators.fibonacci import (
 from core.indicators.htf_fibonacci import get_htf_fibonacci_context, get_ltf_fibonacci_context
 from core.indicators.rsi import calculate_rsi
 from core.observability.metrics import metrics
+from core.strategy.features_asof_parts.hash_utils import as_config_dict as _as_config_dict_impl
+from core.strategy.features_asof_parts.hash_utils import (
+    compute_candles_hash as _compute_candles_hash_impl,
+)
+from core.strategy.features_asof_parts.hash_utils import (
+    safe_series_value as _safe_series_value_impl,
+)
+from core.strategy.features_asof_parts.precompute_utils import (
+    remap_precomputed_features as _remap_precomputed_features_impl,
+)
 from core.strategy.fib_logging import log_fib_flow
 from core.strategy.htf_selector import select_htf_timeframe
 from core.utils.diffing.feature_cache import IndicatorCache, make_indicator_fingerprint
@@ -57,18 +66,7 @@ def get_feature_hit_counts() -> tuple[int, int]:
 
 
 def _as_config_dict(value: Any) -> dict[str, Any]:
-    if value is None:
-        return {}
-    if isinstance(value, dict):
-        return value
-    if hasattr(value, "model_dump"):
-        try:
-            return value.model_dump()  # type: ignore[return-value]
-        except Exception as exc:
-            if _log:
-                _log.warning("model_dump fallback to empty dict: %s", exc)
-            return {}
-    return {}
+    return _as_config_dict_impl(value, logger=_log)
 
 
 _feature_cache: OrderedDict[str, tuple[dict[str, float], dict[str, Any]]] = OrderedDict()
@@ -111,55 +109,7 @@ def _indicator_cache_store(key, value):
 def _remap_precomputed_features(
     pre: dict[str, Any], window_start_idx: int, lookup_idx: int
 ) -> tuple[dict[str, Any], int]:
-    """Remappa precompute till lokalt fönster när backtestet startar mitt i historiken.
-
-    Returnerar (remappad_pre, remappat_lookup_idx). Vid fel återgår vi till tom pre
-    och behåller original-index så att slow path tar över.
-    """
-    if not pre or window_start_idx <= 0:
-        return pre, lookup_idx
-
-    try:
-        local_lookup_idx = lookup_idx - window_start_idx
-        if local_lookup_idx < 0:
-            return {}, lookup_idx
-
-        remapped: dict[str, Any] = {}
-        # Standardserier: klipp bort prefixet före window_start_idx
-        for key, val in pre.items():
-            if isinstance(val, list | tuple):
-                if len(val) <= window_start_idx:
-                    continue
-                remapped[key] = list(val[window_start_idx:])
-            else:
-                remapped[key] = val
-
-        # Remappa fib-svängar (behåll endast de som finns inom fönstret och offset:a index)
-        def _remap_swings(idx_key: str, px_key: str) -> None:
-            idxs = pre.get(idx_key)
-            pxs = pre.get(px_key)
-            if not (isinstance(idxs, list | tuple) and isinstance(pxs, list | tuple)):
-                return
-            new_idx: list[int] = []
-            new_px: list[float] = []
-            for i, p in zip(idxs, pxs, strict=False):
-                try:
-                    if i < window_start_idx:
-                        continue
-                    new_idx.append(int(i - window_start_idx))
-                    new_px.append(float(p))
-                except (TypeError, ValueError):
-                    continue
-            if new_idx and len(new_idx) == len(new_px):
-                remapped[idx_key] = new_idx
-                remapped[px_key] = new_px
-
-        _remap_swings("fib_high_idx", "fib_high_px")
-        _remap_swings("fib_low_idx", "fib_low_px")
-
-        return remapped, local_lookup_idx
-    except Exception:
-        return {}, lookup_idx
+    return _remap_precomputed_features_impl(pre, window_start_idx, lookup_idx)
 
 
 def _log_precompute_status(
@@ -184,92 +134,11 @@ def _log_precompute_status(
 
 
 def _safe_series_value(series: list[float] | np.ndarray | None, idx: int) -> float:
-    if series is None or idx < 0:
-        return 0.0
-    try:
-        if len(series) <= idx:
-            return 0.0
-        return float(series[idx])
-    except Exception:
-        return 0.0
+    return _safe_series_value_impl(series, idx)
 
 
 def _compute_candles_hash(candles: dict[str, list[float] | np.ndarray], asof_bar: int) -> str:
-    """Compute a cache key for candles up to asof_bar.
-
-    Fast path (opt-in): GENESIS_FAST_HASH=1 -> simple f-string on asof_bar:last_close
-    Default: deterministic compact digest over a small, representative state.
-    """
-    # Optional ultra-fast key for tight loops
-    if str(os.environ.get("GENESIS_FAST_HASH", "")).strip().lower() in {"1", "true"}:
-        try:
-            close = candles.get("close")
-            last_close = _safe_series_value(close, asof_bar)
-
-            # Backwards compatibility: keep legacy shape for close-only minimal inputs.
-            if set(candles.keys()) <= {"close"}:
-                return f"{asof_bar}:{last_close:.4f}"
-
-            close_len = int(len(close)) if close is not None else 0
-            c_prev = _safe_series_value(close, asof_bar - 1)
-            c_first = _safe_series_value(close, 0)
-            o_now = _safe_series_value(candles.get("open"), asof_bar)
-            h_now = _safe_series_value(candles.get("high"), asof_bar)
-            l_now = _safe_series_value(candles.get("low"), asof_bar)
-            v_now = _safe_series_value(candles.get("volume"), asof_bar)
-
-            import struct
-
-            payload = struct.pack(
-                "<qqddddddd",
-                int(asof_bar),
-                close_len,
-                last_close,
-                c_prev,
-                c_first,
-                o_now,
-                h_now,
-                l_now,
-                v_now,
-            )
-            digest = hashlib.blake2b(payload, digest_size=8).hexdigest()
-            return f"{asof_bar}:{last_close:.4f}:{digest}"
-        except Exception:
-            return f"{asof_bar}:0.0000"
-
-    # Default deterministic key
-    # NOTE: Avoid Python's built-in hash() here, because it is salted per process
-    # (depends on PYTHONHASHSEED) and would make cache keys non-deterministic across runs.
-    # We include asof_bar, last close, and a few sample points to reduce collisions
-    # without hashing the entire array.
-    try:
-        close = candles.get("close")
-        high = candles.get("high")
-        low = candles.get("low")
-
-        # Sample points: current, -1, -10, -50
-        c_now = _safe_series_value(close, asof_bar)
-        c_prev = _safe_series_value(close, asof_bar - 1)
-        h_now = _safe_series_value(high, asof_bar)
-        l_now = _safe_series_value(low, asof_bar)
-
-        import struct
-
-        # Pack as bytes to get a deterministic digest across processes.
-        payload = struct.pack("<qdddd", int(asof_bar), c_now, c_prev, h_now, l_now)
-        return hashlib.blake2b(payload, digest_size=16).hexdigest()
-    except Exception:
-        # Fallback to robust string construction if something fails
-        data_str = f"{asof_bar}"
-        for key in ["open", "high", "low", "close", "volume"]:
-            if key in candles:
-                start_idx = max(0, asof_bar - 99)
-                data = candles[key][start_idx : asof_bar + 1]
-                length = len(data)
-                data_sum = float(np.sum(data)) if length else 0.0
-                last_val = float(data[-1]) if length else 0.0
-                data_str += f"|{key}:{length}:{data_sum:.2f}:{last_val:.2f}"
-        return hashlib.sha256(data_str.encode()).hexdigest()
+    return _compute_candles_hash_impl(candles, asof_bar)
 
 
 def _extract_asof(

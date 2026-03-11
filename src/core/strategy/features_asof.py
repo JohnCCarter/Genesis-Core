@@ -49,6 +49,9 @@ from core.strategy.features_asof_parts.hash_utils import (
 from core.strategy.features_asof_parts.logging_utils import (
     log_precompute_status as _log_precompute_status_impl,
 )
+from core.strategy.features_asof_parts.numeric_utils import (
+    clip_feature_value as _clip_feature_value_impl,
+)
 from core.strategy.features_asof_parts.precompute_utils import (
     remap_precomputed_features as _remap_precomputed_features_impl,
 )
@@ -146,6 +149,10 @@ def _compute_candles_hash(candles: dict[str, list[float] | np.ndarray], asof_bar
     return _compute_candles_hash_impl(candles, asof_bar)
 
 
+def _clip(x: float, lo: float, hi: float) -> float:
+    return _clip_feature_value_impl(x, lo, hi)
+
+
 def _feature_cache_lookup(cache_key: str):
     return _feature_result_cache_lookup_impl(_feature_cache, cache_key)
 
@@ -230,12 +237,6 @@ def _extract_asof(
     assert (
         len(closes) == asof_bar + 1
     ), f"Expected {asof_bar + 1} bars, got {len(closes)}"  # nosec B101
-
-    # Helper for clipping
-    def _clip(x: float, lo: float, hi: float) -> float:
-        if x != x:  # NaN
-            return 0.0
-        return max(lo, min(hi, x))
 
     # === CALCULATE INDICATORS ===
 

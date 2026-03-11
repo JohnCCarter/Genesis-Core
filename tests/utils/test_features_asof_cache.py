@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import math
 from collections import OrderedDict
 
 
@@ -54,6 +55,37 @@ def test_as_config_dict_logs_and_falls_back_on_model_dump_error(caplog) -> None:
 
     assert out == {}
     assert "model_dump fallback to empty dict" in caplog.text
+
+
+def test_clip_feature_value_preserves_nan_and_bounds_semantics() -> None:
+    from core.strategy.features_asof_parts.numeric_utils import clip_feature_value
+
+    assert clip_feature_value(float("nan"), -1.0, 1.0) == 0.0
+    assert clip_feature_value(-2.5, -1.0, 1.0) == -1.0
+    assert clip_feature_value(2.5, -1.0, 1.0) == 1.0
+    assert clip_feature_value(0.25, -1.0, 1.0) == 0.25
+
+
+def test_clip_wrapper_matches_internal_numeric_helper() -> None:
+    from core.strategy.features_asof import _clip
+    from core.strategy.features_asof_parts.numeric_utils import clip_feature_value
+
+    cases = [
+        (float("nan"), -1.0, 1.0),
+        (-2.5, -1.0, 1.0),
+        (2.5, -1.0, 1.0),
+        (0.25, -1.0, 1.0),
+    ]
+
+    for value, low, high in cases:
+        wrapper_value = _clip(value, low, high)
+        helper_value = clip_feature_value(value, low, high)
+
+        if math.isnan(value):
+            assert wrapper_value == 0.0
+            assert helper_value == 0.0
+        else:
+            assert wrapper_value == helper_value
 
 
 def test_indicator_cache_wrappers_delegate_when_enabled() -> None:

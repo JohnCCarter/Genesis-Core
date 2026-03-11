@@ -4,6 +4,7 @@ import math
 from types import SimpleNamespace
 
 import numpy as np
+import pytest
 
 import core.strategy.features_asof as features_asof
 
@@ -22,6 +23,13 @@ def _synthetic_candles(*, n: int = 260, seed: int = 7) -> dict[str, list[float]]
         "close": closes,
         "volume": volume,
     }
+
+
+@pytest.fixture(autouse=True)
+def _clear_features_asof_result_cache() -> None:
+    features_asof._feature_cache.clear()
+    yield
+    features_asof._feature_cache.clear()
 
 
 def test_fibonacci_feature_error_exposes_meta_and_fallbacks(monkeypatch) -> None:

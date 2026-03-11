@@ -42,6 +42,9 @@ from core.strategy.features_asof_parts.cache_utils import (
 from core.strategy.features_asof_parts.cache_utils import (
     indicator_cache_store as _indicator_cache_store_impl,
 )
+from core.strategy.features_asof_parts.fibonacci_context_utils import (
+    build_ltf_fibonacci_context as _build_ltf_fibonacci_context_impl,
+)
 from core.strategy.features_asof_parts.hash_utils import as_config_dict as _as_config_dict_impl
 from core.strategy.features_asof_parts.hash_utils import (
     compute_candles_hash as _compute_candles_hash_impl,
@@ -160,6 +163,29 @@ def _build_atr_percentiles(
     atr_source: list[float] | np.ndarray | None,
 ) -> dict[str, dict[str, float]]:
     return _build_atr_percentiles_impl(atr_source)
+
+
+def _build_ltf_fibonacci_context(
+    candles: dict[str, Any],
+    highs: list[float] | np.ndarray,
+    lows: list[float] | np.ndarray,
+    closes: list[float] | np.ndarray,
+    timeframe: str | None,
+    atr_values: list[float] | np.ndarray | None,
+    symbol: str | None,
+) -> dict[str, Any]:
+    return _build_ltf_fibonacci_context_impl(
+        candles,
+        highs,
+        lows,
+        closes,
+        timeframe,
+        atr_values,
+        symbol,
+        get_ltf_fibonacci_context,
+        log_fib_flow,
+        _log,
+    )
 
 
 def _feature_cache_lookup(cache_key: str):
@@ -738,36 +764,15 @@ def _extract_asof(
     # === Same timeframe Fibonacci context for entry/exit logic ===
     ltf_fibonacci_context = {}
     if timeframe in ["1h", "30m", "6h", "15m"]:
-        try:
-            ltf_fibonacci_context = get_ltf_fibonacci_context(
-                {
-                    "high": highs.tolist() if isinstance(highs, np.ndarray) else highs,
-                    "low": lows.tolist() if isinstance(lows, np.ndarray) else lows,
-                    "close": closes.tolist() if isinstance(closes, np.ndarray) else closes,
-                    "timestamp": candles.get("timestamp") if isinstance(candles, dict) else None,
-                },
-                timeframe=timeframe,
-                atr_values=atr_vals,
-            )
-            log_fib_flow(
-                "[FIB-FLOW] LTF fibonacci context created: symbol=%s timeframe=%s available=%s",
-                symbol or "tBTCUSD",
-                timeframe,
-                ltf_fibonacci_context.get("available", False),
-                logger=_log,
-            )
-        except Exception as e:  # pragma: no cover - defensive
-            ltf_fibonacci_context = {
-                "available": False,
-                "reason": "LTF_CONTEXT_ERROR",
-            }
-            log_fib_flow(
-                "[FIB-FLOW] LTF fibonacci context failed: symbol=%s timeframe=%s error=%s",
-                symbol or "tBTCUSD",
-                timeframe,
-                str(e),
-                logger=_log,
-            )
+        ltf_fibonacci_context = _build_ltf_fibonacci_context(
+            candles,
+            highs,
+            lows,
+            closes,
+            timeframe,
+            atr_vals,
+            symbol,
+        )
 
     meta_reasons: list[str] = []
     if not bool(fib_feature_status.get("available", True)):

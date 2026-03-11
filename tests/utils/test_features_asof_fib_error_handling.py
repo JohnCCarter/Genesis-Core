@@ -61,3 +61,44 @@ def test_fibonacci_feature_error_exposes_meta_and_fallbacks(monkeypatch) -> None
     assert fib_status.get("available") is False
     assert fib_status.get("reason") == "FIB_FEATURES_CONTEXT_ERROR"
     assert "FIB_FEATURES_CONTEXT_ERROR" in (meta.get("reasons") or [])
+
+
+def test_ltf_context_error_exposes_meta_without_changing_feature_shape(monkeypatch) -> None:
+    candles = _synthetic_candles()
+
+    def _raise_ltf(*_args, **_kwargs):
+        raise RuntimeError("forced ltf failure")
+
+    monkeypatch.setattr(features_asof, "get_ltf_fibonacci_context", _raise_ltf)
+
+    feats, meta = features_asof.extract_features_backtest(
+        candles,
+        asof_bar=len(candles["close"]) - 1,
+        timeframe="1h",
+        symbol="tBTCUSD",
+        config={"thresholds": {"signal_adaptation": {"atr_period": 14}}},
+    )
+
+    expected_features = {
+        "rsi_inv_lag1",
+        "volatility_shift_ma3",
+        "bb_position_inv_ma3",
+        "rsi_vol_interaction",
+        "vol_regime",
+        "atr_14",
+        "fib_dist_min_atr",
+        "fib_dist_signed_atr",
+        "fib_prox_score",
+        "fib0618_prox_atr",
+        "fib05_prox_atr",
+        "swing_retrace_depth",
+        "fib05_x_ema_slope",
+        "fib_prox_x_adx",
+        "fib05_x_rsi_inv",
+    }
+
+    ltf_status = meta.get("ltf_fibonacci") or {}
+    assert ltf_status.get("available") is False
+    assert ltf_status.get("reason") == "LTF_CONTEXT_ERROR"
+    assert set(feats.keys()) == expected_features
+    assert meta.get("feature_count") == 15

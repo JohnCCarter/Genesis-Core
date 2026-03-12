@@ -50,11 +50,53 @@ def test_ui_get_and_evaluate_post():
     assert "authority_mode_source" in shadow_regime
 
 
+def test_strategy_evaluate_delegates_with_current_defaults(monkeypatch):
+    import core.server_strategy_api as route_mod
+
+    captured = {}
+
+    def _fake_evaluate_pipeline(candles, *, policy, configs, state):
+        captured["candles"] = candles
+        captured["policy"] = policy
+        captured["configs"] = configs
+        captured["state"] = state
+        return {"action": "NONE"}, {"meta_source": "route_test"}
+
+    monkeypatch.setattr(route_mod, "evaluate_pipeline", _fake_evaluate_pipeline)
+
+    c = TestClient(app)
+    payload = {
+        "candles": {
+            "open": [1, 2],
+            "high": [2, 3],
+            "low": [0.5, 1.5],
+            "close": [1.5, 2.5],
+            "volume": [10, 11],
+        }
+    }
+
+    r = c.post("/strategy/evaluate", json=payload)
+
+    assert r.status_code == 200
+    assert r.json() == {
+        "result": {"action": "NONE"},
+        "meta": {"meta_source": "route_test"},
+    }
+    assert captured == {
+        "candles": payload["candles"],
+        "policy": {"symbol": "tBTCUSD", "timeframe": "1m"},
+        "configs": {},
+        "state": {},
+    }
+
+
 INVALID_CANDLES_RESPONSE = {
     "ok": False,
     "error": {
         "code": "INVALID_CANDLES",
-        "message": "candles must include non-empty equal-length open/high/low/close/volume arrays",
+        "message": (
+            "candles must include non-empty equal-length " "open/high/low/close/volume arrays"
+        ),
     },
 }
 
@@ -85,8 +127,25 @@ INVALID_CANDLES_RESPONSE = {
             "candles": "not-a-dict",
             "state": {},
         },
+        {
+            "policy": {"symbol": "tBTCUSD", "timeframe": "1m"},
+            "configs": {},
+            "candles": {
+                "open": [1, 2],
+                "high": [2, 3],
+                "low": [0.5],
+                "close": [1.5, 2.5],
+                "volume": [10, 11],
+            },
+            "state": {},
+        },
     ],
-    ids=["missing-candles", "empty-candle-lists", "invalid-candles-type"],
+    ids=[
+        "missing-candles",
+        "empty-candle-lists",
+        "invalid-candles-type",
+        "mismatched-candle-lengths",
+    ],
 )
 def test_evaluate_invalid_candles_variants_return_invalid_candles_error(payload):
     c = TestClient(app)

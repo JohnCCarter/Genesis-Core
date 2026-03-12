@@ -44,6 +44,9 @@ from core.strategy.features_asof_parts.cache_utils import (
 from core.strategy.features_asof_parts.cache_utils import (
     indicator_cache_store as _indicator_cache_store_impl,
 )
+from core.strategy.features_asof_parts.context_bundle_utils import (
+    build_fibonacci_context_bundle as _build_fibonacci_context_bundle_impl,
+)
 from core.strategy.features_asof_parts.extraction_context_utils import (
     prepare_extraction_context as _prepare_extraction_context_impl,
 )
@@ -56,7 +59,9 @@ from core.strategy.features_asof_parts.fibonacci_context_utils import (
 from core.strategy.features_asof_parts.fibonacci_feature_utils import (
     build_fibonacci_feature_updates as _build_fibonacci_feature_updates_impl,
 )
-from core.strategy.features_asof_parts.hash_utils import as_config_dict as _as_config_dict_impl
+from core.strategy.features_asof_parts.hash_utils import (
+    as_config_dict as _as_config_dict_impl,
+)
 from core.strategy.features_asof_parts.hash_utils import (
     compute_candles_hash as _compute_candles_hash_impl,
 )
@@ -433,33 +438,21 @@ def _extract_asof(
     )
     features.update(fib_feature_updates)
 
-    # === ADD HTF FIBONACCI CONTEXT FOR SYMMETRIC CHAMOUN MODEL ===
-    # Only for LTF timeframes that can benefit from HTF structure
-    htf_fibonacci_context = {}
-    htf_selector_meta: dict[str, Any] | None = None
-    if timeframe in ["1h", "30m", "6h", "15m"]:
-        htf_fibonacci_context, htf_selector_meta = _build_htf_fibonacci_context(
-            candles,
-            highs,
-            lows,
-            closes,
-            timeframe,
-            symbol,
-            config,
-        )
-
-    # === Same timeframe Fibonacci context for entry/exit logic ===
-    ltf_fibonacci_context = {}
-    if timeframe in ["1h", "30m", "6h", "15m"]:
-        ltf_fibonacci_context = _build_ltf_fibonacci_context(
-            candles,
-            highs,
-            lows,
-            closes,
-            timeframe,
-            atr_vals,
-            symbol,
-        )
+    context_bundle = _build_fibonacci_context_bundle_impl(
+        candles,
+        highs,
+        lows,
+        closes,
+        timeframe,
+        symbol,
+        config,
+        atr_vals,
+        _build_htf_fibonacci_context,
+        _build_ltf_fibonacci_context,
+    )
+    htf_fibonacci_context = context_bundle.htf_fibonacci_context
+    htf_selector_meta = context_bundle.htf_selector_meta
+    ltf_fibonacci_context = context_bundle.ltf_fibonacci_context
 
     meta = _build_feature_meta_impl(
         features,

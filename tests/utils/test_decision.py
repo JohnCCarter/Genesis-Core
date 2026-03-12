@@ -433,3 +433,149 @@ def test_htf_override_preserves_debug_payload_and_history() -> None:
     htf_summary = fib_summary.get("htf") or {}
     assert htf_summary.get("reason") == "LONG_BELOW_LEVEL_OVERRIDE"
     assert float(htf_summary.get("level_price")) == pytest.approx(100.0)
+
+
+@pytest.mark.parametrize(
+    (
+        "probas",
+        "confidence",
+        "htf_entry_cfg",
+        "state",
+        "expected_action",
+        "expected_reason",
+        "expected_summary_reason",
+        "expected_block_reason",
+        "expected_entry_reason",
+        "expected_targets",
+    ),
+    [
+        (
+            {"buy": 0.9, "sell": 0.1},
+            {"buy": 0.9, "sell": 0.1},
+            {
+                "enabled": True,
+                "long_target_levels": [0.382, 0.5],
+                "tolerance_atr": 1.0,
+            },
+            {
+                "last_close": 100.4,
+                "current_atr": 0.5,
+                "htf_fib": {"available": True, "levels": {0.382: 110.0, 0.5: 100.0}},
+            },
+            "LONG",
+            "TARGET_MATCH",
+            "TARGET_MATCH",
+            None,
+            "ENTRY_LONG",
+            [
+                (0.382, 110.0, 9.6),
+                (0.5, 100.0, 0.4),
+            ],
+        ),
+        (
+            {"buy": 0.1, "sell": 0.9},
+            {"buy": 0.1, "sell": 0.9},
+            {
+                "enabled": True,
+                "short_target_levels": [0.618, 0.5],
+                "tolerance_atr": 1.0,
+            },
+            {
+                "last_close": 105.0,
+                "current_atr": 0.5,
+                "htf_fib": {"available": True, "levels": {0.618: 95.0, 0.5: 100.0}},
+            },
+            "NONE",
+            "SHORT_OFF_TARGET",
+            None,
+            "HTF_FIB_SHORT_BLOCK",
+            None,
+            [
+                (0.618, 95.0, 10.0),
+                (0.5, 100.0, 5.0),
+            ],
+        ),
+    ],
+)
+def test_htf_gate_handler_preserves_targets_and_summary(
+    probas: dict[str, float],
+    confidence: dict[str, float],
+    htf_entry_cfg: dict[str, object],
+    state: dict[str, object],
+    expected_action: str,
+    expected_reason: str,
+    expected_summary_reason: str | None,
+    expected_block_reason: str | None,
+    expected_entry_reason: str | None,
+    expected_targets: list[tuple[float, float, float]],
+) -> None:
+    cfg = {
+        "ev": {"R_default": 1.0},
+        "thresholds": {"entry_conf_overall": 0.6, "regime_proba": {"balanced": 0.55}},
+        "gates": {"cooldown_bars": 0},
+        "risk": {"risk_map": [[0.6, 0.01]]},
+        "multi_timeframe": {
+            "allow_ltf_override": False,
+            "ltf_override_threshold": 0.85,
+            "ltf_override_adaptive": {"enabled": False, "window": 3},
+        },
+        "htf_fib": {"entry": htf_entry_cfg},
+    }
+
+    action, meta = decide(
+        {},
+        probas=probas,
+        confidence=confidence,
+        regime="balanced",
+        state=state,
+        risk_ctx={},
+        cfg=cfg,
+    )
+
+    assert action == expected_action
+
+    reasons = meta.get("reasons") or []
+    state_out = meta.get("state_out") or {}
+    htf_debug = state_out.get("htf_fib_entry_debug") or {}
+    fib_summary = state_out.get("fib_gate_summary") or {}
+    htf_summary = fib_summary.get("htf") or {}
+
+    assert htf_debug.get("reason") == expected_reason
+    if expected_summary_reason is None:
+        assert htf_summary == {}
+    else:
+        assert htf_summary.get("reason") == expected_summary_reason
+
+    debug_targets = htf_debug.get("targets") or []
+    summary_targets = htf_summary.get("targets") or []
+    assert len(debug_targets) == len(expected_targets)
+    if expected_summary_reason is None:
+        assert summary_targets == []
+    else:
+        assert len(summary_targets) == len(expected_targets)
+
+    for debug_target, (expected_level, expected_price, expected_distance) in zip(
+        debug_targets,
+        expected_targets,
+        strict=True,
+    ):
+        assert float(debug_target.get("level")) == pytest.approx(expected_level)
+        assert float(debug_target.get("level_price")) == pytest.approx(expected_price)
+        assert float(debug_target.get("distance")) == pytest.approx(expected_distance)
+
+    if expected_summary_reason is not None:
+        for summary_target, (expected_level, expected_price, expected_distance) in zip(
+            summary_targets,
+            expected_targets,
+            strict=True,
+        ):
+            assert float(summary_target.get("level")) == pytest.approx(expected_level)
+            assert float(summary_target.get("level_price")) == pytest.approx(expected_price)
+            assert float(summary_target.get("distance")) == pytest.approx(expected_distance)
+
+    if expected_block_reason is None:
+        assert expected_entry_reason in reasons
+        assert reasons[-1] == expected_entry_reason
+    else:
+        assert expected_block_reason in reasons
+        assert reasons[-1] == expected_block_reason

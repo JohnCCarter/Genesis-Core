@@ -20,10 +20,10 @@ Split `src/core/strategy/decision_fib_gating.py` into smaller internal helpers w
 
 | File                                                                                         | Purpose                          | Planned change                                                     |
 | -------------------------------------------------------------------------------------------- | -------------------------------- | ------------------------------------------------------------------ |
-| `src/core/strategy/decision_fib_gating.py`                                                   | Current fib gating orchestration | Keep public function, delegate a first extracted helper slice      |
+| `src/core/strategy/decision_fib_gating.py`                                                   | Current fib gating orchestration | Keep public function, delegate only the active HTF helper slice    |
 | `src/core/strategy/decision_fib_gating_helpers.py`                                           | New internal helper module       | Hold pure helper functions first, then later gate-specific helpers |
 | `docs/audit/refactor/decision/context_map_decision_fib_gating_split_2026-03-12.md`           | Governance evidence              | Capture current map and risks                                      |
-| `docs/audit/refactor/decision/command_packet_decision_fib_gating_split_slice2_2026-03-12.md` | Governance packet                | Active slice scope, gates, stop conditions, evidence               |
+| `docs/audit/refactor/decision/command_packet_decision_fib_gating_split_slice3_2026-03-12.md` | Governance packet                | Active slice scope, gates, stop conditions, evidence               |
 
 ## Direct dependencies
 
@@ -81,12 +81,17 @@ Potential later extraction:
 - `prepare_override_context(...)`
 - `try_override_htf_block(...)`
 
+Status: completed in commit `ff572f71` as a no-behavior-change override helper extraction.
+
 ### Slice 3 — HTF gate handler
 
 Potential later extraction:
 
 - HTF unavailable/context-error handling
 - HTF target/level blocking logic
+- shared HTF pass/debug payload assembly while preserving override-path sequencing
+
+Status: completed in this slice as a no-behavior-change HTF helper extraction while keeping the LTF branch and final summary assembly inside `apply_fib_gating(...)`.
 
 ### Slice 4 — LTF gate handler
 
@@ -105,4 +110,4 @@ Potential later extraction:
 
 ## Current recommendation
 
-Slice 1 is complete. Next safest step is Slice 2 only: extract override preparation/apply helpers while keeping HTF/LTF gate branches, mutation order, and debug payload assembly inside `apply_fib_gating(...)` otherwise unchanged.
+Slices 1, 2, and 3 are complete. Next safest step is Slice 4 only: extract the LTF gate handler into a single helper while preserving the current LTF block/pass semantics and keeping final `fib_gate_summary` assembly in `apply_fib_gating(...)` unchanged.

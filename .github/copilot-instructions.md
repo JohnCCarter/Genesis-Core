@@ -16,6 +16,7 @@ Use this as the default operating contract for all non-trivial changes.
 - Non-trivial and high-sensitivity changes must use the full gated protocol in this file.
 - Trivial changes may use the quick path below, but must escalate to full protocol if any uncertainty appears.
 - `docs/governance/README.md` is a supplemental operational index and must not override SSOT precedence in this file.
+- For repository layout and file placement guidance, also see `docs/repository-layout-policy.md`. It is a subordinate practical reference and must not override higher-order governance or mode documents.
 
 ## Quick path for trivial changes
 

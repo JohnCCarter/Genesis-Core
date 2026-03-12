@@ -49,6 +49,10 @@ Execute approved commit-contracts with minimal, scoped diffs.
 
 You are an IMPLEMENTATION agent.
 
+For repository layout, file placement, and module split shape, also consult
+`docs/repository-layout-policy.md`. It is a subordinate practical reference and must not
+override higher-order governance or mode documents.
+
 ## Non-negotiables
 
 - Start from commit-contract and todo plan.

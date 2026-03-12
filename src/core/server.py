@@ -1,8 +1,6 @@
-import uuid
 from contextlib import asynccontextmanager
 
-import httpx
-from fastapi import Body, FastAPI
+from fastapi import FastAPI
 
 import core.server_account_api as server_account_api
 import core.server_info_api as server_info_api
@@ -11,9 +9,9 @@ import core.server_paper_api as server_paper_api
 import core.server_public_api as server_public_api
 import core.server_status_api as server_status_api
 import core.server_ui_api as server_ui_api
-from core.config.settings import get_settings
-from core.io.bitfinex import read_helpers as bfx_read
-from core.io.bitfinex.exchange_client import aclose_http_client, get_exchange_client
+from core.config.settings import get_settings  # noqa: F401
+from core.io.bitfinex import read_helpers as bfx_read  # noqa: F401
+from core.io.bitfinex.exchange_client import aclose_http_client, get_exchange_client  # noqa: F401
 from core.server_config_api import router as config_router
 from core.server_strategy_api import router as strategy_router
 from core.utils.logging_redaction import get_logger
@@ -45,6 +43,7 @@ ui_router = server_ui_api.router
 public_candles = server_public_api.public_candles
 public_router = server_public_api.router
 paper_estimate = server_paper_api.paper_estimate
+paper_submit = server_paper_api.paper_submit
 paper_router = server_paper_api.router
 
 
@@ -117,155 +116,3 @@ def _base_ccy_from_test(sym: str) -> str:
     u = sym.upper().lstrip("T")
     base_part = u.split(":", 1)[0] if ":" in u else u
     return base_part.replace("TEST", "")
-
-
-@app.post("/paper/submit")
-async def paper_submit(payload: dict = Body(...)) -> dict:
-    """Skicka en order till Bitfinex Paper (auth krävs via .env).
-
-    OBS: Paper only – vi tillåter endast TEST-spotpar från whitelist.
-    Icke-whitelistad symbol returnerar explicit invalid_symbol-svar.
-
-      payload: {symbol, side:"LONG"|"SHORT"|"NONE", size:float, type?:"MARKET"|"LIMIT", price?:float}
-    """
-    # Använd endast symboler från whitelist
-    requested_symbol_raw = str(payload.get("symbol") or "")
-    key = requested_symbol_raw.upper()
-    allowed_map = {s.upper(): s for s in TEST_SPOT_WHITELIST}
-    symbol = allowed_map.get(key)
-    if symbol is None:
-        return {
-            "ok": False,
-            "error": "invalid_symbol",
-            "requested_symbol": requested_symbol_raw,
-            "message": "symbol must be one of TEST_SPOT_WHITELIST",
-        }
-    side = str(payload.get("side") or "NONE").upper()
-    size = float(payload.get("size") or 0.0)
-    order_type = str(payload.get("type") or "MARKET").upper()
-    price = payload.get("price")
-    if side not in ("LONG", "SHORT") or size <= 0:
-        return {"ok": False, "error": "invalid_action_or_size"}
-
-    # Minimikrav + liten marginal, auto-klampa om under
-    required_min = float(MIN_ORDER_SIZE.get(symbol, 0.0))
-    min_with_margin = required_min * (1.0 + MIN_ORDER_MARGIN)
-    auto_clamped = False
-    wallet_clamped = False
-    size_before = size
-    if abs(size) < min_with_margin:
-        size = min_with_margin
-        auto_clamped = True
-
-    # Wallet-medveten cap (opt-in): begränsa köp till tillgänglig USD och sälj till innehav av bas
-    try:
-        s = get_settings()
-        if (
-            int(getattr(s, "WALLET_CAP_ENABLED", 0) or 0) == 1
-            and s.BITFINEX_API_KEY
-            and s.BITFINEX_API_SECRET
-        ):
-            # Hämta wallets
-            wallets = await bfx_read.get_wallets()
-            avail_by_ccy: dict[str, float] = {}
-            if isinstance(wallets, list):
-                for w in wallets:
-                    # Förvänta v2-format: [type, currency, balance, unsettled, available]
-                    if isinstance(w, list) and len(w) >= 5:
-                        ccy = str(w[1]).upper()
-                        try:
-                            avail = float(w[4])
-                        except Exception:  # nosec B112
-                            continue
-                        # endast exchange-wallet
-                        if str(w[0]).lower() == "exchange":
-                            avail_by_ccy[ccy] = avail_by_ccy.get(ccy, 0.0) + max(0.0, avail)
-                    elif isinstance(w, dict):
-                        ccy = str(w.get("currency") or "").upper()
-                        avail = float(w.get("available") or 0.0)
-                        if str(w.get("type") or "").lower() == "exchange" and ccy:
-                            avail_by_ccy[ccy] = avail_by_ccy.get(ccy, 0.0) + max(0.0, avail)
-
-            real_sym = _real_from_test(symbol)
-            base_ccy = _base_ccy_from_test(symbol)
-            # LONG: begränsa efter USD
-            if side == "LONG":
-                usd_avail = avail_by_ccy.get("USD", 0.0) or avail_by_ccy.get("TESTUSD", 0.0) or 0.0
-                px = None
-                try:
-                    resp = await get_exchange_client().public_request(
-                        method="GET",
-                        endpoint=f"ticker/{real_sym}",
-                        timeout=5,
-                    )
-                    arr = resp.json()
-                    if isinstance(arr, list) and len(arr) >= 7:
-                        px = float(arr[6])
-                except Exception:
-                    px = None
-                if px and px > 0 and usd_avail > 0:
-                    max_affordable = usd_avail / px
-                    if size > max_affordable:
-                        size = max(max_affordable, min_with_margin)
-                        wallet_clamped = True
-            # SHORT: begränsa efter innehav av bas
-            elif side == "SHORT":
-                base_avail = (
-                    avail_by_ccy.get(base_ccy, 0.0)
-                    or avail_by_ccy.get("TEST" + base_ccy, 0.0)
-                    or 0.0
-                )
-                if base_avail > 0 and abs(size) > base_avail:
-                    size = base_avail
-                    wallet_clamped = True
-    except Exception:  # nosec B110
-        # Ignorera wallet-cap om något går fel
-        pass
-
-    amount = size if side == "LONG" else -size
-
-    # Bitfinex v2 order submit (MARKET/LIMIT):
-    # endpoint: auth/w/order/submit, body: {type, symbol, amount, price?}
-    # Bitfinex kräver EXCHANGE-* typer för spot/paper
-    bfx_type = (
-        "EXCHANGE MARKET"
-        if order_type == "MARKET"
-        else ("EXCHANGE LIMIT" if order_type == "LIMIT" else order_type)
-    )
-    body = {"type": bfx_type, "symbol": symbol, "amount": str(amount)}
-    if order_type == "LIMIT" and price is not None:
-        body["price"] = str(float(price))
-
-    ec = get_exchange_client()
-    try:
-        resp = await ec.signed_request(method="POST", endpoint="auth/w/order/submit", body=body)
-        data = resp.json() if hasattr(resp, "json") else {"status": resp.status_code}
-        return {
-            "ok": True,
-            "exchange": "bitfinex",
-            "request": body,
-            "response": data,
-            "meta": {
-                "auto_clamped": auto_clamped,
-                "wallet_clamped": wallet_clamped,
-                "size_before": size_before,
-                "size_after": size,
-                "required_min": required_min,
-                "min_with_margin": min_with_margin,
-            },
-        }
-    except httpx.HTTPStatusError as e:
-        error_id = uuid.uuid4().hex[:12]
-        status = getattr(e.response, "status_code", None)
-        text = getattr(e.response, "text", "")
-        _LOGGER.warning(
-            "paper_submit upstream HTTP error (status=%s error_id=%s): %s",
-            status,
-            error_id,
-            text,
-        )
-        return {"ok": False, "status": status, "error": "bitfinex_http_error", "error_id": error_id}
-    except Exception:
-        error_id = uuid.uuid4().hex[:12]
-        _LOGGER.exception("paper_submit failed (error_id=%s)", error_id)
-        return {"ok": False, "error": "internal_error", "error_id": error_id}

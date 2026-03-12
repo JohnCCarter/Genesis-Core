@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import httpx
 import pytest
 from fastapi.testclient import TestClient
 
@@ -353,29 +354,53 @@ def test_paper_submit_monkeypatched():
 
     class DummyEC:
         async def signed_request(self, **_kwargs):
+            calls.append(_kwargs)
             return DummyResp()
 
     import core.server as srv
+    import core.server_paper_api as paper_api
 
+    calls = []
     orig_get = srv.get_exchange_client
     srv.get_exchange_client = lambda: DummyEC()  # type: ignore
     try:
         import asyncio
 
-        out = asyncio.get_event_loop().run_until_complete(
-            paper_submit(
-                {
-                    "symbol": "tTESTBTC:TESTUSD",
-                    "side": "LONG",
-                    "size": 0.003,
-                    "type": "MARKET",
-                }
-            )
-        )
+        c = TestClient(app)
+        payload = {
+            "symbol": "tTESTBTC:TESTUSD",
+            "side": "LONG",
+            "size": 0.003,
+            "type": "MARKET",
+        }
+
+        out = asyncio.get_event_loop().run_until_complete(paper_submit(payload))
+        route = c.post("/paper/submit", json=payload)
+
+        assert route.status_code == 200
+        assert out == route.json()
         assert out.get("ok") is True and out.get("exchange") == "bitfinex"
         # Säkerhet: paper-trading ska acceptera giltig whitelist-symbol oförändrad.
         req = out.get("request") or {}
         assert req.get("symbol") == "tTESTBTC:TESTUSD"
+        assert srv.paper_submit is paper_api.paper_submit
+        assert srv.paper_router is paper_api.router
+        paper_submit_routes = [
+            route for route in srv.app.routes if getattr(route, "path", None) == "/paper/submit"
+        ]
+        assert len(paper_submit_routes) == 1
+        assert calls == [
+            {
+                "method": "POST",
+                "endpoint": "auth/w/order/submit",
+                "body": req,
+            },
+            {
+                "method": "POST",
+                "endpoint": "auth/w/order/submit",
+                "body": req,
+            },
+        ]
     finally:
         srv.get_exchange_client = orig_get  # type: ignore
 
@@ -489,18 +514,43 @@ def test_paper_estimate_without_credentials_skips_wallet_lookup(monkeypatch):
 def test_paper_submit_invalid_symbol_returns_pinned_payload():
     import asyncio
 
+    from core.server import app as srv_app
     from core.server import paper_submit
 
-    out = asyncio.get_event_loop().run_until_complete(
-        paper_submit({"symbol": "tBTCUSD", "side": "LONG", "size": 0.003, "type": "MARKET"})
-    )
+    c = TestClient(srv_app)
+    payload = {"symbol": "tBTCUSD", "side": "LONG", "size": 0.003, "type": "MARKET"}
 
-    assert out == {
+    out = asyncio.get_event_loop().run_until_complete(paper_submit(payload))
+    route = c.post("/paper/submit", json=payload)
+
+    expected = {
         "ok": False,
         "error": "invalid_symbol",
         "requested_symbol": "tBTCUSD",
         "message": "symbol must be one of TEST_SPOT_WHITELIST",
     }
+    assert out == route.json() == expected
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {"symbol": "tTESTBTC:TESTUSD", "side": "NONE", "size": 1.0, "type": "MARKET"},
+        {"symbol": "tTESTBTC:TESTUSD", "side": "LONG", "size": 0.0, "type": "MARKET"},
+    ],
+    ids=["invalid-side", "invalid-size"],
+)
+def test_paper_submit_invalid_action_or_size_route_parity(payload):
+    import asyncio
+
+    import core.server as srv
+
+    c = TestClient(app)
+    direct_json = asyncio.get_event_loop().run_until_complete(srv.paper_submit(payload))
+    route = c.post("/paper/submit", json=payload)
+
+    assert route.status_code == 200
+    assert direct_json == route.json() == {"ok": False, "error": "invalid_action_or_size"}
 
 
 def test_paper_submit_wallet_cap_uses_shared_helpers(monkeypatch):
@@ -582,6 +632,56 @@ def test_paper_submit_wallet_cap_uses_shared_helpers(monkeypatch):
     ]
     assert signed_calls[0]["body"]["amount"] == "4.0"
     assert signed_calls[1]["body"]["amount"] == "-3.0"
+
+
+def test_paper_submit_http_status_error_shape(monkeypatch):
+    import asyncio
+
+    import core.server as srv
+
+    class DummyEC:
+        async def signed_request(self, **_kwargs):
+            request = httpx.Request("POST", "https://example.test/auth/w/order/submit")
+            response = httpx.Response(429, request=request, text="rate limited")
+            raise httpx.HTTPStatusError("boom", request=request, response=response)
+
+    monkeypatch.setattr(srv, "get_exchange_client", lambda: DummyEC())
+
+    c = TestClient(app)
+    payload = {"symbol": "tTESTBTC:TESTUSD", "side": "LONG", "size": 1.0, "type": "MARKET"}
+    direct_json = asyncio.get_event_loop().run_until_complete(srv.paper_submit(payload))
+    route_json = c.post("/paper/submit", json=payload).json()
+
+    for data in (direct_json, route_json):
+        assert data["ok"] is False
+        assert data["error"] == "bitfinex_http_error"
+        assert data["status"] == 429
+        assert isinstance(data["error_id"], str)
+        assert len(data["error_id"]) == 12
+
+
+def test_paper_submit_internal_error_shape(monkeypatch):
+    import asyncio
+
+    import core.server as srv
+
+    class DummyEC:
+        async def signed_request(self, **_kwargs):
+            raise RuntimeError("boom")
+
+    monkeypatch.setattr(srv, "get_exchange_client", lambda: DummyEC())
+
+    c = TestClient(app)
+    payload = {"symbol": "tTESTBTC:TESTUSD", "side": "LONG", "size": 1.0, "type": "MARKET"}
+    direct_json = asyncio.get_event_loop().run_until_complete(srv.paper_submit(payload))
+    route_json = c.post("/paper/submit", json=payload).json()
+
+    for data in (direct_json, route_json):
+        assert data["ok"] is False
+        assert data["error"] == "internal_error"
+        assert isinstance(data["error_id"], str)
+        assert len(data["error_id"]) == 12
+        assert "status" not in data
 
 
 def test_debug_auth_masked():

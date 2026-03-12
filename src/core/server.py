@@ -4,10 +4,10 @@ from contextlib import asynccontextmanager
 
 import httpx
 from fastapi import Body, FastAPI
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse
 
 import core.server_info_api as server_info_api
-from core.config.authority import ConfigAuthority
+import core.server_status_api as server_status_api
 from core.config.settings import get_settings
 from core.io.bitfinex import read_helpers as bfx_read
 from core.io.bitfinex.exchange_client import aclose_http_client, get_exchange_client
@@ -30,9 +30,10 @@ TEST_SPOT_WHITELIST = server_info_api.TEST_SPOT_WHITELIST
 paper_whitelist = server_info_api.paper_whitelist
 observability_dashboard = server_info_api.observability_dashboard
 info_router = server_info_api.router
-
-
-_AUTH = ConfigAuthority()
+_AUTH = server_status_api._AUTH
+health = server_status_api.health
+debug_auth = server_status_api.debug_auth
+status_router = server_status_api.router
 
 
 @asynccontextmanager
@@ -57,6 +58,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 app.include_router(config_router)
 app.include_router(info_router)
+app.include_router(status_router)
 app.include_router(strategy_router)
 
 
@@ -98,19 +100,6 @@ def _base_ccy_from_test(sym: str) -> str:
     u = sym.upper().lstrip("T")
     base_part = u.split(":", 1)[0] if ":" in u else u
     return base_part.replace("TEST", "")
-
-
-@app.get("/health", response_model=None)
-def health() -> dict | JSONResponse:
-    try:
-        _, h, v = _AUTH.get()
-        return {"status": "ok", "config_version": v, "config_hash": h}
-    except Exception as exc:
-        _LOGGER.warning("health_config_read_failed: %s", exc)
-        return JSONResponse(
-            status_code=503,
-            content={"status": "error", "config_version": None, "config_hash": None},
-        )
 
 
 @app.get("/ui", response_class=HTMLResponse)
@@ -930,19 +919,6 @@ async def paper_submit(payload: dict = Body(...)) -> dict:
         error_id = uuid.uuid4().hex[:12]
         _LOGGER.exception("paper_submit failed (error_id=%s)", error_id)
         return {"ok": False, "error": "internal_error", "error_id": error_id}
-
-
-@app.get("/debug/auth")
-def debug_auth() -> dict:
-    """Maskerad vy av laddade auth‑nycklar (endast längd + suffix)."""
-    s = get_settings()
-    k = (s.BITFINEX_API_KEY or "").strip()
-    masked = {
-        "present": bool(k),
-        "length": len(k),
-        "suffix": k[-4:] if len(k) >= 4 else k,
-    }
-    return {"rest_api_key": masked}
 
 
 @app.post("/models/reload")

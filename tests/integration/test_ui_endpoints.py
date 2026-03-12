@@ -252,6 +252,13 @@ def test_health_returns_503_when_config_read_fails(monkeypatch):
     assert r.json() == {"status": "error", "config_version": None, "config_hash": None}
 
 
+def test_health_shared_auth_object_identity():
+    import core.server as srv
+    import core.server_status_api as status_api
+
+    assert srv._AUTH is status_api._AUTH
+
+
 def test_paper_submit_monkeypatched():
     from core.server import paper_submit
 
@@ -315,3 +322,24 @@ def test_debug_auth_masked():
     assert "rest_api_key" in out
     m = out["rest_api_key"]
     assert set(m.keys()) >= {"present", "length", "suffix"}
+
+
+def test_debug_auth_route_matches_direct_function(monkeypatch):
+    import core.server as srv
+    import core.server_status_api as status_api
+
+    class DummySettings:
+        BITFINEX_API_KEY = "abcd1234"  # pragma: allowlist secret
+
+    monkeypatch.setattr(status_api, "get_settings", lambda: DummySettings())
+
+    c = TestClient(app)
+
+    route_json = c.get("/debug/auth").json()
+    direct_json = srv.debug_auth()
+
+    assert (
+        route_json
+        == direct_json
+        == {"rest_api_key": {"present": True, "length": 8, "suffix": "1234"}}
+    )

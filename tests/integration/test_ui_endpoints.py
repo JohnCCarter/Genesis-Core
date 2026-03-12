@@ -240,8 +240,8 @@ def test_public_candles_endpoint_smoke():
 
     import asyncio
 
+    import core.api.public as public_api
     import core.server as srv
-    import core.server_public_api as public_api
 
     calls = []
     orig = srv.get_exchange_client
@@ -288,8 +288,8 @@ def test_auth_check_uses_helpers():
     async def fake_positions():
         return []
 
+    import core.api.account as account_api
     import core.server as srv
-    import core.server_account_api as account_api
 
     orig_wh = srv.bfx_read.get_wallets
     orig_ph = srv.bfx_read.get_positions
@@ -390,8 +390,8 @@ def test_paper_submit_monkeypatched():
             calls.append(_kwargs)
             return DummyResp()
 
+    import core.api.paper as paper_api
     import core.server as srv
-    import core.server_paper_api as paper_api
 
     calls = []
     orig_get = srv.get_exchange_client
@@ -438,11 +438,11 @@ def test_paper_submit_monkeypatched():
         srv.get_exchange_client = orig_get  # type: ignore
 
 
-def test_paper_estimate_route_alias_and_parity(monkeypatch):
+def test_paper_estimate_route_and_canonical_module_parity(monkeypatch):
     import asyncio
 
+    import core.api.paper as paper_api
     import core.server as srv
-    import core.server_paper_api as paper_api
 
     class DummySettings:
         BITFINEX_API_KEY = "key"  # pragma: allowlist secret

@@ -148,3 +148,35 @@ def test_check_partial_exits_tp1_outside_padding_does_not_trigger():
     actions = engine._check_partial_exits(pos, current_bar, atr, htf_levels, position_id)
 
     assert actions == []
+
+
+def test_check_partial_exits_short_uses_0618_as_first_target():
+    engine = HTFFibonacciExitEngine(config={})
+    pos = Position(
+        symbol="tBTCUSD",
+        side="SHORT",
+        initial_size=1.0,
+        current_size=1.0,
+        entry_price=100.0,
+        entry_time=datetime(2025, 1, 1, 0, 0, 0),
+    )
+
+    position_id = f"{pos.symbol}_{pos.entry_time.isoformat()}"
+    engine.triggered_exits[position_id] = set()
+
+    current_bar = {
+        "open": 95.5,
+        "high": 95.6,
+        "low": 95.2,
+        "close": 95.3,
+    }
+    atr = 10.0
+    htf_levels = {0.618: 95.28, 0.5: 100.0, 0.382: 104.72, 0.786: 88.56}
+
+    actions = engine._check_partial_exits(pos, current_bar, atr, htf_levels, position_id)
+
+    assert len(actions) == 1
+    assert actions[0].action == "PARTIAL"
+    assert actions[0].reason == "TP1_0618"
+    assert actions[0].size == pos.current_size * engine.partial_1_pct
+    assert engine.triggered_exits[position_id] == {"TP1_0618"}

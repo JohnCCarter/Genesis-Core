@@ -69,6 +69,9 @@ from core.strategy.features_asof_parts.indicator_state_utils import (
 from core.strategy.features_asof_parts.logging_utils import (
     log_precompute_status as _log_precompute_status_impl,
 )
+from core.strategy.features_asof_parts.meta_utils import (
+    build_feature_meta as _build_feature_meta_impl,
+)
 from core.strategy.features_asof_parts.numeric_utils import (
     clip_feature_value as _clip_feature_value_impl,
 )
@@ -458,33 +461,19 @@ def _extract_asof(
             symbol,
         )
 
-    meta_reasons: list[str] = []
-    if not bool(fib_feature_status.get("available", True)):
-        meta_reasons.append(str(fib_feature_status.get("reason") or "FIB_FEATURES_CONTEXT_ERROR"))
-
-    meta = {
-        "versions": {
-            "features_v15_highvol_optimized": True,
-            "features_v16_fibonacci": True,
-            "features_v17_fibonacci_combinations": True,
-            "htf_fibonacci_symmetric_chamoun": True,  # NEW: HTF context for symmetric exits
-        },
-        "reasons": meta_reasons,
-        "feature_count": len(features),
-        "asof_bar": asof_bar,
-        "uses_bars": [0, asof_bar],
-        "total_bars_available": total_bars,
-        "fibonacci_features": fib_feature_status,
-        "htf_fibonacci": htf_fibonacci_context,  # NEW: HTF context for exit logic
-        "ltf_fibonacci": ltf_fibonacci_context,
-        # Backcompat: current_atr aligns with features['atr_14'] (true ATR(14))
-        "current_atr": float(atr14_current) if atr14_current is not None else None,
-        # Transparency: show the ATR used for signal_adaptation (may be != 14)
-        "current_atr_used": float(atr_vals[-1]) if atr_vals else None,
-        "atr_period_used": atr_period,
-        "atr_percentiles": atr_percentiles,
-        "htf_selector": htf_selector_meta,
-    }
+    meta = _build_feature_meta_impl(
+        features,
+        fib_feature_status,
+        htf_fibonacci_context,
+        ltf_fibonacci_context,
+        htf_selector_meta,
+        asof_bar,
+        total_bars,
+        atr14_current,
+        atr_vals,
+        atr_period,
+        atr_percentiles,
+    )
 
     result = (features, meta)
 

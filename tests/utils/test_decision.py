@@ -579,3 +579,135 @@ def test_htf_gate_handler_preserves_targets_and_summary(
     else:
         assert expected_block_reason in reasons
         assert reasons[-1] == expected_block_reason
+
+
+@pytest.mark.parametrize(
+    (
+        "probas",
+        "confidence",
+        "ltf_entry_cfg",
+        "state",
+        "expected_action",
+        "expected_reason",
+        "expected_summary_reason",
+        "expected_block_reason",
+        "expected_entry_reason",
+        "expected_level_price",
+    ),
+    [
+        (
+            {"buy": 0.9, "sell": 0.1},
+            {"buy": 0.9, "sell": 0.1},
+            {"enabled": True, "long_max_level": 1.0, "tolerance_atr": 1.0},
+            {
+                "last_close": 100.0,
+                "current_atr": 0.5,
+                "ltf_fib": {"available": True, "levels": {1.0: 120.0}},
+            },
+            "LONG",
+            "PASS",
+            "PASS",
+            None,
+            "ENTRY_LONG",
+            None,
+        ),
+        (
+            {"buy": 0.9, "sell": 0.1},
+            {"buy": 0.9, "sell": 0.1},
+            {"enabled": True, "long_max_level": 1.0, "tolerance_atr": 1.0},
+            {
+                "last_close": 121.0,
+                "current_atr": 0.5,
+                "ltf_fib": {"available": True, "levels": {1.0: 120.0}},
+            },
+            "NONE",
+            "LONG_ABOVE_LEVEL",
+            None,
+            "LTF_FIB_LONG_BLOCK",
+            None,
+            120.0,
+        ),
+        (
+            {"buy": 0.9, "sell": 0.1},
+            {"buy": 0.9, "sell": 0.1},
+            {
+                "enabled": True,
+                "missing_policy": "pass",
+                "long_max_level": 1.0,
+                "tolerance_atr": 1.0,
+            },
+            {
+                "last_close": 100.0,
+                "current_atr": 0.5,
+                "ltf_fib": {"available": False, "reason": "LTF_NO_SWINGS"},
+            },
+            "LONG",
+            "PASS",
+            "PASS",
+            None,
+            "ENTRY_LONG",
+            None,
+        ),
+    ],
+)
+def test_ltf_gate_handler_preserves_debug_and_summary(
+    probas: dict[str, float],
+    confidence: dict[str, float],
+    ltf_entry_cfg: dict[str, object],
+    state: dict[str, object],
+    expected_action: str,
+    expected_reason: str,
+    expected_summary_reason: str | None,
+    expected_block_reason: str | None,
+    expected_entry_reason: str | None,
+    expected_level_price: float | None,
+) -> None:
+    cfg = {
+        "ev": {"R_default": 1.0},
+        "thresholds": {"entry_conf_overall": 0.6, "regime_proba": {"balanced": 0.55}},
+        "gates": {"cooldown_bars": 0},
+        "risk": {"risk_map": [[0.6, 0.01]]},
+        "multi_timeframe": {
+            "use_htf_block": False,
+            "allow_ltf_override": False,
+            "ltf_override_threshold": 0.85,
+            "ltf_override_adaptive": {"enabled": False, "window": 3},
+        },
+        "ltf_fib": {"entry": ltf_entry_cfg},
+    }
+
+    action, meta = decide(
+        {},
+        probas=probas,
+        confidence=confidence,
+        regime="balanced",
+        state=state,
+        risk_ctx={},
+        cfg=cfg,
+    )
+
+    assert action == expected_action
+
+    reasons = meta.get("reasons") or []
+    state_out = meta.get("state_out") or {}
+    ltf_debug = state_out.get("ltf_fib_entry_debug") or {}
+    fib_summary = state_out.get("fib_gate_summary") or {}
+    ltf_summary = fib_summary.get("ltf") or {}
+
+    assert ltf_debug.get("reason") == expected_reason
+    if expected_level_price is None:
+        assert ltf_debug.get("level_price") is None
+    else:
+        assert float(ltf_debug.get("level_price")) == pytest.approx(expected_level_price)
+
+    if expected_summary_reason is None:
+        assert ltf_summary == {}
+    else:
+        assert ltf_summary.get("reason") == expected_summary_reason
+
+    if expected_block_reason is None:
+        assert expected_entry_reason in reasons
+        assert reasons[-1] == expected_entry_reason
+    else:
+        assert expected_block_reason in reasons
+        assert reasons[-1] == expected_block_reason

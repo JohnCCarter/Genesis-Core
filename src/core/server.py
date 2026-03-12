@@ -7,6 +7,7 @@ from fastapi import Body, FastAPI
 from fastapi.responses import HTMLResponse
 
 import core.server_info_api as server_info_api
+import core.server_models_api as server_models_api
 import core.server_status_api as server_status_api
 from core.config.settings import get_settings
 from core.io.bitfinex import read_helpers as bfx_read
@@ -34,6 +35,8 @@ _AUTH = server_status_api._AUTH
 health = server_status_api.health
 debug_auth = server_status_api.debug_auth
 status_router = server_status_api.router
+reload_models = server_models_api.reload_models
+models_router = server_models_api.router
 
 
 @asynccontextmanager
@@ -59,6 +62,7 @@ app = FastAPI(lifespan=lifespan)
 app.include_router(config_router)
 app.include_router(info_router)
 app.include_router(status_router)
+app.include_router(models_router)
 app.include_router(strategy_router)
 
 
@@ -919,16 +923,6 @@ async def paper_submit(payload: dict = Body(...)) -> dict:
         error_id = uuid.uuid4().hex[:12]
         _LOGGER.exception("paper_submit failed (error_id=%s)", error_id)
         return {"ok": False, "error": "internal_error", "error_id": error_id}
-
-
-@app.post("/models/reload")
-def reload_models() -> dict:
-    """Force reload all model files by clearing cache. Useful after ML training."""
-    from core.strategy.model_registry import ModelRegistry
-
-    registry = ModelRegistry()
-    registry.clear_cache()
-    return {"ok": True, "message": "Model cache cleared"}
 
 
 @app.get("/paper/estimate")

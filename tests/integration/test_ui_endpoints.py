@@ -237,6 +237,28 @@ def test_runtime_endpoints_exist():
     assert r.status_code == 200
 
 
+def test_models_reload_route_and_alias_parity(monkeypatch):
+    import core.server as srv
+    import core.server_models_api as models_api
+
+    calls = []
+
+    def _fake_clear_cache(self):
+        calls.append("clear")
+
+    monkeypatch.setattr(models_api.ModelRegistry, "clear_cache", _fake_clear_cache)
+
+    c = TestClient(app)
+
+    route_response = c.post("/models/reload")
+    direct_json = srv.reload_models()
+
+    assert route_response.status_code == 200
+    assert srv.reload_models is models_api.reload_models
+    assert route_response.json() == direct_json == {"ok": True, "message": "Model cache cleared"}
+    assert calls == ["clear", "clear"]
+
+
 def test_health_returns_503_when_config_read_fails(monkeypatch):
     import core.server as srv
 

@@ -7,6 +7,7 @@ from fastapi import Body, FastAPI
 import core.server_account_api as server_account_api
 import core.server_info_api as server_info_api
 import core.server_models_api as server_models_api
+import core.server_paper_api as server_paper_api
 import core.server_public_api as server_public_api
 import core.server_status_api as server_status_api
 import core.server_ui_api as server_ui_api
@@ -43,6 +44,8 @@ ui_page = server_ui_api.ui_page
 ui_router = server_ui_api.router
 public_candles = server_public_api.public_candles
 public_router = server_public_api.router
+paper_estimate = server_paper_api.paper_estimate
+paper_router = server_paper_api.router
 
 
 @asynccontextmanager
@@ -72,6 +75,7 @@ app.include_router(models_router)
 app.include_router(account_router)
 app.include_router(ui_router)
 app.include_router(public_router)
+app.include_router(paper_router)
 app.include_router(strategy_router)
 
 
@@ -182,22 +186,6 @@ async def paper_submit(payload: dict = Body(...)) -> dict:
                         if str(w.get("type") or "").lower() == "exchange" and ccy:
                             avail_by_ccy[ccy] = avail_by_ccy.get(ccy, 0.0) + max(0.0, avail)
 
-            # Derivera real-symbol för pris (tTESTDOGE:TESTUSD -> tDOGEUSD)
-            def _real_from_test(sym: str) -> str:
-                u = sym.upper().lstrip("T")  # ta bort ledande 't'
-                if ":" in u:
-                    base_part, quote_part = u.split(":", 1)
-                else:
-                    base_part, quote_part = u, "USD"
-                base_part = base_part.replace("TEST", "")
-                quote_part = quote_part.replace("TEST", "")
-                return "t" + base_part + quote_part
-
-            def _base_ccy_from_test(sym: str) -> str:
-                u = sym.upper().lstrip("T")
-                base_part = u.split(":", 1)[0] if ":" in u else u
-                return base_part.replace("TEST", "")
-
             real_sym = _real_from_test(symbol)
             base_ccy = _base_ccy_from_test(symbol)
             # LONG: begränsa efter USD
@@ -281,73 +269,3 @@ async def paper_submit(payload: dict = Body(...)) -> dict:
         error_id = uuid.uuid4().hex[:12]
         _LOGGER.exception("paper_submit failed (error_id=%s)", error_id)
         return {"ok": False, "error": "internal_error", "error_id": error_id}
-
-
-@app.get("/paper/estimate")
-async def paper_estimate(symbol: str) -> dict:
-    """Beräkna minsta storlek (med marginal) och ungefärlig max-storlek utifrån USD-saldo.
-
-    Returnerar även senaste pris och tillgängligt basinnehav för ev. sälj.
-    """
-    allowed_map = {s.upper(): s for s in TEST_SPOT_WHITELIST}
-    sym = allowed_map.get(symbol.upper(), "tTESTBTC:TESTUSD")
-    required_min = float(MIN_ORDER_SIZE.get(sym, 0.0))
-    min_with_margin = required_min * (1.0 + MIN_ORDER_MARGIN)
-    usd_avail: float | None = None
-    base_avail: float | None = None
-    last_price: float | None = None
-
-    # Hämta wallets (om nycklar finns)
-    try:
-        s = get_settings()
-        if s.BITFINEX_API_KEY and s.BITFINEX_API_SECRET:
-            wallets = await bfx_read.get_wallets()
-            avail_by_ccy: dict[str, float] = {}
-            if isinstance(wallets, list):
-                for w in wallets:
-                    if isinstance(w, list) and len(w) >= 5:
-                        ccy = str(w[1]).upper()
-                        try:
-                            avail = float(w[4])
-                        except Exception:  # nosec B112
-                            continue
-                        if str(w[0]).lower() == "exchange":
-                            avail_by_ccy[ccy] = avail_by_ccy.get(ccy, 0.0) + max(0.0, avail)
-                    elif isinstance(w, dict):
-                        ccy = str(w.get("currency") or "").upper()
-                        avail = float(w.get("available") or 0.0)
-                        if str(w.get("type") or "").lower() == "exchange" and ccy:
-                            avail_by_ccy[ccy] = avail_by_ccy.get(ccy, 0.0) + max(0.0, avail)
-            usd_avail = avail_by_ccy.get("USD") or avail_by_ccy.get("TESTUSD") or 0.0
-            base = _base_ccy_from_test(sym)
-            base_avail = avail_by_ccy.get(base) or avail_by_ccy.get("TEST" + base) or 0.0
-    except Exception:  # nosec B110
-        pass
-
-    # Hämta senaste pris
-    try:
-        real_sym = _real_from_test(sym)
-        resp = await get_exchange_client().public_request(
-            method="GET",
-            endpoint=f"ticker/{real_sym}",
-            timeout=5,
-        )
-        arr = resp.json()
-        if isinstance(arr, list) and len(arr) >= 7:
-            last_price = float(arr[6])
-    except Exception:
-        last_price = None
-
-    est_max_size: float | None = None
-    if (usd_avail is not None) and (last_price is not None) and last_price > 0:
-        est_max_size = usd_avail / last_price
-
-    return {
-        "symbol": sym,
-        "required_min": required_min,
-        "min_with_margin": min_with_margin,
-        "usd_available": usd_avail,
-        "base_available": base_avail,
-        "last_price": last_price,
-        "est_max_size": est_max_size,
-    }

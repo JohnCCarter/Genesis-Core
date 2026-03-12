@@ -380,6 +380,112 @@ def test_paper_submit_monkeypatched():
         srv.get_exchange_client = orig_get  # type: ignore
 
 
+def test_paper_estimate_route_alias_and_parity(monkeypatch):
+    import asyncio
+
+    import core.server as srv
+    import core.server_paper_api as paper_api
+
+    class DummySettings:
+        BITFINEX_API_KEY = "key"  # pragma: allowlist secret
+        BITFINEX_API_SECRET = "secret"  # pragma: allowlist secret
+
+    class DummyResp:
+        def json(self):
+            return [0, 0, 0, 0, 0, 0, 50.0]
+
+    class DummyEC:
+        async def public_request(self, **kwargs):
+            calls.append(kwargs)
+            return DummyResp()
+
+    async def fake_wallets():
+        return [
+            ["exchange", "USD", 0, 0, 250.0],
+            ["exchange", "ETH", 0, 0, 7.0],
+        ]
+
+    calls = []
+    monkeypatch.setattr(srv, "get_settings", lambda: DummySettings())
+    monkeypatch.setattr(srv.bfx_read, "get_wallets", fake_wallets)
+    monkeypatch.setattr(srv, "get_exchange_client", lambda: DummyEC())
+    monkeypatch.setattr(srv, "MIN_ORDER_SIZE", {"tTESTBTC:TESTUSD": 2.5})
+    monkeypatch.setattr(srv, "MIN_ORDER_MARGIN", 0.2)
+    monkeypatch.setattr(srv, "_real_from_test", lambda _sym: "tFAKEUSD")
+    monkeypatch.setattr(srv, "_base_ccy_from_test", lambda _sym: "ETH")
+
+    c = TestClient(app)
+    direct_json = asyncio.get_event_loop().run_until_complete(srv.paper_estimate(symbol="tNOPE"))
+    route = c.get("/paper/estimate", params={"symbol": "tNOPE"})
+
+    assert route.status_code == 200
+    assert srv.paper_estimate is paper_api.paper_estimate
+    assert srv.paper_router is paper_api.router
+    assert direct_json == route.json()
+    assert direct_json == {
+        "symbol": "tTESTBTC:TESTUSD",
+        "required_min": 2.5,
+        "min_with_margin": 3.0,
+        "usd_available": 250.0,
+        "base_available": 7.0,
+        "last_price": 50.0,
+        "est_max_size": 5.0,
+    }
+    assert calls == [
+        {
+            "method": "GET",
+            "endpoint": "ticker/tFAKEUSD",
+            "timeout": 5,
+        },
+        {
+            "method": "GET",
+            "endpoint": "ticker/tFAKEUSD",
+            "timeout": 5,
+        },
+    ]
+    paper_estimate_routes = [
+        route for route in srv.app.routes if getattr(route, "path", None) == "/paper/estimate"
+    ]
+    assert len(paper_estimate_routes) == 1
+
+
+def test_paper_estimate_without_credentials_skips_wallet_lookup(monkeypatch):
+    import asyncio
+
+    import core.server as srv
+
+    class DummySettings:
+        BITFINEX_API_KEY = ""  # pragma: allowlist secret
+        BITFINEX_API_SECRET = ""  # pragma: allowlist secret
+
+    class DummyResp:
+        def json(self):
+            return [0, 0, 0, 0, 0, 0, 20.0]
+
+    class DummyEC:
+        async def public_request(self, **_kwargs):
+            return DummyResp()
+
+    async def unexpected_wallets():
+        raise AssertionError("wallet lookup should be skipped without credentials")
+
+    monkeypatch.setattr(srv, "get_settings", lambda: DummySettings())
+    monkeypatch.setattr(srv.bfx_read, "get_wallets", unexpected_wallets)
+    monkeypatch.setattr(srv, "get_exchange_client", lambda: DummyEC())
+
+    direct_json = asyncio.get_event_loop().run_until_complete(
+        srv.paper_estimate(symbol="tTESTBTC:TESTUSD")
+    )
+
+    assert direct_json["symbol"] == "tTESTBTC:TESTUSD"
+    assert direct_json["required_min"] == 0.001
+    assert direct_json["min_with_margin"] == pytest.approx(0.00105)
+    assert direct_json["usd_available"] is None
+    assert direct_json["base_available"] is None
+    assert direct_json["last_price"] == 20.0
+    assert direct_json["est_max_size"] is None
+
+
 def test_paper_submit_invalid_symbol_returns_pinned_payload():
     import asyncio
 
@@ -395,6 +501,87 @@ def test_paper_submit_invalid_symbol_returns_pinned_payload():
         "requested_symbol": "tBTCUSD",
         "message": "symbol must be one of TEST_SPOT_WHITELIST",
     }
+
+
+def test_paper_submit_wallet_cap_uses_shared_helpers(monkeypatch):
+    import asyncio
+
+    import core.server as srv
+
+    class DummySettings:
+        WALLET_CAP_ENABLED = 1
+        BITFINEX_API_KEY = "key"  # pragma: allowlist secret
+        BITFINEX_API_SECRET = "secret"  # pragma: allowlist secret
+
+    class DummyResp:
+        def __init__(self, payload):
+            self.status_code = 200
+            self._payload = payload
+
+        def json(self):
+            return self._payload
+
+    class DummyEC:
+        async def public_request(self, **kwargs):
+            ticker_calls.append(kwargs)
+            return DummyResp([0, 0, 0, 0, 0, 0, 5.0])
+
+        async def signed_request(self, **kwargs):
+            signed_calls.append(kwargs)
+            return DummyResp({"status": "OK"})
+
+    async def fake_wallets():
+        return [
+            ["exchange", "USD", 0, 0, 20.0],
+            ["exchange", "ETH", 0, 0, 3.0],
+        ]
+
+    ticker_calls = []
+    signed_calls = []
+    monkeypatch.setattr(srv, "get_settings", lambda: DummySettings())
+    monkeypatch.setattr(srv.bfx_read, "get_wallets", fake_wallets)
+    monkeypatch.setattr(srv, "get_exchange_client", lambda: DummyEC())
+    monkeypatch.setattr(srv, "MIN_ORDER_SIZE", {"tTESTBTC:TESTUSD": 1.0})
+    monkeypatch.setattr(srv, "MIN_ORDER_MARGIN", 0.1)
+    monkeypatch.setattr(srv, "_real_from_test", lambda _sym: "tFAKEUSD")
+    monkeypatch.setattr(srv, "_base_ccy_from_test", lambda _sym: "ETH")
+
+    long_out = asyncio.get_event_loop().run_until_complete(
+        srv.paper_submit(
+            {
+                "symbol": "tTESTBTC:TESTUSD",
+                "side": "LONG",
+                "size": 10.0,
+                "type": "MARKET",
+            }
+        )
+    )
+    short_out = asyncio.get_event_loop().run_until_complete(
+        srv.paper_submit(
+            {
+                "symbol": "tTESTBTC:TESTUSD",
+                "side": "SHORT",
+                "size": 10.0,
+                "type": "MARKET",
+            }
+        )
+    )
+
+    assert long_out["ok"] is True
+    assert long_out["meta"]["wallet_clamped"] is True
+    assert long_out["meta"]["size_after"] == 4.0
+    assert short_out["ok"] is True
+    assert short_out["meta"]["wallet_clamped"] is True
+    assert short_out["meta"]["size_after"] == 3.0
+    assert ticker_calls == [
+        {
+            "method": "GET",
+            "endpoint": "ticker/tFAKEUSD",
+            "timeout": 5,
+        }
+    ]
+    assert signed_calls[0]["body"]["amount"] == "4.0"
+    assert signed_calls[1]["body"]["amount"] == "-3.0"
 
 
 def test_debug_auth_masked():

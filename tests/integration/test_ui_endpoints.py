@@ -112,7 +112,7 @@ def test_paper_whitelist_endpoint_returns_sorted_symbols():
 
 
 def test_strategy_evaluate_delegates_with_current_defaults(monkeypatch):
-    import core.server_strategy_api as route_mod
+    import core.api.strategy as route_mod
 
     captured = {}
 
@@ -331,9 +331,9 @@ def test_runtime_endpoints_exist():
     assert r.status_code == 200
 
 
-def test_models_reload_route_and_alias_parity(monkeypatch):
+def test_models_reload_route_and_delegation_parity(monkeypatch):
+    import core.api.models as models_api
     import core.server as srv
-    import core.server_models_api as models_api
 
     calls = []
 
@@ -727,8 +727,8 @@ def test_debug_auth_masked():
 
 
 def test_debug_auth_route_matches_direct_function(monkeypatch):
+    import core.api.status as status_api
     import core.server as srv
-    import core.server_status_api as status_api
 
     class DummySettings:
         BITFINEX_API_KEY = "abcd1234"  # pragma: allowlist secret

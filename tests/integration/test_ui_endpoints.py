@@ -7,10 +7,16 @@ from core.server import app
 
 
 def test_ui_get_and_evaluate_post():
+    import core.server as srv
+    import core.server_ui_api as ui_api
+
     c = TestClient(app)
     r = c.get("/ui")
     assert r.status_code == 200
+    assert r.headers["content-type"].startswith("text/html")
     assert "Minimal test" in r.text
+    assert srv.ui_page is ui_api.ui_page
+    assert r.text == srv.ui_page() == ui_api.ui_page()
 
     payload = {
         "policy": {"symbol": "tBTCUSD", "timeframe": "1m"},
@@ -48,6 +54,16 @@ def test_ui_get_and_evaluate_post():
     assert isinstance(shadow_regime, dict)
     assert "authority_mode" in shadow_regime
     assert "authority_mode_source" in shadow_regime
+
+
+def test_ui_route_alias_identity():
+    import core.server as srv
+    import core.server_ui_api as ui_api
+
+    assert srv.ui_page is ui_api.ui_page
+    assert srv.ui_router is ui_api.router
+    ui_routes = [route for route in srv.app.routes if getattr(route, "path", None) == "/ui"]
+    assert len(ui_routes) == 1
 
 
 def test_paper_whitelist_endpoint_returns_sorted_symbols():

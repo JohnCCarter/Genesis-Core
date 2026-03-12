@@ -8,7 +8,6 @@ import hashlib
 import json
 import math
 import os
-import subprocess
 import warnings
 from datetime import datetime
 from pathlib import Path
@@ -22,6 +21,7 @@ from core.backtest.engine_candle_cache import (
     _debug_backtest_enabled,
     _precompute_cache_key_material,
 )
+from core.backtest.engine_result_builder import build_results
 from core.backtest.htf_exit_engine import ExitAction
 from core.backtest.htf_exit_engine import HTFFibonacciExitEngine as LegacyExitEngine
 from core.config.merge_policy import resolve_champion_merge_for_engine
@@ -1027,7 +1027,7 @@ class BacktestEngine:
 
         _LOGGER.info("Backtest complete - %s bars processed", self.bar_count)
 
-        return self._build_results()
+        return build_results(self)
 
     def _check_htf_exit_conditions(
         self,
@@ -1451,93 +1451,6 @@ class BacktestEngine:
             return "REGIME_CHANGE"
 
         return None
-
-    def _build_results(self) -> dict:
-        """Build final backtest results."""
-        summary = self.position_tracker.get_summary()
-
-        # Resolve git executable to an absolute path (Bandit B607) and keep failure non-fatal.
-        git_hash = "unknown"
-        try:
-            import shutil
-
-            git_exe = shutil.which("git")
-            if git_exe:
-                git_hash = subprocess.check_output(
-                    [git_exe, "rev-parse", "HEAD"], text=True
-                ).strip()
-        except (OSError, subprocess.SubprocessError):
-            git_hash = "unknown"
-
-        return {
-            "backtest_info": {
-                "symbol": self.symbol,
-                "timeframe": self.timeframe,
-                "start_date": str(self.candles_df["timestamp"].min()),
-                "end_date": str(self.candles_df["timestamp"].max()),
-                "bars_total": len(self.candles_df),
-                "bars_processed": self.bar_count,
-                "warmup_bars": self.warmup_bars,
-                "initial_capital": self.position_tracker.initial_capital,
-                "commission_rate": self.position_tracker.commission_rate,
-                "slippage_rate": self.position_tracker.slippage_rate,
-                "execution_mode": {
-                    "fast_window": bool(self.fast_window),
-                    "env_precompute_features": os.environ.get("GENESIS_PRECOMPUTE_FEATURES"),
-                    "precompute_enabled": bool(getattr(self, "precompute_features", False)),
-                    "precomputed_ready": bool(getattr(self, "_precomputed_features", None)),
-                    "mode_explicit": os.environ.get("GENESIS_MODE_EXPLICIT"),
-                },
-                "htf": {
-                    "env_htf_exits": os.environ.get("GENESIS_HTF_EXITS"),
-                    "use_new_exit_engine": bool(getattr(self, "_use_new_exit_engine", False)),
-                    "htf_candles_loaded": bool(self.htf_candles_df is not None),
-                    "htf_candles_source": self.htf_candles_source,
-                    "htf_context_seen": bool(getattr(self, "_htf_context_seen", False)),
-                },
-                "effective_config_fingerprint": getattr(
-                    self, "_effective_config_fingerprint", None
-                ),
-                "git_hash": git_hash,
-                "seed": os.environ.get("GENESIS_RANDOM_SEED", "unknown"),
-                "timestamp": datetime.now().isoformat(),
-            },
-            "summary": summary,
-            # Add top-level metrics for convenience (duplicates summary fields)
-            "metrics": {
-                "total_trades": summary.get("num_trades", 0),
-                "num_trades": summary.get("num_trades", 0),
-                "total_return": summary.get("total_return", 0.0) / 100.0,  # Convert to fraction
-                "total_return_pct": summary.get("total_return", 0.0),
-                "win_rate": summary.get("win_rate", 0.0) / 100.0,  # Convert to fraction
-                "profit_factor": summary.get("profit_factor", 0.0),
-                "max_drawdown": summary.get("max_drawdown", 0.0) / 100.0,  # Convert to fraction
-            },
-            "trades": [
-                {
-                    "symbol": t.symbol,
-                    "side": t.side,
-                    "size": t.size,
-                    "entry_price": t.entry_price,
-                    "entry_time": t.entry_time.isoformat(),
-                    "entry_regime": t.entry_regime,
-                    "exit_price": t.exit_price,
-                    "exit_time": t.exit_time.isoformat(),
-                    "pnl": t.pnl,
-                    "pnl_pct": t.pnl_pct,
-                    "commission": t.commission,
-                    "exit_reason": t.exit_reason,
-                    "is_partial": t.is_partial,
-                    "remaining_size": t.remaining_size,
-                    "position_id": t.position_id,
-                    "entry_reasons": t.entry_reasons,
-                    "entry_fib_debug": t.entry_fib_debug,
-                    "exit_fib_debug": t.exit_fib_debug,
-                }
-                for t in self.position_tracker.trades
-            ],
-            "equity_curve": self.position_tracker.equity_curve,
-        }
 
     def _initialize_position_exit_context(
         self, result: dict, meta: dict, entry_price: float, timestamp: datetime

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-import core.backtest.engine as engine_mod
+import core.backtest.engine_candle_cache as cache_mod
 from core.backtest.engine import BacktestEngine
 
 
@@ -23,11 +23,11 @@ def test_precompute_cache_key_changes_when_schema_version_changes(monkeypatch) -
     df = _make_df()
     engine = BacktestEngine(symbol="tBTCUSD", timeframe="1h")
 
-    v0 = int(engine_mod.PRECOMPUTE_SCHEMA_VERSION)
+    v0 = int(cache_mod.PRECOMPUTE_SCHEMA_VERSION)
     key1 = engine._precompute_cache_key(df)
     assert f"_v{v0}_" in key1
 
-    monkeypatch.setattr(engine_mod, "PRECOMPUTE_SCHEMA_VERSION", v0 + 1)
+    monkeypatch.setattr(cache_mod, "PRECOMPUTE_SCHEMA_VERSION", v0 + 1)
 
     key2 = engine._precompute_cache_key(df)
 

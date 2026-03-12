@@ -24,10 +24,7 @@ def test_observability_dashboard():
 
 
 def test_observability_dashboard_passthrough(monkeypatch):
-    import core.api.info as new_info_api
-    import core.server_info_api as info_api
-
-    assert info_api is new_info_api
+    import core.api.info as info_api
 
     sentinel = {
         "counters": {"route_calls": 7},

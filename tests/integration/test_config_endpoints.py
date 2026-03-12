@@ -108,10 +108,7 @@ def test_config_endpoints():
 def test_runtime_validate_uses_config_authority_validate(monkeypatch):
     c = TestClient(app)
 
-    import core.api.config as new_api
-    import core.server_config_api as api
-
-    assert api is new_api
+    import core.api.config as api
 
     calls = {"n": 0, "payload": None}
 
@@ -149,10 +146,7 @@ def test_runtime_endpoints_do_not_leak_exceptions(monkeypatch):
     assert "SECRET_SHOULD_NOT_LEAK" not in r.text
 
     # propose should not leak runtime exceptions
-    import core.api.config as new_api
-    import core.server_config_api as api
-
-    assert api is new_api
+    import core.api.config as api
 
     def _boom(*_args, **_kwargs):
         raise RuntimeError("some internal SECRET_SHOULD_NOT_LEAK")

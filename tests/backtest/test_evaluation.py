@@ -1,5 +1,6 @@
 """Tests for model evaluation (src/core/ml/evaluation.py)."""
 
+import hashlib
 import json
 import tempfile
 from pathlib import Path
@@ -7,6 +8,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from core.ml import evaluation as evaluation_module
 from core.ml.evaluation import (
     evaluate_binary_classification,
     evaluate_calibration,
@@ -450,6 +452,84 @@ class TestGenerateHtmlReport:
         assert "Actual 1" in html
         assert "2" in html  # true_negative
         assert "1" in html  # true_positive
+
+    def test_html_generation_parity_hash(self):
+        """Test HTML generation remains byte-stable for fixed input."""
+        report = {
+            "model_info": {"name": "Parity Model", "n_samples": 12, "threshold": 0.625},
+            "classification": {
+                "basic_metrics": {
+                    "accuracy": 0.8125,
+                    "roc_auc": 0.731,
+                    "log_loss": 0.222,
+                    "brier_score": 0.111,
+                },
+                "classification_metrics": {"f1_score": 0.678},
+                "confusion_matrix": {
+                    "true_negative": 4,
+                    "false_positive": 1,
+                    "false_negative": 2,
+                    "true_positive": 5,
+                },
+            },
+            "calibration": {
+                "expected_calibration_error": 0.098,
+                "brier_decomposition": {
+                    "reliability": 0.021,
+                    "resolution": 0.044,
+                    "uncertainty": 0.249,
+                },
+            },
+            "trading": {
+                "signal_analysis": {"signal_rate": 0.417, "hit_rate": 0.6, "win_rate": 0.75},
+            },
+        }
+
+        html = generate_html_report(report)
+        digest = hashlib.sha256(html.encode("utf-8")).hexdigest()
+        expected_digest = "9a873a39313621f97e5e67b126b2681a66a8d9fdac6df23df2cdc860d9b17e69"  # pragma: allowlist secret
+
+        assert digest == expected_digest
+
+
+class TestFacadeParity:
+    """Tests for compatibility facade exports."""
+
+    def test_public_symbols_still_exported_from_facade(self):
+        """Test public evaluation symbols remain available from core.ml.evaluation."""
+        expected_symbols = {
+            "evaluate_binary_classification": evaluate_binary_classification,
+            "evaluate_calibration": evaluate_calibration,
+            "evaluate_trading_performance": evaluate_trading_performance,
+            "generate_evaluation_report": generate_evaluation_report,
+            "generate_html_report": generate_html_report,
+            "save_evaluation_report": save_evaluation_report,
+        }
+
+        for symbol_name, imported_symbol in expected_symbols.items():
+            assert hasattr(evaluation_module, symbol_name)
+            assert getattr(evaluation_module, symbol_name) is imported_symbol
+
+    def test_facade_import_star_and_module_metadata(self):
+        """Test legacy facade semantics for import-star and callable metadata."""
+        namespace: dict[str, object] = {}
+
+        exec("from core.ml.evaluation import *", namespace)
+
+        assert "evaluate_binary_classification" in namespace
+        assert "evaluate_calibration" in namespace
+        assert "evaluate_trading_performance" in namespace
+        assert "generate_evaluation_report" in namespace
+        assert "generate_html_report" in namespace
+        assert "save_evaluation_report" in namespace
+        assert "np" in namespace
+        assert "Path" in namespace
+        assert evaluate_binary_classification.__module__ == "core.ml.evaluation"
+        assert evaluate_calibration.__module__ == "core.ml.evaluation"
+        assert evaluate_trading_performance.__module__ == "core.ml.evaluation"
+        assert generate_evaluation_report.__module__ == "core.ml.evaluation"
+        assert generate_html_report.__module__ == "core.ml.evaluation"
+        assert save_evaluation_report.__module__ == "core.ml.evaluation"
 
 
 class TestIntegration:

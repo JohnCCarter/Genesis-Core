@@ -213,6 +213,7 @@ def test_auth_check_uses_helpers():
         return []
 
     import core.server as srv
+    import core.server_account_api as account_api
 
     orig_wh = srv.bfx_read.get_wallets
     orig_ph = srv.bfx_read.get_positions
@@ -221,12 +222,29 @@ def test_auth_check_uses_helpers():
     try:
         import asyncio
 
-        out = asyncio.get_event_loop().run_until_complete(auth_check())
-        assert out.get("ok") is True
-        assert out.get("wallets") == 0 and out.get("positions") == 0
+        c = TestClient(app)
+
+        direct_json = asyncio.get_event_loop().run_until_complete(auth_check())
+        route_json = c.get("/auth/check").json()
+
+        assert direct_json == route_json == {"ok": True, "wallets": 0, "positions": 0}
+        assert srv.auth_check is account_api.auth_check
     finally:
         srv.bfx_read.get_wallets = orig_wh  # type: ignore
         srv.bfx_read.get_positions = orig_ph  # type: ignore
+
+
+def test_account_route_alias_and_cache_identity():
+    import core.server as srv
+    import core.server_account_api as account_api
+
+    assert srv.auth_check is account_api.auth_check
+    assert srv.account_wallets is account_api.account_wallets
+    assert srv.account_positions is account_api.account_positions
+    assert srv.account_orders is account_api.account_orders
+    assert srv.account_router is account_api.router
+    assert srv._ACCOUNT_CACHE is account_api._ACCOUNT_CACHE
+    assert srv._ACCOUNT_TTL == account_api._ACCOUNT_TTL
 
 
 def test_runtime_endpoints_exist():

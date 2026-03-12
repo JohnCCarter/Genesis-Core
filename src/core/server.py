@@ -1,4 +1,3 @@
-import asyncio
 import uuid
 from contextlib import asynccontextmanager
 
@@ -6,6 +5,7 @@ import httpx
 from fastapi import Body, FastAPI
 from fastapi.responses import HTMLResponse
 
+import core.server_account_api as server_account_api
 import core.server_info_api as server_info_api
 import core.server_models_api as server_models_api
 import core.server_status_api as server_status_api
@@ -18,15 +18,11 @@ from core.utils.logging_redaction import get_logger
 
 _LOGGER = get_logger(__name__)
 
-_ACCOUNT_CACHE = {
-    "wallets": {"ts": 0.0, "data": {"items": []}},
-    "positions": {"ts": 0.0, "data": {"items": []}},
-    "orders": {"ts": 0.0, "data": {"items": []}},
-}
-_ACCOUNT_TTL = 5.0
 _CANDLES_CACHE = {}  # key -> {ts: float, data: dict}
 _CANDLES_TTL = 10.0  # 10s cache for candles
 
+_ACCOUNT_CACHE = server_account_api._ACCOUNT_CACHE
+_ACCOUNT_TTL = server_account_api._ACCOUNT_TTL
 TEST_SPOT_WHITELIST = server_info_api.TEST_SPOT_WHITELIST
 paper_whitelist = server_info_api.paper_whitelist
 observability_dashboard = server_info_api.observability_dashboard
@@ -37,6 +33,11 @@ debug_auth = server_status_api.debug_auth
 status_router = server_status_api.router
 reload_models = server_models_api.reload_models
 models_router = server_models_api.router
+auth_check = server_account_api.auth_check
+account_wallets = server_account_api.account_wallets
+account_positions = server_account_api.account_positions
+account_orders = server_account_api.account_orders
+account_router = server_account_api.router
 
 
 @asynccontextmanager
@@ -63,6 +64,7 @@ app.include_router(config_router)
 app.include_router(info_router)
 app.include_router(status_router)
 app.include_router(models_router)
+app.include_router(account_router)
 app.include_router(strategy_router)
 
 
@@ -647,114 +649,6 @@ async def public_candles(symbol: str = "tBTCUSD", timeframe: str = "1m", limit: 
     _CANDLES_CACHE[cache_key] = {"ts": now, "data": result}
 
     return result
-
-
-@app.get("/auth/check")
-async def auth_check() -> dict:
-    """Read‑only smoke: wallets + positions (paper). Returnerar endast ok och antal poster."""
-    w, p = await asyncio.gather(bfx_read.get_wallets(), bfx_read.get_positions())
-    w_count = len(w) if isinstance(w, list) else 0
-    p_count = len(p) if isinstance(p, list) else 0
-    return {"ok": True, "wallets": w_count, "positions": p_count}
-
-
-@app.get("/account/wallets")
-async def account_wallets() -> dict:
-    import time
-
-    now = time.time()
-    if now - _ACCOUNT_CACHE["wallets"]["ts"] < _ACCOUNT_TTL:
-        return _ACCOUNT_CACHE["wallets"]["data"]
-    try:
-        data = await bfx_read.get_wallets()
-        items = []
-        if isinstance(data, list):
-            for w in data:
-                # v2 array-format: [type,currency,balance,unsettled,available,...]
-                if isinstance(w, list) and len(w) >= 5 and str(w[0]).lower() == "exchange":
-                    items.append(
-                        {
-                            "type": w[0],
-                            "currency": str(w[1]).upper(),
-                            "balance": float(w[2]),
-                            "available": float(w[4]) if w[4] is not None else None,
-                        }
-                    )
-        out = {"items": items}
-        _ACCOUNT_CACHE["wallets"] = {"ts": now, "data": out}
-        return out
-    except Exception:
-        error_id = uuid.uuid4().hex[:12]
-        _LOGGER.exception("/account/wallets failed (error_id=%s)", error_id)
-        return {"items": [], "error": "internal_error", "error_id": error_id}
-
-
-@app.get("/account/positions")
-async def account_positions() -> dict:
-    import time
-
-    now = time.time()
-    if now - _ACCOUNT_CACHE["positions"]["ts"] < _ACCOUNT_TTL:
-        return _ACCOUNT_CACHE["positions"]["data"]
-    try:
-        data = await bfx_read.get_positions()
-        items = []
-        if isinstance(data, list):
-            for p in data:
-                if isinstance(p, list) and len(p) >= 4:
-                    sym = str(p[0])
-                    # endast TEST-symboler
-                    if not (sym.startswith("tTEST") or ":TEST" in sym):
-                        continue
-                    items.append(
-                        {
-                            "symbol": sym,
-                            "status": p[1],
-                            "amount": float(p[2]),
-                            "base_price": float(p[3]) if p[3] is not None else None,
-                        }
-                    )
-        out = {"items": items}
-        _ACCOUNT_CACHE["positions"] = {"ts": now, "data": out}
-        return out
-    except Exception:
-        error_id = uuid.uuid4().hex[:12]
-        _LOGGER.exception("/account/positions failed (error_id=%s)", error_id)
-        return {"items": [], "error": "internal_error", "error_id": error_id}
-
-
-@app.get("/account/orders")
-async def account_orders() -> dict:
-    import time
-
-    now = time.time()
-    if now - _ACCOUNT_CACHE["orders"]["ts"] < _ACCOUNT_TTL:
-        return _ACCOUNT_CACHE["orders"]["data"]
-    try:
-        data = await bfx_read.get_orders()
-        items = []
-        if isinstance(data, list):
-            for o in data:
-                # orders-array är längre; plocka symbol, amount, type, status
-                if isinstance(o, list) and len(o) >= 8:
-                    sym = str(o[3])  # SYMBOL index i v2 orders array
-                    if not (sym.startswith("tTEST") or ":TEST" in sym):
-                        continue
-                    items.append(
-                        {
-                            "symbol": sym,
-                            "amount": float(o[6]) if o[6] is not None else None,
-                            "type": o[8] if len(o) > 8 else None,
-                            "status": o[13] if len(o) > 13 else None,
-                        }
-                    )
-        out = {"items": items}
-        _ACCOUNT_CACHE["orders"] = {"ts": now, "data": out}
-        return out
-    except Exception:
-        error_id = uuid.uuid4().hex[:12]
-        _LOGGER.exception("/account/orders failed (error_id=%s)", error_id)
-        return {"items": [], "error": "internal_error", "error_id": error_id}
 
 
 @app.post("/paper/submit")

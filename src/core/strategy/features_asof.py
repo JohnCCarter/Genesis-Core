@@ -35,6 +35,9 @@ from core.observability.metrics import metrics
 from core.strategy.features_asof_parts.atr_percentile_utils import (
     build_atr_percentiles as _build_atr_percentiles_impl,
 )
+from core.strategy.features_asof_parts.base_feature_utils import (
+    build_base_feature_bundle as _build_base_feature_bundle_impl,
+)
 from core.strategy.features_asof_parts.cache_utils import (
     indicator_cache_lookup as _indicator_cache_lookup_impl,
 )
@@ -392,48 +395,21 @@ def _extract_asof(
     atr14_current = indicator_state.atr14_current
     vol_shift_last_3 = indicator_state.vol_shift_last_3
     vol_shift_current = indicator_state.vol_shift_current
-
-    # === FEATURE 1: rsi_inv_lag1 ===
-    # Use RSI from 1 bar ago (asof_bar - 1)
-    rsi_inv_lag1 = (rsi_lag1_raw - 50.0) / 50.0
-
-    # === FEATURE 2: volatility_shift_ma3 ===
-    # 3-bar MA of volatility shift
-    if len(vol_shift_last_3) > 0:
-        vol_shift_ma3 = sum(vol_shift_last_3) / len(vol_shift_last_3)
-    else:
-        vol_shift_ma3 = 1.0
-
-    # === FEATURE 3: bb_position_inv_ma3 ===
-    # 3-bar MA of inverted BB position
-    if len(bb_last_3) > 0:
-        bb_inv_last_3 = [1.0 - pos for pos in bb_last_3]
-        bb_position_inv_ma3 = sum(bb_inv_last_3) / len(bb_inv_last_3)
-    else:
-        bb_position_inv_ma3 = 0.5
-
-    # === FEATURE 4: rsi_vol_interaction ===
-    # Current bar RSI x current bar vol_shift
-    rsi_current = (rsi_current_raw - 50.0) / 50.0
-    rsi_vol_interaction = rsi_current * _clip(vol_shift_current, 0.5, 2.0)
-
-    # === FEATURE 5: vol_regime ===
-    # Binary: HighVol=1, LowVol=0
-    vol_regime = 1.0 if vol_shift_current > 1.0 else 0.0
-
-    # === BUILD FEATURES DICT ===
-    # Use atr_window_56 if available (fast path), otherwise atr_vals (slow path)
-    atr_source = atr_window_56 if atr_window_56 else atr_vals
-    atr_percentiles = _build_atr_percentiles(atr_source)
-
-    features = {
-        "rsi_inv_lag1": _clip(rsi_inv_lag1, -1.0, 1.0),
-        "volatility_shift_ma3": _clip(vol_shift_ma3, 0.5, 2.0),
-        "bb_position_inv_ma3": _clip(bb_position_inv_ma3, 0.0, 1.0),
-        "rsi_vol_interaction": _clip(rsi_vol_interaction, -2.0, 2.0),
-        "vol_regime": vol_regime,
-        "atr_14": float(atr14_current) if atr14_current is not None else 0.0,
-    }
+    base_feature_bundle = _build_base_feature_bundle_impl(
+        rsi_current_raw,
+        rsi_lag1_raw,
+        bb_last_3,
+        vol_shift_last_3,
+        vol_shift_current,
+        atr_window_56,
+        atr_vals,
+        atr14_current,
+        _clip,
+        _build_atr_percentiles,
+    )
+    features = dict(base_feature_bundle.features)
+    rsi_current = base_feature_bundle.rsi_current
+    atr_percentiles = base_feature_bundle.atr_percentiles
 
     # === FIBONACCI FEATURES (levels + distances/proximity) ===
     # Beräkna endast om vi har tillräckligt med data (kräver ATR, swing-detektion)

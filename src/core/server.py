@@ -2,18 +2,18 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-import core.server_account_api as server_account_api
-import core.server_info_api as server_info_api
-import core.server_models_api as server_models_api
-import core.server_paper_api as server_paper_api
-import core.server_public_api as server_public_api
-import core.server_status_api as server_status_api
-import core.server_ui_api as server_ui_api
+import core.api.account as server_account_api
+import core.api.info as server_info_api
+import core.api.models as server_models_api
+import core.api.paper as server_paper_api
+import core.api.public as server_public_api
+import core.api.status as server_status_api
+import core.api.ui as server_ui_api
+from core.api.config import router as config_router
+from core.api.strategy import router as strategy_router
 from core.config.settings import get_settings  # noqa: F401
 from core.io.bitfinex import read_helpers as bfx_read  # noqa: F401
 from core.io.bitfinex.exchange_client import aclose_http_client, get_exchange_client  # noqa: F401
-from core.server_config_api import router as config_router
-from core.server_strategy_api import router as strategy_router
 from core.utils.logging_redaction import get_logger
 
 _LOGGER = get_logger(__name__)

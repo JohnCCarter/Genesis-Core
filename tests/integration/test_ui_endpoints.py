@@ -67,6 +67,39 @@ def test_ui_route_alias_identity():
     assert len(ui_routes) == 1
 
 
+def test_server_api_module_aliases_resolve_to_same_module_objects():
+    import sys
+
+    import core.api.account as new_account_api
+    import core.api.models as new_models_api
+    import core.api.paper as new_paper_api
+    import core.api.public as new_public_api
+    import core.api.status as new_status_api
+    import core.api.strategy as new_strategy_api
+    import core.api.ui as new_ui_api
+    import core.server_account_api as old_account_api
+    import core.server_models_api as old_models_api
+    import core.server_paper_api as old_paper_api
+    import core.server_public_api as old_public_api
+    import core.server_status_api as old_status_api
+    import core.server_strategy_api as old_strategy_api
+    import core.server_ui_api as old_ui_api
+
+    pairs = [
+        ("core.server_account_api", old_account_api, "core.api.account", new_account_api),
+        ("core.server_models_api", old_models_api, "core.api.models", new_models_api),
+        ("core.server_paper_api", old_paper_api, "core.api.paper", new_paper_api),
+        ("core.server_public_api", old_public_api, "core.api.public", new_public_api),
+        ("core.server_status_api", old_status_api, "core.api.status", new_status_api),
+        ("core.server_strategy_api", old_strategy_api, "core.api.strategy", new_strategy_api),
+        ("core.server_ui_api", old_ui_api, "core.api.ui", new_ui_api),
+    ]
+
+    for old_name, old_module, new_name, new_module in pairs:
+        assert old_module is new_module
+        assert sys.modules[old_name] is sys.modules[new_name] is old_module
+
+
 def test_paper_whitelist_endpoint_returns_sorted_symbols():
     import core.server as srv
 

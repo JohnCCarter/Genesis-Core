@@ -1,15 +1,7 @@
 from __future__ import annotations
 
-from fastapi import APIRouter
+import sys
 
-from core.strategy.model_registry import ModelRegistry
+from core.api import models as _api_module
 
-router = APIRouter()
-
-
-@router.post("/models/reload")
-def reload_models() -> dict:
-    """Force reload all model files by clearing cache. Useful after ML training."""
-    registry = ModelRegistry()
-    registry.clear_cache()
-    return {"ok": True, "message": "Model cache cleared"}
+sys.modules[__name__] = _api_module

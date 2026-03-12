@@ -50,6 +50,9 @@ from core.strategy.features_asof_parts.context_bundle_utils import (
 from core.strategy.features_asof_parts.extraction_context_utils import (
     prepare_extraction_context as _prepare_extraction_context_impl,
 )
+from core.strategy.features_asof_parts.fibonacci_apply_utils import (
+    apply_fibonacci_feature_updates as _apply_fibonacci_feature_updates_impl,
+)
 from core.strategy.features_asof_parts.fibonacci_context_utils import (
     build_htf_fibonacci_context as _build_htf_fibonacci_context_impl,
 )
@@ -424,22 +427,19 @@ def _extract_asof(
 
     # === FIBONACCI FEATURES (levels + distances/proximity) ===
     # Beräkna endast om vi har tillräckligt med data (kräver ATR, swing-detektion)
-    fib_feature_status: dict[str, Any] = {
-        "available": True,
-        "reason": "OK",
-    }
-    fib_feature_updates, fib_feature_status = _build_fibonacci_feature_updates(
-        highs,
-        lows,
-        closes,
-        atr_vals,
-        pre,
-        pre_idx,
-        timeframe,
-        asof_bar,
-        rsi_current,
+    features, fib_feature_status = _apply_fibonacci_feature_updates_impl(
+        features=features,
+        highs=highs,
+        lows=lows,
+        closes=closes,
+        atr_vals=atr_vals,
+        pre=pre,
+        pre_idx=pre_idx,
+        timeframe=timeframe,
+        asof_bar=asof_bar,
+        rsi_current=rsi_current,
+        build_fibonacci_updates_fn=_build_fibonacci_feature_updates,
     )
-    features.update(fib_feature_updates)
 
     context_bundle = _build_fibonacci_context_bundle_impl(
         candles,

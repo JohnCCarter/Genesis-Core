@@ -89,6 +89,9 @@ from core.strategy.features_asof_parts.result_cache_utils import (
 from core.strategy.features_asof_parts.result_cache_utils import (
     feature_result_cache_store as _feature_result_cache_store_impl,
 )
+from core.strategy.features_asof_parts.result_finalize_utils import (
+    finalize_feature_result as _finalize_feature_result_impl,
+)
 from core.strategy.fib_logging import log_fib_flow
 from core.strategy.htf_selector import select_htf_timeframe
 from core.utils.diffing.feature_cache import IndicatorCache, make_indicator_fingerprint
@@ -454,26 +457,22 @@ def _extract_asof(
     htf_selector_meta = context_bundle.htf_selector_meta
     ltf_fibonacci_context = context_bundle.ltf_fibonacci_context
 
-    meta = _build_feature_meta_impl(
-        features,
-        fib_feature_status,
-        htf_fibonacci_context,
-        ltf_fibonacci_context,
-        htf_selector_meta,
-        asof_bar,
-        total_bars,
-        atr14_current,
-        atr_vals,
-        atr_period,
-        atr_percentiles,
+    return _finalize_feature_result_impl(
+        features=features,
+        fib_feature_status=fib_feature_status,
+        htf_fibonacci_context=htf_fibonacci_context,
+        ltf_fibonacci_context=ltf_fibonacci_context,
+        htf_selector_meta=htf_selector_meta,
+        asof_bar=asof_bar,
+        total_bars=total_bars,
+        atr14_current=atr14_current,
+        atr_vals=atr_vals,
+        atr_period=atr_period,
+        atr_percentiles=atr_percentiles,
+        cache_key=cache_key,
+        build_meta_fn=_build_feature_meta_impl,
+        cache_store_fn=_feature_cache_store,
     )
-
-    result = (features, meta)
-
-    # Cache the result (OrderedDict + LRU eviction)
-    _feature_cache_store(cache_key, result)
-
-    return result
 
 
 def extract_features_live(

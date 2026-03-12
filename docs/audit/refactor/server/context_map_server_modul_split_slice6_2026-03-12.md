@@ -24,14 +24,14 @@ Continue `feature/server-modul-split` with the next smallest safe extraction fro
 
 ## Test files
 
-| Test                                                                                                                      | Coverage                                                                       |
-| ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Test                                                                                                                      | Coverage                                                                           |
+| ------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
 | `tests/integration/test_ui_endpoints.py`                                                                                  | `/ui` returns `200`, keeps `text/html`, and locks alias/direct parity if extracted |
-| `tests/backtest/test_backtest_determinism_smoke.py`                                                                       | Canonical determinism replay required by RESEARCH governance                   |
-| `tests/backtest/test_evaluate_pipeline.py::test_evaluate_pipeline_authority_mode_regime_module_deterministic`             | Pipeline determinism guard after server wiring change                          |
-| `tests/utils/test_features_asof_cache_key_deterministic.py::test_compute_candles_hash_is_deterministic_across_pyhashseed` | Cache-key determinism guard for feature hashing across `PYTHONHASHSEED`        |
-| `tests/governance/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable`                | Pipeline invariant guard                                                       |
-| `bandit -r src -c bandit.yaml`                                                                                            | Security scan required by repo-local policy                                    |
+| `tests/backtest/test_backtest_determinism_smoke.py`                                                                       | Canonical determinism replay required by RESEARCH governance                       |
+| `tests/backtest/test_evaluate_pipeline.py::test_evaluate_pipeline_authority_mode_regime_module_deterministic`             | Pipeline determinism guard after server wiring change                              |
+| `tests/utils/test_features_asof_cache_key_deterministic.py::test_compute_candles_hash_is_deterministic_across_pyhashseed` | Cache-key determinism guard for feature hashing across `PYTHONHASHSEED`            |
+| `tests/governance/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable`                | Pipeline invariant guard                                                           |
+| `bandit -r src -c bandit.yaml`                                                                                            | Security scan required by repo-local policy                                        |
 
 ## Reference patterns
 
@@ -69,14 +69,14 @@ This slice stays contained because:
 - Formatter parity held after extraction: `black --check` passed for `src/core/server.py`, `src/core/server_ui_api.py`, and `tests/integration/test_ui_endpoints.py`.
 - Lint parity held for the same slice files: `ruff check` passed with no findings.
 - `tests/integration/test_ui_endpoints.py` now locks:
-	- route status `200` and stable `Minimal test` marker for `/ui`
-	- `content-type` prefix `text/html`
-	- direct-return parity between the route payload, `core.server.ui_page()`, and `core.server_ui_api.ui_page()`
-	- alias identity for `ui_page` and `ui_router`
-	- single registration of `/ui` in the assembled FastAPI app
+  - route status `200` and stable `Minimal test` marker for `/ui`
+  - `content-type` prefix `text/html`
+  - direct-return parity between the route payload, `core.server.ui_page()`, and `core.server_ui_api.ui_page()`
+  - alias identity for `ui_page` and `ui_router`
+  - single registration of `/ui` in the assembled FastAPI app
 - Governance selectors passed via:
-	- `tests/backtest/test_backtest_determinism_smoke.py`
-	- `tests/backtest/test_evaluate_pipeline.py::test_evaluate_pipeline_authority_mode_regime_module_deterministic`
-	- `tests/utils/test_features_asof_cache_key_deterministic.py::test_compute_candles_hash_is_deterministic_across_pyhashseed`
-	- `tests/governance/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable`
+  - `tests/backtest/test_backtest_determinism_smoke.py`
+  - `tests/backtest/test_evaluate_pipeline.py::test_evaluate_pipeline_authority_mode_regime_module_deterministic`
+  - `tests/utils/test_features_asof_cache_key_deterministic.py::test_compute_candles_hash_is_deterministic_across_pyhashseed`
+  - `tests/governance/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable`
 - Security scan passed: `bandit -r src -c bandit.yaml -q` produced only the existing acknowledged `B608` `nosec` warning and no failed findings.

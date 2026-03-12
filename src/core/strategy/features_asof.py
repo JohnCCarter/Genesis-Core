@@ -74,6 +74,9 @@ from core.strategy.features_asof_parts.hash_utils import (
 from core.strategy.features_asof_parts.indicator_state_utils import (
     build_indicator_state as _build_indicator_state_impl,
 )
+from core.strategy.features_asof_parts.input_guard_utils import (
+    validate_input_or_return_early as _validate_input_or_return_early_impl,
+)
 from core.strategy.features_asof_parts.logging_utils import (
     log_precompute_status as _log_precompute_status_impl,
 )
@@ -321,34 +324,10 @@ def _extract_asof(
 
     metrics.inc("feature_cache_miss")
 
-    # Validate inputs
-    lengths = [len(candles[k]) for k in ["open", "high", "low", "close", "volume"]]
-    if not all(length == lengths[0] for length in lengths):
-        raise ValueError("All OHLCV lists must have same length")
-
-    total_bars = lengths[0]
-
-    # Validate asof_bar
-    if asof_bar < 0:
-        raise ValueError(f"asof_bar must be >= 0, got {asof_bar}")
-    if asof_bar >= total_bars:
-        raise ValueError(f"asof_bar={asof_bar} >= total_bars={total_bars}")
-
-    min_lookback = 50  # Need at least 50 bars for EMA/indicators
-    if asof_bar < min_lookback:
-        result = (
-            {},
-            {
-                "versions": {},
-                "reasons": [
-                    f"INSUFFICIENT_DATA: asof_bar={asof_bar} < min_lookback={min_lookback}"
-                ],
-                "asof_bar": asof_bar,
-                "uses_bars": [0, asof_bar],
-            },
-        )
+    total_bars, early_result = _validate_input_or_return_early_impl(candles, asof_bar)
+    if early_result is not None:
         # Don't cache error results
-        return result
+        return early_result
 
     prep = _prepare_extraction_context_impl(
         candles,

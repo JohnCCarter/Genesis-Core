@@ -7,6 +7,7 @@ from fastapi import Body, FastAPI
 import core.server_account_api as server_account_api
 import core.server_info_api as server_info_api
 import core.server_models_api as server_models_api
+import core.server_public_api as server_public_api
 import core.server_status_api as server_status_api
 import core.server_ui_api as server_ui_api
 from core.config.settings import get_settings
@@ -18,8 +19,8 @@ from core.utils.logging_redaction import get_logger
 
 _LOGGER = get_logger(__name__)
 
-_CANDLES_CACHE = {}  # key -> {ts: float, data: dict}
-_CANDLES_TTL = 10.0  # 10s cache for candles
+_CANDLES_CACHE = server_public_api._CANDLES_CACHE
+_CANDLES_TTL = server_public_api._CANDLES_TTL
 
 _ACCOUNT_CACHE = server_account_api._ACCOUNT_CACHE
 _ACCOUNT_TTL = server_account_api._ACCOUNT_TTL
@@ -40,6 +41,8 @@ account_orders = server_account_api.account_orders
 account_router = server_account_api.router
 ui_page = server_ui_api.ui_page
 ui_router = server_ui_api.router
+public_candles = server_public_api.public_candles
+public_router = server_public_api.router
 
 
 @asynccontextmanager
@@ -68,6 +71,7 @@ app.include_router(status_router)
 app.include_router(models_router)
 app.include_router(account_router)
 app.include_router(ui_router)
+app.include_router(public_router)
 app.include_router(strategy_router)
 
 
@@ -109,59 +113,6 @@ def _base_ccy_from_test(sym: str) -> str:
     u = sym.upper().lstrip("T")
     base_part = u.split(":", 1)[0] if ":" in u else u
     return base_part.replace("TEST", "")
-
-
-@app.get("/public/candles")
-async def public_candles(symbol: str = "tBTCUSD", timeframe: str = "1m", limit: int = 120) -> dict:
-    """Proxy till Bitfinex public candles och normaliserar till {open,high,low,close,volume}."""
-    import time
-
-    # Check cache
-    cache_key = f"{symbol}:{timeframe}:{limit}"
-    now = time.time()
-    if cache_key in _CANDLES_CACHE:
-        entry = _CANDLES_CACHE[cache_key]
-        if now - entry["ts"] < _CANDLES_TTL:
-            return entry["data"]
-
-    # Fetch fresh
-    # Justera limit inom rimliga gränser
-    safe_limit = max(1, min(int(limit), 1000))
-    endpoint = f"candles/trade:{timeframe}:{symbol}/hist"
-    params = {"limit": safe_limit, "sort": 1}
-
-    ec = get_exchange_client()
-    r = await ec.public_request(method="GET", endpoint=endpoint, params=params, timeout=10)
-    data = r.json()
-
-    opens: list[float] = []
-    highs: list[float] = []
-    lows: list[float] = []
-    closes: list[float] = []
-    volumes: list[float] = []
-
-    if isinstance(data, list):
-        for row in data:
-            # Bitfinex format: [MTS, OPEN, CLOSE, HIGH, LOW, VOLUME]
-            if isinstance(row, list) and len(row) >= 6:
-                opens.append(float(row[1]))
-                closes.append(float(row[2]))
-                highs.append(float(row[3]))
-                lows.append(float(row[4]))
-                volumes.append(float(row[5]))
-
-    result = {
-        "open": opens,
-        "high": highs,
-        "low": lows,
-        "close": closes,
-        "volume": volumes,
-    }
-
-    # Update cache
-    _CANDLES_CACHE[cache_key] = {"ts": now, "data": result}
-
-    return result
 
 
 @app.post("/paper/submit")

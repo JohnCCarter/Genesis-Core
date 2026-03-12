@@ -201,21 +201,47 @@ def test_public_candles_endpoint_smoke():
 
     class DummyEC:
         async def public_request(self, **_kwargs):
+            calls.append(_kwargs)
             return fake_get("unused")
 
     import asyncio
 
     import core.server as srv
+    import core.server_public_api as public_api
 
+    calls = []
     orig = srv.get_exchange_client
+    original_cache = dict(srv._CANDLES_CACHE)
     srv.get_exchange_client = lambda: DummyEC()  # type: ignore
     try:
+        srv._CANDLES_CACHE.clear()
+        c = TestClient(app)
         out = asyncio.get_event_loop().run_until_complete(
-            pc(symbol="tBTCUSD", timeframe="1m", limit=1)
+            pc(symbol="tBTCUSD", timeframe="1m", limit=1001)
         )
+        route = c.get(
+            "/public/candles",
+            params={"symbol": "tBTCUSD", "timeframe": "1m", "limit": 1001},
+        )
+
+        assert route.status_code == 200
+        assert out == route.json()
         assert set(out.keys()) == {"open", "high", "low", "close", "volume"}
         assert out["open"] and out["close"]
+        assert srv.public_candles is public_api.public_candles
+        assert srv.public_router is public_api.router
+        assert srv._CANDLES_CACHE is public_api._CANDLES_CACHE
+        assert srv._CANDLES_TTL == public_api._CANDLES_TTL
+        assert "tBTCUSD:1m:1001" in srv._CANDLES_CACHE
+        assert len(calls) == 1
+        assert calls[0]["params"] == {"limit": 1000, "sort": 1}
+        candle_routes = [
+            route for route in srv.app.routes if getattr(route, "path", None) == "/public/candles"
+        ]
+        assert len(candle_routes) == 1
     finally:
+        srv._CANDLES_CACHE.clear()
+        srv._CANDLES_CACHE.update(original_cache)
         srv.get_exchange_client = orig  # type: ignore
 
 

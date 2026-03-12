@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import importlib
+
 import httpx
 import pytest
 from fastapi.testclient import TestClient
@@ -8,8 +10,8 @@ from core.server import app
 
 
 def test_ui_get_and_evaluate_post():
+    import core.api.ui as ui_api
     import core.server as srv
-    import core.server_ui_api as ui_api
 
     c = TestClient(app)
     r = c.get("/ui")
@@ -57,9 +59,9 @@ def test_ui_get_and_evaluate_post():
     assert "authority_mode_source" in shadow_regime
 
 
-def test_ui_route_alias_identity():
+def test_ui_route_server_and_canonical_identity():
+    import core.api.ui as ui_api
     import core.server as srv
-    import core.server_ui_api as ui_api
 
     assert srv.ui_page is ui_api.ui_page
     assert srv.ui_router is ui_api.router
@@ -67,37 +69,27 @@ def test_ui_route_alias_identity():
     assert len(ui_routes) == 1
 
 
-def test_server_api_module_aliases_resolve_to_same_module_objects():
+@pytest.mark.parametrize(
+    "module_name",
+    [
+        "core.server_account_api",
+        "core.server_config_api",
+        "core.server_info_api",
+        "core.server_models_api",
+        "core.server_paper_api",
+        "core.server_public_api",
+        "core.server_status_api",
+        "core.server_strategy_api",
+        "core.server_ui_api",
+    ],
+)
+def test_legacy_server_api_modules_are_not_importable_after_retirement(module_name):
     import sys
 
-    import core.api.account as new_account_api
-    import core.api.models as new_models_api
-    import core.api.paper as new_paper_api
-    import core.api.public as new_public_api
-    import core.api.status as new_status_api
-    import core.api.strategy as new_strategy_api
-    import core.api.ui as new_ui_api
-    import core.server_account_api as old_account_api
-    import core.server_models_api as old_models_api
-    import core.server_paper_api as old_paper_api
-    import core.server_public_api as old_public_api
-    import core.server_status_api as old_status_api
-    import core.server_strategy_api as old_strategy_api
-    import core.server_ui_api as old_ui_api
+    sys.modules.pop(module_name, None)
 
-    pairs = [
-        ("core.server_account_api", old_account_api, "core.api.account", new_account_api),
-        ("core.server_models_api", old_models_api, "core.api.models", new_models_api),
-        ("core.server_paper_api", old_paper_api, "core.api.paper", new_paper_api),
-        ("core.server_public_api", old_public_api, "core.api.public", new_public_api),
-        ("core.server_status_api", old_status_api, "core.api.status", new_status_api),
-        ("core.server_strategy_api", old_strategy_api, "core.api.strategy", new_strategy_api),
-        ("core.server_ui_api", old_ui_api, "core.api.ui", new_ui_api),
-    ]
-
-    for old_name, old_module, new_name, new_module in pairs:
-        assert old_module is new_module
-        assert sys.modules[old_name] is sys.modules[new_name] is old_module
+    with pytest.raises(ModuleNotFoundError):
+        importlib.import_module(module_name)
 
 
 def test_paper_whitelist_endpoint_returns_sorted_symbols():
@@ -310,9 +302,9 @@ def test_auth_check_uses_helpers():
         srv.bfx_read.get_positions = orig_ph  # type: ignore
 
 
-def test_account_route_alias_and_cache_identity():
+def test_account_route_and_cache_use_canonical_module():
+    import core.api.account as account_api
     import core.server as srv
-    import core.server_account_api as account_api
 
     assert srv.auth_check is account_api.auth_check
     assert srv.account_wallets is account_api.account_wallets
@@ -368,9 +360,9 @@ def test_health_returns_503_when_config_read_fails(monkeypatch):
     assert r.json() == {"status": "error", "config_version": None, "config_hash": None}
 
 
-def test_health_shared_auth_object_identity():
+def test_health_shared_auth_uses_canonical_module():
+    import core.api.status as status_api
     import core.server as srv
-    import core.server_status_api as status_api
 
     assert srv._AUTH is status_api._AUTH
 

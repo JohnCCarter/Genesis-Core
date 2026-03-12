@@ -41,6 +41,9 @@ from core.strategy.features_asof_parts.cache_utils import (
 from core.strategy.features_asof_parts.cache_utils import (
     indicator_cache_store as _indicator_cache_store_impl,
 )
+from core.strategy.features_asof_parts.extraction_context_utils import (
+    prepare_extraction_context as _prepare_extraction_context_impl,
+)
 from core.strategy.features_asof_parts.fibonacci_context_utils import (
     build_htf_fibonacci_context as _build_htf_fibonacci_context_impl,
 )
@@ -327,36 +330,22 @@ def _extract_asof(
         # Don't cache error results
         return result
 
-    # Extract data AS OF asof_bar (inclusive) using NumPy views (no copy)
-    highs_arr = np.asarray(candles["high"], dtype=float)
-    lows_arr = np.asarray(candles["low"], dtype=float)
-    closes_arr = np.asarray(candles["close"], dtype=float)
-    highs = highs_arr[: asof_bar + 1]
-    lows = lows_arr[: asof_bar + 1]
-    closes = closes_arr[: asof_bar + 1]
+    prep = _prepare_extraction_context_impl(
+        candles,
+        asof_bar,
+        config,
+        _remap_precomputed_features,
+    )
+    highs = prep.highs
+    lows = prep.lows
+    closes = prep.closes
+    window_start_idx = prep.window_start_idx
+    pre = prep.pre
+    pre_idx = prep.pre_idx
+    use_precompute = prep.use_precompute
+    atr_period = prep.atr_period
 
-    # Invariant check
-    assert (
-        len(closes) == asof_bar + 1
-    ), f"Expected {asof_bar + 1} bars, got {len(closes)}"  # nosec B101
-
-    # === CALCULATE INDICATORS ===
-
-    # Determine lookup index for precomputed features
-    # If _global_index is provided in config (from backtest engine), use it.
-    # Otherwise fallback to asof_bar (assuming full history or relative index).
-    lookup_idx = (config or {}).get("_global_index", asof_bar)
-    window_len = len(closes)
-    window_start_idx = max(0, lookup_idx - (window_len - 1)) if window_len > 0 else 0
-
-    # RSI (returns [0, 100]) - use precomputed if available
-    pre = dict((config or {}).get("precomputed_features") or {})
-    pre, lookup_idx_local = _remap_precomputed_features(pre, window_start_idx, lookup_idx)
-    pre_idx = lookup_idx_local
-
-    # Enforce precompute if requested via env var
-    use_precompute = os.environ.get("GENESIS_PRECOMPUTE_FEATURES") == "1"
-    if use_precompute and not pre:
+    if prep.warn_precompute_missing:
         # Graceful fallback: tillåt slow path men logga en engångsvarning
         global _PRECOMPUTE_WARN_ONCE
         if not _PRECOMPUTE_WARN_ONCE and _log:
@@ -365,7 +354,9 @@ def _extract_asof(
                 "faller tillbaka till slow path."
             )
             _PRECOMPUTE_WARN_ONCE = True
-        use_precompute = False
+
+    # === CALCULATE INDICATORS ===
+
     _log_precompute_status(use_precompute, pre, pre_idx, window_start_idx)
 
     global FAST_HITS, SLOW_HITS
@@ -427,11 +418,6 @@ def _extract_asof(
             bb_last_3 = bb_vals[-3:]
 
     # ATR (use precomputed if available)
-
-    # Determine ATR period used by signal_adaptation (default 14)
-    thresholds = (config or {}).get("thresholds") or {}
-    sig_adapt = thresholds.get("signal_adaptation") or {}
-    atr_period = int(sig_adapt.get("atr_period", 14))
 
     pre_atr_key = f"atr_{atr_period}"
     pre_atr_full = pre.get(pre_atr_key)

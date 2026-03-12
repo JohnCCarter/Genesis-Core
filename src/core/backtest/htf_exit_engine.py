@@ -12,11 +12,18 @@ from dataclasses import dataclass
 from typing import Any
 
 from core.backtest.exit_strategies import SwingUpdateDecider, SwingUpdateParams, SwingUpdateStrategy
-from core.backtest.position_tracker import Position
-from core.indicators.exit_fibonacci import (
-    calculate_exit_fibonacci_levels,
-    validate_swing_for_exit,
+from core.backtest.htf_exit_partials import evaluate_partial_exits
+from core.backtest.htf_exit_structure import detect_structure_break
+from core.backtest.htf_exit_swing_updates import (
+    check_swing_updates,
+    initialize_position_exit_levels,
+    resolve_valid_exit_context,
 )
+from core.backtest.htf_exit_trailing import (
+    calculate_fallback_trailing_stop,
+    calculate_trailing_stop,
+)
+from core.backtest.position_tracker import Position
 
 
 @dataclass
@@ -120,21 +127,13 @@ class HTFFibonacciExitEngine:
             return self._fallback_exits(position, current_bar, indicators)
 
         # Use frozen exit context (en referens per trade)
-        fib_levels = position.exit_ctx["fib"]
-        swing_bounds = position.exit_ctx["swing_bounds"]
         position.exit_ctx["swing_id"]
+        resolved_exit_context = resolve_valid_exit_context(position.exit_ctx)
 
         # Invariants (fångar statisk/dynamisk-mismatch direkt)
-        if not fib_levels or not swing_bounds:
+        if resolved_exit_context is None:
             return self._fallback_exits(position, current_bar, indicators)
-
-        lo, hi = swing_bounds
-        if hi <= lo:
-            return self._fallback_exits(position, current_bar, indicators)
-
-        levels = list(fib_levels.values())
-        if not levels or min(levels) < lo - 1e-9 or max(levels) > hi + 1e-9:
-            return self._fallback_exits(position, current_bar, indicators)
+        fib_levels, _swing_bounds = resolved_exit_context
 
         # Step 2: Check for swing updates (if strategy allows)
         if self.swing_strategy != SwingUpdateStrategy.FIXED and htf_fib_context:
@@ -142,19 +141,10 @@ class HTFFibonacciExitEngine:
 
             # If the swing was updated, we must refresh and re-validate the frozen context.
             if position.exit_ctx:
-                fib_levels = position.exit_ctx.get("fib")
-                swing_bounds = position.exit_ctx.get("swing_bounds")
-
-                if not fib_levels or not swing_bounds:
+                resolved_exit_context = resolve_valid_exit_context(position.exit_ctx)
+                if resolved_exit_context is None:
                     return self._fallback_exits(position, current_bar, indicators)
-
-                lo, hi = swing_bounds
-                if hi <= lo:
-                    return self._fallback_exits(position, current_bar, indicators)
-
-                levels = list(fib_levels.values())
-                if not levels or min(levels) < lo - 1e-9 or max(levels) > hi + 1e-9:
-                    return self._fallback_exits(position, current_bar, indicators)
+                fib_levels, _swing_bounds = resolved_exit_context
 
         # Step 3: Reachability guard + tydlig orsak
         nearest = min(abs(current_price - v) for v in fib_levels.values()) if fib_levels else 999.0
@@ -207,157 +197,30 @@ class HTFFibonacciExitEngine:
         position_id: str,
     ) -> list[ExitAction]:
         """Check for partial exit opportunities with adaptive thresholds."""
-        actions = []
-
         # Get adaptive thresholds based on current market conditions
         current_price = current_bar["close"]
         atr_thr, pct_thr = self._adaptive_thresholds(current_price, htf_levels, atr)
-
-        if position.side == "LONG":
-            # TP1: Near 0.382 (HTF)?
-            tp1_target = htf_levels.get(0.382)
-            tp1_pad = max(0.05 * max(atr, 1e-9), 0.0005 * tp1_target) if tp1_target else 0.0
-            if (
-                tp1_target
-                and (
-                    (current_bar["low"] - tp1_pad) <= tp1_target <= (current_bar["high"] + tp1_pad)
-                )
-                and "TP1_0382" not in self.triggered_exits[position_id]
-            ):
-
-                actions.append(
-                    ExitAction(
-                        action="PARTIAL",
-                        size=position.current_size * self.partial_1_pct,
-                        reason="TP1_0382",
-                    )
-                )
-                self.triggered_exits[position_id].add("TP1_0382")
-
-            # TP2: Near 0.5 (HTF)?
-            if (
-                htf_levels.get(0.5)
-                and self._near_with_adaptive(current_price, htf_levels[0.5], atr, pct_thr, atr_thr)
-                and "TP2_05" not in self.triggered_exits[position_id]
-            ):
-
-                actions.append(
-                    ExitAction(
-                        action="PARTIAL",
-                        size=position.current_size * self.partial_2_pct,
-                        reason="TP2_05",
-                    )
-                )
-                self.triggered_exits[position_id].add("TP2_05")
-
-            # TP3: Near 0.618 (HTF)?
-            if (
-                htf_levels.get(0.618)
-                and self._near_with_adaptive(
-                    current_price, htf_levels[0.618], atr, pct_thr, atr_thr
-                )
-                and "TP3_0618" not in self.triggered_exits[position_id]
-            ):
-
-                actions.append(
-                    ExitAction(
-                        action="PARTIAL",
-                        size=position.current_size * self.partial_3_pct,
-                        reason="TP3_0618",
-                    )
-                )
-                self.triggered_exits[position_id].add("TP3_0618")
-
-            # TP4: Near 0.786 (HTF)?
-            if (
-                htf_levels.get(0.786)
-                and self._near_with_adaptive(
-                    current_price, htf_levels[0.786], atr, pct_thr, atr_thr
-                )
-                and "TP4_0786" not in self.triggered_exits[position_id]
-            ):
-
-                actions.append(
-                    ExitAction(
-                        action="PARTIAL",
-                        size=position.current_size * self.partial_4_pct,
-                        reason="TP4_0786",
-                    )
-                )
-                self.triggered_exits[position_id].add("TP4_0786")
-
-        else:  # SHORT position
-            # TP1: Near 0.618 (HTF)? (SHORT targets lower Fib levels)
-            if (
-                htf_levels.get(0.618)
-                and self._near_with_adaptive(
-                    current_price, htf_levels[0.618], atr, pct_thr, atr_thr
-                )
-                and "TP1_0618" not in self.triggered_exits[position_id]
-            ):
-
-                actions.append(
-                    ExitAction(
-                        action="PARTIAL",
-                        size=position.current_size * self.partial_1_pct,
-                        reason="TP1_0618",
-                    )
-                )
-                self.triggered_exits[position_id].add("TP1_0618")
-
-            # TP2: Near 0.5 (HTF)?
-            if (
-                htf_levels.get(0.5)
-                and self._near_with_adaptive(current_price, htf_levels[0.5], atr, pct_thr, atr_thr)
-                and "TP2_05" not in self.triggered_exits[position_id]
-            ):
-
-                actions.append(
-                    ExitAction(
-                        action="PARTIAL",
-                        size=position.current_size * self.partial_2_pct,
-                        reason="TP2_05",
-                    )
-                )
-                self.triggered_exits[position_id].add("TP2_05")
-
-            # TP3: Near 0.382 (HTF)?
-            if (
-                htf_levels.get(0.382)
-                and self._near_with_adaptive(
-                    current_price, htf_levels[0.382], atr, pct_thr, atr_thr
-                )
-                and "TP3_0382" not in self.triggered_exits[position_id]
-            ):
-
-                actions.append(
-                    ExitAction(
-                        action="PARTIAL",
-                        size=position.current_size * self.partial_3_pct,
-                        reason="TP3_0382",
-                    )
-                )
-                self.triggered_exits[position_id].add("TP3_0382")
-
-            # TP4: Near 0.786 (HTF)?
-            if (
-                htf_levels.get(0.786)
-                and self._near_with_adaptive(
-                    current_price, htf_levels[0.786], atr, pct_thr, atr_thr
-                )
-                and "TP4_0786" not in self.triggered_exits[position_id]
-            ):
-
-                actions.append(
-                    ExitAction(
-                        action="PARTIAL",
-                        size=position.current_size * self.partial_4_pct,
-                        reason="TP4_0786",
-                    )
-                )
-                self.triggered_exits[position_id].add("TP4_0786")
-
-        return actions
+        partial_candidates = evaluate_partial_exits(
+            position_side=position.side,
+            current_size=position.current_size,
+            current_bar=current_bar,
+            atr=atr,
+            htf_levels=htf_levels,
+            triggered_exits=self.triggered_exits[position_id],
+            partial_pcts=(
+                self.partial_1_pct,
+                self.partial_2_pct,
+                self.partial_3_pct,
+                self.partial_4_pct,
+            ),
+            pct_thr=pct_thr,
+            atr_thr=atr_thr,
+            near_with_adaptive=self._near_with_adaptive,
+        )
+        return [
+            ExitAction(action="PARTIAL", size=candidate.size, reason=candidate.reason)
+            for candidate in partial_candidates
+        ]
 
     def _check_trailing_stop(
         self,
@@ -368,35 +231,14 @@ class HTFFibonacciExitEngine:
         htf_levels: dict[float, float],
     ) -> ExitAction | None:
         """Calculate dynamic trailing stop with HTF promotion."""
-
-        if position.side == "LONG":
-            # Base trail
-            base_trail = ema50 - (self.trail_atr_multiplier * atr)
-
-            # Promotion: if price > 0.618 (HTF), lock against 0.5
-            fib_05 = htf_levels.get(0.5)
-            fib_0618 = htf_levels.get(0.618)
-
-            if fib_05 and fib_0618 and current_price > fib_0618:
-                promoted_trail = fib_05  # Lock against 0.5 as support
-                trail_stop = max(base_trail, promoted_trail)
-            else:
-                trail_stop = base_trail
-
-        else:  # SHORT
-            # Base trail
-            base_trail = ema50 + (self.trail_atr_multiplier * atr)
-
-            # Promotion: if price < 0.382 (HTF), lock against 0.5
-            fib_05 = htf_levels.get(0.5)
-            fib_0382 = htf_levels.get(0.382)
-
-            if fib_05 and fib_0382 and current_price < fib_0382:
-                promoted_trail = fib_05  # Lock against 0.5 as resistance
-                trail_stop = min(base_trail, promoted_trail)
-            else:
-                trail_stop = base_trail
-
+        trail_stop = calculate_trailing_stop(
+            position_side=position.side,
+            current_price=current_price,
+            ema50=ema50,
+            atr=atr,
+            htf_levels=htf_levels,
+            trail_atr_multiplier=self.trail_atr_multiplier,
+        )
         return ExitAction(action="TRAIL_UPDATE", stop_price=trail_stop, reason="TRAIL_STOP")
 
     def _check_structure_break(
@@ -407,24 +249,15 @@ class HTFFibonacciExitEngine:
         ema_slope50_z: float,
     ) -> ExitAction | None:
         """Check for structure break → full exit."""
-
-        if position.side == "LONG":
-            # Long structure break: price < 0.618 AND downward momentum
-            fib_0618 = htf_levels.get(0.618)
-            if (
-                fib_0618 and current_price < fib_0618 and ema_slope50_z < -0.5
-            ):  # Stronger momentum filter
-                return ExitAction(action="FULL_EXIT", reason="STRUCTURE_BREAK_DOWN")
-
-        else:  # SHORT
-            # Short structure break: price > 0.382 AND upward momentum
-            fib_0382 = htf_levels.get(0.382)
-            if (
-                fib_0382 and current_price > fib_0382 and ema_slope50_z > 0.5
-            ):  # Stronger momentum filter
-                return ExitAction(action="FULL_EXIT", reason="STRUCTURE_BREAK_UP")
-
-        return None
+        reason = detect_structure_break(
+            position_side=position.side,
+            current_price=current_price,
+            htf_levels=htf_levels,
+            ema_slope50_z=ema_slope50_z,
+        )
+        if reason is None:
+            return None
+        return ExitAction(action="FULL_EXIT", reason=reason)
 
     def _adaptive_thresholds(
         self, price: float, htf_levels: dict[float, float], atr: float
@@ -491,15 +324,14 @@ class HTFFibonacciExitEngine:
 
         Uses simple trailing stop based on EMA.
         """
-        current_price = current_bar["close"]
         atr = indicators.get("atr", 100)
-        ema50 = indicators.get("ema50", current_price)
-
-        # Simple trailing stop
-        if position.side == "LONG":
-            trail_stop = ema50 - (self.trail_atr_multiplier * atr)
-        else:  # SHORT
-            trail_stop = ema50 + (self.trail_atr_multiplier * atr)
+        ema50 = indicators.get("ema50", current_bar["close"])
+        trail_stop = calculate_fallback_trailing_stop(
+            position_side=position.side,
+            ema50=ema50,
+            atr=atr,
+            trail_atr_multiplier=self.trail_atr_multiplier,
+        )
 
         return [ExitAction(action="TRAIL_UPDATE", stop_price=trail_stop, reason="FALLBACK_TRAIL")]
 
@@ -514,54 +346,13 @@ class HTFFibonacciExitEngine:
             htf_fib_context: HTF Fibonacci context
             indicators: Technical indicators
         """
-        htf_levels = htf_fib_context.get("levels", {})
-        current_price = indicators.get("ema50", position.entry_price)  # Use EMA as reference price
-        current_atr = indicators.get("atr", 100.0)
-
-        # Extract swing from HTF context (producer schema)
-        swing_high = htf_fib_context.get("swing_high")
-        swing_low = htf_fib_context.get("swing_low")
-
-        # Backward-compat: if someone passed a full-spectrum levels dict (0.0..1.0), infer bounds.
-        if (swing_high is None or swing_low is None) and isinstance(htf_levels, dict):
-            if 1.0 in htf_levels and 0.0 in htf_levels:
-                swing_high = htf_levels.get(1.0)
-                swing_low = htf_levels.get(0.0)
-
-        swing_high = float(swing_high) if swing_high is not None else 0.0
-        swing_low = float(swing_low) if swing_low is not None else 0.0
-
-        if swing_high <= swing_low or swing_high <= 0 or swing_low <= 0:
-            # Invalid swing - use fallback levels
-            return
-
-        # Calculate exit Fibonacci levels using symmetric logic
-        exit_levels = calculate_exit_fibonacci_levels(
-            side=position.side,
-            swing_high=swing_high,
-            swing_low=swing_low,
-            levels=[0.786, 0.618, 0.5, 0.382],  # Inverterade nivåer för exit
-        )
-
-        # Validate swing for exit
-        is_valid, reason = validate_swing_for_exit(
-            swing_high=swing_high,
-            swing_low=swing_low,
-            current_price=current_price,
-            current_atr=current_atr,
+        initialize_position_exit_levels(
+            position=position,
+            htf_fib_context=htf_fib_context,
+            indicators=indicators,
             min_swing_size_atr=self.swing_params.min_swing_size_atr,
             max_distance_atr=self.swing_params.max_distance_atr,
         )
-
-        if is_valid:
-            # Initialize position with exit levels
-            position.exit_fib_levels = exit_levels
-            position.exit_swing_high = swing_high
-            position.exit_swing_low = swing_low
-            position.exit_swing_timestamp = htf_fib_context.get(
-                "last_update"
-            ) or htf_fib_context.get("timestamp")
-            position.exit_swing_updated = 0
 
     def _check_swing_updates(
         self,
@@ -579,99 +370,12 @@ class HTFFibonacciExitEngine:
             current_bar: Current bar data
             indicators: Technical indicators
         """
-        if not htf_fib_context.get("available"):
-            return
-
-        htf_levels = htf_fib_context.get("levels", {})
-        new_swing_high = htf_fib_context.get("swing_high")
-        new_swing_low = htf_fib_context.get("swing_low")
-
-        # Backward-compat: infer bounds if full-spectrum levels dict was passed.
-        if (new_swing_high is None or new_swing_low is None) and isinstance(htf_levels, dict):
-            if 1.0 in htf_levels and 0.0 in htf_levels:
-                new_swing_high = htf_levels.get(1.0)
-                new_swing_low = htf_levels.get(0.0)
-
-        new_swing_high = float(new_swing_high) if new_swing_high is not None else 0.0
-        new_swing_low = float(new_swing_low) if new_swing_low is not None else 0.0
-
-        if new_swing_high <= new_swing_low or new_swing_high <= 0:
-            return
-
-        # Create current and new swing contexts
-        current_swing = {
-            "swing_high": position.exit_swing_high,
-            "swing_low": position.exit_swing_low,
-            "swing_timestamp": position.exit_swing_timestamp,
-            # NOTE: exit_swing_updated tracks update count, not bars.
-            "bars_since_swing": htf_fib_context.get("swing_age_bars", 0),
-            "is_valid": True,
-        }
-
-        new_swing = {
-            "swing_high": new_swing_high,
-            "swing_low": new_swing_low,
-            "swing_timestamp": htf_fib_context.get("last_update")
-            or htf_fib_context.get("timestamp")
-            or current_bar.get("timestamp"),
-            "bars_since_swing": int(htf_fib_context.get("swing_age_bars", 0)),
-            "is_valid": True,
-        }
-
-        # Decide if swing should be updated
-        should_update, reason = self.swing_decider.should_update_swing(
-            current_swing=current_swing,
-            new_swing=new_swing,
-            position_side=position.side,
-            params=self.swing_params,
+        check_swing_updates(
+            position=position,
+            htf_fib_context=htf_fib_context,
+            current_bar=current_bar,
+            swing_decider=self.swing_decider,
+            swing_params=self.swing_params,
+            triggered_exits=self.triggered_exits,
+            swing_update_log=self.swing_update_log,
         )
-
-        if should_update:
-            # Update position's swing and recalculate exit levels
-            old_swing = (position.exit_swing_high, position.exit_swing_low)
-
-            position.exit_swing_high = new_swing_high
-            position.exit_swing_low = new_swing_low
-            position.exit_swing_timestamp = new_swing.get("swing_timestamp")
-            position.exit_swing_updated += 1
-
-            # Recalculate exit levels
-            new_exit_levels = calculate_exit_fibonacci_levels(
-                side=position.side,
-                swing_high=new_swing_high,
-                swing_low=new_swing_low,
-                levels=[0.786, 0.618, 0.5, 0.382],
-            )
-
-            position.exit_fib_levels = new_exit_levels
-
-            # Keep the frozen exit context consistent with the strategy.
-            # For FIXED, this function is never called; for DYNAMIC/HYBRID we update
-            # exit_ctx so subsequent exit checks actually use the new levels.
-            if position.exit_ctx is not None:
-                position.exit_ctx["fib"] = dict(new_exit_levels)
-                position.exit_ctx["swing_bounds"] = (new_swing_low, new_swing_high)
-                position.exit_ctx["swing_id"] = f"swing_update_{position.exit_swing_updated}"
-
-            # Reset triggered exits (new swing = fresh opportunity)
-            position_id = f"{position.symbol}_{position.entry_time.isoformat()}"
-            old_triggered = self.triggered_exits.get(position_id, set()).copy()
-            self.triggered_exits[position_id] = set()
-
-            # Log the update if enabled
-            if self.swing_params.log_updates:
-                log_entry = self.swing_decider.format_update_log_entry(
-                    position_id=position_id,
-                    timestamp=current_bar.get("timestamp"),
-                    reason=reason,
-                    old_swing=old_swing,
-                    new_swing=(new_swing_high, new_swing_low),
-                    improvement=(
-                        (new_swing_high - old_swing[0]) / old_swing[0]
-                        if position.side == "LONG"
-                        else (old_swing[1] - new_swing_low) / old_swing[1]
-                    ),
-                    old_triggered=old_triggered,
-                    update_count=position.exit_swing_updated,
-                )
-                self.swing_update_log.append(log_entry)

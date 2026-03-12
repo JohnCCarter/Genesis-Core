@@ -60,6 +60,9 @@ from core.strategy.features_asof_parts.hash_utils import (
 from core.strategy.features_asof_parts.hash_utils import (
     safe_series_value as _safe_series_value_impl,
 )
+from core.strategy.features_asof_parts.indicator_state_utils import (
+    build_indicator_state as _build_indicator_state_impl,
+)
 from core.strategy.features_asof_parts.logging_utils import (
     log_precompute_status as _log_precompute_status_impl,
 )
@@ -360,173 +363,35 @@ def _extract_asof(
     _log_precompute_status(use_precompute, pre, pre_idx, window_start_idx)
 
     global FAST_HITS, SLOW_HITS
-
-    pre_rsi = pre.get("rsi_14")
-    rsi_vals = None
-    rsi_current_raw = 50.0
-    rsi_lag1_raw = 50.0
-
-    if isinstance(pre_rsi, list | tuple) and len(pre_rsi) > pre_idx:
-        # FAST PATH: Direct access (no copy)
+    indicator_state = _build_indicator_state_impl(
+        highs,
+        lows,
+        closes,
+        asof_bar,
+        pre,
+        pre_idx,
+        atr_period,
+        make_indicator_fingerprint,
+        _indicator_cache_lookup,
+        _indicator_cache_store,
+        calculate_rsi,
+        bollinger_bands,
+        calculate_atr,
+        calculate_volatility_shift,
+    )
+    if indicator_state.rsi_used_fast_path:
         FAST_HITS += 1
-        rsi_current_raw = float(pre_rsi[pre_idx])
-        rsi_lag1_raw = float(pre_rsi[pre_idx - 1]) if pre_idx > 0 else rsi_current_raw
     else:
         SLOW_HITS += 1
-        key = make_indicator_fingerprint(
-            "rsi",
-            params={"period": 14},
-            series=closes,
-        )
-        cached_rsi = _indicator_cache_lookup(key)
-        if cached_rsi is not None and len(cached_rsi) >= asof_bar + 1:
-            rsi_vals = cached_rsi[: asof_bar + 1]
-        else:
-            rsi_full = calculate_rsi(closes, period=14)
-            _indicator_cache_store(key, rsi_full)
-            rsi_vals = rsi_full
 
-        if rsi_vals:
-            rsi_current_raw = rsi_vals[-1]
-            rsi_lag1_raw = rsi_vals[-2] if len(rsi_vals) > 1 else rsi_current_raw
-
-    # Bollinger Bands
-    pre_bb_pos = pre.get("bb_position_20_2")
-    bb_vals = None
-    bb_last_3 = []
-
-    if isinstance(pre_bb_pos, list | tuple) and len(pre_bb_pos) > pre_idx:
-        # FAST PATH: Slice only what we need (last 3 bars)
-        start_idx = max(0, pre_idx - 2)
-        bb_last_3 = list(pre_bb_pos[start_idx : pre_idx + 1])
-    else:
-        _cl = closes.tolist() if isinstance(closes, np.ndarray) else closes
-        bb_key = make_indicator_fingerprint(
-            "bollinger",
-            params={"period": 20, "std_dev": 2.0},
-            series=_cl,
-        )
-        cached_bb = _indicator_cache_lookup(bb_key)
-        if cached_bb is not None and len(cached_bb.get("position", [])) >= asof_bar + 1:
-            bb_vals = list(cached_bb["position"][: asof_bar + 1])
-        else:
-            bb_full = bollinger_bands(_cl, period=20, std_dev=2.0)
-            _indicator_cache_store(bb_key, bb_full)
-            bb_vals = bb_full["position"]
-
-        if bb_vals:
-            bb_last_3 = bb_vals[-3:]
-
-    # ATR (use precomputed if available)
-
-    pre_atr_key = f"atr_{atr_period}"
-    pre_atr_full = pre.get(pre_atr_key)
-
-    # Fallback to atr_14 if specific period not found but period is 14 (legacy compat)
-    if pre_atr_full is None and atr_period == 14:
-        pre_atr_full = pre.get("atr_14")
-
-    atr_vals = None
-    atr_window_56 = []
-
-    if isinstance(pre_atr_full, list | tuple) and len(pre_atr_full) > pre_idx:
-        # FAST PATH: Slice only what we need for percentiles (last 56 bars)
-        start_idx = max(0, pre_idx - 55)
-        atr_window_56 = list(pre_atr_full[start_idx : pre_idx + 1])
-        # Ensure atr_vals is available for LTF context later
-        atr_vals = list(pre_atr_full[: pre_idx + 1])
-    else:
-        key_atr = make_indicator_fingerprint(
-            f"atr_{atr_period}", params={"period": atr_period}, series=closes
-        )
-        cached_atr = _indicator_cache_lookup(key_atr)
-        if cached_atr is not None and len(cached_atr) >= asof_bar + 1:
-            atr_vals = cached_atr[: asof_bar + 1]
-        else:
-            atr_full = calculate_atr(highs, lows, closes, period=atr_period)
-            _indicator_cache_store(key_atr, atr_full)
-            atr_vals = atr_full
-
-        if atr_vals:
-            atr_window_56 = atr_vals[-56:]
-
-    # Always compute true ATR(14) for legacy feature key stability.
-    # This prevents semantic drift where features["atr_14"] accidentally becomes ATR(atr_period).
-    atr14_vals = None
-    atr14_current = None
-    if atr_period == 14:
-        atr14_vals = atr_vals
-        atr14_current = float(atr_vals[-1]) if atr_vals else None
-    else:
-        pre_atr14_full = pre.get("atr_14")
-        if isinstance(pre_atr14_full, list | tuple) and len(pre_atr14_full) > pre_idx:
-            atr14_current = float(pre_atr14_full[pre_idx])
-            atr14_vals = list(pre_atr14_full[: pre_idx + 1])
-        else:
-            key_atr14 = make_indicator_fingerprint("atr_14", params={"period": 14}, series=closes)
-            cached_atr14 = _indicator_cache_lookup(key_atr14)
-            if cached_atr14 is not None and len(cached_atr14) >= asof_bar + 1:
-                atr14_vals = cached_atr14[: asof_bar + 1]
-            else:
-                atr14_full = calculate_atr(highs, lows, closes, period=14)
-                _indicator_cache_store(key_atr14, atr14_full)
-                atr14_vals = atr14_full
-            atr14_current = float(atr14_vals[-1]) if atr14_vals else None
-
-    # ATR Long (needed for Vol Shift if not precomputed)
-    pre_atr50_full = pre.get("atr_50")
-    atr_long = None
-    if not pre.get("volatility_shift"):  # Only needed if vol shift not precomputed
-        if isinstance(pre_atr50_full, list | tuple) and len(pre_atr50_full) > pre_idx:
-            # We might need full history if calculating vol shift manually?
-            # calculate_volatility_shift takes lists.
-            # If we are here, we are in slow path for vol shift anyway.
-            atr_long = list(pre_atr50_full[: pre_idx + 1])
-        else:
-            key_atr50 = make_indicator_fingerprint("atr_50", params={"period": 50}, series=closes)
-            cached_atr50 = _indicator_cache_lookup(key_atr50)
-            if cached_atr50 is not None and len(cached_atr50) >= asof_bar + 1:
-                atr_long = cached_atr50[: asof_bar + 1]
-            else:
-                atr_long_full = calculate_atr(highs, lows, closes, period=50)
-                _indicator_cache_store(key_atr50, atr_long_full)
-                atr_long = atr_long_full
-
-    # Volatility shift
-    pre_vol_shift = pre.get("volatility_shift")
-    vol_shift_vals = None
-    vol_shift_last_3 = []
-    vol_shift_current = 1.0
-
-    if isinstance(pre_vol_shift, list | tuple) and len(pre_vol_shift) > pre_idx:
-        # FAST PATH
-        start_idx = max(0, pre_idx - 2)
-        vol_shift_last_3 = list(pre_vol_shift[start_idx : pre_idx + 1])
-        vol_shift_current = float(pre_vol_shift[pre_idx])
-    else:
-        # SLOW PATH
-        # We need atr_vals and atr_long here.
-        # If we took fast path for ATR, atr_vals is None.
-        # So we must reconstruct atr_vals if we are here.
-        if atr_vals is None and isinstance(pre_atr_full, list | tuple):
-            atr_vals = list(pre_atr_full[: pre_idx + 1])
-
-        if atr_vals and atr_long:
-            vol_key = make_indicator_fingerprint(
-                "volatility_shift",
-                params={},
-                series=[atr_vals, atr_long],
-            )
-            cached_vol_shift = _indicator_cache_lookup(vol_key)
-            if cached_vol_shift is not None and len(cached_vol_shift) >= len(atr_vals):
-                vol_shift_vals = cached_vol_shift[: len(atr_vals)]
-            else:
-                vol_shift_vals = calculate_volatility_shift(atr_vals, atr_long)
-                _indicator_cache_store(vol_key, vol_shift_vals)
-
-            if vol_shift_vals:
-                vol_shift_last_3 = vol_shift_vals[-3:]
-                vol_shift_current = vol_shift_vals[-1]
+    rsi_current_raw = indicator_state.rsi_current_raw
+    rsi_lag1_raw = indicator_state.rsi_lag1_raw
+    bb_last_3 = indicator_state.bb_last_3
+    atr_vals = indicator_state.atr_vals
+    atr_window_56 = indicator_state.atr_window_56
+    atr14_current = indicator_state.atr14_current
+    vol_shift_last_3 = indicator_state.vol_shift_last_3
+    vol_shift_current = indicator_state.vol_shift_current
 
     # === FEATURE 1: rsi_inv_lag1 ===
     # Use RSI from 1 bar ago (asof_bar - 1)

@@ -6,11 +6,11 @@ import httpx
 from fastapi import Body, FastAPI
 from fastapi.responses import HTMLResponse, JSONResponse
 
+import core.server_info_api as server_info_api
 from core.config.authority import ConfigAuthority
 from core.config.settings import get_settings
 from core.io.bitfinex import read_helpers as bfx_read
 from core.io.bitfinex.exchange_client import aclose_http_client, get_exchange_client
-from core.observability.metrics import get_dashboard
 from core.server_config_api import router as config_router
 from core.server_strategy_api import router as strategy_router
 from core.utils.logging_redaction import get_logger
@@ -25,6 +25,11 @@ _ACCOUNT_CACHE = {
 _ACCOUNT_TTL = 5.0
 _CANDLES_CACHE = {}  # key -> {ts: float, data: dict}
 _CANDLES_TTL = 10.0  # 10s cache for candles
+
+TEST_SPOT_WHITELIST = server_info_api.TEST_SPOT_WHITELIST
+paper_whitelist = server_info_api.paper_whitelist
+observability_dashboard = server_info_api.observability_dashboard
+info_router = server_info_api.router
 
 
 _AUTH = ConfigAuthority()
@@ -51,28 +56,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(config_router)
+app.include_router(info_router)
 app.include_router(strategy_router)
 
-
-# Whitelist av tillåtna TEST-spotpar för paper-trading
-TEST_SPOT_WHITELIST: set[str] = {
-    "tTESTBTC:TESTUSD",
-    "tTESTBTC:TESTUSDT",
-    "tTESTETH:TESTUSD",
-    "tTESTSOL:TESTUSD",
-    "tTESTADA:TESTUSD",
-    "tTESTALGO:TESTUSD",
-    "tTESTAPT:TESTUSD",
-    "tTESTAVAX:TESTUSD",
-    "tTESTDOGE:TESTUSD",
-    "tTESTDOT:TESTUSD",
-    "tTESTEOS:TESTUSD",
-    "tTESTFIL:TESTUSD",
-    "tTESTLTC:TESTUSD",
-    "tTESTNEAR:TESTUSD",
-    "tTESTXAUT:TESTUSD",
-    "tTESTXTZ:TESTUSD",
-}
 
 # Minsta orderstorlek per test-ticker (kan uppdateras via probing)
 MIN_ORDER_SIZE: dict[str, float] = {
@@ -114,12 +100,6 @@ def _base_ccy_from_test(sym: str) -> str:
     return base_part.replace("TEST", "")
 
 
-@app.get("/paper/whitelist")
-def paper_whitelist() -> dict:
-    """Returnera whitelist av tillåtna TEST-spotpar för UI-val."""
-    return {"symbols": sorted(TEST_SPOT_WHITELIST)}
-
-
 @app.get("/health", response_model=None)
 def health() -> dict | JSONResponse:
     try:
@@ -131,11 +111,6 @@ def health() -> dict | JSONResponse:
             status_code=503,
             content={"status": "error", "config_version": None, "config_hash": None},
         )
-
-
-@app.get("/observability/dashboard")
-def observability_dashboard() -> dict:
-    return get_dashboard()
 
 
 @app.get("/ui", response_class=HTMLResponse)

@@ -50,6 +50,17 @@ def test_ui_get_and_evaluate_post():
     assert "authority_mode_source" in shadow_regime
 
 
+def test_paper_whitelist_endpoint_returns_sorted_symbols():
+    import core.server as srv
+
+    c = TestClient(app)
+
+    r = c.get("/paper/whitelist")
+
+    assert r.status_code == 200
+    assert r.json() == {"symbols": sorted(srv.TEST_SPOT_WHITELIST)}
+
+
 def test_strategy_evaluate_delegates_with_current_defaults(monkeypatch):
     import core.server_strategy_api as route_mod
 

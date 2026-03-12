@@ -356,3 +356,80 @@ def test_clarity_score_v2_off_preserves_legacy_path() -> None:
     assert state_off.get("ri_flag_enabled") is False
     assert state_off.get("ri_clarity_enabled") is False
     assert state_off.get("ri_clarity_score") is None
+
+
+def test_htf_override_preserves_debug_payload_and_history() -> None:
+    cfg = {
+        "ev": {"R_default": 1.0},
+        "thresholds": {"entry_conf_overall": 0.6, "regime_proba": {"balanced": 0.55}},
+        "gates": {"cooldown_bars": 0},
+        "risk": {"risk_map": [[0.6, 0.01]]},
+        "multi_timeframe": {
+            "allow_ltf_override": True,
+            "ltf_override_threshold": 0.85,
+            "ltf_override_adaptive": {"enabled": False, "window": 3},
+        },
+        "htf_fib": {
+            "entry": {
+                "enabled": True,
+                "long_min_level": 0.5,
+                "tolerance_atr": 1.0,
+            }
+        },
+        "ltf_fib": {
+            "entry": {
+                "enabled": True,
+                "long_max_level": 1.0,
+                "tolerance_atr": 1.0,
+            }
+        },
+    }
+
+    action, meta = decide(
+        {},
+        probas={"buy": 0.9, "sell": 0.1},
+        confidence={"buy": 0.9, "sell": 0.1},
+        regime="balanced",
+        state={
+            "last_close": 98.0,
+            "current_atr": 1.0,
+            "htf_fib": {"available": True, "levels": {0.5: 100.0}},
+            "ltf_fib": {"available": True, "levels": {1.0: 120.0}},
+            "ltf_override_state": {"buy_history": [0.1, 0.2, 0.3]},
+        },
+        risk_ctx={},
+        cfg=cfg,
+    )
+
+    assert action == "LONG"
+
+    reasons = meta.get("reasons") or []
+    assert "HTF_OVERRIDE_LTF_CONF" in reasons
+    assert "ENTRY_LONG" in reasons
+    assert reasons.index("HTF_OVERRIDE_LTF_CONF") < reasons.index("ENTRY_LONG")
+
+    state_out = meta.get("state_out") or {}
+    assert state_out.get("ltf_override_state", {}).get("buy_history") == [0.2, 0.3, 0.9]
+
+    ltf_override_debug = state_out.get("ltf_override_debug") or {}
+    assert ltf_override_debug.get("candidate") == "LONG"
+    assert float(ltf_override_debug.get("confidence")) == pytest.approx(0.9)
+    assert ltf_override_debug.get("history_key") == "buy_history"
+    assert ltf_override_debug.get("history_len") == 3
+    assert ltf_override_debug.get("history_window") == 3
+    assert float(ltf_override_debug.get("baseline_threshold")) == pytest.approx(0.85)
+    assert float(ltf_override_debug.get("effective_threshold")) == pytest.approx(0.85)
+
+    htf_debug = state_out.get("htf_fib_entry_debug") or {}
+    assert htf_debug.get("reason") == "LONG_BELOW_LEVEL_OVERRIDE"
+    assert float(htf_debug.get("level_price")) == pytest.approx(100.0)
+    override = htf_debug.get("override") or {}
+    assert override.get("source") == "multi_timeframe_threshold"
+    assert float(override.get("confidence")) == pytest.approx(0.9)
+    assert float(override.get("threshold")) == pytest.approx(0.85)
+
+    fib_summary = state_out.get("fib_gate_summary") or {}
+    assert fib_summary.get("candidate") == "LONG"
+    htf_summary = fib_summary.get("htf") or {}
+    assert htf_summary.get("reason") == "LONG_BELOW_LEVEL_OVERRIDE"
+    assert float(htf_summary.get("level_price")) == pytest.approx(100.0)

@@ -23,7 +23,7 @@ Split `src/core/strategy/decision_fib_gating.py` into smaller internal helpers w
 | `src/core/strategy/decision_fib_gating.py`                                                   | Current fib gating orchestration | Keep public function, delegate a first extracted helper slice      |
 | `src/core/strategy/decision_fib_gating_helpers.py`                                           | New internal helper module       | Hold pure helper functions first, then later gate-specific helpers |
 | `docs/audit/refactor/decision/context_map_decision_fib_gating_split_2026-03-12.md`           | Governance evidence              | Capture current map and risks                                      |
-| `docs/audit/refactor/decision/command_packet_decision_fib_gating_split_slice1_2026-03-12.md` | Governance packet                | Scope, gates, stop conditions, evidence                            |
+| `docs/audit/refactor/decision/command_packet_decision_fib_gating_split_slice2_2026-03-12.md` | Governance packet                | Active slice scope, gates, stop conditions, evidence               |
 
 ## Direct dependencies
 
@@ -43,6 +43,7 @@ Split `src/core/strategy/decision_fib_gating.py` into smaller internal helpers w
 | `tests/backtest/test_evaluate_pipeline.py::test_evaluate_pipeline_returns_meta`                                           | Pipeline integration returns decision meta                                           |
 | `tests/backtest/test_evaluate_pipeline.py::test_evaluate_pipeline_authority_mode_regime_module_deterministic`             | Deterministic pipeline path                                                          |
 | `tests/integration/test_golden_trace_runtime_semantics.py`                                                                | Golden trace / runtime semantics                                                     |
+| `tests/utils/test_decision.py::test_htf_override_preserves_debug_payload_and_history`                                     | Override-path parity for history mutation, debug payloads, and reason ordering       |
 | `tests/utils/test_features_asof_cache_key_deterministic.py::test_compute_candles_hash_is_deterministic_across_pyhashseed` | Required invariant selector in repo governance baseline                              |
 | `tests/governance/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable`                | Pipeline invariant guard                                                             |
 | `tests/backtest/test_backtest_determinism_smoke.py`                                                                       | Determinism replay smoke                                                             |
@@ -70,6 +71,8 @@ Extract only helper functions with no branching-policy ownership change:
 - `_is_context_error_reason(...)`
 
 Target module: `src/core/strategy/decision_fib_gating_helpers.py`
+
+Status: completed in commit `b2f48761` as a no-behavior-change helper extraction.
 
 ### Slice 2 — override preparation/apply helpers
 
@@ -102,4 +105,4 @@ Potential later extraction:
 
 ## Current recommendation
 
-Start with Slice 1 only. It is the smallest safe split because it extracts pure helpers and keeps all gating branches, state mutation, and call ordering inside `apply_fib_gating(...)` unchanged.
+Slice 1 is complete. Next safest step is Slice 2 only: extract override preparation/apply helpers while keeping HTF/LTF gate branches, mutation order, and debug payload assembly inside `apply_fib_gating(...)` otherwise unchanged.

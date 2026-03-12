@@ -21,6 +21,7 @@ from core.backtest.engine_candle_cache import (
     _debug_backtest_enabled,
     _precompute_cache_key_material,
 )
+from core.backtest.engine_exit_utils import check_traditional_exit_conditions
 from core.backtest.engine_result_builder import build_results
 from core.backtest.htf_exit_engine import ExitAction
 from core.backtest.htf_exit_engine import HTFFibonacciExitEngine as LegacyExitEngine
@@ -1390,7 +1391,9 @@ class BacktestEngine:
             return "TRAIL_STOP"
 
         # Fallback to traditional exit conditions for safety
-        fallback_reason = self._check_traditional_exit_conditions(current_price, result, configs)
+        fallback_reason = check_traditional_exit_conditions(
+            self.position_tracker, current_price, result, configs
+        )
         if fallback_reason:
             self.position_tracker.append_exit_fib_debug(
                 {
@@ -1402,55 +1405,6 @@ class BacktestEngine:
                 }
             )
         return fallback_reason
-
-    def _check_traditional_exit_conditions(
-        self,
-        current_price: float,
-        result: dict,
-        configs: dict,
-    ) -> str | None:
-        """Fallback traditional exit conditions."""
-        position = self.position_tracker.position
-
-        # Get exit config (top-level in merged configs)
-        exit_cfg = configs.get("exit", {})
-        stop_loss_pct = float(exit_cfg.get("stop_loss_pct", 0.02))
-        take_profit_pct = float(exit_cfg.get("take_profit_pct", 0.05))
-        exit_conf_threshold = float(exit_cfg.get("exit_conf_threshold", 0.45))
-
-        # Emergency stop-loss
-        pnl_pct = self.position_tracker.get_unrealized_pnl_pct(current_price) / 100.0
-        if pnl_pct <= -stop_loss_pct:
-            return "EMERGENCY_SL"
-
-        # Emergency take-profit (for very large moves)
-        if pnl_pct >= take_profit_pct * 2:  # 2x normal TP
-            return "EMERGENCY_TP"
-
-        # Confidence drop (use direction-aware confidence if dict)
-        conf_block = result.get("confidence_exit", result.get("confidence", 1.0))
-        if isinstance(conf_block, dict):
-            # Prefer confidence in the direction of the open position
-            if position.side == "LONG":
-                conf_value = float(conf_block.get("buy", conf_block.get("overall", 1.0) or 1.0))
-            else:
-                conf_value = float(conf_block.get("sell", conf_block.get("overall", 1.0) or 1.0))
-        else:
-            try:
-                conf_value = float(conf_block)
-            except Exception:
-                conf_value = 1.0
-        if conf_value < exit_conf_threshold:
-            return "CONF_DROP"
-
-        # Regime change
-        regime = result.get("regime", "NEUTRAL")
-        if position.side == "SHORT" and regime == "BULL":
-            return "REGIME_CHANGE"
-        if position.side == "LONG" and regime == "BEAR":
-            return "REGIME_CHANGE"
-
-        return None
 
     def _initialize_position_exit_context(
         self, result: dict, meta: dict, entry_price: float, timestamp: datetime

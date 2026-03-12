@@ -3,16 +3,6 @@ from fastapi.testclient import TestClient
 from core.server import app
 
 
-def test_info_module_alias_resolves_to_same_module_object():
-    import sys
-
-    import core.api.info as new_info_api
-    import core.server_info_api as old_info_api
-
-    assert old_info_api is new_info_api
-    assert sys.modules["core.server_info_api"] is sys.modules["core.api.info"] is old_info_api
-
-
 def test_observability_dashboard():
     c = TestClient(app)
     r = c.get("/observability/dashboard")

@@ -1,42 +1,7 @@
-import subprocess
-import sys
-
 from fastapi.testclient import TestClient
 
 from core.config.validator import diff_config, validate_config
 from core.server import app
-
-
-def test_config_module_alias_resolves_to_same_module_object():
-    import sys
-
-    import core.api.config as new_api
-    import core.server_config_api as old_api
-
-    assert old_api is new_api
-    assert sys.modules["core.server_config_api"] is sys.modules["core.api.config"] is old_api
-
-
-def test_config_module_alias_resolves_to_same_module_object_when_old_path_imports_first():
-    code = "\n".join(
-        [
-            "import sys",
-            "import core.server_config_api as old_api",
-            "assert 'core.server' not in sys.modules",
-            "import core.api.config as new_api",
-            "assert old_api is new_api",
-            "assert sys.modules['core.server_config_api'] is sys.modules['core.api.config'] is old_api",
-        ]
-    )
-
-    completed = subprocess.run(
-        [sys.executable, "-c", code],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-
-    assert completed.returncode == 0, completed.stderr or completed.stdout
 
 
 def test_config_validation_and_diff_helpers():

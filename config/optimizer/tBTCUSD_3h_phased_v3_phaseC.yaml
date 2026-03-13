@@ -1,16 +1,15 @@
-description: "Phase C: OOS validation only (all params injected from Phase B)"
+description: "Phase C: OOS validation -- all params fixed from Phase B trial_082"
 #
-# No tunable parameters — runs the top-10 Phase B configs on OOS period
-# with strict constraints to validate generalisability.
+# Phase B best: trial_082, IS score=0.3337, PF=2.06, DD=1.31%, Sharpe=0.252
+# OOS period: 2025-01-01 to 2025-12-31 (data goes to 2026-01-08)
 #
-# Run: python -m core.optimizer.runner config/optimizer/tBTCUSD_3h_phased_v3_phaseC.yaml
+# Run: PYTHONIOENCODING=utf-8 PYTHONPATH="$(pwd)/src" python -m core.optimizer.runner config/optimizer/tBTCUSD_3h_phased_v3_phaseC.yaml
 
 meta:
   symbol: tBTCUSD
   timeframe: 3h
   snapshot_id: snap_tBTCUSD_3h_2024-01-02_2024-12-31_v1
   warmup_bars: 120
-  base_phase_path: "results/hparam_search/phaseB_full"
   runs:
     strategy: optuna
     score_version: "v2"
@@ -23,7 +22,7 @@ meta:
       enabled: false
 
     resume: false
-    max_trials: 10
+    max_trials: 1
     max_concurrent: 1
 
     promotion:
@@ -39,9 +38,9 @@ meta:
       study_name: "phased_v3_phaseC_OOS_3h_2025"
       storage: "sqlite:///results/hparam_search/storage/phased_v3_phaseC_3h.db"
       n_jobs: 1
-      timeout_seconds: 3600
+      timeout_seconds: 300
 
-      bootstrap_random_trials: 10
+      bootstrap_random_trials: 0
       bootstrap_seed: 42
 
       pruner:
@@ -50,7 +49,121 @@ meta:
       sampler:
         type: "tpe"
         kwargs:
-          n_startup_trials: 10
+          n_startup_trials: 1
 
-# All parameters injected from Phase B via base_phase_path
-parameters: {}
+# All parameters fixed to Phase B trial_082 best params
+parameters:
+  thresholds.entry_conf_overall:
+    type: fixed
+    value: 0.25
+  thresholds.min_edge:
+    type: fixed
+    value: 0.01
+  thresholds.regime_proba.balanced:
+    type: fixed
+    value: 0.36
+  thresholds.regime_proba.bull:
+    type: fixed
+    value: 0.5
+  thresholds.regime_proba.bear:
+    type: fixed
+    value: 0.5
+  thresholds.regime_proba.ranging:
+    type: fixed
+    value: 0.5
+  thresholds.signal_adaptation.zones.low.entry_conf_overall:
+    type: fixed
+    value: 0.16
+  thresholds.signal_adaptation.zones.low.regime_proba:
+    type: fixed
+    value: 0.33
+  thresholds.signal_adaptation.zones.mid.entry_conf_overall:
+    type: fixed
+    value: 0.4
+  thresholds.signal_adaptation.zones.mid.regime_proba:
+    type: fixed
+    value: 0.51
+  thresholds.signal_adaptation.zones.high.entry_conf_overall:
+    type: fixed
+    value: 0.32
+  thresholds.signal_adaptation.zones.high.regime_proba:
+    type: fixed
+    value: 0.57
+  exit.exit_conf_threshold:
+    type: fixed
+    value: 0.42
+  exit.max_hold_bars:
+    type: fixed
+    value: 8
+  exit.trailing_stop_pct:
+    type: fixed
+    value: 0.022
+  htf_exit_config.partial_1_pct:
+    type: fixed
+    value: 0.5
+  htf_exit_config.partial_2_pct:
+    type: fixed
+    value: 0.45
+  htf_exit_config.fib_threshold_atr:
+    type: fixed
+    value: 0.9
+  htf_exit_config.trail_atr_multiplier:
+    type: fixed
+    value: 2.5
+  multi_timeframe.ltf_override_threshold:
+    type: fixed
+    value: 0.4
+  multi_timeframe.regime_intelligence.enabled:
+    type: fixed
+    value: true
+  multi_timeframe.regime_intelligence.version:
+    type: fixed
+    value: "v2"
+  multi_timeframe.regime_intelligence.authority_mode:
+    type: fixed
+    value: "regime_module"
+  multi_timeframe.regime_intelligence.clarity_score.enabled:
+    type: fixed
+    value: true
+  multi_timeframe.regime_intelligence.clarity_score.weights.confidence:
+    type: fixed
+    value: 0.2
+  multi_timeframe.regime_intelligence.clarity_score.weights.edge:
+    type: fixed
+    value: 0.4
+  multi_timeframe.regime_intelligence.clarity_score.weights.ev:
+    type: fixed
+    value: 0.3
+  multi_timeframe.regime_intelligence.clarity_score.weights.regime_alignment:
+    type: fixed
+    value: 0.1
+  multi_timeframe.regime_intelligence.size_multiplier.min:
+    type: fixed
+    value: 0.3
+  multi_timeframe.regime_intelligence.size_multiplier.max:
+    type: fixed
+    value: 1.0
+  risk.htf_regime_size_multipliers.bear:
+    type: fixed
+    value: 0.6
+  risk.volatility_sizing.high_vol_multiplier:
+    type: fixed
+    value: 0.8
+  htf_fib.entry.tolerance_atr:
+    type: fixed
+    value: 4.0
+  htf_fib.entry.long_max_level:
+    type: fixed
+    value: 0.236
+  htf_fib.entry.short_min_level:
+    type: fixed
+    value: 0.35
+  ltf_fib.entry.tolerance_atr:
+    type: fixed
+    value: 1.5
+  ltf_fib.entry.long_max_level:
+    type: fixed
+    value: 0.146
+  ltf_fib.entry.short_min_level:
+    type: fixed
+    value: 0.236

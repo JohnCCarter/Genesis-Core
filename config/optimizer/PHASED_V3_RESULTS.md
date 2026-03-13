@@ -12,25 +12,25 @@ Score version: v2 (Sharpe-first with capped bonuses)
 
 ### Best Trial (trial_043)
 
-| Metric | In-Sample (2024) | OOS (2025) |
-|--------|-----------------|------------|
-| Score | 0.1432 | 0.1031 |
-| Return | -3.09% | -9.86% |
-| Profit Factor | 1.37 | 1.30 |
-| Max Drawdown | 7.68% | 12.28% |
-| Sharpe Ratio | 0.112 | 0.088 |
-| Win Rate | 62.5% | 62.3% |
-| Trades | 216 | 204 |
+| Metric        | In-Sample (2024) | OOS (2025) |
+| ------------- | ---------------- | ---------- |
+| Score         | 0.1432           | 0.1031     |
+| Return        | -3.09%           | -9.86%     |
+| Profit Factor | 1.37             | 1.30       |
+| Max Drawdown  | 7.68%            | 12.28%     |
+| Sharpe Ratio  | 0.112            | 0.088      |
+| Win Rate      | 62.5%            | 62.3%      |
+| Trades        | 216              | 204        |
 
 ### Best Parameters
 
 ```yaml
 thresholds:
-  entry_conf_overall: 0.25  # fixed (inert with zones)
+  entry_conf_overall: 0.25 # fixed (inert with zones)
   regime_proba.balanced: 0.36
   zones:
-    low:  { entry_conf_overall: 0.16, regime_proba: 0.33 }
-    mid:  { entry_conf_overall: 0.40, regime_proba: 0.51 }
+    low: { entry_conf_overall: 0.16, regime_proba: 0.33 }
+    mid: { entry_conf_overall: 0.40, regime_proba: 0.51 }
     high: { entry_conf_overall: 0.32, regime_proba: 0.57 }
 exit:
   exit_conf_threshold: 0.42
@@ -54,32 +54,32 @@ multi_timeframe:
 
 ### Best Trial (trial_001)
 
-| Metric | In-Sample (2024) | OOS (2025) |
-|--------|-----------------|------------|
-| Score | 0.3331 | 0.1619 |
-| Return | +3.63% | -2.93% |
-| Profit Factor | 2.04 | 1.46 |
-| Max Drawdown | 1.88% | 5.47% |
-| Sharpe Ratio | 0.251 | 0.124 |
-| Win Rate | 61.1% | 64.8% |
-| Trades | 108 | 122 |
+| Metric        | In-Sample (2024) | OOS (2025) |
+| ------------- | ---------------- | ---------- |
+| Score         | 0.3331           | 0.1619     |
+| Return        | +3.63%           | -2.93%     |
+| Profit Factor | 2.04             | 1.46       |
+| Max Drawdown  | 1.88%            | 5.47%      |
+| Sharpe Ratio  | 0.251            | 0.124      |
+| Win Rate      | 61.1%            | 64.8%      |
+| Trades        | 108              | 122        |
 
 ### Best Parameters (RI-specific)
 
 ```yaml
 regime_intelligence:
-  authority_mode: regime_module  # dominant factor
+  authority_mode: regime_module # dominant factor
   clarity_score:
     weights:
       confidence: 0.40
       edge: 0.30
       ev: 0.10
-      regime_alignment: 0.20  # Dirichlet remainder
+      regime_alignment: 0.20 # Dirichlet remainder
   size_multiplier:
     min: 0.30
     max: 1.00
 risk:
-  htf_regime_size_multipliers.bear: 0.60  # re-tuned higher with RI
+  htf_regime_size_multipliers.bear: 0.60 # re-tuned higher with RI
 ```
 
 ---
@@ -88,25 +88,25 @@ risk:
 
 ### In-Sample (2024)
 
-| Metric | Phase A | Phase B v2 | Delta |
-|--------|---------|------------|-------|
-| Score | 0.1432 | **0.3331** | **+133%** |
-| Return | -3.09% | **+3.63%** | +6.72pp |
-| PF | 1.37 | **2.04** | +49% |
-| Max DD | 7.68% | **1.88%** | **-75%** |
-| Sharpe | 0.112 | **0.251** | +124% |
-| Trades | 216 | 108 | -50% |
+| Metric | Phase A | Phase B v2 | Delta     |
+| ------ | ------- | ---------- | --------- |
+| Score  | 0.1432  | **0.3331** | **+133%** |
+| Return | -3.09%  | **+3.63%** | +6.72pp   |
+| PF     | 1.37    | **2.04**   | +49%      |
+| Max DD | 7.68%   | **1.88%**  | **-75%**  |
+| Sharpe | 0.112   | **0.251**  | +124%     |
+| Trades | 216     | 108        | -50%      |
 
 ### OOS Validation (2025)
 
-| Metric | Phase A | Phase B v2 | Delta |
-|--------|---------|------------|-------|
-| Score | 0.1031 | **0.1619** | **+57%** |
-| Return | -9.86% | **-2.93%** | +6.93pp |
-| PF | 1.30 | **1.46** | +12% |
-| Max DD | 12.28% | **5.47%** | **-55%** |
-| Sharpe | 0.088 | **0.124** | +41% |
-| Trades | 204 | 122 | -40% |
+| Metric | Phase A | Phase B v2 | Delta    |
+| ------ | ------- | ---------- | -------- |
+| Score  | 0.1031  | **0.1619** | **+57%** |
+| Return | -9.86%  | **-2.93%** | +6.93pp  |
+| PF     | 1.30    | **1.46**   | +12%     |
+| Max DD | 12.28%  | **5.47%**  | **-55%** |
+| Sharpe | 0.088   | **0.124**  | +41%     |
+| Trades | 204     | 122        | -40%     |
 
 ---
 
@@ -140,3 +140,118 @@ Result: always used defaults `min=0.5, max=1.0` instead of configured values.
 Phase B should be re-run after the fix to get valid results.
 
 Phase A results are unaffected (RI was disabled, `authority_mode=legacy`).
+
+---
+
+## Phase B v3: Regime Intelligence Re-run After Config-Key Fixes
+
+- **Post-fix artifact evidence:** `config/optimizer/phased_v3_best_trials/phaseB_v3_best_trial.json`
+- Best trial: `trial_082`
+- This artifact reflects the corrected `weights` + `size_multiplier` lookups.
+
+### Best Trial (trial_082)
+
+| Metric        | In-Sample (2024) |
+| ------------- | ---------------- |
+| Score         | 0.3337           |
+| Return        | +2.69%           |
+| Profit Factor | 2.06             |
+| Max Drawdown  | 1.31%            |
+| Sharpe Ratio  | 0.252            |
+| Trades        | 108              |
+
+### Best Parameters (RI-specific, post-fix)
+
+```yaml
+regime_intelligence:
+  authority_mode: regime_module
+  clarity_score:
+    weights:
+      confidence: 0.20
+      edge: 0.40
+      ev: 0.30
+      regime_alignment: 0.10
+  size_multiplier:
+    min: 0.30
+    max: 1.00
+risk:
+  htf_regime_size_multipliers.bear: 0.60
+```
+
+### Phase A vs Phase B v3 Comparison (In-Sample 2024)
+
+| Metric | Phase A | Phase B v3 | Delta     |
+| ------ | ------- | ---------- | --------- |
+| Score  | 0.1432  | **0.3337** | **+133%** |
+| Return | -3.09%  | **+2.69%** | +5.78pp   |
+| PF     | 1.37    | **2.06**   | +50%      |
+| Max DD | 7.68%   | **1.31%**  | **-83%**  |
+| Sharpe | 0.112   | **0.252**  | +125%     |
+| Trades | 216     | 108        | -50%      |
+
+**Interpretation:** The post-fix rerun keeps the strong Phase B thesis intact:
+RI materially improves score, PF, and drawdown versus Phase A, while producing
+similar trade count compression as the earlier v2 run.
+
+---
+
+## Phase C: OOS Validation After Fixes
+
+- **Artifact evidence:** `config/optimizer/phased_v3_best_trials/phaseC_oos_trial.json`
+- Best trial: `trial_001`
+- This is the OOS validation for the post-fix Phase B v3 best parameters.
+
+### Best Trial (trial_001)
+
+| Metric        | OOS (2025) |
+| ------------- | ---------- |
+| Score         | 0.1612     |
+| Return        | -2.08%     |
+| Profit Factor | 1.46       |
+| Max Drawdown  | 3.90%      |
+| Sharpe Ratio  | 0.122      |
+| Trades        | 122        |
+
+### OOS Comparison: Phase A vs Phase B v3 / Phase C
+
+| Metric | Phase A OOS | Phase C OOS | Delta    |
+| ------ | ----------- | ----------- | -------- |
+| Score  | 0.1031      | **0.1612**  | **+56%** |
+| Return | -9.86%      | **-2.08%**  | +7.78pp  |
+| PF     | 1.30        | **1.46**    | +12%     |
+| Max DD | 12.28%      | **3.90%**   | **-68%** |
+| Sharpe | 0.088       | **0.122**   | +39%     |
+| Trades | 204         | 122         | -40%     |
+
+**Interpretation:** The corrected RI path remains materially better than the
+Phase A baseline in OOS, even though returns stay negative in 2025.
+
+---
+
+## Evidence Update (2026-03-13)
+
+The corrected RI evidence trail is now split across artifacts rather than fully
+captured in the original narrative above:
+
+- historical/stale narrative: Phase B v2 section in this file
+- corrected IS artifact: `phaseB_v3_best_trial.json`
+- corrected OOS artifact: `phaseC_oos_trial.json`
+
+### Evidence closure update (2026-03-13, `feature/Regime-Intelligence`)
+
+The previously missing study-level reproducibility gap has now been closed with
+a fresh branch-local rerun:
+
+- **Phase B rerun:** `results/hparam_search/ri_phaseB_rerun_20260313/`
+- **Phase B storage DB:** `results/hparam_search/storage/phased_v3_phaseB_v2_3h.db`
+- **Phase C rerun:** `results/hparam_search/ri_phaseC_rerun_20260313/`
+- **Phase C rerun DB:** `results/hparam_search/storage/phased_v3_phaseC_rerun_20260313.db`
+
+Observed outcomes from the fresh rerun:
+
+- Phase B again selected **`trial_082`** with score **`0.3336954196`**
+- Phase C rerun produced score **`0.1612487234`**
+
+This means the stored post-fix RI narrative is no longer supported only by
+standalone JSON artifacts; it is now backed by preserved study/run evidence from
+the current branch as well.

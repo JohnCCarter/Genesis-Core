@@ -92,6 +92,35 @@ def test_estimate_search_space_nested():
     assert result["total_discrete_combinations"] == 9
 
 
+def test_estimate_search_space_treats_dirichlet_marker_as_fixed_literal() -> None:
+    """Literal sentinel leaves should not crash estimation or add a tunable dimension."""
+    spec = {
+        "multi_timeframe": {
+            "regime_intelligence": {
+                "clarity_score": {
+                    "weights": {
+                        "confidence": {"type": "float", "low": 0.15, "high": 0.45, "step": 0.05},
+                        "edge": {"type": "float", "low": 0.10, "high": 0.40, "step": 0.05},
+                        "ev": {"type": "float", "low": 0.10, "high": 0.35, "step": 0.05},
+                        "regime_alignment": "__dirichlet_remainder__",
+                    }
+                }
+            }
+        }
+    }
+
+    result = _estimate_optuna_search_space(spec)
+
+    assert (
+        result["param_choice_counts"][
+            "multi_timeframe.regime_intelligence.clarity_score.weights.regime_alignment"
+        ]
+        == 1
+    )
+    assert result["continuous_params"] == 0
+    assert result["discrete_params"] == 4
+
+
 @pytest.mark.skipif(not OPTUNA_AVAILABLE, reason="Optuna not installed")
 def test_duplicate_tracking_in_objective(tmp_path: Path):
     """Test that duplicates and zero-trades are tracked properly."""

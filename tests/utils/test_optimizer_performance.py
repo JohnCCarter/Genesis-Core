@@ -273,6 +273,44 @@ class TestSuggestParametersPerformance:
         assert isinstance(params["param1"], float)
         assert isinstance(params["param2"], float)
 
+    def test_suggest_parameters_preserves_literal_dirichlet_marker_leaf(self) -> None:
+        """Literal sentinel leaves should pass through sampling unchanged."""
+
+        spec = {
+            "multi_timeframe": {
+                "regime_intelligence": {
+                    "clarity_score": {
+                        "weights": {
+                            "confidence": {
+                                "type": "float",
+                                "low": 0.15,
+                                "high": 0.45,
+                                "step": 0.05,
+                            },
+                            "edge": {"type": "float", "low": 0.10, "high": 0.40, "step": 0.05},
+                            "ev": {"type": "float", "low": 0.10, "high": 0.35, "step": 0.05},
+                            "regime_alignment": "__dirichlet_remainder__",
+                        }
+                    }
+                }
+            }
+        }
+
+        class MockTrial:
+            def suggest_float(
+                self, name: str, low: float, high: float, step: float = None, log: bool = False
+            ) -> float:
+                _ = (name, high, log)
+                return low + step if step else low
+
+        params = runner._suggest_parameters(MockTrial(), spec)
+
+        weights = params["multi_timeframe"]["regime_intelligence"]["clarity_score"]["weights"]
+        assert weights["confidence"] == 0.2
+        assert weights["edge"] == 0.15
+        assert weights["ev"] == 0.15
+        assert weights["regime_alignment"] == "__dirichlet_remainder__"
+
 
 @pytest.mark.skipif(not runner.OPTUNA_AVAILABLE, reason="Optuna not installed")
 class TestOptunaIntegrationPerformance:

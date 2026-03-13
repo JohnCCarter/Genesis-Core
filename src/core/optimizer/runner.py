@@ -1041,6 +1041,9 @@ def _suggest_parameters(trial: Trial, spec: dict[str, Any]) -> dict[str, Any]:
             if isinstance(value, dict) and "type" not in value:
                 resolved[key] = _recurse(value, path)
                 continue
+            if not isinstance(value, dict):
+                resolved[key] = value
+                continue
             node_type = (value or {}).get("type", "grid")
             if node_type == "fixed":
                 resolved[key] = value.get("value")

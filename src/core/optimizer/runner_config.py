@@ -629,6 +629,9 @@ def _estimate_optuna_search_space(spec: dict[str, Any]) -> dict[str, Any]:
             if isinstance(value, dict) and "type" not in value:
                 counts.update(_count_choices(value, path))
                 continue
+            if not isinstance(value, dict):
+                counts[path] = 1
+                continue
             node_type = (value or {}).get("type", "grid")
             if node_type == "fixed":
                 counts[path] = 1

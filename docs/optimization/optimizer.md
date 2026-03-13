@@ -10,17 +10,17 @@ Key components:
 
 - `src/core/optimizer/runner.py` - expands the search space, executes backtests, calculates scores/constraints and now caches completed trials under `results/hparam_search/<run>/_cache/`.
 - `scripts/run_backtest.py` - executes individual backtests.
-- `config/optimizer/*.yaml` - defines the search space (grid or Optuna).
+- `config/optimizer/<timeframe>/**/*.yaml` - defines the search space (grid or Optuna).
 - `config/strategy/champions/*.json` - stores the active champion (updated today with the fine Optuna winner).
 - `scripts/summarize_hparam_results.py` / `scripts/optimizer.py summarize` - quick summaries of run results.
 - `ChampionManager` & `ChampionLoader` - persist and reload champions for pipeline/backtest.
 
 ## 2. Recommended workflow (coarse -> proxy -> fine)
 
-1. **Coarse grid** - run `config/optimizer/tBTCUSD_1h_coarse_grid.yaml` to map the region:
+1. **Coarse grid** - run `config/optimizer/1h/tBTCUSD_1h_coarse_grid.yaml` to map the region:
 
    ```powershell
-   python -m core.optimizer.runner config/optimizer/tBTCUSD_1h_coarse_grid.yaml
+   python -m core.optimizer.runner config/optimizer/1h/tBTCUSD_1h_coarse_grid.yaml
    ```
 
 2. **Proxy Optuna (fast)** - 2 month window with Hyperband:
@@ -109,7 +109,7 @@ python scripts/optimizer.py summarize run_20251023_141747 --top 5
 
 - Score beräknas nu robust från trades/equity via `core.backtest.metrics.calculate_metrics` (PF/DD hämtas inte längre naivt från `summary`).
 - `return_to_dd` skyddas mot noll‑DD.
-- Constraints separerade från scoringens “hard_failures”. I `config/optimizer/*.yaml` styrs detta via:
+- Constraints separerade från scoringens “hard_failures”. I `config/optimizer/<timeframe>/**/*.yaml` styrs detta via:
 
   ```yaml
   constraints:

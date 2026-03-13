@@ -1,9 +1,27 @@
-## `config/tmp/` profiler (2025-11-03)
+# `config/tmp/`
 
-Den här katalogen samlar experimentella strategikonfigurationer som inte ska checkas in i produktionen men som används för riktade backtester.
+Den här katalogen är en liten stagingyta för tillfälliga eller ännu oplacerade
+konfigurationsartefakter. Innehållet här är **inte authority** för pipeline,
+backtest eller champion-laddning.
 
-- `champion_base.json` – ren kopia av nuvarande champion (`config/strategy/champions/tBTCUSD_1h.json`) för referenstester.
-- `conservative.json`, `balanced.json`, `trend_follow.json`, `aggressive.json` – varianter kring championens risk/entry/exit-parametrar för snabba A/B-tester.
-- `balanced_htf_tune.json` – dagens HTF-experiment (fib-threshold 0.85, trailing 1.6, HTF tolerance 0.55) som gav färre fallback-exits i loggarna. Använd denna som utgångspunkt för vidare HTF-tuning.
+## Nuvarande innehåll
 
-> Obs! Profilerna versioneras här tills Optuna/grids visar att de bör promoveras. Flytta i så fall in i `config/strategy/` eller `config/optimizer/` och uppdatera dokumentationen.
+- `trial_004_breakthrough.json`
+  - En sparad experiment-/kandidatartifact med en fristående config payload.
+  - Behålls här tills den antingen kasseras, arkiveras eller flyttas till en
+    mer permanent plats.
+
+- `quality_v2_variants/`
+  - Kandidatvarianter för `tBTCUSD` 1h med olika quality-v2-upplägg.
+  - Används som experimentyta för A/B-jämförelser innan eventuell promotion.
+
+## Regler för den här katalogen
+
+- Lägg bara filer här om de är tydligt temporära, experimentella eller väntar på
+  bättre placering.
+- Om en fil blir en riktig kandidat eller långlivad referens, flytta den till
+  `config/strategy/` eller `config/optimizer/`.
+- Behåll inte gamla mellanresultat eller stegvisa tuning-snapshots här längre än
+  nödvändigt.
+- Uppdatera den här README:n när innehållet i katalogen förändras, så att den
+  beskriver verkligheten och inte ett arkeologiskt lager.

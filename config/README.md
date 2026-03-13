@@ -14,8 +14,12 @@ Detta är en snabb karta över vad som faktiskt används i dagens körvägar.
 ## Används av scripts/verktyg (inte trading-pipeline)
 
 - `config/champion_weights.json`
-  - Viktprofiler för champion/model-selection i `scripts/select_champion.py`.
-  - OBS: Ändringar här påverkar inte backtest/Optuna-resultat direkt.
+  - Viktprofiler för champion/model-selection.
+  - OBS: Ingen verifierad aktiv konsument finns i nuvarande branch, så filen behandlas som behållen referens/legacy tills separat retirement-beslut finns.
+
+- `config/validation_config.json`
+  - Validerings- och urvalströsklar för modell/feature-arbete.
+  - OBS: Ingen verifierad aktiv runtime-konsument finns i nuvarande branch, så filen behandlas som behållen referens/legacy tills separat retirement-beslut finns.
 
 ## Legacy / superseded (behålls för historik)
 

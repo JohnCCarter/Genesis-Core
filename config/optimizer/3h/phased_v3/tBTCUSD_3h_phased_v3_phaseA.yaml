@@ -4,7 +4,7 @@ description: "Phase A: Threshold + Exit optimisation (reduced search space, Scor
 # Fixes inert params (entry_conf_overall overridden by zones), regime_proba
 # to mid-range defaults, and exit partials to reasonable values.
 #
-# Run: python -m core.optimizer.runner config/optimizer/tBTCUSD_3h_phased_v3_phaseA.yaml
+# Run: python -m core.optimizer.runner config/optimizer/3h/phased_v3/tBTCUSD_3h_phased_v3_phaseA.yaml
 
 meta:
   symbol: tBTCUSD
@@ -45,7 +45,7 @@ meta:
       study_name: "phased_v3_phaseA_3h_2024_2025"
       storage: "sqlite:///results/hparam_search/storage/phased_v3_phaseA_3h.db"
       n_jobs: 1
-      timeout_seconds: 21600  # 6h
+      timeout_seconds: 21600 # 6h
 
       bootstrap_random_trials: 30
       bootstrap_seed: 42

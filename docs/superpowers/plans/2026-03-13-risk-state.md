@@ -15,6 +15,7 @@
 ### Task 1: Inject equity drawdown into engine state
 
 **Files:**
+
 - Modify: `src/core/backtest/engine.py` (~line 888, before `evaluate_pipeline` call)
 
 **Background:** `self.position_tracker.current_equity` is available in the engine loop. We need to inject `equity_drawdown_pct` (0.0 = no drawdown, 0.05 = 5% below peak) and `peak_equity` into `self.state` before calling `evaluate_pipeline`. The pipeline then carries it into `state_in` via `{**state, ...}` merge in `evaluate.py`.
@@ -116,6 +117,7 @@ git commit -m "feat(engine): inject equity_drawdown_pct into state each bar"
 ### Task 2: Persist regime transition counter in state_out
 
 **Files:**
+
 - Modify: `src/core/strategy/decision_sizing.py` (end of function, before `return`)
 
 **Background:** `regime` is passed as an argument to `apply_sizing`. We track `last_regime` from the previous bar (persisted in `state_in`) and count `bars_since_regime_change`. Both are written to `state_out` to persist across bars.
@@ -198,6 +200,7 @@ git commit -m "feat(sizing): persist regime transition counter in state_out"
 ### Task 3: Add compute_risk_state_multiplier to regime_intelligence.py
 
 **Files:**
+
 - Modify: `src/core/strategy/regime_intelligence.py`
 - Test: `tests/utils/test_risk_state_multiplier.py`
 
@@ -209,17 +212,18 @@ multi_timeframe:
     risk_state:
       enabled: true
       drawdown_guard:
-        soft_threshold: 0.03    # -3% from peak -> scale to soft_mult
-        hard_threshold: 0.06    # -6% from peak -> scale to hard_mult
-        soft_mult: 0.70         # size multiplier at soft threshold
-        hard_mult: 0.40         # size multiplier at hard threshold
+        soft_threshold: 0.03 # -3% from peak -> scale to soft_mult
+        hard_threshold: 0.06 # -6% from peak -> scale to hard_mult
+        soft_mult: 0.70 # size multiplier at soft threshold
+        hard_mult: 0.40 # size multiplier at hard threshold
       transition_guard:
         enabled: true
-        guard_bars: 4           # bars after regime change to apply multiplier
-        mult: 0.60              # size multiplier during transition window
+        guard_bars: 4 # bars after regime change to apply multiplier
+        mult: 0.60 # size multiplier during transition window
 ```
 
 The multiplier logic:
+
 - Start at 1.0
 - Apply drawdown guard: linearly interpolate between 1.0 and hard_mult based on drawdown pct
 - Apply transition guard: if bars_since_regime_change <= guard_bars, multiply by transition mult
@@ -451,6 +455,7 @@ git commit -m "feat(ri): add compute_risk_state_multiplier for drawdown + transi
 ### Task 4: Wire risk_state multiplier into decision_sizing.py
 
 **Files:**
+
 - Modify: `src/core/strategy/decision_sizing.py`
 
 **Background:** `combined_mult` is currently `size_scale * regime_mult * htf_regime_mult * vol_size_mult`. We multiply `risk_state_mult` into it. The risk_state config lives at `ri_cfg["risk_state"]`. Input data comes from `state_in["equity_drawdown_pct"]` and `state_in["bars_since_regime_change"]`.
@@ -514,7 +519,8 @@ git commit -m "feat(sizing): wire risk_state multiplier into combined_mult"
 ### Task 5: Phase D YAML config
 
 **Files:**
-- Create: `config/optimizer/tBTCUSD_3h_phased_v3_phaseD.yaml`
+
+- Create: `config/optimizer/3h/phased_v3/tBTCUSD_3h_phased_v3_phaseD.yaml`
 
 **Background:** All Phase A + B params are fixed. Only 5-6 `risk_state` params are tunable. 75 trials is sufficient for this small search space.
 
@@ -524,7 +530,7 @@ git commit -m "feat(sizing): wire risk_state multiplier into combined_mult"
 description: "Phase D: Risk State optimisation -- drawdown_guard + transition_guard"
 #
 # Phase A + B best params fixed. Only risk_state params tunable.
-# Run: PYTHONIOENCODING=utf-8 TQDM_DISABLE=1 PYTHONPATH="$(pwd)/src" python -m core.optimizer.runner config/optimizer/tBTCUSD_3h_phased_v3_phaseD.yaml
+# Run: PYTHONIOENCODING=utf-8 TQDM_DISABLE=1 PYTHONPATH="$(pwd)/src" python -m core.optimizer.runner config/optimizer/3h/phased_v3/tBTCUSD_3h_phased_v3_phaseD.yaml
 
 meta:
   symbol: tBTCUSD
@@ -532,7 +538,7 @@ meta:
   snapshot_id: snap_tBTCUSD_3h_2024-01-02_2024-12-31_v1
   warmup_bars: 120
   score_version: "v2"
-  base_phase_path: "config/optimizer/phased_v3_best_trials/phaseC_oos_trial.json"
+    base_phase_path: "config/optimizer/3h/phased_v3/best_trials/phaseC_oos_trial.json"
   runs:
     strategy: optuna
     score_version: "v2"
@@ -619,7 +625,7 @@ parameters:
 - [ ] **Step 2: Validate YAML parses correctly**
 
 ```bash
-python -c "import yaml; yaml.safe_load(open('config/optimizer/tBTCUSD_3h_phased_v3_phaseD.yaml'))"
+python -c "import yaml; yaml.safe_load(open('config/optimizer/3h/phased_v3/tBTCUSD_3h_phased_v3_phaseD.yaml'))"
 ```
 
 Expected: no output (no errors)
@@ -627,7 +633,7 @@ Expected: no output (no errors)
 - [ ] **Step 3: Commit**
 
 ```bash
-git add config/optimizer/tBTCUSD_3h_phased_v3_phaseD.yaml
+git add config/optimizer/3h/phased_v3/tBTCUSD_3h_phased_v3_phaseD.yaml
 git commit -m "feat(optimizer): add Phase D YAML for risk_state optimisation"
 ```
 
@@ -644,10 +650,11 @@ git commit -m "feat(optimizer): add Phase D YAML for risk_state optimisation"
 Temporarily set `max_trials: 3` in Phase D YAML and run:
 
 ```bash
-PYTHONIOENCODING=utf-8 TQDM_DISABLE=1 PYTHONPATH="$(pwd)/src" python -m core.optimizer.runner config/optimizer/tBTCUSD_3h_phased_v3_phaseD.yaml 2>&1 | grep -E "Trial|score=|risk_state|ERROR|error"
+PYTHONIOENCODING=utf-8 TQDM_DISABLE=1 PYTHONPATH="$(pwd)/src" python -m core.optimizer.runner config/optimizer/3h/phased_v3/tBTCUSD_3h_phased_v3_phaseD.yaml 2>&1 | grep -E "Trial|score=|risk_state|ERROR|error"
 ```
 
 Expected output contains lines like:
+
 ```
 [Runner] Trial trial_001 klar på ...s (score=..., trades=..., ...)
 [Runner] Trial trial_002 klar ...
@@ -674,7 +681,7 @@ Expected: `Has risk_state: True`
 - [ ] **Step 3: Restore max_trials: 75 and commit**
 
 ```bash
-git add config/optimizer/tBTCUSD_3h_phased_v3_phaseD.yaml
+git add config/optimizer/3h/phased_v3/tBTCUSD_3h_phased_v3_phaseD.yaml
 git commit -m "chore(optimizer): restore max_trials=75 in Phase D after dry-run"
 ```
 
@@ -688,16 +695,17 @@ git push
 
 ## Summary
 
-| Task | Files | Tests |
-|------|-------|-------|
-| 1 — Engine equity injection | `engine.py` | `test_risk_state_engine.py` |
-| 2 — Regime transition counter | `decision_sizing.py` | `test_risk_state_engine.py` |
+| Task                              | Files                    | Tests                           |
+| --------------------------------- | ------------------------ | ------------------------------- |
+| 1 — Engine equity injection       | `engine.py`              | `test_risk_state_engine.py`     |
+| 2 — Regime transition counter     | `decision_sizing.py`     | `test_risk_state_engine.py`     |
 | 3 — compute_risk_state_multiplier | `regime_intelligence.py` | `test_risk_state_multiplier.py` |
-| 4 — Wire into combined_mult | `decision_sizing.py` | existing tests |
-| 5 — Phase D YAML | `phaseD.yaml` | YAML parse check |
-| 6 — Dry-run | — | integration smoke test |
+| 4 — Wire into combined_mult       | `decision_sizing.py`     | existing tests                  |
+| 5 — Phase D YAML                  | `phaseD.yaml`            | YAML parse check                |
+| 6 — Dry-run                       | —                        | integration smoke test          |
 
 **Run command for full Phase D after implementation:**
+
 ```bash
-PYTHONIOENCODING=utf-8 TQDM_DISABLE=1 PYTHONPATH="$(pwd)/src" python -m core.optimizer.runner config/optimizer/tBTCUSD_3h_phased_v3_phaseD.yaml
+PYTHONIOENCODING=utf-8 TQDM_DISABLE=1 PYTHONPATH="$(pwd)/src" python -m core.optimizer.runner config/optimizer/3h/phased_v3/tBTCUSD_3h_phased_v3_phaseD.yaml
 ```

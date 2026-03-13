@@ -7,7 +7,7 @@
 components:
   - type: ml_confidence
     params:
-      threshold: 0.24  # Baseline threshold
+      threshold: 0.24 # Baseline threshold
 
   - type: regime_filter
     params:
@@ -16,7 +16,8 @@ components:
 
   - type: ev_gate
     params:
-      min_ev: 0.0  # Tandlös (for isolation)
+      min_ev: 0.0 # Tandlös (for isolation)
+
 
   # REMOVED: cooldown component to isolate its anomalous veto behavior
 

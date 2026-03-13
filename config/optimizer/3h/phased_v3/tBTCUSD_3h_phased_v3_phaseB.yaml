@@ -5,7 +5,7 @@ description: "Phase B: Regime Intelligence clarity + sizing (builds on Phase A b
 #
 # Phase A best: score=0.1432, PF=1.37, DD=7.7%, Sharpe=0.112, WR=62.5%
 #
-# Run: python -m core.optimizer.runner config/optimizer/tBTCUSD_3h_phased_v3_phaseB.yaml
+# Run: python -m core.optimizer.runner config/optimizer/3h/phased_v3/tBTCUSD_3h_phased_v3_phaseB.yaml
 
 meta:
   symbol: tBTCUSD
@@ -44,7 +44,7 @@ meta:
       study_name: "phased_v3_phaseB_RI_v2_3h_2024_2025"
       storage: "sqlite:///results/hparam_search/storage/phased_v3_phaseB_v2_3h.db"
       n_jobs: 1
-      timeout_seconds: 14400  # 4h
+      timeout_seconds: 14400 # 4h
 
       bootstrap_random_trials: 20
       bootstrap_seed: 42

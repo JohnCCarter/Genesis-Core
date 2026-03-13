@@ -4,7 +4,7 @@
 components:
   - type: ml_confidence
     params:
-      threshold: 0.24  # Baseline threshold
+      threshold: 0.24 # Baseline threshold
 
   - type: regime_filter
     params:
@@ -12,7 +12,8 @@ components:
 
   - type: ev_gate
     params:
-      min_ev: 0.2  # Functional proof: require EV > 0.2
+      min_ev: 0.2 # Functional proof: require EV > 0.2
+
 
 # Test period: 2024-06-01 to 2024-08-01 (same as v0/v1/v2)
 #

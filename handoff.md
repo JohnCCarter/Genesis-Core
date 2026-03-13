@@ -29,7 +29,7 @@
    - `tests/utils/test_optimizer_performance.py`
 
 4. **RI-resultat och analys dokumenterades**
-   - `config/optimizer/PHASED_V3_RESULTS.md`
+   - `config/optimizer/3h/phased_v3/PHASED_V3_RESULTS.md`
    - `docs/analysis/regime_intelligence_phase_bc_rerun_plan_2026-03-13.md`
    - `docs/analysis/tBTCUSD_3h_champion_promotion_recommendation_2026-03-13.md`
 
@@ -46,7 +46,7 @@
 
 ### Filer som ingår i slutlig pushad ändring
 
-- `config/optimizer/PHASED_V3_RESULTS.md`
+- `config/optimizer/3h/phased_v3/PHASED_V3_RESULTS.md`
 - `docs/analysis/regime_intelligence_phase_bc_rerun_plan_2026-03-13.md`
 - `docs/analysis/tBTCUSD_3h_champion_promotion_recommendation_2026-03-13.md`
 - `src/core/optimizer/runner.py`

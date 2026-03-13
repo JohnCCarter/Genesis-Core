@@ -1,9 +1,9 @@
-description: "Phase C: OOS validation -- all params fixed from Phase B trial_082"
+description: "Phase E: OOS validation -- all params fixed from Phase D trial_039"
 #
-# Phase B best: trial_082, IS score=0.3337, PF=2.06, DD=1.31%, Sharpe=0.252
-# OOS period: 2025-01-01 to 2025-12-31 (data goes to 2026-01-08)
+# Phase D best: trial_039, IS score=0.3393, PF=2.10, DD=1.30%, Sharpe=0.256
+# OOS period: 2025-01-01 to 2025-12-31
 #
-# Run: PYTHONIOENCODING=utf-8 PYTHONPATH="$(pwd)/src" python -m core.optimizer.runner config/optimizer/tBTCUSD_3h_phased_v3_phaseC.yaml
+# Run: PYTHONIOENCODING=utf-8 TQDM_DISABLE=1 PYTHONPATH="$(pwd)/src" python -m core.optimizer.runner config/optimizer/3h/phased_v3/tBTCUSD_3h_phased_v3_phaseE_oos.yaml
 
 meta:
   symbol: tBTCUSD
@@ -35,8 +35,8 @@ meta:
       max_max_dd: 0.45
 
     optuna:
-      study_name: "phased_v3_phaseC_OOS_3h_2025"
-      storage: "sqlite:///results/hparam_search/storage/phased_v3_phaseC_3h.db"
+      study_name: "phased_v3_phaseE_OOS_3h_2025"
+      storage: "sqlite:///results/hparam_search/storage/phased_v3_phaseE_3h.db"
       n_jobs: 1
       timeout_seconds: 300
 
@@ -51,7 +51,7 @@ meta:
         kwargs:
           n_startup_trials: 1
 
-# All parameters fixed to Phase B trial_082 best params
+# All parameters fixed to Phase D trial_039 best params
 parameters:
   thresholds.entry_conf_overall:
     type: fixed
@@ -143,6 +143,30 @@ parameters:
   multi_timeframe.regime_intelligence.size_multiplier.max:
     type: fixed
     value: 1.0
+  multi_timeframe.regime_intelligence.risk_state.enabled:
+    type: fixed
+    value: true
+  multi_timeframe.regime_intelligence.risk_state.drawdown_guard.soft_threshold:
+    type: fixed
+    value: 0.06
+  multi_timeframe.regime_intelligence.risk_state.drawdown_guard.hard_threshold:
+    type: fixed
+    value: 0.06
+  multi_timeframe.regime_intelligence.risk_state.drawdown_guard.soft_mult:
+    type: fixed
+    value: 0.9
+  multi_timeframe.regime_intelligence.risk_state.drawdown_guard.hard_mult:
+    type: fixed
+    value: 0.2
+  multi_timeframe.regime_intelligence.risk_state.transition_guard.enabled:
+    type: fixed
+    value: true
+  multi_timeframe.regime_intelligence.risk_state.transition_guard.guard_bars:
+    type: fixed
+    value: 8
+  multi_timeframe.regime_intelligence.risk_state.transition_guard.mult:
+    type: fixed
+    value: 0.4
   risk.htf_regime_size_multipliers.bear:
     type: fixed
     value: 0.6

@@ -102,7 +102,7 @@ def calculate_robustness_metrics(trades, total_pnl):
 
 def main():
     # Paths
-    config_path = Path("config/strategy/composable/phase2/v5a_sizing_exp1.yaml")
+    config_path = Path("config/strategy/composable/1h/phase2/v5a_sizing_exp1.yaml")
     results_path = Path("results/milestone3/v5a_sizing_exp1_full2024_20260203_110625.json")
     output_path = Path("config/strategy/champions/tBTCUSD_1h_composable_v5a.json")
 

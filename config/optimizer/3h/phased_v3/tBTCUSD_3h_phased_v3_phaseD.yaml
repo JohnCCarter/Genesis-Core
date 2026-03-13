@@ -2,7 +2,7 @@ description: "Phase D: Risk State optimisation -- drawdown_guard + transition_gu
 #
 # All Phase A + B params fixed directly (from Phase B trial_082 / Phase C OOS).
 # Only risk_state params are tunable.
-# Run: PYTHONIOENCODING=utf-8 TQDM_DISABLE=1 PYTHONPATH="$(pwd)/src" python -m core.optimizer.runner config/optimizer/tBTCUSD_3h_phased_v3_phaseD.yaml
+# Run: PYTHONIOENCODING=utf-8 TQDM_DISABLE=1 PYTHONPATH="$(pwd)/src" python -m core.optimizer.runner config/optimizer/3h/phased_v3/tBTCUSD_3h_phased_v3_phaseD.yaml
 
 meta:
   symbol: tBTCUSD
@@ -170,7 +170,7 @@ parameters:
     type: fixed
     value: 0.236
 
-# ── Phase D tunable: risk_state ───────────────────────────────────────────────
+  # ── Phase D tunable: risk_state ───────────────────────────────────────────────
   multi_timeframe.regime_intelligence.risk_state.enabled:
     type: fixed
     value: true

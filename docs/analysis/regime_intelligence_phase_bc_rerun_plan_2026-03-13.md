@@ -12,8 +12,8 @@ uncertainty is not primarily code completeness, but evidence completeness:
 - old `Phase B v2` narrative is partially invalid because two config-key bugs
   caused `clarity_score.weights` and `size_multiplier` to be ignored
 - corrected post-fix artifacts already exist:
-  - `config/optimizer/phased_v3_best_trials/phaseB_v3_best_trial.json`
-  - `config/optimizer/phased_v3_best_trials/phaseC_oos_trial.json`
+  - `config/optimizer/3h/phased_v3/best_trials/phaseB_v3_best_trial.json`
+  - `config/optimizer/3h/phased_v3/best_trials/phaseC_oos_trial.json`
 - the corresponding `Phase B v3` study DB is not currently present in
   `results/hparam_search/storage/`
 
@@ -41,7 +41,7 @@ Result: the earlier evidence gap is now closed for branch-local reproducibility.
 ### Baseline without RI
 
 - `Phase A` = baseline without RI
-- Artifact: `config/optimizer/phased_v3_best_trials/phaseA_best_trial.json`
+- Artifact: `config/optimizer/3h/phased_v3/best_trials/phaseA_best_trial.json`
 
 ### RI enabled, corrected path
 
@@ -89,7 +89,7 @@ Run the focused RI baseline tests:
 
 Use:
 
-- `config/optimizer/tBTCUSD_3h_phased_v3_phaseB.yaml`
+- `config/optimizer/3h/phased_v3/tBTCUSD_3h_phased_v3_phaseB.yaml`
 
 Expected outcome:
 
@@ -101,7 +101,7 @@ Expected outcome:
 
 If the re-run reproduces or improves the existing artifact:
 
-- update `config/optimizer/phased_v3_best_trials/phaseB_v3_best_trial.json`
+- update `config/optimizer/3h/phased_v3/best_trials/phaseB_v3_best_trial.json`
   only if new result is intentionally accepted as canonical
 - otherwise keep existing artifact and document parity
 
@@ -109,7 +109,7 @@ If the re-run reproduces or improves the existing artifact:
 
 Use:
 
-- `config/optimizer/tBTCUSD_3h_phased_v3_phaseC.yaml`
+- `config/optimizer/3h/phased_v3/tBTCUSD_3h_phased_v3_phaseC.yaml`
 
 Expected outcome:
 

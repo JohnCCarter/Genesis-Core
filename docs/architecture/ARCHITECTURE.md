@@ -6,6 +6,7 @@
 - src/core/strategy: rena funktionsstrategier (ingen IO)
 - src/core/risk: sizing/guards (ingen IO)
 - FastAPI-server (urval): /health, /observability/dashboard, /ui, /strategy/evaluate, /public/candles, /paper/submit, /auth/check
+- API-layout: `src/core/server.py` är canonical entrypoint/assembler medan route-implementationer ligger i `src/core/api/*` (`config`, `info`, `status`, `models`, `account`, `ui`, `public`, `paper`, `strategy`).
 
 ## API-ytor
 

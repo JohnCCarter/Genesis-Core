@@ -145,7 +145,7 @@ Phase A results are unaffected (RI was disabled, `authority_mode=legacy`).
 
 ## Phase B v3: Regime Intelligence Re-run After Config-Key Fixes
 
-- **Post-fix artifact evidence:** `config/optimizer/phased_v3_best_trials/phaseB_v3_best_trial.json`
+- **Post-fix artifact evidence:** `config/optimizer/3h/phased_v3/best_trials/phaseB_v3_best_trial.json`
 - Best trial: `trial_082`
 - This artifact reflects the corrected `weights` + `size_multiplier` lookups.
 
@@ -197,7 +197,7 @@ similar trade count compression as the earlier v2 run.
 
 ## Phase C: OOS Validation After Fixes
 
-- **Artifact evidence:** `config/optimizer/phased_v3_best_trials/phaseC_oos_trial.json`
+- **Artifact evidence:** `config/optimizer/3h/phased_v3/best_trials/phaseC_oos_trial.json`
 - Best trial: `trial_001`
 - This is the OOS validation for the post-fix Phase B v3 best parameters.
 

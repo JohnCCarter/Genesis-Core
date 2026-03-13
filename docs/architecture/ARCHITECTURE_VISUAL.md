@@ -19,7 +19,7 @@ Read-only repo archaeology. Claims are backed by:
 | -------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Backtest CLI         | `python -m scripts.run_backtest` (also runnable as `python scripts/run_backtest.py`) | `src/core/optimizer/runner.py:1559-1603` (subprocess uses `-m scripts.run_backtest`) + `scripts/run_backtest.py:547-548` (`__main__`) | `rg -n "scripts\\.run_backtest" src/core/optimizer/runner.py; rg -n "__main__" scripts/run_backtest.py`                                                                               |
 | Optimizer/Optuna CLI | `python -m core.optimizer.runner <config.yaml>`                                      | `src/core/optimizer/runner.py:3112-3124` (`run_optimizer`) + `src/core/optimizer/runner.py:3510-3522` (`__main__`)                    | `rg -n "def run_optimizer\\(" src/core/optimizer/runner.py; rg -n "__main__" src/core/optimizer/runner.py`                                                                            |
-| API server           | `uvicorn core.server:app --app-dir src` (DEV: add `--reload`)                        | `README.md:22-22` + `src/core/server.py:48-50`                                                                                        | `rg -n "uvicorn core\\.server:app" README.md docs -g"*.md"; rg -n "^app\\s*=\\s*FastAPI" src/core/server.py; rg -n "include_router" src/core/server.py`                               |
+| API server           | `uvicorn core.server:app --app-dir src` (DEV: add `--reload`)                        | `README.md:22-22` + `src/core/server.py:69-78`                                                                                        | `rg -n "uvicorn core\\.server:app" README.md docs -g"*.md"; rg -n "^app\\s*=\\s*FastAPI" src/core/server.py; rg -n "include_router" src/core/server.py`                               |
 | MCP (stdio)          | `python -m mcp_server.server`                                                        | `README.md:42-45` + `mcp_server/server.py:309-337`                                                                                    | `rg -n "python -m mcp_server\\.server" README.md; rg -n "async def main\\(" mcp_server/server.py; rg -n "__main__" mcp_server/server.py`                                              |
 | MCP (remote HTTP)    | `python -m mcp_server.remote_server`                                                 | `mcp_server/README.md:23-45` + `mcp_server/remote_server.py:820-859`                                                                  | `rg -n "python -m mcp_server\\.remote_server" mcp_server/README.md; rg -n "def _build_asgi_app\\(" mcp_server/remote_server.py; rg -n "uvicorn\\.run\\(" mcp_server/remote_server.py` |
 
@@ -56,7 +56,7 @@ flowchart TB
     AUTH["core.config.authority.ConfigAuthority\n(config/runtime.json)"]
     CHAMP["core.strategy.champion_loader.ChampionLoader\n(config/strategy/champions/*.json)"]
     MODELR["core.strategy.model_registry.ModelRegistry\n(config/models/registry.json)"]
-    OPTYAML["config/optimizer/*.yaml (search space)"]
+    OPTYAML["config/optimizer/<timeframe>/**/*.yaml (search space)"]
     BTDEF["config/backtest_defaults.yaml (capital/fees defaults)"]
     ENV["GENESIS_* env flags"]
   end
@@ -110,7 +110,7 @@ flowchart TB
 
   subgraph API[FastAPI app]
     APP["core.server.app"]
-    ROUTER["core.server_config_api.router"]
+    ROUTERS["core.api.*.router\n(config/info/status/models/account/ui/public/paper/strategy)"]
   end
 
   subgraph CFG[Config]
@@ -129,27 +129,27 @@ flowchart TB
   end
 
   UV --> APP
-  APP --> ROUTER
-  ROUTER --> AUTH
-  APP --> SETTINGS
-  APP --> EVAL
+  APP --> ROUTERS
+  ROUTERS --> AUTH
+  ROUTERS --> SETTINGS
+  ROUTERS --> EVAL
   EVAL --> CHAMP
-  APP --> PUB
-  APP --> SIGNED
+  ROUTERS --> PUB
+  ROUTERS --> SIGNED
 ```
 
 Proof checklist (Diagram 1B)
 
-| Arrow             | Proof anchor(s)                                                                                            | `rg` command                                                                                                                           |
-| ----------------- | ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `UV -> APP`       | `README.md:22-22` + `src/core/server.py:48-50`                                                             | `rg -n "uvicorn core\\.server:app" README.md docs -g"*.md"; rg -n "^app\\s*=\\s*FastAPI" src/core/server.py`                           |
-| `APP -> ROUTER`   | `src/core/server.py:14-16` (import) + `src/core/server.py:49-49` (`include_router`)                        | `rg -n "server_config_api" src/core/server.py; rg -n "include_router\\(" src/core/server.py`                                           |
-| `ROUTER -> AUTH`  | `src/core/server_config_api.py:10-18` (`authority = ConfigAuthority()`, `authority.get()`)                 | `rg -n "authority\\s*=\\s*ConfigAuthority\\(" src/core/server_config_api.py; rg -n "authority\\.get\\(" src/core/server_config_api.py` |
-| `APP -> SETTINGS` | `src/core/config/settings.py:8-36` (`env_file=\".env\"`) + `src/core/server.py:831-838` (`get_settings()`) | `rg -n "env_file=\\\"\\.env\\\"" src/core/config/settings.py; rg -n "get_settings\\(" src/core/server.py`                              |
-| `APP -> EVAL`     | `src/core/server.py:622-635` (`/strategy/evaluate` calls `evaluate_pipeline`)                              | `rg -n \"/strategy/evaluate\" src/core/server.py; rg -n "evaluate_pipeline\\(" src/core/server.py`                                     |
-| `EVAL -> CHAMP`   | `src/core/strategy/evaluate.py:134-146` (`champion_loader.load_cached`, merge)                             | `rg -n "champion_loader\\.load_cached" src/core/strategy/evaluate.py`                                                                  |
-| `APP -> PUB`      | `src/core/server.py:638-659` (`/public/candles` uses `public_request`)                                     | `rg -n \"/public/candles\" src/core/server.py; rg -n "public_request\\(" src/core/server.py`                                           |
-| `APP -> SIGNED`   | `src/core/server.py:799-809` (`/paper/submit`) + `src/core/server.py:923-926` (`signed_request(...)`)      | `rg -n \"/paper/submit\" src/core/server.py; rg -n "signed_request\\(" src/core/server.py`                                             |
+| Arrow                 | Proof anchor(s)                                                                                                                                  | `rg` command                                                                                                                                                                                                                                                             |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `UV -> APP`           | `README.md:22-22` + `src/core/server.py:69-78`                                                                                                   | `rg -n "uvicorn core\\.server:app" README.md docs -g"*.md"; rg -n "^app\\s*=\\s*FastAPI" src/core/server.py`                                                                                                                                                             |
+| `APP -> ROUTERS`      | `src/core/server.py:5-13` (imports from `core.api.*`) + `src/core/server.py:70-78` (`include_router`)                                            | `rg -n "import core\\.api" src/core/server.py; rg -n "from core\\.api\\.config import router as config_router" src/core/server.py; rg -n "from core\\.api\\.strategy import router as strategy_router" src/core/server.py; rg -n "include_router\\(" src/core/server.py` |
+| `ROUTERS -> AUTH`     | `src/core/api/config.py:11-17` (`authority = ConfigAuthority()`, `authority.get()`)                                                              | `rg -n "authority\\s*=\\s*ConfigAuthority\\(" src/core/api/config.py; rg -n "authority\\.get\\(" src/core/api/config.py`                                                                                                                                                 |
+| `ROUTERS -> SETTINGS` | `src/core/config/settings.py:8-36` (`env_file=\".env\"`) + `src/core/api/config.py:36-37` and `src/core/api/paper.py:208-208` (`get_settings()`) | `rg -n "env_file=\\\"\\.env\\\"" src/core/config/settings.py; rg -n "get_settings\\(" src/core/api/config.py src/core/api/paper.py`                                                                                                                                      |
+| `ROUTERS -> EVAL`     | `src/core/api/strategy.py:10-42` (`/strategy/evaluate` calls `evaluate_pipeline`)                                                                | `rg -n "/strategy/evaluate" src/core/api/strategy.py; rg -n "evaluate_pipeline\\(" src/core/api/strategy.py`                                                                                                                                                             |
+| `EVAL -> CHAMP`       | `src/core/strategy/evaluate.py:134-146` (`champion_loader.load_cached`, merge)                                                                   | `rg -n "champion_loader\\.load_cached" src/core/strategy/evaluate.py`                                                                                                                                                                                                    |
+| `ROUTERS -> PUB`      | `src/core/api/public.py:24-39` (`/public/candles` uses `public_request`)                                                                         | `rg -n "/public/candles" src/core/api/public.py; rg -n "public_request\\(" src/core/api/public.py`                                                                                                                                                                       |
+| `ROUTERS -> SIGNED`   | `src/core/api/paper.py:169-281` (`/paper/submit` reaches `signed_request(...)`)                                                                  | `rg -n "/paper/submit" src/core/api/paper.py; rg -n "signed_request\\(" src/core/api/paper.py`                                                                                                                                                                           |
 
 ### Diagram 1C — MCP spine (components)
 
@@ -291,7 +291,7 @@ Proof checklist (Diagram 2B)
 ```mermaid
 sequenceDiagram
   participant Client as HTTP client
-  participant API as core.server (/strategy/evaluate)
+  participant API as core.api.strategy.router (/strategy/evaluate)
   participant Eval as core.strategy.evaluate.evaluate_pipeline
   participant Champ as core.strategy.champion_loader.ChampionLoader
   participant Feat as core.strategy.features_asof
@@ -311,20 +311,20 @@ Proof checklist (Diagram 2C)
 
 | Arrow                      | Proof anchor(s)                                                                  | `rg` command                                                          |
 | -------------------------- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| `Client -> API`            | `src/core/server.py:622-635` (`/strategy/evaluate`)                              | `rg -n "/strategy/evaluate" src/core/server.py`                       |
-| `API -> Eval`              | `src/core/server.py:631-635` (`evaluate_pipeline(...)`)                          | `rg -n "evaluate_pipeline\\(" src/core/server.py`                     |
+| `Client -> API`            | `src/core/api/strategy.py:10-10` (`/strategy/evaluate`)                          | `rg -n "/strategy/evaluate" src/core/api/strategy.py`                 |
+| `API -> Eval`              | `src/core/api/strategy.py:41-42` (`evaluate_pipeline(...)`)                      | `rg -n "evaluate_pipeline\\(" src/core/api/strategy.py`               |
 | `Eval -> Champ`            | `src/core/strategy/evaluate.py:134-146` (`champion_loader.load_cached`, merge)   | `rg -n "champion_loader\\.load_cached" src/core/strategy/evaluate.py` |
 | `Eval -> Feat`             | `src/core/strategy/evaluate.py:152-163` (live path uses `extract_features_live`) | `rg -n "extract_features_live\\(" src/core/strategy/evaluate.py`      |
 | `Eval -> Model`            | `src/core/strategy/evaluate.py:216-224` (`predict_proba_for(...)`)               | `rg -n "predict_proba_for\\(" src/core/strategy/evaluate.py`          |
 | `Eval -> Dec`              | `src/core/strategy/evaluate.py:370-379` (`decide(...)`)                          | `rg -n "\\bdecide\\(" src/core/strategy/evaluate.py`                  |
-| `API -> Client (response)` | `src/core/server.py:634-635` (`return {"result":..., "meta":...}`)               | `rg -n "return \\{\\\"result\\\"" src/core/server.py`                 |
+| `API -> Client (response)` | `src/core/api/strategy.py:42-42` (`return {"result":..., "meta":...}`)           | `rg -n "return \\{\\\"result\\\"" src/core/api/strategy.py`           |
 
 ### Diagram 2D — Paper submit (API → signed order) (sequence)
 
 ```mermaid
 sequenceDiagram
   participant Client as HTTP client
-  participant API as core.server (/paper/submit)
+  participant API as core.api.paper.router (/paper/submit)
   participant Settings as core.config.settings.get_settings
   participant EC as core.io.bitfinex.exchange_client.ExchangeClient
 
@@ -336,12 +336,12 @@ sequenceDiagram
 
 Proof checklist (Diagram 2D)
 
-| Arrow                      | Proof anchor(s)                                                                                           | `rg` command                                                                           |
-| -------------------------- | --------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `Client -> API`            | `src/core/server.py:799-809` (`/paper/submit`)                                                            | `rg -n "/paper/submit" src/core/server.py`                                             |
-| `API -> Settings`          | `src/core/server.py:831-838` (`get_settings()`) + `src/core/config/settings.py:32-36`                     | `rg -n "get_settings\\(" src/core/server.py src/core/config/settings.py`               |
-| `API -> EC`                | `src/core/server.py:923-926` (`ec.signed_request(...)`) + `src/core/io/bitfinex/exchange_client.py:57-64` | `rg -n "signed_request\\(" src/core/server.py src/core/io/bitfinex/exchange_client.py` |
-| `API -> Client (response)` | `src/core/server.py:927-940` (`return {"ok": True, ...}`)                                                 | `rg -n "return \\{\\\"ok\\\"" src/core/server.py`                                      |
+| Arrow                      | Proof anchor(s)                                                                                              | `rg` command                                                                              |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| `Client -> API`            | `src/core/api/paper.py:169-169` (`/paper/submit`)                                                            | `rg -n "/paper/submit" src/core/api/paper.py`                                             |
+| `API -> Settings`          | `src/core/api/paper.py:208-208` (`get_settings()`) + `src/core/config/settings.py:32-36`                     | `rg -n "get_settings\\(" src/core/api/paper.py src/core/config/settings.py`               |
+| `API -> EC`                | `src/core/api/paper.py:281-281` (`ec.signed_request(...)`) + `src/core/io/bitfinex/exchange_client.py:57-64` | `rg -n "signed_request\\(" src/core/api/paper.py src/core/io/bitfinex/exchange_client.py` |
+| `API -> Client (response)` | `src/core/api/paper.py:284-284` (`{"ok": True, ...}` success payload)                                        | `rg -n "\"ok\": True" src/core/api/paper.py`                                              |
 
 ### Diagram 2E — MCP remote tool call (HTTP / ChatGPT connector) (sequence)
 
@@ -426,7 +426,7 @@ Proof checklist (Data-flow diagram)
 | `CH -> CFG`       | engine merge: `src/core/backtest/engine.py:679-686` + live merge: `src/core/strategy/evaluate.py:140-146`                                 | `rg -n "champion_loader\\.load_cached" src/core/backtest/engine.py src/core/strategy/evaluate.py`                                                                  |
 | `TR -> CFG`       | `src/core/optimizer/runner.py:1751-1779` (`merged_cfg` + payload includes `merged_config`)                                                | `rg -n "merged_cfg\\s*=\\s*\_deep_merge\\(" src/core/optimizer/runner.py; rg -n "merged_config" src/core/optimizer/runner.py`                                      |
 | `WIN -> FEATS`    | `src/core/backtest/engine.py:784-790` (window build + `_global_index` injection)                                                          | `rg -n "\_build_candles_window\\(" src/core/backtest/engine.py; rg -n "\_global_index" src/core/backtest/engine.py`                                                |
-| `PAY -> FEATS`    | `src/core/server.py:622-635` (`payload.get(\"candles\")` → `evaluate_pipeline`)                                                           | `rg -n "payload\\.get\\(\\\"candles\\\"\\)" src/core/server.py; rg -n "evaluate_pipeline\\(" src/core/server.py`                                                   |
+| `PAY -> FEATS`    | `src/core/api/strategy.py:41-42` (`payload.get("candles")` → `evaluate_pipeline`)                                                         | `rg -n "payload\\.get\\(\\\"candles\\\"\\)" src/core/api/strategy.py; rg -n "evaluate_pipeline\\(" src/core/api/strategy.py`                                       |
 | `CFG -> FEATS`    | `src/core/strategy/evaluate.py:157-170` (`extract_features_*` receives `config=configs`)                                                  | `rg -n "extract_features_live\\(" src/core/strategy/evaluate.py; rg -n "extract_features_backtest\\(" src/core/strategy/evaluate.py`                               |
 | `FEATS -> PROBA`  | `src/core/strategy/evaluate.py:216-224` (`predict_proba_for(...)`)                                                                        | `rg -n "predict_proba_for\\(" src/core/strategy/evaluate.py`                                                                                                       |
 | `PROBA -> ACTION` | `src/core/strategy/evaluate.py:370-379` (`decide(...)`)                                                                                   | `rg -n "\\bdecide\\(" src/core/strategy/evaluate.py`                                                                                                               |
@@ -434,7 +434,7 @@ Proof checklist (Data-flow diagram)
 | `SIM -> RES`      | `src/core/backtest/position_tracker.py:159-203` (mutates trading state + trades)                                                          | `rg -n "def execute_action\\(" src/core/backtest/position_tracker.py`                                                                                              |
 | `RES -> SCORE`    | `scripts/run_backtest.py:455-470` (`score_backtest(results)`) + `src/core/optimizer/runner.py:2057-2065` (`score_backtest(results, ...)`) | `rg -n "score_backtest\\(" scripts/run_backtest.py src/core/optimizer/runner.py`                                                                                   |
 | `SCORE -> MET`    | `src/core/optimizer/scoring.py:89-100` (score calls `calculate_metrics`)                                                                  | `rg -n "calculate_metrics\\(" src/core/optimizer/scoring.py`                                                                                                       |
-| `ACTION -> SIGN`  | `src/core/server.py:923-926` (`signed_request(...)`)                                                                                      | `rg -n "signed_request\\(" src/core/server.py`                                                                                                                     |
+| `ACTION -> SIGN`  | `src/core/api/paper.py:281-284` (`signed_request(...)`)                                                                                   | `rg -n "signed_request\\(" src/core/api/paper.py`                                                                                                                  |
 
 ## 4) Compact call chains per mode (10–20 lines each)
 
@@ -473,8 +473,8 @@ Proof checklist (Data-flow diagram)
 
 ### Live/Runtime (strategy evaluation)
 
-1. Entrypoint: `/strategy/evaluate` (`src/core/server.py:622-635`)
-2. Handler calls `evaluate_pipeline(candles, policy, configs, state)` (`src/core/server.py:631-635`)
+1. Entrypoint route: `/strategy/evaluate` (`src/core/api/strategy.py:10-10`)
+2. Router handler calls `evaluate_pipeline(candles, policy, configs, state)` (`src/core/api/strategy.py:41-42`)
 3. `force_backtest_mode = "_global_index" in configs` (controls champion merge) (`src/core/strategy/evaluate.py:128-133`)
 4. Champion always loaded: `champion_loader.load_cached(symbol,timeframe)` (`src/core/strategy/evaluate.py:134-137`)
 5. Live merge: `_deep_merge(champion_cfg, configs)` when not backtest-mode (`src/core/strategy/evaluate.py:140-146`)
@@ -482,20 +482,20 @@ Proof checklist (Data-flow diagram)
 7. Model inference: `predict_proba_for(...)` (`src/core/strategy/evaluate.py:216-224` → `src/core/strategy/prob_model.py:61-88`)
 8. Confidence + regime assemble for decision (`src/core/strategy/evaluate.py:233-369`)
 9. Decision: `decide(...)` returns `action, action_meta` (`src/core/strategy/evaluate.py:370-379`)
-10. Response payload returns `{result, meta}` (`src/core/server.py:634-635`)
+10. Response payload returns `{result, meta}` (`src/core/api/strategy.py:42-42`)
 
 ### API server (config + IO)
 
 1. Entrypoint: `uvicorn core.server:app --app-dir src` (DEV: add `--reload`) (`README.md:22-22`)
-2. ASGI app constructed + router included (`src/core/server.py:48-50`)
-3. Config read during startup (lifespan): `_AUTH.get()` (`src/core/server.py:33-43`)
-4. `GET /config/runtime` → `authority.get()` (`src/core/server_config_api.py:15-18`)
-5. `POST /config/runtime/validate` → `authority.validate(...)` (`src/core/server_config_api.py:21-29`)
-6. `POST /config/runtime/propose` → bearer check + `authority.propose_update(...)` (`src/core/server_config_api.py:32-47`)
+2. ASGI app constructed + routers included (`src/core/server.py:69-78`)
+3. Config read during startup (lifespan): `_AUTH.get()` (`src/core/server.py:51-55`)
+4. `GET /config/runtime` → `authority.get()` (`src/core/api/config.py:15-17`)
+5. `POST /config/runtime/validate` → `authority.validate(...)` (`src/core/api/config.py:21-24`)
+6. `POST /config/runtime/propose` → bearer check + `authority.propose_update(...)` (`src/core/api/config.py:32-49`)
 7. Runtime SSOT path `RUNTIME_PATH = .../config/runtime.json` (`src/core/config/authority.py:15-18`)
-8. `GET /public/candles` → `ExchangeClient.public_request(...)` (`src/core/server.py:638-659`)
-9. `POST /paper/submit` reads `.env` via `get_settings()` (`src/core/server.py:799-838` → `src/core/config/settings.py:32-36`)
-10. Paper order: `ec.signed_request(...)` (`src/core/server.py:923-926` → `src/core/io/bitfinex/exchange_client.py:57-64`)
+8. `GET /public/candles` → `ExchangeClient.public_request(...)` (`src/core/api/public.py:24-39`)
+9. `POST /paper/submit` reads `.env` via `get_settings()` (`src/core/api/paper.py:208-208` → `src/core/config/settings.py:32-36`)
+10. Paper order: `ec.signed_request(...)` (`src/core/api/paper.py:281-284` → `src/core/io/bitfinex/exchange_client.py:57-64`)
 
 ## 5) Config authority truth table (SSOT + precedence)
 
@@ -505,8 +505,8 @@ Proof checklist (Data-flow diagram)
 | Backtest CLI (`--config-file`) | still reads runtime SSOT                       | runtime cfg + override cfg, OR uses top-level `merged_config` (complete champion) | merge/validate + “complete champion” branch: `scripts/run_backtest.py:323-377`                                                             | mode selection marker: `scripts/run_backtest.py:259-266`                                  | “complete champion”: `scripts/run_backtest.py:335-356`                                              |
 | Optimizer (trial build)        | cached runtime cfg via `ConfigAuthority.get()` | runtime cfg + trial params                                                        | `_get_default_config()` + `_deep_merge`: `src/core/optimizer/runner.py:508-530` + `src/core/optimizer/runner.py:1751-1754`                 | concurrency override: `GENESIS_MAX_CONCURRENT` (`src/core/optimizer/runner.py:3138-3147`) | YAML load: `src/core/optimizer/runner.py:3112-3124`                                                 |
 | Optimizer (anti-drift)         | trial config is authoritative                  | disables implicit champion merge                                                  | sets `meta.skip_champion_merge=True`: `src/core/optimizer/runner.py:1755-1759` (engine respects it: `src/core/backtest/engine.py:679-686`) | direct path forces canonical marker: `src/core/optimizer/runner.py:1358-1363`             | `skip_champion_merge` read: `src/core/backtest/engine.py:679-684`                                   |
-| API `/strategy/evaluate`       | request + current champion                     | request configs merged over champion unless backtest-mode (`_global_index`)       | merge decision: `src/core/strategy/evaluate.py:128-146`                                                                                    | `.env`/env vars via Settings: `src/core/config/settings.py:8-36`                          | endpoint: `src/core/server.py:622-635`                                                              |
-| API `/config/runtime/*`        | `config/runtime.json`                          | patch over current cfg (whitelist-enforced)                                       | `ConfigAuthority.propose_update(...)`: `src/core/config/authority.py:140-190`                                                              | bearer token check: `src/core/server_config_api.py:32-41`                                 | endpoints: `src/core/server_config_api.py:15-64`                                                    |
+| API `/strategy/evaluate`       | request + current champion                     | request configs merged over champion unless backtest-mode (`_global_index`)       | merge decision: `src/core/strategy/evaluate.py:128-146`                                                                                    | `.env`/env vars via Settings: `src/core/config/settings.py:8-36`                          | endpoint: `src/core/api/strategy.py:10-42`                                                          |
+| API `/config/runtime/*`        | `config/runtime.json`                          | patch over current cfg (whitelist-enforced)                                       | `ConfigAuthority.propose_update(...)`: `src/core/config/authority.py:140-190`                                                              | bearer token check: `src/core/api/config.py:36-43`                                        | endpoints: `src/core/api/config.py:15-49`                                                           |
 | Optimizer economics defaults   | `config/backtest_defaults.yaml`                | (capital, commission, slippage) pinned for run                                    | `_get_backtest_defaults()`: `src/core/optimizer/runner.py:540-579`                                                                         | N/A                                                                                       | subprocess cmd uses those values: `src/core/optimizer/runner.py:1559-1599`                          |
 
 ## 6) Reachability-based Ghost/Legacy report (mechanical)

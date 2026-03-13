@@ -114,8 +114,22 @@ def apply_sizing(
         vol_size_mult = 1.0
     vol_size_mult = max(0.0, min(1.0, vol_size_mult))
 
+    risk_state_mult = 1.0
+    risk_state_payload: dict[str, Any] = {"enabled": False, "multiplier": 1.0}
+    risk_state_cfg = dict(ri_cfg.get("risk_state") or {})
+    if ri_enabled and bool(risk_state_cfg.get("enabled", False)):
+        _eq_dd = float(state_in.get("equity_drawdown_pct", 0.0))
+        _bars_rc = int(state_in.get("bars_since_regime_change", 99))
+        risk_state_payload = _regime_intelligence.compute_risk_state_multiplier(
+            cfg=risk_state_cfg,
+            equity_drawdown_pct=_eq_dd,
+            bars_since_regime_change=_bars_rc,
+        )
+        risk_state_mult = float(risk_state_payload.get("multiplier", 1.0))
+    risk_state_mult = max(0.0, min(1.0, risk_state_mult))
+
     min_size_mult = float((cfg.get("risk") or {}).get("min_combined_multiplier", 0.1))
-    combined_mult = size_scale * regime_mult * htf_regime_mult * vol_size_mult
+    combined_mult = size_scale * regime_mult * htf_regime_mult * vol_size_mult * risk_state_mult
     combined_mult = max(min_size_mult, combined_mult)
     size = float(size_base * combined_mult)
     size_pre_clarity = size
@@ -198,6 +212,10 @@ def apply_sizing(
     state_out["ri_clarity_round_policy"] = clarity_payload.get("round_policy")
     state_out["size_before_ri_clarity"] = clarity_payload.get("size_before")
     state_out["size_after_ri_clarity"] = clarity_payload.get("size_after")
+    state_out["ri_risk_state_enabled"] = bool(risk_state_payload.get("enabled"))
+    state_out["ri_risk_state_multiplier"] = risk_state_payload.get("multiplier")
+    state_out["ri_risk_state_drawdown_mult"] = risk_state_payload.get("drawdown_mult")
+    state_out["ri_risk_state_transition_mult"] = risk_state_payload.get("transition_mult")
 
     # Regime transition tracking for risk_state
     _last_regime = state_in.get("last_regime")

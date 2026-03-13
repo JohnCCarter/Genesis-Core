@@ -356,3 +356,358 @@ def test_clarity_score_v2_off_preserves_legacy_path() -> None:
     assert state_off.get("ri_flag_enabled") is False
     assert state_off.get("ri_clarity_enabled") is False
     assert state_off.get("ri_clarity_score") is None
+
+
+def test_htf_override_preserves_debug_payload_and_history() -> None:
+    cfg = {
+        "ev": {"R_default": 1.0},
+        "thresholds": {"entry_conf_overall": 0.6, "regime_proba": {"balanced": 0.55}},
+        "gates": {"cooldown_bars": 0},
+        "risk": {"risk_map": [[0.6, 0.01]]},
+        "multi_timeframe": {
+            "allow_ltf_override": True,
+            "ltf_override_threshold": 0.85,
+            "ltf_override_adaptive": {"enabled": False, "window": 3},
+        },
+        "htf_fib": {
+            "entry": {
+                "enabled": True,
+                "long_min_level": 0.5,
+                "tolerance_atr": 1.0,
+            }
+        },
+        "ltf_fib": {
+            "entry": {
+                "enabled": True,
+                "long_max_level": 1.0,
+                "tolerance_atr": 1.0,
+            }
+        },
+    }
+
+    action, meta = decide(
+        {},
+        probas={"buy": 0.9, "sell": 0.1},
+        confidence={"buy": 0.9, "sell": 0.1},
+        regime="balanced",
+        state={
+            "last_close": 98.0,
+            "current_atr": 1.0,
+            "htf_fib": {"available": True, "levels": {0.5: 100.0}},
+            "ltf_fib": {"available": True, "levels": {1.0: 120.0}},
+            "ltf_override_state": {"buy_history": [0.1, 0.2, 0.3]},
+        },
+        risk_ctx={},
+        cfg=cfg,
+    )
+
+    assert action == "LONG"
+
+    reasons = meta.get("reasons") or []
+    assert "HTF_OVERRIDE_LTF_CONF" in reasons
+    assert "ENTRY_LONG" in reasons
+    assert reasons.index("HTF_OVERRIDE_LTF_CONF") < reasons.index("ENTRY_LONG")
+
+    state_out = meta.get("state_out") or {}
+    assert state_out.get("ltf_override_state", {}).get("buy_history") == [0.2, 0.3, 0.9]
+
+    ltf_override_debug = state_out.get("ltf_override_debug") or {}
+    assert ltf_override_debug.get("candidate") == "LONG"
+    assert float(ltf_override_debug.get("confidence")) == pytest.approx(0.9)
+    assert ltf_override_debug.get("history_key") == "buy_history"
+    assert ltf_override_debug.get("history_len") == 3
+    assert ltf_override_debug.get("history_window") == 3
+    assert float(ltf_override_debug.get("baseline_threshold")) == pytest.approx(0.85)
+    assert float(ltf_override_debug.get("effective_threshold")) == pytest.approx(0.85)
+
+    htf_debug = state_out.get("htf_fib_entry_debug") or {}
+    assert htf_debug.get("reason") == "LONG_BELOW_LEVEL_OVERRIDE"
+    assert float(htf_debug.get("level_price")) == pytest.approx(100.0)
+    override = htf_debug.get("override") or {}
+    assert override.get("source") == "multi_timeframe_threshold"
+    assert float(override.get("confidence")) == pytest.approx(0.9)
+    assert float(override.get("threshold")) == pytest.approx(0.85)
+
+    fib_summary = state_out.get("fib_gate_summary") or {}
+    assert fib_summary.get("candidate") == "LONG"
+    htf_summary = fib_summary.get("htf") or {}
+    assert htf_summary.get("reason") == "LONG_BELOW_LEVEL_OVERRIDE"
+    assert float(htf_summary.get("level_price")) == pytest.approx(100.0)
+
+
+@pytest.mark.parametrize(
+    (
+        "probas",
+        "confidence",
+        "htf_entry_cfg",
+        "state",
+        "expected_action",
+        "expected_reason",
+        "expected_summary_reason",
+        "expected_block_reason",
+        "expected_entry_reason",
+        "expected_targets",
+    ),
+    [
+        (
+            {"buy": 0.9, "sell": 0.1},
+            {"buy": 0.9, "sell": 0.1},
+            {
+                "enabled": True,
+                "long_target_levels": [0.382, 0.5],
+                "tolerance_atr": 1.0,
+            },
+            {
+                "last_close": 100.4,
+                "current_atr": 0.5,
+                "htf_fib": {"available": True, "levels": {0.382: 110.0, 0.5: 100.0}},
+            },
+            "LONG",
+            "TARGET_MATCH",
+            "TARGET_MATCH",
+            None,
+            "ENTRY_LONG",
+            [
+                (0.382, 110.0, 9.6),
+                (0.5, 100.0, 0.4),
+            ],
+        ),
+        (
+            {"buy": 0.1, "sell": 0.9},
+            {"buy": 0.1, "sell": 0.9},
+            {
+                "enabled": True,
+                "short_target_levels": [0.618, 0.5],
+                "tolerance_atr": 1.0,
+            },
+            {
+                "last_close": 105.0,
+                "current_atr": 0.5,
+                "htf_fib": {"available": True, "levels": {0.618: 95.0, 0.5: 100.0}},
+            },
+            "NONE",
+            "SHORT_OFF_TARGET",
+            None,
+            "HTF_FIB_SHORT_BLOCK",
+            None,
+            [
+                (0.618, 95.0, 10.0),
+                (0.5, 100.0, 5.0),
+            ],
+        ),
+    ],
+)
+def test_htf_gate_handler_preserves_targets_and_summary(
+    probas: dict[str, float],
+    confidence: dict[str, float],
+    htf_entry_cfg: dict[str, object],
+    state: dict[str, object],
+    expected_action: str,
+    expected_reason: str,
+    expected_summary_reason: str | None,
+    expected_block_reason: str | None,
+    expected_entry_reason: str | None,
+    expected_targets: list[tuple[float, float, float]],
+) -> None:
+    cfg = {
+        "ev": {"R_default": 1.0},
+        "thresholds": {"entry_conf_overall": 0.6, "regime_proba": {"balanced": 0.55}},
+        "gates": {"cooldown_bars": 0},
+        "risk": {"risk_map": [[0.6, 0.01]]},
+        "multi_timeframe": {
+            "allow_ltf_override": False,
+            "ltf_override_threshold": 0.85,
+            "ltf_override_adaptive": {"enabled": False, "window": 3},
+        },
+        "htf_fib": {"entry": htf_entry_cfg},
+    }
+
+    action, meta = decide(
+        {},
+        probas=probas,
+        confidence=confidence,
+        regime="balanced",
+        state=state,
+        risk_ctx={},
+        cfg=cfg,
+    )
+
+    assert action == expected_action
+
+    reasons = meta.get("reasons") or []
+    state_out = meta.get("state_out") or {}
+    htf_debug = state_out.get("htf_fib_entry_debug") or {}
+    fib_summary = state_out.get("fib_gate_summary") or {}
+    htf_summary = fib_summary.get("htf") or {}
+
+    assert htf_debug.get("reason") == expected_reason
+    if expected_summary_reason is None:
+        assert htf_summary == {}
+    else:
+        assert htf_summary.get("reason") == expected_summary_reason
+
+    debug_targets = htf_debug.get("targets") or []
+    summary_targets = htf_summary.get("targets") or []
+    assert len(debug_targets) == len(expected_targets)
+    if expected_summary_reason is None:
+        assert summary_targets == []
+    else:
+        assert len(summary_targets) == len(expected_targets)
+
+    for debug_target, (expected_level, expected_price, expected_distance) in zip(
+        debug_targets,
+        expected_targets,
+        strict=True,
+    ):
+        assert float(debug_target.get("level")) == pytest.approx(expected_level)
+        assert float(debug_target.get("level_price")) == pytest.approx(expected_price)
+        assert float(debug_target.get("distance")) == pytest.approx(expected_distance)
+
+    if expected_summary_reason is not None:
+        for summary_target, (expected_level, expected_price, expected_distance) in zip(
+            summary_targets,
+            expected_targets,
+            strict=True,
+        ):
+            assert float(summary_target.get("level")) == pytest.approx(expected_level)
+            assert float(summary_target.get("level_price")) == pytest.approx(expected_price)
+            assert float(summary_target.get("distance")) == pytest.approx(expected_distance)
+
+    if expected_block_reason is None:
+        assert expected_entry_reason in reasons
+        assert reasons[-1] == expected_entry_reason
+    else:
+        assert expected_block_reason in reasons
+        assert reasons[-1] == expected_block_reason
+
+
+@pytest.mark.parametrize(
+    (
+        "probas",
+        "confidence",
+        "ltf_entry_cfg",
+        "state",
+        "expected_action",
+        "expected_reason",
+        "expected_summary_reason",
+        "expected_block_reason",
+        "expected_entry_reason",
+        "expected_level_price",
+    ),
+    [
+        (
+            {"buy": 0.9, "sell": 0.1},
+            {"buy": 0.9, "sell": 0.1},
+            {"enabled": True, "long_max_level": 1.0, "tolerance_atr": 1.0},
+            {
+                "last_close": 100.0,
+                "current_atr": 0.5,
+                "ltf_fib": {"available": True, "levels": {1.0: 120.0}},
+            },
+            "LONG",
+            "PASS",
+            "PASS",
+            None,
+            "ENTRY_LONG",
+            None,
+        ),
+        (
+            {"buy": 0.9, "sell": 0.1},
+            {"buy": 0.9, "sell": 0.1},
+            {"enabled": True, "long_max_level": 1.0, "tolerance_atr": 1.0},
+            {
+                "last_close": 121.0,
+                "current_atr": 0.5,
+                "ltf_fib": {"available": True, "levels": {1.0: 120.0}},
+            },
+            "NONE",
+            "LONG_ABOVE_LEVEL",
+            None,
+            "LTF_FIB_LONG_BLOCK",
+            None,
+            120.0,
+        ),
+        (
+            {"buy": 0.9, "sell": 0.1},
+            {"buy": 0.9, "sell": 0.1},
+            {
+                "enabled": True,
+                "missing_policy": "pass",
+                "long_max_level": 1.0,
+                "tolerance_atr": 1.0,
+            },
+            {
+                "last_close": 100.0,
+                "current_atr": 0.5,
+                "ltf_fib": {"available": False, "reason": "LTF_NO_SWINGS"},
+            },
+            "LONG",
+            "PASS",
+            "PASS",
+            None,
+            "ENTRY_LONG",
+            None,
+        ),
+    ],
+)
+def test_ltf_gate_handler_preserves_debug_and_summary(
+    probas: dict[str, float],
+    confidence: dict[str, float],
+    ltf_entry_cfg: dict[str, object],
+    state: dict[str, object],
+    expected_action: str,
+    expected_reason: str,
+    expected_summary_reason: str | None,
+    expected_block_reason: str | None,
+    expected_entry_reason: str | None,
+    expected_level_price: float | None,
+) -> None:
+    cfg = {
+        "ev": {"R_default": 1.0},
+        "thresholds": {"entry_conf_overall": 0.6, "regime_proba": {"balanced": 0.55}},
+        "gates": {"cooldown_bars": 0},
+        "risk": {"risk_map": [[0.6, 0.01]]},
+        "multi_timeframe": {
+            "use_htf_block": False,
+            "allow_ltf_override": False,
+            "ltf_override_threshold": 0.85,
+            "ltf_override_adaptive": {"enabled": False, "window": 3},
+        },
+        "ltf_fib": {"entry": ltf_entry_cfg},
+    }
+
+    action, meta = decide(
+        {},
+        probas=probas,
+        confidence=confidence,
+        regime="balanced",
+        state=state,
+        risk_ctx={},
+        cfg=cfg,
+    )
+
+    assert action == expected_action
+
+    reasons = meta.get("reasons") or []
+    state_out = meta.get("state_out") or {}
+    ltf_debug = state_out.get("ltf_fib_entry_debug") or {}
+    fib_summary = state_out.get("fib_gate_summary") or {}
+    ltf_summary = fib_summary.get("ltf") or {}
+
+    assert ltf_debug.get("reason") == expected_reason
+    if expected_level_price is None:
+        assert ltf_debug.get("level_price") is None
+    else:
+        assert float(ltf_debug.get("level_price")) == pytest.approx(expected_level_price)
+
+    if expected_summary_reason is None:
+        assert ltf_summary == {}
+    else:
+        assert ltf_summary.get("reason") == expected_summary_reason
+
+    if expected_block_reason is None:
+        assert expected_entry_reason in reasons
+        assert reasons[-1] == expected_entry_reason
+    else:
+        assert expected_block_reason in reasons
+        assert reasons[-1] == expected_block_reason

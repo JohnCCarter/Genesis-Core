@@ -146,6 +146,10 @@ Vid rollspecifik granskning/implementering bör även inkluderas:
 - `.github/agents/Codex53.agent.md`
 - `.github/agents/Opus46.agent.md`
 
+För frågor om repo-layout, filplacering och modulsplit kan även `docs/repository-layout-policy.md`
+användas som praktisk referens. Den är underordnad och ändrar inte source-of-truth eller
+precedence i detta dokument.
+
 ## Operativ fallback: terminalverktyg i chatten otillgängligt
 
 Om terminalverktyg tillfälligt är otillgängligt i chattsessionen, följ playbook:

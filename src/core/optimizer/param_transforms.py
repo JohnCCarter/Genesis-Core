@@ -76,6 +76,36 @@ def _expand_dot_notation(params: dict[str, Any]) -> dict[str, Any]:
     return expanded
 
 
+_DIRICHLET_MARKER = "__dirichlet_remainder__"
+
+
+def _apply_dirichlet_remainder(params: dict[str, Any]) -> dict[str, Any]:
+    """Compute Dirichlet remainder for weight vectors that must sum to 1.0.
+
+    Convention: any leaf value equal to ``__dirichlet_remainder__`` is replaced
+    by ``1.0 - sum(sibling float values)``, clamped to [0.01, 0.90].
+    """
+
+    def _walk(node: dict[str, Any]) -> None:
+        remainder_key: str | None = None
+        float_sum = 0.0
+        float_count = 0
+        for k, v in node.items():
+            if v == _DIRICHLET_MARKER:
+                remainder_key = k
+            elif isinstance(v, int | float):
+                float_sum += float(v)
+                float_count += 1
+            elif isinstance(v, dict):
+                _walk(v)
+        if remainder_key is not None and float_count > 0:
+            remainder = max(0.01, min(0.90, 1.0 - float_sum))
+            node[remainder_key] = round(remainder, 4)
+
+    _walk(params)
+    return params
+
+
 def transform_parameters(parameters: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
     """
     Apply optimizer parameter transforms (risk map construction, etc.).
@@ -88,6 +118,9 @@ def transform_parameters(parameters: dict[str, Any]) -> tuple[dict[str, Any], di
     params = _expand_dot_notation(parameters)
     params = copy.deepcopy(params)
     derived: dict[str, Any] = {}
+
+    # Resolve Dirichlet remainder markers (weight vectors that must sum to 1.0)
+    _apply_dirichlet_remainder(params)
 
     risk_cfg = params.get("risk")
     if isinstance(risk_cfg, dict):

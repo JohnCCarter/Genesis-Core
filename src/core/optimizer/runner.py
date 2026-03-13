@@ -1212,6 +1212,47 @@ def _execute_trial_task(
     )
 
 
+def _inject_base_phase_params(
+    parameters_spec: dict[str, Any],
+    base_phase_path: str | Path,
+) -> dict[str, Any]:
+    """Read best_trial.json from a previous phase and pin matching params as type:fixed.
+
+    Any parameter key present in the previous phase's best trial is converted to
+    ``type: fixed`` in *parameters_spec*.  Parameters that exist only in the current
+    spec (new tunable params) are left unchanged.
+    """
+    import json as _json
+    from pathlib import Path as _Path
+
+    base_dir = _Path(base_phase_path)
+    if not base_dir.is_absolute():
+        base_dir = PROJECT_ROOT / base_dir
+    best_json = base_dir / "best_trial.json"
+    if not best_json.exists():
+        print(f"[WARN] base_phase_path best_trial.json not found: {best_json}")
+        return parameters_spec
+    try:
+        payload = _json.loads(best_json.read_text(encoding="utf-8"))
+    except Exception as exc:
+        print(f"[WARN] base_phase_path best_trial.json unreadable: {exc}")
+        return parameters_spec
+
+    best_params: dict[str, Any] = payload.get("parameters") or {}
+    if not best_params:
+        print("[WARN] base_phase best_trial.json has no parameters")
+        return parameters_spec
+
+    updated = dict(parameters_spec)
+    pinned = 0
+    for key, value in best_params.items():
+        if key in updated:
+            updated[key] = {"type": "fixed", "value": value}
+            pinned += 1
+    print(f"[PhaseInjection] Pinned {pinned} params from {best_json}")
+    return updated
+
+
 def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[str, Any]]:
     # Ensure global determinism for the main process
     try:
@@ -1224,6 +1265,17 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
     meta = config.get("meta") or {}
     parameters = config.get("parameters") or {}
     runs_cfg = meta.get("runs") or {}
+
+    # Phase injection: pin previous-phase best params as type:fixed
+    base_phase_path = meta.get("base_phase_path") or runs_cfg.get("base_phase_path")
+    if base_phase_path:
+        parameters = _inject_base_phase_params(parameters, base_phase_path)
+
+    # Score version: allow YAML to override env (score_version: "v2" in meta or runs)
+    yaml_score_version = meta.get("score_version") or runs_cfg.get("score_version")
+    if yaml_score_version:
+        os.environ["GENESIS_SCORE_VERSION"] = str(yaml_score_version)
+
     strategy = (runs_cfg.get("strategy") or OptimizerStrategy.GRID).lower()
 
     sample_start: str | None = None

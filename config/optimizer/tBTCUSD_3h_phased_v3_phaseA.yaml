@@ -1,0 +1,207 @@
+description: "Phase A: Threshold + Exit optimisation (reduced search space, Score v2)"
+#
+# Reduces the original 29-parameter space to 13 tunable parameters.
+# Fixes inert params (entry_conf_overall overridden by zones), regime_proba
+# to mid-range defaults, and exit partials to reasonable values.
+#
+# Run: python -m core.optimizer.runner config/optimizer/tBTCUSD_3h_phased_v3_phaseA.yaml
+
+meta:
+  symbol: tBTCUSD
+  timeframe: 3h
+  snapshot_id: snap_tBTCUSD_3h_2024-01-02_2024-12-31_v1
+  warmup_bars: 120
+  runs:
+    strategy: optuna
+    score_version: "v2"
+
+    # EXPLORE period (in-sample)
+    use_sample_range: true
+    sample_start: "2024-01-02"
+    sample_end: "2024-12-31"
+
+    # VALIDATE period (out-of-sample) — rank top-10 on 2025
+    validation:
+      enabled: true
+      use_sample_range: true
+      sample_start: "2025-01-01"
+      sample_end: "2025-12-31"
+      top_n: 10
+
+      constraints:
+        include_scoring_failures: false
+        min_trades: 10
+        min_profit_factor: 1.05
+        max_max_dd: 0.45
+
+    resume: false
+    max_trials: 150
+    max_concurrent: 1
+
+    promotion:
+      enabled: false
+
+    optuna:
+      study_name: "phased_v3_phaseA_3h_2024_2025"
+      storage: "sqlite:///results/hparam_search/storage/phased_v3_phaseA_3h.db"
+      n_jobs: 1
+      timeout_seconds: 21600  # 6h
+
+      bootstrap_random_trials: 30
+      bootstrap_seed: 42
+
+      pruner:
+        type: "none"
+
+      sampler:
+        type: "tpe"
+        kwargs:
+          n_startup_trials: 35
+
+parameters:
+  # ── FIXED (inert / redundant) ──────────────────────────────────
+  thresholds:
+    entry_conf_overall:
+      type: fixed
+      value: 0.25
+    min_edge:
+      type: fixed
+      value: 0.01
+    regime_proba:
+      balanced:
+        type: float
+        low: 0.36
+        high: 0.52
+        step: 0.04
+      bull:
+        type: fixed
+        value: 0.50
+      bear:
+        type: fixed
+        value: 0.50
+      ranging:
+        type: fixed
+        value: 0.50
+
+    # ── TUNABLE: zone thresholds (6 params) ────────────────────
+    signal_adaptation:
+      zones:
+        low:
+          entry_conf_overall:
+            type: float
+            low: 0.18
+            high: 0.34
+            step: 0.04
+          regime_proba:
+            type: float
+            low: 0.30
+            high: 0.48
+            step: 0.03
+        mid:
+          entry_conf_overall:
+            type: float
+            low: 0.24
+            high: 0.40
+            step: 0.04
+          regime_proba:
+            type: float
+            low: 0.36
+            high: 0.52
+            step: 0.03
+        high:
+          entry_conf_overall:
+            type: float
+            low: 0.30
+            high: 0.46
+            step: 0.04
+          regime_proba:
+            type: float
+            low: 0.42
+            high: 0.58
+            step: 0.03
+
+  # ── TUNABLE: exit params (3 params) ──────────────────────────
+  exit:
+    exit_conf_threshold:
+      type: float
+      low: 0.30
+      high: 0.55
+      step: 0.02
+    max_hold_bars:
+      type: int
+      low: 6
+      high: 24
+      step: 2
+    trailing_stop_pct:
+      type: float
+      low: 0.010
+      high: 0.025
+      step: 0.002
+
+  # ── FIXED: exit partials ─────────────────────────────────────
+  htf_exit_config:
+    partial_1_pct:
+      type: fixed
+      value: 0.50
+    partial_2_pct:
+      type: fixed
+      value: 0.45
+    fib_threshold_atr:
+      type: fixed
+      value: 0.9
+    trail_atr_multiplier:
+      type: fixed
+      value: 2.5
+    enable_partials:
+      type: fixed
+      value: true
+    enable_trailing:
+      type: fixed
+      value: true
+
+  # ── TUNABLE: risk / sizing (2 params) ────────────────────────
+  risk:
+    htf_regime_size_multipliers:
+      bear:
+        type: float
+        low: 0.2
+        high: 0.6
+        step: 0.1
+    volatility_sizing:
+      high_vol_multiplier:
+        type: float
+        low: 0.5
+        high: 0.9
+        step: 0.1
+
+  # ── TUNABLE: multi-timeframe (1 param) ───────────────────────
+  multi_timeframe:
+    ltf_override_threshold:
+      type: float
+      low: 0.40
+      high: 0.60
+      step: 0.05
+
+  # ── FIXED: Fibonacci tolerances ──────────────────────────────
+  htf_fib:
+    entry:
+      tolerance_atr:
+        type: fixed
+        value: 4.0
+      long_max_level:
+        type: fixed
+        value: 0.236
+      short_min_level:
+        type: fixed
+        value: 0.35
+  ltf_fib:
+    entry:
+      tolerance_atr:
+        type: fixed
+        value: 1.5
+      long_max_level:
+        type: fixed
+        value: 0.146
+      short_min_level:
+        type: fixed
+        value: 0.236

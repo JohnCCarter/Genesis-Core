@@ -1,0 +1,56 @@
+description: "Phase C: OOS validation only (all params injected from Phase B)"
+#
+# No tunable parameters — runs the top-10 Phase B configs on OOS period
+# with strict constraints to validate generalisability.
+#
+# Run: python -m core.optimizer.runner config/optimizer/tBTCUSD_3h_phased_v3_phaseC.yaml
+
+meta:
+  symbol: tBTCUSD
+  timeframe: 3h
+  snapshot_id: snap_tBTCUSD_3h_2024-01-02_2024-12-31_v1
+  warmup_bars: 120
+  base_phase_path: "results/hparam_search/phaseB_full"
+  runs:
+    strategy: optuna
+    score_version: "v2"
+
+    use_sample_range: true
+    sample_start: "2025-01-01"
+    sample_end: "2025-12-31"
+
+    validation:
+      enabled: false
+
+    resume: false
+    max_trials: 10
+    max_concurrent: 1
+
+    promotion:
+      enabled: false
+
+    constraints:
+      include_scoring_failures: false
+      min_trades: 10
+      min_profit_factor: 1.05
+      max_max_dd: 0.45
+
+    optuna:
+      study_name: "phased_v3_phaseC_OOS_3h_2025"
+      storage: "sqlite:///results/hparam_search/storage/phased_v3_phaseC_3h.db"
+      n_jobs: 1
+      timeout_seconds: 3600
+
+      bootstrap_random_trials: 10
+      bootstrap_seed: 42
+
+      pruner:
+        type: "none"
+
+      sampler:
+        type: "tpe"
+        kwargs:
+          n_startup_trials: 10
+
+# All parameters injected from Phase B via base_phase_path
+parameters: {}

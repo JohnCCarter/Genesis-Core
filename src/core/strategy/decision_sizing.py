@@ -136,8 +136,9 @@ def apply_sizing(
         "size_after": size,
     }
     if clarity_enabled:
-        min_mult = safe_float(clarity_cfg.get("size_multiplier_min", 0.5), 0.5)
-        max_mult = safe_float(clarity_cfg.get("size_multiplier_max", 1.0), 1.0)
+        _sm_cfg = dict(ri_cfg.get("size_multiplier") or {})
+        min_mult = safe_float(_sm_cfg.get("min", 0.5), 0.5)
+        max_mult = safe_float(_sm_cfg.get("max", 1.0), 1.0)
         if max_mult < min_mult:
             min_mult, max_mult = max_mult, min_mult
         min_mult = max(0.0, min(1.0, min_mult))
@@ -150,7 +151,7 @@ def apply_sizing(
             r_default=r_default,
             candidate=candidate,
             regime=str(regime or "balanced"),
-            weights=clarity_cfg.get("weights_v1"),
+            weights=clarity_cfg.get("weights") or clarity_cfg.get("weights_v1"),
             weights_version=str(clarity_cfg.get("weights_version") or "weights_v1"),
         )
         clarity_score = int(clarity["clarity_score"])

@@ -1,0 +1,218 @@
+description: "Phase B: Regime Intelligence clarity + sizing (builds on Phase A best)"
+#
+# Optimises 7 RI-specific parameters while pinning Phase A best (trial_043)
+# as fixed values directly in this spec.
+#
+# Phase A best: score=0.1432, PF=1.37, DD=7.7%, Sharpe=0.112, WR=62.5%
+#
+# Run: python -m core.optimizer.runner config/optimizer/tBTCUSD_3h_phased_v3_phaseB.yaml
+
+meta:
+  symbol: tBTCUSD
+  timeframe: 3h
+  snapshot_id: snap_tBTCUSD_3h_2024-01-02_2024-12-31_v1
+  warmup_bars: 120
+  runs:
+    strategy: optuna
+    score_version: "v2"
+
+    use_sample_range: true
+    sample_start: "2024-01-02"
+    sample_end: "2024-12-31"
+
+    validation:
+      enabled: true
+      use_sample_range: true
+      sample_start: "2025-01-01"
+      sample_end: "2025-12-31"
+      top_n: 10
+
+      constraints:
+        include_scoring_failures: false
+        min_trades: 10
+        min_profit_factor: 1.05
+        max_max_dd: 0.45
+
+    resume: false
+    max_trials: 100
+    max_concurrent: 1
+
+    promotion:
+      enabled: false
+
+    optuna:
+      study_name: "phased_v3_phaseB_RI_v2_3h_2024_2025"
+      storage: "sqlite:///results/hparam_search/storage/phased_v3_phaseB_v2_3h.db"
+      n_jobs: 1
+      timeout_seconds: 14400  # 4h
+
+      bootstrap_random_trials: 20
+      bootstrap_seed: 42
+
+      pruner:
+        type: "none"
+
+      sampler:
+        type: "tpe"
+        kwargs:
+          n_startup_trials: 25
+
+parameters:
+  # ── FIXED from Phase A best (trial_043, score=0.1432) ──────────
+  thresholds:
+    entry_conf_overall:
+      type: fixed
+      value: 0.25
+    min_edge:
+      type: fixed
+      value: 0.01
+    regime_proba:
+      balanced:
+        type: fixed
+        value: 0.36
+      bull:
+        type: fixed
+        value: 0.50
+      bear:
+        type: fixed
+        value: 0.50
+      ranging:
+        type: fixed
+        value: 0.50
+    signal_adaptation:
+      zones:
+        low:
+          entry_conf_overall:
+            type: fixed
+            value: 0.16
+          regime_proba:
+            type: fixed
+            value: 0.33
+        mid:
+          entry_conf_overall:
+            type: fixed
+            value: 0.40
+          regime_proba:
+            type: fixed
+            value: 0.51
+        high:
+          entry_conf_overall:
+            type: fixed
+            value: 0.32
+          regime_proba:
+            type: fixed
+            value: 0.57
+
+  exit:
+    exit_conf_threshold:
+      type: fixed
+      value: 0.42
+    max_hold_bars:
+      type: fixed
+      value: 8
+    trailing_stop_pct:
+      type: fixed
+      value: 0.022
+
+  htf_exit_config:
+    partial_1_pct:
+      type: fixed
+      value: 0.50
+    partial_2_pct:
+      type: fixed
+      value: 0.45
+    fib_threshold_atr:
+      type: fixed
+      value: 0.9
+    trail_atr_multiplier:
+      type: fixed
+      value: 2.5
+    enable_partials:
+      type: fixed
+      value: true
+    enable_trailing:
+      type: fixed
+      value: true
+
+  # ── TUNABLE: RI clarity (7 params) + bear re-tuned with RI ─────
+  multi_timeframe:
+    ltf_override_threshold:
+      type: fixed
+      value: 0.40
+    regime_intelligence:
+      enabled:
+        type: fixed
+        value: true
+      version:
+        type: fixed
+        value: "v2"
+      authority_mode:
+        type: grid
+        values: ["legacy", "regime_module"]
+      clarity_score:
+        enabled:
+          type: fixed
+          value: true
+        weights:
+          confidence:
+            type: float
+            low: 0.15
+            high: 0.45
+            step: 0.05
+          edge:
+            type: float
+            low: 0.10
+            high: 0.40
+            step: 0.05
+          ev:
+            type: float
+            low: 0.10
+            high: 0.35
+            step: 0.05
+          regime_alignment: "__dirichlet_remainder__"
+      size_multiplier:
+        min:
+          type: float
+          low: 0.3
+          high: 0.6
+          step: 0.1
+        max:
+          type: float
+          low: 1.0
+          high: 1.5
+          step: 0.1
+
+  risk:
+    htf_regime_size_multipliers:
+      bear:
+        type: float
+        low: 0.2
+        high: 0.6
+        step: 0.1
+    volatility_sizing:
+      high_vol_multiplier:
+        type: fixed
+        value: 0.8
+
+  htf_fib:
+    entry:
+      tolerance_atr:
+        type: fixed
+        value: 4.0
+      long_max_level:
+        type: fixed
+        value: 0.236
+      short_min_level:
+        type: fixed
+        value: 0.35
+  ltf_fib:
+    entry:
+      tolerance_atr:
+        type: fixed
+        value: 1.5
+      long_max_level:
+        type: fixed
+        value: 0.146
+      short_min_level:
+        type: fixed
+        value: 0.236

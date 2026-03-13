@@ -1225,10 +1225,14 @@ def _inject_base_phase_params(
     import json as _json
     from pathlib import Path as _Path
 
-    base_dir = _Path(base_phase_path)
-    if not base_dir.is_absolute():
-        base_dir = PROJECT_ROOT / base_dir
-    best_json = base_dir / "best_trial.json"
+    base_path = _Path(base_phase_path)
+    if not base_path.is_absolute():
+        base_path = PROJECT_ROOT / base_path
+    # Accept either a direct JSON file or a directory containing best_trial.json
+    if base_path.suffix == ".json":
+        best_json = base_path
+    else:
+        best_json = base_path / "best_trial.json"
     if not best_json.exists():
         print(f"[WARN] base_phase_path best_trial.json not found: {best_json}")
         return parameters_spec

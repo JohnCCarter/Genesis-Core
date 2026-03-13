@@ -1,3 +1,93 @@
+## Handoff — Regime Intelligence / freeze remediation (2026-03-13)
+
+### Snapshot
+
+- **Datum:** 2026-03-13
+- **Branch:** `feature/Regime-Intelligence`
+- **HEAD:** `9775ea61`
+- **Mode:** RESEARCH (`feature/*`), men champion-path hanterades med STRICT-tänk p.g.a. freeze/config-authority
+- **Repo state vid överlämning:** ren working tree
+- **GitHub checks på HEAD:**
+  - `Champion Freeze Guard` ✅
+  - `CI` ✅
+
+### Vad som faktiskt hände i denna session
+
+1. **RI-evidens verifierades och reproducerades**
+   - Phase B rerun: `ri_phaseB_rerun_20260313`
+   - Phase C rerun: `ri_phaseC_rerun_20260313`
+   - Phase B vinnare reproducerades som `trial_082`
+
+2. **Optimizer-bugg fixades**
+   - Literal/sentinel-löv som `__dirichlet_remainder__` kraschade tidigare vissa optimizer-flöden.
+   - Fix finns i:
+     - `src/core/optimizer/runner.py`
+     - `src/core/optimizer/runner_config.py`
+
+3. **Regressionstester lades till / uppdaterades**
+   - `tests/utils/test_optimizer_duplicate_fixes.py`
+   - `tests/utils/test_optimizer_performance.py`
+
+4. **RI-resultat och analys dokumenterades**
+   - `config/optimizer/PHASED_V3_RESULTS.md`
+   - `docs/analysis/regime_intelligence_phase_bc_rerun_plan_2026-03-13.md`
+   - `docs/analysis/tBTCUSD_3h_champion_promotion_recommendation_2026-03-13.md`
+
+5. **En champion-promotion skrevs först in lokalt men togs sedan bort från pushad historik**
+   - En tidigare commit (`0aaa2e24`) innehöll ändring i `config/strategy/champions/tBTCUSD_3h.json`.
+   - GitHub Actions failade korrekt på `Champion Freeze Guard` eftersom freeze-perioden är aktiv till `2026-03-17`.
+   - Branch-historiken skrevs därför om.
+   - Den slutliga pushade committen **innehåller inte någon ändring under** `config/strategy/champions/`.
+
+### Slutlig pushad commit
+
+- **Commit:** `9775ea61`
+- **Meddelande:** `optimizer: preserve dirichlet literals and document RI evidence`
+
+### Filer som ingår i slutlig pushad ändring
+
+- `config/optimizer/PHASED_V3_RESULTS.md`
+- `docs/analysis/regime_intelligence_phase_bc_rerun_plan_2026-03-13.md`
+- `docs/analysis/tBTCUSD_3h_champion_promotion_recommendation_2026-03-13.md`
+- `src/core/optimizer/runner.py`
+- `src/core/optimizer/runner_config.py`
+- `tests/utils/test_optimizer_duplicate_fixes.py`
+- `tests/utils/test_optimizer_performance.py`
+
+### Filer som uttryckligen **inte** längre ingår i branchdiffen
+
+- `config/strategy/champions/tBTCUSD_3h.json`
+- `.secrets.baseline`
+
+### Verifiering som kördes på slutlig SHA/paket
+
+- `pre-commit` ✅
+- Fokuserad pytest-svit ✅
+  - `tests/governance/test_import_smoke_backtest_optuna.py`
+  - `tests/utils/test_optimizer_duplicate_fixes.py`
+  - `tests/utils/test_optimizer_performance.py`
+  - `tests/backtest/test_backtest_determinism_smoke.py`
+  - `tests/utils/test_features_asof_cache_key_deterministic.py`
+  - `tests/governance/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable`
+
+### Viktiga slutsatser för nästa agent / hemdator
+
+1. **Champion promotion är rekommenderad men inte pushad**
+   - Promotion-underlag finns i analysdokumentet.
+   - Själva champion-writebacken måste vänta tills freeze slutar, eller göras på ett uttryckligen godkänt sätt efter freeze.
+
+2. **Nuvarande branch är grön och freeze-safe**
+   - Champion Freeze Guard är passerad.
+   - CI är grön på HEAD `9775ea61`.
+
+3. **Om du fortsätter hemma**
+   - checka ut `feature/Regime-Intelligence`
+   - utgå från `9775ea61`
+   - använd analysdokumenten som beslutsunderlag för senare champion-promotion
+
+4. **Undvik att ändra `config/strategy/champions/` före 2026-03-17**
+   - annars kommer freeze-workflown att faila igen.
+
 # Handoff — Cleanup Core Audit (Shard C)
 
 ## Snapshot

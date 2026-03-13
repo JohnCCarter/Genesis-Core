@@ -35,6 +35,24 @@ except Exception:  # pragma: no cover - pandas not strictly required
 from core.optimizer.champion import ChampionCandidate, ChampionManager
 from core.optimizer.constraints import enforce_constraints
 from core.optimizer.param_transforms import transform_parameters
+from core.optimizer.runner_optuna_orchestration import (
+    collect_comparability_warnings_impl,
+    compute_optuna_resume_signature_impl,
+    create_optuna_study_impl,
+    dig_impl,
+    enforce_score_version_compatibility_impl,
+    extract_results_path_from_champion_record_impl,
+    extract_score_version_from_champion_record_impl,
+    extract_score_version_from_result_payload_impl,
+    load_backtest_info_from_results_path_impl,
+    resolve_score_version_for_optimizer_impl,
+    run_optuna_impl,
+    select_optuna_pruner_impl,
+    select_optuna_sampler_impl,
+    select_top_n_from_optuna_storage_impl,
+    verify_or_set_optuna_study_score_version_impl,
+    verify_or_set_optuna_study_signature_impl,
+)
 from core.optimizer.scoring import MetricThresholds, score_backtest
 from core.utils.dict_merge import deep_merge_dicts
 from core.utils.diffing import summarize_metrics_diff
@@ -42,7 +60,7 @@ from core.utils.diffing.canonical import canonicalize_config
 from core.utils.diffing.optuna_guard import estimate_zero_trade
 from core.utils.diffing.results_diff import diff_backtest_results
 from core.utils.diffing.trial_cache import TrialResultCache
-from core.utils.optuna_helpers import NoDupeGuard, param_signature, set_global_seeds
+from core.utils.optuna_helpers import param_signature, set_global_seeds
 
 
 def _json_default(obj: Any) -> Any:
@@ -312,180 +330,25 @@ def _compute_optuna_resume_signature(
     git_commit: str,
     runtime_version: int | None,
 ) -> dict[str, Any]:
-    """Compute a stable signature to prevent resuming the wrong Optuna study.
-
-    Notes:
-        - Excludes wall-clock stop policy fields (end_at/timeout_seconds) so you can extend
-          a long run without breaking resume safety.
-        - Includes code/runtime/env so a resumed run won't silently drift.
-    """
-
-    meta = config.get("meta") or {}
-    runs_cfg = meta.get("runs") or {}
-    optuna_cfg = (runs_cfg.get("optuna") or {}).copy()
-    optuna_cfg.pop("timeout_seconds", None)
-    optuna_cfg.pop("end_at", None)
-
-    # Avoid path-dependent signatures:
-    # - Use repo-relative path when possible (stable across machines/checkout locations).
-    # - Always include a content hash for the config file.
-    repo_root = PROJECT_ROOT.resolve()
-    try:
-        config_path_abs = config_path.resolve()
-    except Exception:
-        config_path_abs = config_path
-
-    config_path_external = True
-    config_path_rel_posix: str | None = None
-    try:
-        config_path_rel_posix = config_path_abs.relative_to(repo_root).as_posix()
-        config_path_external = False
-    except ValueError:
-        config_path_external = True
-
-    try:
-        config_sha256 = hashlib.sha256(config_path_abs.read_bytes()).hexdigest()
-    except OSError as exc:
-        raise ValueError(
-            f"Could not read config for resume signature: {config_path_abs} ({exc})"
-        ) from exc
-
-    payload = {
-        "config_path_rel_posix": config_path_rel_posix,
-        "config_path_external": config_path_external,
-        "config_sha256": config_sha256,
-        "git_commit": str(git_commit or "unknown"),
-        "runtime_version": runtime_version,
-        "meta": {
-            "symbol": meta.get("symbol"),
-            "timeframe": meta.get("timeframe"),
-            "snapshot_id": meta.get("snapshot_id"),
-            "warmup_bars": meta.get("warmup_bars"),
-        },
-        "runs": {
-            "use_sample_range": runs_cfg.get("use_sample_range"),
-            "sample_start": runs_cfg.get("sample_start"),
-            "sample_end": runs_cfg.get("sample_end"),
-            "optuna": optuna_cfg,
-        },
-        "constraints": config.get("constraints") or {},
-        "parameters": config.get("parameters") or {},
-        "env": {
-            "GENESIS_MODE_EXPLICIT": os.environ.get("GENESIS_MODE_EXPLICIT"),
-            "GENESIS_FAST_WINDOW": os.environ.get("GENESIS_FAST_WINDOW"),
-            "GENESIS_PRECOMPUTE_FEATURES": os.environ.get("GENESIS_PRECOMPUTE_FEATURES"),
-            "GENESIS_FAST_HASH": os.environ.get("GENESIS_FAST_HASH"),
-        },
-    }
-
-    canonical = canonicalize_config(payload, precision=6)
-    blob = json.dumps(canonical, sort_keys=True, separators=(",", ":"))
-    fingerprint = hashlib.sha256(blob.encode("utf-8")).hexdigest()
-
-    return {
-        "version": 1,
-        "fingerprint": fingerprint,
-        "git_commit": payload["git_commit"],
-        "runtime_version": runtime_version,
-        "config_path_rel_posix": config_path_rel_posix,
-        "config_path_external": config_path_external,
-        "config_path_abs": str(config_path_abs),
-        "config_sha256": config_sha256,
-        "snapshot_id": payload["meta"]["snapshot_id"],
-        "sample_start": payload["runs"]["sample_start"],
-        "sample_end": payload["runs"]["sample_end"],
-    }
+    return compute_optuna_resume_signature_impl(
+        config=config,
+        config_path=config_path,
+        git_commit=git_commit,
+        runtime_version=runtime_version,
+        project_root=PROJECT_ROOT,
+    )
 
 
 def _verify_or_set_optuna_study_signature(study: Any, expected: dict[str, Any]) -> None:
-    """Fail-fast on resume when the study signature mismatches.
-
-    - If an existing signature is present and mismatches: raise unless overridden.
-    - If signature is missing on a non-empty study: warn and do not backfill by default.
-    - If study is empty (or explicit backfill): attach the signature.
-    """
-
-    allow_mismatch = os.environ.get("GENESIS_ALLOW_STUDY_RESUME_MISMATCH") == "1"
-    allow_backfill = os.environ.get("GENESIS_BACKFILL_STUDY_SIGNATURE") == "1"
-
-    expected_fp = str(expected.get("fingerprint") or "")
-    existing = getattr(study, "user_attrs", {}) or {}
-    existing_sig = existing.get("genesis_resume_signature")
-    existing_fp = (
-        str(existing_sig.get("fingerprint") or "") if isinstance(existing_sig, dict) else ""
-    )
-
-    if existing_fp and expected_fp and existing_fp != expected_fp:
-        msg = (
-            "Optuna resume blocked: study signature mismatch. "
-            f"expected={expected_fp} existing={existing_fp}. "
-            "This usually means you are resuming the wrong study/DB or the config/code/runtime/env changed."
-        )
-        if allow_mismatch:
-            print(f"[WARN] {msg} (override via GENESIS_ALLOW_STUDY_RESUME_MISMATCH=1)")
-        else:
-            raise RuntimeError(msg)
-
-    try:
-        has_trials = len(getattr(study, "trials", []) or []) > 0
-    except Exception:
-        has_trials = False
-
-    if not existing_fp and has_trials and not allow_backfill:
-        print(
-            "[WARN] Optuna study has trials but no genesis_resume_signature; cannot verify resume safety. "
-            "Set GENESIS_BACKFILL_STUDY_SIGNATURE=1 to attach a signature explicitly."
-        )
-        return
-
-    try:
-        study.set_user_attr("genesis_resume_signature", expected)
-    except Exception as exc:
-        print(f"[WARN] Could not set genesis_resume_signature on study: {exc}")
+    return verify_or_set_optuna_study_signature_impl(study, expected)
 
 
 def _verify_or_set_optuna_study_score_version(study: Any, expected_score_version: str) -> None:
-    """Fail-fast on resume when Optuna study uses a different scoring version.
-
-    Motivation:
-    - score_version is selected via env (GENESIS_SCORE_VERSION).
-    - resuming a study with a different score_version corrupts comparability.
-    - we store this separately from genesis_resume_signature for backward-compat.
-    """
-
-    allow_mismatch = os.environ.get("GENESIS_ALLOW_STUDY_RESUME_MISMATCH") == "1"
-    try:
-        existing = getattr(study, "user_attrs", None)
-        if not isinstance(existing, dict):
-            existing = {}
-        existing_v = existing.get("genesis_score_version")
-    except Exception:
-        existing_v = None
-
-    expected_norm = str(expected_score_version or "").strip().lower()
-    existing_norm = str(existing_v or "").strip().lower()
-    if existing_norm and expected_norm and existing_norm != expected_norm:
-        msg = (
-            "Optuna resume blocked: score_version mismatch. "
-            f"expected={expected_score_version} existing={existing_v}. "
-            "This usually means GENESIS_SCORE_VERSION changed between runs."
-        )
-        if allow_mismatch:
-            print(f"[WARN] {msg} (override via GENESIS_ALLOW_STUDY_RESUME_MISMATCH=1)")
-            # Do not overwrite the existing study attr; keep forensic evidence intact.
-            return
-        else:
-            raise RuntimeError(msg)
-
-    # Only set when missing (backfill).
-    if existing_v:
-        return
-
-    try:
-        study.set_user_attr("genesis_score_version", expected_score_version)
-    except Exception as exc:
-        # Best-effort only; mocked studies in unit tests may not persist attrs.
-        logger.debug("Could not set genesis_score_version on Optuna study: %s", exc, exc_info=True)
+    return verify_or_set_optuna_study_score_version_impl(
+        study,
+        expected_score_version,
+        logger=logger,
+    )
 
 
 def _trial_key(params: dict[str, Any]) -> str:
@@ -645,57 +508,11 @@ def _resolve_sample_range(snapshot_id: str, runs_cfg: dict[str, Any]) -> tuple[s
 
 
 def _select_top_n_from_optuna_storage(run_meta: dict[str, Any], top_n: int) -> list[dict[str, Any]]:
-    """Fallback för validation: välj top-N kandidater direkt från Optuna storage.
-
-    Detta gör att validation kan köras även när explore-delen redan är klar, eller när
-    vi inte har en komplett results-lista i minnet (t.ex. vid resume efter avbrott).
-
-    Returnerar en lista av payloads ("result_payload") som innehåller minst:
-    - parameters
-    - score.score
-    """
-
-    if top_n <= 0 or not OPTUNA_AVAILABLE:
-        return []
-
-    optuna_meta = run_meta.get("optuna")
-    if not isinstance(optuna_meta, dict):
-        return []
-
-    storage = optuna_meta.get("storage")
-    study_name = optuna_meta.get("study_name")
-    if not storage or not study_name:
-        return []
-
-    try:
-        import optuna
-        from optuna.trial import TrialState
-
-        study = optuna.load_study(study_name=str(study_name), storage=str(storage))
-    except Exception:
-        return []
-
-    ranked: list[tuple[float, dict[str, Any]]] = []
-    for t in getattr(study, "trials", []) or []:
-        try:
-            if getattr(t, "state", None) != TrialState.COMPLETE:
-                continue
-            user_attrs = getattr(t, "user_attrs", None)
-            if not isinstance(user_attrs, dict):
-                continue
-            payload = user_attrs.get("result_payload")
-            if not isinstance(payload, dict):
-                continue
-            if payload.get("error") or payload.get("skipped"):
-                continue
-            score_block = payload.get("score") or {}
-            s = float(score_block.get("score"))
-        except (TypeError, ValueError):
-            continue
-        ranked.append((s, payload))
-
-    ranked.sort(key=lambda x: x[0], reverse=True)
-    return [p for _s, p in ranked[:top_n]]
+    return select_top_n_from_optuna_storage_impl(
+        run_meta,
+        top_n,
+        optuna_available=OPTUNA_AVAILABLE,
+    )
 
 
 def _load_existing_trials(run_dir: Path) -> dict[str, dict[str, Any]]:
@@ -1072,54 +889,19 @@ _ALLOWED_SCORE_VERSIONS: set[str] = {"v1", "v2"}
 
 
 def _resolve_score_version_for_optimizer(explicit: str | None = None) -> str:
-    """Resolve score_version deterministically for an optimizer run.
-
-    Source of truth:
-    - explicit arg (internal)
-    - env GENESIS_SCORE_VERSION
-    - default "v1"
-
-    We validate the value to fail-fast on typos, because mixing scoring versions
-    makes promotion/comparisons meaningless.
-    """
-
-    raw = explicit or os.environ.get("GENESIS_SCORE_VERSION") or "v1"
-    v = str(raw).strip().lower()
-    if v not in _ALLOWED_SCORE_VERSIONS:
-        raise ValueError(
-            f"Ogiltig GENESIS_SCORE_VERSION={raw!r}. Tillåtna värden: {sorted(_ALLOWED_SCORE_VERSIONS)}"
-        )
-    return v
+    return resolve_score_version_for_optimizer_impl(explicit)
 
 
 def _extract_score_version_from_result_payload(result: dict[str, Any] | None) -> str | None:
-    if not isinstance(result, dict):
-        return None
-    score_block = result.get("score")
-    if not isinstance(score_block, dict):
-        return None
-    return _coerce_optional_str(score_block.get("score_version"))
+    return extract_score_version_from_result_payload_impl(result)
 
 
 def _extract_score_version_from_champion_record(current: Any) -> str | None:
-    # ChampionRecord.metadata structure: {"trial_id":..., "results_path":..., "run_meta": {"score_block": {...}}}
-    meta = getattr(current, "metadata", None)
-    if not isinstance(meta, dict):
-        return None
-    run_meta = meta.get("run_meta")
-    if not isinstance(run_meta, dict):
-        return None
-    score_block = run_meta.get("score_block")
-    if not isinstance(score_block, dict):
-        return None
-    return _coerce_optional_str(score_block.get("score_version"))
+    return extract_score_version_from_champion_record_impl(current)
 
 
 def _extract_results_path_from_champion_record(current: Any) -> str | None:
-    meta = getattr(current, "metadata", None)
-    if not isinstance(meta, dict):
-        return None
-    return _coerce_optional_str(meta.get("results_path"))
+    return extract_results_path_from_champion_record_impl(current)
 
 
 def _enforce_score_version_compatibility(
@@ -1128,79 +910,35 @@ def _enforce_score_version_compatibility(
     candidate_score_version: str | None,
     context: str,
 ) -> None:
-    # Backward-compat: older champions may not have score_version persisted.
-    if not current_score_version or not candidate_score_version:
-        return
-    if current_score_version != candidate_score_version:
-        raise ValueError(
-            "Inkompatibla scoring-versioner (äpplen och päron): "
-            f"current={current_score_version} candidate={candidate_score_version} ({context})"
-        )
+    return enforce_score_version_compatibility_impl(
+        current_score_version=current_score_version,
+        candidate_score_version=candidate_score_version,
+        context=context,
+    )
 
 
 def _dig(mapping: dict[str, Any], dotted_path: str) -> Any:
-    cur: Any = mapping
-    for part in dotted_path.split("."):
-        if not isinstance(cur, dict):
-            return None
-        cur = cur.get(part)
-    return cur
+    return dig_impl(mapping, dotted_path)
 
 
 def _load_backtest_info_from_results_path(results_path: str | None) -> dict[str, Any] | None:
-    if not results_path:
-        return None
-    try:
-        p = Path(results_path)
-        if not p.is_absolute():
-            # If a path-like string is provided, treat it as repo-relative.
-            if ("/" in results_path) or ("\\" in results_path):
-                p = (PROJECT_ROOT / p).resolve()
-            else:
-                p = (BACKTEST_RESULTS_DIR / p).resolve()
-        if not p.exists():
-            return None
-        data = _read_json_cached(p)
-        if not isinstance(data, dict):
-            return None
-        info = data.get("backtest_info")
-        return info if isinstance(info, dict) else None
-    except Exception:
-        return None
+    return load_backtest_info_from_results_path_impl(
+        results_path,
+        project_root=PROJECT_ROOT,
+        backtest_results_dir=BACKTEST_RESULTS_DIR,
+        read_json_cached=_read_json_cached,
+    )
 
 
 def _collect_comparability_warnings(
     current_info: dict[str, Any] | None,
     candidate_info: dict[str, Any] | None,
 ) -> list[str]:
-    if not isinstance(current_info, dict) or not isinstance(candidate_info, dict):
-        return []
-
-    watched_fields = [
-        "execution_mode.fast_window",
-        "execution_mode.env_precompute_features",
-        "execution_mode.precompute_enabled",
-        "execution_mode.precomputed_ready",
-        "execution_mode.mode_explicit",
-        "commission_rate",
-        "slippage_rate",
-        "git_hash",
-        "seed",
-        "htf.env_htf_exits",
-        "htf.use_new_exit_engine",
-        "htf.htf_candles_loaded",
-        "htf.htf_context_seen",
-    ]
-
-    warnings: list[str] = []
-    for path in watched_fields:
-        a = _dig(current_info, path)
-        b = _dig(candidate_info, path)
-        if a is None or b is None:
-            continue
-        if a != b:
-            warnings.append(f"{path} current={a!r} candidate={b!r}")
-    return warnings
+    return collect_comparability_warnings_impl(
+        current_info,
+        candidate_info,
+        dig=_dig,
+    )
 
 
 # Performance: Cache for loaded DataFrames
@@ -1736,59 +1474,30 @@ def _select_optuna_sampler(
     kwargs: dict[str, Any] | None,
     concurrency: int = 1,
 ):
-    if not OPTUNA_AVAILABLE:
-        raise RuntimeError("Optuna är inte installerat")
-    kwargs = (kwargs or {}).copy()
-
-    # Inject deterministic seed if not provided
-    if "seed" not in kwargs:
-        try:
-            kwargs["seed"] = int(os.environ.get("GENESIS_RANDOM_SEED", "42"))
-        except ValueError:
-            kwargs["seed"] = 42
-
-    name = (name or kwargs.pop("type", None) or "tpe").lower()
-    if name == "tpe":
-        # Apply better defaults for TPE to avoid degeneracy
-        if "multivariate" not in kwargs:
-            kwargs["multivariate"] = True
-        if "constant_liar" not in kwargs:
-            kwargs["constant_liar"] = True
-        if "n_startup_trials" not in kwargs:
-            # Scale startup trials with concurrency to reduce duplicates
-            # More workers = more simultaneous samples = need more random exploration
-            base_startup = 25
-            adaptive_startup = max(base_startup, 5 * concurrency)
-            kwargs["n_startup_trials"] = adaptive_startup
-        if "n_ei_candidates" not in kwargs:
-            # More candidates for better exploration
-            kwargs["n_ei_candidates"] = 48
-        return TPESampler(**kwargs)
-    if name == "random":
-        return RandomSampler(**kwargs)
-    if name == "cmaes":
-        return CmaEsSampler(**kwargs)
-    raise ValueError(f"Okänd Optuna-sampler: {name}")
+    return select_optuna_sampler_impl(
+        name,
+        kwargs,
+        concurrency=concurrency,
+        optuna_available=OPTUNA_AVAILABLE,
+        tpe_sampler_cls=TPESampler,
+        random_sampler_cls=RandomSampler,
+        cmaes_sampler_cls=CmaEsSampler,
+    )
 
 
 def _select_optuna_pruner(
     name: str | None,
     kwargs: dict[str, Any] | None,
 ):
-    if not OPTUNA_AVAILABLE:
-        raise RuntimeError("Optuna är inte installerat")
-    kwargs = (kwargs or {}).copy()
-    # Safer default: only prune when explicitly configured.
-    name = (name or kwargs.pop("type", None) or "none").lower()
-    if name == "median":
-        return MedianPruner(**kwargs)
-    if name == "sha":
-        return SuccessiveHalvingPruner(**kwargs)
-    if name == "hyperband":
-        return HyperbandPruner(**kwargs)
-    if name == "none":
-        return NopPruner()
-    raise ValueError(f"Okänd Optuna-pruner: {name}")
+    return select_optuna_pruner_impl(
+        name,
+        kwargs,
+        optuna_available=OPTUNA_AVAILABLE,
+        median_pruner_cls=MedianPruner,
+        successive_halving_pruner_cls=SuccessiveHalvingPruner,
+        hyperband_pruner_cls=HyperbandPruner,
+        nop_pruner_cls=NopPruner,
+    )
 
 
 def _create_optuna_study(
@@ -1804,73 +1513,24 @@ def _create_optuna_study(
     heartbeat_interval: int | None = None,
     heartbeat_grace_period: int | None = None,
 ):
-    if not OPTUNA_AVAILABLE:
-        raise RuntimeError("Optuna är inte installerat")
-    sampler_cfg = sampler_cfg or {}
-    pruner_cfg = pruner_cfg or {}
-    sampler_name = (
-        sampler_cfg.get("name")
-        or sampler_cfg.get("type")
-        or sampler_cfg.get("sampler")
-        or sampler_cfg.get("kind")
+    return create_optuna_study_impl(
+        run_id,
+        storage,
+        study_name,
+        sampler_cfg,
+        pruner_cfg,
+        direction,
+        allow_resume,
+        concurrency=concurrency,
+        heartbeat_interval=heartbeat_interval,
+        heartbeat_grace_period=heartbeat_grace_period,
+        optuna_available=OPTUNA_AVAILABLE,
+        select_optuna_sampler=_select_optuna_sampler,
+        select_optuna_pruner=_select_optuna_pruner,
+        rdb_storage_cls=RDBStorage,
+        create_study=getattr(optuna, "create_study", None),
+        optuna_lock=_OPTUNA_LOCK,
     )
-    pruner_name = (
-        pruner_cfg.get("name")
-        or pruner_cfg.get("type")
-        or pruner_cfg.get("pruner")
-        or pruner_cfg.get("kind")
-    )
-    sampler = _select_optuna_sampler(
-        sampler_name, sampler_cfg.get("kwargs"), concurrency=concurrency
-    )
-    pruner = _select_optuna_pruner(pruner_name, pruner_cfg.get("kwargs"))
-
-    # Defensive validation (Optuna enforces the same in RDBStorage):
-    # - heartbeat_interval must be None or a positive int
-    # - grace_period must be None or a positive int
-    if heartbeat_interval is not None and heartbeat_interval <= 0:
-        raise ValueError("heartbeat_interval must be a positive integer")
-    if heartbeat_grace_period is not None and heartbeat_grace_period <= 0:
-        raise ValueError("heartbeat_grace_period must be a positive integer")
-
-    def _default_engine_kwargs_for_storage(storage_url: str) -> dict[str, Any] | None:
-        """Return default SQLAlchemy engine_kwargs for Optuna RDBStorage.
-
-        For SQLite we set connect_args.timeout to reduce transient lock errors when
-        multiple workers/processes contend for the DB.
-
-        Ref: Optuna docs show `engine_kwargs={"connect_args": {"timeout": 10}}` for SQLite.
-        """
-
-        if not storage_url:
-            return None
-        if storage_url.lower().startswith("sqlite"):
-            return {"connect_args": {"timeout": 10}}
-        return None
-
-    storage_obj: Any | None = storage
-    if storage:
-        engine_kwargs = _default_engine_kwargs_for_storage(storage)
-        # To pass engine_kwargs (e.g. sqlite connect timeout), we must instantiate
-        # RDBStorage explicitly (passing a URL string alone doesn't allow engine_kwargs).
-        if heartbeat_interval is not None or engine_kwargs is not None:
-            storage_obj = RDBStorage(
-                storage,
-                engine_kwargs=engine_kwargs,
-                heartbeat_interval=heartbeat_interval,
-                grace_period=heartbeat_grace_period,
-            )
-
-    with _OPTUNA_LOCK:
-        study = optuna.create_study(
-            study_name=study_name or f"optimizer_{run_id}",
-            storage=storage_obj,
-            sampler=sampler,
-            pruner=pruner,
-            direction=(direction or "maximize"),
-            load_if_exists=allow_resume,
-        )
-    return study
 
 
 def _suggest_parameters(trial: Trial, spec: dict[str, Any]) -> dict[str, Any]:
@@ -1979,7 +1639,6 @@ def _run_optuna(
     if not OPTUNA_AVAILABLE:
         raise RuntimeError("Optuna-strategi vald men optuna är inte installerat")
 
-    # Validate search space before starting
     space_diagnostics = _estimate_optuna_search_space(parameters_spec)
     if space_diagnostics["potential_issues"]:
         print("\n⚠️  Search space warnings:")
@@ -1993,634 +1652,31 @@ def _run_optuna(
             )
         print()
 
-    storage = study_config.get("storage") or os.getenv("OPTUNA_STORAGE")
-    study_name = study_config.get("study_name") or os.getenv("OPTUNA_STUDY_NAME")
-    direction = study_config.get("direction") or "maximize"
-    timeout_seconds_raw = study_config.get("timeout_seconds")
-    timeout_seconds: int | None
-    if timeout_seconds_raw is None:
-        timeout_seconds = None
-    else:
-        timeout_seconds = int(timeout_seconds_raw)
-
-    def _parse_end_at(value: Any) -> datetime | None:
-        """Parse an absolute Optuna deadline.
-
-        Accepts ISO-8601 strings (with offset or 'Z') or datetime objects.
-        If the parsed datetime is naive, assume local timezone.
-        """
-
-        if value is None or value == "":
-            return None
-        if isinstance(value, datetime):
-            dt = value
-        else:
-            s = str(value).strip()
-            if s.endswith("Z"):
-                s = s[:-1] + "+00:00"
-            dt = datetime.fromisoformat(s)
-        if dt.tzinfo is None:
-            dt = dt.replace(tzinfo=datetime.now().astimezone().tzinfo)
-        return dt
-
-    end_at = _parse_end_at(study_config.get("end_at"))
-    start_monotonic = time.monotonic()
-
-    def _effective_timeout_seconds() -> int | None:
-        """Compute remaining time budget.
-
-        - If only timeout_seconds is set, returns remaining time since start of this run.
-        - If only end_at is set, returns remaining wall-clock time to deadline.
-        - If both are set, returns the minimum remaining budget.
-        """
-
-        candidates: list[int] = []
-
-        if timeout_seconds is not None:
-            elapsed = time.monotonic() - start_monotonic
-            remaining_rel = int(timeout_seconds - elapsed)
-            candidates.append(max(0, remaining_rel))
-
-        if end_at is not None:
-            now_utc = datetime.now(tz=UTC)
-            deadline_utc = end_at.astimezone(UTC)
-            remaining_abs = int((deadline_utc - now_utc).total_seconds())
-            candidates.append(max(0, remaining_abs))
-
-        if not candidates:
-            return None
-        return min(candidates)
-
-    initial_budget = _effective_timeout_seconds()
-    if initial_budget is not None and initial_budget <= 0:
-        raise ValueError(
-            "Optuna time budget is already exhausted (timeout_seconds/end_at). "
-            "Check optuna.end_at or recompute timeout_seconds."
-        )
-    sampler_cfg = study_config.get("sampler")
-    pruner_cfg = study_config.get("pruner")
-    if isinstance(sampler_cfg, str):
-        sampler_cfg = {"name": sampler_cfg}
-    if isinstance(pruner_cfg, str):
-        pruner_cfg = {"name": pruner_cfg}
-
-    heartbeat_interval_raw = study_config.get("heartbeat_interval")
-    heartbeat_grace_raw = study_config.get("heartbeat_grace_period")
-    heartbeat_interval = (
-        int(heartbeat_interval_raw) if heartbeat_interval_raw not in (None, "") else None
-    )
-    heartbeat_grace = int(heartbeat_grace_raw) if heartbeat_grace_raw not in (None, "") else None
-
-    # Default heartbeats when using storage (reduces risk of zombie RUNNING on resume).
-    if storage and heartbeat_interval is None:
-        heartbeat_interval = 60
-    if storage and heartbeat_grace is None:
-        heartbeat_grace = 180
-
-    score_version = _resolve_score_version_for_optimizer()
-
-    results: list[dict[str, Any]] = []
-    duplicate_streak = 0
-    max_duplicate_streak = int(os.getenv("OPTUNA_MAX_DUPLICATE_STREAK", "10"))
-    total_trials_attempted = 0
-    duplicate_count = 0
-    zero_trade_count = 0
-    score_memory: dict[str, float] = {}  # Cache scores for duplicate parameter sets
-
-    # Fast duplicate precheck using persistent guard (SQLite WAL-backed)
-    dedup_guard_enabled = bool(study_config.get("dedup_guard_enabled", True))
-    guard: NoDupeGuard | None = (
-        NoDupeGuard(sqlite_path=str(run_dir / "_dedup.db")) if dedup_guard_enabled else None
-    )
-
-    def objective(trial):
-        nonlocal duplicate_streak, total_trials_attempted, duplicate_count, zero_trade_count
-        total_trials_attempted += 1
-        try:
-            trial.set_user_attr("score_version", score_version)
-        except Exception as exc:
-            logger.debug(
-                "Failed to set Optuna trial user attribute 'score_version': %s",
-                exc,
-                exc_info=True,
-            )
-        parameters = _suggest_parameters(trial, parameters_spec)
-        trial_number = trial.number + 1
-        key = _trial_key(parameters)
-
-        # Pre-check duplicates across workers/runs using stable param signature
-        sig: str | None = None
-        if guard is not None:
-            try:
-                sig = param_signature(parameters)
-                if guard.seen(sig):
-                    duplicate_streak += 1
-                    duplicate_count += 1
-                    trial.set_user_attr("duplicate", True)
-                    trial.set_user_attr("skipped", True)
-                    # For backward‑compatibility with tests and diagnostics,
-                    # mark both generic and precheck-specific attributes.
-                    trial.set_user_attr("penalized_duplicate", True)
-                    trial.set_user_attr("penalized_duplicate_precheck", True)
-                    # In unit tests (mocked make_trial), advance the mocked trial stream.
-                    # In production, avoid running a backtest here for performance.
-                    try:
-                        make_mod = getattr(make_trial, "__module__", "") or ""
-                        make_name = getattr(make_trial, "__name__", "") or ""
-                        in_tests = (
-                            make_mod.startswith("tests.")
-                            or make_name != "make_trial"
-                            or ("mock" in make_name.lower())
-                        )
-                    except Exception:
-                        in_tests = False
-
-                    if in_tests:
-                        payload = make_trial(trial_number, parameters)
-                        payload = dict(payload or {})
-                        payload["trial_id"] = f"trial_{trial_number:03d}"
-                        payload["parameters"] = parameters
-                        payload["skipped"] = True
-                        payload.setdefault("reason", "duplicate_guard_precheck")
-                        payload.setdefault(
-                            "score", {"score": 0.0, "metrics": {}, "hard_failures": []}
-                        )
-                        payload.setdefault("constraints", {"ok": True, "reasons": []})
-                        results.append(payload)
-                    else:
-                        # Do NOT run backtest; record a lightweight skipped payload
-                        results.append(
-                            {
-                                "trial_id": f"trial_{trial_number:03d}",
-                                "parameters": parameters,
-                                "skipped": True,
-                                "reason": "duplicate_guard_precheck",
-                                "score": {"score": 0.0, "metrics": {}, "hard_failures": []},
-                                "constraints": {"ok": True, "reasons": []},
-                            }
-                        )
-                    if duplicate_streak >= max_duplicate_streak:
-                        raise optuna.exceptions.OptunaError(
-                            "Duplicate parameter suggestions limit reached"
-                        )
-                    return -1e6
-                # Reserve signature to avoid concurrent duplicates
-                guard.add(sig)
-            except Exception:
-                # Best-effort guard; continue without precheck on guard failure
-                sig = None
-        if key in existing_trials:
-            cached = existing_trials[key]
-            trial.set_user_attr("skipped", True)
-            trial.set_user_attr("duplicate", True)
-            duplicate_streak += 1
-            duplicate_count += 1
-            if duplicate_streak >= max_duplicate_streak:
-                raise optuna.exceptions.OptunaError("Duplicate parameter suggestions limit reached")
-            results.append({**cached, "skipped": True})
-            # Penalize duplicates heavily so sampler moves away from same params
-            trial.set_user_attr("penalized_duplicate", True)
-            return -1e6
-
-        optuna_ctx = {
-            "trial_id": trial._trial_id,
-            "storage": storage,
-            "study_name": study_name,
-            "pruner": pruner_cfg,
-        }
-        payload = make_trial(trial_number, parameters, optuna_context=optuna_ctx)
-        results.append(payload)
-
-        # CACHE REUSE FIX: If payload is from cache, return actual score even if duplicate
-        if payload.get("from_cache"):
-            score_block = payload.get("score") or {}
-            cached_score = float(score_block.get("score", 0.0) or 0.0)
-            trial.set_user_attr("cached", True)
-            trial.set_user_attr("cache_reused", True)
-            if payload.get("results_path"):
-                trial.set_user_attr("backtest_path", payload["results_path"])
-            logger.info(
-                f"[CACHE] Trial {trial.number} reusing cached score {cached_score:.2f} "
-                f"(from_cache=True in payload)"
-            )
-            # Store in memory for future fast lookup
-            score_memory[key] = cached_score
-            # Don't penalize cache hits - return actual score
-            duplicate_streak = 0  # Reset streak since we got useful feedback
-            return cached_score
-
-        if payload.get("skipped"):
-            reason = payload.get("reason")
-            trial.set_user_attr("skipped", True)
-            if reason == "duplicate_within_run":
-                duplicate_streak += 1
-                duplicate_count += 1
-                trial.set_user_attr("duplicate", True)
-                if duplicate_streak >= max_duplicate_streak:
-                    raise optuna.exceptions.OptunaError(
-                        "Duplicate parameter suggestions limit reached"
-                    )
-            elif reason == "zero_trade_preflight":
-                zero_trade_count += 1
-                duplicate_streak = 0
-                trial.set_user_attr("zero_trade_preflight", True)
-                penalty = float(payload.get("score", {}).get("score", -1e5) or -1e5)
-                return penalty
-            else:
-                # Only reset streak for non-duplicate skips
-                duplicate_streak = 0
-            # Penalize in-run duplicates to avoid degeneracy
-            if reason == "duplicate_within_run":
-                trial.set_user_attr("penalized_duplicate", True)
-                # Check if we have cached score from previous run
-                if key in score_memory:
-                    cached_score = score_memory[key]
-                    logger.info(
-                        f"[CACHE] Trial {trial.number} reusing memory-cached score {cached_score:.2f} "
-                        f"(duplicate_within_run but score available)"
-                    )
-                    return cached_score
-                return -1e6
-            # Other skip reasons (e.g., already_completed) can report neutral score
-            return float(payload.get("score", {}).get("score", 0.0) or 0.0)
-
-        if payload.get("error"):
-            trial.set_user_attr("error", payload.get("error"))
-            # Release reserved signature to allow future attempts if run failed
-            if guard is not None and sig:
-                try:
-                    guard.remove(sig)
-                except Exception:  # nosec B110
-                    pass  # Guard already removed
-            # Don't reset duplicate streak on errors
-            raise optuna.TrialPruned()
-
-        constraints = payload.get("constraints") or {}
-        score_block = payload.get("score") or {}
-        score_value = float(score_block.get("score", 0.0) or 0.0)
-
-        # Always attach these for traceability, even when we return early due to soft constraints.
-        # (Optuna best_trial can otherwise end up with no payload saved, making run_meta
-        # and best_trial.json much less useful.)
-        trial.set_user_attr("score_block", score_block)
-        trial.set_user_attr("result_payload", payload)
-
-        # Check for zero trades to track this issue - do this BEFORE early returns
-        num_trades_value = _extract_num_trades(payload)
-        num_trades = num_trades_value if num_trades_value is not None else 0
-        if num_trades == 0:
-            zero_trade_count += 1
-            trial.set_user_attr("zero_trades", True)
-
-        # Mjuk constraints: returnera straffad poäng istället för att pruna,
-        # så att Optuna kan ranka försök och fortsätta utforskning.
-        if not constraints.get("ok", True):
-            # Abort-heuristic (post-backtest) already encodes the intended penalty in score_value.
-            # Do not apply the additional soft-constraint penalty on top, otherwise Optuna sees a
-            # double-penalized value (e.g. -500 -> -650) which can mask the intended signal.
-            reasons = constraints.get("reasons")
-            is_abort_heuristic = bool(payload.get("abort_reason")) or (
-                isinstance(reasons, list) and "aborted_by_heuristic" in reasons
-            )
-            if is_abort_heuristic:
-                trial.set_user_attr("constraints", constraints)
-                trial.set_user_attr("constraints_soft_fail", True)
-                trial.set_user_attr("aborted_by_heuristic", True)
-                if payload.get("abort_reason"):
-                    trial.set_user_attr("abort_reason", payload.get("abort_reason"))
-                if payload.get("abort_details"):
-                    trial.set_user_attr("abort_details", payload.get("abort_details"))
-                return score_value
-            trial.set_user_attr("constraints", constraints)
-            trial.set_user_attr("constraints_soft_fail", True)
-            trial.set_user_attr("constraints_penalty", CONSTRAINT_SOFT_PENALTY)
-            # Mjukare straff för att bevara gradient; justerbart via GENESIS_CONSTRAINT_SOFT_PENALTY
-            return score_value - CONSTRAINT_SOFT_PENALTY
-
-        # Only reset duplicate streak on successful, non-zero-trade trials
-        if num_trades > 0:
-            duplicate_streak = 0
-
-        # Store score in memory for future cache lookup
-        score_memory[key] = score_value
-
-        return score_value
-
-    remaining_trials = None if max_trials is None else max(0, max_trials)
-    bootstrap_requested_raw = study_config.get("bootstrap_random_trials")
-    bootstrap_requested = int(bootstrap_requested_raw) if bootstrap_requested_raw else 0
-    bootstrap_seed_raw = study_config.get("bootstrap_seed")
-    random_kwargs: dict[str, Any] = {}
-    if bootstrap_seed_raw is not None:
-        try:
-            random_kwargs["seed"] = int(bootstrap_seed_raw)
-        except (TypeError, ValueError):
-            pass
-    if bootstrap_requested > 0:
-        bootstrap_to_run = bootstrap_requested
-        if remaining_trials is not None:
-            bootstrap_to_run = min(bootstrap_to_run, remaining_trials)
-        if bootstrap_to_run > 0:
-            print(
-                f"[Optuna] Bootstrapper {bootstrap_to_run} random-trials (RandomSampler) innan "
-                f"huvudsamplern (temporär concurrency=1)"
-            )
-            bootstrap_sampler_cfg = {"name": "random", "kwargs": random_kwargs}
-            bootstrap_study = _create_optuna_study(
-                run_id=run_id,
-                storage=storage,
-                study_name=study_name,
-                sampler_cfg=bootstrap_sampler_cfg,
-                pruner_cfg=pruner_cfg,
-                direction=direction,
-                allow_resume=True,
-                concurrency=1,
-                heartbeat_interval=heartbeat_interval,
-                heartbeat_grace_period=heartbeat_grace,
-            )
-            if resume_signature is not None:
-                _verify_or_set_optuna_study_signature(bootstrap_study, resume_signature)
-            _verify_or_set_optuna_study_score_version(bootstrap_study, score_version)
-            bootstrap_study.optimize(
-                objective,
-                n_trials=bootstrap_to_run,
-                timeout=_effective_timeout_seconds(),
-                n_jobs=1,
-                gc_after_trial=True,
-                show_progress_bar=False,
-            )
-            if remaining_trials is not None:
-                remaining_trials = max(0, remaining_trials - bootstrap_to_run)
-    if remaining_trials is not None and remaining_trials == 0:
-        return results
-
-    study = _create_optuna_study(
+    return run_optuna_impl(
+        study_config=study_config,
+        parameters_spec=parameters_spec,
+        make_trial=make_trial,
+        run_dir=run_dir,
         run_id=run_id,
-        storage=storage,
-        study_name=study_name,
-        sampler_cfg=sampler_cfg,
-        pruner_cfg=pruner_cfg,
-        direction=direction,
-        allow_resume=allow_resume or bootstrap_requested > 0,
+        existing_trials=existing_trials,
+        max_trials=max_trials,
         concurrency=concurrency,
-        heartbeat_interval=heartbeat_interval,
-        heartbeat_grace_period=heartbeat_grace,
+        allow_resume=allow_resume,
+        resume_signature=resume_signature,
+        create_optuna_study=_create_optuna_study,
+        verify_or_set_optuna_study_signature=_verify_or_set_optuna_study_signature,
+        verify_or_set_optuna_study_score_version=_verify_or_set_optuna_study_score_version,
+        resolve_score_version_for_optimizer=_resolve_score_version_for_optimizer,
+        suggest_parameters=_suggest_parameters,
+        trial_key=_trial_key,
+        extract_num_trades=_extract_num_trades,
+        atomic_write_text=_atomic_write_text,
+        serialize_meta=_serialize_meta,
+        json_dumps=_json_dumps,
+        constraint_soft_penalty=CONSTRAINT_SOFT_PENALTY,
+        logger=logger,
+        optuna_module=optuna,
     )
-    if resume_signature is not None:
-        _verify_or_set_optuna_study_signature(study, resume_signature)
-    _verify_or_set_optuna_study_score_version(study, score_version)
-
-    # Robustness: checkpoint run metadata periodically so interrupted runs still have
-    # best_trial.json + optuna meta on disk.
-    checkpoint_every_raw = os.environ.get("GENESIS_OPTUNA_CHECKPOINT_EVERY", "25")
-    try:
-        checkpoint_every = int(checkpoint_every_raw)
-    except (TypeError, ValueError):
-        checkpoint_every = 25
-    if checkpoint_every < 1:
-        checkpoint_every = 0
-
-    run_meta_path = run_dir / "run_meta.json"
-    try:
-        run_meta_checkpoint = json.loads(run_meta_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        run_meta_checkpoint = {}
-
-    def _write_optuna_checkpoint(study_to_write) -> None:
-        best_payload_local: dict[str, Any] | None = None
-        best_trial_number_local: str | None = None
-        best_value_local: float | None = None
-        if study_to_write.best_trials:
-            try:
-                best_trial_local = study_to_write.best_trial
-                best_payload_local = best_trial_local.user_attrs.get("result_payload")
-                best_value_local = float(study_to_write.best_value)
-                best_trial_number_local = (
-                    best_payload_local.get("trial_id") if best_payload_local else None
-                )
-            except Exception:
-                best_payload_local = None
-
-        run_meta_checkpoint.setdefault("optuna", {}).update(
-            {
-                "study_name": study_to_write.study_name,
-                "storage": storage,
-                "direction": direction,
-                "n_trials": len(study_to_write.trials),
-                "best_value": best_value_local,
-                "best_trial_number": best_trial_number_local,
-            }
-        )
-        _atomic_write_text(run_meta_path, _json_dumps(_serialize_meta(run_meta_checkpoint)))
-        if best_payload_local is not None:
-            _atomic_write_text(run_dir / "best_trial.json", _json_dumps(best_payload_local))
-
-    def _checkpoint_callback(study_to_write, frozen_trial) -> None:
-        if checkpoint_every and (int(frozen_trial.number) + 1) % checkpoint_every == 0:
-            try:
-                _write_optuna_checkpoint(study_to_write)
-            except Exception:
-                # Best-effort checkpointing only
-                pass
-
-    try:
-        study.optimize(
-            objective,
-            n_trials=remaining_trials,
-            timeout=_effective_timeout_seconds(),
-            n_jobs=concurrency,
-            gc_after_trial=True,
-            show_progress_bar=False,  # Performance: Disable progress bar for batch runs
-            callbacks=[_checkpoint_callback] if checkpoint_every else None,
-        )
-    finally:
-        # Ensure we leave a usable best_trial.json + optuna meta even on interrupts.
-        try:
-            _write_optuna_checkpoint(study)
-        except Exception:
-            pass
-
-    # Collect cache statistics
-    cache_stats = {
-        "total_trials": len(study.trials),
-        "cached_trials": sum(1 for t in study.trials if t.user_attrs.get("cached", False)),
-        "unique_backtests": len(
-            {
-                t.user_attrs.get("backtest_path", "")
-                for t in study.trials
-                if t.user_attrs.get("backtest_path")
-            }
-        ),
-    }
-    if cache_stats["total_trials"] > 0:
-        cache_stats["cache_hit_rate"] = cache_stats["cached_trials"] / cache_stats["total_trials"]
-    else:
-        cache_stats["cache_hit_rate"] = 0.0
-
-    logger.info(
-        f"[CACHE STATS] {cache_stats['cached_trials']}/{cache_stats['total_trials']} trials cached "
-        f"({cache_stats['cache_hit_rate']:.1%} hit rate), "
-        f"{cache_stats['unique_backtests']} unique backtests"
-    )
-
-    # Track PRUNED trials explicitly (Optuna pruning and our own TrialPruned paths)
-    try:
-        from optuna.trial import TrialState
-
-        pruned_count = sum(1 for t in study.trials if t.state == TrialState.PRUNED)
-    except Exception:
-        pruned_count = 0
-
-    # Warn about abnormal cache usage
-    if cache_stats["cache_hit_rate"] > 0.8 and cache_stats["total_trials"] > 10:
-        logger.warning(
-            "[CACHE] Very high cache hit rate (>80%) - consider broadening search space or "
-            "reducing bootstrap_random_trials if using cached study"
-        )
-    elif cache_stats["cache_hit_rate"] < 0.05 and cache_stats["total_trials"] > 50:
-        logger.info("[CACHE] Low cache reuse (<5%) - good exploration diversity")
-
-    # Diagnostic warnings for duplicate and zero-trade issues
-    if total_trials_attempted > 0:
-        duplicate_ratio = duplicate_count / total_trials_attempted
-        zero_trade_ratio = zero_trade_count / total_trials_attempted
-        pruned_ratio = pruned_count / total_trials_attempted
-
-        if duplicate_ratio > 0.5:
-            print(
-                f"\n⚠️  WARNING: High duplicate rate ({duplicate_ratio*100:.1f}%)\n"
-                f"   {duplicate_count}/{total_trials_attempted} trials were duplicates.\n"
-                f"   This suggests:\n"
-                f"   - Search space may be too narrow\n"
-                f"   - Float step sizes causing parameter collapse\n"
-                f"   - TPE sampler degenerating\n"
-            )
-            if concurrency > 4:
-                print(
-                    f"   - High concurrency (n_jobs={concurrency}) increases duplicates\n"
-                    f"     This is normal with parallel optimization + discrete spaces\n"
-                )
-            print(
-                f"   Recommendations:\n"
-                f"   - Widen parameter ranges\n"
-                f"   - Increase n_startup_trials (try {max(25, 5 * concurrency)}+)\n"
-            )
-            if concurrency > 4:
-                print(
-                    f"   - Reduce max_concurrent to {max(2, concurrency // 2)} for discrete spaces\n"
-                )
-            print(
-                "   - Use multivariate=true in TPE sampler\n"
-                "   - Consider removing or loosening step sizes\n"
-            )
-
-        if zero_trade_ratio > 0.5:
-            print(
-                f"\n⚠️  WARNING: High zero-trade rate ({zero_trade_ratio*100:.1f}%)\n"
-                f"   {zero_trade_count}/{total_trials_attempted} trials produced 0 trades.\n"
-                f"   This suggests:\n"
-                f"   - Entry confidence thresholds too high\n"
-                f"   - Fibonacci gates too strict\n"
-                f"   - Multi-timeframe filtering too aggressive\n"
-                f"   Recommendations:\n"
-                f"   - Lower entry_conf_overall (try 0.25-0.35)\n"
-                f"   - Widen fibonacci tolerance_atr ranges\n"
-                f"   - Enable LTF override when HTF blocks\n"
-                f"   - Run smoke test (2-5 trials) before long runs\n"
-            )
-
-        if pruned_ratio > 0.5:
-            print(
-                f"\n⚠️  WARNING: High pruned rate ({pruned_ratio*100:.1f}%)\n"
-                f"   {pruned_count}/{total_trials_attempted} trials were pruned.\n"
-                f"   This suggests:\n"
-                f"   - Pruner is too aggressive (warmup/interval too low)\n"
-                f"   - Objective intermediate reporting is too noisy early\n"
-                f"   Recommendations:\n"
-                f"   - Increase n_warmup_steps and/or interval_steps\n"
-                f"   - Consider disabling pruner for short diagnostics\n"
-            )
-
-    # Performance: Batch metadata updates to reduce file I/O
-    best_payload: dict[str, Any] | None = None
-    optuna_meta: dict[str, Any] = {}
-
-    if study.best_trials:  # finns åtminstone en icke-prunad trial
-        try:
-            best_trial = study.best_trial
-            best_payload = best_trial.user_attrs.get("result_payload")
-            optuna_meta = {
-                "study_name": study.study_name,
-                "storage": storage,
-                "direction": direction,
-                "n_trials": len(study.trials),
-                "best_value": study.best_value,
-                "best_trial_number": best_payload.get("trial_id") if best_payload else None,
-                "diagnostics": {
-                    "total_trials_attempted": total_trials_attempted,
-                    "duplicate_count": duplicate_count,
-                    "pruned_count": pruned_count,
-                    "zero_trade_count": zero_trade_count,
-                    "duplicate_ratio": duplicate_count / max(1, total_trials_attempted),
-                    "pruned_ratio": pruned_count / max(1, total_trials_attempted),
-                    "zero_trade_ratio": zero_trade_count / max(1, total_trials_attempted),
-                },
-            }
-        except ValueError:
-            best_payload = None
-            optuna_meta = {
-                "study_name": study.study_name,
-                "storage": storage,
-                "direction": direction,
-                "n_trials": len(study.trials),
-                "best_value": None,
-                "best_trial_number": None,
-                "diagnostics": {
-                    "total_trials_attempted": total_trials_attempted,
-                    "duplicate_count": duplicate_count,
-                    "pruned_count": pruned_count,
-                    "zero_trade_count": zero_trade_count,
-                    "duplicate_ratio": duplicate_count / max(1, total_trials_attempted),
-                    "pruned_ratio": pruned_count / max(1, total_trials_attempted),
-                    "zero_trade_ratio": zero_trade_count / max(1, total_trials_attempted),
-                },
-            }
-    else:
-        optuna_meta = {
-            "study_name": study.study_name,
-            "storage": storage,
-            "direction": direction,
-            "n_trials": len(study.trials),
-            "best_value": None,
-            "best_trial_number": None,
-            "diagnostics": {
-                "total_trials_attempted": total_trials_attempted,
-                "duplicate_count": duplicate_count,
-                "pruned_count": pruned_count,
-                "zero_trade_count": zero_trade_count,
-                "duplicate_ratio": duplicate_count / max(1, total_trials_attempted),
-                "pruned_ratio": pruned_count / max(1, total_trials_attempted),
-                "zero_trade_ratio": zero_trade_count / max(1, total_trials_attempted),
-            },
-        }
-
-    # Performance: Single file read/write for metadata
-    run_meta_path = run_dir / "run_meta.json"
-    try:
-        run_meta = json.loads(run_meta_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        run_meta = {}
-
-    run_meta.setdefault("optuna", {}).update(optuna_meta)
-
-    # Performance: Write best trial and metadata in sequence to avoid conflicts
-    if best_payload is not None:
-        best_json_path = run_dir / "best_trial.json"
-        _atomic_write_text(best_json_path, _json_dumps(best_payload))
-
-    _atomic_write_text(run_meta_path, _json_dumps(_serialize_meta(run_meta)))
-
-    return results
 
 
 def _create_run_id(proposed: str | None = None) -> str:

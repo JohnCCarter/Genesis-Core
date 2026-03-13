@@ -916,6 +916,38 @@ def test_run_optimizer_optuna_strategy(tmp_path: Path) -> None:
 
 
 @_OPTUNA_SKIP
+def test_run_optimizer_optuna_strategy_uses_runner_run_optuna_patch_surface(tmp_path: Path) -> None:
+    config = _make_optuna_test_config(max_trials=2, resume=False, storage=None)
+    config_path = tmp_path / "optuna_patch_surface.yaml"
+    _write_yaml(config_path, config)
+
+    run_meta_payload = _base_run_meta_payload()
+
+    def fake_ensure(run_dir: Path, *_args: Any, **_kwargs: Any) -> None:
+        _write_run_meta(run_dir, run_meta_payload)
+
+    expected = [
+        {
+            "trial_id": "trial_001",
+            "parameters": _entry_conf_params(0.4),
+            "score": {"score": 1.0, "metrics": {}, "hard_failures": []},
+            "constraints": _ok_constraints(),
+            "results_path": "dummy.json",
+        }
+    ]
+
+    with (
+        _results_dir_patch(tmp_path / "results"),
+        patch("core.optimizer.runner._ensure_run_metadata", side_effect=fake_ensure),
+        patch("core.optimizer.runner._run_optuna", return_value=expected) as mock_run_optuna,
+    ):
+        results = runner.run_optimizer(config_path, run_id="run_optuna_patch_surface")
+
+    assert results == expected
+    mock_run_optuna.assert_called_once()
+
+
+@_OPTUNA_SKIP
 def test_run_optimizer_validation_fallback_reads_from_optuna_storage(tmp_path: Path) -> None:
     config = _make_optuna_test_config(
         max_trials=0,

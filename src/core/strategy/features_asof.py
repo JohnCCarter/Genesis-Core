@@ -71,6 +71,9 @@ from core.strategy.features_asof_parts.hash_utils import (
 from core.strategy.features_asof_parts.hash_utils import (
     safe_series_value as _safe_series_value_impl,
 )
+from core.strategy.features_asof_parts.indicator_pipeline_utils import (
+    build_indicator_pipeline as _build_indicator_pipeline_impl,
+)
 from core.strategy.features_asof_parts.indicator_state_utils import (
     build_indicator_state as _build_indicator_state_impl,
 )
@@ -359,50 +362,53 @@ def _extract_asof(
     _log_precompute_status(use_precompute, pre, pre_idx, window_start_idx)
 
     global FAST_HITS, SLOW_HITS
-    indicator_state = _build_indicator_state_impl(
-        highs,
-        lows,
-        closes,
-        asof_bar,
-        pre,
-        pre_idx,
-        atr_period,
-        make_indicator_fingerprint,
-        _indicator_cache_lookup,
-        _indicator_cache_store,
-        calculate_rsi,
-        bollinger_bands,
-        calculate_atr,
-        calculate_volatility_shift,
+    indicator_pipeline = _build_indicator_pipeline_impl(
+        highs=highs,
+        lows=lows,
+        closes=closes,
+        asof_bar=asof_bar,
+        pre=pre,
+        pre_idx=pre_idx,
+        atr_period=atr_period,
+        build_indicator_state_fn=lambda highs_arg, lows_arg, closes_arg, asof_bar_arg, pre_arg, pre_idx_arg, atr_period_arg: _build_indicator_state_impl(
+            highs_arg,
+            lows_arg,
+            closes_arg,
+            asof_bar_arg,
+            pre_arg,
+            pre_idx_arg,
+            atr_period_arg,
+            make_indicator_fingerprint,
+            _indicator_cache_lookup,
+            _indicator_cache_store,
+            calculate_rsi,
+            bollinger_bands,
+            calculate_atr,
+            calculate_volatility_shift,
+        ),
+        build_base_feature_bundle_fn=lambda rsi_current_raw_arg, rsi_lag1_raw_arg, bb_last_3_arg, vol_shift_last_3_arg, vol_shift_current_arg, atr_window_56_arg, atr_vals_arg, atr14_current_arg: _build_base_feature_bundle_impl(
+            rsi_current_raw_arg,
+            rsi_lag1_raw_arg,
+            bb_last_3_arg,
+            vol_shift_last_3_arg,
+            vol_shift_current_arg,
+            atr_window_56_arg,
+            atr_vals_arg,
+            atr14_current_arg,
+            _clip,
+            _build_atr_percentiles,
+        ),
     )
-    if indicator_state.rsi_used_fast_path:
+    if indicator_pipeline.rsi_used_fast_path:
         FAST_HITS += 1
     else:
         SLOW_HITS += 1
 
-    rsi_current_raw = indicator_state.rsi_current_raw
-    rsi_lag1_raw = indicator_state.rsi_lag1_raw
-    bb_last_3 = indicator_state.bb_last_3
-    atr_vals = indicator_state.atr_vals
-    atr_window_56 = indicator_state.atr_window_56
-    atr14_current = indicator_state.atr14_current
-    vol_shift_last_3 = indicator_state.vol_shift_last_3
-    vol_shift_current = indicator_state.vol_shift_current
-    base_feature_bundle = _build_base_feature_bundle_impl(
-        rsi_current_raw,
-        rsi_lag1_raw,
-        bb_last_3,
-        vol_shift_last_3,
-        vol_shift_current,
-        atr_window_56,
-        atr_vals,
-        atr14_current,
-        _clip,
-        _build_atr_percentiles,
-    )
-    features = dict(base_feature_bundle.features)
-    rsi_current = base_feature_bundle.rsi_current
-    atr_percentiles = base_feature_bundle.atr_percentiles
+    features = indicator_pipeline.features
+    rsi_current = indicator_pipeline.rsi_current
+    atr_percentiles = indicator_pipeline.atr_percentiles
+    atr_vals = indicator_pipeline.atr_vals
+    atr14_current = indicator_pipeline.atr14_current
 
     # === FIBONACCI FEATURES (levels + distances/proximity) ===
     # Beräkna endast om vi har tillräckligt med data (kräver ATR, swing-detektion)

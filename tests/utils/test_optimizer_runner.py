@@ -297,6 +297,72 @@ def test_derive_dates_supports_snap_prefix_symbol_timeframe_iso_dates() -> None:
     assert end == "2024-12-31"
 
 
+def test_load_search_config_rejects_non_mapping_yaml(tmp_path: Path) -> None:
+    config_path = tmp_path / "invalid.yaml"
+    config_path.write_text("- just\n- a\n- list\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="search config måste vara YAML-mapp"):
+        runner.load_search_config(config_path)
+
+
+def test_expand_parameters_nested_grid_and_fixed_parity() -> None:
+    spec = {
+        "thresholds": {
+            "entry_conf_overall": {"type": "grid", "values": [0.4, 0.5]},
+            "exit_conf": {"type": "fixed", "value": 0.3},
+        },
+        "risk": {
+            "multiplier": {"type": "grid", "values": [1.0, 2.0]},
+        },
+    }
+
+    expanded = list(runner.expand_parameters(spec))
+
+    assert expanded == [
+        {
+            "thresholds": {"entry_conf_overall": 0.4, "exit_conf": 0.3},
+            "risk": {"multiplier": 1.0},
+        },
+        {
+            "thresholds": {"entry_conf_overall": 0.4, "exit_conf": 0.3},
+            "risk": {"multiplier": 2.0},
+        },
+        {
+            "thresholds": {"entry_conf_overall": 0.5, "exit_conf": 0.3},
+            "risk": {"multiplier": 1.0},
+        },
+        {
+            "thresholds": {"entry_conf_overall": 0.5, "exit_conf": 0.3},
+            "risk": {"multiplier": 2.0},
+        },
+    ]
+
+
+def test_get_default_runtime_version_reads_runner_facade_state(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(runner, "_DEFAULT_CONFIG_CACHE", {"cached": True})
+    monkeypatch.setattr(runner, "_DEFAULT_CONFIG_RUNTIME_VERSION", 777)
+
+    assert runner._get_default_runtime_version() == 777
+
+
+def test_get_backtest_economics_reads_runner_facade_state(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        runner,
+        "_BACKTEST_DEFAULTS_CACHE",
+        {"capital": "12345", "commission": "0.01", "slippage": "0.02"},
+    )
+
+    capital, commission, slippage = runner._get_backtest_economics()
+
+    assert capital == pytest.approx(12345.0)
+    assert commission == pytest.approx(0.01)
+    assert slippage == pytest.approx(0.02)
+
+
 def test_collect_comparability_warnings_detects_drift_without_raising() -> None:
     current_info = {
         "execution_mode": {
@@ -716,6 +782,92 @@ def test_run_trial_uses_scoring_thresholds_from_constraints(
     assert thresholds.min_trades == 1
     assert thresholds.min_profit_factor == pytest.approx(0.55)
     assert thresholds.max_max_dd == pytest.approx(0.5)
+
+
+def test_run_trial_cache_hit_keeps_trial_prep_in_runner_facade(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _set_score_env_with_shell(monkeypatch, score_version="v2")
+
+    trial = _trial_config(parameters=_entry_conf_params(0.4))
+    cache_lookup_payload = {
+        "score": {"score": 12.5, "metrics": {"num_trades": 3}, "hard_failures": []},
+        "constraints": {"ok": True, "reasons": []},
+        "results_path": "cached.json",
+    }
+
+    cache_instance = MagicMock()
+    cache_instance.lookup.return_value = cache_lookup_payload
+
+    with (
+        patch("core.optimizer.runner.TrialResultCache", return_value=cache_instance),
+        _default_config_patch(),
+        _default_runtime_version_patch(),
+    ):
+        payload = runner.run_trial(
+            trial,
+            run_id=TEST_RUN_ID,
+            index=1,
+            run_dir=tmp_path,
+            allow_resume=False,
+            existing_trials={},
+            cache_enabled=True,
+        )
+
+    assert payload["from_cache"] is True
+    assert payload["trial_id"] == "trial_001"
+    assert payload["parameters"] == _entry_conf_params(0.4)
+    assert payload["config_path"] == "trial_001_config.json"
+
+    written_trial = json.loads((tmp_path / "trial_001.json").read_text(encoding="utf-8"))
+    assert written_trial["from_cache"] is True
+    assert written_trial["config_path"] == "trial_001_config.json"
+
+
+def test_run_trial_config_payload_uses_resolved_score_version(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("GENESIS_SCORE_VERSION", " V2 ")
+    monkeypatch.delenv("GENESIS_FORCE_SHELL", raising=False)
+
+    trial = _trial_config(parameters=_entry_conf_params(0.4))
+
+    def fake_run_backtest_direct(*_args: Any, **_kwargs: Any) -> tuple[int, str, dict[str, Any]]:
+        return (0, "", _backtest_payload(10))
+
+    with (
+        _default_config_patch(),
+        _default_runtime_version_patch(),
+        patch("core.optimizer.runner._check_abort_heuristic", return_value={"ok": True}),
+        _run_backtest_direct_side_effect_patch(fake_run_backtest_direct),
+        patch(
+            "core.optimizer.runner.score_backtest",
+            return_value={
+                "score": 1.0,
+                "metrics": {
+                    "num_trades": 10,
+                    "total_return": 0.0,
+                    "profit_factor": 1.0,
+                    "max_drawdown": 0.0,
+                    "sharpe_ratio": 0.0,
+                    "win_rate": 0.5,
+                },
+                "hard_failures": [],
+                "baseline": {"score_version": "v2"},
+            },
+        ),
+    ):
+        runner.run_trial(
+            trial,
+            run_id=TEST_RUN_ID,
+            index=1,
+            run_dir=tmp_path,
+            allow_resume=False,
+            existing_trials={},
+        )
+
+    cfg = json.loads((tmp_path / "trial_001_config.json").read_text(encoding="utf-8"))
+    assert cfg["score_version"] == "v2"
 
 
 def test_extract_results_path_from_log_parses_run_backtest_format(tmp_path: Path) -> None:

@@ -199,4 +199,14 @@ def apply_sizing(
     state_out["size_before_ri_clarity"] = clarity_payload.get("size_before")
     state_out["size_after_ri_clarity"] = clarity_payload.get("size_after")
 
+    # Regime transition tracking for risk_state
+    _last_regime = state_in.get("last_regime")
+    _cur_regime = str(regime or "")
+    if _last_regime is None or _last_regime == _cur_regime:
+        _bars_since_change = int(state_in.get("bars_since_regime_change", 0))
+    else:
+        _bars_since_change = 0  # reset on transition
+    state_out["last_regime"] = _cur_regime
+    state_out["bars_since_regime_change"] = _bars_since_change + 1
+
     return size, conf_val_gate

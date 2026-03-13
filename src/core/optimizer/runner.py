@@ -1,40 +1,23 @@
 from __future__ import annotations
 
 import argparse
-import copy
-import hashlib
 import json
 import logging
 import os
-import shutil
 import subprocess
 import sys
-import tempfile
 import threading
 import time
-from collections import OrderedDict
 from collections.abc import Iterable
 from concurrent.futures import Future, ProcessPoolExecutor, as_completed
 from dataclasses import dataclass
-from datetime import UTC, date, datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-import yaml
-
-try:  # Optional heavy deps used for JSON serialization helpers
-    import numpy as np  # type: ignore
-except Exception:  # pragma: no cover - numpy not strictly required
-    np = None  # type: ignore
-
-try:
-    import pandas as pd  # type: ignore
-except Exception:  # pragma: no cover - pandas not strictly required
-    pd = None  # type: ignore
-
+from core.optimizer import runner_config as runner_config_lib
 from core.optimizer.champion import ChampionCandidate, ChampionManager
 from core.optimizer.constraints import enforce_constraints
-from core.optimizer.param_transforms import transform_parameters
 from core.optimizer.runner_optuna_orchestration import (
     collect_comparability_warnings_impl,
     compute_optuna_resume_signature_impl,
@@ -54,9 +37,7 @@ from core.optimizer.runner_optuna_orchestration import (
     verify_or_set_optuna_study_signature_impl,
 )
 from core.optimizer.scoring import MetricThresholds, score_backtest
-from core.utils.dict_merge import deep_merge_dicts
 from core.utils.diffing import summarize_metrics_diff
-from core.utils.diffing.canonical import canonicalize_config
 from core.utils.diffing.optuna_guard import estimate_zero_trade
 from core.utils.diffing.results_diff import diff_backtest_results
 from core.utils.diffing.trial_cache import TrialResultCache
@@ -64,27 +45,7 @@ from core.utils.optuna_helpers import param_signature, set_global_seeds
 
 
 def _json_default(obj: Any) -> Any:
-    """Best-effort serializer for optional scientific types."""
-
-    if isinstance(obj, datetime | date):
-        return obj.isoformat()
-    if isinstance(obj, Path):
-        return str(obj)
-    if isinstance(obj, set | frozenset):
-        return list(obj)
-    if np is not None:
-        if isinstance(obj, np.integer | np.bool_):
-            return int(obj)
-        if isinstance(obj, np.floating):
-            return float(obj)
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-    if pd is not None and isinstance(obj, pd.Timestamp):
-        return obj.isoformat()
-    iso = getattr(obj, "isoformat", None)
-    if callable(iso):  # Fallback för objekt med isoformat (t.ex. pendulum)
-        return iso()
-    raise TypeError(f"Object of type {obj.__class__.__name__} is not JSON serializable")
+    return runner_config_lib._json_default(obj)
 
 
 try:  # optional faster JSON
@@ -141,18 +102,13 @@ _OPTUNA_LOCK = threading.Lock()
 _SIMPLE_CATEGORICAL_TYPES = (type(None), bool, int, float, str)
 _COMPLEX_CHOICE_PREFIX = "__optuna_complex__"
 
-# Performance: Cache for trial key generation to avoid repeated JSON serialization
-_TRIAL_KEY_CACHE: dict[int, str] = {}
-_TRIAL_KEY_CACHE_LOCK = threading.Lock()
-
-# Performance: Cache for default config to avoid repeated file reads and model dumps
+# Shared helper-state surfaces are intentionally re-exported via runner.py because
+# runner.py remains the SSOT facade/orchestrator and existing tests patch these names.
+_TRIAL_KEY_CACHE = runner_config_lib._TRIAL_KEY_CACHE
+_TRIAL_KEY_CACHE_LOCK = runner_config_lib._TRIAL_KEY_CACHE_LOCK
 _DEFAULT_CONFIG_CACHE: dict[str, Any] | None = None
 _DEFAULT_CONFIG_RUNTIME_VERSION: int | None = None
 _DEFAULT_CONFIG_LOCK = threading.Lock()
-
-# Backtest economics defaults (capital/fees) may be defined in config/backtest_defaults.yaml.
-# Optuna trials should not implicitly depend on that file changing during a long run, so we load
-# it once (thread-safe) and pin the values into each trial's execution.
 _BACKTEST_DEFAULTS_CACHE: dict[str, Any] | None = None
 _BACKTEST_DEFAULTS_LOCK = threading.Lock()
 
@@ -162,140 +118,41 @@ _STEP_DECIMALS_CACHE_LOCK = threading.Lock()
 
 
 # Performance: JSON mtime cache for optimizer (opt-in via env GENESIS_OPTIMIZER_JSON_CACHE=1)
-_JSON_CACHE: OrderedDict[str, tuple[int, Any]] = OrderedDict()
-try:
-    _JSON_CACHE_MAX = int(os.environ.get("GENESIS_OPTIMIZER_JSON_CACHE_SIZE", "256"))
-except Exception:
-    _JSON_CACHE_MAX = 256
+_JSON_CACHE = runner_config_lib._JSON_CACHE
+_JSON_CACHE_MAX = runner_config_lib._JSON_CACHE_MAX
+
+
+def _set_default_config_state(config: dict[str, Any], runtime_version: int | None) -> None:
+    global _DEFAULT_CONFIG_CACHE
+    global _DEFAULT_CONFIG_RUNTIME_VERSION
+    _DEFAULT_CONFIG_CACHE = config
+    _DEFAULT_CONFIG_RUNTIME_VERSION = runtime_version
+
+
+def _set_backtest_defaults_state(defaults: dict[str, Any]) -> None:
+    global _BACKTEST_DEFAULTS_CACHE
+    _BACKTEST_DEFAULTS_CACHE = defaults
 
 
 def _load_json_with_retries(path: Path, retries: int = 3, delay: float = 0.1) -> Any:
-    """Read JSON from disk with small retry loop; salvage on trailing garbage.
-
-    Problem: Vi har observerat korrupta resultatfiler där flera JSON-objekt eller
-    loggdata har skrivits i samma fil vilket ger `JSONDecodeError: Extra data`.
-    Lösning: Vid 'Extra data' försöker vi extrahera första kompletta JSON-objektet
-    genom att balansera klammerparenteser och parsa substringen. Om salvage
-    misslyckas fortsätter vi med retries som tidigare.
-    """
-    last_error: json.JSONDecodeError | None = None
-    for attempt in range(retries):
-        text = path.read_text(encoding="utf-8")
-        try:
-            return json.loads(text)
-        except json.JSONDecodeError as exc:  # pragma: no cover - IO race eller korrupt fil
-            last_error = exc
-            msg = str(exc)
-            # Salvage endast vid 'Extra data' (typiskt flera JSON-objekt concatenated)
-            if "Extra data" in msg:
-                # Försök hitta första kompletta objektet (antas börja med '{')
-                start_idx = text.find("{")
-                if start_idx != -1:
-                    depth = 0
-                    in_string = False
-                    escape = False
-                    end_idx = -1
-                    for i in range(start_idx, len(text)):
-                        ch = text[i]
-                        if in_string:
-                            if escape:
-                                escape = False
-                            elif ch == "\\":
-                                escape = True
-                            elif ch == '"':
-                                in_string = False
-                            continue
-                        else:
-                            if ch == '"':
-                                in_string = True
-                                continue
-                            if ch == "{":
-                                depth += 1
-                            elif ch == "}":
-                                depth -= 1
-                                if depth == 0:
-                                    end_idx = i + 1
-                                    break
-                    if end_idx != -1:
-                        candidate = text[start_idx:end_idx]
-                        try:
-                            salvaged = json.loads(candidate)
-                            # Logga minimal varning men returnera salvaged innehåll
-                            print(
-                                f"[WARN] Salvaged partial JSON från {path.name} (trailing data borttagen)"
-                            )
-                            return salvaged
-                        except json.JSONDecodeError:
-                            pass  # Salvage misslyckades, fortsätt retries
-            if attempt + 1 < retries:
-                time.sleep(delay)
-            else:
-                raise
-    raise last_error  # pragma: no cover
+    return runner_config_lib._load_json_with_retries(path, retries=retries, delay=delay)
 
 
 def _read_json_cached(path: Path) -> Any:
-    """Read JSON with optional mtime-based in-memory cache.
-
-    Enabled when GENESIS_OPTIMIZER_JSON_CACHE is truthy ("1" or "true",
-    case- and whitespace-insensitive).
-    """
-    use_cache = (os.environ.get("GENESIS_OPTIMIZER_JSON_CACHE") or "").strip().lower() in {
-        "1",
-        "true",
-    }
-    if not use_cache:
-        return _load_json_with_retries(path)
-
-    key = str(path.resolve())
-    try:
-        mtime = path.stat().st_mtime_ns
-    except OSError:
-        # Fall back to direct read if stat fails
-        return json.loads(path.read_text(encoding="utf-8"))
-
-    cached = _JSON_CACHE.get(key)
-    if cached is not None:
-        cached_mtime, cached_obj = cached
-        if cached_mtime == mtime:
-            try:
-                _JSON_CACHE.move_to_end(key)
-            except Exception:  # nosec B110
-                pass  # Cache error non-critical
-            return cached_obj
-
-    obj = _load_json_with_retries(path)
-    _JSON_CACHE[key] = (mtime, obj)
-    try:
-        while len(_JSON_CACHE) > _JSON_CACHE_MAX:
-            _JSON_CACHE.popitem(last=False)
-    except Exception:
-        if len(_JSON_CACHE) > _JSON_CACHE_MAX:
-            _JSON_CACHE.pop(next(iter(_JSON_CACHE)))
-    return obj
+    return runner_config_lib._read_json_cached(
+        path,
+        load_json_with_retries_fn=_load_json_with_retries,
+        json_cache=_JSON_CACHE,
+        json_cache_max=_JSON_CACHE_MAX,
+    )
 
 
 def _atomic_write_text(path: Path, payload: str, *, encoding: str = "utf-8") -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.NamedTemporaryFile("w", encoding=encoding, delete=False, dir=path.parent) as tmp:
-        tmp.write(payload)
-    Path(tmp.name).replace(path)
+    runner_config_lib._atomic_write_text(path, payload, encoding=encoding)
 
 
-class OptimizerStrategy:
-    GRID = "grid"
-    OPTUNA = "optuna"
-
-
-@dataclass(slots=True)
-class TrialConfig:
-    snapshot_id: str
-    symbol: str
-    timeframe: str
-    warmup_bars: int
-    parameters: dict[str, Any]
-    start_date: str | None = None
-    end_date: str | None = None
+OptimizerStrategy = runner_config_lib.OptimizerStrategy
+TrialConfig = runner_config_lib.TrialConfig
 
 
 from core.optimizer.runner_trial_backtest import (  # noqa: E402
@@ -312,15 +169,7 @@ from core.optimizer.runner_trial_results import (  # noqa: E402
 
 
 def load_search_config(path: Path) -> dict[str, Any]:
-    # Läs alltid som UTF-8 (matchar preflight/validator) för att undvika Windows default-encoding-problem.
-    try:
-        text = path.read_text(encoding="utf-8")
-    except Exception as exc:
-        raise ValueError(f"Kunde inte läsa config-filen: {path} ({exc})") from exc
-    data = yaml.safe_load(text)
-    if not isinstance(data, dict):
-        raise ValueError("search config måste vara YAML-mapp")
-    return data
+    return runner_config_lib.load_search_config(path)
 
 
 def _compute_optuna_resume_signature(
@@ -352,96 +201,36 @@ def _verify_or_set_optuna_study_score_version(study: Any, expected_score_version
 
 
 def _trial_key(params: dict[str, Any]) -> str:
-    """Generate canonical key for trial parameters with caching.
-
-    Performance optimization: Cache both the canonical form and the final
-    digest to avoid redundant canonicalization calls.
-    """
-    try:
-        # Fast path: Try to generate key directly from params
-        key = json.dumps(params, sort_keys=True, separators=(",", ":"))
-        digest = hashlib.sha256(key.encode("utf-8")).hexdigest()
-    except (TypeError, ValueError):
-        # Fallback: Use canonicalize for complex types
-        canonical = canonicalize_config(params or {})
-        key = json.dumps(canonical, sort_keys=True, separators=(",", ":"))
-        digest = hashlib.sha256(key.encode("utf-8")).hexdigest()
-
-    with _TRIAL_KEY_CACHE_LOCK:
-        cached = _TRIAL_KEY_CACHE.get(digest)
-        if cached is not None:
-            return cached
-        # Performance: Trim cache when it grows too large
-        if len(_TRIAL_KEY_CACHE) > 10000:
-            items = list(_TRIAL_KEY_CACHE.items())
-            _TRIAL_KEY_CACHE.clear()
-            # Keep most recent 8000 (approximate LRU via dict ordering)
-            _TRIAL_KEY_CACHE.update(items[-8000:])
-
-        _TRIAL_KEY_CACHE[digest] = digest
-        return digest
+    return runner_config_lib._trial_key(
+        params,
+        trial_key_cache=_TRIAL_KEY_CACHE,
+        trial_key_cache_lock=_TRIAL_KEY_CACHE_LOCK,
+    )
 
 
 def _get_default_config() -> dict[str, Any]:
-    """
-    Get default configuration with thread-safe caching.
-
-    Performance optimization: The default config is loaded once and cached
-    for the entire optimization run, avoiding redundant file reads and
-    expensive Pydantic model_dump() operations for every trial.
-
-    Returns:
-        Dictionary containing default configuration
-    """
-    global _DEFAULT_CONFIG_CACHE
-    global _DEFAULT_CONFIG_RUNTIME_VERSION
-
-    with _DEFAULT_CONFIG_LOCK:
-        if _DEFAULT_CONFIG_CACHE is None:
-            from core.config.authority import ConfigAuthority
-
-            authority = ConfigAuthority()
-            default_cfg_obj, _, runtime_version = authority.get()
-            _DEFAULT_CONFIG_CACHE = default_cfg_obj.model_dump()
-            _DEFAULT_CONFIG_RUNTIME_VERSION = runtime_version
-        return _DEFAULT_CONFIG_CACHE
+    return runner_config_lib._get_default_config(
+        default_config_cache=_DEFAULT_CONFIG_CACHE,
+        default_config_lock=_DEFAULT_CONFIG_LOCK,
+        set_default_config_state_fn=_set_default_config_state,
+    )
 
 
 def _get_default_runtime_version() -> int | None:
-    """Return runtime.json version used for the cached default config (if loaded)."""
-    # Ensure _DEFAULT_CONFIG_RUNTIME_VERSION is populated when available.
     _ = _get_default_config()
     return _DEFAULT_CONFIG_RUNTIME_VERSION
 
 
 def _get_backtest_defaults() -> dict[str, Any]:
-    """Load config/backtest_defaults.yaml once and cache it.
-
-    Notes:
-        - This is used to pin capital/commission/slippage for optimizer trials so that
-          long runs are not affected by mid-run edits to the defaults file.
-        - Fallbacks are applied in `_get_backtest_economics()`.
-    """
-
-    global _BACKTEST_DEFAULTS_CACHE
-
-    with _BACKTEST_DEFAULTS_LOCK:
-        if _BACKTEST_DEFAULTS_CACHE is None:
-            path = PROJECT_ROOT / "config" / "backtest_defaults.yaml"
-            if not path.exists():
-                _BACKTEST_DEFAULTS_CACHE = {}
-                return _BACKTEST_DEFAULTS_CACHE
-            try:
-                raw = yaml.safe_load(path.read_text(encoding="utf-8"))
-                _BACKTEST_DEFAULTS_CACHE = raw if isinstance(raw, dict) else {}
-            except Exception:
-                _BACKTEST_DEFAULTS_CACHE = {}
-        return _BACKTEST_DEFAULTS_CACHE
+    return runner_config_lib._get_backtest_defaults(
+        backtest_defaults_cache=_BACKTEST_DEFAULTS_CACHE,
+        backtest_defaults_lock=_BACKTEST_DEFAULTS_LOCK,
+        set_backtest_defaults_state_fn=_set_backtest_defaults_state,
+        project_root=PROJECT_ROOT,
+    )
 
 
 def _get_backtest_economics() -> tuple[float, float, float]:
-    """Return (capital, commission, slippage) with safe fallbacks."""
-
     defaults = _get_backtest_defaults()
 
     def _as_float(key: str, fallback: float) -> float:
@@ -457,54 +246,25 @@ def _get_backtest_economics() -> tuple[float, float, float]:
 
 
 def _as_bool(value: Any) -> bool:
-    if isinstance(value, bool):
-        return value
-    if value is None:
-        return False
-    if isinstance(value, int | float):
-        return value != 0
-    if isinstance(value, str):
-        return value.strip().lower() in {"1", "true", "yes", "y", "on"}
-    return bool(value)
+    return runner_config_lib._as_bool(value)
 
 
 def _validate_date_range(start: str, end: str, *, message: str | None = None) -> None:
-    if start > end:
-        raise ValueError(message or "start_date måste vara mindre än eller lika med end_date")
+    runner_config_lib._validate_date_range(start, end, message=message)
 
 
 def _normalize_date(value: Any, field_name: str) -> str:
-    if isinstance(value, date):
-        return value.isoformat()
-    if not isinstance(value, str):
-        raise TypeError(f"{field_name} måste vara sträng, fick {type(value).__name__}")
-    candidate = value.strip()
-    if not candidate:
-        raise ValueError(f"{field_name} får inte vara tom")
-    try:
-        parsed = datetime.fromisoformat(candidate)
-    except ValueError as exc:
-        raise ValueError(f"Ogiltigt datumformat för {field_name}: {value}") from exc
-    return parsed.date().isoformat()
+    return runner_config_lib._normalize_date(value, field_name)
 
 
 def _resolve_sample_range(snapshot_id: str, runs_cfg: dict[str, Any]) -> tuple[str, str]:
-    start_raw = runs_cfg.get("sample_start")
-    end_raw = runs_cfg.get("sample_end")
-    if start_raw is None and end_raw is None:
-        start, end = _derive_dates(snapshot_id)
-        _validate_date_range(start, end)
-        return start, end
-    if start_raw is None or end_raw is None:
-        raise ValueError("Både sample_start och sample_end måste anges om någon av dem är satt")
-    start = _normalize_date(start_raw, "sample_start")
-    end = _normalize_date(end_raw, "sample_end")
-    _validate_date_range(
-        start,
-        end,
-        message="sample_start måste vara mindre än eller lika med sample_end",
+    return runner_config_lib._resolve_sample_range(
+        snapshot_id,
+        runs_cfg,
+        derive_dates_fn=_derive_dates,
+        validate_date_range_fn=_validate_date_range,
+        normalize_date_fn=_normalize_date,
     )
-    return start, end
 
 
 def _select_top_n_from_optuna_storage(run_meta: dict[str, Any], top_n: int) -> list[dict[str, Any]]:
@@ -516,327 +276,50 @@ def _select_top_n_from_optuna_storage(run_meta: dict[str, Any], top_n: int) -> l
 
 
 def _load_existing_trials(run_dir: Path) -> dict[str, dict[str, Any]]:
-    """Load existing trials with optimized file I/O.
-
-    Performance optimization: Batch read operations, use more efficient
-    JSON parsing, and optimize memory allocation patterns.
-
-    Key optimizations:
-    - Single-pass JSON parsing (no double parse via _json_loads)
-    - Direct orjson usage when available (bypass wrapper overhead)
-    - Batch trial key generation to leverage caching
-
-    Note: Duplicates logic from _json_loads() intentionally to avoid
-    function call overhead in this hot path. This function is called
-    once per optimization run during resume, loading potentially
-    thousands of trial files, where every microsecond counts.
-    """
-    trial_paths = sorted(run_dir.glob("trial_*.json"))
-
-    if not trial_paths:
-        return {}
-
-    # Performance: Pre-allocate dictionary with size hint
-    existing: dict[str, dict[str, Any]] = {}
-
-    for trial_path in trial_paths:
-        try:
-            # Performance: Direct orjson usage for better speed (single parse, no wrapper)
-            content = trial_path.read_text(encoding="utf-8")
-            if _HAS_ORJSON:
-                # Legacy artifacts may contain non-standard floats (Infinity/NaN) written via
-                # json.dumps(..., allow_nan=True). orjson rejects these tokens on load.
-                # Fall back to stdlib json for backwards-compatible resume.
-                try:
-                    trial_data = _orjson.loads(content)
-                except ValueError:
-                    trial_data = json.loads(content)
-            else:
-                trial_data = json.loads(content)
-
-            # JSON always returns exact dict, but be defensive
-            if not isinstance(trial_data, dict):
-                continue
-
-            params = trial_data.get("parameters")
-            if params:
-                key = _trial_key(params)
-                existing[key] = trial_data
-        except (ValueError, OSError) as exc:
-            logger.warning("Skipping unreadable trial artifact %s: %s", trial_path.name, exc)
-            continue
-
-    return existing
+    return runner_config_lib._load_existing_trials(run_dir, trial_key_fn=_trial_key)
 
 
 def _ensure_run_metadata(
     run_dir: Path, config_path: Path, meta: dict[str, Any], run_id: str
 ) -> None:
-    meta_path = run_dir / "run_meta.json"
-
-    repo_root = PROJECT_ROOT
-    try:
-        config_rel = str(config_path.relative_to(repo_root))
-    except ValueError:
-        config_rel = str(config_path)
-
-    expected_score_version = _resolve_score_version_for_optimizer()
-
-    if meta_path.exists():
-        try:
-            existing = json.loads(meta_path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError) as exc:
-            logger.warning(
-                "Failed to read existing run_meta.json at %s, treating as empty metadata: %s",
-                meta_path,
-                exc,
-            )
-            existing = {}
-        if not isinstance(existing, dict):
-            existing = {}
-
-        expected = {
-            "run_id": run_id,
-            "config_path": config_rel,
-            "snapshot_id": meta.get("snapshot_id"),
-            "symbol": meta.get("symbol"),
-            "timeframe": meta.get("timeframe"),
-            "score_version": expected_score_version,
-        }
-
-        mismatches: list[str] = []
-        for k, exp in expected.items():
-            if exp is None:
-                continue
-            cur = existing.get(k)
-            if cur is None or cur == "":
-                continue
-            if str(cur) != str(exp):
-                mismatches.append(f"{k} existing={cur!r} expected={exp!r}")
-
-        allow_mismatch = os.environ.get("GENESIS_ALLOW_RUN_META_MISMATCH") == "1"
-        if mismatches and not allow_mismatch:
-            raise ValueError(
-                "run_meta.json mismatch (vägrar återanvända run_dir med annan konfig/metadata): "
-                + "; ".join(mismatches)
-                + ". Override via GENESIS_ALLOW_RUN_META_MISMATCH=1"
-            )
-        if mismatches and allow_mismatch:
-            print(
-                "[WARN] run_meta.json mismatch tolerated via GENESIS_ALLOW_RUN_META_MISMATCH=1: "
-                + "; ".join(mismatches)
-            )
-
-        # Backfill missing fields to improve forensics for older/partial run_meta.json.
-        did_change = False
-        for k, exp in expected.items():
-            if exp is None:
-                continue
-            if existing.get(k) is None or existing.get(k) == "":
-                existing[k] = exp
-                did_change = True
-        existing.setdefault("raw_meta", meta)
-        if did_change:
-            existing["updated_at"] = datetime.now(UTC).isoformat()
-            _atomic_write_text(meta_path, json.dumps(_serialize_meta(existing), indent=2))
-        return
-    commit = "unknown"
-    git_executable = shutil.which("git")
-    if git_executable:
-        try:
-            completed = subprocess.run(  # nosec B603
-                [git_executable, "rev-parse", "HEAD"],
-                cwd=PROJECT_ROOT,
-                capture_output=True,
-                text=True,
-                check=True,
-            )
-            commit = completed.stdout.strip()
-        except subprocess.SubprocessError:
-            commit = "unknown"
-    meta_payload = {
-        "run_id": run_id,
-        "config_path": config_rel,
-        "snapshot_id": meta.get("snapshot_id"),
-        "symbol": meta.get("symbol"),
-        "timeframe": meta.get("timeframe"),
-        "score_version": expected_score_version,
-        "started_at": datetime.now(UTC).isoformat(),
-        "git_commit": commit,
-        "raw_meta": meta,
-    }
-    _atomic_write_text(meta_path, json.dumps(_serialize_meta(meta_payload), indent=2))
+    runner_config_lib._ensure_run_metadata(
+        run_dir,
+        config_path,
+        meta,
+        run_id,
+        resolve_score_version_fn=_resolve_score_version_for_optimizer,
+        atomic_write_text_fn=_atomic_write_text,
+        serialize_meta_fn=_serialize_meta,
+        project_root=PROJECT_ROOT,
+    )
 
 
 def _serialize_meta(meta_payload: dict[str, Any]) -> dict[str, Any]:
-    serialized = {}
-    for key, value in meta_payload.items():
-        if isinstance(value, dict):
-            serialized[key] = _serialize_meta(value)
-        elif isinstance(value, list):
-            serialized[key] = [_serialize_meta(v) if isinstance(v, dict) else v for v in value]
-        elif isinstance(value, datetime | date):
-            serialized[key] = value.isoformat()
-        else:
-            serialized[key] = value
-    return serialized
+    return runner_config_lib._serialize_meta(meta_payload)
 
 
 def _deep_merge(base: dict, override: dict) -> dict:
-    """Deep merge override dict into base dict via shared helper."""
-    return deep_merge_dicts(base, override)
+    return runner_config_lib._deep_merge(base, override)
 
 
 def _expand_value(node: Any) -> list[Any]:
-    def _clone_value(v: Any) -> Any:
-        # Performance: Use type() for faster checks on primitives
-        t = type(v)
-        if t in (int, float, str, bool, type(None), bytes):
-            return v
-        if t is tuple:
-            return tuple(_clone_value(x) for x in v)
-        if t is list:
-            return [_clone_value(x) for x in v]
-        if t is dict:
-            return {k: _clone_value(val) for k, val in v.items()}
-        return copy.deepcopy(v)
-
-    if isinstance(node, dict):
-        node_type = node.get("type")
-        if node_type == "grid":
-            values = node.get("values") or []
-            return [_clone_value(v) for v in values]
-        if node_type == "fixed":
-            return [_clone_value(node.get("value"))]
-        # Nested dict without explicit type – expand recursively
-        return list(_expand_dict(node))
-    if isinstance(node, list):
-        return [_clone_value(node)]
-    return [_clone_value(node)]
+    return runner_config_lib._expand_value(node)
 
 
 def _expand_dict(spec: dict[str, Any]) -> Iterable[dict[str, Any]]:
-    items = [(key, _expand_value(value)) for key, value in spec.items()]
-
-    def _recurse(idx: int, current: dict[str, Any]) -> Iterable[dict[str, Any]]:
-        if idx >= len(items):
-            yield current
-            return
-        key, values = items[idx]
-        for value in values:
-            next_config = dict(current)
-            next_config[key] = value
-            yield from _recurse(idx + 1, next_config)
-
-    yield from _recurse(0, {})
+    yield from runner_config_lib._expand_dict(spec)
 
 
 def expand_parameters(spec: dict[str, Any]) -> Iterable[dict[str, Any]]:
-    if not spec:
-        yield {}
-        return
-    yield from _expand_dict(spec)
+    yield from runner_config_lib.expand_parameters(spec)
 
 
 def _estimate_optuna_search_space(spec: dict[str, Any]) -> dict[str, Any]:
-    """Estimate the size and diversity of the Optuna search space.
-
-    Returns diagnostics about potential degeneracy issues.
-    """
-
-    def _count_choices(node: dict[str, Any], prefix: str = "") -> dict[str, int]:
-        counts = {}
-        for key, value in (node or {}).items():
-            path = f"{prefix}.{key}" if prefix else key
-            if value is None:
-                continue
-            if isinstance(value, dict) and "type" not in value:
-                counts.update(_count_choices(value, path))
-                continue
-            node_type = (value or {}).get("type", "grid")
-            if node_type == "fixed":
-                counts[path] = 1
-            elif node_type == "grid":
-                options = value.get("values") or []
-                counts[path] = len(options)
-            elif node_type in ("float", "int"):
-                low = float(value.get("low", 0))
-                high = float(value.get("high", 1))
-                step = value.get("step")
-                if step:
-                    # Discretized space
-                    counts[path] = int((high - low) / float(step)) + 1
-                else:
-                    # Continuous space - mark as "infinite"
-                    counts[path] = -1  # continuous
-            elif node_type == "loguniform":
-                counts[path] = -1  # continuous
-        return counts
-
-    param_counts = _count_choices(spec)
-
-    # Calculate total combinations (only for discrete params)
-    discrete_params = {k: v for k, v in param_counts.items() if v > 0}
-    continuous_params = {k: v for k, v in param_counts.items() if v < 0}
-
-    total_combinations = 1
-    for count in discrete_params.values():
-        total_combinations *= count
-
-    # Detect potential issues
-    issues = []
-    if total_combinations < 10 and not continuous_params:
-        issues.append("Search space very small (<10 combinations)")
-
-    narrow_params = [k for k, v in discrete_params.items() if v <= 2]
-    if len(narrow_params) > len(discrete_params) * 0.7:
-        issues.append(f"Many parameters have ≤2 choices: {narrow_params[:3]}")
-
-    return {
-        "total_discrete_combinations": total_combinations if not continuous_params else None,
-        "discrete_params": len(discrete_params),
-        "continuous_params": len(continuous_params),
-        "param_choice_counts": param_counts,
-        "potential_issues": issues,
-    }
+    return runner_config_lib._estimate_optuna_search_space(spec)
 
 
 def _derive_dates(snapshot_id: str) -> tuple[str, str]:
-    """Derive (start_date, end_date) from snapshot_id.
-
-    Supported formats (backwards compatible):
-        - tTEST_1h_20240101_20240201_v1
-        - snap_tBTCUSD_3h_2024-01-02_2024-12-31_v1
-
-    Implementation note:
-        Historically we assumed a fixed underscore layout. Newer snapshot_ids may include
-        extra tokens (e.g. prefix + symbol + timeframe), so we now locate date-like tokens
-        instead of relying on fixed indices.
-    """
-
-    if not snapshot_id:
-        raise ValueError("trial snapshot_id saknas")
-
-    parts = snapshot_id.split("_")
-    if len(parts) < 4:
-        raise ValueError("snapshot_id saknar start/end datum")
-
-    import re
-
-    # Prefer extracting the last two date tokens, so prefixes never shift indices.
-    date_tokens: list[str] = []
-    for p in parts:
-        token = p.strip()
-        if not token:
-            continue
-        if re.fullmatch(r"\d{4}-\d{2}-\d{2}", token) or re.fullmatch(r"\d{8}", token):
-            date_tokens.append(token)
-
-    if len(date_tokens) >= 2:
-        return date_tokens[-2], date_tokens[-1]
-
-    # Fallback to the legacy positional convention.
-    return parts[2], parts[3]
+    return runner_config_lib._derive_dates(snapshot_id)
 
 
 def _exec_backtest(
@@ -968,14 +451,14 @@ def run_trial(
     # Pin scoring-version for the entire trial (and for any subprocess execution).
     score_version = _resolve_score_version_for_optimizer()
 
-    key = _trial_key(trial.parameters)
-    fingerprint_digest = key  # _trial_key already returns a SHA256 digest
-
-    # Also compute the Optuna-style signature used by NoDupeGuard for cross-artifact binding.
-    try:
-        optuna_param_sig = param_signature(trial.parameters)
-    except Exception:
-        optuna_param_sig = fingerprint_digest
+    identity = runner_config_lib.prepare_trial_identity(
+        trial,
+        index=index,
+        trial_key_fn=_trial_key,
+        param_signature_fn=param_signature,
+    )
+    key = identity.key
+    fingerprint_digest = identity.fingerprint_digest
 
     if allow_resume and key in existing_trials:
         if seen_param_keys is not None:
@@ -1007,7 +490,7 @@ def run_trial(
             else:
                 seen_param_keys.add(key)
 
-    trial_id = f"trial_{index:03d}"
+    trial_id = identity.trial_id
     if duplicate_detected:
         return {
             "trial_id": trial_id,
@@ -1016,10 +499,14 @@ def run_trial(
             "reason": "duplicate_within_run",
         }
 
-    output_dir = run_dir
-    output_dir.mkdir(parents=True, exist_ok=True)
-    trial_file = output_dir / f"{trial_id}.json"
-    log_file = output_dir / f"{trial_id}.log"
+    artifacts = runner_config_lib.prepare_trial_artifacts(
+        run_dir,
+        trial_id=trial_id,
+        has_parameters=bool(trial.parameters),
+    )
+    output_dir = artifacts.output_dir
+    trial_file = artifacts.trial_file
+    log_file = artifacts.log_file
 
     zero_trade_estimate = estimate_zero_trade(trial.parameters or {})
     if not zero_trade_estimate.ok:
@@ -1037,46 +524,23 @@ def run_trial(
         )
         _atomic_write_text(trial_file, _json_dumps(payload))
         return payload
-    config_file: Path | None = None
-    derived_values: dict[str, Any] = {}
-    if trial.parameters:
-        config_file = output_dir / f"{trial_id}_config.json"
-
-        # Performance: Use cached default config instead of loading for every trial
-        default_cfg = _get_default_config()
-
-        # Deep merge trial parameters into default config
-        transformed_params, derived_values = transform_parameters(trial.parameters)
-        merged_cfg = _deep_merge(default_cfg, transformed_params)
-
-        # Optimizer/backtest runs must treat the trial config as authoritative.
-        # Prevent BacktestEngine from implicitly merging the current champion.
-        meta = dict(merged_cfg.get("meta") or {})
-        meta["skip_champion_merge"] = True
-        merged_cfg["meta"] = meta
-        # Mark this config as "complete" by including merged_config + runtime_version.
-        # This lets scripts/run_backtest skip re-merging runtime.json, preventing drift if runtime.json
-        # changes during a long optimization run.
-        config_payload = {
-            "cfg": merged_cfg,
-            "merged_config": merged_cfg,
-            "runtime_version": _get_default_runtime_version(),
-            "run_id": run_id,
-            "trial_id": trial_id,
-            "parameters": trial.parameters,
-            "trial_key": fingerprint_digest,
-            "param_signature": optuna_param_sig,
-            "score_version": score_version,
-            "created_at": datetime.now(UTC).isoformat(),
-            "overrides": {
-                "capital": capital_default,
-                "commission": commission_default,
-                "slippage": slippage_default,
-            },
-        }
-        if derived_values:
-            config_payload["derived"] = dict(derived_values)
-        _atomic_write_text(config_file, _json_dumps(config_payload))
+    prepared_config = runner_config_lib.prepare_trial_config_payload(
+        trial,
+        run_id=run_id,
+        score_version=score_version,
+        identity=identity,
+        artifacts=artifacts,
+        capital_default=capital_default,
+        commission_default=commission_default,
+        slippage_default=slippage_default,
+        json_dumps_fn=_json_dumps,
+        get_default_config_fn=_get_default_config,
+        get_default_runtime_version_fn=_get_default_runtime_version,
+        deep_merge_fn=_deep_merge,
+        atomic_write_text_fn=_atomic_write_text,
+    )
+    config_file = prepared_config.config_file
+    derived_values = prepared_config.derived_values
 
     cache: TrialResultCache | None = None
     cached_payload: dict[str, Any] | None = None
@@ -1084,18 +548,12 @@ def run_trial(
         cache = TrialResultCache(run_dir / "_cache")
         cached_payload = cache.lookup(fingerprint_digest)
         if cached_payload is not None:
-            payload = dict(cached_payload)
-            payload.update(
-                {
-                    "trial_id": trial_id,
-                    "parameters": trial.parameters,
-                    "from_cache": True,
-                }
+            payload = runner_config_lib.materialize_cached_trial_payload(
+                cached_payload,
+                identity=identity,
+                parameters=trial.parameters,
+                config_file=config_file,
             )
-            if config_file is not None:
-                payload.setdefault("config_path", config_file.name)
-            if not payload.get("parameters"):
-                payload["parameters"] = trial.parameters
             diff_payload = payload.get("diff_vs_baseline")
             if diff_payload:
                 summary = diff_payload.get("summary")
@@ -1460,10 +918,10 @@ def run_trial(
         else:
             print(f"[WARN] Kunde inte hitta resultatfil för diff: {new_results_path}")
     if cache_enabled and cache is not None and final_payload and not final_payload.get("error"):
-        cache_snapshot = dict(final_payload)
-        cache_snapshot.pop("trial_id", None)
-        cache_snapshot.pop("from_cache", None)
-        cache_snapshot["parameters"] = trial.parameters
+        cache_snapshot = runner_config_lib.prepare_cache_snapshot(
+            final_payload,
+            parameters=trial.parameters,
+        )
         cache.store(fingerprint_digest, cache_snapshot)
     _atomic_write_text(trial_file, _json_dumps(final_payload))
     return final_payload

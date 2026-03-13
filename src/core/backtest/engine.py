@@ -885,6 +885,16 @@ class BacktestEngine:
             # This ensures features_asof uses the correct index in precomputed arrays
             configs["_global_index"] = i
 
+            # Inject equity risk state for risk_state multiplier
+            _cur_eq = self.position_tracker.current_equity
+            _peak_eq = self.state.get("_peak_equity", _cur_eq)
+            if _cur_eq > _peak_eq:
+                _peak_eq = _cur_eq
+            self.state["_peak_equity"] = _peak_eq
+            self.state["equity_drawdown_pct"] = (
+                (_peak_eq - _cur_eq) / _peak_eq if _peak_eq > 0 else 0.0
+            )
+
             # Run pipeline (uses existing evaluate_pipeline from strategy/)
             try:
                 result, meta = evaluate_pipeline(

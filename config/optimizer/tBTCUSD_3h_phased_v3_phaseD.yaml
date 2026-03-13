@@ -1,0 +1,103 @@
+description: "Phase D: Risk State optimisation -- drawdown_guard + transition_guard"
+#
+# Phase A + B best params fixed (from phaseC_oos_trial.json via base_phase_path).
+# Only risk_state params are tunable.
+# Run: PYTHONIOENCODING=utf-8 TQDM_DISABLE=1 PYTHONPATH="$(pwd)/src" python -m core.optimizer.runner config/optimizer/tBTCUSD_3h_phased_v3_phaseD.yaml
+
+meta:
+  symbol: tBTCUSD
+  timeframe: 3h
+  snapshot_id: snap_tBTCUSD_3h_2024-01-02_2024-12-31_v1
+  warmup_bars: 120
+  score_version: "v2"
+  base_phase_path: "config/optimizer/phased_v3_best_trials/phaseC_oos_trial.json"
+  runs:
+    strategy: optuna
+    score_version: "v2"
+
+    use_sample_range: true
+    sample_start: "2024-01-01"
+    sample_end: "2024-12-31"
+
+    validation:
+      enabled: true
+      start_date: "2025-01-01"
+      end_date: "2025-12-31"
+
+    resume: false
+    max_trials: 75
+    max_concurrent: 1
+
+    promotion:
+      enabled: false
+
+    constraints:
+      include_scoring_failures: false
+      min_trades: 30
+      min_profit_factor: 1.10
+      max_max_dd: 0.30
+
+    optuna:
+      study_name: "phased_v3_phaseD_riskstate_3h_2024"
+      storage: "sqlite:///results/hparam_search/storage/phased_v3_phaseD_3h.db"
+      n_jobs: 1
+      timeout_seconds: 7200
+
+      bootstrap_random_trials: 20
+      bootstrap_seed: 42
+
+      pruner:
+        type: "none"
+
+      sampler:
+        type: "tpe"
+        kwargs:
+          n_startup_trials: 20
+          multivariate: true
+
+# All Phase A + B params injected as fixed via base_phase_path.
+# Only risk_state params are tunable below.
+parameters:
+  multi_timeframe.regime_intelligence.risk_state.enabled:
+    type: fixed
+    value: true
+
+  multi_timeframe.regime_intelligence.risk_state.drawdown_guard.soft_threshold:
+    type: float
+    low: 0.02
+    high: 0.06
+    step: 0.01
+
+  multi_timeframe.regime_intelligence.risk_state.drawdown_guard.hard_threshold:
+    type: float
+    low: 0.04
+    high: 0.12
+    step: 0.02
+
+  multi_timeframe.regime_intelligence.risk_state.drawdown_guard.soft_mult:
+    type: float
+    low: 0.50
+    high: 0.90
+    step: 0.10
+
+  multi_timeframe.regime_intelligence.risk_state.drawdown_guard.hard_mult:
+    type: float
+    low: 0.20
+    high: 0.60
+    step: 0.10
+
+  multi_timeframe.regime_intelligence.risk_state.transition_guard.enabled:
+    type: fixed
+    value: true
+
+  multi_timeframe.regime_intelligence.risk_state.transition_guard.guard_bars:
+    type: int
+    low: 2
+    high: 8
+    step: 1
+
+  multi_timeframe.regime_intelligence.risk_state.transition_guard.mult:
+    type: float
+    low: 0.40
+    high: 0.80
+    step: 0.10

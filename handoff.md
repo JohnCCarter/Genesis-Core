@@ -191,3 +191,18 @@ Minst detta set (anpassa målfil + relevanta tests):
 - Den är därför **inte** en rutinmässig delete-kandidat just nu.
 - Vid ett senare tillfälle bör branchen granskas igen och då ska ett uttryckligt keep/delete-beslut fattas.
 - Kanonisk referens för detta ställningstagande finns i `docs/audit/refactor/server/closure_server_modul_split_2026-03-12.md`.
+
+---
+
+## Blocker note — Research Ledger v1 verification state (2026-03-16)
+
+- **Status:** implemented and locally verified
+- **Ledger-local validation:** passed
+- **Governance selectors:** passed
+- **Full repo verification:** passed
+- **Former blocker:** `tests/utils/test_optimizer_performance.py::TestTrialKeyPerformance::test_trial_key_caching`
+- **Resolution:** blocker cleared by the separate stabilized test patch now applied on `feature/research-ledger-v1`.
+  - Root repo now uses repeated samples + median comparison in `test_trial_key_caching` instead of a single timing sample.
+  - Full local verification passed after the blocker fix: registry validation, `pre-commit run --all-files`, `bandit -r src -c bandit.yaml -f txt -o bandit-report.txt`, and `pytest -q`.
+- **Conclusion:** Research Ledger v1 is **locally green and merge-assessable**.
+- **Recommended next step:** commit the remaining scoped ledger files + audit docs + this handoff update, push `feature/research-ledger-v1`, and proceed with normal review/merge workflow.

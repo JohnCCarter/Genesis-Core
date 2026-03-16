@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TypeAlias, Protocol
+from typing import Protocol, TypeAlias
 
 from core.intelligence.events.models import JsonObject, ValidatedIntelligenceEvent
 

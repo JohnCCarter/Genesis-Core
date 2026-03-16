@@ -39,9 +39,7 @@ def _event() -> IntelligenceEvent:
         topic="regime",
         signal_type="observation",
         confidence=0.85,
-        references=(
-            IntelligenceReference(kind="artifact", ref="ART-2026-0001", label="primary"),
-        ),
+        references=(IntelligenceReference(kind="artifact", ref="ART-2026-0001", label="primary"),),
         summary="Deterministic regime event.",
     )
 

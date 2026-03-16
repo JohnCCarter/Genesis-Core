@@ -18,7 +18,7 @@ from core.research_ledger.models import (
 )
 from core.research_ledger.queries import LedgerQueries
 from core.research_ledger.storage import LedgerStorage
-from core.research_ledger.validators import validate_record
+from core.research_ledger.validators import LedgerValidationError, validate_record
 
 
 class ResearchLedgerService:
@@ -29,10 +29,40 @@ class ResearchLedgerService:
     def allocate_id(self, entity_type: LedgerEntityType, *, year: int) -> str:
         return self.storage.next_entity_id(entity_type, year)
 
+    def _validate_experiment_semantics(self, record: ExperimentRecord) -> None:
+        if not self.storage.exists(LedgerEntityType.HYPOTHESIS, record.hypothesis_id):
+            raise LedgerValidationError(
+                f"Experiment {record.entity_id} references missing hypothesis {record.hypothesis_id}"
+            )
+        if not self.storage.exists(LedgerEntityType.PROPOSAL, record.proposal_id):
+            raise LedgerValidationError(
+                f"Experiment {record.entity_id} references missing proposal {record.proposal_id}"
+            )
+
+        proposal = self.storage.read_record(LedgerEntityType.PROPOSAL, record.proposal_id)
+        if not isinstance(proposal, ProposalRecord):
+            raise LedgerValidationError(
+                f"Proposal lookup returned unexpected record for {record.proposal_id}"
+            )
+        if proposal.hypothesis_id != record.hypothesis_id:
+            raise LedgerValidationError(
+                "Experiment hypothesis_id must match the referenced proposal hypothesis_id"
+            )
+
+        for link in record.artifact_links:
+            if link.artifact_id is None:
+                continue
+            if not self.storage.exists(LedgerEntityType.ARTIFACT, link.artifact_id):
+                raise LedgerValidationError(
+                    f"Experiment {record.entity_id} references missing artifact {link.artifact_id}"
+                )
+
     def append_record(self, record: LedgerRecordT) -> LedgerRecordT:
         validate_record(record)
         if self.storage.exists(record.entity_type, record.entity_id):
             raise FileExistsError(f"Ledger record already exists: {record.entity_id}")
+        if isinstance(record, ExperimentRecord):
+            self._validate_experiment_semantics(record)
         self.storage.write_record(record)
         self.refresh_indexes()
         return record

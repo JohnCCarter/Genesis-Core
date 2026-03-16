@@ -71,6 +71,22 @@ def _require_non_empty(value: str | None, *, field_name: str) -> None:
         raise LedgerValidationError(f"{field_name} must be non-empty")
 
 
+def _validate_experiment_traceability(record: LedgerRecordT) -> None:
+    _require_non_empty(record.command_packet_path, field_name="command_packet_path")
+    if record.code_version is None:
+        raise LedgerValidationError("code_version must be provided")
+    _require_non_empty(record.code_version.commit_sha, field_name="code_version.commit_sha")
+    if not record.config_paths:
+        raise LedgerValidationError("config_paths must contain at least one entry")
+    for index, config_path in enumerate(record.config_paths):
+        _require_non_empty(config_path, field_name=f"config_paths[{index}]")
+    if not record.dataset_refs:
+        raise LedgerValidationError("dataset_refs must contain at least one entry")
+    for index, link in enumerate(record.artifact_links):
+        if link.artifact_id is not None:
+            _require_non_empty(link.artifact_id, field_name=f"artifact_links[{index}].artifact_id")
+
+
 def _validate_reference(entity_type: LedgerEntityType, entity_id: str, *, field_name: str) -> None:
     validate_entity_id(entity_type, entity_id)
     _require_non_empty(entity_id, field_name=field_name)
@@ -143,6 +159,7 @@ def validate_record(record: LedgerRecordT) -> None:
             )
             _require_non_empty(record.title, field_name="title")
             _require_non_empty(record.objective, field_name="objective")
+            _validate_experiment_traceability(record)
             validate_timestamp(record.started_at, field_name="started_at")
             validate_timestamp(record.completed_at, field_name="completed_at")
             if record.code_version is not None:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -12,8 +13,11 @@ from core.research_ledger.enums import (
     PromotionTargetKind,
 )
 from core.research_ledger.models import (
+    ArtifactLink,
     ArtifactRecord,
     ChampionRecord,
+    CodeVersionRef,
+    DatasetRef,
     ExperimentRecord,
     GovernanceDecisionRecord,
     HypothesisRecord,
@@ -23,10 +27,33 @@ from core.research_ledger.models import (
 )
 from core.research_ledger.service import ResearchLedgerService
 from core.research_ledger.storage import LedgerStorage
+from core.research_ledger.validators import LedgerValidationError
 
 
 def _service(tmp_path: Path) -> ResearchLedgerService:
     return ResearchLedgerService(LedgerStorage(root=tmp_path / "artifacts" / "research_ledger"))
+
+
+def _experiment_record(
+    *,
+    artifact_links: tuple[ArtifactLink, ...] = (),
+    hypothesis_id: str = "HYP-2026-0001",
+    proposal_id: str = "PROP-2026-0001",
+) -> ExperimentRecord:
+    return ExperimentRecord(
+        entity_id="EXP-2026-0001",
+        entity_type=LedgerEntityType.EXPERIMENT,
+        created_at="2026-03-16T12:10:00+00:00",
+        hypothesis_id=hypothesis_id,
+        proposal_id=proposal_id,
+        title="1h RI vs OFF",
+        objective="Validate canonical Phase B on 1h.",
+        command_packet_path="docs/governance/templates/command_packet.md",
+        code_version=CodeVersionRef(commit_sha="abc123def456"),
+        config_paths=("config/optimizer/1h/tBTCUSD_1h_risk_optuna_smoke.yaml",),
+        dataset_refs=(DatasetRef(dataset_id="curated.tBTCUSD.1h", version="2026-03-16"),),
+        artifact_links=artifact_links,
+    )
 
 
 def test_append_record_refreshes_indexes_and_lineage(tmp_path: Path) -> None:
@@ -55,14 +82,11 @@ def test_append_record_refreshes_indexes_and_lineage(tmp_path: Path) -> None:
         summary="Run a deterministic 1h RI comparison.",
         command_packet_path="docs/governance/templates/command_packet.md",
     )
-    experiment = ExperimentRecord(
-        entity_id="EXP-2026-0001",
-        entity_type=LedgerEntityType.EXPERIMENT,
-        created_at="2026-03-16T12:10:00+00:00",
-        hypothesis_id=hypothesis.entity_id,
-        proposal_id=proposal.entity_id,
-        title="1h RI vs OFF",
-        objective="Validate canonical Phase B on 1h.",
+    experiment = replace(
+        _experiment_record(
+            hypothesis_id=hypothesis.entity_id,
+            proposal_id=proposal.entity_id,
+        ),
         metrics={"score": 0.1126, "profit_factor": 1.41},
     )
     artifact = ArtifactRecord(
@@ -159,3 +183,163 @@ def test_allocate_id_is_storage_state_deterministic(tmp_path: Path) -> None:
         )
     )
     assert service.allocate_id(LedgerEntityType.HYPOTHESIS, year=2026) == "HYP-2026-0002"
+
+
+def test_append_experiment_rejects_missing_hypothesis_reference(tmp_path: Path) -> None:
+    service = _service(tmp_path)
+
+    with pytest.raises(LedgerValidationError, match="missing hypothesis"):
+        service.append_experiment(_experiment_record())
+
+
+def test_append_experiment_rejects_missing_proposal_reference(tmp_path: Path) -> None:
+    service = _service(tmp_path)
+    hypothesis = HypothesisRecord(
+        entity_id="HYP-2026-0001",
+        entity_type=LedgerEntityType.HYPOTHESIS,
+        created_at="2026-03-16T12:00:00+00:00",
+        title="Hypothesis",
+        hypothesis="Hypothesis",
+    )
+
+    service.append_hypothesis(hypothesis)
+
+    with pytest.raises(LedgerValidationError, match="missing proposal"):
+        service.append_experiment(_experiment_record(hypothesis_id=hypothesis.entity_id))
+
+
+def test_append_experiment_rejects_mismatched_proposal_hypothesis(tmp_path: Path) -> None:
+    service = _service(tmp_path)
+    first_hypothesis = HypothesisRecord(
+        entity_id="HYP-2026-0001",
+        entity_type=LedgerEntityType.HYPOTHESIS,
+        created_at="2026-03-16T12:00:00+00:00",
+        title="First hypothesis",
+        hypothesis="First hypothesis",
+    )
+    second_hypothesis = HypothesisRecord(
+        entity_id="HYP-2026-0002",
+        entity_type=LedgerEntityType.HYPOTHESIS,
+        created_at="2026-03-16T12:01:00+00:00",
+        title="Second hypothesis",
+        hypothesis="Second hypothesis",
+    )
+    proposal = ProposalRecord(
+        entity_id="PROP-2026-0001",
+        entity_type=LedgerEntityType.PROPOSAL,
+        created_at="2026-03-16T12:05:00+00:00",
+        hypothesis_id=first_hypothesis.entity_id,
+        title="Proposal",
+        summary="Proposal",
+        command_packet_path="docs/governance/templates/command_packet.md",
+    )
+
+    service.append_hypothesis(first_hypothesis)
+    service.append_hypothesis(second_hypothesis)
+    service.append_proposal(proposal)
+
+    with pytest.raises(LedgerValidationError, match="must match the referenced proposal"):
+        service.append_experiment(
+            _experiment_record(
+                hypothesis_id=second_hypothesis.entity_id,
+                proposal_id=proposal.entity_id,
+            )
+        )
+
+
+def test_append_experiment_rejects_missing_artifact_reference(tmp_path: Path) -> None:
+    service = _service(tmp_path)
+    hypothesis = HypothesisRecord(
+        entity_id="HYP-2026-0001",
+        entity_type=LedgerEntityType.HYPOTHESIS,
+        created_at="2026-03-16T12:00:00+00:00",
+        title="Hypothesis",
+        hypothesis="Hypothesis",
+    )
+    proposal = ProposalRecord(
+        entity_id="PROP-2026-0001",
+        entity_type=LedgerEntityType.PROPOSAL,
+        created_at="2026-03-16T12:05:00+00:00",
+        hypothesis_id=hypothesis.entity_id,
+        title="Proposal",
+        summary="Proposal",
+        command_packet_path="docs/governance/templates/command_packet.md",
+    )
+
+    service.append_hypothesis(hypothesis)
+    service.append_proposal(proposal)
+
+    with pytest.raises(LedgerValidationError, match="missing artifact"):
+        service.append_experiment(
+            _experiment_record(
+                hypothesis_id=hypothesis.entity_id,
+                proposal_id=proposal.entity_id,
+                artifact_links=(ArtifactLink(artifact_id="ART-2026-0001"),),
+            )
+        )
+
+
+def test_append_experiment_accepts_semantically_valid_traceable_record(tmp_path: Path) -> None:
+    service = _service(tmp_path)
+    hypothesis = HypothesisRecord(
+        entity_id="HYP-2026-0001",
+        entity_type=LedgerEntityType.HYPOTHESIS,
+        created_at="2026-03-16T12:00:00+00:00",
+        title="Hypothesis",
+        hypothesis="Hypothesis",
+    )
+    proposal = ProposalRecord(
+        entity_id="PROP-2026-0001",
+        entity_type=LedgerEntityType.PROPOSAL,
+        created_at="2026-03-16T12:05:00+00:00",
+        hypothesis_id=hypothesis.entity_id,
+        title="Proposal",
+        summary="Proposal",
+        command_packet_path="docs/governance/templates/command_packet.md",
+    )
+
+    service.append_hypothesis(hypothesis)
+    service.append_proposal(proposal)
+    experiment = service.append_experiment(
+        _experiment_record(
+            hypothesis_id=hypothesis.entity_id,
+            proposal_id=proposal.entity_id,
+        )
+    )
+
+    assert experiment.entity_id == "EXP-2026-0001"
+
+
+def test_append_experiment_duplicate_id_wins_before_semantic_checks(tmp_path: Path) -> None:
+    service = _service(tmp_path)
+    hypothesis = HypothesisRecord(
+        entity_id="HYP-2026-0001",
+        entity_type=LedgerEntityType.HYPOTHESIS,
+        created_at="2026-03-16T12:00:00+00:00",
+        title="Hypothesis",
+        hypothesis="Hypothesis",
+    )
+    proposal = ProposalRecord(
+        entity_id="PROP-2026-0001",
+        entity_type=LedgerEntityType.PROPOSAL,
+        created_at="2026-03-16T12:05:00+00:00",
+        hypothesis_id=hypothesis.entity_id,
+        title="Proposal",
+        summary="Proposal",
+        command_packet_path="docs/governance/templates/command_packet.md",
+    )
+    valid_experiment = _experiment_record(
+        hypothesis_id=hypothesis.entity_id,
+        proposal_id=proposal.entity_id,
+    )
+    semantically_invalid_duplicate = replace(
+        valid_experiment,
+        hypothesis_id="HYP-2026-9999",
+    )
+
+    service.append_hypothesis(hypothesis)
+    service.append_proposal(proposal)
+    service.append_experiment(valid_experiment)
+
+    with pytest.raises(FileExistsError, match=valid_experiment.entity_id):
+        service.append_experiment(semantically_invalid_duplicate)

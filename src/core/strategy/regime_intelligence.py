@@ -11,6 +11,18 @@ from core.config.authority_mode_resolver import (
 from core.config.authority_mode_resolver import (
     resolve_authority_mode_with_source_permissive as _resolve_authority_mode_with_source_permissive,
 )
+from core.intelligence.regime.authority import (
+    detect_authoritative_regime_legacy as _detect_intelligence_authoritative_regime_legacy,
+)
+from core.intelligence.regime.authority import (
+    normalize_authoritative_regime as _normalize_intelligence_authoritative_regime,
+)
+from core.intelligence.regime.clarity import (
+    compute_clarity_score_v1 as _compute_intelligence_clarity_score_v1,
+)
+from core.intelligence.regime.htf import (
+    compute_htf_regime as _compute_intelligence_htf_regime,
+)
 
 
 def _safe_float(value: Any) -> float | None:
@@ -61,88 +73,32 @@ def compute_clarity_score_v1(
 ) -> dict[str, Any]:
     """Compute deterministic clarity score in [0,100] for sizing-only modulation.
 
-    Contract:
-    - all components normalized to [0,1]
-    - weighted sum with non-negative normalized weights
-    - score conversion uses explicit half-even rounding policy
+    Legacy public shim retained for runtime compatibility during tranche-1
+    migration to the intelligence layer.
     """
 
-    candidate_norm = str(candidate or "").strip().upper()
-    regime_norm = str(regime or "balanced").strip().lower()
-
-    confidence_component = _clamp01(confidence_gate)
-    edge_component = _clamp01(edge)
-
-    ev_denom = abs(float(r_default)) if abs(float(r_default)) > 1e-12 else 1.0
-    ev_component = _clamp01(max_ev / ev_denom)
-
-    if regime_norm in {"bull", "trend"}:
-        regime_alignment_component = 1.0 if candidate_norm == "LONG" else 0.0
-    elif regime_norm == "bear":
-        regime_alignment_component = 1.0 if candidate_norm == "SHORT" else 0.0
-    else:
-        regime_alignment_component = 0.5
-
-    use_weights = _normalize_weights(dict(weights or {}))
-    raw = (
-        use_weights["confidence"] * confidence_component
-        + use_weights["edge"] * edge_component
-        + use_weights["ev"] * ev_component
-        + use_weights["regime_alignment"] * regime_alignment_component
-    )
-    clarity_raw = _clamp01(raw)
-    clarity_scaled = clarity_raw * 100.0
-    clarity_score = _round_half_even_0_100(clarity_scaled)
-
-    return {
-        "components": {
-            "confidence": confidence_component,
-            "edge": edge_component,
-            "ev": ev_component,
-            "regime_alignment": regime_alignment_component,
-        },
-        "weights": use_weights,
-        "weights_version": weights_version,
-        "clarity_raw": clarity_raw,
-        "clarity_scaled": clarity_scaled,
-        "clarity_score": clarity_score,
-        "round_policy": "half_even",
-        "clamp": {"min": 0.0, "max": 100.0},
-    }
+    return _compute_intelligence_clarity_score_v1(
+        confidence_gate=confidence_gate,
+        edge=edge,
+        max_ev=max_ev,
+        r_default=r_default,
+        candidate=candidate,
+        regime=regime,
+        weights=weights,
+        weights_version=weights_version,
+    ).to_legacy_payload()
 
 
 def compute_htf_regime(
     htf_fib_data: dict[str, Any] | None,
     current_price: float | None = None,
 ) -> str:
-    """Compute regime from HTF (1D) Fibonacci context for defensive sizing."""
-    if not htf_fib_data or not isinstance(htf_fib_data, dict):
-        return "unknown"
+    """Legacy public shim retained for runtime compatibility during HTF tranche migration."""
 
-    if not htf_fib_data.get("available"):
-        return "unknown"
-
-    if current_price is None or current_price <= 0:
-        return "unknown"
-
-    swing_high = _safe_float(htf_fib_data.get("swing_high"))
-    swing_low = _safe_float(htf_fib_data.get("swing_low"))
-
-    if swing_high is None or swing_low is None:
-        return "unknown"
-
-    if swing_high <= swing_low:
-        return "unknown"
-
-    swing_range = swing_high - swing_low
-    position_in_range = (current_price - swing_low) / swing_range
-
-    if position_in_range >= 0.618:
-        return "bull"
-    elif position_in_range <= 0.382:
-        return "bear"
-    else:
-        return "ranging"
+    return _compute_intelligence_htf_regime(
+        htf_fib_data,
+        current_price=current_price,
+    )
 
 
 def detect_shadow_regime_from_regime_module(candles: dict[str, Any]) -> str | None:
@@ -169,40 +125,16 @@ def _detect_authoritative_regime_legacy(
     candles: dict[str, Any],
     configs: dict[str, Any],
 ) -> str:
-    pre = dict(configs.get("precomputed_features") or {})
-    ema50 = pre.get("ema_50")
-    closes = candles.get("close") if isinstance(candles, dict) else None
-
-    ema_idx: int | None = None
-    if "_global_index" in configs:
-        try:
-            ema_idx = int(configs.get("_global_index"))
-        except (TypeError, ValueError):
-            ema_idx = None
-    if ema_idx is None and closes is not None:
-        ema_idx = len(closes) - 1
-
-    if (
-        isinstance(ema50, list | tuple)
-        and (closes is not None)
-        and (ema_idx is not None)
-        and 0 <= ema_idx < len(ema50)
-    ):
-        current_price = float(closes[-1])
-        current_ema = float(ema50[ema_idx])
-        if current_ema != 0:
-            trend = (current_price - current_ema) / current_ema
-            if trend > 0.02:
-                return "bull"
-            elif trend < -0.02:
-                return "bear"
-            else:
-                return "ranging"
-        return "balanced"
-
     from core.strategy import regime_unified as _regime_unified
 
-    return _regime_unified.detect_regime_unified(candles, ema_period=50)
+    return _detect_intelligence_authoritative_regime_legacy(
+        candles,
+        configs,
+        fallback_detect_regime_unified=lambda fallback_candles: _regime_unified.detect_regime_unified(
+            fallback_candles,
+            ema_period=50,
+        ),
+    )
 
 
 def detect_authoritative_regime(
@@ -219,10 +151,7 @@ def detect_authoritative_regime(
     authority_mode = resolve_authority_mode(configs)
     if authority_mode == _AUTHORITY_MODE_REGIME_MODULE:
         observed = detect_shadow_regime_from_regime_module(candles)
-        normalized = str(observed).strip().lower() if observed is not None else ""
-        if normalized in {"bull", "bear", "ranging", "balanced"}:
-            return normalized
-        return "balanced"
+        return _normalize_intelligence_authoritative_regime(observed)
 
     return _detect_authoritative_regime_legacy(candles, configs)
 

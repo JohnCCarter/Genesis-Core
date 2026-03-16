@@ -7,6 +7,8 @@ from pathlib import Path
 from statistics import fmean, pstdev
 from typing import Any
 
+from core.intelligence.regime.contracts import ShadowRegimeObservability
+
 
 def _clarity_score(confidence: dict[str, Any]) -> int:
     value = confidence.get("overall", 0.0)
@@ -272,3 +274,36 @@ def test_regime_shadow_artifacts_writes_files_when_env_set(
     }
     assert int(quantiles["total"]) == len(ndjson_rows)
     assert len(ndjson_rows) >= 50
+
+
+def test_regime_shadow_observability_contract_matches_runtime_shape(
+    monkeypatch,
+    sample_policy: dict[str, Any],
+    sample_configs: dict[str, Any],
+    small_candle_history: dict[str, Any],
+) -> None:
+    from core.strategy import evaluate as ev
+    from core.strategy import regime_unified as ru
+
+    monkeypatch.setattr(ru, "detect_regime_unified", lambda *_a, **_k: "ranging")
+    monkeypatch.setattr(ev, "_detect_shadow_regime_from_regime_module", lambda *_a, **_k: "bull")
+
+    configs = deepcopy(sample_configs)
+    configs.pop("precomputed_features", None)
+    configs.pop("_global_index", None)
+
+    _result, meta = ev.evaluate_pipeline(
+        small_candle_history,
+        policy=sample_policy,
+        configs=configs,
+    )
+
+    payload = meta["observability"]["shadow_regime"]
+    contract = ShadowRegimeObservability.from_payload(payload)
+
+    assert contract.to_payload() == payload
+    assert contract.expected_evidence_file_names() == (
+        "clarity_histogram.json",
+        "clarity_quantiles.json",
+        "shadow_samples.ndjson",
+    )

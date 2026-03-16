@@ -29,6 +29,13 @@ This closure note records the completion of the server modularization and legacy
 - `docs/audit/refactor/server/command_packet_server_api_package_move_2026-03-12.md`
 - `docs/audit/refactor/server/context_map_server_api_package_move_2026-03-12.md`
 
+### Archive retention note
+
+- `origin/archive/server-modul-split-contaminated-2026-03-12` is intentionally retained as a historical archive branch from the large cleanup/refactor phase.
+- Current review indicates that the archive branch still carries unique traceability/governance evidence for the server-module-split workstream, including foundational command-packet/context-map material not currently present on the active branch.
+- The branch should therefore be treated as `retain-for-traceability` rather than as a routine delete candidate.
+- Re-review this archive branch later and make an explicit keep/delete decision only after the missing evidence has been salvaged into the active documentation set or the references have been deliberately retired.
+
 ### Alias retirement phases
 
 - `docs/audit/refactor/server/command_packet_server_alias_retirement_phase1_2026-03-12.md`

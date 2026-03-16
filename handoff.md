@@ -181,3 +181,13 @@ Minst detta set (anpassa målfil + relevanta tests):
 2. Lås Batch 22 command packet (LOW risk, no behavior change, scope IN = endast `mcp_server/tools.py`).
 3. Kör ovan gate-stack före/efter.
 4. Säkerställ att inga `__pycache__`-artefakter följer med in i commit.
+
+---
+
+## Persistent note — archive branch retention
+
+- `origin/archive/server-modul-split-contaminated-2026-03-12` ska tills vidare behållas.
+- Skäl: branchen innehåller unik spårbarhet/governance-evidens från den stora cleanup/refaktor-fasen, inklusive material som inte fullt ut finns i aktiv branch-dokumentation.
+- Den är därför **inte** en rutinmässig delete-kandidat just nu.
+- Vid ett senare tillfälle bör branchen granskas igen och då ska ett uttryckligt keep/delete-beslut fattas.
+- Kanonisk referens för detta ställningstagande finns i `docs/audit/refactor/server/closure_server_modul_split_2026-03-12.md`.

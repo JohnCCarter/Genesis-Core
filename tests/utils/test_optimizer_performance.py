@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import statistics
 import time
 from pathlib import Path
 
@@ -29,22 +30,34 @@ class TestTrialKeyPerformance:
         assert key1 != key3, "Different parameters should generate different keys"
 
     def test_trial_key_caching(self) -> None:
-        """Test that trial key caching improves performance."""
+        """Test that trial key caching improves performance.
+
+        Use repeated samples and median timings because a single micro-benchmark
+        measurement can be noisy on Windows/CI schedulers even when caching works.
+        """
         params = {"threshold": 0.5, "window": 100}
+        cold_samples: list[float] = []
+        hot_samples: list[float] = []
 
-        # First call - not cached
-        start = time.perf_counter()
-        key1 = runner._trial_key(params)
-        time1 = time.perf_counter() - start
+        for _ in range(25):
+            runner._TRIAL_KEY_CACHE.clear()
 
-        # Second call - should be cached
-        start = time.perf_counter()
-        key2 = runner._trial_key(params)
-        time2 = time.perf_counter() - start
+            start = time.perf_counter()
+            key1 = runner._trial_key(params)
+            cold_samples.append(time.perf_counter() - start)
 
-        assert key1 == key2
-        # Cached call should generally be faster; allow small tolerance for jitter
-        assert time2 <= time1 * 1.5
+            start = time.perf_counter()
+            key2 = runner._trial_key(params)
+            hot_samples.append(time.perf_counter() - start)
+
+            assert key1 == key2
+
+        median_cold = statistics.median(cold_samples)
+        median_hot = statistics.median(hot_samples)
+
+        # Cached calls should still be faster on the median sample, while avoiding
+        # fragile dependence on a single timing measurement.
+        assert median_hot <= median_cold * 1.5
 
     def test_trial_key_cache_limit(self) -> None:
         """Test that cache doesn't grow unbounded."""

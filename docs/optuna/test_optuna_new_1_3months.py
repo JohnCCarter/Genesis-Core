@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Kör Optuna enligt YAML (6 månader, resume=true)."""
+"""Historiskt Optuna-hjälpskript som kräver explicit YAML-sökväg."""
 
 import argparse
 import sys
@@ -19,12 +19,20 @@ def _read_config(config_path: Path) -> dict[str, Any]:
 
 
 def _parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Kör Optuna enligt angiven YAML-konfig")
+    parser = argparse.ArgumentParser(
+        description=(
+            "Kör Optuna enligt angiven YAML-konfig. "
+            "Ange alltid en explicit config-path; gamla 1h-defaults ligger inte längre under config/optimizer/."
+        )
+    )
     parser.add_argument(
         "--config",
         type=Path,
-        default=Path("config/optimizer/tBTCUSD_1h_new_optuna.yaml"),
-        help="Sökväg till YAML (default: config/optimizer/tBTCUSD_1h_new_optuna.yaml)",
+        required=True,
+        help=(
+            "Sökväg till YAML. Använd aktiv timeframe-layout under config/optimizer/<timeframe>/... "
+            "eller en uttryckligen archival config-path om du granskar historiska 1h-körningar."
+        ),
     )
     return parser.parse_args()
 

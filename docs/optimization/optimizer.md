@@ -15,7 +15,7 @@ Key components:
 - `scripts/summarize_hparam_results.py` / `scripts/optimizer.py summarize` - quick summaries of run results.
 - `ChampionManager` & `ChampionLoader` - persist and reload champions for pipeline/backtest.
 
-## 2. Recommended workflow (coarse -> proxy -> fine)
+## 2. Recommended workflow (current active layout)
 
 1. **Coarse grid** - run `config/optimizer/1h/tBTCUSD_1h_coarse_grid.yaml` to map the region:
 
@@ -23,23 +23,13 @@ Key components:
    python -m core.optimizer.runner config/optimizer/1h/tBTCUSD_1h_coarse_grid.yaml
    ```
 
-2. **Proxy Optuna (fast)** - 2 month window with Hyperband:
+2. **Additional Optuna campaigns** - place any new Optuna YAML under the timeframe-first layout described in `config/optimizer/README.md`.
 
-   ```powershell
-   python test_optuna_new_1_3months.py --config config/optimizer/tBTCUSD_1h_proxy_optuna.yaml
-   ```
+- Active optimizer configs should live under `config/optimizer/<timeframe>/...`.
+- Avoid reusing legacy root-level names such as `config/optimizer/tBTCUSD_1h_proxy_optuna.yaml`, `config/optimizer/tBTCUSD_1h_fine_optuna.yaml`, or `config/optimizer/tBTCUSD_1h_new_optuna.yaml`.
+- Older 1h Optuna YAMLs with those names are historical/archive material, not active defaults.
 
-   Study file: `optuna_tBTCUSD_1h_proxy.db` (resumable).
-
-3. **Fine Optuna (full 6 months)** - narrow bounds around the proxy winners:
-
-   ```powershell
-   python test_optuna_new_1_3months.py --config config/optimizer/tBTCUSD_1h_fine_optuna.yaml
-   ```
-
-   Study file: `optuna_tBTCUSD_1h_fine.db`.
-
-4. **Summaries** - after each run:
+3. **Summaries** - after each run:
 
    ```powershell
    python -m scripts.summarize_hparam_results --run-dir results/hparam_search/<run_id>
@@ -47,7 +37,7 @@ Key components:
    python scripts/optimizer.py summarize <run_id> --top 5
    ```
 
-5. **Config-equivalence proof (rekommenderas)** - verifiera att trial-config och backtest-resultat använder samma effective config:
+4. **Config-equivalence proof (rekommenderas)** - verifiera att trial-config och backtest-resultat använder samma effective config:
 
 ```powershell
 python scripts/check_trial_config_equivalence.py --run-dir results/hparam_search/<run_id> --all
@@ -55,9 +45,15 @@ python scripts/check_trial_config_equivalence.py --run-dir results/hparam_search
 
 Förväntat utfall är `[OK]` per trial. Om `[MISMATCH]`: stoppa och felsök innan fler trials körs.
 
-6. **Full validation** (optional) - confirm the best candidate with the original 6-month config: `config/optimizer/tBTCUSD_1h_new_optuna.yaml` (`optuna_tBTCUSD_1h_6m.db`).
-7. **Champion update** - promote the best trial by updating `config/strategy/champions/<symbol>_<tf>.json`.
-8. **Document** - record the results in `docs/daily_summaries/daily_summary_YYYY-MM-DD.md` and this file.
+4. **Full validation** (optional) - confirm the best candidate with an explicit campaign YAML under the active timeframe layout, for example `config/optimizer/1h/...` or `config/optimizer/3h/...`.
+5. **Champion update** - promote the best trial by updating `config/strategy/champions/<symbol>_<tf>.json`.
+6. **Document** - record the results in `docs/daily_summaries/daily_summary_YYYY-MM-DD.md` and this file.
+
+### Legacy 1h note
+
+- Historical 1h Optuna configs such as `tBTCUSD_1h_new_optuna.yaml`, `tBTCUSD_1h_exact_optuna.yaml`, and `tBTCUSD_1h_optuna_fib_tune_quick.yaml` are currently retained in archive locations for traceability.
+- They should not be treated as the active optimizer entrypoints for new work.
+- When establishing the new 1h campaign, prefer a new YAML under `config/optimizer/1h/` rather than reviving the old root-level naming scheme.
 
 ## 3. Latest champion (23 Oct 2025)
 

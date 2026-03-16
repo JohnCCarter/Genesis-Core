@@ -1,208 +1,133 @@
-## Handoff — Regime Intelligence / freeze remediation (2026-03-13)
+# HANDOFF — Genesis-Core till hemdator / nästa Copilot-session
 
-### Snapshot
+Senast uppdaterad: 2026-03-16
 
-- **Datum:** 2026-03-13
-- **Branch:** `feature/Regime-Intelligence`
-- **HEAD:** `9775ea61`
-- **Mode:** RESEARCH (`feature/*`), men champion-path hanterades med STRICT-tänk p.g.a. freeze/config-authority
-- **Repo state vid överlämning:** ren working tree
-- **GitHub checks på HEAD:**
-  - `Champion Freeze Guard` ✅
-  - `CI` ✅
+## Kort lägesbild
 
-### Vad som faktiskt hände i denna session
+- **Aktiv branch nu:** `master`
+- **HEAD:** `b41a2422`
+- **Repo-status:** ren working tree
+- **Senaste viktiga commits på `master`:**
+  1. `b41a2422` — `refactor(server): extract deterministic regime intelligence layer`
+  2. `003fef58` — `feat(research-ledger): add canonical ledger substrate`
+  3. `d49879a5` — `tooling: stabilize trial key cache performance test`
 
-1. **RI-evidens verifierades och reproducerades**
-   - Phase B rerun: `ri_phaseB_rerun_20260313`
-   - Phase C rerun: `ri_phaseC_rerun_20260313`
-   - Phase B vinnare reproducerades som `trial_082`
+## Vad som är klart
 
-2. **Optimizer-bugg fixades**
-   - Literal/sentinel-löv som `__dirichlet_remainder__` kraschade tidigare vissa optimizer-flöden.
-   - Fix finns i:
-     - `src/core/optimizer/runner.py`
-     - `src/core/optimizer/runner_config.py`
+Följande arbetskedja är **fullbordad och införd i `master`**:
 
-3. **Regressionstester lades till / uppdaterades**
-   - `tests/utils/test_optimizer_duplicate_fixes.py`
+1. **Flaky optimizer-performance test stabiliserat**
    - `tests/utils/test_optimizer_performance.py`
+   - `test_trial_key_caching` använder nu repeated samples + median istället för single-sample micro-benchmark.
 
-4. **RI-resultat och analys dokumenterades**
-   - `config/optimizer/3h/phased_v3/PHASED_V3_RESULTS.md`
-   - `docs/analysis/regime_intelligence_phase_bc_rerun_plan_2026-03-13.md`
-   - `docs/analysis/tBTCUSD_3h_champion_promotion_recommendation_2026-03-13.md`
+2. **Research Ledger v1-substrat infört**
+   - Ny package under `src/core/research_ledger/`
+   - Fokuserade tester under `tests/core/research_ledger/`
+   - Auditunderlag under `docs/audit/research_ledger/`
 
-5. **En champion-promotion skrevs först in lokalt men togs sedan bort från pushad historik**
-   - En tidigare commit (`0aaa2e24`) innehöll ändring i `config/strategy/champions/tBTCUSD_3h.json`.
-   - GitHub Actions failade korrekt på `Champion Freeze Guard` eftersom freeze-perioden är aktiv till `2026-03-17`.
-   - Branch-historiken skrevs därför om.
-   - Den slutliga pushade committen **innehåller inte någon ändring under** `config/strategy/champions/`.
+3. **Regime Intelligence-lagret extraherat och mergat**
+   - Ny package under `src/core/intelligence/regime/`
+   - Legacy-shim kvar i `src/core/strategy/regime_intelligence.py`
+   - Fokuserade tester under `tests/core/intelligence/regime/`
+   - Shadow-observability-regression täcks av `tests/backtest/test_regime_shadow_artifacts.py`
 
-### Slutlig pushad commit
+## Brancher som redan är mergade och bortstädade
 
-- **Commit:** `9775ea61`
-- **Meddelande:** `optimizer: preserve dirichlet literals and document RI evidence`
+Följande brancher **finns inte längre** som aktiva arbetsbrancher och ska inte återupplivas utan särskilt skäl:
 
-### Filer som ingår i slutlig pushad ändring
+- `feature/research-ledger-v1` → mergad, remote deleted, local deleted
+- `fix/flaky-trial-key-caching` → remote deleted, local deleted
+- `feature/regime-intelligence-layer-migration` → mergad, remote deleted, local deleted
 
-- `config/optimizer/3h/phased_v3/PHASED_V3_RESULTS.md`
-- `docs/analysis/regime_intelligence_phase_bc_rerun_plan_2026-03-13.md`
-- `docs/analysis/tBTCUSD_3h_champion_promotion_recommendation_2026-03-13.md`
-- `src/core/optimizer/runner.py`
-- `src/core/optimizer/runner_config.py`
-- `tests/utils/test_optimizer_duplicate_fixes.py`
+## Viktiga verifieringar som redan passerat
+
+Under denna kedja kördes och passerade följande verifieringar innan merge:
+
+- `python scripts/validate/validate_registry.py`
+- `pre-commit run --all-files`
+- `python -m bandit -r src -c bandit.yaml -f txt -o bandit-report.txt`
+- `python -m pytest -q`
+
+Dessutom passerade riktade guardrails för determinism/cache/pipeline, inklusive:
+
+- `tests/backtest/test_backtest_determinism_smoke.py`
+- `tests/utils/test_features_asof_cache_key_deterministic.py`
+- `tests/governance/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable`
+
+## Det viktigaste för nästa Copilot på hemdatorn
+
+### Du ska utgå från detta
+
+- Börja från **`master`**, inte från någon gammal feature-branch i den här kedjan.
+- Anta att arbetet kring:
+  - flaky trial-key caching,
+  - Research Ledger v1-substrat,
+  - Regime Intelligence-lagret
+    redan är **klart och mergat**.
+
+### Du ska inte göra detta igen
+
+- Återskapa inte `feature/research-ledger-v1`
+- Återskapa inte `fix/flaky-trial-key-caching`
+- Återskapa inte `feature/regime-intelligence-layer-migration`
+- Försök inte åter-mergea samma migrationsslice eller ledger-substrat igen
+
+## Viktiga filer som nu är kanoniska på `master`
+
+### Research Ledger
+
+- `src/core/research_ledger/__init__.py`
+- `src/core/research_ledger/enums.py`
+- `src/core/research_ledger/indexes.py`
+- `src/core/research_ledger/models.py`
+- `src/core/research_ledger/queries.py`
+- `src/core/research_ledger/service.py`
+- `src/core/research_ledger/storage.py`
+- `src/core/research_ledger/validators.py`
+
+### Regime Intelligence
+
+- `src/core/intelligence/__init__.py`
+- `src/core/intelligence/regime/__init__.py`
+- `src/core/intelligence/regime/authority.py`
+- `src/core/intelligence/regime/clarity.py`
+- `src/core/intelligence/regime/contracts.py`
+- `src/core/intelligence/regime/htf.py`
+- `src/core/strategy/regime_intelligence.py`
+
+### Testytor att lita på för detta område
+
+- `tests/core/research_ledger/test_storage.py`
+- `tests/core/research_ledger/test_validators.py`
+- `tests/core/research_ledger/test_service.py`
+- `tests/core/intelligence/regime/test_authority.py`
+- `tests/core/intelligence/regime/test_clarity.py`
+- `tests/core/intelligence/regime/test_contracts.py`
+- `tests/core/intelligence/regime/test_htf.py`
+- `tests/backtest/test_regime_shadow_artifacts.py`
 - `tests/utils/test_optimizer_performance.py`
 
-### Filer som uttryckligen **inte** längre ingår i branchdiffen
+## Om du fortsätter arbetet hemma: rekommenderad startpunkt
 
-- `config/strategy/champions/tBTCUSD_3h.json`
-- `.secrets.baseline`
+1. Hämta senaste `master`
+2. Verifiera att HEAD är `b41a2422` eller senare
+3. Skapa **ny** branch från `master` för nästa uppgift
+4. Behandla tidigare migrationsarbete som avslutat
 
-### Verifiering som kördes på slutlig SHA/paket
+## Troliga nästa arbetsområden
 
-- `pre-commit` ✅
-- Fokuserad pytest-svit ✅
-  - `tests/governance/test_import_smoke_backtest_optuna.py`
-  - `tests/utils/test_optimizer_duplicate_fixes.py`
-  - `tests/utils/test_optimizer_performance.py`
-  - `tests/backtest/test_backtest_determinism_smoke.py`
-  - `tests/utils/test_features_asof_cache_key_deterministic.py`
-  - `tests/governance/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable`
+Detta är **inte blockerade restpunkter** från den nyss avslutade kedjan, utan bara rimliga nästa kandidater:
 
-### Viktiga slutsatser för nästa agent / hemdator
+1. **Champion-promotion / post-freeze-arbete**
+   - Om relevant, använd redan existerande analysunderlag
+   - Var fortsatt försiktig med `config/strategy/champions/**` om freeze-regler fortfarande gäller
 
-1. **Champion promotion är rekommenderad men inte pushad**
-   - Promotion-underlag finns i analysdokumentet.
-   - Själva champion-writebacken måste vänta tills freeze slutar, eller göras på ett uttryckligen godkänt sätt efter freeze.
+2. **Övriga feature-spår som inte hör till denna kedja**
+   - Exempelvis `feature/Optuna-Phased-v4` om det är nästa prioritet
 
-2. **Nuvarande branch är grön och freeze-safe**
-   - Champion Freeze Guard är passerad.
-   - CI är grön på HEAD `9775ea61`.
+3. **Vanligt underhåll / cleanup**
+   - Bara som nya, separata, scoped uppgifter från `master`
 
-3. **Om du fortsätter hemma**
-   - checka ut `feature/Regime-Intelligence`
-   - utgå från `9775ea61`
-   - använd analysdokumenten som beslutsunderlag för senare champion-promotion
+## Beslutslogg i en mening
 
-4. **Undvik att ändra `config/strategy/champions/` före 2026-03-17**
-   - annars kommer freeze-workflown att faila igen.
-
-# Handoff — Cleanup Core Audit (Shard C)
-
-## Snapshot
-
-- **Datum:** 2026-03-06
-- **Branch:** `feature/cleanup-core-audit`
-- **HEAD:** `a664ed7d`
-- **Mode:** RESEARCH (`feature/*`)
-- **Repo state vid överlämning:** ren working tree (inga staged/unstaged ändringar)
-
-## Vad som nyligen levererats
-
-Senaste commits (nyast först):
-
-1. `a664ed7d` — `refactor(cleanup): inline git status path filtering`
-2. `3992a117` — `refactor(cleanup): inline preflight print helper in main`
-3. `0c9122aa` — `refactor: inline git owner anomaly helper`
-4. `1e7187c7` — `refactor: inline proc environ reader helper`
-5. `930aff2e` — `refactor: inline git repo state helper`
-6. `7b16435b` — `refactor: inline git environment helper`
-7. `59978886` — `refactor: inline task branch normalization helper`
-
-Alla batches kördes med:
-
-- Opus pre-code review
-- pre-gates
-- minimal diff (no behavior change)
-- post-gates
-- Opus post-diff review
-- commit/push
-
-## Viktiga verifierade facts för nästa agent
-
-1. **Skill-invocation i detta cleanup-spår**
-   - `repo_clean_refactor` och `python_engineering` ger `STOP: no executable steps` (förväntat SPEC-beteende).
-   - Ska ändå dokumenteras som evidens i command packet.
-
-2. **Korrekt smoke-selector för preflight-filen**
-   - `tests/test_mcp_session_preflight.py` finns inte.
-   - Använd istället `tests/test_mcp_server.py` med filter för `mcp_session_preflight` när relevant.
-
-3. **Återkommande hygien-fallgrop**
-   - `scripts/build/__pycache__/...pyc` dyker upp återkommande efter test/lint-körningar.
-   - Rensa innan post-audit/commit för att undvika scope-drift.
-
-## Kvarvarande arbete (praktiskt)
-
-### A) Snäv wrapper-cleanup i aktivt spår
-
-Kvarvarande privata helper-kandidater i `mcp_server/tools.py`:
-
-- `_is_within` (nested i `get_project_structure`) — **lägst risk** för nästa batch
-- `_run_git_command`
-- `_run_git_command_async`
-- `_build_compare_url` _(obs: har direkt internhelper-test i `tests/test_mcp_git_workflow_tools.py`)_
-
-Rekommenderad nästa batch: `_is_within`.
-
-### B) Bredare shard-C cleanup (verktygsfynd)
-
-- Senaste JSCPD-report visar **6 klonfynd / 100 duplicerade rader** (~0.58%).
-- Vulture gav **0 rader** i senaste mätningen.
-- Radon visar många komplexitetsfynd, men dessa är inte per automatik no-behavior-change-kandidater.
-
-## Standard-gates som använts i cleanup-batcher
-
-Minst detta set (anpassa målfil + relevanta tests):
-
-1. `black --check <target_file>`
-2. `ruff check <target_file>`
-3. `bandit -q -c bandit.yaml <target_file>`
-4. Relevanta måltester (t.ex. `tests/test_mcp_git_status_remote_filters.py`, `tests/test_mcp_server.py`)
-5. `tests/backtest/test_backtest_determinism_smoke.py`
-6. `tests/test_feature_cache.py`
-7. `tests/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable`
-
-## Arbetsmönster som ska fortsätta (governance)
-
-1. Lås command packet (mode/risk/path/scope/base SHA)
-2. Kör skill-evidens (STOP/no_steps är OK för SPEC-skills)
-3. Opus pre-code verdict
-4. Pre-gates
-5. Minimal diff (1 kandidat per batch)
-6. Post-gates
-7. Opus post-diff verdict
-8. Commit/push
-
-## Förslag på omedelbar start för nästa agent
-
-1. Välj kandidat: `_is_within` i `mcp_server/tools.py`.
-2. Lås Batch 22 command packet (LOW risk, no behavior change, scope IN = endast `mcp_server/tools.py`).
-3. Kör ovan gate-stack före/efter.
-4. Säkerställ att inga `__pycache__`-artefakter följer med in i commit.
-
----
-
-## Persistent note — archive branch retention
-
-- `origin/archive/server-modul-split-contaminated-2026-03-12` ska tills vidare behållas.
-- Skäl: branchen innehåller unik spårbarhet/governance-evidens från den stora cleanup/refaktor-fasen, inklusive material som inte fullt ut finns i aktiv branch-dokumentation.
-- Den är därför **inte** en rutinmässig delete-kandidat just nu.
-- Vid ett senare tillfälle bör branchen granskas igen och då ska ett uttryckligt keep/delete-beslut fattas.
-- Kanonisk referens för detta ställningstagande finns i `docs/audit/refactor/server/closure_server_modul_split_2026-03-12.md`.
-
----
-
-## Blocker note — Research Ledger v1 verification state (2026-03-16)
-
-- **Status:** implemented and locally verified
-- **Ledger-local validation:** passed
-- **Governance selectors:** passed
-- **Full repo verification:** passed
-- **Former blocker:** `tests/utils/test_optimizer_performance.py::TestTrialKeyPerformance::test_trial_key_caching`
-- **Resolution:** blocker cleared by the separate stabilized test patch now applied on `feature/research-ledger-v1`.
-  - Root repo now uses repeated samples + median comparison in `test_trial_key_caching` instead of a single timing sample.
-  - Full local verification passed after the blocker fix: registry validation, `pre-commit run --all-files`, `bandit -r src -c bandit.yaml -f txt -o bandit-report.txt`, and `pytest -q`.
-- **Conclusion:** Research Ledger v1 is **locally green and merge-assessable**.
-- **Recommended next step:** commit the remaining scoped ledger files + audit docs + this handoff update, push `feature/research-ledger-v1`, and proceed with normal review/merge workflow.
+Allt som behövdes från ledger-v1-, flaky-fix- och regime-intelligence-migration-spåren är nu infört i `master`; dessa brancher är avslutade och nästa session ska fortsätta från `master` med en ny branch.

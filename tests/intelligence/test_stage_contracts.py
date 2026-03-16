@@ -23,6 +23,11 @@ from core.intelligence.features import (
     IntelligenceFeatureExtractor,
     IntelligenceFeatureSet,
 )
+from core.intelligence.ledger_adapter import (
+    IntelligenceLedgerAdapter,
+    LedgerPersistenceRequest,
+    LedgerPersistenceResult,
+)
 from core.intelligence.normalization import (
     IntelligenceNormalizer,
     NormalizationRequest,
@@ -57,6 +62,9 @@ def test_package_root_exports_are_available() -> None:
     assert EvaluationRequest.__name__ == "EvaluationRequest"
     assert IntelligenceEvaluation.__name__ == "IntelligenceEvaluation"
     assert IntelligenceEvaluator.__name__ == "IntelligenceEvaluator"
+    assert LedgerPersistenceRequest.__name__ == "LedgerPersistenceRequest"
+    assert LedgerPersistenceResult.__name__ == "LedgerPersistenceResult"
+    assert IntelligenceLedgerAdapter.__name__ == "IntelligenceLedgerAdapter"
 
 
 def test_stage_result_aliases_remain_tuple_based() -> None:
@@ -92,6 +100,16 @@ def test_stage_result_aliases_remain_tuple_based() -> None:
             ),
             "feature_sets",
             (),
+        ),
+        (
+            lambda: LedgerPersistenceRequest(events=(validate_intelligence_event(_event(1)),)),
+            "events",
+            (validate_intelligence_event(_event(2)),),
+        ),
+        (
+            lambda: LedgerPersistenceResult(persisted_event_ids=("intel-tbtcusd-20260316-0001",)),
+            "persisted_event_ids",
+            ("intel-tbtcusd-20260316-0002",),
         ),
     ],
 )
@@ -167,3 +185,62 @@ def test_stage_contract_construction_does_not_rebind_input_tuples() -> None:
     assert normalization_request.events is collected_events
     assert feature_request.events is normalized_events
     assert feature_request.events[0].event.references[0].ref == "ART-2026-0001"
+
+
+def test_event_payload_preserves_explicit_reference_order() -> None:
+    event = IntelligenceEvent(
+        event_id="intel-tbtcusd-20260316-0099",
+        source="regime_intelligence",
+        timestamp="2026-03-16T13:39:00+00:00",
+        asset="tBTCUSD",
+        topic="regime",
+        signal_type="observation",
+        confidence=0.9,
+        references=(
+            IntelligenceReference(kind="artifact", ref="ART-2026-0099-B", label="second"),
+            IntelligenceReference(kind="artifact", ref="ART-2026-0099-A", label="first"),
+        ),
+        summary="Reference ordering contract.",
+    )
+
+    payload = event.to_payload()
+
+    assert tuple(reference["ref"] for reference in payload["references"]) == (
+        "ART-2026-0099-B",
+        "ART-2026-0099-A",
+    )
+    assert event.references[0].ref == "ART-2026-0099-B"
+    assert event.references[1].ref == "ART-2026-0099-A"
+
+
+def test_validation_wraps_without_mutating_event_identity() -> None:
+    event = _event(3)
+
+    validated = validate_intelligence_event(event)
+
+    assert validated.event is event
+    assert validated.event.references is event.references
+    assert tuple(reference.ref for reference in validated.event.references) == ("ART-2026-0003",)
+
+
+def test_ledger_persistence_contract_preserves_tuple_ordering() -> None:
+    normalized_events = (
+        validate_intelligence_event(_event(2, source="macro")),
+        validate_intelligence_event(_event(1, source="news")),
+    )
+    request = LedgerPersistenceRequest(events=normalized_events)
+    result = LedgerPersistenceResult(
+        persisted_event_ids=tuple(item.event.event_id for item in request.events),
+        ledger_entity_ids=("ledger-002", "ledger-001"),
+    )
+
+    assert request.events is normalized_events
+    assert tuple(item.event.event_id for item in request.events) == (
+        "intel-tbtcusd-20260316-0002",
+        "intel-tbtcusd-20260316-0001",
+    )
+    assert result.persisted_event_ids == (
+        "intel-tbtcusd-20260316-0002",
+        "intel-tbtcusd-20260316-0001",
+    )
+    assert result.ledger_entity_ids == ("ledger-002", "ledger-001")

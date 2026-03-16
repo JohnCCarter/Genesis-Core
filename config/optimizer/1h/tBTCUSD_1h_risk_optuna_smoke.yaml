@@ -1,0 +1,87 @@
+description: "Initial 1h Optuna smoke config in active timeframe-first layout"
+#
+# Purpose:
+# - establish an active 1h Optuna config in the timeframe-first layout
+# - use the modern thresholds/exit/risk optimizer shape expected by current preflight guards
+# - keep scope intentionally small for a first 1h smoke slice
+# - avoid champion promotion and keep study/storage isolated
+
+meta:
+  symbol: tBTCUSD
+  timeframe: 1h
+  snapshot_id: tBTCUSD_1h_2024-10-22_2025-10-01_v1
+  warmup_bars: 50
+  runs:
+    strategy: optuna
+    use_sample_range: true
+    sample_start: "2025-04-01"
+    sample_end: "2025-10-01"
+
+    resume: false
+    max_trials: 6
+    max_concurrent: 1
+
+    promotion:
+      enabled: false
+
+    optuna:
+      study_name: "optuna_tBTCUSD_1h_risk_smoke_2025_v1"
+      storage: "sqlite:///results/hparam_search/storage/optuna_tBTCUSD_1h_risk_smoke_2025_v1.db"
+      n_jobs: 1
+      timeout_seconds: 300
+
+      bootstrap_random_trials: 3
+      bootstrap_seed: 42
+
+      pruner:
+        type: "none"
+
+      sampler:
+        type: "tpe"
+        kwargs:
+          n_startup_trials: 4
+          n_ei_candidates: 48
+          multivariate: true
+          group: true
+          constant_liar: true
+          seed: 42
+
+constraints:
+  include_scoring_failures: false
+  min_trades: 50
+  min_profit_factor: 1.0
+  max_max_dd: 0.15
+
+parameters:
+  thresholds:
+    entry_conf_overall:
+      type: float
+      low: 0.30
+      high: 0.60
+      step: 0.05
+    regime_proba:
+      balanced:
+        type: float
+        low: 0.55
+        high: 0.75
+        step: 0.05
+
+  exit:
+    exit_conf_threshold:
+      type: float
+      low: 0.35
+      high: 0.55
+      step: 0.05
+    max_hold_bars:
+      type: int
+      low: 15
+      high: 30
+      step: 5
+
+  risk:
+    risk_map:
+      type: grid
+      values:
+        - [[0.60, 0.020], [0.70, 0.030], [0.80, 0.040]]
+        - [[0.50, 0.015], [0.60, 0.025], [0.70, 0.035]]
+        - [[0.40, 0.010], [0.50, 0.020], [0.60, 0.030]]

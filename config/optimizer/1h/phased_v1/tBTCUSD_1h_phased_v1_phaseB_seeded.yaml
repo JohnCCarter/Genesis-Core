@@ -1,0 +1,213 @@
+description: "Phase B-style seeded 1h Regime Intelligence optimisation"
+#
+# Provenance / intent:
+# - additive RESEARCH config only; no effect unless explicitly selected
+# - this is a seeded Phase-B-style campaign for 1h, not a traced continuation of a local 1h Phase A best-trial
+# - fixed non-RI baseline values are seeded from:
+#   1) config/optimizer/1h/tBTCUSD_1h_risk_optuna_smoke.yaml
+#   2) config/optimizer/1h/tBTCUSD_1h_coarse_grid.yaml
+#   3) config/strategy/champions/tBTCUSD_1h.json (risk_map / active 1h context)
+# - intent is to test RI ON/OFF and RI sizing behavior on 1h with the same conceptual structure as 3h Phase B
+# - choose this path/name/study/storage as stable from the start; resume signatures are path-sensitive
+#
+# Seed assumptions:
+# - no tracked local 1h Phase A artifact currently exists
+# - seeded baseline thresholds/exit values reflect the previously validated 1h smoke slice
+# - risk_map is pinned to the current active 1h champion shape to reduce unnecessary baseline drift
+
+meta:
+  symbol: tBTCUSD
+  timeframe: 1h
+  snapshot_id: snap_tBTCUSD_1h_2024-01-01_2024-12-31_v1
+  warmup_bars: 50
+  runs:
+    strategy: optuna
+    score_version: "v2"
+
+    use_sample_range: true
+    sample_start: "2024-01-01"
+    sample_end: "2024-12-31"
+
+    validation:
+      enabled: true
+      use_sample_range: true
+      sample_start: "2025-01-01"
+      sample_end: "2025-10-01"
+      top_n: 10
+
+      constraints:
+        include_scoring_failures: false
+        min_trades: 25
+        min_profit_factor: 1.05
+        max_max_dd: 0.30
+
+    resume: false
+    max_trials: 60
+    max_concurrent: 1
+
+    promotion:
+      enabled: false
+
+    optuna:
+      study_name: "phased_v1_phaseB_seeded_RI_1h_2024_2025"
+      storage: "sqlite:///results/hparam_search/storage/phased_v1_phaseB_seeded_1h.db"
+      n_jobs: 1
+      timeout_seconds: 7200
+
+      bootstrap_random_trials: 12
+      bootstrap_seed: 42
+
+      pruner:
+        type: "none"
+
+      sampler:
+        type: "tpe"
+        kwargs:
+          n_startup_trials: 16
+          n_ei_candidates: 48
+          multivariate: true
+          group: true
+          constant_liar: true
+          seed: 42
+
+parameters:
+  thresholds:
+    entry_conf_overall:
+      type: fixed
+      value: 0.35
+    min_edge:
+      type: fixed
+      value: 0.01
+    regime_proba:
+      balanced:
+        type: fixed
+        value: 0.65
+      bull:
+        type: fixed
+        value: 0.50
+      bear:
+        type: fixed
+        value: 0.50
+      ranging:
+        type: fixed
+        value: 0.50
+
+  exit:
+    exit_conf_threshold:
+      type: fixed
+      value: 0.35
+    max_hold_bars:
+      type: fixed
+      value: 30
+    trailing_stop_pct:
+      type: fixed
+      value: 0.022
+
+  htf_exit_config:
+    partial_1_pct:
+      type: fixed
+      value: 0.50
+    partial_2_pct:
+      type: fixed
+      value: 0.45
+    fib_threshold_atr:
+      type: fixed
+      value: 0.9
+    trail_atr_multiplier:
+      type: fixed
+      value: 2.5
+    enable_partials:
+      type: fixed
+      value: true
+    enable_trailing:
+      type: fixed
+      value: true
+
+  multi_timeframe:
+    ltf_override_threshold:
+      type: fixed
+      value: 0.40
+    regime_intelligence:
+      enabled:
+        type: fixed
+        value: true
+      version:
+        type: fixed
+        value: "v2"
+      authority_mode:
+        type: grid
+        values: ["legacy", "regime_module"]
+      clarity_score:
+        enabled:
+          type: fixed
+          value: true
+        weights:
+          confidence:
+            type: float
+            low: 0.15
+            high: 0.45
+            step: 0.05
+          edge:
+            type: float
+            low: 0.10
+            high: 0.40
+            step: 0.05
+          ev:
+            type: float
+            low: 0.10
+            high: 0.35
+            step: 0.05
+          regime_alignment: "__dirichlet_remainder__"
+      size_multiplier:
+        min:
+          type: float
+          low: 0.3
+          high: 0.6
+          step: 0.1
+        max:
+          type: float
+          low: 1.0
+          high: 1.5
+          step: 0.1
+
+  risk:
+    risk_map:
+      type: fixed
+      value:
+        - [0.53, 0.005]
+        - [0.70, 0.008]
+        - [0.80, 0.010]
+        - [0.90, 0.012]
+    htf_regime_size_multipliers:
+      bear:
+        type: float
+        low: 0.3
+        high: 0.8
+        step: 0.1
+    volatility_sizing:
+      high_vol_multiplier:
+        type: fixed
+        value: 0.8
+
+  htf_fib:
+    entry:
+      tolerance_atr:
+        type: fixed
+        value: 4.0
+      long_max_level:
+        type: fixed
+        value: 0.236
+      short_min_level:
+        type: fixed
+        value: 0.35
+  ltf_fib:
+    entry:
+      tolerance_atr:
+        type: fixed
+        value: 1.5
+      long_max_level:
+        type: fixed
+        value: 0.146
+      short_min_level:
+        type: fixed
+        value: 0.236

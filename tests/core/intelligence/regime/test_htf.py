@@ -3,7 +3,6 @@ from __future__ import annotations
 import pytest
 
 from core.intelligence.regime.htf import compute_htf_regime
-from core.strategy.regime_intelligence import compute_htf_regime as legacy_compute_htf_regime
 
 
 @pytest.mark.parametrize(
@@ -35,14 +34,11 @@ from core.strategy.regime_intelligence import compute_htf_regime as legacy_compu
         "mid-range",
     ],
 )
-def test_compute_htf_regime_matches_legacy_shim(
+def test_compute_htf_regime_returns_expected_values(
     htf_fib_data: object,
     current_price: float | None,
     expected: str,
 ) -> None:
     result = compute_htf_regime(htf_fib_data, current_price=current_price)
-    legacy_result = legacy_compute_htf_regime(htf_fib_data, current_price=current_price)
 
     assert result == expected
-    assert legacy_result == expected
-    assert legacy_result == result

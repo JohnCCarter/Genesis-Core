@@ -6,8 +6,8 @@ from typing import Any
 
 import core.strategy.evaluate as evaluate_mod
 from core.config.authority import _deep_merge_dicts
+from core.config.authority_mode_resolver import resolve_authority_mode_with_source_permissive
 from core.strategy.evaluate import _deep_merge as _evaluate_deep_merge
-from core.strategy.regime_intelligence import resolve_authority_mode_with_source
 
 
 def _minimal_candles() -> dict[str, list[float]]:
@@ -196,4 +196,4 @@ def test_authority_mode_precedence_contract_matrix() -> None:
     ]
 
     for cfg, expected in scenarios:
-        assert resolve_authority_mode_with_source(cfg) == expected
+        assert resolve_authority_mode_with_source_permissive(cfg) == expected

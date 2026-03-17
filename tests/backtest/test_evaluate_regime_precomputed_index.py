@@ -99,7 +99,6 @@ def test_evaluate_pipeline_regime_module_authority_ignores_precomputed_global_in
     monkeypatch.setenv("GENESIS_DISABLE_METRICS", "1")
 
     from core.strategy import evaluate as ev
-    from core.strategy import regime_intelligence as ri
 
     captured: dict[str, str | None] = {"regime": None}
 
@@ -137,7 +136,7 @@ def test_evaluate_pipeline_regime_module_authority_ignores_precomputed_global_in
         "decide",
         lambda *_a, **_k: ("NONE", {"size": 0.0, "reasons": [], "state_out": {}}),
     )
-    monkeypatch.setattr(ri, "detect_shadow_regime_from_regime_module", lambda *_a, **_k: "bear")
+    monkeypatch.setattr(ev, "_detect_shadow_regime_from_regime_module", lambda *_a, **_k: "bear")
 
     window_len = 200
     candles = {

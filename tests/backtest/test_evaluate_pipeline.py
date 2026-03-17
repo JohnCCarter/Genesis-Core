@@ -192,11 +192,10 @@ def test_evaluate_pipeline_authority_mode_regime_module_deterministic(
     expected_source_value: str,
 ) -> None:
     from core.strategy import evaluate as ev
-    from core.strategy import regime_intelligence as ri
     from core.strategy import regime_unified as ru
 
     monkeypatch.setattr(ru, "detect_regime_unified", lambda *_a, **_k: "bear")
-    monkeypatch.setattr(ri, "detect_shadow_regime_from_regime_module", lambda *_a, **_k: "bull")
+    monkeypatch.setattr(ev, "_detect_shadow_regime_from_regime_module", lambda *_a, **_k: "bull")
 
     cfg = deepcopy(sample_configs)
     if use_alias_only:
@@ -247,11 +246,10 @@ def test_evaluate_pipeline_authority_mode_conflict_canonical_wins(
     small_candle_history: dict[str, Any],
 ) -> None:
     from core.strategy import evaluate as ev
-    from core.strategy import regime_intelligence as ri
     from core.strategy import regime_unified as ru
 
     monkeypatch.setattr(ru, "detect_regime_unified", lambda *_a, **_k: "ranging")
-    monkeypatch.setattr(ri, "detect_shadow_regime_from_regime_module", lambda *_a, **_k: "bull")
+    monkeypatch.setattr(ev, "_detect_shadow_regime_from_regime_module", lambda *_a, **_k: "bull")
 
     cfg = deepcopy(sample_configs)
     cfg.pop("precomputed_features", None)
@@ -281,11 +279,10 @@ def test_evaluate_pipeline_canonical_invalid_alias_valid_falls_back_to_legacy(
     small_candle_history: dict[str, Any],
 ) -> None:
     from core.strategy import evaluate as ev
-    from core.strategy import regime_intelligence as ri
     from core.strategy import regime_unified as ru
 
     monkeypatch.setattr(ru, "detect_regime_unified", lambda *_a, **_k: "ranging")
-    monkeypatch.setattr(ri, "detect_shadow_regime_from_regime_module", lambda *_a, **_k: "bull")
+    monkeypatch.setattr(ev, "_detect_shadow_regime_from_regime_module", lambda *_a, **_k: "bull")
 
     cfg = deepcopy(sample_configs)
     cfg.pop("precomputed_features", None)
@@ -370,11 +367,10 @@ def test_evaluate_pipeline_authority_mode_source_invariant_contract(
     """
 
     from core.strategy import evaluate as ev
-    from core.strategy import regime_intelligence as ri
     from core.strategy import regime_unified as ru
 
     monkeypatch.setattr(ru, "detect_regime_unified", lambda *_a, **_k: "ranging")
-    monkeypatch.setattr(ri, "detect_shadow_regime_from_regime_module", lambda *_a, **_k: "bull")
+    monkeypatch.setattr(ev, "_detect_shadow_regime_from_regime_module", lambda *_a, **_k: "bull")
 
     allowed_sources = {
         "multi_timeframe.regime_intelligence.authority_mode",

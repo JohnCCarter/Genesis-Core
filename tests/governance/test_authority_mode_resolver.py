@@ -11,7 +11,6 @@ from core.config.authority_mode_resolver import (
     canonicalize_authority_mode_alias_strict,
     resolve_authority_mode_with_source_permissive,
 )
-from core.strategy.regime_intelligence import resolve_authority_mode_with_source
 
 
 @pytest.mark.parametrize(
@@ -46,7 +45,6 @@ def test_authority_mode_precedence_matrix_parity(
     cfg: dict[str, object], expected: tuple[str, str]
 ) -> None:
     assert resolve_authority_mode_with_source_permissive(cfg) == expected
-    assert resolve_authority_mode_with_source(cfg) == expected
 
 
 @pytest.mark.parametrize(

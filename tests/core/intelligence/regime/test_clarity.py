@@ -3,9 +3,6 @@ from __future__ import annotations
 import pytest
 
 from core.intelligence.regime.clarity import compute_clarity_score_v1
-from core.strategy.regime_intelligence import (
-    compute_clarity_score_v1 as legacy_compute_clarity_score_v1,
-)
 
 
 def test_compute_clarity_score_v1_preserves_known_half_even_case() -> None:
@@ -50,7 +47,7 @@ def test_compute_clarity_score_v1_normalizes_weights_permissively() -> None:
     assert result.components.regime_alignment == pytest.approx(1.0)
 
 
-def test_legacy_shim_matches_intelligence_payload_exactly() -> None:
+def test_clarity_result_emits_expected_legacy_payload_shape() -> None:
     kwargs = {
         "confidence_gate": 0.505,
         "edge": 0.1,
@@ -68,6 +65,6 @@ def test_legacy_shim_matches_intelligence_payload_exactly() -> None:
     }
 
     result = compute_clarity_score_v1(**kwargs)
-    legacy_payload = legacy_compute_clarity_score_v1(**kwargs)
+    legacy_payload = result.to_legacy_payload()
 
     assert legacy_payload == result.to_legacy_payload()

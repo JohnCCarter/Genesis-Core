@@ -3,9 +3,23 @@ from __future__ import annotations
 import os
 from typing import Any
 
+from core.config.authority_mode_resolver import (
+    AUTHORITY_MODE_REGIME_MODULE,
+)
+from core.config.authority_mode_resolver import (
+    resolve_authority_mode_with_source_permissive as _resolve_authority_mode_with_source,
+)
 from core.config.merge_policy import resolve_champion_merge_for_evaluate
+from core.intelligence.regime.authority import (
+    detect_authoritative_regime_legacy as _detect_intelligence_authoritative_regime_legacy,
+)
+from core.intelligence.regime.authority import (
+    normalize_authoritative_regime as _normalize_intelligence_authoritative_regime,
+)
+from core.intelligence.regime.htf import (
+    compute_htf_regime as _compute_intelligence_htf_regime,
+)
 from core.observability.metrics import metrics
-from core.strategy import regime_intelligence as _regime_intelligence
 from core.strategy.champion_loader import ChampionLoader
 from core.strategy.confidence import compute_confidence
 from core.strategy.decision import decide
@@ -114,7 +128,7 @@ def compute_htf_regime(
     Keep this symbol local in evaluate.py for tests/monkeypatching parity.
     """
 
-    return _regime_intelligence.compute_htf_regime(
+    return _compute_intelligence_htf_regime(
         htf_fib_data,
         current_price=current_price,
     )
@@ -126,7 +140,12 @@ def _detect_shadow_regime_from_regime_module(candles: dict[str, Any]) -> str | N
     Keep this symbol local in evaluate.py for tests/monkeypatching parity.
     """
 
-    return _regime_intelligence.detect_shadow_regime_from_regime_module(candles)
+    try:
+        from core.strategy.regime import detect_regime_from_candles
+
+        return str(detect_regime_from_candles(candles))
+    except Exception:
+        return None
 
 
 def _detect_authoritative_regime(candles: dict[str, Any], configs: dict[str, Any]) -> str:
@@ -135,7 +154,21 @@ def _detect_authoritative_regime(candles: dict[str, Any], configs: dict[str, Any
     Authority remains `regime_unified.detect_regime_unified` inside the delegated module path.
     """
 
-    return _regime_intelligence.detect_authoritative_regime(candles, configs)
+    authority_mode, _source = _resolve_authority_mode_with_source(configs)
+    if authority_mode == AUTHORITY_MODE_REGIME_MODULE:
+        observed = _detect_shadow_regime_from_regime_module(candles)
+        return _normalize_intelligence_authoritative_regime(observed)
+
+    from core.strategy import regime_unified as _regime_unified
+
+    return _detect_intelligence_authoritative_regime_legacy(
+        candles,
+        configs,
+        fallback_detect_regime_unified=lambda fallback_candles: _regime_unified.detect_regime_unified(
+            fallback_candles,
+            ema_period=50,
+        ),
+    )
 
 
 def evaluate_pipeline(
@@ -206,12 +239,10 @@ def evaluate_pipeline(
 
     # Detect regime BEFORE prediction (needed for regime-aware calibration).
     # Authority path is config-gated in delegated regime_intelligence module.
-    authority_mode, authority_mode_source = _regime_intelligence.resolve_authority_mode_with_source(
-        configs
-    )
+    authority_mode, authority_mode_source = _resolve_authority_mode_with_source(configs)
     authoritative_source = (
         "regime.detect_regime_from_candles"
-        if authority_mode == "regime_module"
+        if authority_mode == AUTHORITY_MODE_REGIME_MODULE
         else "regime_unified.detect_regime_unified"
     )
     current_regime = _detect_authoritative_regime(candles, configs)

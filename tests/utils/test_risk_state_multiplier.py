@@ -30,7 +30,7 @@ def _cfg(
 
 
 def test_disabled_returns_one():
-    from core.strategy.regime_intelligence import compute_risk_state_multiplier
+    from core.intelligence.regime.risk_state import compute_risk_state_multiplier
 
     result = compute_risk_state_multiplier(
         cfg=_cfg(enabled=False),
@@ -42,7 +42,7 @@ def test_disabled_returns_one():
 
 
 def test_no_drawdown_no_transition_returns_one():
-    from core.strategy.regime_intelligence import compute_risk_state_multiplier
+    from core.intelligence.regime.risk_state import compute_risk_state_multiplier
 
     result = compute_risk_state_multiplier(
         cfg=_cfg(),
@@ -53,7 +53,7 @@ def test_no_drawdown_no_transition_returns_one():
 
 
 def test_soft_drawdown_reduces_size():
-    from core.strategy.regime_intelligence import compute_risk_state_multiplier
+    from core.intelligence.regime.risk_state import compute_risk_state_multiplier
 
     # At soft_threshold (0.03), mult should be soft_mult (0.70)
     result = compute_risk_state_multiplier(
@@ -65,7 +65,7 @@ def test_soft_drawdown_reduces_size():
 
 
 def test_hard_drawdown_reduces_size_to_hard_mult():
-    from core.strategy.regime_intelligence import compute_risk_state_multiplier
+    from core.intelligence.regime.risk_state import compute_risk_state_multiplier
 
     result = compute_risk_state_multiplier(
         cfg=_cfg(),
@@ -76,7 +76,7 @@ def test_hard_drawdown_reduces_size_to_hard_mult():
 
 
 def test_drawdown_beyond_hard_clamped():
-    from core.strategy.regime_intelligence import compute_risk_state_multiplier
+    from core.intelligence.regime.risk_state import compute_risk_state_multiplier
 
     result = compute_risk_state_multiplier(
         cfg=_cfg(),
@@ -87,7 +87,7 @@ def test_drawdown_beyond_hard_clamped():
 
 
 def test_transition_within_guard_window_reduces_size():
-    from core.strategy.regime_intelligence import compute_risk_state_multiplier
+    from core.intelligence.regime.risk_state import compute_risk_state_multiplier
 
     result = compute_risk_state_multiplier(
         cfg=_cfg(),
@@ -98,7 +98,7 @@ def test_transition_within_guard_window_reduces_size():
 
 
 def test_transition_outside_guard_window_no_effect():
-    from core.strategy.regime_intelligence import compute_risk_state_multiplier
+    from core.intelligence.regime.risk_state import compute_risk_state_multiplier
 
     result = compute_risk_state_multiplier(
         cfg=_cfg(),
@@ -109,7 +109,7 @@ def test_transition_outside_guard_window_no_effect():
 
 
 def test_drawdown_and_transition_are_multiplicative():
-    from core.strategy.regime_intelligence import compute_risk_state_multiplier
+    from core.intelligence.regime.risk_state import compute_risk_state_multiplier
 
     # soft drawdown (0.70) * transition (0.60) = 0.42
     result = compute_risk_state_multiplier(
@@ -121,7 +121,7 @@ def test_drawdown_and_transition_are_multiplicative():
 
 
 def test_result_contains_debug_keys():
-    from core.strategy.regime_intelligence import compute_risk_state_multiplier
+    from core.intelligence.regime.risk_state import compute_risk_state_multiplier
 
     result = compute_risk_state_multiplier(
         cfg=_cfg(),

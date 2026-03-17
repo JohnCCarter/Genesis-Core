@@ -3,7 +3,15 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
-from core.strategy import regime_intelligence as _regime_intelligence
+from core.config.authority_mode_resolver import (
+    resolve_authority_mode_with_source_permissive as _resolve_authority_mode_with_source,
+)
+from core.intelligence.regime.clarity import (
+    compute_clarity_score_v1 as _compute_clarity_score_v1,
+)
+from core.intelligence.regime.risk_state import (
+    compute_risk_state_multiplier as _compute_risk_state_multiplier,
+)
 from core.strategy.decision_gates import Action, safe_float
 
 
@@ -30,9 +38,7 @@ def apply_sizing(
     clarity_enabled = (
         ri_enabled and ri_version.lower() == "v2" and bool(clarity_cfg.get("enabled", False))
     )
-    authority_mode, authority_mode_source = _regime_intelligence.resolve_authority_mode_with_source(
-        cfg
-    )
+    authority_mode, authority_mode_source = _resolve_authority_mode_with_source(cfg)
 
     risk_map = (cfg.get("risk") or {}).get("risk_map", [])
     c_buy = safe_float(confidence.get("buy", 0.0), 0.0)
@@ -120,7 +126,7 @@ def apply_sizing(
     if ri_enabled and bool(risk_state_cfg.get("enabled", False)):
         _eq_dd = float(state_in.get("equity_drawdown_pct", 0.0))
         _bars_rc = int(state_in.get("bars_since_regime_change", 99))
-        risk_state_payload = _regime_intelligence.compute_risk_state_multiplier(
+        risk_state_payload = _compute_risk_state_multiplier(
             cfg=risk_state_cfg,
             equity_drawdown_pct=_eq_dd,
             bars_since_regime_change=_bars_rc,
@@ -158,7 +164,7 @@ def apply_sizing(
         min_mult = max(0.0, min(1.0, min_mult))
         max_mult = max(0.0, min(1.0, max_mult))
 
-        clarity = _regime_intelligence.compute_clarity_score_v1(
+        clarity = _compute_clarity_score_v1(
             confidence_gate=conf_val_gate,
             edge=abs(p_buy - p_sell),
             max_ev=max_ev,
@@ -167,7 +173,7 @@ def apply_sizing(
             regime=str(regime or "balanced"),
             weights=clarity_cfg.get("weights") or clarity_cfg.get("weights_v1"),
             weights_version=str(clarity_cfg.get("weights_version") or "weights_v1"),
-        )
+        ).to_legacy_payload()
         clarity_score = int(clarity["clarity_score"])
         clarity_multiplier = min_mult + ((max_mult - min_mult) * (clarity_score / 100.0))
         clarity_multiplier = max(0.0, min(1.0, clarity_multiplier))

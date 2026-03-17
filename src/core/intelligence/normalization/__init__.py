@@ -3,5 +3,15 @@ from core.intelligence.normalization.interface import (
     NormalizationRequest,
     NormalizationResult,
 )
+from core.intelligence.normalization.processing import (
+    DeterministicIntelligenceNormalizer,
+    normalize_events,
+)
 
-__all__ = ["IntelligenceNormalizer", "NormalizationRequest", "NormalizationResult"]
+__all__ = [
+    "DeterministicIntelligenceNormalizer",
+    "IntelligenceNormalizer",
+    "NormalizationRequest",
+    "NormalizationResult",
+    "normalize_events",
+]

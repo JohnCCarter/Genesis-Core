@@ -1,0 +1,7753 @@
+[
+  {
+    "action": "NONE",
+    "bar_index": 120,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|120",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-06T00:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 121,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|121",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-06T01:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 122,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|122",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-06T02:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 123,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|123",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-06T03:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 124,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|124",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-06T04:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 125,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|125",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-06T05:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 126,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|126",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-06T06:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 127,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|127",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-06T07:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 128,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|128",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-06T08:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 129,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|129",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-06T09:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 130,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|130",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-06T10:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 131,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|131",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-06T11:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 132,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|132",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-06T12:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 133,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|133",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-06T13:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 134,
+    "reasons": [
+      "ZONE:high@0.300",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|134",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-06T14:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 135,
+    "reasons": [
+      "ZONE:high@0.300",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|135",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-06T15:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 136,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|136",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-06T16:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 137,
+    "reasons": [
+      "ZONE:high@0.300",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|137",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-06T17:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 138,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|138",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-06T18:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 139,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|139",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-06T19:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 140,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|140",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-06T20:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 141,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|141",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-06T21:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 142,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|142",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-06T22:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 143,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|143",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-06T23:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 144,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|144",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-07T00:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 145,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|145",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-07T01:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 146,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|146",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-07T02:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 147,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|147",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-07T03:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 148,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|148",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-07T04:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 149,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|149",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-07T05:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 150,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|150",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-07T06:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 151,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|151",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-07T07:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 152,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|152",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-07T08:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 153,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|153",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-07T09:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 154,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|154",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-07T10:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 155,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|155",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-07T11:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 156,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|156",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-07T12:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 157,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|157",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-07T13:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 158,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|158",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-07T14:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 159,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|159",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-07T15:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 160,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|160",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-07T16:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 161,
+    "reasons": [
+      "ZONE:high@0.300",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|161",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-07T17:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 162,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|162",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-07T18:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 163,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|163",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-07T19:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 164,
+    "reasons": [
+      "ZONE:high@0.300",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|164",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-07T20:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 165,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|165",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-07T21:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 166,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|166",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-07T22:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 167,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|167",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-07T23:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 168,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|168",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-08T00:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 169,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|169",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-08T01:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 170,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|170",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-08T02:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 171,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|171",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-08T03:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 172,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|172",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-08T04:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 173,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|173",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-08T05:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 174,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|174",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-08T06:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 175,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|175",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-08T07:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 176,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|176",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-08T08:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 177,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|177",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-08T09:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 178,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|178",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-08T10:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 179,
+    "reasons": [
+      "ZONE:high@0.300",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|179",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-08T11:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 180,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|180",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-08T12:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 181,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|181",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-08T13:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 182,
+    "reasons": [
+      "ZONE:high@0.300",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|182",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-08T14:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 183,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|183",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-08T15:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 184,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|184",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-08T16:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 185,
+    "reasons": [
+      "ZONE:high@0.300",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|185",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-08T17:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 186,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|186",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-08T18:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 187,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|187",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-08T19:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 188,
+    "reasons": [
+      "ZONE:high@0.300",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|188",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-08T20:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 189,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|189",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-08T21:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 190,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|190",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-08T22:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 191,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|191",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-08T23:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 192,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|192",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-09T00:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 193,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|193",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-09T01:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 194,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|194",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-09T02:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 195,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|195",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-09T03:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 196,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|196",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-09T04:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 197,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|197",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-09T05:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 198,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|198",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-09T06:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 199,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|199",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-09T07:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 200,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|200",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-09T08:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 201,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|201",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-09T09:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 202,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|202",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-09T10:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 203,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|203",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-09T11:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 204,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|204",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-09T12:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 205,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|205",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-09T13:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 206,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|206",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-09T14:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 207,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|207",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-09T15:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 208,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|208",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-09T16:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 209,
+    "reasons": [
+      "ZONE:high@0.300",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|209",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-09T17:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 210,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|210",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-09T18:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 211,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|211",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-09T19:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 212,
+    "reasons": [
+      "ZONE:high@0.300",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|212",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-09T20:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 213,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|213",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-09T21:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 214,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|214",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-09T22:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 215,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|215",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-09T23:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 216,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|216",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-10T00:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 217,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|217",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-10T01:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 218,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|218",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-10T02:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 219,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|219",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-10T03:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 220,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|220",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-10T04:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 221,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|221",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-10T05:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 222,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|222",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-10T06:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 223,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|223",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-10T07:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 224,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|224",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-10T08:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 225,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|225",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-10T09:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 226,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|226",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-10T10:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 227,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|227",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-10T11:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 228,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|228",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-10T12:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 229,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|229",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-10T13:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 230,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|230",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-10T14:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 231,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|231",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-10T15:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 232,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|232",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-10T16:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 233,
+    "reasons": [
+      "ZONE:high@0.300",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|233",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-10T17:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 234,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|234",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-10T18:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 235,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|235",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-10T19:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 236,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|236",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-10T20:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 237,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|237",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-10T21:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 238,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|238",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-10T22:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 239,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|239",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-10T23:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 240,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|240",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-11T00:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 241,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|241",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-11T01:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 242,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|242",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-11T02:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 243,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|243",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-11T03:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 244,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|244",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-11T04:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 245,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|245",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-11T05:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 246,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|246",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-11T06:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 247,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|247",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-11T07:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 248,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|248",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-11T08:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 249,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|249",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-11T09:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 250,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|250",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-11T10:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 251,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|251",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-11T11:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 252,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|252",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-11T12:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 253,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|253",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-11T13:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 254,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|254",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-11T14:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 255,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|255",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-11T15:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 256,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|256",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-11T16:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 257,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|257",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-11T17:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 258,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|258",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-11T18:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 259,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|259",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-11T19:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 260,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|260",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-11T20:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 261,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|261",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-11T21:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 262,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|262",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-11T22:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 263,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|263",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-11T23:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 264,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|264",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-12T00:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 265,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|265",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-12T01:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 266,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|266",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-12T02:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 267,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|267",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-12T03:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 268,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|268",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-12T04:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 269,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|269",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-12T05:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 270,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|270",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-12T06:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 271,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|271",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-12T07:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 272,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|272",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-12T08:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 273,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|273",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-12T09:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 274,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|274",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-12T10:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 275,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|275",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-12T11:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 276,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|276",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-12T12:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 277,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|277",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-12T13:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 278,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|278",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-12T14:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 279,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|279",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-12T15:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 280,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|280",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-12T16:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 281,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|281",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-12T17:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 282,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|282",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-12T18:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 283,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|283",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-12T19:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 284,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|284",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-12T20:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 285,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|285",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-12T21:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 286,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|286",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-12T22:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 287,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|287",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-12T23:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 288,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|288",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-13T00:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 289,
+    "reasons": [
+      "ZONE:high@0.300",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|289",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-13T01:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 290,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|290",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-13T02:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 291,
+    "reasons": [
+      "ZONE:high@0.300",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|291",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-13T03:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 292,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|292",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-13T04:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 293,
+    "reasons": [
+      "ZONE:high@0.300",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|293",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-13T05:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 294,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|294",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-13T06:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 295,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|295",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-13T07:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 296,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|296",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-13T08:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 297,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|297",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-13T09:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 298,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|298",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-13T10:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 299,
+    "reasons": [
+      "ZONE:high@0.300",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|299",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-13T11:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 300,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|300",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-13T12:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 301,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|301",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-13T13:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 302,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|302",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-13T14:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 303,
+    "reasons": [
+      "ZONE:high@0.300",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|303",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-13T15:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 304,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|304",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-13T16:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 305,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|305",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-13T17:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 306,
+    "reasons": [
+      "ZONE:high@0.300",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|306",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-13T18:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 307,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|307",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-13T19:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 308,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|308",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-13T20:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 309,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|309",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-13T21:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 310,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|310",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-13T22:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 311,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|311",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-13T23:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 312,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|312",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-14T00:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 313,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|313",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-14T01:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 314,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|314",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-14T02:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 315,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|315",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-14T03:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 316,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|316",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-14T04:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 317,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|317",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-14T05:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 318,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|318",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-14T06:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 319,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|319",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-14T07:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 320,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|320",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-14T08:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 321,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|321",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-14T09:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 322,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|322",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-14T10:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 323,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|323",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-14T11:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 324,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|324",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-14T12:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 325,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|325",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-14T13:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 326,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|326",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-14T14:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 327,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|327",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-14T15:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 328,
+    "reasons": [
+      "ZONE:high@0.300",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|328",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-14T16:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 329,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|329",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-14T17:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 330,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|330",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-14T18:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 331,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|331",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-14T19:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 332,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|332",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-14T20:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 333,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|333",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-14T21:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 334,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|334",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-14T22:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 335,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|335",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-14T23:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 336,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|336",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-15T00:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 337,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|337",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-15T01:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 338,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|338",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-15T02:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 339,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|339",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-15T03:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 340,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|340",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-15T04:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 341,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|341",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-15T05:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 342,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|342",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-15T06:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 343,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|343",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-15T07:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 344,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|344",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-15T08:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 345,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|345",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-15T09:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 346,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|346",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-15T10:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 347,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|347",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-15T11:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 348,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|348",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-15T12:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 349,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|349",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-15T13:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 350,
+    "reasons": [
+      "ZONE:high@0.300",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|350",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-15T14:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 351,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|351",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-15T15:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 352,
+    "reasons": [
+      "ZONE:high@0.300",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|352",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-15T16:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 353,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|353",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-15T17:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 354,
+    "reasons": [
+      "ZONE:high@0.300",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|354",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-15T18:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 355,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|355",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-15T19:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 356,
+    "reasons": [
+      "ZONE:high@0.300",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|356",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-15T20:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 357,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|357",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-15T21:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 358,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|358",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-15T22:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 359,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|359",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-15T23:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 360,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|360",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-16T00:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 361,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|361",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-16T01:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 362,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|362",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-16T02:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 363,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|363",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-16T03:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 364,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|364",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-16T04:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 365,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|365",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-16T05:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 366,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|366",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-16T06:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 367,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|367",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-16T07:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 368,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|368",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-16T08:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 369,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|369",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-16T09:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 370,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|370",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-16T10:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 371,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|371",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-16T11:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 372,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|372",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-16T12:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 373,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|373",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-16T13:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 374,
+    "reasons": [
+      "ZONE:high@0.300",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|374",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-16T14:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 375,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|375",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-16T15:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 376,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|376",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-16T16:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 377,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|377",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-16T17:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 378,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|378",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-16T18:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 379,
+    "reasons": [
+      "ZONE:high@0.300",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|379",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-16T19:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 380,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|380",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-16T20:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 381,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|381",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-16T21:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 382,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|382",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-16T22:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 383,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|383",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-16T23:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 384,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|384",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-17T00:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 385,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|385",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-17T01:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 386,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|386",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-17T02:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 387,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|387",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-17T03:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 388,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|388",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-17T04:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 389,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|389",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-17T05:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 390,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|390",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-17T06:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 391,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|391",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-17T07:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 392,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|392",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-17T08:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 393,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|393",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-17T09:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 394,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|394",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-17T10:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 395,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|395",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-17T11:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 396,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|396",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-17T12:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 397,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|397",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-17T13:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 398,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|398",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-17T14:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 399,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|399",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-17T15:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 400,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|400",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-17T16:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 401,
+    "reasons": [
+      "ZONE:high@0.300",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|401",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-17T17:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 402,
+    "reasons": [
+      "ZONE:high@0.300",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|402",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-17T18:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 403,
+    "reasons": [
+      "ZONE:high@0.300",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|403",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-17T19:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 404,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|404",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-17T20:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 405,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|405",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-17T21:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 406,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|406",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-17T22:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 407,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|407",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-17T23:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 408,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|408",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-18T00:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 409,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|409",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-18T01:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 410,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|410",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-18T02:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 411,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|411",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-18T03:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 412,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|412",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-18T04:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 413,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|413",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-18T05:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 414,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|414",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-18T06:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 415,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|415",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-18T07:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 416,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|416",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-18T08:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 417,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|417",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-18T09:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 418,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|418",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-18T10:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 419,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|419",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-18T11:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 420,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|420",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-18T12:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 421,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|421",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-18T13:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 422,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|422",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-18T14:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 423,
+    "reasons": [
+      "ZONE:high@0.300",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|423",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-18T15:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 424,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|424",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-18T16:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 425,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|425",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-18T17:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 426,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|426",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-18T18:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 427,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|427",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-18T19:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 428,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|428",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-18T20:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 429,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|429",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-18T21:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 430,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|430",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-18T22:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 431,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|431",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-18T23:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 432,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|432",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-19T00:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 433,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|433",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-19T01:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 434,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|434",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-19T02:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 435,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|435",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-19T03:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 436,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|436",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-19T04:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 437,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|437",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-19T05:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 438,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|438",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-19T06:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 439,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|439",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-19T07:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 440,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|440",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-19T08:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 441,
+    "reasons": [
+      "ZONE:high@0.300",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|441",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-19T09:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 442,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|442",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-19T10:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 443,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|443",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-19T11:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 444,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|444",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-19T12:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 445,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|445",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-19T13:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 446,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|446",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-19T14:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 447,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|447",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-19T15:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 448,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|448",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-19T16:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 449,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|449",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-19T17:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 450,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|450",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-19T18:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 451,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|451",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-19T19:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 452,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|452",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-19T20:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 453,
+    "reasons": [
+      "ZONE:high@0.300",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|453",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-19T21:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 454,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|454",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-19T22:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 455,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|455",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-19T23:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 456,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|456",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-20T00:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 457,
+    "reasons": [
+      "ZONE:high@0.300",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|457",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-20T01:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 458,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|458",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-20T02:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 459,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|459",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-20T03:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 460,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|460",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-20T04:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 461,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|461",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-20T05:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 462,
+    "reasons": [
+      "ZONE:high@0.300",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|462",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-20T06:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 463,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|463",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-20T07:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 464,
+    "reasons": [
+      "ZONE:high@0.300",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|464",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-20T08:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 465,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|465",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-20T09:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 466,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|466",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-20T10:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 467,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|467",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-20T11:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 468,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|468",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-20T12:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 469,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|469",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-20T13:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 470,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|470",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-20T14:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 471,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|471",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-20T15:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 472,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|472",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-20T16:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 473,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|473",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-20T17:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 474,
+    "reasons": [
+      "ZONE:high@0.300",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|474",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-20T18:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 475,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|475",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-20T19:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 476,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|476",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-20T20:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 477,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|477",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-20T21:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 478,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|478",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-20T22:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 479,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|479",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-20T23:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 480,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|480",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-21T00:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 481,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|481",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-21T01:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 482,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|482",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-21T02:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 483,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|483",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-21T03:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 484,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|484",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-21T04:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 485,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|485",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-21T05:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 486,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|486",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-21T06:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 487,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|487",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-21T07:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 488,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|488",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-21T08:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 489,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|489",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-21T09:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 490,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|490",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-21T10:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 491,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|491",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-21T11:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 492,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|492",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-21T12:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 493,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|493",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-21T13:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 494,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|494",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-21T14:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 495,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|495",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-21T15:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 496,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|496",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-21T16:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 497,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|497",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-21T17:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 498,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|498",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-21T18:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 499,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|499",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-21T19:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 500,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|500",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-21T20:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 501,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|501",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-21T21:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 502,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|502",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-21T22:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 503,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|503",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-21T23:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 504,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|504",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-22T00:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 505,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|505",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-22T01:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 506,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|506",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-22T02:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 507,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|507",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-22T03:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 508,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|508",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-22T04:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 509,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|509",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-22T05:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 510,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|510",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-22T06:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 511,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|511",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-22T07:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 512,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|512",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-22T08:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 513,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|513",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-22T09:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 514,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|514",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-22T10:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 515,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|515",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-22T11:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 516,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|516",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-22T12:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 517,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|517",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-22T13:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 518,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|518",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-22T14:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 519,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|519",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-22T15:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 520,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|520",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-22T16:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 521,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|521",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-22T17:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 522,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|522",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-22T18:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 523,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|523",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-22T19:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 524,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|524",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-22T20:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 525,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|525",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-22T21:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 526,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|526",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-22T22:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 527,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|527",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-22T23:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 528,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|528",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-23T00:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 529,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|529",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-23T01:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 530,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|530",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-23T02:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 531,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|531",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-23T03:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 532,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|532",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-23T04:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 533,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|533",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-23T05:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 534,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|534",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-23T06:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 535,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|535",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-23T07:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 536,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|536",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-23T08:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 537,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|537",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-23T09:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 538,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|538",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-23T10:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 539,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|539",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-23T11:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 540,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|540",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-23T12:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 541,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|541",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-23T13:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 542,
+    "reasons": [
+      "ZONE:high@0.300",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|542",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-23T14:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 543,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|543",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-23T15:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 544,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|544",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-23T16:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 545,
+    "reasons": [
+      "ZONE:high@0.300",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|545",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-23T17:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 546,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|546",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-23T18:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 547,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|547",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-23T19:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 548,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|548",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-23T20:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 549,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|549",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-23T21:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 550,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|550",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-23T22:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 551,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|551",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-23T23:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 552,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|552",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-24T00:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 553,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|553",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-24T01:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 554,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|554",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-24T02:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 555,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|555",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-24T03:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 556,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|556",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-24T04:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 557,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|557",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-24T05:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 558,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|558",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-24T06:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 559,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|559",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-24T07:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 560,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|560",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-24T08:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 561,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|561",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-24T09:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 562,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|562",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-24T10:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 563,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|563",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-24T11:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 564,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|564",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-24T12:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 565,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|565",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-24T13:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 566,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|566",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-24T14:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 567,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|567",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-24T15:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 568,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|568",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-24T16:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 569,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|569",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-24T17:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 570,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|570",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-24T18:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 571,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|571",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-24T19:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 572,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|572",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-24T20:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 573,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|573",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-24T21:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 574,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|574",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-24T22:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 575,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|575",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-24T23:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 576,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|576",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-25T00:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 577,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|577",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-25T01:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 578,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|578",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-25T02:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 579,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|579",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-25T03:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 580,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|580",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-25T04:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 581,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|581",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-25T05:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 582,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|582",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-25T06:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 583,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|583",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-25T07:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 584,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|584",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-25T08:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 585,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|585",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-25T09:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 586,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|586",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-25T10:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 587,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|587",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-25T11:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 588,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|588",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-25T12:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 589,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|589",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-25T13:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 590,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|590",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-25T14:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 591,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|591",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-25T15:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 592,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|592",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-25T16:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 593,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|593",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-25T17:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 594,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|594",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-25T18:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 595,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|595",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-25T19:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 596,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|596",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-25T20:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 597,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|597",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-25T21:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 598,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|598",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-25T22:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 599,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|599",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-25T23:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 600,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|600",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-26T00:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 601,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|601",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-26T01:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 602,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|602",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-26T02:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 603,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|603",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-26T03:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 604,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|604",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-26T04:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 605,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|605",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-26T05:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 606,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|606",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-26T06:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 607,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|607",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-26T07:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 608,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|608",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-26T08:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 609,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|609",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-26T09:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 610,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|610",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-26T10:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 611,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|611",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-26T11:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 612,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|612",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-26T12:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 613,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|613",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-26T13:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 614,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|614",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-26T14:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 615,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|615",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-26T15:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 616,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|616",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-26T16:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 617,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|617",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-26T17:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 618,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|618",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-26T18:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 619,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|619",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-26T19:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 620,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|620",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-26T20:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 621,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|621",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-26T21:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 622,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|622",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-26T22:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 623,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|623",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-26T23:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 624,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|624",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-27T00:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 625,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|625",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-27T01:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 626,
+    "reasons": [
+      "ZONE:high@0.300",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|626",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-27T02:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 627,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|627",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-27T03:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 628,
+    "reasons": [
+      "ZONE:high@0.300",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|628",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-27T04:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 629,
+    "reasons": [
+      "ZONE:high@0.300",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|629",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-27T05:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 630,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|630",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-27T06:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 631,
+    "reasons": [
+      "ZONE:high@0.300",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|631",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-27T07:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 632,
+    "reasons": [
+      "ZONE:high@0.300",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|632",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-27T08:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 633,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|633",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-27T09:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 634,
+    "reasons": [
+      "ZONE:high@0.300",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|634",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-27T10:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 635,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|635",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-27T11:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 636,
+    "reasons": [
+      "ZONE:high@0.300",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|636",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-27T12:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 637,
+    "reasons": [
+      "ZONE:high@0.300",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|637",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-27T13:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 638,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|638",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-27T14:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 639,
+    "reasons": [
+      "ZONE:high@0.300",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|639",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-27T15:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 640,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|640",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-27T16:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 641,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|641",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-27T17:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 642,
+    "reasons": [
+      "ZONE:high@0.300",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|642",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-27T18:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 643,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|643",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-27T19:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 644,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|644",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-27T20:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 645,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|645",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-27T21:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 646,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|646",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-27T22:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 647,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|647",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-27T23:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 648,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|648",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-28T00:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 649,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|649",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-28T01:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 650,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|650",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-28T02:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 651,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|651",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-28T03:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 652,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|652",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-28T04:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 653,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|653",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-28T05:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 654,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|654",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-28T06:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 655,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|655",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-28T07:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 656,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|656",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-28T08:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 657,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|657",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-28T09:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 658,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|658",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-28T10:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 659,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|659",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-28T11:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 660,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|660",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-28T12:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 661,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|661",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-28T13:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 662,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|662",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-28T14:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 663,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|663",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-28T15:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 664,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|664",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-28T16:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 665,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|665",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-28T17:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 666,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|666",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-28T18:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 667,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|667",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-28T19:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 668,
+    "reasons": [
+      "ZONE:high@0.300",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|668",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-28T20:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 669,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|669",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-28T21:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 670,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|670",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-28T22:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 671,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|671",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-28T23:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 672,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|672",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-29T00:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 673,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|673",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-29T01:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 674,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|674",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-29T02:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 675,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|675",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-29T03:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 676,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|676",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-29T04:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 677,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|677",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-29T05:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 678,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|678",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-29T06:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 679,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|679",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-29T07:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 680,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|680",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-29T08:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 681,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|681",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-29T09:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 682,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|682",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-29T10:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 683,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|683",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-29T11:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 684,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|684",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-29T12:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 685,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|685",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-29T13:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 686,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|686",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-29T14:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 687,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|687",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-29T15:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 688,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|688",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-29T16:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 689,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|689",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-29T17:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 690,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|690",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-29T18:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 691,
+    "reasons": [
+      "ZONE:high@0.300",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|691",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-29T19:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 692,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|692",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-29T20:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 693,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|693",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-29T21:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 694,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|694",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-29T22:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 695,
+    "reasons": [
+      "ZONE:high@0.300"
+    ],
+    "row_id": "tBTCUSD|1h|695",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-29T23:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 696,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|696",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-30T00:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 697,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|697",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-30T01:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 698,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|698",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-30T02:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 699,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|699",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-30T03:00:00+00:00"
+  },
+  {
+    "action": "SHORT",
+    "bar_index": 700,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_SHORT"
+    ],
+    "row_id": "tBTCUSD|1h|700",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-30T04:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 701,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|701",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-30T05:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 702,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|702",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-30T06:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 703,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|703",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-30T07:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 704,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|704",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-30T08:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 705,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|705",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-30T09:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 706,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|706",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-30T10:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 707,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|707",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-30T11:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 708,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|708",
+    "size": 0.025,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-30T12:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 709,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|709",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-30T13:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 710,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|710",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-30T14:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 711,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|711",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-30T15:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 712,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|712",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-30T16:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 713,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|713",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-30T17:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 714,
+    "reasons": [
+      "ZONE:mid@0.260",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|714",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-30T18:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 715,
+    "reasons": [
+      "ZONE:low@0.220",
+      "HYST_WAIT"
+    ],
+    "row_id": "tBTCUSD|1h|715",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-30T19:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 716,
+    "reasons": [
+      "ZONE:high@0.300",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|716",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-30T20:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 717,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|717",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-30T21:00:00+00:00"
+  },
+  {
+    "action": "LONG",
+    "bar_index": 718,
+    "reasons": [
+      "ZONE:low@0.220",
+      "ENTRY_LONG"
+    ],
+    "row_id": "tBTCUSD|1h|718",
+    "size": 0.015,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-30T22:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 719,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|719",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-30T23:00:00+00:00"
+  },
+  {
+    "action": "NONE",
+    "bar_index": 720,
+    "reasons": [
+      "ZONE:low@0.220",
+      "COOLDOWN_ACTIVE"
+    ],
+    "row_id": "tBTCUSD|1h|720",
+    "size": null,
+    "symbol": "tBTCUSD",
+    "timeframe": "1h",
+    "timestamp": "2025-01-31T00:00:00+00:00"
+  }
+]

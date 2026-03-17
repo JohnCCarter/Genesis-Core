@@ -1,0 +1,22 @@
+{
+  "action_mismatch_count": 0,
+  "added_row_count": 0,
+  "baseline_artifact_ref": "results/evaluation/ri_p1_off_parity_v1_baseline.json",
+  "end_utc": "2025-01-31T23:59:59Z",
+  "git_sha": "1c2f38ad88723034b819b7844c69d138a7702086",
+  "missing_row_count": 0,
+  "mode": "OFF",
+  "parity_verdict": "PASS",
+  "reason_mismatch_count": 0,
+  "run_id": "ri-20260317-001",
+  "size_mismatch_count": 0,
+  "size_tolerance": "1e-12",
+  "start_utc": "2025-01-01T00:00:00Z",
+  "symbols": [
+    "tTESTBTC:TESTUSD"
+  ],
+  "timeframes": [
+    "1h"
+  ],
+  "window_spec_id": "ri_p1_off_parity_v1"
+}

@@ -157,59 +157,16 @@ Only no-behavior-change remediation may proceed by default; any behavior change 
 
 SSOT: `docs/governance_mode.md`
 
-Deterministic resolution logic (A/B/C/D):
-
-1. A) Explicit override via `GENESIS_GOV_MODE`:
-   - Allowed values: `STRICT`, `RESEARCH`, `SANDBOX`
-   - Invalid value => fail-closed to `STRICT`
-2. B) Branch mapping (exact):
-   - `master -> STRICT`
-   - `release/* -> STRICT`
-   - `champion/* -> STRICT`
-   - `feature/* -> RESEARCH`
-   - `research/* -> RESEARCH`
-   - `sandbox/* -> SANDBOX`
-   - `spike/* -> SANDBOX`
-
-3. C) Freeze escalation (force `STRICT` regardless of prior resolution):
-   - Touched path under `config/strategy/champions/`, OR
-   - `.github/workflows/champion-freeze-guard.yml` modified
-4. D) Default fallback: `STRICT`
+Apply governance mode exactly as defined in `docs/governance_mode.md`.
+Do not restate or reinterpret the full resolution logic here; if local wording and the SSOT ever diverge, the SSOT wins.
 
 Mandatory banner at start of every response:
 
 `Mode: <MODE> (source=<resolution reason>)`
 
-Policy blocks:
-
-### STRICT
-
-- Full gates required: pre-commit/lint, smoke tests, determinism replay, feature cache invariance, pipeline invariant.
-- No behavior change by default.
-- Behavior changes require an explicit exception.
-
-### RESEARCH
-
-- Determinism replay required.
-- Pipeline invariant required.
-- Refactors allowed.
-- Behavior change is allowed only if behind a flag/version.
-- Default behavior must remain unchanged.
-- A parity test must prove identical default behavior.
-- Structural improvements may be proposed.
-
-### SANDBOX
-
-- Rapid experimentation is allowed.
-- Determinism replay is optional.
-- No process may be marked `införd`.
-- Must NOT modify `config/strategy/champions/`.
-- Must NOT modify freeze guard workflows.
-- Must NOT modify `runtime.json` (if production-critical).
-- Cannot be merged to `master` without passing STRICT gates.
-
 Hard constraints:
 
+- Keep mode handling deterministic and fail-closed per `docs/governance_mode.md`.
 - Do not modify existing governance enforcement logic.
 - Do not remove gates from STRICT.
 - Do not weaken freeze protection.

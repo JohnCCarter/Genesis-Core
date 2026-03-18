@@ -1,86 +1,48 @@
-# HANDOFF — strategy-family-slicen till hemdatorn
+# HANDOFF — efter merge av strategy-family-slicen
 
 Senast uppdaterad: 2026-03-18
 
-> Detta dokument är en operativ handoff för pågående arbete på en feature-branch. Det är inte en governance authority source och får inte överstyra aktuell repo-status eller högre ordningens styrdokument, inklusive `.github/copilot-instructions.md`, `docs/governance_mode.md`, `docs/OPUS_46_GOVERNANCE.md` och `AGENTS.md`. Verifiera alltid branch, HEAD, remote-status och working tree direkt i den aktuella arbetskopian.
+> Detta dokument är en operativ handoff för nästa session på hemdatorn. Det är inte en governance authority source och får inte överstyra aktuell repo-status eller högre ordningens styrdokument, inklusive `.github/copilot-instructions.md`, `docs/governance_mode.md`, `docs/OPUS_46_GOVERNANCE.md` och `AGENTS.md`. Verifiera alltid branch, HEAD, remote-status och working tree direkt i den aktuella arbetskopian.
 
 ## Kort lägesbild
 
-- **Aktiv branch:** `feature/ri-optuna-train-validate-blind-v1`
-- **Utgångs-remote för branchen före denna slutstädning:** `origin/feature/ri-optuna-train-validate-blind-v1` på `eb005af4`
-- **Branchens lokala commit-stack i denna session före handoff-commit:**
-  1. `7d3c27dc` — `tooling: add RI challenger family slice-3 campaign`
-  2. `79d606a3` — `refactor(strategy-family): enforce explicit family separation`
-  3. `1749835f` — `docs(strategy-family): add RI family design notes`
-- **Basbranch för senare PR:** `master` (`origin/master` på `12c2a1cc` när denna handoff skrevs)
-- **Mål på hemdatorn:** fortsätt från samma feature-branch, inte från `master`
+- **Aktiv branch nu:** `master`
+- **HEAD vid denna handoff:** `e4a79d2d`
+- **Senaste viktiga merge:** PR **#70** — `refactor(strategy-family): enforce explicit RI family separation`
+- **Feature-branch-status:** `feature/ri-optuna-train-validate-blind-v1` är mergad och delete:ad
+- **Det säkra läget att utgå från hemma:** senaste `origin/master`, inte någon gammal feature-branch
 
-## Vad som är gjort i denna slice
+## Vad som nu är klart
 
-### 1. Strategy family är nu explicit och obligatorisk
+Strategy-family-slicen är färdig, merge:ad och landad på `master`.
 
-Följande är infört:
+Det som ingår i den mergade slicen:
 
-- kanonisk registry i `src/core/strategy/family_registry.py`
-- kompatibilitetsshimm i `src/core/strategy/families.py` som endast re-exporterar
-- `strategy_family` är obligatorisk i runtime-configs
-- RI behandlas som separat strategy family, inte som overlay på legacy-champion
+- kanonisk strategy-family registry i `src/core/strategy/family_registry.py`
+- explicit och obligatorisk `strategy_family` på aktiva runtime/champion/optimizer-ytor
+- fail-closed validering för legacy/RI-mismatch
+- family-aware ledger-tagging
+- family-aware shadow-summary
+- additive family wrappers i research orchestrator
+- uppdaterade tester, governance-packet och förklarande docs
 
-### 2. Hard-fail för family-mismatch är på plats
+## Viktig slutpoäng från slicen
 
-Systemet hard-failar nu deterministiskt för felaktiga kombinationer, bland annat:
+Regime Intelligence behandlas nu som **egen strategy family**, inte som overlay på legacy.
+
+Det betyder att systemet nu hard-failar för bland annat:
 
 - `legacy` + `authority_mode=regime_module`
-- `ri` utan exakt `authority_mode=fixed regime_module` i optimizer-config
-- `ri` utan ATR $14$
-- `ri` utan gates $(3,2)$
+- `ri` utan exakt RI-kluster
 - `legacy` med RI-signaturmarkörer i runtime-surface
 
-Det viktiga slutfixet i denna session var att stänga hybridluckan där legacy-deklarerade runtime-surfaces kunde bära RI-ankare utan att stoppas.
+Dessutom är runtime-seed normaliserad tillbaka till riktig legacy-signatur där det behövs.
 
-### 3. Ledger / orchestrator / shadow är family-aware
+## Verifiering som passerade innan merge
 
-Infört i kod:
-
-- default ledger-persist path taggar `strategy_family` och `strategy_family_source`
-- shadow-flödet löser family från `merged_config` och skriver ut family i summary
-- additive family wrappers finns i research orchestrator utan kontraktsdrift på:
-  - `ResearchTask`
-  - `ResearchResult`
-  - `ParameterAnalysisRequest`
-  - `ParameterRecommendation`
-
-### 4. Aktiv config-yta har märkts upp
-
-Följande kategorier bär nu explicit `strategy_family`:
-
-- runtime seed
-- aktiva champion-filer
-- aktiva optimizer YAML-filer
-
-Legacy-ytor är normaliserade till legacy-signatur, och RI-ytor är låsta till RI-kompatibelt kluster.
-
-## Viktig slutfix från denna session
-
-Det som blockerade post-audit först var:
-
-- `config/runtime.json` / `config/runtime.seed.json` var deklarerade som `legacy` men bar RI-lika ankare
-
-Det är nu korrigerat så att legacy-runtime matchar legacy-signatur:
-
-- `strategy_family: legacy`
-- `authority_mode: legacy`
-- `atr_period: 28`
-- `gates: 2/0`
-- legacy-tröskelkluster
-
-Dessutom finns explicit regressionstäckning för att stoppa samma hybrid i framtiden.
-
-## Verifierat grönt i denna session
+Följande verifieringar är gröna för den mergade slicen:
 
 ### Fokuserade selectors
-
-Följande passerade efter hybridfixen:
 
 - `tests/core/strategy/test_families.py`
 - `tests/governance/test_config_ssot.py`
@@ -98,9 +60,9 @@ Följande passerade efter hybridfixen:
 - `tests/utils/test_features_asof_cache_key_deterministic.py` ✅
 - `tests/governance/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable` ✅
 
-### Governance-resultat
+### Governance
 
-Opus post-diff re-audit för den slutliga koden: **APPROVED**
+- Opus post-diff re-audit: **APPROVED**
 
 ## Viktiga filer att känna till hemma
 
@@ -134,43 +96,34 @@ Opus post-diff re-audit för den slutliga koden: **APPROVED**
 - `docs/features/feature-regime-intelligence-strategy-family-1.md`
 - `docs/governance/regime_intelligence_strategy_family_integration_stub_2026-03-18.md`
 
-## Exakt arbetsläge att utgå från hemma
+## Exakt startläge på hemdatorn
 
 På hemdatorn ska nästa session börja så här:
 
 1. hämta senaste remote
-2. checka ut `feature/ri-optuna-train-validate-blind-v1`
-3. pulla senaste ändringarna på just den branchen
-4. verifiera att working tree är ren
-5. fortsätt därifrån — inte från `master`
+2. checka ut `master`
+3. pulla senaste `origin/master`
+4. verifiera att HEAD är `e4a79d2d` eller senare
+5. säkerställ ren working tree
+6. skapa ny branch först när nästa uppgift är tydlig
 
-## Vad som återstår efter denna handoff
+## Det du inte behöver göra igen
 
-Kod- och docs-arbetet i denna slice är färdigt. Det som återstår är rent integrationsflöde:
+- återöppna `feature/ri-optuna-train-validate-blind-v1`
+- återskapa strategy-family-slicen
+- återinföra legacy/RI-overlay-tolkning
+- lägga till mjuka warnings där family-mismatch nu hard-failar
 
-1. pusha branchens nya commits
-2. öppna / uppdatera PR mot `master`
-3. låt CI bli grön
-4. merga
-5. delete branch lokalt och remote efter merge
+## Rekommenderat nästa steg hemma
 
-## Rekommenderad PR-/merge-etikett
+Utgå från att strategy-family-separationen redan är merge:ad.
 
-Det här är i praktiken en:
+Nästa arbete bör därför ske **ovanpå `master`**, till exempel:
 
-- `refactor(strategy-family)` + `config` + `tests` + `docs`
-
-med kärnpåståendet:
-
-> RI är nu explicit separerad strategy family med fail-closed validering, family-aware ledger/shadow/orchestrator-stöd och obligatorisk family-märkning på aktiva configytor.
-
-## Saker du inte ska göra hemma
-
-- börja om från `master` och återskapa samma slice
-- återöppna legacy/RI-overlay-tolkningen
-- återintroducera mjuka warnings för family-mismatch
-- "snabbfixa" runtime till RI-default utan separat governance-slice
+- uppföljande RI-challenger-analys
+- fortsatt optimizer-/campaign-arbete
+- eller nästa governance-godkända runtime-/research-slice
 
 ## Enradig beslutslogg
 
-Den här branchen innehåller nu en governance-godkänd, testverifierad och fail-closed implementation av explicit strategy-family-separation där Regime Intelligence behandlas som egen family och inte som overlay på legacy-systemet.
+Strategy-family-slicen är nu merge:ad till `master`, feature-branchen är delete:ad, och nästa säkra startpunkt på hemdatorn är därför senaste `origin/master`.

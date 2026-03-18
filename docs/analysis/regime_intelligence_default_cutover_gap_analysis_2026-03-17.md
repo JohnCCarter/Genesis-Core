@@ -13,7 +13,7 @@ It does **not** question whether Regime Intelligence is implemented. The current
 - Shim retirement: klar
 - Runtime opt-in path: klar
 - Default authority: fortfarande legacy (medvetet)
-- Governance sign-off: ej klar
+- Governance sign-off: OFF-mode parity återställd, men default-cutover ej godkänd
 - Operational config surface: delvis klar
 
 ## Analysis questions for this slice
@@ -33,12 +33,14 @@ It does **not** question whether Regime Intelligence is implemented. The current
 
 ## Known cutover blockers to evaluate
 
-### 1. OFF-mode parity evidence is incomplete
+### 1. OFF-mode parity evidence is restored for the governed rerun, but legacy lineage remains historically incomplete
 
 - Current repo-visible artifact: `results/evaluation/ri_p1_off_parity_v1_ri-20260303-003.json`
 - Current repo-visible verdict: `FAIL`, but this file matches the intentionally failing test fixture in `tests/backtest/test_compare_backtest_results.py::test_main_ri_off_parity_fail_returns_1` (`run_id=ri-20260303-003`, `git_sha=abc1234`, symbol `tTESTBTC:TESTUSD`, timeframe `1h`).
 - Conclusion: the visible `003` artifact is a local synthetic/test artifact, not reliable sign-off evidence for runtime parity.
-- Referenced baseline artifact is not present in the repository snapshot, and the March sign-off artifact `results/evaluation/ri_p1_off_parity_v1_ri-20260303-005.json` is documented in audit records but absent from the git tree/history.
+- Governed rerun artifact now present: `results/evaluation/ri_p1_off_parity_v1_ri-20260317-001.json` with `parity_verdict=PASS`.
+- Supplemental governed rerun evidence is retained under `docs/audit/refactor/regime_intelligence/evidence/`.
+- The older March artifact lineage remains historically incomplete, but the repo no longer lacks a tracked PASS evidence chain for the frozen OFF-mode spec.
 
 ### 2. Legacy vs regime output delta map is not yet consolidated
 
@@ -49,9 +51,9 @@ Existing tests prove important invariants, but the repository does not yet have 
 - whether differences are expected/accepted,
 - and which differences would block default promotion.
 
-### 3. Governance readiness is not yet explicitly signed off
+### 3. Governance readiness is not yet explicitly signed off for default cutover
 
-The DoD document still requires a valid parity chain and governance confirmation before default cutover can be considered ready.
+The DoD requirement for a valid parity chain is now satisfied by the governed rerun, but governance confirmation for default cutover still requires a reviewed delta summary and explicit promotion decision.
 
 ### 4. Operational config surface is only partially exposed
 
@@ -72,6 +74,60 @@ Current config authority handling cleanly supports `authority_mode`, but does no
 - record edge cases and whether they are intended
 - separate behavioral difference from governance risk
 
+## Current verified legacy vs `regime_module` delta summary
+
+The current tracked selectors support a narrow but important summary of verified differences.
+
+### Verified expected differences
+
+1. **Authoritative regime source differs by mode**
+
+- `legacy` resolves authority through `regime_unified.detect_regime_unified`
+- `regime_module` resolves authority through `regime.detect_regime_from_candles`
+
+2. **Resolved authoritative regime may differ under identical stubbed inputs**
+
+- the cutover parity selector intentionally demonstrates a scenario where `legacy` yields `ranging`
+- under the same controlled test setup, `regime_module` yields `bull`
+- this is currently treated as an _observed mode difference_, not as a defect by itself
+
+3. **Observability captures the split explicitly**
+
+- `authority_mode`
+- `authority_mode_source`
+- `authoritative_source`
+- `authority`
+- `shadow`
+- `mismatch`
+
+### Verified invariants that still hold across both modes
+
+1. **Within-mode determinism holds**
+
+- repeated identical inputs remain stable in `legacy`
+- repeated identical inputs remain stable in `regime_module`
+
+2. **Decision safety contract remains intact**
+
+- `decision_input` remains `False` in the shadow observability payload
+- current selectors therefore support the claim that shadow-path observability does not itself inject decision-path behavior
+
+3. **Authority precedence/fallback remains deterministic**
+
+- canonical `multi_timeframe.regime_intelligence.authority_mode` still wins over alias inputs
+- invalid canonical/alias values still fall back deterministically to `legacy`
+
+4. **Pipeline invariants remain green**
+
+- determinism replay remains green
+- pipeline component order hash remains green
+
+### Current governance interpretation of those deltas
+
+- The verified mode differences are currently sufficient to say that `legacy` and `regime_module` are **not** being treated as cross-mode equality surfaces.
+- The existing evidence instead supports a narrower statement: both modes are deterministic and reviewable, while their authority path and resulting regime can differ in controlled scenarios.
+- A future default-cutover proposal therefore still needs an explicit judgment about which observed differences are acceptable for promotion and which would be blocking.
+
 ### C. Determinism / repeatability workstream
 
 - verify required determinism and pipeline invariant anchors
@@ -88,7 +144,8 @@ Current config authority handling cleanly supports `authority_mode`, but does no
 
 - `results/evaluation/ri_p1_off_parity_v1_ri-20260303-003.json` should not be treated as production/sign-off evidence. Its metadata matches the hard-coded failing unit-test invocation in `tests/backtest/test_compare_backtest_results.py`.
 - `docs/audit/RI_P1_OFF_SIGNOFF_2026-03-04.md`, `docs/audit/PR_RI_P1_OFF_SIGNOFF_2026-03-04.md`, and `docs/audit/MERGE_READINESS_PR58_2026-03-04.md` consistently reference a different artifact, `results/evaluation/ri_p1_off_parity_v1_ri-20260303-005.json`, with `parity_verdict=PASS`.
-- The repository contains supporting local log evidence that the RI OFF parity skill run passed (`logs/skill_runs.jsonl`, `run_id=c8c3b77cd2c1`), but that log file is ignored by `.gitignore` and is not part of tracked repository state. Neither the documented `005` artifact nor `results/evaluation/ri_p1_off_parity_v1_baseline.json` is committed in the current git snapshot.
+- The repository now also contains the governed rerun PASS artifact `results/evaluation/ri_p1_off_parity_v1_ri-20260317-001.json` plus retained baseline/candidate/manifest evidence under `docs/audit/refactor/regime_intelligence/evidence/`.
+- The older documented `005` artifact and `results/evaluation/ri_p1_off_parity_v1_baseline.json` are still not committed in the current git snapshot.
 - `tools/compare_backtest_results.py` records `baseline_artifact_ref` as artifact metadata only; it does not dereference or validate that the referenced baseline file exists. A missing baseline file therefore does not mechanically produce `FAIL`.
 - The currently visible `003` `FAIL` likewise does not demonstrate runtime drift. In this repo snapshot it is best explained as synthetic test output. What remains unproven is the March PASS chain, because the approved baseline/candidate inputs are not preserved in tracked repository evidence.
 
@@ -99,13 +156,17 @@ Current config authority handling cleanly supports `authority_mode`, but does no
 - `docs/audit/RI_P1_OFF_SIGNOFF_2026-03-04.md`
 - `docs/audit/PR_RI_P1_OFF_SIGNOFF_2026-03-04.md`
 - `docs/audit/MERGE_READINESS_PR58_2026-03-04.md`
+- `results/evaluation/ri_p1_off_parity_v1_ri-20260317-001.json`
+- `docs/audit/refactor/regime_intelligence/evidence/ri_p1_off_parity_v1_baseline_rows_ri-20260317-001.json`
+- `docs/audit/refactor/regime_intelligence/evidence/ri_p1_off_parity_v1_candidate_rows_ri-20260317-001.json`
+- `docs/audit/refactor/regime_intelligence/evidence/ri_p1_off_parity_v1_manifest_ri-20260317-001.json`
 - `docs/ideas/REGIME_INTELLIGENCE_DOD_P1_P2_2026-02-27.md`
 - `.github/skills/ri_off_parity_artifact_check.json`
 - `tools/compare_backtest_results.py`
 - `scripts/run/run_backtest.py`
 - `tests/backtest/test_compare_backtest_results.py`
 
-These tracked files preserve the parity contract, the comparator/tooling shape, and the human sign-off claims.
+These tracked files now preserve the parity contract, the comparator/tooling shape, the governed rerun PASS artifact chain, and the human sign-off claims.
 
 ### Present locally or referenced, but not tracked as reproducible sign-off evidence
 
@@ -138,16 +199,17 @@ These tracked files preserve the parity contract, the comparator/tooling shape, 
 
 ## Reproducibility status
 
-- **A) PASS-körningen kan rekonstrueras från historiska inputs:** not demonstrated.
-- **B) Governed rerun krävs för att återställa sign-off-evidens:** yes, unless the missing PASS artifact and its governing baseline/candidate inputs can be recovered from an external retention source outside tracked repository state.
-- Formal conclusion for this slice: **sign-off evidence cannot be reproduced from tracked repository state**.
+- **A) Governed PASS-körningen kan rekonstrueras från trackade inputs:** yes, for the governed rerun evidence chain anchored by `ri-20260317-001`.
+- **B) Historiska March-artifacts kan rekonstrueras från tracked state:** not demonstrated.
+- Formal conclusion for current repo state: **the governed OFF-mode sign-off evidence chain is now reproducible from tracked repository state, but default-cutover readiness remains blocked by non-parity governance gaps**.
 
 ## Implication for cutover readiness
 
-- The active blocker is an evidence-lineage gap, not a confirmed runtime-regression finding.
+- The active blocker is no longer absence of a tracked PASS parity chain.
+- Remaining blockers are cutover-governance oriented: accepted delta summary, promotion criteria, and operational control-surface review.
 - Before any future default-cutover proposal, the repo needs either:
-  - recovery of the approved PASS artifact/baseline provenance, or
-  - a clean rerun under the frozen parity spec with reviewable inputs and retained evidence.
+  - explicit governance acceptance of the current governed rerun evidence as sufficient cutover input, and
+  - a reviewed cutover-focused decision record for legacy vs `regime_module` differences.
 
 ## Paths forward from the current evidence state
 
@@ -167,15 +229,12 @@ These tracked files preserve the parity contract, the comparator/tooling shape, 
   - reviewable run metadata for symbol/timeframe/window
 - If that proof chain is recovered, baseline provenance may be restored without changing the frozen spec.
 
-### 2. Governed rerun baseline reset path
+### 2. Post-rerun governance decision path
 
-- If evidence recovery fails, fall back to a governed baseline reset via parity rerun under frozen spec `ri_p1_off_parity_v1`.
-- That path must:
-  - keep the canonical parity artifact at `results/evaluation/ri_p1_off_parity_v1_<run_id>.json`
-  - define the canonical baseline reference path explicitly
-  - retain reviewable baseline rows, candidate rows, and manifest evidence outside ignored-only paths
-  - preserve the full sign-off gate bundle before any PASS may count as governance sign-off
-- This path does **not** imply runtime drift; it is a governance reset path for rebuilding a reproducible baseline/evidence chain when external recovery fails.
+- Use the governed rerun evidence chain as the active OFF-mode parity anchor under frozen spec `ri_p1_off_parity_v1`.
+- Build the missing cutover-focused delta summary for legacy vs `regime_module` behavior.
+- Review whether the current operational control surface is sufficient for a future default-cutover slice.
+- Keep the rerun artifacts as parity evidence; do not reinterpret them as automatic default-cutover approval.
 
 ## Observed gate outcomes in this slice
 

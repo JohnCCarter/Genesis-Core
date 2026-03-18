@@ -22,7 +22,7 @@ Current answer: **not yet ready for default cutover approval**.
 | Shim retirement            | Ready       | legacy shim path has been retired from runtime entrypoints                       |
 | Runtime opt-in path        | Ready       | `authority_mode=regime_module` is supported                                      |
 | Default authority          | Not changed | remains intentionally `legacy`                                                   |
-| Governance sign-off        | Not ready   | repo-verifiable OFF-mode parity PASS chain is incomplete                         |
+| Governance sign-off        | Partial     | OFF-mode parity sign-off is restored; default-cutover governance is still open   |
 | Operational config surface | Partial     | `authority_mode` is governed; broader RI runtime control surface remains limited |
 
 ## Readiness criteria for a future default-cutover proposal
@@ -37,19 +37,11 @@ A future `feature/regime-intelligence-default-cutover-v1` slice should only be c
 
 ## Current blockers
 
-### 1. Repo-verifiable OFF-mode parity evidence is incomplete
-
-The currently visible `results/evaluation/ri_p1_off_parity_v1_ri-20260303-003.json` file is not sufficient for sign-off and should not be treated as runtime parity evidence. Its metadata matches the intentionally failing unit test fixture in `tests/backtest/test_compare_backtest_results.py`.
-
-### 2. Evidence chain is incomplete
-
-The referenced baseline artifact is not present in the current repository snapshot, and the March PASS artifact `results/evaluation/ri_p1_off_parity_v1_ri-20260303-005.json` is documented in sign-off records but absent from the tracked git tree.
-
-### 3. Behavior delta summary is missing
+### 1. Behavior delta summary is missing
 
 The repo has selectors but lacks a consolidated cutover-focused decision record for expected vs unacceptable differences.
 
-### 4. Operational governance surface is only partially ready
+### 2. Operational governance surface is only partially ready
 
 `authority_mode` is correctly preserved as a governance control, but the full RI control surface is not yet represented as a first-class governed runtime interface.
 
@@ -69,27 +61,26 @@ The repo has selectors but lacks a consolidated cutover-focused decision record 
 - explicit risk statement for any known legacy vs regime deltas
 - final governance recommendation: `ready`, `ready with prerequisites`, or `not ready`
 
-## Lineage finding for this slice
+## Parity evidence update
 
-- Current repo-visible `003` `FAIL` artifact is best classified as local synthetic test output, not a live parity regression signal.
-- Missing baseline/`005` repository artifacts mean the repo snapshot cannot independently reproduce the March PASS chain from tracked files alone.
-- Because `baseline_artifact_ref` is metadata-only in `tools/compare_backtest_results.py`, a missing baseline file cannot by itself explain a `FAIL`; the remaining issue is provenance and reproducibility, not a confirmed runtime behavior break.
-- `logs/skill_runs.jsonl` confirms a local `PASS` attestation for `run_id=c8c3b77cd2c1`, but the file is ignored and not tracked.
-- GitHub Actions retention for PR #58 currently exposes only `bandit-report`; no CI-retained parity artifact or baseline bundle was found.
+- The repo-visible `003` `FAIL` artifact remains synthetic test output and must not be treated as sign-off evidence.
+- The governed baseline reset rerun completed with canonical artifact `results/evaluation/ri_p1_off_parity_v1_ri-20260317-001.json` and `parity_verdict=PASS`.
+- Supplemental retained evidence exists under `docs/audit/refactor/regime_intelligence/evidence/` and is linked by manifest SHA256 values.
+- The parity evidence gap identified earlier is therefore closed for the frozen OFF-mode spec, even though default-cutover governance remains open.
 
 ## Reproducibility verdict
 
-**sign-off evidence cannot be reproduced from tracked repository state**.
+**OFF-mode sign-off evidence is now reproducible from tracked repository state for the governed rerun artifact chain.**
 
 Current classification:
 
-- tracked repo state preserves the parity contract, tooling shape, and human sign-off claims
-- tracked repo state does **not** preserve the PASS artifact, baseline artifact, or raw decision-row inputs needed to replay the March sign-off chain
-- therefore the March PASS chain is not independently reconstructable from tracked repository contents alone
+- tracked repo state preserves the parity contract, tooling shape, the governed rerun PASS artifact, and the retained baseline/candidate/manifest evidence for that rerun
+- the older March sign-off chain is still not independently reconstructable from tracked repository contents alone
+- current governance discussion should therefore rely on the governed rerun evidence chain, not the older missing March artifact chain
 
 Recommended next step:
 
-- perform a **governed parity rerun** under the frozen `ri_p1_off_parity_v1` spec unless the missing PASS artifact plus baseline/candidate inputs can be recovered from an external retention source
+- keep default authority unchanged and evaluate remaining cutover blockers against the now-restored governed parity evidence chain
 
 ## Observed slice gates (2026-03-17)
 
@@ -116,3 +107,10 @@ Slice-local machine-readable gate summary:
 ## Preliminary recommendation
 
 Proceed with the analysis slice. Do **not** open a default-cutover implementation slice until the parity chain and governance evidence are materially stronger than they are today. The immediate follow-up should be evidence recovery or a governed parity rerun, not runtime remediation.
+
+Updated interpretation from current tracked repo state:
+
+- do **not** open a default-cutover implementation slice yet
+- do keep default authority unchanged
+- do treat the governed rerun evidence chain as the active parity baseline for further cutover analysis
+- the immediate follow-up should now be delta-summary/governance review work, not runtime remediation

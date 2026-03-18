@@ -45,6 +45,7 @@ CONFIG_DIR.mkdir(exist_ok=True)
 (CONFIG_DIR / "__init__.py").touch(exist_ok=True)
 
 from core.backtest.metrics import calculate_metrics, print_metrics_report  # noqa: E402
+from core.backtest.intelligence_shadow import BacktestIntelligenceShadowRecorder  # noqa: E402
 from core.backtest.trade_logger import TradeLogger  # noqa: E402
 from core.config.authority import ConfigAuthority  # noqa: E402
 from core.config.merge_policy import resolve_runtime_merge_decision  # noqa: E402
@@ -347,6 +348,15 @@ def main():
         choices=["json", "ndjson"],
         help="Serialization format for --decision-rows-out (default: json).",
     )
+    parser.add_argument(
+        "--intelligence-shadow-out",
+        type=Path,
+        default=None,
+        help=(
+            "Optional output path for a machine-readable intelligence shadow summary. "
+            "Enables champion shadow orchestration without changing decision behavior."
+        ),
+    )
     parser.add_argument("--optuna-trial-id", type=int, help="Optuna trial ID for pruning")
     parser.add_argument("--optuna-storage", type=str, help="Optuna storage URL")
     parser.add_argument("--optuna-study-name", type=str, help="Optuna study name")
@@ -426,6 +436,17 @@ def main():
             slippage=args.slippage,
             warmup_bars=args.warmup,
         )
+
+        intelligence_shadow = None
+        if args.intelligence_shadow_out is not None:
+            intelligence_shadow = BacktestIntelligenceShadowRecorder(
+                symbol=args.symbol,
+                timeframe=args.timeframe,
+                repo_root=ROOT_DIR,
+            )
+            engine.evaluation_hook = intelligence_shadow.create_hook(
+                upstream_hook=engine.evaluation_hook
+            )
 
         decision_rows: list[dict[str, Any]] = []
         if args.decision_rows_out is not None:
@@ -590,6 +611,26 @@ def main():
                 fmt=args.decision_rows_format,
             )
             print(f"[SAVED] Decision rows: {decision_rows_path}")
+
+        if intelligence_shadow is not None:
+            try:
+                shadow_effective_config = merged_cfg
+                if config_provenance.get("used_runtime_merge") and hasattr(
+                    engine, "champion_loader"
+                ):
+                    champion_cfg = engine.champion_loader.load_cached(args.symbol, args.timeframe)
+                    if getattr(champion_cfg, "config", None):
+                        shadow_effective_config = _deep_merge(champion_cfg.config, merged_cfg)
+                shadow_summary = intelligence_shadow.finalize(
+                    results=results,
+                    merged_config=shadow_effective_config,
+                    summary_path=args.intelligence_shadow_out,
+                )
+            except Exception as exc:
+                print(f"\n[FAILED] Intelligence shadow failed: {exc}")
+                return 1
+            results["intelligence_shadow"] = shadow_summary
+            print(f"[SAVED] Intelligence shadow summary: {args.intelligence_shadow_out}")
 
         # Calculate metrics
         # IMPORTANT: Use the same robust metric path as Optuna scoring (trades/equity-based)

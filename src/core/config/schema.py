@@ -4,6 +4,11 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from core.strategy.family_registry import (
+    StrategyFamilyValidationError,
+    validate_strategy_family_config,
+)
+
 
 class RuntimeSection(BaseModel):
     model_config = ConfigDict(extra="allow")
@@ -252,6 +257,7 @@ class HTFExitConfig(RuntimeSection):
 
 
 class RuntimeConfig(RuntimeSection):
+    strategy_family: Literal["legacy", "ri"]
     thresholds: Thresholds = Field(default_factory=Thresholds)
     gates: Gates = Field(default_factory=Gates)
     risk: Risk = Field(default_factory=Risk)
@@ -265,6 +271,17 @@ class RuntimeConfig(RuntimeSection):
     features: FeaturesConfig | None = None
     # Compatibility alias input only (must not persist in canonical runtime payload).
     regime_unified: RegimeUnifiedAliasConfig | None = Field(default=None, exclude=True)
+
+    @model_validator(mode="after")
+    def _validate_strategy_family(self) -> RuntimeConfig:
+        try:
+            resolved_family = validate_strategy_family_config(
+                self.model_dump(mode="python", exclude={"regime_unified"})
+            )
+        except StrategyFamilyValidationError as exc:
+            raise ValueError(str(exc)) from exc
+        self.strategy_family = resolved_family
+        return self
 
     def model_dump_canonical(self) -> dict[str, Any]:
         """Dump in a stable, hash-friendly form (tuples → lists)."""

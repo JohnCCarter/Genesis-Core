@@ -1,4 +1,5 @@
 description: "Phase C-style seeded 1h OOS validation from Phase B RI smoke best"
+strategy_family: legacy
 #
 # Provenance / intent:
 # - additive RESEARCH config only; no effect unless explicitly selected
@@ -109,7 +110,7 @@ parameters:
     value: "v2"
   multi_timeframe.regime_intelligence.authority_mode:
     type: fixed
-    value: "regime_module"
+    value: "legacy"
   multi_timeframe.regime_intelligence.clarity_score.enabled:
     type: fixed
     value: true

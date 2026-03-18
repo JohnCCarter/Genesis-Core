@@ -77,7 +77,11 @@ def test_mapping_preserves_request_serialization_integrity_and_reference_order()
 
 def test_persist_events_preserves_tuple_order_and_returns_correct_result(tmp_path: Path) -> None:
     service = _service(tmp_path)
-    adapter = DeterministicIntelligenceLedgerAdapter(service=service)
+    adapter = DeterministicIntelligenceLedgerAdapter(
+        service=service,
+        strategy_config={"strategy_family": "legacy"},
+        strategy_family="legacy",
+    )
     request = LedgerPersistenceRequest(events=(_validated_event(2), _validated_event(1)))
     before_payloads = deepcopy(tuple(item.event.to_payload() for item in request.events))
 
@@ -94,6 +98,10 @@ def test_persist_events_preserves_tuple_order_and_returns_correct_result(tmp_pat
         "intel-tbtcusd-20260316-0002",
         "intel-tbtcusd-20260316-0001",
     )
+    assert {record.metadata["strategy_family"] for record in persisted_records} == {"legacy"}
+    assert {record.metadata["strategy_family_source"] for record in persisted_records} == {
+        "family_registry_v1"
+    }
     assert tuple(item.event.to_payload() for item in request.events) == before_payloads
 
 
@@ -104,8 +112,16 @@ def test_repeated_runs_on_fresh_storage_produce_identical_persistence_mapping(
 
     first_service = _service(tmp_path / "run_one")
     second_service = _service(tmp_path / "run_two")
-    first_adapter = DeterministicIntelligenceLedgerAdapter(service=first_service)
-    second_adapter = DeterministicIntelligenceLedgerAdapter(service=second_service)
+    first_adapter = DeterministicIntelligenceLedgerAdapter(
+        service=first_service,
+        strategy_config={"strategy_family": "legacy"},
+        strategy_family="legacy",
+    )
+    second_adapter = DeterministicIntelligenceLedgerAdapter(
+        service=second_service,
+        strategy_config={"strategy_family": "legacy"},
+        strategy_family="legacy",
+    )
 
     first_result = first_adapter.persist_events(request)
     second_result = second_adapter.persist_events(request)

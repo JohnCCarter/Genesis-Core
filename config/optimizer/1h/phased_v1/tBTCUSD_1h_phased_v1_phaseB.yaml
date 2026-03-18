@@ -1,4 +1,5 @@
 description: "Phase B: 1h Regime Intelligence clarity + sizing (canonical from 1h Phase A best)"
+strategy_family: legacy
 #
 # Provenance / intent:
 # - additive RESEARCH config only; no effect unless explicitly selected
@@ -145,8 +146,8 @@ parameters:
         type: fixed
         value: "v2"
       authority_mode:
-        type: grid
-        values: ["legacy", "regime_module"]
+        type: fixed
+        value: "legacy"
       clarity_score:
         enabled:
           type: fixed

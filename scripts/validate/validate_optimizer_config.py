@@ -23,6 +23,15 @@ from typing import Any
 
 import yaml
 
+from core.config.authority_mode_resolver import AUTHORITY_MODE_REGIME_MODULE
+from core.strategy.family_registry import (
+    FAMILY_REGISTRY,
+    STRATEGY_FAMILY_LEGACY,
+    STRATEGY_FAMILY_RI,
+    StrategyFamilyValidationError,
+    validate_strategy_family_name,
+)
+
 BASE_RISK_MAP = [
     (0.48, 0.01),
     (0.59, 0.015),
@@ -82,6 +91,110 @@ def extract_param_value(params: dict[str, Any], path: str) -> Any | None:
             return None
         current = current[key]
     return current
+
+
+def _get_param_spec(params_spec: dict[str, Any], path: str) -> dict[str, Any] | None:
+    direct = params_spec.get(path)
+    if isinstance(direct, dict):
+        return direct
+
+    keys = path.split(".")
+    current: Any = params_spec
+    for key in keys:
+        if not isinstance(current, dict) or key not in current:
+            return None
+        current = current[key]
+    return current if isinstance(current, dict) else None
+
+
+def _spec_allows_value(spec: dict[str, Any] | None, expected: Any) -> bool:
+    if not isinstance(spec, dict):
+        return False
+    param_type = spec.get("type")
+    if param_type == "fixed":
+        return spec.get("value") == expected
+    if param_type == "grid":
+        return expected in tuple(spec.get("values") or ())
+    if param_type in {"float", "int"}:
+        low = spec.get("low")
+        high = spec.get("high")
+        if low is None or high is None:
+            return False
+        try:
+            expected_value = float(expected)
+            return float(low) <= expected_value <= float(high)
+        except (TypeError, ValueError):
+            return False
+    return False
+
+
+def _spec_requires_exact_value(spec: dict[str, Any] | None, expected: Any) -> bool:
+    if not isinstance(spec, dict):
+        return False
+    param_type = spec.get("type")
+    if param_type == "fixed":
+        return spec.get("value") == expected
+    if param_type == "grid":
+        return tuple(spec.get("values") or ()) == (expected,)
+    return False
+
+
+def validate_optimizer_strategy_family(opt_cfg: dict[str, Any]) -> tuple[list[str], list[str]]:
+    errors: list[str] = []
+    warnings: list[str] = []
+
+    declared_raw = opt_cfg.get("strategy_family")
+    try:
+        declared = validate_strategy_family_name(declared_raw)
+    except StrategyFamilyValidationError as exc:
+        if str(exc) == "missing_strategy_family":
+            errors.append("[ERROR] strategy_family är obligatoriskt i optimizer-konfig")
+        else:
+            errors.append("[ERROR] strategy_family måste vara 'legacy' eller 'ri'")
+        return errors, warnings
+
+    params_spec = opt_cfg.get("parameters", {})
+    authority_spec = _get_param_spec(
+        params_spec, "multi_timeframe.regime_intelligence.authority_mode"
+    )
+    authority_is_regime_module = _spec_allows_value(authority_spec, AUTHORITY_MODE_REGIME_MODULE)
+    authority_is_exact_regime_module = _spec_requires_exact_value(
+        authority_spec, AUTHORITY_MODE_REGIME_MODULE
+    )
+
+    ri_rule = FAMILY_REGISTRY[STRATEGY_FAMILY_RI]
+    ri_cluster_matches = (
+        authority_is_exact_regime_module
+        and _spec_requires_exact_value(
+            _get_param_spec(params_spec, "thresholds.signal_adaptation.atr_period"),
+            ri_rule.required_atr_period,
+        )
+        and _spec_requires_exact_value(
+            _get_param_spec(params_spec, "gates.hysteresis_steps"),
+            ri_rule.required_gates[0],
+        )
+        and _spec_requires_exact_value(
+            _get_param_spec(params_spec, "gates.cooldown_bars"),
+            ri_rule.required_gates[1],
+        )
+        and all(
+            _spec_allows_value(_get_param_spec(params_spec, path), expected)
+            for path, expected in ri_rule.threshold_cluster.items()
+        )
+    )
+
+    if declared == STRATEGY_FAMILY_LEGACY and authority_is_regime_module:
+        errors.append(
+            "[ERROR] strategy_family=legacy är ogiltigt när authority_mode kan bli regime_module"
+        )
+
+    if declared == STRATEGY_FAMILY_RI and not ri_cluster_matches:
+        errors.append("[ERROR] strategy_family=ri kräver komplett RI-kluster i optimizer-konfig")
+
+    if declared == STRATEGY_FAMILY_RI and not authority_is_exact_regime_module:
+        errors.append("[ERROR] strategy_family=ri kräver authority_mode=fixed regime_module")
+
+    return errors, warnings
 
 
 def check_fixed_matches_champion(
@@ -178,6 +291,10 @@ def validate_risk_map_deltas(
     """Validate that risk map deltas allow reproducing the champion risk map."""
     errors: list[str] = []
     warnings: list[str] = []
+
+    family_errors, family_warnings = validate_optimizer_strategy_family(opt_cfg)
+    errors.extend(family_errors)
+    warnings.extend(family_warnings)
 
     risk_spec = opt_cfg.get("parameters", {}).get("risk", {})
     deltas_spec = risk_spec.get("risk_map_deltas")

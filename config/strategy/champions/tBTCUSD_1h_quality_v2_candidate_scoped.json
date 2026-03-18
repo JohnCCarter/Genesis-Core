@@ -3,6 +3,7 @@
   "run_id": "candidate_quality_v2_scoped_20251225",
   "symbol": "tBTCUSD",
   "timeframe": "1h",
+  "strategy_family": "legacy",
   "metadata": {
     "note": "Candidate config for A/B rollout: quality v2 enabled with per-component scopes. data_quality+spread affect gating; atr+volume affect sizing only (to mitigate W2 regression while keeping W1/W3 gating benefits).",
     "base_champion": "config/strategy/champions/tBTCUSD_1h.json",
@@ -15,6 +16,7 @@
     }
   },
   "parameters": {
+    "strategy_family": "legacy",
     "thresholds": {
       "entry_conf_overall": 0.24,
       "regime_proba": {

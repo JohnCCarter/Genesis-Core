@@ -169,6 +169,22 @@ def test_append_record_rejects_duplicate_ids(tmp_path: Path) -> None:
         service.append_hypothesis(hypothesis)
 
 
+def test_append_record_with_strategy_family_tags_metadata(tmp_path: Path) -> None:
+    service = _service(tmp_path)
+    hypothesis = HypothesisRecord(
+        entity_id="HYP-2026-0009",
+        entity_type=LedgerEntityType.HYPOTHESIS,
+        created_at="2026-03-18T16:00:00+00:00",
+        title="RI hypothesis",
+        hypothesis="Family labels should persist in metadata.",
+    )
+
+    appended = service.append_record_with_strategy_family(hypothesis, strategy_family="ri")
+
+    assert appended.metadata["strategy_family"] == "ri"
+    assert appended.metadata["strategy_family_source"] == "family_registry_v1"
+
+
 def test_allocate_id_is_storage_state_deterministic(tmp_path: Path) -> None:
     service = _service(tmp_path)
 

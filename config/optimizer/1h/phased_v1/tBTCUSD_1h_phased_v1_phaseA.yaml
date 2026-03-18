@@ -1,4 +1,5 @@
 description: "Phase A: 1h baseline threshold + exit optimisation (canonical parent for later 1h Phase B/C)"
+strategy_family: legacy
 #
 # Provenance / intent:
 # - additive RESEARCH config only; no effect unless explicitly selected

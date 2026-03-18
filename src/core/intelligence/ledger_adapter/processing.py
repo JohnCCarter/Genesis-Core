@@ -17,6 +17,7 @@ from core.research_ledger import (
     LedgerEntityType,
     ResearchLedgerService,
 )
+from core.strategy.family_registry import STRATEGY_FAMILY_SOURCE, StrategyFamily
 
 _PATH_ROOT = "intelligence"
 _PATH_SEGMENT_PATTERN = re.compile(r"[^A-Za-z0-9._-]+")
@@ -83,6 +84,9 @@ def map_validated_event_to_artifact_record(
 @dataclass(frozen=True, slots=True)
 class DeterministicIntelligenceLedgerAdapter(IntelligenceLedgerAdapter):
     service: ResearchLedgerService
+    strategy_config: dict | None = None
+    strategy_family: StrategyFamily | None = None
+    strategy_family_source: str = STRATEGY_FAMILY_SOURCE
 
     def persist_events(self, request: LedgerPersistenceRequest) -> LedgerPersistenceResult:
         persisted_event_ids: list[str] = []
@@ -97,7 +101,12 @@ class DeterministicIntelligenceLedgerAdapter(IntelligenceLedgerAdapter):
                 validated_event,
                 entity_id=entity_id,
             )
-            persisted = self.service.append_artifact(record)
+            persisted = self.service.append_record_with_strategy_family(
+                record,
+                config=self.strategy_config,
+                strategy_family=self.strategy_family,
+                strategy_family_source=self.strategy_family_source,
+            )
             persisted_event_ids.append(validated_event.event.event_id)
             ledger_entity_ids.append(persisted.entity_id)
 

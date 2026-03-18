@@ -1,4 +1,5 @@
 description: "Phase A: Threshold + Exit optimisation (reduced search space, Score v2)"
+strategy_family: legacy
 #
 # Reduces the original 29-parameter space to 13 tunable parameters.
 # Fixes inert params (entry_conf_overall overridden by zones), regime_proba

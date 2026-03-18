@@ -6,6 +6,7 @@
   "snapshot_id": "snap_tBTCUSD_3h_2024-01-02_2024-12-31_v1",
   "symbol": "tBTCUSD",
   "timeframe": "3h",
+  "strategy_family": "legacy",
   "score": 0.0,
   "metrics": {},
   "constraints": {
@@ -20,6 +21,7 @@
     "recommended_next": "Run a canonical 3h backtest smoke + Optuna explore and update this champion from a validated run."
   },
   "cfg": {
+    "strategy_family": "legacy",
     "thresholds": {
       "entry_conf_overall": 0.26,
       "regime_proba": {
@@ -53,22 +55,10 @@
     },
     "risk": {
       "risk_map": [
-        [
-          0.6,
-          0.02
-        ],
-        [
-          0.7,
-          0.03
-        ],
-        [
-          0.8,
-          0.04
-        ],
-        [
-          0.9,
-          0.05
-        ]
+        [0.6, 0.02],
+        [0.7, 0.03],
+        [0.8, 0.04],
+        [0.9, 0.05]
       ],
       "regime_size_multipliers": {
         "bull": 1.0,
@@ -146,6 +136,7 @@
     "features": null
   },
   "merged_config": {
+    "strategy_family": "legacy",
     "thresholds": {
       "entry_conf_overall": 0.26,
       "regime_proba": {
@@ -179,22 +170,10 @@
     },
     "risk": {
       "risk_map": [
-        [
-          0.6,
-          0.02
-        ],
-        [
-          0.7,
-          0.03
-        ],
-        [
-          0.8,
-          0.04
-        ],
-        [
-          0.9,
-          0.05
-        ]
+        [0.6, 0.02],
+        [0.7, 0.03],
+        [0.8, 0.04],
+        [0.9, 0.05]
       ],
       "regime_size_multipliers": {
         "bull": 1.0,

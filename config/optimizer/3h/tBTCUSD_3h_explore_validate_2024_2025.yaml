@@ -1,4 +1,5 @@
 description: "Explore on 2024, Validate (rank) on 2025 - 3h timeframe"
+strategy_family: legacy
 #
 # Purpose: Avoid overfitting by exploring on 2024 but ranking candidates
 # by their out-of-sample performance on 2025.

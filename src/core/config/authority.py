@@ -71,7 +71,7 @@ class ConfigAuthority:
                     return v, cfg_raw
                 except Exception as e:
                     _LOGGER.debug("seed_read_error: %s", e)
-            cfg = RuntimeConfig().model_dump_canonical()
+            cfg = RuntimeConfig(strategy_family="legacy").model_dump_canonical()
             return 0, cfg
         data = json.loads(self.path.read_text(encoding="utf-8"))
         version = int(data.get("version") or 0)
@@ -177,8 +177,18 @@ class ConfigAuthority:
         # whitelist enforcement (path-based)
         def _enforce_whitelist(p: dict[str, Any]) -> None:
             for k, v in (p or {}).items():
-                if k not in {"thresholds", "gates", "risk", "ev", "multi_timeframe"}:
+                if k not in {
+                    "strategy_family",
+                    "thresholds",
+                    "gates",
+                    "risk",
+                    "ev",
+                    "multi_timeframe",
+                }:
                     raise ValueError("non_whitelisted_field")
+                if k == "strategy_family":
+                    if str(v).strip().lower() not in {"legacy", "ri"}:
+                        raise ValueError("invalid_value:strategy_family")
                 if k == "risk":
                     if not isinstance(v, dict) or any(subk != "risk_map" for subk in v.keys()):
                         raise ValueError("non_whitelisted_field:risk")

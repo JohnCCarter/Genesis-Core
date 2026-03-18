@@ -105,7 +105,11 @@ def build_orchestrator(
         feature_extractor=DeterministicIntelligenceFeatureExtractor(),
         evaluator=DeterministicIntelligenceEvaluator(),
         parameter_analyzer=DeterministicParameterIntelligenceAnalyzer(),
-        ledger_adapter=DeterministicIntelligenceLedgerAdapter(service=service),
+        ledger_adapter=DeterministicIntelligenceLedgerAdapter(
+            service=service,
+            strategy_config={"strategy_family": "legacy"},
+            strategy_family="legacy",
+        ),
     )
 
 

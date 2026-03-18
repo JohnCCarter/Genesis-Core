@@ -1,4 +1,5 @@
 description: "Initial 1h Optuna smoke config in active timeframe-first layout"
+strategy_family: legacy
 #
 # Purpose:
 # - establish an active 1h Optuna config in the timeframe-first layout

@@ -102,7 +102,11 @@ def test_orchestrator_preserves_stage_and_event_order_without_mutation(tmp_path)
             calls,
         ),
         ledger_adapter=RecordingLedgerAdapter(
-            DeterministicIntelligenceLedgerAdapter(service=service),
+            DeterministicIntelligenceLedgerAdapter(
+                service=service,
+                strategy_config={"strategy_family": "legacy"},
+                strategy_family="legacy",
+            ),
             calls,
         ),
     )

@@ -1,4 +1,5 @@
 description: "6h debug baseline: exit/risk-focused non-RI investigation"
+strategy_family: legacy
 #
 # Provenance / intent:
 # - additive RESEARCH config only; no effect unless explicitly selected

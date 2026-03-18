@@ -18,7 +18,7 @@ class _DummyCfg:
 
 class _DummyAuthority:
     def __init__(self, payload: dict | None = None, runtime_version: int = 7):
-        self.payload = payload or {}
+        self.payload = payload or {"strategy_family": "legacy"}
         self.runtime_version = runtime_version
 
     def get(self):
@@ -52,7 +52,9 @@ class _DummyEngine:
         self.warmup_bars = 0
         self.position_tracker = _DummyPositionTracker()
         self.evaluation_hook = None
-        self.champion_loader = _DummyChampionLoader({"thresholds": {"entry_conf_overall": 0.26}})
+        self.champion_loader = _DummyChampionLoader(
+            {"strategy_family": "legacy", "thresholds": {"entry_conf_overall": 0.26}}
+        )
         self.last_configs = None
         self.last_result = None
         self.last_meta = None
@@ -215,6 +217,7 @@ def test_run_backtest_main_writes_shadow_summary_without_changing_dummy_results(
     summary = json.loads(shadow_summary_path.read_text(encoding="utf-8"))
     assert summary["shadow_status"] == "completed"
     assert summary["decision_drift_observed"] is False
+    assert summary["derived_parameter_set"]["strategy_family"] == "legacy"
     assert summary["counts"]["captured_events"] == 1
     assert summary["counts"]["collected_events"] == 1
     assert (
@@ -224,3 +227,4 @@ def test_run_backtest_main_writes_shadow_summary_without_changing_dummy_results(
     assert (
         tmp_path / "artifacts" / "intelligence_shadow" / "unit-run" / "research_ledger"
     ).exists()
+    assert summary["ledger_entity_ids"]

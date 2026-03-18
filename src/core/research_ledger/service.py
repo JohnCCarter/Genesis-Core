@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import replace
+
 from core.research_ledger.enums import LedgerEntityType
 from core.research_ledger.indexes import (
     build_champion_index,
@@ -19,6 +21,11 @@ from core.research_ledger.models import (
 from core.research_ledger.queries import LedgerQueries
 from core.research_ledger.storage import LedgerStorage
 from core.research_ledger.validators import LedgerValidationError, validate_record
+from core.strategy.family_registry import (
+    STRATEGY_FAMILY_SOURCE,
+    resolve_strategy_family,
+    validate_strategy_family_name,
+)
 
 
 class ResearchLedgerService:
@@ -66,6 +73,25 @@ class ResearchLedgerService:
         self.storage.write_record(record)
         self.refresh_indexes()
         return record
+
+    def append_record_with_strategy_family(
+        self,
+        record: LedgerRecordT,
+        *,
+        config: dict | None = None,
+        strategy_family: str | None = None,
+        strategy_family_source: str = STRATEGY_FAMILY_SOURCE,
+    ) -> LedgerRecordT:
+        resolved_family = (
+            validate_strategy_family_name(strategy_family)
+            if strategy_family is not None
+            else resolve_strategy_family(dict(config or {}))
+        )
+        tagged_metadata = dict(record.metadata)
+        tagged_metadata["strategy_family"] = resolved_family
+        tagged_metadata["strategy_family_source"] = strategy_family_source
+        tagged_record = replace(record, metadata=tagged_metadata)
+        return self.append_record(tagged_record)
 
     def append_hypothesis(self, record: HypothesisRecord) -> HypothesisRecord:
         return self.append_record(record)

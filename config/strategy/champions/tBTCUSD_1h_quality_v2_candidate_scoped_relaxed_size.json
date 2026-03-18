@@ -3,6 +3,7 @@
   "run_id": "candidate_quality_v2_scoped_relaxed_size_20251225",
   "symbol": "tBTCUSD",
   "timeframe": "1h",
+  "strategy_family": "legacy",
   "metadata": {
     "note": "Scoped quality v2: data_quality+spread affect gating; atr+volume affect sizing only. Relaxed sizing penalty to reduce W3 degradation (higher floors + lower exponents for atr/volume).",
     "base_champion": "config/strategy/champions/tBTCUSD_1h.json",
@@ -19,6 +20,7 @@
     }
   },
   "parameters": {
+    "strategy_family": "legacy",
     "thresholds": {
       "entry_conf_overall": 0.24,
       "regime_proba": {

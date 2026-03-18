@@ -21,8 +21,8 @@ def test_config_endpoints():
     c = TestClient(app)
 
     # runtime validate (new API)
-    good_rt = {"thresholds": {"entry_conf_overall": 0.6}}
-    bad_rt = {"ev": {"R_default": "invalid"}}
+    good_rt = {"strategy_family": "legacy", "thresholds": {"entry_conf_overall": 0.6}}
+    bad_rt = {"strategy_family": "legacy", "ev": {"R_default": "invalid"}}
 
     r = c.post("/config/runtime/validate", json=good_rt)
     assert r.status_code == 200 and r.json().get("valid") is True
@@ -31,23 +31,60 @@ def test_config_endpoints():
     assert r.status_code == 200 and r.json().get("valid") is False
 
     good_authority_mode = {
-        "multi_timeframe": {"regime_intelligence": {"authority_mode": "regime_module"}}
+        "strategy_family": "ri",
+        "thresholds": {
+            "entry_conf_overall": 0.25,
+            "regime_proba": {"balanced": 0.36},
+            "signal_adaptation": {
+                "atr_period": 14,
+                "zones": {
+                    "low": {"entry_conf_overall": 0.16, "regime_proba": 0.33},
+                    "mid": {"entry_conf_overall": 0.40, "regime_proba": 0.51},
+                    "high": {"entry_conf_overall": 0.32, "regime_proba": 0.57},
+                },
+            },
+        },
+        "gates": {"hysteresis_steps": 3, "cooldown_bars": 2},
+        "multi_timeframe": {"regime_intelligence": {"authority_mode": "regime_module"}},
     }
-    good_authority_mode_alias = {"regime_unified": {"authority_mode": "regime_module"}}
+    good_authority_mode_alias = {
+        "strategy_family": "ri",
+        "thresholds": {
+            "entry_conf_overall": 0.25,
+            "regime_proba": {"balanced": 0.36},
+            "signal_adaptation": {
+                "atr_period": 14,
+                "zones": {
+                    "low": {"entry_conf_overall": 0.16, "regime_proba": 0.33},
+                    "mid": {"entry_conf_overall": 0.40, "regime_proba": 0.51},
+                    "high": {"entry_conf_overall": 0.32, "regime_proba": 0.57},
+                },
+            },
+        },
+        "gates": {"hysteresis_steps": 3, "cooldown_bars": 2},
+        "regime_unified": {"authority_mode": "regime_module"},
+    }
     bad_authority_mode = {
-        "multi_timeframe": {"regime_intelligence": {"authority_mode": "invalid_mode"}}
+        "strategy_family": "legacy",
+        "multi_timeframe": {"regime_intelligence": {"authority_mode": "invalid_mode"}},
     }
-    bad_authority_mode_alias_non_dict = {"regime_unified": "regime_module"}
+    bad_authority_mode_alias_non_dict = {
+        "strategy_family": "legacy",
+        "regime_unified": "regime_module",
+    }
     bad_authority_mode_alias_extra_key = {
-        "regime_unified": {"authority_mode": "regime_module", "extra": 1}
+        "strategy_family": "legacy",
+        "regime_unified": {"authority_mode": "regime_module", "extra": 1},
     }
     bad_conflicting_authority_mode = {
+        "strategy_family": "legacy",
         "multi_timeframe": {"regime_intelligence": {"authority_mode": "invalid_mode"}},
         "regime_unified": {"authority_mode": "regime_module"},
     }
 
     r = c.post("/config/runtime/validate", json=good_authority_mode)
     assert r.status_code == 200 and r.json().get("valid") is True
+    assert r.json().get("cfg", {}).get("strategy_family") == "ri"
 
     r = c.post("/config/runtime/validate", json=good_authority_mode_alias)
     assert r.status_code == 200 and r.json().get("valid") is True
@@ -62,6 +99,14 @@ def test_config_endpoints():
     assert r.status_code == 200 and r.json().get("valid") is False
 
     r = c.post("/config/runtime/validate", json=bad_conflicting_authority_mode)
+    assert r.status_code == 200 and r.json().get("valid") is False
+
+    bad_legacy_with_regime_module = {
+        "strategy_family": "legacy",
+        "multi_timeframe": {"regime_intelligence": {"authority_mode": "regime_module"}},
+    }
+
+    r = c.post("/config/runtime/validate", json=bad_legacy_with_regime_module)
     assert r.status_code == 200 and r.json().get("valid") is False
 
     # runtime get
@@ -88,7 +133,7 @@ def test_runtime_validate_uses_config_authority_validate(monkeypatch):
 
     monkeypatch.setattr(api.authority, "validate", _fake_validate)
 
-    payload = {"thresholds": {"entry_conf_overall": 0.61}}
+    payload = {"strategy_family": "legacy", "thresholds": {"entry_conf_overall": 0.61}}
     r = c.post("/config/runtime/validate", json=payload)
 
     assert r.status_code == 200
@@ -105,7 +150,10 @@ def test_runtime_endpoints_do_not_leak_exceptions(monkeypatch):
     c = TestClient(app)
 
     # validate should not echo exception details
-    r = c.post("/config/runtime/validate", json={"ev": {"R_default": "SECRET_SHOULD_NOT_LEAK"}})
+    r = c.post(
+        "/config/runtime/validate",
+        json={"strategy_family": "legacy", "ev": {"R_default": "SECRET_SHOULD_NOT_LEAK"}},
+    )
     assert r.status_code == 200
     assert r.json().get("valid") is False
     assert "SECRET_SHOULD_NOT_LEAK" not in r.text

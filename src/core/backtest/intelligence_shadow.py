@@ -31,6 +31,7 @@ from core.research_orchestrator import (
     DeterministicResearchOrchestrator,
     ResearchTask,
 )
+from core.strategy.family_registry import resolve_strategy_family
 
 _SHADOW_SOURCE = "champion_shadow"
 _SHADOW_TOPIC = "regime_shadow"
@@ -222,13 +223,18 @@ class BacktestIntelligenceShadowRecorder:
             approved_parameter_sets=(approved_parameter_set,),
         )
         service = ResearchLedgerService(LedgerStorage(root=ledger_root))
+        strategy_family = resolve_strategy_family(merged_config)
         orchestrator = DeterministicResearchOrchestrator(
             collector=DeterministicIntelligenceCollector(events=tuple(self.events)),
             normalizer=DeterministicIntelligenceNormalizer(),
             feature_extractor=DeterministicIntelligenceFeatureExtractor(),
             evaluator=DeterministicIntelligenceEvaluator(),
             parameter_analyzer=DeterministicParameterIntelligenceAnalyzer(),
-            ledger_adapter=DeterministicIntelligenceLedgerAdapter(service=service),
+            ledger_adapter=DeterministicIntelligenceLedgerAdapter(
+                service=service,
+                strategy_config=merged_config,
+                strategy_family=strategy_family,
+            ),
         )
         research_result = orchestrator.run(task)
 
@@ -256,6 +262,7 @@ class BacktestIntelligenceShadowRecorder:
                 "effective_config_fingerprint": effective_config_fingerprint,
             },
             "derived_parameter_set": {
+                "strategy_family": strategy_family,
                 "parameter_set_id": approved_parameter_set.parameter_set_id,
                 "parameter_count": len(approved_parameter_set.parameters),
                 "baseline_weight": approved_parameter_set.baseline_weight,

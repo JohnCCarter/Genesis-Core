@@ -1,50 +1,36 @@
 {
   "version": 0,
   "cfg": {
+    "strategy_family": "legacy",
     "thresholds": {
-      "entry_conf_overall": 0.35,
+      "entry_conf_overall": 0.26,
       "regime_proba": {
         "ranging": 0.5,
-        "bull": 0.5,
-        "bear": 0.5,
+        "bull": 0.52,
+        "bear": 0.48,
         "balanced": 0.5
       },
       "signal_adaptation": {
-        "atr_period": 14,
+        "atr_period": 28,
         "zones": {
           "low": {
-            "entry_conf_overall": 0.22,
-            "regime_proba": {
-              "ranging": 0.47,
-              "bull": 0.42,
-              "bear": 0.42,
-              "balanced": 0.46
-            }
+            "entry_conf_overall": 0.24,
+            "regime_proba": 0.36
           },
           "mid": {
-            "entry_conf_overall": 0.26,
-            "regime_proba": {
-              "ranging": 0.5,
-              "bull": 0.46,
-              "bear": 0.46,
-              "balanced": 0.5
-            }
+            "entry_conf_overall": 0.3,
+            "regime_proba": 0.44
           },
           "high": {
-            "entry_conf_overall": 0.3,
-            "regime_proba": {
-              "ranging": 0.55,
-              "bull": 0.5,
-              "bear": 0.5,
-              "balanced": 0.55
-            }
+            "entry_conf_overall": 0.36,
+            "regime_proba": 0.56
           }
         }
       }
     },
     "gates": {
-      "hysteresis_steps": 3,
-      "cooldown_bars": 2
+      "hysteresis_steps": 2,
+      "cooldown_bars": 0
     },
     "risk": {
       "risk_map": [

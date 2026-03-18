@@ -7,6 +7,7 @@ def test_validate_accepts_scalar_regime_proba_in_signal_adaptation_zones() -> No
     """Back-compat: older Optuna configs used scalar regime_proba inside signal_adaptation zones."""
 
     proposal = {
+        "strategy_family": "legacy",
         "thresholds": {
             "entry_conf_overall": 0.3,
             "regime_proba": {"balanced": 0.5},
@@ -18,7 +19,7 @@ def test_validate_accepts_scalar_regime_proba_in_signal_adaptation_zones() -> No
                     "high": {"entry_conf_overall": 0.38, "regime_proba": 0.56, "pct": None},
                 },
             },
-        }
+        },
     }
 
     cfg = ConfigAuthority().validate(proposal)
@@ -30,10 +31,11 @@ def test_validate_accepts_scalar_regime_proba_in_signal_adaptation_zones() -> No
 
 def test_validate_accepts_scalar_top_level_regime_proba() -> None:
     proposal = {
+        "strategy_family": "legacy",
         "thresholds": {
             "entry_conf_overall": 0.3,
             "regime_proba": 0.5,
-        }
+        },
     }
 
     cfg = ConfigAuthority().validate(proposal)
@@ -42,10 +44,11 @@ def test_validate_accepts_scalar_top_level_regime_proba() -> None:
 
 def test_validate_top_level_regime_proba_none_uses_balanced_default() -> None:
     proposal = {
+        "strategy_family": "legacy",
         "thresholds": {
             "entry_conf_overall": 0.3,
             "regime_proba": None,
-        }
+        },
     }
 
     cfg = ConfigAuthority().validate(proposal)
@@ -61,6 +64,7 @@ def test_fib_entry_missing_policy_defaults_to_pass_for_backcompat() -> None:
     """
 
     proposal = {
+        "strategy_family": "legacy",
         "htf_fib": {"entry": {"enabled": True, "tolerance_atr": 1.0}},
         "ltf_fib": {"entry": {"enabled": True, "tolerance_atr": 1.0, "missing_policy": None}},
     }

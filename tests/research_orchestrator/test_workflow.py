@@ -231,7 +231,11 @@ def test_orchestration_persists_validated_events_with_real_adapter(tmp_path: Pat
         feature_extractor=DeterministicIntelligenceFeatureExtractor(),
         evaluator=DeterministicIntelligenceEvaluator(),
         parameter_analyzer=DeterministicParameterIntelligenceAnalyzer(),
-        ledger_adapter=DeterministicIntelligenceLedgerAdapter(service=service),
+        ledger_adapter=DeterministicIntelligenceLedgerAdapter(
+            service=service,
+            strategy_config={"strategy_family": "legacy"},
+            strategy_family="legacy",
+        ),
     )
 
     result = orchestrator.run(_task())

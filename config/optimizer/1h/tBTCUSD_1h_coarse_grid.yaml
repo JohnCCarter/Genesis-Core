@@ -1,3 +1,5 @@
+strategy_family: legacy
+
 meta:
   symbol: tBTCUSD
   timeframe: 1h
@@ -5,7 +7,7 @@ meta:
   warmup_bars: 50
   runs:
     strategy: grid
-    max_trials: 27  # 3 x 3 x 3 combos
+    max_trials: 27 # 3 x 3 x 3 combos
     max_concurrent: 1
     resume: false
   use_sample_range: true

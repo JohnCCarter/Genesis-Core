@@ -516,6 +516,16 @@ def test_evaluate_pipeline_ri_v2_clarity_on_changes_sizing_only_and_logs(
 
     cfg_on = deepcopy(cfg_off)
     cfg_on["multi_timeframe"]["regime_intelligence"]["enabled"] = True
+    cfg_on["multi_timeframe"]["regime_intelligence"]["size_multiplier"] = {
+        "min": 0.5,
+        "max": 0.5,
+    }
+
+    cfg_on_neutral = deepcopy(cfg_on)
+    cfg_on_neutral["multi_timeframe"]["regime_intelligence"]["size_multiplier"] = {
+        "min": 1.0,
+        "max": 1.0,
+    }
 
     result_off, meta_off = ev.evaluate_pipeline(
         small_candle_history,
@@ -532,24 +542,48 @@ def test_evaluate_pipeline_ri_v2_clarity_on_changes_sizing_only_and_logs(
         policy=sample_policy,
         configs=cfg_on,
     )
+    result_on_neutral, meta_on_neutral = ev.evaluate_pipeline(
+        small_candle_history,
+        policy=sample_policy,
+        configs=cfg_on_neutral,
+    )
 
     assert result_off["action"] == result_on_1["action"] == result_on_2["action"] == "LONG"
+    assert result_on_neutral["action"] == result_on_1["action"]
     assert meta_off["decision"]["reasons"] == meta_on_1["decision"]["reasons"]
     assert meta_on_1["decision"]["reasons"] == meta_on_2["decision"]["reasons"]
+    assert meta_on_1["decision"]["reasons"] == meta_on_neutral["decision"]["reasons"]
+    assert (
+        meta_on_1["observability"]["shadow_regime"]
+        == meta_on_neutral["observability"]["shadow_regime"]
+    )
 
     size_off = float(meta_off["decision"]["size"])
     size_on_1 = float(meta_on_1["decision"]["size"])
     size_on_2 = float(meta_on_2["decision"]["size"])
+    size_on_neutral = float(meta_on_neutral["decision"]["size"])
     assert size_on_1 == pytest.approx(size_on_2)
     assert size_on_1 < size_off
+    assert size_on_1 < size_on_neutral
 
     state_off = meta_off["decision"]["state_out"]
     state_on = meta_on_1["decision"]["state_out"]
+    state_on_neutral = meta_on_neutral["decision"]["state_out"]
     assert state_off["ri_clarity_enabled"] is False
     assert state_on["ri_clarity_enabled"] is True
+    assert state_on_neutral["ri_clarity_enabled"] is True
     assert state_on["ri_clarity_apply"] == "sizing_only"
+    assert state_on_neutral["ri_clarity_apply"] == "sizing_only"
     assert state_on["ri_clarity_round_policy"] == "half_even"
+    assert state_on_neutral["ri_clarity_round_policy"] == "half_even"
     assert isinstance(state_on["ri_clarity_score"], int)
     assert 0 <= state_on["ri_clarity_score"] <= 100
+    assert state_on["ri_clarity_score"] == state_on_neutral["ri_clarity_score"]
     assert state_on["size_after_ri_clarity"] == pytest.approx(size_on_1)
     assert state_on["size_before_ri_clarity"] > state_on["size_after_ri_clarity"]
+    assert state_on_neutral["size_after_ri_clarity"] == pytest.approx(size_on_neutral)
+    assert state_on["size_before_ri_clarity"] == pytest.approx(
+        state_on_neutral["size_before_ri_clarity"]
+    )
+    assert state_on["ri_clarity_multiplier"] == pytest.approx(0.5)
+    assert state_on_neutral["ri_clarity_multiplier"] == pytest.approx(1.0)

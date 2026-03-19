@@ -53,14 +53,20 @@ def analyze_parameter_batches_by_family(
     evaluations,
     family_batches: tuple[FamilyParameterBatch, ...],
 ) -> dict[StrategyFamily, ParameterAnalysisResult]:
+    grouped_parameter_sets: dict[StrategyFamily, list[ApprovedParameterSet]] = {}
+    for batch in family_batches:
+        grouped_parameter_sets.setdefault(batch.strategy_family, []).extend(
+            batch.approved_parameter_sets
+        )
+
     return {
-        batch.strategy_family: analyzer.analyze(
+        strategy_family: analyzer.analyze(
             ParameterAnalysisRequest(
                 evaluations=evaluations,
-                approved_parameter_sets=batch.approved_parameter_sets,
+                approved_parameter_sets=tuple(approved_parameter_sets),
             )
         )
-        for batch in family_batches
+        for strategy_family, approved_parameter_sets in grouped_parameter_sets.items()
     }
 
 

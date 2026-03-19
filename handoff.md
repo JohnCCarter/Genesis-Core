@@ -1,129 +1,185 @@
-# HANDOFF — efter merge av strategy-family-slicen
+# HANDOFF — RI/R1 vs legacy role-map kickoff
 
-Senast uppdaterad: 2026-03-18
+Senast uppdaterad: 2026-03-19
 
-> Detta dokument är en operativ handoff för nästa session på hemdatorn. Det är inte en governance authority source och får inte överstyra aktuell repo-status eller högre ordningens styrdokument, inklusive `.github/copilot-instructions.md`, `docs/governance_mode.md`, `docs/OPUS_46_GOVERNANCE.md` och `AGENTS.md`. Verifiera alltid branch, HEAD, remote-status och working tree direkt i den aktuella arbetskopian.
+> Detta dokument är en operativ handoff för nästa agent/session. Det är **inte** en governance authority source och får inte överstyra `.github/copilot-instructions.md`, `docs/governance_mode.md`, `docs/OPUS_46_GOVERNANCE.md` eller `AGENTS.md`. Verifiera alltid live branch, HEAD, remote-status och working tree i aktuell arbetskopia innan arbete fortsätter.
 
-## Kort lägesbild
+## Läs detta först — vad nästa agent måste förstå direkt
 
-- **Aktiv branch nu:** `master`
-- **HEAD vid denna handoff:** `e4a79d2d`
-- **Senaste viktiga merge:** PR **#70** — `refactor(strategy-family): enforce explicit RI family separation`
-- **Feature-branch-status:** `feature/ri-optuna-train-validate-blind-v1` är mergad och borttagen
-- **Det säkra läget att utgå från hemma:** senaste `origin/master`, inte någon gammal feature-branch
+Den viktigaste insikten från den senaste sessionen är **inte** bara att RI är en separat strategy family. Den viktigaste insikten är också att den ursprungliga idén med **R1/RI** verkar ha varit:
 
-## Vad som nu är klart
+- **management/filter-lager**
+- **overlay-lager**
+- **inte en primary entry-driver**
 
-Strategy-family-slicen är färdig, mergad och landad på `master`.
+Under implementationen gled arbetet sannolikt bort från den idén utan att det upptäcktes direkt. Det upptäcktes först i efteranalys/brainstorming.
 
-Det som ingår i den mergade slicen:
+### Kritisk arbetsfråga framåt
 
-- kanonisk strategy-family registry i `src/core/strategy/family_registry.py`
-- explicit och obligatorisk `strategy_family` på aktiva runtime/champion/optimizer-ytor
-- fail-closed validering för legacy/RI-mismatch
-- family-aware ledger-tagging
-- family-aware shadow-summary
-- additive family wrappers i research orchestrator
-- uppdaterade tester, governance-packet och förklarande docs
+Nästa agent ska därför **inte** börja med mer bred parameteroptimering.
 
-## Viktig slutpoäng från slicen
+Nästa agent ska först fråga:
 
-Regime Intelligence behandlas nu som **egen strategy family**, inte som overlay på legacy.
+> **Vilka delar i RI/R1 är egentligen tänkta att vara context/filter/management — och vilka delar har i praktiken börjat bete sig som entry-motor?**
 
-Det betyder att systemet nu hard-failar för bland annat:
+Detta är sannolikt nyckeln till nästa edge.
 
-- `legacy` + `authority_mode=regime_module`
-- `ri` utan exakt RI-kluster (`authority_mode=regime_module`, kanonisk ATR/gates och kanoniska threshold-värden)
-- `legacy` med RI-signaturmarkörer i runtime-surface
+## Live repo-status vid denna handoff
 
-Dessutom är runtime-seed normaliserad tillbaka till riktig legacy-signatur där det behövs.
+- **Aktiv branch vid handoff:** `feature/ri-legacy-role-map-2026-03-19`
+- **HEAD vid handoff:** `8d5d7d80`
+- **Senast pushad commit på master före brancharbete:** `8d5d7d80` — `docs(ri): align strategy-family architecture terminology`
+- **Remote-status som observerades:** `origin/master` pekade på samma commit när branchen skapades
 
-## Verifiering som passerade innan merge
+## Vad som blev klart precis innan denna handoff
 
-Följande verifieringar är gröna för den mergade slicen:
+### 1. Strategy-family-separationen är redan landad
 
-### Fokuserade selectors
+Följande är redan infört och ska **inte** återdebatteras som om det vore öppet:
 
-- `tests/core/strategy/test_families.py`
-- `tests/governance/test_config_ssot.py`
-- `tests/integration/test_config_endpoints.py`
-- `tests/integration/test_config_api_e2e.py`
+- `strategy_family` är kanoniskt `legacy | ri`
+- hybrida ytor fail-closed i stället för att accepteras som tredje family label
+- RI behandlas som separat strategy family, inte som legacy-overlay i canonical modellen
 
-### Repo-hooks
+### 2. Repo-guidance har just alignats semantiskt
 
-- `pre-commit run --all-files` ✅
+En docs-slice landades för att städa aktiv guidance så att den matchar nuvarande architecture truth:
 
-### Strikta guardrails
+- `docs/features/feature-regime-intelligence-strategy-family-1.md`
+- `docs/governance/regime_intelligence_strategy_family_integration_stub_2026-03-18.md`
+- `docs/analysis/regime_intelligence_champion_compatibility_findings_2026-03-18.md`
+- `docs/audit/refactor/regime_intelligence/command_packet_regime_intelligence_repo_wide_architecture_alignment_2026-03-19.md`
 
-- `tests/governance/test_authority_mode_resolver.py` ✅
-- `tests/backtest/test_backtest_determinism_smoke.py` ✅
-- `tests/utils/test_features_asof_cache_key_deterministic.py` ✅
-- `tests/governance/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable` ✅
+Den slicen verifierades med riktade STRICT-sentinels och pushades till `master` innan denna nya branch skapades.
 
-### Governance
+## Det viktigaste resonemanget att bevara
 
-- Opus post-diff re-audit: **APPROVED**
+### Kärntes
 
-## Viktiga filer att känna till hemma
+Edge ser just nu mer sannolikt ut att komma från:
 
-### Kärnimplementation
+- **regime-aware permissioning**
+- **continuation bias**
+- **no-trade state detection**
+- **management / exit intelligence**
+
+…än från bredare parameteroptimering av nuvarande RI-baseline.
+
+### Arbetsantagande
+
+Det är möjligt att RI/R1 har blivit för entry-drivande under implementationen och därmed tappat sin avsedda roll som filter/management-lager.
+
+### Viktig konsekvens
+
+Nästa steg bör därför vara **rollkartläggning**, inte ny Optuna-jakt.
+
+## Hypoteser som nästa agent ska bära vidare
+
+1. **Edge ligger troligen i permissioning, inte i ny entry-logik.**
+2. **RI tappade sin design när den började påverka entryytan för mycket.**
+3. **Continuation-aware filtering är mer lovande än allmän regime-entry.**
+4. **Exit/management kan ge större edge än ytterligare entry-tuning.**
+5. **No-trade state detection kan vara mer värdefull än ökad signalaggressivitet.**
+
+## Rekommenderad nästa uppgift — bygg en rollkarta
+
+Nästa agent bör ta fram en **rollkarta för RI/R1 och legacy**.
+
+### Syftet med rollkartan
+
+Att svara på:
+
+- vad ansvarar **legacy** för?
+- vad borde **RI/R1** ansvara för?
+- vilka intelligence-moduler hör hemma i **context/filter/management**?
+- vilka delar har glidit över till att bli **entry-drivare**?
+
+### Rekommenderade ansvarshinkar
+
+Nästa agent bör gruppera allt i åtminstone dessa fyra kategorier:
+
+1. **Context / regime**
+   - marknadsläge, struktur, volatilitet, persistence, state
+2. **Permission / filtering**
+   - trade allowed / not allowed, veto, cooldown, hysteresis, confidence gating
+3. **Management**
+   - sizing, exits, partials, hold, aggressivitetsjustering
+4. **Entry-driving logic**
+   - allt som i praktiken skapar eller kraftigt flyttar entry-beteendet
+
+### Kritisk designregel
+
+RI/R1 bör huvudsakligen leva i:
+
+- **Permission / filtering**
+- **Management**
+
+…och endast mycket försiktigt i **Entry-driving logic**.
+
+## Konkreta frågor nästa agent bör driva
+
+1. **Vilka indikatorer används faktiskt i legacy vs RI/R1?**
+2. **Vilka parametrar finns per modul och vilken roll spelar de egentligen?**
+3. **Vilka moduler har testats isolerat, och vilka har bara testats i kluster?**
+4. **Vilka moduler är orthogonala, och vilka är bara redundans/komplexitet?**
+5. **Vilka delar bör behållas, förenklas, flyttas eller stängas av?**
+
+## Viktigt: börja inte härifrån på fel sätt
+
+Nästa agent ska **inte** börja med att:
+
+- köra ny bred Optuna-kampanj
+- öka/minska parametrar blint
+- anta att “mer RI” automatiskt är bättre
+- behandla alla intelligence-moduler som lika viktiga
+- låta overlay-/filter-lagret fortsätta mutera till dold entrymotor
+
+## Bättre arbetsordning
+
+1. **Inventory**
+   - lista alla intelligence-moduler + indikatorer + centrala parametrar
+2. **Intent audit**
+   - var modulen tänkt som filter/management eller beter den sig som entry-driver?
+3. **Ablation plan**
+   - modul av/på, modul som filter-only, modul som management-only, kombinationspar
+4. **Parameter policy först efteråt**
+   - diskutera först därefter om något ska upp, ner, frysas eller tas bort
+
+## Filer nästa agent sannolikt bör läsa tidigt
+
+### För arkitektur / definitioner
 
 - `src/core/strategy/family_registry.py`
 - `src/core/strategy/families.py`
-- `src/core/config/schema.py`
-- `src/core/config/authority.py`
-- `scripts/validate/validate_optimizer_config.py`
-- `src/core/research_ledger/service.py`
-- `src/core/intelligence/ledger_adapter/processing.py`
-- `src/core/research_orchestrator/families.py`
-- `src/core/research_orchestrator/__init__.py`
 - `src/core/backtest/intelligence_shadow.py`
+- `scripts/validate/validate_optimizer_config.py`
 
-### Viktiga testytor
+### För styrande/förklarande kontext
+
+- `docs/features/feature-regime-intelligence-strategy-family-1.md`
+- `docs/governance/regime_intelligence_strategy_family_integration_stub_2026-03-18.md`
+- `docs/analysis/regime_intelligence_champion_compatibility_findings_2026-03-18.md`
+- `docs/analysis/tBTCUSD_3h_candidate_recommendation_2026-03-18.md`
+
+### För test-/guardrail-surface
 
 - `tests/core/strategy/test_families.py`
 - `tests/utils/test_validate_optimizer_config.py`
-- `tests/core/research_ledger/test_service.py`
-- `tests/integration/test_config_endpoints.py`
-- `tests/integration/test_config_api_e2e.py`
-- `tests/governance/test_config_ssot.py`
-- `tests/research_orchestrator/test_family_wrappers.py`
-- `tests/backtest/test_run_backtest_intelligence_shadow.py`
+- `tests/governance/test_pipeline_fast_hash_guard.py`
+- `tests/governance/test_regime_intelligence_cutover_parity.py`
 
-### Styrande / förklarande docs
+## Om nästa agent ska skriva något först
 
-- `docs/audit/refactor/regime_intelligence/command_packet_strategy_family_system_separation_2026-03-18.md`
-- `docs/features/feature-regime-intelligence-strategy-family-1.md`
-- `docs/governance/regime_intelligence_strategy_family_integration_stub_2026-03-18.md`
+Det bästa första artefaktförslaget är **inte kod** utan en tydlig arbetsmatris, till exempel:
 
-## Exakt startläge på hemdatorn
+- modul / indikator
+- tänkt roll
+- faktisk observerad roll
+- påverkar entry?
+- påverkar filtering?
+- påverkar management?
+- misstanke (behåll / förenkla / flytta / avaktivera)
 
-På hemdatorn ska nästa session börja så här:
+## Enradig sammanfattning
 
-1. hämta senaste remote
-2. checka ut `master`
-3. pulla senaste `origin/master`
-4. verifiera att HEAD är `e4a79d2d` eller senare
-5. säkerställ ren working tree
-6. skapa ny branch först när nästa uppgift är tydlig
-
-## Det du inte behöver göra igen
-
-- återöppna `feature/ri-optuna-train-validate-blind-v1`
-- återskapa strategy-family-slicen
-- återinföra legacy/RI-overlay-tolkning
-- lägga till mjuka warnings där family-mismatch nu hard-failar
-
-## Rekommenderat nästa steg hemma
-
-Utgå från att strategy-family-separationen redan är mergad.
-
-Nästa arbete bör därför ske **ovanpå `master`**, till exempel:
-
-- uppföljande RI-challenger-analys
-- fortsatt optimizer-/campaign-arbete
-- eller nästa governance-godkända runtime-/research-slice
-
-## Enradig beslutslogg
-
-Strategy-family-slicen är nu mergad till `master`, feature-branchen är borttagen, och nästa säkra startpunkt på hemdatorn är därför senaste `origin/master`.
+RI är redan separerad från legacy i canonical modellen, men nästa stora arbete är att återföra RI/R1 till sin sannolika ursprungsroll som **management/filter-lager** genom att först bygga en tydlig **rollkarta för RI/R1 vs legacy** innan mer optimering sker.

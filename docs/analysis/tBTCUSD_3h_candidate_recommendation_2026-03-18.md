@@ -11,7 +11,8 @@ We do **not** yet have evidence to replace the current `tBTCUSD_3h` champion.
 What we do have is:
 
 - an incumbent champion that still wins the direct validation replay on score
-- a coherent RI candidate family that trades and passes validation constraints
+- a coherent RI challenger track that now peaks at the slice-4 validation plateau `0.22516209452403432`
+- a completed slice-5 follow-up that failed to beat that slice-4 plateau and is therefore not promotable
 - strong evidence that the RI family should be developed as a separate strategy family, not as a thin overlay on the current champion
 
 ## Current leaderboard
@@ -80,7 +81,7 @@ If the question is **"what is the best current champion candidate?"**, the answe
 
 If the question is **"what is the best next challenger family?"**, the answer is:
 
-- **the RI family represented by `trial_001/002/005` (same family as `trial_025`)**
+- **the RI challenger line carried forward through the current slice-4 baseline**
 
 ## Promotion stance
 
@@ -99,7 +100,7 @@ Yes.
 
 Recommended challenger baseline:
 
-- freeze the `trial_001/002/005` family as the RI challenger baseline for the next governed search slice
+- freeze the current slice-4 RI challenger winner/plateau baseline and treat slice-5 as negative evidence rather than as a promotion candidate
 
 ## Recommended next step
 
@@ -112,7 +113,13 @@ Continue on **two clearly separated tracks**:
 
 ### Track B — RI challenger family
 
-Use the `trial_001/002/005` family as the baseline for the next RI-focused search.
+Use the current slice-4 RI challenger baseline as the active RI reference point.
+
+Most recent governed follow-up:
+
+- slice-4 raised the RI plateau to `0.22516209452403432`
+- slice-5 completed but did **not** break that plateau
+- result: slice-4 remains the current RI challenger winner; slice-5 does not justify promotion or blind-2025 escalation
 
 Suggested baseline traits for that family:
 
@@ -135,7 +142,7 @@ The next RI slice should try to produce a challenger that can beat the incumbent
 ## Recommended decision rule going forward
 
 - **Incumbent champion:** current `tBTCUSD_3h` champion
-- **Lead challenger family:** RI `trial_001/002/005`
+- **Lead challenger family:** current slice-4 RI challenger baseline
 - **Promotion status:** not ready
 - **Research status:** continue
 

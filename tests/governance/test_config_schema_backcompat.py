@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
+import pytest
+
+import core.config.authority as authority_module
 from core.config.authority import ConfigAuthority
 
 
@@ -78,3 +84,149 @@ def test_fib_entry_missing_policy_defaults_to_pass_for_backcompat() -> None:
     assert cfg.ltf_fib is not None
     assert cfg.ltf_fib.entry is not None
     assert cfg.ltf_fib.entry.missing_policy == "pass"
+
+
+def test_load_injects_legacy_strategy_family_for_persisted_snapshot_backcompat(
+    tmp_path: Path,
+) -> None:
+    runtime_path = tmp_path / "runtime.json"
+    runtime_path.write_text(
+        json.dumps(
+            {
+                "version": 7,
+                "cfg": {
+                    "thresholds": {
+                        "entry_conf_overall": 0.26,
+                        "regime_proba": {"balanced": 0.5},
+                        "signal_adaptation": {
+                            "atr_period": 28,
+                            "zones": {
+                                "low": {"entry_conf_overall": 0.24, "regime_proba": 0.36},
+                                "mid": {"entry_conf_overall": 0.30, "regime_proba": 0.44},
+                                "high": {"entry_conf_overall": 0.36, "regime_proba": 0.56},
+                            },
+                        },
+                    },
+                    "gates": {"hysteresis_steps": 2, "cooldown_bars": 0},
+                    "multi_timeframe": {"regime_intelligence": {"authority_mode": "legacy"}},
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    snapshot = ConfigAuthority(path=runtime_path).load()
+
+    assert snapshot.version == 7
+    assert snapshot.cfg.strategy_family == "legacy"
+
+
+def test_load_rejects_missing_strategy_family_for_non_legacy_snapshot_backcompat(
+    tmp_path: Path,
+) -> None:
+    runtime_path = tmp_path / "runtime.json"
+    runtime_path.write_text(
+        json.dumps(
+            {
+                "version": 9,
+                "cfg": {
+                    "thresholds": {
+                        "entry_conf_overall": 0.25,
+                        "regime_proba": {"balanced": 0.36},
+                        "signal_adaptation": {
+                            "atr_period": 14,
+                            "zones": {
+                                "low": {"entry_conf_overall": 0.16, "regime_proba": 0.33},
+                                "mid": {"entry_conf_overall": 0.40, "regime_proba": 0.51},
+                                "high": {"entry_conf_overall": 0.32, "regime_proba": 0.57},
+                            },
+                        },
+                    },
+                    "gates": {"hysteresis_steps": 3, "cooldown_bars": 2},
+                    "multi_timeframe": {"regime_intelligence": {"authority_mode": "regime_module"}},
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        ValueError, match="missing_strategy_family_backcompat_requires_legacy_signature"
+    ):
+        ConfigAuthority(path=runtime_path).load()
+
+
+def test_load_uses_seed_backcompat_for_missing_legacy_strategy_family(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    runtime_path = tmp_path / "runtime.json"
+    seed_path = tmp_path / "runtime.seed.json"
+    seed_path.write_text(
+        json.dumps(
+            {
+                "version": 3,
+                "cfg": {
+                    "thresholds": {
+                        "entry_conf_overall": 0.26,
+                        "regime_proba": {"balanced": 0.5},
+                        "signal_adaptation": {
+                            "atr_period": 28,
+                            "zones": {
+                                "low": {"entry_conf_overall": 0.24, "regime_proba": 0.36},
+                                "mid": {"entry_conf_overall": 0.30, "regime_proba": 0.44},
+                                "high": {"entry_conf_overall": 0.36, "regime_proba": 0.56},
+                            },
+                        },
+                    },
+                    "gates": {"hysteresis_steps": 2, "cooldown_bars": 0},
+                    "multi_timeframe": {"regime_intelligence": {"authority_mode": "legacy"}},
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(authority_module, "SEED_PATH", seed_path)
+
+    snapshot = ConfigAuthority(path=runtime_path).load()
+
+    assert snapshot.version == 3
+    assert snapshot.cfg.strategy_family == "legacy"
+
+
+def test_load_rejects_seed_backcompat_for_non_legacy_missing_strategy_family(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    runtime_path = tmp_path / "runtime.json"
+    seed_path = tmp_path / "runtime.seed.json"
+    seed_path.write_text(
+        json.dumps(
+            {
+                "version": 4,
+                "cfg": {
+                    "thresholds": {
+                        "entry_conf_overall": 0.25,
+                        "regime_proba": {"balanced": 0.36},
+                        "signal_adaptation": {
+                            "atr_period": 14,
+                            "zones": {
+                                "low": {"entry_conf_overall": 0.16, "regime_proba": 0.33},
+                                "mid": {"entry_conf_overall": 0.40, "regime_proba": 0.51},
+                                "high": {"entry_conf_overall": 0.32, "regime_proba": 0.57},
+                            },
+                        },
+                    },
+                    "gates": {"hysteresis_steps": 3, "cooldown_bars": 2},
+                    "multi_timeframe": {"regime_intelligence": {"authority_mode": "regime_module"}},
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(authority_module, "SEED_PATH", seed_path)
+
+    with pytest.raises(
+        ValueError, match="missing_strategy_family_backcompat_requires_legacy_signature"
+    ):
+        ConfigAuthority(path=runtime_path).load()

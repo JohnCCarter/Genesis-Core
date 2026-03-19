@@ -23,6 +23,8 @@ from core.research_ledger.storage import LedgerStorage
 from core.research_ledger.validators import LedgerValidationError, validate_record
 from core.strategy.family_registry import (
     STRATEGY_FAMILY_SOURCE,
+    StrategyFamilyValidationError,
+    classify_strategy_family,
     resolve_strategy_family,
     validate_strategy_family_name,
 )
@@ -82,11 +84,19 @@ class ResearchLedgerService:
         strategy_family: str | None = None,
         strategy_family_source: str = STRATEGY_FAMILY_SOURCE,
     ) -> LedgerRecordT:
-        resolved_family = (
-            validate_strategy_family_name(strategy_family)
-            if strategy_family is not None
-            else resolve_strategy_family(dict(config or {}))
+        explicit_family = (
+            validate_strategy_family_name(strategy_family) if strategy_family is not None else None
         )
+        if explicit_family is not None and config is not None:
+            config_family = (
+                validate_strategy_family_name(config.get("strategy_family"))
+                if config.get("strategy_family") is not None
+                else classify_strategy_family(dict(config or {}))
+            )
+            if config_family != explicit_family:
+                raise StrategyFamilyValidationError("strategy_family_config_mismatch")
+
+        resolved_family = explicit_family or resolve_strategy_family(dict(config or {}))
         tagged_metadata = dict(record.metadata)
         tagged_metadata["strategy_family"] = resolved_family
         tagged_metadata["strategy_family_source"] = strategy_family_source

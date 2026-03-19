@@ -3,6 +3,8 @@ from __future__ import annotations
 from copy import deepcopy
 from pathlib import Path
 
+import pytest
+
 from core.intelligence.events import (
     IntelligenceEvent,
     IntelligenceReference,
@@ -136,3 +138,13 @@ def test_repeated_runs_on_fresh_storage_produce_identical_persistence_mapping(
 
     assert first_result == second_result
     assert first_records == second_records
+
+
+def test_persist_events_fails_fast_without_strategy_family_context(tmp_path: Path) -> None:
+    service = _service(tmp_path)
+    adapter = DeterministicIntelligenceLedgerAdapter(service=service)
+
+    with pytest.raises(ValueError, match="strategy_family_context_required"):
+        adapter.persist_events(LedgerPersistenceRequest(events=(_validated_event(1),)))
+
+    assert service.storage.list_records(LedgerEntityType.ARTIFACT) == []

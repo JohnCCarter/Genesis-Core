@@ -10,6 +10,8 @@ Yes — this finding should be documented.
 
 The evidence shows that the currently active `tBTCUSD_3h` champion is **not RI-compatible as a simple overlay**. When the full champion surface is replayed on the 2024-07-01..2024-12-31 validation window, it trades and scores positively. When only RI authority is overlaid onto that same complete champion surface, trading collapses to zero. In contrast, the previously observed RI-positive path comes from a different runtime-shaped surface, not from the active champion.
 
+Terminology note: the overlay/migration wording in this analysis is preserved as historical evidence about a rejected compatibility probe. It does **not** redefine the current canonical family model, where `strategy_family` is `legacy` or `ri` and hybrid surfaces fail closed rather than being stored as a third family label.
+
 Working conclusion: this is better treated as a **strategy-topology finding** than as a small additive tuning note.
 
 ## Evidence chain

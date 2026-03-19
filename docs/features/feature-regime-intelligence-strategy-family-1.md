@@ -216,31 +216,31 @@ The deterministic procedure should be interpreted as follows:
 1. Extract the effective config surface after all config merging.
 2. Derive `authority_mode`, `atr_period`, gating tuple, and threshold shape signature.
 3. Apply family rules in this order:
-   - if the RI authority identity is present **and** the config matches the RI compatibility cluster, classify as `ri_family`
-   - else if the config matches the legacy signature and does not present the RI compatibility cluster, classify as `legacy_family`
-   - else classify as `invalid_hybrid_overlay`
-4. Never silently coerce an `invalid_hybrid_overlay` result into `legacy_family` or `ri_family`.
+   - if the RI authority identity is present **and** the config matches the RI compatibility cluster, classify as `ri`
+   - else if the config matches the legacy signature and does not present the RI compatibility cluster, classify as `legacy`
+   - else fail closed on the rejected hybrid surface (historical analysis artifacts may describe this diagnostic shape as `invalid_hybrid_overlay`)
+4. Never silently coerce a rejected hybrid surface into `legacy` or `ri`.
 
 Pseudo-logic:
 
-- `ri_family` if:
+- `ri` if:
   - `enabled = true`
   - `version = "v2"`
   - `authority_mode = "regime_module"`
   - `atr_period = 14`
   - gates are `3/2`
   - threshold surface matches the RI-family anchor pattern
-- `legacy_family` if:
+- `legacy` if:
   - RI authority identity is absent
   - `atr_period = 28`
   - gates are `2/0`
   - threshold surface matches the incumbent champion pattern
 - otherwise:
-  - `invalid_hybrid_overlay`
+  - reject/fail closed (historically documented as `invalid_hybrid_overlay` in some analysis artifacts)
 
-### 5.1 Classify as `legacy_family`
+### 5.1 Classify as `legacy`
 
-A surface should be classified as `legacy_family` when it preserves the incumbent champion decision topology and is evaluated as the control baseline or as a legacy-style challenger.
+A surface should be classified as `legacy` when it preserves the incumbent champion decision topology and is evaluated as the control baseline or as a legacy-style challenger.
 
 Typical signs include:
 
@@ -250,9 +250,9 @@ Typical signs include:
 - incumbent Fib/override surface
 - no RI authority path, or no evidence-backed RI compatibility cluster
 
-### 5.2 Classify as `ri_family`
+### 5.2 Classify as `ri`
 
-A surface should be classified as `ri_family` only when all of the following are true:
+A surface should be classified as `ri` only when all of the following are true:
 
 1. RI authority identity is present:
    - `enabled = true`
@@ -265,9 +265,9 @@ A surface should be classified as `ri_family` only when all of the following are
 3. The candidate is evaluated as a full challenger surface, not as a partial overlay on the incumbent champion
 4. The candidate is judged on governed train/validate/blind rules against the incumbent control
 
-### 5.3 Classify as `invalid_hybrid_overlay`
+### 5.3 Reject hybrid surfaces (historical diagnostic label: `invalid_hybrid_overlay`)
 
-A surface should be classified as `invalid_hybrid_overlay` when it combines RI authority or RI subcomponents with the incumbent champion surface but does not adopt the minimum RI baseline.
+A surface should be rejected fail-closed when it combines RI authority or RI subcomponents with the incumbent champion surface but does not adopt the minimum RI baseline. Earlier analysis artifacts may refer to this rejected diagnostic shape as `invalid_hybrid_overlay`, but that is not a third accepted canonical `strategy_family` label.
 
 Typical signs include:
 
@@ -295,9 +295,9 @@ Recommended framing:
 
 Campaigns should be named and grouped by family before ranking by score. At minimum:
 
-- incumbent/legacy control runs remain labeled as `legacy_family`
-- RI challenger runs remain labeled as `ri_family`
-- compatibility probes remain labeled as `invalid_hybrid_overlay`
+- incumbent/legacy control runs remain labeled as `legacy`
+- RI challenger runs remain labeled as `ri`
+- compatibility probes remain rejected hybrid diagnostics rather than stored third-family labels
 
 This prevents an overlay probe from being misread as a promotable RI candidate.
 
@@ -319,8 +319,8 @@ Design note:
 
 Minimum metadata convention:
 
-- `metadata.strategy_family = "legacy_family" | "ri_family" | "invalid_hybrid_overlay"`
-- `metadata.strategy_family_source = "deterministic_classifier_v1"`
+- `metadata.strategy_family = "legacy" | "ri"`
+- `metadata.strategy_family_source = "family_registry_v1"`
 
 This satisfies the requirement that the ledger stores `strategy_family` while preserving the existing ledger schema and record dataclasses.
 
@@ -418,11 +418,11 @@ If RI is ever promoted, that promotion should mean:
 Promotion logic must follow these rules:
 
 1. **Within-family comparison is mandatory by default**
-   - choose the family representative inside `legacy_family` or `ri_family` first
+   - choose the family representative inside `legacy` or `ri` first
 2. **Cross-family competition must be explicit**
    - incumbent-vs-RI comparison is a deliberate governed step, not an implicit side effect of optimizer ranking
 3. **Silent overlay comparison is forbidden**
-   - an `invalid_hybrid_overlay` result must not be treated as proof that one family beat another
+   - a rejected hybrid probe (historically described as `invalid_hybrid_overlay`) must not be treated as proof that one family beat another
 4. **Promotion target must preserve family identity**
    - if an RI candidate wins, it is promoted as an RI-family champion candidate, not as a retroactively relabeled legacy champion
 
@@ -473,7 +473,7 @@ Until contrary evidence exists, the default stance is:
 
 - **RISK-001**: Future evidence may refine the minimum RI compatibility cluster. Mitigation: keep this artifact versioned and update only through new governed evidence.
 - **RISK-002**: Readers may confuse family classification with promotion readiness. Mitigation: keep the incumbent-control and no-promotion stance explicit in every related summary.
-- **RISK-003**: Hybrid overlay diagnostics may be over-interpreted as deployable candidates. Mitigation: classify them explicitly as `invalid_hybrid_overlay`.
+- **RISK-003**: Hybrid overlay diagnostics may be over-interpreted as deployable candidates. Mitigation: keep them explicitly documented as rejected hybrid probes rather than as canonical family labels.
 - **ASSUMPTION-001**: The incumbent control evidence and the slice-1/2/3 RI challenger evidence remain the current best basis for family classification.
 - **ASSUMPTION-002**: `authority_mode = regime_module` remains necessary but not sufficient for valid RI-family classification.
 

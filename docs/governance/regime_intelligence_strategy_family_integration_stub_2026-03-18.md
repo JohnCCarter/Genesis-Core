@@ -102,7 +102,7 @@ For the införd implementation, the corresponding canonical values are:
 
 - `metadata.strategy_family = "legacy" | "ri"`
 - `metadata.strategy_family_source = "family_registry_v1"`
-- no third accepted family label is stored for hybrids; invalid hybrid surfaces fail closed
+- no third accepted family label is stored for hybrids; invalid hybrid surfaces fail closed and remain, at most, historical/rejected-path diagnostics
 
 ### 1.2 Record-placement map
 
@@ -171,7 +171,7 @@ This should be emitted into metadata or a sidecar artifact, not as a new require
 
 ### 2.3 Failure mode
 
-If the config cannot be classified cleanly as `legacy_family` or `ri_family`, the historical **föreslagen** fallback in this stub was:
+If the config cannot be classified cleanly as the historical **föreslagen** labels `legacy_family` or `ri_family`, the fallback in this older stub was:
 
 - `invalid_hybrid_overlay`
 
@@ -257,7 +257,7 @@ Suggested sections:
 
 - `intra_family_rankings`
 - `cross_family_representatives`
-- `invalid_hybrid_overlays`
+- `rejected_hybrid_probes`
 - `promotion_ready_candidates`
 
 This artifact is **föreslagen**, not currently införd.
@@ -270,7 +270,7 @@ The **föreslagen** promotion order is:
 
 1. choose best candidate inside each family
 2. run explicit cross-family competition between family representatives
-3. reject any `invalid_hybrid_overlay` from promotion consideration
+3. reject any rejected hybrid probe (historically `invalid_hybrid_overlay`) from promotion consideration
 4. promote only if the winning representative clears the governed evidence chain
 
 ### 5.2 Promotion record handling
@@ -306,7 +306,7 @@ Stop immediately if a future implementation proposal tries to:
 
 - add required dataclass fields to ledger/orchestrator/parameter-intelligence contracts without separate approval
 - infer family from score alone
-- treat `invalid_hybrid_overlay` as promotable
+- treat a rejected hybrid probe (`invalid_hybrid_overlay` in historical docs) as promotable
 - change runtime regime behavior in the same slice
 - merge legacy and RI families conceptually without new evidence
 

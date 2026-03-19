@@ -139,6 +139,26 @@ def _spec_requires_exact_value(spec: dict[str, Any] | None, expected: Any) -> bo
     return False
 
 
+def _has_optimizer_ri_signature_markers(params_spec: dict[str, Any]) -> bool:
+    ri_rule = FAMILY_REGISTRY[STRATEGY_FAMILY_RI]
+    atr_marker = _spec_requires_exact_value(
+        _get_param_spec(params_spec, "thresholds.signal_adaptation.atr_period"),
+        ri_rule.required_atr_period,
+    )
+    gates_marker = _spec_requires_exact_value(
+        _get_param_spec(params_spec, "gates.hysteresis_steps"),
+        ri_rule.required_gates[0],
+    ) and _spec_requires_exact_value(
+        _get_param_spec(params_spec, "gates.cooldown_bars"),
+        ri_rule.required_gates[1],
+    )
+    threshold_cluster_marker = all(
+        _spec_requires_exact_value(_get_param_spec(params_spec, path), expected)
+        for path, expected in ri_rule.threshold_cluster.items()
+    )
+    return atr_marker or gates_marker or threshold_cluster_marker
+
+
 def validate_optimizer_strategy_family(opt_cfg: dict[str, Any]) -> tuple[list[str], list[str]]:
     errors: list[str] = []
     warnings: list[str] = []
@@ -154,6 +174,10 @@ def validate_optimizer_strategy_family(opt_cfg: dict[str, Any]) -> tuple[list[st
         return errors, warnings
 
     params_spec = opt_cfg.get("parameters", {})
+    if not isinstance(params_spec, dict):
+        errors.append("[ERROR] parameters måste vara en dict/mapping i optimizer-konfig")
+        return errors, warnings
+
     authority_spec = _get_param_spec(
         params_spec, "multi_timeframe.regime_intelligence.authority_mode"
     )
@@ -182,10 +206,16 @@ def validate_optimizer_strategy_family(opt_cfg: dict[str, Any]) -> tuple[list[st
             for path, expected in ri_rule.threshold_cluster.items()
         )
     )
+    ri_signature_markers_present = _has_optimizer_ri_signature_markers(params_spec)
 
     if declared == STRATEGY_FAMILY_LEGACY and authority_is_regime_module:
         errors.append(
             "[ERROR] strategy_family=legacy är ogiltigt när authority_mode kan bli regime_module"
+        )
+
+    if declared == STRATEGY_FAMILY_LEGACY and ri_signature_markers_present:
+        errors.append(
+            "[ERROR] strategy_family=legacy är ogiltigt med RI-signaturmarkörer i optimizer-konfig"
         )
 
     if declared == STRATEGY_FAMILY_RI and not ri_cluster_matches:

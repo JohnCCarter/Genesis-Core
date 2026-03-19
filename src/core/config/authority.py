@@ -11,6 +11,11 @@ from pydantic import ValidationError
 
 from core.config.authority_mode_resolver import canonicalize_authority_mode_alias_strict
 from core.config.schema import RuntimeConfig, RuntimeSnapshot
+from core.strategy.family_registry import (
+    STRATEGY_FAMILY_LEGACY,
+    StrategyFamilyValidationError,
+    classify_strategy_family,
+)
 from core.utils.dict_merge import deep_merge_dicts
 from core.utils.logging_redaction import get_logger
 
@@ -53,6 +58,20 @@ def _canonicalize_authority_mode_alias(patch: dict[str, Any]) -> dict[str, Any]:
     return canonicalize_authority_mode_alias_strict(patch)
 
 
+def _normalize_loaded_runtime_cfg(cfg: dict[str, Any]) -> dict[str, Any]:
+    normalized = dict(cfg or {})
+    if normalized.get("strategy_family") is not None:
+        return normalized
+    try:
+        inferred_family = classify_strategy_family(normalized)
+    except StrategyFamilyValidationError as exc:
+        raise ValueError("missing_strategy_family_backcompat_requires_legacy_signature") from exc
+    if inferred_family != STRATEGY_FAMILY_LEGACY:
+        raise ValueError("missing_strategy_family_backcompat_requires_legacy_signature")
+    normalized["strategy_family"] = STRATEGY_FAMILY_LEGACY
+    return normalized
+
+
 class ConfigAuthority:
     def __init__(self, path: Path | None = None) -> None:
         self.path = path or RUNTIME_PATH
@@ -66,9 +85,13 @@ class ConfigAuthority:
                 try:
                     data = json.loads(SEED_PATH.read_text(encoding="utf-8"))
                     v = int(data.get("version") or 0)
-                    cfg_raw = data.get("cfg") or {}
+                    cfg_raw = _normalize_loaded_runtime_cfg(data.get("cfg") or {})
                     _ = RuntimeConfig(**cfg_raw)  # validera
                     return v, cfg_raw
+                except ValueError as e:
+                    if str(e) == "missing_strategy_family_backcompat_requires_legacy_signature":
+                        raise
+                    _LOGGER.debug("seed_read_error: %s", e)
                 except Exception as e:
                     _LOGGER.debug("seed_read_error: %s", e)
             cfg = RuntimeConfig(strategy_family="legacy").model_dump_canonical()
@@ -87,6 +110,7 @@ class ConfigAuthority:
 
     def load(self) -> RuntimeSnapshot:
         version, cfg_raw = self._read()
+        cfg_raw = _normalize_loaded_runtime_cfg(cfg_raw)
         cfg = RuntimeConfig(**cfg_raw)
         cfg_canon = cfg.model_dump_canonical()
         h = self._hash_cfg(cfg_canon)

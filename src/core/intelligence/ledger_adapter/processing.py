@@ -17,7 +17,12 @@ from core.research_ledger import (
     LedgerEntityType,
     ResearchLedgerService,
 )
-from core.strategy.family_registry import STRATEGY_FAMILY_SOURCE, StrategyFamily
+from core.strategy.family_registry import (
+    STRATEGY_FAMILY_SOURCE,
+    StrategyFamily,
+    StrategyFamilyValidationError,
+    resolve_strategy_family,
+)
 
 _PATH_ROOT = "intelligence"
 _PATH_SEGMENT_PATTERN = re.compile(r"[^A-Za-z0-9._-]+")
@@ -89,6 +94,13 @@ class DeterministicIntelligenceLedgerAdapter(IntelligenceLedgerAdapter):
     strategy_family_source: str = STRATEGY_FAMILY_SOURCE
 
     def persist_events(self, request: LedgerPersistenceRequest) -> LedgerPersistenceResult:
+        resolved_strategy_family = self.strategy_family
+        if resolved_strategy_family is None:
+            try:
+                resolved_strategy_family = resolve_strategy_family(dict(self.strategy_config or {}))
+            except StrategyFamilyValidationError as exc:
+                raise ValueError("strategy_family_context_required") from exc
+
         persisted_event_ids: list[str] = []
         ledger_entity_ids: list[str] = []
 
@@ -104,7 +116,7 @@ class DeterministicIntelligenceLedgerAdapter(IntelligenceLedgerAdapter):
             persisted = self.service.append_record_with_strategy_family(
                 record,
                 config=self.strategy_config,
-                strategy_family=self.strategy_family,
+                strategy_family=resolved_strategy_family,
                 strategy_family_source=self.strategy_family_source,
             )
             persisted_event_ids.append(validated_event.event.event_id)

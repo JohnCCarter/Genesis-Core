@@ -135,3 +135,28 @@ def test_validate_optimizer_strategy_family_rejects_non_exact_ri_authority() -> 
     errors, _warnings = validate_optimizer_strategy_family(opt_cfg)
 
     assert any("fixed regime_module" in error for error in errors)
+
+
+def test_validate_optimizer_strategy_family_rejects_legacy_with_ri_signature_markers() -> None:
+    opt_cfg = {
+        "strategy_family": "legacy",
+        "parameters": {
+            "multi_timeframe.regime_intelligence.authority_mode": {
+                "type": "fixed",
+                "value": "legacy",
+            },
+            "thresholds.signal_adaptation.atr_period": {"type": "fixed", "value": 14},
+        },
+    }
+
+    errors, _warnings = validate_optimizer_strategy_family(opt_cfg)
+
+    assert any("RI-signaturmarkörer" in error for error in errors)
+
+
+def test_validate_optimizer_strategy_family_rejects_non_mapping_parameters() -> None:
+    opt_cfg = {"strategy_family": "legacy", "parameters": []}
+
+    errors, _warnings = validate_optimizer_strategy_family(opt_cfg)
+
+    assert any("parameters måste vara en dict/mapping" in error for error in errors)

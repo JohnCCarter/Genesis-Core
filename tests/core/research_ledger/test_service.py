@@ -28,6 +28,7 @@ from core.research_ledger.models import (
 from core.research_ledger.service import ResearchLedgerService
 from core.research_ledger.storage import LedgerStorage
 from core.research_ledger.validators import LedgerValidationError
+from core.strategy.family_registry import StrategyFamilyValidationError
 
 
 def _service(tmp_path: Path) -> ResearchLedgerService:
@@ -183,6 +184,24 @@ def test_append_record_with_strategy_family_tags_metadata(tmp_path: Path) -> Non
 
     assert appended.metadata["strategy_family"] == "ri"
     assert appended.metadata["strategy_family_source"] == "family_registry_v1"
+
+
+def test_append_record_with_strategy_family_rejects_config_family_mismatch(tmp_path: Path) -> None:
+    service = _service(tmp_path)
+    hypothesis = HypothesisRecord(
+        entity_id="HYP-2026-0010",
+        entity_type=LedgerEntityType.HYPOTHESIS,
+        created_at="2026-03-18T16:05:00+00:00",
+        title="Mismatch hypothesis",
+        hypothesis="Explicit and config strategy_family must match.",
+    )
+
+    with pytest.raises(StrategyFamilyValidationError, match="strategy_family_config_mismatch"):
+        service.append_record_with_strategy_family(
+            hypothesis,
+            config={"strategy_family": "legacy"},
+            strategy_family="ri",
+        )
 
 
 def test_allocate_id_is_storage_state_deterministic(tmp_path: Path) -> None:

@@ -9,12 +9,12 @@ Senast uppdaterad: 2026-03-18
 - **Aktiv branch nu:** `master`
 - **HEAD vid denna handoff:** `e4a79d2d`
 - **Senaste viktiga merge:** PR **#70** — `refactor(strategy-family): enforce explicit RI family separation`
-- **Feature-branch-status:** `feature/ri-optuna-train-validate-blind-v1` är mergad och delete:ad
+- **Feature-branch-status:** `feature/ri-optuna-train-validate-blind-v1` är mergad och borttagen
 - **Det säkra läget att utgå från hemma:** senaste `origin/master`, inte någon gammal feature-branch
 
 ## Vad som nu är klart
 
-Strategy-family-slicen är färdig, merge:ad och landad på `master`.
+Strategy-family-slicen är färdig, mergad och landad på `master`.
 
 Det som ingår i den mergade slicen:
 
@@ -33,7 +33,7 @@ Regime Intelligence behandlas nu som **egen strategy family**, inte som overlay 
 Det betyder att systemet nu hard-failar för bland annat:
 
 - `legacy` + `authority_mode=regime_module`
-- `ri` utan exakt RI-kluster
+- `ri` utan exakt RI-kluster (`authority_mode=regime_module`, kanonisk ATR/gates och kanoniska threshold-värden)
 - `legacy` med RI-signaturmarkörer i runtime-surface
 
 Dessutom är runtime-seed normaliserad tillbaka till riktig legacy-signatur där det behövs.
@@ -116,7 +116,7 @@ På hemdatorn ska nästa session börja så här:
 
 ## Rekommenderat nästa steg hemma
 
-Utgå från att strategy-family-separationen redan är merge:ad.
+Utgå från att strategy-family-separationen redan är mergad.
 
 Nästa arbete bör därför ske **ovanpå `master`**, till exempel:
 
@@ -126,4 +126,4 @@ Nästa arbete bör därför ske **ovanpå `master`**, till exempel:
 
 ## Enradig beslutslogg
 
-Strategy-family-slicen är nu merge:ad till `master`, feature-branchen är delete:ad, och nästa säkra startpunkt på hemdatorn är därför senaste `origin/master`.
+Strategy-family-slicen är nu mergad till `master`, feature-branchen är borttagen, och nästa säkra startpunkt på hemdatorn är därför senaste `origin/master`.

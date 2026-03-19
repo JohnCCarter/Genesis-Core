@@ -66,15 +66,21 @@ The following remain out of scope:
 
 ## Family labels
 
-The **föreslagen** canonical family labels are:
+The historical **föreslagen** label model in this stub was:
 
 - `legacy_family`
 - `ri_family`
 - `invalid_hybrid_overlay`
 
-The source of the label should be recorded as:
+The now **införd** implementation instead uses:
 
-- `deterministic_classifier_v1`
+- `strategy_family = "legacy" | "ri"`
+- `strategy_family_source = "family_registry_v1"`
+
+Important clarification:
+
+- `invalid_hybrid_overlay` is not an införd third family label in current code
+- hybrid or RI-mismatched surfaces now fail closed via validation/classification error rather than being stored as a third accepted family
 
 ## 1. Föreslagen ledger integration
 
@@ -86,11 +92,17 @@ The **föreslagen** metadata keys are:
 - `metadata.strategy_family_source`
 - `metadata.strategy_family_basis`
 
-Recommended values:
+Historical/föreslagen values in this stub were:
 
 - `metadata.strategy_family = "legacy_family" | "ri_family" | "invalid_hybrid_overlay"`
 - `metadata.strategy_family_source = "deterministic_classifier_v1"`
 - `metadata.strategy_family_basis = "effective_config"`
+
+For the införd implementation, the corresponding canonical values are:
+
+- `metadata.strategy_family = "legacy" | "ri"`
+- `metadata.strategy_family_source = "family_registry_v1"`
+- no third accepted family label is stored for hybrids; invalid hybrid surfaces fail closed
 
 ### 1.2 Record-placement map
 
@@ -159,11 +171,11 @@ This should be emitted into metadata or a sidecar artifact, not as a new require
 
 ### 2.3 Failure mode
 
-If the config cannot be classified cleanly as `legacy_family` or `ri_family`, the **föreslagen** fallback is:
+If the config cannot be classified cleanly as `legacy_family` or `ri_family`, the historical **föreslagen** fallback in this stub was:
 
 - `invalid_hybrid_overlay`
 
-This is fail-closed and prevents silent migration stories.
+In the införd implementation, this idea was narrowed further: hybrid surfaces fail closed with validation/classification error instead of being accepted as a third stored family label. That is the behavior readers should map to current code.
 
 ## 3. Föreslagen multi-family orchestration shape
 
@@ -265,7 +277,7 @@ The **föreslagen** promotion order is:
 
 If a future RI-family candidate wins, the **föreslagen** record behavior is:
 
-- keep `strategy_family = "ri_family"` on promotion-related records
+- keep `strategy_family = "ri"` on promotion-related records
 - keep the winning artifact labeled as RI-family derived
 - do not rewrite history by relabeling the winner as legacy-family
 
@@ -274,7 +286,7 @@ If a future RI-family candidate wins, the **föreslagen** record behavior is:
 The incumbent champion remains:
 
 - the control baseline
-- a member of `legacy_family`
+- a member of `legacy`
 - comparable against RI only through explicit governed cross-family competition
 
 ## 6. Föreslagen artifact surfaces

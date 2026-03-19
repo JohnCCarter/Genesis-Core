@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import textwrap
+
+import scripts.validate.validate_optimizer_config as validate_optimizer_config_module
 from scripts.validate.validate_optimizer_config import (
     normalize_champion_payload,
+    validate_config,
     validate_optimizer_strategy_family,
 )
 
@@ -160,3 +164,25 @@ def test_validate_optimizer_strategy_family_rejects_non_mapping_parameters() -> 
     errors, _warnings = validate_optimizer_strategy_family(opt_cfg)
 
     assert any("parameters måste vara en dict/mapping" in error for error in errors)
+
+
+def test_validate_config_rejects_non_mapping_parameters_without_crashing(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    cfg_path = tmp_path / "bad_optimizer.yaml"
+    cfg_path.write_text(
+        textwrap.dedent(
+            """
+            meta:
+              symbol: tBTCUSD
+              timeframe: 1h
+            strategy_family: legacy
+            parameters: []
+            """
+        ).strip(),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(validate_optimizer_config_module, "load_champion", lambda *_args: {})
+
+    assert validate_config(cfg_path) == 1

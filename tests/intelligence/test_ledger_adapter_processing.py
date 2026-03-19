@@ -18,6 +18,7 @@ from core.intelligence.ledger_adapter import (
 from core.research_ledger import ArtifactKind, LedgerEntityType, ResearchLedgerService
 from core.research_ledger.models import record_to_dict
 from core.research_ledger.storage import LedgerStorage
+from core.strategy.family_registry import StrategyFamilyValidationError
 
 
 def _event(index: int, *, source: str = "regime_intelligence") -> IntelligenceEvent:
@@ -145,6 +146,35 @@ def test_persist_events_fails_fast_without_strategy_family_context(tmp_path: Pat
     adapter = DeterministicIntelligenceLedgerAdapter(service=service)
 
     with pytest.raises(ValueError, match="strategy_family_context_required"):
+        adapter.persist_events(LedgerPersistenceRequest(events=(_validated_event(1),)))
+
+    assert service.storage.list_records(LedgerEntityType.ARTIFACT) == []
+
+
+def test_persist_events_preserves_invalid_strategy_family_errors(tmp_path: Path) -> None:
+    service = _service(tmp_path)
+    adapter = DeterministicIntelligenceLedgerAdapter(
+        service=service,
+        strategy_config={
+            "strategy_family": "ri",
+            "thresholds": {
+                "entry_conf_overall": 0.25,
+                "regime_proba": {"balanced": 0.36},
+                "signal_adaptation": {
+                    "atr_period": 14,
+                    "zones": {
+                        "low": {"entry_conf_overall": 0.16, "regime_proba": 0.33},
+                        "mid": {"entry_conf_overall": 0.40, "regime_proba": 0.51},
+                        "high": {"entry_conf_overall": 0.32, "regime_proba": 0.57},
+                    },
+                },
+            },
+            "gates": {"hysteresis_steps": 2, "cooldown_bars": 0},
+            "multi_timeframe": {"regime_intelligence": {"authority_mode": "regime_module"}},
+        },
+    )
+
+    with pytest.raises(StrategyFamilyValidationError, match="ri_requires_canonical_gates"):
         adapter.persist_events(LedgerPersistenceRequest(events=(_validated_event(1),)))
 
     assert service.storage.list_records(LedgerEntityType.ARTIFACT) == []

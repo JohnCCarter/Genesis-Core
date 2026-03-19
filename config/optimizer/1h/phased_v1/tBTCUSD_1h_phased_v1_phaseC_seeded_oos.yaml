@@ -1,14 +1,14 @@
-description: "Phase C-style seeded 1h OOS validation from Phase B RI smoke best"
+description: "Phase C-style seeded 1h OOS validation for a legacy-family Phase B-style smoke best"
 strategy_family: legacy
 #
 # Provenance / intent:
 # - additive RESEARCH config only; no effect unless explicitly selected
-# - this OOS spec is fixed to the best parameters observed in the short seeded 1h RI smoke run on 2026-03-16
+# - this OOS spec is fixed to the best parameters observed in the short seeded 1h smoke run on 2026-03-16
 # - it is not yet a canonical 1h Phase C artifact from a full 1h Phase B campaign
-# - purpose: provide the next deterministic validation step for 1h timeframe experimentation
+# - purpose: provide the next deterministic validation step for 1h timeframe experimentation while staying on the legacy-family / legacy-authority surface
 #
-# Fixed from 1h seeded RI smoke best trial:
-# - authority_mode: regime_module
+# Fixed from the seeded 1h smoke best trial that informed this legacy-family OOS spec:
+# - authority_mode in this OOS config remains legacy
 # - clarity_score.weights: confidence=0.40, edge=0.30, ev=0.10, regime_alignment=0.20
 # - size_multiplier.min=0.30, size_multiplier.max=1.00
 # - risk.htf_regime_size_multipliers.bear=0.80

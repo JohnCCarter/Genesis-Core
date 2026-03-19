@@ -1,11 +1,11 @@
-description: "Phase B: 1h Regime Intelligence clarity + sizing (canonical from 1h Phase A best)"
+description: "Phase B: 1h legacy-family clarity + sizing evaluation (canonical from 1h Phase A best)"
 strategy_family: legacy
 #
 # Provenance / intent:
 # - additive RESEARCH config only; no effect unless explicitly selected
 # - canonical 1h Phase B derived from the full 1h Phase A best trial on 2026-03-16
 # - all non-RI baseline parameters below are fixed from the verified 1h Phase A winner
-# - purpose: test RI ON vs OFF on 1h using a fair parent baseline instead of seeded values
+# - purpose: test optional RI ON/OFF and sizing logic on a legacy-family 1h baseline without changing family or authority semantics
 #
 # Phase A best (full run):
 # - score: 0.1018975613

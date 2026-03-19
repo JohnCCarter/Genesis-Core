@@ -1,4 +1,4 @@
-description: "Phase B-style seeded 1h Regime Intelligence optimisation"
+description: "Phase B-style seeded 1h legacy-family optimisation"
 strategy_family: legacy
 #
 # Provenance / intent:
@@ -8,7 +8,7 @@ strategy_family: legacy
 #   1) config/optimizer/1h/tBTCUSD_1h_risk_optuna_smoke.yaml
 #   2) config/optimizer/1h/tBTCUSD_1h_coarse_grid.yaml
 #   3) config/strategy/champions/tBTCUSD_1h.json (risk_map / active 1h context)
-# - intent is to test RI ON/OFF and RI sizing behavior on 1h with the same conceptual structure as 3h Phase B
+# - intent is to test optional RI ON/OFF and sizing behavior on 1h within a legacy-family / legacy-authority config surface
 # - choose this path/name/study/storage as stable from the start; resume signatures are path-sensitive
 #
 # Seed assumptions:

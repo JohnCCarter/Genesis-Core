@@ -99,7 +99,9 @@ class DeterministicIntelligenceLedgerAdapter(IntelligenceLedgerAdapter):
             try:
                 resolved_strategy_family = resolve_strategy_family(dict(self.strategy_config or {}))
             except StrategyFamilyValidationError as exc:
-                raise ValueError("strategy_family_context_required") from exc
+                if str(exc) == "missing_strategy_family":
+                    raise ValueError("strategy_family_context_required") from exc
+                raise
 
         persisted_event_ids: list[str] = []
         ledger_entity_ids: list[str] = []

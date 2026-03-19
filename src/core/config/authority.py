@@ -21,6 +21,14 @@ from core.utils.logging_redaction import get_logger
 
 _LOGGER = get_logger(__name__)
 
+_MISSING_STRATEGY_FAMILY_BACKCOMPAT_MSG = (
+    "missing_strategy_family_backcompat_requires_legacy_signature"
+)
+
+
+class _MissingStrategyFamilyBackcompatError(Exception):
+    """Internal control-flow marker for legacy-only strategy_family backcompat."""
+
 
 def _resolve_repo_root() -> Path:
     """Resolve repo root deterministically from this module's location.
@@ -58,6 +66,12 @@ def _canonicalize_authority_mode_alias(patch: dict[str, Any]) -> dict[str, Any]:
     return canonicalize_authority_mode_alias_strict(patch)
 
 
+def _raise_missing_strategy_family_backcompat_error() -> None:
+    raise _MissingStrategyFamilyBackcompatError(
+        _MISSING_STRATEGY_FAMILY_BACKCOMPAT_MSG,
+    )
+
+
 def _normalize_loaded_runtime_cfg(cfg: dict[str, Any]) -> dict[str, Any]:
     normalized = dict(cfg or {})
     if normalized.get("strategy_family") is not None:
@@ -65,9 +79,11 @@ def _normalize_loaded_runtime_cfg(cfg: dict[str, Any]) -> dict[str, Any]:
     try:
         inferred_family = classify_strategy_family(normalized)
     except StrategyFamilyValidationError as exc:
-        raise ValueError("missing_strategy_family_backcompat_requires_legacy_signature") from exc
+        raise _MissingStrategyFamilyBackcompatError(
+            _MISSING_STRATEGY_FAMILY_BACKCOMPAT_MSG,
+        ) from exc
     if inferred_family != STRATEGY_FAMILY_LEGACY:
-        raise ValueError("missing_strategy_family_backcompat_requires_legacy_signature")
+        _raise_missing_strategy_family_backcompat_error()
     normalized["strategy_family"] = STRATEGY_FAMILY_LEGACY
     return normalized
 
@@ -88,9 +104,9 @@ class ConfigAuthority:
                     cfg_raw = _normalize_loaded_runtime_cfg(data.get("cfg") or {})
                     _ = RuntimeConfig(**cfg_raw)  # validera
                     return v, cfg_raw
+                except _MissingStrategyFamilyBackcompatError as e:
+                    raise ValueError(_MISSING_STRATEGY_FAMILY_BACKCOMPAT_MSG) from e
                 except ValueError as e:
-                    if str(e) == "missing_strategy_family_backcompat_requires_legacy_signature":
-                        raise
                     _LOGGER.debug("seed_read_error: %s", e)
                 except Exception as e:
                     _LOGGER.debug("seed_read_error: %s", e)
@@ -110,7 +126,10 @@ class ConfigAuthority:
 
     def load(self) -> RuntimeSnapshot:
         version, cfg_raw = self._read()
-        cfg_raw = _normalize_loaded_runtime_cfg(cfg_raw)
+        try:
+            cfg_raw = _normalize_loaded_runtime_cfg(cfg_raw)
+        except _MissingStrategyFamilyBackcompatError as exc:
+            raise ValueError(_MISSING_STRATEGY_FAMILY_BACKCOMPAT_MSG) from exc
         cfg = RuntimeConfig(**cfg_raw)
         cfg_canon = cfg.model_dump_canonical()
         h = self._hash_cfg(cfg_canon)

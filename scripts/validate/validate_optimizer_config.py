@@ -107,6 +107,11 @@ def _get_param_spec(params_spec: dict[str, Any], path: str) -> dict[str, Any] | 
     return current if isinstance(current, dict) else None
 
 
+def _get_parameters_mapping(opt_cfg: dict[str, Any]) -> dict[str, Any] | None:
+    params_spec = opt_cfg.get("parameters", {})
+    return params_spec if isinstance(params_spec, dict) else None
+
+
 def _spec_allows_value(spec: dict[str, Any] | None, expected: Any) -> bool:
     if not isinstance(spec, dict):
         return False
@@ -173,8 +178,8 @@ def validate_optimizer_strategy_family(opt_cfg: dict[str, Any]) -> tuple[list[st
             errors.append("[ERROR] strategy_family måste vara 'legacy' eller 'ri'")
         return errors, warnings
 
-    params_spec = opt_cfg.get("parameters", {})
-    if not isinstance(params_spec, dict):
+    params_spec = _get_parameters_mapping(opt_cfg)
+    if params_spec is None:
         errors.append("[ERROR] parameters måste vara en dict/mapping i optimizer-konfig")
         return errors, warnings
 
@@ -235,7 +240,9 @@ def check_fixed_matches_champion(
 ) -> list[str]:
     """Kontrollera om fixerad parameter matchar champion."""
     errors = []
-    params_spec = opt_cfg.get("parameters", {})
+    params_spec = _get_parameters_mapping(opt_cfg)
+    if params_spec is None:
+        return ["[WARN] parameters måste vara en dict/mapping i optimizer-konfig"]
 
     # Navigera till parameter-specen
     keys = param_path.split(".")
@@ -271,7 +278,9 @@ def check_champion_in_range(
 ) -> list[str]:
     """Kontrollera om championens värde ligger i sökrymden."""
     errors = []
-    params_spec = opt_cfg.get("parameters", {})
+    params_spec = _get_parameters_mapping(opt_cfg)
+    if params_spec is None:
+        return ["[WARN] parameters måste vara en dict/mapping i optimizer-konfig"]
 
     # Navigera till parameter-specen
     keys = param_path.split(".")
@@ -326,7 +335,11 @@ def validate_risk_map_deltas(
     errors.extend(family_errors)
     warnings.extend(family_warnings)
 
-    risk_spec = opt_cfg.get("parameters", {}).get("risk", {})
+    params_spec = _get_parameters_mapping(opt_cfg)
+    if params_spec is None:
+        return errors, warnings
+
+    risk_spec = params_spec.get("risk", {})
     deltas_spec = risk_spec.get("risk_map_deltas")
     if not isinstance(deltas_spec, dict):
         warnings.append(
@@ -510,7 +523,7 @@ def validate_config(opt_config_path: Path) -> int:
 
     # Kontrollera signal_adaptation (saknas ofta i Optuna-konfigs)
     champ_signal_adapt = extract_param_value(champ_params, "thresholds.signal_adaptation")
-    opt_params = opt_cfg.get("parameters", {})
+    opt_params = _get_parameters_mapping(opt_cfg) or {}
     opt_signal_adapt = extract_param_value(opt_params, "thresholds.signal_adaptation")
 
     if champ_signal_adapt and not opt_signal_adapt:

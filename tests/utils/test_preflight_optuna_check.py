@@ -299,3 +299,64 @@ parameters: {}
     # Kör som CLI.
     monkeypatch.setattr(sys, "argv", ["preflight_optuna_check.py", str(cfg_path)])
     assert preflight.main() == 1
+
+
+def test_main_fails_when_champion_validation_returns_non_zero(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path,
+) -> None:
+    from scripts.preflight import preflight_optuna_check as preflight
+
+    cfg_path = tmp_path / "cfg.yaml"
+    cfg_path.write_text(
+        """
+meta:
+    runs:
+        optuna:
+            timeout_seconds: 10
+parameters: {}
+""".lstrip(),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(preflight, "maybe_load_dotenv", lambda: (True, "[OK]"))
+    monkeypatch.setattr(preflight, "check_optuna_installed", lambda: (True, "[OK]"))
+    monkeypatch.setattr(
+        preflight, "check_storage_writable", lambda *_args, **_kwargs: (True, "[OK]")
+    )
+    monkeypatch.setattr(preflight, "check_study_resume", lambda *_args, **_kwargs: (True, "[OK]"))
+    monkeypatch.setattr(
+        preflight, "check_sampler_settings", lambda *_args, **_kwargs: (True, "[OK]")
+    )
+    monkeypatch.setattr(preflight, "check_duplicate_guard", lambda: (True, "[OK]"))
+    monkeypatch.setattr(preflight, "check_timeout_config", lambda *_args, **_kwargs: (True, "[OK]"))
+    monkeypatch.setattr(preflight, "check_mode_flags_consistency", lambda: (True, "[OK]"))
+    monkeypatch.setattr(
+        preflight, "check_storage_resume_sanity", lambda *_args, **_kwargs: (True, "[OK]")
+    )
+    monkeypatch.setattr(
+        preflight, "check_parameters_valid", lambda *_args, **_kwargs: (True, "[OK]")
+    )
+    monkeypatch.setattr(
+        preflight, "check_snapshot_exists", lambda *_args, **_kwargs: (True, "[OK]")
+    )
+    monkeypatch.setattr(
+        preflight, "check_htf_requirements", lambda *_args, **_kwargs: (True, "[OK]")
+    )
+    monkeypatch.setattr(preflight, "check_date_source", lambda *_args, **_kwargs: (True, "[OK]"))
+    monkeypatch.setattr(
+        preflight, "check_requested_data_coverage", lambda *_args, **_kwargs: (True, "[OK]")
+    )
+    monkeypatch.setattr(
+        preflight, "check_champion_drift_smoke", lambda *_args, **_kwargs: (True, "[OK]")
+    )
+    monkeypatch.setattr(
+        preflight, "check_precompute_functionality", lambda *_args, **_kwargs: (True, "[OK]")
+    )
+
+    stub = types.ModuleType("scripts.validate.validate_optimizer_config")
+    stub.validate_config = lambda *_args, **_kwargs: 1  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "scripts.validate.validate_optimizer_config", stub)
+
+    monkeypatch.setattr(sys, "argv", ["preflight_optuna_check.py", str(cfg_path)])
+    assert preflight.main() == 1

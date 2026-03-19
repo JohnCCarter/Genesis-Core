@@ -204,6 +204,79 @@ def test_append_record_with_strategy_family_rejects_config_family_mismatch(tmp_p
         )
 
 
+def test_append_record_with_strategy_family_accepts_semantically_valid_declared_config(
+    tmp_path: Path,
+) -> None:
+    service = _service(tmp_path)
+    hypothesis = HypothesisRecord(
+        entity_id="HYP-2026-0011",
+        entity_type=LedgerEntityType.HYPOTHESIS,
+        created_at="2026-03-18T16:06:00+00:00",
+        title="Valid RI hypothesis",
+        hypothesis="Explicit family should accept semantically valid matching config.",
+    )
+
+    appended = service.append_record_with_strategy_family(
+        hypothesis,
+        config={
+            "strategy_family": "ri",
+            "thresholds": {
+                "entry_conf_overall": 0.25,
+                "regime_proba": {"balanced": 0.36},
+                "signal_adaptation": {
+                    "atr_period": 14,
+                    "zones": {
+                        "low": {"entry_conf_overall": 0.16, "regime_proba": 0.33},
+                        "mid": {"entry_conf_overall": 0.40, "regime_proba": 0.51},
+                        "high": {"entry_conf_overall": 0.32, "regime_proba": 0.57},
+                    },
+                },
+            },
+            "gates": {"hysteresis_steps": 3, "cooldown_bars": 2},
+            "multi_timeframe": {"regime_intelligence": {"authority_mode": "regime_module"}},
+        },
+        strategy_family="ri",
+    )
+
+    assert appended.metadata["strategy_family"] == "ri"
+
+
+def test_append_record_with_strategy_family_rejects_semantically_invalid_declared_config(
+    tmp_path: Path,
+) -> None:
+    service = _service(tmp_path)
+    hypothesis = HypothesisRecord(
+        entity_id="HYP-2026-0012",
+        entity_type=LedgerEntityType.HYPOTHESIS,
+        created_at="2026-03-18T16:07:00+00:00",
+        title="Invalid RI hypothesis",
+        hypothesis="Explicit family should reject invalid declared RI configs.",
+    )
+
+    with pytest.raises(StrategyFamilyValidationError, match="ri_requires_canonical_gates"):
+        service.append_record_with_strategy_family(
+            hypothesis,
+            config={
+                "strategy_family": "ri",
+                "thresholds": {
+                    "entry_conf_overall": 0.25,
+                    "regime_proba": {"balanced": 0.36},
+                    "signal_adaptation": {
+                        "atr_period": 14,
+                        "zones": {
+                            "low": {"entry_conf_overall": 0.16, "regime_proba": 0.33},
+                            "mid": {"entry_conf_overall": 0.40, "regime_proba": 0.51},
+                            "high": {"entry_conf_overall": 0.32, "regime_proba": 0.57},
+                        },
+                    },
+                },
+                "gates": {"hysteresis_steps": 2, "cooldown_bars": 0},
+                "multi_timeframe": {"regime_intelligence": {"authority_mode": "regime_module"}},
+            },
+            strategy_family="ri",
+        )
+
+
 def test_allocate_id_is_storage_state_deterministic(tmp_path: Path) -> None:
     service = _service(tmp_path)
 

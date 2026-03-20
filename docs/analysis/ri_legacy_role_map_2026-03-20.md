@@ -283,6 +283,166 @@ Om nästa agent bara hinner granska några få ytor först, bör ordningen vara:
 5. `core.intelligence.regime.clarity.py`
 6. `prob_model.py` (främst calibration-frågan, inte full omdesign)
 
+## Kompletterande rollkarta — återstående kärnmoduler i hela kedjan
+
+Efter kodläsningen av de återstående nyckelmodulerna blir helhetskedjan tydligare. Det som först såg ut som “några separata beslutslager” är i praktiken en ganska ren pipeline med tydliga men ibland semantiskt känsliga övergångar.
+
+### Förenklad systemkedja
+
+Den nuvarande pipeline-kedjan kan läsas ungefär så här:
+
+1. `features_asof.py`
+2. `regime_unified.py` / authority-path
+3. `prob_model.py`
+4. `confidence.py`
+5. `decision.py`
+  - `decision_gates.py`
+  - `decision_fib_gating.py`
+  - `decision_sizing.py`
+6. `evaluate.py`
+7. shadow/observability via `meta.observability.shadow_regime`
+8. separat forsknings-/ledger-spår via `core/backtest/intelligence_shadow.py`
+
+Det innebär att nästa rollmap inte bara bör tala om “vilka moduler som finns”, utan också om **vilken typ av ansvar som förs vidare från ett lager till nästa**.
+
+### Fullare klassificering av återstående moduler
+
+| Modul | Primär roll | Sekundär roll | Bedömning |
+| --- | --- | --- | --- |
+| `src/core/strategy/evaluate.py` | Pipeline-orkestrering | authority-seam + observability | Tunn men central kompositör; väljer regime-authority, features, probas, confidence och `decide()` |
+| `src/core/strategy/decision.py` | Beslutsorkestrering | state propagation | Renaste navet mellan candidate, fib-gating, post-gates och sizing |
+| `src/core/strategy/prob_model.py` | Entry-underlag | regime-aware calibration | Legacy-kärna, men med RI-adjacent calibration seam när regime-specifik kalibrering används |
+| `src/core/strategy/confidence.py` | Confidence-/quality-layer | gate+sizing bridge | Inte entrymotor i sig, men påverkar både gating och sizing beroende på `quality.apply` och component scopes |
+| `src/core/strategy/regime_unified.py` | Legacy context authority | trend/volatility classification | Ser fortfarande ut som canonical legacy-default för authoritative regime |
+| `src/core/intelligence/regime/authority.py` | RI authority seam | normalization/fallback | Viktig därför att den avgör *vilken* regime-källa som är auktoritativ, inte därför att den genererar entries |
+| `src/core/backtest/intelligence_shadow.py` | Research/observability | advisory ledger | Stark observability-yta; uttryckligen advisory/shadow, inte decision-input |
+
+### Samlad bedömning av `evaluate.py`
+
+`evaluate.py` ser efter läsningen ut som det tydligaste **pipeline-navet** i hela systemet, men inte som en egen alpha-modul. Den:
+
+- bygger features
+- väljer authoritative regime via authority-mode
+- kör `predict_proba_for(...)`
+- kör `compute_confidence(...)`
+- väljer mellan scaled/raw confidence beroende på `quality.apply`
+- beräknar HTF-regime
+- skickar allt vidare till `decide(...)`
+- exporterar shadow-observability där `decision_input=False`
+
+Det viktigaste här är att `evaluate.py` inte själv verkar flytta alfa eller entrylogik, men den **bestämmer vilken väg som används**. Därför bör den klassas som:
+
+- **primärt:** orchestration
+- **sekundärt:** authority/observability seam
+
+### Samlad bedömning av `decision.py`
+
+`decision.py` bekräftar den ordning som dokumentet redan antytt, men gör den nu explicit:
+
+1. `select_candidate(...)`
+2. `apply_fib_gating(...)`
+3. `apply_post_fib_gates(...)`
+4. `apply_sizing(...)`
+5. state propagation + final reason append
+
+Det gör `decision.py` till den tydligaste **mekaniska orkestreraren av själva beslutsordningen**. Viktig nyans:
+
+- filen skapar inte probas
+- filen skapar inte confidence
+- filen skapar inte regime
+
+Men den avgör i vilken ordning dessa får påverka slutbeslutet. Därför bör den klassas som:
+
+- **primärt:** entry orchestration
+- **sekundärt:** state management
+
+### Samlad bedömning av `prob_model.py`
+
+`prob_model.py` ser fortfarande ut som den renaste **legacy-entry-kärnan** i hela systemet. Den producerar buy/sell/hold-probabilities från model registry + kalibrering.
+
+Det som gör filen semantiskt viktig för RI-rollkartan är dock att `predict_proba_for(...)` stödjer:
+
+- regime-specifik kalibrering via `calibration_by_regime`
+- fallback till vanlig default-kalibrering om regime-specifik version saknas
+
+Det betyder att filen bör klassas som:
+
+- **primärt:** entry-driving substrate
+- **sekundärt:** regime-aware entry modulation
+
+Viktig observation: här kan RI påverka entry **före gates**, men fortfarande genom kalibrering av proba-underlaget snarare än genom att bli en separat entrymotor.
+
+### Samlad bedömning av `confidence.py`
+
+`confidence.py` förtjänar en egen plats i rollkartan, eftersom den inte bara är ett “litet hjälplager”. Efter kodläsning ser den ut som en **quality-aware bridge** mellan entry-underlag och både gating/sizing.
+
+Filen:
+
+- skalar buy/sell-confidence med quality factor
+- kan hålla gate och sizing isär via component scopes
+- exporterar `buy_scaled` / `sell_scaled` när sizing-faktorn skiljer sig från gate-faktorn
+
+Det gör att `confidence.py` bör klassas som:
+
+- **primärt:** confidence/quality layer
+- **sekundärt:** permission + sizing bridge
+
+Viktig observation: detta är inte en RI-modul i snäv mening, men den är en plats där marknadskvalitet kan minska aggressivitet utan att nödvändigtvis ändra direction. Därför är den strategiskt viktig i rollkartan.
+
+### Samlad bedömning av authority-seamen
+
+Kombinationen av `regime_unified.py` och `core/intelligence/regime/authority.py` gör att regime-authority inte bör beskrivas som “en modul”, utan som en **auktoritetsseam**:
+
+- `regime_unified.py` = legacy-default authoritative context
+- `authority.py` = normalize/fallback-seam och RI-path-stöd
+- `evaluate.py` = väljer authority-mode och därmed vilken väg som används
+
+Detta stödjer följande klassning:
+
+- **legacy-path:** `regime_unified.py` som canonical authority
+- **RI-path:** authority-mode-baserad seam där regime_module kan vinna
+
+Viktig observation: authority-seamen är inte entrylogik, men den kan indirekt påverka både calibration, gating och observability genom att definiera vilket regime som anses sant.
+
+### Samlad bedömning av `core/backtest/intelligence_shadow.py`
+
+`core/backtest/intelligence_shadow.py` ser efter läsningen inte ut som ett latent beslutslager, utan som en **ren advisory/ledger-observability-yta**.
+
+Det viktiga här är att den:
+
+- bygger shadow events från backtest-resultat
+- persistar dem till research-ledger
+- uttryckligen sätter `decision_drift_observed=False` i summary-payloaden
+- arbetar som post-hoc research-/auditlager
+
+Den bör därför klassas som:
+
+- **primärt:** observability / advisory research
+- **sekundärt:** audit trail
+
+Detta stärker tesen att shadow/intelligence-spåret i nuvarande form främst är till för förståelse och utvärdering, inte för att injicera runtime-beslut.
+
+## Bevisstatus — vad vi faktiskt vet nu
+
+Rollkartan stöds nu inte bara av kodläsning, utan också av redan existerande högsignaltester.
+
+### Verifierad evidens som stödjer rollkartan
+
+| Fråga | Befintligt test | Vad det stöder |
+| --- | --- | --- |
+| Ändrar clarity bara size/logg? | `tests/backtest/test_evaluate_pipeline.py::test_evaluate_pipeline_ri_v2_clarity_on_changes_sizing_only_and_logs` | Stöder att clarity hör hemma i management/sizing snarare än candidate selection |
+| Ändrar risk_state action-path eller bara size? | `tests/utils/test_decision_scenario_behavior.py::test_decide_risk_state_stress_reduces_size_without_changing_action_path` | Stöder att risk_state är risk/sizing modulation, inte entrymotor |
+| Kan adaptive fib override faktiskt flytta block → entry? | `tests/utils/test_decision_scenario_behavior.py::test_decide_adaptive_htf_override_progression_flips_block_into_entry` | Stöder att fib-override är en semantiskt känslig permission-brygga |
+| Förblir shadow-regime observability advisory? | `tests/governance/test_regime_intelligence_cutover_parity.py` och relaterade shadow-observer-tester | Stöder att `decision_input=False` hålls i observability-spåret |
+
+### Det viktigaste som fortfarande behöver bevisas bättre
+
+Det som fortfarande är mest värt att isolera i nästa steg är:
+
+1. hur mycket av candidate-drift som kommer från `decision_gates.py` thresholding
+2. hur mycket regime-aware calibration i `prob_model.py` faktiskt flyttar outputs relativt legacy-calibration
+3. om `confidence.py` i praktiken bara sänker aggressivitet, eller ibland också förändrar vilka setups som överlever gating på ett mer strukturellt sätt
+
 ## Föreslagen ablationsordning
 
 För att undvika ännu en “allt på en gång”-situation bör nästa analys/experimentserie vara liten och tydlig.
@@ -417,19 +577,19 @@ Första kodläsningen visar att `decision_fib_gating.py` själv främst är en o
 
 Det betyder att denna yta bör läsas som **ett sammanhållet permission-lager**, inte som en ensam wrapper-fil.
 
-| Del i fib-gating-flödet | Vad koden gör | Observerad roll idag | Bör främst tillhöra | Drift-/riskbedömning | Rekommenderad nästa kontroll |
-| --- | --- | --- | --- | --- | --- |
-| `apply_fib_gating(...)` orchestration | Bygger override-context, kör HTF-gate, sedan LTF-gate och sammanfattar debug | Gate orchestration | Permission/orchestration | Låg; främst ordningskontroll | Dokumentera tydligt att wrappern inte bär huvudpolicyn själv |
-| `prepare_override_context(...)` | Bygger confidence/history/adaptiv threshold för eventuell override | Override-prep / adaptive permission | RI/permission | Medium till hög; här kan filter bli dold aggressionsmotor | Testa fasta confidence-serier per regime och mappa hur `effective_threshold` rör sig |
-| Override history (`buy_history` / `sell_history`) | Sparar historik i `override_state` för percentilbaserad threshold | Stateful permission support | Permission/support state | Medium; statefulness gör beteendet svårare att läsa | Verifiera om historiken bara stabiliserar eller faktiskt ökar trade-frekvens aggressivt |
-| Adaptive threshold via percentil + regime-multipliers | Gör override-threshold dynamisk efter historik och regime | Regime-aware permission | RI/permission boundary | Hög; tydlig plats där RI kan flytta entry-gränser indirekt | Kör ablation med adaptiv av/på och jämför override-rate |
-| HTF gate: context availability / missing-policy | Blockerar eller passerar beroende på om HTF-context finns | Safety + permission | Permission/safety | Medium; viktig fail-open/fail-closed-policy | Dokumentera separat vilka lägen som är `pass` vs `block` |
-| HTF gate: target match / level checks | Kräver att pris ligger nära tillåtna HTF-nivåer eller inte bryter nivågräns | Structural permission | Permission | Medium; tydligt “rätt-att-handla”-lager | Isolera target-match vs level-block i analysmatris |
-| HTF override (`try_override_htf_block`) | Tillåter LTF-confidence att häva HTF-block under vissa villkor | Override bridge | Permission med entry-adjacent risk | Hög; här kan filter slå över i entry-aggression | Testa override-rate, win-rate och om override främst räddar bra eller dåliga trades |
-| `override_confidence` range | Tillåter override inom explicit confidence-intervall | Fixed override policy | Permission | Medium; enklare och mer läsbar än adaptive path | Jämför mot adaptive override för att se vilken som driver mest drift |
-| LTF gate: context availability / missing-policy | Blockerar eller passerar beroende på om LTF-context finns | Safety + permission | Permission/safety | Medium; samma fail-policyfråga som HTF | Säkerställ att HTF och LTF använder konsekvent semantik |
-| LTF gate: level checks | Stoppar LONG ovan maxnivå / SHORT under minnivå | Structural veto | Permission | Låg till medium; tydligt veto-lager | Behandla som canonical permission-regel i rollkartan |
-| `fib_gate_summary` / debug payloads | Samlar HTF/LTF-debug i `state_out` | Observability/audit | Observability | Låg; mycket värdefullt för beviskedjan | Använd som primär evidensyta i framtida override-ablationer |
+| Del i fib-gating-flödet                               | Vad koden gör                                                                | Observerad roll idag                | Bör främst tillhöra                | Drift-/riskbedömning                                       | Rekommenderad nästa kontroll                                                            |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------- | ----------------------------------- | ---------------------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `apply_fib_gating(...)` orchestration                 | Bygger override-context, kör HTF-gate, sedan LTF-gate och sammanfattar debug | Gate orchestration                  | Permission/orchestration           | Låg; främst ordningskontroll                               | Dokumentera tydligt att wrappern inte bär huvudpolicyn själv                            |
+| `prepare_override_context(...)`                       | Bygger confidence/history/adaptiv threshold för eventuell override           | Override-prep / adaptive permission | RI/permission                      | Medium till hög; här kan filter bli dold aggressionsmotor  | Testa fasta confidence-serier per regime och mappa hur `effective_threshold` rör sig    |
+| Override history (`buy_history` / `sell_history`)     | Sparar historik i `override_state` för percentilbaserad threshold            | Stateful permission support         | Permission/support state           | Medium; statefulness gör beteendet svårare att läsa        | Verifiera om historiken bara stabiliserar eller faktiskt ökar trade-frekvens aggressivt |
+| Adaptive threshold via percentil + regime-multipliers | Gör override-threshold dynamisk efter historik och regime                    | Regime-aware permission             | RI/permission boundary             | Hög; tydlig plats där RI kan flytta entry-gränser indirekt | Kör ablation med adaptiv av/på och jämför override-rate                                 |
+| HTF gate: context availability / missing-policy       | Blockerar eller passerar beroende på om HTF-context finns                    | Safety + permission                 | Permission/safety                  | Medium; viktig fail-open/fail-closed-policy                | Dokumentera separat vilka lägen som är `pass` vs `block`                                |
+| HTF gate: target match / level checks                 | Kräver att pris ligger nära tillåtna HTF-nivåer eller inte bryter nivågräns  | Structural permission               | Permission                         | Medium; tydligt “rätt-att-handla”-lager                    | Isolera target-match vs level-block i analysmatris                                      |
+| HTF override (`try_override_htf_block`)               | Tillåter LTF-confidence att häva HTF-block under vissa villkor               | Override bridge                     | Permission med entry-adjacent risk | Hög; här kan filter slå över i entry-aggression            | Testa override-rate, win-rate och om override främst räddar bra eller dåliga trades     |
+| `override_confidence` range                           | Tillåter override inom explicit confidence-intervall                         | Fixed override policy               | Permission                         | Medium; enklare och mer läsbar än adaptive path            | Jämför mot adaptive override för att se vilken som driver mest drift                    |
+| LTF gate: context availability / missing-policy       | Blockerar eller passerar beroende på om LTF-context finns                    | Safety + permission                 | Permission/safety                  | Medium; samma fail-policyfråga som HTF                     | Säkerställ att HTF och LTF använder konsekvent semantik                                 |
+| LTF gate: level checks                                | Stoppar LONG ovan maxnivå / SHORT under minnivå                              | Structural veto                     | Permission                         | Låg till medium; tydligt veto-lager                        | Behandla som canonical permission-regel i rollkartan                                    |
+| `fib_gate_summary` / debug payloads                   | Samlar HTF/LTF-debug i `state_out`                                           | Observability/audit                 | Observability                      | Låg; mycket värdefullt för beviskedjan                     | Använd som primär evidensyta i framtida override-ablationer                             |
 
 ### Samlad bedömning av `decision_fib_gating.py` + helpers
 

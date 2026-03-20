@@ -585,13 +585,13 @@ För att flytta detta från “trolig tolkning” till faktisk evidens kördes `
 
 Det gav följande bild:
 
-| Fall | Gate confidence | Scaled confidence | Gate-pass vid `0.24`? | Slutsats |
-| ---- | --------------- | ----------------- | --------------------- | -------- |
-| Clean | `0.33` | `0.33` | Ja | Baslinje |
-| `spread_stress` | `0.231` | `0.231` | Nej | `scope: both` på `spread` kan blockera entry |
-| `data_quality_stress` | `0.231` | `0.231` | Nej | `scope: both` på `data_quality` kan blockera entry |
-| `atr_stress` | `0.33` | `0.231` | Ja | `scope: sizing` på ATR lämnar gating orörd men sänker storlek |
-| `volume_stress` | `0.33` | `0.231` | Ja | `scope: sizing` på volume lämnar gating orörd men sänker storlek |
+| Fall                  | Gate confidence | Scaled confidence | Gate-pass vid `0.24`? | Slutsats                                                         |
+| --------------------- | --------------- | ----------------- | --------------------- | ---------------------------------------------------------------- |
+| Clean                 | `0.33`          | `0.33`            | Ja                    | Baslinje                                                         |
+| `spread_stress`       | `0.231`         | `0.231`           | Nej                   | `scope: both` på `spread` kan blockera entry                     |
+| `data_quality_stress` | `0.231`         | `0.231`           | Nej                   | `scope: both` på `data_quality` kan blockera entry               |
+| `atr_stress`          | `0.33`          | `0.231`           | Ja                    | `scope: sizing` på ATR lämnar gating orörd men sänker storlek    |
+| `volume_stress`       | `0.33`          | `0.231`           | Ja                    | `scope: sizing` på volume lämnar gating orörd men sänker storlek |
 
 Detta är viktigt därför att det visar att frågan inte längre är om `both`-profiler **kan** flytta gating i teorin, utan att den checked-in scoped-profilen faktiskt gör det på ett mätbart sätt.
 
@@ -599,12 +599,12 @@ Detta är viktigt därför att det visar att frågan inte längre är om `both`-
 
 Den andra checked-in varianten, `tBTCUSD_1h_quality_v2_candidate_scoped_relaxed_size.json`, visar samma gate-sida men mildare size-straff för de sizing-only-komponenter som öppnats upp:
 
-| Profil | Fall | `q_gate` | `q_size` | Tolkning |
-| ------ | ---- | -------- | -------- | -------- |
-| `candidate_scoped` | `spread_stress` | `0.7` | `0.7` | Gate och size sjunker tillsammans via `scope: both` |
-| `relaxed_size` | `spread_stress` | `0.7` | `0.7` | Samma gate-ytan kvar |
-| `candidate_scoped` | `atr_stress` | `1.0` | `0.7` | Gating orörd, size tydligt reducerad |
-| `relaxed_size` | `atr_stress` | `1.0` | `0.892469` | Samma gate, mildare size-straff |
+| Profil             | Fall            | `q_gate` | `q_size`   | Tolkning                                            |
+| ------------------ | --------------- | -------- | ---------- | --------------------------------------------------- |
+| `candidate_scoped` | `spread_stress` | `0.7`    | `0.7`      | Gate och size sjunker tillsammans via `scope: both` |
+| `relaxed_size`     | `spread_stress` | `0.7`    | `0.7`      | Samma gate-ytan kvar                                |
+| `candidate_scoped` | `atr_stress`    | `1.0`    | `0.7`      | Gating orörd, size tydligt reducerad                |
+| `relaxed_size`     | `atr_stress`    | `1.0`    | `0.892469` | Samma gate, mildare size-straff                     |
 
 Det stöder följande precisering:
 
@@ -613,6 +613,58 @@ Det stöder följande precisering:
 - relaxed-size-profilen ser alltså ut att vara en **size-surface-justering**, inte en ny gate-topologi
 
 Detta passar också väl med metadata-noten i den scoped-profilen: målet beskrivs som att behålla gating-fördelarna från W1/W3 men mildra W2-regression via sizing-only-komponenterna.
+
+### Konkret evidens — threshold-lagret kan ensamt flippa samma setup
+
+För att få en jämförbar evidenspunkt mot quality-lagret kördes också samma `probas` och samma `confidence` genom RI-signaturens zontrösklar i `decision_gates.py`:
+
+- `buy = 0.45`
+- `sell = 0.20`
+- `confidence.buy = 0.45`
+- regime = `balanced`
+
+Med en RI-lik signal-adaptation-konfiguration gav det:
+
+| Zon | Aktiv balanced-threshold | Action | Slutsats |
+| --- | ------------------------ | ------ | -------- |
+| `low` | `0.33` | `LONG` | setup passerar |
+| `mid` | `0.51` | `NONE` | samma setup blockeras |
+| `high` | `0.57` | `NONE` | samma setup blockeras ännu tydligare |
+
+Detta visar att threshold-lagret i `decision_gates.py` på egen hand kan flytta ett identiskt setup mellan **trade** och **no-trade** utan att probas eller confidence i sig ändras.
+
+### Jämförbar driftstege — calibration vs threshold vs quality
+
+När de tre evidensytorna ställs bredvid varandra blir skillnaden i ansvar tydligare:
+
+| Lager | Fast input | Observerad drift | Typ av drift |
+| ----- | ---------- | ---------------- | ------------ |
+| `prob_model.py` calibration | samma features, olika regime | `buy` går från `0.425263` (`none`) till `0.206923` (`bear`) och faller då under gate `0.24` | **Upstream probability drift** före all gating |
+| `decision_gates.py` thresholding | samma probas/confidence, olika zon | samma setup går från `LONG` (`low`) till `NONE` (`mid/high`) | **Explicit gate-boundary drift** |
+| `confidence.py` quality (`both`) | samma probas, olika market-quality | gate confidence går från `0.33` till `0.231` under `spread_stress` / `data_quality_stress` | **Conditional gate drift** via gate-scoped quality-komponenter |
+| `confidence.py` quality (`sizing`) | samma probas, olika ATR/volume | gate confidence oförändrad, men scaled confidence sjunker | **Ren size drift** |
+
+### Tydligare slutsats om relativ driftstyrka
+
+Den jämförbara bilden pekar på följande arbetsordning för fortsatt analys:
+
+1. **Calibration** är den tidigaste och mest strukturella bryggan
+  - den flyttar själva sannolikhetsytan innan några gates ens läser den
+
+2. **Thresholding** är den tydligaste sena trade/no-trade-brytaren
+  - den kan med identiska probas/confidence flippa ett setup mellan `LONG` och `NONE`
+
+3. **Quality** är i nuvarande checked-in profiler en verklig men mer selektiv gate-brygga
+  - `data_quality` och `spread` kan blockera entry
+  - `atr` och `volume` ligger däremot huvudsakligen i sizing-facket
+
+Det betyder att om målet är att förklara faktisk trade-drift mellan RI- och legacy-topologier, bör nästa viktning sannolikt vara:
+
+- först **calibration-pathen**
+- därefter **threshold-/zone-pathen**
+- därefter **quality-gating**
+
+...med förbehållet att quality fortfarande kan vara mycket viktig i vissa marknadslägen, men att dess checked-in scoped-profiler just nu ser mer **hybridiska** än primärt topologidrivande ut.
 
 ### Samlad bedömning av authority-seamen
 
@@ -653,22 +705,23 @@ Rollkartan stöds nu inte bara av kodläsning, utan också av redan existerande 
 
 ### Verifierad evidens som stödjer rollkartan
 
-| Fråga                                                           | Befintligt test                                                                                                           | Vad det stöder                                                                         |
-| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| Ändrar clarity bara size/logg?                                  | `tests/backtest/test_evaluate_pipeline.py::test_evaluate_pipeline_ri_v2_clarity_on_changes_sizing_only_and_logs`          | Stöder att clarity hör hemma i management/sizing snarare än candidate selection        |
-| Ändrar risk_state action-path eller bara size?                  | `tests/utils/test_decision_scenario_behavior.py::test_decide_risk_state_stress_reduces_size_without_changing_action_path` | Stöder att risk_state är risk/sizing modulation, inte entrymotor                       |
-| Kan adaptive fib override faktiskt flytta block → entry?        | `tests/utils/test_decision_scenario_behavior.py::test_decide_adaptive_htf_override_progression_flips_block_into_entry`    | Stöder att fib-override är en semantiskt känslig permission-brygga                     |
-| Är `confidence.py` direction-bevarande men gate/sizing-känslig? | `tests/utils/test_confidence.py` + `tests/utils/test_decision_edge.py`                                                    | Stöder att confidence bevarar riktning men kan moduleras som gate- eller sizing-brygga |
+| Fråga                                                           | Befintligt test                                                                                                           | Vad det stöder                                                                                              |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Ändrar clarity bara size/logg?                                  | `tests/backtest/test_evaluate_pipeline.py::test_evaluate_pipeline_ri_v2_clarity_on_changes_sizing_only_and_logs`          | Stöder att clarity hör hemma i management/sizing snarare än candidate selection                             |
+| Ändrar risk_state action-path eller bara size?                  | `tests/utils/test_decision_scenario_behavior.py::test_decide_risk_state_stress_reduces_size_without_changing_action_path` | Stöder att risk_state är risk/sizing modulation, inte entrymotor                                            |
+| Kan adaptive fib override faktiskt flytta block → entry?        | `tests/utils/test_decision_scenario_behavior.py::test_decide_adaptive_htf_override_progression_flips_block_into_entry`    | Stöder att fib-override är en semantiskt känslig permission-brygga                                          |
+| Är `confidence.py` direction-bevarande men gate/sizing-känslig? | `tests/utils/test_confidence.py` + `tests/utils/test_decision_edge.py`                                                    | Stöder att confidence bevarar riktning men kan moduleras som gate- eller sizing-brygga                      |
 | Ger checked-in `both`-profiler faktisk gate-drift?              | direkt körbar evidens med `tBTCUSD_1h_quality_v2_candidate_scoped*.json`                                                  | Stöder att `data_quality`/`spread` verkligen kan flytta gate-pass, medan `atr`/`volume` främst flyttar size |
-| Förblir shadow-regime observability advisory?                   | `tests/governance/test_regime_intelligence_cutover_parity.py` och relaterade shadow-observer-tester                       | Stöder att `decision_input=False` hålls i observability-spåret                         |
+| Kan threshold-lagret ensamt flippa samma setup?                 | direkt körbar evidens med RI-zontrösklar i `decision_gates.py`                                                            | Stöder att zone/regime-thresholding är en explicit trade/no-trade-brytare även när probas och confidence hålls fasta |
+| Förblir shadow-regime observability advisory?                   | `tests/governance/test_regime_intelligence_cutover_parity.py` och relaterade shadow-observer-tester                       | Stöder att `decision_input=False` hålls i observability-spåret                                              |
 
 ### Det viktigaste som fortfarande behöver bevisas bättre
 
 Det som fortfarande är mest värt att isolera i nästa steg är:
 
 1. hur mycket av candidate-drift som kommer från `decision_gates.py` thresholding
-2. hur mycket regime-aware calibration i `prob_model.py` faktiskt flyttar outputs relativt legacy-calibration
-3. hur stor del av faktisk trade-drift i RI-/legacy-jämförelser som kommer från quality-gating jämfört med threshold/calibration-lagren
+2. hur mycket regime-aware calibration i `prob_model.py` faktiskt flyttar outputs relativt legacy-calibration i verkliga RI-/legacy-jämförelser
+3. hur stor del av faktisk trade-drift i RI-/legacy-jämförelser som kommer från threshold-lagret jämfört med calibration-lagret när quality hålls konstant
 
 ## Föreslagen ablationsordning
 

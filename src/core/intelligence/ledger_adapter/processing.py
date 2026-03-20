@@ -48,6 +48,9 @@ def _record_path(validated_event: ValidatedIntelligenceEvent) -> str:
 
 def _intelligence_refs(
     validated_event: ValidatedIntelligenceEvent,
+    *,
+    strategy_family: StrategyFamily | None = None,
+    strategy_family_source: str | None = None,
 ) -> tuple[IntelligenceRef, ...]:
     event = validated_event.event
     return tuple(
@@ -58,6 +61,14 @@ def _intelligence_refs(
             metadata={
                 "event_id": event.event_id,
                 "source_ref": reference.ref,
+                **(
+                    {
+                        "strategy_family": strategy_family,
+                        "strategy_family_source": strategy_family_source,
+                    }
+                    if strategy_family is not None and strategy_family_source is not None
+                    else {}
+                ),
             },
         )
         for reference in event.references
@@ -68,6 +79,8 @@ def map_validated_event_to_artifact_record(
     validated_event: ValidatedIntelligenceEvent,
     *,
     entity_id: str,
+    strategy_family: StrategyFamily | None = None,
+    strategy_family_source: str | None = None,
 ) -> ArtifactRecord:
     """Map a validated intelligence event into a canonical ledger artifact record."""
 
@@ -82,7 +95,11 @@ def map_validated_event_to_artifact_record(
             "event": event.to_payload(),
             "validator_version": validated_event.validator_version,
         },
-        intelligence_refs=_intelligence_refs(validated_event),
+        intelligence_refs=_intelligence_refs(
+            validated_event,
+            strategy_family=strategy_family,
+            strategy_family_source=strategy_family_source,
+        ),
     )
 
 
@@ -114,6 +131,8 @@ class DeterministicIntelligenceLedgerAdapter(IntelligenceLedgerAdapter):
             record = map_validated_event_to_artifact_record(
                 validated_event,
                 entity_id=entity_id,
+                strategy_family=resolved_strategy_family,
+                strategy_family_source=self.strategy_family_source,
             )
             persisted = self.service.append_record_with_strategy_family(
                 record,

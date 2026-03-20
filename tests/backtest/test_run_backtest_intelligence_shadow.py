@@ -213,11 +213,17 @@ def test_run_backtest_main_writes_shadow_summary_without_changing_dummy_results(
     shadow_summary_inline = shadow_results_without_summary.pop("intelligence_shadow")
     assert control_engine.last_results == shadow_results_without_summary
     assert shadow_summary_inline["decision_drift_observed"] is False
+    assert shadow_summary_inline["derived_parameter_set"]["strategy_family"] == "legacy"
+    assert (
+        shadow_summary_inline["derived_parameter_set"]["strategy_family_source"]
+        == "family_registry_v1"
+    )
 
     summary = json.loads(shadow_summary_path.read_text(encoding="utf-8"))
     assert summary["shadow_status"] == "completed"
     assert summary["decision_drift_observed"] is False
     assert summary["derived_parameter_set"]["strategy_family"] == "legacy"
+    assert summary["derived_parameter_set"]["strategy_family_source"] == "family_registry_v1"
     assert summary["counts"]["captured_events"] == 1
     assert summary["counts"]["collected_events"] == 1
     assert (

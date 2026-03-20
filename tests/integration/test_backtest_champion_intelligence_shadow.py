@@ -9,6 +9,7 @@ import pytest
 import scripts.run.run_backtest as run_backtest
 from core.backtest.engine import BacktestEngine
 from core.backtest.intelligence_shadow import BacktestIntelligenceShadowRecorder
+from core.strategy.family_registry import resolve_strategy_family
 
 
 @pytest.fixture
@@ -80,6 +81,7 @@ def test_existing_champion_path_supports_shadow_without_decision_drift(
         merged_config=champion_cfg,
         summary_path=summary_path,
     )
+    expected_strategy_family = resolve_strategy_family(champion_cfg)
 
     assert control_rows == shadow_rows
     assert control_results["trades"] == shadow_results["trades"]
@@ -92,6 +94,8 @@ def test_existing_champion_path_supports_shadow_without_decision_drift(
     loaded_summary = json.loads(summary_path.read_text(encoding="utf-8"))
     assert loaded_summary == summary
     assert summary["decision_drift_observed"] is False
+    assert summary["derived_parameter_set"]["strategy_family"] == expected_strategy_family
+    assert summary["derived_parameter_set"]["strategy_family_source"] == "family_registry_v1"
     assert summary["counts"]["captured_events"] == len(shadow_rows)
     assert summary["counts"]["captured_events"] > 0
     assert len(summary["persisted_event_ids"]) == summary["counts"]["normalized_events"]

@@ -31,7 +31,7 @@ from core.research_orchestrator import (
     DeterministicResearchOrchestrator,
     ResearchTask,
 )
-from core.strategy.family_registry import resolve_strategy_family
+from core.strategy.family_registry import STRATEGY_FAMILY_SOURCE, resolve_strategy_family
 
 _SHADOW_SOURCE = "champion_shadow"
 _SHADOW_TOPIC = "regime_shadow"
@@ -263,6 +263,7 @@ class BacktestIntelligenceShadowRecorder:
             },
             "derived_parameter_set": {
                 "strategy_family": strategy_family,
+                "strategy_family_source": STRATEGY_FAMILY_SOURCE,
                 "parameter_set_id": approved_parameter_set.parameter_set_id,
                 "parameter_count": len(approved_parameter_set.parameters),
                 "baseline_weight": approved_parameter_set.baseline_weight,

@@ -38,15 +38,19 @@ def _parameter_set(
     consistency_score: float,
     baseline_weight: float = 1.0,
     risk_multiplier: float = 1.0,
+    strategy_family: str | None = None,
 ) -> ApprovedParameterSet:
+    parameters = {
+        "ema_fast": 9,
+        "ema_slow": 21,
+        "stop_loss_atr": 1.5,
+        "parameter_set_id": parameter_set_id,
+    }
+    if strategy_family is not None:
+        parameters["strategy_family"] = strategy_family
     return ApprovedParameterSet(
         parameter_set_id=parameter_set_id,
-        parameters={
-            "ema_fast": 9,
-            "ema_slow": 21,
-            "stop_loss_atr": 1.5,
-            "parameter_set_id": parameter_set_id,
-        },
+        parameters=parameters,
         sensitivity_score=sensitivity_score,
         stability_score=stability_score,
         consistency_score=consistency_score,
@@ -153,6 +157,97 @@ def test_parameter_analysis_outputs_are_advisory_only_and_json_serializable() ->
     assert isinstance(payload, str)
 
 
+def test_parameter_analysis_appends_strategy_family_to_rationale_when_declared_consistently() -> (
+    None
+):
+    request = ParameterAnalysisRequest(
+        evaluations=(
+            _evaluation(1, disposition="high_priority", score=0.8),
+            _evaluation(2, disposition="review", score=0.4),
+        ),
+        approved_parameter_sets=(
+            _parameter_set(
+                "ps-a",
+                sensitivity_score=0.2,
+                stability_score=0.9,
+                consistency_score=0.8,
+                baseline_weight=1.0,
+                risk_multiplier=1.2,
+                strategy_family="legacy",
+            ),
+        ),
+    )
+
+    result = analyze_parameter_sets(request)
+
+    assert result[0].advisory_score == 0.795
+    assert result[0].advisory_disposition == "preferred"
+    assert result[0].supporting_event_ids == (
+        "intel-tbtcusd-20260317-0001",
+        "intel-tbtcusd-20260317-0002",
+    )
+    assert "strategy_family=legacy" in result[0].rationale
+
+
+@pytest.mark.parametrize(
+    "approved_parameter_sets",
+    [
+        (
+            _parameter_set(
+                "ps-missing",
+                sensitivity_score=0.2,
+                stability_score=0.9,
+                consistency_score=0.8,
+            ),
+        ),
+        (
+            _parameter_set(
+                "ps-legacy",
+                sensitivity_score=0.2,
+                stability_score=0.9,
+                consistency_score=0.8,
+                strategy_family="legacy",
+            ),
+            _parameter_set(
+                "ps-ri",
+                sensitivity_score=0.3,
+                stability_score=0.8,
+                consistency_score=0.7,
+                strategy_family="ri",
+            ),
+        ),
+        (
+            ApprovedParameterSet(
+                parameter_set_id="ps-invalid",
+                parameters={
+                    "ema_fast": 9,
+                    "ema_slow": 21,
+                    "stop_loss_atr": 1.5,
+                    "parameter_set_id": "ps-invalid",
+                    "strategy_family": "legacy-ish",
+                },
+                sensitivity_score=0.2,
+                stability_score=0.9,
+                consistency_score=0.8,
+                source_ledger_entity_ids=("ART-2026-X001",),
+            ),
+        ),
+    ],
+)
+def test_parameter_analysis_does_not_append_strategy_family_for_non_canonical_metadata(
+    approved_parameter_sets: tuple[ApprovedParameterSet, ...],
+) -> None:
+    request = ParameterAnalysisRequest(
+        evaluations=(_evaluation(1, disposition="review", score=0.55),),
+        approved_parameter_sets=approved_parameter_sets,
+    )
+
+    result = analyze_parameter_sets(request)
+
+    assert "strategy_family=" not in result[0].rationale
+    assert result[0].advisory_disposition in {"preferred", "review", "defer"}
+
+
 @pytest.mark.parametrize(
     ("analysis_request", "message"),
     [
@@ -226,6 +321,21 @@ def test_parameter_analysis_outputs_are_advisory_only_and_json_serializable() ->
                 ),
             ),
             "parameters",
+        ),
+        (
+            ParameterAnalysisRequest(
+                evaluations=(_evaluation(1),),
+                approved_parameter_sets=(
+                    ApprovedParameterSet(
+                        parameter_set_id="ps-non-mapping",
+                        parameters=[],
+                        sensitivity_score=0.2,
+                        stability_score=0.9,
+                        consistency_score=0.8,
+                    ),
+                ),
+            ),
+            "mapping",
         ),
     ],
 )

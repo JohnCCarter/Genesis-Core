@@ -11,6 +11,10 @@ from core.intelligence.parameter.interface import (
     ParameterIntelligenceAnalyzer,
     ParameterRecommendation,
 )
+from core.strategy.family_registry import (
+    StrategyFamilyValidationError,
+    validate_strategy_family_name,
+)
 
 PREFERRED_THRESHOLD = 0.7
 REVIEW_THRESHOLD = 0.5
@@ -53,8 +57,8 @@ def _validate_parameter_set(parameter_set: ApprovedParameterSet, *, seen_ids: se
     if parameter_set.parameter_set_id in seen_ids:
         raise ParameterAnalysisValidationError("parameter_set_id values must be unique")
     seen_ids.add(parameter_set.parameter_set_id)
-    if not parameter_set.parameters:
-        raise ParameterAnalysisValidationError("parameters must be non-empty")
+    if not isinstance(parameter_set.parameters, dict) or not parameter_set.parameters:
+        raise ParameterAnalysisValidationError("parameters must be a non-empty mapping")
     _validate_json_value(
         parameter_set.parameters, path=f"{parameter_set.parameter_set_id}.parameters"
     )
@@ -135,12 +139,29 @@ def _risk_multiplier_suggestion(
     return round(max(0.1, min(2.0, suggestion)), 6)
 
 
+def _resolve_declared_strategy_family(
+    approved_parameter_sets: tuple[ApprovedParameterSet, ...],
+) -> str | None:
+    declared_families: set[str] = set()
+    for parameter_set in approved_parameter_sets:
+        declared_family = parameter_set.parameters.get("strategy_family")
+        try:
+            normalized_family = validate_strategy_family_name(declared_family)
+        except StrategyFamilyValidationError:
+            return None
+        declared_families.add(normalized_family)
+        if len(declared_families) > 1:
+            return None
+    return next(iter(declared_families), None)
+
+
 def _recommendation(
     parameter_set: ApprovedParameterSet,
     *,
     evaluation_support: float,
     high_priority_share: float,
     supporting_event_ids: tuple[str, ...],
+    strategy_family: str | None,
 ) -> ParameterRecommendation:
     sensitivity_score = _clamp01(parameter_set.sensitivity_score, field_name="sensitivity_score")
     stability_score = _clamp01(parameter_set.stability_score, field_name="stability_score")
@@ -176,6 +197,8 @@ def _recommendation(
         f"advisory_score={advisory_score:.6f};"
         f"advisory_disposition={advisory_disposition}"
     )
+    if strategy_family is not None:
+        rationale = f"{rationale};strategy_family={strategy_family}"
     return ParameterRecommendation(
         parameter_set_id=parameter_set.parameter_set_id,
         advisory_score=advisory_score,
@@ -196,12 +219,14 @@ def analyze_parameter_sets(request: ParameterAnalysisRequest) -> ParameterAnalys
 
     _validate_request(request)
     evaluation_support, high_priority_share, supporting_event_ids = _evaluation_support(request)
+    strategy_family = _resolve_declared_strategy_family(request.approved_parameter_sets)
     recommendations = tuple(
         _recommendation(
             parameter_set,
             evaluation_support=evaluation_support,
             high_priority_share=high_priority_share,
             supporting_event_ids=supporting_event_ids,
+            strategy_family=strategy_family,
         )
         for parameter_set in request.approved_parameter_sets
     )

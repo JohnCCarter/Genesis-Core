@@ -78,6 +78,23 @@ def test_mapping_preserves_request_serialization_integrity_and_reference_order()
     assert validated_event.event.to_payload() == before_payload
 
 
+def test_mapping_adds_strategy_family_to_intelligence_ref_metadata_when_provided() -> None:
+    validated_event = _validated_event(1)
+
+    record = map_validated_event_to_artifact_record(
+        validated_event,
+        entity_id="ART-2026-0001",
+        strategy_family="ri",
+        strategy_family_source="family_registry_v1",
+    )
+
+    assert all(ref.metadata["strategy_family"] == "ri" for ref in record.intelligence_refs)
+    assert all(
+        ref.metadata["strategy_family_source"] == "family_registry_v1"
+        for ref in record.intelligence_refs
+    )
+
+
 def test_persist_events_preserves_tuple_order_and_returns_correct_result(tmp_path: Path) -> None:
     service = _service(tmp_path)
     adapter = DeterministicIntelligenceLedgerAdapter(
@@ -105,6 +122,16 @@ def test_persist_events_preserves_tuple_order_and_returns_correct_result(tmp_pat
     assert {record.metadata["strategy_family_source"] for record in persisted_records} == {
         "family_registry_v1"
     }
+    assert {
+        ref.metadata["strategy_family"]
+        for record in persisted_records
+        for ref in record.intelligence_refs
+    } == {"legacy"}
+    assert {
+        ref.metadata["strategy_family_source"]
+        for record in persisted_records
+        for ref in record.intelligence_refs
+    } == {"family_registry_v1"}
     assert tuple(item.event.to_payload() for item in request.events) == before_payloads
 
 

@@ -848,6 +848,44 @@ Detta ger en mer kondenserad arbetsregel för fortsatt analys:
 
 > Om målet är att förstå varför RI och legacy glider isär, börja vid authority/calibration, fortsätt med threshold-surface, och läs cadence samt övriga post-gates som senare formgivare av en redan divergerande topologi.
 
+### Slutsyntes — replay-driftens lagerordning
+
+Med den nuvarande evidensen går det nu att formulera en mer slutlig och operativ driftmodell för RI vs legacy.
+
+Detta är fortfarande en **analytisk lagerordning**, inte en exakt procentuell attribution från full replay-statistik. Men som arbetsmodell är den nu betydligt starkare än i början av dokumentet, eftersom varje steg stöds av separata kontrollerade fall.
+
+| Lager i driftkedjan | Typisk fråga | Nuvarande evidensbild | Praktisk family-tolkning |
+| ------------------- | ------------ | --------------------- | ------------------------ |
+| **1. Authority + calibration** | “Är det fortfarande samma kandidatunderlag?” | authority-only kollapsar; regime-aware kalibrering kan byta `LONG/SHORT` på fast yta | **första topologisöm / family-breaker** |
+| **2. Threshold-surface** | “Får den kalibrerade kandidaten passera?” | samma proba kan ge `LONG` på legacy och `NONE` på RI, eller tvärtom | **primär kompatibilitetsyta** |
+| **3. Cadence** | “Sker bytet nu eller hålls det tillbaka?” | `2/0` vs `3/2` kan ge `LONG` kontra `HYST_WAIT/NONE` | **family-shape / timingprofil** |
+| **4. Post-gates / safety** | “Fångas kandidaten upp senare?” | compound-fall visar att `min_edge` m.fl. kan stoppa drift som redan börjat uppströms | **sekundär förstärkare / stabiliserare** |
+| **5. Quality** | “Hur fördelas drift inom den valda familjeytan?” | quality kan flytta gating och sizing, men drift kan redan uppstå tidigare utan quality | **familjeintern driftfördelare** |
+
+Detta leder till en enklare läsregel för framtida RI-/legacy-frågor:
+
+- om utfallet bryter redan vid kandidatunderlaget, titta först på **authority/calibration**
+- om kandidaten verkar rimlig men försvinner eller återuppstår, titta först på **threshold-surface**
+- om kandidaten finns men bytet blir för sent eller uteblir tillfälligt, titta först på **cadence**
+- om kandidaten dör efter att ha passerat tidigare lager, titta på **post-gates / safety**
+- om beteendet bara mjukas upp, skärps eller omfördelas inom en redan vald yta, titta på **quality**
+
+### Sammanfattad family-dom enligt nuvarande evidens
+
+Om man destillerar hela dokumentets kedja till en enda kort dom blir den just nu:
+
+> **RI blir inte en separat family därför att quality eller en enskild gate råkar justera utfallet, utan därför att authority/calibration först bryter kandidatunderlaget och därefter kräver en egen threshold-/cadence-shape för att bli tradebar som sammanhängande topologi.**
+
+Det innebär också att följande arbetsdelning nu ser mest rimlig ut:
+
+- **family-breakers:** authority + calibration
+- **family-enablers / compatibility surface:** threshold-surface
+- **family-shape:** cadence
+- **family-stabilizers:** post-gates / safety
+- **family-internal drift distribution:** quality
+
+Om denna modell håller även när den senare testas på bredare replay-ytor, då har vi i praktiken en robust förklaring till varför RI inte bör beskrivas som en liten overlay på legacy, utan som en egen topologi med tydlig intern lagerordning.
+
 ### Samlad bedömning av authority-seamen
 
 Kombinationen av `regime_unified.py` och `core/intelligence/regime/authority.py` gör att regime-authority inte bör beskrivas som “en modul”, utan som en **auktoritetsseam**:

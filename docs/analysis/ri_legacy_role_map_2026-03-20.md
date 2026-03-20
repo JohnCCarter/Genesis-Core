@@ -758,11 +758,11 @@ Det enda som varierades var **vilken kalibreringsgren som användes** i `prob_mo
 
 Ett konkret feature-set gav följande utfall:
 
-| Kalibreringsgren | Buy        | Sell       | Legacy low-zon (`regime_thr=0.36`) | RI low-zon (`regime_thr=0.33`) | Tolkning                                                                     |
-| ---------------- | ---------- | ---------- | ---------------------------------- | ------------------------------ | ---------------------------------------------------------------------------- |
-| `none`           | `0.513411` | `0.486589` | `LONG`                             | `LONG`                         | Default-kalibreringen håller long-sidan marginellt över short                |
-| `bull`           | `0.481459` | `0.518541` | `SHORT`                            | `SHORT`                        | Samma features byter riktning enbart via regime-aware kalibrering            |
-| `bear`           | `0.498711` | `0.501289` | `SHORT`                            | `SHORT`                        | Även bear-grenen flyttar fördelningen över till short utan threshold-byte    |
+| Kalibreringsgren | Buy        | Sell       | Legacy low-zon (`regime_thr=0.36`) | RI low-zon (`regime_thr=0.33`) | Tolkning                                                                  |
+| ---------------- | ---------- | ---------- | ---------------------------------- | ------------------------------ | ------------------------------------------------------------------------- |
+| `none`           | `0.513411` | `0.486589` | `LONG`                             | `LONG`                         | Default-kalibreringen håller long-sidan marginellt över short             |
+| `bull`           | `0.481459` | `0.518541` | `SHORT`                            | `SHORT`                        | Samma features byter riktning enbart via regime-aware kalibrering         |
+| `bear`           | `0.498711` | `0.501289` | `SHORT`                            | `SHORT`                        | Även bear-grenen flyttar fördelningen över till short utan threshold-byte |
 
 Det viktiga här är inte att just detta feature-set råkar vara “magiskt”, utan vad det bevisar om ansvarsfördelningen:
 
@@ -774,11 +774,11 @@ Det viktiga här är inte att just detta feature-set råkar vara “magiskt”, 
 
 När de kontrollerade proverna nu läggs bredvid varandra blir ansvarskartan tydligare än tidigare:
 
-| Isolerad probe                  | Vad som hölls fast                                   | Vad som varierades                       | Observerad drift                                     | Slutsats                                                            |
-| ------------------------------- | ---------------------------------------------------- | ---------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------- |
-| **Calibration-only**            | samma features, samma gate-surface, ingen quality    | `predict_proba_for(...)`-kalibreringsgren | `LONG -> SHORT` på oförändrad yta                    | `prob_model.py` kan flytta riktning före all senare gating          |
-| **Threshold-only**              | samma probas/confidence, samma cadence, ingen quality | legacy- vs RI-threshold surface          | `NONE -> LONG` och `LONG -> NONE` mellan ytor        | threshold-surface kan själv öppna/stänga identiska setups           |
-| **Cadence-only**                | samma kandidat, samma probas/confidence, ingen quality | `2/0` vs `3/2`                           | `LONG -> HYST_WAIT/NONE` vid samma flip-läge         | gating cadence kan själv fördröja eller hålla tillbaka giltiga byten |
+| Isolerad probe       | Vad som hölls fast                                     | Vad som varierades                        | Observerad drift                              | Slutsats                                                             |
+| -------------------- | ------------------------------------------------------ | ----------------------------------------- | --------------------------------------------- | -------------------------------------------------------------------- |
+| **Calibration-only** | samma features, samma gate-surface, ingen quality      | `predict_proba_for(...)`-kalibreringsgren | `LONG -> SHORT` på oförändrad yta             | `prob_model.py` kan flytta riktning före all senare gating           |
+| **Threshold-only**   | samma probas/confidence, samma cadence, ingen quality  | legacy- vs RI-threshold surface           | `NONE -> LONG` och `LONG -> NONE` mellan ytor | threshold-surface kan själv öppna/stänga identiska setups            |
+| **Cadence-only**     | samma kandidat, samma probas/confidence, ingen quality | `2/0` vs `3/2`                            | `LONG -> HYST_WAIT/NONE` vid samma flip-läge  | gating cadence kan själv fördröja eller hålla tillbaka giltiga byten |
 
 Detta flyttar dokumentets attribution från en allmän “många lager spelar roll”-bild till en mer precis sekvens:
 
@@ -789,6 +789,64 @@ Detta flyttar dokumentets attribution från en allmän “många lager spelar ro
 Det betyder att nästa replay-fråga nu kan ställas skarpare än tidigare:
 
 > Hur mycket av den observerade RI-/legacy-driften kommer från att kalibreringen redan ändrar kandidatunderlaget, och hur mycket tillkommer först när threshold- och cadence-surface läggs ovanpå?
+
+### Representativ regime-/zon-matris — flera små fall pekar i samma riktning
+
+För att undvika att hela attributionen står och faller med ett enda “snyggt” exempel kördes därefter en liten sökprobe över den verkliga modellen `config/models/tBTCUSD_3h.json` för att hitta flera representativa fall.
+
+Detta är fortfarande **kontrollerade mikrofall**, inte full backtest-replay, men de har två viktiga egenskaper:
+
+- de använder **verklig modellmetadata**
+- de spänner över **flera regime-/zonlägen** i stället för ett enda handplockat scenario
+
+| Fall                     | Yta / läge                         | Kärnobservation                                                                                                        | Först brytande lager                            | Varför det spelar roll                                                                   |
+| ------------------------ | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `calibration_flip_bull`  | low-zon, bull                      | samma features går från `LONG` (`buy=0.522537`) till `SHORT` (`buy=0.490402`) när endast bull-kalibrering aktiveras    | **calibration**                                 | visar att bull-grenen ensam kan vända riktning före all senare gating                    |
+| `calibration_flip_bear`  | low-zon, bear                      | samma features går från `LONG` (`buy=0.512210`) till `SHORT` (`buy=0.494809`) när endast bear-kalibrering aktiveras    | **calibration**                                 | visar att detta inte är ett bull-specialfall; även bear-grenen kan bryta kandidat tidigt |
+| `threshold_only_mid`     | mid-zon, balanced                  | samma proba (`buy=0.508405`) passerar legacy `0.30` men blockeras av RI `0.40`                                         | **threshold**                                   | visar att mid-zonens threshold-yta ensam kan skapa trade/no-trade-drift                  |
+| `cadence_holdback_fixed` | low-zon, flip från `SHORT`         | samma kandidat `LONG` passerar i legacy `2/0` men hålls tillbaka som `HYST_WAIT` i RI `3/2`                            | **cadence**                                     | visar att cadence är ett självständigt fördröjningslager, inte bara kosmetik             |
+| `compound_long_to_none`  | legacy mid balanced vs RI low bull | legacy-default ger `LONG`, men bull-kalibrerad RI-yta landar i `SHORT`-candidate som sedan stoppas av `EDGE_TOO_SMALL` | **compound: calibration -> post-gate boundary** | visar hur tidig kandidatdrift senare kan fångas upp av downstream safety-lager           |
+
+Den viktigaste poängen med matrisen är att den nu visar **tre olika först-brytande lager** i flera små, verkliga modellfall:
+
+- calibration som tidig riktningsbrytare
+- threshold som explicit trade/no-trade-brytare
+- cadence som senare timing-/stability-brytare
+
+...samt ett compound-fall där flera lager faktiskt staplas ovanpå varandra.
+
+### Preliminära family-regler från den samlade evidensen
+
+Efter de kontrollerade proverna och den lilla regime-/zon-matrisen går det att formulera en första, mer kondenserad family-tolkning:
+
+1. **Det tidigaste topologibrottet sitter fortfarande i authority + calibration-seamen**
+
+- authority avgör vilken regime-path som räknas som sann
+- calibration kan därefter vända själva kandidatunderlaget innan någon gate-surface ens aktiveras fullt ut
+
+2. **Threshold-surface är den viktigaste sena kompatibilitetsytan**
+
+- när kandidatunderlaget väl finns avgör threshold-klustret om en RI-yta faktiskt blir tradebar
+- detta förklarar varför authority-only kan kollapsa medan authority + RI-threshold-surface fortfarande kan fungera
+
+3. **Cadence ser ut som family-shape snarare än primär familjebrytare**
+
+- `3/2` förändrar timing och stabilitet
+- men cadence verkar inte vara den första orsaken till topologibrott; den modifierar snarare hur en redan RI-lik yta beter sig över tid
+
+4. **Downstream safety-lager kan förstärka eller fånga upp tidig drift, men de verkar inte vara den första sömmen**
+
+- `min_edge`, hysteresis och andra post-gates kan stoppa ett setup efter att kandidat redan skiftat
+- de ser därför ut som sekundära förstärkare eller stabiliserare, inte som den primära family-breakern
+
+5. **Quality förblir viktig, men mer som familjeintern driftfördelare än som första topologisöm**
+
+- quality kan absolut flytta gating och sizing
+- men den senaste evidensen visar att family-drift redan kan uppstå tidigare, utan quality
+
+Detta ger en mer kondenserad arbetsregel för fortsatt analys:
+
+> Om målet är att förstå varför RI och legacy glider isär, börja vid authority/calibration, fortsätt med threshold-surface, och läs cadence samt övriga post-gates som senare formgivare av en redan divergerande topologi.
 
 ### Samlad bedömning av authority-seamen
 
@@ -838,7 +896,7 @@ Rollkartan stöds nu inte bara av kodläsning, utan också av redan existerande 
 | Ger checked-in `both`-profiler faktisk gate-drift?              | direkt körbar evidens med `tBTCUSD_1h_quality_v2_candidate_scoped*.json`                                                  | Stöder att `data_quality`/`spread` verkligen kan flytta gate-pass, medan `atr`/`volume` främst flyttar size          |
 | Kan threshold-lagret ensamt flippa samma setup?                 | direkt körbar evidens med RI-zontrösklar i `decision_gates.py`                                                            | Stöder att zone/regime-thresholding är en explicit trade/no-trade-brytare även när probas och confidence hålls fasta |
 | Kan legacy- och RI-family surfaces drifta utan quality?         | kontrollerad probe mot `select_candidate(...)` + `apply_post_fib_gates(...)` med `tBTCUSD_3h` och RI-signaturytan         | Stöder att threshold- och cadence-klustret räcker för verklig action-drift även när quality hålls konstant           |
-| Kan kalibreringen ensam flytta candidate på fast surface?       | kontrollerad probe mot `predict_proba_for(...)` med `config/models/tBTCUSD_3h.json` och oförändrad gate-surface           | Stöder att regime-aware kalibrering kan byta riktning före threshold- och cadence-lagret                              |
+| Kan kalibreringen ensam flytta candidate på fast surface?       | kontrollerad probe mot `predict_proba_for(...)` med `config/models/tBTCUSD_3h.json` och oförändrad gate-surface           | Stöder att regime-aware kalibrering kan byta riktning före threshold- och cadence-lagret                             |
 | Förblir shadow-regime observability advisory?                   | `tests/governance/test_regime_intelligence_cutover_parity.py` och relaterade shadow-observer-tester                       | Stöder att `decision_input=False` hålls i observability-spåret                                                       |
 
 ### Det viktigaste som fortfarande behöver bevisas bättre

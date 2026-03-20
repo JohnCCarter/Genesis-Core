@@ -1,4 +1,4 @@
-# RI/R1 vs legacy — första rollkarta
+# RI vs legacy — rollkarta som två strategy families
 
 Datum: 2026-03-20
 Branch: `feature/ri-legacy-role-map-2026-03-19`
@@ -6,1229 +6,844 @@ Status: arbetsdokument / analysunderlag / ingen runtime-ändring
 
 ## Syfte
 
-Detta dokument fångar en första rollkarta för **legacy** respektive **RI/R1** i Genesis-Core.
-Målet är att klargöra:
+Detta dokument reframar RI och legacy utifrån den kod och evidens som nu finns i repot.
 
-- vad som faktiskt driver entry i legacy
-- vilka RI/intelligence-delar som i första hand verkar vara context/filter/management
-- var ansvar blandas eller riskerar att glida
-- vilka moduler som bör granskas först i fortsatt ablations-/edge-arbete
+Den tidigare läsningen — att **legacy** är den egentliga strategin och att **RI** främst är ett context-/filter-/management-lager ovanpå — är för svag givet nuvarande repo-kontrakt och kodvägar.
 
-Detta är en analysartefakt. Den ändrar inte runtime-beteende, config-authority eller strategy-family-regler.
+Arbetsmodellen i detta dokument är därför i stället:
 
-## Kort slutsats
+- `strategy_family ∈ {"legacy", "ri"}`
+- **legacy** och **RI** ska behandlas som två **separata strategy families**
+- båda familjerna realiseras genom samma övergripande runtime-orkestrering (`evaluate -> decide`)
+- men de använder olika **family-signaturer**, olika **authority/calibration-paths** och olika **threshold/gating/cadence/sizing-surfaces**
 
-Den nuvarande kodbilden pekar på följande övergripande ansvarsfördelning:
+Detta dokument beskriver alltså **inte** två fysiskt duplicerade runtime-motorer. Det beskriver två fullständiga strategiytor som körs genom samma orkestreringskedja men divergerar på family-kritiska sömmar.
 
-- **legacy** är fortfarande den tydliga **entry-drivaren**
-- **RI/R1/intelligence** ligger främst i **context**, **permission/filtering**, **sizing** och **observability**
-- den största arkitekturrisken är inte att RI fullt ut redan tagit över entry, utan att vissa lager blandar **context + permission + management** så att ansvar blir svårare att se och utvärdera
+## Repo-kodens nuvarande family-premiss
 
-Arbetsantagandet från handoffen består därför:
+Repo-koden uttrycker redan en explicit family-modell:
 
-> Nästa edge bör sökas genom att förtydliga RI/R1 som management/filter-lager och genom att testa dess delar som sådana, innan ny bred parameteroptimering sker.
+- `src/core/strategy/family_registry.py`
+  - definierar `legacy` och `ri` som de enda tillåtna strategy families
+  - förbjuder hybridlägen där legacy försöker bära RI-signatur eller där RI saknar canonical RI-kluster
+- `tests/core/strategy/test_families.py`
+  - bekräftar att RI kräver ett sammanhängande kluster av authority, ATR-period, gates och thresholds
+  - bekräftar att legacy med `regime_module` eller RI-signaturmarkörer ska avvisas
 
-## Översiktskarta
+Det gör följande formulering legitim och nödvändig:
 
-| Lager                      | Legacy                                                       | RI/R1 / intelligence                                                                       | Bedömning                                                    |
-| -------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------ |
-| **Context / regime**       | `regime_unified.py`, delar av `regime.py`                    | `core.intelligence.regime.authority`, `core.intelligence.regime.htf`, shadow observability | Delat område; RI bidrar främst med alternativ/utökad kontext |
-| **Entry-driving logic**    | `prob_model.py`, `decision.py`, `decision_gates.py`          | endast sekundär påverkan via thresholds, calibration och tie-breaks                        | Legacy dominerar tydligt                                     |
-| **Permission / filtering** | EV-check, confidence gates, fib-gating, hysteresis, cooldown | regime-aware thresholds, LTF override-history per regime, authority-mode routing           | Här ligger mycket av RI:s verkliga värde idag                |
-| **Management / exits**     | risk_map, sizing, HTF exits                                  | `risk_state`, `clarity_score` (när aktiverad), regime multipliers, HTF regime multipliers  | Mest naturliga hemvisten för RI/R1                           |
-| **Observability / audit**  | begränsad i legacy-kärnan                                    | `intelligence_shadow.py`, regime contracts, mismatch-observability                         | RI/intelligence är starkt här                                |
+> **RI är en separat strategy family, inte ett lager ovanpå legacy.**
 
-## Rollkarta — legacy
+## Delad orkestrering, två fullständiga strategiytor
 
-### Legacy som tydlig entrymotor
+Den kodmässiga huvudkedjan är delad:
 
-Legacy verkar fortfarande bära den primära beslutskedjan för att skapa en trade-kandidat:
+1. `src/core/strategy/evaluate.py`
+2. `src/core/strategy/prob_model.py`
+3. `src/core/strategy/confidence.py`
+4. `src/core/strategy/decision.py`
+   - `decision_gates.py`
+   - `decision_fib_gating.py`
+   - `decision_sizing.py`
+5. exit-/livscykelytor, inklusive `src/core/backtest/htf_exit_engine.py`
 
+Men familjebeteendet är inte delat bara för att orkestreringen är det. Family-separationen realiseras i de parametrar, authority-val och beslutsytor som matas genom denna kedja.
+
+Det mest korrekta sättet att läsa systemet är därför:
+
+- **en delad orkestreringspipeline**
+- **två kompletta strategy families** ovanpå den
+
+## Kodförankrad evidensbas
+
+Följande ytor bär huvudevidensen för family-spliten:
+
+- `src/core/strategy/family_registry.py`
+  - legacy- och RI-definitioner
+- `tests/core/strategy/test_families.py`
+  - canonical RI-signatur och hybridförbud
+- `src/core/strategy/evaluate.py`
+  - authority-val, regime-detektion, family-konditionerad confidence-applicering, vidarekoppling till `decide(...)`
 - `src/core/strategy/prob_model.py`
-  - buy/sell-probabilities via logistisk modell
-- `src/core/strategy/decision.py`
-  - den rena beslutsfunktionen som orkestrerar ordningen
+  - default-kalibrering och `calibration_by_regime`
 - `src/core/strategy/decision_gates.py`
-  - candidate selection, thresholding, EV-filter, post-fib-gates
+  - thresholding, candidate selection, hysteresis, cooldown, `min_edge`
 - `src/core/strategy/decision_fib_gating.py`
-  - HTF/LTF-structural gates före entry släpps igenom
+  - HTF/LTF-gating, override-prep och survival-logik
+- `src/core/strategy/decision_sizing.py`
+  - regime-multipliers, HTF-multipliers, `risk_state`, `clarity`
 
-### Legacy-ansvar enligt denna första karta
+Den starkaste evidensen för family-separation i denna artefakt ligger **uppströms** i authority, calibration, threshold, cadence och sizing. Exit-lagret behandlas här som del av den fulla strategilivscykeln, men inte som den primära bevisytan för family-spliten.
 
-| Komponent                | Föreslagen roll                        | Kommentar                                                    |
-| ------------------------ | -------------------------------------- | ------------------------------------------------------------ |
-| `prob_model.py`          | **Entry-driving**                      | Producerar det egentliga buy/sell-underlaget                 |
-| `decision.py`            | **Entry orchestration**                | Gate-ordningen lever här; är navet mellan layers             |
-| `decision_gates.py`      | **Permission/filtering nära entry**    | Fortfarande legacy-kärna även när regime påverkar thresholds |
-| `decision_fib_gating.py` | **Permission/filtering**               | Strukturveto/override; viktigt före sizing                   |
-| `regime_unified.py`      | **Context authority (legacy default)** | Standardauktoritet i default-path                            |
-| `htf_exit_engine.py`     | **Management/exits**                   | Position lifecycle, partials, trailing, hold                 |
+## LEGACY PIPELINE
 
-### Legacy-signatur som bör hållas i minnet
+Legacy ska läsas som en **full strategy family**, inte bara som en rå entry-motor.
 
-Den verifierade legacy-signaturen i repo/logik/docs är fortfarande ungefär:
+### Steg 1 — family-signatur och config-kontrakt
 
 - `strategy_family = "legacy"`
-- `authority_mode = legacy`
-- `atr_period = 28`
-- `hysteresis_steps = 2`
-- `cooldown_bars = 0`
-- legacy-threshold-kluster snarare än RI-kluster
+- authority får **inte** vara `regime_module`
+- legacy får **inte** bära RI:s canonical signaturmarkörer
 
-Det betyder att när vi talar om “legacy” i fortsatt rollkarta syftar vi inte bara på gamla docs, utan på en faktisk aktiv entry-topologi.
+Det betyder att legacy är en sammanhängande family-surface, inte bara ett restläge när RI är avstängt.
 
-## Rollkarta — RI/R1 / intelligence
+### Steg 2 — features och authoritative context
 
-### RI/R1:s mest naturliga hemvist
+- `evaluate.py` bygger features via `extract_features_live(...)` eller `extract_features_backtest(...)`
+- authoritative regime går via legacy-path när authority inte är `regime_module`
+- detta context är en del av legacy-pipelinen, inte ett externt overlay-lager
 
-Kodbilden pekar på att RI/intelligence främst hör hemma i följande roller:
+### Steg 3 — probability generation och kalibrering
 
-1. **Context / regime enrichment**
-2. **Permission / filtering modulation**
-3. **Management / sizing / exits**
-4. **Observability / shadow audit**
+- `predict_proba_for(...)` i `prob_model.py` hämtar modellmetadata
+- samma funktion bygger `{buy, sell, hold}`-ytan för båda families
+- i legacy-läget är default-kalibrering den canonical family-basen
 
-Det är i linje med den återupptäckta grundidén: management/filter-lager snarare än primary entry-driver.
+Legacy har alltså en egen probability surface även om den kodmässigt produceras av samma modul som RI använder.
 
-### RI/intelligence-komponenter
+### Steg 4 — thresholding och candidate resolution
 
-| Komponent                                       | Primär roll          | Sekundär roll      | Bedömning                                                           |
-| ----------------------------------------------- | -------------------- | ------------------ | ------------------------------------------------------------------- |
-| `src/core/intelligence/regime/authority.py`     | Context              | authority seam     | RI-kompatibel authority-boundary, men ska inte själv bli entrylogik |
-| `src/core/intelligence/regime/htf.py`           | Context              | confirmation       | HTF-regime som sekundär signal, inte entrymotor                     |
-| `src/core/intelligence/regime/clarity.py`       | Management           | permission-support | Mest naturlig som sizing/clarity-justering                          |
-| `src/core/intelligence/regime/risk_state.py`    | Management           | risk modulation    | Stark kandidat för kärn-RI snarare än entry                         |
-| `src/core/backtest/intelligence_shadow.py`      | Observability        | audit              | Viktig för att mäta utan att injicera decision behavior             |
-| regime-aware thresholding i `decision_gates.py` | Permission/filtering | context bridge     | Här finns mycket RI-värde men också ansvarsmix                      |
-| regime multipliers i `decision_sizing.py`       | Management           | risk control       | Mycket naturlig RI-yta                                              |
+- `select_candidate(...)` i `decision_gates.py`
+- EV-kontroll
+- risk/event-veto
+- zone/threshold-val
+- candidate selection och tie-break
 
-## Första arbetsmatris per område
+Detta är inte “bara gating”. Det är en del av legacy-familjens fulla survival-pipeline.
 
-### 1. Context / regime
+### Steg 5 — structural gating och survival
 
-| Modul                                   | Tänkt roll                                     | Observerad roll                  | Notering                                |
-| --------------------------------------- | ---------------------------------------------- | -------------------------------- | --------------------------------------- |
-| `regime_unified.py`                     | Authoritative context                          | Authoritative context            | Legacy-default och fortfarande styrande |
-| `regime.py`                             | Alternativ regimeklassificering / richer state | Delvis shadow / delvis stödjande | Viktig att granska för faktisk påverkan |
-| `core.intelligence.regime.authority.py` | RI authority boundary                          | Context authority seam           | Ska hållas ren från entryglidning       |
-| `core.intelligence.regime.htf.py`       | HTF context                                    | Context/confirmation             | Borde inte ges för stor entrytyngd      |
+- `apply_fib_gating(...)`
+- HTF-block
+- LTF-gating
+- override-policy
 
-### 2. Permission / filtering
+Fib-lagret är en del av hur legacy-familjen överlever från kandidat till faktisk trade, inte bara kosmetisk filtrering efteråt.
 
-| Modul                         | Tänkt roll          | Observerad roll          | Risk / möjlighet                                                                 |
-| ----------------------------- | ------------------- | ------------------------ | -------------------------------------------------------------------------------- |
-| `decision_gates.py`           | Filter/gate         | Filter/gate nära entry   | Hög analysvikt; här blandas mycket ansvar                                        |
-| `decision_fib_gating.py`      | Structural veto     | Structural veto/override | Bra kandidat för “trade permission” snarare än alpha                             |
-| zone/regime threshold mapping | Regime-aware gating | Regime-aware gating      | Ser fortfarande ut som permission, inte ren entry, men behöver isolerad testning |
-| LTF override adaptive         | Filter override     | Filter override          | Kan vara kraftfull men riskerar att bli dold entry-aggressivitet                 |
+### Steg 6 — cadence och post-gates
 
-### 3. Management / exits
+- `apply_post_fib_gates(...)`
+- confidence-threshold efter kandidat
+- `min_edge`
+- hysteresis
+- cooldown
 
-| Modul                | Tänkt roll                    | Observerad roll           | Bedömning                                            |
-| -------------------- | ----------------------------- | ------------------------- | ---------------------------------------------------- |
-| `decision_sizing.py` | Sizing                        | Sizing + RI multipliers   | Naturlig RI-yta                                      |
-| `risk_state.py`      | Risk modulation               | Risk modulation           | Stark kandidat att behålla i RI-kärnan               |
-| `clarity.py`         | Clarity / strength adjustment | Sizing/clarity modulation | Bör behandlas som management tills motsatsen bevisas |
-| `htf_exit_engine.py` | Exit/partials/trailing        | Exit/partials/trailing    | Intressant för framtida RI-as-management-spår        |
+I denna analys läses cadence och post-gates som family-konstitutiva för legacy, inte som löst hängande stabiliserare utanför strategin.
 
-### 4. Entry-driving logic
+### Steg 7 — sizing
 
-| Modul                                      | Nuvarande roll            | Bör i första hand tillhöra   | Bedömning                                                |
-| ------------------------------------------ | ------------------------- | ---------------------------- | -------------------------------------------------------- |
-| `prob_model.py`                            | Entry-driving             | Legacy                       | Borde förbli entrymotor tills tydligt annat beslut finns |
-| candidate selection i `decision_gates.py`  | Entry-adjacent            | Legacy + permission boundary | Ambivalent men fortfarande mest legacy-kärna             |
-| regime tie-breaks                          | Secondary entry influence | Permission/context           | Troligen okej som sekundärt beteende                     |
-| regime-aware calibration i `prob_model.py` | Entry-adjacent modulation | Ambivalent                   | Behöver granskas om den börjar bli för styrande          |
+- `apply_sizing(...)`
+- `risk_map`
+- confidence-driven size-base
+- volatilitetsskalning
 
-## Viktigaste blandzoner att granska först
+Sizing är del av legacy-familjens kompletta strategiuttryck, även när RI-specifika multipliers inte används.
 
-Det finns några områden där ansvar ser blandat ut och där nästa analys sannolikt ger mest värde.
+### Steg 8 — exits och livscykel
 
-### A. `decision_gates.py`
+- exit-livscykeln fortsätter via exit-/backtestytor, inklusive `htf_exit_engine.py`
 
-Detta är sannolikt den viktigaste filen för nästa steg eftersom den binder ihop:
+I denna analys används exits främst som del av den fulla strategilivscykeln. Den starkaste legacy-vs-RI-separationen i evidensen ligger dock tidigare i kedjan.
 
-- regime/context
-- probability thresholds
-- candidate selection
-- EV-filter
-- post-fib gates
+## RI PIPELINE
 
-Det gör den till en naturlig plats där RI kan se ut som “bara filtering” men ändå i praktiken flytta entrybeteende.
+RI ska också läsas som en **full strategy family**, inte som ett sekundärt lager ovanpå legacy.
 
-**Arbetshypotes:**
-`decision_gates.py` bör brytas ner analytiskt i vilka delar som är:
+### Steg 1 — family-signatur och config-kontrakt
 
-- genuin permissioning
-- legacy entry resolution
-- dold aggressivitetsstyrning
+Canonical RI kräver enligt `family_registry.py` och `test_families.py`:
 
-### B. `decision_sizing.py`
+- `strategy_family = "ri"`
+- `multi_timeframe.regime_intelligence.authority_mode = regime_module`
+- `thresholds.signal_adaptation.atr_period = 14`
+- `gates.hysteresis_steps = 3`
+- `gates.cooldown_bars = 2`
+- canonical RI-threshold-kluster
 
-Denna fil verkar vara en stark kandidat för RI:s “rätta hem”.
-Den innehåller redan:
+Detta är inte en liten overlay-konfiguration. Det är en explicit family-signatur.
 
-- regime multipliers
-- HTF regime multipliers
-- clarity hooks
-- risk state hooks
+### Steg 2 — features och authoritative context
 
-**Arbetshypotes:**
-Om RI ska återföras till management/filter-lager är `decision_sizing.py` och dess närliggande intelligence-moduler sannolikt kärnområdet.
+- `evaluate.py` väljer authority-path
+- när authority är `regime_module` blir RI-pathen authoritative för regime-inputen
+- family-spliten börjar därför redan innan sannolikheter och gates används fullt ut
 
-### C. `decision_fib_gating.py` + override-logiken
+### Steg 3 — probability generation och regime-aware calibration
 
-Fib-gating och LTF override verkar mer som **trade permission** än alpha-generation.
-Det gör området mycket intressant eftersom en verklig edge kan ligga i:
+- RI använder samma `predict_proba_for(...)`
+- men när regime-aware kalibrering aktiveras används en annan calibration-branch
+- det kan flytta eller vända kandidatunderlaget innan senare gates alls får säga sitt
 
-- bättre rätt-att-handla-logik
-- bättre no-trade states
-- bättre confirmation
+Detta gör RI:s probability surface family-specifik trots att inferensmotorn delas kodmässigt.
 
-…inte i fler fria entryparametrar.
+### Steg 4 — RI-threshold surface
 
-## Har vi testat alla intelligence-moduler?
+- RI kräver sitt canonical threshold-kluster
+- samma proba/confidence kan därför passera i legacy men blockeras i RI, eller tvärtom
 
-Första svaret är: **inte på det sätt vi nu behöver**.
+Threshold-surface är därmed inte bara “finjustering”. Den är en del av RI-familjens kärnidentitet.
 
-Det finns test- och bevisytor för delar av RI/intelligence, inklusive:
+### Steg 5 — RI survival-pipeline via structural gating
 
-- authority-mode parity
-- clarity on/off legacy parity
-- risk state multiplier
-- cutover parity / pipeline invariants
-- shadow observability
+- `decision_fib_gating.py` används även för RI
+- override-prep, HTF-/LTF-gating och adaptiva trösklar blir del av RI-familjens survival-logik
 
-Men det är en annan sak än att ha en ren **modul-för-modul rollkarta + ablationsmatris**.
+Här finns en viktig family-poäng: RI är inte bara en annan probability-yta. RI kräver också en sammanhängande passage genom en annan survival-surface.
 
-Det vi ännu verkar sakna är en kompakt översikt som svarar på:
+### Steg 6 — RI cadence
 
-1. vad modulen var tänkt att göra
-2. vad den nu faktiskt gör
-3. om den påverkar entry, filtering eller management
-4. om den är orthogonal eller redundant
-5. om den bör behållas, förenklas, flyttas eller stängas av
+- canonical RI-gates är `3/2`
+- det ger en annan bytesprofil än legacy
+- i evidensen syns detta som skillnader i när giltiga kandidatbyten får realiseras
 
-## Första rekommendationer
+Cadence är därför en family-formgivare i RI, inte bara en sen stabiliseringsdetalj.
 
-### Behåll som sannolik RI-kärna att utvärdera vidare
+### Steg 7 — RI sizing
 
-- `risk_state.py`
-- `clarity.py` (som management/sizing-kandidat, inte som entrymotor)
-- HTF/secondary regime context
-- observability/shadow-spåret
-- regime-aware permissioning där den verkligen fungerar som veto/filter
+- `decision_sizing.py` aktiverar family-känsliga ytor via regime multipliers, HTF-multipliers, `risk_state` och `clarity`
+- RI-v2 clarity är uttryckligen modellerad som `sizing_only`
+- `risk_state` och clarity ändrar inte nödvändigtvis action-path, men de är fortfarande del av RI-familjens fulla strategiuttryck
 
-### Granska extra hårt för ansvarsglidning
+Detta betyder inte att RI “bara är sizing”. Det betyder att sizing-surface är en family-bärande del av RI-pipelinen.
 
-- `decision_gates.py`
-- regime-aware threshold mapping
-- LTF override adaptive logic
-- eventuell regime-aware calibration i `prob_model.py`
+### Steg 8 — exits och livscykel
 
-### Utgå inte från att detta ska optimeras bredare ännu
+- även RI måste fullbordas genom exit-/livscykelytorna
+- den aktuella artefaktens starkaste bevisläge för RI-family-split ligger dock inte i exit-wiringen, utan tidigare i authority/calibration/threshold/cadence/sizing
 
-Innan ny Optuna/parameterjakt bör nästa arbete fokusera på:
+## Divergenspunkter mellan families
 
-1. **Inventory**
-2. **Intent audit**
-3. **Ablation plan**
-4. **Först därefter parameter policy**
+| Lager                   | Legacy family                               | RI family                                   | Varför detta är family-separerande                   |
+| ----------------------- | ------------------------------------------- | ------------------------------------------- | ---------------------------------------------------- |
+| **Family-signatur**     | `strategy_family=legacy`, ingen RI-signatur | `strategy_family=ri` + canonical RI-kluster | Family-registry förbjuder hybrider                   |
+| **Authority**           | legacy authority-path                       | `regime_module` authoritative path          | avgör vilken regime-input som är sann                |
+| **Probability surface** | default family-calibration                  | regime-aware calibration-branch             | kan ändra kandidatunderlaget före gating             |
+| **Threshold surface**   | legacy-cluster                              | canonical RI-thresholds                     | samma setup kan ge olika trade/no-trade              |
+| **Cadence**             | legacy-gates                                | RI `3/2` cadence                            | samma kandidatbyte kan släppas eller hållas tillbaka |
+| **Structural survival** | fib-gating på legacy-surface                | fib-gating på RI-surface                    | överlevnadsvillkoren följer family-ytan              |
+| **Sizing**              | legacy risk-map + basmultipliers            | RI regime/HTF/clarity/risk_state-surface    | full family skiljer sig även efter candidate         |
+| **Exits/lifecycle**     | full strategi kräver exits                  | full strategi kräver exits                  | starkaste splitbeviset ligger dock uppströms         |
 
-## Rekommenderad nästa artefakt
+## Family-konditionerade moduler
 
-Efter detta dokument bör nästa steg vara en ännu mer operativ arbetsmatris, till exempel:
+Följande moduler beter sig inte som “RI-moduler” eller “legacy-moduler” i isolation. De beter sig som **delade moduler med family-konditionerad semantik**.
 
-| Modul / indikator | Tänkt roll | Faktisk roll | Entry? | Filter? | Management? | Misstanke | Nästa test |
-| ----------------- | ---------- | ------------ | ------ | ------- | ----------- | --------- | ---------- |
+| Modul                    | Gemensam eller family-konditionerad?       | Vad som skiftar mellan families                                                         |
+| ------------------------ | ------------------------------------------ | --------------------------------------------------------------------------------------- |
+| `family_registry.py`     | family-definierande                        | avgör vad som ens får kallas legacy respektive RI                                       |
+| `evaluate.py`            | delad orkestrering, family-konditionerad   | authority-val, regime-input, confidence-applicering och väg in i `decide(...)`          |
+| `prob_model.py`          | delad inferensmotor, family-konditionerad  | default-kalibrering vs regime-aware calibration                                         |
+| `confidence.py`          | delad brygga, family-konditionerad         | om quality påverkar gate+sizing eller sizing-only i family-surface                      |
+| `decision_gates.py`      | delad gate-motor, family-konditionerad     | threshold-cluster, zone-surface, candidate survival, cadence                            |
+| `decision_fib_gating.py` | delad survival-motor, family-konditionerad | override-thresholds, HTF/LTF-permission och structural survival                         |
+| `decision_sizing.py`     | delad sizing-motor, family-konditionerad   | regime multipliers, HTF multipliers, `risk_state`, `clarity`                            |
+| `htf_exit_engine.py`     | del av full livscykel                      | evidensen här är svagare för family-split, så exits kvalificeras snarare än överbevisas |
 
-Det skulle göra fortsatt arbete mycket mer systematiskt.
+## Projekt- och rollkarta
 
-## Operativ arbetsmatris — första version
+Om hela projektet läses på en högre nivå blir rollerna tydligare om de grupperas i fyra lager snarare än i enskilda filer.
 
-Syftet med matrisen nedan är att göra nästa steg konkret. Den är inte en slutdom över modulerna, utan en arbetsyta för att prioritera:
+### 1. Family- och kontraktslager
 
-- vad som ska granskas först
-- vad som sannolikt hör hemma i legacy
-- vad som sannolikt hör hemma i RI/R1
-- vilka delar som riskerar ansvarsglidning
+Detta lagers jobb är att avgöra **vilken strategi-family som över huvud taget får existera**.
 
-### Matris
+- `src/core/strategy/family_registry.py`
+- `tests/core/strategy/test_families.py`
 
-| Modul / indikator                        | Tänkt roll                               | Faktisk observerad roll                            | Entry  | Filter | Management | Misstanke                                                                  | Nästa test / analys                                                                     |
-| ---------------------------------------- | ---------------------------------------- | -------------------------------------------------- | ------ | ------ | ---------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `prob_model.py`                          | Entrymotor                               | Primär buy/sell-signal                             | Ja     | Nej    | Nej        | Ska sannolikt stanna i legacy-kärnan                                       | Isolera regime-aware calibration mot ren legacy-kalibrering                             |
-| `decision.py`                            | Orkestrering                             | Binder ihop gates, fib, sizing                     | Ja     | Ja     | Ja         | Hög ansvarskoncentration, men inte nödvändigtvis fel                       | Dokumentera exakt gate-ordning och vilka inputs som faktiskt påverkar candidate vs size |
-| `decision_gates.py`                      | Permission/filtering nära entry          | Filter/gate nära entry + delvis entry resolution   | Delvis | Ja     | Nej        | Största blandzonen i hela systemet                                         | Bryt ned i delsteg: EV, thresholding, candidate selection, tie-break, post-fib-gates    |
-| `decision_fib_gating.py`                 | Structural permission                    | HTF/LTF-veto, override, structure-based pass/block | Delvis | Ja     | Delvis     | Ser mer ut som trade permission än alpha                                   | Testa strikt veto-only vs override-aktivt läge                                          |
-| `decision_fib_gating_helpers.py`         | Local helper                             | Hjälper override/veto-logik                        | Nej    | Ja     | Nej        | Risk för dold komplexitet om mycket logik ligger här                       | Kartlägg exakt vad som är policy vs helper-implementering                               |
-| `regime_unified.py`                      | Legacy authority context                 | Fortfarande default authority path                 | Nej    | Delvis | Delvis     | Bör inte blandas ihop med RI-path bara för att båda är “regime”            | Dokumentera vilka downstream-beslut som faktiskt läser authoritative regime             |
-| `regime.py`                              | Alternativ / rikare regimeklassificering | Delvis shadow, delvis stödjande signal             | Nej    | Delvis | Delvis     | Kandidat för begreppsglidning om den uppfattas som live authority överallt | Jämför shadow-resultat mot faktisk decision-input rad för rad                           |
-| `core.intelligence.regime.authority.py`  | RI authority boundary                    | Context-seam för authority_mode                    | Nej    | Delvis | Delvis     | Måste hållas ren från att bli entrylogik i smyg                            | Verifiera vilka funktioner som bara normaliserar context vs förändrar decision-input    |
-| `core.intelligence.regime.htf.py`        | HTF context / confirmation               | Sekundär kontextsignal                             | Nej    | Delvis | Delvis     | Får inte övervärderas till primär alpha                                    | Testa HTF-context som ren confirmation-signal utan override-effekt                      |
-| `decision_sizing.py`                     | Management                               | Sizing + regime/HTF/RI multipliers                 | Nej    | Delvis | Ja         | Stark kandidat för RI:s rätta hemvist                                      | Kör clarity/risk_state av/på utan att ändra candidate outcome                           |
-| `core.intelligence.regime.clarity.py`    | Clarity/strength                         | Sizing/clarity modulation                          | Nej    | Delvis | Ja         | Ska sannolikt behandlas som management tills motsatsen bevisas             | Testa clarity on/off och bevisa om endast size/logg ändras                              |
-| `core.intelligence.regime.risk_state.py` | Risk modulation                          | Risk modulation / sizing                           | Nej    | Nej    | Ja         | Starkaste kandidaten för “ren RI management”                               | Isolera risk_state-effekt på size och exits utan entry-drift                            |
-| `htf_exit_engine.py`                     | Exit/management                          | Partials, trailing, hold                           | Nej    | Nej    | Ja         | Möjlig framtida edge-källa via RI-as-management                            | Testa regime-aware exit-profiler utan entryändring                                      |
-| `intelligence_shadow.py`                 | Observability/audit                      | Shadow logging utan decision injection             | Nej    | Nej    | Nej        | Viktig safety rail; bör bevaras                                            | Säkerställ fortsatt `decision_input=False` i observability-bevis                        |
+Roll:
 
-### Prioriteringsordning
+- definierar `legacy` respektive `ri`
+- förbjuder hybrider
+- låser RI till canonical authority-/threshold-/cadence-signatur
 
-Om nästa agent bara hinner granska några få ytor först, bör ordningen vara:
+Detta är projektets tydligaste **kontraktsroll**.
 
-1. `decision_gates.py`
-2. `decision_sizing.py`
-3. `decision_fib_gating.py`
-4. `core.intelligence.regime.risk_state.py`
-5. `core.intelligence.regime.clarity.py`
-6. `prob_model.py` (främst calibration-frågan, inte full omdesign)
+### 2. Delad runtime-orkestrering
 
-## Kompletterande rollkarta — återstående kärnmoduler i hela kedjan
+Detta lagers jobb är att bära den gemensamma exekveringskedjan, oavsett family.
 
-Efter kodläsningen av de återstående nyckelmodulerna blir helhetskedjan tydligare. Det som först såg ut som “några separata beslutslager” är i praktiken en ganska ren pipeline med tydliga men ibland semantiskt känsliga övergångar.
+- `src/core/strategy/evaluate.py`
+- `src/core/strategy/decision.py`
 
-### Förenklad systemkedja
+Roll:
 
-Den nuvarande pipeline-kedjan kan läsas ungefär så här:
+- bygger features
+- väljer authority-path
+- kopplar probability, confidence och decision-funktionerna
+- driver ordningen mellan candidate, gating, cadence och sizing
 
-1. `features_asof.py`
-2. `regime_unified.py` / authority-path
-3. `prob_model.py`
-4. `confidence.py`
-5. `decision.py`
+Detta är projektets tydligaste **backbone-roll**.
 
+### 3. Family-konditionerade beslutsytor
+
+Detta lagers jobb är att ge samma backbone **olika strategibeteende beroende på family**.
+
+- `src/core/strategy/prob_model.py`
+- `src/core/strategy/confidence.py`
+- `src/core/strategy/decision_gates.py`
+- `src/core/strategy/decision_fib_gating.py`
+- `src/core/strategy/decision_sizing.py`
+
+Roll:
+
+- formar probability surface
+- formar threshold surface
+- formar survival / gating
+- formar cadence
+- formar sizing surface
+
+Detta är projektets viktigaste **family-differentierande roll**.
+
+### 4. Livscykel, exits och observability
+
+Detta lagers jobb är att fullborda strategin efter att family-ytan redan valts.
+
+- `src/core/backtest/htf_exit_engine.py`
+- shadow-/observability-spår som stöder analys och uppföljning
+
+Roll:
+
+- fullbordar position lifecycle
+- gör family-beteendet granskbart
+- stödjer analys utan att i sig bära huvudbeviset för family-spliten
+
+Detta är projektets tydligaste **livscykel- och granskningsroll**.
+
+### Praktisk projektläsning
+
+Om vi fortsätter med projektet utan att fastna i diagram bör den praktiska läsordningen nu vara:
+
+1. **Vilken family tillåts?**
+2. **Vilken delad backbone kör?**
+3. **Vilka family-konditionerade ytor formar utfallet?**
+4. **Hur fullbordas strategin i sizing, exits och observability?**
+
+Det gör att projektet inte längre behöver beskrivas som “legacy plus RI-lager”, utan som:
+
+> **ett gemensamt strategiramverk med två separata strategy families och tydligt delade roller mellan kontrakt, orkestrering, family-ytor och livscykel.**
+
+### Kompakt ansvarsmatris för projektet
+
+| Lager / roll                      | Primärt ansvar                                       | Huvudmoduler                                   | Delad eller family-konditionerad? | Praktisk nyckelfråga                                                                        |
+| --------------------------------- | ---------------------------------------------------- | ---------------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------- |
+| **Family- och kontraktslager**    | Definiera vilka strategy families som är giltiga     | `family_registry.py`, `test_families.py`       | **Family-definierande**           | Vilken family är tillåten, och är configen hybridfri?                                       |
+| **Backbone / orkestrering**       | Bära den gemensamma runtime-kedjan                   | `evaluate.py`, `decision.py`                   | **Delad**                         | I vilken ordning kopplas features, authority, proba, confidence och beslut ihop?            |
+| **Probability surface**           | Forma sannolikhetsunderlaget                         | `prob_model.py`                                | **Family-konditionerad**          | Är det default-kalibrering eller regime-aware calibration som styr ytan?                    |
+| **Threshold / candidate surface** | Avgöra om kandidat överlever till tradebar action    | `decision_gates.py`                            | **Family-konditionerad**          | Är det threshold-klustret eller cadence/post-gates som stoppar eller öppnar setupet?        |
+| **Structural survival**           | Tvinga passage genom HTF/LTF-veto och override-logik | `decision_fib_gating.py`                       | **Family-konditionerad**          | Är detta ett legitimt survival-lager eller finns ansvarsglidning mot dold entry-aggression? |
+| **Sizing surface**                | Översätta kandidat till faktisk riskexponering       | `decision_sizing.py`, delar av `confidence.py` | **Family-konditionerad**          | Är drift i första hand en sizing-fråga eller började den tidigare i family-ytan?            |
+| **Livscykel / exits**             | Fullborda trade efter vald family-surface            | `htf_exit_engine.py`                           | **Delvis delad**                  | Hur mycket av family-skillnaden lever faktiskt vidare in i exit-lagret?                     |
+| **Observability / audit**         | Göra family-beteendet spårbart och granskbart        | shadow-/observability-spår                     | **Delad stödroll**                | Kan vi bevisa family-drift utan att injicera nytt runtime-beteende?                         |
+
+Denna matris är avsedd som **arbetsyta för fortsatt projektstyrning**. Den svarar inte bara på vad modulerna gör, utan också på **vilken typ av fråga** varje lager bör bära i fortsatt analys eller implementation.
+
+## Prioriterad fortsatt arbetsordning
+
+Om projektet fortsätter härifrån bör arbetet inte drivas som “allting samtidigt”, utan i en fast ordning från högst semantisk risk till lägst.
+
+### Prioritet 1 — skydda family-kontraktet
+
+Det första som alltid bör hållas stabilt är family- och kontraktslagret.
+
+Primära ytor:
+
+- `family_registry.py`
+- `test_families.py`
+
+Frågor att bära här:
+
+- Är legacy- och RI-signaturerna fortfarande tydligt separerade?
+- Har någon hybridglidning uppstått i config eller testantaganden?
+- Har family-begreppet börjat tunnas ut i docs eller implementation?
+
+Praktisk regel:
+
+> **Ingen senare analys eller implementation bör accepteras om den först gör family-kontraktet otydligt.**
+
+### Prioritet 2 — håll backbone tunn och tydlig
+
+Det andra som bör skyddas är den delade runtime-orkestreringen.
+
+Primära ytor:
+
+- `evaluate.py`
+- `decision.py`
+
+Frågor att bära här:
+
+- Är ordningen mellan features, authority, proba, confidence och beslut fortsatt tydlig?
+- Har backbone börjat bära policy som egentligen hör hemma i family-ytorna?
+- Går det fortfarande att peka ut var family-separationen faktiskt uppstår?
+
+Praktisk regel:
+
+> **Backbone ska orkestrera, inte smyga in ny family-policy.**
+
+### Prioritet 3 — analysera family-drift där den faktiskt uppstår
+
+Det tredje arbetet bör ligga i de ytor där evidensen redan visar att family-spliten faktiskt formas.
+
+Primära ytor:
+
+- `prob_model.py`
 - `decision_gates.py`
 - `decision_fib_gating.py`
 - `decision_sizing.py`
 
-6. `evaluate.py`
-7. shadow/observability via `meta.observability.shadow_regime`
-8. separat forsknings-/ledger-spår via `core/backtest/intelligence_shadow.py`
+Föreslagen intern ordning:
 
-Det innebär att nästa rollmap inte bara bör tala om “vilka moduler som finns”, utan också om **vilken typ av ansvar som förs vidare från ett lager till nästa**.
+1. **Probability surface**
 
-### Fullare klassificering av återstående moduler
+- authority + calibration
 
-| Modul                                       | Primär roll               | Sekundär roll                   | Bedömning                                                                                                    |
-| ------------------------------------------- | ------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `src/core/strategy/evaluate.py`             | Pipeline-orkestrering     | authority-seam + observability  | Tunn men central kompositör; väljer regime-authority, features, probas, confidence och `decide()`            |
-| `src/core/strategy/decision.py`             | Beslutsorkestrering       | state propagation               | Renaste navet mellan candidate, fib-gating, post-gates och sizing                                            |
-| `src/core/strategy/prob_model.py`           | Entry-underlag            | regime-aware calibration        | Legacy-kärna, men med RI-adjacent calibration seam när regime-specifik kalibrering används                   |
-| `src/core/strategy/confidence.py`           | Confidence-/quality-layer | gate+sizing bridge              | Inte entrymotor i sig, men påverkar både gating och sizing beroende på `quality.apply` och component scopes  |
-| `src/core/strategy/regime_unified.py`       | Legacy context authority  | trend/volatility classification | Ser fortfarande ut som canonical legacy-default för authoritative regime                                     |
-| `src/core/intelligence/regime/authority.py` | RI authority seam         | normalization/fallback          | Viktig därför att den avgör _vilken_ regime-källa som är auktoritativ, inte därför att den genererar entries |
-| `src/core/backtest/intelligence_shadow.py`  | Research/observability    | advisory ledger                 | Stark observability-yta; uttryckligen advisory/shadow, inte decision-input                                   |
+2. **Threshold / candidate surface**
 
-### Samlad bedömning av `evaluate.py`
+- threshold-kluster, candidate survival, cadence
 
-`evaluate.py` ser efter läsningen ut som det tydligaste **pipeline-navet** i hela systemet, men inte som en egen alpha-modul. Den:
+3. **Structural survival**
 
-- bygger features
-- väljer authoritative regime via authority-mode
-- kör `predict_proba_for(...)`
-- kör `compute_confidence(...)`
-- väljer mellan scaled/raw confidence beroende på `quality.apply`
-- beräknar HTF-regime
-- skickar allt vidare till `decide(...)`
-- exporterar shadow-observability där `decision_input=False`
+- HTF/LTF-veto, override-logik
 
-Det viktigaste här är att `evaluate.py` inte själv verkar flytta alfa eller entrylogik, men den **bestämmer vilken väg som används**. Därför bör den klassas som:
+4. **Sizing surface**
 
-- **primärt:** orchestration
-- **sekundärt:** authority/observability seam
+- regime-/HTF-multipliers, `risk_state`, `clarity`
 
-### Samlad bedömning av `decision.py`
+Praktisk regel:
 
-`decision.py` bekräftar den ordning som dokumentet redan antytt, men gör den nu explicit:
+> **Om drift syns tidigt i family-ytan ska den inte förklaras bort som ett sent sizing- eller exitfenomen.**
 
-1. `select_candidate(...)`
-2. `apply_fib_gating(...)`
-3. `apply_post_fib_gates(...)`
-4. `apply_sizing(...)`
-5. state propagation + final reason append
+### Prioritet 4 — behandla exits som viktig men senare livscykelyta
 
-Det gör `decision.py` till den tydligaste **mekaniska orkestreraren av själva beslutsordningen**. Viktig nyans:
+Exit-lagret är viktigt, men bör inte vara första platsen där family-frågan avgörs.
 
-- filen skapar inte probas
-- filen skapar inte confidence
-- filen skapar inte regime
+Primär yta:
 
-Men den avgör i vilken ordning dessa får påverka slutbeslutet. Därför bör den klassas som:
+- `htf_exit_engine.py`
 
-- **primärt:** entry orchestration
-- **sekundärt:** state management
+Frågor att bära här:
 
-### Samlad bedömning av `prob_model.py`
+- Vilken del av skillnaden mellan families lever faktiskt vidare in i exit-lagret?
+- Vad är verklig family-drift och vad är allmän livscykellogik?
 
-`prob_model.py` ser fortfarande ut som den renaste **legacy-entry-kärnan** i hela systemet. Den producerar buy/sell/hold-probabilities från model registry + kalibrering.
+Praktisk regel:
 
-Det som gör filen semantiskt viktig för RI-rollkartan är dock att `predict_proba_for(...)` stödjer:
+> **Exits ska användas för att fullborda family-analysen, inte för att ersätta tidigare family-bevis.**
 
-- regime-specifik kalibrering via `calibration_by_regime`
-- fallback till vanlig default-kalibrering om regime-specifik version saknas
+### Prioritet 5 — använd observability som verifieringsyta, inte som strategi
 
-Det betyder att filen bör klassas som:
+Observability ska bära bevis, inte ny policy.
 
-- **primärt:** entry-driving substrate
-- **sekundärt:** regime-aware entry modulation
+Primära ytor:
 
-Viktig observation: här kan RI påverka entry **före gates**, men fortfarande genom kalibrering av proba-underlaget snarare än genom att bli en separat entrymotor.
+- shadow-/observability-spår
 
-### Skarpare delkarta — vad i `prob_model.py` flyttar faktiskt entry?
+Frågor att bära här:
 
-Efter närläsning av koden är det viktigt att inte beskriva hela `prob_model.py` som “en enda entrymotor”. Filen innehåller i praktiken tre olika ansvar:
+- Kan vi spåra family-drift utan att injicera nytt runtime-beteende?
+- Har analysbeviset god täckning över authority, probability, gating, cadence och sizing?
 
-1. **inläsning av modellsubstrat**
-2. **proba-beräkning från vikter/bias/kalibrering**
-3. **val av kalibreringsgren beroende på regime**
+Praktisk regel:
 
-Det betyder att filen inte väljer `LONG` eller `SHORT` direkt, men den formar det sannolikhetsunderlag som alla senare gates lever på.
+> **Observability ska göra skillnaden synlig, inte skapa skillnaden.**
 
-| Del i `prob_model.py`                            | Vad koden gör                                                               | Flyttar sannolikhetsytan? | Typisk roll                        | Bedömning för rollkartan                                     |
-| ------------------------------------------------ | --------------------------------------------------------------------------- | ------------------------- | ---------------------------------- | ------------------------------------------------------------ |
-| `ModelRegistry().get_meta(...)`                  | Hämtar modellmetadata från registry / modellfil                             | Indirekt                  | Model substrate lookup             | Infrastruktur-/substratsteg; viktig men inte i sig RI-logik  |
-| `schema` + feature projection                    | Läser features i rätt ordning och fyller saknade värden med `0.0`           | Ja                        | Deterministiskt inference-substrat | Legacy-kärna; utan detta finns ingen meningsfull proba       |
-| `buy.w` / `buy.b` / `sell.w` / `sell.b`          | Definierar den råa logistiska scoringytan                                   | Ja                        | Entry substrate                    | Detta är den mest rena legacy-entryytan i filen              |
-| Default-kalibrering (`buy.calib` / `sell.calib`) | Skalar/offsetar råscore till kalibrerad buy/sell-proba                      | Ja                        | Entry calibration                  | Fortfarande legacy-nära, men redan ett boundary-shaping steg |
-| `calibration_by_regime`-lookup                   | Väljer regimespecifik kalibrering när både `regime` och metadata finns      | Ja                        | Regime-aware entry modulation      | Detta är filens tydligaste RI-adjacent söm                   |
-| Fallback från regime-kalibrering till default    | Behåller default-kalibrering när regime-saknas eller saknar specifik branch | Ja                        | Safety / compatibility fallback    | Viktig kompatibilitetsbrygga snarare än ny alpha             |
-| `predict_proba(...)`-normalisering till simplex  | Bygger slutlig `{buy, sell, hold}`-fördelning                               | Ja                        | Canonical probability output       | Legacy-inferencekärna; formar allt senare gating läser       |
-| `meta_out.versions.regime_aware_calibration`     | Exponerar om regime-aware kalibrering användes                              | Nej                       | Observability                      | Audit-spår, inte beslutslogik                                |
-| `meta_out.calibration_used`                      | Exponerar exakt vilka kalibreringsparametrar som användes                   | Nej                       | Observability / evidence           | Mycket värdefullt för ablation och driftanalys               |
+### Rekommenderad arbetssekvens för nästa fas
 
-### Praktisk split — legacy-substrat vs RI-söm i `prob_model.py`
+Om arbetet fortsätter i ännu en fas bör sekvensen vara:
 
-I praktiken kan filen delas så här:
+1. säkra family-kontraktet
+2. bekräfta att backbone fortfarande är ren orkestrering
+3. analysera probability- och threshold-surface
+4. analysera structural survival och sizing
+5. först därefter gå vidare till exits och bredare uppföljning
 
-- **Tydligt legacy-substrat**
-  - feature projection enligt `schema`
-  - buy/sell-vikter och bias
-  - sigmoid + simplex-normalisering
+Detta minskar risken att projektet åter glider tillbaka till ett otydligt språk där legacy antas vara “huvudstrategin” och RI ett sent lager ovanpå.
 
-- **Boundary-shaping men fortfarande model-nära steg**
-  - default-kalibrering
-  - fallbacklogik när regime-specifik kalibrering saknas
+## Riskzoner för fortsatt implementation
 
-- **RI-adjacent söm**
-  - valet av `calibration_by_regime` när authoritative regime skickas in från pipeline
+Om arbetet senare går från analys till implementation finns några särskilt känsliga zoner där family-gränser lätt kan bli otydliga igen.
 
-Den viktiga nyansen är att RI här inte väljer riktning direkt. I stället kan RI flytta **sannolikhetsgeometrin före gates**, vilket gör sömmen mer känslig än sizing men fortfarande annorlunda från ren candidate selection.
+### Riskzon 1 — hybridglidning i family-kontraktet
 
-### Konkret evidens — aktiv modellmetadata flyttar proba före gates
+Den första risken är att `legacy` och `ri` börjar blandas i namn, config eller testlogik utan att det sägs rakt ut.
 
-Detta är inte bara en teoretisk kodstig. Aktiv modellmetadata i `config/models/tBTCUSD_1m.json` innehåller tydligt olika `a`/`b`-parametrar per regime för både buy och sell. En snabb körning med samma feature-vektor men olika `regime` gav:
+Typiska varningssignaler:
 
-| Regime    | Buy        | Sell       | Hold       | Tolkning                               |
-| --------- | ---------- | ---------- | ---------- | -------------------------------------- |
-| `none`    | `0.425263` | `0.574737` | `0.000000` | Default-kalibrering                    |
-| `bull`    | `0.378436` | `0.587149` | `0.034414` | Regime-söm aktiv men måttlig drift     |
-| `bear`    | `0.206923` | `0.755708` | `0.037368` | Kraftig topologisk drift före gates    |
-| `ranging` | `0.352529` | `0.583218` | `0.064253` | Regime-söm aktiv även i sidledes miljö |
+- legacy-config som börjar bära RI-signaturmarkörer
+- RI-config som tappar canonical authority-/threshold-/cadence-kluster
+- docs eller tester som börjar tala om “nästan-RI legacy” eller “legacy med lite RI på toppen”
 
-Det stöder två viktiga slutsatser:
+Varför zonen är farlig:
 
-1. `prob_model.py` är fortfarande legacy-entry-substratet.
-2. regime-aware kalibrering är en **aktiv och meningsfull beslutsgräns före gating**, inte bara dekorativ metadata.
+- den upplöser hela family-begreppet
+- den gör senare drift omöjlig att tolka rent
 
-### Tydligare slutsats om `prob_model.py`
+### Riskzon 2 — policy läcker in i backbone
 
-Den skarpare läsningen pekar på följande:
+Den andra risken är att `evaluate.py` eller `decision.py` börjar bära family-policy som egentligen borde ligga i family-ytorna.
 
-- **Filens kärna är fortfarande legacy**
-  - vikter, bias, sigmoid och simplex-normalisering
+Typiska varningssignaler:
 
-- **Den mest känsliga RI-bryggan i filen är kalibreringsvalet**
-  - inte inferencemotorn i sig
-  - inte candidate selection
-  - utan valet mellan default-kalibrering och regime-specifik kalibrering
+- ny family-specifik logik göms i ordningsstyrning eller routing
+- backbone börjar fatta policybeslut i stället för att bara orkestrera
+- det blir svårt att peka ut om drift uppstår i authority, calibration, thresholds eller cadence
 
-- **Detta gör `prob_model.py` till en tidigare och mer strukturell brygga än `decision_gates.py`**
-  - `decision_gates.py` formar vilka kandidater som överlever
-  - `prob_model.py` kan redan innan dess flytta själva buy/sell/hold-fördelningen som gates läser
+Varför zonen är farlig:
 
-Det betyder att om vi vill förstå var RI först börjar bryta loss från legacy-topologin, är `prob_model.py` sannolikt en av de första verkligt känsliga sömmarna i kedjan.
+- det suddar ut separationen mellan ramverk och strategi
+- det gör framtida refaktorering betydligt farligare än nödvändigt
 
-### Befintlig evidens som stödjer denna split
+### Riskzon 3 — tidig family-drift feltolkas som sen effekt
 
-- `tests/integration/test_prob_model_integration.py::test_prob_model_wrapper_applies_calibration_and_meta`
-  - stöder att wrappern faktiskt applicerar kalibrering och exporterar metadata
-- `tests/utils/test_prob_model_min.py`
-  - stöder att basmodellen producerar normaliserad `{buy, sell, hold}`-output utan sidoeffekter
-- `docs/analysis/regime_intelligence_champion_compatibility_findings_2026-03-18.md`
-  - stöder att authority-/calibration-pathen är den första tydliga topologiska bryggan i RI-familjens avvikelse från legacy
+Den tredje risken är att drift som börjar i authority, calibration eller threshold surface förklaras bort som ett senare sizing- eller exitfenomen.
 
-### Samlad bedömning av `confidence.py`
+Typiska varningssignaler:
 
-`confidence.py` förtjänar en egen plats i rollkartan, eftersom den inte bara är ett “litet hjälplager”. Efter kodläsning ser den ut som en **quality-aware bridge** mellan entry-underlag och både gating/sizing.
+- diskussioner som hoppar direkt till `risk_state`, `clarity` eller exits
+- tuning av size/exits innan probability- och threshold-surface är förstådd
+- buggrapporter där candidate-drift och size-drift blandas ihop
 
-Filen:
+Varför zonen är farlig:
 
-- skalar buy/sell-confidence med quality factor
-- kan hålla gate och sizing isär via component scopes
-- exporterar `buy_scaled` / `sell_scaled` när sizing-faktorn skiljer sig från gate-faktorn
+- den leder analysen till fel lager
+- den riskerar att skapa kosmetiska fixar på fel ställe
 
-Det gör att `confidence.py` bör klassas som:
+### Riskzon 4 — override-logik börjar uppträda som dold entrymotor
 
-- **primärt:** confidence/quality layer
-- **sekundärt:** permission + sizing bridge
+Den fjärde risken sitter i structural survival-lagret, särskilt där override-logik kan börja fungera som dold aggressionsreglering i stället för legitim survival-policy.
 
-Viktig observation: detta är inte en RI-modul i snäv mening, men den är en plats där marknadskvalitet kan minska aggressivitet utan att nödvändigtvis ändra direction. Därför är den strategiskt viktig i rollkartan.
+Typiska varningssignaler:
 
-### Skarpare delkarta — vad i `confidence.py` flyttar faktiskt beteendet?
+- HTF/LTF override används för att systematiskt rädda svaga setups
+- veto-lager börjar beskrivas som “smart entry-förbättring”
+- permission-lagret blir svårare att skilja från alpha-generation
 
-Efter närläsning av både `confidence.py`, `evaluate.py` och kontraktstesterna blir bilden skarpare: filen genererar inte direction, men den kan fortfarande flytta **vilka setups som passerar confidence-gates** och/eller **hur stora positioner de får** beroende på konfiguration.
+Varför zonen är farlig:
 
-| Del i `confidence.py`                           | Vad koden gör                                                  | Ändrar riktning? | Kan ändra gate-pass?  | Kan ändra storlek? | Typisk roll              | Bedömning                                                          |
-| ----------------------------------------------- | -------------------------------------------------------------- | ---------------- | --------------------- | ------------------ | ------------------------ | ------------------------------------------------------------------ |
-| `_as_float` / `_clamp01` / `_clamp`             | Normaliserar och säkrar numeriska inputs                       | Nej              | Indirekt              | Indirekt           | Safety / numeric hygiene | Ren stödfunktion, inte semantisk alpha                             |
-| `_compute_quality_factor(..., enabled=False)`   | v1-läge: använder bara `data_quality` eller `1.0`              | Nej              | Ja, via absolut nivå  | Ja                 | Basal confidence scaling | Legacy-kompatibel dämpning                                         |
-| v2-komponenter: `spread`, `atr`, `volume`       | Straffar quality utifrån marknadskvalitet                      | Nej              | Ja                    | Ja                 | Quality modulation       | Flyttar absolut confidence men inte buy/sell-ordning               |
-| `component_scopes`                              | Delar upp komponenter i `gate`, `sizing` eller `both`          | Nej              | Ja, om scope når gate | Ja                 | Gate/sizing routing      | Detta är filens viktigaste beteendesöm                             |
-| `q_gate` / `q_size`                             | Bygger separata kvalitetsfaktorer för gating respektive sizing | Nej              | Ja                    | Ja                 | Boundary + sizing bridge | Förklarar varför samma quality-data kan ge olika downstream-effekt |
-| `c_buy` / `c_sell` / `overall`                  | Skalar buy/sell lika med gate-faktorn och bevarar rangordning  | Nej              | Ja                    | Indirekt           | Gate-facing confidence   | Direction bevaras men absolut nivå kan stoppa entry                |
-| `buy_scaled` / `sell_scaled` / `overall_scaled` | Exponerar separat sizing-confidence när `q_size != q_gate`     | Nej              | Nej direkt            | Ja                 | Sizing-facing confidence | Tydlig brygga till `decision_sizing.py`                            |
-| `meta.quality` / `reasons` / `component_scopes` | Exporterar varför confidence reducerades och med vilken scope  | Nej              | Nej                   | Nej                | Observability / audit    | Viktigt bevislager, inte beslutsmotor                              |
+- det döljer var entry egentligen uppstår
+- det kan återinföra precis den rollförvirring som rapporten försöker städa bort
 
-### Praktisk split — confidence som direction-bevarande men boundary-flyttande brygga
+### Riskzon 5 — observability går från spegel till policy
 
-Det viktigaste att hålla isär här är tre olika påståenden:
+Den femte risken är att shadow-/observability-spår börjar användas som beslutsdrivare i stället för som verifieringsyta.
 
-1. `confidence.py` **väljer inte riktning**
-2. `confidence.py` kan ändå **ändra om ett setup passerar confidence-gaten**
-3. `confidence.py` kan också, separat, **bara ändra size**
+Typiska varningssignaler:
 
-Denna kombination gör lagret ovanligt viktigt:
+- observability-data används som direkt runtime-input utan tydlig family-förankring
+- advisory-/shadow-spår börjar styra i stället för att mäta
+- analysartefakter används som om de vore policykontrakt
 
-- **Direction-bevarande egenskap**
-  - buy och sell skalas med samma gate-faktor
-  - ordningen mellan buy och sell bevaras
-  - filen introducerar därför inte ny long/short-bias i sig
+Varför zonen är farlig:
 
-- **Boundary-flyttande egenskap**
-  - om `quality.apply = both` i `evaluate.py` används den skalade confidence-bilden direkt i `decide()`
-  - då kan samma proba-setup gå från pass till block utan att direction ändras
+- den suddar ut gränsen mellan bevis och beslut
+- den gör systemets verkliga kausalitet svårare att läsa
 
-- **Ren sizing-gemenskap när den explicit konfigureras så**
-  - om `quality.apply = sizing_only` använder `evaluate.py` rå confidence för gating
-  - samtidigt exporteras `buy_scaled` / `sell_scaled` för sizing
-  - då blir lagret i praktiken management/sizing snarare än entry-permission
+### Praktisk riskregel
 
-Detta betyder att `confidence.py` inte bör beskrivas som varken ren management eller ren gate-logik. Det är en **konfigurerbar brygga** vars default-läge kan vara entry-adjacent, medan dess isolerade sizing-läge ligger mycket närmare RI:s tänkta managementroll.
+Om en framtida ändring gör det svårare att svara på följande fyra frågor, då ligger den sannolikt i en riskzon:
 
-### Tydligare slutsats om `confidence.py`
+1. vilken family körs?
+2. vilken authority-path är authoritative?
+3. i vilket lager uppstår drift först?
+4. är detta policy, orkestrering, survival eller observability?
 
-Den skarpare läsningen pekar på följande:
+Om svaret på någon av dessa blir otydligare efter en ändring, bör den ändringen betraktas som högrisk även om diffen ser liten ut.
 
-- **`confidence.py` är inte en direction-motor**
-  - den bevarar buy/sell-ordningen
-  - den skapar inte nya kandidater
+## Beslutschecklista för nästa ändring
 
-- **`confidence.py` är däremot en verklig boundary-modulator**
-  - i default-/`both`-läge kan den påverka vilka setups som överlever gating
-  - i `sizing_only`-läge blir den i stället en ren storleksmodulator
+Innan en framtida implementation eller refaktor accepteras bör följande checklista kunna besvaras kort och tydligt.
 
-- **Detta gör filen till en mer flexibel brygga än `decision_sizing.py`**
-  - `decision_sizing.py` är nästan rent post-candidate
-  - `confidence.py` kan, beroende på apply/scope, ligga både före och efter den verkliga gating-effekten
+### A. Family-frågor
 
-Praktiskt betyder det att `confidence.py` bör hållas under extra kontroll i RI-rollkartan: inte därför att den genererar entry, utan därför att den kan flytta entry-gränsen utan att ändra riktning.
+- Vilken strategy family berörs: `legacy`, `ri` eller båda?
+- Är ändringen family-definierande, backbone-relaterad eller bara en lokal yta?
+- Riskerar ändringen att skapa ett hybridläge mellan families?
 
-### Befintlig evidens som stödjer denna split
+### B. Kausalitet
 
-- `tests/utils/test_confidence.py::test_compute_confidence_v2_preserves_buy_sell_order_when_not_saturated`
-  - stöder att lagret bevarar direction-order och därmed inte själv skapar ny riktning
-- `tests/utils/test_confidence.py::test_compute_confidence_v2_component_scope_sizing_only_does_not_affect_gate`
-  - stöder att komponentscope kan hålla gating oförändrad men ändå reducera sizing via `buy_scaled` / `sell_scaled`
-- `tests/utils/test_decision_edge.py::test_entry_gate_does_not_use_scaled_confidence`
-  - stöder att scaled confidence inte får smyga in och skapa entry när rå gate-confidence ligger under threshold
-- `tests/utils/test_decision_edge.py::test_sizing_prefers_scaled_confidence_when_present`
-  - stöder att scaled confidence faktiskt används i sizing när den väl finns
-- `src/core/strategy/evaluate.py`
-  - visar explicit att `quality.apply` avgör om confidence-lagret används som `both`-bridge eller som `sizing_only`-bridge
+- I vilket lager uppstår den avsedda effekten först?
+  - authority
+  - calibration
+  - threshold/candidate
+  - survival/cadence
+  - sizing
+  - exits
+- Finns risk att man försöker fixa en sen effekt fast problemet börjar tidigare?
 
-### Runtime-/config-karta — var används `both` respektive `sizing_only`?
+### C. Rollrenhet
 
-Efter repo-sökning över kod, tester och checked-in configfiler framträder en viktig praktisk bild:
+- Ligger ändringen i rätt lager?
+- Bör den höra hemma i backbone, eller borde den vara en family-konditionerad yta?
+- Bör den höra hemma i observability i stället för i runtime-policy?
 
-| Runtime-/configyta                                                                                               | Observerat läge                       | Evidens                                                                                 | Tolkning                                                                                       |
-| ---------------------------------------------------------------------------------------------------------------- | ------------------------------------- | --------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `src/core/strategy/evaluate.py` utan explicit `quality.apply`                                                    | `both` (default)                      | `quality_cfg.get("apply") or "both"`                                                    | Om config inte sätter `apply` används quality-lagret som gate+sizing-brygga                    |
-| Checked-in quality-profiler under `config/strategy/champions/`                                                   | ingen explicit `apply`                | profilerna innehåller `quality.components.*.scope` men ingen `apply`-nyckel             | Dessa profiler faller därför tillbaka till runtime-default `both`                              |
-| `config/strategy/champions/tBTCUSD_1h_quality_v2_candidate_scoped*.json`                                         | effektivt hybrid under default `both` | `data_quality` + `spread` har `scope: both`, medan `atr` + `volume` har `scope: sizing` | Gating påverkas av vissa quality-komponenter, medan andra bara påverkar sizing                 |
-| `tests/backtest/test_evaluate_pipeline.py::test_evaluate_pipeline_ri_v2_clarity_on_changes_sizing_only_and_logs` | explicit `sizing_only`                | `cfg_base["quality"] = {"apply": "sizing_only"}`                                        | Testad RI-slice där confidence hålls borta från gating och används för sizing-only             |
-| `src/core/strategy/decision_sizing.py` clarity-payload                                                           | `sizing_only`                         | `clarity_payload["apply"] = "sizing_only"`                                              | RI clarity är uttryckligen modellerad som storleks-/management-lager                           |
-| Repo-bredd sökning efter explicit `"apply": "sizing_only"` i checked-in config                                   | inga träffar i config                 | `rg` över `config/` gav inga explicita `quality.apply = sizing_only`-konfigurationer    | `sizing_only` framstår som kontrollerat test-/specialläge, inte som standardiserad huvudprofil |
+### D. Evidens
 
-### Praktisk slutsats om skarpa confidence-lägen
+- Vilken befintlig evidens stöder att detta är rätt lager att ändra?
+- Vilken verifiering krävs för att visa att family-separationen inte blivit otydligare?
+- Är resultatet lättare eller svårare att förklara efter ändringen?
 
-Detta ger en mer precis karta än den tidigare allmänna formuleringen:
+### Kort beslutsregel
 
-- **Default i runtime är `both`**
-  - om `quality.apply` saknas blir confidence-lagret gate+sizing-brygga
-  - detta gäller även checked-in quality-profiler som bara anger komponentscopes
+> **En bra nästa ändring gör family-gränser, backbone-roller och den kausala driftordningen tydligare — inte mer sammanblandade.**
 
-- **Checked-in champion-/candidate-profiler ser ut som hybrider under `both`**
-  - `data_quality` och `spread` får påverka gating
-  - `atr` och `volume` får bara påverka sizing
-  - alltså: inte “ren gate” och inte “ren sizing”, utan en avsiktlig mix
+## Verifieringskarta per lager
 
-- **`sizing_only` finns tydligt som kontrollerad policy, men främst i testad RI-/clarity-kontext**
-  - explicit i pipeline-testen för clarity-slicen
-  - explicit i clarity-metadata i `decision_sizing.py`
-  - inte observerad som generell checked-in runtime-default i `config/`
+För att rapporten ska kunna användas som arbetsunderlag i praktiken behöver varje lager också ha en tydlig verifieringsyta. Tabellen nedan är inte en fullständig testinventering, utan en styrkarta för **vilka bevis som hör till vilket ansvar**.
 
-Detta betyder att den nuvarande repo-bilden lutar åt att **skarp standardanvändning fortfarande är entry-adjacent via `both`**, medan **RI clarity-spåret redan uttryckligen är placerat i management/sizing-facket via `sizing_only`**.
+| Lager                               | Vad som ska bevisas                                                                        | Primära bevisytor                                                                                           |
+| ----------------------------------- | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| **Family- och kontraktslager**      | att `legacy` och `ri` fortfarande är tydligt separerade och hybridfria                     | `family_registry.py`, `tests/core/strategy/test_families.py`                                                |
+| **Backbone / orkestrering**         | att den gemensamma kedjan fortfarande bara orkestrerar och inte smyger in ny family-policy | `evaluate.py`, `decision.py`, `tests/backtest/test_evaluate_pipeline.py`, pipeline-hash-/cutover-parity-yta |
+| **Authority + probability surface** | att authority-path och calibration verkligen är tidiga family-sömmar                       | `prob_model.py`, authority-/cutover-parity-bevis, prob-model integration-/kontraktytor                      |
+| **Threshold / candidate surface**   | att trade/no-trade och candidate resolution sker i rätt lager                              | `decision_gates.py`, decision-gates contract-/edge-/scenario-ytor                                           |
+| **Structural survival**             | att HTF/LTF-veto och override beter sig som survival-policy snarare än dold entrymotor     | `decision_fib_gating.py`, scenario-/behavior-tester kring override och block/pass                           |
+| **Sizing surface**                  | att drift i size inte förväxlas med tidigare candidate-drift                               | `decision_sizing.py`, `confidence.py`, clarity-/risk_state-/sizing-relaterade pipeline- och scenarioytor    |
+| **Livscykel / exits**               | att exits fullbordar strategin utan att överta family-beviset                              | `htf_exit_engine.py`, exit-engine tester och backtestytor                                                   |
+| **Observability / audit**           | att drift kan mätas utan att observability blir policy                                     | shadow-/observability-spår, cutover-parity-/shadow-bevis                                                    |
 
-### Konkret evidens — de faktiska `both`-profilerna ger verklig gate-drift
+### Praktisk användning av verifieringskartan
 
-För att flytta detta från “trolig tolkning” till faktisk evidens kördes `compute_confidence(...)` med den checked-in profilen `config/strategy/champions/tBTCUSD_1h_quality_v2_candidate_scoped.json` och en representativ buy-proba nära defaultgränsen (`buy = 0.33` mot `entry_conf_overall = 0.24`).
+Kartans poäng är enkel:
 
-Det gav följande bild:
+- om en ändring påstår sig röra **family-kontraktet**, ska beviset inte börja i exits
+- om en ändring påstår sig röra **threshold surface**, ska beviset inte gömmas i sizing-telemetri
+- om en ändring påstår sig röra **observability**, ska den inte beskrivas som ny strategi
 
-| Fall                  | Gate confidence | Scaled confidence | Gate-pass vid `0.24`? | Slutsats                                                         |
-| --------------------- | --------------- | ----------------- | --------------------- | ---------------------------------------------------------------- |
-| Clean                 | `0.33`          | `0.33`            | Ja                    | Baslinje                                                         |
-| `spread_stress`       | `0.231`         | `0.231`           | Nej                   | `scope: both` på `spread` kan blockera entry                     |
-| `data_quality_stress` | `0.231`         | `0.231`           | Nej                   | `scope: both` på `data_quality` kan blockera entry               |
-| `atr_stress`          | `0.33`          | `0.231`           | Ja                    | `scope: sizing` på ATR lämnar gating orörd men sänker storlek    |
-| `volume_stress`       | `0.33`          | `0.231`           | Ja                    | `scope: sizing` på volume lämnar gating orörd men sänker storlek |
+Det vill säga: **beviset bör ligga i samma lager som anspråket**.
 
-Detta är viktigt därför att det visar att frågan inte längre är om `both`-profiler **kan** flytta gating i teorin, utan att den checked-in scoped-profilen faktiskt gör det på ett mätbart sätt.
+### Minsta bevisdisciplin för framtida arbete
 
-### Jämförelse mellan scoped-profilerna — relaxed-size ändrar size, inte gate
+När projektet går vidare bör minst följande princip gälla:
 
-Den andra checked-in varianten, `tBTCUSD_1h_quality_v2_candidate_scoped_relaxed_size.json`, visar samma gate-sida men mildare size-straff för de sizing-only-komponenter som öppnats upp:
+1. påstådd family-drift ska ha bevis i rätt family-lager
+2. påstådd backbone-förenkling ska visa att backbone blivit renare, inte smartare
+3. påstådd sizing-fix ska visa att den inte döljer tidigare candidate-drift
+4. observability ska användas för att bekräfta, inte för att uppfinna, family-skillnad
 
-| Profil             | Fall            | `q_gate` | `q_size`   | Tolkning                                            |
-| ------------------ | --------------- | -------- | ---------- | --------------------------------------------------- |
-| `candidate_scoped` | `spread_stress` | `0.7`    | `0.7`      | Gate och size sjunker tillsammans via `scope: both` |
-| `relaxed_size`     | `spread_stress` | `0.7`    | `0.7`      | Samma gate-ytan kvar                                |
-| `candidate_scoped` | `atr_stress`    | `1.0`    | `0.7`      | Gating orörd, size tydligt reducerad                |
-| `relaxed_size`     | `atr_stress`    | `1.0`    | `0.892469` | Samma gate, mildare size-straff                     |
+## Nästa kandidatytor för fortsatt fas
 
-Det stöder följande precisering:
+Om arbetet fortsätter utan att öppna en bred refaktor eller ny parameterjakt, är följande kandidatytor de mest rimliga att ta i turordning.
 
-- **gate-driften i dessa profiler kommer från `data_quality` och `spread`**
-- **skillnaden mellan scoped-profilerna sitter främst i sizing-sidan (`atr` / `volume`)**
-- relaxed-size-profilen ser alltså ut att vara en **size-surface-justering**, inte en ny gate-topologi
+### Kandidatyta A — `prob_model.py`
 
-Detta passar också väl med metadata-noten i den scoped-profilen: målet beskrivs som att behålla gating-fördelarna från W1/W3 men mildra W2-regression via sizing-only-komponenterna.
+Varför först:
 
-### Konkret evidens — threshold-lagret kan ensamt flippa samma setup
+- calibration-seamen är den tidigaste tydliga family-brytaren
+- här går det att isolera authority/calibration utan att direkt röra senare lager
 
-För att få en jämförbar evidenspunkt mot quality-lagret kördes också samma `probas` och samma `confidence` genom RI-signaturens zontrösklar i `decision_gates.py`:
+Vad nästa fas bör svara på:
 
-- `buy = 0.45`
-- `sell = 0.20`
-- `confidence.buy = 0.45`
-- regime = `balanced`
+- hur mycket family-drift uppstår redan före thresholding?
+- vilka delar är ren inferens och vilka delar är family-shaping calibration?
 
-Med en RI-lik signal-adaptation-konfiguration gav det:
+### Kandidatyta B — `decision_gates.py`
 
-| Zon    | Aktiv balanced-threshold | Action | Slutsats                             |
-| ------ | ------------------------ | ------ | ------------------------------------ |
-| `low`  | `0.33`                   | `LONG` | setup passerar                       |
-| `mid`  | `0.51`                   | `NONE` | samma setup blockeras                |
-| `high` | `0.57`                   | `NONE` | samma setup blockeras ännu tydligare |
+Varför därefter:
 
-Detta visar att threshold-lagret i `decision_gates.py` på egen hand kan flytta ett identiskt setup mellan **trade** och **no-trade** utan att probas eller confidence i sig ändras.
+- threshold- och candidate-surface är den tydligaste sena trade/no-trade-brytaren
+- här ligger också cadence och flera av de mest synliga family-skillnaderna
 
-### Jämförbar driftstege — calibration vs threshold vs quality
+Vad nästa fas bör svara på:
 
-När de tre evidensytorna ställs bredvid varandra blir skillnaden i ansvar tydligare:
+- vilka steg är boundary-forming, vilka är candidate-moving och vilka är bara blockerande?
+- hur mycket av driftbilden kommer från threshold-surface jämfört med calibration?
 
-| Lager                              | Fast input                         | Observerad drift                                                                            | Typ av drift                                                   |
-| ---------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| `prob_model.py` calibration        | samma features, olika regime       | `buy` går från `0.425263` (`none`) till `0.206923` (`bear`) och faller då under gate `0.24` | **Upstream probability drift** före all gating                 |
-| `decision_gates.py` thresholding   | samma probas/confidence, olika zon | samma setup går från `LONG` (`low`) till `NONE` (`mid/high`)                                | **Explicit gate-boundary drift**                               |
-| `confidence.py` quality (`both`)   | samma probas, olika market-quality | gate confidence går från `0.33` till `0.231` under `spread_stress` / `data_quality_stress`  | **Conditional gate drift** via gate-scoped quality-komponenter |
-| `confidence.py` quality (`sizing`) | samma probas, olika ATR/volume     | gate confidence oförändrad, men scaled confidence sjunker                                   | **Ren size drift**                                             |
+### Kandidatyta C — `decision_fib_gating.py`
 
-### Tydligare slutsats om relativ driftstyrka
+Varför som tredje steg:
 
-Den jämförbara bilden pekar på följande arbetsordning för fortsatt analys:
+- structural survival är semantiskt känsligt
+- override-logik är den tydligaste platsen där permission riskerar att glida mot dold aggressionsstyrning
 
-1. **Calibration** är den tidigaste och mest strukturella bryggan
+Vad nästa fas bör svara på:
 
-- den flyttar själva sannolikhetsytan innan några gates ens läser den
+- när är override legitim survival-policy?
+- när börjar override fungera som dold entryförstärkning?
 
-2. **Thresholding** är den tydligaste sena trade/no-trade-brytaren
+### Kandidatyta D — `decision_sizing.py`
 
-- den kan med identiska probas/confidence flippa ett setup mellan `LONG` och `NONE`
+Varför efter survival-lagret:
 
-3. **Quality** är i nuvarande checked-in profiler en verklig men mer selektiv gate-brygga
+- sizing är viktig, men bör läsas efter att tidig family-drift redan separerats ut
+- här blir skillnaden mellan candidate-drift och size-drift särskilt viktig
 
-- `data_quality` och `spread` kan blockera entry
-- `atr` och `volume` ligger däremot huvudsakligen i sizing-facket
+Vad nästa fas bör svara på:
 
-Det betyder att om målet är att förklara faktisk trade-drift mellan RI- och legacy-topologier, bör nästa viktning sannolikt vara:
+- vilka effekter är verkligt post-candidate?
+- vilka family-skillnader ligger i regime-/HTF-/clarity-/risk_state-surface snarare än tidigare i kedjan?
 
-- först **calibration-pathen**
-- därefter **threshold-/zone-pathen**
-- därefter **quality-gating**
+### Kandidatyta E — exits och observability
 
-...med förbehållet att quality fortfarande kan vara mycket viktig i vissa marknadslägen, men att dess checked-in scoped-profiler just nu ser mer **hybridiska** än primärt topologidrivande ut.
+Varför sist:
 
-### Tvärjämförelse — verklig legacy-yta vs RI-signaturyta
+- de fullbordar och verifierar strategin
+- de bör inte vara första platsen där family-frågan avgörs
 
-När de faktiska repo-ytorna läggs bredvid varandra blir det tydligare vad som är **intra-legacy tuning** och vad som faktiskt ser ut som **familjebyte**.
+Vad nästa fas bör svara på:
 
-| Yta                                                                   | Observerade fakta                                                                                                             | Tolkning                                                                              |
-| --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| Aktiv champion `config/strategy/champions/tBTCUSD_1h.json`            | `strategy_family = legacy`, `413` trades, milestone-3 baseline                                                                | Verklig legacy-yta, inte bara en teoretisk referens                                   |
-| Scoped quality-kandidater                                             | `strategy_family = legacy`, `base_champion = tBTCUSD_1h.json`, quality v2 med gate+sizing-scopes                              | Fortfarande legacy-familj; kvalitetstuning ovanpå champion, inte RI-migration         |
-| RI-signatur från `tests/core/strategy/test_families.py::_ri_config()` | `authority_mode = regime_module`, `entry_conf_overall = 0.25`, `regime_proba.balanced = 0.36`, `atr_period = 14`, gates `3/2` | Repo-kodad RI-familjesignatur med egen threshold-/gating-shape                        |
-| Champion + authority-only overlay                                     | `0` trades enligt kompatibilitetsanalysen                                                                                     | Första topologibrottet inträffar innan quality- eller sizing-only-förklaringar behövs |
-| `trial_025` / RI-positiv runtime-yta                                  | fortsatt trading under RI-kompatibel surface                                                                                  | RI fungerar som separat kompatibel topologi, inte som liten champion-overlay          |
+- hur mycket av family-skillnaden lever faktiskt vidare efter sizing?
+- vilka observability-ytor ger bäst bevis utan att skapa ny policy?
 
-### Tydligare family-tolkning av quality-slicerna
+## Selector- och evidensplan per kandidatyta
 
-Detta hjälper också att placera de senaste quality-resultaten rätt:
+För att nästa fas inte ska börja med att "leta test" bör varje kandidatyta ha en liten minimiuppsättning selectors redan innan första diffen skrivs.
 
-- de checked-in scoped quality-profilerna är **verkliga och viktiga**
-- men de är fortfarande uttryckligen märkta som **legacy**
-- de visar hur mycket gate- respektive size-drift som kan skapas **inom legacy-familjen**
-- de bevisar däremot inte att legacy därmed blivit RI-kompatibelt
+### A. `prob_model.py` — rekommenderad minsta evidens
 
-Det tvärtom viktiga fyndet är:
+Primär selectors:
 
-> Legacy kan finjusteras ganska långt via quality-, threshold- och sizingytor utan att därmed upphöra att vara legacy.
+- `tests/backtest/test_evaluate_pipeline.py::test_evaluate_pipeline_returns_meta`
+- `tests/governance/test_regime_intelligence_cutover_parity.py::test_cutover_identical_inputs_replay_identical_outputs_within_authority_mode`
+- `tests/governance/test_regime_intelligence_cutover_parity.py::test_cutover_pipeline_hash_stability`
 
-Det som enligt repo-evidensen först ser ut att bryta topologin är fortfarande:
+Bra komplettering om calibration-/probability-seamen öppnas tydligare:
 
-1. authority-byten till `regime_module`
-2. den regimkänsliga calibration-pathen som följer därav
-3. först därefter den RI-nativa threshold-/gating-surface som gör den nya topologin tradebar igen
+- `tests/backtest/test_evaluation.py`
 
-### Första topologibrott-karta
+Praktisk läsning:
 
-Om man uttrycker detta som en kedja blir bilden nu mer sammanhängande:
+- börja med selectors som visar att sannolikhets- eller authority-drift faktiskt syns uppströms thresholding
+- använd bredare calibration-tester som kompletterande stöd, inte som ensam family-dom
 
-1. **Legacy champion fungerar**
-2. **Legacy champion + authority-only kollapsar**
-3. **RI-kompatibel calibration/authority-path kräver egen threshold-/gating-yta**
-4. **Scoped quality-profiler förbättrar eller förskjuter beteendet inom legacy-topologin, men ersätter inte RI-sömmen**
+### B. `decision_gates.py` — rekommenderad minsta evidens
 
-Detta stärker den nuvarande arbetsmodellen i dokumentet:
+Primär selectors:
 
-- **quality** = viktig driftfördelare inom en redan vald familjeyta
-- **thresholding** = stark trade/no-trade-brytare inom den aktiva topologin
-- **calibration + authority** = tidigaste kandidaten till verkligt familjebrytande söm
+- `tests/integration/test_golden_trace_runtime_semantics.py::test_signal_adaptation_zone_overrides_base_thresholds`
+- `tests/core/strategy/test_families.py::test_resolve_strategy_family_rejects_declared_ri_with_wrong_gates`
+- `tests/governance/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable`
 
-### Quality-konstant family probe — threshold- och cadence-ytan räcker för verklig drift
+Bra komplettering när threshold-shape eller gating-gränser rörs:
 
-För att minska risken att quality-lagret “får skulden för allt” kördes en liten, kontrollerad probe direkt mot `select_candidate(...)` och `apply_post_fib_gates(...)` i `decision_gates.py`.
+- `tests/governance/test_config_schema_backcompat.py`
 
-Upplägget var medvetet snävt:
+Praktisk läsning:
 
-- verklig legacy-yta från `config/strategy/champions/tBTCUSD_3h.json`
-- repo-kodad RI-signaturyta från `tests/core/strategy/test_families.py::_ri_config()`
-- samma `probas`
-- samma råa `confidence`
-- ingen quality-skalning alls i vägen
+- om ändringen sägs vara threshold-relaterad ska minst en selector visa faktisk threshold-/candidate-effekt
+- pipeline-hash ska fungera som skydd mot att en "liten" gate-ändring i själva verket flyttar backbone-ordning
 
-Det gör att eventuell drift i utfallet här inte kan förklaras av `confidence.py`-quality, utan måste komma från family-surface i threshold-/cadence-lagret.
+### C. `decision_fib_gating.py` — rekommenderad minsta evidens
 
-| Scenario                 | Fast input                                                                 | Legacy 3h-yta                                                      | RI-signaturyta                                             | Tolkning                                                                |
-| ------------------------ | -------------------------------------------------------------------------- | ------------------------------------------------------------------ | ---------------------------------------------------------- | ----------------------------------------------------------------------- |
-| `threshold_low_reopens`  | `buy=0.34`, `sell=0.20`, `confidence.buy=0.34`, `balanced`, låg ATR-zon    | `NONE` via `regime_thr=0.36`                                       | `LONG` via `regime_thr=0.33`                               | Samma setup öppnas i RI men inte i legacy enbart via threshold-surface  |
-| `threshold_mid_reblocks` | `buy=0.47`, `sell=0.20`, `confidence.buy=0.47`, `balanced`, mid ATR-zon    | `LONG` via `regime_thr=0.44`                                       | `NONE` via `regime_thr=0.51`                               | Samma setup blockeras i RI men passerar i legacy, återigen utan quality |
-| `cadence_flip_holdback`  | `buy=0.60`, `sell=0.20`, `confidence.buy=0.60`, låg zon, flip från `SHORT` | `LONG` när `decision_steps=1` växer till `2` och möter gates `2/0` | `NONE` med `HYST_WAIT` när samma läge möter RI-gates `3/2` | RI-familjens gating cadence kan hålla tillbaka ett redan giltigt setup  |
+Primär selectors:
 
-Detta ger en viktig precisering av topologibrottet:
+- `tests/governance/test_regime_intelligence_cutover_parity.py::test_cutover_identical_inputs_replay_identical_outputs_within_authority_mode`
+- `tests/backtest/test_evaluate_regime_precomputed_index.py`
+- `tests/core/strategy/test_families.py::test_cross_family_promotion_requires_override_and_signoff`
 
-1. **quality är inte nödvändig för att skapa verklig family-drift i gate-utfallet**
-2. **threshold-klustret räcker för att både öppna och stänga identiska setups mellan ytorna**
-3. **gating cadence (`3/2` vs `2/0`) räcker dessutom för att fördröja ett redan giltigt candidate-byte**
+Bra komplettering om HTF/LTF-fib-samspelet påverkas:
 
-I praktiken innebär det att nästa frågeställning inte längre är _om_ threshold-/cadence-ytan kan skapa verklig RI-/legacy-drift när quality hålls konstant, utan **hur stor del av den bredare replay-driften som kommer därifrån relativt calibration-pathen**.
+- `tests/utils/test_features_asof_context_bundle.py`
 
-### Kalibreringssömmen på fast gate-surface — samma features kan byta riktning före thresholding
+Praktisk läsning:
 
-För att isolera den tidigare sömmen i kedjan kördes därefter en separat probe direkt mot `predict_proba_for(...)` med den verkliga modellen `config/models/tBTCUSD_3h.json`.
+- override/survival-logik behöver bevisas som permission- eller survival-policy, inte smygväg för ny aggression
+- därför bör samma ändring helst ha både replay-bevis och ett kontraktsbevis mot otillåten override-glidning
 
-Även detta upplägg hölls medvetet rent:
+### D. `decision_sizing.py` — rekommenderad minsta evidens
 
-- samma features hela vägen
-- samma gate-surface hela vägen
-- ingen quality-skalning
-- ingen ändring av hysteresis/cooldown
+Primär selectors:
 
-Det enda som varierades var **vilken kalibreringsgren som användes** i `prob_model.py`.
+- `tests/backtest/test_evaluate_pipeline.py::test_evaluate_pipeline_ri_v2_clarity_on_changes_sizing_only_and_logs`
+- `tests/governance/test_regime_intelligence_cutover_parity.py::test_cutover_identical_inputs_replay_identical_outputs_within_authority_mode`
+- `tests/governance/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable`
 
-Ett konkret feature-set gav följande utfall:
+Bra komplettering när regime-/clarity-/risk-state-surface öppnas:
 
-| Kalibreringsgren | Buy        | Sell       | Legacy low-zon (`regime_thr=0.36`) | RI low-zon (`regime_thr=0.33`) | Tolkning                                                                  |
-| ---------------- | ---------- | ---------- | ---------------------------------- | ------------------------------ | ------------------------------------------------------------------------- |
-| `none`           | `0.513411` | `0.486589` | `LONG`                             | `LONG`                         | Default-kalibreringen håller long-sidan marginellt över short             |
-| `bull`           | `0.481459` | `0.518541` | `SHORT`                            | `SHORT`                        | Samma features byter riktning enbart via regime-aware kalibrering         |
-| `bear`           | `0.498711` | `0.501289` | `SHORT`                            | `SHORT`                        | Även bear-grenen flyttar fördelningen över till short utan threshold-byte |
+- `tests/core/intelligence/regime/test_clarity.py`
+- `tests/core/intelligence/regime/test_contracts.py`
 
-Det viktiga här är inte att just detta feature-set råkar vara “magiskt”, utan vad det bevisar om ansvarsfördelningen:
+Praktisk läsning:
 
-1. **kalibreringssömmen kan ensam byta candidate-riktning på en oförändrad gate-surface**
-2. **threshold/cadence behöver alltså inte vara orsaken när ett setup redan har vänt riktning tidigare i kedjan**
-3. **detta placerar calibration som en tidigare och mer strukturell driftkälla än gate-surface, även när båda senare samverkar**
+- sizing-ytan ska visa post-candidate-effekt, inte maskera tidigare drift
+- om clar​ity eller risk_state påverkar size men inte candidate, ska beviset säga just det och inte mer
 
-### Skarpare attribution när quality hålls konstant
+### E. exits och observability — rekommenderad minsta evidens
 
-När de kontrollerade proverna nu läggs bredvid varandra blir ansvarskartan tydligare än tidigare:
+Primär selectors:
 
-| Isolerad probe       | Vad som hölls fast                                     | Vad som varierades                        | Observerad drift                              | Slutsats                                                             |
-| -------------------- | ------------------------------------------------------ | ----------------------------------------- | --------------------------------------------- | -------------------------------------------------------------------- |
-| **Calibration-only** | samma features, samma gate-surface, ingen quality      | `predict_proba_for(...)`-kalibreringsgren | `LONG -> SHORT` på oförändrad yta             | `prob_model.py` kan flytta riktning före all senare gating           |
-| **Threshold-only**   | samma probas/confidence, samma cadence, ingen quality  | legacy- vs RI-threshold surface           | `NONE -> LONG` och `LONG -> NONE` mellan ytor | threshold-surface kan själv öppna/stänga identiska setups            |
-| **Cadence-only**     | samma kandidat, samma probas/confidence, ingen quality | `2/0` vs `3/2`                            | `LONG -> HYST_WAIT/NONE` vid samma flip-läge  | gating cadence kan själv fördröja eller hålla tillbaka giltiga byten |
+- `tests/backtest/test_htf_exit_engine_selection.py`
+- `tests/backtest/test_htf_exit_engine_htf_context_schema.py`
+- `tests/backtest/test_backtest_applies_htf_exit_config.py`
 
-Detta flyttar dokumentets attribution från en allmän “många lager spelar roll”-bild till en mer precis sekvens:
+Bra komplettering när evidensartefakter eller shadow-spår rörs:
 
-1. **calibration-pathen kan först flytta sannolikhetsgeometrin och till och med vända riktning**
-2. **threshold-surface avgör därefter om den kalibrerade kandidaten över huvud taget får passera**
-3. **cadence bestämmer slutligen om ett giltigt byte får ske direkt eller måste vänta**
+- `tests/backtest/test_regime_shadow_artifacts.py`
+- `tests/core/intelligence/regime/test_contracts.py::test_shadow_regime_observability_roundtrip_preserves_shape`
 
-Det betyder att nästa replay-fråga nu kan ställas skarpare än tidigare:
+Praktisk läsning:
 
-> Hur mycket av den observerade RI-/legacy-driften kommer från att kalibreringen redan ändrar kandidatunderlaget, och hur mycket tillkommer först när threshold- och cadence-surface läggs ovanpå?
+- exits och observability ska bekräfta family-bilden nedströms, inte definiera den uppströms
+- om en ändring bara kan försvaras via shadow-artifacts men inte via family-/candidate-lager, är evidensen sannolikt felplacerad
 
-### Representativ regime-/zon-matris — flera små fall pekar i samma riktning
+### Kort arbetsregel för nästa fas
 
-För att undvika att hela attributionen står och faller med ett enda “snyggt” exempel kördes därefter en liten sökprobe över den verkliga modellen `config/models/tBTCUSD_3h.json` för att hitta flera representativa fall.
+Före första implementation på någon av kandidatytorna bör nästa slice skriva ned exakt:
 
-Detta är fortfarande **kontrollerade mikrofall**, inte full backtest-replay, men de har två viktiga egenskaper:
+1. vilken av selectors ovan som är **minimikrav**
+2. vilken selector som är **driftvakt** mot scope-glidning
+3. vilken extra selector som bara körs om ändringen faktiskt öppnar ett bredare lager
 
-- de använder **verklig modellmetadata**
-- de spänner över **flera regime-/zonlägen** i stället för ett enda handplockat scenario
+Det gör att nästa fas kan starta med en liten, explicit evidensdisciplin i stället för att uppfinna sin verifiering halvvägs genom diffen.
 
-| Fall                     | Yta / läge                         | Kärnobservation                                                                                                        | Först brytande lager                            | Varför det spelar roll                                                                   |
-| ------------------------ | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `calibration_flip_bull`  | low-zon, bull                      | samma features går från `LONG` (`buy=0.522537`) till `SHORT` (`buy=0.490402`) när endast bull-kalibrering aktiveras    | **calibration**                                 | visar att bull-grenen ensam kan vända riktning före all senare gating                    |
-| `calibration_flip_bear`  | low-zon, bear                      | samma features går från `LONG` (`buy=0.512210`) till `SHORT` (`buy=0.494809`) när endast bear-kalibrering aktiveras    | **calibration**                                 | visar att detta inte är ett bull-specialfall; även bear-grenen kan bryta kandidat tidigt |
-| `threshold_only_mid`     | mid-zon, balanced                  | samma proba (`buy=0.508405`) passerar legacy `0.30` men blockeras av RI `0.40`                                         | **threshold**                                   | visar att mid-zonens threshold-yta ensam kan skapa trade/no-trade-drift                  |
-| `cadence_holdback_fixed` | low-zon, flip från `SHORT`         | samma kandidat `LONG` passerar i legacy `2/0` men hålls tillbaka som `HYST_WAIT` i RI `3/2`                            | **cadence**                                     | visar att cadence är ett självständigt fördröjningslager, inte bara kosmetik             |
-| `compound_long_to_none`  | legacy mid balanced vs RI low bull | legacy-default ger `LONG`, men bull-kalibrerad RI-yta landar i `SHORT`-candidate som sedan stoppas av `EDGE_TOO_SMALL` | **compound: calibration -> post-gate boundary** | visar hur tidig kandidatdrift senare kan fångas upp av downstream safety-lager           |
+## Minimal arbetsmall för nästa slice
 
-Den viktigaste poängen med matrisen är att den nu visar **tre olika först-brytande lager** i flera små, verkliga modellfall:
+Om nästa fas öppnar en av kandidatytorna ovan bör arbetet kunna beskrivas i följande miniformat redan innan första kodändringen.
 
-- calibration som tidig riktningsbrytare
-- threshold som explicit trade/no-trade-brytare
-- cadence som senare timing-/stability-brytare
+### 1. Slice-definition
 
-...samt ett compound-fall där flera lager faktiskt staplas ovanpå varandra.
+- **Kandidatyta:** vilken fil eller family-surface som öppnas
+- **Family-anspråk:** `legacy`, `ri` eller delad backbone med family-konditionerad effekt
+- **Första driftlager:** authority, calibration, threshold, survival, sizing eller exits
+- **Uttryckligt icke-mål:** vilket lager som inte ska ändras i samma slice
 
-### Preliminära family-regler från den samlade evidensen
+### 2. Minsta evidenspaket
 
-Efter de kontrollerade proverna och den lilla regime-/zon-matrisen går det att formulera en första, mer kondenserad family-tolkning:
+- **Minimikrav-selector:** den viktigaste selector som måste passera
+- **Driftvakt:** selector som fångar scope-glidning eller backbone-drift
+- **Kompletterande selector:** körs bara om ändringen faktiskt öppnar bredare semantik
 
-1. **Det tidigaste topologibrottet sitter fortfarande i authority + calibration-seamen**
+### 3. Tolkningsregel
 
-- authority avgör vilken regime-path som räknas som sann
-- calibration kan därefter vända själva kandidatunderlaget innan någon gate-surface ens aktiveras fullt ut
+- om minimikravet faller är hypotesen om rätt lager sannolikt fel
+- om driftvakten faller har ändringen sannolikt blivit bredare än avsett
+- om bara kompletterande selector faller måste man först avgöra om slicen i praktiken öppnade ett större lager än planerat
 
-2. **Threshold-surface är den viktigaste sena kompatibilitetsytan**
+### 4. Kort beslutsrad som bör kunna fyllas i
 
-- när kandidatunderlaget väl finns avgör threshold-klustret om en RI-yta faktiskt blir tradebar
-- detta förklarar varför authority-only kan kollapsa medan authority + RI-threshold-surface fortfarande kan fungera
+Nästa pass bör kunna börja med en enda rad i stil med:
 
-3. **Cadence ser ut som family-shape snarare än primär familjebrytare**
+> **Vi öppnar `decision_gates.py` för RI/legacy threshold surface; första driftlager antas vara candidate/threshold; `test_signal_adaptation_zone_overrides_base_thresholds` är minimikrav, pipeline-hash är driftvakt och config-schema-backcompat körs endast om threshold-shape öppnas.**
 
-- `3/2` förändrar timing och stabilitet
-- men cadence verkar inte vara den första orsaken till topologibrott; den modifierar snarare hur en redan RI-lik yta beter sig över tid
+Poängen med denna mall är enkel: nästa arbete ska kunna uttryckas som **ett litet lageranspråk + ett litet bevispaket**, inte som en bred diffus ambition.
 
-4. **Downstream safety-lager kan förstärka eller fånga upp tidig drift, men de verkar inte vara den första sömmen**
+## Vad denna reframing uttryckligen säger
 
-- `min_edge`, hysteresis och andra post-gates kan stoppa ett setup efter att kandidat redan skiftat
-- de ser därför ut som sekundära förstärkare eller stabiliserare, inte som den primära family-breakern
+1. **RI är en separat strategy family, inte ett lager.**
+2. **Legacy är också en full strategy family, inte bara “rå entry”.**
+3. **Båda families realiseras genom samma övergripande orkestreringskedja.**
+4. **Family-separationen sitter i signatur, authority, calibration, threshold, cadence, survival och sizing.**
 
-5. **Quality förblir viktig, men mer som familjeintern driftfördelare än som första topologisöm**
+## Vad denna reframing uttryckligen inte säger
 
-- quality kan absolut flytta gating och sizing
-- men den senaste evidensen visar att family-drift redan kan uppstå tidigare, utan quality
+- den säger **inte** att RI och legacy använder två helt separata fysiska runtime-pipelines
+- den säger **inte** att RI ersätter legacy helt
+- den säger **inte** att exits redan är den starkast bevisade splitpunkten
+- den säger **inte** att behavior ska ändras eller retunas
 
-Detta ger en mer kondenserad arbetsregel för fortsatt analys:
+## Samlad family-dom
 
-> Om målet är att förstå varför RI och legacy glider isär, börja vid authority/calibration, fortsätt med threshold-surface, och läs cadence samt övriga post-gates som senare formgivare av en redan divergerande topologi.
+Den starkaste, kodförankrade slutdomen är nu:
 
-### Slutsyntes — replay-driftens lagerordning
+> **Legacy och RI ska beskrivas som två separata strategy families som realiseras genom samma `evaluate -> decide`-orkestrering men med olika family-signaturer, authority/calibration-paths och family-konditionerade threshold/gating/cadence/sizing-surfaces. RI är därför inte ett lager ovanpå legacy, utan en separat strategy family.**
 
-Med den nuvarande evidensen går det nu att formulera en mer slutlig och operativ driftmodell för RI vs legacy.
+## Praktisk läsregel för fortsatt arbete
 
-Detta är fortfarande en **analytisk lagerordning**, inte en exakt procentuell attribution från full replay-statistik. Men som arbetsmodell är den nu betydligt starkare än i början av dokumentet, eftersom varje steg stöds av separata kontrollerade fall.
+När framtida analys eller implementation frågar “är detta legacy eller RI?” bör frågan inte längre besvaras med “vem gör entry och vem gör filtering?”.
 
-| Lager i driftkedjan | Typisk fråga | Nuvarande evidensbild | Praktisk family-tolkning |
-| ------------------- | ------------ | --------------------- | ------------------------ |
-| **1. Authority + calibration** | “Är det fortfarande samma kandidatunderlag?” | authority-only kollapsar; regime-aware kalibrering kan byta `LONG/SHORT` på fast yta | **första topologisöm / family-breaker** |
-| **2. Threshold-surface** | “Får den kalibrerade kandidaten passera?” | samma proba kan ge `LONG` på legacy och `NONE` på RI, eller tvärtom | **primär kompatibilitetsyta** |
-| **3. Cadence** | “Sker bytet nu eller hålls det tillbaka?” | `2/0` vs `3/2` kan ge `LONG` kontra `HYST_WAIT/NONE` | **family-shape / timingprofil** |
-| **4. Post-gates / safety** | “Fångas kandidaten upp senare?” | compound-fall visar att `min_edge` m.fl. kan stoppa drift som redan börjat uppströms | **sekundär förstärkare / stabiliserare** |
-| **5. Quality** | “Hur fördelas drift inom den valda familjeytan?” | quality kan flytta gating och sizing, men drift kan redan uppstå tidigare utan quality | **familjeintern driftfördelare** |
+Rätt fråga är i stället:
 
-Detta leder till en enklare läsregel för framtida RI-/legacy-frågor:
+1. vilken **family-signatur** bär konfigurationen?
+2. vilken **authority-path** är authoritative?
+3. vilken **calibration-/threshold-/cadence-surface** används?
+4. vilken **survival- och sizing-surface** fullbordar strategin?
 
-- om utfallet bryter redan vid kandidatunderlaget, titta först på **authority/calibration**
-- om kandidaten verkar rimlig men försvinner eller återuppstår, titta först på **threshold-surface**
-- om kandidaten finns men bytet blir för sent eller uteblir tillfälligt, titta först på **cadence**
-- om kandidaten dör efter att ha passerat tidigare lager, titta på **post-gates / safety**
-- om beteendet bara mjukas upp, skärps eller omfördelas inom en redan vald yta, titta på **quality**
-
-### Sammanfattad family-dom enligt nuvarande evidens
-
-Om man destillerar hela dokumentets kedja till en enda kort dom blir den just nu:
-
-> **RI blir inte en separat family därför att quality eller en enskild gate råkar justera utfallet, utan därför att authority/calibration först bryter kandidatunderlaget och därefter kräver en egen threshold-/cadence-shape för att bli tradebar som sammanhängande topologi.**
-
-Det innebär också att följande arbetsdelning nu ser mest rimlig ut:
-
-- **family-breakers:** authority + calibration
-- **family-enablers / compatibility surface:** threshold-surface
-- **family-shape:** cadence
-- **family-stabilizers:** post-gates / safety
-- **family-internal drift distribution:** quality
-
-Om denna modell håller även när den senare testas på bredare replay-ytor, då har vi i praktiken en robust förklaring till varför RI inte bör beskrivas som en liten overlay på legacy, utan som en egen topologi med tydlig intern lagerordning.
-
-### Samlad bedömning av authority-seamen
-
-Kombinationen av `regime_unified.py` och `core/intelligence/regime/authority.py` gör att regime-authority inte bör beskrivas som “en modul”, utan som en **auktoritetsseam**:
-
-- `regime_unified.py` = legacy-default authoritative context
-- `authority.py` = normalize/fallback-seam och RI-path-stöd
-- `evaluate.py` = väljer authority-mode och därmed vilken väg som används
-
-Detta stödjer följande klassning:
-
-- **legacy-path:** `regime_unified.py` som canonical authority
-- **RI-path:** authority-mode-baserad seam där regime_module kan vinna
-
-Viktig observation: authority-seamen är inte entrylogik, men den kan indirekt påverka både calibration, gating och observability genom att definiera vilket regime som anses sant.
-
-### Samlad bedömning av `core/backtest/intelligence_shadow.py`
-
-`core/backtest/intelligence_shadow.py` ser efter läsningen inte ut som ett latent beslutslager, utan som en **ren advisory/ledger-observability-yta**.
-
-Det viktiga här är att den:
-
-- bygger shadow events från backtest-resultat
-- persistar dem till research-ledger
-- uttryckligen sätter `decision_drift_observed=False` i summary-payloaden
-- arbetar som post-hoc research-/auditlager
-
-Den bör därför klassas som:
-
-- **primärt:** observability / advisory research
-- **sekundärt:** audit trail
-
-Detta stärker tesen att shadow/intelligence-spåret i nuvarande form främst är till för förståelse och utvärdering, inte för att injicera runtime-beslut.
-
-## Bevisstatus — vad vi faktiskt vet nu
-
-Rollkartan stöds nu inte bara av kodläsning, utan också av redan existerande högsignaltester.
-
-### Verifierad evidens som stödjer rollkartan
-
-| Fråga                                                           | Befintligt test                                                                                                           | Vad det stöder                                                                                                       |
-| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Ändrar clarity bara size/logg?                                  | `tests/backtest/test_evaluate_pipeline.py::test_evaluate_pipeline_ri_v2_clarity_on_changes_sizing_only_and_logs`          | Stöder att clarity hör hemma i management/sizing snarare än candidate selection                                      |
-| Ändrar risk_state action-path eller bara size?                  | `tests/utils/test_decision_scenario_behavior.py::test_decide_risk_state_stress_reduces_size_without_changing_action_path` | Stöder att risk_state är risk/sizing modulation, inte entrymotor                                                     |
-| Kan adaptive fib override faktiskt flytta block → entry?        | `tests/utils/test_decision_scenario_behavior.py::test_decide_adaptive_htf_override_progression_flips_block_into_entry`    | Stöder att fib-override är en semantiskt känslig permission-brygga                                                   |
-| Är `confidence.py` direction-bevarande men gate/sizing-känslig? | `tests/utils/test_confidence.py` + `tests/utils/test_decision_edge.py`                                                    | Stöder att confidence bevarar riktning men kan moduleras som gate- eller sizing-brygga                               |
-| Ger checked-in `both`-profiler faktisk gate-drift?              | direkt körbar evidens med `tBTCUSD_1h_quality_v2_candidate_scoped*.json`                                                  | Stöder att `data_quality`/`spread` verkligen kan flytta gate-pass, medan `atr`/`volume` främst flyttar size          |
-| Kan threshold-lagret ensamt flippa samma setup?                 | direkt körbar evidens med RI-zontrösklar i `decision_gates.py`                                                            | Stöder att zone/regime-thresholding är en explicit trade/no-trade-brytare även när probas och confidence hålls fasta |
-| Kan legacy- och RI-family surfaces drifta utan quality?         | kontrollerad probe mot `select_candidate(...)` + `apply_post_fib_gates(...)` med `tBTCUSD_3h` och RI-signaturytan         | Stöder att threshold- och cadence-klustret räcker för verklig action-drift även när quality hålls konstant           |
-| Kan kalibreringen ensam flytta candidate på fast surface?       | kontrollerad probe mot `predict_proba_for(...)` med `config/models/tBTCUSD_3h.json` och oförändrad gate-surface           | Stöder att regime-aware kalibrering kan byta riktning före threshold- och cadence-lagret                             |
-| Förblir shadow-regime observability advisory?                   | `tests/governance/test_regime_intelligence_cutover_parity.py` och relaterade shadow-observer-tester                       | Stöder att `decision_input=False` hålls i observability-spåret                                                       |
-
-### Det viktigaste som fortfarande behöver bevisas bättre
-
-Det som fortfarande är mest värt att isolera i nästa steg är:
-
-1. hur stor del av den bredare replay-driften som kommer från calibration-pathen jämfört med threshold-/cadence-surface, nu när båda är visade isolerat utan quality
-2. om den relativa viktningen mellan calibration och threshold/cadence är stabil över flera regimescenarier eller om den skiftar med regime/zon
-3. hur detta bör översättas till family-tolkning: vad som är tidig topologisöm respektive sen kompatibilitetsyta
-
-## Föreslagen ablationsordning
-
-För att undvika ännu en “allt på en gång”-situation bör nästa analys/experimentserie vara liten och tydlig.
-
-### Steg A — bevisa vad som är entry vs management
-
-1. **Clarity on/off**
-
-- fråga: ändras bara size/logg, eller ändras faktiskt candidate?
-
-2. **Risk state on/off**
-
-- fråga: påverkar den bara sizing/risk, eller läcker den bakåt in i entrybeslut?
-
-3. **HTF/LTF fib override on/off**
-
-- fråga: är detta ett permission-lager eller en dold entry-aggressionsmotor?
-
-### Steg B — bryt ned `decision_gates.py`
-
-Nästa agent bör gärna skriva en mikro-matris enbart för `decision_gates.py`:
-
-| Delsteg             | Roll idag            | Bör tillhöra                    | Risk   |
-| ------------------- | -------------------- | ------------------------------- | ------ |
-| EV-filter           | Entry-säkerhet       | Legacy/permission               | låg    |
-| Thresholding        | Permission           | RI/permission + legacy boundary | medium |
-| Candidate selection | Entry resolution     | Legacy                          | hög    |
-| Tie-break           | Context bridge       | Permission/context              | medium |
-| Post-fib gates      | Permission/stability | Permission                      | medium |
-
-### Mikromatris — `decision_gates.py`
-
-Filen har två centrala funktioner:
-
-- `select_candidate(...)`
-- `apply_post_fib_gates(...)`
-
-Tillsammans utgör de den mest koncentrerade blandzonen mellan legacy-entry och RI-influerad permissioning.
-
-| Del i `decision_gates.py`                      | Vad koden gör                                                | Observerad roll idag                  | Bör främst tillhöra            | Drift-/riskbedömning                                            | Rekommenderad nästa kontroll                                                                |
-| ---------------------------------------------- | ------------------------------------------------------------ | ------------------------------------- | ------------------------------ | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| Fail-safe på saknade probas                    | Returnerar `NONE` om `probas` saknas/är ogiltiga             | Säkerhetsveto                         | Legacy/permission              | Låg risk; tydlig fail-safe                                      | Behåll som ren safety gate                                                                  |
-| EV-beräkning (`ev_long`, `ev_short`, `max_ev`) | Stoppar trade om EV <= 0                                     | Entry-säkerhet                        | Legacy med permission-karaktär | Låg risk; tydligt pre-entry skydd                               | Dokumentera som “entry-safety”, inte RI-logik                                               |
-| Event block / risk cap block                   | Stoppar trade vid risk/event conditions                      | Permission/safety                     | Permission                     | Låg risk; korrekt placerat                                      | Bryt eventuellt ut begreppsligt som separat safety-lager i docs                             |
-| Regime-baserad long/short-allowance            | `trend_long_only` / `trend_short_only` begränsar riktning    | Context → permission                  | Permission/context             | Medium; kan missläsas som regime-entry                          | Testa fasta probas med växlande regime för att bevisa att detta bara är riktningstillåtelse |
-| Bas-threshold (`entry_conf_overall`)           | Sätter default confidence threshold                          | Permission                            | Legacy/permission boundary     | Medium; nära entry men fortfarande gate                         | Dokumentera som canonical gate före candidate resolve                                       |
-| ATR-zonval (`low/mid/high`)                    | Väljer zon från ATR + percentiler                            | Volatility context feeding permission | Context → permission           | Medium; behavior-påverkande trots att den inte är regimebaserad | Isolera zonbyte med fasta probas för att se hur thresholds flyttar outcomes                 |
-| Zone/regime threshold mapping                  | Väljer regime-specifikt threshold per zon                    | Regime-aware permission               | RI/permission boundary         | Hög analysvikt; här börjar RI flytta beslutsgränser             | Testa threshold-tabellen med fasta inputs och mappa exakt vilka outcomes som ändras         |
-| `buy_pass` / `sell_pass`                       | Avgör om respektive sida överlever thresholding              | Permission nära entry                 | Permission                     | Medium; direkt outcome-påverkan                                 | Mät hur stor del av candidate drift som kommer härifrån vs senare steg                      |
-| Candidate selection                            | Väljer `LONG`/`SHORT` när en eller båda sidor passerar       | Entry resolution                      | Legacy                         | Hög; detta är tydlig entrylogik                                 | Behandla explicit som legacy-kärna i fortsatt modell                                        |
-| Tie-break vid lika probas                      | Använder `last_action` eller regime-bias när p_buy ≈ p_sell  | Context bridge                        | Permission/context             | Medium; liten men semantiskt viktig                             | Testa om tie-break någonsin triggar meningsfullt i riktiga runs                             |
-| Confidence gate i `apply_post_fib_gates(...)`  | Kräver att confidence för vald kandidat överstiger threshold | Permission/stability                  | Permission                     | Medium; ytterligare gate nära entry                             | Jämför effekt mot tidigare proba-threshold för att undvika dubbelräkning                    |
-| `min_edge`-gate                                | Kräver tillräcklig skillnad mellan buy/sell                  | Entry-säkerhet / permission           | Legacy/permission              | Medium; kan vara bra “no-trade”-mekanism                        | Testa om detta är bättre edge-kandidat än mer proba-tuning                                  |
-| Hysteresis-block                               | Kräver flera steg innan action byts                          | Stability filter                      | Permission                     | Medium; starkt beteendepåverkande men inte alpha i sig          | Isolera hur mycket hysteresis skyddar vs försenar bra entries                               |
-| Cooldown                                       | Blockerar entry under låsperiod                              | Stability/risk control                | Permission                     | Låg till medium; tydlig anti-chop mekanik                       | Testa som ren no-trade-state mekanism                                                       |
-
-### Samlad bedömning av `decision_gates.py`
-
-Första kodläsningen stödjer följande uppdelning:
-
-- **Tydligt legacy-kärna:**
-  - EV-beräkning
-  - candidate selection
-  - delar av `min_edge`-logiken
-
-- **Tydligt permission/filtering:**
-  - confidence thresholds
-  - zone/regime threshold mapping
-  - hysteresis
-  - cooldown
-  - event/risk veto
-
-- **Semantiskt känsliga bryggor:**
-  - regime-baserad long/short-allowance
-  - tie-break via regime / `last_action`
-
-Den viktigaste observationen är att `decision_gates.py` inte ser ut som att RI direkt genererar trades, men filen är absolut ett ställe där RI-liknande signaler kan flytta gränsen för _när_ legacy-entry får passera. Därför bör filen behandlas som den viktigaste blandzonen, inte som ren entrylogik eller ren management.
-
-### Skarpare delkarta — vad i `decision_gates.py` flyttar faktiskt candidate?
-
-Efter närläsning av koden och kontraktstesterna är det användbart att skilja mellan tre olika typer av steg i `decision_gates.py`:
-
-1. steg som **kan skapa eller ändra candidate**
-2. steg som **inte ändrar candidate men kan blockera det**
-3. steg som **bara förbereder eller flyttar beslutsgränsen**
-
-Detta ger en mycket skarpare bild av var entry faktiskt uppstår.
-
-| Delsteg i `decision_gates.py`                 | Kan skapa/ändra candidate? | Kan bara blockera? | Typisk roll                        | Kommentar                                                                                             |
-| --------------------------------------------- | -------------------------- | ------------------ | ---------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Fail-safe på null/ogiltiga probas             | Nej                        | Ja                 | Safety veto                        | Stoppar hela flödet innan någon candidate finns                                                       |
-| EV-beräkning / `EV_NEG`                       | Nej                        | Ja                 | Entry-safety                       | Stoppar setup med negativ edge men väljer aldrig riktning                                             |
-| Event block / risk cap block                  | Nej                        | Ja                 | Safety / permission                | Hård veto-yta före candidate                                                                          |
-| `trend_long_only` / `trend_short_only`        | Indirekt                   | Ja                 | Context → permission               | Ändrar inte proba-order, men kan eliminera ena sidan och därmed påverka vilken candidate som återstår |
-| `entry_conf_overall` + threshold-bas          | Nej                        | Nej                | Boundary setup                     | Förbereder gränsen; i sig ingen candidate-effekt                                                      |
-| ATR-zonval                                    | Nej                        | Nej                | Context setup                      | Flyttar vilken threshold-tabell som ska gälla                                                         |
-| Zone/regime threshold mapping                 | Indirekt                   | Ja                 | Permission boundary                | Ändrar inte kandidat direkt, men flyttar vilka sidor som överlever till candidate-valet               |
-| `buy_pass` / `sell_pass`                      | Indirekt                   | Ja                 | Permission outcome                 | Här avgörs vilka riktningar som fortfarande är kandidater                                             |
-| Candidate selection                           | Ja                         | Nej                | Entry resolution                   | Det tydligaste stället där `LONG` eller `SHORT` faktiskt väljs                                        |
-| Tie-break (`last_action` / regime-bias)       | Ja                         | Nej                | Context-sensitive entry resolution | Kan välja riktning när probas är lika; liten volym men semantiskt viktig                              |
-| Confidence gate i `apply_post_fib_gates(...)` | Nej                        | Ja                 | Post-candidate permission          | Kandidaten finns redan; steget kan bara blockera                                                      |
-| `min_edge`                                    | Nej                        | Ja                 | Post-candidate entry-safety        | Bevarar eller stoppar vald candidate; skapar ingen ny                                                 |
-| Hysteresis                                    | Nej                        | Ja                 | Stability filter                   | Kan bara hålla kvar NONE/pausa byte, inte välja annan riktning                                        |
-| Cooldown                                      | Nej                        | Ja                 | No-trade filter                    | Ren blockering efter att candidate redan är känt                                                      |
-
-### Praktisk split — candidate-moving vs candidate-preserving
-
-I praktiken ser `decision_gates.py` ut att ha följande kärnsplit:
-
-- **Candidate-moving steg**
-  - candidate selection
-  - tie-break
-  - indirekt: regime-baserad allowance + threshold-pass/fail eftersom de bestämmer vilka kandidater som över huvud taget får vara kvar i urvalet
-
-- **Candidate-preserving men blockerande steg**
-  - EV-gate
-  - event/risk veto
-  - confidence gate
-  - `min_edge`
-  - hysteresis
-  - cooldown
-
-- **Boundary-forming steg**
-  - bas-threshold
-  - ATR-zonval
-  - zone/regime threshold mapping
-
-Detta är viktigt därför att det visar att mycket av det som först ser ut som “entrylogik” i själva verket bara är **candidate-preserving blockering**. Den verkliga entry-resolutionen är betydligt smalare än filens totala yta antyder.
-
-### Tydligare slutsats om `decision_gates.py`
-
-Den skarpare läsningen pekar på följande:
-
-- **Legacy-entry-kärnan i filen är smalare än man först tror**
-  - candidate selection
-  - tie-break
-
-- **Den större delen av filen är egentligen permission/safety/boundary management**
-  - EV
-  - thresholds
-  - buy/sell pass
-  - confidence
-  - edge
-  - hysteresis
-  - cooldown
-
-- **De mest känsliga RI-adjacent bryggorna är inte där candidate väljs, utan där beslutsgränsen formas**
-  - regime-baserad allowance
-  - zone/regime threshold mapping
-  - threshold-pass/fail
-
-Det betyder att om vi vill förstå om RI håller på att bli entrymotor, bör vi inte främst stirra på `candidate selection`-raden i sig, utan på **vilka boundary-steg som avgör vilka kandidater som ens når dit**.
-
-### Befintlig evidens som stödjer denna split
-
-De nuvarande testerna stödjer redan delar av denna uppdelning:
-
-- `tests/utils/test_decision_gates_contract.py::test_select_candidate_tie_handling_contract`
-  - stödjer att tie-break är ett verkligt candidate-moving-steg
-- `tests/utils/test_decision_gates_contract.py::test_select_candidate_fail_safe_and_blockers`
-  - stödjer att fail-safe, event-block och risk-cap är rena blockerare
-- `tests/utils/test_decision_gates_contract.py::test_apply_post_fib_gates_hysteresis_blocks_and_increments_state`
-  - stödjer att hysteresis är candidate-preserving blockering
-- `tests/utils/test_decision_gates_contract.py::test_apply_post_fib_gates_cooldown_blocks_and_decrements_state`
-  - stödjer att cooldown är ren post-candidate blockering
-- `tests/utils/test_decision_edge.py::test_min_edge_requirement`
-  - stödjer att `min_edge` blockerar ett redan möjligt entry men inte skapar ett nytt
-
-### Mikromatris — `decision_sizing.py`
-
-Första kodläsningen visar att `decision_sizing.py` i praktiken är en enda koncentrerad management-funktion:
-
-- `apply_sizing(...)`
-
-Det mest intressanta här är inte om filen “skapar entries”, utan hur många olika lager av risk/context/RI som får påverka **storleken efter att kandidat redan valts**.
-
-| Del i `decision_sizing.py`                               | Vad koden gör                                             | Observerad roll idag          | Bör främst tillhöra        | Drift-/riskbedömning                                                  | Rekommenderad nästa kontroll                                                         |
-| -------------------------------------------------------- | --------------------------------------------------------- | ----------------------------- | -------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| `confidence_gate` från vald kandidat                     | Hämtar buy/sell-confidence utifrån redan vald `candidate` | Bridge från entry till sizing | Legacy → management bridge | Medium; beroende av upstream-candidate men ändrar inte kandidat själv | Bekräfta med test att filen aldrig byter action, bara size                           |
-| `risk_map` → `size_base`                                 | Mappar confidence till basstorlek                         | Klassisk sizing               | Legacy/management          | Låg; tydlig sizing-kärna                                              | Dokumentera som canonical pre-RI size base                                           |
-| `size_scale` via `buy_scaled` / `sell_scaled`            | Skalar size med kalibrerad confidence om sådan finns      | Confidence-aware sizing       | Management                 | Medium; kan misstolkas som extra entryvikt                            | Testa om den bara förändrar storlek och aldrig gate:ar bort trades                   |
-| `regime_size_multipliers`                                | Multiplicerar size beroende på regime                     | Regime-aware management       | RI/management              | Låg till medium; naturlig RI-yta                                      | Isolera multipliers med fast candidate och confidence                                |
-| `htf_regime_size_multipliers`                            | Läser HTF-regime och modulerar size                       | HTF-aware management          | RI/management              | Låg till medium; tydligt secondary-context-beteende                   | Bekräfta att detta inte läcker bakåt till candidate-path                             |
-| `volatility_sizing`                                      | Minskar size i hög ATR-volatilitet                        | Volatility risk control       | Management                 | Låg; ren riskkontroll                                                 | Dokumentera som no-trade-light/risk-lager snarare än alpha                           |
-| `risk_state_mult` från `risk_state.py`                   | Modulerar storlek via drawdown/transition-state           | RI risk modulation            | RI/management              | Låg; stark kandidat för ren RI-kärna                                  | Kör on/off-test och bevisa att endast size/state_out ändras                          |
-| `min_combined_multiplier`                                | Sätter golv för total multiplikator                       | Safety floor                  | Management/safety          | Låg; skyddar mot nollning/överstraffning                              | Verifiera att golvet är risk-policy, inte dold aggressionsregel                      |
-| `clarity_multiplier` från `clarity.py`                   | Applicerar clarity-score på size när RI v2 är aktiv       | RI clarity-based sizing       | RI/management              | Medium; rik signal men fortfarande size-only i denna fil              | Kör clarity on/off och diffa candidate vs size/logg                                  |
-| `authority_mode` / `authority_mode_source` i `state_out` | Sparar authority metadata                                 | Observability/traceability    | Observability              | Låg; ingen direkt beslutskraft här                                    | Behåll som audit-spår, inte beslutsmotor                                             |
-| `state_out`-telemetri                                    | Skriver ut delmultipliers, clarity och risk_state-data    | Observability                 | Observability              | Låg; mycket värdefullt för ablation                                   | Använd som primär evidensyta i framtida rolltester                                   |
-| Regime transition tracking                               | Uppdaterar `last_regime` och `bars_since_regime_change`   | State support för risk_state  | Management/support state   | Medium; liten men viktigt stöd till risk_state                        | Verifiera att detta bara stödjer sizing-logik och inte återkopplas till entry i smyg |
-
-### Samlad bedömning av `decision_sizing.py`
-
-Första kodläsningen stödjer följande uppdelning:
-
-- **Tydligt management-kärna:**
-  - `risk_map` → `size_base`
-  - regime/HTF multipliers
-  - volatility sizing
-  - `risk_state_mult`
-  - `clarity_multiplier`
-
-- **Tydligt observability / audit-stöd:**
-  - `authority_mode`
-  - `authority_mode_source`
-  - `state_out`-telemetri
-
-- **Semantiskt känsliga bryggor:**
-  - `confidence_gate` från redan vald kandidat
-  - `size_scale` via scaled confidence
-  - regime transition tracking som matar risk_state-stöd
-
-Den viktigaste observationen är att `decision_sizing.py` inte ser ut att vara någon entrymotor alls. Tvärtom ser den ut som den starkaste nuvarande kandidaten för var RI/R1 faktiskt kan få vara “sig själv” utan att bli en dold ersättare för legacy-entry. Om vi vill återföra RI till management/filter-lagret är detta sannolikt ett av de renaste kärnområdena att bygga vidare från.
-
-### Mikromatris — `decision_fib_gating.py` + helpers
-
-Första kodläsningen visar att `decision_fib_gating.py` själv främst är en orkestrerare, medan den verkliga policytyngden ligger i:
-
-- `prepare_override_context(...)`
-- `apply_htf_fib_gate(...)`
-- `apply_ltf_fib_gate(...)`
-
-Det betyder att denna yta bör läsas som **ett sammanhållet permission-lager**, inte som en ensam wrapper-fil.
-
-| Del i fib-gating-flödet                               | Vad koden gör                                                                | Observerad roll idag                | Bör främst tillhöra                | Drift-/riskbedömning                                       | Rekommenderad nästa kontroll                                                            |
-| ----------------------------------------------------- | ---------------------------------------------------------------------------- | ----------------------------------- | ---------------------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `apply_fib_gating(...)` orchestration                 | Bygger override-context, kör HTF-gate, sedan LTF-gate och sammanfattar debug | Gate orchestration                  | Permission/orchestration           | Låg; främst ordningskontroll                               | Dokumentera tydligt att wrappern inte bär huvudpolicyn själv                            |
-| `prepare_override_context(...)`                       | Bygger confidence/history/adaptiv threshold för eventuell override           | Override-prep / adaptive permission | RI/permission                      | Medium till hög; här kan filter bli dold aggressionsmotor  | Testa fasta confidence-serier per regime och mappa hur `effective_threshold` rör sig    |
-| Override history (`buy_history` / `sell_history`)     | Sparar historik i `override_state` för percentilbaserad threshold            | Stateful permission support         | Permission/support state           | Medium; statefulness gör beteendet svårare att läsa        | Verifiera om historiken bara stabiliserar eller faktiskt ökar trade-frekvens aggressivt |
-| Adaptive threshold via percentil + regime-multipliers | Gör override-threshold dynamisk efter historik och regime                    | Regime-aware permission             | RI/permission boundary             | Hög; tydlig plats där RI kan flytta entry-gränser indirekt | Kör ablation med adaptiv av/på och jämför override-rate                                 |
-| HTF gate: context availability / missing-policy       | Blockerar eller passerar beroende på om HTF-context finns                    | Safety + permission                 | Permission/safety                  | Medium; viktig fail-open/fail-closed-policy                | Dokumentera separat vilka lägen som är `pass` vs `block`                                |
-| HTF gate: target match / level checks                 | Kräver att pris ligger nära tillåtna HTF-nivåer eller inte bryter nivågräns  | Structural permission               | Permission                         | Medium; tydligt “rätt-att-handla”-lager                    | Isolera target-match vs level-block i analysmatris                                      |
-| HTF override (`try_override_htf_block`)               | Tillåter LTF-confidence att häva HTF-block under vissa villkor               | Override bridge                     | Permission med entry-adjacent risk | Hög; här kan filter slå över i entry-aggression            | Testa override-rate, win-rate och om override främst räddar bra eller dåliga trades     |
-| `override_confidence` range                           | Tillåter override inom explicit confidence-intervall                         | Fixed override policy               | Permission                         | Medium; enklare och mer läsbar än adaptive path            | Jämför mot adaptive override för att se vilken som driver mest drift                    |
-| LTF gate: context availability / missing-policy       | Blockerar eller passerar beroende på om LTF-context finns                    | Safety + permission                 | Permission/safety                  | Medium; samma fail-policyfråga som HTF                     | Säkerställ att HTF och LTF använder konsekvent semantik                                 |
-| LTF gate: level checks                                | Stoppar LONG ovan maxnivå / SHORT under minnivå                              | Structural veto                     | Permission                         | Låg till medium; tydligt veto-lager                        | Behandla som canonical permission-regel i rollkartan                                    |
-| `fib_gate_summary` / debug payloads                   | Samlar HTF/LTF-debug i `state_out`                                           | Observability/audit                 | Observability                      | Låg; mycket värdefullt för beviskedjan                     | Använd som primär evidensyta i framtida override-ablationer                             |
-
-### Samlad bedömning av `decision_fib_gating.py` + helpers
-
-Första kodläsningen stödjer följande uppdelning:
-
-- **Tydligt permission-kärna:**
-  - HTF gate
-  - LTF gate
-  - structural veto via level checks
-  - missing-policy-hantering
-
-- **Tydligt observability / audit-stöd:**
-  - `ltf_override_debug`
-  - `htf_fib_entry_debug`
-  - `ltf_fib_entry_debug`
-  - `fib_gate_summary`
-
-- **Semantiskt känsliga bryggor:**
-  - adaptive override-threshold
-  - regime-multipliers i override-path
-  - `try_override_htf_block(...)`
-
-Den viktigaste observationen är att fib-gatingytan inte ser ut som en ren alpha-motor, utan som ett avancerat permission-lager med en potentiellt mycket viktig override-mekanism. Det gör området strategiskt intressant: om RI/R1 ska vara filter/management snarare än entrymotor är detta sannolikt rätt plats att leta edge i form av bättre veto, bättre confirmation och bättre no-trade-state — men också rätt plats att jaga ansvarsglidning om override-logiken blivit för aggressiv.
-
-### Steg C — först därefter parameterpolicy
-
-Först när ansvaren är tydligare bör vi börja märka moduler som:
-
-- **behåll**
-- **förenkla**
-- **flytta ansvar**
-- **stäng av**
-
-## Rekommenderade frågor för nästa session
-
-1. Vilka moduler vill vi uttryckligen definiera som **R1/RI-kärna**?
-2. Vilka moduler ska uttryckligen definieras som **legacy-kärna**?
-3. Vilka moduler är tillåtna att påverka **candidate selection**?
-4. Vilka moduler får endast påverka:
-
-- permission
-- size
-- exits
-- observability
-
-5. Vilket minimum-set av moduler ger mest “ren” RI-identitet utan att bli en ny entrymotor?
-
-## Enradig slutsats
-
-Legacy ser fortfarande ut att vara den verkliga entrymotorn, medan RI/R1/intelligence främst lever i context, filtering, sizing och observability; nästa edge-arbete bör därför fokusera på att förtydliga och testa dessa roller snarare än att direkt optimera fler parametrar.
+Om dessa svar ligger på RI-ytan, då är det RI-strategin som körs — inte legacy med ett smart lager ovanpå.

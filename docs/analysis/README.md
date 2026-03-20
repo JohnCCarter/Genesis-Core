@@ -11,7 +11,7 @@ Den här README:n sammanfattar RI/R1-vs-legacy-serien i `docs/analysis/` och pek
 
 1. `handoff.md`
    - kickoff och ursprunglig arbetsfråga
-   - varför RI/R1 skulle granskas som management/filter snarare än som ren entry-motor
+   - varför family-separationen behövde granskas explicit innan vidare implementation
 
 2. `docs/analysis/regime_intelligence_champion_compatibility_findings_2026-03-18.md`
    - visar att champion + authority-only kollapsar
@@ -19,21 +19,23 @@ Den här README:n sammanfattar RI/R1-vs-legacy-serien i `docs/analysis/` och pek
 
 3. `docs/analysis/ri_legacy_role_map_2026-03-20.md`
    - huvudartefakten i serien
-   - full rollkarta, evidenskedja, driftattribution och slutsyntes
+   - beskriver legacy och RI som två fullständiga strategy families över delad orkestrering
 
 ## Kort slutbild
 
-Den samlade analysen pekar just nu på följande:
+Den samlade analysen pekar nu på följande:
 
-- **legacy** är fortfarande den primära entry-motorn
-- **RI/R1** hör mest naturligt hemma i:
-  - context / regime
-  - permission / filtering
-  - management / sizing / exits
-  - observability
-- RI ser inte ut att bli en separat family därför att quality eller en enskild gate råkar justera utfallet
-- det tidigaste topologibrottet ser i stället ut att ligga i **authority + calibration**
-- för att bli tradebar som sammanhängande yta kräver RI därefter en egen **threshold-/cadence-shape**
+- **legacy** och **RI** ska behandlas som två separata **strategy families**
+- båda families använder samma övergripande runtime-orkestrering (`evaluate -> decide`)
+- family-separationen sitter i:
+  - family-signatur
+  - authority-val
+  - calibration/probability surface
+  - threshold surface
+  - cadence
+  - structural survival
+  - sizing-surface
+- RI är därför **inte** ett management-/filter-lager ovanpå legacy, utan en egen family-yta
 
 ## Sammanfattad lagerordning för drift
 
@@ -47,25 +49,26 @@ Nuvarande evidens stöder denna arbetsmodell:
    - family-shape / timingprofil
 4. **Post-gates / safety**
    - sekundära förstärkare / stabiliserare
-5. **Quality**
-   - familjeintern driftfördelare
+5. **Quality / sizing-surface**
+   - family-intern driftfördelare när family-ytan redan valts
 
 ## Vad master-diff-reviewn visade
 
-Jämförelsen mot `master` visade att den här branchen i praktiken består av två analysrelaterade spår:
+Jämförelsen mot `master` visade att den här branchen i praktiken består av analysrelaterade artefakter som nu bör läsas som ett sammanhängande family-reframe-paket:
 
 - `handoff.md` — kickoff / arbetsfråga / designriktning
-- `docs/analysis/ri_legacy_role_map_2026-03-20.md` — den faktiska slutanalysen
+- `docs/analysis/ri_legacy_role_map_2026-03-20.md` — huvudanalysen med explicit family-reframe
+- `docs/analysis/ri_legacy_role_map_2026-03-20_mermaid.md` — visuell karta över samma reframing
 
-Ingen ytterligare runtime- eller testartefakt i branchdiffen såg ut att saknas för att förstå själva analysserien. Det som saknades var främst en kort index-/summary-yta som binder ihop kickoff, kompatibilitetsfynd och slutlig rollkarta.
+För själva docs-slutsatsen räcker de tre artefakterna ovan som sammanfattande läsunderlag. Runtime- och testartefakter finns fortsatt som underliggande evidens, men behöver inte läsas först för att följa reframingen.
 
 ## Viktigaste slutsats för framtida arbete
 
 Om nästa steg någon gång återupptas bör första frågan vara:
 
-> Bryter RI/legacy redan vid kandidatunderlaget, eller uppstår driften först senare i threshold-, cadence- eller safety-lagret?
+> Vilken strategy family körs faktiskt här — legacy eller RI — och på vilken authority/calibration/threshold/cadence/sizing-surface realiseras den?
 
-Det håller analysen fokuserad på rätt lager i rätt ordning.
+Det håller analysen fokuserad på family-gränserna i stället för på äldre overlay-språk.
 
 ## Relaterade analysdokument i samma mapp
 
@@ -77,4 +80,4 @@ Det håller analysen fokuserad på rätt lager i rätt ordning.
 
 ## Enradig slutdom
 
-RI/R1 bör läsas som en separat topologi där **authority/calibration bryter först**, **threshold/cadence gör ytan tradebar**, och **quality huvudsakligen fördelar drift inom redan vald family-yta**.
+Legacy och RI ska läsas som två separata strategy families som körs genom samma övergripande orkestrering men divergerar i family-signatur, authority/calibration, threshold, cadence och sizing-surfaces.

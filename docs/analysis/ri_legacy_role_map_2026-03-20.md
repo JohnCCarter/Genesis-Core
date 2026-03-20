@@ -296,9 +296,11 @@ Den nuvarande pipeline-kedjan kan läsas ungefär så här:
 3. `prob_model.py`
 4. `confidence.py`
 5. `decision.py`
-  - `decision_gates.py`
-  - `decision_fib_gating.py`
-  - `decision_sizing.py`
+
+- `decision_gates.py`
+- `decision_fib_gating.py`
+- `decision_sizing.py`
+
 6. `evaluate.py`
 7. shadow/observability via `meta.observability.shadow_regime`
 8. separat forsknings-/ledger-spår via `core/backtest/intelligence_shadow.py`
@@ -307,15 +309,15 @@ Det innebär att nästa rollmap inte bara bör tala om “vilka moduler som finn
 
 ### Fullare klassificering av återstående moduler
 
-| Modul | Primär roll | Sekundär roll | Bedömning |
-| --- | --- | --- | --- |
-| `src/core/strategy/evaluate.py` | Pipeline-orkestrering | authority-seam + observability | Tunn men central kompositör; väljer regime-authority, features, probas, confidence och `decide()` |
-| `src/core/strategy/decision.py` | Beslutsorkestrering | state propagation | Renaste navet mellan candidate, fib-gating, post-gates och sizing |
-| `src/core/strategy/prob_model.py` | Entry-underlag | regime-aware calibration | Legacy-kärna, men med RI-adjacent calibration seam när regime-specifik kalibrering används |
-| `src/core/strategy/confidence.py` | Confidence-/quality-layer | gate+sizing bridge | Inte entrymotor i sig, men påverkar både gating och sizing beroende på `quality.apply` och component scopes |
-| `src/core/strategy/regime_unified.py` | Legacy context authority | trend/volatility classification | Ser fortfarande ut som canonical legacy-default för authoritative regime |
-| `src/core/intelligence/regime/authority.py` | RI authority seam | normalization/fallback | Viktig därför att den avgör *vilken* regime-källa som är auktoritativ, inte därför att den genererar entries |
-| `src/core/backtest/intelligence_shadow.py` | Research/observability | advisory ledger | Stark observability-yta; uttryckligen advisory/shadow, inte decision-input |
+| Modul                                       | Primär roll               | Sekundär roll                   | Bedömning                                                                                                    |
+| ------------------------------------------- | ------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `src/core/strategy/evaluate.py`             | Pipeline-orkestrering     | authority-seam + observability  | Tunn men central kompositör; väljer regime-authority, features, probas, confidence och `decide()`            |
+| `src/core/strategy/decision.py`             | Beslutsorkestrering       | state propagation               | Renaste navet mellan candidate, fib-gating, post-gates och sizing                                            |
+| `src/core/strategy/prob_model.py`           | Entry-underlag            | regime-aware calibration        | Legacy-kärna, men med RI-adjacent calibration seam när regime-specifik kalibrering används                   |
+| `src/core/strategy/confidence.py`           | Confidence-/quality-layer | gate+sizing bridge              | Inte entrymotor i sig, men påverkar både gating och sizing beroende på `quality.apply` och component scopes  |
+| `src/core/strategy/regime_unified.py`       | Legacy context authority  | trend/volatility classification | Ser fortfarande ut som canonical legacy-default för authoritative regime                                     |
+| `src/core/intelligence/regime/authority.py` | RI authority seam         | normalization/fallback          | Viktig därför att den avgör _vilken_ regime-källa som är auktoritativ, inte därför att den genererar entries |
+| `src/core/backtest/intelligence_shadow.py`  | Research/observability    | advisory ledger                 | Stark observability-yta; uttryckligen advisory/shadow, inte decision-input                                   |
 
 ### Samlad bedömning av `evaluate.py`
 
@@ -428,12 +430,12 @@ Rollkartan stöds nu inte bara av kodläsning, utan också av redan existerande 
 
 ### Verifierad evidens som stödjer rollkartan
 
-| Fråga | Befintligt test | Vad det stöder |
-| --- | --- | --- |
-| Ändrar clarity bara size/logg? | `tests/backtest/test_evaluate_pipeline.py::test_evaluate_pipeline_ri_v2_clarity_on_changes_sizing_only_and_logs` | Stöder att clarity hör hemma i management/sizing snarare än candidate selection |
-| Ändrar risk_state action-path eller bara size? | `tests/utils/test_decision_scenario_behavior.py::test_decide_risk_state_stress_reduces_size_without_changing_action_path` | Stöder att risk_state är risk/sizing modulation, inte entrymotor |
-| Kan adaptive fib override faktiskt flytta block → entry? | `tests/utils/test_decision_scenario_behavior.py::test_decide_adaptive_htf_override_progression_flips_block_into_entry` | Stöder att fib-override är en semantiskt känslig permission-brygga |
-| Förblir shadow-regime observability advisory? | `tests/governance/test_regime_intelligence_cutover_parity.py` och relaterade shadow-observer-tester | Stöder att `decision_input=False` hålls i observability-spåret |
+| Fråga                                                    | Befintligt test                                                                                                           | Vad det stöder                                                                  |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Ändrar clarity bara size/logg?                           | `tests/backtest/test_evaluate_pipeline.py::test_evaluate_pipeline_ri_v2_clarity_on_changes_sizing_only_and_logs`          | Stöder att clarity hör hemma i management/sizing snarare än candidate selection |
+| Ändrar risk_state action-path eller bara size?           | `tests/utils/test_decision_scenario_behavior.py::test_decide_risk_state_stress_reduces_size_without_changing_action_path` | Stöder att risk_state är risk/sizing modulation, inte entrymotor                |
+| Kan adaptive fib override faktiskt flytta block → entry? | `tests/utils/test_decision_scenario_behavior.py::test_decide_adaptive_htf_override_progression_flips_block_into_entry`    | Stöder att fib-override är en semantiskt känslig permission-brygga              |
+| Förblir shadow-regime observability advisory?            | `tests/governance/test_regime_intelligence_cutover_parity.py` och relaterade shadow-observer-tester                       | Stöder att `decision_input=False` hålls i observability-spåret                  |
 
 ### Det viktigaste som fortfarande behöver bevisas bättre
 
@@ -520,6 +522,96 @@ Första kodläsningen stödjer följande uppdelning:
   - tie-break via regime / `last_action`
 
 Den viktigaste observationen är att `decision_gates.py` inte ser ut som att RI direkt genererar trades, men filen är absolut ett ställe där RI-liknande signaler kan flytta gränsen för _när_ legacy-entry får passera. Därför bör filen behandlas som den viktigaste blandzonen, inte som ren entrylogik eller ren management.
+
+### Skarpare delkarta — vad i `decision_gates.py` flyttar faktiskt candidate?
+
+Efter närläsning av koden och kontraktstesterna är det användbart att skilja mellan tre olika typer av steg i `decision_gates.py`:
+
+1. steg som **kan skapa eller ändra candidate**
+2. steg som **inte ändrar candidate men kan blockera det**
+3. steg som **bara förbereder eller flyttar beslutsgränsen**
+
+Detta ger en mycket skarpare bild av var entry faktiskt uppstår.
+
+| Delsteg i `decision_gates.py` | Kan skapa/ändra candidate? | Kan bara blockera? | Typisk roll | Kommentar |
+| --- | --- | --- | --- | --- |
+| Fail-safe på null/ogiltiga probas | Nej | Ja | Safety veto | Stoppar hela flödet innan någon candidate finns |
+| EV-beräkning / `EV_NEG` | Nej | Ja | Entry-safety | Stoppar setup med negativ edge men väljer aldrig riktning |
+| Event block / risk cap block | Nej | Ja | Safety / permission | Hård veto-yta före candidate |
+| `trend_long_only` / `trend_short_only` | Indirekt | Ja | Context → permission | Ändrar inte proba-order, men kan eliminera ena sidan och därmed påverka vilken candidate som återstår |
+| `entry_conf_overall` + threshold-bas | Nej | Nej | Boundary setup | Förbereder gränsen; i sig ingen candidate-effekt |
+| ATR-zonval | Nej | Nej | Context setup | Flyttar vilken threshold-tabell som ska gälla |
+| Zone/regime threshold mapping | Indirekt | Ja | Permission boundary | Ändrar inte kandidat direkt, men flyttar vilka sidor som överlever till candidate-valet |
+| `buy_pass` / `sell_pass` | Indirekt | Ja | Permission outcome | Här avgörs vilka riktningar som fortfarande är kandidater |
+| Candidate selection | Ja | Nej | Entry resolution | Det tydligaste stället där `LONG` eller `SHORT` faktiskt väljs |
+| Tie-break (`last_action` / regime-bias) | Ja | Nej | Context-sensitive entry resolution | Kan välja riktning när probas är lika; liten volym men semantiskt viktig |
+| Confidence gate i `apply_post_fib_gates(...)` | Nej | Ja | Post-candidate permission | Kandidaten finns redan; steget kan bara blockera |
+| `min_edge` | Nej | Ja | Post-candidate entry-safety | Bevarar eller stoppar vald candidate; skapar ingen ny |
+| Hysteresis | Nej | Ja | Stability filter | Kan bara hålla kvar NONE/pausa byte, inte välja annan riktning |
+| Cooldown | Nej | Ja | No-trade filter | Ren blockering efter att candidate redan är känt |
+
+### Praktisk split — candidate-moving vs candidate-preserving
+
+I praktiken ser `decision_gates.py` ut att ha följande kärnsplit:
+
+- **Candidate-moving steg**
+  - candidate selection
+  - tie-break
+  - indirekt: regime-baserad allowance + threshold-pass/fail eftersom de bestämmer vilka kandidater som över huvud taget får vara kvar i urvalet
+
+- **Candidate-preserving men blockerande steg**
+  - EV-gate
+  - event/risk veto
+  - confidence gate
+  - `min_edge`
+  - hysteresis
+  - cooldown
+
+- **Boundary-forming steg**
+  - bas-threshold
+  - ATR-zonval
+  - zone/regime threshold mapping
+
+Detta är viktigt därför att det visar att mycket av det som först ser ut som “entrylogik” i själva verket bara är **candidate-preserving blockering**. Den verkliga entry-resolutionen är betydligt smalare än filens totala yta antyder.
+
+### Tydligare slutsats om `decision_gates.py`
+
+Den skarpare läsningen pekar på följande:
+
+- **Legacy-entry-kärnan i filen är smalare än man först tror**
+  - candidate selection
+  - tie-break
+
+- **Den större delen av filen är egentligen permission/safety/boundary management**
+  - EV
+  - thresholds
+  - buy/sell pass
+  - confidence
+  - edge
+  - hysteresis
+  - cooldown
+
+- **De mest känsliga RI-adjacent bryggorna är inte där candidate väljs, utan där beslutsgränsen formas**
+  - regime-baserad allowance
+  - zone/regime threshold mapping
+  - threshold-pass/fail
+
+Det betyder att om vi vill förstå om RI håller på att bli entrymotor, bör vi inte främst stirra på `candidate selection`-raden i sig, utan på **vilka boundary-steg som avgör vilka kandidater som ens når dit**.
+
+### Befintlig evidens som stödjer denna split
+
+De nuvarande testerna stödjer redan delar av denna uppdelning:
+
+- `tests/utils/test_decision_gates_contract.py::test_select_candidate_tie_handling_contract`
+  - stödjer att tie-break är ett verkligt candidate-moving-steg
+- `tests/utils/test_decision_gates_contract.py::test_select_candidate_fail_safe_and_blockers`
+  - stödjer att fail-safe, event-block och risk-cap är rena blockerare
+- `tests/utils/test_decision_gates_contract.py::test_apply_post_fib_gates_hysteresis_blocks_and_increments_state`
+  - stödjer att hysteresis är candidate-preserving blockering
+- `tests/utils/test_decision_gates_contract.py::test_apply_post_fib_gates_cooldown_blocks_and_decrements_state`
+  - stödjer att cooldown är ren post-candidate blockering
+- `tests/utils/test_decision_edge.py::test_min_edge_requirement`
+  - stödjer att `min_edge` blockerar ett redan möjligt entry men inte skapar ett nytt
 
 ### Mikromatris — `decision_sizing.py`
 

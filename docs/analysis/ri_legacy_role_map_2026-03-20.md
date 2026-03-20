@@ -550,14 +550,14 @@ Praktiskt betyder det att `confidence.py` bör hållas under extra kontroll i RI
 
 Efter repo-sökning över kod, tester och checked-in configfiler framträder en viktig praktisk bild:
 
-| Runtime-/configyta | Observerat läge | Evidens | Tolkning |
-| ------------------ | --------------- | ------- | -------- |
-| `src/core/strategy/evaluate.py` utan explicit `quality.apply` | `both` (default) | `quality_cfg.get("apply") or "both"` | Om config inte sätter `apply` används quality-lagret som gate+sizing-brygga |
-| Checked-in quality-profiler under `config/strategy/champions/` | ingen explicit `apply` | profilerna innehåller `quality.components.*.scope` men ingen `apply`-nyckel | Dessa profiler faller därför tillbaka till runtime-default `both` |
-| `config/strategy/champions/tBTCUSD_1h_quality_v2_candidate_scoped*.json` | effektivt hybrid under default `both` | `data_quality` + `spread` har `scope: both`, medan `atr` + `volume` har `scope: sizing` | Gating påverkas av vissa quality-komponenter, medan andra bara påverkar sizing |
-| `tests/backtest/test_evaluate_pipeline.py::test_evaluate_pipeline_ri_v2_clarity_on_changes_sizing_only_and_logs` | explicit `sizing_only` | `cfg_base["quality"] = {"apply": "sizing_only"}` | Testad RI-slice där confidence hålls borta från gating och används för sizing-only |
-| `src/core/strategy/decision_sizing.py` clarity-payload | `sizing_only` | `clarity_payload["apply"] = "sizing_only"` | RI clarity är uttryckligen modellerad som storleks-/management-lager |
-| Repo-bredd sökning efter explicit `"apply": "sizing_only"` i checked-in config | inga träffar i config | `rg` över `config/` gav inga explicita `quality.apply = sizing_only`-konfigurationer | `sizing_only` framstår som kontrollerat test-/specialläge, inte som standardiserad huvudprofil |
+| Runtime-/configyta                                                                                               | Observerat läge                       | Evidens                                                                                 | Tolkning                                                                                       |
+| ---------------------------------------------------------------------------------------------------------------- | ------------------------------------- | --------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `src/core/strategy/evaluate.py` utan explicit `quality.apply`                                                    | `both` (default)                      | `quality_cfg.get("apply") or "both"`                                                    | Om config inte sätter `apply` används quality-lagret som gate+sizing-brygga                    |
+| Checked-in quality-profiler under `config/strategy/champions/`                                                   | ingen explicit `apply`                | profilerna innehåller `quality.components.*.scope` men ingen `apply`-nyckel             | Dessa profiler faller därför tillbaka till runtime-default `both`                              |
+| `config/strategy/champions/tBTCUSD_1h_quality_v2_candidate_scoped*.json`                                         | effektivt hybrid under default `both` | `data_quality` + `spread` har `scope: both`, medan `atr` + `volume` har `scope: sizing` | Gating påverkas av vissa quality-komponenter, medan andra bara påverkar sizing                 |
+| `tests/backtest/test_evaluate_pipeline.py::test_evaluate_pipeline_ri_v2_clarity_on_changes_sizing_only_and_logs` | explicit `sizing_only`                | `cfg_base["quality"] = {"apply": "sizing_only"}`                                        | Testad RI-slice där confidence hålls borta från gating och används för sizing-only             |
+| `src/core/strategy/decision_sizing.py` clarity-payload                                                           | `sizing_only`                         | `clarity_payload["apply"] = "sizing_only"`                                              | RI clarity är uttryckligen modellerad som storleks-/management-lager                           |
+| Repo-bredd sökning efter explicit `"apply": "sizing_only"` i checked-in config                                   | inga träffar i config                 | `rg` över `config/` gav inga explicita `quality.apply = sizing_only`-konfigurationer    | `sizing_only` framstår som kontrollerat test-/specialläge, inte som standardiserad huvudprofil |
 
 ### Praktisk slutsats om skarpa confidence-lägen
 
@@ -578,6 +578,41 @@ Detta ger en mer precis karta än den tidigare allmänna formuleringen:
   - inte observerad som generell checked-in runtime-default i `config/`
 
 Detta betyder att den nuvarande repo-bilden lutar åt att **skarp standardanvändning fortfarande är entry-adjacent via `both`**, medan **RI clarity-spåret redan uttryckligen är placerat i management/sizing-facket via `sizing_only`**.
+
+### Konkret evidens — de faktiska `both`-profilerna ger verklig gate-drift
+
+För att flytta detta från “trolig tolkning” till faktisk evidens kördes `compute_confidence(...)` med den checked-in profilen `config/strategy/champions/tBTCUSD_1h_quality_v2_candidate_scoped.json` och en representativ buy-proba nära defaultgränsen (`buy = 0.33` mot `entry_conf_overall = 0.24`).
+
+Det gav följande bild:
+
+| Fall | Gate confidence | Scaled confidence | Gate-pass vid `0.24`? | Slutsats |
+| ---- | --------------- | ----------------- | --------------------- | -------- |
+| Clean | `0.33` | `0.33` | Ja | Baslinje |
+| `spread_stress` | `0.231` | `0.231` | Nej | `scope: both` på `spread` kan blockera entry |
+| `data_quality_stress` | `0.231` | `0.231` | Nej | `scope: both` på `data_quality` kan blockera entry |
+| `atr_stress` | `0.33` | `0.231` | Ja | `scope: sizing` på ATR lämnar gating orörd men sänker storlek |
+| `volume_stress` | `0.33` | `0.231` | Ja | `scope: sizing` på volume lämnar gating orörd men sänker storlek |
+
+Detta är viktigt därför att det visar att frågan inte längre är om `both`-profiler **kan** flytta gating i teorin, utan att den checked-in scoped-profilen faktiskt gör det på ett mätbart sätt.
+
+### Jämförelse mellan scoped-profilerna — relaxed-size ändrar size, inte gate
+
+Den andra checked-in varianten, `tBTCUSD_1h_quality_v2_candidate_scoped_relaxed_size.json`, visar samma gate-sida men mildare size-straff för de sizing-only-komponenter som öppnats upp:
+
+| Profil | Fall | `q_gate` | `q_size` | Tolkning |
+| ------ | ---- | -------- | -------- | -------- |
+| `candidate_scoped` | `spread_stress` | `0.7` | `0.7` | Gate och size sjunker tillsammans via `scope: both` |
+| `relaxed_size` | `spread_stress` | `0.7` | `0.7` | Samma gate-ytan kvar |
+| `candidate_scoped` | `atr_stress` | `1.0` | `0.7` | Gating orörd, size tydligt reducerad |
+| `relaxed_size` | `atr_stress` | `1.0` | `0.892469` | Samma gate, mildare size-straff |
+
+Det stöder följande precisering:
+
+- **gate-driften i dessa profiler kommer från `data_quality` och `spread`**
+- **skillnaden mellan scoped-profilerna sitter främst i sizing-sidan (`atr` / `volume`)**
+- relaxed-size-profilen ser alltså ut att vara en **size-surface-justering**, inte en ny gate-topologi
+
+Detta passar också väl med metadata-noten i den scoped-profilen: målet beskrivs som att behålla gating-fördelarna från W1/W3 men mildra W2-regression via sizing-only-komponenterna.
 
 ### Samlad bedömning av authority-seamen
 
@@ -624,6 +659,7 @@ Rollkartan stöds nu inte bara av kodläsning, utan också av redan existerande 
 | Ändrar risk_state action-path eller bara size?                  | `tests/utils/test_decision_scenario_behavior.py::test_decide_risk_state_stress_reduces_size_without_changing_action_path` | Stöder att risk_state är risk/sizing modulation, inte entrymotor                       |
 | Kan adaptive fib override faktiskt flytta block → entry?        | `tests/utils/test_decision_scenario_behavior.py::test_decide_adaptive_htf_override_progression_flips_block_into_entry`    | Stöder att fib-override är en semantiskt känslig permission-brygga                     |
 | Är `confidence.py` direction-bevarande men gate/sizing-känslig? | `tests/utils/test_confidence.py` + `tests/utils/test_decision_edge.py`                                                    | Stöder att confidence bevarar riktning men kan moduleras som gate- eller sizing-brygga |
+| Ger checked-in `both`-profiler faktisk gate-drift?              | direkt körbar evidens med `tBTCUSD_1h_quality_v2_candidate_scoped*.json`                                                  | Stöder att `data_quality`/`spread` verkligen kan flytta gate-pass, medan `atr`/`volume` främst flyttar size |
 | Förblir shadow-regime observability advisory?                   | `tests/governance/test_regime_intelligence_cutover_parity.py` och relaterade shadow-observer-tester                       | Stöder att `decision_input=False` hålls i observability-spåret                         |
 
 ### Det viktigaste som fortfarande behöver bevisas bättre
@@ -632,7 +668,7 @@ Det som fortfarande är mest värt att isolera i nästa steg är:
 
 1. hur mycket av candidate-drift som kommer från `decision_gates.py` thresholding
 2. hur mycket regime-aware calibration i `prob_model.py` faktiskt flyttar outputs relativt legacy-calibration
-3. vilka av de faktiska `both`-profilerna som ger mätbar gate-drift i riktiga RI-/legacy-jämförelser
+3. hur stor del av faktisk trade-drift i RI-/legacy-jämförelser som kommer från quality-gating jämfört med threshold/calibration-lagren
 
 ## Föreslagen ablationsordning
 

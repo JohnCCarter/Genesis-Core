@@ -533,22 +533,22 @@ Efter närläsning av koden och kontraktstesterna är det användbart att skilja
 
 Detta ger en mycket skarpare bild av var entry faktiskt uppstår.
 
-| Delsteg i `decision_gates.py` | Kan skapa/ändra candidate? | Kan bara blockera? | Typisk roll | Kommentar |
-| --- | --- | --- | --- | --- |
-| Fail-safe på null/ogiltiga probas | Nej | Ja | Safety veto | Stoppar hela flödet innan någon candidate finns |
-| EV-beräkning / `EV_NEG` | Nej | Ja | Entry-safety | Stoppar setup med negativ edge men väljer aldrig riktning |
-| Event block / risk cap block | Nej | Ja | Safety / permission | Hård veto-yta före candidate |
-| `trend_long_only` / `trend_short_only` | Indirekt | Ja | Context → permission | Ändrar inte proba-order, men kan eliminera ena sidan och därmed påverka vilken candidate som återstår |
-| `entry_conf_overall` + threshold-bas | Nej | Nej | Boundary setup | Förbereder gränsen; i sig ingen candidate-effekt |
-| ATR-zonval | Nej | Nej | Context setup | Flyttar vilken threshold-tabell som ska gälla |
-| Zone/regime threshold mapping | Indirekt | Ja | Permission boundary | Ändrar inte kandidat direkt, men flyttar vilka sidor som överlever till candidate-valet |
-| `buy_pass` / `sell_pass` | Indirekt | Ja | Permission outcome | Här avgörs vilka riktningar som fortfarande är kandidater |
-| Candidate selection | Ja | Nej | Entry resolution | Det tydligaste stället där `LONG` eller `SHORT` faktiskt väljs |
-| Tie-break (`last_action` / regime-bias) | Ja | Nej | Context-sensitive entry resolution | Kan välja riktning när probas är lika; liten volym men semantiskt viktig |
-| Confidence gate i `apply_post_fib_gates(...)` | Nej | Ja | Post-candidate permission | Kandidaten finns redan; steget kan bara blockera |
-| `min_edge` | Nej | Ja | Post-candidate entry-safety | Bevarar eller stoppar vald candidate; skapar ingen ny |
-| Hysteresis | Nej | Ja | Stability filter | Kan bara hålla kvar NONE/pausa byte, inte välja annan riktning |
-| Cooldown | Nej | Ja | No-trade filter | Ren blockering efter att candidate redan är känt |
+| Delsteg i `decision_gates.py`                 | Kan skapa/ändra candidate? | Kan bara blockera? | Typisk roll                        | Kommentar                                                                                             |
+| --------------------------------------------- | -------------------------- | ------------------ | ---------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Fail-safe på null/ogiltiga probas             | Nej                        | Ja                 | Safety veto                        | Stoppar hela flödet innan någon candidate finns                                                       |
+| EV-beräkning / `EV_NEG`                       | Nej                        | Ja                 | Entry-safety                       | Stoppar setup med negativ edge men väljer aldrig riktning                                             |
+| Event block / risk cap block                  | Nej                        | Ja                 | Safety / permission                | Hård veto-yta före candidate                                                                          |
+| `trend_long_only` / `trend_short_only`        | Indirekt                   | Ja                 | Context → permission               | Ändrar inte proba-order, men kan eliminera ena sidan och därmed påverka vilken candidate som återstår |
+| `entry_conf_overall` + threshold-bas          | Nej                        | Nej                | Boundary setup                     | Förbereder gränsen; i sig ingen candidate-effekt                                                      |
+| ATR-zonval                                    | Nej                        | Nej                | Context setup                      | Flyttar vilken threshold-tabell som ska gälla                                                         |
+| Zone/regime threshold mapping                 | Indirekt                   | Ja                 | Permission boundary                | Ändrar inte kandidat direkt, men flyttar vilka sidor som överlever till candidate-valet               |
+| `buy_pass` / `sell_pass`                      | Indirekt                   | Ja                 | Permission outcome                 | Här avgörs vilka riktningar som fortfarande är kandidater                                             |
+| Candidate selection                           | Ja                         | Nej                | Entry resolution                   | Det tydligaste stället där `LONG` eller `SHORT` faktiskt väljs                                        |
+| Tie-break (`last_action` / regime-bias)       | Ja                         | Nej                | Context-sensitive entry resolution | Kan välja riktning när probas är lika; liten volym men semantiskt viktig                              |
+| Confidence gate i `apply_post_fib_gates(...)` | Nej                        | Ja                 | Post-candidate permission          | Kandidaten finns redan; steget kan bara blockera                                                      |
+| `min_edge`                                    | Nej                        | Ja                 | Post-candidate entry-safety        | Bevarar eller stoppar vald candidate; skapar ingen ny                                                 |
+| Hysteresis                                    | Nej                        | Ja                 | Stability filter                   | Kan bara hålla kvar NONE/pausa byte, inte välja annan riktning                                        |
+| Cooldown                                      | Nej                        | Ja                 | No-trade filter                    | Ren blockering efter att candidate redan är känt                                                      |
 
 ### Praktisk split — candidate-moving vs candidate-preserving
 

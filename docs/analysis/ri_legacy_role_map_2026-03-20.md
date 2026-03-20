@@ -374,6 +374,89 @@ Det betyder att filen bör klassas som:
 
 Viktig observation: här kan RI påverka entry **före gates**, men fortfarande genom kalibrering av proba-underlaget snarare än genom att bli en separat entrymotor.
 
+### Skarpare delkarta — vad i `prob_model.py` flyttar faktiskt entry?
+
+Efter närläsning av koden är det viktigt att inte beskriva hela `prob_model.py` som “en enda entrymotor”. Filen innehåller i praktiken tre olika ansvar:
+
+1. **inläsning av modellsubstrat**
+2. **proba-beräkning från vikter/bias/kalibrering**
+3. **val av kalibreringsgren beroende på regime**
+
+Det betyder att filen inte väljer `LONG` eller `SHORT` direkt, men den formar det sannolikhetsunderlag som alla senare gates lever på.
+
+| Del i `prob_model.py`                              | Vad koden gör                                                               | Flyttar sannolikhetsytan? | Typisk roll                        | Bedömning för rollkartan                                                          |
+| -------------------------------------------------- | --------------------------------------------------------------------------- | ------------------------- | ---------------------------------- | --------------------------------------------------------------------------------- |
+| `ModelRegistry().get_meta(...)`                    | Hämtar modellmetadata från registry / modellfil                             | Indirekt                  | Model substrate lookup             | Infrastruktur-/substratsteg; viktig men inte i sig RI-logik                      |
+| `schema` + feature projection                      | Läser features i rätt ordning och fyller saknade värden med `0.0`           | Ja                        | Deterministiskt inference-substrat | Legacy-kärna; utan detta finns ingen meningsfull proba                            |
+| `buy.w` / `buy.b` / `sell.w` / `sell.b`            | Definierar den råa logistiska scoringytan                                   | Ja                        | Entry substrate                    | Detta är den mest rena legacy-entryytan i filen                                   |
+| Default-kalibrering (`buy.calib` / `sell.calib`)   | Skalar/offsetar råscore till kalibrerad buy/sell-proba                      | Ja                        | Entry calibration                  | Fortfarande legacy-nära, men redan ett boundary-shaping steg                      |
+| `calibration_by_regime`-lookup                     | Väljer regimespecifik kalibrering när både `regime` och metadata finns      | Ja                        | Regime-aware entry modulation      | Detta är filens tydligaste RI-adjacent söm                                        |
+| Fallback från regime-kalibrering till default      | Behåller default-kalibrering när regime-saknas eller saknar specifik branch | Ja                        | Safety / compatibility fallback    | Viktig kompatibilitetsbrygga snarare än ny alpha                                  |
+| `predict_proba(...)`-normalisering till simplex    | Bygger slutlig `{buy, sell, hold}`-fördelning                               | Ja                        | Canonical probability output       | Legacy-inferencekärna; formar allt senare gating läser                            |
+| `meta_out.versions.regime_aware_calibration`       | Exponerar om regime-aware kalibrering användes                              | Nej                       | Observability                      | Audit-spår, inte beslutslogik                                                     |
+| `meta_out.calibration_used`                        | Exponerar exakt vilka kalibreringsparametrar som användes                   | Nej                       | Observability / evidence           | Mycket värdefullt för ablation och driftanalys                                    |
+
+### Praktisk split — legacy-substrat vs RI-söm i `prob_model.py`
+
+I praktiken kan filen delas så här:
+
+- **Tydligt legacy-substrat**
+  - feature projection enligt `schema`
+  - buy/sell-vikter och bias
+  - sigmoid + simplex-normalisering
+
+- **Boundary-shaping men fortfarande model-nära steg**
+  - default-kalibrering
+  - fallbacklogik när regime-specifik kalibrering saknas
+
+- **RI-adjacent söm**
+  - valet av `calibration_by_regime` när authoritative regime skickas in från pipeline
+
+Den viktiga nyansen är att RI här inte väljer riktning direkt. I stället kan RI flytta **sannolikhetsgeometrin före gates**, vilket gör sömmen mer känslig än sizing men fortfarande annorlunda från ren candidate selection.
+
+### Konkret evidens — aktiv modellmetadata flyttar proba före gates
+
+Detta är inte bara en teoretisk kodstig. Aktiv modellmetadata i `config/models/tBTCUSD_1m.json` innehåller tydligt olika `a`/`b`-parametrar per regime för både buy och sell. En snabb körning med samma feature-vektor men olika `regime` gav:
+
+| Regime | Buy | Sell | Hold | Tolkning |
+| ------ | --- | ---- | ---- | -------- |
+| `none` | `0.425263` | `0.574737` | `0.000000` | Default-kalibrering |
+| `bull` | `0.378436` | `0.587149` | `0.034414` | Regime-söm aktiv men måttlig drift |
+| `bear` | `0.206923` | `0.755708` | `0.037368` | Kraftig topologisk drift före gates |
+| `ranging` | `0.352529` | `0.583218` | `0.064253` | Regime-söm aktiv även i sidledes miljö |
+
+Det stöder två viktiga slutsatser:
+
+1. `prob_model.py` är fortfarande legacy-entry-substratet.
+2. regime-aware kalibrering är en **aktiv och meningsfull beslutsgräns före gating**, inte bara dekorativ metadata.
+
+### Tydligare slutsats om `prob_model.py`
+
+Den skarpare läsningen pekar på följande:
+
+- **Filens kärna är fortfarande legacy**
+  - vikter, bias, sigmoid och simplex-normalisering
+
+- **Den mest känsliga RI-bryggan i filen är kalibreringsvalet**
+  - inte inferencemotorn i sig
+  - inte candidate selection
+  - utan valet mellan default-kalibrering och regime-specifik kalibrering
+
+- **Detta gör `prob_model.py` till en tidigare och mer strukturell brygga än `decision_gates.py`**
+  - `decision_gates.py` formar vilka kandidater som överlever
+  - `prob_model.py` kan redan innan dess flytta själva buy/sell/hold-fördelningen som gates läser
+
+Det betyder att om vi vill förstå var RI först börjar bryta loss från legacy-topologin, är `prob_model.py` sannolikt en av de första verkligt känsliga sömmarna i kedjan.
+
+### Befintlig evidens som stödjer denna split
+
+- `tests/integration/test_prob_model_integration.py::test_prob_model_wrapper_applies_calibration_and_meta`
+  - stöder att wrappern faktiskt applicerar kalibrering och exporterar metadata
+- `tests/utils/test_prob_model_min.py`
+  - stöder att basmodellen producerar normaliserad `{buy, sell, hold}`-output utan sidoeffekter
+- `docs/analysis/regime_intelligence_champion_compatibility_findings_2026-03-18.md`
+  - stöder att authority-/calibration-pathen är den första tydliga topologiska bryggan i RI-familjens avvikelse från legacy
+
 ### Samlad bedömning av `confidence.py`
 
 `confidence.py` förtjänar en egen plats i rollkartan, eftersom den inte bara är ett “litet hjälplager”. Efter kodläsning ser den ut som en **quality-aware bridge** mellan entry-underlag och både gating/sizing.
@@ -390,6 +473,78 @@ Det gör att `confidence.py` bör klassas som:
 - **sekundärt:** permission + sizing bridge
 
 Viktig observation: detta är inte en RI-modul i snäv mening, men den är en plats där marknadskvalitet kan minska aggressivitet utan att nödvändigtvis ändra direction. Därför är den strategiskt viktig i rollkartan.
+
+### Skarpare delkarta — vad i `confidence.py` flyttar faktiskt beteendet?
+
+Efter närläsning av både `confidence.py`, `evaluate.py` och kontraktstesterna blir bilden skarpare: filen genererar inte direction, men den kan fortfarande flytta **vilka setups som passerar confidence-gates** och/eller **hur stora positioner de får** beroende på konfiguration.
+
+| Del i `confidence.py`                                | Vad koden gör                                                          | Ändrar riktning? | Kan ändra gate-pass? | Kan ändra storlek? | Typisk roll                     | Bedömning |
+| --------------------------------------------------- | ---------------------------------------------------------------------- | ---------------- | -------------------- | ------------------ | ------------------------------- | --------- |
+| `_as_float` / `_clamp01` / `_clamp`                 | Normaliserar och säkrar numeriska inputs                               | Nej              | Indirekt             | Indirekt           | Safety / numeric hygiene        | Ren stödfunktion, inte semantisk alpha |
+| `_compute_quality_factor(..., enabled=False)`       | v1-läge: använder bara `data_quality` eller `1.0`                      | Nej              | Ja, via absolut nivå | Ja                 | Basal confidence scaling        | Legacy-kompatibel dämpning |
+| v2-komponenter: `spread`, `atr`, `volume`           | Straffar quality utifrån marknadskvalitet                              | Nej              | Ja                   | Ja                 | Quality modulation              | Flyttar absolut confidence men inte buy/sell-ordning |
+| `component_scopes`                                  | Delar upp komponenter i `gate`, `sizing` eller `both`                  | Nej              | Ja, om scope når gate | Ja                | Gate/sizing routing             | Detta är filens viktigaste beteendesöm |
+| `q_gate` / `q_size`                                 | Bygger separata kvalitetsfaktorer för gating respektive sizing         | Nej              | Ja                   | Ja                 | Boundary + sizing bridge        | Förklarar varför samma quality-data kan ge olika downstream-effekt |
+| `c_buy` / `c_sell` / `overall`                      | Skalar buy/sell lika med gate-faktorn och bevarar rangordning          | Nej              | Ja                   | Indirekt           | Gate-facing confidence          | Direction bevaras men absolut nivå kan stoppa entry |
+| `buy_scaled` / `sell_scaled` / `overall_scaled`     | Exponerar separat sizing-confidence när `q_size != q_gate`             | Nej              | Nej direkt           | Ja                 | Sizing-facing confidence        | Tydlig brygga till `decision_sizing.py` |
+| `meta.quality` / `reasons` / `component_scopes`     | Exporterar varför confidence reducerades och med vilken scope          | Nej              | Nej                  | Nej                | Observability / audit           | Viktigt bevislager, inte beslutsmotor |
+
+### Praktisk split — confidence som direction-bevarande men boundary-flyttande brygga
+
+Det viktigaste att hålla isär här är tre olika påståenden:
+
+1. `confidence.py` **väljer inte riktning**
+2. `confidence.py` kan ändå **ändra om ett setup passerar confidence-gaten**
+3. `confidence.py` kan också, separat, **bara ändra size**
+
+Denna kombination gör lagret ovanligt viktigt:
+
+- **Direction-bevarande egenskap**
+  - buy och sell skalas med samma gate-faktor
+  - ordningen mellan buy och sell bevaras
+  - filen introducerar därför inte ny long/short-bias i sig
+
+- **Boundary-flyttande egenskap**
+  - om `quality.apply = both` i `evaluate.py` används den skalade confidence-bilden direkt i `decide()`
+  - då kan samma proba-setup gå från pass till block utan att direction ändras
+
+- **Ren sizing-gemenskap när den explicit konfigureras så**
+  - om `quality.apply = sizing_only` använder `evaluate.py` rå confidence för gating
+  - samtidigt exporteras `buy_scaled` / `sell_scaled` för sizing
+  - då blir lagret i praktiken management/sizing snarare än entry-permission
+
+Detta betyder att `confidence.py` inte bör beskrivas som varken ren management eller ren gate-logik. Det är en **konfigurerbar brygga** vars default-läge kan vara entry-adjacent, medan dess isolerade sizing-läge ligger mycket närmare RI:s tänkta managementroll.
+
+### Tydligare slutsats om `confidence.py`
+
+Den skarpare läsningen pekar på följande:
+
+- **`confidence.py` är inte en direction-motor**
+  - den bevarar buy/sell-ordningen
+  - den skapar inte nya kandidater
+
+- **`confidence.py` är däremot en verklig boundary-modulator**
+  - i default-/`both`-läge kan den påverka vilka setups som överlever gating
+  - i `sizing_only`-läge blir den i stället en ren storleksmodulator
+
+- **Detta gör filen till en mer flexibel brygga än `decision_sizing.py`**
+  - `decision_sizing.py` är nästan rent post-candidate
+  - `confidence.py` kan, beroende på apply/scope, ligga både före och efter den verkliga gating-effekten
+
+Praktiskt betyder det att `confidence.py` bör hållas under extra kontroll i RI-rollkartan: inte därför att den genererar entry, utan därför att den kan flytta entry-gränsen utan att ändra riktning.
+
+### Befintlig evidens som stödjer denna split
+
+- `tests/utils/test_confidence.py::test_compute_confidence_v2_preserves_buy_sell_order_when_not_saturated`
+  - stöder att lagret bevarar direction-order och därmed inte själv skapar ny riktning
+- `tests/utils/test_confidence.py::test_compute_confidence_v2_component_scope_sizing_only_does_not_affect_gate`
+  - stöder att komponentscope kan hålla gating oförändrad men ändå reducera sizing via `buy_scaled` / `sell_scaled`
+- `tests/utils/test_decision_edge.py::test_entry_gate_does_not_use_scaled_confidence`
+  - stöder att scaled confidence inte får smyga in och skapa entry när rå gate-confidence ligger under threshold
+- `tests/utils/test_decision_edge.py::test_sizing_prefers_scaled_confidence_when_present`
+  - stöder att scaled confidence faktiskt används i sizing när den väl finns
+- `src/core/strategy/evaluate.py`
+  - visar explicit att `quality.apply` avgör om confidence-lagret används som `both`-bridge eller som `sizing_only`-bridge
 
 ### Samlad bedömning av authority-seamen
 
@@ -435,6 +590,7 @@ Rollkartan stöds nu inte bara av kodläsning, utan också av redan existerande 
 | Ändrar clarity bara size/logg?                           | `tests/backtest/test_evaluate_pipeline.py::test_evaluate_pipeline_ri_v2_clarity_on_changes_sizing_only_and_logs`          | Stöder att clarity hör hemma i management/sizing snarare än candidate selection |
 | Ändrar risk_state action-path eller bara size?           | `tests/utils/test_decision_scenario_behavior.py::test_decide_risk_state_stress_reduces_size_without_changing_action_path` | Stöder att risk_state är risk/sizing modulation, inte entrymotor                |
 | Kan adaptive fib override faktiskt flytta block → entry? | `tests/utils/test_decision_scenario_behavior.py::test_decide_adaptive_htf_override_progression_flips_block_into_entry`    | Stöder att fib-override är en semantiskt känslig permission-brygga              |
+| Är `confidence.py` direction-bevarande men gate/sizing-känslig? | `tests/utils/test_confidence.py` + `tests/utils/test_decision_edge.py`                                                    | Stöder att confidence bevarar riktning men kan moduleras som gate- eller sizing-brygga |
 | Förblir shadow-regime observability advisory?            | `tests/governance/test_regime_intelligence_cutover_parity.py` och relaterade shadow-observer-tester                       | Stöder att `decision_input=False` hålls i observability-spåret                  |
 
 ### Det viktigaste som fortfarande behöver bevisas bättre
@@ -443,7 +599,7 @@ Det som fortfarande är mest värt att isolera i nästa steg är:
 
 1. hur mycket av candidate-drift som kommer från `decision_gates.py` thresholding
 2. hur mycket regime-aware calibration i `prob_model.py` faktiskt flyttar outputs relativt legacy-calibration
-3. om `confidence.py` i praktiken bara sänker aggressivitet, eller ibland också förändrar vilka setups som överlever gating på ett mer strukturellt sätt
+3. vilka runtime-/configlägen som faktiskt använder `confidence.py` som `both`-bridge respektive `sizing_only`-bridge i skarpa RI-paths
 
 ## Föreslagen ablationsordning
 

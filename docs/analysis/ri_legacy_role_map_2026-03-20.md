@@ -743,6 +743,53 @@ Detta ger en viktig precisering av topologibrottet:
 
 I praktiken innebär det att nästa frågeställning inte längre är _om_ threshold-/cadence-ytan kan skapa verklig RI-/legacy-drift när quality hålls konstant, utan **hur stor del av den bredare replay-driften som kommer därifrån relativt calibration-pathen**.
 
+### Kalibreringssömmen på fast gate-surface — samma features kan byta riktning före thresholding
+
+För att isolera den tidigare sömmen i kedjan kördes därefter en separat probe direkt mot `predict_proba_for(...)` med den verkliga modellen `config/models/tBTCUSD_3h.json`.
+
+Även detta upplägg hölls medvetet rent:
+
+- samma features hela vägen
+- samma gate-surface hela vägen
+- ingen quality-skalning
+- ingen ändring av hysteresis/cooldown
+
+Det enda som varierades var **vilken kalibreringsgren som användes** i `prob_model.py`.
+
+Ett konkret feature-set gav följande utfall:
+
+| Kalibreringsgren | Buy        | Sell       | Legacy low-zon (`regime_thr=0.36`) | RI low-zon (`regime_thr=0.33`) | Tolkning                                                                     |
+| ---------------- | ---------- | ---------- | ---------------------------------- | ------------------------------ | ---------------------------------------------------------------------------- |
+| `none`           | `0.513411` | `0.486589` | `LONG`                             | `LONG`                         | Default-kalibreringen håller long-sidan marginellt över short                |
+| `bull`           | `0.481459` | `0.518541` | `SHORT`                            | `SHORT`                        | Samma features byter riktning enbart via regime-aware kalibrering            |
+| `bear`           | `0.498711` | `0.501289` | `SHORT`                            | `SHORT`                        | Även bear-grenen flyttar fördelningen över till short utan threshold-byte    |
+
+Det viktiga här är inte att just detta feature-set råkar vara “magiskt”, utan vad det bevisar om ansvarsfördelningen:
+
+1. **kalibreringssömmen kan ensam byta candidate-riktning på en oförändrad gate-surface**
+2. **threshold/cadence behöver alltså inte vara orsaken när ett setup redan har vänt riktning tidigare i kedjan**
+3. **detta placerar calibration som en tidigare och mer strukturell driftkälla än gate-surface, även när båda senare samverkar**
+
+### Skarpare attribution när quality hålls konstant
+
+När de kontrollerade proverna nu läggs bredvid varandra blir ansvarskartan tydligare än tidigare:
+
+| Isolerad probe                  | Vad som hölls fast                                   | Vad som varierades                       | Observerad drift                                     | Slutsats                                                            |
+| ------------------------------- | ---------------------------------------------------- | ---------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------- |
+| **Calibration-only**            | samma features, samma gate-surface, ingen quality    | `predict_proba_for(...)`-kalibreringsgren | `LONG -> SHORT` på oförändrad yta                    | `prob_model.py` kan flytta riktning före all senare gating          |
+| **Threshold-only**              | samma probas/confidence, samma cadence, ingen quality | legacy- vs RI-threshold surface          | `NONE -> LONG` och `LONG -> NONE` mellan ytor        | threshold-surface kan själv öppna/stänga identiska setups           |
+| **Cadence-only**                | samma kandidat, samma probas/confidence, ingen quality | `2/0` vs `3/2`                           | `LONG -> HYST_WAIT/NONE` vid samma flip-läge         | gating cadence kan själv fördröja eller hålla tillbaka giltiga byten |
+
+Detta flyttar dokumentets attribution från en allmän “många lager spelar roll”-bild till en mer precis sekvens:
+
+1. **calibration-pathen kan först flytta sannolikhetsgeometrin och till och med vända riktning**
+2. **threshold-surface avgör därefter om den kalibrerade kandidaten över huvud taget får passera**
+3. **cadence bestämmer slutligen om ett giltigt byte får ske direkt eller måste vänta**
+
+Det betyder att nästa replay-fråga nu kan ställas skarpare än tidigare:
+
+> Hur mycket av den observerade RI-/legacy-driften kommer från att kalibreringen redan ändrar kandidatunderlaget, och hur mycket tillkommer först när threshold- och cadence-surface läggs ovanpå?
+
 ### Samlad bedömning av authority-seamen
 
 Kombinationen av `regime_unified.py` och `core/intelligence/regime/authority.py` gör att regime-authority inte bör beskrivas som “en modul”, utan som en **auktoritetsseam**:
@@ -791,15 +838,16 @@ Rollkartan stöds nu inte bara av kodläsning, utan också av redan existerande 
 | Ger checked-in `both`-profiler faktisk gate-drift?              | direkt körbar evidens med `tBTCUSD_1h_quality_v2_candidate_scoped*.json`                                                  | Stöder att `data_quality`/`spread` verkligen kan flytta gate-pass, medan `atr`/`volume` främst flyttar size          |
 | Kan threshold-lagret ensamt flippa samma setup?                 | direkt körbar evidens med RI-zontrösklar i `decision_gates.py`                                                            | Stöder att zone/regime-thresholding är en explicit trade/no-trade-brytare även när probas och confidence hålls fasta |
 | Kan legacy- och RI-family surfaces drifta utan quality?         | kontrollerad probe mot `select_candidate(...)` + `apply_post_fib_gates(...)` med `tBTCUSD_3h` och RI-signaturytan         | Stöder att threshold- och cadence-klustret räcker för verklig action-drift även när quality hålls konstant           |
+| Kan kalibreringen ensam flytta candidate på fast surface?       | kontrollerad probe mot `predict_proba_for(...)` med `config/models/tBTCUSD_3h.json` och oförändrad gate-surface           | Stöder att regime-aware kalibrering kan byta riktning före threshold- och cadence-lagret                              |
 | Förblir shadow-regime observability advisory?                   | `tests/governance/test_regime_intelligence_cutover_parity.py` och relaterade shadow-observer-tester                       | Stöder att `decision_input=False` hålls i observability-spåret                                                       |
 
 ### Det viktigaste som fortfarande behöver bevisas bättre
 
 Det som fortfarande är mest värt att isolera i nästa steg är:
 
-1. hur mycket av den bredare replay-driften som kommer från `decision_gates.py` thresholding + gating cadence, nu när deras quality-oberoende drift redan är visad
-2. hur mycket regime-aware calibration i `prob_model.py` faktiskt flyttar outputs relativt legacy-calibration i verkliga RI-/legacy-jämförelser
-3. hur stor del av faktisk trade-drift i RI-/legacy-jämförelser som kommer från threshold-/cadence-lagret jämfört med calibration-lagret när quality hålls konstant
+1. hur stor del av den bredare replay-driften som kommer från calibration-pathen jämfört med threshold-/cadence-surface, nu när båda är visade isolerat utan quality
+2. om den relativa viktningen mellan calibration och threshold/cadence är stabil över flera regimescenarier eller om den skiftar med regime/zon
+3. hur detta bör översättas till family-tolkning: vad som är tidig topologisöm respektive sen kompatibilitetsyta
 
 ## Föreslagen ablationsordning
 

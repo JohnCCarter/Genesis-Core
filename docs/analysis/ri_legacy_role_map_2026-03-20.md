@@ -715,6 +715,34 @@ Detta stärker den nuvarande arbetsmodellen i dokumentet:
 - **thresholding** = stark trade/no-trade-brytare inom den aktiva topologin
 - **calibration + authority** = tidigaste kandidaten till verkligt familjebrytande söm
 
+### Quality-konstant family probe — threshold- och cadence-ytan räcker för verklig drift
+
+För att minska risken att quality-lagret “får skulden för allt” kördes en liten, kontrollerad probe direkt mot `select_candidate(...)` och `apply_post_fib_gates(...)` i `decision_gates.py`.
+
+Upplägget var medvetet snävt:
+
+- verklig legacy-yta från `config/strategy/champions/tBTCUSD_3h.json`
+- repo-kodad RI-signaturyta från `tests/core/strategy/test_families.py::_ri_config()`
+- samma `probas`
+- samma råa `confidence`
+- ingen quality-skalning alls i vägen
+
+Det gör att eventuell drift i utfallet här inte kan förklaras av `confidence.py`-quality, utan måste komma från family-surface i threshold-/cadence-lagret.
+
+| Scenario                 | Fast input                                                                 | Legacy 3h-yta                                                      | RI-signaturyta                                             | Tolkning                                                                |
+| ------------------------ | -------------------------------------------------------------------------- | ------------------------------------------------------------------ | ---------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `threshold_low_reopens`  | `buy=0.34`, `sell=0.20`, `confidence.buy=0.34`, `balanced`, låg ATR-zon    | `NONE` via `regime_thr=0.36`                                       | `LONG` via `regime_thr=0.33`                               | Samma setup öppnas i RI men inte i legacy enbart via threshold-surface  |
+| `threshold_mid_reblocks` | `buy=0.47`, `sell=0.20`, `confidence.buy=0.47`, `balanced`, mid ATR-zon    | `LONG` via `regime_thr=0.44`                                       | `NONE` via `regime_thr=0.51`                               | Samma setup blockeras i RI men passerar i legacy, återigen utan quality |
+| `cadence_flip_holdback`  | `buy=0.60`, `sell=0.20`, `confidence.buy=0.60`, låg zon, flip från `SHORT` | `LONG` när `decision_steps=1` växer till `2` och möter gates `2/0` | `NONE` med `HYST_WAIT` när samma läge möter RI-gates `3/2` | RI-familjens gating cadence kan hålla tillbaka ett redan giltigt setup  |
+
+Detta ger en viktig precisering av topologibrottet:
+
+1. **quality är inte nödvändig för att skapa verklig family-drift i gate-utfallet**
+2. **threshold-klustret räcker för att både öppna och stänga identiska setups mellan ytorna**
+3. **gating cadence (`3/2` vs `2/0`) räcker dessutom för att fördröja ett redan giltigt candidate-byte**
+
+I praktiken innebär det att nästa frågeställning inte längre är _om_ threshold-/cadence-ytan kan skapa verklig RI-/legacy-drift när quality hålls konstant, utan **hur stor del av den bredare replay-driften som kommer därifrån relativt calibration-pathen**.
+
 ### Samlad bedömning av authority-seamen
 
 Kombinationen av `regime_unified.py` och `core/intelligence/regime/authority.py` gör att regime-authority inte bör beskrivas som “en modul”, utan som en **auktoritetsseam**:
@@ -762,15 +790,16 @@ Rollkartan stöds nu inte bara av kodläsning, utan också av redan existerande 
 | Är `confidence.py` direction-bevarande men gate/sizing-känslig? | `tests/utils/test_confidence.py` + `tests/utils/test_decision_edge.py`                                                    | Stöder att confidence bevarar riktning men kan moduleras som gate- eller sizing-brygga                               |
 | Ger checked-in `both`-profiler faktisk gate-drift?              | direkt körbar evidens med `tBTCUSD_1h_quality_v2_candidate_scoped*.json`                                                  | Stöder att `data_quality`/`spread` verkligen kan flytta gate-pass, medan `atr`/`volume` främst flyttar size          |
 | Kan threshold-lagret ensamt flippa samma setup?                 | direkt körbar evidens med RI-zontrösklar i `decision_gates.py`                                                            | Stöder att zone/regime-thresholding är en explicit trade/no-trade-brytare även när probas och confidence hålls fasta |
+| Kan legacy- och RI-family surfaces drifta utan quality?         | kontrollerad probe mot `select_candidate(...)` + `apply_post_fib_gates(...)` med `tBTCUSD_3h` och RI-signaturytan         | Stöder att threshold- och cadence-klustret räcker för verklig action-drift även när quality hålls konstant           |
 | Förblir shadow-regime observability advisory?                   | `tests/governance/test_regime_intelligence_cutover_parity.py` och relaterade shadow-observer-tester                       | Stöder att `decision_input=False` hålls i observability-spåret                                                       |
 
 ### Det viktigaste som fortfarande behöver bevisas bättre
 
 Det som fortfarande är mest värt att isolera i nästa steg är:
 
-1. hur mycket av candidate-drift som kommer från `decision_gates.py` thresholding
+1. hur mycket av den bredare replay-driften som kommer från `decision_gates.py` thresholding + gating cadence, nu när deras quality-oberoende drift redan är visad
 2. hur mycket regime-aware calibration i `prob_model.py` faktiskt flyttar outputs relativt legacy-calibration i verkliga RI-/legacy-jämförelser
-3. hur stor del av faktisk trade-drift i RI-/legacy-jämförelser som kommer från threshold-lagret jämfört med calibration-lagret när quality hålls konstant
+3. hur stor del av faktisk trade-drift i RI-/legacy-jämförelser som kommer från threshold-/cadence-lagret jämfört med calibration-lagret när quality hålls konstant
 
 ## Föreslagen ablationsordning
 

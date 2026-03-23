@@ -1,8 +1,85 @@
 # HANDOFF — RI/R1 vs legacy role-map kickoff
 
-Senast uppdaterad: 2026-03-19
+Senast uppdaterad: 2026-03-23
 
 > Detta dokument är en operativ handoff för nästa agent/session. Det är **inte** en governance authority source och får inte överstyra `.github/copilot-instructions.md`, `docs/governance_mode.md`, `docs/OPUS_46_GOVERNANCE.md` eller `AGENTS.md`. Verifiera alltid live branch, HEAD, remote-status och working tree i aktuell arbetskopia innan arbete fortsätter.
+
+## Uppdatering 2026-03-23 — vad som nu faktiskt är etablerat
+
+Detta dokument började som en kickoff för en öppen rollmap-fråga. Efter vidare analys på branchen ska nästa agent **inte** läsa de tidiga formuleringarna här som en slutdom. Följande är nu kod- och artefaktförankrat:
+
+- `legacy` och `ri` behandlas i repot som två separata `strategy_family`-ytor, inte som “legacy plus ett litet RI-lager”.
+- Den första verkliga family-driften uppstår **uppströms** i:
+   1. **authority resolution**
+   2. **regime-aware calibration**
+- Den första plats där denna drift blir **faktiskt trade/no-trade / candidate/no-candidate** är:
+   1. **threshold / candidate surface** i `src/core/strategy/decision_gates.py`
+   2. därefter **cadence / post-gates**
+- `clarity_score` och `risk_state` beter sig i nuvarande evidens främst som **sizing/management**, inte som första action-driftkälla.
+
+### Konkret status efter genomförd kartläggning
+
+Följande är nu genomläst och korskopplat:
+
+- `handoff.md`
+- `docs/analysis/regime_intelligence_champion_compatibility_findings_2026-03-18.md`
+- `docs/analysis/ri_legacy_role_map_2026-03-20.md`
+- `src/core/strategy/evaluate.py`
+- `src/core/strategy/prob_model.py`
+- `src/core/strategy/decision_gates.py`
+- `src/core/strategy/decision_fib_gating.py`
+- `src/core/strategy/decision_fib_gating_helpers.py`
+- `src/core/strategy/decision_sizing.py`
+- `src/core/strategy/confidence.py`
+- högsignal-tester kring authority parity, signal adaptation, hysteresis/cooldown, edge och sizing-only-beteende
+
+### Slice 1 — authority + calibration
+
+Det som nu är fastställt:
+
+- `src/core/config/authority_mode_resolver.py` resolve:ar deterministiskt `authority_mode` med canonical path före alias och fail-closed tillbaka till `legacy`.
+- `src/core/strategy/evaluate.py` använder detta för att välja **authoritative regime path**.
+- `src/core/strategy/prob_model.py` använder sedan authoritative regime för att välja **`calibration_by_regime`** när modellen erbjuder det.
+- `config/models/tBTCUSD_3h.json` har explicita regime-specifika calibration-koefficienter för `buy` och `sell`, vilket gör authority-bytet till en verklig probability-surface-förändring — inte bara metadata.
+
+Arbetsdom efter slice 1:
+
+> Den första topologiska RI-vs-legacy-driften uppstår i **authority + calibration** innan threshold-, fib- eller sizing-lagren får säga sitt.
+
+### Slice 2 — threshold / candidate surface + cadence
+
+Det som nu är fastställt:
+
+- `src/core/strategy/decision_gates.py::select_candidate(...)` är den primära **candidate surface** där uppströms drift först blir konkret `LONG` / `SHORT` / `NONE`.
+- `signal_adaptation` överstyr baströsklarna när den är aktiv; detta är låst av `tests/integration/test_golden_trace_runtime_semantics.py::test_signal_adaptation_zone_overrides_base_thresholds`.
+- Den aktuella legacy champion-surface för `tBTCUSD_3h` och RI challenger-surface i `config/optimizer/3h/ri_challenger_family_v1/tBTCUSD_3h_ri_challenger_family_slice2_2024_v1.yaml` har **olika threshold-form**, inte bara globalt högre/lägre siffror.
+- `apply_post_fib_gates(...)` beter sig som ett separat **cadence/stabiliseringslager** via `CONF_TOO_LOW`, `EDGE_TOO_SMALL`, `HYST_WAIT` och `COOLDOWN_ACTIVE`.
+
+Arbetsdom efter slice 2:
+
+> `decision_gates.py` är den plats där authority+calibration-drift först blir **praktiskt tradingbeteende**, medan post-gates främst formar **timing och persistence**.
+
+### Nästa rimliga steg
+
+Nästa agent bör starta med **slice 3: structural survival / override** och fokusera på:
+
+- `src/core/strategy/decision_fib_gating.py`
+- `src/core/strategy/decision_fib_gating_helpers.py`
+
+Kärnfråga för slice 3:
+
+> När beter sig HTF/LTF-veto + adaptive override som legitim **permission/survival-policy**, och när börjar det i praktiken fungera som **dold entrymotor**?
+
+### Viktig tolkningsregel framåt
+
+Den tidiga kickoff-idén i detta dokument — att RI/R1 kanske borde ”återföras” till management/filter — ska nu behandlas som en **historisk arbetshypotes**, inte som slutdom.
+
+Det som just nu är bäst förankrat i kod och tester är i stället:
+
+1. **RI och legacy är separata strategy families**
+2. **första driftlagret är authority + calibration**
+3. **första praktiska action-lagret är threshold / candidate surface**
+4. **sizing-lagret är senare och mer management-präglat i nuvarande evidens**
 
 ## Läs detta först — vad nästa agent måste förstå direkt
 
@@ -27,7 +104,8 @@ Detta är sannolikt nyckeln till nästa edge.
 ## Live repo-status vid denna handoff
 
 - **Aktiv branch vid handoff:** `feature/ri-legacy-role-map-2026-03-19`
-- **HEAD vid handoff:** `8d5d7d80`
+- **HEAD vid handoff:** `f9cb996d`
+- **Working tree vid handoff:** clean
 - **Senast pushad commit på master före brancharbete:** `8d5d7d80` — `docs(ri): align strategy-family architecture terminology`
 - **Remote-status som observerades:** `origin/master` pekade på samma commit när branchen skapades
 

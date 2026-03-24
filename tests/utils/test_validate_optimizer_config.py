@@ -41,6 +41,7 @@ def test_normalize_champion_payload_falls_back_to_payload() -> None:
 def test_validate_optimizer_strategy_family_accepts_matching_ri_cluster() -> None:
     opt_cfg = {
         "strategy_family": "ri",
+        "meta": {"runs": {"run_intent": "champion_freeze"}},
         "parameters": {
             "multi_timeframe.regime_intelligence.authority_mode": {
                 "type": "fixed",
@@ -75,7 +76,7 @@ def test_validate_optimizer_strategy_family_accepts_matching_ri_cluster() -> Non
     errors, warnings = validate_optimizer_strategy_family(opt_cfg)
 
     assert errors == []
-    assert warnings == []
+    assert any("run_intent=champion_freeze" in warning for warning in warnings)
 
 
 def test_validate_optimizer_strategy_family_rejects_legacy_with_regime_module() -> None:
@@ -105,6 +106,7 @@ def test_validate_optimizer_strategy_family_requires_explicit_family() -> None:
 def test_validate_optimizer_strategy_family_rejects_non_exact_ri_authority() -> None:
     opt_cfg = {
         "strategy_family": "ri",
+        "meta": {"runs": {"run_intent": "research_slice"}},
         "parameters": {
             "multi_timeframe.regime_intelligence.authority_mode": {
                 "type": "grid",
@@ -164,6 +166,100 @@ def test_validate_optimizer_strategy_family_rejects_non_mapping_parameters() -> 
     errors, _warnings = validate_optimizer_strategy_family(opt_cfg)
 
     assert any("parameters måste vara en dict/mapping" in error for error in errors)
+
+
+def test_validate_optimizer_strategy_family_accepts_ri_research_slice_gate_sweep() -> None:
+    opt_cfg = {
+        "strategy_family": "ri",
+        "meta": {"runs": {"run_intent": "research_slice"}},
+        "parameters": {
+            "multi_timeframe.regime_intelligence.authority_mode": {
+                "type": "fixed",
+                "value": "regime_module",
+            },
+            "thresholds.signal_adaptation.atr_period": {"type": "fixed", "value": 14},
+            "gates.hysteresis_steps": {"type": "int", "low": 2, "high": 4, "step": 1},
+            "gates.cooldown_bars": {"type": "int", "low": 1, "high": 3, "step": 1},
+            "thresholds.entry_conf_overall": {"type": "fixed", "value": 0.28},
+            "thresholds.regime_proba.balanced": {"type": "fixed", "value": 0.36},
+            "thresholds.signal_adaptation.zones.low.entry_conf_overall": {
+                "type": "fixed",
+                "value": 0.14,
+            },
+            "thresholds.signal_adaptation.zones.low.regime_proba": {"type": "fixed", "value": 0.32},
+            "thresholds.signal_adaptation.zones.mid.entry_conf_overall": {
+                "type": "fixed",
+                "value": 0.42,
+            },
+            "thresholds.signal_adaptation.zones.mid.regime_proba": {"type": "fixed", "value": 0.52},
+            "thresholds.signal_adaptation.zones.high.entry_conf_overall": {
+                "type": "fixed",
+                "value": 0.34,
+            },
+            "thresholds.signal_adaptation.zones.high.regime_proba": {
+                "type": "fixed",
+                "value": 0.58,
+            },
+        },
+    }
+
+    errors, warnings = validate_optimizer_strategy_family(opt_cfg)
+
+    assert errors == []
+    assert any("run_intent=research_slice" in warning for warning in warnings)
+
+
+def test_validate_optimizer_strategy_family_rejects_missing_run_intent_for_ri() -> None:
+    opt_cfg = {
+        "strategy_family": "ri",
+        "parameters": {
+            "multi_timeframe.regime_intelligence.authority_mode": {
+                "type": "fixed",
+                "value": "regime_module",
+            }
+        },
+    }
+
+    errors, _warnings = validate_optimizer_strategy_family(opt_cfg)
+
+    assert any("run_intent är obligatoriskt" in error for error in errors)
+
+
+def test_validate_optimizer_strategy_family_rejects_unknown_run_intent_for_ri() -> None:
+    opt_cfg = {
+        "strategy_family": "ri",
+        "meta": {"runs": {"run_intent": "mystery"}},
+        "parameters": {
+            "multi_timeframe.regime_intelligence.authority_mode": {
+                "type": "fixed",
+                "value": "regime_module",
+            }
+        },
+    }
+
+    errors, _warnings = validate_optimizer_strategy_family(opt_cfg)
+
+    assert any("run_intent måste vara" in error for error in errors)
+
+
+def test_validate_optimizer_strategy_family_rejects_non_canonical_ri_for_champion_freeze() -> None:
+    opt_cfg = {
+        "strategy_family": "ri",
+        "meta": {"runs": {"run_intent": "champion_freeze"}},
+        "parameters": {
+            "multi_timeframe.regime_intelligence.authority_mode": {
+                "type": "fixed",
+                "value": "regime_module",
+            },
+            "thresholds.signal_adaptation.atr_period": {"type": "fixed", "value": 14},
+            "gates.hysteresis_steps": {"type": "int", "low": 2, "high": 4, "step": 1},
+            "gates.cooldown_bars": {"type": "int", "low": 1, "high": 3, "step": 1},
+        },
+    }
+
+    errors, _warnings = validate_optimizer_strategy_family(opt_cfg)
+
+    assert any("family_admission" in error for error in errors)
 
 
 def test_validate_config_rejects_non_mapping_parameters_without_crashing(

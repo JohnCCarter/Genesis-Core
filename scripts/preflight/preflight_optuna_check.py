@@ -12,6 +12,17 @@ from typing import Any
 
 import yaml
 
+from core.strategy.family_admission import (
+    StrategyFamilyAdmissionError,
+    extract_optimizer_run_intent,
+    validate_optimizer_family_admission,
+)
+from core.strategy.family_registry import (
+    StrategyFamilyValidationError,
+    validate_strategy_family_name,
+)
+from core.strategy.run_intent import RunIntentValidationError
+
 
 def _find_repo_root(start: Path) -> Path:
     for candidate in [start, *start.parents]:
@@ -577,9 +588,12 @@ def check_precompute_functionality(symbol: str, timeframe: str) -> tuple[bool, s
         return False, f"[FAIL] Precompute-fel: {e}"
 
 
-def check_parameters_valid(parameters: dict[str, Any]) -> tuple[bool, str]:
+def check_parameters_valid(cfg: dict[str, Any]) -> tuple[bool, str]:
     """Kontrollera att parametrarna är korrekta."""
     issues = []
+    parameters = cfg.get("parameters", {}) if isinstance(cfg, dict) else {}
+    if not isinstance(parameters, dict):
+        return False, "[FAIL] parameters måste vara en dict/mapping i optimizer-konfig"
 
     # Kontrollera att alla required-fält finns
     required_sections = ["thresholds", "risk", "exit"]
@@ -598,7 +612,7 @@ def check_parameters_valid(parameters: dict[str, Any]) -> tuple[bool, str]:
             current_path = f"{path}.{key}" if path else key
             if isinstance(value, dict):
                 param_type = value.get("type")
-                if param_type in ("float", "grid"):
+                if param_type in ("float", "grid", "int"):
                     count += 1
                 elif param_type == "fixed":
                     pass  # Ignorera fixerade
@@ -611,6 +625,43 @@ def check_parameters_valid(parameters: dict[str, Any]) -> tuple[bool, str]:
         issues.append("[WARN] Alla parametrar är fixerade - ingen optimering kommer ske")
     else:
         issues.append(f"[OK] {searchable} sökbara parametrar hittade")
+
+    try:
+        declared_family = validate_strategy_family_name(cfg.get("strategy_family"))
+    except StrategyFamilyValidationError as exc:
+        code = str(exc)
+        if code == "missing_strategy_family":
+            issues.append("[FAIL] strategy_family är obligatoriskt i optimizer-konfig")
+        else:
+            issues.append("[FAIL] strategy_family måste vara 'legacy' eller 'ri'")
+        has_errors = any("[FAIL]" in issue for issue in issues)
+        return not has_errors, " | ".join(issues)
+
+    raw_run_intent = ((cfg.get("meta") or {}).get("runs") or {}).get("run_intent")
+    try:
+        extract_optimizer_run_intent(cfg)
+    except RunIntentValidationError:
+        issues.append(
+            "[FAIL] run_intent måste vara 'research_slice', 'candidate', 'promotion_compare' eller 'champion_freeze'"
+        )
+        has_errors = any("[FAIL]" in issue for issue in issues)
+        return not has_errors, " | ".join(issues)
+
+    if declared_family == "ri" and raw_run_intent is None:
+        issues.append("[FAIL] strategy_family=ri kräver explicit run_intent i meta.runs")
+        has_errors = any("[FAIL]" in issue for issue in issues)
+        return not has_errors, " | ".join(issues)
+
+    try:
+        _family, admitted_run_intent = validate_optimizer_family_admission(cfg)
+        if admitted_run_intent is not None:
+            issues.append(f"[OK] family admission godkänd för run_intent={admitted_run_intent}")
+    except StrategyFamilyValidationError as exc:
+        issues.append(f"[FAIL] family identity ogiltig: {exc}")
+    except StrategyFamilyAdmissionError as exc:
+        issues.append(f"[FAIL] family admission blockerad: {exc}")
+    except RunIntentValidationError as exc:
+        issues.append(f"[FAIL] run_intent ogiltig: {exc}")
 
     has_errors = any("[FAIL]" in issue for issue in issues)
     return not has_errors, " | ".join(issues)
@@ -1005,7 +1056,7 @@ def main() -> int:
     print()
 
     # 7. Parametrar
-    ok, msg = check_parameters_valid(parameters)
+    ok, msg = check_parameters_valid(cfg)
     print(f"7. Parametrar: {msg}")
     if not ok:
         all_ok = False

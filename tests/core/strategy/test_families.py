@@ -7,10 +7,12 @@ from core.strategy.family_registry import (
     STRATEGY_FAMILY_RI,
     StrategyFamilyValidationError,
     classify_strategy_family,
+    has_ri_signature_markers,
     inject_strategy_family,
     matches_ri_cluster,
     resolve_strategy_family,
     validate_cross_family_promotion,
+    validate_strategy_family_identity_config,
 )
 
 
@@ -52,6 +54,8 @@ def test_resolve_strategy_family_accepts_declared_ri_when_cluster_matches() -> N
     cfg = _ri_config(strategy_family="ri")
 
     assert matches_ri_cluster(cfg) is True
+    assert has_ri_signature_markers(cfg) is True
+    assert validate_strategy_family_identity_config(cfg) == STRATEGY_FAMILY_RI
     assert resolve_strategy_family(cfg) == STRATEGY_FAMILY_RI
     assert inject_strategy_family(cfg)["strategy_family"] == STRATEGY_FAMILY_RI
 
@@ -67,6 +71,8 @@ def test_resolve_strategy_family_rejects_hybrid_regime_module_configs() -> None:
 def test_resolve_strategy_family_rejects_declared_ri_with_wrong_gates() -> None:
     cfg = _ri_config(strategy_family="ri")
     cfg["gates"] = {"hysteresis_steps": 2, "cooldown_bars": 0}
+
+    assert validate_strategy_family_identity_config(cfg) == STRATEGY_FAMILY_RI
 
     with pytest.raises(StrategyFamilyValidationError, match="ri_requires_canonical_gates"):
         resolve_strategy_family(cfg)
@@ -98,6 +104,14 @@ def test_resolve_strategy_family_rejects_legacy_with_ri_signature_markers() -> N
 
     with pytest.raises(StrategyFamilyValidationError, match="legacy_hybrid_signature"):
         resolve_strategy_family(cfg)
+
+
+def test_identity_validation_rejects_declared_legacy_with_ri_signature_markers() -> None:
+    cfg = _ri_config(strategy_family="legacy")
+    cfg["multi_timeframe"] = {"regime_intelligence": {"authority_mode": "legacy"}}
+
+    with pytest.raises(StrategyFamilyValidationError, match="legacy_hybrid_signature"):
+        validate_strategy_family_identity_config(cfg)
 
 
 def test_cross_family_promotion_requires_override_and_signoff() -> None:

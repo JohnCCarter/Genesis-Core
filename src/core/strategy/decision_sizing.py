@@ -163,6 +163,28 @@ def _apply_clarity_sizing(
     return size, clarity_payload
 
 
+def _compute_risk_state_sizing(
+    *,
+    ri_enabled: bool,
+    ri_cfg: dict[str, Any],
+    state_in: dict[str, Any],
+) -> tuple[float, dict[str, Any]]:
+    risk_state_mult = 1.0
+    risk_state_payload: dict[str, Any] = {"enabled": False, "multiplier": 1.0}
+    risk_state_cfg = dict(ri_cfg.get("risk_state") or {})
+    if ri_enabled and bool(risk_state_cfg.get("enabled", False)):
+        _eq_dd = float(state_in.get("equity_drawdown_pct", 0.0))
+        _bars_rc = int(state_in.get("bars_since_regime_change", 99))
+        risk_state_payload = _compute_risk_state_multiplier(
+            cfg=risk_state_cfg,
+            equity_drawdown_pct=_eq_dd,
+            bars_since_regime_change=_bars_rc,
+        )
+        risk_state_mult = float(risk_state_payload.get("multiplier", 1.0))
+    risk_state_mult = max(0.0, min(1.0, risk_state_mult))
+    return risk_state_mult, risk_state_payload
+
+
 def apply_sizing(
     *,
     candidate: Action,
@@ -268,19 +290,11 @@ def apply_sizing(
         vol_size_mult = 1.0
     vol_size_mult = max(0.0, min(1.0, vol_size_mult))
 
-    risk_state_mult = 1.0
-    risk_state_payload: dict[str, Any] = {"enabled": False, "multiplier": 1.0}
-    risk_state_cfg = dict(ri_cfg.get("risk_state") or {})
-    if ri_enabled and bool(risk_state_cfg.get("enabled", False)):
-        _eq_dd = float(state_in.get("equity_drawdown_pct", 0.0))
-        _bars_rc = int(state_in.get("bars_since_regime_change", 99))
-        risk_state_payload = _compute_risk_state_multiplier(
-            cfg=risk_state_cfg,
-            equity_drawdown_pct=_eq_dd,
-            bars_since_regime_change=_bars_rc,
-        )
-        risk_state_mult = float(risk_state_payload.get("multiplier", 1.0))
-    risk_state_mult = max(0.0, min(1.0, risk_state_mult))
+    risk_state_mult, risk_state_payload = _compute_risk_state_sizing(
+        ri_enabled=ri_enabled,
+        ri_cfg=ri_cfg,
+        state_in=state_in,
+    )
 
     min_size_mult = float((cfg.get("risk") or {}).get("min_combined_multiplier", 0.1))
     combined_mult = size_scale * regime_mult * htf_regime_mult * vol_size_mult * risk_state_mult

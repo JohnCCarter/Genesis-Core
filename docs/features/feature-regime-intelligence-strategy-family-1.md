@@ -27,6 +27,7 @@ This is a design and decision-framing artifact only. It does **not** approve pro
 - **REQ-001**: The current `config/strategy/champions/tBTCUSD_3h.json` remains the incumbent control baseline until a governed challenger beats it on the approved comparison path.
 - **REQ-002**: RI must be treated as a separate strategy family when reasoning about search-space design, candidate comparison, and promotion readiness.
 - **REQ-003**: Future RI research must compete against the incumbent champion as a full challenger candidate, not as a partial overlay on the incumbent champion surface.
+- **REQ-003A**: Legacy and RI challenger work must run as separate optimizer/backtest tracks; they must not be collapsed into a single mixed-family Optuna study.
 - **REQ-004**: The RI family definition must be anchored in observed evidence from governed slice-1, slice-2, and slice-3 artifacts.
 - **REQ-005**: The minimum RI baseline must capture the smallest evidence-backed compatibility cluster required for an RI candidate to be considered part of the RI family.
 - **REQ-006**: Classification rules must distinguish between:
@@ -37,6 +38,7 @@ This is a design and decision-framing artifact only. It does **not** approve pro
 - **CON-001**: No changes to `src/**`, `tests/**`, runtime defaults, champion files, or optimizer behavior are allowed in this slice.
 - **CON-002**: This document must not redefine the incumbent champion as RI-compatible without new evidence.
 - **CON-003**: This document must not imply that `authority_mode = regime_module` alone is sufficient to classify a surface as a valid RI candidate.
+- **CON-003A**: This document must not allow "RI overlaid on top of the incumbent champion" to be treated as the default RI research path or as a valid promotion candidate shape.
 - **CON-004**: This document must not weaken the existing train/validate/blind discipline or allow blind-window retuning.
 
 ## 2. Strategy Family Definitions

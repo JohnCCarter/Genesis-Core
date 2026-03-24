@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from core.config.authority_mode_resolver import AUTHORITY_MODE_SOURCE_CANONICAL
-from core.strategy.decision_sizing import apply_sizing
+from core.strategy.decision_sizing import _compute_size_base, apply_sizing
 
 
 def test_apply_sizing_composes_active_multipliers_and_exports_ri_state() -> None:
@@ -190,3 +190,56 @@ def test_apply_sizing_uses_min_combined_floor_and_increments_regime_counter() ->
     assert state_out["ri_risk_state_multiplier"] == pytest.approx(1.0)
     assert state_out["last_regime"] == "balanced"
     assert state_out["bars_since_regime_change"] == 6
+
+
+def test_compute_size_base_sorts_thresholds_and_uses_zero_fallback() -> None:
+    logger = MagicMock()
+    cfg = {
+        "risk": {
+            "risk_map": [["0.80", 2.0], ["0.50", 1.0]],
+        }
+    }
+
+    matched_size = _compute_size_base(
+        candidate="LONG",
+        conf_val_gate=0.8,
+        cfg=cfg,
+        logger=logger,
+        sanitize_context=lambda value: value,
+    )
+    unmatched_size = _compute_size_base(
+        candidate="LONG",
+        conf_val_gate=0.2,
+        cfg=cfg,
+        logger=logger,
+        sanitize_context=lambda value: value,
+    )
+
+    assert matched_size == pytest.approx(2.0)
+    assert unmatched_size == pytest.approx(0.0)
+    logger.exception.assert_not_called()
+
+
+def test_compute_size_base_raises_runtime_error_and_logs_on_invalid_risk_map() -> None:
+    logger = MagicMock()
+    cfg = {
+        "risk": {
+            "risk_map": [["bad-threshold", 1.0]],
+        }
+    }
+
+    with pytest.raises(RuntimeError, match="Failed to compute size_base from risk_map"):
+        _compute_size_base(
+            candidate="SHORT",
+            conf_val_gate=0.6,
+            cfg=cfg,
+            logger=logger,
+            sanitize_context=lambda value: {"sanitized": value},
+        )
+
+    logger.exception.assert_called_once_with(
+        "[DECISION] SIZING_RISK_MAP_ERROR candidate=%s confidence=%.6f risk_map=%s",
+        "SHORT",
+        0.6,
+        {"sanitized": [["bad-threshold", 1.0]]},
+    )

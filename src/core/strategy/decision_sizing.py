@@ -264,6 +264,31 @@ def _compute_size_multipliers(
     return size_scale, regime_mult, htf_regime_mult, vol_size_mult, combined_mult
 
 
+def _compute_size_base(
+    *,
+    candidate: Action,
+    conf_val_gate: float,
+    cfg: dict[str, Any],
+    logger: Any,
+    sanitize_context: Callable[[Any], Any],
+) -> float:
+    risk_map = (cfg.get("risk") or {}).get("risk_map", [])
+    size_base = 0.0
+    try:
+        for thr_v, sz in sorted(risk_map, key=lambda item: float(item[0])):
+            if conf_val_gate >= float(thr_v):
+                size_base = float(sz)
+    except Exception as exc:
+        logger.exception(
+            "[DECISION] SIZING_RISK_MAP_ERROR candidate=%s confidence=%.6f risk_map=%s",
+            candidate,
+            conf_val_gate,
+            sanitize_context(risk_map),
+        )
+        raise RuntimeError("Failed to compute size_base from risk_map") from exc
+    return size_base
+
+
 def apply_sizing(
     *,
     candidate: Action,
@@ -289,24 +314,17 @@ def apply_sizing(
     )
     authority_mode, authority_mode_source = _resolve_authority_mode_with_source(cfg)
 
-    risk_map = (cfg.get("risk") or {}).get("risk_map", [])
     c_buy = safe_float(confidence.get("buy", 0.0), 0.0)
     c_sell = safe_float(confidence.get("sell", 0.0), 0.0)
     conf_val_gate = c_buy if candidate == "LONG" else c_sell
 
-    size_base = 0.0
-    try:
-        for thr_v, sz in sorted(risk_map, key=lambda item: float(item[0])):
-            if conf_val_gate >= float(thr_v):
-                size_base = float(sz)
-    except Exception as exc:
-        logger.exception(
-            "[DECISION] SIZING_RISK_MAP_ERROR candidate=%s confidence=%.6f risk_map=%s",
-            candidate,
-            conf_val_gate,
-            sanitize_context(risk_map),
-        )
-        raise RuntimeError("Failed to compute size_base from risk_map") from exc
+    size_base = _compute_size_base(
+        candidate=candidate,
+        conf_val_gate=conf_val_gate,
+        cfg=cfg,
+        logger=logger,
+        sanitize_context=sanitize_context,
+    )
 
     risk_state_mult, risk_state_payload = _compute_risk_state_sizing(
         ri_enabled=ri_enabled,

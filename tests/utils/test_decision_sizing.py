@@ -105,6 +105,36 @@ def test_apply_sizing_composes_active_multipliers_and_exports_ri_state() -> None
     assert state_out["ri_risk_state_multiplier"] == pytest.approx(0.42)
     assert state_out["last_regime"] == "bull"
     assert state_out["bars_since_regime_change"] == 1
+    assert list(state_out.keys()) == [
+        "confidence_gate",
+        "size_base",
+        "size_scale",
+        "size_regime_mult",
+        "size_htf_regime_mult",
+        "size_vol_mult",
+        "size_combined_mult",
+        "ri_flag_enabled",
+        "ri_version",
+        "authority_mode",
+        "authority_mode_source",
+        "ri_clarity_enabled",
+        "ri_clarity_apply",
+        "ri_clarity_multiplier",
+        "ri_clarity_score",
+        "ri_clarity_raw",
+        "ri_clarity_components",
+        "ri_clarity_weights",
+        "ri_clarity_weights_version",
+        "ri_clarity_round_policy",
+        "size_before_ri_clarity",
+        "size_after_ri_clarity",
+        "ri_risk_state_enabled",
+        "ri_risk_state_multiplier",
+        "ri_risk_state_drawdown_mult",
+        "ri_risk_state_transition_mult",
+        "last_regime",
+        "bars_since_regime_change",
+    ]
 
 
 def test_apply_sizing_uses_min_combined_floor_and_increments_regime_counter() -> None:

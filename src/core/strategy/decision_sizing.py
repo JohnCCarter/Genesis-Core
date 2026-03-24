@@ -15,6 +15,73 @@ from core.intelligence.regime.risk_state import (
 from core.strategy.decision_gates import Action, safe_float
 
 
+def _build_regime_transition_state(
+    *,
+    regime: str | None,
+    state_in: dict[str, Any],
+) -> dict[str, Any]:
+    _last_regime = state_in.get("last_regime")
+    _cur_regime = str(regime or "")
+    if _last_regime is None or _last_regime == _cur_regime:
+        _bars_since_change = int(state_in.get("bars_since_regime_change", 0))
+    else:
+        _bars_since_change = 0
+    return {
+        "last_regime": _cur_regime,
+        "bars_since_regime_change": _bars_since_change + 1,
+    }
+
+
+def _build_sizing_state_updates(
+    *,
+    regime: str | None,
+    state_in: dict[str, Any],
+    conf_val_gate: float,
+    size_base: float,
+    size_scale: float,
+    regime_mult: float,
+    htf_regime_mult: float,
+    vol_size_mult: float,
+    combined_mult: float,
+    ri_enabled: bool,
+    ri_version: str,
+    authority_mode: str,
+    authority_mode_source: str,
+    clarity_payload: dict[str, Any],
+    risk_state_payload: dict[str, Any],
+) -> dict[str, Any]:
+    state_updates = {
+        "confidence_gate": conf_val_gate,
+        "size_base": size_base,
+        "size_scale": size_scale,
+        "size_regime_mult": regime_mult,
+        "size_htf_regime_mult": htf_regime_mult,
+        "size_vol_mult": vol_size_mult,
+        "size_combined_mult": combined_mult,
+        "ri_flag_enabled": ri_enabled,
+        "ri_version": ri_version,
+        "authority_mode": authority_mode,
+        "authority_mode_source": authority_mode_source,
+        "ri_clarity_enabled": bool(clarity_payload.get("enabled")),
+        "ri_clarity_apply": clarity_payload.get("apply"),
+        "ri_clarity_multiplier": clarity_payload.get("multiplier"),
+        "ri_clarity_score": clarity_payload.get("score"),
+        "ri_clarity_raw": clarity_payload.get("raw"),
+        "ri_clarity_components": clarity_payload.get("components"),
+        "ri_clarity_weights": clarity_payload.get("weights"),
+        "ri_clarity_weights_version": clarity_payload.get("weights_version"),
+        "ri_clarity_round_policy": clarity_payload.get("round_policy"),
+        "size_before_ri_clarity": clarity_payload.get("size_before"),
+        "size_after_ri_clarity": clarity_payload.get("size_after"),
+        "ri_risk_state_enabled": bool(risk_state_payload.get("enabled")),
+        "ri_risk_state_multiplier": risk_state_payload.get("multiplier"),
+        "ri_risk_state_drawdown_mult": risk_state_payload.get("drawdown_mult"),
+        "ri_risk_state_transition_mult": risk_state_payload.get("transition_mult"),
+    }
+    state_updates.update(_build_regime_transition_state(regime=regime, state_in=state_in))
+    return state_updates
+
+
 def apply_sizing(
     *,
     candidate: Action,
@@ -196,41 +263,24 @@ def apply_sizing(
             "multiplier_max": max_mult,
         }
 
-    state_out["confidence_gate"] = conf_val_gate
-    state_out["size_base"] = size_base
-    state_out["size_scale"] = size_scale
-    state_out["size_regime_mult"] = regime_mult
-    state_out["size_htf_regime_mult"] = htf_regime_mult
-    state_out["size_vol_mult"] = vol_size_mult
-    state_out["size_combined_mult"] = combined_mult
-    state_out["ri_flag_enabled"] = ri_enabled
-    state_out["ri_version"] = ri_version
-    state_out["authority_mode"] = authority_mode
-    state_out["authority_mode_source"] = authority_mode_source
-    state_out["ri_clarity_enabled"] = bool(clarity_payload.get("enabled"))
-    state_out["ri_clarity_apply"] = clarity_payload.get("apply")
-    state_out["ri_clarity_multiplier"] = clarity_payload.get("multiplier")
-    state_out["ri_clarity_score"] = clarity_payload.get("score")
-    state_out["ri_clarity_raw"] = clarity_payload.get("raw")
-    state_out["ri_clarity_components"] = clarity_payload.get("components")
-    state_out["ri_clarity_weights"] = clarity_payload.get("weights")
-    state_out["ri_clarity_weights_version"] = clarity_payload.get("weights_version")
-    state_out["ri_clarity_round_policy"] = clarity_payload.get("round_policy")
-    state_out["size_before_ri_clarity"] = clarity_payload.get("size_before")
-    state_out["size_after_ri_clarity"] = clarity_payload.get("size_after")
-    state_out["ri_risk_state_enabled"] = bool(risk_state_payload.get("enabled"))
-    state_out["ri_risk_state_multiplier"] = risk_state_payload.get("multiplier")
-    state_out["ri_risk_state_drawdown_mult"] = risk_state_payload.get("drawdown_mult")
-    state_out["ri_risk_state_transition_mult"] = risk_state_payload.get("transition_mult")
-
-    # Regime transition tracking for risk_state
-    _last_regime = state_in.get("last_regime")
-    _cur_regime = str(regime or "")
-    if _last_regime is None or _last_regime == _cur_regime:
-        _bars_since_change = int(state_in.get("bars_since_regime_change", 0))
-    else:
-        _bars_since_change = 0  # reset on transition
-    state_out["last_regime"] = _cur_regime
-    state_out["bars_since_regime_change"] = _bars_since_change + 1
+    state_out.update(
+        _build_sizing_state_updates(
+            regime=regime,
+            state_in=state_in,
+            conf_val_gate=conf_val_gate,
+            size_base=size_base,
+            size_scale=size_scale,
+            regime_mult=regime_mult,
+            htf_regime_mult=htf_regime_mult,
+            vol_size_mult=vol_size_mult,
+            combined_mult=combined_mult,
+            ri_enabled=ri_enabled,
+            ri_version=ri_version,
+            authority_mode=authority_mode,
+            authority_mode_source=authority_mode_source,
+            clarity_payload=clarity_payload,
+            risk_state_payload=risk_state_payload,
+        )
+    )
 
     return size, conf_val_gate

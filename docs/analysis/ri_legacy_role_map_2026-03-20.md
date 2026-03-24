@@ -511,6 +511,18 @@ Varför zonen är farlig:
 
 Den fjärde risken sitter i structural survival-lagret, särskilt där override-logik kan börja fungera som dold aggressionsreglering i stället för legitim survival-policy.
 
+Nuvarande kod- och testläsning skärper bilden:
+
+- `decision.py` väljer kandidat före fib-gating, så override byter inte riktning utan kan bara rädda eller stoppa en redan vald kandidat.
+- `tests/utils/test_decision.py::test_htf_override_preserves_debug_payload_and_history` visar en hög-confidence-override där HTF-block släpper igenom en redan vald LONG utan att hoppa över senare gates.
+- `tests/utils/test_decision_scenario_behavior.py::test_decide_adaptive_htf_override_progression_flips_block_into_entry` visar samtidigt att adaptiv threshold-sänkning över tid kan flytta samma scenario från `NONE` till `LONG`.
+- `tests/utils/test_decision_scenario_behavior.py::test_decide_ltf_entry_range_override_remains_static_across_history` visar däremot att den fasta `ltf_entry_range`-vägen inte driver samma historikbaserade glidning: samma historik propagateras, men acceptansgränsen ligger kvar oförändrad.
+
+Arbetsregel just nu:
+
+- **Legitim survival-policy** när override endast återöppnar passage för en redan vald kandidat, fortfarande kräver hög/tydlig confidence och fortfarande låter post-fib-gates + sizing bära resten av beslutskedjan.
+- **Risk för dold entryaggression** när adaptiv threshold gör att tidigare blockerade medelstarka setups systematiskt börjar passera, så att fib-lagret i praktiken flyttar trade/no-trade-gränsen snarare än bara skyddar mot falska block. Den fasta `ltf_entry_range`-vägen ser efter nuvarande scenarioyta mer ut som en statisk policygräns än en historikdriven aggressionsmotor.
+
 Typiska varningssignaler:
 
 - HTF/LTF override används för att systematiskt rädda svaga setups
@@ -654,10 +666,24 @@ Varför som tredje steg:
 - structural survival är semantiskt känsligt
 - override-logik är den tydligaste platsen där permission riskerar att glida mot dold aggressionsstyrning
 
+Nuvarande kodläsning (2026-03-24):
+
+- `decision.py` väljer kandidat före `apply_fib_gating(...)`, vilket betyder att fib-lagret inte initierar LONG/SHORT utan granskar om en redan vald kandidat får överleva vidare i kedjan.
+- `decision_fib_gating.py` beter sig därför primärt som **permission-/survival-lager**: det kan stoppa en kandidat genom att returnera `"NONE"`, eller låta den passera vidare till post-fib-gates och sizing.
+- Den semantiskt känsliga delen ligger i `prepare_override_context(...)` och `try_override_htf_block(...)`, där confidence, historik, percentiler och regime-multipliers kan rädda en annars blockerad setup.
+- Arbetsdomen just nu bör därför vara: **delad survival-motor med family-konditionerad permission-logik**, men ännu inte slutligt frikänd från risken att override börjar fungera som dold entryförstärkning.
+
 Vad nästa fas bör svara på:
 
 - när är override legitim survival-policy?
 - när börjar override fungera som dold entryförstärkning?
+
+Nuvarande preliminära dom:
+
+- override är **inte** kandidatursprung, eftersom riktningen väljs tidigare i `decision.py`
+- override är **mer än passiv observability**, eftersom testytan visar att ett HTF-block faktiskt kan vändas till entry när thresholden justeras
+- den avgörande gränsen går därför inte mellan "override eller inte", utan mellan **snäv räddningspolicy för stark kandidat** och **återkommande threshold-förskjutning som i praktiken skapar ny aggression**
+- den separata `ltf_entry.entry.override_confidence` / `ltf_entry_range`-vägen har nu explicit riktad evidens både på kontraktnivå i `tests/utils/test_decision_fib_gating_contract.py` och på full `decide(...)`-integrationsnivå i `tests/utils/test_decision.py`, för både `LONG` och `SHORT`; kvarvarande fråga är därför inte om vägen existerar, utan hur ofta den bör tolkas som legitim survival-policy jämfört med dold aggressionsförskjutning
 
 ### Kandidatyta D — `decision_sizing.py`
 
@@ -666,10 +692,27 @@ Varför efter survival-lagret:
 - sizing är viktig, men bör läsas efter att tidig family-drift redan separerats ut
 - här blir skillnaden mellan candidate-drift och size-drift särskilt viktig
 
+Nuvarande kodläsning (2026-03-24):
+
+- `apply_sizing(...)` tar en redan vald `candidate` och returnerar endast `size` + `conf_val_gate`; den producerar inte ny action och kan inte i sig byta LONG/SHORT/NONE.
+- `tests/utils/test_decision_scenario_behavior.py::test_decide_risk_state_stress_reduces_size_without_changing_action_path` visar att RI risk_state kan reducera storlek utan att ändra action-path.
+- `tests/utils/test_decision_scenario_behavior.py::test_decide_stacked_sizing_penalties_reduce_size_without_changing_entry_path` visar dessutom att staplade sizing-signaler (regime multiplier + HTF-regime multiplier + RI risk_state + clarity) fortfarande lämnar samma `ENTRY_LONG`-path intakt medan endast storleken pressas ned.
+- `tests/backtest/test_evaluate_pipeline.py::test_evaluate_pipeline_ri_v2_clarity_on_changes_sizing_only_and_logs` visar att clarity v2 påverkar storlek och state/exporter, men inte entry-reasons eller vald action.
+- `tests/utils/test_decision_edge.py::test_regime_size_multiplier_scales_size_only` visar samma sak för regime-multipliers: samma LONG, annan size.
+- `tests/utils/test_confidence.py::test_compute_confidence_v2_component_scope_sizing_only_does_not_affect_gate` är viktig därför att den skiljer gate-confidence från sizing-confidence via `buy_scaled` / `sell_scaled`; annars riskerar man att misstolka en sizing-penalty som tidig candidate-drift.
+
+Arbetsdomen just nu bör därför vara: **sizing-surface är huvudsakligen post-candidate och family-konditionerad**, där RI främst uttrycker sig genom clarity-, risk_state- och regime-/HTF-multipliers snarare än genom att skapa kandidaten från början.
+
 Vad nästa fas bör svara på:
 
 - vilka effekter är verkligt post-candidate?
 - vilka family-skillnader ligger i regime-/HTF-/clarity-/risk_state-surface snarare än tidigare i kedjan?
+
+Nuvarande preliminära dom:
+
+- family-drift som syns här är i första hand **riskexponering efter vald kandidat**, inte första uppkomst av kandidat
+- den största tolkningsrisken är att blanda ihop `confidence`-penalty i gating med `buy_scaled` / `sell_scaled` i sizing och därmed felaktigt tro att sizing-lagret skapade en trade/no-trade-skillnad
+- sizing-fasen framstår därför som tillräckligt ren för att läsas efter threshold/survival, inte före
 
 ### Kandidatyta E — exits och observability
 
@@ -678,10 +721,28 @@ Varför sist:
 - de fullbordar och verifierar strategin
 - de bör inte vara första platsen där family-frågan avgörs
 
+Nuvarande kodläsning (2026-03-24):
+
+- `src/core/backtest/htf_exit_engine.py` arbetar på en redan öppnad position med fryst `exit_ctx`, HTF-fibnivåer, partials, trailing och structure-breaks; den väljer inte strategy family och skapar inte entry-kandidat.
+- `tests/backtest/test_htf_exit_engine_selection.py` visar främst motorval mellan ny och legacy exit-engine via config/env, inte family-separation.
+- `tests/backtest/test_htf_exit_engine_htf_context_schema.py` och `tests/backtest/test_htf_exit_engine_components.py` visar schema-, partial-, trailing- och structure-break-kontrakt för exitmotorn, men de bevisar framför allt korrekt livscykel efter entry.
+- `tests/backtest/test_backtest_applies_htf_exit_config.py` visar att exit-konfiguration faktiskt appliceras i backtestmotorn, vilket stärker exit-lagret som runtime-livscykel snarare än som family-definierare.
+- `tests/backtest/test_regime_shadow_artifacts.py` och `tests/core/intelligence/regime/test_contracts.py::test_shadow_regime_observability_roundtrip_preserves_shape` visar att shadow-/observability-lagret bevarar en stabil payload-shape, håller `decision_input` som observability-only och skriver evidensartefakter endast i explicit opt-in-läge.
+
+Arbetsdomen just nu bör därför vara: **exit-lagret fullbordar och kvalificerar den redan valda family-surface**, men utgör inte den primära evidensen för family-spliten mellan legacy och RI.
+
 Vad nästa fas bör svara på:
 
 - hur mycket av family-skillnaden lever faktiskt vidare efter sizing?
 - vilka observability-ytor ger bäst bevis utan att skapa ny policy?
+
+Nuvarande preliminära dom:
+
+- exits verkar huvudsakligen vara **livscykellogik nedströms candidate + sizing**, inte ett eget family-breaker-lager
+- family-frågan här handlar därför mer om **hur tidigare vald surface fullbordas** än om var den först uppstår
+- om exit-lagret börjar bära huvudbeviset för family-split har analysen sannolikt redan flyttat sig för långt nedströms
+- observability-/shadow-lagret framstår som **spegel och kontraktsbärare**, inte som policykälla: det ska göra mismatch och evidens synliga utan att själv bli beslutsdrivare
+- closure-fasen kan därför läsas som tillräckligt ren när exits + observability bekräftar tidigare lager utan att omdefiniera dem
 
 ## Selector- och evidensplan per kandidatyta
 
@@ -725,6 +786,10 @@ Praktisk läsning:
 
 Primär selectors:
 
+- `tests/utils/test_decision_fib_gating_contract.py`
+- `tests/utils/test_decision.py::test_htf_override_preserves_debug_payload_and_history`
+- `tests/utils/test_decision_scenario_behavior.py::test_decide_adaptive_htf_override_progression_flips_block_into_entry`
+- `tests/utils/test_decision_scenario_behavior.py::test_decide_ltf_entry_range_override_remains_static_across_history`
 - `tests/governance/test_regime_intelligence_cutover_parity.py::test_cutover_identical_inputs_replay_identical_outputs_within_authority_mode`
 - `tests/backtest/test_evaluate_regime_precomputed_index.py`
 - `tests/core/strategy/test_families.py::test_cross_family_promotion_requires_override_and_signoff`
@@ -743,6 +808,10 @@ Praktisk läsning:
 Primär selectors:
 
 - `tests/backtest/test_evaluate_pipeline.py::test_evaluate_pipeline_ri_v2_clarity_on_changes_sizing_only_and_logs`
+- `tests/utils/test_decision_scenario_behavior.py::test_decide_risk_state_stress_reduces_size_without_changing_action_path`
+- `tests/utils/test_decision_scenario_behavior.py::test_decide_stacked_sizing_penalties_reduce_size_without_changing_entry_path`
+- `tests/utils/test_decision_edge.py::test_regime_size_multiplier_scales_size_only`
+- `tests/utils/test_confidence.py::test_compute_confidence_v2_component_scope_sizing_only_does_not_affect_gate`
 - `tests/governance/test_regime_intelligence_cutover_parity.py::test_cutover_identical_inputs_replay_identical_outputs_within_authority_mode`
 - `tests/governance/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable`
 
@@ -763,11 +832,17 @@ Primär selectors:
 - `tests/backtest/test_htf_exit_engine_selection.py`
 - `tests/backtest/test_htf_exit_engine_htf_context_schema.py`
 - `tests/backtest/test_backtest_applies_htf_exit_config.py`
+- `tests/backtest/test_htf_exit_engine_components.py`
 
 Bra komplettering när evidensartefakter eller shadow-spår rörs:
 
 - `tests/backtest/test_regime_shadow_artifacts.py`
 - `tests/core/intelligence/regime/test_contracts.py::test_shadow_regime_observability_roundtrip_preserves_shape`
+
+Closure-dom just nu:
+
+- exits och observability bekräftar family-bilden **nedströms** men definierar den inte
+- det stärker huvudtesen att family-separationen ska bevisas i authority/calibration/threshold/survival/sizing, medan closure-lagret främst ska göra samma bild granskningsbar och reproducerbar
 
 Praktisk läsning:
 

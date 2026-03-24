@@ -58,9 +58,8 @@ Jämförelsen mot `master` visade att den här branchen i praktiken består av a
 
 - `handoff.md` — kickoff / arbetsfråga / designriktning
 - `docs/analysis/ri_legacy_role_map_2026-03-20.md` — huvudanalysen med explicit family-reframe
-- `docs/analysis/ri_legacy_role_map_2026-03-20_mermaid.md` — visuell karta över samma reframing
 
-För själva docs-slutsatsen räcker de tre artefakterna ovan som sammanfattande läsunderlag. Runtime- och testartefakter finns fortsatt som underliggande evidens, men behöver inte läsas först för att följa reframingen.
+Den tidigare Mermaid-sammanfattningen har tagits bort för att undvika begreppsglidning innan RI- och legacy-rollerna är slutligt fastställda. Runtime- och testartefakter finns fortsatt som underliggande evidens, men behöver inte läsas först för att följa reframingen.
 
 ## Viktigaste slutsats för framtida arbete
 
@@ -69,6 +68,17 @@ Om nästa steg någon gång återupptas bör första frågan vara:
 > Vilken strategy family körs faktiskt här — legacy eller RI — och på vilken authority/calibration/threshold/cadence/sizing-surface realiseras den?
 
 Det håller analysen fokuserad på family-gränserna i stället för på äldre overlay-språk.
+
+## Nästa prioriterade analysyta
+
+Den mest rimliga fortsättningen i rollmap-arbetet är nu:
+
+- `src/core/strategy/decision_fib_gating.py`
+- `src/core/strategy/decision_fib_gating_helpers.py`
+
+Kärnfrågan för nästa slice är:
+
+> När beter sig HTF/LTF-veto + adaptive override som legitim survival-/permission-policy, och när börjar det fungera som dold entrymotor?
 
 ## Relaterade analysdokument i samma mapp
 

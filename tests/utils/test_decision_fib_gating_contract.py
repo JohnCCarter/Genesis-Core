@@ -233,3 +233,261 @@ def test_apply_fib_gating_exports_adaptive_override_debug_details() -> None:
     assert override_state["buy_history"][-1] == pytest.approx(0.9)
     assert len(override_state["buy_history"]) == 3
     assert state_out["fib_gate_summary"]["ltf"]["reason"] == "PASS"
+
+
+def test_apply_fib_gating_uses_ltf_entry_range_override_when_threshold_override_disabled() -> None:
+    reasons: list[str] = []
+    state_out: dict[str, object] = {}
+
+    action, meta = apply_fib_gating(
+        policy_symbol="tBTCUSD",
+        policy_timeframe="1h",
+        candidate="LONG",
+        confidence={"buy": 0.7, "sell": 0.1},
+        cfg={
+            "htf_fib": {
+                "entry": {
+                    "enabled": True,
+                    "long_min_level": 0.5,
+                    "tolerance_atr": 1.0,
+                }
+            },
+            "ltf_fib": {
+                "entry": {
+                    "enabled": True,
+                    "long_max_level": 1.0,
+                    "tolerance_atr": 1.0,
+                    "override_confidence": {
+                        "enabled": True,
+                        "min": 0.65,
+                        "max": 0.75,
+                    },
+                }
+            },
+        },
+        state_in={
+            "last_close": 98.0,
+            "current_atr": 1.0,
+            "htf_fib": {"available": True, "levels": {0.5: 100.0}},
+            "ltf_fib": {"available": True, "levels": {1.0: 120.0}},
+        },
+        state_out=state_out,
+        reasons=reasons,
+        versions={"decision": "v1"},
+        regime_str="balanced",
+        use_htf_block=True,
+        allow_ltf_override_cfg=False,
+        ltf_override_threshold=0.85,
+        adaptive_cfg={},
+        override_state={},
+        logger=MagicMock(),
+        log_decision_event=_noop_log,
+        log_fib_flow=_noop_log,
+    )
+
+    assert action is None
+    assert meta is None
+    assert reasons == ["HTF_OVERRIDE_LTF_CONF"]
+    htf_debug = state_out["htf_fib_entry_debug"]
+    assert htf_debug["reason"] == "LONG_BELOW_LEVEL_OVERRIDE"
+    assert htf_debug["override"]["source"] == "ltf_entry_range"
+    assert htf_debug["override"]["confidence"] == pytest.approx(0.7)
+    assert htf_debug["override"]["min"] == pytest.approx(0.65)
+    assert htf_debug["override"]["max"] == pytest.approx(0.75)
+    assert state_out["ltf_override_debug"]["effective_threshold"] == pytest.approx(0.85)
+    assert state_out["fib_gate_summary"]["htf"]["reason"] == "LONG_BELOW_LEVEL_OVERRIDE"
+    assert state_out["fib_gate_summary"]["htf"]["override"]["source"] == "ltf_entry_range"
+    assert state_out["fib_gate_summary"]["ltf"]["reason"] == "PASS"
+
+
+def test_apply_fib_gating_does_not_use_ltf_entry_range_override_outside_range() -> None:
+    reasons: list[str] = []
+    state_out: dict[str, object] = {}
+
+    action, meta = apply_fib_gating(
+        policy_symbol="tBTCUSD",
+        policy_timeframe="1h",
+        candidate="LONG",
+        confidence={"buy": 0.6, "sell": 0.1},
+        cfg={
+            "htf_fib": {
+                "entry": {
+                    "enabled": True,
+                    "long_min_level": 0.5,
+                    "tolerance_atr": 1.0,
+                }
+            },
+            "ltf_fib": {
+                "entry": {
+                    "enabled": True,
+                    "long_max_level": 1.0,
+                    "tolerance_atr": 1.0,
+                    "override_confidence": {
+                        "enabled": True,
+                        "min": 0.65,
+                        "max": 0.75,
+                    },
+                }
+            },
+        },
+        state_in={
+            "last_close": 98.0,
+            "current_atr": 1.0,
+            "htf_fib": {"available": True, "levels": {0.5: 100.0}},
+            "ltf_fib": {"available": True, "levels": {1.0: 120.0}},
+        },
+        state_out=state_out,
+        reasons=reasons,
+        versions={"decision": "v1"},
+        regime_str="balanced",
+        use_htf_block=True,
+        allow_ltf_override_cfg=False,
+        ltf_override_threshold=0.85,
+        adaptive_cfg={},
+        override_state={},
+        logger=MagicMock(),
+        log_decision_event=_noop_log,
+        log_fib_flow=_noop_log,
+    )
+
+    assert action == "NONE"
+    assert meta is not None
+    assert reasons == ["HTF_FIB_LONG_BLOCK"]
+    assert "HTF_OVERRIDE_LTF_CONF" not in reasons
+    htf_debug = state_out["htf_fib_entry_debug"]
+    assert htf_debug["reason"] == "LONG_BELOW_LEVEL"
+    assert "override" not in htf_debug
+    assert state_out["ltf_override_debug"]["confidence"] == pytest.approx(0.6)
+    assert state_out["ltf_override_debug"]["effective_threshold"] == pytest.approx(0.85)
+    assert "fib_gate_summary" not in state_out
+    assert meta["reasons"] == reasons
+    assert meta["state_out"] == state_out
+
+
+def test_apply_fib_gating_uses_ltf_entry_range_override_for_short_when_threshold_override_disabled() -> (
+    None
+):
+    reasons: list[str] = []
+    state_out: dict[str, object] = {}
+
+    action, meta = apply_fib_gating(
+        policy_symbol="tBTCUSD",
+        policy_timeframe="1h",
+        candidate="SHORT",
+        confidence={"buy": 0.1, "sell": 0.7},
+        cfg={
+            "htf_fib": {
+                "entry": {
+                    "enabled": True,
+                    "short_max_level": 0.5,
+                    "tolerance_atr": 1.0,
+                }
+            },
+            "ltf_fib": {
+                "entry": {
+                    "enabled": True,
+                    "short_min_level": 0.0,
+                    "tolerance_atr": 1.0,
+                    "override_confidence": {
+                        "enabled": True,
+                        "min": 0.65,
+                        "max": 0.75,
+                    },
+                }
+            },
+        },
+        state_in={
+            "last_close": 102.0,
+            "current_atr": 1.0,
+            "htf_fib": {"available": True, "levels": {0.5: 100.0}},
+            "ltf_fib": {"available": True, "levels": {0.0: 80.0}},
+        },
+        state_out=state_out,
+        reasons=reasons,
+        versions={"decision": "v1"},
+        regime_str="balanced",
+        use_htf_block=True,
+        allow_ltf_override_cfg=False,
+        ltf_override_threshold=0.85,
+        adaptive_cfg={},
+        override_state={},
+        logger=MagicMock(),
+        log_decision_event=_noop_log,
+        log_fib_flow=_noop_log,
+    )
+
+    assert action is None
+    assert meta is None
+    assert reasons == ["HTF_OVERRIDE_LTF_CONF"]
+    htf_debug = state_out["htf_fib_entry_debug"]
+    assert htf_debug["reason"] == "SHORT_ABOVE_LEVEL_OVERRIDE"
+    assert htf_debug["override"]["source"] == "ltf_entry_range"
+    assert htf_debug["override"]["confidence"] == pytest.approx(0.7)
+    assert htf_debug["override"]["min"] == pytest.approx(0.65)
+    assert htf_debug["override"]["max"] == pytest.approx(0.75)
+    assert state_out["fib_gate_summary"]["htf"]["reason"] == "SHORT_ABOVE_LEVEL_OVERRIDE"
+    assert state_out["fib_gate_summary"]["htf"]["override"]["source"] == "ltf_entry_range"
+
+
+def test_apply_fib_gating_preserves_short_block_when_ltf_entry_range_override_is_outside_range() -> (
+    None
+):
+    reasons: list[str] = []
+    state_out: dict[str, object] = {}
+
+    action, meta = apply_fib_gating(
+        policy_symbol="tBTCUSD",
+        policy_timeframe="1h",
+        candidate="SHORT",
+        confidence={"buy": 0.1, "sell": 0.6},
+        cfg={
+            "htf_fib": {
+                "entry": {
+                    "enabled": True,
+                    "short_max_level": 0.5,
+                    "tolerance_atr": 1.0,
+                }
+            },
+            "ltf_fib": {
+                "entry": {
+                    "enabled": True,
+                    "short_min_level": 0.0,
+                    "tolerance_atr": 1.0,
+                    "override_confidence": {
+                        "enabled": True,
+                        "min": 0.65,
+                        "max": 0.75,
+                    },
+                }
+            },
+        },
+        state_in={
+            "last_close": 102.0,
+            "current_atr": 1.0,
+            "htf_fib": {"available": True, "levels": {0.5: 100.0}},
+            "ltf_fib": {"available": True, "levels": {0.0: 80.0}},
+        },
+        state_out=state_out,
+        reasons=reasons,
+        versions={"decision": "v1"},
+        regime_str="balanced",
+        use_htf_block=True,
+        allow_ltf_override_cfg=False,
+        ltf_override_threshold=0.85,
+        adaptive_cfg={},
+        override_state={},
+        logger=MagicMock(),
+        log_decision_event=_noop_log,
+        log_fib_flow=_noop_log,
+    )
+
+    assert action == "NONE"
+    assert meta is not None
+    assert reasons == ["HTF_FIB_SHORT_BLOCK"]
+    assert "HTF_OVERRIDE_LTF_CONF" not in reasons
+    htf_debug = state_out["htf_fib_entry_debug"]
+    assert htf_debug["reason"] == "SHORT_ABOVE_LEVEL"
+    assert "override" not in htf_debug
+    assert "fib_gate_summary" not in state_out
+    assert meta["reasons"] == reasons
+    assert meta["state_out"] == state_out

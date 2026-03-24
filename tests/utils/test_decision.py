@@ -435,6 +435,267 @@ def test_htf_override_preserves_debug_payload_and_history() -> None:
     assert float(htf_summary.get("level_price")) == pytest.approx(100.0)
 
 
+def test_decide_uses_ltf_entry_range_override_when_threshold_override_disabled() -> None:
+    cfg = {
+        "ev": {"R_default": 1.0},
+        "thresholds": {"entry_conf_overall": 0.6, "regime_proba": {"balanced": 0.55}},
+        "gates": {"cooldown_bars": 0},
+        "risk": {"risk_map": [[0.6, 0.01]]},
+        "multi_timeframe": {
+            "allow_ltf_override": False,
+            "ltf_override_threshold": 0.85,
+            "ltf_override_adaptive": {"enabled": False, "window": 3},
+        },
+        "htf_fib": {
+            "entry": {
+                "enabled": True,
+                "long_min_level": 0.5,
+                "tolerance_atr": 1.0,
+            }
+        },
+        "ltf_fib": {
+            "entry": {
+                "enabled": True,
+                "long_max_level": 1.0,
+                "tolerance_atr": 1.0,
+                "override_confidence": {
+                    "enabled": True,
+                    "min": 0.65,
+                    "max": 0.75,
+                },
+            }
+        },
+    }
+
+    action, meta = decide(
+        {},
+        probas={"buy": 0.7, "sell": 0.1},
+        confidence={"buy": 0.7, "sell": 0.1},
+        regime="balanced",
+        state={
+            "last_close": 98.0,
+            "current_atr": 1.0,
+            "htf_fib": {"available": True, "levels": {0.5: 100.0}},
+            "ltf_fib": {"available": True, "levels": {1.0: 120.0}},
+        },
+        risk_ctx={},
+        cfg=cfg,
+    )
+
+    assert action == "LONG"
+
+    reasons = meta.get("reasons") or []
+    assert "HTF_OVERRIDE_LTF_CONF" in reasons
+    assert "ENTRY_LONG" in reasons
+    assert reasons.index("HTF_OVERRIDE_LTF_CONF") < reasons.index("ENTRY_LONG")
+
+    state_out = meta.get("state_out") or {}
+    ltf_override_debug = state_out.get("ltf_override_debug") or {}
+    assert float(ltf_override_debug.get("effective_threshold")) == pytest.approx(0.85)
+
+    htf_debug = state_out.get("htf_fib_entry_debug") or {}
+    assert htf_debug.get("reason") == "LONG_BELOW_LEVEL_OVERRIDE"
+    override = htf_debug.get("override") or {}
+    assert override.get("source") == "ltf_entry_range"
+    assert float(override.get("confidence")) == pytest.approx(0.7)
+    assert float(override.get("min")) == pytest.approx(0.65)
+    assert float(override.get("max")) == pytest.approx(0.75)
+
+    fib_summary = state_out.get("fib_gate_summary") or {}
+    assert (fib_summary.get("htf") or {}).get("reason") == "LONG_BELOW_LEVEL_OVERRIDE"
+    assert ((fib_summary.get("htf") or {}).get("override") or {}).get("source") == "ltf_entry_range"
+
+
+def test_decide_preserves_htf_block_when_ltf_entry_range_override_is_outside_range() -> None:
+    cfg = {
+        "ev": {"R_default": 1.0},
+        "thresholds": {"entry_conf_overall": 0.6, "regime_proba": {"balanced": 0.55}},
+        "gates": {"cooldown_bars": 0},
+        "risk": {"risk_map": [[0.6, 0.01]]},
+        "multi_timeframe": {
+            "allow_ltf_override": False,
+            "ltf_override_threshold": 0.85,
+            "ltf_override_adaptive": {"enabled": False, "window": 3},
+        },
+        "htf_fib": {
+            "entry": {
+                "enabled": True,
+                "long_min_level": 0.5,
+                "tolerance_atr": 1.0,
+            }
+        },
+        "ltf_fib": {
+            "entry": {
+                "enabled": True,
+                "long_max_level": 1.0,
+                "tolerance_atr": 1.0,
+                "override_confidence": {
+                    "enabled": True,
+                    "min": 0.65,
+                    "max": 0.75,
+                },
+            }
+        },
+    }
+
+    action, meta = decide(
+        {},
+        probas={"buy": 0.6, "sell": 0.1},
+        confidence={"buy": 0.6, "sell": 0.1},
+        regime="balanced",
+        state={
+            "last_close": 98.0,
+            "current_atr": 1.0,
+            "htf_fib": {"available": True, "levels": {0.5: 100.0}},
+            "ltf_fib": {"available": True, "levels": {1.0: 120.0}},
+        },
+        risk_ctx={},
+        cfg=cfg,
+    )
+
+    assert action == "NONE"
+
+    reasons = meta.get("reasons") or []
+    assert "HTF_OVERRIDE_LTF_CONF" not in reasons
+    assert "HTF_FIB_LONG_BLOCK" in reasons
+
+    state_out = meta.get("state_out") or {}
+    htf_debug = state_out.get("htf_fib_entry_debug") or {}
+    assert htf_debug.get("reason") == "LONG_BELOW_LEVEL"
+    assert htf_debug.get("override") is None
+
+    ltf_override_debug = state_out.get("ltf_override_debug") or {}
+    assert float(ltf_override_debug.get("confidence")) == pytest.approx(0.6)
+    assert float(ltf_override_debug.get("effective_threshold")) == pytest.approx(0.85)
+    assert state_out.get("fib_gate_summary") is None
+
+
+def test_decide_uses_ltf_entry_range_override_for_short_when_threshold_override_disabled() -> None:
+    cfg = {
+        "ev": {"R_default": 1.0},
+        "thresholds": {"entry_conf_overall": 0.6, "regime_proba": {"balanced": 0.55}},
+        "gates": {"cooldown_bars": 0},
+        "risk": {"risk_map": [[0.6, 0.01]]},
+        "multi_timeframe": {
+            "allow_ltf_override": False,
+            "ltf_override_threshold": 0.85,
+            "ltf_override_adaptive": {"enabled": False, "window": 3},
+        },
+        "htf_fib": {
+            "entry": {
+                "enabled": True,
+                "short_max_level": 0.5,
+                "tolerance_atr": 1.0,
+            }
+        },
+        "ltf_fib": {
+            "entry": {
+                "enabled": True,
+                "short_min_level": 0.0,
+                "tolerance_atr": 1.0,
+                "override_confidence": {
+                    "enabled": True,
+                    "min": 0.65,
+                    "max": 0.75,
+                },
+            }
+        },
+    }
+
+    action, meta = decide(
+        {},
+        probas={"buy": 0.1, "sell": 0.7},
+        confidence={"buy": 0.1, "sell": 0.7},
+        regime="balanced",
+        state={
+            "last_close": 102.0,
+            "current_atr": 1.0,
+            "htf_fib": {"available": True, "levels": {0.5: 100.0}},
+            "ltf_fib": {"available": True, "levels": {0.0: 80.0}},
+        },
+        risk_ctx={},
+        cfg=cfg,
+    )
+
+    assert action == "SHORT"
+
+    reasons = meta.get("reasons") or []
+    assert "HTF_OVERRIDE_LTF_CONF" in reasons
+    assert "ENTRY_SHORT" in reasons
+    assert reasons.index("HTF_OVERRIDE_LTF_CONF") < reasons.index("ENTRY_SHORT")
+
+    state_out = meta.get("state_out") or {}
+    htf_debug = state_out.get("htf_fib_entry_debug") or {}
+    assert htf_debug.get("reason") == "SHORT_ABOVE_LEVEL_OVERRIDE"
+    override = htf_debug.get("override") or {}
+    assert override.get("source") == "ltf_entry_range"
+    assert float(override.get("confidence")) == pytest.approx(0.7)
+
+    fib_summary = state_out.get("fib_gate_summary") or {}
+    assert (fib_summary.get("htf") or {}).get("reason") == "SHORT_ABOVE_LEVEL_OVERRIDE"
+    assert ((fib_summary.get("htf") or {}).get("override") or {}).get("source") == "ltf_entry_range"
+
+
+def test_decide_preserves_short_htf_block_when_ltf_entry_range_override_is_outside_range() -> None:
+    cfg = {
+        "ev": {"R_default": 1.0},
+        "thresholds": {"entry_conf_overall": 0.6, "regime_proba": {"balanced": 0.55}},
+        "gates": {"cooldown_bars": 0},
+        "risk": {"risk_map": [[0.6, 0.01]]},
+        "multi_timeframe": {
+            "allow_ltf_override": False,
+            "ltf_override_threshold": 0.85,
+            "ltf_override_adaptive": {"enabled": False, "window": 3},
+        },
+        "htf_fib": {
+            "entry": {
+                "enabled": True,
+                "short_max_level": 0.5,
+                "tolerance_atr": 1.0,
+            }
+        },
+        "ltf_fib": {
+            "entry": {
+                "enabled": True,
+                "short_min_level": 0.0,
+                "tolerance_atr": 1.0,
+                "override_confidence": {
+                    "enabled": True,
+                    "min": 0.65,
+                    "max": 0.75,
+                },
+            }
+        },
+    }
+
+    action, meta = decide(
+        {},
+        probas={"buy": 0.1, "sell": 0.6},
+        confidence={"buy": 0.1, "sell": 0.6},
+        regime="balanced",
+        state={
+            "last_close": 102.0,
+            "current_atr": 1.0,
+            "htf_fib": {"available": True, "levels": {0.5: 100.0}},
+            "ltf_fib": {"available": True, "levels": {0.0: 80.0}},
+        },
+        risk_ctx={},
+        cfg=cfg,
+    )
+
+    assert action == "NONE"
+
+    reasons = meta.get("reasons") or []
+    assert "HTF_OVERRIDE_LTF_CONF" not in reasons
+    assert "HTF_FIB_SHORT_BLOCK" in reasons
+
+    state_out = meta.get("state_out") or {}
+    htf_debug = state_out.get("htf_fib_entry_debug") or {}
+    assert htf_debug.get("reason") == "SHORT_ABOVE_LEVEL"
+    assert htf_debug.get("override") is None
+    assert state_out.get("fib_gate_summary") is None
+
+
 @pytest.mark.parametrize(
     (
         "probas",

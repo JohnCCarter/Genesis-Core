@@ -158,6 +158,49 @@ def prepare_override_context(
     }
 
 
+def build_ltf_override_debug(
+    *,
+    override_context: dict[str, Any],
+    candidate: Action,
+    confidence: dict[str, float] | None,
+    adaptive_cfg: dict[str, Any],
+    ltf_override_threshold: float,
+    regime_str: str,
+) -> dict[str, Any]:
+    if override_context:
+        return {
+            "candidate": candidate,
+            "confidence": override_context["conf_val"],
+            "history_key": override_context["history_key"],
+            "history_len": override_context["history_len"],
+            "history_window": override_context["history_window"],
+            "baseline_threshold": ltf_override_threshold,
+            "effective_threshold": override_context["effective_threshold"],
+            "adaptive_enabled": bool(adaptive_cfg.get("enabled")),
+            "regime": regime_str,
+            "details": override_context.get("adaptive_debug"),
+        }
+
+    fallback_conf = None
+    if confidence and isinstance(confidence, dict):
+        fallback_conf = safe_float(
+            confidence.get("buy" if candidate == "LONG" else "sell", 0.0),
+            0.0,
+        )
+    return {
+        "candidate": candidate,
+        "confidence": fallback_conf,
+        "history_key": None,
+        "history_len": 0,
+        "history_window": int(adaptive_cfg.get("window", 120)),
+        "baseline_threshold": ltf_override_threshold,
+        "effective_threshold": ltf_override_threshold,
+        "adaptive_enabled": bool(adaptive_cfg.get("enabled")),
+        "regime": regime_str,
+        "details": None,
+    }
+
+
 def _apply_override(
     *,
     payload: dict[str, Any],

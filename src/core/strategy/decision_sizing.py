@@ -185,50 +185,17 @@ def _compute_risk_state_sizing(
     return risk_state_mult, risk_state_payload
 
 
-def apply_sizing(
+def _compute_size_multipliers(
     *,
     candidate: Action,
     confidence: dict[str, float],
     regime: str | None,
     htf_regime: str | None,
     state_in: dict[str, Any],
-    state_out: dict[str, Any],
     cfg: dict[str, Any],
-    p_buy: float,
-    p_sell: float,
-    r_default: float,
-    max_ev: float,
-    logger: Any,
-    sanitize_context: Callable[[Any], Any],
-) -> tuple[float, float]:
-    ri_cfg = dict((cfg.get("multi_timeframe") or {}).get("regime_intelligence") or {})
-    clarity_cfg = dict(ri_cfg.get("clarity_score") or {})
-    ri_enabled = bool(ri_cfg.get("enabled", False))
-    ri_version = str(ri_cfg.get("version") or "legacy")
-    clarity_enabled = (
-        ri_enabled and ri_version.lower() == "v2" and bool(clarity_cfg.get("enabled", False))
-    )
-    authority_mode, authority_mode_source = _resolve_authority_mode_with_source(cfg)
-
-    risk_map = (cfg.get("risk") or {}).get("risk_map", [])
-    c_buy = safe_float(confidence.get("buy", 0.0), 0.0)
-    c_sell = safe_float(confidence.get("sell", 0.0), 0.0)
-    conf_val_gate = c_buy if candidate == "LONG" else c_sell
-
-    size_base = 0.0
-    try:
-        for thr_v, sz in sorted(risk_map, key=lambda item: float(item[0])):
-            if conf_val_gate >= float(thr_v):
-                size_base = float(sz)
-    except Exception as exc:
-        logger.exception(
-            "[DECISION] SIZING_RISK_MAP_ERROR candidate=%s confidence=%.6f risk_map=%s",
-            candidate,
-            conf_val_gate,
-            sanitize_context(risk_map),
-        )
-        raise RuntimeError("Failed to compute size_base from risk_map") from exc
-
+    conf_val_gate: float,
+    risk_state_mult: float,
+) -> tuple[float, float, float, float, float]:
     size_scale = 1.0
     try:
         if conf_val_gate > 0.0:
@@ -290,15 +257,75 @@ def apply_sizing(
         vol_size_mult = 1.0
     vol_size_mult = max(0.0, min(1.0, vol_size_mult))
 
+    min_size_mult = float((cfg.get("risk") or {}).get("min_combined_multiplier", 0.1))
+    combined_mult = size_scale * regime_mult * htf_regime_mult * vol_size_mult * risk_state_mult
+    combined_mult = max(min_size_mult, combined_mult)
+
+    return size_scale, regime_mult, htf_regime_mult, vol_size_mult, combined_mult
+
+
+def apply_sizing(
+    *,
+    candidate: Action,
+    confidence: dict[str, float],
+    regime: str | None,
+    htf_regime: str | None,
+    state_in: dict[str, Any],
+    state_out: dict[str, Any],
+    cfg: dict[str, Any],
+    p_buy: float,
+    p_sell: float,
+    r_default: float,
+    max_ev: float,
+    logger: Any,
+    sanitize_context: Callable[[Any], Any],
+) -> tuple[float, float]:
+    ri_cfg = dict((cfg.get("multi_timeframe") or {}).get("regime_intelligence") or {})
+    clarity_cfg = dict(ri_cfg.get("clarity_score") or {})
+    ri_enabled = bool(ri_cfg.get("enabled", False))
+    ri_version = str(ri_cfg.get("version") or "legacy")
+    clarity_enabled = (
+        ri_enabled and ri_version.lower() == "v2" and bool(clarity_cfg.get("enabled", False))
+    )
+    authority_mode, authority_mode_source = _resolve_authority_mode_with_source(cfg)
+
+    risk_map = (cfg.get("risk") or {}).get("risk_map", [])
+    c_buy = safe_float(confidence.get("buy", 0.0), 0.0)
+    c_sell = safe_float(confidence.get("sell", 0.0), 0.0)
+    conf_val_gate = c_buy if candidate == "LONG" else c_sell
+
+    size_base = 0.0
+    try:
+        for thr_v, sz in sorted(risk_map, key=lambda item: float(item[0])):
+            if conf_val_gate >= float(thr_v):
+                size_base = float(sz)
+    except Exception as exc:
+        logger.exception(
+            "[DECISION] SIZING_RISK_MAP_ERROR candidate=%s confidence=%.6f risk_map=%s",
+            candidate,
+            conf_val_gate,
+            sanitize_context(risk_map),
+        )
+        raise RuntimeError("Failed to compute size_base from risk_map") from exc
+
     risk_state_mult, risk_state_payload = _compute_risk_state_sizing(
         ri_enabled=ri_enabled,
         ri_cfg=ri_cfg,
         state_in=state_in,
     )
 
-    min_size_mult = float((cfg.get("risk") or {}).get("min_combined_multiplier", 0.1))
-    combined_mult = size_scale * regime_mult * htf_regime_mult * vol_size_mult * risk_state_mult
-    combined_mult = max(min_size_mult, combined_mult)
+    size_scale, regime_mult, htf_regime_mult, vol_size_mult, combined_mult = (
+        _compute_size_multipliers(
+            candidate=candidate,
+            confidence=confidence,
+            regime=regime,
+            htf_regime=htf_regime,
+            state_in=state_in,
+            cfg=cfg,
+            conf_val_gate=conf_val_gate,
+            risk_state_mult=risk_state_mult,
+        )
+    )
     size = float(size_base * combined_mult)
     size_pre_clarity = size
 

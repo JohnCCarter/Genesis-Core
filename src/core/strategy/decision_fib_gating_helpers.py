@@ -201,6 +201,14 @@ def build_ltf_override_debug(
     }
 
 
+def build_fib_gate_summary(*, candidate: Action, state_out: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "candidate": candidate,
+        "htf": _summarize_fib_debug(state_out.get("htf_fib_entry_debug")),
+        "ltf": _summarize_fib_debug(state_out.get("ltf_fib_entry_debug")),
+    }
+
+
 def _apply_override(
     *,
     payload: dict[str, Any],

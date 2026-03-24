@@ -82,6 +82,87 @@ def _build_sizing_state_updates(
     return state_updates
 
 
+def _build_default_clarity_payload(
+    *,
+    clarity_enabled: bool,
+    ri_version: str,
+    clarity_multiplier: float,
+    size_pre_clarity: float,
+    size: float,
+) -> dict[str, Any]:
+    return {
+        "enabled": clarity_enabled,
+        "apply": "sizing_only",
+        "version": ri_version,
+        "score": None,
+        "raw": None,
+        "components": None,
+        "weights": None,
+        "weights_version": None,
+        "round_policy": None,
+        "multiplier": clarity_multiplier,
+        "size_before": size_pre_clarity,
+        "size_after": size,
+    }
+
+
+def _apply_clarity_sizing(
+    *,
+    conf_val_gate: float,
+    p_buy: float,
+    p_sell: float,
+    max_ev: float,
+    r_default: float,
+    candidate: Action,
+    regime: str | None,
+    ri_version: str,
+    clarity_cfg: dict[str, Any],
+    ri_cfg: dict[str, Any],
+    size: float,
+    size_pre_clarity: float,
+) -> tuple[float, dict[str, Any]]:
+    _sm_cfg = dict(ri_cfg.get("size_multiplier") or {})
+    min_mult = safe_float(_sm_cfg.get("min", 0.5), 0.5)
+    max_mult = safe_float(_sm_cfg.get("max", 1.0), 1.0)
+    if max_mult < min_mult:
+        min_mult, max_mult = max_mult, min_mult
+    min_mult = max(0.0, min(1.0, min_mult))
+    max_mult = max(0.0, min(1.0, max_mult))
+
+    clarity = _compute_clarity_score_v1(
+        confidence_gate=conf_val_gate,
+        edge=abs(p_buy - p_sell),
+        max_ev=max_ev,
+        r_default=r_default,
+        candidate=candidate,
+        regime=str(regime or "balanced"),
+        weights=clarity_cfg.get("weights") or clarity_cfg.get("weights_v1"),
+        weights_version=str(clarity_cfg.get("weights_version") or "weights_v1"),
+    ).to_legacy_payload()
+    clarity_score = int(clarity["clarity_score"])
+    clarity_multiplier = min_mult + ((max_mult - min_mult) * (clarity_score / 100.0))
+    clarity_multiplier = max(0.0, min(1.0, clarity_multiplier))
+    size = float(size * clarity_multiplier)
+
+    clarity_payload = {
+        "enabled": True,
+        "apply": "sizing_only",
+        "version": ri_version,
+        "score": clarity_score,
+        "raw": float(clarity["clarity_raw"]),
+        "components": dict(clarity["components"]),
+        "weights": dict(clarity["weights"]),
+        "weights_version": str(clarity["weights_version"]),
+        "round_policy": str(clarity["round_policy"]),
+        "multiplier": clarity_multiplier,
+        "size_before": size_pre_clarity,
+        "size_after": size,
+        "multiplier_min": min_mult,
+        "multiplier_max": max_mult,
+    }
+    return size, clarity_payload
+
+
 def apply_sizing(
     *,
     candidate: Action,
@@ -208,60 +289,28 @@ def apply_sizing(
     size_pre_clarity = size
 
     clarity_multiplier = 1.0
-    clarity_payload: dict[str, Any] = {
-        "enabled": clarity_enabled,
-        "apply": "sizing_only",
-        "version": ri_version,
-        "score": None,
-        "raw": None,
-        "components": None,
-        "weights": None,
-        "weights_version": None,
-        "round_policy": None,
-        "multiplier": clarity_multiplier,
-        "size_before": size_pre_clarity,
-        "size_after": size,
-    }
+    clarity_payload = _build_default_clarity_payload(
+        clarity_enabled=clarity_enabled,
+        ri_version=ri_version,
+        clarity_multiplier=clarity_multiplier,
+        size_pre_clarity=size_pre_clarity,
+        size=size,
+    )
     if clarity_enabled:
-        _sm_cfg = dict(ri_cfg.get("size_multiplier") or {})
-        min_mult = safe_float(_sm_cfg.get("min", 0.5), 0.5)
-        max_mult = safe_float(_sm_cfg.get("max", 1.0), 1.0)
-        if max_mult < min_mult:
-            min_mult, max_mult = max_mult, min_mult
-        min_mult = max(0.0, min(1.0, min_mult))
-        max_mult = max(0.0, min(1.0, max_mult))
-
-        clarity = _compute_clarity_score_v1(
-            confidence_gate=conf_val_gate,
-            edge=abs(p_buy - p_sell),
+        size, clarity_payload = _apply_clarity_sizing(
+            conf_val_gate=conf_val_gate,
+            p_buy=p_buy,
+            p_sell=p_sell,
             max_ev=max_ev,
             r_default=r_default,
             candidate=candidate,
-            regime=str(regime or "balanced"),
-            weights=clarity_cfg.get("weights") or clarity_cfg.get("weights_v1"),
-            weights_version=str(clarity_cfg.get("weights_version") or "weights_v1"),
-        ).to_legacy_payload()
-        clarity_score = int(clarity["clarity_score"])
-        clarity_multiplier = min_mult + ((max_mult - min_mult) * (clarity_score / 100.0))
-        clarity_multiplier = max(0.0, min(1.0, clarity_multiplier))
-        size = float(size * clarity_multiplier)
-
-        clarity_payload = {
-            "enabled": True,
-            "apply": "sizing_only",
-            "version": ri_version,
-            "score": clarity_score,
-            "raw": float(clarity["clarity_raw"]),
-            "components": dict(clarity["components"]),
-            "weights": dict(clarity["weights"]),
-            "weights_version": str(clarity["weights_version"]),
-            "round_policy": str(clarity["round_policy"]),
-            "multiplier": clarity_multiplier,
-            "size_before": size_pre_clarity,
-            "size_after": size,
-            "multiplier_min": min_mult,
-            "multiplier_max": max_mult,
-        }
+            regime=regime,
+            ri_version=ri_version,
+            clarity_cfg=clarity_cfg,
+            ri_cfg=ri_cfg,
+            size=size,
+            size_pre_clarity=size_pre_clarity,
+        )
 
     state_out.update(
         _build_sizing_state_updates(

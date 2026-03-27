@@ -151,11 +151,64 @@ Se `OPTUNA_VS_BACKTEST_CONFIG_DIFFERENCE.md` för fullständig checklista. Kortf
   - Om fingerprints skiljer sig men outcome är identiskt är parametern ofta inert (inte aktivt styrande).
 - Optimerings-/valideringskörningar kan isoleras från implicit champion-merge via `meta.skip_champion_merge`.
 
+## Startup-data: säkerställ candle-data innan preflight
+
+Preflight-checken kräver att candle-parquet-filer finns i `data/curated/v1/candles/`
+med tillräcklig datumtäckning. Använd `scripts/startup/ensure_candle_data.py` för att
+automatiskt kontrollera och hämta saknade filer via Bitfinex publika API.
+
+### Steg 1 – Kontrollera vad som saknas (dry-run)
+
+```bash
+python scripts/startup/ensure_candle_data.py --dry-run \
+  config/optimizer/3h/legacy_decision_slice1/tBTCUSD_3h_legacy_decision_slice1_2024_2025.yaml
+```
+
+### Steg 2 – Hämta saknade data (kräver internet-åtkomst till api-pub.bitfinex.com)
+
+```bash
+python scripts/startup/ensure_candle_data.py \
+  config/optimizer/3h/legacy_decision_slice1/tBTCUSD_3h_legacy_decision_slice1_2024_2025.yaml
+```
+
+Skriptet hämtar automatiskt:
+- Huvud-timeframe-data (`tBTCUSD 3h`)
+- `1D`-data när `htf_exit_config` finns i konfigen (vilket legacy_decision_slice1 har)
+
+### Steg 3 – Kör preflight efter att data är på plats
+
+```bash
+python scripts/preflight/preflight_optuna_check.py \
+  config/optimizer/3h/legacy_decision_slice1/tBTCUSD_3h_legacy_decision_slice1_2024_2025.yaml
+```
+
+### Om outbound API-åtkomst saknas
+
+Lägg manuellt till parquet-filer med rätt täckning och verifiera sedan med `--no-fetch`:
+
+```bash
+# Kopiera in filer från extern källa till:
+#   data/curated/v1/candles/tBTCUSD_3h.parquet
+#   data/curated/v1/candles/tBTCUSD_1D.parquet
+
+python scripts/startup/ensure_candle_data.py --no-fetch \
+  config/optimizer/3h/legacy_decision_slice1/tBTCUSD_3h_legacy_decision_slice1_2024_2025.yaml
+```
+
+### Alternativ: hämta manuellt med fetch_historical.py
+
+```bash
+python scripts/fetch/fetch_historical.py --symbol tBTCUSD --timeframe 3h --months 30
+python scripts/fetch/fetch_historical.py --symbol tBTCUSD --timeframe 1D --months 30
+```
+
 ## Relaterade Filer
 
 - `config/optimizer/` - Optuna-konfigurationer
 - `config/optimizer/config_equivalence_smoke.yaml` - Minimal smoke-config för drift-check proof
-- `scripts/preflight_optuna_check.py` - Preflight-validering
-- `scripts/validate_optimizer_config.py` - Champion-validering
+- `scripts/startup/ensure_candle_data.py` - Startup-data check + auto-fetch
+- `scripts/preflight/preflight_optuna_check.py` - Preflight-validering
+- `scripts/validate/validate_optimizer_config.py` - Champion-validering
+- `scripts/fetch/fetch_historical.py` - Hämta historiska candle-data från Bitfinex
 - `scripts/check_trial_config_equivalence.py` - Drift-check (trial-config vs backtest-resultat)
 - `src/core/optimizer/` - Optuna-integration kod

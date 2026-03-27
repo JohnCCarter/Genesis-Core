@@ -63,6 +63,29 @@ Examples:
 - `Mode: STRICT (source=freeze-signal)`
 - `Mode: SANDBOX (source=branch:spike/idea-x)`
 
+## Operational expectations per mode
+
+Mode is an active operating constraint, not a decorative banner.
+
+### STRICT
+
+- Packet-first for non-trivial work.
+- Require explicit authority before entering behavior/config/runtime/comparison/champion surfaces.
+- Fail closed on ambiguity.
+
+### RESEARCH
+
+- Prefer the smallest admissible research step.
+- Prefer the minimum artifacts/docs needed for traceability.
+- Do not add STRICT-style process unless a strict-only surface is touched or mode re-resolves to `STRICT`.
+- Avoid unnecessary packet proliferation or governance expansion when authority is already clear.
+
+### SANDBOX
+
+- Prefer fast exploration, sketches, and disposable work.
+- No production-near, merge-ready, or `införd` claims.
+- Keep experimentation clearly separated from tracked governed artifacts.
+
 ## Policy by mode
 
 ### STRICT
@@ -90,6 +113,46 @@ Examples:
 - Must NOT modify freeze guard workflows.
 - Must NOT modify `runtime.json` (if production-critical).
 - Cannot be merged to `master` without passing STRICT gates.
+
+## RESEARCH is not STRICT-by-default
+
+- RESEARCH must be operated as `RESEARCH`.
+- Do not apply extra STRICT-style process unless:
+  - branch/override/freeze escalation resolves to `STRICT`, OR
+  - the task explicitly enters a strict-only surface listed below.
+- Applying STRICT process inside RESEARCH without a strict-only trigger is considered a governance violation.
+- If stricter handling is used, state the exact triggering path, concept, or rule.
+
+## When to use SANDBOX vs RESEARCH
+
+- Use `SANDBOX` for early exploration, sketches, and non-reproducible experiments.
+- Use `RESEARCH` for tracked, reproducible experiments and artifacts.
+- If the work is intended to support later review with traceable evidence, prefer `RESEARCH`.
+- If the work is intentionally rough, disposable, or not yet reproducible, prefer `SANDBOX`.
+
+## Strict-only surfaces
+
+This is an operational stop/escalate list only. It does not change the deterministic resolution logic above.
+
+- `config/strategy/champions/`
+- `.github/workflows/champion-freeze-guard.yml`
+- `src/core/strategy/family_registry.py`
+- `src/core/strategy/family_admission.py`
+- runtime-default authority surfaces
+- comparison surfaces
+- readiness surfaces
+- promotion surfaces
+- champion surfaces
+- family-rule surfaces
+
+## Mode proof requirement
+
+Before any non-trivial action, the agent must briefly state:
+
+- why the current mode applies
+- what the current mode allows for the present task
+- what remains forbidden for the present task
+- what exact path or concept would require `STRICT` escalation
 
 ## Constraints
 

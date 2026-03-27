@@ -16,7 +16,7 @@ Denna process gäller för:
 - **Optuna-körningar** och resultat-analyser
 - **Systeminställningar** och deployment-ändringar
 
-Kanonisk referens är `.github/copilot-instructions.md`. Detta dokument är en utbyggd arbetsmanual och får inte stå i konflikt med den filen.
+Kanonisk referens är `.github/copilot-instructions.md`. För governance mode resolution och mode-specifika operativa förväntningar är `docs/governance_mode.md` SSOT. Detta dokument är en utbyggd arbetsmanual och får inte stå i konflikt med dessa filer.
 
 ---
 

@@ -189,7 +189,7 @@ For docs-only commits, use a reduced gate set defined in contract.
 Scope note:
 
 - This file is the practical SSOT for workflow/governance precedence and operating contract behavior in this repository.
-- `docs/governance_mode.md` is the SSOT for governance mode resolution only.
+- `docs/governance_mode.md` is the SSOT for governance mode resolution and mode-specific operating expectations.
 
 Deterministic precedence for this repository:
 

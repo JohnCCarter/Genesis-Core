@@ -1,8 +1,73 @@
 # HANDOFF — RI/R1 vs legacy role-map kickoff
 
-Senast uppdaterad: 2026-03-23
+Senast uppdaterad: 2026-03-27
 
 > Detta dokument är en operativ handoff för nästa agent/session. Det är **inte** en governance authority source och får inte överstyra `.github/copilot-instructions.md`, `docs/governance_mode.md`, `docs/OPUS_46_GOVERNANCE.md` eller `AGENTS.md`. Verifiera alltid live branch, HEAD, remote-status och working tree i aktuell arbetskopia innan arbete fortsätter.
+
+## Uppdatering 2026-03-27 — nuvarande takeover-status
+
+Den här handoffen är nu kompletterad för den aktuella branchen:
+
+- **Aktiv branch:** `feature/ri-role-map-implementation-2026-03-24`
+- **HEAD / origin:** `4bea3fb9` (`docs(config): add transition-guard decision slice artifacts`)
+- **Working tree:** clean
+- **Remote-sync:** lokal branch matchar `origin/feature/ri-role-map-implementation-2026-03-24`
+- **Öppen PR:** ingen aktiv PR finns just nu för branchen
+- **Viktig regel:** öppna **inte** automatiskt en ny PR mot `master`; target/base-branch måste beslutas explicit först
+
+### Vad som blev klart i den senaste sessionen
+
+Följande är genomfört och pushat:
+
+1. **Kategoriserad commit- och push-städning**
+   - ändringarna delades upp i logiska commits i stället för att lämnas som en stor osorterad stack
+2. **Governance mode / SSOT-förtydliganden**
+   - uppdateringar landade i `docs/governance_mode.md`, `.github/copilot-instructions.md` och `docs/OPUS_46_GOVERNANCE.md`
+3. **Kodsteg för regime-definition**
+   - konfigurerbar `multi_timeframe.regime_intelligence.regime_definition` har förts genom authority/schema/evaluate/regime med tillhörande tester
+4. **RI-signal- och decision-slices**
+   - nya optimizer-configs och governance/evidence-spår för SIGNAL, SIGNAL + regime-definition, DECISION EV-edge och DECISION `transition_guard`
+5. **Transition-guard evidens**
+   - bounded smoke + fresh canonical run genomfördes i tidigare steg
+   - bästa observerade validation-tuple för den slicen var `mult=0.55` och `guard_bars=1`
+
+### Viktiga commits högst i stacken
+
+- `4bea3fb9` `docs(config): add transition-guard decision slice artifacts`
+- `c4d79fb2` `docs(config): add decision EV-edge slice research artifacts`
+- `85c7d5d2` `docs(config): add RI signal research lanes and evidence`
+- `46711d3d` `feat(regime): enable configurable regime-definition thresholds`
+- `442c6e8c` `docs(governance): clarify mode ssot and operating expectations`
+
+### PR-status och varför nästa agent måste känna till det
+
+- En draft-PR `#74` skapades tillfälligt mot `master` som publicerings-/reviewpaket.
+- Den PR:n **stängdes utan merge** efter explicit användarstyrning.
+- Historiken finns kvar på GitHub som stängd PR, men **inget** har mergats till `master`.
+- Nästa agent ska därför behandla branchen som **pushad men ännu inte korrekt targetad för merge/review**.
+
+### Vad nästa agent ska göra härnäst
+
+Starta **inte** med att öppna PR eller mer optuna-körning. Nästa agent bör istället:
+
+1. läsa denna handoff + relevanta governance-/analysis-filer för att förstå den nuvarande RI-stackens läge
+2. bekräfta vilken branchstrategi som faktiskt gäller för fortsatt integration (ingen implicit `master`-PR)
+3. fortsätta från den nu etablerade RI research stacken och avgöra nästa minsta admissible steg
+4. om ny review/publicering behövs: först fastställ rätt target-branch och om arbetet ska vara draft, stacked eller internt viloläge
+
+### Kort takeover-bedömning
+
+Ja — repot är **redo för nästa agent** på hemdatorn i den meningen att:
+
+- branchen är ren och pushad
+- senaste arbetet är commitat
+- ingen öppen PR blockerar eller skapar merge-risk just nu
+
+Det som **inte** är förifyllt är beslutet om nästa integrationssteg. Nästa agent måste alltså få eller bekräfta:
+
+- om arbetet bara ska fortsätta på branchen,
+- om en ny PR senare ska öppnas,
+- och i så fall mot **vilken** base-branch.
 
 ## Uppdatering 2026-03-23 — vad som nu faktiskt är etablerat
 
@@ -10,11 +75,11 @@ Detta dokument började som en kickoff för en öppen rollmap-fråga. Efter vida
 
 - `legacy` och `ri` behandlas i repot som två separata `strategy_family`-ytor, inte som “legacy plus ett litet RI-lager”.
 - Den första verkliga family-driften uppstår **uppströms** i:
-   1. **authority resolution**
-   2. **regime-aware calibration**
+  1.  **authority resolution**
+  2.  **regime-aware calibration**
 - Den första plats där denna drift blir **faktiskt trade/no-trade / candidate/no-candidate** är:
-   1. **threshold / candidate surface** i `src/core/strategy/decision_gates.py`
-   2. därefter **cadence / post-gates**
+  1.  **threshold / candidate surface** i `src/core/strategy/decision_gates.py`
+  2.  därefter **cadence / post-gates**
 - `clarity_score` och `risk_state` beter sig i nuvarande evidens främst som **sizing/management**, inte som första action-driftkälla.
 
 ### Konkret status efter genomförd kartläggning

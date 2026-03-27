@@ -306,7 +306,7 @@ class ConfigAuthority:
                     if regime_intelligence_cfg is not None:
                         if not isinstance(regime_intelligence_cfg, dict):
                             raise ValueError("non_whitelisted_field:regime_intelligence")
-                        allowed_regime_intelligence = {"authority_mode"}
+                        allowed_regime_intelligence = {"authority_mode", "regime_definition"}
                         if any(
                             subk not in allowed_regime_intelligence
                             for subk in regime_intelligence_cfg.keys()
@@ -320,6 +320,22 @@ class ConfigAuthority:
                             "regime_module",
                         }:
                             raise ValueError("invalid_value:regime_intelligence.authority_mode")
+                        regime_definition_cfg = regime_intelligence_cfg.get("regime_definition")
+                        if regime_definition_cfg is not None:
+                            if not isinstance(regime_definition_cfg, dict):
+                                raise ValueError(
+                                    "non_whitelisted_field:regime_intelligence.regime_definition"
+                                )
+                            required_regime_definition = {
+                                "adx_trend_threshold",
+                                "adx_range_threshold",
+                                "slope_threshold",
+                                "volatility_threshold",
+                            }
+                            if set(regime_definition_cfg.keys()) != required_regime_definition:
+                                raise ValueError(
+                                    "non_whitelisted_field:regime_intelligence.regime_definition"
+                                )
 
         _enforce_whitelist(normalized_patch)
 

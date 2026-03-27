@@ -134,7 +134,10 @@ def compute_htf_regime(
     )
 
 
-def _detect_shadow_regime_from_regime_module(candles: dict[str, Any]) -> str | None:
+def _detect_shadow_regime_from_regime_module(
+    candles: dict[str, Any],
+    configs: dict[str, Any] | None = None,
+) -> str | None:
     """Compatibility wrapper for shadow observer logic.
 
     Keep this symbol local in evaluate.py for tests/monkeypatching parity.
@@ -143,7 +146,7 @@ def _detect_shadow_regime_from_regime_module(candles: dict[str, Any]) -> str | N
     try:
         from core.strategy.regime import detect_regime_from_candles
 
-        return str(detect_regime_from_candles(candles))
+        return str(detect_regime_from_candles(candles, config=configs))
     except Exception:
         return None
 
@@ -156,7 +159,7 @@ def _detect_authoritative_regime(candles: dict[str, Any], configs: dict[str, Any
 
     authority_mode, _source = _resolve_authority_mode_with_source(configs)
     if authority_mode == AUTHORITY_MODE_REGIME_MODULE:
-        observed = _detect_shadow_regime_from_regime_module(candles)
+        observed = _detect_shadow_regime_from_regime_module(candles, configs)
         return _normalize_intelligence_authoritative_regime(observed)
 
     from core.strategy import regime_unified as _regime_unified
@@ -249,7 +252,7 @@ def evaluate_pipeline(
 
     # Shadow-only observer path (T2): compute regime.py signal for observability only.
     # Authority for decision path remains `detect_regime_unified` above.
-    shadow_regime = _detect_shadow_regime_from_regime_module(candles)
+    shadow_regime = _detect_shadow_regime_from_regime_module(candles, configs)
     shadow_regime_mismatch: bool | None = None
     if shadow_regime is not None:
         shadow_regime_mismatch = str(shadow_regime) != str(current_regime)

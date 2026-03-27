@@ -137,8 +137,22 @@ class HTFSelectorConfig(RuntimeSection):
     per_timeframe: dict[str, HTFSelectorRule] = Field(default_factory=dict)
 
 
+class RegimeDefinitionConfig(RuntimeSection):
+    adx_trend_threshold: float = Field(gt=0.0)
+    adx_range_threshold: float = Field(ge=0.0)
+    slope_threshold: float = Field(ge=0.0)
+    volatility_threshold: float = Field(ge=0.0)
+
+    @model_validator(mode="after")
+    def _validate_threshold_order(self) -> RegimeDefinitionConfig:
+        if self.adx_range_threshold >= self.adx_trend_threshold:
+            raise ValueError("adx_range_threshold must be lower than adx_trend_threshold")
+        return self
+
+
 class RegimeIntelligenceConfig(RuntimeSection):
     authority_mode: Literal["legacy", "regime_module"] = Field(default="legacy")
+    regime_definition: RegimeDefinitionConfig | None = None
 
 
 class RegimeUnifiedAliasConfig(RuntimeSection):
@@ -302,6 +316,11 @@ class RuntimeConfig(RuntimeSection):
                     for key, rng in pct.items()
                     if isinstance(rng, dict)
                 }
+        mtf_cfg = data.get("multi_timeframe")
+        if isinstance(mtf_cfg, dict):
+            ri_cfg = mtf_cfg.get("regime_intelligence")
+            if isinstance(ri_cfg, dict) and ri_cfg.get("regime_definition") is None:
+                ri_cfg.pop("regime_definition", None)
         return data
 
 

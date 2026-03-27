@@ -178,6 +178,29 @@ def select_candidate(
         return action, meta, {}
 
     candidate: Action
+    research_meta = cfg.get("meta") or {}
+    research_variant = str(research_meta.get("research_decision_variant") or "")
+    if (
+        buy_pass
+        and sell_pass
+        and regime_str == "balanced"
+        and research_meta.get("run_intent") == "research_code_experiment"
+        and research_variant == "balanced_conflict_abstain"
+    ):
+        conflict_edge_floor = safe_float(research_meta.get("research_conflict_edge_floor"), 0.0)
+        if abs(p_buy - p_sell) < conflict_edge_floor:
+            reasons.append("R_BALANCED_CONFLICT")
+            log_decision_event(
+                "RESEARCH_BALANCED_CONFLICT_ABSTAIN",
+                p_buy=p_buy,
+                p_sell=p_sell,
+                conflict_edge=abs(p_buy - p_sell),
+                conflict_edge_floor=conflict_edge_floor,
+                regime=regime_str,
+            )
+            action, meta = _none_result(versions, reasons, state_out)
+            return action, meta, {}
+
     if buy_pass and not sell_pass:
         candidate = "LONG"
     elif sell_pass and not buy_pass:

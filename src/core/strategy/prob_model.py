@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import json
 from collections.abc import Iterable
+from pathlib import Path
 from typing import Any
 
 
@@ -58,6 +60,32 @@ def predict_proba(
     }
 
 
+def _repo_root() -> Path:
+    return Path(__file__).resolve().parents[3]
+
+
+def _load_research_model_meta(path_value: str) -> dict[str, Any]:
+    root = _repo_root()
+    active_models_dir = (root / "config" / "models").resolve()
+    path = Path(path_value)
+    if not path.is_absolute():
+        path = (root / path).resolve()
+    else:
+        path = path.resolve()
+
+    try:
+        path.relative_to(active_models_dir)
+    except ValueError:
+        pass
+    else:
+        raise ValueError("research_model_meta_path_points_to_active_model_path")
+
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError("research_model_meta_path_invalid_json_object")
+    return data
+
+
 def predict_proba_for(
     symbol: str,
     timeframe: str,
@@ -65,6 +93,7 @@ def predict_proba_for(
     *,
     model_meta: dict[str, Any] | None = None,
     regime: str | None = None,
+    research_model_meta_path: str | None = None,
 ) -> tuple[dict[str, float], dict[str, Any]]:
     """Wrapper som hämtar vikter/kalibrering från ModelRegistry och applicerar kalibrering.
 
@@ -80,13 +109,18 @@ def predict_proba_for(
     """
     from core.strategy.model_registry import ModelRegistry
 
-    if model_meta is None:
+    if model_meta is None and research_model_meta_path:
+        meta = _load_research_model_meta(research_model_meta_path)
+        model_meta_source = "research_model_meta_path"
+    elif model_meta is None:
         # OPTIMIZATION: Use module-level singleton to reuse cache across calls
         if not hasattr(predict_proba_for, "_registry"):
             predict_proba_for._registry = ModelRegistry()
         meta = predict_proba_for._registry.get_meta(symbol, timeframe) or {}
+        model_meta_source = "model_registry"
     else:
         meta = model_meta
+        model_meta_source = "inline_model_meta"
 
     schema = tuple(meta.get("schema", ()))
     buy = meta.get("buy", {})
@@ -151,6 +185,7 @@ def predict_proba_for(
             "regime_aware_calibration": bool(regime and regime_calib),
         },
         "schema": list(schema),
+        "model_meta_source": model_meta_source,
         "calibration_used": {
             "regime": regime if regime else "none",
             "buy_calib": {"a": calib_buy[0], "b": calib_buy[1]},

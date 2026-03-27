@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
+import pytest
+
 import core.strategy.evaluate as evaluate_mod
 
 
@@ -117,3 +119,89 @@ def test_evaluate_pipeline_merges_champion_in_live_mode(monkeypatch):
     assert "champion_only" in effective, "Champion config should be used as baseline in live mode"
     assert effective["thresholds"]["entry_conf_overall"] == 0.5
     assert effective.get("meta", {}).get("champion_source") == "dummy"
+
+
+def test_evaluate_pipeline_passes_research_model_meta_path_only_for_research_code_experiment(
+    monkeypatch,
+):
+    _patch_champion_loader(monkeypatch, source="dummy")
+
+    captured: dict[str, object] = {}
+
+    def fake_extract_features_backtest(candles, asof_bar, *, config, timeframe, symbol):
+        _ = (candles, asof_bar, config, timeframe, symbol)
+        return {}, {}
+
+    def fake_predict_proba_for(
+        _symbol, _timeframe, _feats, *, regime=None, research_model_meta_path=None
+    ):
+        captured["regime"] = regime
+        captured["research_model_meta_path"] = research_model_meta_path
+        return {"buy": 0.6, "sell": 0.4}, {"schema": [], "versions": {}}
+
+    monkeypatch.setattr(evaluate_mod, "extract_features_backtest", fake_extract_features_backtest)
+    monkeypatch.setattr(evaluate_mod, "predict_proba_for", fake_predict_proba_for)
+    monkeypatch.setattr(
+        evaluate_mod,
+        "compute_confidence",
+        lambda *_args, **_kwargs: (
+            {"buy": 0.6, "sell": 0.4, "overall": 0.6},
+            {"versions": {}},
+        ),
+    )
+    monkeypatch.setattr(
+        evaluate_mod,
+        "decide",
+        lambda *_args, **_kwargs: ("NONE", {"versions": {}, "reasons": [], "state_out": {}}),
+    )
+
+    evaluate_mod.evaluate_pipeline(
+        _minimal_candles(),
+        policy={"symbol": "tBTCUSD", "timeframe": "3h"},
+        configs={
+            "_global_index": 1,
+            "precomputed_features": {"ema_50": [1.0, 1.0]},
+            "meta": {
+                "run_intent": "research_code_experiment",
+                "research_model_meta_path": (
+                    "config/research/model_meta/ri_regime_calibration_slice1/tBTCUSD_3h.json"
+                ),
+            },
+        },
+        state={},
+    )
+
+    assert (
+        captured["research_model_meta_path"]
+        == "config/research/model_meta/ri_regime_calibration_slice1/tBTCUSD_3h.json"
+    )
+
+
+def test_evaluate_pipeline_rejects_research_model_meta_path_without_research_code_experiment(
+    monkeypatch,
+):
+    _patch_champion_loader(monkeypatch, source="dummy")
+    monkeypatch.setattr(
+        evaluate_mod,
+        "extract_features_backtest",
+        lambda *_args, **_kwargs: ({}, {}),
+    )
+    _patch_common_pipeline_stubs(monkeypatch)
+
+    with pytest.raises(
+        ValueError, match="research_model_meta_path_requires_research_code_experiment"
+    ):
+        evaluate_mod.evaluate_pipeline(
+            _minimal_candles(),
+            policy={"symbol": "tBTCUSD", "timeframe": "3h"},
+            configs={
+                "_global_index": 1,
+                "precomputed_features": {"ema_50": [1.0, 1.0]},
+                "meta": {
+                    "research_model_meta_path": (
+                        "config/research/model_meta/ri_regime_calibration_slice1/tBTCUSD_3h.json"
+                    ),
+                },
+            },
+            state={},
+        )

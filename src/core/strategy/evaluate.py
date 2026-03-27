@@ -257,7 +257,17 @@ def evaluate_pipeline(
     # symbol/timeframe kan plockas från configs eller policy; defaulta till tBTCUSD/1m
     symbol = policy.get("symbol", "tBTCUSD")
     timeframe = policy.get("timeframe", "1m")
-    probas, pmeta = predict_proba_for(symbol, timeframe, feats, regime=current_regime)
+    meta_cfg = dict(configs.get("meta") or {})
+    research_model_meta_path = meta_cfg.get("research_model_meta_path")
+    if (
+        research_model_meta_path is not None
+        and meta_cfg.get("run_intent") != "research_code_experiment"
+    ):
+        raise ValueError("research_model_meta_path_requires_research_code_experiment")
+    predict_kwargs: dict[str, Any] = {"regime": current_regime}
+    if research_model_meta_path is not None:
+        predict_kwargs["research_model_meta_path"] = str(research_model_meta_path)
+    probas, pmeta = predict_proba_for(symbol, timeframe, feats, **predict_kwargs)
     if metrics_enabled:
         metrics.event(
             "proba_ok",

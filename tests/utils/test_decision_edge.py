@@ -232,6 +232,65 @@ def test_regime_size_multiplier_scales_size_only():
     assert (m_rng.get("state_out") or {}).get("size_regime_mult") == 0.5
 
 
+def test_research_balanced_conflict_abstain_is_opt_in_only() -> None:
+    base_cfg = {
+        "thresholds": {
+            "entry_conf_overall": 0.60,
+            "regime_proba": {"balanced": 0.60},
+            "min_edge": 0.0,
+        }
+    }
+    kwargs = {
+        "probas": {"buy": 0.67, "sell": 0.64},
+        "confidence": {"buy": 0.8, "sell": 0.8},
+        "regime": "balanced",
+        "state": {},
+        "risk_ctx": {},
+    }
+
+    action_default, _meta_default = decide({}, cfg=base_cfg, **kwargs)
+    assert action_default == "LONG"
+
+    research_cfg = {
+        **base_cfg,
+        "meta": {
+            "run_intent": "research_code_experiment",
+            "research_decision_variant": "balanced_conflict_abstain",
+            "research_conflict_edge_floor": 0.05,
+        },
+    }
+    action_research, meta_research = decide({}, cfg=research_cfg, **kwargs)
+    assert action_research == "NONE"
+    assert "R_BALANCED_CONFLICT" in (meta_research.get("reasons") or [])
+
+
+def test_research_balanced_conflict_abstain_keeps_stronger_edge_tradeable() -> None:
+    cfg = {
+        "thresholds": {
+            "entry_conf_overall": 0.60,
+            "regime_proba": {"balanced": 0.60},
+            "min_edge": 0.0,
+        },
+        "meta": {
+            "run_intent": "research_code_experiment",
+            "research_decision_variant": "balanced_conflict_abstain",
+            "research_conflict_edge_floor": 0.05,
+        },
+    }
+
+    action, meta = decide(
+        {},
+        probas={"buy": 0.72, "sell": 0.64},
+        confidence={"buy": 0.8, "sell": 0.8},
+        regime="balanced",
+        state={},
+        risk_ctx={},
+        cfg=cfg,
+    )
+    assert action == "LONG"
+    assert "R_BALANCED_CONFLICT" not in (meta.get("reasons") or [])
+
+
 def test_sizing_risk_map_error_is_not_silent_zero() -> None:
     cfg = {
         "thresholds": {

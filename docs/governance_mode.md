@@ -91,6 +91,48 @@ Examples:
 - Must NOT modify `runtime.json` (if production-critical).
 - Cannot be merged to `master` without passing STRICT gates.
 
+## Operational clarity
+
+### Operational expectations per mode
+
+- `STRICT`: packet-first, explicit authority, fail closed on ambiguity.
+- `RESEARCH`: take the smallest admissible research step, prefer minimal tracked artifacts, and avoid unnecessary strict process.
+- `SANDBOX`: optimize for fast exploration; no production-near claims.
+
+### RESEARCH is not STRICT-by-default
+
+- `RESEARCH` follows `RESEARCH` policy, not `STRICT` policy.
+- Applying STRICT process inside RESEARCH without a strict-only trigger is considered a governance violation.
+- Do not apply full `STRICT` packet/gate process in `RESEARCH` unless a strict-only surface is touched or the work otherwise resolves/escalates to `STRICT` under the existing rules.
+- Prefer minimal, reproducible research artifacts over heavyweight process when `STRICT` is not required.
+
+### When to use SANDBOX vs RESEARCH
+
+- Use `SANDBOX` for early exploration, sketches, and non-reproducible experiments.
+- Use `RESEARCH` for tracked, reproducible experiments and retained research artifacts.
+- If work starts in `SANDBOX` but becomes something to retain, reproduce, or govern, move it into `RESEARCH` or `STRICT` as appropriate.
+
+### Strict-only surfaces
+
+The following surfaces are operationally strict-only. This clarifies working posture only and does not change mode resolution, authority rules, or freeze enforcement.
+
+- `src/core/strategy/family_registry.py`
+- family admission semantics and related contract decisions
+- `config/strategy/champions/**`
+- runtime defaults, including `config/runtime.json`
+- comparison lane opening or comparison-eligibility decisions
+- readiness lane opening or readiness-eligibility decisions
+- promotion lane opening or promotion-eligibility decisions
+
+### Mode proof requirement
+
+When beginning a task, briefly state:
+
+- why the current mode applies
+- what the mode allows
+- what is forbidden in the current mode
+- what would require escalation to `STRICT`
+
 ## Constraints
 
 - Do not modify existing governance enforcement logic.

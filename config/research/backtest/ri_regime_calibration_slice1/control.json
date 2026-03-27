@@ -1,0 +1,100 @@
+{
+  "cfg": {
+    "strategy_family": "ri",
+    "thresholds": {
+      "entry_conf_overall": 0.25,
+      "regime_proba": {
+        "balanced": 0.36,
+        "bull": 0.5,
+        "bear": 0.5,
+        "ranging": 0.5
+      },
+      "signal_adaptation": {
+        "atr_period": 14,
+        "zones": {
+          "low": {
+            "entry_conf_overall": 0.16,
+            "regime_proba": 0.33
+          },
+          "mid": {
+            "entry_conf_overall": 0.4,
+            "regime_proba": 0.51
+          },
+          "high": {
+            "entry_conf_overall": 0.32,
+            "regime_proba": 0.57
+          }
+        }
+      },
+      "min_edge": 0.01
+    },
+    "gates": {
+      "hysteresis_steps": 3,
+      "cooldown_bars": 2
+    },
+    "exit": {
+      "max_hold_bars": 8,
+      "trailing_stop_pct": 0.022,
+      "stop_loss_pct": 0.016,
+      "exit_conf_threshold": 0.42
+    },
+    "risk": {
+      "htf_regime_size_multipliers": {
+        "bear": 0.65
+      },
+      "volatility_sizing": {
+        "high_vol_multiplier": 0.7
+      }
+    },
+    "multi_timeframe": {
+      "ltf_override_threshold": 0.4,
+      "regime_intelligence": {
+        "enabled": true,
+        "version": "v2",
+        "authority_mode": "regime_module",
+        "clarity_score": {
+          "enabled": false
+        },
+        "risk_state": {
+          "enabled": true,
+          "drawdown_guard": {
+            "soft_threshold": 0.04,
+            "soft_mult": 1.0,
+            "hard_threshold": 0.06,
+            "hard_mult": 0.65
+          },
+          "transition_guard": {
+            "mult": 0.65,
+            "guard_bars": 2
+          }
+        }
+      }
+    },
+    "htf_exit_config": {
+      "partial_1_pct": 0.5,
+      "partial_2_pct": 0.45,
+      "fib_threshold_atr": 0.9,
+      "trail_atr_multiplier": 2.5
+    },
+    "htf_fib": {
+      "entry": {
+        "tolerance_atr": 4.0,
+        "long_max_level": 0.236,
+        "short_min_level": 0.35
+      }
+    },
+    "ltf_fib": {
+      "entry": {
+        "tolerance_atr": 1.5,
+        "long_max_level": 0.146,
+        "short_min_level": 0.236
+      }
+    },
+    "meta": {
+      "run_intent": "research_code_experiment",
+      "skip_champion_merge": true,
+      "research_slice_id": "ri_regime_calibration_slice1",
+      "research_variant": "control"
+    }
+  }
+}

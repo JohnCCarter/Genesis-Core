@@ -130,10 +130,27 @@ Nästa agent bör starta med **slice 3: structural survival / override** och fok
 
 - `src/core/strategy/decision_fib_gating.py`
 - `src/core/strategy/decision_fib_gating_helpers.py`
+- `docs/analysis/ri_legacy_role_map_slice3_structural_survival_2026-03-30.md`
 
 Kärnfråga för slice 3:
 
 > När beter sig HTF/LTF-veto + adaptive override som legitim **permission/survival-policy**, och när börjar det i praktiken fungera som **dold entrymotor**?
+
+Aktuell status för slice 3:
+
+- En första arbetsmatris finns nu i `docs/analysis/ri_legacy_role_map_slice3_structural_survival_2026-03-30.md`.
+- Den viktigaste nya observationen därifrån är att `use_htf_block` defaultar till `True`, medan `allow_ltf_override` inte gör det.
+- Därför måste nästa agent läsa **mergeresolverad config**, inte bara sparse optimizer-leafs, innan override-semantik tolkas.
+- Ett materialiserat proof visar dessutom att transition-guard-slicens första konkreta RI-trial får `allow_ltf_override=true` och `ltf_override_adaptive.enabled=true`, men att `htf_fib.entry.enabled` och `ltf_fib.entry.enabled` saknas i mergeresolverad config.
+- En uppföljande config-matris visar att legacy champion däremot har `htf_fib.entry.enabled=true`, `ltf_fib.entry.enabled=true` och explicit `missing_policy="pass"`, medan första RI-trialen saknar dessa grindaktiverande nycklar trots aktiv override-postur.
+- Ett bounded 2x2-experiment visar dessutom att `allow_ltf_override` är inert när fib-grindarna saknar `entry.enabled`; först när grindarna aktiveras blir override en verklig rescue-path (`HTF_OVERRIDE_LTF_CONF`) ovanpå ett aktivt HTF-veto.
+- Exekveringskedjan är nu också verifierad: default-Optuna kör direct execution via `_run_backtest_direct(...)` utan ny schema-validering, så saknade `entry.enabled` förblir saknade; om shell-vägen används i stället fyller schema `enabled=false` och `missing_policy="pass"`, vilket fortfarande lämnar HTF/LTF-gating inaktiv.
+- Repo-bred inventory visar samma mönster i hela den aktuella RI optimizer-familjen: **21/21** RI-YAML har `htf_fib.entry.*` och `ltf_fib.entry.*` leafs, men **0/21** sätter `htf_fib.entry.enabled`, `ltf_fib.entry.enabled` eller motsvarande `missing_policy` explicit.
+- Första bounded baseline-vs-enabled-backtesten på transition-guard trial #1 gav dock **ingen observerad skillnad**: sample och validation fick identiska metrics, och sample-fönstrets decision rows var hash-identiska (`rows_equal=true`). Det betyder att HTF/LTF-entry-surface är strukturellt missad i authoring-kedjan, men samtidigt praktiskt icke-bindande för just denna trial/path.
+- En uppföljande missing-vs-false-kontroll gav också identiskt utfall (`rows_equal=true`), vilket stärker att saknat `entry.enabled` och explicit `entry.enabled=false` är operativt samma sak för denna trial/path.
+- En ny hook-baserad per-bar-debug på sample-fönstret för samma trial förklarar nu _varför_ `enabled=true` ändå inte ändrade något: baseline gav `htf=missing` och `ltf=missing` på alla `1417` fib-rader, medan explicit aktivering gav `htf=UNAVAILABLE_PASS` och `ltf=PASS` på samma `1417/1417` rader, fortfarande utan en enda fib-relaterad reason eller block. Första HTF-debugpayloaden var `{reason: UNAVAILABLE_PASS, policy: pass, raw: {}}`, vilket betyder att HTF aldrig blev en faktisk veto-yta i detta sample; LTF var samtidigt bara `PASS`.
+- Den egentliga rotnyckeln är nu spårad i featurekedjan: `src/core/strategy/features_asof_parts/context_bundle_utils.py` bygger bara HTF/LTF fib-context för `1h`, `30m`, `6h` och `15m`. Eftersom den aktuella trialen körs på `3h` returneras både `htf_fibonacci_context` och `ltf_fibonacci_context` som `{}` redan i featuresteget. Därför når beslutslagret tomma dictar på varje bar, och 3h-fib-gating blir praktiskt inert oavsett om `entry.enabled` saknas eller sätts explicit. LTF visas dessutom som `PASS` snarare än `UNAVAILABLE_PASS` därför att dess gate skriver över debugstatus till `PASS` när den fortsätter med tom `levels = {}`.
+- Nästa agent bör därför först avgöra om fib-gating i dessa RI optimizer-trials är avsiktligt eller oavsiktligt **inaktivt** innan vidare tuning eller rolltolkning görs.
 
 ### Viktig tolkningsregel framåt
 

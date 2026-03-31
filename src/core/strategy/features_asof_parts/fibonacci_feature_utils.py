@@ -15,6 +15,7 @@ def build_fibonacci_feature_updates(
     pre_idx: int,
     timeframe: str | None,
     asof_bar: int,
+    atr_period: int,
     rsi_current: float,
     fallback_features: dict[str, float],
     clip_fn,
@@ -22,9 +23,11 @@ def build_fibonacci_feature_updates(
     make_indicator_fingerprint_fn,
     indicator_cache_lookup_fn,
     indicator_cache_store_fn,
+    calculate_atr_fn,
     detect_swing_points_fn,
     calculate_fibonacci_levels_fn,
     calculate_fibonacci_features_fn,
+    calculate_rsi_fn,
     calculate_ema_fn,
     calculate_adx_fn,
     metrics_obj,
@@ -36,8 +39,30 @@ def build_fibonacci_feature_updates(
     }
     try:
         fib_config = fib_config_cls(atr_depth=3.0, max_swings=8, min_swings=1)
+        confirmed_idx = pre_idx - max(1, int(fib_config.atr_depth))
         current_price = closes[-1] if len(closes) > 0 else 0.0
-        current_atr = atr_values[-1] if atr_values else 1.0
+        window_len = len(closes)
+
+        def _local_indicator_series(name: str, params: dict[str, Any], series, build_fn):
+            cache_key = make_indicator_fingerprint_fn(
+                name,
+                params={**params, "window_bounded": True, "window_len": window_len},
+                series=series,
+            )
+            cached = indicator_cache_lookup_fn(cache_key)
+            if cached is not None and len(cached) >= window_len:
+                return list(cached[:window_len])
+            values = build_fn()
+            indicator_cache_store_fn(cache_key, values)
+            return list(values)
+
+        local_atr_values = _local_indicator_series(
+            f"fib_atr_{int(atr_period)}",
+            {"period": int(atr_period)},
+            [highs, lows, closes],
+            lambda: calculate_atr_fn(highs, lows, closes, period=atr_period),
+        )
+        current_atr = float(local_atr_values[-1]) if local_atr_values else 1.0
 
         pre_sw_hi_idx = pre.get("fib_high_idx")
         pre_sw_lo_idx = pre.get("fib_low_idx")
@@ -49,13 +74,38 @@ def build_fibonacci_feature_updates(
             and isinstance(pre_sw_hi_px, list | tuple)
             and isinstance(pre_sw_lo_px, list | tuple)
         ):
-            hi_cut = bisect_right(pre_sw_hi_idx, pre_idx)
-            lo_cut = bisect_right(pre_sw_lo_idx, pre_idx)
+            hi_cut = bisect_right(pre_sw_hi_idx, confirmed_idx)
+            lo_cut = bisect_right(pre_sw_lo_idx, confirmed_idx)
 
-            swing_high_indices = [int(i) for i in pre_sw_hi_idx[:hi_cut]]
-            swing_low_indices = [int(i) for i in pre_sw_lo_idx[:lo_cut]]
-            swing_high_prices = [float(p) for p in pre_sw_hi_px[:hi_cut]]
-            swing_low_prices = [float(p) for p in pre_sw_lo_px[:lo_cut]]
+            eligible_high_indices = [int(i) for i in pre_sw_hi_idx[:hi_cut]]
+            eligible_low_indices = [int(i) for i in pre_sw_lo_idx[:lo_cut]]
+            eligible_high_prices = [float(p) for p in pre_sw_hi_px[:hi_cut]]
+            eligible_low_prices = [float(p) for p in pre_sw_lo_px[:lo_cut]]
+
+            if eligible_high_indices:
+                last_high_idx = eligible_high_indices[-1]
+                high_pairs = [
+                    (idx, price)
+                    for idx, price in zip(eligible_high_indices, eligible_high_prices, strict=False)
+                    if (last_high_idx - idx) <= fib_config.max_lookback
+                ]
+            else:
+                high_pairs = []
+
+            if eligible_low_indices:
+                last_low_idx = eligible_low_indices[-1]
+                low_pairs = [
+                    (idx, price)
+                    for idx, price in zip(eligible_low_indices, eligible_low_prices, strict=False)
+                    if (last_low_idx - idx) <= fib_config.max_lookback
+                ]
+            else:
+                low_pairs = []
+
+            swing_high_indices = [idx for idx, _ in high_pairs[-fib_config.max_swings :]]
+            swing_low_indices = [idx for idx, _ in low_pairs[-fib_config.max_swings :]]
+            swing_high_prices = [price for _, price in high_pairs[-fib_config.max_swings :]]
+            swing_low_prices = [price for _, price in low_pairs[-fib_config.max_swings :]]
         else:
             swing_key = make_indicator_fingerprint_fn(
                 "fib_swings",
@@ -79,7 +129,7 @@ def build_fibonacci_feature_updates(
                         lows,
                         closes,
                         fib_config,
-                        atr_values=atr_values,
+                        atr_values=local_atr_values,
                     )
                 )
                 indicator_cache_store_fn(
@@ -96,6 +146,11 @@ def build_fibonacci_feature_updates(
             swing_low_prices,
             fib_config.levels,
         )
+        if not swing_high_prices or not swing_low_prices or not fib_levels:
+            fib_feature_status = {
+                "available": False,
+                "reason": "insufficient_local_history",
+            }
 
         current_swing_high = swing_high_prices[-1] if swing_high_prices else current_price * 1.05
         current_swing_low = swing_low_prices[-1] if swing_low_prices else current_price * 0.95
@@ -126,69 +181,51 @@ def build_fibonacci_feature_updates(
             ),
         }
 
-        pre_ema_slope = pre.get("ema_slope")
-        if isinstance(pre_ema_slope, list | tuple) and len(pre_ema_slope) > pre_idx:
-            ema_slope_raw = float(pre_ema_slope[pre_idx])
+        ema_slope_params = {
+            "30m": {"ema_period": 50, "lookback": 20},
+            "1h": {"ema_period": 20, "lookback": 5},
+            "3h": {"ema_period": 20, "lookback": 5},
+        }
+        params = ema_slope_params.get(
+            str(timeframe or "").lower(),
+            {"ema_period": 20, "lookback": 5},
+        )
+        ema_period = params["ema_period"]
+        ema_lookback = params["lookback"]
+        ema_values = _local_indicator_series(
+            f"fib_ema_{int(ema_period)}",
+            {"period": int(ema_period)},
+            closes,
+            lambda: calculate_ema_fn(closes, period=ema_period),
+        )
+        if len(ema_values) >= ema_lookback + 1:
+            ema_slope_raw = (ema_values[-1] - ema_values[-1 - ema_lookback]) / ema_values[
+                -1 - ema_lookback
+            ]
         else:
-            ema_slope_params = {
-                "30m": {"ema_period": 50, "lookback": 20},
-                "1h": {"ema_period": 20, "lookback": 5},
-                "3h": {"ema_period": 20, "lookback": 5},
-            }
-            params = ema_slope_params.get(
-                str(timeframe or "").lower(),
-                {"ema_period": 20, "lookback": 5},
-            )
-            ema_period = params["ema_period"]
-            ema_lookback = params["lookback"]
-            pre_ema_key = f"ema_{ema_period}"
-            pre_ema_full = pre.get(pre_ema_key)
-            if isinstance(pre_ema_full, list | tuple) and len(pre_ema_full) >= asof_bar + 1:
-                ema_values = list(pre_ema_full[: asof_bar + 1])
-            else:
-                ema_key = make_indicator_fingerprint_fn(
-                    "ema",
-                    params={"period": ema_period},
-                    series=closes,
-                )
-                cached_ema = indicator_cache_lookup_fn(ema_key)
-                if cached_ema is not None and len(cached_ema) >= asof_bar + 1:
-                    ema_values = cached_ema[: asof_bar + 1]
-                else:
-                    ema_full = calculate_ema_fn(closes, period=ema_period)
-                    indicator_cache_store_fn(ema_key, ema_full)
-                    ema_values = ema_full
-            if len(ema_values) >= ema_lookback + 1:
-                ema_slope_raw = (ema_values[-1] - ema_values[-1 - ema_lookback]) / ema_values[
-                    -1 - ema_lookback
-                ]
-            else:
-                ema_slope_raw = 0.0
+            ema_slope_raw = 0.0
         ema_slope = clip_fn(ema_slope_raw, -0.10, 0.10)
 
-        pre_adx_full = pre.get("adx_14")
-        if isinstance(pre_adx_full, list | tuple) and len(pre_adx_full) > pre_idx:
-            adx_values = list(pre_adx_full[: pre_idx + 1])
-            adx_latest = float(pre_adx_full[pre_idx])
-        else:
-            adx_key = make_indicator_fingerprint_fn(
-                "adx",
-                params={"period": 14},
-                series=list(zip(highs, lows, closes, strict=False)),
-            )
-            cached_adx = indicator_cache_lookup_fn(adx_key)
-            if cached_adx is not None and len(cached_adx) >= asof_bar + 1:
-                adx_values = cached_adx[: asof_bar + 1]
-            else:
-                adx_full = calculate_adx_fn(highs, lows, closes, period=14)
-                indicator_cache_store_fn(adx_key, adx_full)
-                adx_values = adx_full
-            adx_latest = adx_values[-1] if adx_values else 25.0
+        local_rsi_values = _local_indicator_series(
+            "fib_rsi_14",
+            {"period": 14},
+            closes,
+            lambda: calculate_rsi_fn(closes, period=14),
+        )
+        fib_rsi_current = float(local_rsi_values[-1]) if local_rsi_values else float(rsi_current)
+
+        adx_values = _local_indicator_series(
+            "fib_adx_14",
+            {"period": 14},
+            [highs, lows, closes],
+            lambda: calculate_adx_fn(highs, lows, closes, period=14),
+        )
+        adx_latest = float(adx_values[-1]) if adx_values else 25.0
         adx_normalized = adx_latest / 100.0
 
         fib05_x_ema_slope = fib_feature_updates.get("fib05_prox_atr", 0.0) * ema_slope
         fib_prox_x_adx = fib_feature_updates.get("fib_prox_score", 0.0) * adx_normalized
-        fib05_x_rsi_inv = fib_feature_updates.get("fib05_prox_atr", 0.0) * (-rsi_current)
+        fib05_x_rsi_inv = fib_feature_updates.get("fib05_prox_atr", 0.0) * (-fib_rsi_current)
 
         fib_feature_updates.update(
             {

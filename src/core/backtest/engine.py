@@ -41,7 +41,7 @@ _LOGGER = get_logger(__name__)
 #
 # This guards against silently reusing stale cached indicators/swings after code or
 # configuration changes that affect the precomputed outputs.
-PRECOMPUTE_SCHEMA_VERSION = 1
+PRECOMPUTE_SCHEMA_VERSION = 3
 
 
 def _precompute_cache_key_material() -> str:
@@ -59,7 +59,13 @@ def _precompute_cache_key_material() -> str:
             "bb": {"period": 20, "std_dev": 2.0},
             "adx_period": 14,
         },
-        "fib_cfg": {"atr_depth": 3.0, "max_swings": 8, "min_swings": 1},
+        "fib_cfg": {
+            "atr_depth": 3.0,
+            "max_swings": 8,
+            "min_swings": 1,
+            "precompute_swing_history": "full",
+            "precompute_max_lookback": "full",
+        },
     }
     canon = json.dumps(spec, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     digest12 = hashlib.sha256(canon.encode("utf-8")).hexdigest()[:12]
@@ -522,8 +528,22 @@ class BacktestEngine:
                     # Use pandas only for Series conversion inside detect function to keep parity
                     import pandas as _pd
 
+                    fib_precompute_cfg = _FibCfg(
+                        levels=list(fib_cfg.levels),
+                        weights=dict(fib_cfg.weights),
+                        atr_depth=fib_cfg.atr_depth,
+                        max_swings=max(1, len(closes_all)),
+                        min_swings=fib_cfg.min_swings,
+                        max_lookback=max(fib_cfg.max_lookback, len(closes_all)),
+                        swing_threshold_multiple=fib_cfg.swing_threshold_multiple,
+                        swing_threshold_min=fib_cfg.swing_threshold_min,
+                        swing_threshold_step=fib_cfg.swing_threshold_step,
+                    )
                     sh_idx, sl_idx, sh_px, sl_px = _detect_swings(
-                        _pd.Series(highs_all), _pd.Series(lows_all), _pd.Series(closes_all), fib_cfg
+                        _pd.Series(highs_all),
+                        _pd.Series(lows_all),
+                        _pd.Series(closes_all),
+                        fib_precompute_cfg,
                     )
 
                     elapsed = time.perf_counter() - start_time

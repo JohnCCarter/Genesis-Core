@@ -50,7 +50,7 @@ def _build_precomputed(candles: dict[str, list[float]]) -> dict[str, list[float]
     pre["bb_position_20_2"] = list(bb.get("position") or [])
     pre["adx_14"] = calculate_adx(highs, lows, closes, period=14)
 
-    fib_cfg = FibonacciConfig(atr_depth=3.0, max_swings=8, min_swings=1)
+    fib_cfg = FibonacciConfig(atr_depth=3.0, max_swings=max(1, len(closes)), min_swings=1)
     sh_idx, sl_idx, sh_px, sl_px = detect_swing_points(
         pd.Series(highs), pd.Series(lows), pd.Series(closes), fib_cfg
     )

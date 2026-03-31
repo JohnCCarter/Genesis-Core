@@ -12,6 +12,7 @@ This eliminates all ambiguity between live and backtest modes.
 
 from __future__ import annotations
 
+import copy
 import os
 from collections import OrderedDict
 from typing import Any
@@ -189,6 +190,20 @@ def _compute_candles_hash(candles: dict[str, list[float] | np.ndarray], asof_bar
     return _compute_candles_hash_impl(candles, asof_bar)
 
 
+def _compute_feature_cache_key(
+    candles: dict[str, list[float] | np.ndarray],
+    asof_bar: int,
+    config: dict[str, Any] | None,
+) -> str:
+    cfg = _as_config_dict(config)
+    candle_id = _compute_candles_hash(candles, asof_bar)
+    use_precompute = os.environ.get("GENESIS_PRECOMPUTE_FEATURES") == "1" and bool(
+        cfg.get("precomputed_features")
+    )
+    mode = "precompute" if use_precompute else "runtime"
+    return f"{mode}:{int(asof_bar)}:{candle_id}"
+
+
 def _clip(x: float, lo: float, hi: float) -> float:
     return _clip_feature_value_impl(x, lo, hi)
 
@@ -256,6 +271,7 @@ def _build_fibonacci_feature_updates(
     pre_idx: int,
     timeframe: str | None,
     asof_bar: int,
+    atr_period: int,
     rsi_current: float,
 ) -> tuple[dict[str, float], dict[str, Any]]:
     return _build_fibonacci_feature_updates_impl(
@@ -267,6 +283,7 @@ def _build_fibonacci_feature_updates(
         pre_idx,
         timeframe,
         asof_bar,
+        atr_period,
         rsi_current,
         _FIB_FEATURE_FALLBACKS,
         _clip,
@@ -274,9 +291,11 @@ def _build_fibonacci_feature_updates(
         make_indicator_fingerprint,
         _indicator_cache_lookup,
         _indicator_cache_store,
+        calculate_atr,
         detect_swing_points,
         calculate_fibonacci_levels,
         calculate_fibonacci_features,
+        calculate_rsi,
         calculate_ema,
         calculate_adx,
         metrics,
@@ -285,11 +304,14 @@ def _build_fibonacci_feature_updates(
 
 
 def _feature_cache_lookup(cache_key: str):
-    return _feature_result_cache_lookup_impl(_feature_cache, cache_key)
+    cached_value = _feature_result_cache_lookup_impl(_feature_cache, cache_key)
+    if cached_value is None:
+        return None
+    return copy.deepcopy(cached_value)
 
 
 def _feature_cache_store(cache_key: str, result: tuple[dict[str, float], dict[str, Any]]) -> None:
-    _feature_result_cache_store_impl(_feature_cache, cache_key, result, _MAX_CACHE_SIZE)
+    _feature_result_cache_store_impl(_feature_cache, cache_key, copy.deepcopy(result), _MAX_CACHE_SIZE)
 
 
 def _extract_asof(
@@ -319,7 +341,7 @@ def _extract_asof(
         - No lookahead: never uses bars > asof_bar
     """
     # Check cache first (optimization: avoid recomputing features for same data)
-    cache_key = _compute_candles_hash(candles, asof_bar)
+    cache_key = _compute_feature_cache_key(candles, asof_bar, config)
     cached_value = _feature_cache_lookup(cache_key)
     if cached_value is not None:
         metrics.inc("feature_cache_hit")
@@ -410,6 +432,29 @@ def _extract_asof(
     atr_vals = indicator_pipeline.atr_vals
     atr14_current = indicator_pipeline.atr14_current
 
+    def _window_bounded_atr_series(period: int) -> list[float]:
+        atr_key = make_indicator_fingerprint(
+            f"extract_asof_window_atr_{int(period)}",
+            params={"period": int(period), "window_bounded": True, "window_len": len(closes)},
+            series=[highs, lows, closes],
+        )
+        cached_atr = _indicator_cache_lookup(atr_key)
+        if cached_atr is not None and len(cached_atr) >= len(closes):
+            return list(cached_atr[: len(closes)])
+        atr_full = calculate_atr(highs, lows, closes, period=period)
+        _indicator_cache_store(atr_key, atr_full)
+        return list(atr_full)
+
+    # Keep ATR/meta state aligned to the exact as-of window in both runtime and precompute mode.
+    atr_vals = _window_bounded_atr_series(atr_period)
+    atr_percentiles = _build_atr_percentiles(atr_vals[-56:] if atr_vals else atr_vals)
+    if atr_period == 14:
+        atr14_current = float(atr_vals[-1]) if atr_vals else None
+    else:
+        atr14_vals_local = _window_bounded_atr_series(14)
+        atr14_current = float(atr14_vals_local[-1]) if atr14_vals_local else None
+    features["atr_14"] = float(atr14_current) if atr14_current is not None else 0.0
+
     # === FIBONACCI FEATURES (levels + distances/proximity) ===
     # Beräkna endast om vi har tillräckligt med data (kräver ATR, swing-detektion)
     features, fib_feature_status = _apply_fibonacci_feature_updates_impl(
@@ -423,7 +468,18 @@ def _extract_asof(
         timeframe=timeframe,
         asof_bar=asof_bar,
         rsi_current=rsi_current,
-        build_fibonacci_updates_fn=_build_fibonacci_feature_updates,
+        build_fibonacci_updates_fn=lambda highs_arg, lows_arg, closes_arg, atr_vals_arg, pre_arg, pre_idx_arg, timeframe_arg, asof_bar_arg, rsi_current_arg: _build_fibonacci_feature_updates(
+            highs_arg,
+            lows_arg,
+            closes_arg,
+            atr_vals_arg,
+            pre_arg,
+            pre_idx_arg,
+            timeframe_arg,
+            asof_bar_arg,
+            atr_period,
+            rsi_current_arg,
+        ),
     )
 
     context_bundle = _build_fibonacci_context_bundle_impl(

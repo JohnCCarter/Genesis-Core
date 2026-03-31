@@ -35,6 +35,30 @@ def test_validate_accepts_scalar_regime_proba_in_signal_adaptation_zones() -> No
     assert zones["high"].regime_proba == 0.56
 
 
+def test_validate_preserves_signal_adaptation_enabled_flag_in_canonical_dump() -> None:
+    proposal = {
+        "strategy_family": "legacy",
+        "thresholds": {
+            "entry_conf_overall": 0.3,
+            "regime_proba": {"balanced": 0.5},
+            "signal_adaptation": {
+                "enabled": False,
+                "atr_period": 28,
+                "zones": {
+                    "low": {"entry_conf_overall": 0.25, "regime_proba": 0.36, "pct": None},
+                    "mid": {"entry_conf_overall": 0.32, "regime_proba": 0.44, "pct": None},
+                    "high": {"entry_conf_overall": 0.38, "regime_proba": 0.56, "pct": None},
+                },
+            },
+        },
+    }
+
+    cfg = ConfigAuthority().validate(proposal)
+    dumped = cfg.model_dump_canonical()
+
+    assert dumped["thresholds"]["signal_adaptation"]["enabled"] is False
+
+
 def test_validate_accepts_scalar_top_level_regime_proba() -> None:
     proposal = {
         "strategy_family": "legacy",

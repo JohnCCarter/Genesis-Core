@@ -95,6 +95,122 @@ def test_signal_adaptation_zone_overrides_base_thresholds() -> None:
     assert action == "LONG"
 
 
+def test_signal_adaptation_enabled_false_uses_base_entry_threshold() -> None:
+    """Controlled intervention: enabled=false must restore base entry threshold ownership."""
+
+    cfg = {
+        "ev": {"R_default": 1.0},
+        "thresholds": {
+            "entry_conf_overall": 0.80,
+            "regime_proba": {"balanced": 0.50},
+            "signal_adaptation": {
+                "atr_period": 28,
+                "zones": {
+                    "mid": {
+                        "entry_conf_overall": 0.60,
+                        "regime_proba": {"balanced": 0.50},
+                    }
+                },
+            },
+        },
+        "risk": {"risk_map": [[0.50, 0.01]]},
+    }
+
+    state = {
+        "current_atr": 2.0,
+        "atr_percentiles": {"28": {"p40": 1.0, "p80": 3.0}},
+    }
+
+    active_action, active_meta = decide(
+        {"symbol": "tBTCUSD", "timeframe": "1h"},
+        probas={"buy": 0.65, "sell": 0.20},
+        confidence={"buy": 0.65, "sell": 0.20},
+        regime="balanced",
+        state=state,
+        risk_ctx={},
+        cfg=cfg,
+    )
+
+    disabled_cfg = deepcopy(cfg)
+    disabled_cfg["thresholds"]["signal_adaptation"]["enabled"] = False
+    disabled_action, disabled_meta = decide(
+        {"symbol": "tBTCUSD", "timeframe": "1h"},
+        probas={"buy": 0.65, "sell": 0.20},
+        confidence={"buy": 0.65, "sell": 0.20},
+        regime="balanced",
+        state=state,
+        risk_ctx={},
+        cfg=disabled_cfg,
+    )
+
+    active_reasons = list(active_meta.get("reasons") or [])
+    disabled_reasons = list(disabled_meta.get("reasons") or [])
+
+    assert active_action == "LONG"
+    assert any(r.startswith("ZONE:mid@0.600") for r in active_reasons)
+    assert disabled_action == "NONE"
+    assert any(r.startswith("ZONE:base@0.800") for r in disabled_reasons)
+    assert "CONF_TOO_LOW" in disabled_reasons
+
+
+def test_signal_adaptation_enabled_false_uses_base_regime_threshold() -> None:
+    """Controlled intervention: enabled=false must restore base regime threshold ownership."""
+
+    cfg = {
+        "ev": {"R_default": 1.0},
+        "thresholds": {
+            "entry_conf_overall": 0.60,
+            "regime_proba": {"balanced": 0.75},
+            "signal_adaptation": {
+                "atr_period": 28,
+                "zones": {
+                    "mid": {
+                        "entry_conf_overall": 0.60,
+                        "regime_proba": {"balanced": 0.60},
+                    }
+                },
+            },
+        },
+        "risk": {"risk_map": [[0.50, 0.01]]},
+    }
+
+    state = {
+        "current_atr": 2.0,
+        "atr_percentiles": {"28": {"p40": 1.0, "p80": 3.0}},
+    }
+
+    active_action, active_meta = decide(
+        {"symbol": "tBTCUSD", "timeframe": "1h"},
+        probas={"buy": 0.65, "sell": 0.20},
+        confidence={"buy": 0.65, "sell": 0.20},
+        regime="balanced",
+        state=state,
+        risk_ctx={},
+        cfg=cfg,
+    )
+
+    disabled_cfg = deepcopy(cfg)
+    disabled_cfg["thresholds"]["signal_adaptation"]["enabled"] = False
+    disabled_action, disabled_meta = decide(
+        {"symbol": "tBTCUSD", "timeframe": "1h"},
+        probas={"buy": 0.65, "sell": 0.20},
+        confidence={"buy": 0.65, "sell": 0.20},
+        regime="balanced",
+        state=state,
+        risk_ctx={},
+        cfg=disabled_cfg,
+    )
+
+    active_reasons = list(active_meta.get("reasons") or [])
+    disabled_reasons = list(disabled_meta.get("reasons") or [])
+
+    assert active_action == "LONG"
+    assert any(r.startswith("ZONE:mid@0.600") for r in active_reasons)
+    assert disabled_action == "NONE"
+    assert any(r.startswith("ZONE:base@0.600") for r in disabled_reasons)
+    assert "CONF_TOO_LOW" not in disabled_reasons
+
+
 def test_signal_adaptation_missing_percentiles_locks_low_zone() -> None:
     """Golden trace: unknown atr_period falls back to p40=p80=atr => low zone.
 

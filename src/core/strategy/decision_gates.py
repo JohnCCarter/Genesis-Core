@@ -107,7 +107,12 @@ def select_candidate(
             long_allowed = False
 
     thresholds_cfg = cfg.get("thresholds") or {}
-    adaptation_cfg = thresholds_cfg.get("signal_adaptation") or {}
+    adaptation_cfg_raw = thresholds_cfg.get("signal_adaptation") or {}
+    adaptation_cfg = (
+        adaptation_cfg_raw
+        if not (isinstance(adaptation_cfg_raw, dict) and adaptation_cfg_raw.get("enabled") is False)
+        else {}
+    )
     default_thr = safe_float(thresholds_cfg.get("entry_conf_overall", 0.7), 0.7)
 
     atr = state_in.get("current_atr") if adaptation_cfg else None

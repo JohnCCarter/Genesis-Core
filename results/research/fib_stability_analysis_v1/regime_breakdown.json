@@ -1,0 +1,43 @@
+{
+  "by_regime": {
+    "bear": {
+      "expectancy": 4.750349121551561,
+      "profit_factor": 2.276776773222532,
+      "total_return_pct": 6.080446875585997,
+      "trade_count": 128,
+      "win_rate": 77.34375
+    },
+    "ranging": {
+      "expectancy": 0.6759836717018075,
+      "profit_factor": 1.1106701168832365,
+      "total_return_pct": 0.1216770609063253,
+      "trade_count": 18,
+      "win_rate": 55.55555555555556
+    }
+  },
+  "by_trend_bucket": {
+    "ranging": {
+      "expectancy": 0.6759836717018075,
+      "profit_factor": 1.1106701168832365,
+      "total_return_pct": 0.1216770609063253,
+      "trade_count": 18,
+      "win_rate": 55.55555555555556
+    },
+    "trending": {
+      "expectancy": 4.750349121551561,
+      "profit_factor": 2.276776773222532,
+      "total_return_pct": 6.080446875585997,
+      "trade_count": 128,
+      "win_rate": 77.34375
+    }
+  },
+  "by_volatility_bucket": {
+    "low": {
+      "expectancy": 4.248030093487892,
+      "profit_factor": 2.058058171071003,
+      "total_return_pct": 6.202123936492322,
+      "trade_count": 146,
+      "win_rate": 74.65753424657534
+    }
+  }
+}

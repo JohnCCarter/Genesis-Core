@@ -1,0 +1,35 @@
+{
+  "concentration_hhi_abs_pnl": 0.014176984358033254,
+  "dominant_trade_count_for_50pct_pnl": 27,
+  "max_trade_pnl": 71.8902619176,
+  "min_trade_pnl": -32.20360627343997,
+  "split_metrics": {
+    "early": {
+      "expectancy": 1.496982230269226,
+      "max_drawdown": 0.342739455312073,
+      "profit_factor": 1.8012480523615473,
+      "total_return_pct": 0.041468224671152715,
+      "trade_count": 41,
+      "win_rate": 78.04878048780488
+    },
+    "late": {
+      "expectancy": 5.766708110670585,
+      "max_drawdown": 1.4427767092574384,
+      "profit_factor": 1.852019354140442,
+      "total_return_pct": 0.7029391927439792,
+      "trade_count": 46,
+      "win_rate": 65.21739130434783
+    },
+    "mid": {
+      "expectancy": 5.652367967836139,
+      "max_drawdown": 0.6660357717077163,
+      "profit_factor": 3.596253192750794,
+      "total_return_pct": 1.0348862102285055,
+      "trade_count": 48,
+      "win_rate": 85.41666666666666
+    }
+  },
+  "top_1_pnl_share": 0.04010452976385707,
+  "top_5_pnl_share": 0.14936251014919397,
+  "trade_count": 146
+}

@@ -13,6 +13,7 @@ This eliminates all ambiguity between live and backtest modes.
 from __future__ import annotations
 
 import copy
+import inspect
 import os
 from collections import OrderedDict
 from typing import Any
@@ -271,8 +272,9 @@ def _build_fibonacci_feature_updates(
     pre_idx: int,
     timeframe: str | None,
     asof_bar: int,
-    atr_period: int,
     rsi_current: float,
+    *,
+    atr_period: int = 14,
 ) -> tuple[dict[str, float], dict[str, Any]]:
     return _build_fibonacci_feature_updates_impl(
         highs,
@@ -303,6 +305,48 @@ def _build_fibonacci_feature_updates(
     )
 
 
+def _build_fibonacci_updates_with_current_atr_period(
+    highs: list[float] | np.ndarray,
+    lows: list[float] | np.ndarray,
+    closes: list[float] | np.ndarray,
+    atr_vals: list[float] | np.ndarray | None,
+    pre: dict[str, Any],
+    pre_idx: int,
+    timeframe: str | None,
+    asof_bar: int,
+    rsi_current: float,
+    *,
+    atr_period: int,
+) -> tuple[dict[str, float], dict[str, Any]]:
+    build_fn = _build_fibonacci_feature_updates
+    parameters = inspect.signature(build_fn).parameters
+    if "atr_period" in parameters:
+        return build_fn(
+            highs,
+            lows,
+            closes,
+            atr_vals,
+            pre,
+            pre_idx,
+            timeframe,
+            asof_bar,
+            rsi_current,
+            atr_period=atr_period,
+        )
+
+    return build_fn(
+        highs,
+        lows,
+        closes,
+        atr_vals,
+        pre,
+        pre_idx,
+        timeframe,
+        asof_bar,
+        rsi_current,
+    )
+
+
 def _feature_cache_lookup(cache_key: str):
     cached_value = _feature_result_cache_lookup_impl(_feature_cache, cache_key)
     if cached_value is None:
@@ -311,7 +355,9 @@ def _feature_cache_lookup(cache_key: str):
 
 
 def _feature_cache_store(cache_key: str, result: tuple[dict[str, float], dict[str, Any]]) -> None:
-    _feature_result_cache_store_impl(_feature_cache, cache_key, copy.deepcopy(result), _MAX_CACHE_SIZE)
+    _feature_result_cache_store_impl(
+        _feature_cache, cache_key, copy.deepcopy(result), _MAX_CACHE_SIZE
+    )
 
 
 def _extract_asof(
@@ -468,7 +514,7 @@ def _extract_asof(
         timeframe=timeframe,
         asof_bar=asof_bar,
         rsi_current=rsi_current,
-        build_fibonacci_updates_fn=lambda highs_arg, lows_arg, closes_arg, atr_vals_arg, pre_arg, pre_idx_arg, timeframe_arg, asof_bar_arg, rsi_current_arg: _build_fibonacci_feature_updates(
+        build_fibonacci_updates_fn=lambda highs_arg, lows_arg, closes_arg, atr_vals_arg, pre_arg, pre_idx_arg, timeframe_arg, asof_bar_arg, rsi_current_arg: _build_fibonacci_updates_with_current_atr_period(
             highs_arg,
             lows_arg,
             closes_arg,
@@ -477,8 +523,8 @@ def _extract_asof(
             pre_idx_arg,
             timeframe_arg,
             asof_bar_arg,
-            atr_period,
             rsi_current_arg,
+            atr_period=atr_period,
         ),
     )
 

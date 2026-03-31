@@ -212,7 +212,9 @@ def build_fibonacci_feature_updates(
             closes,
             lambda: calculate_rsi_fn(closes, period=14),
         )
-        fib_rsi_current = float(local_rsi_values[-1]) if local_rsi_values else float(rsi_current)
+        fib_rsi_current = (
+            (float(local_rsi_values[-1]) - 50.0) / 50.0 if local_rsi_values else float(rsi_current)
+        )
 
         adx_values = _local_indicator_series(
             "fib_adx_14",

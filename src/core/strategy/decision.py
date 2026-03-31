@@ -14,6 +14,23 @@ Action = Literal["LONG", "SHORT", "NONE"]
 
 _LOG = get_logger(__name__)
 
+_FEATURE_ATTRIBUTION_REQUEST_KEY = "feature_attribution"
+_FEATURE_ATTRIBUTION_REQUEST_KEYS = frozenset({"selected_row_label", "mode"})
+_FEATURE_ATTRIBUTION_INVALID_REQUEST = "FEATURE_ATTRIBUTION_INVALID_REQUEST"
+_FEATURE_ATTRIBUTION_MIN_EDGE_ROW = "Minimum-edge gate seam"
+_FEATURE_ATTRIBUTION_HYSTERESIS_ROW = "Hysteresis gate seam"
+_FEATURE_ATTRIBUTION_COOLDOWN_ROW = "Cooldown gate seam"
+_FEATURE_ATTRIBUTION_HTF_BLOCK_ROW = "HTF block seam"
+_FEATURE_ATTRIBUTION_SUPPORTED_ROWS = frozenset(
+    {
+        _FEATURE_ATTRIBUTION_MIN_EDGE_ROW,
+        _FEATURE_ATTRIBUTION_HYSTERESIS_ROW,
+        _FEATURE_ATTRIBUTION_COOLDOWN_ROW,
+        _FEATURE_ATTRIBUTION_HTF_BLOCK_ROW,
+    }
+)
+_FEATURE_ATTRIBUTION_NEUTRALIZE_MODE = "neutralize"
+
 
 def _sanitize_context(value: Any) -> Any:
     if isinstance(value, str | int | float | bool) or value is None:
@@ -34,6 +51,83 @@ def _log_decision_event(event: str, **context: Any) -> None:
         _LOG.debug("[DECISION] %s %s", event, payload)
     except Exception:  # pragma: no cover
         _LOG.debug("[DECISION] %s", event)
+
+
+def _none_result(
+    versions: dict[str, Any],
+    reasons: list[str],
+    state_out: dict[str, Any],
+) -> tuple[Action, dict[str, Any]]:
+    return "NONE", {
+        "versions": versions,
+        "reasons": reasons,
+        "state_out": state_out,
+    }
+
+
+def _resolve_feature_attribution_request(
+    policy: dict[str, Any],
+    *,
+    reasons: list[str],
+    versions: dict[str, Any],
+    state_out: dict[str, Any],
+) -> tuple[str | None, tuple[Action, dict[str, Any]] | None]:
+    request = policy.get(_FEATURE_ATTRIBUTION_REQUEST_KEY)
+    if request is None:
+        return None, None
+
+    if not isinstance(request, dict) or set(request) != _FEATURE_ATTRIBUTION_REQUEST_KEYS:
+        reasons.append(_FEATURE_ATTRIBUTION_INVALID_REQUEST)
+        _log_decision_event("FEATURE_ATTRIBUTION_INVALID_REQUEST", request=request)
+        return None, _none_result(versions, reasons, state_out)
+
+    selected_row_label = request.get("selected_row_label")
+    mode = request.get("mode")
+
+    if (
+        selected_row_label not in _FEATURE_ATTRIBUTION_SUPPORTED_ROWS
+        or mode != _FEATURE_ATTRIBUTION_NEUTRALIZE_MODE
+    ):
+        reasons.append(_FEATURE_ATTRIBUTION_INVALID_REQUEST)
+        _log_decision_event(
+            "FEATURE_ATTRIBUTION_INVALID_REQUEST",
+            request=request,
+            selected_row_label=selected_row_label,
+            mode=mode,
+        )
+        return None, _none_result(versions, reasons, state_out)
+
+    return str(selected_row_label), None
+
+
+def _with_min_edge_neutralized(cfg: dict[str, Any]) -> dict[str, Any]:
+    thresholds = dict(cfg.get("thresholds") or {})
+    thresholds["min_edge"] = 0.0
+    cfg_overridden = dict(cfg)
+    cfg_overridden["thresholds"] = thresholds
+    return cfg_overridden
+
+
+def _with_hysteresis_neutralized(cfg: dict[str, Any]) -> dict[str, Any]:
+    gates = dict(cfg.get("gates") or {})
+    gates["hysteresis_steps"] = 1
+    cfg_overridden = dict(cfg)
+    cfg_overridden["gates"] = gates
+    return cfg_overridden
+
+
+def _with_cooldown_neutralized(cfg: dict[str, Any]) -> dict[str, Any]:
+    gates = dict(cfg.get("gates") or {})
+    gates["cooldown_bars"] = 0
+    cfg_overridden = dict(cfg)
+    cfg_overridden["gates"] = gates
+    return cfg_overridden
+
+
+def _with_cooldown_state_neutralized(state_in: dict[str, Any]) -> dict[str, Any]:
+    state_overridden = dict(state_in)
+    state_overridden["cooldown_remaining"] = 0
+    return state_overridden
 
 
 def decide(
@@ -76,6 +170,15 @@ def decide(
                 override_state[key] = value
     state_out["ltf_override_state"] = override_state
 
+    selected_feature_attribution_row, invalid_request_result = _resolve_feature_attribution_request(
+        policy,
+        reasons=reasons,
+        versions=versions,
+        state_out=state_out,
+    )
+    if invalid_request_result is not None:
+        return invalid_request_result
+
     action, meta, candidate_data = select_candidate(
         policy=policy,
         probas=probas,
@@ -92,6 +195,10 @@ def decide(
         return action, meta
 
     candidate = candidate_data["candidate"]
+    fib_use_htf_block = use_htf_block
+    if selected_feature_attribution_row == _FEATURE_ATTRIBUTION_HTF_BLOCK_ROW:
+        fib_use_htf_block = False
+
     fib_action, fib_meta = apply_fib_gating(
         policy_symbol=policy_symbol,
         policy_timeframe=policy_timeframe,
@@ -103,7 +210,7 @@ def decide(
         reasons=reasons,
         versions=versions,
         regime_str=candidate_data["regime_str"],
-        use_htf_block=use_htf_block,
+        use_htf_block=fib_use_htf_block,
         allow_ltf_override_cfg=allow_ltf_override_cfg,
         ltf_override_threshold=ltf_override_threshold,
         adaptive_cfg=adaptive_cfg,
@@ -115,11 +222,21 @@ def decide(
     if fib_action is not None:
         return fib_action, fib_meta
 
+    post_fib_cfg = cfg
+    post_fib_state_in = state_in
+    if selected_feature_attribution_row == _FEATURE_ATTRIBUTION_MIN_EDGE_ROW:
+        post_fib_cfg = _with_min_edge_neutralized(cfg)
+    elif selected_feature_attribution_row == _FEATURE_ATTRIBUTION_HYSTERESIS_ROW:
+        post_fib_cfg = _with_hysteresis_neutralized(cfg)
+    elif selected_feature_attribution_row == _FEATURE_ATTRIBUTION_COOLDOWN_ROW:
+        post_fib_cfg = _with_cooldown_neutralized(cfg)
+        post_fib_state_in = _with_cooldown_state_neutralized(state_in)
+
     action, meta, confidence_data = apply_post_fib_gates(
         candidate=candidate,
         confidence=confidence,
-        cfg=cfg,
-        state_in=state_in,
+        cfg=post_fib_cfg,
+        state_in=post_fib_state_in,
         state_out=state_out,
         reasons=reasons,
         versions=versions,
@@ -156,7 +273,10 @@ def decide(
         )
 
     state_out["last_action"] = candidate
-    cooldown_bars = int((cfg.get("gates") or {}).get("cooldown_bars") or 0)
+    if selected_feature_attribution_row == _FEATURE_ATTRIBUTION_COOLDOWN_ROW:
+        state_out.pop("cooldown_remaining", None)
+
+    cooldown_bars = int((post_fib_cfg.get("gates") or {}).get("cooldown_bars") or 0)
     if cooldown_bars > 0:
         state_out["cooldown_remaining"] = cooldown_bars
 

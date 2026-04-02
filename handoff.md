@@ -2,6 +2,103 @@
 
 Senast uppdaterad: 2026-03-27
 
+## Uppdatering 2026-04-01 — ChatGPT-handoff för Phase 4 survival boundary
+
+Detta block är avsett att kunna klistras in direkt i ChatGPT som kort status för den senaste STRICT-lanen.
+
+### Copy/paste till ChatGPT
+
+```text
+Genesis-Core — Phase 4 survival boundary (STRICT) är nu genomförd och verifierad på branchen `feature/ri-role-map-implementation-2026-03-24`.
+
+Kärnresultat:
+- Final selected rule: ALL(base_size > 0)
+- Boundary identified: YES
+- Coverage: 100%
+- Accuracy: 100%
+- Dominant driver: base_size
+- Validation: PASS
+
+Viktig tolkning:
+- Detta är en observational sizing boundary, inte proof of edge.
+- System survival är alltså deterministiskt separerad av positiv base_size i de låsta Phase 4-artifakterna.
+
+Verifierat under STRICT:
+- pre-commit run --all-files: PASS
+- deterministic smoke selector: PASS
+- cutover replay parity selectors: PASS
+- feature-cache determinism selector: PASS
+- pipeline component-order hash selector: PASS
+
+Viktiga artifacts:
+- results/research/fa_v2_adaptation_off/survival_boundary_selected.json
+- results/research/fa_v2_adaptation_off/survival_boundary_candidates.json
+- results/research/fa_v2_adaptation_off/boundary_feature_stats.json
+- results/research/fa_v2_adaptation_off/survival_boundary_summary.md
+- results/research/fa_v2_adaptation_off/audit_trace_coverage.json
+- results/research/fa_v2_adaptation_off/audit_field_presence.json
+- results/research/fa_v2_adaptation_off/audit_classification.json
+- results/research/fa_v2_adaptation_off/audit_determinism.json
+- results/research/fa_v2_adaptation_off/audit_sample_rows.json
+
+Nyckelfakta:
+- Combined sizing-eligible rows: 4224
+- Combined survivors: 626
+- Combined collapses: 3598
+- Survivors per trace: 313 / 313
+- All combined collapse rows had base_size = 0
+- All combined survivor rows had base_size > 0
+
+Governance-noter:
+- Packetet hårdnades under körning för att deterministiskt hantera flera exakta size-1-regler.
+- Numeriska alias på samma fält kollapsas först.
+- Därefter används driver-precedens: base_size > multiplier > interaction > upstream_threshold_proxy.
+- Upstream-threshold-proxy-only är explicit fail-closed före artifact write.
+- audit_determinism.json gjordes icke-självrefererande enligt repo-precedent.
+
+Om du ska resonera vidare från detta ska du behandla edge_value/confidence_gate som observational proxies här, inte som den slutliga boundaryn, eftersom packetets deterministiska selektion reducerade den exakta final boundaryn till base_size > 0.
+```
+
+### Bifoga dessa filer till ChatGPT
+
+Om ChatGPT bara ska förstå slutsatsen och kunna resonera på summary-/auditnivå, skicka minst dessa filer i denna ordning:
+
+1. `results/research/fa_v2_adaptation_off/survival_boundary_summary.md`
+   - mänsklig sammanfattning + final output contract
+2. `results/research/fa_v2_adaptation_off/survival_boundary_selected.json`
+   - slutlig vald regel och exakt PASS-status
+3. `results/research/fa_v2_adaptation_off/audit_classification.json`
+   - visar varför just den regeln vann och vilka exakta alias/proxy-regler som också matchade före kollaps
+4. `results/research/fa_v2_adaptation_off/audit_determinism.json`
+   - bevis att dubbelkörningen gav identiska icke-självrefererande hash-resultat
+5. `docs/governance/survival_boundary_phase4_packet_2026-04-01.md`
+   - styrande packet som definierar fail-closed-reglerna och varför boundaryn måste tolkas observationalt
+
+Om ChatGPT också ska kunna granska själva dataunderlaget och inte bara slutsatsen, lägg dessutom till dessa filer:
+
+6. `results/research/fa_v2_adaptation_off/boundary_feature_stats.json`
+   - per trace / combined survivor-vs-collapse distributions
+7. `results/research/fa_v2_adaptation_off/survival_boundary_candidates.json`
+   - hela kandidatrymden i deterministisk ordning
+8. `results/research/fa_v2_adaptation_off/audit_trace_coverage.json`
+   - row-accounting och denominator-bevis
+9. `results/research/fa_v2_adaptation_off/audit_field_presence.json`
+   - required-field och observable-validity-bevis
+10. `results/research/fa_v2_adaptation_off/audit_sample_rows.json`
+
+- konkreta survivor/collapse/boundary-exempelrader
+
+Om ChatGPT behöver göra en verklig oberoende replay av boundaryn från råmaterialet, bifoga även de två trace-filerna sist eftersom de är störst:
+
+11. `results/research/fa_v2_adaptation_off/trace_baseline_current.json`
+12. `results/research/fa_v2_adaptation_off/trace_adaptation_off.json`
+
+Praktisk rekommendation:
+
+- Börja med filerna 1–5.
+- Lägg till 6–10 om ChatGPT behöver granska logiken och auditen djupare.
+- Lägg bara till 11–12 om ChatGPT verkligen behöver analysera råa `trace_rows` direkt.
+
 > Detta dokument är en operativ handoff för nästa agent/session. Det är **inte** en governance authority source och får inte överstyra `.github/copilot-instructions.md`, `docs/governance_mode.md`, `docs/OPUS_46_GOVERNANCE.md` eller `AGENTS.md`. Verifiera alltid live branch, HEAD, remote-status och working tree i aktuell arbetskopia innan arbete fortsätter.
 
 ## Uppdatering 2026-03-27 — nuvarande takeover-status

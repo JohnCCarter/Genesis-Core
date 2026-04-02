@@ -1,6 +1,122 @@
 # HANDOFF — RI/R1 vs legacy role-map kickoff
 
-Senast uppdaterad: 2026-03-27
+Senast uppdaterad: 2026-04-02
+
+## Uppdatering 2026-04-02 — aktuell WFH-handoff för nästa agent
+
+Detta är den **aktuella takeover-sektionen**. Äldre block längre ned i filen är bevarade för spårbarhet, men nästa agent ska börja här eftersom nuläget har flyttat från tidig role-map-kickoff till en senare RESEARCH-lane runt Phase 10 execution evidence.
+
+### Live status som är verifierad i denna arbetskopia
+
+- **Repo:** `Genesis-Core`
+- **Aktiv branch:** `feature/ri-role-map-implementation-2026-03-24`
+- **Governance mode:** `RESEARCH` via branch-mappning i `docs/governance_mode.md`
+- **HEAD:** `0d01247798478769a88ee29c9c3683bf62e5a46a`
+- **Senaste pushade commit:** `0d012477` — `docs: add execution proxy first read`
+- **Remote-sync:** lokal branch matchar `origin/feature/ri-role-map-implementation-2026-03-24`
+- **Working tree:** clean
+
+### Vad som faktiskt är klart
+
+Följande är genomfört, verifierat och redan pushat på denna branch:
+
+1. **Phase 10 edge-origin isolation lane finns på riktigt**
+   - Implementerad i `scripts/analyze/edge_origin_isolation.py`
+   - Täckt av `tests/backtest/test_edge_origin_isolation.py`
+   - Kördes mot låsta traces och användes för att uppdatera repo-spårade Phase 14-sammanfattningar
+
+2. **Tre residualklasser är frysta som docs-only gaps**
+   - `execution_inefficiency`
+   - `regime_independent_drift`
+   - `structural_market_microstructure`
+
+3. **En ny additiv execution-proxy evidence lane finns nu på plats**
+   - Implementerad i `scripts/analyze/execution_proxy_evidence.py`
+   - Täckt av `tests/backtest/test_execution_proxy_evidence.py`
+   - Designad som separat read-only lane för att undvika mutation av den låsta Phase 10-analysatorn
+
+4. **Execution-proxy lane är körd mot låst baseline-trace**
+   - Körpacket är pushat i `docs/governance/execution_proxy_evidence_run_packet_2026-04-02.md`
+   - Första tolkningen är pushad i:
+     - `docs/governance/execution_proxy_first_read_packet_2026-04-02.md`
+     - `docs/analysis/execution_proxy_first_read_2026-04-02.md`
+
+5. **Branch-hygien är redan städad**
+   - Inga meningsfulla lokala diffar återstod efter senaste steget
+   - Linjeendingsbrus återställdes
+   - Ett orelaterat, ospårat överlevnads-packet togs bort i stället för att råka följa med i en skräpcommit
+
+### Viktigaste nulägesbilden för nästa agent
+
+Det viktigaste som ändrats sedan äldre delar av denna handoff är:
+
+- vi är **inte** längre i ett läge där nästa naturliga steg är mer allmän role-map-diskussion eller bred Optuna-jakt
+- vi har nu en **verklig, deterministisk men proxy-bunden execution-surface**
+- den nya proxy-lanen reducerar osäkerhet om price-path-shape, men ger **inte** authority att hävda realized execution price, slippage, latency eller queue effects
+- residualklassen `execution_inefficiency` är därför **fortfarande olöst**, men nu bättre avgränsad än tidigare
+
+### Det som finns pushat kontra lokalt på hem-datorn
+
+**Pushat och spårat i git:**
+
+- `scripts/analyze/edge_origin_isolation.py`
+- `tests/backtest/test_edge_origin_isolation.py`
+- `scripts/analyze/execution_proxy_evidence.py`
+- `tests/backtest/test_execution_proxy_evidence.py`
+- `docs/governance/execution_proxy_evidence_run_packet_2026-04-02.md`
+- `docs/governance/execution_proxy_first_read_packet_2026-04-02.md`
+- `docs/analysis/execution_proxy_first_read_2026-04-02.md`
+
+**Lokalt genererade proxy-artifakter som finns i denna arbetskopia men inte ska antas vara delade via git:**
+
+- `results/research/fa_v2_adaptation_off/phase10_execution_proxy_evidence/execution_proxy_evidence.json`
+- `results/research/fa_v2_adaptation_off/phase10_execution_proxy_evidence/execution_proxy_summary.md`
+- `results/research/fa_v2_adaptation_off/phase10_execution_proxy_evidence/audit_execution_proxy_determinism.json`
+
+Nästa agent på samma hemdator kan läsa dessa direkt. Nästa agent på en annan maskin får **inte** anta att de finns bara för att docs-memon refererar till dem.
+
+### Vad nästa agent bör läsa först
+
+Läs i denna ordning innan nytt arbete startar:
+
+1. denna toppsektion i `handoff.md`
+2. `docs/analysis/execution_proxy_first_read_2026-04-02.md`
+3. `docs/governance/execution_proxy_first_read_packet_2026-04-02.md`
+4. `docs/governance/execution_proxy_evidence_run_packet_2026-04-02.md`
+5. `scripts/analyze/execution_proxy_evidence.py`
+6. `tests/backtest/test_execution_proxy_evidence.py`
+
+Om nästa steg kräver tillbaka-länkning till föregående lane, läs därefter även:
+
+- `scripts/analyze/edge_origin_isolation.py`
+- `tests/backtest/test_edge_origin_isolation.py`
+- `results/research/fa_v2_adaptation_off/EDGE_ORIGIN_REPORT.md`
+
+### Rekommenderat nästa minsta admissible steg
+
+Starta **inte** med runtime-ändringar, inte med ny PR mot `master`, och inte med en bred ny optimizer-kampanj.
+
+Det bästa nästa lilla steget är i stället en **andra analys-slice över de redan genererade execution-proxy-artifakterna**, exempelvis en partitionering av proxy-surface efter:
+
+- `full-window` vs `sparse-window`
+- resolved vs omitted exit proxy price
+- winners vs losers på den realiserade ledgern
+- korta vs längre fasta horisonter
+
+Det håller arbetet inom `RESEARCH`, bygger vidare på befintlig evidens och undviker att uppgradera proxy-observationer till otillåten mechanism authority.
+
+### Viktiga guardrails för takeover
+
+- öppna **inte** automatiskt någon ny PR; branch/publiceringsstrategi måste beslutas explicit
+- behandla proxy-surface som **observational only**
+- gör inga claims om att `execution_inefficiency` är bevisad eller falsifierad
+- mutera inte låsta Phase 10–14-artifakter utan uttryckligt nytt scope
+- håll diffen liten och fortsätt bara med nästa minsta admissible slice
+- om arbete riskerar att gå in i strict-only surfaces, stoppa och reklassificera först
+
+### Kort enradig takeover-summary
+
+Branchens läge är grönt och pushat, execution-proxy-lanen finns nu i kod + test + docs, lokala proxy-resultat finns på hemdatorn, och nästa agent bör fortsätta med en liten partitionerad proxy-analys — inte med runtime- eller merge-orienterade steg.
 
 ## Uppdatering 2026-04-01 — ChatGPT-handoff för Phase 4 survival boundary
 

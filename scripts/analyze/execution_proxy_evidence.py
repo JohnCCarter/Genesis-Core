@@ -55,7 +55,14 @@ class ProxyTradeMetrics:
     exit_bar_index: int
     window_row_count: int
     observed_price_row_count: int
+    observed_price_coverage_ratio: float
     full_window_price_attested: bool
+    missing_proxy_price_bar_count: int
+    missing_proxy_price_bar_indexes: list[int]
+    first_missing_proxy_price_bar_index: int | None
+    last_observed_proxy_price_bar_index: int
+    exit_bar_proxy_price_present: bool
+    proxy_window_missingness_class: str
     entry_proxy_price: float
     exit_proxy_price: float | None
     exact_exit_proxy_price_status: str
@@ -363,6 +370,26 @@ def _fixed_horizon_metrics(
     return metrics
 
 
+def _classify_proxy_window_missingness(
+    *,
+    missing_proxy_price_bar_indexes: list[int],
+    exit_bar_index: int,
+) -> str:
+    if not missing_proxy_price_bar_indexes:
+        return "FULL_WINDOW_PROXY_PRICE_OBSERVED"
+
+    exit_missing = exit_bar_index in missing_proxy_price_bar_indexes
+    interior_missing = any(
+        bar_index != exit_bar_index for bar_index in missing_proxy_price_bar_indexes
+    )
+
+    if exit_missing and interior_missing:
+        return "EXIT_AND_INTERIOR_PROXY_PRICE_MISSING"
+    if exit_missing:
+        return "EXIT_BAR_PROXY_PRICE_MISSING"
+    return "INTERIOR_PROXY_PRICE_MISSING"
+
+
 def _build_trade_proxy_metrics(
     joined_trade: JoinedTrade,
     rows_by_bar_index: dict[int, dict[str, Any]],
@@ -388,11 +415,19 @@ def _build_trade_proxy_metrics(
             "inclusive proxy window must begin with an attested entry-row price"
         )
 
+    missing_proxy_price_bar_indexes = [
+        bar_index for bar_index, row in window_rows if _observed_proxy_price(row) is None
+    ]
+    coverage_ratio = round(len(observed_rows) / len(window_rows), 12)
     deltas = [
         _price_delta(joined_trade.direction, entry_price, price) for _, price in observed_rows
     ]
     exit_proxy_price = _observed_proxy_price(joined_trade.exit_row)
     exit_status = "PASS" if exit_proxy_price is not None else "OMITTED_MISSING_PROXY_PRICE"
+    proxy_window_missingness_class = _classify_proxy_window_missingness(
+        missing_proxy_price_bar_indexes=missing_proxy_price_bar_indexes,
+        exit_bar_index=joined_trade.exit_bar_index,
+    )
     fixed_horizon_deltas = _fixed_horizon_metrics(
         rows_by_bar_index,
         joined_trade.entry_bar_index,
@@ -413,7 +448,16 @@ def _build_trade_proxy_metrics(
         exit_bar_index=joined_trade.exit_bar_index,
         window_row_count=len(window_rows),
         observed_price_row_count=len(observed_rows),
+        observed_price_coverage_ratio=coverage_ratio,
         full_window_price_attested=len(observed_rows) == len(window_rows),
+        missing_proxy_price_bar_count=len(missing_proxy_price_bar_indexes),
+        missing_proxy_price_bar_indexes=missing_proxy_price_bar_indexes,
+        first_missing_proxy_price_bar_index=(
+            None if not missing_proxy_price_bar_indexes else missing_proxy_price_bar_indexes[0]
+        ),
+        last_observed_proxy_price_bar_index=observed_rows[-1][0],
+        exit_bar_proxy_price_present=exit_proxy_price is not None,
+        proxy_window_missingness_class=proxy_window_missingness_class,
         entry_proxy_price=round(entry_price, 12),
         exit_proxy_price=(None if exit_proxy_price is None else round(exit_proxy_price, 12)),
         exact_exit_proxy_price_status=exit_status,
@@ -483,6 +527,10 @@ def build_execution_proxy_outputs(
     ]
     mae_values = [metric.proxy_mae_price_delta for metric in proxy_metrics]
     mfe_values = [metric.proxy_mfe_price_delta for metric in proxy_metrics]
+    coverage_values = [metric.observed_price_coverage_ratio for metric in proxy_metrics]
+    missingness_class_counts = Counter(
+        metric.proxy_window_missingness_class for metric in proxy_metrics
+    )
 
     fixed_horizon_summaries: list[dict[str, Any]] = []
     for horizon in horizons:
@@ -548,10 +596,27 @@ def build_execution_proxy_outputs(
             "mean_observed_price_row_count": round(
                 _mean([float(metric.observed_price_row_count) for metric in proxy_metrics]), 12
             ),
+            "mean_observed_price_coverage_ratio": round(_mean(coverage_values), 12),
+            "median_observed_price_coverage_ratio": round(_median(coverage_values), 12),
             "mean_proxy_mae_price_delta": round(_mean(mae_values), 12),
             "median_proxy_mae_price_delta": round(_median(mae_values), 12),
             "mean_proxy_mfe_price_delta": round(_mean(mfe_values), 12),
             "median_proxy_mfe_price_delta": round(_median(mfe_values), 12),
+        },
+        "proxy_window_missingness_summary": {
+            "trade_count": len(proxy_metrics),
+            "full_window_proxy_price_observed_count": missingness_class_counts[
+                "FULL_WINDOW_PROXY_PRICE_OBSERVED"
+            ],
+            "exit_bar_proxy_price_present_count": sum(
+                1 for metric in proxy_metrics if metric.exit_bar_proxy_price_present
+            ),
+            "exit_bar_proxy_price_missing_count": sum(
+                1 for metric in proxy_metrics if not metric.exit_bar_proxy_price_present
+            ),
+            "missingness_class_counts": {
+                name: missingness_class_counts[name] for name in sorted(missingness_class_counts)
+            },
         },
         "fixed_horizon_summaries": fixed_horizon_summaries,
         "trade_proxy_metrics": [
@@ -561,7 +626,14 @@ def build_execution_proxy_outputs(
                 "exit_bar_index": metric.exit_bar_index,
                 "window_row_count": metric.window_row_count,
                 "observed_price_row_count": metric.observed_price_row_count,
+                "observed_price_coverage_ratio": metric.observed_price_coverage_ratio,
                 "full_window_price_attested": metric.full_window_price_attested,
+                "missing_proxy_price_bar_count": metric.missing_proxy_price_bar_count,
+                "missing_proxy_price_bar_indexes": metric.missing_proxy_price_bar_indexes,
+                "first_missing_proxy_price_bar_index": metric.first_missing_proxy_price_bar_index,
+                "last_observed_proxy_price_bar_index": metric.last_observed_proxy_price_bar_index,
+                "exit_bar_proxy_price_present": metric.exit_bar_proxy_price_present,
+                "proxy_window_missingness_class": metric.proxy_window_missingness_class,
                 "entry_proxy_price": metric.entry_proxy_price,
                 "exit_proxy_price": metric.exit_proxy_price,
                 "exact_exit_proxy_price_status": metric.exact_exit_proxy_price_status,
@@ -575,6 +647,7 @@ def build_execution_proxy_outputs(
             "Proxy evidence uses only attested trace_rows.fib_phase.ltf_debug.price observations.",
             "Proxy evidence does not attest realized execution price, slippage, latency, or queue position.",
             "Sparse windows indicate missing attested price observations inside the inclusive entry-exit bar window.",
+            "Proxy missingness diagnostics describe coverage only and do not attest realized execution, slippage, latency, or venue behavior.",
             "Proxy evidence does not support causal support or rejection of execution_inefficiency.",
         ],
         "proxy_conclusion": (
@@ -593,6 +666,9 @@ def build_execution_proxy_outputs(
         f"- window semantics: `{evidence_payload['proxy_surface']['window_semantics']}`",
         f"- full-window attested trades: `{evidence_payload['proxy_surface']['full_window_attested_trade_count']}`",
         f"- sparse-window trades: `{evidence_payload['proxy_surface']['sparse_window_trade_count']}`",
+        "- these diagnostics describe proxy price-path coverage and missingness only. They do not attest realized execution, slippage, latency, or venue behavior.",
+        f"- exit-bar proxy price present trades: `{evidence_payload['proxy_window_missingness_summary']['exit_bar_proxy_price_present_count']}`",
+        f"- exit-bar proxy price missing trades: `{evidence_payload['proxy_window_missingness_summary']['exit_bar_proxy_price_missing_count']}`",
         f"- mean proxy MAE price delta: `{evidence_payload['proxy_path_summary']['mean_proxy_mae_price_delta']}`",
         f"- mean proxy MFE price delta: `{evidence_payload['proxy_path_summary']['mean_proxy_mfe_price_delta']}`",
         "- fixed-horizon summaries are proxy-only and omit unresolved bar-price observations explicitly.",

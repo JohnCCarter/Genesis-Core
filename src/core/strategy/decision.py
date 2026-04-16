@@ -21,6 +21,7 @@ _FEATURE_ATTRIBUTION_MIN_EDGE_ROW = "Minimum-edge gate seam"
 _FEATURE_ATTRIBUTION_HYSTERESIS_ROW = "Hysteresis gate seam"
 _FEATURE_ATTRIBUTION_COOLDOWN_ROW = "Cooldown gate seam"
 _FEATURE_ATTRIBUTION_HTF_BLOCK_ROW = "HTF block seam"
+_RESEARCH_BULL_HIGH_PERSISTENCE_REASON = "RESEARCH_BULL_HIGH_PERSISTENCE_OVERRIDE"
 _FEATURE_ATTRIBUTION_SUPPORTED_ROWS = frozenset(
     {
         _FEATURE_ATTRIBUTION_MIN_EDGE_ROW,
@@ -260,6 +261,7 @@ def decide(
         p_sell=candidate_data["p_sell"],
         r_default=candidate_data["R"],
         max_ev=candidate_data["max_ev"],
+        research_bull_high_persistence_applied=(_RESEARCH_BULL_HIGH_PERSISTENCE_REASON in reasons),
         logger=_LOG,
         sanitize_context=_sanitize_context,
     )

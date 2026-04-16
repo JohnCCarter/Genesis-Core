@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from copy import deepcopy
 
+import pytest
+
 from core.backtest.engine import BacktestEngine
 from core.strategy.decision import decide
 
@@ -254,3 +256,114 @@ def test_signal_adaptation_missing_percentiles_locks_low_zone() -> None:
     reasons = list(meta.get("reasons") or [])
     assert any(r.startswith("ZONE:low@") for r in reasons)
     assert action == "LONG"
+
+
+def test_research_bull_high_persistence_override_disabled_preserves_runtime_parity() -> None:
+    base_cfg = {
+        "ev": {"R_default": 1.0},
+        "thresholds": {
+            "entry_conf_overall": 0.6,
+            "signal_adaptation": {
+                "atr_period": 28,
+                "zones": {"high": {"entry_conf_overall": 0.36, "regime_proba": 0.56}},
+            },
+        },
+        "risk": {"risk_map": [[0.36, 0.01]]},
+        "gates": {"cooldown_bars": 0, "hysteresis_steps": 1},
+    }
+    state = {
+        "current_atr": 4.0,
+        "atr_percentiles": {"28": {"p40": 1.0, "p80": 3.0}},
+    }
+
+    action_base, meta_base = decide(
+        {"symbol": "tBTCUSD", "timeframe": "1h"},
+        probas={"buy": 0.52, "sell": 0.48},
+        confidence={"buy": 0.52, "sell": 0.48},
+        regime="bull",
+        state=state,
+        risk_ctx={},
+        cfg=base_cfg,
+    )
+
+    cfg_disabled = deepcopy(base_cfg)
+    cfg_disabled["multi_timeframe"] = {
+        "research_bull_high_persistence_override": {
+            "enabled": False,
+            "min_persistence": 2,
+            "max_probability_gap": 0.06,
+        }
+    }
+    action_disabled, meta_disabled = decide(
+        {"symbol": "tBTCUSD", "timeframe": "1h"},
+        probas={"buy": 0.52, "sell": 0.48},
+        confidence={"buy": 0.52, "sell": 0.48},
+        regime="bull",
+        state=state,
+        risk_ctx={},
+        cfg=cfg_disabled,
+    )
+
+    assert action_base == action_disabled == "NONE"
+    assert meta_base.get("reasons") == meta_disabled.get("reasons")
+    assert meta_base.get("state_out") == meta_disabled.get("state_out")
+
+
+def test_current_atr_selective_high_vol_multiplier_absent_matches_enabled_false() -> None:
+    base_cfg = {
+        "ev": {"R_default": 1.0},
+        "thresholds": {
+            "entry_conf_overall": 0.6,
+            "regime_proba": {"bull": 0.6},
+        },
+        "risk": {
+            "risk_map": [[0.6, 0.01]],
+            "volatility_sizing": {
+                "enabled": True,
+                "high_vol_threshold": 80,
+                "high_vol_multiplier": 0.9,
+                "atr_period": 14,
+            },
+            "min_combined_multiplier": 0.01,
+        },
+        "gates": {"cooldown_bars": 0, "hysteresis_steps": 1},
+    }
+    state = {
+        "current_atr": 4.0,
+        "atr_percentiles": {"14": {"p80": 3.0}},
+    }
+
+    action_base, meta_base = decide(
+        {"symbol": "tBTCUSD", "timeframe": "1h"},
+        probas={"buy": 0.6, "sell": 0.4},
+        confidence={"buy": 0.6, "sell": 0.4},
+        regime="bull",
+        state=state,
+        risk_ctx={},
+        cfg=base_cfg,
+    )
+
+    cfg_disabled = deepcopy(base_cfg)
+    cfg_disabled["multi_timeframe"] = {
+        "research_current_atr_high_vol_multiplier_override": {
+            "enabled": False,
+            "current_atr_threshold": 763.415054,
+            "high_vol_multiplier_override": 1.0,
+        }
+    }
+    action_disabled, meta_disabled = decide(
+        {"symbol": "tBTCUSD", "timeframe": "1h"},
+        probas={"buy": 0.6, "sell": 0.4},
+        confidence={"buy": 0.6, "sell": 0.4},
+        regime="bull",
+        state=state,
+        risk_ctx={},
+        cfg=cfg_disabled,
+    )
+
+    assert action_base == action_disabled == "LONG"
+    assert float(meta_base.get("size") or 0.0) == pytest.approx(
+        float(meta_disabled.get("size") or 0.0)
+    )
+    assert meta_base.get("reasons") == meta_disabled.get("reasons")
+    assert meta_base.get("state_out") == meta_disabled.get("state_out")

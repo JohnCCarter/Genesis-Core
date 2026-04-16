@@ -59,6 +59,130 @@ def test_validate_preserves_signal_adaptation_enabled_flag_in_canonical_dump() -
     assert dumped["thresholds"]["signal_adaptation"]["enabled"] is False
 
 
+def test_validate_preserves_default_off_research_override_in_canonical_dump() -> None:
+    proposal = {
+        "strategy_family": "legacy",
+        "thresholds": {
+            "entry_conf_overall": 0.3,
+            "regime_proba": {"balanced": 0.5},
+        },
+        "multi_timeframe": {
+            "research_bull_high_persistence_override": {
+                "enabled": False,
+                "min_persistence": 2,
+                "max_probability_gap": 0.06,
+                "min_size_base": 0.0,
+                "require_non_penalized_volatility_for_min_size_base": False,
+            }
+        },
+    }
+
+    cfg = ConfigAuthority().validate(proposal)
+    dumped = cfg.model_dump_canonical()
+
+    assert dumped["multi_timeframe"]["research_bull_high_persistence_override"] == {
+        "enabled": False,
+        "min_persistence": 2,
+        "max_probability_gap": 0.06,
+        "min_size_base": 0.0,
+        "require_non_penalized_volatility_for_min_size_base": False,
+    }
+
+
+def test_validate_research_override_absent_matches_explicit_false_leaf() -> None:
+    proposal_absent = {
+        "strategy_family": "legacy",
+        "thresholds": {
+            "entry_conf_overall": 0.3,
+            "regime_proba": {"balanced": 0.5},
+        },
+        "multi_timeframe": {
+            "research_bull_high_persistence_override": {
+                "enabled": False,
+                "min_persistence": 2,
+                "max_probability_gap": 0.06,
+                "min_size_base": 0.0,
+            }
+        },
+    }
+    proposal_false = {
+        "strategy_family": "legacy",
+        "thresholds": {
+            "entry_conf_overall": 0.3,
+            "regime_proba": {"balanced": 0.5},
+        },
+        "multi_timeframe": {
+            "research_bull_high_persistence_override": {
+                "enabled": False,
+                "min_persistence": 2,
+                "max_probability_gap": 0.06,
+                "min_size_base": 0.0,
+                "require_non_penalized_volatility_for_min_size_base": False,
+            }
+        },
+    }
+
+    dumped_absent = ConfigAuthority().validate(proposal_absent).model_dump_canonical()
+    dumped_false = ConfigAuthority().validate(proposal_false).model_dump_canonical()
+
+    assert dumped_absent == dumped_false
+
+
+def test_validate_preserves_default_off_current_atr_selective_override_in_canonical_dump() -> None:
+    proposal = {
+        "strategy_family": "legacy",
+        "thresholds": {
+            "entry_conf_overall": 0.3,
+            "regime_proba": {"balanced": 0.5},
+        },
+        "multi_timeframe": {
+            "research_current_atr_high_vol_multiplier_override": {
+                "enabled": False,
+                "current_atr_threshold": 763.415054,
+                "high_vol_multiplier_override": 1.0,
+            }
+        },
+    }
+
+    cfg = ConfigAuthority().validate(proposal)
+    dumped = cfg.model_dump_canonical()
+
+    assert dumped["multi_timeframe"]["research_current_atr_high_vol_multiplier_override"] == {
+        "enabled": False,
+        "current_atr_threshold": 763.415054,
+        "high_vol_multiplier_override": 1.0,
+    }
+
+
+def test_validate_current_atr_selective_override_absent_matches_explicit_false_leaf() -> None:
+    proposal_absent = {
+        "strategy_family": "legacy",
+        "thresholds": {
+            "entry_conf_overall": 0.3,
+            "regime_proba": {"balanced": 0.5},
+        },
+    }
+    proposal_false = {
+        "strategy_family": "legacy",
+        "thresholds": {
+            "entry_conf_overall": 0.3,
+            "regime_proba": {"balanced": 0.5},
+        },
+        "multi_timeframe": {
+            "research_current_atr_high_vol_multiplier_override": {
+                "enabled": False,
+                "current_atr_threshold": 0.0,
+                "high_vol_multiplier_override": 1.0,
+            }
+        },
+    }
+
+    dumped_absent = ConfigAuthority().validate(proposal_absent).model_dump_canonical()
+    dumped_false = ConfigAuthority().validate(proposal_false).model_dump_canonical()
+
+    assert dumped_absent == dumped_false
+
+
 def test_validate_accepts_scalar_top_level_regime_proba() -> None:
     proposal = {
         "strategy_family": "legacy",

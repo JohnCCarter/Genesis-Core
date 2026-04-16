@@ -75,6 +75,7 @@ def test_apply_sizing_composes_active_multipliers_and_exports_ri_state() -> None
         p_sell=0.1,
         r_default=1.0,
         max_ev=1.0,
+        research_bull_high_persistence_applied=False,
         logger=MagicMock(),
         sanitize_context=lambda value: value,
     )
@@ -172,6 +173,7 @@ def test_apply_sizing_uses_min_combined_floor_and_increments_regime_counter() ->
         p_sell=0.2,
         r_default=1.0,
         max_ev=0.5,
+        research_bull_high_persistence_applied=False,
         logger=MagicMock(),
         sanitize_context=lambda value: value,
     )
@@ -243,3 +245,127 @@ def test_compute_size_base_raises_runtime_error_and_logs_on_invalid_risk_map() -
         0.6,
         {"sanitized": [["bad-threshold", 1.0]]},
     )
+
+
+def test_apply_sizing_current_atr_selective_override_absent_matches_explicit_disabled() -> None:
+    state_in = {
+        "atr_percentiles": {"14": {"p80": 1.0}},
+        "current_atr": 2.0,
+    }
+    base_cfg = {
+        "risk": {
+            "risk_map": [[0.50, 1.0]],
+            "volatility_sizing": {
+                "enabled": True,
+                "high_vol_threshold": 80,
+                "high_vol_multiplier": 0.9,
+                "atr_period": 14,
+            },
+            "min_combined_multiplier": 0.01,
+        }
+    }
+    disabled_cfg = {
+        **base_cfg,
+        "multi_timeframe": {
+            "research_current_atr_high_vol_multiplier_override": {
+                "enabled": False,
+                "current_atr_threshold": 2.0,
+                "high_vol_multiplier_override": 1.0,
+            }
+        },
+    }
+    state_out_base: dict[str, object] = {}
+    state_out_disabled: dict[str, object] = {}
+
+    size_base, conf_base = apply_sizing(
+        candidate="LONG",
+        confidence={"buy": 0.5, "sell": 0.1, "buy_scaled": 0.5},
+        regime="bull",
+        htf_regime=None,
+        state_in=state_in,
+        state_out=state_out_base,
+        cfg=base_cfg,
+        p_buy=0.7,
+        p_sell=0.2,
+        r_default=1.0,
+        max_ev=0.5,
+        research_bull_high_persistence_applied=False,
+        logger=MagicMock(),
+        sanitize_context=lambda value: value,
+    )
+    size_disabled, conf_disabled = apply_sizing(
+        candidate="LONG",
+        confidence={"buy": 0.5, "sell": 0.1, "buy_scaled": 0.5},
+        regime="bull",
+        htf_regime=None,
+        state_in=state_in,
+        state_out=state_out_disabled,
+        cfg=disabled_cfg,
+        p_buy=0.7,
+        p_sell=0.2,
+        r_default=1.0,
+        max_ev=0.5,
+        research_bull_high_persistence_applied=False,
+        logger=MagicMock(),
+        sanitize_context=lambda value: value,
+    )
+
+    assert conf_base == pytest.approx(conf_disabled)
+    assert size_base == pytest.approx(size_disabled)
+    assert state_out_base == state_out_disabled
+
+
+def test_apply_sizing_current_atr_selective_override_replaces_high_vol_multiplier() -> None:
+    cfg = {
+        "risk": {
+            "risk_map": [[0.50, 1.0]],
+            "volatility_sizing": {
+                "enabled": True,
+                "high_vol_threshold": 80,
+                "high_vol_multiplier": 0.9,
+                "atr_period": 14,
+            },
+            "min_combined_multiplier": 0.01,
+        },
+        "multi_timeframe": {
+            "research_current_atr_high_vol_multiplier_override": {
+                "enabled": True,
+                "current_atr_threshold": 2.0,
+                "high_vol_multiplier_override": 1.0,
+            }
+        },
+    }
+    state_in = {
+        "atr_percentiles": {"14": {"p80": 1.0}},
+        "current_atr": 2.0,
+    }
+    state_out: dict[str, object] = {}
+
+    size, conf_val_gate = apply_sizing(
+        candidate="LONG",
+        confidence={"buy": 0.5, "sell": 0.1, "buy_scaled": 0.5},
+        regime="bull",
+        htf_regime=None,
+        state_in=state_in,
+        state_out=state_out,
+        cfg=cfg,
+        p_buy=0.7,
+        p_sell=0.2,
+        r_default=1.0,
+        max_ev=0.5,
+        research_bull_high_persistence_applied=False,
+        logger=MagicMock(),
+        sanitize_context=lambda value: value,
+    )
+
+    assert conf_val_gate == pytest.approx(0.5)
+    assert size == pytest.approx(1.0)
+    assert state_out["size_vol_mult"] == pytest.approx(1.0)
+    assert state_out["size_combined_mult"] == pytest.approx(1.0)
+    assert state_out["current_atr_selective_high_vol_multiplier_override"] == {
+        "applied": True,
+        "current_atr": 2.0,
+        "current_atr_threshold": 2.0,
+        "high_vol_multiplier_before": 0.9,
+        "high_vol_multiplier_after": 1.0,
+    }

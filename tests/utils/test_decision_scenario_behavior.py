@@ -443,3 +443,561 @@ def test_decide_stacked_sizing_penalties_reduce_size_without_changing_entry_path
     assert (
         state_out_constrained["size_before_ri_clarity"] < state_out_base["size_before_ri_clarity"]
     )
+
+
+def test_decide_research_bull_high_persistence_override_flips_second_near_miss_only() -> None:
+    cfg = {
+        "ev": {"R_default": 1.0},
+        "thresholds": {
+            "entry_conf_overall": 0.6,
+            "signal_adaptation": {
+                "atr_period": 28,
+                "zones": {"high": {"entry_conf_overall": 0.36, "regime_proba": 0.56}},
+            },
+        },
+        "gates": {"cooldown_bars": 0, "hysteresis_steps": 1},
+        "risk": {"risk_map": [[0.36, 1.0]]},
+        "multi_timeframe": {
+            "research_bull_high_persistence_override": {
+                "enabled": True,
+                "min_persistence": 2,
+                "max_probability_gap": 0.06,
+            }
+        },
+    }
+    state_base = {
+        "current_atr": 4.0,
+        "atr_percentiles": {"28": {"p40": 1.0, "p80": 3.0}},
+    }
+
+    action_1, meta_1 = decide(
+        {},
+        probas={"buy": 0.52, "sell": 0.48},
+        confidence={"buy": 0.52, "sell": 0.48},
+        regime="bull",
+        state=state_base,
+        risk_ctx={},
+        cfg=cfg,
+    )
+
+    assert action_1 == "NONE"
+    assert meta_1["reasons"] == ["ZONE:high@0.360"]
+    assert meta_1["state_out"]["research_bull_high_persistence_state"] == {"near_miss_streak": 1}
+    assert "research_bull_high_persistence_debug" not in meta_1["state_out"]
+
+    action_2, meta_2 = decide(
+        {},
+        probas={"buy": 0.521, "sell": 0.479},
+        confidence={"buy": 0.521, "sell": 0.479},
+        regime="bull",
+        state={**state_base, **meta_1["state_out"]},
+        risk_ctx={},
+        cfg=cfg,
+    )
+
+    assert action_2 == "LONG"
+    assert meta_2["reasons"] == [
+        "ZONE:high@0.360",
+        "RESEARCH_BULL_HIGH_PERSISTENCE_OVERRIDE",
+        "ENTRY_LONG",
+    ]
+    assert float(meta_2["size"]) == pytest.approx(1.0)
+    assert meta_2["state_out"]["research_bull_high_persistence_state"] == {"near_miss_streak": 2}
+    assert meta_2["state_out"]["research_bull_high_persistence_debug"]["applied"] is True
+    assert (
+        meta_2["state_out"]["research_bull_high_persistence_debug"]["reason"]
+        == "RESEARCH_BULL_HIGH_PERSISTENCE_OVERRIDE"
+    )
+
+
+def test_decide_research_bull_high_persistence_override_enabled_but_unmet_preserves_action_path() -> (
+    None
+):
+    cfg = {
+        "ev": {"R_default": 1.0},
+        "thresholds": {
+            "entry_conf_overall": 0.6,
+            "signal_adaptation": {
+                "atr_period": 28,
+                "zones": {"high": {"entry_conf_overall": 0.36, "regime_proba": 0.56}},
+            },
+        },
+        "gates": {"cooldown_bars": 0, "hysteresis_steps": 1},
+        "risk": {"risk_map": [[0.36, 1.0]]},
+        "multi_timeframe": {
+            "research_bull_high_persistence_override": {
+                "enabled": True,
+                "min_persistence": 2,
+                "max_probability_gap": 0.01,
+            }
+        },
+    }
+    state = {
+        "current_atr": 4.0,
+        "atr_percentiles": {"28": {"p40": 1.0, "p80": 3.0}},
+    }
+
+    action, meta = decide(
+        {},
+        probas={"buy": 0.52, "sell": 0.48},
+        confidence={"buy": 0.52, "sell": 0.48},
+        regime="bull",
+        state=state,
+        risk_ctx={},
+        cfg=cfg,
+    )
+
+    assert action == "NONE"
+    assert meta["reasons"] == ["ZONE:high@0.360"]
+    assert "research_bull_high_persistence_state" not in meta["state_out"]
+    assert "research_bull_high_persistence_debug" not in meta["state_out"]
+
+
+def test_decide_research_bull_high_persistence_min_size_base_zero_preserves_enabled_path() -> None:
+    cfg_base = {
+        "ev": {"R_default": 1.0},
+        "thresholds": {
+            "entry_conf_overall": 0.6,
+            "signal_adaptation": {
+                "atr_period": 28,
+                "zones": {"high": {"entry_conf_overall": 0.36, "regime_proba": 0.56}},
+            },
+        },
+        "gates": {"cooldown_bars": 0, "hysteresis_steps": 1},
+        "risk": {"risk_map": [[0.6, 1.0]]},
+        "multi_timeframe": {
+            "research_bull_high_persistence_override": {
+                "enabled": True,
+                "min_persistence": 2,
+                "max_probability_gap": 0.06,
+            }
+        },
+    }
+    cfg_zero = deepcopy(cfg_base)
+    cfg_zero["multi_timeframe"]["research_bull_high_persistence_override"]["min_size_base"] = 0.0
+    state_base = {
+        "current_atr": 4.0,
+        "atr_percentiles": {"28": {"p40": 1.0, "p80": 3.0}},
+    }
+
+    _, meta_base_1 = decide(
+        {},
+        probas={"buy": 0.52, "sell": 0.48},
+        confidence={"buy": 0.52, "sell": 0.48},
+        regime="bull",
+        state=state_base,
+        risk_ctx={},
+        cfg=cfg_base,
+    )
+    _, meta_zero_1 = decide(
+        {},
+        probas={"buy": 0.52, "sell": 0.48},
+        confidence={"buy": 0.52, "sell": 0.48},
+        regime="bull",
+        state=state_base,
+        risk_ctx={},
+        cfg=cfg_zero,
+    )
+
+    action_base_2, meta_base_2 = decide(
+        {},
+        probas={"buy": 0.521, "sell": 0.479},
+        confidence={"buy": 0.521, "sell": 0.479},
+        regime="bull",
+        state={**state_base, **meta_base_1["state_out"]},
+        risk_ctx={},
+        cfg=cfg_base,
+    )
+    action_zero_2, meta_zero_2 = decide(
+        {},
+        probas={"buy": 0.521, "sell": 0.479},
+        confidence={"buy": 0.521, "sell": 0.479},
+        regime="bull",
+        state={**state_base, **meta_zero_1["state_out"]},
+        risk_ctx={},
+        cfg=cfg_zero,
+    )
+
+    assert action_base_2 == action_zero_2 == "LONG"
+    assert float(meta_base_2["size"]) == pytest.approx(0.0)
+    assert float(meta_zero_2["size"]) == pytest.approx(0.0)
+    assert meta_base_2["reasons"] == meta_zero_2["reasons"]
+    assert meta_base_2["state_out"] == meta_zero_2["state_out"]
+
+
+def test_decide_research_bull_high_persistence_non_penalized_leaf_false_matches_absent() -> None:
+    cfg_base = {
+        "ev": {"R_default": 1.0},
+        "thresholds": {
+            "entry_conf_overall": 0.6,
+            "signal_adaptation": {
+                "atr_period": 28,
+                "zones": {"high": {"entry_conf_overall": 0.36, "regime_proba": 0.56}},
+            },
+        },
+        "gates": {"cooldown_bars": 0, "hysteresis_steps": 1},
+        "risk": {"risk_map": [[0.6, 1.0]]},
+        "multi_timeframe": {
+            "research_bull_high_persistence_override": {
+                "enabled": True,
+                "min_persistence": 2,
+                "max_probability_gap": 0.06,
+                "min_size_base": 0.02,
+            }
+        },
+    }
+    cfg_false = deepcopy(cfg_base)
+    cfg_false["multi_timeframe"]["research_bull_high_persistence_override"][
+        "require_non_penalized_volatility_for_min_size_base"
+    ] = False
+    state_base = {
+        "current_atr": 4.0,
+        "atr_percentiles": {"28": {"p40": 1.0, "p80": 3.0}},
+    }
+
+    _, meta_base_1 = decide(
+        {},
+        probas={"buy": 0.52, "sell": 0.48},
+        confidence={"buy": 0.52, "sell": 0.48},
+        regime="bull",
+        state=state_base,
+        risk_ctx={},
+        cfg=cfg_base,
+    )
+    _, meta_false_1 = decide(
+        {},
+        probas={"buy": 0.52, "sell": 0.48},
+        confidence={"buy": 0.52, "sell": 0.48},
+        regime="bull",
+        state=state_base,
+        risk_ctx={},
+        cfg=cfg_false,
+    )
+
+    action_base_2, meta_base_2 = decide(
+        {},
+        probas={"buy": 0.521, "sell": 0.479},
+        confidence={"buy": 0.521, "sell": 0.479},
+        regime="bull",
+        state={**state_base, **meta_base_1["state_out"]},
+        risk_ctx={},
+        cfg=cfg_base,
+    )
+    action_false_2, meta_false_2 = decide(
+        {},
+        probas={"buy": 0.521, "sell": 0.479},
+        confidence={"buy": 0.521, "sell": 0.479},
+        regime="bull",
+        state={**state_base, **meta_false_1["state_out"]},
+        risk_ctx={},
+        cfg=cfg_false,
+    )
+
+    assert action_base_2 == action_false_2 == "LONG"
+    assert float(meta_base_2["size"]) == pytest.approx(0.02)
+    assert float(meta_false_2["size"]) == pytest.approx(0.02)
+    assert meta_base_2["reasons"] == meta_false_2["reasons"]
+    assert meta_base_2["state_out"] == meta_false_2["state_out"]
+
+
+def test_decide_research_bull_high_persistence_min_size_base_only_affects_override_bar() -> None:
+    cfg = {
+        "ev": {"R_default": 1.0},
+        "thresholds": {
+            "entry_conf_overall": 0.3,
+            "regime_proba": {"bull": 0.3},
+        },
+        "gates": {"cooldown_bars": 0, "hysteresis_steps": 1},
+        "risk": {"risk_map": [[0.6, 1.0]]},
+        "multi_timeframe": {
+            "research_bull_high_persistence_override": {
+                "enabled": True,
+                "min_persistence": 2,
+                "max_probability_gap": 0.06,
+                "min_size_base": 0.02,
+            }
+        },
+    }
+
+    action, meta = decide(
+        {},
+        probas={"buy": 0.52, "sell": 0.48},
+        confidence={"buy": 0.52, "sell": 0.48},
+        regime="bull",
+        state={},
+        risk_ctx={},
+        cfg=cfg,
+    )
+
+    assert action == "LONG"
+    assert meta["reasons"] == ["ZONE:base@0.300", "ENTRY_LONG"]
+    assert float(meta["size"]) == pytest.approx(0.0)
+    assert "research_bull_high_persistence_size_override" not in meta["state_out"]
+
+
+def test_decide_research_bull_high_persistence_min_size_base_enables_small_entry() -> None:
+    cfg = {
+        "ev": {"R_default": 1.0},
+        "thresholds": {
+            "entry_conf_overall": 0.6,
+            "signal_adaptation": {
+                "atr_period": 28,
+                "zones": {"high": {"entry_conf_overall": 0.36, "regime_proba": 0.56}},
+            },
+        },
+        "gates": {"cooldown_bars": 0, "hysteresis_steps": 1},
+        "risk": {"risk_map": [[0.6, 1.0]]},
+        "multi_timeframe": {
+            "research_bull_high_persistence_override": {
+                "enabled": True,
+                "min_persistence": 2,
+                "max_probability_gap": 0.06,
+                "min_size_base": 0.02,
+            }
+        },
+    }
+    state_base = {
+        "current_atr": 4.0,
+        "atr_percentiles": {"28": {"p40": 1.0, "p80": 3.0}},
+    }
+
+    action_1, meta_1 = decide(
+        {},
+        probas={"buy": 0.52, "sell": 0.48},
+        confidence={"buy": 0.52, "sell": 0.48},
+        regime="bull",
+        state=state_base,
+        risk_ctx={},
+        cfg=cfg,
+    )
+
+    assert action_1 == "NONE"
+
+    action_2, meta_2 = decide(
+        {},
+        probas={"buy": 0.521, "sell": 0.479},
+        confidence={"buy": 0.521, "sell": 0.479},
+        regime="bull",
+        state={**state_base, **meta_1["state_out"]},
+        risk_ctx={},
+        cfg=cfg,
+    )
+
+    assert action_2 == "LONG"
+    assert meta_2["reasons"] == [
+        "ZONE:high@0.360",
+        "RESEARCH_BULL_HIGH_PERSISTENCE_OVERRIDE",
+        "ENTRY_LONG",
+    ]
+    assert float(meta_2["size"]) == pytest.approx(0.02)
+    assert meta_2["state_out"]["research_bull_high_persistence_size_override"] == {
+        "applied": True,
+        "reason": "RESEARCH_BULL_HIGH_PERSISTENCE_OVERRIDE",
+        "size_base_before": 0.0,
+        "size_base_after": 0.02,
+    }
+
+
+def test_decide_research_bull_high_persistence_non_penalized_leaf_blocks_penalized_bar() -> None:
+    cfg = {
+        "ev": {"R_default": 1.0},
+        "thresholds": {
+            "entry_conf_overall": 0.6,
+            "signal_adaptation": {
+                "atr_period": 28,
+                "zones": {"high": {"entry_conf_overall": 0.36, "regime_proba": 0.56}},
+            },
+        },
+        "gates": {"cooldown_bars": 0, "hysteresis_steps": 1},
+        "risk": {
+            "risk_map": [[0.6, 1.0]],
+            "volatility_sizing": {
+                "enabled": True,
+                "high_vol_threshold": 80,
+                "high_vol_multiplier": 0.7,
+                "atr_period": 14,
+            },
+        },
+        "multi_timeframe": {
+            "research_bull_high_persistence_override": {
+                "enabled": True,
+                "min_persistence": 2,
+                "max_probability_gap": 0.06,
+                "min_size_base": 0.02,
+                "require_non_penalized_volatility_for_min_size_base": True,
+            }
+        },
+    }
+    state_base = {
+        "current_atr": 4.0,
+        "atr_percentiles": {
+            "14": {"p40": 1.0, "p80": 3.0},
+            "28": {"p40": 1.0, "p80": 3.0},
+        },
+    }
+
+    action_1, meta_1 = decide(
+        {},
+        probas={"buy": 0.52, "sell": 0.48},
+        confidence={"buy": 0.52, "sell": 0.48},
+        regime="bull",
+        state=state_base,
+        risk_ctx={},
+        cfg=cfg,
+    )
+
+    assert action_1 == "NONE"
+
+    action_2, meta_2 = decide(
+        {},
+        probas={"buy": 0.521, "sell": 0.479},
+        confidence={"buy": 0.521, "sell": 0.479},
+        regime="bull",
+        state={**state_base, **meta_1["state_out"]},
+        risk_ctx={},
+        cfg=cfg,
+    )
+
+    assert action_2 == "LONG"
+    assert float(meta_2["size"]) == pytest.approx(0.0)
+    assert meta_2["state_out"]["size_vol_mult"] == pytest.approx(0.7)
+    assert "research_bull_high_persistence_size_override" not in meta_2["state_out"]
+
+
+def test_decide_research_bull_high_persistence_non_penalized_leaf_allows_non_penalized_bar() -> (
+    None
+):
+    cfg = {
+        "ev": {"R_default": 1.0},
+        "thresholds": {
+            "entry_conf_overall": 0.6,
+            "signal_adaptation": {
+                "atr_period": 28,
+                "zones": {"high": {"entry_conf_overall": 0.36, "regime_proba": 0.56}},
+            },
+        },
+        "gates": {"cooldown_bars": 0, "hysteresis_steps": 1},
+        "risk": {
+            "risk_map": [[0.6, 1.0]],
+            "volatility_sizing": {
+                "enabled": True,
+                "high_vol_threshold": 80,
+                "high_vol_multiplier": 0.7,
+                "atr_period": 14,
+            },
+        },
+        "multi_timeframe": {
+            "research_bull_high_persistence_override": {
+                "enabled": True,
+                "min_persistence": 2,
+                "max_probability_gap": 0.06,
+                "min_size_base": 0.02,
+                "require_non_penalized_volatility_for_min_size_base": True,
+            }
+        },
+    }
+    state_base = {
+        "current_atr": 4.0,
+        "atr_percentiles": {
+            "14": {"p40": 1.0, "p80": 5.0},
+            "28": {"p40": 1.0, "p80": 3.0},
+        },
+    }
+
+    action_1, meta_1 = decide(
+        {},
+        probas={"buy": 0.52, "sell": 0.48},
+        confidence={"buy": 0.52, "sell": 0.48},
+        regime="bull",
+        state=state_base,
+        risk_ctx={},
+        cfg=cfg,
+    )
+
+    assert action_1 == "NONE"
+
+    action_2, meta_2 = decide(
+        {},
+        probas={"buy": 0.521, "sell": 0.479},
+        confidence={"buy": 0.521, "sell": 0.479},
+        regime="bull",
+        state={**state_base, **meta_1["state_out"]},
+        risk_ctx={},
+        cfg=cfg,
+    )
+
+    assert action_2 == "LONG"
+    assert float(meta_2["size"]) == pytest.approx(0.02)
+    assert meta_2["state_out"]["size_vol_mult"] == pytest.approx(1.0)
+    assert meta_2["state_out"]["research_bull_high_persistence_size_override"] == {
+        "applied": True,
+        "reason": "RESEARCH_BULL_HIGH_PERSISTENCE_OVERRIDE",
+        "size_base_before": 0.0,
+        "size_base_after": 0.02,
+    }
+
+
+def test_decide_current_atr_selective_high_vol_multiplier_increases_size_on_eligible_bar() -> None:
+    cfg_base = {
+        "ev": {"R_default": 1.0},
+        "thresholds": {
+            "entry_conf_overall": 0.6,
+            "regime_proba": {"bull": 0.6},
+        },
+        "gates": {"cooldown_bars": 0, "hysteresis_steps": 1},
+        "risk": {
+            "risk_map": [[0.6, 0.01]],
+            "volatility_sizing": {
+                "enabled": True,
+                "high_vol_threshold": 80,
+                "high_vol_multiplier": 0.9,
+                "atr_period": 14,
+            },
+            "min_combined_multiplier": 0.01,
+        },
+    }
+    cfg_selective = deepcopy(cfg_base)
+    cfg_selective["multi_timeframe"] = {
+        "research_current_atr_high_vol_multiplier_override": {
+            "enabled": True,
+            "current_atr_threshold": 4.0,
+            "high_vol_multiplier_override": 1.0,
+        }
+    }
+    state = {
+        "current_atr": 4.0,
+        "atr_percentiles": {"14": {"p80": 3.0}},
+    }
+
+    action_base, meta_base = decide(
+        {},
+        probas={"buy": 0.6, "sell": 0.4},
+        confidence={"buy": 0.6, "sell": 0.4},
+        regime="bull",
+        state=state,
+        risk_ctx={},
+        cfg=cfg_base,
+    )
+    action_selective, meta_selective = decide(
+        {},
+        probas={"buy": 0.6, "sell": 0.4},
+        confidence={"buy": 0.6, "sell": 0.4},
+        regime="bull",
+        state=state,
+        risk_ctx={},
+        cfg=cfg_selective,
+    )
+
+    assert action_base == action_selective == "LONG"
+    assert meta_base["reasons"] == meta_selective["reasons"] == ["ZONE:base@0.600", "ENTRY_LONG"]
+    assert float(meta_base["size"]) == pytest.approx(0.009)
+    assert float(meta_selective["size"]) == pytest.approx(0.01)
+    assert meta_base["state_out"]["size_vol_mult"] == pytest.approx(0.9)
+    assert meta_selective["state_out"]["size_vol_mult"] == pytest.approx(1.0)
+    assert meta_selective["state_out"]["current_atr_selective_high_vol_multiplier_override"] == {
+        "applied": True,
+        "current_atr": 4.0,
+        "current_atr_threshold": 4.0,
+        "high_vol_multiplier_before": 0.9,
+        "high_vol_multiplier_after": 1.0,
+    }

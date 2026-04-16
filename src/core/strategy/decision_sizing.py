@@ -14,6 +14,8 @@ from core.intelligence.regime.risk_state import (
 )
 from core.strategy.decision_gates import Action, safe_float
 
+_RESEARCH_BULL_HIGH_PERSISTENCE_REASON = "RESEARCH_BULL_HIGH_PERSISTENCE_OVERRIDE"
+
 
 def _build_regime_transition_state(
     *,
@@ -185,6 +187,40 @@ def _compute_risk_state_sizing(
     return risk_state_mult, risk_state_payload
 
 
+def _apply_current_atr_selective_high_vol_multiplier(
+    *,
+    cfg: dict[str, Any],
+    current_atr: Any,
+    vol_size_mult: float,
+) -> tuple[float, dict[str, Any] | None]:
+    mtf_cfg = dict(cfg.get("multi_timeframe") or {})
+    override_cfg = dict(mtf_cfg.get("research_current_atr_high_vol_multiplier_override") or {})
+    if not bool(override_cfg.get("enabled", False)):
+        return vol_size_mult, None
+
+    current_atr_value = safe_float(current_atr, 0.0)
+    threshold = safe_float(override_cfg.get("current_atr_threshold", 0.0), 0.0)
+    if current_atr_value < threshold:
+        return vol_size_mult, None
+
+    override_mult = safe_float(
+        override_cfg.get("high_vol_multiplier_override", vol_size_mult),
+        vol_size_mult,
+    )
+    override_mult = max(0.0, min(1.0, override_mult))
+    if abs(override_mult - float(vol_size_mult)) < 1e-12:
+        return vol_size_mult, None
+
+    payload = {
+        "applied": True,
+        "current_atr": float(current_atr_value),
+        "current_atr_threshold": float(threshold),
+        "high_vol_multiplier_before": float(vol_size_mult),
+        "high_vol_multiplier_after": float(override_mult),
+    }
+    return float(override_mult), payload
+
+
 def _compute_size_multipliers(
     *,
     candidate: Action,
@@ -195,7 +231,7 @@ def _compute_size_multipliers(
     cfg: dict[str, Any],
     conf_val_gate: float,
     risk_state_mult: float,
-) -> tuple[float, float, float, float, float]:
+) -> tuple[float, float, float, float, float, dict[str, Any] | None]:
     size_scale = 1.0
     try:
         if conf_val_gate > 0.0:
@@ -241,6 +277,7 @@ def _compute_size_multipliers(
     htf_regime_mult = max(0.0, min(1.0, htf_regime_mult))
 
     vol_size_mult = 1.0
+    current_atr_selective_override_payload: dict[str, Any] | None = None
     try:
         vol_cfg = (cfg.get("risk") or {}).get("volatility_sizing") or {}
         if vol_cfg.get("enabled"):
@@ -253,15 +290,30 @@ def _compute_size_multipliers(
             p_threshold = current_p.get("p80") if threshold >= 80 else current_p.get("p40")
             if current_atr is not None and p_threshold is not None and current_atr > p_threshold:
                 vol_size_mult = multiplier
+                vol_size_mult, current_atr_selective_override_payload = (
+                    _apply_current_atr_selective_high_vol_multiplier(
+                        cfg=cfg,
+                        current_atr=current_atr,
+                        vol_size_mult=vol_size_mult,
+                    )
+                )
     except Exception:
         vol_size_mult = 1.0
+        current_atr_selective_override_payload = None
     vol_size_mult = max(0.0, min(1.0, vol_size_mult))
 
     min_size_mult = float((cfg.get("risk") or {}).get("min_combined_multiplier", 0.1))
     combined_mult = size_scale * regime_mult * htf_regime_mult * vol_size_mult * risk_state_mult
     combined_mult = max(min_size_mult, combined_mult)
 
-    return size_scale, regime_mult, htf_regime_mult, vol_size_mult, combined_mult
+    return (
+        size_scale,
+        regime_mult,
+        htf_regime_mult,
+        vol_size_mult,
+        combined_mult,
+        current_atr_selective_override_payload,
+    )
 
 
 def _compute_size_base(
@@ -289,6 +341,41 @@ def _compute_size_base(
     return size_base
 
 
+def _apply_research_bull_high_persistence_min_size_base(
+    *,
+    cfg: dict[str, Any],
+    state_out: dict[str, Any],
+    size_base: float,
+    research_bull_high_persistence_applied: bool,
+    vol_size_mult: float,
+) -> tuple[float, dict[str, Any] | None]:
+    if not research_bull_high_persistence_applied or size_base > 0.0:
+        return size_base, None
+
+    mtf_cfg = dict(cfg.get("multi_timeframe") or {})
+    research_cfg = dict(mtf_cfg.get("research_bull_high_persistence_override") or {})
+    if not bool(research_cfg.get("enabled", False)):
+        return size_base, None
+
+    min_size_base = safe_float(research_cfg.get("min_size_base", 0.0), 0.0)
+    if min_size_base <= 0.0:
+        return size_base, None
+
+    require_non_penalized_volatility = bool(
+        research_cfg.get("require_non_penalized_volatility_for_min_size_base", False)
+    )
+    if require_non_penalized_volatility and float(vol_size_mult) < 1.0:
+        return size_base, None
+
+    payload = {
+        "applied": True,
+        "reason": _RESEARCH_BULL_HIGH_PERSISTENCE_REASON,
+        "size_base_before": float(size_base),
+        "size_base_after": float(min_size_base),
+    }
+    return float(min_size_base), payload
+
+
 def apply_sizing(
     *,
     candidate: Action,
@@ -302,6 +389,7 @@ def apply_sizing(
     p_sell: float,
     r_default: float,
     max_ev: float,
+    research_bull_high_persistence_applied: bool,
     logger: Any,
     sanitize_context: Callable[[Any], Any],
 ) -> tuple[float, float]:
@@ -332,17 +420,29 @@ def apply_sizing(
         state_in=state_in,
     )
 
-    size_scale, regime_mult, htf_regime_mult, vol_size_mult, combined_mult = (
-        _compute_size_multipliers(
-            candidate=candidate,
-            confidence=confidence,
-            regime=regime,
-            htf_regime=htf_regime,
-            state_in=state_in,
-            cfg=cfg,
-            conf_val_gate=conf_val_gate,
-            risk_state_mult=risk_state_mult,
-        )
+    (
+        size_scale,
+        regime_mult,
+        htf_regime_mult,
+        vol_size_mult,
+        combined_mult,
+        current_atr_selective_override_payload,
+    ) = _compute_size_multipliers(
+        candidate=candidate,
+        confidence=confidence,
+        regime=regime,
+        htf_regime=htf_regime,
+        state_in=state_in,
+        cfg=cfg,
+        conf_val_gate=conf_val_gate,
+        risk_state_mult=risk_state_mult,
+    )
+    size_base, research_size_override_payload = _apply_research_bull_high_persistence_min_size_base(
+        cfg=cfg,
+        state_out=state_out,
+        size_base=size_base,
+        research_bull_high_persistence_applied=research_bull_high_persistence_applied,
+        vol_size_mult=vol_size_mult,
     )
     size = float(size_base * combined_mult)
     size_pre_clarity = size
@@ -390,5 +490,15 @@ def apply_sizing(
             risk_state_payload=risk_state_payload,
         )
     )
+    if research_size_override_payload is None:
+        state_out.pop("research_bull_high_persistence_size_override", None)
+    else:
+        state_out["research_bull_high_persistence_size_override"] = research_size_override_payload
+    if current_atr_selective_override_payload is None:
+        state_out.pop("current_atr_selective_high_vol_multiplier_override", None)
+    else:
+        state_out["current_atr_selective_high_vol_multiplier_override"] = (
+            current_atr_selective_override_payload
+        )
 
     return size, conf_val_gate

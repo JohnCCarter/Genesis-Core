@@ -165,6 +165,20 @@ class RegimeUnifiedAliasConfig(RuntimeSection):
     authority_mode: Literal["legacy", "regime_module"] = Field(default="legacy")
 
 
+class ResearchBullHighPersistenceOverrideConfig(RuntimeSection):
+    enabled: bool = Field(default=False)
+    min_persistence: int = Field(default=2, ge=1, le=20)
+    max_probability_gap: float = Field(default=0.06, ge=0.0, le=1.0)
+    min_size_base: float = Field(default=0.0, ge=0.0)
+    require_non_penalized_volatility_for_min_size_base: bool = Field(default=False)
+
+
+class ResearchCurrentATRHighVolMultiplierOverrideConfig(RuntimeSection):
+    enabled: bool = Field(default=False)
+    current_atr_threshold: float = Field(default=0.0, ge=0.0)
+    high_vol_multiplier_override: float = Field(default=1.0, ge=0.0, le=1.0)
+
+
 class MultiTimeframeConfig(RuntimeSection):
     use_htf_block: bool = Field(default=True)
     allow_ltf_override: bool = Field(default=False)
@@ -172,6 +186,12 @@ class MultiTimeframeConfig(RuntimeSection):
     ltf_override_adaptive: LTFOverrideAdaptiveConfig = Field(
         default_factory=LTFOverrideAdaptiveConfig
     )
+    research_bull_high_persistence_override: ResearchBullHighPersistenceOverrideConfig = Field(
+        default_factory=ResearchBullHighPersistenceOverrideConfig
+    )
+    research_current_atr_high_vol_multiplier_override: (
+        ResearchCurrentATRHighVolMultiplierOverrideConfig
+    ) = Field(default_factory=ResearchCurrentATRHighVolMultiplierOverrideConfig)
     htf_selector: HTFSelectorConfig = Field(default_factory=HTFSelectorConfig)
     regime_intelligence: RegimeIntelligenceConfig = Field(default_factory=RegimeIntelligenceConfig)
 

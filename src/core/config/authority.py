@@ -246,6 +246,8 @@ class ConfigAuthority:
                         "allow_ltf_override",
                         "ltf_override_threshold",
                         "ltf_override_adaptive",
+                        "research_bull_high_persistence_override",
+                        "research_current_atr_high_vol_multiplier_override",
                         "htf_selector",
                         "regime_intelligence",
                     }
@@ -275,6 +277,46 @@ class ConfigAuthority:
                                 raise ValueError(
                                     "non_whitelisted_field:ltf_override_adaptive.regime_multipliers"
                                 )
+                    research_override_cfg = v.get("research_bull_high_persistence_override")
+                    if research_override_cfg is not None:
+                        if not isinstance(research_override_cfg, dict):
+                            raise ValueError(
+                                "non_whitelisted_field:research_bull_high_persistence_override"
+                            )
+                        allowed_research_override = {
+                            "enabled",
+                            "min_persistence",
+                            "max_probability_gap",
+                            "min_size_base",
+                            "require_non_penalized_volatility_for_min_size_base",
+                        }
+                        if any(
+                            subk not in allowed_research_override
+                            for subk in research_override_cfg.keys()
+                        ):
+                            raise ValueError(
+                                "non_whitelisted_field:research_bull_high_persistence_override"
+                            )
+                    current_atr_override_cfg = v.get(
+                        "research_current_atr_high_vol_multiplier_override"
+                    )
+                    if current_atr_override_cfg is not None:
+                        if not isinstance(current_atr_override_cfg, dict):
+                            raise ValueError(
+                                "non_whitelisted_field:research_current_atr_high_vol_multiplier_override"
+                            )
+                        allowed_current_atr_override = {
+                            "enabled",
+                            "current_atr_threshold",
+                            "high_vol_multiplier_override",
+                        }
+                        if any(
+                            subk not in allowed_current_atr_override
+                            for subk in current_atr_override_cfg.keys()
+                        ):
+                            raise ValueError(
+                                "non_whitelisted_field:research_current_atr_high_vol_multiplier_override"
+                            )
                     selector_cfg = v.get("htf_selector")
                     if selector_cfg is not None:
                         if not isinstance(selector_cfg, dict):

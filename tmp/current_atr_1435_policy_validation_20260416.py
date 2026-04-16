@@ -29,7 +29,26 @@ from core.config.authority import ConfigAuthority  # noqa: E402
 from core.optimizer.scoring import score_backtest  # noqa: E402
 from core.pipeline import GenesisPipeline  # noqa: E402
 
-HEAD_PIN = "8e23ddb45d08784e8a8a340f83334f5842505e0e"
+HEAD_PIN = "2ee708c9a85a1f3b14dd597b8e2155c5847e91c5"
+PREVIOUS_PACKET_HEAD_PIN = "8e23ddb45d08784e8a8a340f83334f5842505e0e"
+INTERVENING_COMMITS = [
+    {
+        "sha": "f161afe0",
+        "subject": "feat: add execution proxy missingness diagnostics",
+    },
+    {
+        "sha": "2b8c4e69",
+        "subject": "feat: add research-only decision and sizing override seams",
+    },
+    {
+        "sha": "d5264ff4",
+        "subject": "feat: add packeted current-atr research validation tooling",
+    },
+    {
+        "sha": "2ee708c9",
+        "subject": "style: format mcp.json for improved readability",
+    },
+]
 DEFAULT_CANDIDATE_900_CONFIG = (
     ROOT_DIR
     / "results"
@@ -927,6 +946,12 @@ def _build_manifest(
     return {
         "git_sha": git_sha,
         "head_pin": HEAD_PIN,
+        "previous_packet_head_pin": PREVIOUS_PACKET_HEAD_PIN,
+        "intervening_commits_since_previous_packet_pin": INTERVENING_COMMITS,
+        "packet_rebase_note": (
+            "This run is an explicit rebasing/amendment of the packet execution basis from "
+            f"{PREVIOUS_PACKET_HEAD_PIN} to {HEAD_PIN}."
+        ),
         "command_line": [sys.executable, *sys.argv],
         "effective_env": env_values,
         "preflight_git_status_short": pre_git_status_short,

@@ -44,6 +44,17 @@
 
 ## Evidence basis
 
+### Rebased execution basis amendment
+
+- This packet is amended to run on clean HEAD `2ee708c9a85a1f3b14dd597b8e2155c5847e91c5`.
+- Prior packet pin: `8e23ddb45d08784e8a8a340f83334f5842505e0e`.
+- This is not the same execution basis as the original packet draft; results from this run apply to the rebased HEAD above.
+- Intervening commits between the prior pin and the rebased HEAD:
+  - `f161afe0` — `feat: add execution proxy missingness diagnostics`
+  - `2b8c4e69` — `feat: add research-only decision and sizing override seams`
+  - `d5264ff4` — `feat: add packeted current-atr research validation tooling`
+  - `2ee708c9` — `style: format mcp.json for improved readability`
+
 - Prior candidate config anchor:
   - `results/research/fa_v2_adaptation_off/phase15_bull_high_persistence_override/current_atr_selective_900_validation_2026-04-15/candidate_900_cfg.json`
 - Prior dedicated 900 replay-validation skeleton:
@@ -51,8 +62,8 @@
 - Observational discovery evidence:
   - `results/research/fa_v2_adaptation_off/phase15_bull_high_persistence_override/current_atr_900_env_profile_2026-04-16/env_summary.json`
   - `results/research/fa_v2_adaptation_off/phase15_bull_high_persistence_override/current_atr_900_env_profile_2026-04-16/closeout.md`
-- HEAD pin:
-  - `8e23ddb45d08784e8a8a340f83334f5842505e0e`
+- HEAD pin for this amended execution basis:
+  - `2ee708c9a85a1f3b14dd597b8e2155c5847e91c5`
 
 ## Implementation shape
 
@@ -70,7 +81,7 @@ Create one temporary research script:
 
 The script may reuse the structure of the prior `900` replay-validation script, but must remain scoped to this slice.
 
-Before replay starts, the script must verify that `git rev-parse HEAD` resolves to `8e23ddb45d08784e8a8a340f83334f5842505e0e` and fail closed if the working tree is on a different commit.
+Before replay starts, the script must verify that `git rev-parse HEAD` resolves to `2ee708c9a85a1f3b14dd597b8e2155c5847e91c5` and fail closed if the working tree is on a different commit.
 
 Before replay starts, the script must also:
 

@@ -119,6 +119,7 @@ def test_run_execution_proxy_evidence_outputs_proxy_surfaces() -> None:
     first_trade = evidence["trade_proxy_metrics"][0]
     assert first_trade["entry_bar_index"] == 0
     assert first_trade["exit_bar_index"] == 2
+    assert first_trade["trace_final_bar_index"] == 4
     assert first_trade["window_row_count"] == 3
     assert first_trade["observed_price_row_count"] == 3
     assert first_trade["observed_price_coverage_ratio"] == 1.0
@@ -128,6 +129,11 @@ def test_run_execution_proxy_evidence_outputs_proxy_surfaces() -> None:
     assert first_trade["last_observed_proxy_price_bar_index"] == 2
     assert first_trade["exit_bar_proxy_price_present"] is True
     assert first_trade["proxy_window_missingness_class"] == "FULL_WINDOW_PROXY_PRICE_OBSERVED"
+    assert first_trade["exit_bar_is_final_trace_bar"] is False
+    assert first_trade["missing_proxy_price_reaches_trace_boundary"] is False
+    assert (
+        first_trade["proxy_window_missingness_pattern_class"] == "FULL_WINDOW_PROXY_PRICE_OBSERVED"
+    )
     assert first_trade["entry_proxy_price"] == 100.0
     assert first_trade["exit_proxy_price"] == 110.0
     assert first_trade["proxy_mae_price_delta"] == -5.0
@@ -144,6 +150,7 @@ def test_run_execution_proxy_evidence_outputs_proxy_surfaces() -> None:
     second_trade = evidence["trade_proxy_metrics"][1]
     assert second_trade["entry_bar_index"] == 4
     assert second_trade["exit_bar_index"] == 4
+    assert second_trade["trace_final_bar_index"] == 4
     assert second_trade["window_row_count"] == 1
     assert second_trade["observed_price_row_count"] == 1
     assert second_trade["observed_price_coverage_ratio"] == 1.0
@@ -153,6 +160,11 @@ def test_run_execution_proxy_evidence_outputs_proxy_surfaces() -> None:
     assert second_trade["last_observed_proxy_price_bar_index"] == 4
     assert second_trade["exit_bar_proxy_price_present"] is True
     assert second_trade["proxy_window_missingness_class"] == "FULL_WINDOW_PROXY_PRICE_OBSERVED"
+    assert second_trade["exit_bar_is_final_trace_bar"] is True
+    assert second_trade["missing_proxy_price_reaches_trace_boundary"] is False
+    assert (
+        second_trade["proxy_window_missingness_pattern_class"] == "FULL_WINDOW_PROXY_PRICE_OBSERVED"
+    )
     assert second_trade["proxy_mae_price_delta"] == 0.0
     assert second_trade["proxy_mfe_price_delta"] == 0.0
 
@@ -164,6 +176,12 @@ def test_run_execution_proxy_evidence_outputs_proxy_surfaces() -> None:
         "exit_bar_proxy_price_present_count": 2,
         "exit_bar_proxy_price_missing_count": 0,
         "missingness_class_counts": {"FULL_WINDOW_PROXY_PRICE_OBSERVED": 2},
+    }
+    assert evidence["proxy_window_missingness_pattern_summary"] == {
+        "trade_count": 2,
+        "exit_bar_is_final_trace_bar_count": 1,
+        "missing_proxy_price_reaches_trace_boundary_count": 0,
+        "missingness_pattern_class_counts": {"FULL_WINDOW_PROXY_PRICE_OBSERVED": 2},
     }
 
     horizon_summary = evidence["fixed_horizon_summaries"]
@@ -200,6 +218,12 @@ def test_run_execution_proxy_evidence_classifies_interior_proxy_missingness() ->
     assert first_trade["last_observed_proxy_price_bar_index"] == 2
     assert first_trade["exit_bar_proxy_price_present"] is True
     assert first_trade["proxy_window_missingness_class"] == "INTERIOR_PROXY_PRICE_MISSING"
+    assert first_trade["exit_bar_is_final_trace_bar"] is False
+    assert first_trade["missing_proxy_price_reaches_trace_boundary"] is False
+    assert (
+        first_trade["proxy_window_missingness_pattern_class"]
+        == "INTERIOR_PROXY_PRICE_MISSING_WITHIN_TRACE"
+    )
 
 
 def test_run_execution_proxy_evidence_classifies_exit_bar_proxy_missingness() -> None:
@@ -218,6 +242,63 @@ def test_run_execution_proxy_evidence_classifies_exit_bar_proxy_missingness() ->
     assert first_trade["last_observed_proxy_price_bar_index"] == 1
     assert first_trade["exit_bar_proxy_price_present"] is False
     assert first_trade["proxy_window_missingness_class"] == "EXIT_BAR_PROXY_PRICE_MISSING"
+    assert first_trade["exit_bar_is_final_trace_bar"] is False
+    assert first_trade["missing_proxy_price_reaches_trace_boundary"] is False
+    assert (
+        first_trade["proxy_window_missingness_pattern_class"]
+        == "EXIT_BAR_PROXY_PRICE_MISSING_WITHIN_TRACE"
+    )
+
+
+def test_run_execution_proxy_evidence_classifies_exit_bar_missing_at_trace_boundary() -> None:
+    payload = _deep_copy_payload()
+    payload["trade_signatures"] = [payload["trade_signatures"][0]]
+    payload["trace_rows"] = payload["trace_rows"][:3]
+    payload["trace_rows"][2]["fib_phase"] = None
+
+    outputs = run_execution_proxy_evidence(payload, horizons=(1,))
+    evidence = outputs["execution_proxy_evidence.json"]
+    first_trade = evidence["trade_proxy_metrics"][0]
+
+    assert first_trade["trace_final_bar_index"] == 2
+    assert first_trade["exit_bar_is_final_trace_bar"] is True
+    assert first_trade["missing_proxy_price_reaches_trace_boundary"] is True
+    assert first_trade["proxy_window_missingness_class"] == "EXIT_BAR_PROXY_PRICE_MISSING"
+    assert (
+        first_trade["proxy_window_missingness_pattern_class"]
+        == "EXIT_BAR_PROXY_PRICE_MISSING_AT_TRACE_BOUNDARY"
+    )
+
+    assert evidence["proxy_window_missingness_pattern_summary"] == {
+        "trade_count": 1,
+        "exit_bar_is_final_trace_bar_count": 1,
+        "missing_proxy_price_reaches_trace_boundary_count": 1,
+        "missingness_pattern_class_counts": {
+            "EXIT_BAR_PROXY_PRICE_MISSING_AT_TRACE_BOUNDARY": 1,
+        },
+    }
+
+
+def test_run_execution_proxy_evidence_classifies_mixed_missingness_at_trace_boundary() -> None:
+    payload = _deep_copy_payload()
+    payload["trade_signatures"] = [payload["trade_signatures"][0]]
+    payload["trace_rows"] = payload["trace_rows"][:3]
+    payload["trace_rows"][1]["fib_phase"] = None
+    payload["trace_rows"][2]["fib_phase"] = None
+
+    outputs = run_execution_proxy_evidence(payload, horizons=(1,))
+    evidence = outputs["execution_proxy_evidence.json"]
+    first_trade = evidence["trade_proxy_metrics"][0]
+
+    assert first_trade["observed_price_row_count"] == 1
+    assert first_trade["last_observed_proxy_price_bar_index"] == 0
+    assert first_trade["exit_bar_is_final_trace_bar"] is True
+    assert first_trade["missing_proxy_price_reaches_trace_boundary"] is True
+    assert first_trade["proxy_window_missingness_class"] == "EXIT_AND_INTERIOR_PROXY_PRICE_MISSING"
+    assert (
+        first_trade["proxy_window_missingness_pattern_class"]
+        == "EXIT_AND_INTERIOR_PROXY_PRICE_MISSING_AT_TRACE_BOUNDARY"
+    )
 
 
 def test_run_execution_proxy_evidence_same_input_is_repeatable() -> None:
@@ -355,6 +436,12 @@ def test_run_execution_proxy_evidence_sparse_window_omits_exit_proxy_price() -> 
     assert first_trade["last_observed_proxy_price_bar_index"] == 0
     assert first_trade["exit_bar_proxy_price_present"] is False
     assert first_trade["proxy_window_missingness_class"] == "EXIT_AND_INTERIOR_PROXY_PRICE_MISSING"
+    assert first_trade["exit_bar_is_final_trace_bar"] is False
+    assert first_trade["missing_proxy_price_reaches_trace_boundary"] is False
+    assert (
+        first_trade["proxy_window_missingness_pattern_class"]
+        == "EXIT_AND_INTERIOR_PROXY_PRICE_MISSING_WITHIN_TRACE"
+    )
     assert first_trade["exit_proxy_price"] is None
     assert first_trade["exact_exit_proxy_price_status"] == "OMITTED_MISSING_PROXY_PRICE"
     assert first_trade["proxy_mae_price_delta"] == 0.0
@@ -375,6 +462,15 @@ def test_run_execution_proxy_evidence_sparse_window_omits_exit_proxy_price() -> 
         "exit_bar_proxy_price_missing_count": 1,
         "missingness_class_counts": {
             "EXIT_AND_INTERIOR_PROXY_PRICE_MISSING": 1,
+            "FULL_WINDOW_PROXY_PRICE_OBSERVED": 1,
+        },
+    }
+    assert evidence["proxy_window_missingness_pattern_summary"] == {
+        "trade_count": 2,
+        "exit_bar_is_final_trace_bar_count": 1,
+        "missing_proxy_price_reaches_trace_boundary_count": 0,
+        "missingness_pattern_class_counts": {
+            "EXIT_AND_INTERIOR_PROXY_PRICE_MISSING_WITHIN_TRACE": 1,
             "FULL_WINDOW_PROXY_PRICE_OBSERVED": 1,
         },
     }

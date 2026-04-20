@@ -52,6 +52,14 @@ Quick path steps:
 - For audit/removal workflows, enforce one-candidate-per-PR to preserve deterministic traceability.
 - `READY_FOR_REVIEW` may only be claimed when evidence is complete: mode/risk/path, scope IN/OUT, exact gates + outcomes, and relevant selectors/artifacts.
 
+## Controlled dirty research inside RESEARCH
+
+- Inside `RESEARCH`, exploratory evidence-shaping work may use temporary features, approximate labels, incomplete classification, and simple heuristics.
+- This allowance is for isolated research/evidence surfaces only; it is not runtime-validity, production-clean evidence, or decision authority.
+- Such work must remain explicitly marked as exploratory, approximate, and non-authoritative.
+- Such work must not modify runtime/default/authority surfaces or decision-engine behavior.
+- Exploratory evidence must not be presented as phase-faithful labels, runtime readiness, or promotion evidence without a later governed follow-up.
+
 ## Roles and responsibilities
 
 ### Codex 5.3 (Agent + Plan + Doer)

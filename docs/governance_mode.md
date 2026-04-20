@@ -79,6 +79,7 @@ Mode is an active operating constraint, not a decorative banner.
 - Prefer the minimum artifacts/docs needed for traceability.
 - Do not add STRICT-style process unless a strict-only surface is touched or mode re-resolves to `STRICT`.
 - Avoid unnecessary packet proliferation or governance expansion when authority is already clear.
+- Controlled dirty research is allowed only for isolated evidence-surface work inside `RESEARCH`; it is not a separate governance mode.
 
 ### SANDBOX
 
@@ -103,6 +104,14 @@ Mode is an active operating constraint, not a decorative banner.
 - Default behavior must remain unchanged.
 - A parity test must prove identical default behavior.
 - Structural improvements may be proposed.
+
+#### Controlled dirty research inside RESEARCH
+
+- Temporary features, approximate labels, incomplete classification, and simple heuristics are allowed only for isolated exploratory evidence-shaping work.
+- Such work must remain clearly marked as exploratory, approximate, and non-authoritative.
+- Such work must stay outside runtime-authority, decision-engine, default-authority, readiness, and promotion surfaces.
+- Such work must not by itself justify phase-faithful label claims, runtime-readiness claims, or promotion claims.
+- If exploratory work needs to cross from evidence shaping into runtime/default/authority semantics, stop and re-evaluate under the normal governance path.
 
 ### SANDBOX
 

@@ -1,0 +1,85 @@
+{
+  "audit_version": "scpe-ri-v1-no-trade-axis-ceiling-audit-2026-04-20",
+  "axis_ceiling_verdict": {
+    "classification": "blocked_by_external_gate",
+    "full_gate_satisfiable_on_no_trade_axis_alone": false,
+    "reason": "The defensive trade floor remains unsatisfiable on the bounded no-trade continuation-release axis even before churn is considered."
+  },
+  "baseline_recommendation_passthrough": "NEEDS_REVISION",
+  "baseline_recommendation_scope": "observed_replay_quality_only",
+  "branch": "feature/ri-role-map-implementation-2026-03-24",
+  "date": "2026-04-20",
+  "findings": [
+    "The bounded no-trade release axis cannot satisfy the full replay-quality gate on its own under unchanged baseline and first-revision inputs.",
+    "The defensive trade floor remains short by 8 trades even after the first revision, which keeps a separate bottleneck outside the continuation-release axis in place.",
+    "The change-rate ceiling still leaves capacity for at most 7 additional actual policy changes above baseline, so churn is binding but not the only blocker on this axis."
+  ],
+  "first_revision_counterfactual_assessment": "NEEDS_REVISION",
+  "frozen_inputs": {
+    "baseline_replay_manifest": {
+      "path": "results/research/scpe_v1_ri/manifest.json",
+      "sha256": "273f16d3247e71327d15aeecac2ecdbed37238b9133fb7aefe45450a5b59b322"
+    },
+    "baseline_replay_metrics": {
+      "path": "results/research/scpe_v1_ri/replay_metrics.json",
+      "sha256": "f46cc0e1fb0418b6fe8b1759571cb9e967343595c9be85378d09e28492dcfe60"
+    },
+    "first_revision_artifact": {
+      "path": "results/evaluation/scpe_ri_v1_no_trade_release_revision_2026-04-20.json",
+      "sha256": "6423bc2811a0ec7ee137acd5088b2602ea70440c4255cccced4e1024c12c9afe"
+    }
+  },
+  "gate_components": {
+    "actual_policy_change_rate_ceiling": {
+      "axis_classification": "satisfiable",
+      "axis_reason": "Change-rate pressure is binding but controllable by selecting a smaller subset of candidate releases on the same axis.",
+      "baseline_actual_policy_changes": 29,
+      "baseline_status": "satisfied",
+      "baseline_value": 0.2,
+      "comparison": "<=",
+      "first_revision_changed_rows": 10,
+      "max_allowed_actual_policy_changes": 36,
+      "remaining_capacity_above_baseline": 7,
+      "required_release_reduction_to_re-enter_ceiling": 3,
+      "revised_status": "unsatisfied",
+      "revised_value": 0.268966,
+      "threshold": 0.25
+    },
+    "continuation_trade_floor": {
+      "axis_classification": "satisfiable",
+      "axis_reason": "The bounded no-trade release axis directly increases continuation participation and the floor is already satisfied in baseline.",
+      "baseline_status": "satisfied",
+      "baseline_value": 89,
+      "comparison": ">=",
+      "revised_status": "satisfied",
+      "revised_value": 99,
+      "threshold": 10
+    },
+    "defensive_trade_floor": {
+      "axis_classification": "unsatisfiable",
+      "axis_reason": "The bounded no-trade release axis only releases RI_no_trade_policy -> RI_continuation_policy rows, so defensive trade count remains invariant on this axis.",
+      "baseline_status": "unsatisfied",
+      "baseline_value": 2,
+      "comparison": ">=",
+      "revised_status": "unsatisfied",
+      "revised_value": 2,
+      "shortfall_after_revision": 8,
+      "threshold": 10
+    }
+  },
+  "mode": "RESEARCH",
+  "non_authoritative": true,
+  "observational_only": true,
+  "proposed_followup_hypothesis": "A future slice should investigate the defensive-policy scarcity bottleneck separately from the no-trade continuation-release axis.",
+  "proposed_followup_status": "föreslagen",
+  "read_only_inputs_confirmed": true,
+  "recommendation_change": "none",
+  "source_hashes": {
+    "results/evaluation/scpe_ri_v1_no_trade_release_revision_2026-04-20.json": "6423bc2811a0ec7ee137acd5088b2602ea70440c4255cccced4e1024c12c9afe",
+    "results/research/scpe_v1_ri/manifest.json": "273f16d3247e71327d15aeecac2ecdbed37238b9133fb7aefe45450a5b59b322",
+    "results/research/scpe_v1_ri/replay_metrics.json": "f46cc0e1fb0418b6fe8b1759571cb9e967343595c9be85378d09e28492dcfe60",
+    "scripts/analyze/scpe_ri_v1_no_trade_axis_ceiling_audit.py": "9e696166e5db12b290f4d0eb2d7d4d665286de65f8a7df5e141b59b4586a387b"
+  },
+  "status": "no-trade-axis-ceiling-audit-generated",
+  "summary_only": true
+}

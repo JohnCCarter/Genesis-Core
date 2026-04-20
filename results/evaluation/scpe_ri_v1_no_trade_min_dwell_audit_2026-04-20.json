@@ -1,0 +1,182 @@
+{
+  "audit_version": "scpe-ri-v1-no-trade-min-dwell-audit-2026-04-20",
+  "blocked_exit_from_no_trade": {
+    "state_summary": {
+      "avg_action_edge": 0.100385,
+      "avg_bars_since_regime_change": 314.038462,
+      "avg_clarity_score": 29.0,
+      "avg_conf_overall": 0.550192,
+      "clarity_bucket_counts": {
+        "high": 12,
+        "low": 5,
+        "mid": 9
+      },
+      "confidence_bucket_counts": {
+        "high": 15,
+        "low": 4,
+        "mid": 7
+      },
+      "count": 26,
+      "edge_bucket_counts": {
+        "mid": 8,
+        "strong": 13,
+        "weak": 5
+      },
+      "transition_bucket_counts": {
+        "stable": 26
+      },
+      "year_counts": {
+        "2024": 12,
+        "2025": 14
+      },
+      "zone_counts": {
+        "high": 3,
+        "low": 5,
+        "mid": 18
+      }
+    },
+    "switch_reason_counts": {
+      "switch_blocked_by_min_dwell": 26
+    },
+    "veto_reason_counts": {
+      "policy_no_trade": 26
+    }
+  },
+  "blocked_vs_successful_state_delta": {
+    "action_edge": -0.007187,
+    "bars_since_regime_change": -32.032967,
+    "clarity_score": -0.428571,
+    "conf_overall": -0.003594
+  },
+  "branch": "feature/ri-role-map-implementation-2026-03-24",
+  "date": "2026-04-20",
+  "findings": [
+    "No-trade persistence is episodic rather than a single monolith: 14 no-trade segments span 50 rows.",
+    "Rows following a previous no-trade state are dominated by blocked or quiet persistence rather than releases: blocked=26, successful_exit=14, quiet_stay=5.",
+    "Blocked exits from no-trade are explicitly min-dwell bound by construction in this slice: 26 rows match `switch_blocked_by_min_dwell` while staying in `RI_no_trade_policy`.",
+    "Successful exits from no-trade are sparse relative to all rows with previous no-trade: 14 of 50 previous-no-trade rows release to another policy."
+  ],
+  "mode": "RESEARCH",
+  "no_trade_segments": {
+    "length_stats": {
+      "count": 14,
+      "histogram": {
+        "3": 9,
+        "4": 4,
+        "7": 1
+      },
+      "max": 7,
+      "mean": 3.571429,
+      "median": 3,
+      "min": 3
+    },
+    "row_count_total": 50,
+    "segment_count": 14
+  },
+  "non_authoritative": true,
+  "observational_only": true,
+  "previous_no_trade_rows": {
+    "blocked_exit_from_no_trade_count": 26,
+    "blocked_exit_share": 0.52,
+    "count": 50,
+    "other_previous_no_trade_count": 5,
+    "quiet_no_trade_stay_count": 5,
+    "quiet_stay_share": 0.1,
+    "share_of_all_rows": 0.342466,
+    "successful_exit_from_no_trade_count": 14,
+    "successful_exit_share": 0.28
+  },
+  "quiet_no_trade_stay": {
+    "state_summary": {
+      "avg_action_edge": 0.02614,
+      "avg_bars_since_regime_change": 416.0,
+      "avg_clarity_score": 23.6,
+      "avg_conf_overall": 0.51307,
+      "clarity_bucket_counts": {
+        "low": 5
+      },
+      "confidence_bucket_counts": {
+        "low": 5
+      },
+      "count": 5,
+      "edge_bucket_counts": {
+        "weak": 5
+      },
+      "transition_bucket_counts": {
+        "stable": 5
+      },
+      "year_counts": {
+        "2024": 3,
+        "2025": 2
+      },
+      "zone_counts": {
+        "low": 4,
+        "mid": 1
+      }
+    },
+    "veto_reason_counts": {
+      "policy_no_trade": 5
+    }
+  },
+  "recommendation_change_attempted": false,
+  "recommendation_passthrough": "NEEDS_REVISION",
+  "recommendation_scope": "observed_replay_quality_only",
+  "row_count": 146,
+  "source_hashes": {
+    "results/research/scpe_v1_ri/manifest.json": "273f16d3247e71327d15aeecac2ecdbed37238b9133fb7aefe45450a5b59b322",
+    "results/research/scpe_v1_ri/policy_trace.json": "7003d539476726f5e4c77d0f0803e4f879e2fdefcfb6b897a317fe8bcf944337",
+    "results/research/scpe_v1_ri/replay_metrics.json": "f46cc0e1fb0418b6fe8b1759571cb9e967343595c9be85378d09e28492dcfe60",
+    "results/research/scpe_v1_ri/routing_trace.ndjson": "d01ebc7457da902fcdcff93ea78eadf5036be464908a2b45c0cdb7bfb0f61da8",
+    "scripts/analyze/scpe_ri_v1_no_trade_min_dwell_audit.py": "85947923626ae89548e8236f2945df85c55e73c8bb6212cae2d2ac1fc5d6e8e0"
+  },
+  "source_replay_root": "results/research/scpe_v1_ri",
+  "status": "no-trade-min-dwell-audit-generated",
+  "successful_exit_from_no_trade": {
+    "state_summary": {
+      "avg_action_edge": 0.107572,
+      "avg_bars_since_regime_change": 346.071429,
+      "avg_clarity_score": 29.428571,
+      "avg_conf_overall": 0.553786,
+      "clarity_bucket_counts": {
+        "high": 6,
+        "mid": 8
+      },
+      "confidence_bucket_counts": {
+        "high": 10,
+        "mid": 4
+      },
+      "count": 14,
+      "edge_bucket_counts": {
+        "mid": 7,
+        "strong": 7
+      },
+      "transition_bucket_counts": {
+        "stable": 14
+      },
+      "year_counts": {
+        "2024": 7,
+        "2025": 7
+      },
+      "zone_counts": {
+        "low": 4,
+        "mid": 10
+      }
+    },
+    "target_policy_counts": {
+      "RI_continuation_policy": 14
+    },
+    "veto_reason_counts": {
+      "no_veto": 14
+    }
+  },
+  "summary_only": true,
+  "upstream_reference": {
+    "diagnostic_anchor": {
+      "blocked_switch_count": 49,
+      "min_dwell_block_count": 32,
+      "router_selected_no_trade_rows": 50
+    },
+    "replay_manifest_containment_verdict": "PASS",
+    "replay_recommendation": "NEEDS_REVISION"
+  }
+}

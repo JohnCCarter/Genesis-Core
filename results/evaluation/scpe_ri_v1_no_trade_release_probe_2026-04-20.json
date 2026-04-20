@@ -1,0 +1,105 @@
+{
+  "blocked_exit_matches": {
+    "categorical_and_numeric_match_count": 15,
+    "categorical_and_numeric_match_share": 0.576923,
+    "categorical_envelope_match_count": 18,
+    "categorical_envelope_match_share": 0.692308,
+    "numeric_envelope_match_count": 18,
+    "numeric_envelope_match_share": 0.692308,
+    "release_strength_floor_match_count": 13,
+    "release_strength_floor_match_share": 0.5
+  },
+  "blocked_exit_mismatch_reasons": {
+    "clarity_below_success_min": 6,
+    "clarity_bucket_outside_success_support": 5,
+    "confidence_below_success_min": 7,
+    "confidence_bucket_outside_success_support": 4,
+    "edge_below_success_min": 7,
+    "edge_bucket_outside_success_support": 5,
+    "zone_outside_success_support": 3
+  },
+  "branch": "feature/ri-role-map-implementation-2026-03-24",
+  "cohort_counts": {
+    "blocked_exit_from_no_trade": 26,
+    "successful_exit_from_no_trade": 14
+  },
+  "date": "2026-04-20",
+  "findings": [
+    "Blocked no-trade exits remain a material cohort: 26 rows are still held by `switch_blocked_by_min_dwell`.",
+    "Categorical support overlap is high relative to blocked size: 18 of 26 blocked exits sit inside the successful-release categorical envelope.",
+    "Numeric overlap is narrower but still material: 18 of 26 blocked exits sit inside the successful-release min/max numeric envelope.",
+    "Release-strength floor matches remain bounded: 13 of 26 blocked exits are at or above the successful-release medians for clarity, confidence, and edge; 15 satisfy both the categorical and numeric envelope simultaneously."
+  ],
+  "mode": "RESEARCH",
+  "non_authoritative": true,
+  "observational_only": true,
+  "probe_version": "scpe-ri-v1-no-trade-release-probe-2026-04-20",
+  "recommendation_change_attempted": false,
+  "recommendation_passthrough": "NEEDS_REVISION",
+  "recommendation_scope": "observed_replay_quality_only",
+  "source_audit_path": "results/evaluation/scpe_ri_v1_no_trade_min_dwell_audit_2026-04-20.json",
+  "source_hashes": {
+    "results/evaluation/scpe_ri_v1_no_trade_min_dwell_audit_2026-04-20.json": "d19c46550872eb52f214c6299bd1bfd0dc9528ea10540be652f49a21b15f0f9b",
+    "results/research/scpe_v1_ri/manifest.json": "273f16d3247e71327d15aeecac2ecdbed37238b9133fb7aefe45450a5b59b322",
+    "results/research/scpe_v1_ri/replay_metrics.json": "f46cc0e1fb0418b6fe8b1759571cb9e967343595c9be85378d09e28492dcfe60",
+    "results/research/scpe_v1_ri/routing_trace.ndjson": "d01ebc7457da902fcdcff93ea78eadf5036be464908a2b45c0cdb7bfb0f61da8",
+    "scripts/analyze/scpe_ri_v1_no_trade_release_probe.py": "9e6a95841928a641b0515383de0779a5f7a5acde39f018681371d7ced091353d"
+  },
+  "source_replay_root": "results/research/scpe_v1_ri",
+  "status": "no-trade-release-probe-generated",
+  "successful_release_envelope": {
+    "categorical": {
+      "clarity_bucket": [
+        "high",
+        "mid"
+      ],
+      "confidence_bucket": [
+        "high",
+        "mid"
+      ],
+      "edge_bucket": [
+        "mid",
+        "strong"
+      ],
+      "target_policy": [
+        "RI_continuation_policy"
+      ],
+      "transition_bucket": [
+        "stable"
+      ],
+      "zone": [
+        "low",
+        "mid"
+      ]
+    },
+    "numeric": {
+      "action_edge": {
+        "max": 0.173287,
+        "median": 0.100068,
+        "min": 0.078046
+      },
+      "bars_since_regime_change": {
+        "max": 606.0,
+        "median": 373.5,
+        "min": 32.0
+      },
+      "conf_overall": {
+        "max": 0.586643,
+        "median": 0.550034,
+        "min": 0.539023
+      },
+      "ri_clarity_score": {
+        "max": 34.0,
+        "median": 29.0,
+        "min": 27.0
+      }
+    }
+  },
+  "summary_only": true,
+  "upstream_reference": {
+    "audit_blocked_exit_count": 26,
+    "audit_successful_exit_count": 14,
+    "replay_manifest_containment_verdict": "PASS",
+    "replay_recommendation": "NEEDS_REVISION"
+  }
+}

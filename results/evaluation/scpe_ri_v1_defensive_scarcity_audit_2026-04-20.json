@@ -1,0 +1,423 @@
+{
+  "audit_version": "scpe-ri-v1-defensive-scarcity-audit-2026-04-20",
+  "baseline_recommendation_passthrough": "NEEDS_REVISION",
+  "baseline_recommendation_scope": "observed_replay_quality_only",
+  "branch": "feature/ri-role-map-implementation-2026-03-24",
+  "date": "2026-04-20",
+  "fate_bucket_counts": {
+    "other_observed_fates": 10,
+    "retained_continuation_confidence_threshold": 12,
+    "retained_no_trade_min_dwell": 6,
+    "selected_defensive": 2,
+    "selected_defensive_veto_cap": 1,
+    "selected_defensive_veto_force_no_trade": 1
+  },
+  "fate_bucket_examples": {
+    "other_observed_fates": [
+      {
+        "action_edge": 0.039674,
+        "bars_since_regime_change": 525.0,
+        "conf_overall": 0.519837,
+        "final_routed_action": "NONE",
+        "raw_switch_reason": "defensive_transition_state",
+        "ri_clarity_score": 25.0,
+        "row_index": 57,
+        "selected_policy": "RI_no_trade_policy",
+        "switch_reason": "confidence_below_threshold",
+        "timestamp": "2024-11-06T21:00:00",
+        "transition_bucket": "stable",
+        "veto_action": "force_no_trade",
+        "veto_reason": "policy_no_trade",
+        "zone": "mid"
+      },
+      {
+        "action_edge": 0.036946,
+        "bars_since_regime_change": 552.0,
+        "conf_overall": 0.518473,
+        "final_routed_action": "NONE",
+        "raw_switch_reason": "defensive_transition_state",
+        "ri_clarity_score": 24.0,
+        "row_index": 59,
+        "selected_policy": "RI_continuation_policy",
+        "switch_reason": "switch_blocked_by_min_dwell",
+        "timestamp": "2024-11-21T06:00:00",
+        "transition_bucket": "stable",
+        "veto_action": "force_no_trade",
+        "veto_reason": "state_below_veto_floor",
+        "zone": "mid"
+      },
+      {
+        "action_edge": 0.069436,
+        "bars_since_regime_change": 603.0,
+        "conf_overall": 0.534718,
+        "final_routed_action": "NONE",
+        "raw_switch_reason": "defensive_transition_state",
+        "ri_clarity_score": 27.0,
+        "row_index": 68,
+        "selected_policy": "RI_no_trade_policy",
+        "switch_reason": "confidence_below_threshold",
+        "timestamp": "2024-12-21T03:00:00",
+        "transition_bucket": "stable",
+        "veto_action": "force_no_trade",
+        "veto_reason": "policy_no_trade",
+        "zone": "mid"
+      },
+      {
+        "action_edge": 0.053305,
+        "bars_since_regime_change": 34.0,
+        "conf_overall": 0.526652,
+        "final_routed_action": "LONG",
+        "raw_switch_reason": "defensive_transition_state",
+        "ri_clarity_score": 26.0,
+        "row_index": 77,
+        "selected_policy": "RI_continuation_policy",
+        "switch_reason": "switch_blocked_by_min_dwell",
+        "timestamp": "2025-02-04T06:00:00",
+        "transition_bucket": "stable",
+        "veto_action": "pass",
+        "veto_reason": "no_veto",
+        "zone": "mid"
+      },
+      {
+        "action_edge": 0.054008,
+        "bars_since_regime_change": 99.0,
+        "conf_overall": 0.527004,
+        "final_routed_action": "LONG",
+        "raw_switch_reason": "defensive_transition_state",
+        "ri_clarity_score": 26.0,
+        "row_index": 87,
+        "selected_policy": "RI_continuation_policy",
+        "switch_reason": "switch_blocked_by_min_dwell",
+        "timestamp": "2025-03-11T09:00:00",
+        "transition_bucket": "stable",
+        "veto_action": "pass",
+        "veto_reason": "no_veto",
+        "zone": "mid"
+      }
+    ],
+    "retained_continuation_confidence_threshold": [
+      {
+        "action_edge": 0.059002,
+        "bars_since_regime_change": 119.0,
+        "conf_overall": 0.529501,
+        "final_routed_action": "LONG",
+        "raw_switch_reason": "defensive_transition_state",
+        "ri_clarity_score": 26.0,
+        "row_index": 13,
+        "selected_policy": "RI_continuation_policy",
+        "switch_reason": "confidence_below_threshold",
+        "timestamp": "2024-03-22T12:00:00",
+        "transition_bucket": "stable",
+        "veto_action": "pass",
+        "veto_reason": "no_veto",
+        "zone": "low"
+      },
+      {
+        "action_edge": 0.065669,
+        "bars_since_regime_change": 196.0,
+        "conf_overall": 0.532835,
+        "final_routed_action": "LONG",
+        "raw_switch_reason": "defensive_transition_state",
+        "ri_clarity_score": 26.0,
+        "row_index": 23,
+        "selected_policy": "RI_continuation_policy",
+        "switch_reason": "confidence_below_threshold",
+        "timestamp": "2024-05-05T03:00:00",
+        "transition_bucket": "stable",
+        "veto_action": "pass",
+        "veto_reason": "no_veto",
+        "zone": "low"
+      },
+      {
+        "action_edge": 0.063089,
+        "bars_since_regime_change": 292.0,
+        "conf_overall": 0.531544,
+        "final_routed_action": "LONG",
+        "raw_switch_reason": "defensive_transition_state",
+        "ri_clarity_score": 26.0,
+        "row_index": 26,
+        "selected_policy": "RI_continuation_policy",
+        "switch_reason": "confidence_below_threshold",
+        "timestamp": "2024-06-26T03:00:00",
+        "transition_bucket": "stable",
+        "veto_action": "pass",
+        "veto_reason": "no_veto",
+        "zone": "mid"
+      },
+      {
+        "action_edge": 0.056476,
+        "bars_since_regime_change": 414.0,
+        "conf_overall": 0.528238,
+        "final_routed_action": "LONG",
+        "raw_switch_reason": "defensive_transition_state",
+        "ri_clarity_score": 26.0,
+        "row_index": 43,
+        "selected_policy": "RI_continuation_policy",
+        "switch_reason": "confidence_below_threshold",
+        "timestamp": "2024-08-29T06:00:00",
+        "transition_bucket": "stable",
+        "veto_action": "pass",
+        "veto_reason": "no_veto",
+        "zone": "low"
+      },
+      {
+        "action_edge": 0.052171,
+        "bars_since_regime_change": 426.0,
+        "conf_overall": 0.526085,
+        "final_routed_action": "LONG",
+        "raw_switch_reason": "defensive_transition_state",
+        "ri_clarity_score": 25.0,
+        "row_index": 45,
+        "selected_policy": "RI_continuation_policy",
+        "switch_reason": "confidence_below_threshold",
+        "timestamp": "2024-09-04T21:00:00",
+        "transition_bucket": "stable",
+        "veto_action": "pass",
+        "veto_reason": "no_veto",
+        "zone": "mid"
+      }
+    ],
+    "retained_no_trade_min_dwell": [
+      {
+        "action_edge": 0.050576,
+        "bars_since_regime_change": 81.0,
+        "conf_overall": 0.525288,
+        "final_routed_action": "NONE",
+        "raw_switch_reason": "defensive_transition_state",
+        "ri_clarity_score": 25.0,
+        "row_index": 7,
+        "selected_policy": "RI_no_trade_policy",
+        "switch_reason": "switch_blocked_by_min_dwell",
+        "timestamp": "2024-02-28T00:00:00",
+        "transition_bucket": "stable",
+        "veto_action": "force_no_trade",
+        "veto_reason": "policy_no_trade",
+        "zone": "mid"
+      },
+      {
+        "action_edge": 0.047484,
+        "bars_since_regime_change": 144.0,
+        "conf_overall": 0.523742,
+        "final_routed_action": "NONE",
+        "raw_switch_reason": "defensive_transition_state",
+        "ri_clarity_score": 25.0,
+        "row_index": 16,
+        "selected_policy": "RI_no_trade_policy",
+        "switch_reason": "switch_blocked_by_min_dwell",
+        "timestamp": "2024-04-05T09:00:00",
+        "transition_bucket": "stable",
+        "veto_action": "force_no_trade",
+        "veto_reason": "policy_no_trade",
+        "zone": "mid"
+      },
+      {
+        "action_edge": 0.037526,
+        "bars_since_regime_change": 478.0,
+        "conf_overall": 0.518763,
+        "final_routed_action": "NONE",
+        "raw_switch_reason": "defensive_transition_state",
+        "ri_clarity_score": 24.0,
+        "row_index": 55,
+        "selected_policy": "RI_no_trade_policy",
+        "switch_reason": "switch_blocked_by_min_dwell",
+        "timestamp": "2024-10-05T15:00:00",
+        "transition_bucket": "stable",
+        "veto_action": "force_no_trade",
+        "veto_reason": "policy_no_trade",
+        "zone": "low"
+      },
+      {
+        "action_edge": 0.042158,
+        "bars_since_regime_change": 21.0,
+        "conf_overall": 0.521079,
+        "final_routed_action": "NONE",
+        "raw_switch_reason": "defensive_transition_state",
+        "ri_clarity_score": 25.0,
+        "row_index": 74,
+        "selected_policy": "RI_no_trade_policy",
+        "switch_reason": "switch_blocked_by_min_dwell",
+        "timestamp": "2025-01-28T06:00:00",
+        "transition_bucket": "stable",
+        "veto_action": "force_no_trade",
+        "veto_reason": "policy_no_trade",
+        "zone": "mid"
+      },
+      {
+        "action_edge": 0.046062,
+        "bars_since_regime_change": 125.0,
+        "conf_overall": 0.523031,
+        "final_routed_action": "NONE",
+        "raw_switch_reason": "defensive_transition_state",
+        "ri_clarity_score": 25.0,
+        "row_index": 90,
+        "selected_policy": "RI_no_trade_policy",
+        "switch_reason": "switch_blocked_by_min_dwell",
+        "timestamp": "2025-03-23T21:00:00",
+        "transition_bucket": "stable",
+        "veto_action": "force_no_trade",
+        "veto_reason": "policy_no_trade",
+        "zone": "mid"
+      }
+    ],
+    "selected_defensive": [
+      {
+        "action_edge": 0.047792,
+        "bars_since_regime_change": 1.0,
+        "conf_overall": 0.523896,
+        "final_routed_action": "NONE",
+        "raw_switch_reason": "transition_pressure_detected",
+        "ri_clarity_score": 25.0,
+        "row_index": 1,
+        "selected_policy": "RI_defensive_transition_policy",
+        "switch_reason": "transition_pressure_detected",
+        "timestamp": "2024-01-16T00:00:00",
+        "transition_bucket": "acute",
+        "veto_action": "force_no_trade",
+        "veto_reason": "state_below_veto_floor",
+        "zone": "low"
+      },
+      {
+        "action_edge": 0.07073,
+        "bars_since_regime_change": 5.0,
+        "conf_overall": 0.535365,
+        "final_routed_action": "LONG",
+        "raw_switch_reason": "defensive_transition_state",
+        "ri_clarity_score": 27.0,
+        "row_index": 2,
+        "selected_policy": "RI_defensive_transition_policy",
+        "switch_reason": "defensive_transition_state",
+        "timestamp": "2024-01-17T12:00:00",
+        "transition_bucket": "recent",
+        "veto_action": "cap",
+        "veto_reason": "defensive_transition_cap",
+        "zone": "low"
+      }
+    ],
+    "selected_defensive_veto_cap": [
+      {
+        "action_edge": 0.07073,
+        "bars_since_regime_change": 5.0,
+        "conf_overall": 0.535365,
+        "final_routed_action": "LONG",
+        "raw_switch_reason": "defensive_transition_state",
+        "ri_clarity_score": 27.0,
+        "row_index": 2,
+        "selected_policy": "RI_defensive_transition_policy",
+        "switch_reason": "defensive_transition_state",
+        "timestamp": "2024-01-17T12:00:00",
+        "transition_bucket": "recent",
+        "veto_action": "cap",
+        "veto_reason": "defensive_transition_cap",
+        "zone": "low"
+      }
+    ],
+    "selected_defensive_veto_force_no_trade": [
+      {
+        "action_edge": 0.047792,
+        "bars_since_regime_change": 1.0,
+        "conf_overall": 0.523896,
+        "final_routed_action": "NONE",
+        "raw_switch_reason": "transition_pressure_detected",
+        "ri_clarity_score": 25.0,
+        "row_index": 1,
+        "selected_policy": "RI_defensive_transition_policy",
+        "switch_reason": "transition_pressure_detected",
+        "timestamp": "2024-01-16T00:00:00",
+        "transition_bucket": "acute",
+        "veto_action": "force_no_trade",
+        "veto_reason": "state_below_veto_floor",
+        "zone": "low"
+      }
+    ]
+  },
+  "findings": [
+    "Defensive scarcity starts downstream of raw eligibility: 30 rows resolve to raw defensive targets, but only 2 resolve to observed defensive selection.",
+    "The largest observed fate bucket for raw defensive candidates is retained continuation (17 rows), dominated by `confidence_below_threshold` rather than by raw-target absence.",
+    "A second material bucket remains in no-trade (11 rows), dominated by `switch_blocked_by_min_dwell`, which shows that defensive scarcity is also shaped by stability controls rather than pure state rarity."
+  ],
+  "frozen_inputs": {
+    "entry_rows": {
+      "path": "results/research/ri_advisory_environment_fit/phase3_phasec_evidence_capture_v2_2026-04-17/entry_rows.ndjson",
+      "sha256": "a8712bf723444269576fa5fc8363b7c7d680b654fe79ded8cc6dd17df5c6857a"
+    },
+    "replay_manifest": {
+      "path": "results/research/scpe_v1_ri/manifest.json",
+      "sha256": "273f16d3247e71327d15aeecac2ecdbed37238b9133fb7aefe45450a5b59b322"
+    },
+    "replay_metrics": {
+      "path": "results/research/scpe_v1_ri/replay_metrics.json",
+      "sha256": "f46cc0e1fb0418b6fe8b1759571cb9e967343595c9be85378d09e28492dcfe60"
+    },
+    "replay_script_reference": {
+      "path": "scripts/analyze/scpe_ri_v1_router_replay.py",
+      "sha256": "6f9d93f26ab5544a51cd1546f68f405596ad82e5341dbe8c352eba049b462b06"
+    },
+    "routing_trace": {
+      "path": "results/research/scpe_v1_ri/routing_trace.ndjson",
+      "sha256": "d01ebc7457da902fcdcff93ea78eadf5036be464908a2b45c0cdb7bfb0f61da8"
+    }
+  },
+  "mode": "RESEARCH",
+  "non_authoritative": true,
+  "observational_only": true,
+  "observed_selected_policy_counts": {
+    "RI_continuation_policy": 17,
+    "RI_defensive_transition_policy": 2,
+    "RI_no_trade_policy": 11
+  },
+  "observed_switch_reason_counts": {
+    "confidence_below_threshold": 17,
+    "defensive_transition_state": 1,
+    "switch_blocked_by_min_dwell": 11,
+    "transition_pressure_detected": 1
+  },
+  "observed_veto_reason_counts": {
+    "defensive_transition_cap": 1,
+    "no_veto": 13,
+    "policy_no_trade": 11,
+    "state_below_veto_floor": 5
+  },
+  "proposed_followup_hypothesis": "A future slice should separately test whether defensive scarcity is more sensitive to threshold gating or to stability-control retention on raw defensive candidates.",
+  "proposed_followup_status": "föreslagen",
+  "raw_defensive_candidate_summary": {
+    "avg_action_edge": 0.052487,
+    "avg_bars_since_regime_change": 252.466667,
+    "avg_clarity_score": 25.5,
+    "avg_conf_overall": 0.526244,
+    "count": 30,
+    "raw_reason_counts": {
+      "defensive_transition_state": 29,
+      "transition_pressure_detected": 1
+    },
+    "transition_bucket_counts": {
+      "acute": 1,
+      "recent": 1,
+      "stable": 28
+    },
+    "zone_counts": {
+      "low": 13,
+      "mid": 17
+    }
+  },
+  "read_only_inputs_confirmed": true,
+  "recommendation_change": "none",
+  "scarcity_origin": {
+    "primary_observed_bottlenecks": [
+      "retained_continuation_confidence_threshold",
+      "retained_no_trade_min_dwell"
+    ],
+    "raw_target_rarity": false,
+    "selection_or_stability_suppression": true,
+    "veto_suppression_present": true
+  },
+  "source_hashes": {
+    "results/research/ri_advisory_environment_fit/phase3_phasec_evidence_capture_v2_2026-04-17/entry_rows.ndjson": "a8712bf723444269576fa5fc8363b7c7d680b654fe79ded8cc6dd17df5c6857a",
+    "results/research/scpe_v1_ri/manifest.json": "273f16d3247e71327d15aeecac2ecdbed37238b9133fb7aefe45450a5b59b322",
+    "results/research/scpe_v1_ri/replay_metrics.json": "f46cc0e1fb0418b6fe8b1759571cb9e967343595c9be85378d09e28492dcfe60",
+    "results/research/scpe_v1_ri/routing_trace.ndjson": "d01ebc7457da902fcdcff93ea78eadf5036be464908a2b45c0cdb7bfb0f61da8",
+    "scripts/analyze/scpe_ri_v1_defensive_scarcity_audit.py": "614332a7aa9f5fbef9f7cc6c832b7a59a2bc75f609b41453d9cc37c75eca4e50",
+    "scripts/analyze/scpe_ri_v1_router_replay.py": "6f9d93f26ab5544a51cd1546f68f405596ad82e5341dbe8c352eba049b462b06"
+  },
+  "status": "defensive-scarcity-audit-generated",
+  "summary_only": true
+}

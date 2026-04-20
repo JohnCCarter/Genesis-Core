@@ -1,0 +1,431 @@
+{
+  "baseline_recommendation_passthrough": "NEEDS_REVISION",
+  "baseline_recommendation_scope": "observed_replay_quality_only",
+  "baseline_summary": {
+    "observational_metrics": {
+      "per_policy": {
+        "RI_continuation_policy": {
+          "average_loss": -23.827866,
+          "average_win": 46.555814,
+          "profit_factor": 1.594971,
+          "row_count": 93,
+          "trade_count": 89,
+          "winrate": 0.449438
+        },
+        "RI_defensive_transition_policy": {
+          "average_loss": -13.951459,
+          "average_win": null,
+          "profit_factor": 0.0,
+          "row_count": 3,
+          "trade_count": 2,
+          "winrate": 0.0
+        },
+        "RI_no_trade_policy": {
+          "average_loss": null,
+          "average_win": null,
+          "profit_factor": null,
+          "row_count": 50,
+          "trade_count": 0,
+          "winrate": null
+        }
+      },
+      "per_year": {
+        "2024": {
+          "average_loss": -18.666026,
+          "average_win": 48.934437,
+          "profit_factor": 2.016598,
+          "row_count": 72,
+          "trade_count": 46,
+          "winrate": 0.434783
+        },
+        "2025": {
+          "average_loss": -28.406069,
+          "average_win": 44.177192,
+          "profit_factor": 1.244162,
+          "row_count": 74,
+          "trade_count": 45,
+          "winrate": 0.444444
+        }
+      }
+    },
+    "recommendation_passthrough": "NEEDS_REVISION",
+    "recommendation_scope": "observed_replay_quality_only",
+    "routing_metrics": {
+      "actual_policy_change_count": 29,
+      "actual_policy_change_rate": 0.2,
+      "average_dwell_by_policy": {
+        "RI_continuation_policy": 6.2,
+        "RI_defensive_transition_policy": 3,
+        "RI_no_trade_policy": 3.571429
+      },
+      "blocked_switch_count": 49,
+      "blocked_switch_rate": 0.337931,
+      "no_trade_rate": 0.376712,
+      "policy_selection_frequency": {
+        "RI_continuation_policy": 93,
+        "RI_defensive_transition_policy": 3,
+        "RI_no_trade_policy": 50
+      },
+      "proposed_switch_count": 78,
+      "proposed_switch_rate": 0.537931,
+      "row_count": 146,
+      "time_share_by_policy": {
+        "RI_continuation_policy": 0.636986,
+        "RI_defensive_transition_policy": 0.020548,
+        "RI_no_trade_policy": 0.342466
+      },
+      "veto_rate": 0.438356
+    }
+  },
+  "branch": "feature/ri-role-map-implementation-2026-03-24",
+  "canonical_replay_root_unchanged": true,
+  "changed_rows": [
+    {
+      "action_edge": 0.117315,
+      "bars_since_regime_change": 32.0,
+      "baseline_final_routed_action": "NONE",
+      "baseline_selected_policy": "RI_no_trade_policy",
+      "baseline_switch_reason": "switch_blocked_by_min_dwell",
+      "clarity_bucket": "high",
+      "conf_overall": 0.558657,
+      "confidence_bucket": "high",
+      "edge_bucket": "strong",
+      "revised_final_routed_action": "LONG",
+      "revised_selected_policy": "RI_continuation_policy",
+      "revised_switch_reason": "stable_continuation_state",
+      "ri_clarity_score": 30.0,
+      "row_index": 6,
+      "timestamp": "2024-02-01T09:00:00",
+      "transition_bucket": "stable",
+      "zone": "mid"
+    },
+    {
+      "action_edge": 0.148777,
+      "bars_since_regime_change": 379.0,
+      "baseline_final_routed_action": "NONE",
+      "baseline_selected_policy": "RI_no_trade_policy",
+      "baseline_switch_reason": "switch_blocked_by_min_dwell",
+      "clarity_bucket": "high",
+      "conf_overall": 0.574388,
+      "confidence_bucket": "high",
+      "edge_bucket": "strong",
+      "revised_final_routed_action": "LONG",
+      "revised_selected_policy": "RI_continuation_policy",
+      "revised_switch_reason": "stable_continuation_state",
+      "ri_clarity_score": 33.0,
+      "row_index": 39,
+      "timestamp": "2024-08-11T18:00:00",
+      "transition_bucket": "stable",
+      "zone": "mid"
+    },
+    {
+      "action_edge": 0.139875,
+      "bars_since_regime_change": 448.0,
+      "baseline_final_routed_action": "NONE",
+      "baseline_selected_policy": "RI_no_trade_policy",
+      "baseline_switch_reason": "switch_blocked_by_min_dwell",
+      "clarity_bucket": "high",
+      "conf_overall": 0.569937,
+      "confidence_bucket": "high",
+      "edge_bucket": "strong",
+      "revised_final_routed_action": "LONG",
+      "revised_selected_policy": "RI_continuation_policy",
+      "revised_switch_reason": "stable_continuation_state",
+      "ri_clarity_score": 32.0,
+      "row_index": 49,
+      "timestamp": "2024-09-16T06:00:00",
+      "transition_bucket": "stable",
+      "zone": "mid"
+    },
+    {
+      "action_edge": 0.107779,
+      "bars_since_regime_change": 484.0,
+      "baseline_final_routed_action": "NONE",
+      "baseline_selected_policy": "RI_no_trade_policy",
+      "baseline_switch_reason": "switch_blocked_by_min_dwell",
+      "clarity_bucket": "high",
+      "conf_overall": 0.55389,
+      "confidence_bucket": "high",
+      "edge_bucket": "strong",
+      "revised_final_routed_action": "LONG",
+      "revised_selected_policy": "RI_continuation_policy",
+      "revised_switch_reason": "stable_continuation_state",
+      "ri_clarity_score": 30.0,
+      "row_index": 56,
+      "timestamp": "2024-10-09T18:00:00",
+      "transition_bucket": "stable",
+      "zone": "mid"
+    },
+    {
+      "action_edge": 0.129651,
+      "bars_since_regime_change": 86.0,
+      "baseline_final_routed_action": "NONE",
+      "baseline_selected_policy": "RI_no_trade_policy",
+      "baseline_switch_reason": "switch_blocked_by_min_dwell",
+      "clarity_bucket": "high",
+      "conf_overall": 0.564825,
+      "confidence_bucket": "high",
+      "edge_bucket": "strong",
+      "revised_final_routed_action": "LONG",
+      "revised_selected_policy": "RI_continuation_policy",
+      "revised_switch_reason": "stable_continuation_state",
+      "ri_clarity_score": 31.0,
+      "row_index": 83,
+      "timestamp": "2025-03-04T12:00:00",
+      "transition_bucket": "stable",
+      "zone": "mid"
+    },
+    {
+      "action_edge": 0.137396,
+      "bars_since_regime_change": 92.0,
+      "baseline_final_routed_action": "NONE",
+      "baseline_selected_policy": "RI_no_trade_policy",
+      "baseline_switch_reason": "switch_blocked_by_min_dwell",
+      "clarity_bucket": "high",
+      "conf_overall": 0.568698,
+      "confidence_bucket": "high",
+      "edge_bucket": "strong",
+      "revised_final_routed_action": "LONG",
+      "revised_selected_policy": "RI_continuation_policy",
+      "revised_switch_reason": "stable_continuation_state",
+      "ri_clarity_score": 32.0,
+      "row_index": 84,
+      "timestamp": "2025-03-08T00:00:00",
+      "transition_bucket": "stable",
+      "zone": "mid"
+    },
+    {
+      "action_edge": 0.133368,
+      "bars_since_regime_change": 104.0,
+      "baseline_final_routed_action": "NONE",
+      "baseline_selected_policy": "RI_no_trade_policy",
+      "baseline_switch_reason": "switch_blocked_by_min_dwell",
+      "clarity_bucket": "high",
+      "conf_overall": 0.566684,
+      "confidence_bucket": "high",
+      "edge_bucket": "strong",
+      "revised_final_routed_action": "LONG",
+      "revised_selected_policy": "RI_continuation_policy",
+      "revised_switch_reason": "stable_continuation_state",
+      "ri_clarity_score": 31.0,
+      "row_index": 89,
+      "timestamp": "2025-03-13T21:00:00",
+      "transition_bucket": "stable",
+      "zone": "low"
+    },
+    {
+      "action_edge": 0.114348,
+      "bars_since_regime_change": 531.0,
+      "baseline_final_routed_action": "NONE",
+      "baseline_selected_policy": "RI_no_trade_policy",
+      "baseline_switch_reason": "switch_blocked_by_min_dwell",
+      "clarity_bucket": "high",
+      "conf_overall": 0.557174,
+      "confidence_bucket": "high",
+      "edge_bucket": "strong",
+      "revised_final_routed_action": "LONG",
+      "revised_selected_policy": "RI_continuation_policy",
+      "revised_switch_reason": "stable_continuation_state",
+      "ri_clarity_score": 30.0,
+      "row_index": 140,
+      "timestamp": "2025-11-22T00:00:00",
+      "transition_bucket": "stable",
+      "zone": "mid"
+    },
+    {
+      "action_edge": 0.133813,
+      "bars_since_regime_change": 590.0,
+      "baseline_final_routed_action": "NONE",
+      "baseline_selected_policy": "RI_no_trade_policy",
+      "baseline_switch_reason": "switch_blocked_by_min_dwell",
+      "clarity_bucket": "high",
+      "conf_overall": 0.566907,
+      "confidence_bucket": "high",
+      "edge_bucket": "strong",
+      "revised_final_routed_action": "LONG",
+      "revised_selected_policy": "RI_continuation_policy",
+      "revised_switch_reason": "stable_continuation_state",
+      "ri_clarity_score": 31.0,
+      "row_index": 144,
+      "timestamp": "2025-12-23T06:00:00",
+      "transition_bucket": "stable",
+      "zone": "mid"
+    },
+    {
+      "action_edge": 0.104288,
+      "bars_since_regime_change": 597.0,
+      "baseline_final_routed_action": "NONE",
+      "baseline_selected_policy": "RI_no_trade_policy",
+      "baseline_switch_reason": "switch_blocked_by_min_dwell",
+      "clarity_bucket": "mid",
+      "conf_overall": 0.552144,
+      "confidence_bucket": "high",
+      "edge_bucket": "strong",
+      "revised_final_routed_action": "LONG",
+      "revised_selected_policy": "RI_continuation_policy",
+      "revised_switch_reason": "stable_continuation_state",
+      "ri_clarity_score": 29.0,
+      "row_index": 145,
+      "timestamp": "2025-12-26T21:00:00",
+      "transition_bucket": "stable",
+      "zone": "mid"
+    }
+  ],
+  "containment": {
+    "allowed_candidate_count": 10,
+    "changed_outside_allowed_count": 0,
+    "changed_outside_allowed_rows": [],
+    "changed_row_count": 10
+  },
+  "counterfactual_only": true,
+  "date": "2026-04-20",
+  "delta_summary": {
+    "actual_policy_change_count_delta": 10,
+    "blocked_switch_count_delta": -10,
+    "continuation_trade_count_delta": 10,
+    "no_trade_rate_delta": -0.068493
+  },
+  "findings": [
+    "Selective early-release changed exactly 10 baseline-blocked no-trade continuation candidates and no rows outside the allowed frozen subset.",
+    "Blocked switch count moved by -10 relative to baseline, while the canonical replay root remained unchanged.",
+    "No-trade rate moved by -0.068493 under the local counterfactual override.",
+    "Continuation-policy trade count moved by 10 under the counterfactual replay-quality view."
+  ],
+  "mode": "RESEARCH",
+  "non_authoritative": true,
+  "observational_only": true,
+  "release_probe_binding": {
+    "categorical_support": {
+      "clarity_bucket": [
+        "high",
+        "mid"
+      ],
+      "confidence_bucket": [
+        "high",
+        "mid"
+      ],
+      "edge_bucket": [
+        "mid",
+        "strong"
+      ],
+      "target_policy": [
+        "RI_continuation_policy"
+      ],
+      "transition_bucket": [
+        "stable"
+      ],
+      "zone": [
+        "low",
+        "mid"
+      ]
+    },
+    "numeric_support": {
+      "action_edge": {
+        "max": 0.173287,
+        "median": 0.100068,
+        "min": 0.078046
+      },
+      "bars_since_regime_change": {
+        "max": 606.0,
+        "median": 373.5,
+        "min": 32.0
+      },
+      "conf_overall": {
+        "max": 0.586643,
+        "median": 0.550034,
+        "min": 0.539023
+      },
+      "ri_clarity_score": {
+        "max": 34.0,
+        "median": 29.0,
+        "min": 27.0
+      }
+    },
+    "path": "results/evaluation/scpe_ri_v1_no_trade_release_probe_2026-04-20.json",
+    "sha256": "ec2691cea7b464f1c63f9d6ad5ee1eee81548b0f6b170c8ace26d1e864a94623"
+  },
+  "revised_summary": {
+    "counterfactual_replay_quality_assessment": "NEEDS_REVISION",
+    "observational_metrics": {
+      "per_policy": {
+        "RI_continuation_policy": {
+          "average_loss": -23.920261,
+          "average_win": 50.500473,
+          "profit_factor": 1.987012,
+          "row_count": 103,
+          "trade_count": 99,
+          "winrate": 0.484848
+        },
+        "RI_defensive_transition_policy": {
+          "average_loss": -13.951459,
+          "average_win": null,
+          "profit_factor": 0.0,
+          "row_count": 3,
+          "trade_count": 2,
+          "winrate": 0.0
+        },
+        "RI_no_trade_policy": {
+          "average_loss": null,
+          "average_win": null,
+          "profit_factor": null,
+          "row_count": 40,
+          "trade_count": 0,
+          "winrate": null
+        }
+      }
+    },
+    "routing_metrics": {
+      "actual_policy_change_count": 39,
+      "actual_policy_change_rate": 0.268966,
+      "blocked_switch_count": 39,
+      "no_trade_rate": 0.308219,
+      "policy_selection_frequency": {
+        "RI_continuation_policy": 103,
+        "RI_defensive_transition_policy": 3,
+        "RI_no_trade_policy": 40
+      },
+      "proposed_switch_count": 78,
+      "row_count": 146
+    },
+    "veto_metrics": {
+      "action_counts": {
+        "cap": 1,
+        "force_no_trade": 45,
+        "pass": 92,
+        "reduce": 8
+      },
+      "reason_counts": {
+        "defensive_transition_cap": 1,
+        "high_zone_continuation_cap": 8,
+        "no_veto": 92,
+        "policy_no_trade": 40,
+        "state_below_veto_floor": 5
+      }
+    }
+  },
+  "revision_rule": {
+    "baseline_switch_blocked_must_be": true,
+    "baseline_switch_reason_must_be": "switch_blocked_by_min_dwell",
+    "categorical_support_required": true,
+    "median_floor_required_for": [
+      "ri_clarity_score",
+      "conf_overall",
+      "action_edge"
+    ],
+    "non_propagating_local_override": true,
+    "numeric_support_required": true,
+    "previous_policy_must_be": "RI_no_trade_policy",
+    "raw_target_policy_must_be": "RI_continuation_policy"
+  },
+  "revision_version": "scpe-ri-v1-no-trade-release-revision-2026-04-20",
+  "runtime_unchanged": true,
+  "source_hashes": {
+    "results/evaluation/scpe_ri_v1_no_trade_release_probe_2026-04-20.json": "ec2691cea7b464f1c63f9d6ad5ee1eee81548b0f6b170c8ace26d1e864a94623",
+    "results/research/ri_advisory_environment_fit/phase3_phasec_evidence_capture_v2_2026-04-17/entry_rows.ndjson": "a8712bf723444269576fa5fc8363b7c7d680b654fe79ded8cc6dd17df5c6857a",
+    "results/research/scpe_v1_ri/manifest.json": "273f16d3247e71327d15aeecac2ecdbed37238b9133fb7aefe45450a5b59b322",
+    "results/research/scpe_v1_ri/replay_metrics.json": "f46cc0e1fb0418b6fe8b1759571cb9e967343595c9be85378d09e28492dcfe60",
+    "results/research/scpe_v1_ri/routing_trace.ndjson": "d01ebc7457da902fcdcff93ea78eadf5036be464908a2b45c0cdb7bfb0f61da8",
+    "scripts/analyze/scpe_ri_v1_no_trade_release_revision.py": "b8f0a0c56d6d46d9ded2db48184cfa5428ac09dbff333e68af6b597888b1184e"
+  },
+  "status": "no-trade-release-revision-generated"
+}

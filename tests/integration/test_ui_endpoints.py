@@ -107,6 +107,22 @@ def test_ui_strategy_evaluate_emits_ri_runtime_observability_only_with_opt_in():
     }
 
 
+def test_ui_page_contains_default_off_ri_runtime_observability_consumer_controls():
+    c = TestClient(app)
+
+    response = c.get("/ui")
+
+    assert response.status_code == 200
+    assert 'id="ri_observability_opt_in"' in response.text
+    assert "SCPE RI runtime-observability (opt-in)" in response.text
+    assert "function buildRuntimeObservabilityState()" in response.text
+    assert "const state = {};" in response.text
+    assert "if (el('ri_observability_opt_in')?.checked)" in response.text
+    assert "state: buildRuntimeObservabilityState()" in response.text
+    assert "scpe_ri_v1: true" in response.text
+    assert 'id="ri_observability_opt_in" checked' not in response.text
+
+
 def test_ui_route_server_and_canonical_identity():
     import core.api.ui as ui_api
     import core.server as srv

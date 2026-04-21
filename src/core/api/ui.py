@@ -68,6 +68,11 @@ def ui_page() -> str:
     <textarea id="candles">{\n  "symbol": "tETHUSD",\n  "open": [1,2,3,4],\n  "high": [2,3,4,5],\n  "low": [0.5,1.5,2.5,3.5],\n  "close": [1.5,2.5,3.5,4.5],\n  "volume": [10,11,12,13]\n}</textarea>
     <div id="candles_err" style="color:#b91c1c"></div>
 
+    <div style="display:flex; align-items:center; gap:8px; font-size:12px; color:#374151;">
+      <input type="checkbox" id="ri_observability_opt_in" />
+      <label for="ri_observability_opt_in">SCPE RI runtime-observability (opt-in)</label>
+    </div>
+
     <div style="display:flex; gap:8px;">
       <button id="run">Kör pipeline</button>
 
@@ -267,7 +272,7 @@ def ui_page() -> str:
           policy: getJSON('policy','policy_err'),
           configs: getJSON('configs','configs_err'),
           candles: getJSON('candles','candles_err'),
-          state: {}
+          state: buildRuntimeObservabilityState()
         };
         const r = await fetch('/strategy/evaluate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
         const data = await r.json();
@@ -293,11 +298,20 @@ def ui_page() -> str:
         const a = data.result?.action;
         const sz = data.meta?.decision?.size;
         const reasons = data.meta?.decision?.reasons || [];
+        const riObs = data.meta?.observability?.scpe_ri_v1;
         el('summary').innerHTML = `<div>Action: <b>${a}</b> &nbsp; Size: <b>${(sz??0).toFixed(4)}</b></div>` +
-          (reasons.length ? `<div>Reasons: ${reasons.map(r=>`<span>[${r}]</span>`).join(' ')}</div>` : '');
+          (reasons.length ? `<div>Reasons: ${reasons.map(r=>`<span>[${r}]</span>`).join(' ')}</div>` : '') +
+          (riObs ? `<div>RI obs: authority=<b>${riObs.authoritative_regime}</b> shadow=<b>${riObs.shadow_regime}</b> mismatch=<b>${riObs.regime_mismatch}</b></div>` : '');
         lastData = data;
       } catch { el('summary').textContent = ''; }
     };
+    function buildRuntimeObservabilityState() {
+      const state = {};
+      if (el('ri_observability_opt_in')?.checked) {
+        state.observability = { scpe_ri_v1: true };
+      }
+      return state;
+    }
     const save = () => {
       localStorage.setItem('ui_policy', el('policy').value);
       localStorage.setItem('ui_configs', el('configs').value);
@@ -410,7 +424,7 @@ def ui_page() -> str:
           policy: getJSON('policy','policy_err'),
           configs: getJSON('configs','configs_err'),
           candles: getJSON('candles','candles_err'),
-          state: {}
+          state: buildRuntimeObservabilityState()
         };
       } catch { return; }
       const r = await fetch('/strategy/evaluate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });

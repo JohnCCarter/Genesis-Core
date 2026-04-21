@@ -119,6 +119,33 @@ def _deep_merge(base: dict, override: dict) -> dict:
     return deep_merge_dicts(base, override)
 
 
+def _ri_runtime_observability_enabled(state: dict[str, Any] | None) -> bool:
+    if not isinstance(state, dict):
+        return False
+    observability = state.get("observability")
+    if not isinstance(observability, dict):
+        return False
+    return bool(observability.get("scpe_ri_v1"))
+
+
+def _build_ri_runtime_observability_payload(
+    *,
+    shadow_regime_observability: dict[str, Any],
+) -> dict[str, Any]:
+    return {
+        "family_tag": "ri",
+        "lane": "runtime_observability",
+        "observational_only": True,
+        "decision_input": False,
+        "enabled_via": "state.observability.scpe_ri_v1",
+        "authority_mode": shadow_regime_observability.get("authority_mode"),
+        "authority_mode_source": shadow_regime_observability.get("authority_mode_source"),
+        "authoritative_regime": shadow_regime_observability.get("authority"),
+        "shadow_regime": shadow_regime_observability.get("shadow"),
+        "regime_mismatch": shadow_regime_observability.get("mismatch"),
+    }
+
+
 def compute_htf_regime(
     htf_fib_data: dict[str, Any] | None,
     current_price: float | None = None,
@@ -188,6 +215,7 @@ def evaluate_pipeline(
     policy = dict(policy or {})
     configs = dict(configs or {})
     state = dict(state or {})
+    ri_runtime_observability_enabled = _ri_runtime_observability_enabled(state)
 
     metrics_enabled = _metrics_enabled()
     if metrics_enabled:
@@ -469,4 +497,9 @@ def evaluate_pipeline(
             }
         },
     }
+    if ri_runtime_observability_enabled:
+        shadow_regime_observability = meta["observability"]["shadow_regime"]
+        meta["observability"]["scpe_ri_v1"] = _build_ri_runtime_observability_payload(
+            shadow_regime_observability=shadow_regime_observability,
+        )
     return result, meta

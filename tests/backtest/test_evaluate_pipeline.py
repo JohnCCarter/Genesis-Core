@@ -31,6 +31,89 @@ def test_evaluate_pipeline_returns_meta(
     assert "champion" in meta
 
 
+def test_evaluate_pipeline_ri_runtime_observability_default_off_parity(
+    monkeypatch,
+    sample_policy: dict[str, Any],
+    sample_configs: dict[str, Any],
+    small_candle_history: dict[str, Any],
+) -> None:
+    from core.strategy import evaluate as ev
+    from core.strategy import regime_unified as ru
+
+    monkeypatch.setattr(ru, "detect_regime_unified", lambda *_a, **_k: "ranging")
+    monkeypatch.setattr(ev, "_detect_shadow_regime_from_regime_module", lambda *_a, **_k: "bull")
+
+    result_absent, meta_absent = ev.evaluate_pipeline(
+        small_candle_history,
+        policy=sample_policy,
+        configs=deepcopy(sample_configs),
+        state={},
+    )
+    result_false, meta_false = ev.evaluate_pipeline(
+        small_candle_history,
+        policy=sample_policy,
+        configs=deepcopy(sample_configs),
+        state={"observability": {"scpe_ri_v1": False}},
+    )
+
+    assert result_absent == result_false
+    decision_absent = {k: v for k, v in meta_absent["decision"].items() if k != "state_out"}
+    decision_false = {k: v for k, v in meta_false["decision"].items() if k != "state_out"}
+    assert {
+        "decision": decision_absent,
+        "observability": meta_absent["observability"],
+    } == {
+        "decision": decision_false,
+        "observability": meta_false["observability"],
+    }
+    assert "scpe_ri_v1" not in meta_absent["observability"]
+    assert "scpe_ri_v1" not in meta_false["observability"]
+
+
+def test_evaluate_pipeline_ri_runtime_observability_payload_opt_in_shape(
+    monkeypatch,
+    sample_policy: dict[str, Any],
+    sample_configs: dict[str, Any],
+    small_candle_history: dict[str, Any],
+) -> None:
+    from core.strategy import evaluate as ev
+    from core.strategy import regime_unified as ru
+
+    monkeypatch.setattr(ru, "detect_regime_unified", lambda *_a, **_k: "ranging")
+    monkeypatch.setattr(ev, "_detect_shadow_regime_from_regime_module", lambda *_a, **_k: "bull")
+
+    _result, meta = ev.evaluate_pipeline(
+        small_candle_history,
+        policy=sample_policy,
+        configs=deepcopy(sample_configs),
+        state={"observability": {"scpe_ri_v1": True}},
+    )
+
+    shadow_regime = meta["observability"]["shadow_regime"]
+    assert shadow_regime == {
+        "authoritative_source": "regime_unified.detect_regime_unified",
+        "shadow_source": "regime.detect_regime_from_candles",
+        "authority_mode": "legacy",
+        "authority_mode_source": "default_legacy",
+        "authority": "ranging",
+        "shadow": "bull",
+        "mismatch": True,
+        "decision_input": False,
+    }
+    assert meta["observability"]["scpe_ri_v1"] == {
+        "family_tag": "ri",
+        "lane": "runtime_observability",
+        "observational_only": True,
+        "decision_input": False,
+        "enabled_via": "state.observability.scpe_ri_v1",
+        "authority_mode": "legacy",
+        "authority_mode_source": "default_legacy",
+        "authoritative_regime": "ranging",
+        "shadow_regime": "bull",
+        "regime_mismatch": True,
+    }
+
+
 def test_volume_score_cap_ratio_below_one_does_not_penalize_normal_volume() -> None:
     candles = {"volume": [100.0] * 60}
 

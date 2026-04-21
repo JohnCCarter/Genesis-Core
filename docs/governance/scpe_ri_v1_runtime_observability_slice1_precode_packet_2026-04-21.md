@@ -35,7 +35,7 @@ It remains in `RESEARCH`, must preserve `NO BEHAVIOR CHANGE`, and must stay expl
   - `src/core/strategy/evaluate.py`
   - `tests/backtest/test_evaluate_pipeline.py`
   - `tests/integration/test_ui_endpoints.py`
-  - one implementation report under `docs/governance/` after the slice completes
+  - `docs/governance/scpe_ri_v1_runtime_observability_slice1_implementation_report_2026-04-21.md`
 - **Scope OUT:**
   - `src/core/api/config.py`
   - `src/core/server.py`
@@ -54,7 +54,7 @@ It remains in `RESEARCH`, must preserve `NO BEHAVIOR CHANGE`, and must stay expl
   - `src/core/strategy/evaluate.py`
   - `tests/backtest/test_evaluate_pipeline.py`
   - `tests/integration/test_ui_endpoints.py`
-  - one implementation report under `docs/governance/`
+  - `docs/governance/scpe_ri_v1_runtime_observability_slice1_implementation_report_2026-04-21.md`
 - **Max files touched:** `5`
 
 ### Exact opt-in boundary
@@ -126,7 +126,7 @@ The future implementation may do only the following:
 
 ### Required gates
 
-1. `pre-commit run --files docs/governance/scpe_ri_v1_runtime_observability_slice1_precode_packet_2026-04-21.md src/core/strategy/evaluate.py tests/backtest/test_evaluate_pipeline.py tests/integration/test_ui_endpoints.py`
+1. `pre-commit run --files docs/governance/scpe_ri_v1_runtime_observability_slice1_precode_packet_2026-04-21.md docs/governance/scpe_ri_v1_runtime_observability_slice1_implementation_report_2026-04-21.md src/core/strategy/evaluate.py tests/backtest/test_evaluate_pipeline.py tests/integration/test_ui_endpoints.py`
 2. `C:/Users/fa06662/Projects/Genesis-Core/.venv/Scripts/python.exe -m pytest tests/backtest/test_evaluate_pipeline.py`
 3. `C:/Users/fa06662/Projects/Genesis-Core/.venv/Scripts/python.exe -m pytest tests/integration/test_ui_endpoints.py::test_ui_get_and_evaluate_post tests/integration/test_ui_endpoints.py::test_strategy_evaluate_delegates_with_current_defaults`
 4. `C:/Users/fa06662/Projects/Genesis-Core/.venv/Scripts/python.exe -m pytest tests/backtest/test_backtest_determinism_smoke.py::test_backtest_engine_is_deterministic_across_two_runs`
@@ -147,7 +147,7 @@ The future implementation may do only the following:
 
 - one reviewable pre-code packet
 - one bounded implementation diff on the exact files above only
-- one implementation report under `docs/governance/` with gate outcomes and default-parity evidence
+- `docs/governance/scpe_ri_v1_runtime_observability_slice1_implementation_report_2026-04-21.md` with gate outcomes and default-parity evidence
 
 ## Why this is the smallest honest implementation slice
 

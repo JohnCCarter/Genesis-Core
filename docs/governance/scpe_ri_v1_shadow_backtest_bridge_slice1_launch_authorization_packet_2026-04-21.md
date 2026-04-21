@@ -226,15 +226,15 @@ Implication:
 
 ## Exact preconditions and current status
 
-| Check                                        | Required state | Current status in this session     | Why it matters                                                        |
-| -------------------------------------------- | -------------- | ---------------------------------- | --------------------------------------------------------------------- |
-| Working tree clean                           | Green          | Red                                | provenance and exact-state launch discipline must remain reviewable   |
-| Exact bridge anchor identity                 | Green          | Green                              | launch subject must remain exact and fingerprint-stable               |
-| Current repo-visible CLI flag support        | Green          | Green                              | descriptive command targets must still match current repo entrypoints |
-| Descriptive control/shadow command-target shape | Green          | Green at repo-visible CLI surface only | later launch must remain no-code in shape                          |
-| Full bounded write containment               | Green          | Red / not yet explicitly verified  | launch may not leak writes outside bounded surfaces                   |
-| Ledger-root derivation re-verification       | Green          | Red / not yet explicitly verified  | launch evidence may not rely on assumption alone                      |
-| RI-only observational boundary retained      | Green          | Green                              | slice must stay below runtime integration and paper coupling          |
+| Check                                           | Required state | Current status in this session         | Why it matters                                                        |
+| ----------------------------------------------- | -------------- | -------------------------------------- | --------------------------------------------------------------------- |
+| Working tree clean                              | Green          | Red                                    | provenance and exact-state launch discipline must remain reviewable   |
+| Exact bridge anchor identity                    | Green          | Green                                  | launch subject must remain exact and fingerprint-stable               |
+| Current repo-visible CLI flag support           | Green          | Green                                  | descriptive command targets must still match current repo entrypoints |
+| Descriptive control/shadow command-target shape | Green          | Green at repo-visible CLI surface only | later launch must remain no-code in shape                             |
+| Full bounded write containment                  | Green          | Red / not yet explicitly verified      | launch may not leak writes outside bounded surfaces                   |
+| Ledger-root derivation re-verification          | Green          | Red / not yet explicitly verified      | launch evidence may not rely on assumption alone                      |
+| RI-only observational boundary retained         | Green          | Green                                  | slice must stay below runtime integration and paper coupling          |
 
 ## Research-only run boundary
 

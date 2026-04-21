@@ -39,11 +39,6 @@ if str(ROOT_DIR) not in sys.path:
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-# Ensure config package resolvable
-CONFIG_DIR = ROOT_DIR / "config"
-CONFIG_DIR.mkdir(exist_ok=True)
-(CONFIG_DIR / "__init__.py").touch(exist_ok=True)
-
 from core.backtest.metrics import calculate_metrics, print_metrics_report  # noqa: E402
 from core.backtest.intelligence_shadow import BacktestIntelligenceShadowRecorder  # noqa: E402
 from core.backtest.trade_logger import TradeLogger  # noqa: E402

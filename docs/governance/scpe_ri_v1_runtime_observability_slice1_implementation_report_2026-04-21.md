@@ -63,12 +63,12 @@ Default-off proof for the bounded slice is established by:
 ### File-scoped validation
 
 - `pre-commit run --files docs/governance/scpe_ri_v1_runtime_observability_slice1_precode_packet_2026-04-21.md docs/governance/scpe_ri_v1_runtime_observability_slice1_implementation_report_2026-04-21.md src/core/strategy/evaluate.py tests/backtest/test_evaluate_pipeline.py tests/integration/test_ui_endpoints.py`
-   - PASS — `black`, `ruff`, secret scan, large-file check, merge-conflict check, EOF fixer, and trailing-whitespace check all green on the final rerun
+  - PASS — `black`, `ruff`, secret scan, large-file check, merge-conflict check, EOF fixer, and trailing-whitespace check all green on the final rerun
 
 ### Post-diff audit
 
 - `Opus 4.6 Governance Reviewer`
-   - APPROVED — bounded opt-in/additive implementation accepted as no-behavior-change for the reviewed slice; no code remediation requested
+  - APPROVED — bounded opt-in/additive implementation accepted as no-behavior-change for the reviewed slice; no code remediation requested
 
 ## Residual risks
 

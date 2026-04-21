@@ -6,6 +6,7 @@ Tests candle-close detection and idempotency logic without network calls.
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 from unittest.mock import Mock, patch
 
@@ -21,6 +22,7 @@ from paper_trading_runner import (
     fetch_latest_candle,
     load_state,
     map_policy_symbol_to_test_symbol,
+    parse_args,
     save_state,
     submit_paper_order,
     validate_live_paper_guardrails,
@@ -312,6 +314,166 @@ def test_evaluate_strategy_omits_configs_when_runtime_unavailable(
     }
     assert payload["candles"] == candles
     assert payload["state"] == state_in
+
+
+def test_parse_args_accepts_ri_paper_shadow_default_off_to_on(monkeypatch):
+    monkeypatch.setattr(sys, "argv", ["paper_trading_runner.py", "--ri-paper-shadow"])
+
+    args = parse_args()
+
+    assert args.ri_paper_shadow is True
+    assert args.dry_run is True
+    assert args.live_paper is False
+
+
+def test_parse_args_rejects_ri_paper_shadow_with_live_paper(monkeypatch):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["paper_trading_runner.py", "--ri-paper-shadow", "--live-paper"],
+    )
+
+    with pytest.raises(SystemExit):
+        parse_args()
+
+
+@patch("paper_trading_runner.fetch_candles_window")
+def test_evaluate_strategy_adds_ri_paper_shadow_opt_in_when_enabled(
+    mock_fetch_candles_window, tmp_path
+):
+    candles = {
+        "open": [1.0, 1.1],
+        "high": [1.2, 1.3],
+        "low": [0.9, 1.0],
+        "close": [1.1, 1.2],
+        "volume": [10.0, 11.0],
+    }
+    state_in = {"cooldown_remaining": 3}
+    mock_fetch_candles_window.return_value = candles
+
+    runtime_resp = Mock()
+    runtime_resp.raise_for_status = Mock()
+    runtime_resp.json.return_value = {"cfg": {"thresholds": {}}, "hash": "x", "version": 1}
+
+    eval_resp = {"ok": True, "result": {"action": "NONE"}}
+    evaluate_resp = Mock()
+    evaluate_resp.raise_for_status = Mock()
+    evaluate_resp.json.return_value = eval_resp
+
+    client = Mock(spec=httpx.Client)
+    client.get.return_value = runtime_resp
+    client.post.return_value = evaluate_resp
+    logger = Mock()
+
+    config = RunnerConfig(
+        host="localhost",
+        port=8000,
+        symbol="tBTCUSD",
+        timeframe="1h",
+        poll_interval=1,
+        dry_run=True,
+        live_paper=False,
+        log_dir=tmp_path,
+        state_file=tmp_path / "runner_state.json",
+        ri_paper_shadow=True,
+    )
+
+    out = evaluate_strategy(
+        config,
+        candle_ts_ms=1704067200000,
+        state_in=state_in,
+        client=client,
+        logger=logger,
+    )
+
+    assert out == eval_resp
+    payload = client.post.call_args.kwargs["json"]
+    assert payload["state"] == {
+        "cooldown_remaining": 3,
+        "observability": {"scpe_ri_v1": True},
+    }
+
+
+@patch("paper_trading_runner.fetch_candles_window")
+def test_evaluate_strategy_rejects_ri_paper_shadow_with_live_paper(
+    mock_fetch_candles_window, tmp_path
+):
+    mock_fetch_candles_window.return_value = {
+        "open": [1.0, 1.1],
+        "high": [1.2, 1.3],
+        "low": [0.9, 1.0],
+        "close": [1.1, 1.2],
+        "volume": [10.0, 11.0],
+    }
+
+    config = RunnerConfig(
+        host="localhost",
+        port=8000,
+        symbol="tBTCUSD",
+        timeframe="1h",
+        poll_interval=1,
+        dry_run=False,
+        live_paper=True,
+        log_dir=tmp_path,
+        state_file=tmp_path / "runner_state.json",
+        ri_paper_shadow=True,
+    )
+
+    client = Mock(spec=httpx.Client)
+    logger = Mock()
+
+    with pytest.raises(SystemExit) as exc:
+        evaluate_strategy(
+            config,
+            candle_ts_ms=1704067200000,
+            state_in={"cooldown_remaining": 3},
+            client=client,
+            logger=logger,
+        )
+
+    assert exc.value.code == 1
+    client.post.assert_not_called()
+
+
+@patch("paper_trading_runner.fetch_candles_window")
+def test_evaluate_strategy_rejects_existing_observability_state_when_ri_paper_shadow_enabled(
+    mock_fetch_candles_window, tmp_path
+):
+    mock_fetch_candles_window.return_value = {
+        "open": [1.0, 1.1],
+        "high": [1.2, 1.3],
+        "low": [0.9, 1.0],
+        "close": [1.1, 1.2],
+        "volume": [10.0, 11.0],
+    }
+
+    config = RunnerConfig(
+        host="localhost",
+        port=8000,
+        symbol="tBTCUSD",
+        timeframe="1h",
+        poll_interval=1,
+        dry_run=True,
+        live_paper=False,
+        log_dir=tmp_path,
+        state_file=tmp_path / "runner_state.json",
+        ri_paper_shadow=True,
+    )
+
+    client = Mock(spec=httpx.Client)
+    logger = Mock()
+
+    with pytest.raises(SystemExit) as exc:
+        evaluate_strategy(
+            config,
+            candle_ts_ms=1704067200000,
+            state_in={"observability": {"existing": True}},
+            client=client,
+            logger=logger,
+        )
+
+    assert exc.value.code == 1
+    client.post.assert_not_called()
 
 
 # --- Idempotency Tests ---
@@ -642,6 +804,81 @@ def test_build_decision_context_none_includes_observability_fields(tmp_path):
     assert out["computed_size"] == pytest.approx(0.0)
     assert out["position_state"] == "flat"
     assert out["gating_reason"] == "EV_NEG"
+    assert "ri_paper_shadow" not in out
+
+
+def test_build_decision_context_includes_bounded_ri_paper_shadow_summary(tmp_path):
+    from paper_trading_runner import RunnerConfig
+
+    config = RunnerConfig(
+        host="localhost",
+        port=8000,
+        symbol="tBTCUSD",
+        timeframe="1h",
+        poll_interval=1,
+        dry_run=True,
+        live_paper=False,
+        log_dir=tmp_path,
+        state_file=tmp_path / "state.json",
+        ri_paper_shadow=True,
+    )
+    state = RunnerState()
+
+    eval_resp = {
+        "result": {
+            "action": "NONE",
+            "signal": None,
+            "confidence": {"overall": 0.42},
+        },
+        "meta": {
+            "champion": {
+                "source": "config\\strategy\\champions\\tBTCUSD_1h.json",
+            },
+            "decision": {
+                "reasons": ["EV_NEG"],
+                "size": 0.0,
+            },
+            "observability": {
+                "scpe_ri_v1": {
+                    "family_tag": "ri",
+                    "lane": "runtime_observability",
+                    "observational_only": True,
+                    "decision_input": False,
+                    "enabled_via": "state.observability.scpe_ri_v1",
+                    "authority_mode": "legacy",
+                    "authority_mode_source": "default_legacy",
+                    "authoritative_regime": "balanced",
+                    "shadow_regime": "balanced",
+                    "regime_mismatch": False,
+                    "unexpected": "must_not_leak",
+                }
+            },
+        },
+    }
+
+    out = build_decision_context(
+        config,
+        state,
+        candle_ts=1704067200000,
+        action="NONE",
+        signal=None,
+        confidence=0.42,
+        eval_response=eval_resp,
+    )
+
+    assert out["ri_paper_shadow"] == {
+        "family_tag": "ri",
+        "lane": "runtime_observability",
+        "observational_only": True,
+        "decision_input": False,
+        "enabled_via": "state.observability.scpe_ri_v1",
+        "authority_mode": "legacy",
+        "authority_mode_source": "default_legacy",
+        "authoritative_regime": "balanced",
+        "shadow_regime": "balanced",
+        "regime_mismatch": False,
+    }
+    assert "unexpected" not in out["ri_paper_shadow"]
 
 
 def test_run_loop_live_paper_fails_closed_on_eval_failure(tmp_path):

@@ -21,10 +21,10 @@ It is `precode-only / candidate-only` and does **not** by itself authorize imple
 
 ### Skill Usage
 
-- No exact repo-local skill matches governance-packet authoring for this step.
-- `python_engineering` may be used only as future implementation quality discipline.
+- Repo-local `paper_runner_ops` applies to this execution-adjacent runner surface as fail-fast and drift-discipline guardrail, even though this slice remains dry-run-only and below operations approval.
+- Repo-local `python_engineering` applies to the future bounded Python implementation and test work.
 - `repo_clean_refactor` may be used only as future scope/minimal-diff discipline.
-- Any dedicated paper-shadow governance skill remains `föreslagen`, not `införd`.
+- No exact repo-local skill matches governance-packet authoring itself; any dedicated governance-packet skill remains `föreslagen`, not `införd`.
 
 ### Done criteria
 
@@ -102,6 +102,9 @@ The runner may consume or log only these existing fields from `meta["observabili
 - `shadow_regime`
 - `regime_mismatch`
 
+Any future RI paper-shadow summary must remain local to runner-side dry-run observability only, such as local decision-context logging for the runner process.
+It must not widen or mutate any outbound request payload, `/paper/submit` payload, persisted runner state schema, or other external surface.
+
 The runner must not derive or influence:
 
 - order side
@@ -138,6 +141,9 @@ The future implementation may do only the following:
 1. `pre-commit run --files docs/governance/scpe_ri_v1_paper_shadow_slice1_precode_packet_2026-04-21.md docs/governance/scpe_ri_v1_paper_shadow_slice1_implementation_report_2026-04-21.md scripts/paper_trading_runner.py tests/integration/test_paper_trading_runner.py`
 2. `C:/Users/fa06662/Projects/Genesis-Core/.venv/Scripts/python.exe -m pytest tests/integration/test_paper_trading_runner.py tests/integration/test_paper_trading_runner_candles_window_ordering.py`
 3. `C:/Users/fa06662/Projects/Genesis-Core/.venv/Scripts/python.exe -m pytest tests/backtest/test_evaluate_pipeline.py::test_evaluate_pipeline_ri_runtime_observability_default_off_parity tests/backtest/test_evaluate_pipeline.py::test_evaluate_pipeline_ri_runtime_observability_payload_opt_in_shape`
+4. `C:/Users/fa06662/Projects/Genesis-Core/.venv/Scripts/python.exe -m pytest tests/backtest/test_backtest_determinism_smoke.py::test_backtest_engine_is_deterministic_across_two_runs`
+5. `C:/Users/fa06662/Projects/Genesis-Core/.venv/Scripts/python.exe -m pytest tests/utils/test_features_asof_cache_key_deterministic.py::test_compute_candles_hash_is_deterministic_across_pyhashseed`
+6. `C:/Users/fa06662/Projects/Genesis-Core/.venv/Scripts/python.exe -m pytest tests/governance/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable`
 
 ### Stop Conditions
 

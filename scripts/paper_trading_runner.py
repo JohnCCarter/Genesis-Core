@@ -54,10 +54,25 @@ class RunnerConfig:
     live_paper: bool
     log_dir: Path
     state_file: Path
+    ri_paper_shadow: bool = False
 
     @property
     def api_base(self) -> str:
         return f"http://{self.host}:{self.port}"
+
+
+RI_PAPER_SHADOW_ALLOWLIST = (
+    "family_tag",
+    "lane",
+    "observational_only",
+    "decision_input",
+    "enabled_via",
+    "authority_mode",
+    "authority_mode_source",
+    "authoritative_regime",
+    "shadow_regime",
+    "regime_mismatch",
+)
 
 
 def _safe_resolve(path: Path) -> Path:
@@ -211,6 +226,78 @@ def build_runner_contract_snapshot(
     if runtime_cfg_version is not None:
         snapshot["runtime_cfg_version"] = int(runtime_cfg_version)
     return snapshot
+
+
+def validate_ri_paper_shadow_guardrails(
+    config: RunnerConfig,
+    state_in: dict | None = None,
+) -> list[str]:
+    """Validate dry-run-only guardrails for the bounded RI paper-shadow lane."""
+    if not config.ri_paper_shadow:
+        return []
+
+    issues: list[str] = []
+    if config.live_paper or not config.dry_run:
+        issues.append("--ri-paper-shadow kräver dry-run och får inte kombineras med --live-paper.")
+
+    if state_in is not None and isinstance(state_in, dict) and "observability" in state_in:
+        issues.append(
+            "state_in innehåller redan observability; stoppa och packet om i stället för att merge:a tvetydig authority."
+        )
+
+    return issues
+
+
+def enforce_ri_paper_shadow_guardrails(
+    config: RunnerConfig,
+    logger: logging.Logger | None = None,
+    state_in: dict | None = None,
+) -> None:
+    """Fail-fast enforcement for the bounded RI paper-shadow lane."""
+    issues = validate_ri_paper_shadow_guardrails(config, state_in=state_in)
+    if not issues:
+        return
+
+    for issue in issues:
+        msg = f"FATAL RI paper-shadow guardrail violation: {issue}"
+        if logger is not None:
+            logger.error(msg)
+        else:
+            print(msg, file=sys.stderr)
+    raise SystemExit(1)
+
+
+def _build_evaluate_state(
+    config: RunnerConfig,
+    state_in: dict | None,
+    logger: logging.Logger,
+) -> dict:
+    """Build outbound runner state for /strategy/evaluate without widening authority."""
+    if not config.ri_paper_shadow:
+        return state_in if isinstance(state_in, dict) else {}
+
+    enforce_ri_paper_shadow_guardrails(config, logger=logger, state_in=state_in)
+
+    state = dict(state_in) if isinstance(state_in, dict) else {}
+    state["observability"] = {"scpe_ri_v1": True}
+    return state
+
+
+def _extract_ri_paper_shadow_summary(eval_response: dict | None) -> dict[str, Any] | None:
+    """Return the allowlisted RI paper-shadow summary for local runner observability only."""
+    if not isinstance(eval_response, dict):
+        return None
+
+    meta = eval_response.get("meta") if isinstance(eval_response.get("meta"), dict) else {}
+    observability = meta.get("observability") if isinstance(meta.get("observability"), dict) else {}
+    ri_payload = (
+        observability.get("scpe_ri_v1") if isinstance(observability.get("scpe_ri_v1"), dict) else {}
+    )
+    if not ri_payload:
+        return None
+
+    summary = {key: ri_payload[key] for key in RI_PAPER_SHADOW_ALLOWLIST if key in ri_payload}
+    return summary or None
 
 
 def _ensure_quarantine_state(state: RunnerState) -> dict:
@@ -400,6 +487,10 @@ def build_decision_context(
         "quarantine_active": bool(quarantine.get("active", False)),
         "quarantine_blocked_orders": int(quarantine.get("blocked_orders", 0)),
     }
+
+    ri_paper_shadow = _extract_ri_paper_shadow_summary(eval_response)
+    if ri_paper_shadow is not None:
+        decision_context["ri_paper_shadow"] = ri_paper_shadow
 
     if str(action).upper() == "NONE":
         decision_context.update(
@@ -619,7 +710,7 @@ def evaluate_strategy(
         payload = {
             "policy": {"symbol": config.symbol, "timeframe": config.timeframe},
             "candles": candles,
-            "state": state_in or {},
+            "state": _build_evaluate_state(config, state_in, logger),
         }
         runtime_cfg = _load_runtime_cfg(config, client, logger)
         if isinstance(runtime_cfg, dict):
@@ -853,6 +944,7 @@ def _maybe_reset_pipeline_state(
 def run_loop(config: RunnerConfig, logger: logging.Logger, state: RunnerState) -> None:
     """Main polling loop."""
     enforce_live_paper_guardrails(config, logger)
+    enforce_ri_paper_shadow_guardrails(config, logger)
 
     logger.info("=" * 80)
     logger.info("Paper Trading Runner Started")
@@ -1181,6 +1273,12 @@ def parse_args() -> argparse.Namespace:
         help="Live paper trading: submit real orders (default: false)",
     )
     parser.add_argument(
+        "--ri-paper-shadow",
+        action="store_true",
+        default=False,
+        help="Dry-run-only SCPE RI paper-shadow observability (default: off)",
+    )
+    parser.add_argument(
         "--log-dir",
         type=Path,
         default=Path("results/paper_live/logs"),
@@ -1202,6 +1300,9 @@ def parse_args() -> argparse.Namespace:
     # Mutual exclusivity
     if args.dry_run and args.live_paper:
         parser.error("Cannot set both --dry-run and --live-paper. Choose one.")
+
+    if args.ri_paper_shadow and (args.live_paper or not args.dry_run):
+        parser.error("--ri-paper-shadow kräver --dry-run och får inte kombineras med --live-paper.")
 
     return args
 
@@ -1266,10 +1367,12 @@ def main():
         live_paper=args.live_paper,
         log_dir=args.log_dir,
         state_file=args.state_file,
+        ri_paper_shadow=args.ri_paper_shadow,
     )
 
     # Enforce mode/path guardrails before initializing runtime resources.
     enforce_live_paper_guardrails(config, logger=None)
+    enforce_ri_paper_shadow_guardrails(config, logger=None)
 
     # Load state
     state = load_state(config.state_file, logger)

@@ -63,7 +63,8 @@ This slice adds a summary-only, observational-only, non-authoritative audit surf
    - `replay_manifest_after = 273f16d3247e71327d15aeecac2ecdbed37238b9133fb7aefe45450a5b59b322`
    - Result: `PASS`
 5. `pre-commit run --files docs/governance/scpe_ri_v1_no_trade_min_dwell_audit_packet_2026-04-20.md docs/governance/scpe_ri_v1_no_trade_min_dwell_audit_report_2026-04-20.md scripts/analyze/scpe_ri_v1_no_trade_min_dwell_audit.py results/evaluation/scpe_ri_v1_no_trade_min_dwell_audit_2026-04-20.json`
-  - Result: `PASS`
+
+- Result: `PASS`
 
 ## Boundary proof
 

@@ -87,15 +87,18 @@ Any follow-up paths are `föreslagen` hypotheses only and are out of scope for t
    - Result: `PASS` (`2 passed`)
    - Note: these selectors are unchanged-surface guardrails only; they do not validate the new audit logic directly.
 4. Determinism + replay-root immutability proof:
-  - reran `C:/Users/fa06662/Projects/Genesis-Core/.venv/Scripts/python.exe scripts/analyze/scpe_ri_v1_no_trade_axis_ceiling_audit.py`
-  - `json_before = 5b9b78ec85f691afdae89207311b828ee34ccf489ac8d78fd61926d0cd8f8858`
-  - `json_after = 5b9b78ec85f691afdae89207311b828ee34ccf489ac8d78fd61926d0cd8f8858`
-  - report hash matched before/after rerun
-  - `replay_manifest_before = 273f16d3247e71327d15aeecac2ecdbed37238b9133fb7aefe45450a5b59b322`
-  - `replay_manifest_after = 273f16d3247e71327d15aeecac2ecdbed37238b9133fb7aefe45450a5b59b322`
-  - Result: `PASS`
+
+- reran `C:/Users/fa06662/Projects/Genesis-Core/.venv/Scripts/python.exe scripts/analyze/scpe_ri_v1_no_trade_axis_ceiling_audit.py`
+- `json_before = 5b9b78ec85f691afdae89207311b828ee34ccf489ac8d78fd61926d0cd8f8858`
+- `json_after = 5b9b78ec85f691afdae89207311b828ee34ccf489ac8d78fd61926d0cd8f8858`
+- report hash matched before/after rerun
+- `replay_manifest_before = 273f16d3247e71327d15aeecac2ecdbed37238b9133fb7aefe45450a5b59b322`
+- `replay_manifest_after = 273f16d3247e71327d15aeecac2ecdbed37238b9133fb7aefe45450a5b59b322`
+- Result: `PASS`
+
 5. `pre-commit run --files docs/governance/scpe_ri_v1_no_trade_axis_ceiling_audit_packet_2026-04-20.md docs/governance/scpe_ri_v1_no_trade_axis_ceiling_audit_report_2026-04-20.md scripts/analyze/scpe_ri_v1_no_trade_axis_ceiling_audit.py results/evaluation/scpe_ri_v1_no_trade_axis_ceiling_audit_2026-04-20.json`
-  - Result: `PASS`
+
+- Result: `PASS`
 
 ## Boundary proof
 

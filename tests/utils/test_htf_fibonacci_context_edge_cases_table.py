@@ -119,3 +119,33 @@ def test_get_htf_fibonacci_context_edge_cases_table(case) -> None:
 
     assert ctx.get("available") is False
     assert ctx.get("reason") == case["reason"]
+
+
+def test_get_htf_fibonacci_context_accepts_3h_when_cached_levels_are_valid() -> None:
+    _set_cached_fib_df(
+        pd.DataFrame(
+            {
+                "timestamp": [pd.Timestamp("2025-01-01T00:00:00Z")],
+                "htf_fib_0382": [100.0],
+                "htf_fib_05": [95.0],
+                "htf_fib_0618": [90.0],
+                "htf_fib_0786": [85.0],
+                "htf_swing_high": [110.0],
+                "htf_swing_low": [80.0],
+                "htf_swing_age_bars": [3],
+            }
+        )
+    )
+
+    ctx = htf.get_htf_fibonacci_context(
+        {"timestamp": [pd.Timestamp("2025-01-02T00:00:00Z")], "close": [1.0]},
+        timeframe="3h",
+        symbol="tBTCUSD",
+        htf_timeframe="1D",
+    )
+
+    assert ctx.get("available") is True
+    assert ctx.get("htf_timeframe") == "1D"
+    assert ctx.get("swing_high") == 110.0
+    assert ctx.get("swing_low") == 80.0
+    assert ctx.get("levels") == {0.382: 100.0, 0.5: 95.0, 0.618: 90.0, 0.786: 85.0}

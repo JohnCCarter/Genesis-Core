@@ -118,7 +118,7 @@ def get_htf_fibonacci_context_impl(
     if not tf_norm:
         return {"available": False, "reason": "HTF_TIMEFRAME_MISSING"}
 
-    if tf_norm not in ["1h", "30m", "6h", "15m"]:
+    if tf_norm not in ["15m", "30m", "1h", "3h", "6h"]:
         return {
             "available": False,
             "reason": "HTF_NOT_APPLICABLE",

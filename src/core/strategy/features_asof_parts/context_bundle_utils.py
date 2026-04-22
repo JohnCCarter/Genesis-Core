@@ -5,7 +5,8 @@ from typing import Any
 
 import numpy as np
 
-_ELIGIBLE_TIMEFRAMES = {"1h", "30m", "6h", "15m"}
+_HTF_ELIGIBLE_TIMEFRAMES = {"1h", "30m", "3h", "6h", "15m"}
+_LTF_ELIGIBLE_TIMEFRAMES = {"1h", "30m", "6h", "15m"}
 
 
 @dataclass(frozen=True)
@@ -31,7 +32,7 @@ def build_fibonacci_context_bundle(
     htf_selector_meta: dict[str, Any] | None = None
     ltf_fibonacci_context: dict[str, Any] = {}
 
-    if timeframe in _ELIGIBLE_TIMEFRAMES:
+    if timeframe in _HTF_ELIGIBLE_TIMEFRAMES:
         htf_fibonacci_context, htf_selector_meta = build_htf_context_fn(
             candles,
             highs,
@@ -41,6 +42,8 @@ def build_fibonacci_context_bundle(
             symbol,
             config,
         )
+
+    if timeframe in _LTF_ELIGIBLE_TIMEFRAMES:
         ltf_fibonacci_context = build_ltf_context_fn(
             candles,
             highs,

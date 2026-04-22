@@ -89,3 +89,40 @@ def test_build_fibonacci_context_bundle_preserves_selector_and_atr_passthrough()
     assert observed["ltf"]["atr_vals"] is atr_vals
     assert observed["ltf"]["timeframe"] == "1h"
     assert observed["ltf"]["symbol"] == "tBTCUSD"
+
+
+def test_build_fibonacci_context_bundle_enables_htf_only_for_3h() -> None:
+    calls = {"htf": 0, "ltf": 0}
+
+    def _fake_htf(candles, highs, lows, closes, timeframe, symbol, config):
+        calls["htf"] += 1
+        assert candles == {"timestamp": [1, 2, 3]}
+        assert highs == [10.0, 11.0]
+        assert lows == [9.0, 10.0]
+        assert closes == [9.5, 10.5]
+        assert timeframe == "3h"
+        assert symbol == "tBTCUSD"
+        assert config == {"multi_timeframe": {"htf_selector": {"mode": "fixed"}}}
+        return {"available": True, "source": "htf-3h"}, {"selected": "1D"}
+
+    def _unexpected_ltf(*_args, **_kwargs):
+        calls["ltf"] += 1
+        raise AssertionError("LTF builder should remain disabled for 3h in this slice")
+
+    bundle = build_fibonacci_context_bundle(
+        candles={"timestamp": [1, 2, 3]},
+        highs=[10.0, 11.0],
+        lows=[9.0, 10.0],
+        closes=[9.5, 10.5],
+        timeframe="3h",
+        symbol="tBTCUSD",
+        config={"multi_timeframe": {"htf_selector": {"mode": "fixed"}}},
+        atr_vals=[0.7, 0.8],
+        build_htf_context_fn=_fake_htf,
+        build_ltf_context_fn=_unexpected_ltf,
+    )
+
+    assert bundle.htf_fibonacci_context == {"available": True, "source": "htf-3h"}
+    assert bundle.htf_selector_meta == {"selected": "1D"}
+    assert bundle.ltf_fibonacci_context == {}
+    assert calls == {"htf": 1, "ltf": 0}

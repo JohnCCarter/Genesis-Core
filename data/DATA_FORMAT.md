@@ -29,6 +29,7 @@ data/
 **Data files are NOT version controlled due to size.**
 
 Ignored by `.gitignore`:
+
 - `data/raw/**/*.parquet`
 - `data/curated/**/*.parquet`
 - `data/curated/**/*.feather`
@@ -47,10 +48,12 @@ Ignored by `.gitignore`:
 **File naming:** `{SYMBOL}_{TIMEFRAME}.parquet`
 
 **Examples (curated v1):**
+
 - `tBTCUSD_6h.parquet` - Bitcoin 6-hour candles
 - `tETHUSD_15m.parquet` - Ethereum 15-minute candles
 
 **Schema:**
+
 ```python
 {
     "timestamp": int64,      # Unix timestamp (ms)
@@ -79,17 +82,18 @@ Ignored by `.gitignore`:
 - `tETHUSD_1h_v1.json`
 
 **Schema:**
+
 ```json
 {
-    "symbol": "tBTCUSD",
-    "timeframe": "1m",
-    "fetched_at": "2025-10-07T12:00:00Z",
-    "start_date": "2025-04-07",
-    "end_date": "2025-10-07",
-    "total_candles": 262800,
-    "missing_candles": 0,
-    "quality_score": 1.0,
-    "source": "bitfinex_public_api"
+  "symbol": "tBTCUSD",
+  "timeframe": "1m",
+  "fetched_at": "2025-10-07T12:00:00Z",
+  "start_date": "2025-04-07",
+  "end_date": "2025-10-07",
+  "total_candles": 262800,
+  "missing_candles": 0,
+  "quality_score": 1.0,
+  "source": "bitfinex_public_api"
 }
 ```
 
@@ -99,11 +103,14 @@ Ignored by `.gitignore`:
 
 > **Note:** Tidigare standalone-skript (`fetch_historical.py`, `precompute_features.py`,
 > `validate_data.py`) har flyttats/ersatts. Se underkataloger i `scripts/`:
+>
 > - `scripts/fetch/` – datahämtning
 > - `scripts/validate/` – datavalidering
 > - `scripts/analyze/` / `scripts/audit/` – analys & audit
 >
 > Konsultera respektive katalogs README/skript för aktuella kommandon.
+
+```
 
 ---
 
@@ -155,3 +162,4 @@ Ignored by `.gitignore`:
 ## Metadata
 
 - `metadata/curated/`: JSON metadata, samt `.json` filer bredvid varje feature-feather (version, skapad tid, source).
+```

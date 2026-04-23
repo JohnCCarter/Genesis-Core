@@ -43,6 +43,13 @@ It selects among predefined policies based on observable state, and any switchin
 
 Active focus right now:
 
+- the user has now explicitly reopened the bounded RI-local runtime policy-router lane, and the active pre-code contract for that work is `docs/governance/ri_policy_router_runtime_integration_packet_2026-04-23.md`
+- that packet has already received Opus pre-code review as `APPROVED_WITH_NOTES` on the Full RESEARCH path, with the router kept default-off and fenced below strict-only family/champion surfaces
+- the exact active implementation target is one new pure module `src/core/strategy/ri_policy_router.py` plus bounded integration in `src/core/strategy/decision.py` and explicit config-authority support in `src/core/config/{schema,authority}.py`
+- the first repo-native strategy candidate lifecycle slice is now implemented and validated across `registry/schemas/strategy_candidate_manifest.schema.json`, `registry/manifests/strategy_candidates.dev.json`, `src/core/governance/registry.py`, `tests/governance/test_registry_validator.py`, and `config/strategy/candidates/README.md`
+- this slice preserves candidate identity, lifecycle status, lineage, and governance/evidence refs as **archival metadata only** and does not create runtime-selection, promotion, champion, readiness, cutover, or live-near authority
+- the first seeded lifecycle entries now preserve the fixed RI runtime bridge candidate as `candidate` and the defensive-transition bridge variant as `research`
+- the earlier paired no-divergence diagnostic is no longer an open next-step blocker for today; the first relevant high-zone near-miss rows already appeared only at `bars_since_regime_change >= 5`, which explains why the `guard_bars: 3` defensive-transition override produced no row-level divergence on the frozen paired surface
 - the widened candidate-gate carrier slice is now implemented and validated in `src/core/strategy/decision_gates.py` plus bounded support in `src/core/config/schema.py` and `src/core/config/authority.py`
 - the current verified conclusion remains that defensive starvation is better localized to raw defensive candidate formation than to generic hysteresis, min-dwell, or downstream sizing semantics
 - default-path protection is now proven for the new `research_defensive_transition_override` leaf: absent leaf and explicit disabled leaf are canonically identical, and untouched authority/default outputs do not materialize the leaf
@@ -52,7 +59,7 @@ Active focus right now:
 - the repo now contains one explicit bounded containment mechanism in `src/core/backtest/engine.py`: `GENESIS_PRECOMPUTE_CACHE_WRITE=0` suppresses `cache/precomputed/` directory creation and `.npz` writes on cache miss while preserving existing-cache reads and in-memory precompute for the current run
 - default behavior remains unchanged when `GENESIS_PRECOMPUTE_CACHE_WRITE` is absent, so canonical behavior is not silently widened or altered on untouched paths
 - the actual paired execution has now been completed on the exact authorized suppressed-write surface, and the emitted baseline/candidate decision-row artifacts were bit-for-bit identical on this frozen window
-- the next admissible step is therefore no longer launch preparation; it is a separate diagnostic slice that explains why the runnable candidate still produces no row-level divergence on this paired subject
+- the next admissible step is therefore no longer launch preparation or the already-closed no-divergence diagnosis; it is a separate bounded candidate-preservation slice that adds the next existing cited candidate to the lifecycle manifest without reopening authority surfaces
 
 ## Explicitly not active by default
 
@@ -85,6 +92,10 @@ Unless the user reopens them explicitly with the needed authority, do **not** tr
 - `docs/governance/ri_router_replay_defensive_transition_backtest_launch_authorization_packet_2026-04-23.md` now records `AUTHORIZED NOW` for the exact paired pre-execution surface only when that explicit suppressed-write command shape is preserved
 - `docs/governance/ri_router_replay_defensive_transition_backtest_execution_summary_2026-04-23.md` now records the completed bounded paired execution and the observed no-divergence outcome on the exact authorized surface
 - `docs/governance/ri_router_replay_defensive_transition_backtest_precompute_containment_implementation_packet_2026-04-23.md` defines the bounded high-sensitivity runtime slice that introduces an explicit opt-in suppression path for precompute disk writes without changing the default canonical path
+- `docs/governance/ri_policy_router_runtime_integration_packet_2026-04-23.md` now defines the bounded default-off runtime slice for RI-local policy switching, dwell/hysteresis state carry, and explicit return-to-continuation semantics below family/champion authority
+- `registry/schemas/strategy_candidate_manifest.schema.json` defines the closed archival schema for strategy-candidate lifecycle metadata only
+- `registry/manifests/strategy_candidates.dev.json` seeds the first preserved RI candidate identities without creating promotion or runtime authority
+- `config/strategy/candidates/README.md` now documents the candidate-bank lifecycle manifest and explicitly keeps `promotion_compare`, `champion_freeze`, `readiness`, `cutover`, and live-near authority out of ordinary runtime selection semantics
 
 ## Last verified facts relevant to today
 
@@ -114,14 +125,18 @@ Unless the user reopens them explicitly with the needed authority, do **not** tr
 - the launch-authorization packet now records that the explicit suppressed-write surface is authorized for pre-execution, but that authorization does not imply execution already happened
 - the bounded paired execution is now complete on `HEAD` `efdce46b`, and the emitted baseline/candidate decision-row files are bit-for-bit identical (`D75471906D9C82E981B51D7281F41A7F1CA71DC00779751C707872CEECF9D804`, `2793` lines each)
 - top-line stdout metrics were also identical across the pair (`6.40%` return, `118` trades, `58.5%` win rate, `0.261` Sharpe, `1.43%` max drawdown, `2.27` profit factor, `0.3567` score)
+- the first repo-native candidate lifecycle registry slice has now passed focused registry validation, import smoke, determinism smoke, feature-cache invariance selectors, and pipeline fast-hash guard selectors without widening runtime/default/champion authority
+- `src/core/governance/registry.py` now validates optional `strategy_candidates*.json` manifests additively, including duplicate candidate-id checks, duplicate `config_path` checks, and existence checks for referenced candidate configs
+- the current closed schema intentionally allows only `research`, `candidate`, `promotion_compare`, and `champion_freeze`, and fences `config_path` to `config/strategy/candidates/**/*.json`
+- the bounded policy-router implementation lane remains RESEARCH-valid so long as it stays inside `ri_policy_router.py`, `decision.py`, `schema.py`, `authority.py`, and the exact test/doc surfaces named in the packet, with absent-vs-disabled parity proven and no drift into `family_registry.py`, `family_admission.py`, `decision_gates.py`, or `decision_sizing.py`
 
 ## Next admissible steps
 
 Choose the smallest valid next step that matches the user request:
 
-1. if the user wants to proceed next, open one separate diagnostic slice that explains why `config/strategy/candidates/3h/tBTCUSD_3h_slice8_runtime_bridge_defensive_transition_20260423.json` still emits no row-level divergence versus the baseline on the frozen paired surface
-2. keep any writable-surface expansion to include `cache/precomputed/` as a non-preferred, separately governed path rather than silently widening the current boundary
-3. keep any future diagnostic or execution-follow-up slice explicitly separate from candidate artifact creation, launch-boundary definition, launch authorization, runtime-default authority, family-rule surfaces, `decision.py`, `decision_sizing.py`, and `risk_state.py` unless a new lane explicitly reopens them
+1. implement the exact bounded default-off RI policy-router slice from `docs/governance/ri_policy_router_runtime_integration_packet_2026-04-23.md`, keeping scope out of family/champion/promotion surfaces and proving absent-vs-disabled parity for the new leaf
+2. if the router slice cannot stay local to `ri_policy_router.py`, `decision.py`, `schema.py`, and `authority.py`, stop and re-open governance review before widening to any other runtime or family surface
+3. keep candidate-preservation follow-up, lifecycle-skill additions, and any promotion/readiness/cutover semantics explicitly separate from the active runtime policy-router lane unless the user re-prioritizes them
 
 ## Hard stops
 

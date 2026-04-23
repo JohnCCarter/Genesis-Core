@@ -8,6 +8,14 @@ from core.strategy.decision_fib_gating import apply_fib_gating
 from core.strategy.decision_gates import apply_post_fib_gates, safe_float, select_candidate
 from core.strategy.decision_sizing import apply_sizing
 from core.strategy.fib_logging import log_fib_flow
+from core.strategy.ri_policy_router import (
+    POLICY_DEFENSIVE,
+    POLICY_NO_TRADE,
+    RESEARCH_POLICY_ROUTER_DEBUG_KEY,
+    RESEARCH_POLICY_ROUTER_STATE_KEY,
+    RI_POLICY_ROUTER_VERSION,
+    resolve_research_policy_router,
+)
 from core.utils.logging_redaction import get_logger
 
 Action = Literal["LONG", "SHORT", "NONE"]
@@ -249,6 +257,38 @@ def decide(
     if action is not None:
         return action, meta
 
+    router_outcome = resolve_research_policy_router(
+        candidate=candidate,
+        conf_val_gate=float(confidence_data["conf_val_gate"]),
+        p_buy=float(candidate_data["p_buy"]),
+        p_sell=float(candidate_data["p_sell"]),
+        max_ev=float(candidate_data["max_ev"]),
+        r_default=float(candidate_data["R"]),
+        regime=regime,
+        state_in=state_in,
+        cfg=cfg,
+        zone=(candidate_data.get("zone_debug") or {}).get("zone"),
+    )
+    if router_outcome is not None:
+        versions["ri_policy_router"] = RI_POLICY_ROUTER_VERSION
+        state_out[RESEARCH_POLICY_ROUTER_STATE_KEY] = dict(router_outcome.state)
+        state_out[RESEARCH_POLICY_ROUTER_DEBUG_KEY] = dict(router_outcome.debug)
+        if router_outcome.selected_policy == POLICY_DEFENSIVE:
+            reasons.append("RESEARCH_POLICY_ROUTER_DEFENSIVE")
+        elif router_outcome.selected_policy == POLICY_NO_TRADE:
+            reasons.append("RESEARCH_POLICY_ROUTER_NO_TRADE")
+        else:
+            reasons.append("RESEARCH_POLICY_ROUTER_CONTINUATION")
+        _log_decision_event(
+            "RESEARCH_POLICY_ROUTER",
+            selected_policy=router_outcome.selected_policy,
+            switch_reason=router_outcome.switch_reason,
+            switch_blocked=router_outcome.switch_blocked,
+            size_multiplier=router_outcome.size_multiplier,
+        )
+        if router_outcome.no_trade:
+            return _none_result(versions, reasons, state_out)
+
     size, conf_val_gate = apply_sizing(
         candidate=candidate,
         confidence=confidence or {},
@@ -265,6 +305,13 @@ def decide(
         logger=_LOG,
         sanitize_context=_sanitize_context,
     )
+    if router_outcome is not None:
+        router_debug = dict(state_out.get(RESEARCH_POLICY_ROUTER_DEBUG_KEY) or {})
+        router_debug["size_before_policy_router"] = float(size)
+        size = float(size) * float(router_outcome.size_multiplier)
+        router_debug["size_after_policy_router"] = float(size)
+        router_debug["size_multiplier"] = float(router_outcome.size_multiplier)
+        state_out[RESEARCH_POLICY_ROUTER_DEBUG_KEY] = router_debug
 
     if size <= 0.0:
         _log_decision_event(

@@ -419,3 +419,58 @@ def test_research_defensive_transition_override_absent_matches_enabled_false() -
     assert action_base == action_disabled == "NONE"
     assert meta_base.get("reasons") == meta_disabled.get("reasons")
     assert meta_base.get("state_out") == meta_disabled.get("state_out")
+
+
+def test_research_policy_router_absent_matches_enabled_false() -> None:
+    base_cfg = {
+        "ev": {"R_default": 1.0},
+        "thresholds": {
+            "entry_conf_overall": 0.30,
+            "regime_proba": {"bull": 0.50},
+        },
+        "risk": {"risk_map": [[0.30, 1.0]], "min_combined_multiplier": 0.1},
+        "gates": {"cooldown_bars": 0, "hysteresis_steps": 1},
+        "multi_timeframe": {"use_htf_block": False, "allow_ltf_override": False},
+        "htf_fib": {"entry": {"enabled": False}},
+        "ltf_fib": {"entry": {"enabled": False}},
+    }
+    state = {
+        "bars_since_regime_change": 2,
+        "last_regime": "bull",
+    }
+
+    action_base, meta_base = decide(
+        {"symbol": "tBTCUSD", "timeframe": "1h"},
+        probas={"buy": 0.52, "sell": 0.48},
+        confidence={"buy": 0.52, "sell": 0.48},
+        regime="bull",
+        state=state,
+        risk_ctx={},
+        cfg=base_cfg,
+    )
+
+    cfg_disabled = deepcopy(base_cfg)
+    cfg_disabled["multi_timeframe"] = {
+        "use_htf_block": False,
+        "allow_ltf_override": False,
+        "research_policy_router": {
+            "enabled": False,
+            "switch_threshold": 2,
+            "hysteresis": 1,
+            "min_dwell": 3,
+            "defensive_size_multiplier": 0.5,
+        },
+    }
+    action_disabled, meta_disabled = decide(
+        {"symbol": "tBTCUSD", "timeframe": "1h"},
+        probas={"buy": 0.52, "sell": 0.48},
+        confidence={"buy": 0.52, "sell": 0.48},
+        regime="bull",
+        state=state,
+        risk_ctx={},
+        cfg=cfg_disabled,
+    )
+
+    assert action_base == action_disabled == "LONG"
+    assert meta_base.get("reasons") == meta_disabled.get("reasons")
+    assert meta_base.get("state_out") == meta_disabled.get("state_out")

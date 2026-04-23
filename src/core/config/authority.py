@@ -336,6 +336,21 @@ class ConfigAuthority:
                             raise ValueError(
                                 "non_whitelisted_field:research_current_atr_high_vol_multiplier_override"
                             )
+                    policy_router_cfg = v.get("research_policy_router")
+                    if policy_router_cfg is not None:
+                        if not isinstance(policy_router_cfg, dict):
+                            raise ValueError("non_whitelisted_field:research_policy_router")
+                        allowed_policy_router = {
+                            "enabled",
+                            "switch_threshold",
+                            "hysteresis",
+                            "min_dwell",
+                            "defensive_size_multiplier",
+                        }
+                        if any(
+                            subk not in allowed_policy_router for subk in policy_router_cfg.keys()
+                        ):
+                            raise ValueError("non_whitelisted_field:research_policy_router")
                     selector_cfg = v.get("htf_selector")
                     if selector_cfg is not None:
                         if not isinstance(selector_cfg, dict):

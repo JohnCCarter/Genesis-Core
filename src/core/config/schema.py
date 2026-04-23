@@ -185,6 +185,14 @@ class ResearchDefensiveTransitionOverrideConfig(RuntimeSection):
     max_probability_gap: float = Field(default=0.06, ge=0.0, le=1.0)
 
 
+class ResearchPolicyRouterConfig(RuntimeSection):
+    enabled: bool = Field(default=False)
+    switch_threshold: int = Field(default=2, ge=1)
+    hysteresis: int = Field(default=1, ge=0)
+    min_dwell: int = Field(default=3, ge=0)
+    defensive_size_multiplier: float = Field(default=0.5, ge=0.0, le=1.0)
+
+
 class MultiTimeframeConfig(RuntimeSection):
     use_htf_block: bool = Field(default=True)
     allow_ltf_override: bool = Field(default=False)
@@ -199,6 +207,7 @@ class MultiTimeframeConfig(RuntimeSection):
     research_current_atr_high_vol_multiplier_override: (
         ResearchCurrentATRHighVolMultiplierOverrideConfig
     ) = Field(default_factory=ResearchCurrentATRHighVolMultiplierOverrideConfig)
+    research_policy_router: ResearchPolicyRouterConfig | None = None
     htf_selector: HTFSelectorConfig = Field(default_factory=HTFSelectorConfig)
     regime_intelligence: RegimeIntelligenceConfig = Field(default_factory=RegimeIntelligenceConfig)
 
@@ -354,6 +363,12 @@ class RuntimeConfig(RuntimeSection):
                 and bool(defensive_transition_cfg.get("enabled", False))
             ):
                 mtf_cfg.pop("research_defensive_transition_override", None)
+            research_policy_router_cfg = mtf_cfg.get("research_policy_router")
+            if not (
+                isinstance(research_policy_router_cfg, dict)
+                and bool(research_policy_router_cfg.get("enabled", False))
+            ):
+                mtf_cfg.pop("research_policy_router", None)
         return data
 
 

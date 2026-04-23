@@ -1074,3 +1074,92 @@ def test_decide_research_defensive_transition_override_flips_fresh_high_zone_nea
     assert action_stale == "NONE"
     assert meta_stale["reasons"] == ["ZONE:high@0.360"]
     assert "research_defensive_transition_debug" not in meta_stale["state_out"]
+
+
+def test_decide_enabled_policy_router_selects_defensive_and_reduces_size() -> None:
+    cfg = deepcopy(_BASE_CFG)
+    cfg["thresholds"] = {
+        "entry_conf_overall": 0.3,
+        "regime_proba": {"bull": 0.5},
+    }
+    cfg["risk"] = {"risk_map": [[0.3, 1.0]], "min_combined_multiplier": 0.1}
+    cfg["multi_timeframe"] = {
+        "use_htf_block": False,
+        "allow_ltf_override": False,
+        "research_policy_router": {
+            "enabled": True,
+            "switch_threshold": 2,
+            "hysteresis": 1,
+            "min_dwell": 3,
+            "defensive_size_multiplier": 0.5,
+        },
+    }
+    cfg["htf_fib"] = {"entry": {"enabled": False}}
+    cfg["ltf_fib"] = {"entry": {"enabled": False}}
+
+    action, meta = decide(
+        cfg=cfg,
+        state={"bars_since_regime_change": 2, "last_regime": "bull"},
+        probas={"buy": 0.52, "sell": 0.48},
+        confidence={"buy": 0.52, "sell": 0.48},
+        regime="bull",
+        risk_ctx={},
+        policy={},
+    )
+
+    assert action == "LONG"
+    assert meta["reasons"][-1] == "ENTRY_LONG"
+    assert "RESEARCH_POLICY_ROUTER_DEFENSIVE" in meta["reasons"]
+    assert float(meta["size"]) == pytest.approx(0.5)
+    assert meta["versions"]["ri_policy_router"] == "ri_policy_router_v1"
+
+    state_out = meta["state_out"]
+    assert (
+        state_out["research_policy_router_state"]["selected_policy"]
+        == "RI_defensive_transition_policy"
+    )
+    assert (
+        state_out["research_policy_router_debug"]["switch_reason"] == "transition_pressure_detected"
+    )
+    assert state_out["research_policy_router_debug"]["size_multiplier"] == pytest.approx(0.5)
+
+
+def test_decide_enabled_policy_router_can_force_no_trade_before_sizing() -> None:
+    cfg = deepcopy(_BASE_CFG)
+    cfg["thresholds"] = {
+        "entry_conf_overall": 0.3,
+        "regime_proba": {"bull": 0.5},
+    }
+    cfg["risk"] = {"risk_map": [[0.3, 1.0]], "min_combined_multiplier": 0.1}
+    cfg["multi_timeframe"] = {
+        "use_htf_block": False,
+        "allow_ltf_override": False,
+        "research_policy_router": {
+            "enabled": True,
+            "switch_threshold": 2,
+            "hysteresis": 1,
+            "min_dwell": 3,
+            "defensive_size_multiplier": 0.5,
+        },
+    }
+    cfg["htf_fib"] = {"entry": {"enabled": False}}
+    cfg["ltf_fib"] = {"entry": {"enabled": False}}
+
+    action, meta = decide(
+        cfg=cfg,
+        state={"bars_since_regime_change": 2, "last_regime": "bull"},
+        probas={"buy": 0.51, "sell": 0.49},
+        confidence={"buy": 0.51, "sell": 0.49},
+        regime="bull",
+        risk_ctx={},
+        policy={},
+    )
+
+    assert action == "NONE"
+    assert "RESEARCH_POLICY_ROUTER_NO_TRADE" in meta["reasons"]
+    assert "ENTRY_LONG" not in meta["reasons"]
+    assert "size" not in meta
+
+    state_out = meta["state_out"]
+    assert state_out["research_policy_router_state"]["selected_policy"] == "RI_no_trade_policy"
+    assert state_out["research_policy_router_debug"]["switch_reason"] == "insufficient_evidence"

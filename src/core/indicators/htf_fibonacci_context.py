@@ -8,6 +8,7 @@ from typing import Any
 import pandas as pd
 
 from core.indicators.fibonacci import FibonacciConfig
+from core.indicators.htf_fibonacci_data import normalize_data_source_policy
 from core.utils.logging_redaction import get_logger
 
 _LOGGER = get_logger(__name__)
@@ -72,6 +73,7 @@ def get_htf_fibonacci_context_impl(
 ) -> dict[str, Any]:
     """Get HTF Fibonacci context with injected cache and loader/compute functions."""
 
+    data_source_policy = normalize_data_source_policy(kwargs.pop("data_source_policy", None))
     del kwargs
 
     def _reference_timestamp() -> pd.Timestamp | None:
@@ -99,7 +101,7 @@ def get_htf_fibonacci_context_impl(
         except Exception:
             config_hash = str(hash(str(config)))
 
-    cache_key = f"{symbol}_{htf_timeframe}_{config_hash}"
+    cache_key = f"{symbol}_{htf_timeframe}_{data_source_policy}_{config_hash}"
     cache_entry = htf_context_cache.setdefault(cache_key, {})
     fib_df = cache_entry.get("fib_df")
 
@@ -128,7 +130,11 @@ def get_htf_fibonacci_context_impl(
 
     if fib_df is None:
         try:
-            htf_candles = load_candles_data_fn(symbol, htf_timeframe)
+            htf_candles = load_candles_data_fn(
+                symbol,
+                htf_timeframe,
+                data_source_policy=data_source_policy,
+            )
             if htf_candles is not None:
                 fib_df = compute_htf_fibonacci_levels_fn(htf_candles, config or FibonacciConfig())
                 cache_entry["fib_df"] = fib_df

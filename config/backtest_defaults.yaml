@@ -2,7 +2,7 @@
 # Can be overridden by CLI arguments
 
 capital: 10000.0
-commission: 0.002 # 0.2%
+commission: 0.0 # 0.0% (Bitfinex zero-fee default)
 slippage: 0.0005 # 0.05%
 warmup: 120
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from core.strategy.features_asof_parts.context_bundle_utils import build_fibonacci_context_bundle
+from core.strategy.features_asof_parts.fibonacci_context_utils import build_htf_fibonacci_context
 
 
 def test_build_fibonacci_context_bundle_skips_builders_for_ineligible_timeframe() -> None:
@@ -126,3 +127,46 @@ def test_build_fibonacci_context_bundle_enables_htf_only_for_3h() -> None:
     assert bundle.htf_selector_meta == {"selected": "1D"}
     assert bundle.ltf_fibonacci_context == {}
     assert calls == {"htf": 1, "ltf": 0}
+
+
+def test_build_htf_fibonacci_context_forwards_data_source_policy_from_config() -> None:
+    observed: dict[str, object] = {}
+
+    def _as_config_dict(value):
+        return value if isinstance(value, dict) else {}
+
+    def _select_htf_timeframe(_timeframe, _selector_cfg):
+        return "1D", {"selected": "1D"}
+
+    def _fake_get_htf_fibonacci_context(candles, timeframe, symbol, htf_timeframe, **kwargs):
+        observed["candles"] = candles
+        observed["timeframe"] = timeframe
+        observed["symbol"] = symbol
+        observed["htf_timeframe"] = htf_timeframe
+        observed["kwargs"] = kwargs
+        return {"available": True}
+
+    def _noop_log(*_args, **_kwargs):
+        return None
+
+    context, selector_meta = build_htf_fibonacci_context(
+        candles={"timestamp": [1, 2, 3]},
+        highs=[10.0, 11.0],
+        lows=[9.0, 10.0],
+        closes=[9.5, 10.5],
+        timeframe="3h",
+        symbol="tBTCUSD",
+        config={"data_source_policy": "curated_only", "multi_timeframe": {}},
+        as_config_dict_fn=_as_config_dict,
+        select_htf_timeframe_fn=_select_htf_timeframe,
+        get_htf_fibonacci_context_fn=_fake_get_htf_fibonacci_context,
+        log_fib_flow_fn=_noop_log,
+        logger=None,
+    )
+
+    assert context == {"available": True, "selector": {"selected": "1D"}}
+    assert selector_meta == {"selected": "1D"}
+    assert observed["timeframe"] == "3h"
+    assert observed["symbol"] == "tBTCUSD"
+    assert observed["htf_timeframe"] == "1D"
+    assert observed["kwargs"] == {"data_source_policy": "curated_only"}

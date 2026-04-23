@@ -78,15 +78,28 @@ def _debug_backtest_enabled() -> bool:
     return env_flag_enabled(os.getenv("GENESIS_DEBUG_BACKTEST"), default=False)
 
 
+VALID_DATA_SOURCE_POLICIES = ("frozen_first", "curated_only")
+
+
+def _normalize_data_source_policy(policy: str | None) -> str:
+    """Return a validated backtest data-source policy."""
+
+    normalized = str(policy or "frozen_first").strip().lower()
+    if normalized not in VALID_DATA_SOURCE_POLICIES:
+        allowed = ", ".join(VALID_DATA_SOURCE_POLICIES)
+        raise ValueError(f"Invalid data_source_policy={policy!r}. Expected one of: {allowed}")
+    return normalized
+
+
 class CandleCache:
     def __init__(self, max_size: int = 4):
         self._max_size = max_size
-        self._store: dict[tuple[str, str], pd.DataFrame] = {}
+        self._store: dict[tuple[str, str, str], pd.DataFrame] = {}
 
-    def get(self, key: tuple[str, str]) -> pd.DataFrame | None:
+    def get(self, key: tuple[str, str, str]) -> pd.DataFrame | None:
         return self._store.get(key)
 
-    def put(self, key: tuple[str, str], value: pd.DataFrame) -> None:
+    def put(self, key: tuple[str, str, str], value: pd.DataFrame) -> None:
         if key in self._store:
             self._store[key] = value
             return
@@ -134,6 +147,7 @@ class BacktestEngine:
         post_execution_hook: (
             Any | None
         ) = None,  # Optional hook(symbol, bar_index, action, executed)
+        data_source_policy: str = "frozen_first",
     ):
         """
         Initialize backtest engine.
@@ -160,11 +174,13 @@ class BacktestEngine:
         self.fast_window = bool(fast_window)
         self.evaluation_hook = evaluation_hook
         self.post_execution_hook = post_execution_hook
+        self.data_source_policy = _normalize_data_source_policy(data_source_policy)
 
         # Validate mode consistency to prevent mixed-mode bugs
         self._validate_mode_consistency()
 
         self.candles_df: pd.DataFrame | None = None
+        self.candles_source: str | None = None
         self.htf_candles_df: pd.DataFrame | None = None
         self.htf_candles_source: str | None = None
         self._htf_context_seen: bool = False
@@ -288,6 +304,18 @@ class BacktestEngine:
             self.htf_exit_engine = LegacyExitEngine(self.htf_exit_config)
             self._use_new_exit_engine = False
 
+    def _build_data_candidates(self, base_dir: Path, timeframe: str) -> list[Path]:
+        """Return candidate candle files for the configured data-source policy."""
+
+        frozen = base_dir / "raw" / f"{self.symbol}_{timeframe}_frozen.parquet"
+        curated = base_dir / "curated" / "v1" / "candles" / f"{self.symbol}_{timeframe}.parquet"
+        legacy = base_dir / "candles" / f"{self.symbol}_{timeframe}.parquet"
+
+        if self.data_source_policy == "curated_only":
+            return [curated]
+
+        return [frozen, curated, legacy]
+
     def load_data(self) -> bool:
         """
         Load historical candle data from Parquet (two-layer structure support).
@@ -295,32 +323,25 @@ class BacktestEngine:
         Returns:
             True if data loaded successfully, False otherwise
         """
-        # Find data file (try frozen first, then two-layer structure, fallback to legacy)
+        # Find data file according to the selected backtest data-source policy.
         base_dir = Path(__file__).parent.parent.parent.parent / "data"
 
-        # 1. Frozen Data (Priority 1)
-        data_file_frozen = base_dir / "raw" / f"{self.symbol}_{self.timeframe}_frozen.parquet"
+        self.candles_source = None
+        self.htf_candles_df = None
+        self.htf_candles_source = None
 
-        # 2. Curated Data (Priority 2)
-        data_file_curated = (
-            base_dir / "curated" / "v1" / "candles" / f"{self.symbol}_{self.timeframe}.parquet"
-        )
-
-        # 3. Legacy Data (Priority 3)
-        data_file_legacy = base_dir / "candles" / f"{self.symbol}_{self.timeframe}.parquet"
+        data_candidates = self._build_data_candidates(base_dir, self.timeframe)
 
         data_file: Path | None = None
-        if data_file_frozen.exists():
-            data_file = data_file_frozen
-            _LOGGER.debug("Using frozen snapshot: %s", data_file.name)
-        elif data_file_curated.exists():
-            data_file = data_file_curated
-        elif data_file_legacy.exists():
-            data_file = data_file_legacy
-        else:
+        for candidate in data_candidates:
+            if candidate.exists():
+                data_file = candidate
+                break
+
+        if data_file is None:
             # Defensive fallback: even if exists() returns False (e.g. during tests with monkeypatch
             # or odd FS semantics), reading may still succeed. Only fail if all read attempts fail.
-            for candidate in (data_file_frozen, data_file_curated, data_file_legacy):
+            for candidate in data_candidates:
                 try:
                     # Minimal read probe; if it works, we use that candidate.
                     pd.read_parquet(candidate, columns=["timestamp"], engine="pyarrow")
@@ -331,14 +352,15 @@ class BacktestEngine:
 
             if data_file is None:
                 _LOGGER.error(
-                    "Data file not found. Tried frozen=%s curated=%s legacy=%s",
-                    data_file_frozen,
-                    data_file_curated,
-                    data_file_legacy,
+                    "Data file not found for policy=%s. Tried: %s",
+                    self.data_source_policy,
+                    ", ".join(str(candidate) for candidate in data_candidates),
                 )
                 return False
 
-        cache_key = (self.symbol, self.timeframe)
+        self.candles_source = str(data_file)
+
+        cache_key = (self.symbol, self.timeframe, self.candles_source)
         base_df = self._candles_cache.get(cache_key)
         if base_df is None:
             # Read only required columns, prefer pyarrow engine and memory-mapped IO for speed
@@ -354,10 +376,11 @@ class BacktestEngine:
             _LOGGER.debug("Loaded %s candles from %s", f"{len(base_df):,}", data_file.name)
         else:
             _LOGGER.debug(
-                "Reusing %s candles for %s %s",
+                "Reusing %s candles for %s %s from %s",
                 f"{len(base_df):,}",
                 self.symbol,
                 self.timeframe,
+                data_file.name,
             )
 
         # Normalize timestamps to UTC to avoid tz-naive vs tz-aware comparison bugs
@@ -374,15 +397,9 @@ class BacktestEngine:
 
         # Load HTF (1D) candles for HTF-related features/exits.
         # NOTE: HTF context (and therefore HTF-exit tuning) is effectively inert if 1D data is missing.
-        self.htf_candles_df = None
-        self.htf_candles_source = None
         if getattr(self, "_use_new_exit_engine", False):
             htf_timeframe = "1D"
-            htf_candidates = [
-                base_dir / "raw" / f"{self.symbol}_{htf_timeframe}_frozen.parquet",
-                base_dir / "curated" / "v1" / "candles" / f"{self.symbol}_{htf_timeframe}.parquet",
-                base_dir / "candles" / f"{self.symbol}_{htf_timeframe}.parquet",
-            ]
+            htf_candidates = self._build_data_candidates(base_dir, htf_timeframe)
             htf_file = next((p for p in htf_candidates if p.exists()), None)
             if htf_file is not None:
                 try:
@@ -665,9 +682,15 @@ class BacktestEngine:
             cfg_digest = hashlib.sha256(config_hash_env.encode("utf-8")).hexdigest()[:12]
             cfg_segment = f"_cfg{cfg_digest}"
 
+        source_segment = ""
+        candles_source = str(getattr(self, "candles_source", "") or "").strip()
+        if candles_source:
+            source_digest = hashlib.sha256(candles_source.encode("utf-8")).hexdigest()[:12]
+            source_segment = f"_src{source_digest}"
+
         return (
             f"{self.symbol}_{self.timeframe}_{material}"
-            f"{cfg_segment}_{len(df)}_{start_ns}_{end_ns}"
+            f"{cfg_segment}{source_segment}_{len(df)}_{start_ns}_{end_ns}"
         )
 
     def _prepare_numpy_arrays(self) -> None:
@@ -806,6 +829,13 @@ class BacktestEngine:
             meta.setdefault("champion_loaded_at", champion_cfg.loaded_at)
         else:
             meta.setdefault("champion_source", "explicit_backtest_config")
+
+        # No-default-drift contract:
+        # Only propagate the engine-resolved policy into downstream feature evaluation
+        # when the active backtest lane is the explicit non-default curated_only path.
+        # This keeps default frozen_first callers on the existing implicit behavior.
+        if self.data_source_policy != "frozen_first":
+            configs["data_source_policy"] = self.data_source_policy
 
         # IMPORTANT: Apply HTF exit config from merged runtime/trial configs.
         # The engine is constructed before configs are known (CLI loads config after create_engine),
@@ -1537,6 +1567,7 @@ class BacktestEngine:
     def _build_results(self) -> dict:
         """Build final backtest results."""
         summary = self.position_tracker.get_summary()
+        position_summary = self.position_tracker.get_position_summary()
 
         # Resolve git executable to an absolute path (Bandit B607) and keep failure non-fatal.
         git_hash = "unknown"
@@ -1555,6 +1586,8 @@ class BacktestEngine:
             "backtest_info": {
                 "symbol": self.symbol,
                 "timeframe": self.timeframe,
+                "data_source_policy": self.data_source_policy,
+                "ltf_candles_source": self.candles_source,
                 "start_date": str(self.candles_df["timestamp"].min()),
                 "end_date": str(self.candles_df["timestamp"].max()),
                 "bars_total": len(self.candles_df),
@@ -1585,6 +1618,7 @@ class BacktestEngine:
                 "timestamp": datetime.now().isoformat(),
             },
             "summary": summary,
+            "position_summary": position_summary,
             # Add top-level metrics for convenience (duplicates summary fields)
             "metrics": {
                 "total_trades": summary.get("num_trades", 0),

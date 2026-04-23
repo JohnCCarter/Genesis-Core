@@ -4,6 +4,7 @@ Position tracker for backtest.
 Tracks open positions, calculates PnL, and manages trade lifecycle.
 """
 
+from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
@@ -486,6 +487,127 @@ class PositionTracker:
         """Force close all open positions (end of backtest)."""
         if self.position is not None:
             self._close_position(price, timestamp)
+
+    @staticmethod
+    def _position_group_key(trade: Trade) -> str:
+        """Build a stable fallback position key for trade grouping."""
+        return trade.position_id or f"{trade.symbol}_{trade.entry_time.isoformat()}"
+
+    @staticmethod
+    def _expected_trade_slice_pnl(trade: Trade) -> float:
+        """Compute the slice-level PnL implied by a single close event."""
+        if trade.side == "CLOSE_LONG":
+            return (trade.exit_price - trade.entry_price) * trade.size
+        if trade.side == "CLOSE_SHORT":
+            return (trade.entry_price - trade.exit_price) * trade.size
+        return trade.pnl
+
+    @staticmethod
+    def _float_matches(a: float, b: float, *, tolerance: float = 1e-9) -> bool:
+        """Relative-safe float comparison for reconstructed PnL values."""
+        scale = max(1.0, abs(a), abs(b))
+        return abs(a - b) <= tolerance * scale
+
+    def _build_position_records(self) -> list[dict[str, Any]]:
+        """Reconstruct closed-position economics from recorded trade events."""
+        grouped_trades: dict[str, list[Trade]] = defaultdict(list)
+        for trade in self.trades:
+            grouped_trades[self._position_group_key(trade)].append(trade)
+
+        position_records: list[dict[str, Any]] = []
+        for position_id in sorted(grouped_trades):
+            trades = sorted(
+                grouped_trades[position_id],
+                key=lambda trade: (trade.exit_time, trade.remaining_size, trade.size),
+            )
+            if not trades:
+                continue
+
+            total_closed_size = sum(trade.size for trade in trades)
+            entry_price = trades[0].entry_price
+            entry_notional = total_closed_size * entry_price
+            entry_commission = entry_notional * self.commission_rate
+            exit_commission = sum(trade.commission for trade in trades)
+
+            aggregate_trade = next(
+                (
+                    trade
+                    for trade in trades
+                    if (not trade.is_partial)
+                    and not self._float_matches(trade.pnl, self._expected_trade_slice_pnl(trade))
+                ),
+                None,
+            )
+            gross_pnl = (
+                aggregate_trade.pnl
+                if aggregate_trade is not None
+                else sum(trade.pnl for trade in trades)
+            )
+            net_pnl = gross_pnl - entry_commission - exit_commission
+
+            position_records.append(
+                {
+                    "position_id": position_id,
+                    "event_count": len(trades),
+                    "closed_size": total_closed_size,
+                    "entry_notional": entry_notional,
+                    "entry_commission": entry_commission,
+                    "exit_commission": exit_commission,
+                    "total_commission": entry_commission + exit_commission,
+                    "gross_pnl": gross_pnl,
+                    "net_pnl": net_pnl,
+                }
+            )
+
+        return position_records
+
+    def get_position_summary(self) -> dict[str, Any]:
+        """Get net per-position summary statistics derived from trade events."""
+        position_records = self._build_position_records()
+        num_positions = len(position_records)
+        winning_positions = [record for record in position_records if record["net_pnl"] > 0]
+        losing_positions = [record for record in position_records if record["net_pnl"] < 0]
+        breakeven_positions = num_positions - len(winning_positions) - len(losing_positions)
+
+        win_rate = len(winning_positions) / num_positions * 100 if num_positions > 0 else 0
+        avg_win = (
+            sum(record["net_pnl"] for record in winning_positions) / len(winning_positions)
+            if winning_positions
+            else 0
+        )
+        avg_loss = (
+            sum(record["net_pnl"] for record in losing_positions) / len(losing_positions)
+            if losing_positions
+            else 0
+        )
+
+        gross_profit = (
+            sum(record["net_pnl"] for record in winning_positions) if winning_positions else 0.0
+        )
+        gross_loss = (
+            abs(sum(record["net_pnl"] for record in losing_positions)) if losing_positions else 0.0
+        )
+        profit_factor = (gross_profit / gross_loss) if gross_loss > 0 else float("inf")
+
+        return {
+            "pnl_basis": "net_after_commission",
+            "num_positions": num_positions,
+            "winning_positions": len(winning_positions),
+            "losing_positions": len(losing_positions),
+            "breakeven_positions": breakeven_positions,
+            "win_rate": win_rate,
+            "avg_win": avg_win,
+            "avg_loss": avg_loss,
+            "profit_factor": profit_factor,
+            "gross_pnl": sum(record["gross_pnl"] for record in position_records),
+            "net_pnl": sum(record["net_pnl"] for record in position_records),
+            "entry_commission": sum(record["entry_commission"] for record in position_records),
+            "exit_commission": sum(record["exit_commission"] for record in position_records),
+            "total_commission": sum(record["total_commission"] for record in position_records),
+            "multi_event_positions": sum(
+                1 for record in position_records if record["event_count"] > 1
+            ),
+        }
 
     def get_summary(self) -> dict:
         """Get backtest summary statistics."""

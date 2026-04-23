@@ -43,9 +43,9 @@ It selects among predefined policies based on observable state, and any switchin
 
 Active focus right now:
 
-- open one separate bounded implementation packet for the fresh RI router replay evidence slice
-- keep the current move on docs/packet surfaces only until scope, output root, and gates are explicit
-- continue treating older `scpe_v1_ri` replay surfaces as frozen comparison context only
+- the bounded RI router replay counterfactual lane is closed as an explanatory research lane
+- the current verified conclusion is that defensive starvation is better localized to raw defensive mandate assignment than to generic hysteresis or min-dwell semantics
+- keep the current move on docs / report / packet interpretation surfaces only unless a fresh follow-up packet is explicitly opened
 
 ## Explicitly not active by default
 
@@ -64,20 +64,25 @@ Unless the user reopens them explicitly with the needed authority, do **not** tr
 - `docs/OPUS_46_GOVERNANCE.md` treats lane classification as workflow framing, not new authority
 - `docs/governance/ri_router_replay_evidence_slice_precode_packet_2026-04-23.md` freezes the first fresh RI router replay subject without granting execution authority
 - `scripts/analyze/scpe_ri_v1_router_replay.py` and `results/research/scpe_v1_ri/` exist as tracked historical reference surfaces, not inherited authority for the fresh slice
+- `docs/governance/ri_router_replay_counterfactual_closeout_report_2026-04-23.md` closes the bounded counterfactual lane and records the current blocker ordering without granting semantics or runtime approval
 
 ## Last verified facts relevant to today
 
 - the fresh pre-code RI replay packet already freezes the allowed future input/output envelope and explicit non-inheritance rule
 - the frozen Phase C evidence inputs exist locally under `results/research/ri_advisory_environment_fit/phase3_phasec_evidence_capture_v2_2026-04-17/`
 - the historical SCPE replay script and approved eight-file replay root exist locally as comparison/reference context only
+- the baseline fresh replay surface still shows raw defensive `30` versus selected defensive `3`
+- `switch_threshold: 2 -> 1` and `defensive_transition_state mandate/confidence: 1 -> 2` are behavior-equivalent on the current frozen surface
+- `min_dwell: 3 -> 1` increases continuation dominance rather than improving defensive separation
+- `hysteresis: 1 -> 0` is a no-op on the baseline surface, and the apparent hysteresis blocker reduces to raw mandate `1` versus continuation mandate `2/3`
 
 ## Next admissible steps
 
 Choose the smallest valid next step that matches the user request:
 
-1. open a bounded implementation packet for one fresh `ri_router_replay_v1` runnable research slice with explicit scope, gates, and stop conditions
-2. keep any actual implementation isolated to non-runtime research surfaces only, with `src/**`, `config/**`, and runtime authority surfaces still out of scope
-3. only after that packet is explicit and accepted, implement one deterministic replay script and prove rerun stability on the approved output root
+1. stop at the current closeout if the user only wanted a bounded research conclusion and tracked anchor
+2. if more evidence is explicitly requested, open one fresh semantics-focused research packet for evaluating whether `defensive_transition_state` should be treated as a mandate-2 candidate on research surfaces only
+3. keep any future follow-up isolated from `src/**`, `config/**`, runtime-default authority, family-rule surfaces, and promotion/readiness semantics unless a new lane is explicitly approved
 
 ## Hard stops
 

@@ -48,9 +48,10 @@ Active focus right now:
 - default-path protection is now proven for the new `research_defensive_transition_override` leaf: absent leaf and explicit disabled leaf are canonically identical, and untouched authority/default outputs do not materialize the leaf
 - the separate candidate bridge artifact now exists at `config/strategy/candidates/3h/tBTCUSD_3h_slice8_runtime_bridge_defensive_transition_20260423.json` and differs from the fixed baseline bridge only by explicit materialization of `multi_timeframe.research_defensive_transition_override`
 - the paired launch-boundary packet now exists at `docs/governance/ri_router_replay_defensive_transition_backtest_launch_boundary_packet_2026-04-23.md` and fixes the exact baseline/candidate no-save command targets plus explicit decision-row outputs without authorizing execution
-- the tracked worktree is now clean after the local logical commit split, so the mixed-worktree blocker has been removed from this lane
-- the current verified blocker is now the absence of a separate launch-authorization packet rather than candidate expressibility, paired command/output definition, or worktree hygiene
-- launch/backtest execution remains unopened: the paired launch-boundary packet defines the exact subject and explicit outputs on a clean tracked worktree, but candidate artifact creation and boundary definition alone do not authorize selection or execution
+- the separate launch-authorization packet now exists at `docs/governance/ri_router_replay_defensive_transition_backtest_launch_authorization_packet_2026-04-23.md` and records `NOT AUTHORIZED NOW` for the current paired launch surface
+- the tracked worktree can be kept clean for this lane, but cleanliness alone is not enough: the current canonical paired no-save surface is still not fully write-contained because `src/core/backtest/engine.py` can create/write under `cache/precomputed/` when precompute is enabled
+- the current verified blocker is now bounded write containment on the canonical paired run surface rather than candidate expressibility or command naming
+- launch/backtest execution remains unopened: the paired boundary and separate authorization packet now agree that candidate artifact creation plus command definition do not authorize execution while `cache/precomputed/` remains outside the approved surface
 
 ## Explicitly not active by default
 
@@ -80,6 +81,7 @@ Unless the user reopens them explicitly with the needed authority, do **not** tr
 - `docs/governance/ri_router_replay_defensive_transition_bridge_activation_precode_packet_2026-04-23.md` defines the next docs-only future config slice that would make the new carrier expressible as a separate candidate bridge artifact without reopening launch authority
 - `docs/governance/ri_router_replay_defensive_transition_bridge_activation_implementation_packet_2026-04-23.md` defines the completed config-only candidate-artifact creation slice for the defensive-transition bridge path while keeping baseline and launch surfaces separate
 - `docs/governance/ri_router_replay_defensive_transition_backtest_launch_boundary_packet_2026-04-23.md` defines the exact paired baseline/candidate no-save command targets and explicit decision-row outputs for any later separately authorized run while keeping launch blocked
+- `docs/governance/ri_router_replay_defensive_transition_backtest_launch_authorization_packet_2026-04-23.md` records the separate fail-closed launch decision for the exact paired subject and localizes the current blocker to out-of-bound `cache/precomputed/` writes on the canonical run path
 
 ## Last verified facts relevant to today
 
@@ -104,16 +106,17 @@ Unless the user reopens them explicitly with the needed authority, do **not** tr
 - the config-only bridge-artifact slice passed targeted pre-commit validation, explicit baseline immutability proof, `tests/governance/test_config_schema_backcompat.py`, config-authority lifecycle selectors, determinism replay, feature-cache invariance, and pipeline invariant selectors
 - the `config_authority_lifecycle_check` skill is now evidenced for this slice by the green lifecycle selectors listed above
 - `scripts/run/run_backtest.py` currently exposes the paired no-save boundary surfaces needed for the exact subject: `--config-file`, `--warmup`, `--data-source-policy`, `--fast-window`, `--precompute-features`, `--decision-rows-out`, `--decision-rows-format`, and `--no-save`
-- the paired launch-boundary packet fixes the explicit decision-row outputs `results/backtests/ri_router_defensive_transition_backtest_20260423/baseline_decision_rows.ndjson` and `results/backtests/ri_router_defensive_transition_backtest_20260423/candidate_decision_rows.ndjson` for any later separately authorized no-save run
-- the mixed-worktree blocker has now been removed by the local logical commit split, and the remaining blocker is the absence of a separate launch-authorization decision
+- the paired launch-boundary packet fixes the intended explicit decision-row outputs `results/backtests/ri_router_defensive_transition_backtest_20260423/baseline_decision_rows.ndjson` and `results/backtests/ri_router_defensive_transition_backtest_20260423/candidate_decision_rows.ndjson` for any later separately authorized no-save run, but those outputs are not yet the full bounded write surface
+- `src/core/backtest/engine.py` currently creates `cache/precomputed/` and can attempt `_np.savez_compressed(...)` to `cache/precomputed/<key>.npz` when canonical paired execution keeps `GENESIS_PRECOMPUTE_FEATURES=1`
+- the mixed-worktree blocker can be removed operationally, but the durable blocker is now write containment on the canonical paired run surface
 
 ## Next admissible steps
 
 Choose the smallest valid next step that matches the user request:
 
-1. if the user wants runnable comparison next, open one setup/launch-boundary slice that names both the baseline and candidate bridge artifacts and re-verifies bounded command/output surfaces without executing yet
-2. if the user wants actual execution next, open one separate launch-authorization packet for the exact paired no-save decision-row capture surface on the now-clean tracked worktree
-3. keep any future execution slice explicitly separate from candidate artifact creation, launch-boundary definition, runtime-default authority, family-rule surfaces, `decision.py`, `decision_sizing.py`, and `risk_state.py` unless a new lane explicitly reopens them
+1. if the user wants to unblock launch next, open one separate containment-fix or containment-precode slice for the exact paired canonical run surface and localize how `cache/precomputed/*.npz` writes are removed, suppressed, or separately governed
+2. keep any writable-surface expansion to include `cache/precomputed/` as a non-preferred, separately governed path rather than silently widening the current boundary
+3. keep any future execution slice explicitly separate from candidate artifact creation, launch-boundary definition, launch authorization, runtime-default authority, family-rule surfaces, `decision.py`, `decision_sizing.py`, and `risk_state.py` unless a new lane explicitly reopens them
 
 ## Hard stops
 

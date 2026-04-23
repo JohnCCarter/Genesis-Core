@@ -29,9 +29,16 @@ data/
 **Data files are NOT version controlled due to size.**
 
 Ignored by `.gitignore`:
+- `data/raw/**/*.parquet`
+- `data/curated/**/*.parquet`
+- `data/curated/**/*.feather`
+- `data/curated/**/*.json`
 - `data/candles/*.parquet`
 - `data/features/*.parquet`
-- `data/metadata/*.json`
+- `data/features/*.feather`
+- `data/archive/**`
+- `data/metadata/**/*.json`
+- `data/meta_labels/*.parquet`
 
 ---
 
@@ -65,9 +72,8 @@ Ignored by `.gitignore`:
 
 ## 📊 Metadata Format
 
-**File naming:** `{SYMBOL}_{TIMEFRAME}_meta.json`
+**File naming:** `{SYMBOL}_{TIMEFRAME}_v1.json`
 
-**Examples:**
 **Examples:**
 - `tBTCUSD_6h_v1.json`
 - `tETHUSD_1h_v1.json`
@@ -91,20 +97,13 @@ Ignored by `.gitignore`:
 
 ## 🚀 Usage
 
-### **Fetch Historical Data:**
-```bash
-python scripts/fetch_historical.py --symbol tBTCUSD --timeframe 1m --months 6
-```
-
-### **Pre-compute Features:**
-```bash
-python scripts/precompute_features.py --symbol tBTCUSD --timeframe 1m
-```
-
-### **Check Data Quality:**
-```bash
-python scripts/validate_data.py --symbol tBTCUSD --timeframe 1m
-```
+> **Note:** Tidigare standalone-skript (`fetch_historical.py`, `precompute_features.py`,
+> `validate_data.py`) har flyttats/ersatts. Se underkataloger i `scripts/`:
+> - `scripts/fetch/` – datahämtning
+> - `scripts/validate/` – datavalidering
+> - `scripts/analyze/` / `scripts/audit/` – analys & audit
+>
+> Konsultera respektive katalogs README/skript för aktuella kommandon.
 
 ---
 

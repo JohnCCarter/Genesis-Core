@@ -43,9 +43,9 @@ It selects among predefined policies based on observable state, and any switchin
 
 Active focus right now:
 
-- operationalize the three-lane workflow model so concept and research-evidence work stay cheaper than runtime-integration
-- keep this slice on docs/workflow surfaces only unless a separate packet opens broader integration work
-- avoid accidental drift from hypothesis/evidence shaping into family/runtime/authority structure
+- open one separate bounded implementation packet for the fresh RI router replay evidence slice
+- keep the current move on docs/packet surfaces only until scope, output root, and gates are explicit
+- continue treating older `scpe_v1_ri` replay surfaces as frozen comparison context only
 
 ## Explicitly not active by default
 
@@ -62,21 +62,22 @@ Unless the user reopens them explicitly with the needed authority, do **not** tr
 - `docs/governance/concept_evidence_runtime_lane_model_2026-04-23.md` is the canonical practical definition of concept / research-evidence / runtime-integration lanes
 - `.github/copilot-instructions.md` already says to prefer the cheapest admissible lane before proposing durable runtime structure
 - `docs/OPUS_46_GOVERNANCE.md` treats lane classification as workflow framing, not new authority
-- the next operational gap is workflow tooling/templates that make concept/research cheaper in practice, not more runtime structure
+- `docs/governance/ri_router_replay_evidence_slice_precode_packet_2026-04-23.md` freezes the first fresh RI router replay subject without granting execution authority
+- `scripts/analyze/scpe_ri_v1_router_replay.py` and `results/research/scpe_v1_ri/` exist as tracked historical reference surfaces, not inherited authority for the fresh slice
 
 ## Last verified facts relevant to today
 
-- the lane model is already documented in the practical SSOT and governance references
-- the command-packet workflow still needed explicit lane-framing prompts to reduce accidental over-scoping
-- explicit user request for this task supersedes the prior `3h` historical-validation anchor
+- the fresh pre-code RI replay packet already freezes the allowed future input/output envelope and explicit non-inheritance rule
+- the frozen Phase C evidence inputs exist locally under `results/research/ri_advisory_environment_fit/phase3_phasec_evidence_capture_v2_2026-04-17/`
+- the historical SCPE replay script and approved eight-file replay root exist locally as comparison/reference context only
 
 ## Next admissible steps
 
 Choose the smallest valid next step that matches the user request:
 
-1. make the workflow template explicitly ask which lane applies and why a cheaper non-runtime form is sufficient
-2. keep the working anchor aligned to the lane-model operationalization until the user explicitly reopens another lane
-3. only after that, open any further concept- or research-evidence slice on bounded non-runtime surfaces
+1. open a bounded implementation packet for one fresh `ri_router_replay_v1` runnable research slice with explicit scope, gates, and stop conditions
+2. keep any actual implementation isolated to non-runtime research surfaces only, with `src/**`, `config/**`, and runtime authority surfaces still out of scope
+3. only after that packet is explicit and accepted, implement one deterministic replay script and prove rerun stability on the approved output root
 
 ## Hard stops
 

@@ -179,6 +179,12 @@ class ResearchCurrentATRHighVolMultiplierOverrideConfig(RuntimeSection):
     high_vol_multiplier_override: float = Field(default=1.0, ge=0.0, le=1.0)
 
 
+class ResearchDefensiveTransitionOverrideConfig(RuntimeSection):
+    enabled: bool = Field(default=False)
+    guard_bars: int = Field(default=3, ge=1, le=20)
+    max_probability_gap: float = Field(default=0.06, ge=0.0, le=1.0)
+
+
 class MultiTimeframeConfig(RuntimeSection):
     use_htf_block: bool = Field(default=True)
     allow_ltf_override: bool = Field(default=False)
@@ -189,6 +195,7 @@ class MultiTimeframeConfig(RuntimeSection):
     research_bull_high_persistence_override: ResearchBullHighPersistenceOverrideConfig = Field(
         default_factory=ResearchBullHighPersistenceOverrideConfig
     )
+    research_defensive_transition_override: ResearchDefensiveTransitionOverrideConfig | None = None
     research_current_atr_high_vol_multiplier_override: (
         ResearchCurrentATRHighVolMultiplierOverrideConfig
     ) = Field(default_factory=ResearchCurrentATRHighVolMultiplierOverrideConfig)
@@ -341,6 +348,12 @@ class RuntimeConfig(RuntimeSection):
             ri_cfg = mtf_cfg.get("regime_intelligence")
             if isinstance(ri_cfg, dict) and ri_cfg.get("regime_definition") is None:
                 ri_cfg.pop("regime_definition", None)
+            defensive_transition_cfg = mtf_cfg.get("research_defensive_transition_override")
+            if not (
+                isinstance(defensive_transition_cfg, dict)
+                and bool(defensive_transition_cfg.get("enabled", False))
+            ):
+                mtf_cfg.pop("research_defensive_transition_override", None)
         return data
 
 

@@ -247,6 +247,7 @@ class ConfigAuthority:
                         "ltf_override_threshold",
                         "ltf_override_adaptive",
                         "research_bull_high_persistence_override",
+                        "research_defensive_transition_override",
                         "research_current_atr_high_vol_multiplier_override",
                         "htf_selector",
                         "regime_intelligence",
@@ -296,6 +297,24 @@ class ConfigAuthority:
                         ):
                             raise ValueError(
                                 "non_whitelisted_field:research_bull_high_persistence_override"
+                            )
+                    defensive_transition_cfg = v.get("research_defensive_transition_override")
+                    if defensive_transition_cfg is not None:
+                        if not isinstance(defensive_transition_cfg, dict):
+                            raise ValueError(
+                                "non_whitelisted_field:research_defensive_transition_override"
+                            )
+                        allowed_defensive_transition = {
+                            "enabled",
+                            "guard_bars",
+                            "max_probability_gap",
+                        }
+                        if any(
+                            subk not in allowed_defensive_transition
+                            for subk in defensive_transition_cfg.keys()
+                        ):
+                            raise ValueError(
+                                "non_whitelisted_field:research_defensive_transition_override"
                             )
                     current_atr_override_cfg = v.get(
                         "research_current_atr_high_vol_multiplier_override"

@@ -367,3 +367,55 @@ def test_current_atr_selective_high_vol_multiplier_absent_matches_enabled_false(
     )
     assert meta_base.get("reasons") == meta_disabled.get("reasons")
     assert meta_base.get("state_out") == meta_disabled.get("state_out")
+
+
+def test_research_defensive_transition_override_absent_matches_enabled_false() -> None:
+    base_cfg = {
+        "ev": {"R_default": 1.0},
+        "thresholds": {
+            "entry_conf_overall": 0.6,
+            "signal_adaptation": {
+                "atr_period": 28,
+                "zones": {"high": {"entry_conf_overall": 0.36, "regime_proba": 0.56}},
+            },
+        },
+        "risk": {"risk_map": [[0.36, 0.01]]},
+        "gates": {"cooldown_bars": 0, "hysteresis_steps": 1},
+    }
+    state = {
+        "bars_since_regime_change": 2,
+        "current_atr": 4.0,
+        "atr_percentiles": {"28": {"p40": 1.0, "p80": 3.0}},
+    }
+
+    action_base, meta_base = decide(
+        {"symbol": "tBTCUSD", "timeframe": "1h"},
+        probas={"buy": 0.52, "sell": 0.48},
+        confidence={"buy": 0.52, "sell": 0.48},
+        regime="bull",
+        state=state,
+        risk_ctx={},
+        cfg=base_cfg,
+    )
+
+    cfg_disabled = deepcopy(base_cfg)
+    cfg_disabled["multi_timeframe"] = {
+        "research_defensive_transition_override": {
+            "enabled": False,
+            "guard_bars": 5,
+            "max_probability_gap": 0.08,
+        }
+    }
+    action_disabled, meta_disabled = decide(
+        {"symbol": "tBTCUSD", "timeframe": "1h"},
+        probas={"buy": 0.52, "sell": 0.48},
+        confidence={"buy": 0.52, "sell": 0.48},
+        regime="bull",
+        state=state,
+        risk_ctx={},
+        cfg=cfg_disabled,
+    )
+
+    assert action_base == action_disabled == "NONE"
+    assert meta_base.get("reasons") == meta_disabled.get("reasons")
+    assert meta_base.get("state_out") == meta_disabled.get("state_out")

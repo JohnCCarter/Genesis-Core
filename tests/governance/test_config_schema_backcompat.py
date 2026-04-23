@@ -183,6 +183,80 @@ def test_validate_current_atr_selective_override_absent_matches_explicit_false_l
     assert dumped_absent == dumped_false
 
 
+def test_validate_research_defensive_transition_override_default_path_does_not_materialize() -> (
+    None
+):
+    proposal = {
+        "strategy_family": "legacy",
+        "thresholds": {
+            "entry_conf_overall": 0.3,
+            "regime_proba": {"balanced": 0.5},
+        },
+    }
+
+    dumped = ConfigAuthority().validate(proposal).model_dump_canonical()
+
+    assert "research_defensive_transition_override" not in dumped["multi_timeframe"]
+
+
+def test_validate_research_defensive_transition_override_enabled_preserves_leaf_in_canonical_dump() -> (
+    None
+):
+    proposal = {
+        "strategy_family": "legacy",
+        "thresholds": {
+            "entry_conf_overall": 0.3,
+            "regime_proba": {"balanced": 0.5},
+        },
+        "multi_timeframe": {
+            "research_defensive_transition_override": {
+                "enabled": True,
+                "guard_bars": 4,
+                "max_probability_gap": 0.03,
+            }
+        },
+    }
+
+    dumped = ConfigAuthority().validate(proposal).model_dump_canonical()
+
+    assert dumped["multi_timeframe"]["research_defensive_transition_override"] == {
+        "enabled": True,
+        "guard_bars": 4,
+        "max_probability_gap": 0.03,
+    }
+
+
+def test_validate_research_defensive_transition_override_absent_matches_explicit_false_leaf() -> (
+    None
+):
+    proposal_absent = {
+        "strategy_family": "legacy",
+        "thresholds": {
+            "entry_conf_overall": 0.3,
+            "regime_proba": {"balanced": 0.5},
+        },
+    }
+    proposal_false = {
+        "strategy_family": "legacy",
+        "thresholds": {
+            "entry_conf_overall": 0.3,
+            "regime_proba": {"balanced": 0.5},
+        },
+        "multi_timeframe": {
+            "research_defensive_transition_override": {
+                "enabled": False,
+                "guard_bars": 7,
+                "max_probability_gap": 0.02,
+            }
+        },
+    }
+
+    dumped_absent = ConfigAuthority().validate(proposal_absent).model_dump_canonical()
+    dumped_false = ConfigAuthority().validate(proposal_false).model_dump_canonical()
+
+    assert dumped_absent == dumped_false
+
+
 def test_validate_accepts_scalar_top_level_regime_proba() -> None:
     proposal = {
         "strategy_family": "legacy",

@@ -9,6 +9,8 @@ Action = Literal["LONG", "SHORT", "NONE"]
 _RESEARCH_BULL_HIGH_PERSISTENCE_REASON = "RESEARCH_BULL_HIGH_PERSISTENCE_OVERRIDE"
 _RESEARCH_BULL_HIGH_PERSISTENCE_STATE_KEY = "research_bull_high_persistence_state"
 _RESEARCH_BULL_HIGH_PERSISTENCE_DEBUG_KEY = "research_bull_high_persistence_debug"
+_RESEARCH_DEFENSIVE_TRANSITION_REASON = "RESEARCH_DEFENSIVE_TRANSITION_OVERRIDE"
+_RESEARCH_DEFENSIVE_TRANSITION_DEBUG_KEY = "research_defensive_transition_debug"
 
 
 def safe_float(value: Any, default: float = 0.0) -> float:
@@ -92,6 +94,36 @@ def _set_research_bull_high_persistence_debug(
     }
 
 
+def _set_research_defensive_transition_debug(
+    state_out: dict[str, Any],
+    *,
+    candidate: Action,
+    bars_since_regime_change: int,
+    guard_bars: int,
+    max_probability_gap: float,
+    threshold: float,
+    threshold_gap: float,
+    p_buy: float,
+    p_sell: float,
+    regime: str,
+    zone: str,
+) -> None:
+    state_out[_RESEARCH_DEFENSIVE_TRANSITION_DEBUG_KEY] = {
+        "applied": True,
+        "reason": _RESEARCH_DEFENSIVE_TRANSITION_REASON,
+        "candidate": candidate,
+        "bars_since_regime_change": max(0, int(bars_since_regime_change)),
+        "guard_bars": max(1, int(guard_bars)),
+        "max_probability_gap": float(max_probability_gap),
+        "threshold": float(threshold),
+        "threshold_gap": float(threshold_gap),
+        "buy": float(p_buy),
+        "sell": float(p_sell),
+        "regime": regime,
+        "zone": zone,
+    }
+
+
 def select_candidate(
     *,
     policy: dict[str, Any],
@@ -117,6 +149,24 @@ def select_candidate(
         0.06,
     )
     research_prev_streak = _get_research_bull_high_persistence_prev_streak(state_in)
+    research_defensive_transition_cfg = dict(
+        mtf_cfg.get("research_defensive_transition_override") or {}
+    )
+    research_defensive_transition_enabled = bool(
+        research_defensive_transition_cfg.get("enabled", False)
+    )
+    research_defensive_transition_guard_bars = max(
+        1,
+        int(safe_float(research_defensive_transition_cfg.get("guard_bars", 3), 3.0)),
+    )
+    research_defensive_transition_max_probability_gap = safe_float(
+        research_defensive_transition_cfg.get("max_probability_gap", 0.06),
+        0.06,
+    )
+    bars_since_regime_change = max(
+        0,
+        int(safe_float(state_in.get("bars_since_regime_change", 0.0), 0.0)),
+    )
 
     if not probas or not isinstance(probas, dict):
         if research_override_enabled and research_prev_streak > 0:
@@ -238,6 +288,8 @@ def select_candidate(
     research_family_active = False
     if not buy_pass and not sell_pass:
         threshold_gap = threshold - p_buy
+        buy_threshold_gap = threshold - p_buy
+        sell_threshold_gap = threshold - p_sell
         research_family = (
             research_override_enabled
             and regime_str == "bull"
@@ -248,6 +300,29 @@ def select_candidate(
         )
         research_family_active = research_family
         research_streak = research_prev_streak + 1 if research_family else 0
+        defensive_transition_candidate: Action | None = None
+        defensive_transition_threshold_gap: float | None = None
+        if (
+            research_defensive_transition_enabled
+            and zone_name == "high"
+            and 0 < bars_since_regime_change <= research_defensive_transition_guard_bars
+        ):
+            if (
+                long_allowed
+                and p_buy > p_sell
+                and buy_threshold_gap >= 0.0
+                and buy_threshold_gap <= research_defensive_transition_max_probability_gap
+            ):
+                defensive_transition_candidate = "LONG"
+                defensive_transition_threshold_gap = buy_threshold_gap
+            elif (
+                short_allowed
+                and p_sell > p_buy
+                and sell_threshold_gap >= 0.0
+                and sell_threshold_gap <= research_defensive_transition_max_probability_gap
+            ):
+                defensive_transition_candidate = "SHORT"
+                defensive_transition_threshold_gap = sell_threshold_gap
         if research_override_enabled and (research_family or research_prev_streak > 0):
             _set_research_bull_high_persistence_state(state_out, research_streak)
         if research_family and research_streak >= research_min_persistence:
@@ -271,6 +346,41 @@ def select_candidate(
                 threshold_gap=threshold_gap,
                 streak=research_streak,
                 min_persistence=research_min_persistence,
+                regime=regime_str,
+                zone=zone_name,
+                p_buy=p_buy,
+                p_sell=p_sell,
+            )
+        elif (
+            defensive_transition_candidate is not None
+            and defensive_transition_threshold_gap is not None
+        ):
+            reasons.append(_RESEARCH_DEFENSIVE_TRANSITION_REASON)
+            _set_research_defensive_transition_debug(
+                state_out,
+                candidate=defensive_transition_candidate,
+                bars_since_regime_change=bars_since_regime_change,
+                guard_bars=research_defensive_transition_guard_bars,
+                max_probability_gap=research_defensive_transition_max_probability_gap,
+                threshold=threshold,
+                threshold_gap=defensive_transition_threshold_gap,
+                p_buy=p_buy,
+                p_sell=p_sell,
+                regime=regime_str,
+                zone=zone_name or "base",
+            )
+            if defensive_transition_candidate == "LONG":
+                buy_pass = True
+            else:
+                sell_pass = True
+            log_decision_event(
+                "RESEARCH_DEFENSIVE_TRANSITION_OVERRIDE",
+                candidate=defensive_transition_candidate,
+                threshold=threshold,
+                threshold_gap=defensive_transition_threshold_gap,
+                bars_since_regime_change=bars_since_regime_change,
+                guard_bars=research_defensive_transition_guard_bars,
+                max_probability_gap=research_defensive_transition_max_probability_gap,
                 regime=regime_str,
                 zone=zone_name,
                 p_buy=p_buy,

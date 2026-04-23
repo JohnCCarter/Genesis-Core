@@ -23,6 +23,7 @@ def test_genesis_pipeline_create_engine_uses_zero_commission_default(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "1")
+    monkeypatch.setenv("GENESIS_FAST_WINDOW", "1")
 
     pipeline = GenesisPipeline()
     engine = pipeline.create_engine(symbol="tBTCUSD", timeframe="3h")

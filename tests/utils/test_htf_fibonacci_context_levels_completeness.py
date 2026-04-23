@@ -21,7 +21,7 @@ def test_get_htf_fibonacci_context_requires_all_required_levels() -> None:
         }
     )
 
-    cache_key = "tBTCUSD_1D_default"
+    cache_key = "tBTCUSD_1D_frozen_first_default"
     htf._htf_context_cache[cache_key] = {"fib_df": fib_df}
 
     ltf_candles = {

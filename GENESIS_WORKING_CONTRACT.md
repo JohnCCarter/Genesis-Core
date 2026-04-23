@@ -48,8 +48,9 @@ Active focus right now:
 - default-path protection is now proven for the new `research_defensive_transition_override` leaf: absent leaf and explicit disabled leaf are canonically identical, and untouched authority/default outputs do not materialize the leaf
 - the separate candidate bridge artifact now exists at `config/strategy/candidates/3h/tBTCUSD_3h_slice8_runtime_bridge_defensive_transition_20260423.json` and differs from the fixed baseline bridge only by explicit materialization of `multi_timeframe.research_defensive_transition_override`
 - the paired launch-boundary packet now exists at `docs/governance/ri_router_replay_defensive_transition_backtest_launch_boundary_packet_2026-04-23.md` and fixes the exact baseline/candidate no-save command targets plus explicit decision-row outputs without authorizing execution
-- the current verified blocker is now launch authorization hygiene rather than candidate expressibility or paired command/output definition: the paired boundary exists, but the tracked worktree is still mixed and no separate launch-authorization packet exists yet
-- launch/backtest execution remains unopened: the paired launch-boundary packet defines the exact subject and explicit outputs, but candidate artifact creation and boundary definition alone do not authorize selection or execution
+- the tracked worktree is now clean after the local logical commit split, so the mixed-worktree blocker has been removed from this lane
+- the current verified blocker is now the absence of a separate launch-authorization packet rather than candidate expressibility, paired command/output definition, or worktree hygiene
+- launch/backtest execution remains unopened: the paired launch-boundary packet defines the exact subject and explicit outputs on a clean tracked worktree, but candidate artifact creation and boundary definition alone do not authorize selection or execution
 
 ## Explicitly not active by default
 
@@ -104,14 +105,14 @@ Unless the user reopens them explicitly with the needed authority, do **not** tr
 - the `config_authority_lifecycle_check` skill is now evidenced for this slice by the green lifecycle selectors listed above
 - `scripts/run/run_backtest.py` currently exposes the paired no-save boundary surfaces needed for the exact subject: `--config-file`, `--warmup`, `--data-source-policy`, `--fast-window`, `--precompute-features`, `--decision-rows-out`, `--decision-rows-format`, and `--no-save`
 - the paired launch-boundary packet fixes the explicit decision-row outputs `results/backtests/ri_router_defensive_transition_backtest_20260423/baseline_decision_rows.ndjson` and `results/backtests/ri_router_defensive_transition_backtest_20260423/candidate_decision_rows.ndjson` for any later separately authorized no-save run
-- the remaining blocker is now worktree hygiene plus separate launch authorization, not candidate expressibility or paired command/output definition
+- the mixed-worktree blocker has now been removed by the local logical commit split, and the remaining blocker is the absence of a separate launch-authorization decision
 
 ## Next admissible steps
 
 Choose the smallest valid next step that matches the user request:
 
 1. if the user wants runnable comparison next, open one setup/launch-boundary slice that names both the baseline and candidate bridge artifacts and re-verifies bounded command/output surfaces without executing yet
-2. if the user wants actual execution next, first isolate or clean the tracked worktree touching the current governed lane and then open one separate launch-authorization packet for the exact paired no-save decision-row capture surface
+2. if the user wants actual execution next, open one separate launch-authorization packet for the exact paired no-save decision-row capture surface on the now-clean tracked worktree
 3. keep any future execution slice explicitly separate from candidate artifact creation, launch-boundary definition, runtime-default authority, family-rule surfaces, `decision.py`, `decision_sizing.py`, and `risk_state.py` unless a new lane explicitly reopens them
 
 ## Hard stops

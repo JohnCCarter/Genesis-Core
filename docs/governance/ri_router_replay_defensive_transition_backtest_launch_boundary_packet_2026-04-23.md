@@ -211,12 +211,12 @@ Boundaried meaning:
 
 | Check                                            | Current status in this session        | Evidence                                                                                                                                                                                                        | Why it matters                                                                                        |
 | ------------------------------------------------ | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Working tree clean for governed surfaces         | Red                                   | `git status --short` still shows tracked modifications across docs/runtime/test surfaces plus untracked RI packet files                                                                                         | launch provenance and exact-state discipline remain reviewable only when the tracked surface is clean |
+| Working tree clean for governed surfaces         | Green                                 | `git status --short` is now empty after the local logical commit split that captured the current governed slices                                                                                                | launch provenance and exact-state discipline are no longer blocked by mixed tracked changes           |
 | Exact baseline bridge identity                   | Green                                 | baseline bridge exists at the fixed path and currently hashes to `824E409D39B7E09A7B04FD2AEE9A34E4D0C3F010440FB6D68069764EB17A0BAD`                                                                             | the baseline subject must remain exact and fingerprint-stable                                         |
 | Exact candidate bridge identity                  | Green                                 | candidate bridge exists at the fixed path and currently hashes to `EF7661A673C3BFC89C1D60168163F4651EDA99D5937DD2163F5B666AD8ED51F7`                                                                            | the candidate subject must remain exact and fingerprint-stable                                        |
 | Repo-visible paired CLI support                  | Green                                 | `scripts/run/run_backtest.py` currently exposes `--config-file`, `--warmup`, `--data-source-policy`, `--fast-window`, `--precompute-features`, `--decision-rows-out`, `--decision-rows-format`, and `--no-save` | the paired command targets remain expressible without runner edits                                    |
 | Explicit bounded output surface at command level | Green at repo-visible command surface | `--no-save` suppresses `TradeLogger.save_all(...)`, and explicit `--decision-rows-out` paths are available for both runs                                                                                        | paired write targets can be kept narrow at the current CLI surface                                    |
-| Launch authorization                             | Still blocked                         | no separate launch-authorization packet exists yet, and the worktree remains dirty on governed surfaces                                                                                                         | paired command/output definition is not equivalent to permission to execute                           |
+| Launch authorization                             | Still blocked                         | no separate launch-authorization packet exists yet even though the tracked worktree is now clean for the current governed lane                                                                                 | paired command/output definition is not equivalent to permission to execute                           |
 
 ## Current blocker between boundary and launch
 
@@ -225,11 +225,11 @@ That blocker is already closed by the separate candidate bridge artifact.
 
 The current blocker is now:
 
-- **launch authorization remains unopened because the tracked worktree is still mixed across governed surfaces even though the paired command/output boundary is now defined**
+- **launch authorization remains unopened because no separate launch-authorization packet exists yet even though the paired command/output boundary is now defined on a clean tracked worktree**
 
 Interpretation:
 
-- the paired run surface is now nameable and bounded
+- the paired run surface is now nameable, bounded, and no longer blocked by mixed tracked changes
 - execution still requires a later separate authorization decision
 - candidate artifact creation and paired command definition still do not authorize launch by themselves
 

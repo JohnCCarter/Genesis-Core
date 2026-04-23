@@ -102,8 +102,16 @@ def get_htf_fibonacci_context_impl(
             config_hash = str(hash(str(config)))
 
     cache_key = f"{symbol}_{htf_timeframe}_{data_source_policy}_{config_hash}"
+    legacy_cache_key = f"{symbol}_{htf_timeframe}_{config_hash}"
     cache_entry = htf_context_cache.setdefault(cache_key, {})
     fib_df = cache_entry.get("fib_df")
+    if fib_df is None and data_source_policy == "frozen_first":
+        legacy_cache_entry = htf_context_cache.get(legacy_cache_key)
+        if isinstance(legacy_cache_entry, dict):
+            legacy_fib_df = legacy_cache_entry.get("fib_df")
+            if legacy_fib_df is not None:
+                fib_df = legacy_fib_df
+                cache_entry["fib_df"] = legacy_fib_df
 
     tf_raw = "" if timeframe is None else str(timeframe)
     tf_norm = tf_raw.strip().lower()

@@ -2,36 +2,36 @@
 name: Codex 5.3 Implementer
 description: Agent + Plan + Doer for scoped implementation with minimal diffs.
 tools:
-  [
-    vscode,
-    execute,
-    read,
-    agent,
-    edit,
-    search,
-    web,
-    "io.github.upstash/context7/*",
-    "io.github.wonderwhy-er/desktop-commander/*",
-    browser,
-    "github/*",
-    vscode.mermaid-chat-features/renderMermaidDiagram,
-    github.vscode-pull-request-github/issue_fetch,
-    github.vscode-pull-request-github/labels_fetch,
-    github.vscode-pull-request-github/notification_fetch,
-    github.vscode-pull-request-github/doSearch,
-    github.vscode-pull-request-github/activePullRequest,
-    github.vscode-pull-request-github/pullRequestStatusChecks,
-    github.vscode-pull-request-github/openPullRequest,
-    mermaidchart.vscode-mermaid-chart/get_syntax_docs,
-    mermaidchart.vscode-mermaid-chart/mermaid-diagram-validator,
-    mermaidchart.vscode-mermaid-chart/mermaid-diagram-preview,
-    ms-python.python/getPythonEnvironmentInfo,
-    ms-python.python/getPythonExecutableCommand,
-    ms-python.python/installPythonPackage,
-    ms-python.python/configurePythonEnvironment,
-    ms-vscode.vscode-websearchforcopilot/websearch,
-    todo,
-  ]
+  - vscode
+  - execute
+  - read
+  - agent
+  - edit
+  - search
+  - web
+  - "github/*"
+  - browser
+  - "io.github.upstash/context7/*"
+  - "io.github.wonderwhy-er/desktop-commander/*"
+  - vscode.mermaid-chat-features/renderMermaidDiagram
+  - github.vscode-pull-request-github/issue_fetch
+  - github.vscode-pull-request-github/labels_fetch
+  - github.vscode-pull-request-github/notification_fetch
+  - github.vscode-pull-request-github/doSearch
+  - github.vscode-pull-request-github/activePullRequest
+  - github.vscode-pull-request-github/pullRequestStatusChecks
+  - github.vscode-pull-request-github/openPullRequest
+  - github.vscode-pull-request-github/create_pull_request
+  - github.vscode-pull-request-github/resolveReviewThread
+  - mermaidchart.vscode-mermaid-chart/get_syntax_docs
+  - mermaidchart.vscode-mermaid-chart/mermaid-diagram-validator
+  - mermaidchart.vscode-mermaid-chart/mermaid-diagram-preview
+  - ms-python.python/getPythonEnvironmentInfo
+  - ms-python.python/getPythonExecutableCommand
+  - ms-python.python/installPythonPackage
+  - ms-python.python/configurePythonEnvironment
+  - ms-vscode.vscode-websearchforcopilot/websearch
+  - todo
 ---
 
 Skills may evolve additively via explicit proposals; they must not self-modify, broaden scope, alter determinism guarantees, or redefine PASS without governance approval.

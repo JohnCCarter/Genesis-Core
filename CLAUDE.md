@@ -82,3 +82,11 @@ Genesis-Core/
 - **Opus 4.6** (`.claude/agents/Opus46.agent.md`): Governance-reviewer
 
 Governance SSOT: `docs/governance_mode.md`
+
+## Working lane model
+
+- Use the canonical workflow guidance in `docs/governance/concept_evidence_runtime_lane_model_2026-04-23.md`
+- This lane model does **not** replace governance modes or higher-order authority files
+- Prefer cheaper shapes first: concept lane -> research-evidence lane -> runtime-integration lane
+- Do not introduce a new strategy family merely to give early research a container; prefer role-map/policy/replay-style candidates first
+- Treat family/runtime/public structure as an expensive integration shape that belongs only in the runtime-integration lane

@@ -43,6 +43,7 @@ Quick path steps:
 - Stability first: no behavior changes unless explicitly authorized.
 - Keep diffs minimal and scoped.
 - Be explicit about assumptions, risks, and verification.
+- Prefer the cheapest admissible workflow lane before proposing durable runtime structure: concept -> research-evidence -> runtime-integration.
 - Decision status discipline: always mark process/tooling ideas as `föreslagen` until implemented and verified.
 - Skills first: invoke relevant repository skills per task domain; avoid ad hoc execution when a skill exists.
 - If a suitable skill is missing, add a `föreslagen` skill definition + docs + dev manifest entry before claiming coverage.
@@ -51,6 +52,32 @@ Quick path steps:
 - Use only repo-local instruction sources for this repository; ignore workstation-level `~/.claude/CLAUDE.md` as policy input.
 - For audit/removal workflows, enforce one-candidate-per-PR to preserve deterministic traceability.
 - `READY_FOR_REVIEW` may only be claimed when evidence is complete: mode/risk/path, scope IN/OUT, exact gates + outcomes, and relevant selectors/artifacts.
+
+## Three-lane workflow model (supplemental guidance)
+
+The canonical practical definition lives in:
+
+- `docs/governance/concept_evidence_runtime_lane_model_2026-04-23.md`
+
+This lane model is workflow guidance only.
+
+It does **not** change:
+
+- governance mode resolution
+- authority precedence
+- freeze rules
+- strict-only surfaces
+- promotion or runtime authority
+
+Use it as follows:
+
+- **Concept lane** for hypotheses, replay/trace analysis, research scripts, and exploratory docs/evidence shaping
+- **Research-evidence lane** for reproducible comparisons and bounded evidence that still carries no runtime/promotion authority
+- **Runtime-integration lane** only when durable runtime/family/public structure must be proposed under the existing governed packet/review path
+
+Operational reminder:
+
+- a strategy family is a costly runtime/public shape, not the default container for early research ideas
 
 ## Controlled dirty research inside RESEARCH
 

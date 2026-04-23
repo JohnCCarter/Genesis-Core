@@ -2,7 +2,7 @@
 
 Date: 2026-04-23
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `launch-boundary-defined / planning-only / no launch authorization`
+Status: `launch-boundary-refreshed / explicit-suppressed-write-surface / non-authorizing`
 
 This packet defines the exact paired launch-boundary surface for the defensive-transition backtest subject now that both the baseline bridge and the separate candidate bridge artifact exist.
 
@@ -15,10 +15,10 @@ Any runnable backtest step still requires a separate follow-up packet with fresh
 - **Mode:** `RESEARCH` — source: `branch:feature/ri-role-map-implementation-2026-03-24`
 - **Category:** `docs`
 - **Risk:** `MED` — why: this packet is still docs-only, but it now defines the exact paired baseline/candidate command and output boundary immediately upstream of any later execution decision, so wording must remain strictly fail-closed.
-- **Required Path:** `Quick`
-- **Objective:** define one docs-only paired launch-boundary surface for the exact defensive-transition baseline-vs-candidate backtest subject, including exact bridge identities, descriptive paired command targets, explicit bounded outputs, and the remaining blocker that still prevents launch authorization.
+- **Required Path:** `Lite`
+- **Objective:** refresh the docs-only paired launch-boundary surface for the exact defensive-transition baseline-vs-candidate backtest subject so that the descriptive command targets, containment evidence, and bounded outputs now match the explicit suppressed-write command surface that uses `GENESIS_PRECOMPUTE_CACHE_WRITE=0`.
 - **Candidate:** `defensive-transition paired backtest launch boundary`
-- **Base SHA:** `2dc6df79`
+- **Base SHA:** `4690e9d8`
 
 ### Constraints
 
@@ -116,7 +116,7 @@ Carried-forward meaning from that chain:
 1. the exact defensive-transition backtest subject is already fixed to one RI bridge baseline on `tBTCUSD`, `3h`, `2024-01-02 -> 2024-12-31`, warmup `120`
 2. setup-only framing never authorized launch by itself
 3. the previous candidate-carrier blocker is now closed because a separate candidate bridge artifact exists at a distinct path
-4. launch still requires a separate authorization decision even though the paired subject is now expressible
+4. launch still requires a separate authorization decision even when the paired subject and boundary surface are fully expressible
 
 ## Exact paired subject
 
@@ -154,6 +154,7 @@ If a later launch-authorization packet is proposed, the canonical reproducibilit
 - `GENESIS_FAST_WINDOW=1`
 - `GENESIS_PRECOMPUTE_FEATURES=1`
 - `GENESIS_FAST_HASH=0`
+- `GENESIS_PRECOMPUTE_CACHE_WRITE=0`
 - explicit CLI flags `--fast-window --precompute-features`
 
 These are reproducibility notes only, not launch authority.
@@ -174,11 +175,11 @@ This is a reproducibility note only, not launch authority.
 
 ### Future baseline-run target
 
-`$env:GENESIS_RANDOM_SEED='42'; $env:GENESIS_FAST_WINDOW='1'; $env:GENESIS_PRECOMPUTE_FEATURES='1'; $env:GENESIS_FAST_HASH='0'; C:/Users/fa06662/Projects/Genesis-Core/.venv/Scripts/python.exe scripts/run/run_backtest.py --symbol tBTCUSD --timeframe 3h --start 2024-01-02 --end 2024-12-31 --warmup 120 --data-source-policy frozen_first --config-file config/strategy/candidates/3h/tBTCUSD_3h_slice8_runtime_bridge_20260326.json --decision-rows-out results/backtests/ri_router_defensive_transition_backtest_20260423/baseline_decision_rows.ndjson --decision-rows-format ndjson --fast-window --precompute-features --no-save`
+`$env:GENESIS_RANDOM_SEED='42'; $env:GENESIS_FAST_WINDOW='1'; $env:GENESIS_PRECOMPUTE_FEATURES='1'; $env:GENESIS_FAST_HASH='0'; $env:GENESIS_PRECOMPUTE_CACHE_WRITE='0'; C:/Users/fa06662/Projects/Genesis-Core/.venv/Scripts/python.exe scripts/run/run_backtest.py --symbol tBTCUSD --timeframe 3h --start 2024-01-02 --end 2024-12-31 --warmup 120 --data-source-policy frozen_first --config-file config/strategy/candidates/3h/tBTCUSD_3h_slice8_runtime_bridge_20260326.json --decision-rows-out results/backtests/ri_router_defensive_transition_backtest_20260423/baseline_decision_rows.ndjson --decision-rows-format ndjson --fast-window --precompute-features --no-save`
 
 ### Future candidate-run target
 
-`$env:GENESIS_RANDOM_SEED='42'; $env:GENESIS_FAST_WINDOW='1'; $env:GENESIS_PRECOMPUTE_FEATURES='1'; $env:GENESIS_FAST_HASH='0'; C:/Users/fa06662/Projects/Genesis-Core/.venv/Scripts/python.exe scripts/run/run_backtest.py --symbol tBTCUSD --timeframe 3h --start 2024-01-02 --end 2024-12-31 --warmup 120 --data-source-policy frozen_first --config-file config/strategy/candidates/3h/tBTCUSD_3h_slice8_runtime_bridge_defensive_transition_20260423.json --decision-rows-out results/backtests/ri_router_defensive_transition_backtest_20260423/candidate_decision_rows.ndjson --decision-rows-format ndjson --fast-window --precompute-features --no-save`
+`$env:GENESIS_RANDOM_SEED='42'; $env:GENESIS_FAST_WINDOW='1'; $env:GENESIS_PRECOMPUTE_FEATURES='1'; $env:GENESIS_FAST_HASH='0'; $env:GENESIS_PRECOMPUTE_CACHE_WRITE='0'; C:/Users/fa06662/Projects/Genesis-Core/.venv/Scripts/python.exe scripts/run/run_backtest.py --symbol tBTCUSD --timeframe 3h --start 2024-01-02 --end 2024-12-31 --warmup 120 --data-source-policy frozen_first --config-file config/strategy/candidates/3h/tBTCUSD_3h_slice8_runtime_bridge_defensive_transition_20260423.json --decision-rows-out results/backtests/ri_router_defensive_transition_backtest_20260423/candidate_decision_rows.ndjson --decision-rows-format ndjson --fast-window --precompute-features --no-save`
 
 ### Why `--compare` and timestamp-driven saves are intentionally excluded here
 
@@ -191,12 +192,12 @@ Why:
 
 - `--no-save` is the smallest repo-visible way to suppress timestamp-driven result/trade/equity writes from `TradeLogger`
 - explicit `--decision-rows-out` paths keep the later paired run surface narrow and reviewable
-- the canonical paired run shape still requires `--precompute-features`, so excluding `TradeLogger` outputs does **not** by itself make full write containment green while `src/core/backtest/engine.py` can still create/write under `cache/precomputed/`
+- `GENESIS_PRECOMPUTE_CACHE_WRITE=0` keeps the canonical paired run shape write-contained on cache miss by suppressing `cache/precomputed/` directory creation and `.npz` writes while preserving existing cache reads and in-memory precompute for the run
 - any later metrics/result comparison artifact remains a separate follow-up decision and must not be smuggled into this boundary packet
 
 ## Explicit bounded output surface for any later paired run
 
-If a later launch packet is separately authorized **after containment is repaired or separately governed**, the paired no-save run surface should remain bounded to the following explicit outputs only:
+If a later separate execution step is performed on the exact surface fixed here, the paired no-save run surface should remain bounded to the following explicit outputs only:
 
 1. `results/backtests/ri_router_defensive_transition_backtest_20260423/baseline_decision_rows.ndjson`
 2. `results/backtests/ri_router_defensive_transition_backtest_20260423/candidate_decision_rows.ndjson`
@@ -211,44 +212,43 @@ Boundaried meaning:
 
 ## Repo-visible evidence observed in this session
 
-| Check                                    | Current status in this session | Evidence                                                                                                                                                                                                                                                                        | Why it matters                                                                              |
-| ---------------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| Working tree clean for governed surfaces | Green                          | `git status --short` is now empty after the local logical commit split that captured the current governed slices                                                                                                                                                                | launch provenance and exact-state discipline are no longer blocked by mixed tracked changes |
-| Exact baseline bridge identity           | Green                          | baseline bridge exists at the fixed path and currently hashes to `824E409D39B7E09A7B04FD2AEE9A34E4D0C3F010440FB6D68069764EB17A0BAD`                                                                                                                                             | the baseline subject must remain exact and fingerprint-stable                               |
-| Exact candidate bridge identity          | Green                          | candidate bridge exists at the fixed path and currently hashes to `EF7661A673C3BFC89C1D60168163F4651EDA99D5937DD2163F5B666AD8ED51F7`                                                                                                                                            | the candidate subject must remain exact and fingerprint-stable                              |
-| Repo-visible paired CLI support          | Green                          | `scripts/run/run_backtest.py` currently exposes `--config-file`, `--warmup`, `--data-source-policy`, `--fast-window`, `--precompute-features`, `--decision-rows-out`, `--decision-rows-format`, and `--no-save`                                                                 | the paired command targets remain expressible without runner edits                          |
-| Full bounded write containment           | Red                            | `--no-save` suppresses `TradeLogger.save_all(...)`, but canonical paired execution still requires `--precompute-features`, and `src/core/backtest/engine.py` can therefore create `cache/precomputed/` and attempt `_np.savez_compressed(...)` to `cache/precomputed/<key>.npz` | launch may not leak writes outside the approved paired surface                              |
-| Launch authorization                     | Still blocked                  | separate launch-authorization remains required, and full bounded write containment is not green on the current canonical paired surface                                                                                                                                         | paired command/output definition is not equivalent to permission to execute                 |
+| Check                                  | Current status in this session               | Evidence                                                                                                                                                                                                                                                                                                                                                                                                   | Why it matters                                                                                            |
+| -------------------------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Paired subject/runtime surfaces stable | Green                                        | current tracked changes are limited to this docs-only refresh plus unrelated `data/DATA_FORMAT.md`; no current diff touches the paired bridge files, `scripts/run/run_backtest.py`, or `src/core/backtest/engine.py`                                                                                                                                                                                       | launch subject identity and containment anchors remain exact                                              |
+| Exact baseline bridge identity         | Green                                        | baseline bridge exists at the fixed path and currently hashes to `824E409D39B7E09A7B04FD2AEE9A34E4D0C3F010440FB6D68069764EB17A0BAD`                                                                                                                                                                                                                                                                        | the baseline subject must remain exact and fingerprint-stable                                             |
+| Exact candidate bridge identity        | Green                                        | candidate bridge exists at the fixed path and currently hashes to `EF7661A673C3BFC89C1D60168163F4651EDA99D5937DD2163F5B666AD8ED51F7`                                                                                                                                                                                                                                                                       | the candidate subject must remain exact and fingerprint-stable                                            |
+| Repo-visible paired CLI support        | Green                                        | `scripts/run/run_backtest.py` currently exposes `--config-file`, `--warmup`, `--data-source-policy`, `--fast-window`, `--precompute-features`, `--decision-rows-out`, `--decision-rows-format`, and `--no-save`                                                                                                                                                                                            | the paired command targets remain expressible without runner edits                                        |
+| Full bounded write containment         | Green for the exact suppressed-write surface | `scripts/run/run_backtest.py::_write_decision_rows(...)` writes only to the explicit decision-row output path, `TradeLogger.save_all(...)` remains behind `if not args.no_save`, no `--intelligence-shadow-out` path is used for this pair, and `src/core/backtest/engine.py` now suppresses `cache_dir.mkdir(...)` plus `_np.savez_compressed(...)` on cache miss when `GENESIS_PRECOMPUTE_CACHE_WRITE=0` | the paired run may stay confined to the approved explicit outputs when the exact env surface is preserved |
+| Launch authorization                   | Separate companion decision                  | this boundary packet remains non-authorizing even when containment is green for the exact suppressed-write surface                                                                                                                                                                                                                                                                                         | paired command/output definition is not equivalent to permission to execute                               |
 
-## Current blocker between boundary and launch
+## Current state between boundary and launch
 
-The current blocker is no longer candidate expressibility.
-That blocker is already closed by the separate candidate bridge artifact.
+The previous blocker is no longer candidate expressibility.
+That blocker was already closed by the separate candidate bridge artifact.
 
-The current blocker is now:
-
-- **full bounded write containment is not green on the canonical paired no-save surface because precompute can still create/write under `cache/precomputed/`, so launch authorization cannot yet turn green even though the paired command/output boundary is now defined**
+The previous containment blocker is now also closed for the exact paired surface that explicitly sets `GENESIS_PRECOMPUTE_CACHE_WRITE=0`.
 
 Interpretation:
 
-- the paired run surface is now nameable and explicit, but not yet fully bounded for authorization purposes
-- execution still requires a later separate authorization decision
+- the paired run surface is now nameable, explicit, and boundary-bounded for the exact suppressed-write command shape
+- this packet still does **not** authorize execution by itself
 - candidate artifact creation and paired command definition still do not authorize launch by themselves
-- `--no-save` remains necessary but not sufficient for containment on the current canonical path
+- launch authorization remains a separate companion decision even when the boundary-level containment question is green for this exact surface
 
-## Preconditions for any later launch-authorization packet
+## Boundary conditions for any companion authorization or later execution step
 
-Any later launch-authorization packet that wishes to use this boundary remains blocked unless all of the following are true:
+Any companion authorization or later execution step that wishes to use this boundary must keep all of the following true:
 
 1. the working tree is clean for tracked files touching the paired bridge subject, runner entrypoint, or governed packet chain
 2. the exact baseline and candidate bridge files still exist at the same paths and still match the SHA256 values recorded above
 3. `scripts/run/run_backtest.py` still supports the paired no-save command targets without runner edits
 4. the paired command targets still keep canonical mode fixed to `1/1` discipline via explicit env vars and `--fast-window --precompute-features`
-5. full bounded write containment is explicitly green for the canonical paired surface, including the absence of unapproved `cache/precomputed/` writes or a separately governed writable-surface decision
-6. the paired run remains RI-only, observational-only, and below runtime integration, paper coupling, readiness, cutover, or promotion claims
-7. actual execution, if later authorized, remains separate from any post-run comparison or readiness claim
+5. the explicit containment qualifier `GENESIS_PRECOMPUTE_CACHE_WRITE=0` remains present, and the pair continues to avoid `--intelligence-shadow-out`
+6. full bounded write containment remains green for that exact suppressed-write surface and is not broadened to env-absent or widened-output variants by implication
+7. the paired run remains RI-only, observational-only, and below runtime integration, paper coupling, readiness, cutover, or promotion claims
+8. actual execution, if separately performed, remains separate from any post-run comparison or readiness claim
 
-These are preconditions for a later separate launch-authorization packet only.
+These are retained boundary conditions only.
 They are not launch approval in this packet.
 
 ## Explicit exclusions / not in scope
@@ -263,6 +263,7 @@ The following remain explicitly outside this packet:
 - intelligence-shadow outputs
 - readiness, cutover, or promotion framing
 - code/config/test/runtime changes
+- known unrelated tracked diff `data/DATA_FORMAT.md` outside this packet's governed surface
 - any new evidence class beyond the paired boundary definition
 
 ## Bottom line
@@ -273,8 +274,8 @@ It locks:
 
 - the exact baseline and candidate bridge identities
 - the exact observational context
-- the descriptive paired no-save command targets that are repo-visible today
+- the descriptive paired no-save command targets for the exact suppressed-write surface that is repo-visible today
 - the explicit bounded decision-row output surface
-- the real remaining blocker: launch authorization remains blocked by uncontrolled canonical backtest writes under `cache/precomputed/`; mixed-worktree status is no longer the controlling blocker for this packet
+- green write-containment evidence for the exact surface that explicitly sets `GENESIS_PRECOMPUTE_CACHE_WRITE=0`
 
 It does **not** authorize launch, execution, comparison verdicts, runtime integration, or any broader authority claim.

@@ -47,11 +47,11 @@ Active focus right now:
 - the current verified conclusion remains that defensive starvation is better localized to raw defensive candidate formation than to generic hysteresis, min-dwell, or downstream sizing semantics
 - default-path protection is now proven for the new `research_defensive_transition_override` leaf: absent leaf and explicit disabled leaf are canonically identical, and untouched authority/default outputs do not materialize the leaf
 - the separate candidate bridge artifact now exists at `config/strategy/candidates/3h/tBTCUSD_3h_slice8_runtime_bridge_defensive_transition_20260423.json` and differs from the fixed baseline bridge only by explicit materialization of `multi_timeframe.research_defensive_transition_override`
-- the paired launch-boundary packet now exists at `docs/governance/ri_router_replay_defensive_transition_backtest_launch_boundary_packet_2026-04-23.md` and fixes the exact baseline/candidate no-save command targets plus explicit decision-row outputs without authorizing execution
-- the separate launch-authorization packet now exists at `docs/governance/ri_router_replay_defensive_transition_backtest_launch_authorization_packet_2026-04-23.md` and records `NOT AUTHORIZED NOW` for the current paired launch surface
+- the paired launch-boundary packet now fixes the exact baseline/candidate no-save command targets for the explicit suppressed-write surface that sets `GENESIS_PRECOMPUTE_CACHE_WRITE=0` while remaining non-authorizing
+- the separate launch-authorization packet now records `AUTHORIZED NOW` for the exact paired pre-execution surface only when that explicit suppressed-write command shape is preserved
 - the repo now contains one explicit bounded containment mechanism in `src/core/backtest/engine.py`: `GENESIS_PRECOMPUTE_CACHE_WRITE=0` suppresses `cache/precomputed/` directory creation and `.npz` writes on cache miss while preserving existing-cache reads and in-memory precompute for the current run
 - default behavior remains unchanged when `GENESIS_PRECOMPUTE_CACHE_WRITE` is absent, so canonical behavior is not silently widened or altered on untouched paths
-- launch/backtest execution remains unopened: the current paired boundary and authorization packets still describe the older command surface, so a separate boundary/authorization refresh is still required before any actual paired execution may be approved
+- actual paired execution has still not happened, but the next admissible step is now the separate execution slice on the exact authorized suppressed-write surface rather than another launch-boundary refresh
 
 ## Explicitly not active by default
 
@@ -80,8 +80,8 @@ Unless the user reopens them explicitly with the needed authority, do **not** tr
 - `docs/governance/ri_router_replay_defensive_transition_candidate_gate_carrier_implementation_packet_2026-04-23.md` defines the implemented bounded carrier slice for `decision_gates.py` plus explicit config-authority support and default-off parity/backcompat proof
 - `docs/governance/ri_router_replay_defensive_transition_bridge_activation_precode_packet_2026-04-23.md` defines the next docs-only future config slice that would make the new carrier expressible as a separate candidate bridge artifact without reopening launch authority
 - `docs/governance/ri_router_replay_defensive_transition_bridge_activation_implementation_packet_2026-04-23.md` defines the completed config-only candidate-artifact creation slice for the defensive-transition bridge path while keeping baseline and launch surfaces separate
-- `docs/governance/ri_router_replay_defensive_transition_backtest_launch_boundary_packet_2026-04-23.md` defines the exact paired baseline/candidate no-save command targets and explicit decision-row outputs for any later separately authorized run while keeping launch blocked
-- `docs/governance/ri_router_replay_defensive_transition_backtest_launch_authorization_packet_2026-04-23.md` records the separate fail-closed launch decision for the exact paired subject and localizes the current blocker to out-of-bound `cache/precomputed/` writes on the canonical run path
+- `docs/governance/ri_router_replay_defensive_transition_backtest_launch_boundary_packet_2026-04-23.md` now defines the exact paired baseline/candidate no-save command targets for the explicit suppressed-write surface that sets `GENESIS_PRECOMPUTE_CACHE_WRITE=0`
+- `docs/governance/ri_router_replay_defensive_transition_backtest_launch_authorization_packet_2026-04-23.md` now records `AUTHORIZED NOW` for the exact paired pre-execution surface only when that explicit suppressed-write command shape is preserved
 - `docs/governance/ri_router_replay_defensive_transition_backtest_precompute_containment_implementation_packet_2026-04-23.md` defines the bounded high-sensitivity runtime slice that introduces an explicit opt-in suppression path for precompute disk writes without changing the default canonical path
 
 ## Last verified facts relevant to today
@@ -107,15 +107,15 @@ Unless the user reopens them explicitly with the needed authority, do **not** tr
 - the config-only bridge-artifact slice passed targeted pre-commit validation, explicit baseline immutability proof, `tests/governance/test_config_schema_backcompat.py`, config-authority lifecycle selectors, determinism replay, feature-cache invariance, and pipeline invariant selectors
 - the `config_authority_lifecycle_check` skill is now evidenced for this slice by the green lifecycle selectors listed above
 - `scripts/run/run_backtest.py` currently exposes the paired no-save boundary surfaces needed for the exact subject: `--config-file`, `--warmup`, `--data-source-policy`, `--fast-window`, `--precompute-features`, `--decision-rows-out`, `--decision-rows-format`, and `--no-save`
-- the paired launch-boundary packet fixes the intended explicit decision-row outputs `results/backtests/ri_router_defensive_transition_backtest_20260423/baseline_decision_rows.ndjson` and `results/backtests/ri_router_defensive_transition_backtest_20260423/candidate_decision_rows.ndjson` for any later separately authorized no-save run, but those outputs are not yet the full bounded write surface
+- the paired launch-boundary packet now fixes the exact explicit suppressed-write command surface by adding `GENESIS_PRECOMPUTE_CACHE_WRITE=0` to the paired target shape while keeping outputs bounded to `results/backtests/ri_router_defensive_transition_backtest_20260423/baseline_decision_rows.ndjson`, `results/backtests/ri_router_defensive_transition_backtest_20260423/candidate_decision_rows.ndjson`, and a later human-written execution summary
 - `src/core/backtest/engine.py` now supports one explicit suppression path: when `GENESIS_PRECOMPUTE_CACHE_WRITE=0`, canonical precompute may still read an existing cache entry and build in-memory precomputed features, but it does not create `cache/precomputed/` and does not attempt `_np.savez_compressed(...)` on cache miss
-- the durable blocker has therefore narrowed from missing runtime containment capability to missing refreshed boundary/authorization evidence for the exact paired command shape that would use the explicit suppression path
+- the launch-authorization packet now records that the explicit suppressed-write surface is authorized for pre-execution, but that authorization does not imply execution already happened
 
 ## Next admissible steps
 
 Choose the smallest valid next step that matches the user request:
 
-1. if the user wants to unblock launch next, open one separate boundary/authorization refresh slice that pins the paired command surface with `GENESIS_PRECOMPUTE_CACHE_WRITE=0` and re-evaluates launch on the explicit suppressed-write path
+1. if the user wants to proceed next, open one separate paired execution slice on the exact authorized suppressed-write surface and capture only the bounded decision-row outputs plus a human-written execution summary
 2. keep any writable-surface expansion to include `cache/precomputed/` as a non-preferred, separately governed path rather than silently widening the current boundary
 3. keep any future execution slice explicitly separate from candidate artifact creation, launch-boundary definition, launch authorization, runtime-default authority, family-rule surfaces, `decision.py`, `decision_sizing.py`, and `risk_state.py` unless a new lane explicitly reopens them
 

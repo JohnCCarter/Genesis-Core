@@ -30,4 +30,4 @@ Operativa dokument i `docs/governance/**` är **kompletterande**, inte överstyr
 2. Klassificera risk (LOW/MED/HIGH) enligt kontraktet.
 3. Välj path (Quick/Lite/Full) och lås Scope IN/OUT.
 4. Om arbetet är research-/governance-tungt: klassificera vilket arbetslane som gäller enligt `concept_evidence_runtime_lane_model_2026-04-23.md`.
-4. Kör gates och producera evidens innan `READY_FOR_REVIEW`.
+5. Kör gates och producera evidens innan `READY_FOR_REVIEW`.

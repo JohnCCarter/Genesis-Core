@@ -11,7 +11,9 @@ Before starting new work, the agent should re-anchor against the latest validate
 ## Non-purpose
 
 This file does **not**:
+
 - authorize new implementation work by itself
+- grant execution authority by itself
 - override `.github/copilot-instructions.md`, `docs/governance_mode.md`, `AGENTS.md`, or explicit user instructions
 - replace packets, reports, or verified evidence artifacts
 
@@ -40,14 +42,16 @@ It selects among predefined policies based on observable state, and any switchin
 ## Current validated lane
 
 Active focus right now:
-- historical driver/backtest validation on the `3h` lane
-- compare real prior evidence vs current bootstrap config behavior
-- avoid accidental drift into runtime/paper execution work unless separately opened
+
+- operationalize the three-lane workflow model so concept and research-evidence work stay cheaper than runtime-integration
+- keep this slice on docs/workflow surfaces only unless a separate packet opens broader integration work
+- avoid accidental drift from hypothesis/evidence shaping into family/runtime/authority structure
 
 ## Explicitly not active by default
 
 Unless the user reopens them explicitly with the needed authority, do **not** treat these as active:
-- SCPE RI research lane beyond its documented closeout authority
+
+- the earlier `3h` historical validation lane from the prior working anchor
 - inherited runtime/integration authority from RI research docs
 - runtime-default changes
 - paper-shadow follow-up fixes
@@ -55,31 +59,31 @@ Unless the user reopens them explicitly with the needed authority, do **not** tr
 
 ## Key anchors already verified
 
-- `docs/governance/scpe_ri_v1_research_closeout_report_2026-04-20.md` closes the bounded research lane and grants no inherited runtime/integration approval
-- `docs/governance/scpe_ri_v1_runtime_integration_roadmap_2026-04-20.md` defines fail-closed future ordering
-- `docs/governance/scpe_ri_v1_shadow_backtest_packet_boundary_2026-04-20.md` says the next admissible packet, if any, must be a separate RI-only shadow-backtest pre-code slice
-- `config/strategy/champions/tBTCUSD_3h.json` is a bootstrap 3h champion, not the strongest known 2024 research config
-- better 2024 research results exist under `results/research/fa_v2_adaptation_off/phase15_bull_high_persistence_override/`
-- older-year `3h` backtests can appear empty because `src/core/backtest/engine.py` prioritizes `data/raw/*_frozen.parquet` over longer curated history when the frozen file exists
+- `docs/governance/concept_evidence_runtime_lane_model_2026-04-23.md` is the canonical practical definition of concept / research-evidence / runtime-integration lanes
+- `.github/copilot-instructions.md` already says to prefer the cheapest admissible lane before proposing durable runtime structure
+- `docs/OPUS_46_GOVERNANCE.md` treats lane classification as workflow framing, not new authority
+- the next operational gap is workflow tooling/templates that make concept/research cheaper in practice, not more runtime structure
 
 ## Last verified facts relevant to today
 
-- canonical bootstrap 3h smoke succeeded for `2024` and `2025`
-- the bootstrap 3h config underperforms several earlier `2024` research configs
-- older yearly windows like `2017`, `2020`, and `2022` were blocked by data-source priority rather than obvious strategy failure
+- the lane model is already documented in the practical SSOT and governance references
+- the command-packet workflow still needed explicit lane-framing prompts to reduce accidental over-scoping
+- explicit user request for this task supersedes the prior `3h` historical-validation anchor
 
 ## Next admissible steps
 
 Choose the smallest valid next step that matches the user request:
-1. compare bootstrap 3h results against prior `2024` research configs in one clean table
-2. open a bounded packet/fix lane for historical data fallback behavior if older-year testing is required
-3. continue read-only historical validation inside already accessible windows
+
+1. make the workflow template explicitly ask which lane applies and why a cheaper non-runtime form is sufficient
+2. keep the working anchor aligned to the lane-model operationalization until the user explicitly reopens another lane
+3. only after that, open any further concept- or research-evidence slice on bounded non-runtime surfaces
 
 ## Hard stops
 
 Stop and re-anchor before proceeding if any of the following happens:
+
 - the next step starts relying on memory instead of cited anchors
-- bootstrap 3h results are treated as if they were the best known 2024 evidence
+- concept or research language starts implying runtime/family/authority status
 - runtime/paper work starts to creep in without explicit authority
 - a task touches strict-only surfaces or champion/promotion semantics
 - the lane is no longer obvious from the latest user request
@@ -87,6 +91,7 @@ Stop and re-anchor before proceeding if any of the following happens:
 ## Required day-start / resume ritual
 
 At the start of a new day or resumed session, do this before reasoning forward:
+
 1. read this file
 2. read persistent user memory relevant to workflow
 3. read current repo memory items relevant to the active lane
@@ -96,6 +101,7 @@ At the start of a new day or resumed session, do this before reasoning forward:
 ## Update rule
 
 Update this file only when one of these changes:
+
 - active lane
 - blocked/not-active lane status
 - known verified blocker

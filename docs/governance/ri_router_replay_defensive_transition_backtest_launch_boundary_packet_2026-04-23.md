@@ -275,6 +275,6 @@ It locks:
 - the exact observational context
 - the descriptive paired no-save command targets that are repo-visible today
 - the explicit bounded decision-row output surface
-- the real remaining blocker: launch authorization is still unopened because the tracked worktree remains mixed
+- the real remaining blocker: launch authorization remains blocked by uncontrolled canonical backtest writes under `cache/precomputed/`; mixed-worktree status is no longer the controlling blocker for this packet
 
 It does **not** authorize launch, execution, comparison verdicts, runtime integration, or any broader authority claim.

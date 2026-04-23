@@ -974,6 +974,196 @@ def test_engine_precompute_cache_write_failure_logs_warning(monkeypatch, caplog)
     assert "Failed to write precompute cache" in caplog.text
 
 
+def test_engine_precompute_cache_write_can_be_disabled_without_creating_cache_dir(
+    tmp_path, monkeypatch
+):
+    import numpy as np
+
+    import core.backtest.engine as engine_mod
+
+    fake_engine_file = tmp_path / "src" / "core" / "backtest" / "engine.py"
+    fake_engine_file.parent.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(engine_mod, "__file__", str(fake_engine_file))
+
+    data_raw = tmp_path / "data" / "raw"
+    data_raw.mkdir(parents=True, exist_ok=True)
+
+    ltf_ts = pd.date_range("2025-01-01", periods=80, freq="15min", tz="UTC")
+    ltf = pd.DataFrame(
+        {
+            "timestamp": ltf_ts,
+            "open": [100.0 + i * 0.1 for i in range(len(ltf_ts))],
+            "high": [100.5 + i * 0.1 for i in range(len(ltf_ts))],
+            "low": [99.5 + i * 0.1 for i in range(len(ltf_ts))],
+            "close": [100.2 + i * 0.1 for i in range(len(ltf_ts))],
+            "volume": [1000.0 + i for i in range(len(ltf_ts))],
+        }
+    )
+    ltf.to_parquet(data_raw / "tBTCUSD_15m_frozen.parquet", index=False)
+
+    save_calls = {"count": 0}
+
+    def _fake_savez(*_args, **_kwargs):
+        save_calls["count"] += 1
+
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "1")
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_CACHE_WRITE", "0")
+    monkeypatch.setattr(np, "savez_compressed", _fake_savez)
+
+    engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m", warmup_bars=10, fast_window=True)
+    cache_dir = tmp_path / "cache" / "precomputed"
+
+    assert cache_dir.exists() is False
+    assert engine.load_data() is True
+    assert engine._precomputed_features is not None
+    assert save_calls["count"] == 0
+    assert cache_dir.exists() is False
+
+
+def test_engine_precompute_cache_write_disabled_still_reads_existing_cache(tmp_path, monkeypatch):
+    import numpy as np
+
+    import core.backtest.engine as engine_mod
+
+    fake_engine_file = tmp_path / "src" / "core" / "backtest" / "engine.py"
+    fake_engine_file.parent.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(engine_mod, "__file__", str(fake_engine_file))
+
+    data_raw = tmp_path / "data" / "raw"
+    data_raw.mkdir(parents=True, exist_ok=True)
+
+    ltf_ts = pd.date_range("2025-01-01", periods=48, freq="15min", tz="UTC")
+    ltf = pd.DataFrame(
+        {
+            "timestamp": ltf_ts,
+            "open": [100.0 + i * 0.1 for i in range(len(ltf_ts))],
+            "high": [100.5 + i * 0.1 for i in range(len(ltf_ts))],
+            "low": [99.5 + i * 0.1 for i in range(len(ltf_ts))],
+            "close": [100.2 + i * 0.1 for i in range(len(ltf_ts))],
+            "volume": [1000.0 + i for i in range(len(ltf_ts))],
+        }
+    )
+    ltf.to_parquet(data_raw / "tBTCUSD_15m_frozen.parquet", index=False)
+
+    cache_dir = tmp_path / "cache" / "precomputed"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    key = "pytest_precompute_read_only"
+    np.savez_compressed(
+        cache_dir / f"{key}.npz",
+        atr_14=np.asarray([1.0, 1.0], dtype=float),
+        atr_50=np.asarray([1.0, 1.0], dtype=float),
+        ema_20=np.asarray([1.0, 1.0], dtype=float),
+        ema_50=np.asarray([1.0, 1.0], dtype=float),
+        rsi_14=np.asarray([50.0, 50.0], dtype=float),
+        bb_position_20_2=np.asarray([0.0, 0.0], dtype=float),
+        adx_14=np.asarray([20.0, 20.0], dtype=float),
+        fib_high_idx=np.asarray([0], dtype=int),
+        fib_low_idx=np.asarray([0], dtype=int),
+        fib_high_px=np.asarray([100.0], dtype=float),
+        fib_low_px=np.asarray([90.0], dtype=float),
+    )
+
+    save_calls = {"count": 0}
+
+    def _fake_savez(*_args, **_kwargs):
+        save_calls["count"] += 1
+
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "1")
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_CACHE_WRITE", "0")
+    monkeypatch.setattr(np, "savez_compressed", _fake_savez)
+
+    engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m", warmup_bars=10, fast_window=True)
+    monkeypatch.setattr(engine, "_precompute_cache_key", lambda _df: key)
+
+    assert engine.load_data() is True
+    assert engine._precomputed_features is not None
+    assert engine._precomputed_features["atr_14"] == [1.0, 1.0]
+    assert save_calls["count"] == 0
+
+
+def test_engine_precompute_cache_write_disabled_preserves_cache_miss_runtime_parity(
+    tmp_path, monkeypatch
+):
+    import shutil
+
+    import core.backtest.engine as engine_mod
+
+    BacktestEngine._candles_cache.clear()
+
+    fake_engine_file = tmp_path / "src" / "core" / "backtest" / "engine.py"
+    fake_engine_file.parent.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(engine_mod, "__file__", str(fake_engine_file))
+
+    data_raw = tmp_path / "data" / "raw"
+    data_raw.mkdir(parents=True, exist_ok=True)
+
+    ltf_ts = pd.date_range("2025-01-01", periods=48, freq="15min", tz="UTC")
+    ltf = pd.DataFrame(
+        {
+            "timestamp": ltf_ts,
+            "open": [100.0 + i * 0.1 for i in range(len(ltf_ts))],
+            "high": [100.5 + i * 0.1 for i in range(len(ltf_ts))],
+            "low": [99.5 + i * 0.1 for i in range(len(ltf_ts))],
+            "close": [100.2 + i * 0.1 for i in range(len(ltf_ts))],
+            "volume": [1000.0 + i for i in range(len(ltf_ts))],
+        }
+    )
+    ltf.to_parquet(data_raw / "tBTCUSD_15m_frozen.parquet", index=False)
+
+    def _fake_evaluate_pipeline(*, candles, policy, configs, state):
+        return (
+            {
+                "action": "NONE",
+                "confidence": 1.0,
+                "regime": "NEUTRAL",
+                "features": {},
+            },
+            {
+                "decision": {"size": 0.0, "state_out": {}},
+                "features": {},
+            },
+        )
+
+    monkeypatch.setattr(engine_mod, "evaluate_pipeline", _fake_evaluate_pipeline)
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "1")
+    monkeypatch.delenv("GENESIS_MODE_EXPLICIT", raising=False)
+
+    cache_dir = tmp_path / "cache" / "precomputed"
+    base_configs = {
+        "meta": {"skip_champion_merge": True},
+        "thresholds": {"entry_conf_overall": 0.99},
+        "risk": {"risk_map": [[0.7, 0.01]]},
+    }
+
+    def _run_with(cache_write_flag: str | None):
+        if cache_write_flag is None:
+            monkeypatch.delenv("GENESIS_PRECOMPUTE_CACHE_WRITE", raising=False)
+        else:
+            monkeypatch.setenv("GENESIS_PRECOMPUTE_CACHE_WRITE", cache_write_flag)
+
+        engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m", warmup_bars=10, fast_window=True)
+        assert engine.load_data() is True
+        return engine.run(
+            policy={"symbol": "tBTCUSD", "timeframe": "15m"},
+            configs=base_configs,
+            verbose=False,
+        )
+
+    default_results = _run_with(None)
+    assert cache_dir.exists() is True
+
+    shutil.rmtree(cache_dir)
+    assert cache_dir.exists() is False
+
+    suppressed_results = _run_with("0")
+
+    assert suppressed_results["summary"] == default_results["summary"]
+    assert suppressed_results["metrics"] == default_results["metrics"]
+    assert suppressed_results["trades"] == default_results["trades"]
+    assert len(suppressed_results["equity_curve"]) == len(default_results["equity_curve"])
+    assert cache_dir.exists() is False
+
+
 def test_engine_precompute_cache_hit_htf_mapping_does_not_require_local_fib_cfg(
     tmp_path, monkeypatch
 ):

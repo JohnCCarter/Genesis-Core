@@ -78,6 +78,18 @@ def _debug_backtest_enabled() -> bool:
     return env_flag_enabled(os.getenv("GENESIS_DEBUG_BACKTEST"), default=False)
 
 
+def _precompute_cache_write_enabled() -> bool:
+    """Return whether precompute cache writes are enabled for this process.
+
+    Default behavior remains unchanged: when the variable is absent, on-disk
+    cache writes stay enabled. Setting `GENESIS_PRECOMPUTE_CACHE_WRITE=0`
+    suppresses directory creation and `.npz` writes on cache miss while still
+    allowing cache reads and in-memory precompute for the current run.
+    """
+
+    return env_flag_enabled(os.getenv("GENESIS_PRECOMPUTE_CACHE_WRITE"), default=True)
+
+
 VALID_DATA_SOURCE_POLICIES = ("frozen_first", "curated_only")
 
 
@@ -503,7 +515,9 @@ class BacktestEngine:
 
                 # Try on-disk cache first
                 cache_dir = Path(__file__).resolve().parents[3] / "cache" / "precomputed"
-                cache_dir.mkdir(parents=True, exist_ok=True)
+                cache_write_enabled = _precompute_cache_write_enabled()
+                if cache_write_enabled:
+                    cache_dir.mkdir(parents=True, exist_ok=True)
                 # IMPORTANT:
                 # Cache key must include data identity, not only length.
                 # Different periods can have the same number of bars; reusing the wrong
@@ -567,27 +581,33 @@ class BacktestEngine:
                     _LOGGER.info("Precompute: computed indicators in %.2fs", elapsed)
 
                     # Optional on-disk cache for reuse between runs
-                    try:
-                        _np.savez_compressed(
-                            cache_path,
-                            atr_14=_np.asarray(atr_14, dtype=float),
-                            atr_50=_np.asarray(atr_50, dtype=float),
-                            ema_20=_np.asarray(ema_20, dtype=float),
-                            ema_50=_np.asarray(ema_50, dtype=float),
-                            rsi_14=_np.asarray(rsi_14, dtype=float),
-                            bb_position_20_2=_np.asarray(bb_pos, dtype=float),
-                            adx_14=_np.asarray(adx_14, dtype=float),
-                            fib_high_idx=_np.asarray(sh_idx, dtype=int),
-                            fib_low_idx=_np.asarray(sl_idx, dtype=int),
-                            fib_high_px=_np.asarray(sh_px, dtype=float),
-                            fib_low_px=_np.asarray(sl_px, dtype=float),
-                        )
-                        _LOGGER.debug("Cached precomputed features: %s", cache_path.name)
-                    except Exception as cache_err:  # nosec B110
-                        _LOGGER.warning(
-                            "Failed to write precompute cache %s: %s",
-                            cache_path,
-                            cache_err,
+                    if cache_write_enabled:
+                        try:
+                            _np.savez_compressed(
+                                cache_path,
+                                atr_14=_np.asarray(atr_14, dtype=float),
+                                atr_50=_np.asarray(atr_50, dtype=float),
+                                ema_20=_np.asarray(ema_20, dtype=float),
+                                ema_50=_np.asarray(ema_50, dtype=float),
+                                rsi_14=_np.asarray(rsi_14, dtype=float),
+                                bb_position_20_2=_np.asarray(bb_pos, dtype=float),
+                                adx_14=_np.asarray(adx_14, dtype=float),
+                                fib_high_idx=_np.asarray(sh_idx, dtype=int),
+                                fib_low_idx=_np.asarray(sl_idx, dtype=int),
+                                fib_high_px=_np.asarray(sh_px, dtype=float),
+                                fib_low_px=_np.asarray(sl_px, dtype=float),
+                            )
+                            _LOGGER.debug("Cached precomputed features: %s", cache_path.name)
+                        except Exception as cache_err:  # nosec B110
+                            _LOGGER.warning(
+                                "Failed to write precompute cache %s: %s",
+                                cache_path,
+                                cache_err,
+                            )
+                    else:
+                        _LOGGER.debug(
+                            "Precompute cache writes disabled via GENESIS_PRECOMPUTE_CACHE_WRITE; "
+                            "using in-memory precomputed features only for this run"
                         )
 
                     pre = {

@@ -71,6 +71,45 @@ Använd följande format för **nya** kandidatfiler:
 - `tBTCUSD_3h_slice8_experimental_cooldown_gate_20260423.json`
 - `tBTCUSD_1h_runtime_candidate_high_freq_20260423.json`
 
+## Lifecycle-manifest
+
+Kandidatbanken får nu ett separat, repo-spårat lifecycle-manifest på:
+
+- `registry/manifests/strategy_candidates.dev.json`
+
+Tillhörande schema finns på:
+
+- `registry/schemas/strategy_candidate_manifest.schema.json`
+
+Manifestet är **arkivmetadata**, inte runtime-authority.
+
+Det används för att:
+
+- hålla viktiga kandidater synliga
+- ge dem explicit lifecycle-status
+- länka configs till styrda governance-/evidensspår
+
+Det används **inte** för att:
+
+- välja runtime-policy
+- ändra champion/default
+- öppna readiness, cutover eller live-nära auktoritet
+
+### Tillåtna lifecycle-statusar
+
+- `research`
+  - bevarad research-kandidat som inte ska tappas bort
+- `candidate`
+  - explicit kandidat värd att jämföra och återköra
+- `promotion_compare`
+  - admitted för styrd jämförelse, men fortfarande inte promotion i sig
+- `champion_freeze`
+  - separat auktoriserad frusen referens för rollback-/spårbarhetsändamål, inte automatisk champion-writeback
+
+`promotion_compare` och `champion_freeze` är alltså fortfarande **icke-auktoritativa etiketter** i manifestet.
+
+`readiness`, `cutover` och live-nära auktoritet ligger utanför kandidatbankens statusmodell och måste fortsätta hanteras i separata governance-lanes.
+
 ## Regler
 
 - En kandidatfil ska beskriva **en tydlig idé** eller variant, inte flera samtidigt.

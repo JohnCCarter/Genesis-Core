@@ -46,6 +46,55 @@ def _schema_validate(errors: list[str], *, data: object, schema: dict, source: P
         errors.append(f"{source}: {loc} {err.message}")
 
 
+def _validate_strategy_candidate_manifests(
+    errors: list[str], *, repo_root: Path, manifests_dir: Path, schema: dict
+) -> None:
+    for manifest_path in sorted(manifests_dir.glob("strategy_candidates*.json")):
+        try:
+            manifest = _load_json(manifest_path)
+        except Exception as e:  # noqa: BLE001 - convert to validation message
+            errors.append(str(e))
+            continue
+
+        _schema_validate(errors, data=manifest, schema=schema, source=manifest_path)
+        if not isinstance(manifest, dict):
+            errors.append(f"{manifest_path}: manifest must be a JSON object")
+            continue
+
+        candidates = manifest.get("candidates")
+        if not isinstance(candidates, list):
+            continue
+
+        seen_ids: set[str] = set()
+        seen_paths: set[str] = set()
+
+        for entry in candidates:
+            if not isinstance(entry, dict):
+                continue
+
+            candidate_id = entry.get("id")
+            if isinstance(candidate_id, str):
+                if candidate_id in seen_ids:
+                    errors.append(f"{manifest_path}: duplicate candidate id {candidate_id!r}")
+                else:
+                    seen_ids.add(candidate_id)
+
+            config_path = entry.get("config_path")
+            if not isinstance(config_path, str):
+                continue
+
+            if config_path in seen_paths:
+                errors.append(f"{manifest_path}: duplicate config_path {config_path!r}")
+            else:
+                seen_paths.add(config_path)
+
+            referenced_path = repo_root / config_path
+            if not referenced_path.exists():
+                errors.append(
+                    f"{manifest_path}: referenced config_path does not exist: {config_path}"
+                )
+
+
 def _priority_rank(compact: dict) -> int:
     """Map P0..P4 to numeric rank (lower is higher priority)."""
 
@@ -67,6 +116,9 @@ def validate_registry(repo_root: Path) -> RegistryValidationResult:
     skill_schema = _load_schema(repo_root, "skill.schema.json")
     compact_schema = _load_schema(repo_root, "compact.schema.json")
     manifest_schema = _load_schema(repo_root, "manifest.schema.json")
+    strategy_candidate_manifest_schema = _load_schema(
+        repo_root, "strategy_candidate_manifest.schema.json"
+    )
 
     skills_dir = repo_root / ".github" / "skills"
     compacts_dir = repo_root / "registry" / "compacts"
@@ -248,5 +300,11 @@ def validate_registry(repo_root: Path) -> RegistryValidationResult:
 
     _validate_manifest("dev")
     _validate_manifest("stable")
+    _validate_strategy_candidate_manifests(
+        errors,
+        repo_root=repo_root,
+        manifests_dir=manifests_dir,
+        schema=strategy_candidate_manifest_schema,
+    )
 
     return RegistryValidationResult(errors=errors)

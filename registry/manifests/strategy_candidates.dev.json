@@ -1,0 +1,57 @@
+{
+  "manifest_type": "strategy_candidates",
+  "registry_version": 1,
+  "candidates": [
+    {
+      "id": "tbtcusd_3h_slice8_runtime_bridge_20260326",
+      "status": "candidate",
+      "symbol": "tBTCUSD",
+      "timeframe": "3h",
+      "strategy_family": "ri",
+      "config_path": "config/strategy/candidates/3h/tBTCUSD_3h_slice8_runtime_bridge_20260326.json",
+      "created_at": "2026-03-26",
+      "governance_refs": [
+        "docs/governance/regime_intelligence_optuna_challenger_family_runtime_bridge_classification_2026-03-26.md",
+        "docs/governance/ri_router_replay_defensive_transition_backtest_execution_summary_2026-04-23.md"
+      ],
+      "evidence_refs": [
+        "docs/analysis/ri_advisory_environment_fit_phase3_direct_baseline_admissibility_2026-04-16.md",
+        "docs/governance/scpe_ri_v1_shadow_backtest_bridge_slice1_execution_summary_2026-04-21.md"
+      ],
+      "lineage": {
+        "source_run": "run_20260324_174006",
+        "source_trial": "trial_001"
+      },
+      "notes": [
+        "Runtime-valid RI bridge candidate preserved as archival lifecycle metadata only.",
+        "Not champion authority, not promotion approval, and not live-readiness state."
+      ]
+    },
+    {
+      "id": "tbtcusd_3h_slice8_runtime_bridge_defensive_transition_20260423",
+      "status": "research",
+      "symbol": "tBTCUSD",
+      "timeframe": "3h",
+      "strategy_family": "ri",
+      "config_path": "config/strategy/candidates/3h/tBTCUSD_3h_slice8_runtime_bridge_defensive_transition_20260423.json",
+      "created_at": "2026-04-23",
+      "governance_refs": [
+        "docs/governance/ri_router_replay_defensive_transition_bridge_activation_implementation_packet_2026-04-23.md",
+        "docs/governance/ri_router_replay_defensive_transition_backtest_execution_summary_2026-04-23.md"
+      ],
+      "evidence_refs": [
+        "docs/governance/ri_router_replay_defensive_transition_backtest_launch_boundary_packet_2026-04-23.md",
+        "docs/governance/ri_router_replay_defensive_transition_backtest_execution_summary_2026-04-23.md"
+      ],
+      "lineage": {
+        "parent_candidate_id": "tbtcusd_3h_slice8_runtime_bridge_20260326",
+        "source_run": "run_20260324_174006",
+        "source_trial": "trial_001_runtime_bridge"
+      },
+      "notes": [
+        "Research-only defensive-transition variant preserved even though the paired frozen run showed no row-level divergence.",
+        "Archival lifecycle metadata only; readiness, cutover, and live-near authority remain separate lanes."
+      ]
+    }
+  ]
+}

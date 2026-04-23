@@ -43,9 +43,9 @@ It selects among predefined policies based on observable state, and any switchin
 
 Active focus right now:
 
-- the bounded RI router replay counterfactual lane is closed as an explanatory research lane
-- the current verified conclusion is that defensive starvation is better localized to raw defensive mandate assignment than to generic hysteresis or min-dwell semantics
-- keep the current move on docs / report / packet interpretation surfaces only unless a fresh follow-up packet is explicitly opened
+- one fresh semantics-focused research packet is now open for the question of whether `defensive_transition_state` should be treated as a mandate-2 candidate on research surfaces only
+- the current verified conclusion remains that defensive starvation is better localized to raw defensive mandate assignment than to generic hysteresis or min-dwell semantics
+- keep the current move on docs / packet interpretation surfaces only unless the user explicitly requests a further evidence slice under the new packet
 
 ## Explicitly not active by default
 
@@ -65,6 +65,7 @@ Unless the user reopens them explicitly with the needed authority, do **not** tr
 - `docs/governance/ri_router_replay_evidence_slice_precode_packet_2026-04-23.md` freezes the first fresh RI router replay subject without granting execution authority
 - `scripts/analyze/scpe_ri_v1_router_replay.py` and `results/research/scpe_v1_ri/` exist as tracked historical reference surfaces, not inherited authority for the fresh slice
 - `docs/governance/ri_router_replay_counterfactual_closeout_report_2026-04-23.md` closes the bounded counterfactual lane and records the current blocker ordering without granting semantics or runtime approval
+- `docs/governance/ri_router_replay_defensive_transition_semantics_packet_2026-04-23.md` opens the next bounded semantics question without authorizing execution or runtime follow-up by itself
 
 ## Last verified facts relevant to today
 
@@ -80,8 +81,8 @@ Unless the user reopens them explicitly with the needed authority, do **not** tr
 
 Choose the smallest valid next step that matches the user request:
 
-1. stop at the current closeout if the user only wanted a bounded research conclusion and tracked anchor
-2. if more evidence is explicitly requested, open one fresh semantics-focused research packet for evaluating whether `defensive_transition_state` should be treated as a mandate-2 candidate on research surfaces only
+1. stop at the current packet if the user only wanted the semantics question scoped and anchored
+2. if more evidence is explicitly requested, open one fresh, packet-compliant research-only follow-up that evaluates whether `defensive_transition_state` should be treated as a mandate-2 candidate on frozen research surfaces only
 3. keep any future follow-up isolated from `src/**`, `config/**`, runtime-default authority, family-rule surfaces, and promotion/readiness semantics unless a new lane is explicitly approved
 
 ## Hard stops

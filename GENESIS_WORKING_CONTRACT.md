@@ -43,9 +43,24 @@ It selects among predefined policies based on observable state, and any switchin
 
 Active focus right now:
 
-- the user has now explicitly reopened the bounded RI-local runtime policy-router lane, and the active pre-code contract for that work is `docs/governance/ri_policy_router_runtime_integration_packet_2026-04-23.md`
-- that packet has already received Opus pre-code review as `APPROVED_WITH_NOTES` on the Full RESEARCH path, with the router kept default-off and fenced below strict-only family/champion surfaces
-- the exact active implementation target is one new pure module `src/core/strategy/ri_policy_router.py` plus bounded integration in `src/core/strategy/decision.py` and explicit config-authority support in `src/core/config/{schema,authority}.py`
+- the bounded default-off RI-local runtime policy-router lane is now implemented and validated; the authoritative runtime packet for that slice remains `docs/governance/ri_policy_router_runtime_integration_packet_2026-04-23.md`
+- the current active lane has moved forward from candidate preservation into one bounded `RESEARCH` runtime tuning slice for the enabled-only router path, and the active implementation packet for that work is now `docs/governance/ri_policy_router_aged_weak_continuation_guard_implementation_packet_2026-04-24.md`
+- the current tuning focus is late-December continuation-entry substitution / timing drift on the same `3h` runtime bridge subject, not broader global router retuning
+- the first preserved tuning candidate is intentionally narrow: an `aged weak continuation guard` hypothesis aimed only at the continuation-admission seam below default/champion/family authority
+- the active implementation hypothesis is now explicit: when the router is enabled, the existing strong continuation predicate has already failed, and the weak continuation branch would otherwise be selected, block that weak continuation by returning router-local no-trade only when `bars_since_regime_change >= 16.0`
+- the first bounded fail-set evidence pass for that guard is now complete and recorded in `docs/governance/ri_policy_router_aged_weak_continuation_guard_failset_evidence_2026-04-24.md`
+- the fail-set result is negative: the guard worsened both the local December window and the micro-window anchor, and it did not remove the intended late continuation entries on `2023-12-22 15:00` and `2023-12-24 21:00`
+- the observed guard-only delta vs the prior router-enabled December artifact was confined to later bars on `2023-12-28 06:00` and `2023-12-30 18:00` plus their cooldown propagation, which means the current guard misses the intended seam
+- the bounded read-only seam replay now explains why: `2023-12-22 15:00` is weak continuation but only `7` bars into regime age, while `2023-12-24 21:00` is already strong continuation (`mandate_level 3`, `stable_continuation_state`) at `13` bars, so the current `aged weak continuation` predicate cannot remove both rows
+- the split-seam direction freeze is now recorded in `docs/governance/ri_policy_router_continuation_split_seam_direction_packet_2026-04-24.md`, which locks the next candidate to explicitly choose either the `weak-pre-aged continuation` seam or the `already-strong continuation` seam before any new runtime authoring begins
+- the cheapest next seam-A candidate is now preserved in `docs/governance/ri_policy_router_weak_pre_aged_release_candidate_packet_2026-04-24.md`, which frames the next continuation-local question as a `weak pre-aged continuation release` problem around `2023-12-22 15:00` rather than as another generic aged-threshold tweak
+- the seam-A implementation slice is now complete under `docs/governance/ri_policy_router_weak_pre_aged_release_implementation_packet_2026-04-24.md`; the bounded runtime change in `ri_policy_router.py` passed its focused tests, required gate bundle, and post-diff audit
+- the first seam-A fail-set evidence pass is now recorded in `docs/governance/ri_policy_router_weak_pre_aged_release_failset_evidence_2026-04-24.md`
+- that fail-set result is negative: the candidate does hit the intended `2023-12-22 15:00` weak pre-aged release seam, but both December fail windows still worsen and `2023-12-24 21:00` remains a later continuation entry on the enabled path
+- the observed row-level delta is materially broader than the intended one-row seam correction: `34` action diffs on the full December fail window and `10` on the micro-window, including blocked earlier baseline longs and replacement continuation entries from `2023-12-23` onward
+- the new analysis note `docs/governance/ri_policy_router_weak_pre_aged_release_cooldown_displacement_diagnosis_2026-04-24.md` now sharpens that fail-set result: the guard is state-carrying, so one seam-A veto can persist as a repeated `RI_no_trade_policy` pocket before later continuation release occurs
+- the observed loss mechanism is now more precise than generic churn: there are `12` substitution episodes on the full fail window, all with replacement continuation entries exactly `2` bars after blocked baseline longs, which matches a cooldown-displacement loop rather than a one-row correction
+- keep-set (`2024`, `2025`) and stress-set (`2018`, `2020 H1`) verification are therefore not admissible for this candidate in its current form
 - the first repo-native strategy candidate lifecycle slice is now implemented and validated across `registry/schemas/strategy_candidate_manifest.schema.json`, `registry/manifests/strategy_candidates.dev.json`, `src/core/governance/registry.py`, `tests/governance/test_registry_validator.py`, and `config/strategy/candidates/README.md`
 - this slice preserves candidate identity, lifecycle status, lineage, and governance/evidence refs as **archival metadata only** and does not create runtime-selection, promotion, champion, readiness, cutover, or live-near authority
 - the first seeded lifecycle entries now preserve the fixed RI runtime bridge candidate as `candidate` and the defensive-transition bridge variant as `research`
@@ -59,7 +74,12 @@ Active focus right now:
 - the repo now contains one explicit bounded containment mechanism in `src/core/backtest/engine.py`: `GENESIS_PRECOMPUTE_CACHE_WRITE=0` suppresses `cache/precomputed/` directory creation and `.npz` writes on cache miss while preserving existing-cache reads and in-memory precompute for the current run
 - default behavior remains unchanged when `GENESIS_PRECOMPUTE_CACHE_WRITE` is absent, so canonical behavior is not silently widened or altered on untouched paths
 - the actual paired execution has now been completed on the exact authorized suppressed-write surface, and the emitted baseline/candidate decision-row artifacts were bit-for-bit identical on this frozen window
-- the next admissible step is therefore no longer launch preparation or the already-closed no-divergence diagnosis; it is a separate bounded candidate-preservation slice that adds the next existing cited candidate to the lifecycle manifest without reopening authority surfaces
+- the next admissible step is no longer launch preparation, lifecycle-seeding, or seam-A implementation; it is a separate bounded analysis/refinement slice that explains why the new seam-A guard now hits `2023-12-22 15:00` but still worsens December through broader action churn across the `2023-12-21 -> 2023-12-25` pocket
+- that bounded analysis/refinement slice is now complete at the docs level and points specifically to a chained no-trade pocket plus a recurring two-bar cooldown displacement loop as the current loss mechanism
+- the earlier explanatory split-seam slice remains complete at the docs level, and the next honest move is still not generic continuation tuning; it is one fresh bounded candidate/analysis step that stays explicit about whether it is solving seam-A trade-off drift or reopening seam-B / strong continuation semantics
+- the weakest-cost follow-up now remains continuation-local candidate-framing first: any next seam-A packet must explain how it avoids repeated `previous_policy = RI_no_trade_policy` chaining and the observed two-bar displacement loop before any keep-set, stress-set, or broader runtime packet is attempted
+- a minimal repo-native findings-bank seed now exists under `artifacts/bundles/findings/` and `artifacts/research_ledger/`; it is research support only: `ArtifactRecord` identity remains authoritative, finding bundles remain descriptive evidence payloads, and `artifacts/research_ledger/indexes/findings_index.json` is a derived, rebuildable projection rather than a policy, readiness, or promotion gate
+- that seed preserves both positive and negative RI-router findings plus the split-seam direction lock so later candidate framing can reuse resolved conclusions instead of repeating already-falsified or already-confirmed work
 
 ## Explicitly not active by default
 
@@ -134,9 +154,12 @@ Unless the user reopens them explicitly with the needed authority, do **not** tr
 
 Choose the smallest valid next step that matches the user request:
 
-1. implement the exact bounded default-off RI policy-router slice from `docs/governance/ri_policy_router_runtime_integration_packet_2026-04-23.md`, keeping scope out of family/champion/promotion surfaces and proving absent-vs-disabled parity for the new leaf
-2. if the router slice cannot stay local to `ri_policy_router.py`, `decision.py`, `schema.py`, and `authority.py`, stop and re-open governance review before widening to any other runtime or family surface
-3. keep candidate-preservation follow-up, lifecycle-skill additions, and any promotion/readiness/cutover semantics explicitly separate from the active runtime policy-router lane unless the user re-prioritizes them
+1. use `docs/governance/ri_policy_router_weak_pre_aged_release_failset_evidence_2026-04-24.md` as the current evidence anchor for why the seam-A candidate is fail-set-negative despite hitting the intended `2023-12-22 15:00` seam
+2. use `docs/governance/ri_policy_router_continuation_split_seam_direction_packet_2026-04-24.md` as the direction lock that still forbids bundling `weak but not aged` and `already strong continuation` under the same next candidate without explicit justification
+3. use `docs/governance/ri_policy_router_weak_pre_aged_release_cooldown_displacement_diagnosis_2026-04-24.md` as the current mechanism-level anchor for why the loss is a chained no-trade pocket plus a two-bar cooldown displacement loop rather than a simple missed target row
+4. do not advance this candidate to keep-set or stress-set verification unless a new bounded slice first removes or honestly bounds that repeated release-veto chaining / displacement mechanism
+5. if the next candidate remains on seam A, keep it continuation-local and explicit about how it differs from the now-vetoed weak-release guard
+6. if the next candidate needs to affect the already-strong seam around `2023-12-24 21:00`, stop and reopen governance review before any runtime edit because that is no longer the old weak-continuation-only question
 
 ## Hard stops
 

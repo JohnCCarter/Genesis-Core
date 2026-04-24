@@ -43,6 +43,10 @@ _SWITCH_DEFAULTS = {
     "defensive_size_multiplier": 0.5,
 }
 
+_AGED_WEAK_CONTINUATION_BARS_THRESHOLD = _CONTINUATION_DEFAULTS["stable_bars_strong"] * 2.0
+_AGED_WEAK_CONTINUATION_GUARD_REASON = "AGED_WEAK_CONTINUATION_GUARD"
+_WEAK_PRE_AGED_RELEASE_GUARD_REASON = "WEAK_PRE_AGED_CONTINUATION_RELEASE_GUARD"
+
 
 @dataclass(frozen=True, slots=True)
 class PolicyRouterOutcome:
@@ -131,6 +135,34 @@ def _previous_router_state(state_in: dict[str, Any]) -> _PreviousRouterState | N
     )
 
 
+def _should_guard_aged_weak_continuation(
+    *,
+    confidence_gate: float,
+    action_edge: float,
+    bars_since_regime_change: float,
+) -> bool:
+    return (
+        bars_since_regime_change >= _AGED_WEAK_CONTINUATION_BARS_THRESHOLD
+        and confidence_gate < _CONTINUATION_DEFAULTS["confidence_strong"]
+        and action_edge < _CONTINUATION_DEFAULTS["edge_strong"]
+    )
+
+
+def _should_block_weak_pre_aged_release(
+    *,
+    raw_decision: _RawRouterDecision,
+    previous_state: _PreviousRouterState,
+    bars_since_regime_change: float,
+) -> bool:
+    return (
+        previous_state.selected_policy == POLICY_NO_TRADE
+        and raw_decision.target_policy == POLICY_CONTINUATION
+        and raw_decision.raw_switch_reason == "continuation_state_supported"
+        and raw_decision.mandate_level == 2
+        and bars_since_regime_change < _CONTINUATION_DEFAULTS["stable_bars_strong"]
+    )
+
+
 def _raw_router_decision(
     *,
     clarity_score: float,
@@ -184,6 +216,18 @@ def _raw_router_decision(
             no_trade=False,
         )
     if continuation_points >= 4 and transition_points <= 2:
+        if _should_guard_aged_weak_continuation(
+            confidence_gate=confidence_gate,
+            action_edge=action_edge,
+            bars_since_regime_change=bars_since_regime_change,
+        ):
+            return _RawRouterDecision(
+                target_policy=POLICY_NO_TRADE,
+                raw_switch_reason=_AGED_WEAK_CONTINUATION_GUARD_REASON,
+                mandate_level=0,
+                confidence_level=0,
+                no_trade=True,
+            )
         return _RawRouterDecision(
             target_policy=POLICY_CONTINUATION,
             raw_switch_reason="continuation_state_supported",
@@ -220,6 +264,7 @@ def _apply_stability_controls(
     *,
     raw_decision: _RawRouterDecision,
     previous_state: _PreviousRouterState | None,
+    bars_since_regime_change: float,
     switch_threshold: int,
     hysteresis: int,
     min_dwell: int,
@@ -260,6 +305,23 @@ def _apply_stability_controls(
             mandate_level=raw_decision.mandate_level,
             confidence_level=raw_decision.confidence_level,
             dwell_duration=1,
+            no_trade=True,
+        )
+
+    if _should_block_weak_pre_aged_release(
+        raw_decision=raw_decision,
+        previous_state=previous_state,
+        bars_since_regime_change=bars_since_regime_change,
+    ):
+        return _StabilityControlledDecision(
+            selected_policy=previous_state.selected_policy,
+            switch_reason=_WEAK_PRE_AGED_RELEASE_GUARD_REASON,
+            switch_proposed=True,
+            switch_blocked=True,
+            previous_policy=previous_state.selected_policy,
+            mandate_level=previous_state.mandate_level,
+            confidence_level=previous_state.confidence_level,
+            dwell_duration=previous_state.dwell_duration + 1,
             no_trade=True,
         )
 
@@ -358,6 +420,7 @@ def resolve_research_policy_router(
     routed_decision = _apply_stability_controls(
         raw_decision=raw_decision,
         previous_state=previous_state,
+        bars_since_regime_change=float(bars_since_regime_change),
         switch_threshold=int(router_cfg["switch_threshold"]),
         hysteresis=int(router_cfg["hysteresis"]),
         min_dwell=int(router_cfg["min_dwell"]),

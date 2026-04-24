@@ -37,6 +37,126 @@ def test_policy_router_returns_none_when_disabled() -> None:
     assert outcome is None
 
 
+def test_policy_router_keeps_fresh_weak_continuation_allowed() -> None:
+    outcome = resolve_research_policy_router(
+        candidate="LONG",
+        conf_val_gate=0.54,
+        p_buy=0.54,
+        p_sell=0.46,
+        max_ev=0.02,
+        r_default=1.0,
+        regime="bear",
+        state_in={"bars_since_regime_change": 10},
+        cfg=_router_cfg(),
+        zone="base",
+    )
+
+    assert outcome is not None
+    assert outcome.selected_policy == POLICY_CONTINUATION
+    assert outcome.no_trade is False
+    assert outcome.debug["switch_reason"] == "continuation_state_supported"
+
+
+def test_policy_router_blocks_aged_weak_continuation() -> None:
+    outcome = resolve_research_policy_router(
+        candidate="LONG",
+        conf_val_gate=0.54,
+        p_buy=0.54,
+        p_sell=0.46,
+        max_ev=0.02,
+        r_default=1.0,
+        regime="bear",
+        state_in={"bars_since_regime_change": 16},
+        cfg=_router_cfg(),
+        zone="base",
+    )
+
+    assert outcome is not None
+    assert outcome.selected_policy == POLICY_NO_TRADE
+    assert outcome.no_trade is True
+    assert outcome.size_multiplier == 0.0
+    assert outcome.debug["switch_reason"] == "AGED_WEAK_CONTINUATION_GUARD"
+
+
+def test_policy_router_preserves_aged_strong_continuation() -> None:
+    outcome = resolve_research_policy_router(
+        candidate="LONG",
+        conf_val_gate=0.55,
+        p_buy=0.60,
+        p_sell=0.40,
+        max_ev=0.10,
+        r_default=1.0,
+        regime="bear",
+        state_in={"bars_since_regime_change": 16},
+        cfg=_router_cfg(),
+        zone="base",
+    )
+
+    assert outcome is not None
+    assert outcome.selected_policy == POLICY_CONTINUATION
+    assert outcome.no_trade is False
+    assert outcome.debug["switch_reason"] == "stable_continuation_state"
+
+
+def test_policy_router_blocks_weak_pre_aged_release_from_no_trade() -> None:
+    outcome = resolve_research_policy_router(
+        candidate="LONG",
+        conf_val_gate=0.54,
+        p_buy=0.54,
+        p_sell=0.46,
+        max_ev=0.02,
+        r_default=1.0,
+        regime="bear",
+        state_in={
+            "bars_since_regime_change": 7,
+            "research_policy_router_state": {
+                "selected_policy": POLICY_NO_TRADE,
+                "mandate_level": 0,
+                "confidence": 0,
+                "dwell_duration": 3,
+            },
+        },
+        cfg=_router_cfg(),
+        zone="base",
+    )
+
+    assert outcome is not None
+    assert outcome.selected_policy == POLICY_NO_TRADE
+    assert outcome.no_trade is True
+    assert outcome.switch_proposed is True
+    assert outcome.switch_blocked is True
+    assert outcome.debug["switch_reason"] == "WEAK_PRE_AGED_CONTINUATION_RELEASE_GUARD"
+
+
+def test_policy_router_allows_release_once_strong_stability_is_reached() -> None:
+    outcome = resolve_research_policy_router(
+        candidate="LONG",
+        conf_val_gate=0.54,
+        p_buy=0.54,
+        p_sell=0.46,
+        max_ev=0.02,
+        r_default=1.0,
+        regime="bear",
+        state_in={
+            "bars_since_regime_change": 8,
+            "research_policy_router_state": {
+                "selected_policy": POLICY_NO_TRADE,
+                "mandate_level": 0,
+                "confidence": 0,
+                "dwell_duration": 3,
+            },
+        },
+        cfg=_router_cfg(),
+        zone="base",
+    )
+
+    assert outcome is not None
+    assert outcome.selected_policy == POLICY_CONTINUATION
+    assert outcome.no_trade is False
+    assert outcome.switch_blocked is False
+    assert outcome.debug["switch_reason"] == "continuation_state_supported"
+
+
 def test_policy_router_selects_defensive_policy_in_fresh_transition_pocket() -> None:
     outcome = resolve_research_policy_router(
         candidate="LONG",

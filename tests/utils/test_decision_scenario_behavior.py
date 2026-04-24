@@ -1163,3 +1163,132 @@ def test_decide_enabled_policy_router_can_force_no_trade_before_sizing() -> None
     state_out = meta["state_out"]
     assert state_out["research_policy_router_state"]["selected_policy"] == "RI_no_trade_policy"
     assert state_out["research_policy_router_debug"]["switch_reason"] == "insufficient_evidence"
+
+
+def test_decide_enabled_policy_router_blocks_only_aged_weak_continuation() -> None:
+    cfg = deepcopy(_BASE_CFG)
+    cfg["thresholds"] = {
+        "entry_conf_overall": 0.3,
+        "regime_proba": {"bull": 0.5},
+    }
+    cfg["risk"] = {"risk_map": [[0.3, 1.0]], "min_combined_multiplier": 0.1}
+    cfg["multi_timeframe"] = {
+        "use_htf_block": False,
+        "allow_ltf_override": False,
+        "research_policy_router": {
+            "enabled": True,
+            "switch_threshold": 2,
+            "hysteresis": 1,
+            "min_dwell": 3,
+            "defensive_size_multiplier": 0.5,
+        },
+    }
+    cfg["htf_fib"] = {"entry": {"enabled": False}}
+    cfg["ltf_fib"] = {"entry": {"enabled": False}}
+
+    common_kwargs = {
+        "cfg": cfg,
+        "probas": {"buy": 0.535, "sell": 0.465},
+        "confidence": {"buy": 0.53, "sell": 0.47},
+        "regime": "bear",
+        "risk_ctx": {},
+        "policy": {},
+    }
+
+    action_fresh, meta_fresh = decide(
+        state={"bars_since_regime_change": 10, "last_regime": "bear"},
+        **common_kwargs,
+    )
+    action_aged, meta_aged = decide(
+        state={"bars_since_regime_change": 16, "last_regime": "bear"},
+        **common_kwargs,
+    )
+
+    assert action_fresh == "LONG"
+    assert "RESEARCH_POLICY_ROUTER_CONTINUATION" in meta_fresh["reasons"]
+    assert meta_fresh["reasons"][-1] == "ENTRY_LONG"
+    assert meta_fresh["state_out"]["research_policy_router_debug"]["switch_reason"] == (
+        "continuation_state_supported"
+    )
+
+    assert action_aged == "NONE"
+    assert "RESEARCH_POLICY_ROUTER_NO_TRADE" in meta_aged["reasons"]
+    assert "ENTRY_LONG" not in meta_aged["reasons"]
+    assert "size" not in meta_aged
+    assert meta_aged["state_out"]["research_policy_router_state"]["selected_policy"] == (
+        "RI_no_trade_policy"
+    )
+    assert meta_aged["state_out"]["research_policy_router_debug"]["switch_reason"] == (
+        "AGED_WEAK_CONTINUATION_GUARD"
+    )
+
+
+def test_decide_enabled_policy_router_blocks_weak_pre_aged_release_from_no_trade() -> None:
+    cfg = deepcopy(_BASE_CFG)
+    cfg["thresholds"] = {
+        "entry_conf_overall": 0.3,
+        "regime_proba": {"bull": 0.5},
+    }
+    cfg["risk"] = {"risk_map": [[0.3, 1.0]], "min_combined_multiplier": 0.1}
+    cfg["multi_timeframe"] = {
+        "use_htf_block": False,
+        "allow_ltf_override": False,
+        "research_policy_router": {
+            "enabled": True,
+            "switch_threshold": 2,
+            "hysteresis": 1,
+            "min_dwell": 3,
+            "defensive_size_multiplier": 0.5,
+        },
+    }
+    cfg["htf_fib"] = {"entry": {"enabled": False}}
+    cfg["ltf_fib"] = {"entry": {"enabled": False}}
+
+    common_kwargs = {
+        "cfg": cfg,
+        "probas": {"buy": 0.54, "sell": 0.46},
+        "confidence": {"buy": 0.54, "sell": 0.46},
+        "regime": "bear",
+        "risk_ctx": {},
+        "policy": {},
+    }
+
+    no_trade_state = {
+        "research_policy_router_state": {
+            "selected_policy": "RI_no_trade_policy",
+            "mandate_level": 0,
+            "confidence": 0,
+            "dwell_duration": 3,
+        },
+        "last_regime": "bear",
+    }
+
+    action_blocked, meta_blocked = decide(
+        state={**no_trade_state, "bars_since_regime_change": 7},
+        **common_kwargs,
+    )
+    action_release, meta_release = decide(
+        state={**no_trade_state, "bars_since_regime_change": 8},
+        **common_kwargs,
+    )
+
+    assert action_blocked == "NONE"
+    assert "RESEARCH_POLICY_ROUTER_NO_TRADE" in meta_blocked["reasons"]
+    assert "ENTRY_LONG" not in meta_blocked["reasons"]
+    assert "size" not in meta_blocked
+    assert meta_blocked["state_out"]["research_policy_router_state"]["selected_policy"] == (
+        "RI_no_trade_policy"
+    )
+    assert meta_blocked["state_out"]["research_policy_router_debug"]["switch_reason"] == (
+        "WEAK_PRE_AGED_CONTINUATION_RELEASE_GUARD"
+    )
+
+    assert action_release == "LONG"
+    assert "RESEARCH_POLICY_ROUTER_CONTINUATION" in meta_release["reasons"]
+    assert meta_release["reasons"][-1] == "ENTRY_LONG"
+    assert meta_release["state_out"]["research_policy_router_state"]["selected_policy"] == (
+        "RI_continuation_policy"
+    )
+    assert meta_release["state_out"]["research_policy_router_debug"]["switch_reason"] == (
+        "stable_continuation_state"
+    )

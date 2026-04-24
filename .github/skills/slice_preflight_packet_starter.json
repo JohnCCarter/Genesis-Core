@@ -49,11 +49,11 @@
       "value": "docs/governance/slice_scout_preflight_bootstrap_packet_2026-04-24.md"
     },
     {
-      "type": "script",
+      "type": "file",
       "value": "scripts/preflight/findings_preflight_lookup.py"
     },
     {
-      "type": "script",
+      "type": "file",
       "value": "scripts/preflight/findings_packet_starter.py"
     }
   ]

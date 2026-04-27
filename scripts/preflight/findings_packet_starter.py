@@ -11,11 +11,13 @@ from pathlib import Path
 from typing import Any
 
 
+REPO_ROOT_MARKER = "pyproject.toml"
+
+
 def _find_repo_root(start: Path) -> Path:
-    for candidate in [start, *start.parents]:
-        if (
-            candidate / "artifacts" / "research_ledger" / "indexes" / "findings_index.json"
-        ).exists():
+    current = start if start.is_dir() else start.parent
+    for candidate in [current, *current.parents]:
+        if (candidate / REPO_ROOT_MARKER).is_file():
             return candidate
     raise RuntimeError("Could not locate repository root from script path")
 

@@ -4,6 +4,9 @@ import json
 from pathlib import Path
 
 from scripts.preflight.findings_preflight_lookup import (
+    _find_repo_root as find_preflight_lookup_repo_root,
+)
+from scripts.preflight.findings_preflight_lookup import (
     find_blocking_matches,
     format_lookup_report,
     load_findings_index,
@@ -19,6 +22,11 @@ def _write_json(path: Path, payload: dict) -> None:
 
 def _seed_findings_repo(tmp_path: Path) -> Path:
     repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True, exist_ok=True)
+    (repo_root / "pyproject.toml").write_text(
+        '[project]\nname = "findings-preflight-lookup-test"\nversion = "0.0.0"\n',
+        encoding="utf-8",
+    )
 
     positive_bundle_path = (
         repo_root
@@ -168,6 +176,19 @@ def _seed_findings_repo(tmp_path: Path) -> Path:
     )
 
     return repo_root
+
+
+def test_find_repo_root_uses_repo_marker_without_generated_findings_index(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    script_path = repo_root / "scripts" / "preflight" / "dummy.py"
+    script_path.parent.mkdir(parents=True, exist_ok=True)
+    script_path.write_text("# dummy\n", encoding="utf-8")
+    (repo_root / "pyproject.toml").write_text(
+        '[project]\nname = "findings-preflight-lookup-test"\nversion = "0.0.0"\n',
+        encoding="utf-8",
+    )
+
+    assert find_preflight_lookup_repo_root(script_path) == repo_root
 
 
 def test_load_findings_index_reads_items(tmp_path: Path) -> None:

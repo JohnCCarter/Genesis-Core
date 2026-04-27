@@ -4,6 +4,9 @@ import json
 from pathlib import Path
 
 from scripts.preflight.findings_packet_starter import (
+    _find_repo_root as find_packet_starter_repo_root,
+)
+from scripts.preflight.findings_packet_starter import (
     build_packet_starter,
     format_packet_starter_markdown,
     main,
@@ -18,6 +21,11 @@ def _write_json(path: Path, payload: dict) -> None:
 
 def _seed_findings_repo(tmp_path: Path) -> Path:
     repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True, exist_ok=True)
+    (repo_root / "pyproject.toml").write_text(
+        '[project]\nname = "findings-packet-starter-test"\nversion = "0.0.0"\n',
+        encoding="utf-8",
+    )
 
     positive_bundle_path = (
         repo_root
@@ -175,6 +183,19 @@ def _seed_findings_repo(tmp_path: Path) -> Path:
     return repo_root
 
 
+def test_find_repo_root_uses_repo_marker_without_generated_findings_index(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    script_path = repo_root / "scripts" / "preflight" / "dummy.py"
+    script_path.parent.mkdir(parents=True, exist_ok=True)
+    script_path.write_text("# dummy\n", encoding="utf-8")
+    (repo_root / "pyproject.toml").write_text(
+        '[project]\nname = "findings-packet-starter-test"\nversion = "0.0.0"\n',
+        encoding="utf-8",
+    )
+
+    assert find_packet_starter_repo_root(script_path) == repo_root
+
+
 def test_build_packet_starter_deduplicates_hints_in_first_seen_order(tmp_path: Path) -> None:
     repo_root = _seed_findings_repo(tmp_path)
     matches = lookup_findings(repo_root, domain="ri_policy_router")
@@ -278,3 +299,28 @@ def test_main_does_not_create_files_or_directories(tmp_path: Path, capsys) -> No
 
     assert exit_code == 0
     assert before_paths == after_paths
+
+
+def test_main_prefers_explicit_repo_root_over_default_root(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo_root = _seed_findings_repo(tmp_path)
+    fallback_root = tmp_path / "fallback-root"
+    fallback_root.mkdir(parents=True, exist_ok=True)
+
+    monkeypatch.setattr("scripts.preflight.findings_packet_starter.ROOT", fallback_root)
+
+    exit_code = main(
+        [
+            "--repo-root",
+            str(repo_root),
+            "--domain",
+            "ri_policy_router",
+            "--title",
+            "Explicit root starter",
+        ]
+    )
+    captured = capsys.readouterr()
+
+    assert exit_code == 0
+    assert "Explicit root starter" in captured.out

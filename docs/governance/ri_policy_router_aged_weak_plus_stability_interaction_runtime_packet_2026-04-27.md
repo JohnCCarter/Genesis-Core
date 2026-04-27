@@ -3,14 +3,39 @@
 Date: 2026-04-27
 Branch: `feature/ri-role-map-implementation-2026-03-24`
 Mode: `RESEARCH`
-Status: `pre-code reviewed / APPROVED_WITH_NOTES / implementation may proceed inside exact scope`
+Status: `negative closeout / exact fail-B verification falsified implementation / reverted`
 
 This packet is the bounded runtime-integration follow-up to `docs/governance/ri_policy_router_aged_weak_plus_stability_interaction_precode_packet_2026-04-27.md`.
 
-It does **not** grant implementation or execution authority by itself.
-Any code change or bounded fail-B backtest/replay on this surface remains blocked until pre-code review is complete.
+It is now a **historical closeout record** for that bounded runtime attempt.
+The implementation was attempted inside the exact approved scope, but the packet's locked fail-B verification falsified it on the active router-enabled carrier, so the runtime code and focused tests were reverted.
 
 Within the aged-weak continuation seam only, the first qualifying aged-weak guard hit in a bounded late-continuation pocket must still block unchanged; only the repeated second-hit residual row in that same pocket may be reconsidered, and only through one explicit interaction contract between the aged-weak guard and same-origin stability/min-dwell retention. Low-zone families, bars-7 continuation persistence, seam-A single-veto, already-strong continuation / seam-B, generic threshold retuning, cooldown, sizing, exits, and config/env/schema/authority surfaces remain OUT.
+
+## Closeout result
+
+- bounded implementation was attempted in:
+  - `src/core/strategy/ri_policy_router.py`
+  - `tests/utils/test_ri_policy_router.py`
+  - `tests/utils/test_decision_scenario_behavior.py`
+- focused/source gates passed during the attempt, but the exact helper-hit proof on the active router-enabled fail-B carrier failed the packet lock
+- expected direct helper-hit set:
+  - `2023-12-28T09:00:00+00:00`
+  - `2023-12-30T21:00:00+00:00`
+- actual direct helper-hit set on the active carrier:
+  - `2023-12-28T09:00:00+00:00`
+  - `2023-12-31T00:00:00+00:00`
+- decisive falsifier:
+  - `2023-12-30T21:00:00+00:00` remained `RESEARCH_POLICY_ROUTER_NO_TRADE`
+  - `2023-12-31T00:00:00+00:00` was incorrectly released instead
+- interpretation on the active carrier:
+  - `2023-12-30T12:00:00+00:00` is already a continuation entry
+  - `2023-12-30T15:00:00+00:00` and `2023-12-30T18:00:00+00:00` are cooldown rows
+  - therefore `2023-12-30T21:00:00+00:00` no longer arrives as the same-origin `RI_no_trade_policy` row assumed by this packet's residual-lock story
+- outcome:
+  - the slice is closed negative on the active carrier
+  - no aged-weak-plus-stability interaction code remains in active runtime after revert
+  - any reopen requires a fresh packet re-anchored to the active carrier truth rather than a reuse of this packet's residual-row assumption
 
 ## COMMAND PACKET
 

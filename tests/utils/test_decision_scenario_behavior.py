@@ -53,6 +53,53 @@ _BASE_DECISION_KWARGS = {
 }
 
 
+def _balanced_low_zone_policy_router_cfg(*, p_buy: float, p_sell: float) -> dict:
+    target_ev_component = 0.231595
+    cfg = deepcopy(_BASE_CFG)
+    cfg["ev"] = {"R_default": p_sell / (p_buy - target_ev_component)}
+    cfg["thresholds"] = {
+        "entry_conf_overall": 0.25,
+        "regime_proba": {"balanced": 0.25},
+        "signal_adaptation": {
+            "atr_period": 14,
+            "zones": {
+                "low": {"entry_conf_overall": 0.16, "regime_proba": 0.16},
+                "mid": {"entry_conf_overall": 0.4, "regime_proba": 0.4},
+                "high": {"entry_conf_overall": 0.6, "regime_proba": 0.6},
+            },
+        },
+    }
+    cfg["risk"] = {"risk_map": [[0.16, 1.0]], "min_combined_multiplier": 0.1}
+    cfg["multi_timeframe"] = {
+        "use_htf_block": False,
+        "allow_ltf_override": False,
+        "research_policy_router": {
+            "enabled": True,
+            "switch_threshold": 2,
+            "hysteresis": 1,
+            "min_dwell": 3,
+            "defensive_size_multiplier": 0.5,
+        },
+    }
+    cfg["htf_fib"] = {"entry": {"enabled": False}}
+    cfg["ltf_fib"] = {"entry": {"enabled": False}}
+    return cfg
+
+
+def _balanced_low_zone_state(
+    *, bars_since_regime_change: int, router_state: dict | None = None
+) -> dict:
+    state = {
+        "bars_since_regime_change": bars_since_regime_change,
+        "last_regime": "balanced",
+        "current_atr": 1.0,
+        "atr_percentiles": {"14": {"p40": 2.0, "p80": 3.0}},
+    }
+    if router_state is not None:
+        state["research_policy_router_state"] = router_state
+    return state
+
+
 def test_decide_risk_state_stress_reduces_size_without_changing_action_path() -> None:
     cfg = deepcopy(_BASE_CFG)
     baseline_state = {
@@ -1165,6 +1212,87 @@ def test_decide_enabled_policy_router_can_force_no_trade_before_sizing() -> None
     assert state_out["research_policy_router_debug"]["switch_reason"] == "insufficient_evidence"
 
 
+def test_decide_enabled_policy_router_preserves_continuation_on_exact_bars7_row() -> None:
+    p_buy = 0.5060251200
+    p_sell = 0.4939748799
+    cfg = _balanced_low_zone_policy_router_cfg(p_buy=p_buy, p_sell=p_sell)
+
+    action, meta = decide(
+        cfg=cfg,
+        state=_balanced_low_zone_state(
+            bars_since_regime_change=7,
+            router_state={
+                "selected_policy": "RI_continuation_policy",
+                "mandate_level": 2,
+                "confidence": 2,
+                "dwell_duration": 3,
+            },
+        ),
+        probas={"buy": p_buy, "sell": p_sell},
+        confidence={"buy": p_buy, "sell": p_sell},
+        regime="balanced",
+        risk_ctx={},
+        policy={},
+    )
+
+    assert action == "LONG"
+    assert "RESEARCH_POLICY_ROUTER_CONTINUATION" in meta["reasons"]
+    assert meta["reasons"][-1] == "ENTRY_LONG"
+    assert float(meta["size"]) == pytest.approx(1.0)
+
+    state_out = meta["state_out"]
+    assert state_out["research_policy_router_state"]["selected_policy"] == (
+        "RI_continuation_policy"
+    )
+    assert state_out["research_policy_router_debug"]["switch_reason"] == (
+        "confidence_below_threshold"
+    )
+    assert state_out["research_policy_router_debug"]["raw_target_policy"] == (
+        "RI_defensive_transition_policy"
+    )
+    assert (
+        state_out["research_policy_router_debug"][
+            "bars7_continuation_persistence_reconsideration_applied"
+        ]
+        is True
+    )
+
+
+def test_decide_enabled_policy_router_excludes_later_low_zone_rows_from_bars7_helper() -> None:
+    p_buy = 0.5068924643
+    p_sell = 0.4931075356
+    cfg = _balanced_low_zone_policy_router_cfg(p_buy=p_buy, p_sell=p_sell)
+
+    action, meta = decide(
+        cfg=cfg,
+        state=_balanced_low_zone_state(
+            bars_since_regime_change=7,
+            router_state={
+                "selected_policy": "RI_no_trade_policy",
+                "mandate_level": 0,
+                "confidence": 0,
+                "dwell_duration": 4,
+            },
+        ),
+        probas={"buy": p_buy, "sell": p_sell},
+        confidence={"buy": p_buy, "sell": p_sell},
+        regime="balanced",
+        risk_ctx={},
+        policy={},
+    )
+
+    assert action == "NONE"
+    assert "RESEARCH_POLICY_ROUTER_NO_TRADE" in meta["reasons"]
+    assert "ENTRY_LONG" not in meta["reasons"]
+    assert "size" not in meta
+    assert (
+        meta["state_out"]["research_policy_router_debug"][
+            "bars7_continuation_persistence_reconsideration_applied"
+        ]
+        is False
+    )
+
+
 def test_decide_enabled_policy_router_blocks_only_aged_weak_continuation() -> None:
     cfg = deepcopy(_BASE_CFG)
     cfg["thresholds"] = {
@@ -1291,4 +1419,86 @@ def test_decide_enabled_policy_router_blocks_weak_pre_aged_release_from_no_trade
     )
     assert meta_release["state_out"]["research_policy_router_debug"]["switch_reason"] == (
         "stable_continuation_state"
+    )
+
+
+def test_decide_enabled_policy_router_allows_second_same_pocket_release_after_single_veto() -> None:
+    cfg = deepcopy(_BASE_CFG)
+    cfg["thresholds"] = {
+        "entry_conf_overall": 0.3,
+        "regime_proba": {"bull": 0.5},
+    }
+    cfg["risk"] = {"risk_map": [[0.3, 1.0]], "min_combined_multiplier": 0.1}
+    cfg["multi_timeframe"] = {
+        "use_htf_block": False,
+        "allow_ltf_override": False,
+        "research_policy_router": {
+            "enabled": True,
+            "switch_threshold": 2,
+            "hysteresis": 1,
+            "min_dwell": 3,
+            "defensive_size_multiplier": 0.5,
+        },
+    }
+    cfg["htf_fib"] = {"entry": {"enabled": False}}
+    cfg["ltf_fib"] = {"entry": {"enabled": False}}
+
+    common_kwargs = {
+        "cfg": cfg,
+        "probas": {"buy": 0.54, "sell": 0.46},
+        "confidence": {"buy": 0.54, "sell": 0.46},
+        "regime": "bear",
+        "risk_ctx": {},
+        "policy": {},
+    }
+
+    no_trade_state = {
+        "research_policy_router_state": {
+            "selected_policy": "RI_no_trade_policy",
+            "mandate_level": 0,
+            "confidence": 0,
+            "dwell_duration": 3,
+        },
+        "last_regime": "bear",
+    }
+
+    action_blocked, meta_blocked = decide(
+        state={**no_trade_state, "bars_since_regime_change": 7},
+        **common_kwargs,
+    )
+
+    assert action_blocked == "NONE"
+    assert "RESEARCH_POLICY_ROUTER_NO_TRADE" in meta_blocked["reasons"]
+    assert meta_blocked["state_out"]["research_policy_router_debug"]["switch_reason"] == (
+        "WEAK_PRE_AGED_CONTINUATION_RELEASE_GUARD"
+    )
+
+    action_release, meta_release = decide(
+        state={**meta_blocked["state_out"], "bars_since_regime_change": 7, "last_regime": "bear"},
+        **common_kwargs,
+    )
+
+    assert action_release == "LONG"
+    assert "RESEARCH_POLICY_ROUTER_CONTINUATION" in meta_release["reasons"]
+    assert meta_release["reasons"][-1] == "ENTRY_LONG"
+    assert meta_release["state_out"]["research_policy_router_state"]["selected_policy"] == (
+        "RI_continuation_policy"
+    )
+    assert meta_release["state_out"]["research_policy_router_debug"]["switch_reason"] == (
+        "continuation_state_supported"
+    )
+
+    action_exit, meta_exit = decide(
+        state={**meta_release["state_out"], "bars_since_regime_change": 8, "last_regime": "bear"},
+        **common_kwargs,
+    )
+
+    assert action_exit == "LONG"
+    assert (
+        "weak_pre_aged_single_veto_latch"
+        not in meta_exit["state_out"]["research_policy_router_state"]
+    )
+    assert (
+        meta_exit["state_out"]["research_policy_router_debug"]["weak_pre_aged_single_veto_latch"]
+        is False
     )

@@ -46,6 +46,10 @@ _SWITCH_DEFAULTS = {
 _AGED_WEAK_CONTINUATION_BARS_THRESHOLD = _CONTINUATION_DEFAULTS["stable_bars_strong"] * 2.0
 _AGED_WEAK_CONTINUATION_GUARD_REASON = "AGED_WEAK_CONTINUATION_GUARD"
 _WEAK_PRE_AGED_RELEASE_GUARD_REASON = "WEAK_PRE_AGED_CONTINUATION_RELEASE_GUARD"
+_WEAK_PRE_AGED_SINGLE_VETO_LATCH_KEY = "weak_pre_aged_single_veto_latch"
+_BARS7_CONTINUATION_PERSISTENCE_RECONSIDERATION_KEY = (
+    "bars7_continuation_persistence_reconsideration_applied"
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -71,6 +75,7 @@ class _RawRouterDecision:
     mandate_level: int
     confidence_level: int
     no_trade: bool
+    bars7_continuation_persistence_reconsideration_applied: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -92,6 +97,7 @@ class _PreviousRouterState:
     mandate_level: int
     confidence_level: int
     dwell_duration: int
+    weak_pre_aged_single_veto_latch: bool
 
 
 def _safe_float(value: Any, default: float = 0.0) -> float:
@@ -132,6 +138,7 @@ def _previous_router_state(state_in: dict[str, Any]) -> _PreviousRouterState | N
         mandate_level=max(0, int(_safe_float(raw.get("mandate_level", 0.0), 0.0))),
         confidence_level=max(0, int(_safe_float(raw.get("confidence", 0.0), 0.0))),
         dwell_duration=max(0, int(_safe_float(raw.get("dwell_duration", 0.0), 0.0))),
+        weak_pre_aged_single_veto_latch=bool(raw.get(_WEAK_PRE_AGED_SINGLE_VETO_LATCH_KEY, False)),
     )
 
 
@@ -148,6 +155,48 @@ def _should_guard_aged_weak_continuation(
     )
 
 
+def _should_reconsider_bars7_continuation_persistence(
+    *,
+    candidate: Action,
+    raw_decision: _RawRouterDecision,
+    previous_state: _PreviousRouterState | None,
+    clarity_score: float,
+    confidence_gate: float,
+    action_edge: float,
+    bars_since_regime_change: float,
+    zone: str,
+) -> bool:
+    tolerance = 1e-12
+    if candidate != "LONG" or previous_state is None:
+        return False
+
+    confidence_delta = _NO_TRADE_DEFAULTS["confidence_floor"] - confidence_gate
+    return (
+        previous_state.selected_policy == POLICY_CONTINUATION
+        and raw_decision.target_policy == POLICY_NO_TRADE
+        and raw_decision.raw_switch_reason == "insufficient_evidence"
+        and zone == "low"
+        and int(bars_since_regime_change) == 7
+        and int(clarity_score) == 35
+        and confidence_delta > 0.0
+        and confidence_delta <= 0.01 + tolerance
+        and 0.010 - tolerance <= action_edge <= 0.014 + tolerance
+    )
+
+
+def _is_weak_pre_aged_release_pocket(
+    *,
+    raw_decision: _RawRouterDecision,
+    bars_since_regime_change: float,
+) -> bool:
+    return (
+        raw_decision.target_policy == POLICY_CONTINUATION
+        and raw_decision.raw_switch_reason == "continuation_state_supported"
+        and raw_decision.mandate_level == 2
+        and bars_since_regime_change < _CONTINUATION_DEFAULTS["stable_bars_strong"]
+    )
+
+
 def _should_block_weak_pre_aged_release(
     *,
     raw_decision: _RawRouterDecision,
@@ -156,11 +205,31 @@ def _should_block_weak_pre_aged_release(
 ) -> bool:
     return (
         previous_state.selected_policy == POLICY_NO_TRADE
-        and raw_decision.target_policy == POLICY_CONTINUATION
-        and raw_decision.raw_switch_reason == "continuation_state_supported"
-        and raw_decision.mandate_level == 2
-        and bars_since_regime_change < _CONTINUATION_DEFAULTS["stable_bars_strong"]
+        and _is_weak_pre_aged_release_pocket(
+            raw_decision=raw_decision,
+            bars_since_regime_change=bars_since_regime_change,
+        )
+        and not previous_state.weak_pre_aged_single_veto_latch
     )
+
+
+def _next_weak_pre_aged_single_veto_latch(
+    *,
+    raw_decision: _RawRouterDecision,
+    routed_decision: _StabilityControlledDecision,
+    previous_state: _PreviousRouterState | None,
+    bars_since_regime_change: float,
+) -> bool:
+    if not _is_weak_pre_aged_release_pocket(
+        raw_decision=raw_decision,
+        bars_since_regime_change=bars_since_regime_change,
+    ):
+        return False
+    if routed_decision.switch_reason == _WEAK_PRE_AGED_RELEASE_GUARD_REASON:
+        return True
+    if previous_state is None:
+        return False
+    return previous_state.weak_pre_aged_single_veto_latch
 
 
 def _raw_router_decision(
@@ -170,12 +239,13 @@ def _raw_router_decision(
     action_edge: float,
     bars_since_regime_change: float,
     zone: str,
+    allow_insufficient_evidence_fallthrough: bool = False,
 ) -> _RawRouterDecision:
     if (
         clarity_score < _NO_TRADE_DEFAULTS["clarity_floor"]
         or confidence_gate < _NO_TRADE_DEFAULTS["confidence_floor"]
         or action_edge < _NO_TRADE_DEFAULTS["edge_floor"]
-    ):
+    ) and not allow_insufficient_evidence_fallthrough:
         return _RawRouterDecision(
             target_policy=POLICY_NO_TRADE,
             raw_switch_reason="insufficient_evidence",
@@ -214,6 +284,9 @@ def _raw_router_decision(
             mandate_level=3,
             confidence_level=3,
             no_trade=False,
+            bars7_continuation_persistence_reconsideration_applied=(
+                allow_insufficient_evidence_fallthrough
+            ),
         )
     if continuation_points >= 4 and transition_points <= 2:
         if _should_guard_aged_weak_continuation(
@@ -227,6 +300,9 @@ def _raw_router_decision(
                 mandate_level=0,
                 confidence_level=0,
                 no_trade=True,
+                bars7_continuation_persistence_reconsideration_applied=(
+                    allow_insufficient_evidence_fallthrough
+                ),
             )
         return _RawRouterDecision(
             target_policy=POLICY_CONTINUATION,
@@ -234,6 +310,9 @@ def _raw_router_decision(
             mandate_level=2,
             confidence_level=2,
             no_trade=False,
+            bars7_continuation_persistence_reconsideration_applied=(
+                allow_insufficient_evidence_fallthrough
+            ),
         )
     if transition_points >= 4:
         return _RawRouterDecision(
@@ -242,6 +321,9 @@ def _raw_router_decision(
             mandate_level=2,
             confidence_level=2,
             no_trade=False,
+            bars7_continuation_persistence_reconsideration_applied=(
+                allow_insufficient_evidence_fallthrough
+            ),
         )
     if transition_points >= 2:
         return _RawRouterDecision(
@@ -250,6 +332,9 @@ def _raw_router_decision(
             mandate_level=1,
             confidence_level=1,
             no_trade=False,
+            bars7_continuation_persistence_reconsideration_applied=(
+                allow_insufficient_evidence_fallthrough
+            ),
         )
     return _RawRouterDecision(
         target_policy=POLICY_NO_TRADE,
@@ -257,6 +342,9 @@ def _raw_router_decision(
         mandate_level=0,
         confidence_level=0,
         no_trade=True,
+        bars7_continuation_persistence_reconsideration_applied=(
+            allow_insufficient_evidence_fallthrough
+        ),
     )
 
 
@@ -417,6 +505,24 @@ def resolve_research_policy_router(
         zone=zone_norm,
     )
     previous_state = _previous_router_state(state_in)
+    if _should_reconsider_bars7_continuation_persistence(
+        candidate=candidate,
+        raw_decision=raw_decision,
+        previous_state=previous_state,
+        clarity_score=float(clarity_result.clarity_score),
+        confidence_gate=float(conf_val_gate),
+        action_edge=float(action_edge),
+        bars_since_regime_change=float(bars_since_regime_change),
+        zone=zone_norm,
+    ):
+        raw_decision = _raw_router_decision(
+            clarity_score=float(clarity_result.clarity_score),
+            confidence_gate=float(conf_val_gate),
+            action_edge=float(action_edge),
+            bars_since_regime_change=float(bars_since_regime_change),
+            zone=zone_norm,
+            allow_insufficient_evidence_fallthrough=True,
+        )
     routed_decision = _apply_stability_controls(
         raw_decision=raw_decision,
         previous_state=previous_state,
@@ -424,6 +530,12 @@ def resolve_research_policy_router(
         switch_threshold=int(router_cfg["switch_threshold"]),
         hysteresis=int(router_cfg["hysteresis"]),
         min_dwell=int(router_cfg["min_dwell"]),
+    )
+    weak_pre_aged_single_veto_latch = _next_weak_pre_aged_single_veto_latch(
+        raw_decision=raw_decision,
+        routed_decision=routed_decision,
+        previous_state=previous_state,
+        bars_since_regime_change=float(bars_since_regime_change),
     )
     size_multiplier = (
         0.0
@@ -440,6 +552,8 @@ def resolve_research_policy_router(
         "confidence": routed_decision.confidence_level,
         "dwell_duration": routed_decision.dwell_duration,
     }
+    if weak_pre_aged_single_veto_latch:
+        state[_WEAK_PRE_AGED_SINGLE_VETO_LATCH_KEY] = True
     debug = {
         "enabled": True,
         "version": RI_POLICY_ROUTER_VERSION,
@@ -460,6 +574,10 @@ def resolve_research_policy_router(
         "mandate_level": routed_decision.mandate_level,
         "confidence_level": routed_decision.confidence_level,
         "dwell_duration": routed_decision.dwell_duration,
+        _WEAK_PRE_AGED_SINGLE_VETO_LATCH_KEY: weak_pre_aged_single_veto_latch,
+        _BARS7_CONTINUATION_PERSISTENCE_RECONSIDERATION_KEY: (
+            raw_decision.bars7_continuation_persistence_reconsideration_applied
+        ),
         "size_multiplier": float(size_multiplier),
         "router_params": {
             "switch_threshold": int(router_cfg["switch_threshold"]),

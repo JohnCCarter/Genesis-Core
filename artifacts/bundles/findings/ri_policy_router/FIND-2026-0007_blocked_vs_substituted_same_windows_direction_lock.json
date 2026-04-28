@@ -1,0 +1,53 @@
+{
+  "$schema": "../schema/research_findings_bundle_v1.schema.json",
+  "schema_version": "research_findings_bundle.v1",
+  "finding_id": "FIND-2026-0007",
+  "artifact_id": "ART-2026-0008",
+  "created_at": "2026-04-28T18:35:00+00:00",
+  "subject": "ri_policy_router",
+  "domain": "ri_policy_router",
+  "symbol": "tBTCUSD",
+  "timeframe": "3h",
+  "window": {
+    "start": "2018-03-20T06:00:00+00:00",
+    "end": "2020-03-19T06:00:00+00:00"
+  },
+  "candidate_refs": [
+    "docs/governance/ri_policy_router_blocked_vs_substituted_same_windows_2026-04-28.md"
+  ],
+  "finding_outcome": "direction_lock",
+  "summary": "Even inside fixed mixed local windows, blocked-versus-substituted balance is phase-sensitive rather than universal: blocked rows look locally stronger in the mixed March 2020 window but locally weaker in the recurrent hostile March 2018 window.",
+  "mechanism": "The two cohorts do not fire row-for-row inside the same bounded interval. In March 2020 continuation rows carry the earlier left-tail segment and blocked rows appear later in the sequence, while the March 2018 window has a different local ordering and different balance. This constrains same-window evidence to chronology and phase structure rather than universal cohort ranking.",
+  "seam_class": "blocked_vs_substituted_same_window_phase_ordering",
+  "key_timestamps": [
+    "2018-03-20T06:00:00+00:00",
+    "2018-03-22T09:00:00+00:00",
+    "2018-03-24T18:00:00+00:00",
+    "2020-03-14T09:00:00+00:00",
+    "2020-03-15T15:00:00+00:00",
+    "2020-03-19T06:00:00+00:00"
+  ],
+  "evidence_refs": [
+    {
+      "path": "docs/governance/ri_policy_router_blocked_vs_substituted_same_windows_2026-04-28.md",
+      "role": "governance_note"
+    },
+    {
+      "path": "results/research/ri_policy_router_blocked_vs_substituted_same_windows_20260428/blocked_vs_substituted_same_windows_summary.json",
+      "role": "summary_artifact"
+    }
+  ],
+  "do_not_repeat": [
+    "Do not treat same-window overlap as row-matched proof of universal blocked-versus-substituted superiority.",
+    "Do not widen to more same-window subjects before resolving phase ordering on the existing 2020 and 2018 windows.",
+    "Do not use these two fixed windows as runtime tuning or promotion authority."
+  ],
+  "next_admissible_step": "If this line is reopened, quantify phase ordering on the same fixed 2020 and 2018 windows only rather than widening to more years or returning to runtime tuning.",
+  "runtime_authority": "none",
+  "metadata": {
+    "classification_role": "descriptive_only",
+    "strategy_family": "ri",
+    "duplicate_work_guard": true,
+    "seed_slice": "findings_bank_extension_2026-04-28"
+  }
+}

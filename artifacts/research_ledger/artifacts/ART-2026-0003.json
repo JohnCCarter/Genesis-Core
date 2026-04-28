@@ -1,0 +1,28 @@
+{
+  "entity_id": "ART-2026-0003",
+  "entity_type": "artifact",
+  "created_at": "2026-04-24T09:31:00+00:00",
+  "schema_version": "research_ledger.v1",
+  "metadata": {
+    "strategy_family": "ri",
+    "strategy_family_source": "family_registry_v1",
+    "classification_role": "descriptive_only",
+    "runtime_authority": "none",
+    "lane": "research_findings_bank_seed",
+    "finding_id": "FIND-2026-0002",
+    "finding_outcome": "direction_lock",
+    "notes": [
+      "This ArtifactRecord identifies a research-only direction-lock finding bundle.",
+      "The direction lock prevents repeated seam conflation and carries no governance verdict authority.",
+      "The bundle payload is descriptive evidence only."
+    ]
+  },
+  "experiment_id": null,
+  "artifact_kind": "evidence_bundle",
+  "path": "artifacts/bundles/findings/ri_policy_router/FIND-2026-0002_continuation_split_seam_direction_lock.json",
+  "role": "research_finding_bundle",
+  "format": "json",
+  "checksum_sha256": "bb1bba6ae3791b09c26511f82e304bd5a5dd2ad7fb9846b1a70b080e68d9e8d8",
+  "size_bytes": 2088,
+  "intelligence_refs": []
+}

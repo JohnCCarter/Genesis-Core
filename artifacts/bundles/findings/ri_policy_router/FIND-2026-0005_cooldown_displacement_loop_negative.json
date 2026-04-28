@@ -1,0 +1,52 @@
+{
+  "$schema": "../schema/research_findings_bundle_v1.schema.json",
+  "schema_version": "research_findings_bundle.v1",
+  "finding_id": "FIND-2026-0005",
+  "artifact_id": "ART-2026-0006",
+  "created_at": "2026-04-24T09:20:00+00:00",
+  "subject": "ri_policy_router",
+  "domain": "ri_policy_router",
+  "symbol": "tBTCUSD",
+  "timeframe": "3h",
+  "window": {
+    "start": "2023-12-21T18:00:00+00:00",
+    "end": "2023-12-25T15:00:00+00:00"
+  },
+  "candidate_refs": [
+    "docs/governance/ri_policy_router_weak_pre_aged_release_implementation_packet_2026-04-24.md"
+  ],
+  "finding_outcome": "negative",
+  "summary": "The seam-A candidate fails through repeated no-trade chaining plus a recurring two-bar cooldown displacement loop, not because the intended row was missed.",
+  "mechanism": "Keeping previous_policy as RI_no_trade_policy allows one seam-A veto to persist into a no-trade pocket, after which unchanged cooldown timing shifts replacement entries exactly two bars later into baseline cooldown bars.",
+  "seam_class": "cooldown_displacement_loop",
+  "key_timestamps": [
+    "2023-12-21T18:00:00+00:00",
+    "2023-12-22T09:00:00+00:00",
+    "2023-12-22T15:00:00+00:00",
+    "2023-12-22T18:00:00+00:00",
+    "2023-12-23T00:00:00+00:00",
+    "2023-12-24T21:00:00+00:00"
+  ],
+  "evidence_refs": [
+    {
+      "path": "docs/governance/ri_policy_router_weak_pre_aged_release_cooldown_displacement_diagnosis_2026-04-24.md",
+      "role": "mechanism_diagnosis"
+    },
+    {
+      "path": "docs/governance/ri_policy_router_weak_pre_aged_release_failset_evidence_2026-04-24.md",
+      "role": "supporting_evidence"
+    }
+  ],
+  "do_not_repeat": [
+    "Do not frame the next seam-A candidate as a simple one-row veto.",
+    "Do not ignore repeated previous_policy equals RI_no_trade_policy chaining when designing the next seam-A candidate."
+  ],
+  "next_admissible_step": "Keep the next seam-A packet continuation-local and explicit about how it avoids repeated no-trade chaining and two-bar displacement.",
+  "runtime_authority": "none",
+  "metadata": {
+    "classification_role": "descriptive_only",
+    "strategy_family": "ri",
+    "duplicate_work_guard": true,
+    "seed_slice": "research_findings_bank_seed_2026-04-24"
+  }
+}

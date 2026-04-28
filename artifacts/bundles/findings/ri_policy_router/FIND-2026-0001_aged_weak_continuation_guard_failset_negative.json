@@ -1,0 +1,50 @@
+{
+  "$schema": "../schema/research_findings_bundle_v1.schema.json",
+  "schema_version": "research_findings_bundle.v1",
+  "finding_id": "FIND-2026-0001",
+  "artifact_id": "ART-2026-0002",
+  "created_at": "2026-04-24T09:00:00+00:00",
+  "subject": "ri_policy_router",
+  "domain": "ri_policy_router",
+  "symbol": "tBTCUSD",
+  "timeframe": "3h",
+  "window": {
+    "start": "2023-12-01T00:00:00+00:00",
+    "end": "2023-12-31T23:59:59+00:00"
+  },
+  "candidate_refs": [
+    "docs/governance/ri_policy_router_aged_weak_continuation_guard_implementation_packet_2026-04-24.md"
+  ],
+  "finding_outcome": "negative",
+  "summary": "The aged weak continuation guard worsened both December fail windows and did not remove the intended late-December losing seam.",
+  "mechanism": "The candidate only matches late aged weak continuation rows, while the targeted losing pair spans weak-pre-aged and already-strong continuation seams.",
+  "seam_class": "aged_weak_continuation_guard",
+  "key_timestamps": [
+    "2023-12-22T15:00:00+00:00",
+    "2023-12-24T21:00:00+00:00",
+    "2023-12-28T06:00:00+00:00",
+    "2023-12-30T18:00:00+00:00"
+  ],
+  "evidence_refs": [
+    {
+      "path": "docs/governance/ri_policy_router_aged_weak_continuation_guard_failset_evidence_2026-04-24.md",
+      "role": "primary_evidence"
+    },
+    {
+      "path": "docs/governance/ri_policy_router_continuation_split_seam_direction_packet_2026-04-24.md",
+      "role": "seam_interpretation"
+    }
+  ],
+  "do_not_repeat": [
+    "Do not treat the late-December losing rows as one homogeneous aged weak continuation seam.",
+    "Do not advance this candidate to keep-set or stress-set verification."
+  ],
+  "next_admissible_step": "Frame the next candidate against one explicitly chosen seam class instead of retuning the aged weak guard further.",
+  "runtime_authority": "none",
+  "metadata": {
+    "classification_role": "descriptive_only",
+    "strategy_family": "ri",
+    "duplicate_work_guard": true,
+    "seed_slice": "research_findings_bank_seed_2026-04-24"
+  }
+}

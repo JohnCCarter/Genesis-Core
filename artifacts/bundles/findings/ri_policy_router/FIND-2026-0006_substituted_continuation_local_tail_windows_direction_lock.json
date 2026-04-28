@@ -1,0 +1,53 @@
+{
+  "$schema": "../schema/research_findings_bundle_v1.schema.json",
+  "schema_version": "research_findings_bundle.v1",
+  "finding_id": "FIND-2026-0006",
+  "artifact_id": "ART-2026-0007",
+  "created_at": "2026-04-28T18:30:00+00:00",
+  "subject": "ri_policy_router",
+  "domain": "ri_policy_router",
+  "symbol": "tBTCUSD",
+  "timeframe": "3h",
+  "window": {
+    "start": "2018-01-29T12:00:00+00:00",
+    "end": "2025-11-29T18:00:00+00:00"
+  },
+  "candidate_refs": [
+    "docs/governance/ri_policy_router_substituted_continuation_local_tail_windows_2026-04-28.md"
+  ],
+  "finding_outcome": "direction_lock",
+  "summary": "Substituted-continuation weakness does not follow one universal annual shape on the curated observational surface: 2020 concentrates bad rows into a few acute windows, 2018 and 2022 revisit recurrent multi-row weak windows, and 2025 is weaker in a more fragmented form.",
+  "mechanism": "On the curated observational proxy surface, the same substituted-continuation cohort distributes weak rows differently by year: 2020 concentrates them into a few acute windows, 2018 and 2022 recur across many multi-row windows, and 2025 shows smaller scattered clusters. This constrains framing toward concentration-versus-recurrence rather than a single annual continuation rule.",
+  "seam_class": "substituted_continuation_local_window_shape",
+  "key_timestamps": [
+    "2018-01-29T12:00:00+00:00",
+    "2018-11-22T21:00:00+00:00",
+    "2020-03-11T03:00:00+00:00",
+    "2022-06-09T21:00:00+00:00",
+    "2025-03-08T06:00:00+00:00",
+    "2025-11-29T18:00:00+00:00"
+  ],
+  "evidence_refs": [
+    {
+      "path": "docs/governance/ri_policy_router_substituted_continuation_local_tail_windows_2026-04-28.md",
+      "role": "governance_note"
+    },
+    {
+      "path": "results/research/ri_policy_router_substituted_continuation_local_tail_windows_20260428/substituted_continuation_local_tail_windows_summary.json",
+      "role": "summary_artifact"
+    }
+  ],
+  "do_not_repeat": [
+    "Do not treat continuation weakness as one universal positive-versus-negative annual rule.",
+    "Do not collapse acute 2020 concentration and recurrent 2018 or 2022 multi-window weakness into the same local shape.",
+    "Do not reopen runtime tuning directly from this local-window packaging finding."
+  ],
+  "next_admissible_step": "If this line is reopened, keep follow-up on fixed local subjects or phase-ordering evidence rather than widening back to annual grouping or returning to runtime tuning.",
+  "runtime_authority": "none",
+  "metadata": {
+    "classification_role": "descriptive_only",
+    "strategy_family": "ri",
+    "duplicate_work_guard": true,
+    "seed_slice": "findings_bank_extension_2026-04-28"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "$schema": "../schema/research_findings_bundle_v1.schema.json",
+  "schema_version": "research_findings_bundle.v1",
+  "finding_id": "FIND-2026-0003",
+  "artifact_id": "ART-2026-0004",
+  "created_at": "2026-04-24T09:10:00+00:00",
+  "subject": "ri_policy_router",
+  "domain": "ri_policy_router",
+  "symbol": "tBTCUSD",
+  "timeframe": "3h",
+  "window": {
+    "start": "2023-12-22T15:00:00+00:00",
+    "end": "2023-12-22T15:00:00+00:00"
+  },
+  "candidate_refs": [
+    "docs/governance/ri_policy_router_weak_pre_aged_release_implementation_packet_2026-04-24.md"
+  ],
+  "finding_outcome": "positive",
+  "summary": "The weak pre-aged release seam at 2023-12-22 15:00 is reachable and can be blocked by a bounded continuation-local guard.",
+  "mechanism": "At the target seam, baseline remains NONE/COOLDOWN_ACTIVE while the candidate becomes RESEARCH_POLICY_ROUTER_NO_TRADE, proving the seam is reachable and locally controllable.",
+  "seam_class": "weak_pre_aged_release_target_reachability",
+  "key_timestamps": ["2023-12-22T15:00:00+00:00"],
+  "evidence_refs": [
+    {
+      "path": "docs/governance/ri_policy_router_weak_pre_aged_release_failset_evidence_2026-04-24.md",
+      "role": "primary_evidence"
+    },
+    {
+      "path": "docs/governance/ri_policy_router_weak_pre_aged_release_implementation_packet_2026-04-24.md",
+      "role": "implementation_scope"
+    }
+  ],
+  "do_not_repeat": [
+    "Do not claim seam A is unreachable or untestable.",
+    "Do not reopen seam discovery for 2023-12-22 15:00 without citing this reachability result."
+  ],
+  "next_admissible_step": "Any future seam-A candidate should start from confirmed reachability and focus on avoiding broader churn rather than re-proving the target row exists.",
+  "runtime_authority": "none",
+  "metadata": {
+    "classification_role": "descriptive_only",
+    "strategy_family": "ri",
+    "duplicate_work_guard": true,
+    "seed_slice": "research_findings_bank_seed_2026-04-24"
+  }
+}

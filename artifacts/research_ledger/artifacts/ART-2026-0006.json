@@ -1,0 +1,28 @@
+{
+  "entity_id": "ART-2026-0006",
+  "entity_type": "artifact",
+  "created_at": "2026-04-24T09:34:00+00:00",
+  "schema_version": "research_ledger.v1",
+  "metadata": {
+    "strategy_family": "ri",
+    "strategy_family_source": "family_registry_v1",
+    "classification_role": "descriptive_only",
+    "runtime_authority": "none",
+    "lane": "research_findings_bank_seed",
+    "finding_id": "FIND-2026-0005",
+    "finding_outcome": "negative",
+    "notes": [
+      "This ArtifactRecord identifies a research-only mechanism finding bundle.",
+      "The bundle preserves the chained no-trade plus two-bar displacement explanation for the seam-A loss.",
+      "The payload is descriptive evidence and not executable runtime config."
+    ]
+  },
+  "experiment_id": null,
+  "artifact_kind": "evidence_bundle",
+  "path": "artifacts/bundles/findings/ri_policy_router/FIND-2026-0005_cooldown_displacement_loop_negative.json",
+  "role": "research_finding_bundle",
+  "format": "json",
+  "checksum_sha256": "89e893daf7444ed5cf00e83dd16aaf814ba39d1c9bcdcb92165f23dcf45a9f8a",
+  "size_bytes": 2279,
+  "intelligence_refs": []
+}

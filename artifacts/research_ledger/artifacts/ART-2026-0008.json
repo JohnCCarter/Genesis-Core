@@ -1,0 +1,28 @@
+{
+  "entity_id": "ART-2026-0008",
+  "entity_type": "artifact",
+  "created_at": "2026-04-28T18:41:00+00:00",
+  "schema_version": "research_ledger.v1",
+  "metadata": {
+    "strategy_family": "ri",
+    "strategy_family_source": "family_registry_v1",
+    "classification_role": "descriptive_only",
+    "runtime_authority": "none",
+    "lane": "findings_bank_extension_2026-04-28",
+    "finding_id": "FIND-2026-0007",
+    "finding_outcome": "direction_lock",
+    "notes": [
+      "This ArtifactRecord identifies a research-only same-window phase-ordering finding bundle.",
+      "The bundle preserves the constraint that same-window overlap is phase-sensitive rather than a universal cohort ranking rule.",
+      "The payload is descriptive evidence and not executable runtime config."
+    ]
+  },
+  "experiment_id": null,
+  "artifact_kind": "evidence_bundle",
+  "path": "artifacts/bundles/findings/ri_policy_router/FIND-2026-0007_blocked_vs_substituted_same_windows_direction_lock.json",
+  "role": "research_finding_bundle",
+  "format": "json",
+  "checksum_sha256": "cde0a7349cba5c58b0deb86143b38b764cfb9799ec38113038595660aa58226b",
+  "size_bytes": 2714,
+  "intelligence_refs": []
+}

@@ -1,0 +1,153 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "artifacts/bundles/findings/schema/research_findings_bundle_v1.schema.json",
+  "title": "Research Findings Bundle v1",
+  "description": "Research-only, non-runtime finding bundle used to preserve positive, negative, and direction-lock conclusions without creating governance or runtime authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "finding_id",
+    "artifact_id",
+    "created_at",
+    "subject",
+    "domain",
+    "symbol",
+    "timeframe",
+    "window",
+    "candidate_refs",
+    "finding_outcome",
+    "summary",
+    "mechanism",
+    "seam_class",
+    "key_timestamps",
+    "evidence_refs",
+    "do_not_repeat",
+    "next_admissible_step",
+    "runtime_authority",
+    "metadata"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "minLength": 1
+    },
+    "schema_version": {
+      "const": "research_findings_bundle.v1"
+    },
+    "finding_id": {
+      "type": "string",
+      "pattern": "^FIND-\\d{4}-\\d{4}$"
+    },
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^ART-\\d{4}-\\d{4}$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "subject": {
+      "type": "string",
+      "minLength": 1
+    },
+    "domain": {
+      "type": "string",
+      "minLength": 1
+    },
+    "symbol": {
+      "type": "string",
+      "minLength": 1
+    },
+    "timeframe": {
+      "type": "string",
+      "minLength": 1
+    },
+    "window": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start", "end"],
+      "properties": {
+        "start": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "end": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "candidate_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "finding_outcome": {
+      "type": "string",
+      "enum": ["positive", "negative", "direction_lock"],
+      "description": "Research-only evidence direction. This is not a governance verdict and carries no runtime, promotion, readiness, or family authority."
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mechanism": {
+      "type": "string",
+      "minLength": 1
+    },
+    "seam_class": {
+      "type": "string",
+      "minLength": 1
+    },
+    "key_timestamps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "format": "date-time"
+      }
+    },
+    "evidence_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "role"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "role": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "do_not_repeat": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "next_admissible_step": {
+      "type": "string",
+      "minLength": 1
+    },
+    "runtime_authority": {
+      "const": "none"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}

@@ -18,7 +18,7 @@ and does **not** authorize tuning by itself.
 
 - **Mode:** `RESEARCH` — source: `branch:feature/next-slice-2026-04-29`
 - **Risk:** `LOW` — why: this slice reads already-generated annual action-diff JSONs plus curated
-  candles only and writes one research artifact plus one governance note.
+  candles only and writes one research artifact plus one analysis note.
 - **Required Path:** `Lite`
 - **Lane:** `Research-evidence` — why this is the cheapest admissible lane now: the blocked
   baseline-long cohort already looks like the clearest annual divider, so the next honest step is

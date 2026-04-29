@@ -13,7 +13,7 @@ modify runtime/config/default surfaces, and does **not** authorize runtime follo
 
 ### Scope IN
 
-- `docs/governance/ri_policy_router_defensive_probe_exact_carrier_evidence_2026-04-29.md`
+- `docs/analysis/ri_policy_router_defensive_probe_exact_carrier_evidence_2026-04-29.md`
 - `GENESIS_WORKING_CONTRACT.md`
 - existing audited artifacts only
 
@@ -30,7 +30,7 @@ modify runtime/config/default surfaces, and does **not** authorize runtime follo
 
 ## Evidence used
 
-- `docs/governance/ri_policy_router_defensive_probe_concept_precode_packet_2026-04-29.md`
+- `docs/decisions/ri_policy_router_defensive_probe_concept_precode_packet_2026-04-29.md`
 - `docs/governance/scpe_ri_v1_selected_defensive_transition_window_audit_report_2026-04-20.md`
 - `docs/governance/scpe_ri_v1_defensive_scarcity_audit_report_2026-04-20.md`
 - `results/evaluation/scpe_ri_v1_selected_defensive_transition_window_audit_2026-04-20.json`

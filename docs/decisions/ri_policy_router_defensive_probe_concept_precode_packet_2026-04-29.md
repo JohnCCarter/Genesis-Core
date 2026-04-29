@@ -151,7 +151,7 @@ What is **not** admissible from this packet alone:
 ## Scope
 
 - **Scope IN:**
-  - `docs/governance/ri_policy_router_defensive_probe_concept_precode_packet_2026-04-29.md`
+  - `docs/decisions/ri_policy_router_defensive_probe_concept_precode_packet_2026-04-29.md`
   - `GENESIS_WORKING_CONTRACT.md`
   - explicit anchoring to current parked-state and annual-evidence notes
 - **Scope OUT:**
@@ -164,7 +164,7 @@ What is **not** admissible from this packet alone:
   - new runtime packets
   - family-rule, readiness, promotion, or champion surfaces
 - **Expected changed files:**
-  - `docs/governance/ri_policy_router_defensive_probe_concept_precode_packet_2026-04-29.md`
+  - `docs/decisions/ri_policy_router_defensive_probe_concept_precode_packet_2026-04-29.md`
   - `GENESIS_WORKING_CONTRACT.md`
 - **Max files touched:** `2`
 
@@ -184,7 +184,7 @@ What is **not** admissible from this packet alone:
 
 Choose the minimum docs-only gates appropriate to the current scope:
 
-1. `pre-commit run --files GENESIS_WORKING_CONTRACT.md docs/governance/ri_policy_router_defensive_probe_concept_precode_packet_2026-04-29.md`
+1. `pre-commit run --files GENESIS_WORKING_CONTRACT.md docs/decisions/ri_policy_router_defensive_probe_concept_precode_packet_2026-04-29.md`
 2. basic file diagnostics for both markdown files
 
 No runtime-classified gates are required for this packet itself because it is docs-only and opens

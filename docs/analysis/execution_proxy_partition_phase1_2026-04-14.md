@@ -3,7 +3,7 @@
 This note is observational only.
 It partitions the already generated execution-proxy surface so the repository can decide whether execution is being narrowed meaningfully or whether the current proxy lane has reached its honest limit.
 
-Governance packet: `docs/governance/execution_proxy_partition_phase1_packet_2026-04-14.md`
+Governance packet: `docs/decisions/execution_proxy_partition_phase1_packet_2026-04-14.md`
 
 ## Source surface used
 

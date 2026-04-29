@@ -3,7 +3,7 @@
 This memo is docs-only and fail-closed.
 It decides what the smallest honest next Phase 3 step is after the bounded partial-baseline preflight stopped on an exact Phase 2 label-gap.
 
-Governance packet: `docs/governance/ri_advisory_environment_fit_phase3_provisional_evaluation_admissibility_packet_2026-04-17.md`
+Governance packet: `docs/decisions/ri_advisory_environment_fit_phase3_provisional_evaluation_admissibility_packet_2026-04-17.md`
 
 ## Source surface used
 

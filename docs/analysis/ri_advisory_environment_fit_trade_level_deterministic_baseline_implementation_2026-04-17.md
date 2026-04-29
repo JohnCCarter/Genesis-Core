@@ -3,7 +3,7 @@
 This memo records the first bounded research-only materialization slice for the trade-level deterministic baseline.
 It is artifact-only and fail-closed.
 
-Governance packet: `docs/governance/ri_advisory_environment_fit_trade_level_deterministic_baseline_implementation_packet_2026-04-17.md`
+Governance packet: `docs/decisions/ri_advisory_environment_fit_trade_level_deterministic_baseline_implementation_packet_2026-04-17.md`
 
 ## What was materialized
 
@@ -119,7 +119,7 @@ So this slice remains strictly below runtime, ML, Phase 4, and any exact row-lev
 
 The following required gates were run and passed:
 
-- targeted docs gate on `docs/governance/ri_advisory_environment_fit_trade_level_deterministic_baseline_implementation_packet_2026-04-17.md`
+- targeted docs gate on `docs/decisions/ri_advisory_environment_fit_trade_level_deterministic_baseline_implementation_packet_2026-04-17.md`
 - bounded script execution of `tmp/ri_advisory_environment_fit_trade_level_deterministic_baseline_implementation_20260417.py`
 - `python -m pytest tests/backtest/test_runner_direct_includes_merged_config.py tests/backtest/test_backtest_engine.py::test_engine_run_skip_champion_merge_does_not_load_champion tests/backtest/test_backtest_determinism_smoke.py::test_backtest_engine_is_deterministic_across_two_runs tests/utils/test_features_asof_cache_key_deterministic.py::test_compute_candles_hash_is_deterministic_across_pyhashseed tests/governance/test_pipeline_fast_hash_guard.py::test_pipeline_component_order_hash_contract_is_stable`
 

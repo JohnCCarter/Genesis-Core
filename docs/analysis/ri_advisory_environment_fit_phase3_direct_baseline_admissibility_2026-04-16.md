@@ -3,7 +3,7 @@
 This memo is docs-only and fail-closed.
 It decides whether the roadmap may open a direct RI deterministic advisory-baseline slice now.
 
-Governance packet: `docs/governance/ri_advisory_environment_fit_phase3_direct_baseline_admissibility_packet_2026-04-16.md`
+Governance packet: `docs/decisions/ri_advisory_environment_fit_phase3_direct_baseline_admissibility_packet_2026-04-16.md`
 
 ## Source surface used
 

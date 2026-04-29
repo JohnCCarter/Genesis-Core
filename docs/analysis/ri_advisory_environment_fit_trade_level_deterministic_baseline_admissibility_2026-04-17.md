@@ -3,7 +3,7 @@
 This memo is docs-only and fail-closed.
 It decides whether the new RI trade-level-authority lane now has enough contract structure to open one bounded deterministic baseline before any implementation or ML work begins.
 
-Governance packet: `docs/governance/ri_advisory_environment_fit_trade_level_deterministic_baseline_admissibility_packet_2026-04-17.md`
+Governance packet: `docs/decisions/ri_advisory_environment_fit_trade_level_deterministic_baseline_admissibility_packet_2026-04-17.md`
 
 ## Source surface used
 
@@ -14,9 +14,9 @@ Governance packet: `docs/governance/ri_advisory_environment_fit_trade_level_dete
 - `docs/analysis/ri_advisory_environment_fit_trade_level_authority_admissibility_2026-04-17.md`
 - `docs/analysis/ri_advisory_environment_fit_trade_level_label_mapping_contract_2026-04-17.md`
 - `docs/analysis/ri_advisory_environment_fit_trade_level_evidence_family_leakage_boundary_2026-04-17.md`
-- `docs/governance/ri_advisory_environment_fit_trade_level_authority_admissibility_packet_2026-04-17.md`
-- `docs/governance/ri_advisory_environment_fit_trade_level_label_mapping_contract_packet_2026-04-17.md`
-- `docs/governance/ri_advisory_environment_fit_trade_level_evidence_family_leakage_boundary_packet_2026-04-17.md`
+- `docs/decisions/ri_advisory_environment_fit_trade_level_authority_admissibility_packet_2026-04-17.md`
+- `docs/decisions/ri_advisory_environment_fit_trade_level_label_mapping_contract_packet_2026-04-17.md`
+- `docs/decisions/ri_advisory_environment_fit_trade_level_evidence_family_leakage_boundary_packet_2026-04-17.md`
 
 ## Decision question
 

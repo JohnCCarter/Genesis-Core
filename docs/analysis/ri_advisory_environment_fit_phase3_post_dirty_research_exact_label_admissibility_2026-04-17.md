@@ -3,7 +3,7 @@
 This memo is docs-only and fail-closed.
 It decides whether the controlled dirty-research shaping pass made the narrow reliability-side exact-label-authority question more concrete, or whether the lane should stop before any further authority-oriented follow-up.
 
-Governance packet: `docs/governance/ri_advisory_environment_fit_phase3_post_dirty_research_exact_label_admissibility_packet_2026-04-17.md`
+Governance packet: `docs/decisions/ri_advisory_environment_fit_phase3_post_dirty_research_exact_label_admissibility_packet_2026-04-17.md`
 
 ## Source surface used
 

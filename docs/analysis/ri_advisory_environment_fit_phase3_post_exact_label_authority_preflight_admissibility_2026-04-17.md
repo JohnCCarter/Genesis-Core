@@ -3,7 +3,7 @@
 This memo is docs-only and fail-closed.
 It decides whether the roadmap may continue on the current capture-v2 surface after the reliability exact-label-authority preflight ended with `NOT_RECOVERED`, or whether the lane should stop before Phase 4 on this surface.
 
-Governance packet: `docs/governance/ri_advisory_environment_fit_phase3_post_exact_label_authority_preflight_admissibility_packet_2026-04-17.md`
+Governance packet: `docs/decisions/ri_advisory_environment_fit_phase3_post_exact_label_authority_preflight_admissibility_packet_2026-04-17.md`
 
 ## Source surface used
 

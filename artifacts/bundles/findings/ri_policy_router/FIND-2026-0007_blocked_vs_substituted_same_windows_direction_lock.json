@@ -13,7 +13,7 @@
     "end": "2020-03-19T06:00:00+00:00"
   },
   "candidate_refs": [
-    "docs/governance/ri_policy_router_blocked_vs_substituted_same_windows_2026-04-28.md"
+    "docs/analysis/ri_policy_router_blocked_vs_substituted_same_windows_2026-04-28.md"
   ],
   "finding_outcome": "direction_lock",
   "summary": "Even inside fixed mixed local windows, blocked-versus-substituted balance is phase-sensitive rather than universal: blocked rows look locally stronger in the mixed March 2020 window but locally weaker in the recurrent hostile March 2018 window.",
@@ -29,7 +29,7 @@
   ],
   "evidence_refs": [
     {
-      "path": "docs/governance/ri_policy_router_blocked_vs_substituted_same_windows_2026-04-28.md",
+      "path": "docs/analysis/ri_policy_router_blocked_vs_substituted_same_windows_2026-04-28.md",
       "role": "governance_note"
     },
     {

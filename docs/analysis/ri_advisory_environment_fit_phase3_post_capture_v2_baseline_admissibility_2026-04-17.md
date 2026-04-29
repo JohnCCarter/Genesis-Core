@@ -3,7 +3,7 @@
 This memo is docs-only and fail-closed.
 It decides what kind of deterministic Phase 3 baseline is now admissible after the Phase C evidence-bundle capture v2 run.
 
-Governance packet for the capture source: `docs/governance/ri_advisory_environment_fit_phase3_phaseC_evidence_capture_v2_packet_2026-04-17.md`
+Governance packet for the capture source: `docs/decisions/ri_advisory_environment_fit_phase3_phaseC_evidence_capture_v2_packet_2026-04-17.md`
 
 ## Source surface used
 

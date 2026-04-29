@@ -26,8 +26,8 @@ Framåtriktad placering för sådant material är i stället:
 - `docs/analysis/` för mänskliga synteser
 - `results/research/` för reproducerbara experimentbundlar
 
-Historiska governance-adjacent packetdokument ligger fortfarande i stor utsträckning kvar under `docs/governance/`.
-Den här README:n betyder **inte** att historiken redan har migrerats; den anger främst hur nya dokument bör placeras framåt.
+Den stora historiska root-migreringen är nu genomförd för de root-dokument i `docs/governance/` som inte hörde till governance-kärnan.
+Kvar här ska i normalfallet främst vara governance-core, modeller, runbooks, mallar och andra verkligt governance-specifika ytor.
 
 ## SSOT och precedence
 
@@ -49,8 +49,8 @@ Operativa dokument i `docs/governance/**` är **kompletterande**, inte överstyr
 - `templates/command_packet.md` — standardmall för start av uppgift
 - `runbooks/trivial_fast_lane.md` — snabbspår för triviala ändringar
 
-Utöver detta finns många historiska packet-, signoff- och closeout-dokument kvar här från tidigare arbetssätt.
-De ska läsas med respekt för innehållets faktiska roll, inte enbart efter mappnamnet.
+Historiska packet-, signoff- och closeout-dokument som låg direkt i governance-roten har flyttats till `docs/decisions/` eller `docs/analysis/` enligt faktisk dokumentroll.
+Äldre material i andra ytor ska fortfarande läsas med respekt för innehållets faktiska roll, inte enbart efter mappnamnet.
 
 ## Användning (kort)
 

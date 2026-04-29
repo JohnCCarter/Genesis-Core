@@ -3,7 +3,7 @@
 This memo is docs-only and definitional.
 It defines which labels and state tags are admissible for the RI advisory environment-fit lane, using only already generated current-ATR evidence and already tracked RI observability surfaces.
 
-Governance packet: `docs/governance/ri_advisory_environment_fit_phase2_label_taxonomy_packet_2026-04-16.md`
+Governance packet: `docs/decisions/ri_advisory_environment_fit_phase2_label_taxonomy_packet_2026-04-16.md`
 
 ## Source surface used
 
@@ -11,7 +11,7 @@ This memo uses only already tracked surfaces:
 
 - `plan/ri_advisory_environment_fit_roadmap_2026-04-16.md`
 - `docs/analysis/ri_advisory_environment_fit_phase1_observability_inventory_2026-04-16.md`
-- `docs/governance/current_atr_900_multi_year_env_robustness_packet_2026-04-16.md`
+- `docs/decisions/current_atr_900_multi_year_env_robustness_packet_2026-04-16.md`
 - `results/research/fa_v2_adaptation_off/phase15_bull_high_persistence_override/current_atr_900_env_profile_2026-04-16/env_summary.json`
 - `results/research/fa_v2_adaptation_off/phase15_bull_high_persistence_override/current_atr_900_multi_year_env_robustness_2026-04-16/robustness_summary.json`
 - `results/research/fa_v2_adaptation_off/phase15_bull_high_persistence_override/current_atr_900_multi_year_env_robustness_2026-04-16/closeout.md`

@@ -3,7 +3,7 @@
 This memo is docs-only and fail-closed.
 It records the outcome of the bounded partial-baseline preflight run on the Phase C capture-v2 evidence surface.
 
-Governance packet: `docs/governance/ri_advisory_environment_fit_phase3_partial_baseline_packet_2026-04-17.md`
+Governance packet: `docs/decisions/ri_advisory_environment_fit_phase3_partial_baseline_packet_2026-04-17.md`
 
 ## Source surface used
 

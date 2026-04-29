@@ -13,7 +13,7 @@
     "end": "2023-12-22T15:00:00+00:00"
   },
   "candidate_refs": [
-    "docs/governance/ri_policy_router_weak_pre_aged_release_implementation_packet_2026-04-24.md"
+    "docs/decisions/ri_policy_router_weak_pre_aged_release_implementation_packet_2026-04-24.md"
   ],
   "finding_outcome": "positive",
   "summary": "The weak pre-aged release seam at 2023-12-22 15:00 is reachable and can be blocked by a bounded continuation-local guard.",
@@ -22,11 +22,11 @@
   "key_timestamps": ["2023-12-22T15:00:00+00:00"],
   "evidence_refs": [
     {
-      "path": "docs/governance/ri_policy_router_weak_pre_aged_release_failset_evidence_2026-04-24.md",
+      "path": "docs/analysis/ri_policy_router_weak_pre_aged_release_failset_evidence_2026-04-24.md",
       "role": "primary_evidence"
     },
     {
-      "path": "docs/governance/ri_policy_router_weak_pre_aged_release_implementation_packet_2026-04-24.md",
+      "path": "docs/decisions/ri_policy_router_weak_pre_aged_release_implementation_packet_2026-04-24.md",
       "role": "implementation_scope"
     }
   ],

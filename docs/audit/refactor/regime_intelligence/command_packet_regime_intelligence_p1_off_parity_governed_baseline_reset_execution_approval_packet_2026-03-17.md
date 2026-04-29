@@ -12,7 +12,7 @@
 - **Scope IN:**
   - `docs/audit/refactor/regime_intelligence/command_packet_regime_intelligence_p1_off_parity_governed_baseline_reset_execution_approval_packet_2026-03-17.md`
   - `docs/audit/refactor/regime_intelligence/context_map_regime_intelligence_p1_off_parity_governed_baseline_reset_execution_approval_packet_2026-03-17.md`
-  - `docs/governance/regime_intelligence_p1_off_parity_governed_baseline_reset_execution_approval_packet_2026-03-17.md`
+  - `docs/decisions/regime_intelligence_p1_off_parity_governed_baseline_reset_execution_approval_packet_2026-03-17.md`
 - **Scope OUT:**
   - all existing analysis / execution-prep / execution-runbook / execution-plan / execution-review docs are reference-only in this slice
   - `src/**`
@@ -46,7 +46,7 @@
 
 ### Gates required
 
-- `pre-commit run --files docs/audit/refactor/regime_intelligence/command_packet_regime_intelligence_p1_off_parity_governed_baseline_reset_execution_approval_packet_2026-03-17.md docs/audit/refactor/regime_intelligence/context_map_regime_intelligence_p1_off_parity_governed_baseline_reset_execution_approval_packet_2026-03-17.md docs/governance/regime_intelligence_p1_off_parity_governed_baseline_reset_execution_approval_packet_2026-03-17.md`
+- `pre-commit run --files docs/audit/refactor/regime_intelligence/command_packet_regime_intelligence_p1_off_parity_governed_baseline_reset_execution_approval_packet_2026-03-17.md docs/audit/refactor/regime_intelligence/context_map_regime_intelligence_p1_off_parity_governed_baseline_reset_execution_approval_packet_2026-03-17.md docs/decisions/regime_intelligence_p1_off_parity_governed_baseline_reset_execution_approval_packet_2026-03-17.md`
 - clean editor diagnostics on the 3 new docs
 
 ### Stop Conditions

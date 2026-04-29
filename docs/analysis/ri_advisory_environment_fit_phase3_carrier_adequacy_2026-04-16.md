@@ -3,7 +3,7 @@
 This memo is docs-only and fail-closed.
 It decides whether the repository already contains an admissible RI carrier rich enough to justify a second bounded RI evidence-capture slice after the fixed slice8 bridge proved too thin.
 
-Governance packet: `docs/governance/ri_advisory_environment_fit_phase3_carrier_adequacy_packet_2026-04-16.md`
+Governance packet: `docs/decisions/ri_advisory_environment_fit_phase3_carrier_adequacy_packet_2026-04-16.md`
 
 ## Source surface used
 

@@ -22,9 +22,9 @@
 ### Scope
 
 - **Scope IN:**
-  - move `docs/governance/ri_policy_router_defensive_probe_concept_precode_packet_2026-04-29.md` to `docs/decisions/`
-  - move `docs/governance/ri_policy_router_defensive_probe_exact_carrier_evidence_2026-04-29.md` to `docs/analysis/`
-  - move `docs/governance/ri_policy_router_blocked_reason_split_2026-04-29.md` to `docs/analysis/`
+  - move `docs/decisions/ri_policy_router_defensive_probe_concept_precode_packet_2026-04-29.md` into the decisions zone
+  - move `docs/analysis/ri_policy_router_defensive_probe_exact_carrier_evidence_2026-04-29.md` into the analysis zone
+  - move `docs/analysis/ri_policy_router_blocked_reason_split_2026-04-29.md` into the analysis zone
   - update exact path references in the moved files and `GENESIS_WORKING_CONTRACT.md`
   - add this migration decision record
 - **Scope OUT:**

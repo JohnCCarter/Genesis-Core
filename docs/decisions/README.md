@@ -41,5 +41,5 @@ Om ett dokument både innehåller beslut och evidens bör evidensen refereras ut
 
 ## Historisk not
 
-Äldre packet- och closeout-dokument ligger i dag fortfarande till stor del under `docs/governance/`.
-Den här mappen definierar **ny framåtriktad placering**, inte att historiken redan har migrerats.
+Den historiska root-migreringen från `docs/governance/` är nu genomförd för packet-, signoff-, closeout- och närliggande beslutsdokument som tidigare låg där direkt.
+Den här mappen är därför både framåtriktad standard och nuvarande hemvist för den större rotmängden av historiska beslutsspår.

@@ -3,7 +3,7 @@
 This memo is docs-only and fail-closed.
 It decides how the repository can track research findings correctly without losing context between packets, evidence runs, and later follow-up slices.
 
-Governance packet: `docs/governance/research_findings_bank_repo_native_packet_2026-04-24.md`
+Governance packet: `docs/decisions/research_findings_bank_repo_native_packet_2026-04-24.md`
 
 ## Source surface used
 
@@ -11,8 +11,8 @@ Governance packet: `docs/governance/research_findings_bank_repo_native_packet_20
 - `src/core/research_ledger/service.py`
 - `src/core/research_ledger/storage.py`
 - `docs/analysis/ri_advisory_environment_fit_phase3_non_runtime_evidence_namespace_2026-04-17.md`
-- `docs/governance/ri_policy_router_weak_pre_aged_release_failset_evidence_2026-04-24.md`
-- `docs/governance/ri_policy_router_weak_pre_aged_release_cooldown_displacement_diagnosis_2026-04-24.md`
+- `docs/analysis/ri_policy_router_weak_pre_aged_release_failset_evidence_2026-04-24.md`
+- `docs/analysis/ri_policy_router_weak_pre_aged_release_cooldown_displacement_diagnosis_2026-04-24.md`
 - existing top-level `artifacts/` layout
 
 ## Decision question

@@ -3,7 +3,7 @@
 This note is observational only.
 It re-reads the residual drift question after the completed execution-proxy partition and sizing-chain synthesis.
 
-Governance packet: `docs/governance/residual_drift_separation_phase3_packet_2026-04-14.md`
+Governance packet: `docs/decisions/residual_drift_separation_phase3_packet_2026-04-14.md`
 
 ## Source surface used
 

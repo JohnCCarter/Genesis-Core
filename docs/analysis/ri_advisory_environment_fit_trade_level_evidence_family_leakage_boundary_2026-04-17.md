@@ -3,7 +3,7 @@
 This memo is docs-only and definitional.
 It defines which evidence families are admissible for future trade-level authority labels and which leakage boundaries must remain fail-closed before any deterministic baseline is considered in the new RI trade-level-authority lane.
 
-Governance packet: `docs/governance/ri_advisory_environment_fit_trade_level_evidence_family_leakage_boundary_packet_2026-04-17.md`
+Governance packet: `docs/decisions/ri_advisory_environment_fit_trade_level_evidence_family_leakage_boundary_packet_2026-04-17.md`
 
 ## Source surface used
 
@@ -16,9 +16,9 @@ Governance packet: `docs/governance/ri_advisory_environment_fit_trade_level_evid
 - `docs/analysis/ri_advisory_environment_fit_phase3_materially_different_surface_inventory_2026-04-17.md`
 - `docs/analysis/ri_advisory_environment_fit_trade_level_authority_admissibility_2026-04-17.md`
 - `docs/analysis/ri_advisory_environment_fit_trade_level_label_mapping_contract_2026-04-17.md`
-- `docs/governance/ri_advisory_environment_fit_trade_level_authority_admissibility_packet_2026-04-17.md`
-- `docs/governance/ri_advisory_environment_fit_trade_level_label_mapping_contract_packet_2026-04-17.md`
-- `docs/governance/ri_advisory_environment_fit_phase2_label_taxonomy_packet_2026-04-16.md`
+- `docs/decisions/ri_advisory_environment_fit_trade_level_authority_admissibility_packet_2026-04-17.md`
+- `docs/decisions/ri_advisory_environment_fit_trade_level_label_mapping_contract_packet_2026-04-17.md`
+- `docs/decisions/ri_advisory_environment_fit_phase2_label_taxonomy_packet_2026-04-16.md`
 
 ## Why this slice is needed
 

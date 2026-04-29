@@ -8,7 +8,7 @@ Status: `research-diagnostic / observability only / no runtime change`
 
 This document summarizes the executed slice-2 diagnostic defined in:
 
-- `docs/governance/regime_intelligence_upstream_candidate_authority_diagnostic_slice2_precode_packet_2026-03-30.md`
+- `docs/decisions/regime_intelligence_upstream_candidate_authority_diagnostic_slice2_precode_packet_2026-03-30.md`
 
 The slice remained strictly bounded to the authority/calibration handoff after the already-known `authority_mode` selector step from slice 1.
 

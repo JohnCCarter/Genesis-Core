@@ -175,7 +175,7 @@ Turn the current fragmented research state into one live working roadmap with ex
 ### Status
 
 - `completed on docs-only basis`
-- packet anchor: `docs/governance/execution_proxy_partition_phase1_packet_2026-04-14.md`
+- packet anchor: `docs/decisions/execution_proxy_partition_phase1_packet_2026-04-14.md`
 - analysis anchor: `docs/analysis/execution_proxy_partition_phase1_2026-04-14.md`
 - verdict: `stricter execution lane justified`
 
@@ -240,7 +240,7 @@ The next bounded move on the current roadmap is therefore:
 ### Status
 
 - `completed on docs-only basis`
-- packet anchor: `docs/governance/sizing_chain_synthesis_phase2_packet_2026-04-14.md`
+- packet anchor: `docs/decisions/sizing_chain_synthesis_phase2_packet_2026-04-14.md`
 - analysis anchor: `docs/analysis/sizing_chain_synthesis_phase2_2026-04-14.md`
 - conclusion: `sizing chain matters but does not beat emergent_system_behavior`
 
@@ -269,7 +269,7 @@ Fuse the following into one bounded driver ladder:
 
 - `plan/feature_attribution_post_phase14_reactivation_roadmap_2026-04-02.md`
 - `docs/analysis/feature_attribution_post_phase14_rebaseline_reconciliation_2026-04-02.md`
-- `docs/governance/survival_boundary_phase4_packet_2026-04-01.md`
+- `docs/decisions/survival_boundary_phase4_packet_2026-04-01.md`
 - `results/research/fa_v2_adaptation_off/EDGE_ORIGIN_REPORT.md`
 
 ### Required output
@@ -310,7 +310,7 @@ The next bounded move on the current roadmap is therefore:
 ### Status
 
 - `completed on docs-only basis`
-- packet anchor: `docs/governance/residual_drift_separation_phase3_packet_2026-04-14.md`
+- packet anchor: `docs/decisions/residual_drift_separation_phase3_packet_2026-04-14.md`
 - analysis anchor: `docs/analysis/residual_drift_separation_phase3_2026-04-14.md`
 - verdict: `drift compatibility strengthened`
 
@@ -367,7 +367,7 @@ The next bounded move on the current roadmap is therefore:
 ### Status
 
 - `completed on docs-only basis`
-- packet anchor: `docs/governance/microstructure_triage_phase4_packet_2026-04-14.md`
+- packet anchor: `docs/decisions/microstructure_triage_phase4_packet_2026-04-14.md`
 - analysis anchor: `docs/analysis/microstructure_triage_phase4_2026-04-14.md`
 - decision: `future stricter lane only`
 

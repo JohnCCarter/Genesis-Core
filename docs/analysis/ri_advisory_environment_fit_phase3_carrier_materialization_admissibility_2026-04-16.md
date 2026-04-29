@@ -3,7 +3,7 @@
 This memo is docs-only and fail-closed.
 It decides whether the roadmap may open a separate bounded implementation slice whose only job would be to materialize one clarity-on RI optimizer artifact into a fixed research carrier.
 
-Governance packet: `docs/governance/ri_advisory_environment_fit_phase3_carrier_materialization_admissibility_packet_2026-04-16.md`
+Governance packet: `docs/decisions/ri_advisory_environment_fit_phase3_carrier_materialization_admissibility_packet_2026-04-16.md`
 
 ## Source surface used
 

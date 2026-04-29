@@ -3,7 +3,7 @@
 This memo is docs-only and fail-closed.
 It decides whether RI advisory work may pivot from the exhausted exact row-level authority-recovery path to a new lane where trade outcomes become the primary authority surface while entry rows remain the pre-entry scoring surface.
 
-Governance packet: `docs/governance/ri_advisory_environment_fit_trade_level_authority_admissibility_packet_2026-04-17.md`
+Governance packet: `docs/decisions/ri_advisory_environment_fit_trade_level_authority_admissibility_packet_2026-04-17.md`
 
 ## Source surface used
 
@@ -14,8 +14,8 @@ Governance packet: `docs/governance/ri_advisory_environment_fit_trade_level_auth
 - `docs/analysis/ri_advisory_environment_fit_phase3_reliability_exact_label_authority_preflight_2026-04-17.md`
 - `docs/analysis/ri_advisory_environment_fit_phase3_post_exact_label_authority_preflight_admissibility_2026-04-17.md`
 - `docs/analysis/ri_advisory_environment_fit_phase3_materially_different_surface_inventory_2026-04-17.md`
-- `docs/governance/ri_advisory_environment_fit_phase3_reliability_exact_label_authority_preflight_packet_2026-04-17.md`
-- `docs/governance/ri_advisory_environment_fit_phase3_phaseC_evidence_capture_v2_packet_2026-04-17.md`
+- `docs/decisions/ri_advisory_environment_fit_phase3_reliability_exact_label_authority_preflight_packet_2026-04-17.md`
+- `docs/decisions/ri_advisory_environment_fit_phase3_phaseC_evidence_capture_v2_packet_2026-04-17.md`
 
 ## Decision question
 

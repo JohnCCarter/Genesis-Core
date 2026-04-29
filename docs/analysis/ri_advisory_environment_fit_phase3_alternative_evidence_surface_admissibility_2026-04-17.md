@@ -3,7 +3,7 @@
 This memo is docs-only and fail-closed.
 It decides whether the roadmap may continue after the current capture-v2 surface was exhausted for same-surface exact-label-authority work, or whether the lane should close unless a materially different evidence surface is introduced.
 
-Governance packet: `docs/governance/ri_advisory_environment_fit_phase3_alternative_evidence_surface_admissibility_packet_2026-04-17.md`
+Governance packet: `docs/decisions/ri_advisory_environment_fit_phase3_alternative_evidence_surface_admissibility_packet_2026-04-17.md`
 
 ## Source surface used
 

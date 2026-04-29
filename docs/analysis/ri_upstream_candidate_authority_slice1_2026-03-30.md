@@ -8,7 +8,7 @@ Status: `research-diagnostic / observability only / no runtime change`
 
 This document summarizes the first executed upstream diagnostic slice defined in:
 
-- `docs/governance/regime_intelligence_upstream_candidate_authority_diagnostic_slice1_precode_packet_2026-03-30.md`
+- `docs/decisions/regime_intelligence_upstream_candidate_authority_diagnostic_slice1_precode_packet_2026-03-30.md`
 
 The slice was intentionally bounded to the upstream pre-fib chain only:
 

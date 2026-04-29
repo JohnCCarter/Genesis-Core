@@ -8,6 +8,8 @@ Status: zon-guide med bevarad historisk RI/R1-serieöversikt
 `docs/analysis/` är den framåtriktade ytan för mänskligt läsbara synteser, diagnoser och findings i Genesis-Core.
 Mappen är till för tolkning och sammanhang — inte för governance-SSOT, slice-packets eller råa researchbundlar.
 
+Efter den breda dokumenttaxonomimigreringen rymmer mappen också historiska root-dokument som tidigare låg under `docs/governance/` men vars faktiska roll var analys, evidenssyntes eller assessment.
+
 ## Hit hör
 
 - findings-synteser

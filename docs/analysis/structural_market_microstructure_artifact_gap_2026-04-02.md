@@ -6,7 +6,7 @@ It explains why `structural_market_microstructure` remains `UNATTESTED` on the c
 ## What the current surface already supports
 
 - `GENESIS-CORE-POST PHASE-9-ROADMAP.md` includes structural market microstructure as one of the packet-authorized possible edge classes.
-- `docs/governance/edge_classification_phase13_packet_2026-04-02.md` explicitly forbids `SUPPORTED` for `structural_market_microstructure` because no packet-authorized market-microstructure artifact surface exists in the locked inputs.
+- `docs/decisions/edge_classification_phase13_packet_2026-04-02.md` explicitly forbids `SUPPORTED` for `structural_market_microstructure` because no packet-authorized market-microstructure artifact surface exists in the locked inputs.
 - `results/research/fa_v2_adaptation_off/phase13_edge_classification/edge_classification.json` therefore emits `structural_market_microstructure = UNATTESTED` on the locked classification matrix.
 - `results/research/fa_v2_adaptation_off/EDGE_ORIGIN_REPORT.md` preserves that boundary by stating that `structural_market_microstructure` remains `UNATTESTED`, not `REJECTED`.
 

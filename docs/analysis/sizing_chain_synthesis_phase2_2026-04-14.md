@@ -3,14 +3,14 @@
 This note is observational only.
 It synthesizes the current sizing-related evidence so the repository can decide whether the sizing chain materially narrows Genesis or whether it still remains subordinate to the broader `emergent_system_behavior` explanation.
 
-Governance packet: `docs/governance/sizing_chain_synthesis_phase2_packet_2026-04-14.md`
+Governance packet: `docs/decisions/sizing_chain_synthesis_phase2_packet_2026-04-14.md`
 
 ## Source surface used
 
 This memo uses only already tracked or already generated evidence:
 
 - `results/research/fa_v2_adaptation_off/survival_boundary_summary.md`
-- `docs/governance/survival_boundary_phase4_packet_2026-04-01.md`
+- `docs/decisions/survival_boundary_phase4_packet_2026-04-01.md`
 - `plan/feature_attribution_post_phase14_reactivation_roadmap_2026-04-02.md`
 - `docs/analysis/feature_attribution_post_phase14_rebaseline_reconciliation_2026-04-02.md`
 - `results/research/feature_attribution_v1/reports/fa_v1_full_admitted_units_synthesis_20260331_01.md`

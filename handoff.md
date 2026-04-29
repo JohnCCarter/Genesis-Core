@@ -36,9 +36,9 @@ Följande är genomfört, verifierat och redan pushat på denna branch:
    - Designad som separat read-only lane för att undvika mutation av den låsta Phase 10-analysatorn
 
 4. **Execution-proxy lane är körd mot låst baseline-trace**
-   - Körpacket är pushat i `docs/governance/execution_proxy_evidence_run_packet_2026-04-02.md`
+   - Körpacket är pushat i `docs/decisions/execution_proxy_evidence_run_packet_2026-04-02.md`
    - Första tolkningen är pushad i:
-     - `docs/governance/execution_proxy_first_read_packet_2026-04-02.md`
+     - `docs/decisions/execution_proxy_first_read_packet_2026-04-02.md`
      - `docs/analysis/execution_proxy_first_read_2026-04-02.md`
 
 5. **Branch-hygien är redan städad**
@@ -63,8 +63,8 @@ Det viktigaste som ändrats sedan äldre delar av denna handoff är:
 - `tests/backtest/test_edge_origin_isolation.py`
 - `scripts/analyze/execution_proxy_evidence.py`
 - `tests/backtest/test_execution_proxy_evidence.py`
-- `docs/governance/execution_proxy_evidence_run_packet_2026-04-02.md`
-- `docs/governance/execution_proxy_first_read_packet_2026-04-02.md`
+- `docs/decisions/execution_proxy_evidence_run_packet_2026-04-02.md`
+- `docs/decisions/execution_proxy_first_read_packet_2026-04-02.md`
 - `docs/analysis/execution_proxy_first_read_2026-04-02.md`
 
 **Lokalt genererade proxy-artifakter som finns i denna arbetskopia men inte ska antas vara delade via git:**
@@ -81,8 +81,8 @@ Läs i denna ordning innan nytt arbete startar:
 
 1. denna toppsektion i `handoff.md`
 2. `docs/analysis/execution_proxy_first_read_2026-04-02.md`
-3. `docs/governance/execution_proxy_first_read_packet_2026-04-02.md`
-4. `docs/governance/execution_proxy_evidence_run_packet_2026-04-02.md`
+3. `docs/decisions/execution_proxy_first_read_packet_2026-04-02.md`
+4. `docs/decisions/execution_proxy_evidence_run_packet_2026-04-02.md`
 5. `scripts/analyze/execution_proxy_evidence.py`
 6. `tests/backtest/test_execution_proxy_evidence.py`
 
@@ -187,7 +187,7 @@ Om ChatGPT bara ska förstå slutsatsen och kunna resonera på summary-/auditniv
    - visar varför just den regeln vann och vilka exakta alias/proxy-regler som också matchade före kollaps
 4. `results/research/fa_v2_adaptation_off/audit_determinism.json`
    - bevis att dubbelkörningen gav identiska icke-självrefererande hash-resultat
-5. `docs/governance/survival_boundary_phase4_packet_2026-04-01.md`
+5. `docs/decisions/survival_boundary_phase4_packet_2026-04-01.md`
    - styrande packet som definierar fail-closed-reglerna och varför boundaryn måste tolkas observationalt
 
 Om ChatGPT också ska kunna granska själva dataunderlaget och inte bara slutsatsen, lägg dessutom till dessa filer:
@@ -419,7 +419,7 @@ Följande är redan infört och ska **inte** återdebatteras som om det vore öp
 En docs-slice landades för att städa aktiv guidance så att den matchar nuvarande architecture truth:
 
 - `docs/features/feature-regime-intelligence-strategy-family-1.md`
-- `docs/governance/regime_intelligence_strategy_family_integration_stub_2026-03-18.md`
+- `docs/analysis/regime_intelligence_strategy_family_integration_stub_2026-03-18.md`
 - `docs/analysis/regime_intelligence_champion_compatibility_findings_2026-03-18.md`
 - `docs/audit/refactor/regime_intelligence/command_packet_regime_intelligence_repo_wide_architecture_alignment_2026-03-19.md`
 
@@ -530,7 +530,7 @@ Nästa agent ska **inte** börja med att:
 ### För styrande/förklarande kontext
 
 - `docs/features/feature-regime-intelligence-strategy-family-1.md`
-- `docs/governance/regime_intelligence_strategy_family_integration_stub_2026-03-18.md`
+- `docs/analysis/regime_intelligence_strategy_family_integration_stub_2026-03-18.md`
 - `docs/analysis/regime_intelligence_champion_compatibility_findings_2026-03-18.md`
 - `docs/analysis/tBTCUSD_3h_candidate_recommendation_2026-03-18.md`
 

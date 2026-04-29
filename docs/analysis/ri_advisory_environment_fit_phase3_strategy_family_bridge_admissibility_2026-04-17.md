@@ -4,11 +4,11 @@ This memo is docs-only and fail-closed.
 It resolves the blocker exposed by the failed Phase C carrier-materialization slice:
 `phaseC_oos_trial.json` cannot be copied unchanged into a runtime-valid carrier because its donor `merged_config` lacks `strategy_family`.
 
-Governance packet: `docs/governance/ri_advisory_environment_fit_phase3_strategy_family_bridge_admissibility_packet_2026-04-17.md`
+Governance packet: `docs/decisions/ri_advisory_environment_fit_phase3_strategy_family_bridge_admissibility_packet_2026-04-17.md`
 
 ## Source surface used
 
-- `docs/governance/ri_advisory_environment_fit_phase3_phaseC_carrier_materialization_packet_2026-04-16.md`
+- `docs/decisions/ri_advisory_environment_fit_phase3_phaseC_carrier_materialization_packet_2026-04-16.md`
 - `config/optimizer/3h/phased_v3/best_trials/phaseC_oos_trial.json`
 - `src/core/config/authority.py`
 - `src/core/config/schema.py`

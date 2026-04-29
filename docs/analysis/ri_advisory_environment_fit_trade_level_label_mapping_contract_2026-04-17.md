@@ -3,7 +3,7 @@
 This memo is docs-only and definitional.
 It defines the minimal authority labels and mapping outputs that are admissible for the new RI trade-level-authority lane.
 
-Governance packet: `docs/governance/ri_advisory_environment_fit_trade_level_label_mapping_contract_packet_2026-04-17.md`
+Governance packet: `docs/decisions/ri_advisory_environment_fit_trade_level_label_mapping_contract_packet_2026-04-17.md`
 
 ## Source surface used
 
@@ -15,7 +15,7 @@ Governance packet: `docs/governance/ri_advisory_environment_fit_trade_level_labe
 - `docs/analysis/ri_advisory_environment_fit_phase3_post_exact_label_authority_preflight_admissibility_2026-04-17.md`
 - `docs/analysis/ri_advisory_environment_fit_phase3_materially_different_surface_inventory_2026-04-17.md`
 - `docs/analysis/ri_advisory_environment_fit_trade_level_authority_admissibility_2026-04-17.md`
-- `docs/governance/ri_advisory_environment_fit_trade_level_authority_admissibility_packet_2026-04-17.md`
+- `docs/decisions/ri_advisory_environment_fit_trade_level_authority_admissibility_packet_2026-04-17.md`
 
 ## Why this slice is needed
 

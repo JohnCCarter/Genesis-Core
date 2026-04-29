@@ -3,13 +3,13 @@
 This memo is docs-only and fail-closed.
 It closes the newly completed fixed-carrier RI evidence-capture slice by deciding whether that evidence surface is now sufficient to open a direct deterministic advisory-baseline slice.
 
-Governance packet: `docs/governance/ri_advisory_environment_fit_phase3_post_capture_admissibility_packet_2026-04-16.md`
+Governance packet: `docs/decisions/ri_advisory_environment_fit_phase3_post_capture_admissibility_packet_2026-04-16.md`
 
 ## Source surface used
 
 This memo uses only the just-created bounded evidence-capture outputs and their governing packet:
 
-- `docs/governance/ri_advisory_environment_fit_phase3_ri_evidence_capture_packet_2026-04-16.md`
+- `docs/decisions/ri_advisory_environment_fit_phase3_ri_evidence_capture_packet_2026-04-16.md`
 - `results/research/ri_advisory_environment_fit/phase3_ri_evidence_capture_2026-04-16/capture_summary.json`
 - `results/research/ri_advisory_environment_fit/phase3_ri_evidence_capture_2026-04-16/manifest.json`
 - `results/research/ri_advisory_environment_fit/phase3_ri_evidence_capture_2026-04-16/closeout.md`

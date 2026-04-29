@@ -12,7 +12,7 @@
 - **Scope IN:**
   - `docs/audit/refactor/regime_intelligence/command_packet_regime_intelligence_p1_off_parity_governed_rerun_execution_review_2026-03-17.md`
   - `docs/audit/refactor/regime_intelligence/context_map_regime_intelligence_p1_off_parity_governed_rerun_execution_review_2026-03-17.md`
-  - `docs/governance/regime_intelligence_p1_off_parity_governed_rerun_execution_review_2026-03-17.md`
+  - `docs/decisions/regime_intelligence_p1_off_parity_governed_rerun_execution_review_2026-03-17.md`
 - **Scope OUT:**
   - all existing execution-plan docs as reference-only
   - `src/**`
@@ -50,7 +50,7 @@
 
 ### Gates required
 
-- `pre-commit run --files docs/audit/refactor/regime_intelligence/command_packet_regime_intelligence_p1_off_parity_governed_rerun_execution_review_2026-03-17.md docs/audit/refactor/regime_intelligence/context_map_regime_intelligence_p1_off_parity_governed_rerun_execution_review_2026-03-17.md docs/governance/regime_intelligence_p1_off_parity_governed_rerun_execution_review_2026-03-17.md`
+- `pre-commit run --files docs/audit/refactor/regime_intelligence/command_packet_regime_intelligence_p1_off_parity_governed_rerun_execution_review_2026-03-17.md docs/audit/refactor/regime_intelligence/context_map_regime_intelligence_p1_off_parity_governed_rerun_execution_review_2026-03-17.md docs/decisions/regime_intelligence_p1_off_parity_governed_rerun_execution_review_2026-03-17.md`
 
 ### Stop Conditions
 

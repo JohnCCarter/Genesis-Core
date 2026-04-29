@@ -14,7 +14,7 @@ Perform a repo-wide semantic alignment pass so active repository guidance matche
 ## Scope IN
 
 - `docs/features/feature-regime-intelligence-strategy-family-1.md`
-- `docs/governance/regime_intelligence_strategy_family_integration_stub_2026-03-18.md`
+- `docs/analysis/regime_intelligence_strategy_family_integration_stub_2026-03-18.md`
 - `docs/analysis/regime_intelligence_champion_compatibility_findings_2026-03-18.md`
 
 ## Scope OUT
@@ -39,7 +39,7 @@ Perform a repo-wide semantic alignment pass so active repository guidance matche
    - still presents historical classifier/storage labels (`legacy_family`, `ri_family`, `invalid_hybrid_overlay`) as if they are the active canonical labels
    - needs alignment to current canonical labels `legacy | ri` and fail-closed hybrid handling
 
-2. `docs/governance/regime_intelligence_strategy_family_integration_stub_2026-03-18.md`
+2. `docs/analysis/regime_intelligence_strategy_family_integration_stub_2026-03-18.md`
    - partially clarified already, but still mixes current-state language with historical stub labels and proposed artifacts
    - needs tighter wording so readers do not infer a third persisted family label or active overlay-compatible path
 

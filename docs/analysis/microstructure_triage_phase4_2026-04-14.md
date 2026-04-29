@@ -3,7 +3,7 @@
 This note is observational only.
 It makes an explicit triage decision on whether structural market microstructure deserves any more bounded-slice time under the current artifact constraints.
 
-Governance packet: `docs/governance/microstructure_triage_phase4_packet_2026-04-14.md`
+Governance packet: `docs/decisions/microstructure_triage_phase4_packet_2026-04-14.md`
 
 ## Source surface used
 

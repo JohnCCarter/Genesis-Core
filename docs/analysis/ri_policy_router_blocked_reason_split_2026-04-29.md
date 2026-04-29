@@ -37,9 +37,9 @@ and does **not** authorize tuning by itself.
 - `results/backtests/ri_policy_router_enabled_vs_absent_all_years_20260428_curated_only/*_enabled_vs_absent_action_diffs.json`
 - `data/curated/v1/candles/tBTCUSD_3h.parquet`
 - `results/evaluation/ri_policy_router_blocked_reason_split_2026-04-29.json`
-- `docs/governance/ri_policy_router_negative_year_pocket_isolation_2026-04-28.md`
-- `docs/governance/ri_policy_router_shared_pocket_outcome_quality_2026-04-28.md`
-- `docs/governance/ri_policy_router_blocked_vs_substituted_same_window_phase_ordering_2026-04-29.md`
+- `docs/analysis/ri_policy_router_negative_year_pocket_isolation_2026-04-28.md`
+- `docs/analysis/ri_policy_router_shared_pocket_outcome_quality_2026-04-28.md`
+- `docs/analysis/ri_policy_router_blocked_vs_substituted_same_window_phase_ordering_2026-04-29.md`
 
 ## Exact command run
 

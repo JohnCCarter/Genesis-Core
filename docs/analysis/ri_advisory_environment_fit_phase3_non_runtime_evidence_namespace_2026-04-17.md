@@ -3,7 +3,7 @@
 This memo is docs-only and fail-closed.
 It decides where the corrected Phase C RI donor should live if Phase 3 is to continue without smuggling runtime-valid carrier authoring into the lane.
 
-Governance packet: `docs/governance/ri_advisory_environment_fit_phase3_non_runtime_evidence_namespace_packet_2026-04-17.md`
+Governance packet: `docs/decisions/ri_advisory_environment_fit_phase3_non_runtime_evidence_namespace_packet_2026-04-17.md`
 
 ## Source surface used
 

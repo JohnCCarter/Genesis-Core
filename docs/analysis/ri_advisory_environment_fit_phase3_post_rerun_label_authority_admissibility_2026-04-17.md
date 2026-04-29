@@ -3,7 +3,7 @@
 This memo is docs-only and fail-closed.
 It decides whether the bounded exploratory signal from the provisional rerun is strong enough to justify one more separate Phase 3 follow-up centered on exact label authority, or whether the lane should stop before Phase 4.
 
-Governance packet: `docs/governance/ri_advisory_environment_fit_phase3_post_rerun_label_authority_admissibility_packet_2026-04-17.md`
+Governance packet: `docs/decisions/ri_advisory_environment_fit_phase3_post_rerun_label_authority_admissibility_packet_2026-04-17.md`
 
 ## Source surface used
 

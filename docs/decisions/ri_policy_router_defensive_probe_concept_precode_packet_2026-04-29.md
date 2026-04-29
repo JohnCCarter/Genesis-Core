@@ -64,9 +64,9 @@ The current evidence posture already establishes the limits of the active RI-rou
 ## Evidence anchors
 
 - `docs/analysis/ri_policy_router_personality_mapping_2026-04-28.md`
-- `docs/governance/ri_policy_router_aged_weak_active_carrier_truth_parked_handoff_2026-04-27.md`
-- `docs/governance/ri_policy_router_enabled_vs_absent_curated_annual_evidence_2026-04-28.md`
-- `docs/governance/ri_policy_router_negative_year_pocket_isolation_2026-04-28.md`
+- `docs/decisions/ri_policy_router_aged_weak_active_carrier_truth_parked_handoff_2026-04-27.md`
+- `docs/analysis/ri_policy_router_enabled_vs_absent_curated_annual_evidence_2026-04-28.md`
+- `docs/analysis/ri_policy_router_negative_year_pocket_isolation_2026-04-28.md`
 - `docs/scpe_ri_v1_architecture.md`
 - `src/core/strategy/ri_policy_router.py`
 - `scripts/analyze/scpe_ri_v1_router_replay.py`

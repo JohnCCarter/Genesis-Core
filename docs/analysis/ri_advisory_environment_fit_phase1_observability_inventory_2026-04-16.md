@@ -3,7 +3,7 @@
 This memo is docs-only and observational.
 It inventories the already tracked `ri` observability surfaces that can support the advisory environment-fit roadmap without changing default behavior.
 
-Governance packet: `docs/governance/ri_advisory_environment_fit_phase1_observability_inventory_packet_2026-04-16.md`
+Governance packet: `docs/decisions/ri_advisory_environment_fit_phase1_observability_inventory_packet_2026-04-16.md`
 
 ## Source surface used
 

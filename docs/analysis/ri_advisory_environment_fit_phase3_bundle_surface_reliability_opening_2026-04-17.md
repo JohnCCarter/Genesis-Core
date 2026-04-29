@@ -3,15 +3,15 @@
 This memo is docs-only and fail-closed.
 It decides whether the newly materialized non-runtime evidence-bundle surface created a real next roadmap opening after the earlier capture-v2 surface was exhausted for same-surface authority-bearing continuation.
 
-Governance packet: `docs/governance/ri_advisory_environment_fit_phase3_bundle_surface_reliability_opening_packet_2026-04-17.md`
+Governance packet: `docs/decisions/ri_advisory_environment_fit_phase3_bundle_surface_reliability_opening_packet_2026-04-17.md`
 
 ## Source surface used
 
 - `plan/ri_advisory_environment_fit_roadmap_2026-04-16.md`
 - `docs/analysis/ri_advisory_environment_fit_phase3_alternative_evidence_surface_admissibility_2026-04-17.md`
 - `docs/analysis/ri_advisory_environment_fit_phase3_non_runtime_evidence_namespace_2026-04-17.md`
-- `docs/governance/ri_advisory_environment_fit_phase3_phaseC_evidence_freeze_packet_2026-04-17.md`
-- `docs/governance/ri_advisory_environment_fit_phase3_phaseC_evidence_capture_v2_packet_2026-04-17.md`
+- `docs/decisions/ri_advisory_environment_fit_phase3_phaseC_evidence_freeze_packet_2026-04-17.md`
+- `docs/decisions/ri_advisory_environment_fit_phase3_phaseC_evidence_capture_v2_packet_2026-04-17.md`
 - `results/research/ri_advisory_environment_fit/phase3_phasec_evidence_capture_v2_2026-04-17/capture_summary.json`
 - `results/research/ri_advisory_environment_fit/phase3_phasec_evidence_capture_v2_2026-04-17/manifest.json`
 - `results/research/ri_advisory_environment_fit/phase3_phasec_evidence_capture_v2_2026-04-17/closeout.md`

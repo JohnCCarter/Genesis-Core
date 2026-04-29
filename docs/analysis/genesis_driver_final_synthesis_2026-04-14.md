@@ -3,7 +3,7 @@
 This note is observational only.
 It closes the current bounded Genesis driver-identification roadmap on the evidence surface that is already authorized and already present in the repository.
 
-Closeout governance anchor: `docs/governance/genesis_driver_bounded_closeout_commit_packet_2026-04-14.md`
+Closeout governance anchor: `docs/decisions/genesis_driver_bounded_closeout_commit_packet_2026-04-14.md`
 
 ## 1. Current best-supported driver statement
 

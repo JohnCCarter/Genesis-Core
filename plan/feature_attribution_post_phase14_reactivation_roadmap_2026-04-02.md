@@ -197,7 +197,7 @@ No fresh reruns or regenerated outputs were created to close the remaining phase
 
 - Status: `completed`
 - Evidence basis:
-  - `docs/governance/feature_attribution_post_phase14_phase0_reactivation_packet_2026-04-02.md`
+  - `docs/decisions/feature_attribution_post_phase14_phase0_reactivation_packet_2026-04-02.md`
 - Closeout meaning:
   - the post-Phase-14 restart boundary was locked
   - frozen-route vs current-route provenance was separated
@@ -207,7 +207,7 @@ No fresh reruns or regenerated outputs were created to close the remaining phase
 
 - Status: `completed`
 - Evidence basis:
-  - `docs/governance/feature_attribution_post_phase14_phase1_rebaseline_reconciliation_packet_2026-04-02.md`
+  - `docs/decisions/feature_attribution_post_phase14_phase1_rebaseline_reconciliation_packet_2026-04-02.md`
   - `docs/analysis/feature_attribution_post_phase14_rebaseline_reconciliation_2026-04-02.md`
 - Closeout meaning:
   - frozen historical baseline and current executable-route baseline were separated cleanly

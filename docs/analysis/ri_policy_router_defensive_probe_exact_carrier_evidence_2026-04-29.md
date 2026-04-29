@@ -31,8 +31,8 @@ modify runtime/config/default surfaces, and does **not** authorize runtime follo
 ## Evidence used
 
 - `docs/decisions/ri_policy_router_defensive_probe_concept_precode_packet_2026-04-29.md`
-- `docs/governance/scpe_ri_v1_selected_defensive_transition_window_audit_report_2026-04-20.md`
-- `docs/governance/scpe_ri_v1_defensive_scarcity_audit_report_2026-04-20.md`
+- `docs/analysis/scpe_ri_v1_selected_defensive_transition_window_audit_report_2026-04-20.md`
+- `docs/analysis/scpe_ri_v1_defensive_scarcity_audit_report_2026-04-20.md`
 - `results/evaluation/scpe_ri_v1_selected_defensive_transition_window_audit_2026-04-20.json`
 - `results/evaluation/scpe_ri_v1_defensive_scarcity_audit_2026-04-20.json`
 - `results/research/scpe_v1_ri/routing_trace.ndjson`

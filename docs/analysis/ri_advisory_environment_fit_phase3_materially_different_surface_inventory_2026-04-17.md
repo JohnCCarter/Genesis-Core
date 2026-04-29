@@ -3,7 +3,7 @@
 This memo is docs-only and fail-closed.
 It decides whether the repository already contains any **already materialized** evidence surface that is materially different enough to reopen deterministic RI advisory-baseline work after the current capture-v2 surface failed exact-label authority.
 
-Governance packet: `docs/governance/ri_advisory_environment_fit_phase3_materially_different_surface_inventory_packet_2026-04-17.md`
+Governance packet: `docs/decisions/ri_advisory_environment_fit_phase3_materially_different_surface_inventory_packet_2026-04-17.md`
 
 ## Source surface used
 

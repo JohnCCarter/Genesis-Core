@@ -23,7 +23,8 @@ Det betyder i praktiken:
 
 - configs stannar här
 - körresultat hör hemma i `results/`
-- tolkning och styrda beslut hör hemma i `docs/governance/`
+- tolkning hör hemma i `docs/analysis/`
+- styrda beslut och packets hör hemma i `docs/decisions/`
 
 ## Struktur
 

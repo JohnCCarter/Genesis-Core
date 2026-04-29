@@ -2,7 +2,7 @@
 
 Date: 2026-04-17
 Mode: RESEARCH
-Packet: `docs/governance/ri_advisory_environment_fit_phase3_reliability_exact_label_authority_preflight_packet_2026-04-17.md`
+Packet: `docs/decisions/ri_advisory_environment_fit_phase3_reliability_exact_label_authority_preflight_packet_2026-04-17.md`
 
 ## Slutsats
 

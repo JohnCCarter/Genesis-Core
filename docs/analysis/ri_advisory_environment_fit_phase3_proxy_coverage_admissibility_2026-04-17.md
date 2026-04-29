@@ -3,7 +3,7 @@
 This memo is docs-only and fail-closed.
 It decides whether the next admissible step after `BLOCKED_PROXY_COVERAGE_GAP` is a bounded observational proxy-coverage audit, or whether evaluation-side Phase 3 work should stop.
 
-Governance packet: `docs/governance/ri_advisory_environment_fit_phase3_proxy_coverage_admissibility_packet_2026-04-17.md`
+Governance packet: `docs/decisions/ri_advisory_environment_fit_phase3_proxy_coverage_admissibility_packet_2026-04-17.md`
 
 ## Source surface used
 

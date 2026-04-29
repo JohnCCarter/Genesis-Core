@@ -120,7 +120,7 @@ Mode is an active operating constraint, not a decorative banner.
 - No process may be marked `införd`.
 - Must NOT modify `config/strategy/champions/`.
 - Must NOT modify freeze guard workflows.
-- Must NOT modify `config/runtime.json` (if production-critical).
+ - Must NOT modify `config/runtime.json` eller `config/runtime.seed.json` (if production-critical).
 - Cannot be merged to `master` without passing STRICT gates.
 
 ## RESEARCH is not STRICT-by-default

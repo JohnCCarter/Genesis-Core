@@ -248,6 +248,7 @@ class ConfigAuthority:
                         "ltf_override_adaptive",
                         "research_bull_high_persistence_override",
                         "research_defensive_transition_override",
+                        "research_policy_router",
                         "research_current_atr_high_vol_multiplier_override",
                         "htf_selector",
                         "regime_intelligence",

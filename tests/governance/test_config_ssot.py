@@ -120,6 +120,47 @@ def test_multi_timeframe_regime_intelligence_regime_definition_whitelisted(tmp_p
     assert regime_definition.adx_range_threshold == 20.0
 
 
+def test_multi_timeframe_research_policy_router_whitelisted(tmp_path: Path) -> None:
+    path = tmp_path / "runtime.json"
+    auth = ConfigAuthority(path)
+
+    snap = auth.propose_update(
+        {
+            **_ri_runtime_patch(),
+            "multi_timeframe": {
+                "regime_intelligence": {"authority_mode": "regime_module"},
+                "research_policy_router": {
+                    "enabled": True,
+                    "switch_threshold": 2,
+                    "hysteresis": 1,
+                    "min_dwell": 3,
+                    "defensive_size_multiplier": 0.5,
+                },
+            },
+        },
+        actor="t",
+        expected_version=0,
+    )
+
+    assert snap.version == 1
+    router_cfg = snap.cfg.multi_timeframe.research_policy_router
+    assert router_cfg is not None
+    assert router_cfg.enabled is True
+    assert router_cfg.switch_threshold == 2
+    assert router_cfg.hysteresis == 1
+    assert router_cfg.min_dwell == 3
+    assert router_cfg.defensive_size_multiplier == pytest.approx(0.5)
+
+    persisted = json.loads(path.read_text(encoding="utf-8"))
+    assert persisted["cfg"]["multi_timeframe"]["research_policy_router"] == {
+        "enabled": True,
+        "switch_threshold": 2,
+        "hysteresis": 1,
+        "min_dwell": 3,
+        "defensive_size_multiplier": 0.5,
+    }
+
+
 def test_multi_timeframe_regime_intelligence_rejects_non_whitelisted_nested_keys(
     tmp_path: Path,
 ) -> None:

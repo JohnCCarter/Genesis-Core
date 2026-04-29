@@ -1,11 +1,30 @@
-# README — RI/R1 vs legacy analysserie
+# README — analysis zone guide
 
 Datum: 2026-03-20
-Status: kort slutöversikt för analysserien
+Status: zon-guide med bevarad historisk RI/R1-serieöversikt
 
-## Syfte
+## Syfte för mappen
 
-Den här README:n sammanfattar RI/R1-vs-legacy-serien i `docs/analysis/` och pekar ut vilka artefakter som är viktigast att läsa i vilken ordning.
+`docs/analysis/` är den framåtriktade ytan för mänskligt läsbara synteser, diagnoser och findings i Genesis-Core.
+Mappen är till för tolkning och sammanhang — inte för governance-SSOT, slice-packets eller råa researchbundlar.
+
+## Hit hör
+
+- findings-synteser
+- jämförelse- och diagnosnoter
+- narrativ sammanfattning av en forskningsserie
+- mänskligt orienterade läsguider till större evidenspaket
+
+## Hit hör inte
+
+- governance-mode eller andra SSOT-regler
+- command-/precode-packets, signoffs eller closeouts
+- stabila kontraktsdefinitioner
+- hela experimentbundlar med tabeller/traces som bör leva under `results/research/`
+
+## Historisk serie: RI/R1 vs legacy
+
+Den här README:n sammanfattar samtidigt den äldre RI/R1-vs-legacy-serien i `docs/analysis/` och pekar ut vilka artefakter som är viktigast att läsa i vilken ordning.
 
 ## Rekommenderad läsordning
 

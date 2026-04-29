@@ -47,26 +47,26 @@ def build_headers(endpoint: str, body: dict | None) -> dict[str, str]:
 
 def print_data(data: dict, pretty: bool = False) -> None:
     """
-    Skriv endast sanerad data till stdout.
+    Write only sanitized data to stdout.
     """
-    # CodeQL [py/clear-text-logging-sensitive-data]: Datan är sanerad (inga secrets).
-    print(json.dumps(data, indent=2 if pretty else None))  # nosec B101 - Säker loggning
+    # CodeQL [py/clear-text-logging-sensitive-data]: The data is sanitized (no secrets).
+    print(json.dumps(data, indent=2 if pretty else None))  # nosec B101 - Safe logging
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Build Bitfinex v2 auth headers")
-    parser.add_argument("endpoint", help="Endpoint utan /v2/, t.ex. auth/r/alerts")
+    parser.add_argument("endpoint", help="Endpoint without /v2/, e.g. auth/r/alerts")
     parser.add_argument(
         "--body",
-        help="JSON body som sträng (default: {} )",
+        help="JSON body as string (default: {})",
         default="{}",
     )
     parser.add_argument(
         "--reveal",
         action="store_true",
         help=(
-            "Kräver explicit ack via miljövariabel "
-            f"{REVEAL_ACK_ENV}={REVEAL_ACK_VALUE}. Klartext visas inte."
+            "Requires explicit acknowledgement via environment variable "
+            f"{REVEAL_ACK_ENV}={REVEAL_ACK_VALUE}. Clear text is not shown."
         ),
     )
     parser.add_argument(
@@ -78,7 +78,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     try:
-        body = json.loads(args.body) if args.body else {}
+        body = json.loads(args.body)
     except json.JSONDecodeError as e:
         print(f"Invalid JSON body: {e}", file=sys.stderr)
         return 2
@@ -96,12 +96,12 @@ def main(argv: list[str] | None = None) -> int:
             )
             return 3
 
-        out = _mask_sensitive_headers(headers)
-        out["info"] = "Reveal ack accepterad, men hemligheter maskeras av säkerhetsskäl."
+    out = _mask_sensitive_headers(headers)
+    if args.reveal:
+        out["info"] = "Reveal acknowledgement accepted, but secrets remain masked for safe logging."
     else:
-        out = _mask_sensitive_headers(headers)
         out["info"] = (
-            "Hemligheter maskeras som standard. --reveal kräver explicit ack och visar inte klartext."
+            "Secrets are masked by default. --reveal requires explicit acknowledgement and still does not show clear text."
         )
 
     print_data(out, args.pretty)

@@ -14,7 +14,7 @@ Separera alltid följande roller:
 - **research artifacts** — reproducerbara experimentbundlar och råa evidensytor
 
 Historiska dokument kan fortfarande ligga i äldre mappar.
-Den här taxonomin definierar **framåtriktad placering**, inte en redan slutförd migration.
+Den här taxonomin definierar fortfarande **framåtriktad placering**, men för `docs/decisions/` och `docs/analysis/` är root-tunga historiska korpusar nu redan migrerade till domändrivna undermappar.
 
 ## Rekommenderade ytor
 
@@ -47,7 +47,8 @@ Typiska exempel:
 ### `docs/decisions/`
 
 Använd för beslutsspår kring en viss slice.
-Detta är platsen för dokument som förklarar *vad som beslutades nu*, under vilken authority och med vilket scope.
+Detta är platsen för dokument som förklarar _vad som beslutades nu_, under vilken authority och med vilket scope.
+Rooten används nu främst för zon-guide och taxonomi/meta-packets; huvuddelen av beslutskorpusen ligger i domändrivna undermappar som beskrivs i `docs/decisions/README.md`.
 
 Typiska exempel:
 
@@ -60,6 +61,7 @@ Typiska exempel:
 
 Använd för mänskligt läsbara synteser och diagnoser.
 Här hör tolkning, sammanfattning och begreppsarbete hemma — inte governance-SSOT och inte råa experimentbundlar.
+Rooten används nu främst för zon-guide; huvuddelen av analyskorpusen ligger i grova, domändrivna undermappar som beskrivs i `docs/analysis/README.md`.
 
 Typiska exempel:
 
@@ -85,14 +87,14 @@ Använd för kuraterade, commit-säkra, maskinläsbara sammanfattningar som andr
 
 ## Snabb placeringsguide
 
-| Fråga | Rätt yta |
-| --- | --- |
-| Är detta en regel eller authority-definition? | `docs/governance/` |
-| Är detta en stabil form som andra ytor måste följa? | `docs/contracts/` |
-| Är detta ett slice-beslut, packet eller closeout? | `docs/decisions/` |
-| Är detta en tolkning eller syntes för mänsklig läsning? | `docs/analysis/` |
-| Är detta reproducerbar experimentoutput eller rå evidens? | `results/research/` |
-| Är detta en liten kuraterad summary för vidare referens? | `results/evaluation/` |
+| Fråga                                                     | Rätt yta              |
+| --------------------------------------------------------- | --------------------- |
+| Är detta en regel eller authority-definition?             | `docs/governance/`    |
+| Är detta en stabil form som andra ytor måste följa?       | `docs/contracts/`     |
+| Är detta ett slice-beslut, packet eller closeout?         | `docs/decisions/`     |
+| Är detta en tolkning eller syntes för mänsklig läsning?   | `docs/analysis/`      |
+| Är detta reproducerbar experimentoutput eller rå evidens? | `results/research/`   |
+| Är detta en liten kuraterad summary för vidare referens?  | `results/evaluation/` |
 
 ## Viktig försiktighetsregel
 

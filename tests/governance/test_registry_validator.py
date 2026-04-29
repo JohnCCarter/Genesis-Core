@@ -18,6 +18,7 @@ def _copy_schemas(repo_root: Path, dst_root: Path) -> None:
         "compact.schema.json",
         "manifest.schema.json",
         "audit_entry.schema.json",
+        "strategy_candidate_manifest.schema.json",
     ]:
         (dst / name).write_text(
             (repo_root / "registry" / "schemas" / name).read_text(encoding="utf-8"),
@@ -92,6 +93,27 @@ def _write_manifest_with_compacts(
         "compacts": compact_refs,
     }
     (manifests / f"{stage}.json").write_text(
+        json.dumps(payload, ensure_ascii=False),
+        encoding="utf-8",
+    )
+
+
+def _write_strategy_candidate_manifest(
+    dst_root: Path,
+    *,
+    candidates: list[dict[str, object]],
+) -> None:
+    manifests = dst_root / "registry" / "manifests"
+    manifests.mkdir(parents=True, exist_ok=True)
+
+    import json
+
+    payload = {
+        "manifest_type": "strategy_candidates",
+        "registry_version": 1,
+        "candidates": candidates,
+    }
+    (manifests / "strategy_candidates.dev.json").write_text(
         json.dumps(payload, ensure_ascii=False),
         encoding="utf-8",
     )
@@ -214,3 +236,81 @@ def test_registry_still_flags_real_conflict_between_distinct_compacts(tmp_path: 
     result = validate_registry(tmp_path)
     assert not result.ok
     assert any("compact conflict in group 'shared_group'" in e for e in result.errors)
+
+
+def test_registry_allows_missing_strategy_candidate_manifest(tmp_path: Path) -> None:
+    repo_root = _repo_root()
+    _copy_schemas(repo_root, tmp_path)
+
+    (tmp_path / ".github" / "skills").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "registry" / "compacts").mkdir(parents=True, exist_ok=True)
+    _write_manifest_with_compacts(tmp_path, stage="dev", compact_refs=[])
+    _write_manifest_with_compacts(tmp_path, stage="stable", compact_refs=[])
+
+    result = validate_registry(tmp_path)
+    assert result.ok, "\n".join(result.errors)
+
+
+def test_strategy_candidate_manifest_rejects_invalid_status(tmp_path: Path) -> None:
+    repo_root = _repo_root()
+    _copy_schemas(repo_root, tmp_path)
+
+    (tmp_path / ".github" / "skills").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "registry" / "compacts").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "config" / "strategy" / "candidates" / "3h").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "config" / "strategy" / "candidates" / "3h" / "sample.json").write_text(
+        "{}",
+        encoding="utf-8",
+    )
+    _write_manifest_with_compacts(tmp_path, stage="dev", compact_refs=[])
+    _write_manifest_with_compacts(tmp_path, stage="stable", compact_refs=[])
+    _write_strategy_candidate_manifest(
+        tmp_path,
+        candidates=[
+            {
+                "id": "sample_candidate",
+                "status": "not_a_real_status",
+                "symbol": "tBTCUSD",
+                "timeframe": "3h",
+                "strategy_family": "ri",
+                "config_path": "config/strategy/candidates/3h/sample.json",
+                "created_at": "2026-04-23",
+                "governance_refs": ["docs/governance/sample.md"],
+                "evidence_refs": ["docs/analysis/sample.md"],
+            }
+        ],
+    )
+
+    result = validate_registry(tmp_path)
+    assert not result.ok
+    assert any("'status'" in e and "is not one of" in e for e in result.errors)
+
+
+def test_strategy_candidate_manifest_rejects_out_of_scope_config_path(tmp_path: Path) -> None:
+    repo_root = _repo_root()
+    _copy_schemas(repo_root, tmp_path)
+
+    (tmp_path / ".github" / "skills").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "registry" / "compacts").mkdir(parents=True, exist_ok=True)
+    _write_manifest_with_compacts(tmp_path, stage="dev", compact_refs=[])
+    _write_manifest_with_compacts(tmp_path, stage="stable", compact_refs=[])
+    _write_strategy_candidate_manifest(
+        tmp_path,
+        candidates=[
+            {
+                "id": "sample_candidate",
+                "status": "research",
+                "symbol": "tBTCUSD",
+                "timeframe": "3h",
+                "strategy_family": "ri",
+                "config_path": "config/strategy/champions/tBTCUSD_3h.json",
+                "created_at": "2026-04-23",
+                "governance_refs": ["docs/governance/sample.md"],
+                "evidence_refs": ["docs/analysis/sample.md"],
+            }
+        ],
+    )
+
+    result = validate_registry(tmp_path)
+    assert not result.ok
+    assert any("config_path" in e and "does not match" in e for e in result.errors)

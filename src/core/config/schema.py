@@ -137,8 +137,22 @@ class HTFSelectorConfig(RuntimeSection):
     per_timeframe: dict[str, HTFSelectorRule] = Field(default_factory=dict)
 
 
+class RegimeDefinitionConfig(RuntimeSection):
+    adx_trend_threshold: float = Field(gt=0.0)
+    adx_range_threshold: float = Field(ge=0.0)
+    slope_threshold: float = Field(ge=0.0)
+    volatility_threshold: float = Field(ge=0.0)
+
+    @model_validator(mode="after")
+    def _validate_threshold_order(self) -> RegimeDefinitionConfig:
+        if self.adx_range_threshold >= self.adx_trend_threshold:
+            raise ValueError("adx_range_threshold must be lower than adx_trend_threshold")
+        return self
+
+
 class RegimeIntelligenceConfig(RuntimeSection):
     authority_mode: Literal["legacy", "regime_module"] = Field(default="legacy")
+    regime_definition: RegimeDefinitionConfig | None = None
 
 
 class RegimeUnifiedAliasConfig(RuntimeSection):
@@ -151,6 +165,34 @@ class RegimeUnifiedAliasConfig(RuntimeSection):
     authority_mode: Literal["legacy", "regime_module"] = Field(default="legacy")
 
 
+class ResearchBullHighPersistenceOverrideConfig(RuntimeSection):
+    enabled: bool = Field(default=False)
+    min_persistence: int = Field(default=2, ge=1, le=20)
+    max_probability_gap: float = Field(default=0.06, ge=0.0, le=1.0)
+    min_size_base: float = Field(default=0.0, ge=0.0)
+    require_non_penalized_volatility_for_min_size_base: bool = Field(default=False)
+
+
+class ResearchCurrentATRHighVolMultiplierOverrideConfig(RuntimeSection):
+    enabled: bool = Field(default=False)
+    current_atr_threshold: float = Field(default=0.0, ge=0.0)
+    high_vol_multiplier_override: float = Field(default=1.0, ge=0.0, le=1.0)
+
+
+class ResearchDefensiveTransitionOverrideConfig(RuntimeSection):
+    enabled: bool = Field(default=False)
+    guard_bars: int = Field(default=3, ge=1, le=20)
+    max_probability_gap: float = Field(default=0.06, ge=0.0, le=1.0)
+
+
+class ResearchPolicyRouterConfig(RuntimeSection):
+    enabled: bool = Field(default=False)
+    switch_threshold: int = Field(default=2, ge=1)
+    hysteresis: int = Field(default=1, ge=0)
+    min_dwell: int = Field(default=3, ge=0)
+    defensive_size_multiplier: float = Field(default=0.5, ge=0.0, le=1.0)
+
+
 class MultiTimeframeConfig(RuntimeSection):
     use_htf_block: bool = Field(default=True)
     allow_ltf_override: bool = Field(default=False)
@@ -158,6 +200,14 @@ class MultiTimeframeConfig(RuntimeSection):
     ltf_override_adaptive: LTFOverrideAdaptiveConfig = Field(
         default_factory=LTFOverrideAdaptiveConfig
     )
+    research_bull_high_persistence_override: ResearchBullHighPersistenceOverrideConfig = Field(
+        default_factory=ResearchBullHighPersistenceOverrideConfig
+    )
+    research_defensive_transition_override: ResearchDefensiveTransitionOverrideConfig | None = None
+    research_current_atr_high_vol_multiplier_override: (
+        ResearchCurrentATRHighVolMultiplierOverrideConfig
+    ) = Field(default_factory=ResearchCurrentATRHighVolMultiplierOverrideConfig)
+    research_policy_router: ResearchPolicyRouterConfig | None = None
     htf_selector: HTFSelectorConfig = Field(default_factory=HTFSelectorConfig)
     regime_intelligence: RegimeIntelligenceConfig = Field(default_factory=RegimeIntelligenceConfig)
 
@@ -302,6 +352,23 @@ class RuntimeConfig(RuntimeSection):
                     for key, rng in pct.items()
                     if isinstance(rng, dict)
                 }
+        mtf_cfg = data.get("multi_timeframe")
+        if isinstance(mtf_cfg, dict):
+            ri_cfg = mtf_cfg.get("regime_intelligence")
+            if isinstance(ri_cfg, dict) and ri_cfg.get("regime_definition") is None:
+                ri_cfg.pop("regime_definition", None)
+            defensive_transition_cfg = mtf_cfg.get("research_defensive_transition_override")
+            if not (
+                isinstance(defensive_transition_cfg, dict)
+                and bool(defensive_transition_cfg.get("enabled", False))
+            ):
+                mtf_cfg.pop("research_defensive_transition_override", None)
+            research_policy_router_cfg = mtf_cfg.get("research_policy_router")
+            if not (
+                isinstance(research_policy_router_cfg, dict)
+                and bool(research_policy_router_cfg.get("enabled", False))
+            ):
+                mtf_cfg.pop("research_policy_router", None)
         return data
 
 

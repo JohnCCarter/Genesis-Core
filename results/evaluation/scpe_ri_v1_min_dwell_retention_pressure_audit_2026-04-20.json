@@ -1,0 +1,335 @@
+{
+  "audit_version": "scpe-ri-v1-min-dwell-retention-pressure-audit-2026-04-20",
+  "baseline_recommendation_passthrough": "NEEDS_REVISION",
+  "baseline_recommendation_scope": "observed_replay_quality_only",
+  "branch": "feature/ri-role-map-implementation-2026-03-24",
+  "comparator_summaries": {
+    "min_dwell_retained": {
+      "avg_action_edge": 0.047714,
+      "avg_bars_since_regime_change": 189.166667,
+      "avg_conf_overall": 0.523857,
+      "avg_ri_clarity_score": 25.0,
+      "count": 6,
+      "max_action_edge": 0.062481,
+      "max_bars_since_regime_change": 478.0,
+      "max_conf_overall": 0.531241,
+      "max_ri_clarity_score": 26.0,
+      "min_action_edge": 0.037526,
+      "min_bars_since_regime_change": 21.0,
+      "min_conf_overall": 0.518763,
+      "min_ri_clarity_score": 24.0,
+      "raw_mandate_level_counts": {
+        "1": 6
+      },
+      "raw_switch_reason_counts": {
+        "defensive_transition_state": 6
+      },
+      "selected_policy_counts": {
+        "RI_no_trade_policy": 6
+      },
+      "switch_reason_counts": {
+        "switch_blocked_by_min_dwell": 6
+      },
+      "transition_bucket_counts": {
+        "stable": 6
+      },
+      "veto_reason_counts": {
+        "policy_no_trade": 6
+      },
+      "zone_counts": {
+        "low": 1,
+        "mid": 5
+      }
+    },
+    "raw_defensive_candidates": {
+      "avg_action_edge": 0.052487,
+      "avg_bars_since_regime_change": 252.466667,
+      "avg_conf_overall": 0.526244,
+      "avg_ri_clarity_score": 25.5,
+      "count": 30,
+      "max_action_edge": 0.07073,
+      "max_bars_since_regime_change": 603.0,
+      "max_conf_overall": 0.535365,
+      "max_ri_clarity_score": 27.0,
+      "min_action_edge": 0.035007,
+      "min_bars_since_regime_change": 1.0,
+      "min_conf_overall": 0.517503,
+      "min_ri_clarity_score": 24.0,
+      "raw_mandate_level_counts": {
+        "1": 29,
+        "2": 1
+      },
+      "raw_switch_reason_counts": {
+        "defensive_transition_state": 29,
+        "transition_pressure_detected": 1
+      },
+      "selected_policy_counts": {
+        "RI_continuation_policy": 17,
+        "RI_defensive_transition_policy": 2,
+        "RI_no_trade_policy": 11
+      },
+      "switch_reason_counts": {
+        "confidence_below_threshold": 17,
+        "defensive_transition_state": 1,
+        "switch_blocked_by_min_dwell": 11,
+        "transition_pressure_detected": 1
+      },
+      "transition_bucket_counts": {
+        "acute": 1,
+        "recent": 1,
+        "stable": 28
+      },
+      "veto_reason_counts": {
+        "defensive_transition_cap": 1,
+        "no_veto": 13,
+        "policy_no_trade": 11,
+        "state_below_veto_floor": 5
+      },
+      "zone_counts": {
+        "low": 13,
+        "mid": 17
+      }
+    },
+    "selected_defensive": {
+      "avg_action_edge": 0.059261,
+      "avg_bars_since_regime_change": 3.0,
+      "avg_conf_overall": 0.529631,
+      "avg_ri_clarity_score": 26.0,
+      "count": 2,
+      "max_action_edge": 0.07073,
+      "max_bars_since_regime_change": 5.0,
+      "max_conf_overall": 0.535365,
+      "max_ri_clarity_score": 27.0,
+      "min_action_edge": 0.047792,
+      "min_bars_since_regime_change": 1.0,
+      "min_conf_overall": 0.523896,
+      "min_ri_clarity_score": 25.0,
+      "raw_mandate_level_counts": {
+        "1": 1,
+        "2": 1
+      },
+      "raw_switch_reason_counts": {
+        "defensive_transition_state": 1,
+        "transition_pressure_detected": 1
+      },
+      "selected_policy_counts": {
+        "RI_defensive_transition_policy": 2
+      },
+      "switch_reason_counts": {
+        "defensive_transition_state": 1,
+        "transition_pressure_detected": 1
+      },
+      "transition_bucket_counts": {
+        "acute": 1,
+        "recent": 1
+      },
+      "veto_reason_counts": {
+        "defensive_transition_cap": 1,
+        "state_below_veto_floor": 1
+      },
+      "zone_counts": {
+        "low": 2
+      }
+    },
+    "threshold_retained": {
+      "avg_action_edge": 0.053972,
+      "avg_bars_since_regime_change": 251.333333,
+      "avg_conf_overall": 0.526986,
+      "avg_ri_clarity_score": 25.5,
+      "count": 12,
+      "max_action_edge": 0.065669,
+      "max_bars_since_regime_change": 528.0,
+      "max_conf_overall": 0.532835,
+      "max_ri_clarity_score": 26.0,
+      "min_action_edge": 0.035007,
+      "min_bars_since_regime_change": 119.0,
+      "min_conf_overall": 0.517503,
+      "min_ri_clarity_score": 24.0,
+      "raw_mandate_level_counts": {
+        "1": 12
+      },
+      "raw_switch_reason_counts": {
+        "defensive_transition_state": 12
+      },
+      "selected_policy_counts": {
+        "RI_continuation_policy": 12
+      },
+      "switch_reason_counts": {
+        "confidence_below_threshold": 12
+      },
+      "transition_bucket_counts": {
+        "stable": 12
+      },
+      "veto_reason_counts": {
+        "no_veto": 9,
+        "state_below_veto_floor": 3
+      },
+      "zone_counts": {
+        "low": 8,
+        "mid": 4
+      }
+    }
+  },
+  "comparison_deltas": {
+    "min_dwell_vs_raw_defensive": {
+      "delta_avg_action_edge": -0.004773,
+      "delta_avg_bars_since_regime_change": -63.3,
+      "delta_avg_conf_overall": -0.002387,
+      "delta_avg_ri_clarity_score": -0.5
+    },
+    "min_dwell_vs_selected_defensive": {
+      "delta_avg_action_edge": -0.011547,
+      "delta_avg_bars_since_regime_change": 186.166667,
+      "delta_avg_conf_overall": -0.005774,
+      "delta_avg_ri_clarity_score": -1.0
+    },
+    "min_dwell_vs_threshold": {
+      "delta_avg_action_edge": -0.006258,
+      "delta_avg_bars_since_regime_change": -62.166666,
+      "delta_avg_conf_overall": -0.003129,
+      "delta_avg_ri_clarity_score": -0.5
+    }
+  },
+  "date": "2026-04-20",
+  "descriptive_guardrails": {
+    "no_dwell_rule_proposal": true,
+    "no_replay_quality_reinterpretation": true,
+    "report_only_interpretation_labels": [
+      "near-miss",
+      "materially weaker",
+      "mixed",
+      "overlapping"
+    ],
+    "script_emits_metrics_only": true
+  },
+  "findings": [
+    "Min-dwell-retained rows are emitted as a descriptive comparator bucket only; the script does not classify them as near-miss or materially weaker.",
+    "Comparator cohorts are derived from the same frozen reconstruction surface and do not define an alternative acceptance policy.",
+    "The report may interpret the emitted metric deltas, but the artifact remains non-authoritative and observational-only."
+  ],
+  "frozen_inputs": {
+    "entry_rows": {
+      "path": "results/research/ri_advisory_environment_fit/phase3_phasec_evidence_capture_v2_2026-04-17/entry_rows.ndjson",
+      "sha256": "a8712bf723444269576fa5fc8363b7c7d680b654fe79ded8cc6dd17df5c6857a"
+    },
+    "replay_manifest": {
+      "path": "results/research/scpe_v1_ri/manifest.json",
+      "sha256": "273f16d3247e71327d15aeecac2ecdbed37238b9133fb7aefe45450a5b59b322"
+    },
+    "replay_metrics": {
+      "path": "results/research/scpe_v1_ri/replay_metrics.json",
+      "sha256": "f46cc0e1fb0418b6fe8b1759571cb9e967343595c9be85378d09e28492dcfe60"
+    },
+    "replay_script_reference": {
+      "path": "scripts/analyze/scpe_ri_v1_router_replay.py",
+      "sha256": "6f9d93f26ab5544a51cd1546f68f405596ad82e5341dbe8c352eba049b462b06"
+    },
+    "routing_trace": {
+      "path": "results/research/scpe_v1_ri/routing_trace.ndjson",
+      "sha256": "d01ebc7457da902fcdcff93ea78eadf5036be464908a2b45c0cdb7bfb0f61da8"
+    }
+  },
+  "min_dwell_examples_sorted": [
+    {
+      "action_edge": 0.062481,
+      "bars_since_regime_change": 286.0,
+      "conf_overall": 0.531241,
+      "final_routed_action": "NONE",
+      "raw_mandate_level": 1,
+      "raw_switch_reason": "defensive_transition_state",
+      "ri_clarity_score": 26.0,
+      "row_index": 112,
+      "selected_policy": "RI_no_trade_policy",
+      "switch_reason": "switch_blocked_by_min_dwell",
+      "timestamp": "2025-06-23T12:00:00",
+      "transition_bucket": "stable",
+      "veto_action": "force_no_trade",
+      "veto_reason": "policy_no_trade",
+      "zone": "mid"
+    },
+    {
+      "action_edge": 0.050576,
+      "bars_since_regime_change": 81.0,
+      "conf_overall": 0.525288,
+      "final_routed_action": "NONE",
+      "raw_mandate_level": 1,
+      "raw_switch_reason": "defensive_transition_state",
+      "ri_clarity_score": 25.0,
+      "row_index": 7,
+      "selected_policy": "RI_no_trade_policy",
+      "switch_reason": "switch_blocked_by_min_dwell",
+      "timestamp": "2024-02-28T00:00:00",
+      "transition_bucket": "stable",
+      "veto_action": "force_no_trade",
+      "veto_reason": "policy_no_trade",
+      "zone": "mid"
+    },
+    {
+      "action_edge": 0.047484,
+      "bars_since_regime_change": 144.0,
+      "conf_overall": 0.523742,
+      "final_routed_action": "NONE",
+      "raw_mandate_level": 1,
+      "raw_switch_reason": "defensive_transition_state",
+      "ri_clarity_score": 25.0,
+      "row_index": 16,
+      "selected_policy": "RI_no_trade_policy",
+      "switch_reason": "switch_blocked_by_min_dwell",
+      "timestamp": "2024-04-05T09:00:00",
+      "transition_bucket": "stable",
+      "veto_action": "force_no_trade",
+      "veto_reason": "policy_no_trade",
+      "zone": "mid"
+    },
+    {
+      "action_edge": 0.046062,
+      "bars_since_regime_change": 125.0,
+      "conf_overall": 0.523031,
+      "final_routed_action": "NONE",
+      "raw_mandate_level": 1,
+      "raw_switch_reason": "defensive_transition_state",
+      "ri_clarity_score": 25.0,
+      "row_index": 90,
+      "selected_policy": "RI_no_trade_policy",
+      "switch_reason": "switch_blocked_by_min_dwell",
+      "timestamp": "2025-03-23T21:00:00",
+      "transition_bucket": "stable",
+      "veto_action": "force_no_trade",
+      "veto_reason": "policy_no_trade",
+      "zone": "mid"
+    },
+    {
+      "action_edge": 0.042158,
+      "bars_since_regime_change": 21.0,
+      "conf_overall": 0.521079,
+      "final_routed_action": "NONE",
+      "raw_mandate_level": 1,
+      "raw_switch_reason": "defensive_transition_state",
+      "ri_clarity_score": 25.0,
+      "row_index": 74,
+      "selected_policy": "RI_no_trade_policy",
+      "switch_reason": "switch_blocked_by_min_dwell",
+      "timestamp": "2025-01-28T06:00:00",
+      "transition_bucket": "stable",
+      "veto_action": "force_no_trade",
+      "veto_reason": "policy_no_trade",
+      "zone": "mid"
+    }
+  ],
+  "mode": "RESEARCH",
+  "non_authoritative": true,
+  "observational_only": true,
+  "read_only_inputs_confirmed": true,
+  "recommendation_change": "none",
+  "selector_definitions": {
+    "min_dwell_retained": "raw target policy = RI_defensive_transition_policy AND selected_policy = RI_no_trade_policy AND switch_reason = switch_blocked_by_min_dwell",
+    "raw_defensive_candidates": "raw target policy = RI_defensive_transition_policy",
+    "selected_defensive": "raw target policy = RI_defensive_transition_policy AND selected_policy = RI_defensive_transition_policy",
+    "threshold_retained": "raw target policy = RI_defensive_transition_policy AND selected_policy = RI_continuation_policy AND switch_reason = confidence_below_threshold"
+  },
+  "source_hashes": {
+    "scripts/analyze/scpe_ri_v1_min_dwell_retention_pressure_audit.py": "ea659a1608164691cb1182d7d7160c638b4aa48ef5ed1989f41e9a83b0b404d1"
+  },
+  "status": "min-dwell-retention-pressure-audit-generated",
+  "summary_only": true
+}

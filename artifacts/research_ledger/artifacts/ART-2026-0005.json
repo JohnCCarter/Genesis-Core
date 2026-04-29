@@ -1,0 +1,28 @@
+{
+  "entity_id": "ART-2026-0005",
+  "entity_type": "artifact",
+  "created_at": "2026-04-24T09:33:00+00:00",
+  "schema_version": "research_ledger.v1",
+  "metadata": {
+    "strategy_family": "ri",
+    "strategy_family_source": "family_registry_v1",
+    "classification_role": "descriptive_only",
+    "runtime_authority": "none",
+    "lane": "research_findings_bank_seed",
+    "finding_id": "FIND-2026-0004",
+    "finding_outcome": "negative",
+    "notes": [
+      "This ArtifactRecord identifies a research-only negative finding bundle.",
+      "The bundle preserves that seam A is reachable but still fail-set negative overall.",
+      "The payload is descriptive evidence and not executable runtime config."
+    ]
+  },
+  "experiment_id": null,
+  "artifact_kind": "evidence_bundle",
+  "path": "artifacts/bundles/findings/ri_policy_router/FIND-2026-0004_weak_pre_aged_release_failset_negative.json",
+  "role": "research_finding_bundle",
+  "format": "json",
+  "checksum_sha256": "3c15dc083ea3b480bb1476b97576d15305e9228be1ec17899e0a3b843cb27ed0",
+  "size_bytes": 2114,
+  "intelligence_refs": []
+}

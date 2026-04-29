@@ -246,6 +246,10 @@ class ConfigAuthority:
                         "allow_ltf_override",
                         "ltf_override_threshold",
                         "ltf_override_adaptive",
+                        "research_bull_high_persistence_override",
+                        "research_defensive_transition_override",
+                        "research_policy_router",
+                        "research_current_atr_high_vol_multiplier_override",
                         "htf_selector",
                         "regime_intelligence",
                     }
@@ -275,6 +279,79 @@ class ConfigAuthority:
                                 raise ValueError(
                                     "non_whitelisted_field:ltf_override_adaptive.regime_multipliers"
                                 )
+                    research_override_cfg = v.get("research_bull_high_persistence_override")
+                    if research_override_cfg is not None:
+                        if not isinstance(research_override_cfg, dict):
+                            raise ValueError(
+                                "non_whitelisted_field:research_bull_high_persistence_override"
+                            )
+                        allowed_research_override = {
+                            "enabled",
+                            "min_persistence",
+                            "max_probability_gap",
+                            "min_size_base",
+                            "require_non_penalized_volatility_for_min_size_base",
+                        }
+                        if any(
+                            subk not in allowed_research_override
+                            for subk in research_override_cfg.keys()
+                        ):
+                            raise ValueError(
+                                "non_whitelisted_field:research_bull_high_persistence_override"
+                            )
+                    defensive_transition_cfg = v.get("research_defensive_transition_override")
+                    if defensive_transition_cfg is not None:
+                        if not isinstance(defensive_transition_cfg, dict):
+                            raise ValueError(
+                                "non_whitelisted_field:research_defensive_transition_override"
+                            )
+                        allowed_defensive_transition = {
+                            "enabled",
+                            "guard_bars",
+                            "max_probability_gap",
+                        }
+                        if any(
+                            subk not in allowed_defensive_transition
+                            for subk in defensive_transition_cfg.keys()
+                        ):
+                            raise ValueError(
+                                "non_whitelisted_field:research_defensive_transition_override"
+                            )
+                    current_atr_override_cfg = v.get(
+                        "research_current_atr_high_vol_multiplier_override"
+                    )
+                    if current_atr_override_cfg is not None:
+                        if not isinstance(current_atr_override_cfg, dict):
+                            raise ValueError(
+                                "non_whitelisted_field:research_current_atr_high_vol_multiplier_override"
+                            )
+                        allowed_current_atr_override = {
+                            "enabled",
+                            "current_atr_threshold",
+                            "high_vol_multiplier_override",
+                        }
+                        if any(
+                            subk not in allowed_current_atr_override
+                            for subk in current_atr_override_cfg.keys()
+                        ):
+                            raise ValueError(
+                                "non_whitelisted_field:research_current_atr_high_vol_multiplier_override"
+                            )
+                    policy_router_cfg = v.get("research_policy_router")
+                    if policy_router_cfg is not None:
+                        if not isinstance(policy_router_cfg, dict):
+                            raise ValueError("non_whitelisted_field:research_policy_router")
+                        allowed_policy_router = {
+                            "enabled",
+                            "switch_threshold",
+                            "hysteresis",
+                            "min_dwell",
+                            "defensive_size_multiplier",
+                        }
+                        if any(
+                            subk not in allowed_policy_router for subk in policy_router_cfg.keys()
+                        ):
+                            raise ValueError("non_whitelisted_field:research_policy_router")
                     selector_cfg = v.get("htf_selector")
                     if selector_cfg is not None:
                         if not isinstance(selector_cfg, dict):
@@ -306,7 +383,7 @@ class ConfigAuthority:
                     if regime_intelligence_cfg is not None:
                         if not isinstance(regime_intelligence_cfg, dict):
                             raise ValueError("non_whitelisted_field:regime_intelligence")
-                        allowed_regime_intelligence = {"authority_mode"}
+                        allowed_regime_intelligence = {"authority_mode", "regime_definition"}
                         if any(
                             subk not in allowed_regime_intelligence
                             for subk in regime_intelligence_cfg.keys()
@@ -320,6 +397,22 @@ class ConfigAuthority:
                             "regime_module",
                         }:
                             raise ValueError("invalid_value:regime_intelligence.authority_mode")
+                        regime_definition_cfg = regime_intelligence_cfg.get("regime_definition")
+                        if regime_definition_cfg is not None:
+                            if not isinstance(regime_definition_cfg, dict):
+                                raise ValueError(
+                                    "non_whitelisted_field:regime_intelligence.regime_definition"
+                                )
+                            required_regime_definition = {
+                                "adx_trend_threshold",
+                                "adx_range_threshold",
+                                "slope_threshold",
+                                "volatility_threshold",
+                            }
+                            if set(regime_definition_cfg.keys()) != required_regime_definition:
+                                raise ValueError(
+                                    "non_whitelisted_field:regime_intelligence.regime_definition"
+                                )
 
         _enforce_whitelist(normalized_patch)
 

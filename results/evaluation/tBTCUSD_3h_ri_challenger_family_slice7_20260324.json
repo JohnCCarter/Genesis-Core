@@ -1,0 +1,59 @@
+{
+  "date": "2026-03-24",
+  "branch": "feature/ri-role-map-implementation-2026-03-24",
+  "git_commit": "1d1470745927050cf9a0cfd4ccb6d3603b1d813d",
+  "status": "execution-complete",
+  "scope": "RI challenger family slice7 execution summary only; no promotion/default/runtime change",
+  "config_path": "config/optimizer/3h/ri_challenger_family_v1/tBTCUSD_3h_ri_challenger_family_slice7_2024_v1.yaml",
+  "run_id": "run_20260324_171511",
+  "run_dir": "results/hparam_search/run_20260324_171511",
+  "storage_db": "results/hparam_search/storage/ri_challenger_family_slice7_3h_2024_v1.db",
+  "run_intent": "research_slice",
+  "symbol": "tBTCUSD",
+  "timeframe": "3h",
+  "train_window": ["2023-12-21", "2024-06-30"],
+  "validation_window": ["2024-07-01", "2024-12-31"],
+  "score_version": "v2",
+  "best_train": {
+    "trial_id": "trial_007",
+    "score": 0.4414426432506574,
+    "gates": {
+      "hysteresis_steps": 4,
+      "cooldown_bars": 1
+    }
+  },
+  "validation_winner": {
+    "trial_id": "trial_001",
+    "score": 0.26974911658712664,
+    "num_trades": 63,
+    "profit_factor": 1.8845797002042906,
+    "max_drawdown": 0.027808774550017137,
+    "sharpe_ratio": 0.20047738907046656,
+    "gates": {
+      "hysteresis_steps": 4,
+      "cooldown_bars": 1
+    }
+  },
+  "comparisons": {
+    "slice6_plateau": 0.23646934335498004,
+    "slice4_plateau": 0.22516209452403432,
+    "slice3_plateau": 0.22289051935876203,
+    "incumbent_same_head_control": 0.2616884080730424,
+    "beats_slice6": true,
+    "beats_slice4": true,
+    "beats_slice3": true,
+    "beats_incumbent_on_score": true
+  },
+  "optuna_diagnostics": {
+    "n_trials": 96,
+    "duplicate_count": 87,
+    "duplicate_ratio": 0.90625,
+    "pruned_count": 0,
+    "zero_trade_count": 0
+  },
+  "execution_verdict": "slice7 success rule satisfied for challenger evidence; promotion remains separate and not approved by this artifact",
+  "residual_risks": [
+    "High duplicate ratio indicates a narrow search surface and weak sampler efficiency.",
+    "Run artifacts still show merged_config.strategy_family='legacy', which appears to be an older metadata quirk and should be audited separately before any promotion discussion."
+  ]
+}

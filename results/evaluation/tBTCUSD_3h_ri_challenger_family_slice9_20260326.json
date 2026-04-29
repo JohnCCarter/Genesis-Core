@@ -1,0 +1,78 @@
+{
+  "date": "2026-03-26",
+  "branch": "feature/ri-role-map-implementation-2026-03-24",
+  "git_commit": "22a3900504ec87e8e3834b1be3bf900403687ec3",
+  "status": "execution-complete",
+  "scope": "RI challenger family slice9 bounded management-surface falsification summary only; no canonical anchor/promotion/default/runtime change",
+  "config_path": "config/optimizer/3h/ri_challenger_family_v1/tBTCUSD_3h_ri_challenger_family_slice9_2024_v1.yaml",
+  "run_id": "run_20260326_090908",
+  "run_dir": "results/hparam_search/run_20260326_090908",
+  "storage_db": "results/hparam_search/storage/ri_challenger_family_slice9_3h_2024_v1.db",
+  "run_intent": "research_slice",
+  "symbol": "tBTCUSD",
+  "timeframe": "3h",
+  "train_window": ["2023-12-21", "2024-06-30"],
+  "validation_window": ["2024-07-01", "2024-12-31"],
+  "score_version": "v2",
+  "best_train": {
+    "trial_id": "trial_002",
+    "score": 0.4414426432506574,
+    "params": {
+      "entry_conf_overall": 0.27,
+      "regime_proba_balanced": 0.36,
+      "hysteresis_steps": 4,
+      "cooldown_bars": 1,
+      "max_hold_bars": 8,
+      "exit_conf_threshold": 0.4,
+      "ltf_override_threshold": 0.38
+    }
+  },
+  "validation_winner": {
+    "trial_id": "trial_001",
+    "score": 0.26974911658712664,
+    "num_trades": 63,
+    "profit_factor": 1.8845797002042906,
+    "max_drawdown": 0.027808774550017137,
+    "sharpe_ratio": 0.20047738907046656,
+    "params": {
+      "entry_conf_overall": 0.27,
+      "regime_proba_balanced": 0.36,
+      "hysteresis_steps": 4,
+      "cooldown_bars": 1,
+      "max_hold_bars": 8,
+      "exit_conf_threshold": 0.4,
+      "ltf_override_threshold": 0.38
+    }
+  },
+  "comparisons": {
+    "slice8_validation_winner": 0.26974911658712664,
+    "slice7_validation_winner": 0.26974911658712664,
+    "slice8_duplicate_ratio": 0.2604166666666667,
+    "slice7_duplicate_ratio": 0.90625,
+    "slice6_plateau": 0.23646934335498004,
+    "incumbent_same_head_control": 0.2616884080730424,
+    "matches_slice8_score": true,
+    "matches_slice7_score": true,
+    "beats_slice6": true,
+    "beats_incumbent_on_score": true,
+    "differs_from_slice8_management_tuple": true,
+    "slice8_management_tuple": {
+      "max_hold_bars": 8,
+      "exit_conf_threshold": 0.42,
+      "ltf_override_threshold": 0.4
+    }
+  },
+  "optuna_diagnostics": {
+    "n_trials": 75,
+    "duplicate_count": 26,
+    "duplicate_ratio": 0.3466666666666667,
+    "pruned_count": 0,
+    "zero_trade_count": 0
+  },
+  "execution_verdict": "slice9 management-surface evidence collected; success rule satisfied via slice8/slice7-level validation score at a non-slice8 management tuple while remaining above incumbent same-head control",
+  "residual_risks": [
+    "Slice9 did not produce a higher validation winner than slice7 or slice8, so this run strengthens robustness evidence rather than creating a new score high-water mark.",
+    "Duplicate ratio worsened versus slice8 even though it remained far below slice7, so management-surface robustness is stronger than before but not cleaner than the slice8 widen-search.",
+    "Run artifacts still show merged_config.strategy_family='legacy', which remains a separate metadata quirk to audit before any promotion-grade interpretation."
+  ]
+}

@@ -16,7 +16,30 @@ Denna process gäller för:
 - **Optuna-körningar** och resultat-analyser
 - **Systeminställningar** och deployment-ändringar
 
-Kanonisk referens är `.github/copilot-instructions.md`. Detta dokument är en utbyggd arbetsmanual och får inte stå i konflikt med den filen.
+Kanonisk referens är `.github/copilot-instructions.md`. För governance mode resolution och mode-specifika operativa förväntningar är `docs/governance_mode.md` SSOT. Detta dokument är en utbyggd arbetsmanual och får inte stå i konflikt med dessa filer.
+
+## Workflow lane model (supplemental, not a new mode system)
+
+The canonical practical definition of the three-lane workflow model lives in:
+
+- `docs/governance/concept_evidence_runtime_lane_model_2026-04-23.md`
+
+Use it only as workflow framing:
+
+- **Concept lane** — hypothesis shaping, replay/trace analysis, bounded exploratory docs/evidence work
+- **Research-evidence lane** — reproducible comparison/evidence work without runtime or promotion authority
+- **Runtime-integration lane** — the only lane where durable runtime/family/public structure may be proposed under the existing governed path
+
+This lane framing does **not** change:
+
+- governance mode resolution
+- precedence
+- veto power
+- freeze rules
+- strict-only surfaces
+- runtime/default/promotion authority
+
+If this document is used for review, the lane model should help Opus ask whether the work is framed at the correct cost level, not broaden what the work is allowed to do.
 
 ---
 
@@ -216,6 +239,7 @@ Granska **planen** — inte koden — för att fånga risker, scope-drift och do
 2. **Risk audit checklist**:
    - [ ] Scope är clearly defined och bounded
    - [ ] Acceptance criteria är testable
+   - [ ] Arbetslane är korrekt klassificerad (concept / research-evidence / runtime-integration) utan att högre kostnads-lane smygs in via formuleringar
    - [ ] Risk exposure identified (entry/exit logic, features, backtest, optimizer)
    - [ ] Config dependencies mapped
    - [ ] Backward compat: en breaking change? Documented?

@@ -15,6 +15,48 @@ from typing import Any, Literal
 # Regime types: bull/bear (trending), ranging (sideways), balanced (transition)
 Regime = Literal["bull", "bear", "ranging", "balanced"]
 
+_DEFAULT_ADX_TREND_THRESHOLD = 25.0
+_DEFAULT_ADX_RANGE_THRESHOLD = 20.0
+_DEFAULT_SLOPE_THRESHOLD = 0.001
+_DEFAULT_VOLATILITY_THRESHOLD = 0.05
+
+
+def _safe_float(value: Any, default: float) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _resolve_regime_definition_thresholds(config: dict[str, Any] | None) -> dict[str, float]:
+    cfg = dict(config or {})
+    mtf_cfg = dict(cfg.get("multi_timeframe") or {})
+    regime_intelligence_cfg = dict(mtf_cfg.get("regime_intelligence") or {})
+    regime_definition_cfg = dict(regime_intelligence_cfg.get("regime_definition") or {})
+
+    thresholds = {
+        "adx_trend_threshold": _safe_float(
+            regime_definition_cfg.get("adx_trend_threshold"),
+            _DEFAULT_ADX_TREND_THRESHOLD,
+        ),
+        "adx_range_threshold": _safe_float(
+            regime_definition_cfg.get("adx_range_threshold"),
+            _DEFAULT_ADX_RANGE_THRESHOLD,
+        ),
+        "slope_threshold": _safe_float(
+            regime_definition_cfg.get("slope_threshold"),
+            _DEFAULT_SLOPE_THRESHOLD,
+        ),
+        "volatility_threshold": _safe_float(
+            regime_definition_cfg.get("volatility_threshold"),
+            _DEFAULT_VOLATILITY_THRESHOLD,
+        ),
+    }
+    if thresholds["adx_range_threshold"] >= thresholds["adx_trend_threshold"]:
+        thresholds["adx_trend_threshold"] = _DEFAULT_ADX_TREND_THRESHOLD
+        thresholds["adx_range_threshold"] = _DEFAULT_ADX_RANGE_THRESHOLD
+    return thresholds
+
 
 def classify_regime(
     htf_features: dict[str, float],
@@ -54,10 +96,11 @@ def classify_regime(
     hysteresis_steps = int((cfg.get("gates") or {}).get("hysteresis_steps") or 2)
 
     # Thresholds
-    adx_trend_threshold = 25.0  # ADX > 25 = trending
-    adx_range_threshold = 20.0  # ADX < 20 = ranging
-    slope_threshold = 0.001  # Minimum slope for trend detection
-    volatility_threshold = 0.05  # Low volatility for ranging (5%)
+    thresholds = _resolve_regime_definition_thresholds(cfg)
+    adx_trend_threshold = thresholds["adx_trend_threshold"]
+    adx_range_threshold = thresholds["adx_range_threshold"]
+    slope_threshold = thresholds["slope_threshold"]
+    volatility_threshold = thresholds["volatility_threshold"]
 
     # Determine candidate regime
     candidate: Regime
@@ -118,6 +161,8 @@ def detect_regime_from_candles(
     candles: dict[str, list[float]],
     ema_period: int = 50,
     adx_period: int = 14,
+    *,
+    config: dict[str, Any] | None = None,
 ) -> Regime:
     """
     Convenience function to detect regime directly from candle data.
@@ -180,5 +225,5 @@ def detect_regime_from_candles(
     }
 
     # Classify without hysteresis
-    regime, _ = classify_regime(htf_features)
+    regime, _ = classify_regime(htf_features, config=config)
     return regime

@@ -1,0 +1,82 @@
+{
+  "date": "2026-04-20",
+  "branch": "feature/ri-role-map-implementation-2026-03-24",
+  "git_commit": "5fe2a94f84b0ad0b834391c2049d21fe5518a12b",
+  "status": "script-promotion-verified",
+  "scope": "SCPE RI V1 tracked replay-script promotion plus curated evidence summary only; no runtime/config/default/results-research policy change",
+  "canonical_script_path": "scripts/analyze/scpe_ri_v1_router_replay.py",
+  "source_scratch_script_path": "tmp/scpe_ri_v1_router_replay_20260420.py",
+  "packet_path": "docs/governance/scpe_ri_v1_router_replay_script_promotion_packet_2026-04-20.md",
+  "prior_packets": [
+    "docs/governance/scpe_ri_v1_router_replay_implementation_packet_2026-04-20.md",
+    "docs/governance/scpe_ri_v1_router_replay_metric_semantics_revision_packet_2026-04-20.md"
+  ],
+  "replay_output_root": "results/research/scpe_v1_ri",
+  "recommendation": "NEEDS_REVISION",
+  "recommendation_scope": "observed_replay_quality_only",
+  "observational_only": true,
+  "metrics_semantics_version": "scpe-ri-v1-metric-semantics-2026-04-20b",
+  "routing_metrics": {
+    "row_count": 146,
+    "proposed_switch_count": 78,
+    "proposed_switch_rate": 0.537931,
+    "blocked_switch_count": 49,
+    "blocked_switch_rate": 0.337931,
+    "actual_policy_change_count": 29,
+    "actual_policy_change_rate": 0.2,
+    "veto_rate": 0.438356,
+    "no_trade_rate": 0.376712,
+    "policy_selection_frequency": {
+      "RI_continuation_policy": 93,
+      "RI_defensive_transition_policy": 3,
+      "RI_no_trade_policy": 50
+    }
+  },
+  "observational_metrics": {
+    "per_year": {
+      "2024": {
+        "row_count": 72,
+        "trade_count": 46,
+        "winrate": 0.434783,
+        "average_win": 48.934437,
+        "average_loss": -18.666026,
+        "profit_factor": 2.016598
+      },
+      "2025": {
+        "row_count": 74,
+        "trade_count": 45,
+        "winrate": 0.444444,
+        "average_win": 44.177192,
+        "average_loss": -28.406069,
+        "profit_factor": 1.244162
+      }
+    }
+  },
+  "promotion_verification": {
+    "tmp_vs_tracked_row_parity": "PASS",
+    "recommendation_identity": "PASS",
+    "tracked_rerun_hash_match": "PASS",
+    "containment_verdict": "PASS",
+    "unexpected_events": []
+  },
+  "approved_output_hashes": {
+    "results/research/scpe_v1_ri/input_manifest.json": "1fb7bfe833091e8c3828a4a519297aef12e3a371d619e4602ec4dbad198429ec",
+    "results/research/scpe_v1_ri/policy_trace.json": "7003d539476726f5e4c77d0f0803e4f879e2fdefcfb6b897a317fe8bcf944337",
+    "results/research/scpe_v1_ri/replay_metrics.json": "f46cc0e1fb0418b6fe8b1759571cb9e967343595c9be85378d09e28492dcfe60",
+    "results/research/scpe_v1_ri/routing_trace.ndjson": "d01ebc7457da902fcdcff93ea78eadf5036be464908a2b45c0cdb7bfb0f61da8",
+    "results/research/scpe_v1_ri/state_trace.json": "01164b57bfc88dcf0cc073b8183b9aeb5a2532426023cf99242db0aeedf52d6b",
+    "results/research/scpe_v1_ri/summary.md": "cefb2a57b0617fd009a8b555f657251c141cf6e65e468a839b640851d7fe7eee",
+    "results/research/scpe_v1_ri/veto_trace.json": "5006af4f816e924d25428404544290680aed2ea08db8b97908c0cd62025d49c7"
+  },
+  "input_hashes": {
+    "results/research/ri_advisory_environment_fit/phase3_phasec_evidence_capture_v2_2026-04-17/capture_summary.json": "493f4ad3aca71e284a710696f915f1b1ac823af38fc065d5fb58423f0566e00b",
+    "results/research/ri_advisory_environment_fit/phase3_phasec_evidence_capture_v2_2026-04-17/entry_rows.ndjson": "a8712bf723444269576fa5fc8363b7c7d680b654fe79ded8cc6dd17df5c6857a",
+    "results/research/ri_advisory_environment_fit/phase3_phasec_evidence_capture_v2_2026-04-17/manifest.json": "174893022e0e96a2fa336763ef830946038585e0d9d052ed123cc22f0e43f86d",
+    "scripts/analyze/scpe_ri_v1_router_replay.py": "6f9d93f26ab5544a51cd1546f68f405596ad82e5341dbe8c352eba049b462b06"
+  },
+  "residual_risks": [
+    "This promotion makes the replay reproducible from a tracked script path, but it does not change the research-only status of the replay lane.",
+    "The defensive policy remains sparsely selected at 3 rows, so policy distinctness is still a live research concern.",
+    "Proposal pressure remains materially higher than actual realized policy changes, which is informative but not yet a router redesign result."
+  ]
+}

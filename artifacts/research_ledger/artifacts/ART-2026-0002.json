@@ -1,0 +1,28 @@
+{
+  "entity_id": "ART-2026-0002",
+  "entity_type": "artifact",
+  "created_at": "2026-04-24T09:30:00+00:00",
+  "schema_version": "research_ledger.v1",
+  "metadata": {
+    "strategy_family": "ri",
+    "strategy_family_source": "family_registry_v1",
+    "classification_role": "descriptive_only",
+    "runtime_authority": "none",
+    "lane": "research_findings_bank_seed",
+    "finding_id": "FIND-2026-0001",
+    "finding_outcome": "negative",
+    "notes": [
+      "This ArtifactRecord identifies a research-only finding bundle.",
+      "The bundle payload is descriptive evidence and is not executable runtime config.",
+      "This finding exists to prevent repeated aged-weak retuning against an already falsified seam assumption."
+    ]
+  },
+  "experiment_id": null,
+  "artifact_kind": "evidence_bundle",
+  "path": "artifacts/bundles/findings/ri_policy_router/FIND-2026-0001_aged_weak_continuation_guard_failset_negative.json",
+  "role": "research_finding_bundle",
+  "format": "json",
+  "checksum_sha256": "4f5cbdf057131b6fefb6cadf5ed4b60441d964b7d1180578da21cc245f3a3218",
+  "size_bytes": 2075,
+  "intelligence_refs": []
+}

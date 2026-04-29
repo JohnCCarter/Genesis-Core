@@ -41,7 +41,7 @@ _LOGGER = get_logger(__name__)
 #
 # This guards against silently reusing stale cached indicators/swings after code or
 # configuration changes that affect the precomputed outputs.
-PRECOMPUTE_SCHEMA_VERSION = 1
+PRECOMPUTE_SCHEMA_VERSION = 3
 
 
 def _precompute_cache_key_material() -> str:
@@ -59,7 +59,13 @@ def _precompute_cache_key_material() -> str:
             "bb": {"period": 20, "std_dev": 2.0},
             "adx_period": 14,
         },
-        "fib_cfg": {"atr_depth": 3.0, "max_swings": 8, "min_swings": 1},
+        "fib_cfg": {
+            "atr_depth": 3.0,
+            "max_swings": 8,
+            "min_swings": 1,
+            "precompute_swing_history": "full",
+            "precompute_max_lookback": "full",
+        },
     }
     canon = json.dumps(spec, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     digest12 = hashlib.sha256(canon.encode("utf-8")).hexdigest()[:12]
@@ -72,15 +78,40 @@ def _debug_backtest_enabled() -> bool:
     return env_flag_enabled(os.getenv("GENESIS_DEBUG_BACKTEST"), default=False)
 
 
+def _precompute_cache_write_enabled() -> bool:
+    """Return whether precompute cache writes are enabled for this process.
+
+    Default behavior remains unchanged: when the variable is absent, on-disk
+    cache writes stay enabled. Setting `GENESIS_PRECOMPUTE_CACHE_WRITE=0`
+    suppresses directory creation and `.npz` writes on cache miss while still
+    allowing cache reads and in-memory precompute for the current run.
+    """
+
+    return env_flag_enabled(os.getenv("GENESIS_PRECOMPUTE_CACHE_WRITE"), default=True)
+
+
+VALID_DATA_SOURCE_POLICIES = ("frozen_first", "curated_only")
+
+
+def _normalize_data_source_policy(policy: str | None) -> str:
+    """Return a validated backtest data-source policy."""
+
+    normalized = str(policy or "frozen_first").strip().lower()
+    if normalized not in VALID_DATA_SOURCE_POLICIES:
+        allowed = ", ".join(VALID_DATA_SOURCE_POLICIES)
+        raise ValueError(f"Invalid data_source_policy={policy!r}. Expected one of: {allowed}")
+    return normalized
+
+
 class CandleCache:
     def __init__(self, max_size: int = 4):
         self._max_size = max_size
-        self._store: dict[tuple[str, str], pd.DataFrame] = {}
+        self._store: dict[tuple[str, str, str], pd.DataFrame] = {}
 
-    def get(self, key: tuple[str, str]) -> pd.DataFrame | None:
+    def get(self, key: tuple[str, str, str]) -> pd.DataFrame | None:
         return self._store.get(key)
 
-    def put(self, key: tuple[str, str], value: pd.DataFrame) -> None:
+    def put(self, key: tuple[str, str, str], value: pd.DataFrame) -> None:
         if key in self._store:
             self._store[key] = value
             return
@@ -128,6 +159,7 @@ class BacktestEngine:
         post_execution_hook: (
             Any | None
         ) = None,  # Optional hook(symbol, bar_index, action, executed)
+        data_source_policy: str = "frozen_first",
     ):
         """
         Initialize backtest engine.
@@ -154,11 +186,13 @@ class BacktestEngine:
         self.fast_window = bool(fast_window)
         self.evaluation_hook = evaluation_hook
         self.post_execution_hook = post_execution_hook
+        self.data_source_policy = _normalize_data_source_policy(data_source_policy)
 
         # Validate mode consistency to prevent mixed-mode bugs
         self._validate_mode_consistency()
 
         self.candles_df: pd.DataFrame | None = None
+        self.candles_source: str | None = None
         self.htf_candles_df: pd.DataFrame | None = None
         self.htf_candles_source: str | None = None
         self._htf_context_seen: bool = False
@@ -282,6 +316,18 @@ class BacktestEngine:
             self.htf_exit_engine = LegacyExitEngine(self.htf_exit_config)
             self._use_new_exit_engine = False
 
+    def _build_data_candidates(self, base_dir: Path, timeframe: str) -> list[Path]:
+        """Return candidate candle files for the configured data-source policy."""
+
+        frozen = base_dir / "raw" / f"{self.symbol}_{timeframe}_frozen.parquet"
+        curated = base_dir / "curated" / "v1" / "candles" / f"{self.symbol}_{timeframe}.parquet"
+        legacy = base_dir / "candles" / f"{self.symbol}_{timeframe}.parquet"
+
+        if self.data_source_policy == "curated_only":
+            return [curated]
+
+        return [frozen, curated, legacy]
+
     def load_data(self) -> bool:
         """
         Load historical candle data from Parquet (two-layer structure support).
@@ -289,32 +335,25 @@ class BacktestEngine:
         Returns:
             True if data loaded successfully, False otherwise
         """
-        # Find data file (try frozen first, then two-layer structure, fallback to legacy)
+        # Find data file according to the selected backtest data-source policy.
         base_dir = Path(__file__).parent.parent.parent.parent / "data"
 
-        # 1. Frozen Data (Priority 1)
-        data_file_frozen = base_dir / "raw" / f"{self.symbol}_{self.timeframe}_frozen.parquet"
+        self.candles_source = None
+        self.htf_candles_df = None
+        self.htf_candles_source = None
 
-        # 2. Curated Data (Priority 2)
-        data_file_curated = (
-            base_dir / "curated" / "v1" / "candles" / f"{self.symbol}_{self.timeframe}.parquet"
-        )
-
-        # 3. Legacy Data (Priority 3)
-        data_file_legacy = base_dir / "candles" / f"{self.symbol}_{self.timeframe}.parquet"
+        data_candidates = self._build_data_candidates(base_dir, self.timeframe)
 
         data_file: Path | None = None
-        if data_file_frozen.exists():
-            data_file = data_file_frozen
-            _LOGGER.debug("Using frozen snapshot: %s", data_file.name)
-        elif data_file_curated.exists():
-            data_file = data_file_curated
-        elif data_file_legacy.exists():
-            data_file = data_file_legacy
-        else:
+        for candidate in data_candidates:
+            if candidate.exists():
+                data_file = candidate
+                break
+
+        if data_file is None:
             # Defensive fallback: even if exists() returns False (e.g. during tests with monkeypatch
             # or odd FS semantics), reading may still succeed. Only fail if all read attempts fail.
-            for candidate in (data_file_frozen, data_file_curated, data_file_legacy):
+            for candidate in data_candidates:
                 try:
                     # Minimal read probe; if it works, we use that candidate.
                     pd.read_parquet(candidate, columns=["timestamp"], engine="pyarrow")
@@ -325,14 +364,15 @@ class BacktestEngine:
 
             if data_file is None:
                 _LOGGER.error(
-                    "Data file not found. Tried frozen=%s curated=%s legacy=%s",
-                    data_file_frozen,
-                    data_file_curated,
-                    data_file_legacy,
+                    "Data file not found for policy=%s. Tried: %s",
+                    self.data_source_policy,
+                    ", ".join(str(candidate) for candidate in data_candidates),
                 )
                 return False
 
-        cache_key = (self.symbol, self.timeframe)
+        self.candles_source = str(data_file)
+
+        cache_key = (self.symbol, self.timeframe, self.candles_source)
         base_df = self._candles_cache.get(cache_key)
         if base_df is None:
             # Read only required columns, prefer pyarrow engine and memory-mapped IO for speed
@@ -348,10 +388,11 @@ class BacktestEngine:
             _LOGGER.debug("Loaded %s candles from %s", f"{len(base_df):,}", data_file.name)
         else:
             _LOGGER.debug(
-                "Reusing %s candles for %s %s",
+                "Reusing %s candles for %s %s from %s",
                 f"{len(base_df):,}",
                 self.symbol,
                 self.timeframe,
+                data_file.name,
             )
 
         # Normalize timestamps to UTC to avoid tz-naive vs tz-aware comparison bugs
@@ -368,15 +409,9 @@ class BacktestEngine:
 
         # Load HTF (1D) candles for HTF-related features/exits.
         # NOTE: HTF context (and therefore HTF-exit tuning) is effectively inert if 1D data is missing.
-        self.htf_candles_df = None
-        self.htf_candles_source = None
         if getattr(self, "_use_new_exit_engine", False):
             htf_timeframe = "1D"
-            htf_candidates = [
-                base_dir / "raw" / f"{self.symbol}_{htf_timeframe}_frozen.parquet",
-                base_dir / "curated" / "v1" / "candles" / f"{self.symbol}_{htf_timeframe}.parquet",
-                base_dir / "candles" / f"{self.symbol}_{htf_timeframe}.parquet",
-            ]
+            htf_candidates = self._build_data_candidates(base_dir, htf_timeframe)
             htf_file = next((p for p in htf_candidates if p.exists()), None)
             if htf_file is not None:
                 try:
@@ -480,7 +515,9 @@ class BacktestEngine:
 
                 # Try on-disk cache first
                 cache_dir = Path(__file__).resolve().parents[3] / "cache" / "precomputed"
-                cache_dir.mkdir(parents=True, exist_ok=True)
+                cache_write_enabled = _precompute_cache_write_enabled()
+                if cache_write_enabled:
+                    cache_dir.mkdir(parents=True, exist_ok=True)
                 # IMPORTANT:
                 # Cache key must include data identity, not only length.
                 # Different periods can have the same number of bars; reusing the wrong
@@ -522,35 +559,55 @@ class BacktestEngine:
                     # Use pandas only for Series conversion inside detect function to keep parity
                     import pandas as _pd
 
+                    fib_precompute_cfg = _FibCfg(
+                        levels=list(fib_cfg.levels),
+                        weights=dict(fib_cfg.weights),
+                        atr_depth=fib_cfg.atr_depth,
+                        max_swings=max(1, len(closes_all)),
+                        min_swings=fib_cfg.min_swings,
+                        max_lookback=max(fib_cfg.max_lookback, len(closes_all)),
+                        swing_threshold_multiple=fib_cfg.swing_threshold_multiple,
+                        swing_threshold_min=fib_cfg.swing_threshold_min,
+                        swing_threshold_step=fib_cfg.swing_threshold_step,
+                    )
                     sh_idx, sl_idx, sh_px, sl_px = _detect_swings(
-                        _pd.Series(highs_all), _pd.Series(lows_all), _pd.Series(closes_all), fib_cfg
+                        _pd.Series(highs_all),
+                        _pd.Series(lows_all),
+                        _pd.Series(closes_all),
+                        fib_precompute_cfg,
                     )
 
                     elapsed = time.perf_counter() - start_time
                     _LOGGER.info("Precompute: computed indicators in %.2fs", elapsed)
 
                     # Optional on-disk cache for reuse between runs
-                    try:
-                        _np.savez_compressed(
-                            cache_path,
-                            atr_14=_np.asarray(atr_14, dtype=float),
-                            atr_50=_np.asarray(atr_50, dtype=float),
-                            ema_20=_np.asarray(ema_20, dtype=float),
-                            ema_50=_np.asarray(ema_50, dtype=float),
-                            rsi_14=_np.asarray(rsi_14, dtype=float),
-                            bb_position_20_2=_np.asarray(bb_pos, dtype=float),
-                            adx_14=_np.asarray(adx_14, dtype=float),
-                            fib_high_idx=_np.asarray(sh_idx, dtype=int),
-                            fib_low_idx=_np.asarray(sl_idx, dtype=int),
-                            fib_high_px=_np.asarray(sh_px, dtype=float),
-                            fib_low_px=_np.asarray(sl_px, dtype=float),
-                        )
-                        _LOGGER.debug("Cached precomputed features: %s", cache_path.name)
-                    except Exception as cache_err:  # nosec B110
-                        _LOGGER.warning(
-                            "Failed to write precompute cache %s: %s",
-                            cache_path,
-                            cache_err,
+                    if cache_write_enabled:
+                        try:
+                            _np.savez_compressed(
+                                cache_path,
+                                atr_14=_np.asarray(atr_14, dtype=float),
+                                atr_50=_np.asarray(atr_50, dtype=float),
+                                ema_20=_np.asarray(ema_20, dtype=float),
+                                ema_50=_np.asarray(ema_50, dtype=float),
+                                rsi_14=_np.asarray(rsi_14, dtype=float),
+                                bb_position_20_2=_np.asarray(bb_pos, dtype=float),
+                                adx_14=_np.asarray(adx_14, dtype=float),
+                                fib_high_idx=_np.asarray(sh_idx, dtype=int),
+                                fib_low_idx=_np.asarray(sl_idx, dtype=int),
+                                fib_high_px=_np.asarray(sh_px, dtype=float),
+                                fib_low_px=_np.asarray(sl_px, dtype=float),
+                            )
+                            _LOGGER.debug("Cached precomputed features: %s", cache_path.name)
+                        except Exception as cache_err:  # nosec B110
+                            _LOGGER.warning(
+                                "Failed to write precompute cache %s: %s",
+                                cache_path,
+                                cache_err,
+                            )
+                    else:
+                        _LOGGER.debug(
+                            "Precompute cache writes disabled via GENESIS_PRECOMPUTE_CACHE_WRITE; "
+                            "using in-memory precomputed features only for this run"
                         )
 
                     pre = {
@@ -645,9 +702,15 @@ class BacktestEngine:
             cfg_digest = hashlib.sha256(config_hash_env.encode("utf-8")).hexdigest()[:12]
             cfg_segment = f"_cfg{cfg_digest}"
 
+        source_segment = ""
+        candles_source = str(getattr(self, "candles_source", "") or "").strip()
+        if candles_source:
+            source_digest = hashlib.sha256(candles_source.encode("utf-8")).hexdigest()[:12]
+            source_segment = f"_src{source_digest}"
+
         return (
             f"{self.symbol}_{self.timeframe}_{material}"
-            f"{cfg_segment}_{len(df)}_{start_ns}_{end_ns}"
+            f"{cfg_segment}{source_segment}_{len(df)}_{start_ns}_{end_ns}"
         )
 
     def _prepare_numpy_arrays(self) -> None:
@@ -786,6 +849,13 @@ class BacktestEngine:
             meta.setdefault("champion_loaded_at", champion_cfg.loaded_at)
         else:
             meta.setdefault("champion_source", "explicit_backtest_config")
+
+        # No-default-drift contract:
+        # Only propagate the engine-resolved policy into downstream feature evaluation
+        # when the active backtest lane is the explicit non-default curated_only path.
+        # This keeps default frozen_first callers on the existing implicit behavior.
+        if self.data_source_policy != "frozen_first":
+            configs["data_source_policy"] = self.data_source_policy
 
         # IMPORTANT: Apply HTF exit config from merged runtime/trial configs.
         # The engine is constructed before configs are known (CLI loads config after create_engine),
@@ -1517,6 +1587,7 @@ class BacktestEngine:
     def _build_results(self) -> dict:
         """Build final backtest results."""
         summary = self.position_tracker.get_summary()
+        position_summary = self.position_tracker.get_position_summary()
 
         # Resolve git executable to an absolute path (Bandit B607) and keep failure non-fatal.
         git_hash = "unknown"
@@ -1535,6 +1606,8 @@ class BacktestEngine:
             "backtest_info": {
                 "symbol": self.symbol,
                 "timeframe": self.timeframe,
+                "data_source_policy": self.data_source_policy,
+                "ltf_candles_source": self.candles_source,
                 "start_date": str(self.candles_df["timestamp"].min()),
                 "end_date": str(self.candles_df["timestamp"].max()),
                 "bars_total": len(self.candles_df),
@@ -1565,6 +1638,7 @@ class BacktestEngine:
                 "timestamp": datetime.now().isoformat(),
             },
             "summary": summary,
+            "position_summary": position_summary,
             # Add top-level metrics for convenience (duplicates summary fields)
             "metrics": {
                 "total_trades": summary.get("num_trades", 0),

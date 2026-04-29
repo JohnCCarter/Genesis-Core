@@ -91,6 +91,76 @@ def test_multi_timeframe_regime_intelligence_authority_mode_strict_value(tmp_pat
         )
 
 
+def test_multi_timeframe_regime_intelligence_regime_definition_whitelisted(tmp_path: Path) -> None:
+    path = tmp_path / "runtime.json"
+    auth = ConfigAuthority(path)
+
+    snap = auth.propose_update(
+        {
+            **_ri_runtime_patch(),
+            "multi_timeframe": {
+                "regime_intelligence": {
+                    "authority_mode": "regime_module",
+                    "regime_definition": {
+                        "adx_trend_threshold": 25.0,
+                        "adx_range_threshold": 20.0,
+                        "slope_threshold": 0.001,
+                        "volatility_threshold": 0.05,
+                    },
+                }
+            },
+        },
+        actor="t",
+        expected_version=0,
+    )
+
+    regime_definition = snap.cfg.multi_timeframe.regime_intelligence.regime_definition
+    assert regime_definition is not None
+    assert regime_definition.adx_trend_threshold == 25.0
+    assert regime_definition.adx_range_threshold == 20.0
+
+
+def test_multi_timeframe_research_policy_router_whitelisted(tmp_path: Path) -> None:
+    path = tmp_path / "runtime.json"
+    auth = ConfigAuthority(path)
+
+    snap = auth.propose_update(
+        {
+            **_ri_runtime_patch(),
+            "multi_timeframe": {
+                "regime_intelligence": {"authority_mode": "regime_module"},
+                "research_policy_router": {
+                    "enabled": True,
+                    "switch_threshold": 2,
+                    "hysteresis": 1,
+                    "min_dwell": 3,
+                    "defensive_size_multiplier": 0.5,
+                },
+            },
+        },
+        actor="t",
+        expected_version=0,
+    )
+
+    assert snap.version == 1
+    router_cfg = snap.cfg.multi_timeframe.research_policy_router
+    assert router_cfg is not None
+    assert router_cfg.enabled is True
+    assert router_cfg.switch_threshold == 2
+    assert router_cfg.hysteresis == 1
+    assert router_cfg.min_dwell == 3
+    assert router_cfg.defensive_size_multiplier == pytest.approx(0.5)
+
+    persisted = json.loads(path.read_text(encoding="utf-8"))
+    assert persisted["cfg"]["multi_timeframe"]["research_policy_router"] == {
+        "enabled": True,
+        "switch_threshold": 2,
+        "hysteresis": 1,
+        "min_dwell": 3,
+        "defensive_size_multiplier": 0.5,
+    }
+
+
 def test_multi_timeframe_regime_intelligence_rejects_non_whitelisted_nested_keys(
     tmp_path: Path,
 ) -> None:
@@ -100,6 +170,55 @@ def test_multi_timeframe_regime_intelligence_rejects_non_whitelisted_nested_keys
     with pytest.raises(ValueError):
         auth.propose_update(
             {"multi_timeframe": {"regime_intelligence": {"authority_mode": "legacy", "extra": 1}}},
+            actor="t",
+            expected_version=0,
+        )
+
+
+def test_multi_timeframe_regime_intelligence_rejects_partial_regime_definition(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "runtime.json"
+    auth = ConfigAuthority(path)
+
+    with pytest.raises(ValueError):
+        auth.propose_update(
+            {
+                "multi_timeframe": {
+                    "regime_intelligence": {
+                        "regime_definition": {
+                            "adx_trend_threshold": 25.0,
+                            "adx_range_threshold": 20.0,
+                        }
+                    }
+                }
+            },
+            actor="t",
+            expected_version=0,
+        )
+
+
+def test_multi_timeframe_regime_intelligence_rejects_regime_definition_extra_keys(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "runtime.json"
+    auth = ConfigAuthority(path)
+
+    with pytest.raises(ValueError):
+        auth.propose_update(
+            {
+                "multi_timeframe": {
+                    "regime_intelligence": {
+                        "regime_definition": {
+                            "adx_trend_threshold": 25.0,
+                            "adx_range_threshold": 20.0,
+                            "slope_threshold": 0.001,
+                            "volatility_threshold": 0.05,
+                            "extra": 1,
+                        }
+                    }
+                }
+            },
             actor="t",
             expected_version=0,
         )

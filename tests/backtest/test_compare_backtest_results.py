@@ -58,6 +58,27 @@ def test_compare_backtest_payloads_invalid_shape() -> None:
     assert result.failure == "INPUT_INVALID_SHAPE"
 
 
+def test_compare_backtest_payloads_ignores_top_level_position_summary() -> None:
+    baseline = {
+        "score": 1.0,
+        "summary": {
+            "total_return": 0.1,
+            "profit_factor": 1.2,
+            "max_drawdown": 0.05,
+            "total_trades": 10,
+        },
+    }
+    candidate = json.loads(json.dumps(baseline))
+    candidate["position_summary"] = {
+        "pnl_basis": "net_after_commission",
+        "num_positions": 7,
+        "net_pnl": 123.45,
+    }
+
+    result = compare_backtest_payloads(baseline=baseline, candidate=candidate, mode="strict")
+    assert result.status == "PASS"
+
+
 def test_compare_ri_p1_off_parity_rows_pass_order_insensitive() -> None:
     baseline_rows = [
         {"row_id": 1, "action": "LONG", "reason": ["ENTRY_LONG"], "size": 1.0},

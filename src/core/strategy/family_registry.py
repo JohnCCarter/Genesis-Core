@@ -129,7 +129,7 @@ def matches_ri_cluster(config: dict[str, Any]) -> bool:
     )
 
 
-def _has_ri_signature_markers(config: dict[str, Any]) -> bool:
+def has_ri_signature_markers(config: dict[str, Any]) -> bool:
     ri_definition = FAMILY_REGISTRY[STRATEGY_FAMILY_RI]
     atr_period = _get_nested_value(config, "thresholds.signal_adaptation.atr_period")
     gates = (
@@ -149,7 +149,7 @@ def classify_strategy_family(config: dict[str, Any]) -> StrategyFamily:
         if matches_ri_cluster(config):
             return STRATEGY_FAMILY_RI
         raise StrategyFamilyValidationError("invalid_strategy_family:hybrid_regime_module")
-    if _has_ri_signature_markers(config):
+    if has_ri_signature_markers(config):
         raise StrategyFamilyValidationError("invalid_strategy_family:hybrid_legacy_signature")
     return STRATEGY_FAMILY_LEGACY
 
@@ -169,7 +169,7 @@ def validate_strategy_family_config(config: dict[str, Any]) -> StrategyFamily:
     if family == STRATEGY_FAMILY_LEGACY:
         if authority_mode == AUTHORITY_MODE_REGIME_MODULE:
             raise StrategyFamilyValidationError("invalid_strategy_family:legacy_regime_module")
-        if _has_ri_signature_markers(config):
+        if has_ri_signature_markers(config):
             raise StrategyFamilyValidationError("invalid_strategy_family:legacy_hybrid_signature")
         return family
 
@@ -189,6 +189,23 @@ def validate_strategy_family_config(config: dict[str, Any]) -> StrategyFamily:
 
     if not matches_threshold_cluster(config, ri_definition.threshold_cluster):
         raise StrategyFamilyValidationError("invalid_strategy_family:ri_threshold_cluster_mismatch")
+
+    return family
+
+
+def validate_strategy_family_identity_config(config: dict[str, Any]) -> StrategyFamily:
+    family = validate_strategy_family_name(config.get("strategy_family"))
+    authority_mode = resolve_authority_mode_permissive(config)
+
+    if family == STRATEGY_FAMILY_LEGACY:
+        if authority_mode == AUTHORITY_MODE_REGIME_MODULE:
+            raise StrategyFamilyValidationError("invalid_strategy_family:legacy_regime_module")
+        if has_ri_signature_markers(config):
+            raise StrategyFamilyValidationError("invalid_strategy_family:legacy_hybrid_signature")
+        return family
+
+    if authority_mode != AUTHORITY_MODE_REGIME_MODULE:
+        raise StrategyFamilyValidationError("invalid_strategy_family:ri_requires_regime_module")
 
     return family
 
@@ -235,11 +252,13 @@ __all__ = [
     "StrategyFamilyValidationError",
     "build_strategy_family_metadata",
     "classify_strategy_family",
+    "has_ri_signature_markers",
     "inject_strategy_family",
     "matches_ri_cluster",
     "matches_threshold_cluster",
     "resolve_strategy_family",
     "validate_cross_family_promotion",
     "validate_strategy_family_config",
+    "validate_strategy_family_identity_config",
     "validate_strategy_family_name",
 ]

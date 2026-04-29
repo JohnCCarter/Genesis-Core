@@ -4,6 +4,7 @@ import re
 
 import pandas as pd
 
+import core.backtest.engine as engine_mod
 from core.backtest.engine import BacktestEngine
 
 
@@ -33,10 +34,11 @@ def test_precompute_cache_key_changes_with_date_window(monkeypatch) -> None:
 
     key_a = engine._precompute_cache_key(df_a)
     key_b = engine._precompute_cache_key(df_b)
+    expected_prefix = f"tBTCUSD_1h_{engine_mod._precompute_cache_key_material()}_"
 
     assert key_a != key_b
-    assert key_a.startswith("tBTCUSD_1h_v1_")
-    assert key_b.startswith("tBTCUSD_1h_v1_")
+    assert key_a.startswith(expected_prefix)
+    assert key_b.startswith(expected_prefix)
 
 
 def test_precompute_cache_key_legacy_shape_when_config_hash_unset_or_empty(monkeypatch) -> None:
@@ -45,9 +47,10 @@ def test_precompute_cache_key_legacy_shape_when_config_hash_unset_or_empty(monke
 
     monkeypatch.delenv("GENESIS_PRECOMPUTE_CONFIG_HASH", raising=False)
     key_unset = engine._precompute_cache_key(df)
+    material = re.escape(engine_mod._precompute_cache_key_material())
 
     assert "_cfg" not in key_unset
-    assert re.fullmatch(r"tBTCUSD_1h_v1_[0-9a-f]{12}_\d+_-?\d+_-?\d+", key_unset)
+    assert re.fullmatch(rf"tBTCUSD_1h_{material}_\d+_-?\d+_-?\d+", key_unset)
 
     monkeypatch.setenv("GENESIS_PRECOMPUTE_CONFIG_HASH", "")
     key_empty = engine._precompute_cache_key(df)

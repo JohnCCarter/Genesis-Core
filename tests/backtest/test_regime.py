@@ -151,6 +151,40 @@ class TestClassifyRegime:
         assert state["features"]["ema_slope"] == 0.01
         assert state["features"]["volatility"] == 0.02
 
+    def test_classify_regime_respects_configured_adx_thresholds(self):
+        """Configured regime-definition thresholds may open a narrower bull band."""
+        features = {
+            "adx": 24.0,
+            "price_vs_ema": 0.03,
+            "ema_slope": 0.002,
+            "volatility": 0.02,
+        }
+
+        default_regime, _default_state = classify_regime(
+            features,
+            prev_state={"regime": "balanced", "steps": 0},
+        )
+        tuned_regime, tuned_state = classify_regime(
+            features,
+            prev_state={"regime": "bull", "steps": 0},
+            config={
+                "multi_timeframe": {
+                    "regime_intelligence": {
+                        "regime_definition": {
+                            "adx_trend_threshold": 23.0,
+                            "adx_range_threshold": 19.0,
+                            "slope_threshold": 0.001,
+                            "volatility_threshold": 0.05,
+                        }
+                    }
+                }
+            },
+        )
+
+        assert default_regime == "balanced"
+        assert tuned_regime == "bull"
+        assert tuned_state["candidate"] == "bull"
+
 
 class TestDetectRegimeFromCandles:
     """Test regime detection from candle data."""
@@ -197,3 +231,79 @@ class TestDetectRegimeFromCandles:
         candles = {"close": [], "high": [], "low": []}
         regime = detect_regime_from_candles(candles)
         assert regime == "balanced"
+
+    def test_detect_regime_from_candles_respects_regime_definition_override(self, monkeypatch):
+        """Configured ADX band should affect regime-module classification."""
+        from core.indicators import adx as adx_module
+        from core.indicators import atr as atr_module
+        from core.indicators import ema as ema_module
+
+        candles = {
+            "close": [100.0] * 60,
+            "high": [101.0] * 60,
+            "low": [99.0] * 60,
+        }
+
+        monkeypatch.setattr(ema_module, "calculate_ema", lambda *_a, **_k: [97.0] * 60)
+        monkeypatch.setattr(adx_module, "calculate_adx", lambda *_a, **_k: [24.0] * 60)
+        monkeypatch.setattr(atr_module, "calculate_atr", lambda *_a, **_k: [2.0] * 60)
+
+        default_regime = detect_regime_from_candles(candles, ema_period=20, adx_period=14)
+        tuned_regime = detect_regime_from_candles(
+            candles,
+            ema_period=20,
+            adx_period=14,
+            config={
+                "gates": {"hysteresis_steps": 1},
+                "multi_timeframe": {
+                    "regime_intelligence": {
+                        "regime_definition": {
+                            "adx_trend_threshold": 23.0,
+                            "adx_range_threshold": 19.0,
+                            "slope_threshold": 0.001,
+                            "volatility_threshold": 0.05,
+                        }
+                    }
+                },
+            },
+        )
+
+        assert default_regime == "balanced"
+        assert tuned_regime == "bull"
+
+    def test_detect_regime_from_candles_explicit_defaults_match_default_call(self, monkeypatch):
+        """Explicit canonical defaults must match the no-override baseline exactly."""
+        from core.indicators import adx as adx_module
+        from core.indicators import atr as atr_module
+        from core.indicators import ema as ema_module
+
+        candles = {
+            "close": [100.0] * 60,
+            "high": [101.0] * 60,
+            "low": [99.0] * 60,
+        }
+
+        monkeypatch.setattr(ema_module, "calculate_ema", lambda *_a, **_k: [101.0] * 60)
+        monkeypatch.setattr(adx_module, "calculate_adx", lambda *_a, **_k: [18.0] * 60)
+        monkeypatch.setattr(atr_module, "calculate_atr", lambda *_a, **_k: [1.0] * 60)
+
+        baseline = detect_regime_from_candles(candles, ema_period=20, adx_period=14)
+        explicit_defaults = detect_regime_from_candles(
+            candles,
+            ema_period=20,
+            adx_period=14,
+            config={
+                "multi_timeframe": {
+                    "regime_intelligence": {
+                        "regime_definition": {
+                            "adx_trend_threshold": 25.0,
+                            "adx_range_threshold": 20.0,
+                            "slope_threshold": 0.001,
+                            "volatility_threshold": 0.05,
+                        }
+                    }
+                }
+            },
+        )
+
+        assert explicit_defaults == baseline == "balanced"

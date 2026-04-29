@@ -1,0 +1,224 @@
+description: "Regime Intelligence challenger family slice 4 fresh run: risk-state and sizing robustness search around the validated RI family on 2023-12-21..2024-06-30, rank on 2024-07-01..2024-12-31 (3h)"
+strategy_family: ri
+#
+# Purpose:
+# - fresh-run identity variant of the validated RI challenger-family slice 4 config
+# - preserve the validated RI family identity (regime_module, v2, clarity off, risk_state on)
+# - keep the canonical RI threshold cluster plus stable exit/fib surface unchanged
+# - treat this run as a bounded RI adaptive-policy / robustness slice, not as a broad RI topology or legacy-style static search
+# - use a distinct study_name/storage path so this RI challenger run stays separate and analyzable
+
+meta:
+  symbol: tBTCUSD
+  timeframe: 3h
+  snapshot_id: snap_tBTCUSD_3h_2023-12-21_2024-06-30_v1
+  warmup_bars: 120
+  runs:
+    strategy: optuna
+    score_version: "v2"
+
+    use_sample_range: true
+    sample_start: "2023-12-21"
+    sample_end: "2024-06-30"
+
+    validation:
+      enabled: true
+      use_sample_range: true
+      sample_start: "2024-07-01"
+      sample_end: "2024-12-31"
+      top_n: 5
+      constraints:
+        include_scoring_failures: false
+        min_trades: 20
+        min_profit_factor: 1.05
+        max_max_dd: 0.35
+
+    resume: false
+    max_trials: 96
+    max_concurrent: 1
+
+    promotion:
+      enabled: false
+
+    optuna:
+      study_name: "ri_challenger_family_slice4_3h_2024_fresh_20260324_v1"
+      storage: "sqlite:///results/hparam_search/storage/ri_challenger_family_slice4_3h_2024_fresh_20260324_v1.db"
+      n_jobs: 1
+      timeout_seconds: 10800
+
+      bootstrap_random_trials: 16
+      bootstrap_seed: 42
+
+      pruner:
+        type: "none"
+
+      sampler:
+        type: "tpe"
+        kwargs:
+          n_startup_trials: 16
+          n_ei_candidates: 64
+          multivariate: true
+          group: true
+          constant_liar: true
+          seed: 42
+
+constraints:
+  include_scoring_failures: false
+  max_max_dd: 0.60
+  min_profit_factor: 0.80
+
+  scoring_thresholds:
+    min_trades: 10
+    min_profit_factor: 0.0
+    max_max_dd: 1.0
+
+parameters:
+  thresholds.min_edge:
+    type: fixed
+    value: 0.01
+  thresholds.regime_proba.bull:
+    type: fixed
+    value: 0.5
+  thresholds.regime_proba.bear:
+    type: fixed
+    value: 0.5
+  thresholds.regime_proba.ranging:
+    type: fixed
+    value: 0.5
+  thresholds.signal_adaptation.atr_period:
+    type: fixed
+    value: 14
+  htf_exit_config.partial_1_pct:
+    type: fixed
+    value: 0.5
+  htf_exit_config.partial_2_pct:
+    type: fixed
+    value: 0.45
+  htf_exit_config.fib_threshold_atr:
+    type: fixed
+    value: 0.9
+  htf_exit_config.trail_atr_multiplier:
+    type: fixed
+    value: 2.5
+  gates.hysteresis_steps:
+    type: fixed
+    value: 3
+  gates.cooldown_bars:
+    type: fixed
+    value: 2
+  multi_timeframe.regime_intelligence.enabled:
+    type: fixed
+    value: true
+  multi_timeframe.regime_intelligence.version:
+    type: fixed
+    value: "v2"
+  multi_timeframe.regime_intelligence.authority_mode:
+    type: fixed
+    value: "regime_module"
+  multi_timeframe.regime_intelligence.clarity_score.enabled:
+    type: fixed
+    value: false
+  multi_timeframe.regime_intelligence.risk_state.enabled:
+    type: fixed
+    value: true
+  multi_timeframe.regime_intelligence.risk_state.transition_guard.enabled:
+    type: fixed
+    value: true
+  thresholds.entry_conf_overall:
+    type: fixed
+    value: 0.25
+  thresholds.regime_proba.balanced:
+    type: fixed
+    value: 0.36
+  thresholds.signal_adaptation.zones.low.entry_conf_overall:
+    type: fixed
+    value: 0.16
+  thresholds.signal_adaptation.zones.low.regime_proba:
+    type: fixed
+    value: 0.33
+  thresholds.signal_adaptation.zones.mid.entry_conf_overall:
+    type: fixed
+    value: 0.40
+  thresholds.signal_adaptation.zones.mid.regime_proba:
+    type: fixed
+    value: 0.51
+  thresholds.signal_adaptation.zones.high.entry_conf_overall:
+    type: fixed
+    value: 0.32
+  thresholds.signal_adaptation.zones.high.regime_proba:
+    type: fixed
+    value: 0.57
+  exit.max_hold_bars:
+    type: fixed
+    value: 8
+  exit.trailing_stop_pct:
+    type: fixed
+    value: 0.022
+  exit.stop_loss_pct:
+    type: fixed
+    value: 0.016
+  exit.exit_conf_threshold:
+    type: fixed
+    value: 0.42
+  multi_timeframe.ltf_override_threshold:
+    type: fixed
+    value: 0.4
+  htf_fib.entry.tolerance_atr:
+    type: fixed
+    value: 4.0
+  htf_fib.entry.long_max_level:
+    type: fixed
+    value: 0.236
+  htf_fib.entry.short_min_level:
+    type: fixed
+    value: 0.35
+  ltf_fib.entry.tolerance_atr:
+    type: fixed
+    value: 1.5
+  ltf_fib.entry.long_max_level:
+    type: fixed
+    value: 0.146
+  ltf_fib.entry.short_min_level:
+    type: fixed
+    value: 0.236
+
+  multi_timeframe.regime_intelligence.risk_state.drawdown_guard.soft_threshold:
+    type: float
+    low: 0.03
+    high: 0.05
+    step: 0.01
+  multi_timeframe.regime_intelligence.risk_state.drawdown_guard.soft_mult:
+    type: float
+    low: 0.90
+    high: 1.00
+    step: 0.05
+  multi_timeframe.regime_intelligence.risk_state.transition_guard.mult:
+    type: float
+    low: 0.65
+    high: 0.85
+    step: 0.05
+  multi_timeframe.regime_intelligence.risk_state.drawdown_guard.hard_threshold:
+    type: float
+    low: 0.05
+    high: 0.07
+    step: 0.01
+  multi_timeframe.regime_intelligence.risk_state.drawdown_guard.hard_mult:
+    type: float
+    low: 0.55
+    high: 0.70
+    step: 0.05
+  multi_timeframe.regime_intelligence.risk_state.transition_guard.guard_bars:
+    type: int
+    low: 2
+    high: 4
+    step: 1
+  risk.htf_regime_size_multipliers.bear:
+    type: float
+    low: 0.50
+    high: 0.70
+    step: 0.05
+  risk.volatility_sizing.high_vol_multiplier:
+    type: float
+    low: 0.70
+    high: 0.90
+    step: 0.05

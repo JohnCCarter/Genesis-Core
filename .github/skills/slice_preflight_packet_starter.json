@@ -1,0 +1,60 @@
+{
+  "governance": {
+    "skill_type": "SPEC",
+    "contract_owner": "opus-4.6",
+    "implementation_owner": "codex-5.3",
+    "pass_definition_locked": true,
+    "scope_locked": true,
+    "evolution_mode": "additive_only",
+    "forbidden": [
+      "runtime_default_drift",
+      "governance_authority_drift",
+      "auto_write_packet_generation",
+      "mutation_of_findings_truth_surfaces",
+      "scope_broadening"
+    ],
+    "stop_conditions": [
+      "detected_authority_drift",
+      "detected_truth_surface_mutation",
+      "attempted_scope_change"
+    ]
+  },
+  "id": "slice_preflight_packet_starter",
+  "version": "0.1.0",
+  "title": "Slice preflight + packet starter",
+  "description": "Workflow-spec för findings-first slice-framing i Genesis-Core: kör preflight mot findings-bank, samla anchors/blockers/do_not_repeat/next_admissible_step och håll resultatet advisory-only.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "tags": ["slice", "findings", "packet", "workflow", "research"],
+  "rules": {
+    "must": [
+      "Börja med findings-bank preflight när relevant domain/seam redan har repo-bevarade findings.",
+      "Föredra exakta filter (domain, subject, symbol, timeframe, seam_class) före fri textsökning när sådan struktur finns.",
+      "Separera positiva anchors från blockerande findings och direction locks.",
+      "Bevara citationer till bundles, artifact records och evidence docs i packet-start-underlaget.",
+      "Håll packet-start-resultat advisory-only och manuellt copy/paste-baserat.",
+      "Återanvänd befintliga helpers under scripts/preflight innan nya engångsflöden föreslås."
+    ],
+    "must_not": [
+      "Behandla findings som runtime-, governance-, promotion- eller readiness-authority.",
+      "Mutera artifacts/research_ledger, findings bundles eller docs som en del av preflight-steget.",
+      "Auto-generera eller auto-redigera packet-filer från skillen.",
+      "Dölja blockers eller do_not_repeat-signaler bakom generiska sammanfattningar utan citations.",
+      "Blanda flera seam-klasser i ett packet-start-underlag utan att kalla ut riktiga direction locks."
+    ]
+  },
+  "references": [
+    {
+      "type": "doc",
+      "value": "docs/governance/slice_scout_preflight_bootstrap_packet_2026-04-24.md"
+    },
+    {
+      "type": "file",
+      "value": "scripts/preflight/findings_preflight_lookup.py"
+    },
+    {
+      "type": "file",
+      "value": "scripts/preflight/findings_packet_starter.py"
+    }
+  ]
+}

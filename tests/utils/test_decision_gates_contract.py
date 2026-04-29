@@ -186,3 +186,318 @@ def test_apply_post_fib_gates_success_exports_selected_confidence() -> None:
     assert confidence_data["c_buy"] == pytest.approx(0.1)
     assert confidence_data["c_sell"] == pytest.approx(0.75)
     assert confidence_data["conf_val_gate"] == pytest.approx(0.75)
+
+
+def test_select_candidate_research_bull_high_persistence_override_is_default_off() -> None:
+    reasons: list[str] = []
+    state_out: dict[str, object] = {}
+
+    action, meta, candidate_data = select_candidate(
+        policy={},
+        probas={"buy": 0.52, "sell": 0.48},
+        regime="bull",
+        risk_ctx={},
+        cfg={
+            "ev": {"R_default": 1.0},
+            "thresholds": {
+                "entry_conf_overall": 0.6,
+                "signal_adaptation": {
+                    "atr_period": 28,
+                    "zones": {"high": {"entry_conf_overall": 0.36, "regime_proba": 0.56}},
+                },
+            },
+            "multi_timeframe": {
+                "research_bull_high_persistence_override": {
+                    "enabled": False,
+                    "min_persistence": 2,
+                    "max_probability_gap": 0.06,
+                }
+            },
+        },
+        state_in={
+            "current_atr": 4.0,
+            "atr_percentiles": {"28": {"p40": 1.0, "p80": 3.0}},
+        },
+        state_out=state_out,
+        reasons=reasons,
+        versions={"decision": "v1"},
+        log_decision_event=_noop_log,
+    )
+
+    assert action == "NONE"
+    assert meta is not None
+    assert candidate_data == {}
+    assert reasons == ["ZONE:high@0.360"]
+    assert "research_bull_high_persistence_state" not in state_out
+    assert "research_bull_high_persistence_debug" not in state_out
+
+
+def test_select_candidate_research_bull_high_persistence_override_requires_streak() -> None:
+    cfg = {
+        "ev": {"R_default": 1.0},
+        "thresholds": {
+            "entry_conf_overall": 0.6,
+            "signal_adaptation": {
+                "atr_period": 28,
+                "zones": {"high": {"entry_conf_overall": 0.36, "regime_proba": 0.56}},
+            },
+        },
+        "multi_timeframe": {
+            "research_bull_high_persistence_override": {
+                "enabled": True,
+                "min_persistence": 2,
+                "max_probability_gap": 0.06,
+            }
+        },
+    }
+    base_state = {
+        "current_atr": 4.0,
+        "atr_percentiles": {"28": {"p40": 1.0, "p80": 3.0}},
+    }
+
+    reasons_1: list[str] = []
+    state_out_1: dict[str, object] = {}
+    action_1, meta_1, candidate_data_1 = select_candidate(
+        policy={},
+        probas={"buy": 0.52, "sell": 0.48},
+        regime="bull",
+        risk_ctx={},
+        cfg=cfg,
+        state_in=base_state,
+        state_out=state_out_1,
+        reasons=reasons_1,
+        versions={"decision": "v1"},
+        log_decision_event=_noop_log,
+    )
+
+    assert action_1 == "NONE"
+    assert meta_1 is not None
+    assert candidate_data_1 == {}
+    assert reasons_1 == ["ZONE:high@0.360"]
+    assert state_out_1["research_bull_high_persistence_state"] == {"near_miss_streak": 1}
+    assert "research_bull_high_persistence_debug" not in state_out_1
+
+    reasons_2: list[str] = []
+    state_out_2: dict[str, object] = {}
+    action_2, meta_2, candidate_data_2 = select_candidate(
+        policy={},
+        probas={"buy": 0.521, "sell": 0.479},
+        regime="bull",
+        risk_ctx={},
+        cfg=cfg,
+        state_in={**base_state, **state_out_1},
+        state_out=state_out_2,
+        reasons=reasons_2,
+        versions={"decision": "v1"},
+        log_decision_event=_noop_log,
+    )
+
+    assert action_2 is None
+    assert meta_2 is None
+    assert candidate_data_2["candidate"] == "LONG"
+    assert reasons_2 == ["ZONE:high@0.360", "RESEARCH_BULL_HIGH_PERSISTENCE_OVERRIDE"]
+    assert state_out_2["research_bull_high_persistence_state"] == {"near_miss_streak": 2}
+    debug = state_out_2["research_bull_high_persistence_debug"]
+    assert debug["applied"] is True
+    assert debug["reason"] == "RESEARCH_BULL_HIGH_PERSISTENCE_OVERRIDE"
+    assert debug["near_miss_streak"] == 2
+    assert debug["min_persistence"] == 2
+    assert debug["max_probability_gap"] == pytest.approx(0.06)
+    assert debug["threshold"] == pytest.approx(0.56)
+    assert debug["threshold_gap"] == pytest.approx(0.039)
+    assert debug["buy"] == pytest.approx(0.521)
+    assert debug["sell"] == pytest.approx(0.479)
+    assert debug["regime"] == "bull"
+    assert debug["zone"] == "high"
+
+
+def test_select_candidate_research_override_uses_resolved_zone_threshold_not_base_threshold() -> (
+    None
+):
+    cfg = {
+        "ev": {"R_default": 1.0},
+        "thresholds": {
+            "entry_conf_overall": 0.6,
+            "regime_proba": {"bull": 0.9},
+            "signal_adaptation": {
+                "atr_period": 28,
+                "zones": {"high": {"entry_conf_overall": 0.36, "regime_proba": 0.56}},
+            },
+        },
+        "multi_timeframe": {
+            "research_bull_high_persistence_override": {
+                "enabled": True,
+                "min_persistence": 2,
+                "max_probability_gap": 0.06,
+            }
+        },
+    }
+    base_state = {
+        "current_atr": 4.0,
+        "atr_percentiles": {"28": {"p40": 1.0, "p80": 3.0}},
+    }
+
+    reasons_1: list[str] = []
+    state_out_1: dict[str, object] = {}
+    action_1, meta_1, candidate_data_1 = select_candidate(
+        policy={},
+        probas={"buy": 0.52, "sell": 0.48},
+        regime="bull",
+        risk_ctx={},
+        cfg=cfg,
+        state_in=base_state,
+        state_out=state_out_1,
+        reasons=reasons_1,
+        versions={"decision": "v1"},
+        log_decision_event=_noop_log,
+    )
+
+    assert action_1 == "NONE"
+    assert meta_1 is not None
+    assert candidate_data_1 == {}
+
+    reasons_2: list[str] = []
+    state_out_2: dict[str, object] = {}
+    action_2, meta_2, candidate_data_2 = select_candidate(
+        policy={},
+        probas={"buy": 0.521, "sell": 0.479},
+        regime="bull",
+        risk_ctx={},
+        cfg=cfg,
+        state_in={**base_state, **state_out_1},
+        state_out=state_out_2,
+        reasons=reasons_2,
+        versions={"decision": "v1"},
+        log_decision_event=_noop_log,
+    )
+
+    assert action_2 is None
+    assert meta_2 is None
+    assert candidate_data_2["candidate"] == "LONG"
+    debug = state_out_2["research_bull_high_persistence_debug"]
+    assert debug["threshold"] == pytest.approx(0.56)
+    assert debug["threshold_gap"] == pytest.approx(0.039)
+
+
+def test_select_candidate_research_defensive_transition_override_disabled_matches_absent() -> None:
+    base_cfg = {
+        "ev": {"R_default": 1.0},
+        "thresholds": {
+            "entry_conf_overall": 0.6,
+            "signal_adaptation": {
+                "atr_period": 28,
+                "zones": {"high": {"entry_conf_overall": 0.36, "regime_proba": 0.56}},
+            },
+        },
+    }
+    state_in = {
+        "bars_since_regime_change": 2,
+        "current_atr": 4.0,
+        "atr_percentiles": {"28": {"p40": 1.0, "p80": 3.0}},
+    }
+
+    reasons_base: list[str] = []
+    state_out_base: dict[str, object] = {}
+    action_base, meta_base, candidate_data_base = select_candidate(
+        policy={},
+        probas={"buy": 0.52, "sell": 0.48},
+        regime="bull",
+        risk_ctx={},
+        cfg=base_cfg,
+        state_in=state_in,
+        state_out=state_out_base,
+        reasons=reasons_base,
+        versions={"decision": "v1"},
+        log_decision_event=_noop_log,
+    )
+
+    reasons_disabled: list[str] = []
+    state_out_disabled: dict[str, object] = {}
+    action_disabled, meta_disabled, candidate_data_disabled = select_candidate(
+        policy={},
+        probas={"buy": 0.52, "sell": 0.48},
+        regime="bull",
+        risk_ctx={},
+        cfg={
+            **base_cfg,
+            "multi_timeframe": {
+                "research_defensive_transition_override": {
+                    "enabled": False,
+                    "guard_bars": 5,
+                    "max_probability_gap": 0.08,
+                }
+            },
+        },
+        state_in=state_in,
+        state_out=state_out_disabled,
+        reasons=reasons_disabled,
+        versions={"decision": "v1"},
+        log_decision_event=_noop_log,
+    )
+
+    assert action_base == action_disabled == "NONE"
+    assert meta_base == meta_disabled
+    assert candidate_data_base == candidate_data_disabled == {}
+    assert reasons_base == reasons_disabled == ["ZONE:high@0.360"]
+    assert state_out_base == state_out_disabled == {}
+
+
+def test_select_candidate_research_defensive_transition_override_enables_fresh_high_zone_near_miss() -> (
+    None
+):
+    reasons: list[str] = []
+    state_out: dict[str, object] = {}
+
+    action, meta, candidate_data = select_candidate(
+        policy={},
+        probas={"buy": 0.52, "sell": 0.48},
+        regime="bull",
+        risk_ctx={},
+        cfg={
+            "ev": {"R_default": 1.0},
+            "thresholds": {
+                "entry_conf_overall": 0.6,
+                "signal_adaptation": {
+                    "atr_period": 28,
+                    "zones": {"high": {"entry_conf_overall": 0.36, "regime_proba": 0.56}},
+                },
+            },
+            "multi_timeframe": {
+                "research_defensive_transition_override": {
+                    "enabled": True,
+                    "guard_bars": 3,
+                    "max_probability_gap": 0.05,
+                }
+            },
+        },
+        state_in={
+            "bars_since_regime_change": 2,
+            "current_atr": 4.0,
+            "atr_percentiles": {"28": {"p40": 1.0, "p80": 3.0}},
+        },
+        state_out=state_out,
+        reasons=reasons,
+        versions={"decision": "v1"},
+        log_decision_event=_noop_log,
+    )
+
+    assert action is None
+    assert meta is None
+    assert candidate_data["candidate"] == "LONG"
+    assert reasons == [
+        "ZONE:high@0.360",
+        "RESEARCH_DEFENSIVE_TRANSITION_OVERRIDE",
+    ]
+    debug = state_out["research_defensive_transition_debug"]
+    assert debug["applied"] is True
+    assert debug["reason"] == "RESEARCH_DEFENSIVE_TRANSITION_OVERRIDE"
+    assert debug["candidate"] == "LONG"
+    assert debug["bars_since_regime_change"] == 2
+    assert debug["guard_bars"] == 3
+    assert debug["max_probability_gap"] == pytest.approx(0.05)
+    assert debug["threshold"] == pytest.approx(0.56)
+    assert debug["threshold_gap"] == pytest.approx(0.04)
+    assert debug["buy"] == pytest.approx(0.52)
+    assert debug["sell"] == pytest.approx(0.48)
+    assert debug["regime"] == "bull"
+    assert debug["zone"] == "high"

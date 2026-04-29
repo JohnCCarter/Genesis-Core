@@ -1,0 +1,176 @@
+description: "Bounded 1h fib-gating matrix on fixed legacy-family surface"
+strategy_family: legacy
+#
+# Provenance / intent:
+# - additive RESEARCH config only; no runtime/champion/default impact unless explicitly selected
+# - anchored on the fixed 1h phased_v1 seeded OOS surface so all non-fib parameters stay frozen
+# - purpose: test whether HTF/LTF fib entry-gating has measurable impact on an eligible timeframe (1h)
+# - only fib posture varies; all other parameters are fixed
+#
+# Trial order (deterministic grid expansion):
+# - trial_001 = control      -> HTF off / LTF off
+# - trial_002 = mixed_ltf_on -> HTF off / LTF on
+# - trial_003 = mixed_htf_on -> HTF on  / LTF off
+# - trial_004 = candidate    -> HTF on  / LTF on
+
+meta:
+  symbol: tBTCUSD
+  timeframe: 1h
+  snapshot_id: snap_tBTCUSD_1h_2024-01-01_2024-12-31_v1
+  warmup_bars: 50
+  runs:
+    strategy: grid
+    score_version: "v2"
+
+    use_sample_range: true
+    sample_start: "2024-01-01"
+    sample_end: "2024-12-31"
+
+    validation:
+      enabled: true
+      use_sample_range: true
+      sample_start: "2025-01-01"
+      sample_end: "2025-10-01"
+      top_n: 4
+
+      constraints:
+        include_scoring_failures: false
+        min_trades: 25
+        min_profit_factor: 1.05
+        max_max_dd: 0.30
+
+    resume: false
+    max_trials: 4
+    max_concurrent: 1
+
+    promotion:
+      enabled: false
+
+constraints:
+  include_scoring_failures: false
+  min_trades: 25
+  min_profit_factor: 1.05
+  max_max_dd: 0.30
+
+parameters:
+  thresholds.entry_conf_overall:
+    type: fixed
+    value: 0.35
+  thresholds.min_edge:
+    type: fixed
+    value: 0.01
+  thresholds.regime_proba.balanced:
+    type: fixed
+    value: 0.65
+  thresholds.regime_proba.bull:
+    type: fixed
+    value: 0.50
+  thresholds.regime_proba.bear:
+    type: fixed
+    value: 0.50
+  thresholds.regime_proba.ranging:
+    type: fixed
+    value: 0.50
+
+  exit.exit_conf_threshold:
+    type: fixed
+    value: 0.35
+  exit.max_hold_bars:
+    type: fixed
+    value: 30
+  exit.trailing_stop_pct:
+    type: fixed
+    value: 0.022
+
+  htf_exit_config.partial_1_pct:
+    type: fixed
+    value: 0.50
+  htf_exit_config.partial_2_pct:
+    type: fixed
+    value: 0.45
+  htf_exit_config.fib_threshold_atr:
+    type: fixed
+    value: 0.9
+  htf_exit_config.trail_atr_multiplier:
+    type: fixed
+    value: 2.5
+
+  multi_timeframe.ltf_override_threshold:
+    type: fixed
+    value: 0.40
+  multi_timeframe.regime_intelligence.enabled:
+    type: fixed
+    value: true
+  multi_timeframe.regime_intelligence.version:
+    type: fixed
+    value: "v2"
+  multi_timeframe.regime_intelligence.authority_mode:
+    type: fixed
+    value: "legacy"
+  multi_timeframe.regime_intelligence.clarity_score.enabled:
+    type: fixed
+    value: true
+  multi_timeframe.regime_intelligence.clarity_score.weights.confidence:
+    type: fixed
+    value: 0.40
+  multi_timeframe.regime_intelligence.clarity_score.weights.edge:
+    type: fixed
+    value: 0.30
+  multi_timeframe.regime_intelligence.clarity_score.weights.ev:
+    type: fixed
+    value: 0.10
+  multi_timeframe.regime_intelligence.clarity_score.weights.regime_alignment:
+    type: fixed
+    value: 0.20
+  multi_timeframe.regime_intelligence.size_multiplier.min:
+    type: fixed
+    value: 0.30
+  multi_timeframe.regime_intelligence.size_multiplier.max:
+    type: fixed
+    value: 1.00
+
+  risk.risk_map:
+    type: fixed
+    value:
+      - [0.53, 0.005]
+      - [0.70, 0.008]
+      - [0.80, 0.010]
+      - [0.90, 0.012]
+  risk.htf_regime_size_multipliers.bear:
+    type: fixed
+    value: 0.80
+  risk.volatility_sizing.high_vol_multiplier:
+    type: fixed
+    value: 0.8
+
+  htf_fib.entry.enabled:
+    type: grid
+    values: [false, true]
+  htf_fib.entry.missing_policy:
+    type: fixed
+    value: "pass"
+  htf_fib.entry.tolerance_atr:
+    type: fixed
+    value: 4.0
+  htf_fib.entry.long_max_level:
+    type: fixed
+    value: 0.236
+  htf_fib.entry.short_min_level:
+    type: fixed
+    value: 0.35
+
+  ltf_fib.entry.enabled:
+    type: grid
+    values: [false, true]
+  ltf_fib.entry.missing_policy:
+    type: fixed
+    value: "pass"
+  ltf_fib.entry.tolerance_atr:
+    type: fixed
+    value: 1.5
+  ltf_fib.entry.long_max_level:
+    type: fixed
+    value: 0.146
+  ltf_fib.entry.short_min_level:
+    type: fixed
+    value: 0.236

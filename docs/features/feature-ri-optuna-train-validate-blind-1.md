@@ -24,6 +24,7 @@ Define a deterministic experiment plan to test whether regime intelligence can i
 
 - **REQ-001**: The current `config/strategy/champions/tBTCUSD_3h.json` champion remains the control baseline and must not be modified during the experiment.
 - **REQ-002**: Regime intelligence optimization must begin with the smallest search space that showed signal in prior ablation work: authority-related parameters first, then risk-state parameters.
+- **REQ-002A**: Once an RI family baseline is established, default RI Optuna framing should keep the family-defining RI surface frozen and optimize adaptation/guardrail behavior first rather than reopening a broad legacy-like static parameter surface.
 - **REQ-003**: The experiment must include three distinct data roles: training/tuning, validation/selection, and blind holdout.
 - **REQ-004**: The blind 2025 holdout must not influence parameter ranges, candidate selection, or search-space edits.
 - **REQ-005**: All runs used for comparison must use canonical mode (`GENESIS_FAST_WINDOW=1`, `GENESIS_PRECOMPUTE_FEATURES=1`) and fixed seeds.
@@ -34,11 +35,23 @@ Define a deterministic experiment plan to test whether regime intelligence can i
 - **CON-002**: No use of blind 2025 outputs is allowed for post-hoc parameter retuning in the same campaign.
 - **CON-003**: Existing Optuna storage DBs must not be reused when `resume=false`.
 - **CON-004**: Existing optimizer config paths should remain stable when possible because resume signatures include repo-relative config paths.
+- **CON-005**: RI campaigns should not be framed as broad mixed-surface searches that silently collapse RI into a legacy-like optimizer topology or as champion-overlay patch searches.
 - **GUD-001**: Place new optimizer YAML files under `config/optimizer/3h/<campaign>/`.
 - **GUD-002**: Keep search space intentionally narrow in Phase 1 to reduce overfitting and make attribution easier.
+- **GUD-002A**: After the RI baseline exists, prefer bounded within-family slices in this order: adaptive policy / guardrails, regime-aware sizing, then small entry/exit cadence slices if attribution remains clear.
 - **GUD-003**: Prefer deterministic walk-forward or staged validation over one-shot in-sample optimization.
 - **PAT-001**: Reuse existing optimizer validation flow via `scripts/preflight/preflight_optuna_check.py` and `scripts/validate/validate_optimizer_config.py`.
 - **PAT-002**: Preserve a control-vs-candidate comparison on identical windows before any blind claim is made.
+
+### 1.1 RI optimizer framing after baseline freeze
+
+After an RI family baseline has been demonstrated, the default research policy is:
+
+1. keep the family-defining RI surface frozen by default (authority identity, RI threshold cluster, gating cadence, and baseline clarity stance)
+2. optimize within-family adaptive behavior first (for example `risk_state`, drawdown/transition guards, or regime-aware sizing response)
+3. allow broader entry/exit or cadence slices only as bounded, attribution-friendly follow-up slices after the frozen baseline exists
+
+This framing is intended to stop RI research from drifting into a broad legacy-style parameter hunt. It does **not** claim that the repository currently enforces that distinction automatically in code; it is the governing experiment policy for RI campaign design.
 
 ## 2. Implementation Steps
 

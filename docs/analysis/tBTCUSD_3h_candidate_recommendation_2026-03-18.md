@@ -104,6 +104,18 @@ Recommended challenger baseline:
 
 ## Recommended next step
 
+### Operational rule for backtest / Optuna
+
+Run **legacy** and **RI** as **two separate challenger tracks**, not as a single Optuna
+search and not as "RI overlaid on top of the incumbent champion".
+
+Implications:
+
+- do not mix `strategy_family: legacy` and `strategy_family: ri` in the same study
+- do not treat `authority_mode = regime_module` as a small migration patch on the incumbent champion
+- do not interpret hybrid/overlay probes as promotion candidates
+- compare each family against the incumbent through governed comparison, not by collapsing them into one search surface
+
 Continue on **two clearly separated tracks**:
 
 ### Track A — incumbent control

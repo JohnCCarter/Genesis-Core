@@ -52,9 +52,17 @@ def test_engine_initialization():
     assert engine.symbol == "tBTCUSD"
     assert engine.timeframe == "15m"
     assert engine.warmup_bars == 120
+    assert engine.data_source_policy == "frozen_first"
     assert engine.position_tracker.initial_capital == 10000.0
     assert engine.position_tracker.commission_rate == 0.001
     assert engine.candles_df is None
+
+
+def test_engine_invalid_data_source_policy_raises():
+    """Backtest data-source policy must reject unsupported values."""
+
+    with pytest.raises(ValueError, match="Invalid data_source_policy"):
+        BacktestEngine(symbol="tBTCUSD", timeframe="15m", data_source_policy="legacy_first")
 
 
 def test_engine_precompute_without_fast_window_raises_when_mode_not_explicit(
@@ -170,6 +178,241 @@ def test_engine_load_data_date_filter_handles_tz_aware(monkeypatch):
     assert engine.candles_df is not None
     # end_date is inclusive at midnight; at least the first bar should remain.
     assert len(engine.candles_df) >= 1
+
+
+def test_engine_load_data_default_policy_prefers_frozen(monkeypatch, sample_candles_data):
+    """Default policy must preserve frozen-first behavior."""
+
+    BacktestEngine._candles_cache.clear()
+
+    frozen_df = sample_candles_data.copy()
+    curated_df = sample_candles_data.copy()
+    curated_df["close"] = curated_df["close"] + 500.0
+
+    original_exists = Path.exists
+
+    def _fake_exists(self: Path) -> bool:
+        if self.name in {"tBTCUSD_15m_frozen.parquet", "tBTCUSD_15m.parquet"}:
+            return True
+        return original_exists(self)
+
+    def _fake_read_parquet(path, columns=None, **_kwargs):
+        df = frozen_df if str(path).endswith("_frozen.parquet") else curated_df
+        if columns is None:
+            return df.copy()
+        return df[columns].copy()
+
+    monkeypatch.setattr(Path, "exists", _fake_exists)
+    monkeypatch.setattr(pd, "read_parquet", _fake_read_parquet)
+
+    engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m")
+
+    assert engine.load_data() is True
+    assert engine.candles_source is not None
+    assert engine.candles_source.endswith("tBTCUSD_15m_frozen.parquet")
+    assert engine.data_source_policy == "frozen_first"
+    assert engine.candles_df is not None
+    assert engine.candles_df["close"].iloc[0] == pytest.approx(frozen_df["close"].iloc[0])
+
+
+def test_engine_load_data_curated_only_prefers_curated(monkeypatch, sample_candles_data):
+    """Opt-in curated_only must select curated even when frozen exists."""
+
+    BacktestEngine._candles_cache.clear()
+
+    frozen_df = sample_candles_data.copy()
+    curated_df = sample_candles_data.copy()
+    curated_df["close"] = curated_df["close"] + 250.0
+    read_paths: list[str] = []
+
+    original_exists = Path.exists
+
+    def _fake_exists(self: Path) -> bool:
+        if self.name in {"tBTCUSD_15m_frozen.parquet", "tBTCUSD_15m.parquet"}:
+            return True
+        return original_exists(self)
+
+    def _fake_read_parquet(path, columns=None, **_kwargs):
+        read_paths.append(str(path))
+        df = frozen_df if str(path).endswith("_frozen.parquet") else curated_df
+        if columns is None:
+            return df.copy()
+        return df[columns].copy()
+
+    monkeypatch.setattr(Path, "exists", _fake_exists)
+    monkeypatch.setattr(pd, "read_parquet", _fake_read_parquet)
+
+    engine = BacktestEngine(
+        symbol="tBTCUSD",
+        timeframe="15m",
+        data_source_policy="curated_only",
+    )
+
+    assert engine.load_data() is True
+    assert engine.candles_source is not None
+    assert engine.candles_source.endswith("tBTCUSD_15m.parquet")
+    assert engine.candles_df is not None
+    assert engine.candles_df["close"].iloc[0] == pytest.approx(curated_df["close"].iloc[0])
+    assert all("_frozen.parquet" not in path for path in read_paths)
+
+
+def test_engine_load_data_curated_only_does_not_fallback_to_frozen(monkeypatch):
+    """curated_only must fail closed instead of silently falling back to frozen."""
+
+    BacktestEngine._candles_cache.clear()
+
+    original_exists = Path.exists
+    read_paths: list[str] = []
+
+    def _fake_exists(self: Path) -> bool:
+        if self.name == "tBTCUSD_15m_frozen.parquet":
+            return True
+        if self.name == "tBTCUSD_15m.parquet":
+            return False
+        return original_exists(self)
+
+    def _fake_read_parquet(path, columns=None, **_kwargs):
+        read_paths.append(str(path))
+        raise FileNotFoundError(path)
+
+    monkeypatch.setattr(Path, "exists", _fake_exists)
+    monkeypatch.setattr(pd, "read_parquet", _fake_read_parquet)
+
+    engine = BacktestEngine(
+        symbol="tBTCUSD",
+        timeframe="15m",
+        data_source_policy="curated_only",
+    )
+
+    assert engine.load_data() is False
+    assert engine.candles_source is None
+    assert all("_frozen.parquet" not in path for path in read_paths)
+
+
+def test_engine_load_data_cache_isolated_by_selected_source(monkeypatch, sample_candles_data):
+    """Frozen and curated loads must not alias through the in-memory candle cache."""
+
+    BacktestEngine._candles_cache.clear()
+
+    frozen_df = sample_candles_data.copy()
+    curated_df = sample_candles_data.copy()
+    curated_df["close"] = curated_df["close"] + 777.0
+
+    original_exists = Path.exists
+
+    def _fake_exists(self: Path) -> bool:
+        if self.name in {"tBTCUSD_15m_frozen.parquet", "tBTCUSD_15m.parquet"}:
+            return True
+        return original_exists(self)
+
+    def _fake_read_parquet(path, columns=None, **_kwargs):
+        df = frozen_df if str(path).endswith("_frozen.parquet") else curated_df
+        if columns is None:
+            return df.copy()
+        return df[columns].copy()
+
+    monkeypatch.setattr(Path, "exists", _fake_exists)
+    monkeypatch.setattr(pd, "read_parquet", _fake_read_parquet)
+
+    frozen_engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m")
+    curated_engine = BacktestEngine(
+        symbol="tBTCUSD",
+        timeframe="15m",
+        data_source_policy="curated_only",
+    )
+
+    assert frozen_engine.load_data() is True
+    assert curated_engine.load_data() is True
+    assert frozen_engine.candles_df is not None
+    assert curated_engine.candles_df is not None
+    assert frozen_engine.candles_df["close"].iloc[0] == pytest.approx(frozen_df["close"].iloc[0])
+    assert curated_engine.candles_df["close"].iloc[0] == pytest.approx(curated_df["close"].iloc[0])
+
+
+def test_engine_load_data_applies_policy_to_htf(monkeypatch, sample_candles_data):
+    """HTF loading must follow the same data-source policy as the primary timeframe."""
+
+    BacktestEngine._candles_cache.clear()
+
+    ltf_frozen = sample_candles_data.copy()
+    ltf_curated = sample_candles_data.copy()
+    ltf_curated["close"] = ltf_curated["close"] + 300.0
+
+    htf_dates = pd.date_range("2024-01-01", periods=40, freq="1D", tz="UTC")
+    htf_frozen = pd.DataFrame(
+        {
+            "timestamp": htf_dates,
+            "open": [100.0 + i for i in range(40)],
+            "high": [101.0 + i for i in range(40)],
+            "low": [99.0 + i for i in range(40)],
+            "close": [100.5 + i for i in range(40)],
+        }
+    )
+    htf_curated = htf_frozen.copy()
+    htf_curated["close"] = htf_curated["close"] + 400.0
+
+    original_exists = Path.exists
+
+    def _fake_exists(self: Path) -> bool:
+        if self.name in {
+            "tBTCUSD_15m_frozen.parquet",
+            "tBTCUSD_15m.parquet",
+            "tBTCUSD_1D_frozen.parquet",
+            "tBTCUSD_1D.parquet",
+        }:
+            return True
+        return original_exists(self)
+
+    def _fake_read_parquet(path, columns=None, **_kwargs):
+        path_str = str(path)
+        if path_str.endswith("tBTCUSD_15m_frozen.parquet"):
+            df = ltf_frozen
+        elif path_str.endswith("tBTCUSD_15m.parquet"):
+            df = ltf_curated
+        elif path_str.endswith("tBTCUSD_1D_frozen.parquet"):
+            df = htf_frozen
+        elif path_str.endswith("tBTCUSD_1D.parquet"):
+            df = htf_curated
+        else:
+            raise AssertionError(f"Unexpected parquet read: {path_str}")
+
+        if columns is None:
+            return df.copy()
+        return df[columns].copy()
+
+    monkeypatch.setattr(Path, "exists", _fake_exists)
+    monkeypatch.setattr(pd, "read_parquet", _fake_read_parquet)
+
+    engine = BacktestEngine(
+        symbol="tBTCUSD",
+        timeframe="15m",
+        data_source_policy="curated_only",
+    )
+    engine._use_new_exit_engine = True
+
+    assert engine.load_data() is True
+    assert engine.candles_source is not None
+    assert engine.htf_candles_source is not None
+    assert engine.candles_source.endswith("tBTCUSD_15m.parquet")
+    assert engine.htf_candles_source.endswith("tBTCUSD_1D.parquet")
+
+
+def test_precompute_cache_key_includes_candle_source(sample_candles_data):
+    """Precompute cache keys must differ across frozen vs curated sources."""
+
+    frozen_engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m")
+    curated_engine = BacktestEngine(
+        symbol="tBTCUSD",
+        timeframe="15m",
+        data_source_policy="curated_only",
+    )
+
+    frozen_engine.candles_source = "data/raw/tBTCUSD_15m_frozen.parquet"
+    curated_engine.candles_source = "data/curated/v1/candles/tBTCUSD_15m.parquet"
+
+    assert frozen_engine._precompute_cache_key(
+        sample_candles_data
+    ) != curated_engine._precompute_cache_key(sample_candles_data)
 
 
 def test_build_candles_window(sample_candles_data):
@@ -489,6 +732,67 @@ def test_engine_run_default_loads_champion_and_fingerprint_changes(
     assert fp_skip != fp_merged
 
 
+@pytest.mark.parametrize(
+    ("engine_policy", "expect_propagated"),
+    [("frozen_first", False), ("curated_only", True)],
+)
+def test_engine_run_propagates_only_explicit_nondefault_data_source_policy(
+    monkeypatch,
+    sample_candles_data,
+    engine_policy,
+    expect_propagated,
+):
+    """Only explicit non-default policy should be injected into downstream eval configs."""
+
+    engine = BacktestEngine(
+        symbol="tBTCUSD",
+        timeframe="15m",
+        warmup_bars=10,
+        data_source_policy=engine_policy,
+    )
+    engine.candles_df = sample_candles_data.head(30)
+
+    captured_configs: list[dict] = []
+
+    def _fake_evaluate_pipeline(*, candles, policy, configs, state):
+        captured_configs.append(dict(configs))
+        return (
+            {
+                "action": "NONE",
+                "confidence": 1.0,
+                "regime": "NEUTRAL",
+                "features": {},
+            },
+            {
+                "decision": {"size": 0.0, "state_out": {}},
+                "features": {},
+            },
+        )
+
+    monkeypatch.setattr("core.backtest.engine.evaluate_pipeline", _fake_evaluate_pipeline)
+
+    caller_configs = {
+        "meta": {"skip_champion_merge": True},
+        "thresholds": {"entry_conf_overall": 0.99},
+        "risk": {"risk_map": [[0.7, 0.01]]},
+    }
+
+    results = engine.run(
+        policy={"symbol": "tBTCUSD", "timeframe": "15m"},
+        configs=caller_configs,
+        verbose=False,
+    )
+
+    assert "error" not in results
+    assert captured_configs
+    first_seen = captured_configs[0]
+    if expect_propagated:
+        assert first_seen.get("data_source_policy") == "curated_only"
+    else:
+        assert "data_source_policy" not in first_seen
+    assert "data_source_policy" not in caller_configs
+
+
 def test_engine_results_format(sample_candles_data):
     """Test that engine results have correct format."""
     engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m", warmup_bars=10)
@@ -499,6 +803,8 @@ def test_engine_results_format(sample_candles_data):
     # Check backtest_info
     assert "symbol" in results["backtest_info"]
     assert "timeframe" in results["backtest_info"]
+    assert "data_source_policy" in results["backtest_info"]
+    assert "ltf_candles_source" in results["backtest_info"]
     assert "bars_total" in results["backtest_info"]
     assert "bars_processed" in results["backtest_info"]
     assert "execution_mode" in results["backtest_info"]
@@ -666,6 +972,196 @@ def test_engine_precompute_cache_write_failure_logs_warning(monkeypatch, caplog)
 
     assert ok is True
     assert "Failed to write precompute cache" in caplog.text
+
+
+def test_engine_precompute_cache_write_can_be_disabled_without_creating_cache_dir(
+    tmp_path, monkeypatch
+):
+    import numpy as np
+
+    import core.backtest.engine as engine_mod
+
+    fake_engine_file = tmp_path / "src" / "core" / "backtest" / "engine.py"
+    fake_engine_file.parent.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(engine_mod, "__file__", str(fake_engine_file))
+
+    data_raw = tmp_path / "data" / "raw"
+    data_raw.mkdir(parents=True, exist_ok=True)
+
+    ltf_ts = pd.date_range("2025-01-01", periods=80, freq="15min", tz="UTC")
+    ltf = pd.DataFrame(
+        {
+            "timestamp": ltf_ts,
+            "open": [100.0 + i * 0.1 for i in range(len(ltf_ts))],
+            "high": [100.5 + i * 0.1 for i in range(len(ltf_ts))],
+            "low": [99.5 + i * 0.1 for i in range(len(ltf_ts))],
+            "close": [100.2 + i * 0.1 for i in range(len(ltf_ts))],
+            "volume": [1000.0 + i for i in range(len(ltf_ts))],
+        }
+    )
+    ltf.to_parquet(data_raw / "tBTCUSD_15m_frozen.parquet", index=False)
+
+    save_calls = {"count": 0}
+
+    def _fake_savez(*_args, **_kwargs):
+        save_calls["count"] += 1
+
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "1")
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_CACHE_WRITE", "0")
+    monkeypatch.setattr(np, "savez_compressed", _fake_savez)
+
+    engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m", warmup_bars=10, fast_window=True)
+    cache_dir = tmp_path / "cache" / "precomputed"
+
+    assert cache_dir.exists() is False
+    assert engine.load_data() is True
+    assert engine._precomputed_features is not None
+    assert save_calls["count"] == 0
+    assert cache_dir.exists() is False
+
+
+def test_engine_precompute_cache_write_disabled_still_reads_existing_cache(tmp_path, monkeypatch):
+    import numpy as np
+
+    import core.backtest.engine as engine_mod
+
+    fake_engine_file = tmp_path / "src" / "core" / "backtest" / "engine.py"
+    fake_engine_file.parent.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(engine_mod, "__file__", str(fake_engine_file))
+
+    data_raw = tmp_path / "data" / "raw"
+    data_raw.mkdir(parents=True, exist_ok=True)
+
+    ltf_ts = pd.date_range("2025-01-01", periods=48, freq="15min", tz="UTC")
+    ltf = pd.DataFrame(
+        {
+            "timestamp": ltf_ts,
+            "open": [100.0 + i * 0.1 for i in range(len(ltf_ts))],
+            "high": [100.5 + i * 0.1 for i in range(len(ltf_ts))],
+            "low": [99.5 + i * 0.1 for i in range(len(ltf_ts))],
+            "close": [100.2 + i * 0.1 for i in range(len(ltf_ts))],
+            "volume": [1000.0 + i for i in range(len(ltf_ts))],
+        }
+    )
+    ltf.to_parquet(data_raw / "tBTCUSD_15m_frozen.parquet", index=False)
+
+    cache_dir = tmp_path / "cache" / "precomputed"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    key = "pytest_precompute_read_only"
+    np.savez_compressed(
+        cache_dir / f"{key}.npz",
+        atr_14=np.asarray([1.0, 1.0], dtype=float),
+        atr_50=np.asarray([1.0, 1.0], dtype=float),
+        ema_20=np.asarray([1.0, 1.0], dtype=float),
+        ema_50=np.asarray([1.0, 1.0], dtype=float),
+        rsi_14=np.asarray([50.0, 50.0], dtype=float),
+        bb_position_20_2=np.asarray([0.0, 0.0], dtype=float),
+        adx_14=np.asarray([20.0, 20.0], dtype=float),
+        fib_high_idx=np.asarray([0], dtype=int),
+        fib_low_idx=np.asarray([0], dtype=int),
+        fib_high_px=np.asarray([100.0], dtype=float),
+        fib_low_px=np.asarray([90.0], dtype=float),
+    )
+
+    save_calls = {"count": 0}
+
+    def _fake_savez(*_args, **_kwargs):
+        save_calls["count"] += 1
+
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "1")
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_CACHE_WRITE", "0")
+    monkeypatch.setattr(np, "savez_compressed", _fake_savez)
+
+    engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m", warmup_bars=10, fast_window=True)
+    monkeypatch.setattr(engine, "_precompute_cache_key", lambda _df: key)
+
+    assert engine.load_data() is True
+    assert engine._precomputed_features is not None
+    assert engine._precomputed_features["atr_14"] == [1.0, 1.0]
+    assert save_calls["count"] == 0
+
+
+def test_engine_precompute_cache_write_disabled_preserves_cache_miss_runtime_parity(
+    tmp_path, monkeypatch
+):
+    import shutil
+
+    import core.backtest.engine as engine_mod
+
+    BacktestEngine._candles_cache.clear()
+
+    fake_engine_file = tmp_path / "src" / "core" / "backtest" / "engine.py"
+    fake_engine_file.parent.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(engine_mod, "__file__", str(fake_engine_file))
+
+    data_raw = tmp_path / "data" / "raw"
+    data_raw.mkdir(parents=True, exist_ok=True)
+
+    ltf_ts = pd.date_range("2025-01-01", periods=48, freq="15min", tz="UTC")
+    ltf = pd.DataFrame(
+        {
+            "timestamp": ltf_ts,
+            "open": [100.0 + i * 0.1 for i in range(len(ltf_ts))],
+            "high": [100.5 + i * 0.1 for i in range(len(ltf_ts))],
+            "low": [99.5 + i * 0.1 for i in range(len(ltf_ts))],
+            "close": [100.2 + i * 0.1 for i in range(len(ltf_ts))],
+            "volume": [1000.0 + i for i in range(len(ltf_ts))],
+        }
+    )
+    ltf.to_parquet(data_raw / "tBTCUSD_15m_frozen.parquet", index=False)
+
+    def _fake_evaluate_pipeline(*, candles, policy, configs, state):
+        return (
+            {
+                "action": "NONE",
+                "confidence": 1.0,
+                "regime": "NEUTRAL",
+                "features": {},
+            },
+            {
+                "decision": {"size": 0.0, "state_out": {}},
+                "features": {},
+            },
+        )
+
+    monkeypatch.setattr(engine_mod, "evaluate_pipeline", _fake_evaluate_pipeline)
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "1")
+    monkeypatch.delenv("GENESIS_MODE_EXPLICIT", raising=False)
+
+    cache_dir = tmp_path / "cache" / "precomputed"
+    base_configs = {
+        "meta": {"skip_champion_merge": True},
+        "thresholds": {"entry_conf_overall": 0.99},
+        "risk": {"risk_map": [[0.7, 0.01]]},
+    }
+
+    def _run_with(cache_write_flag: str | None):
+        if cache_write_flag is None:
+            monkeypatch.delenv("GENESIS_PRECOMPUTE_CACHE_WRITE", raising=False)
+        else:
+            monkeypatch.setenv("GENESIS_PRECOMPUTE_CACHE_WRITE", cache_write_flag)
+
+        engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m", warmup_bars=10, fast_window=True)
+        assert engine.load_data() is True
+        return engine.run(
+            policy={"symbol": "tBTCUSD", "timeframe": "15m"},
+            configs=base_configs,
+            verbose=False,
+        )
+
+    default_results = _run_with(None)
+    assert cache_dir.exists() is True
+
+    shutil.rmtree(cache_dir)
+    assert cache_dir.exists() is False
+
+    suppressed_results = _run_with("0")
+
+    assert suppressed_results["summary"] == default_results["summary"]
+    assert suppressed_results["metrics"] == default_results["metrics"]
+    assert suppressed_results["trades"] == default_results["trades"]
+    assert len(suppressed_results["equity_curve"]) == len(default_results["equity_curve"])
+    assert cache_dir.exists() is False
 
 
 def test_engine_precompute_cache_hit_htf_mapping_does_not_require_local_fib_cfg(

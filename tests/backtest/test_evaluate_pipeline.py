@@ -31,6 +31,89 @@ def test_evaluate_pipeline_returns_meta(
     assert "champion" in meta
 
 
+def test_evaluate_pipeline_ri_runtime_observability_default_off_parity(
+    monkeypatch,
+    sample_policy: dict[str, Any],
+    sample_configs: dict[str, Any],
+    small_candle_history: dict[str, Any],
+) -> None:
+    from core.strategy import evaluate as ev
+    from core.strategy import regime_unified as ru
+
+    monkeypatch.setattr(ru, "detect_regime_unified", lambda *_a, **_k: "ranging")
+    monkeypatch.setattr(ev, "_detect_shadow_regime_from_regime_module", lambda *_a, **_k: "bull")
+
+    result_absent, meta_absent = ev.evaluate_pipeline(
+        small_candle_history,
+        policy=sample_policy,
+        configs=deepcopy(sample_configs),
+        state={},
+    )
+    result_false, meta_false = ev.evaluate_pipeline(
+        small_candle_history,
+        policy=sample_policy,
+        configs=deepcopy(sample_configs),
+        state={"observability": {"scpe_ri_v1": False}},
+    )
+
+    assert result_absent == result_false
+    decision_absent = {k: v for k, v in meta_absent["decision"].items() if k != "state_out"}
+    decision_false = {k: v for k, v in meta_false["decision"].items() if k != "state_out"}
+    assert {
+        "decision": decision_absent,
+        "observability": meta_absent["observability"],
+    } == {
+        "decision": decision_false,
+        "observability": meta_false["observability"],
+    }
+    assert "scpe_ri_v1" not in meta_absent["observability"]
+    assert "scpe_ri_v1" not in meta_false["observability"]
+
+
+def test_evaluate_pipeline_ri_runtime_observability_payload_opt_in_shape(
+    monkeypatch,
+    sample_policy: dict[str, Any],
+    sample_configs: dict[str, Any],
+    small_candle_history: dict[str, Any],
+) -> None:
+    from core.strategy import evaluate as ev
+    from core.strategy import regime_unified as ru
+
+    monkeypatch.setattr(ru, "detect_regime_unified", lambda *_a, **_k: "ranging")
+    monkeypatch.setattr(ev, "_detect_shadow_regime_from_regime_module", lambda *_a, **_k: "bull")
+
+    _result, meta = ev.evaluate_pipeline(
+        small_candle_history,
+        policy=sample_policy,
+        configs=deepcopy(sample_configs),
+        state={"observability": {"scpe_ri_v1": True}},
+    )
+
+    shadow_regime = meta["observability"]["shadow_regime"]
+    assert shadow_regime == {
+        "authoritative_source": "regime_unified.detect_regime_unified",
+        "shadow_source": "regime.detect_regime_from_candles",
+        "authority_mode": "legacy",
+        "authority_mode_source": "default_legacy",
+        "authority": "ranging",
+        "shadow": "bull",
+        "mismatch": True,
+        "decision_input": False,
+    }
+    assert meta["observability"]["scpe_ri_v1"] == {
+        "family_tag": "ri",
+        "lane": "runtime_observability",
+        "observational_only": True,
+        "decision_input": False,
+        "enabled_via": "state.observability.scpe_ri_v1",
+        "authority_mode": "legacy",
+        "authority_mode_source": "default_legacy",
+        "authoritative_regime": "ranging",
+        "shadow_regime": "bull",
+        "regime_mismatch": True,
+    }
+
+
 def test_volume_score_cap_ratio_below_one_does_not_penalize_normal_volume() -> None:
     candles = {"volume": [100.0] * 60}
 
@@ -63,11 +146,11 @@ def test_evaluate_pipeline_shadow_regime_observer_preserves_default_parity(
 
     observed_shadow_values: list[str] = []
 
-    def _shadow_bull(_candles: dict[str, Any]) -> str:
+    def _shadow_bull(_candles: dict[str, Any], _cfg: dict[str, Any] | None = None) -> str:
         observed_shadow_values.append("bull")
         return "bull"
 
-    def _shadow_bear(_candles: dict[str, Any]) -> str:
+    def _shadow_bear(_candles: dict[str, Any], _cfg: dict[str, Any] | None = None) -> str:
         observed_shadow_values.append("bear")
         return "bear"
 
@@ -239,6 +322,153 @@ def test_evaluate_pipeline_authority_mode_regime_module_deterministic(
     assert shadow_obs_b["decision_input"] is False
 
 
+def test_evaluate_pipeline_regime_module_forwards_regime_definition_config(
+    monkeypatch,
+    sample_policy: dict[str, Any],
+    sample_configs: dict[str, Any],
+    small_candle_history: dict[str, Any],
+) -> None:
+    from core.strategy import evaluate as ev
+    from core.strategy import regime_unified as ru
+
+    captured_configs: list[dict[str, Any] | None] = []
+
+    monkeypatch.setattr(ru, "detect_regime_unified", lambda *_a, **_k: "bear")
+
+    def _shadow_forward(_candles: dict[str, Any], cfg: dict[str, Any] | None = None) -> str:
+        captured_configs.append(cfg)
+        return "bull"
+
+    monkeypatch.setattr(ev, "_detect_shadow_regime_from_regime_module", _shadow_forward)
+
+    cfg = deepcopy(sample_configs)
+    cfg.setdefault("multi_timeframe", {})["regime_intelligence"] = {
+        "authority_mode": "regime_module",
+        "regime_definition": {
+            "adx_trend_threshold": 25.0,
+            "adx_range_threshold": 20.0,
+            "slope_threshold": 0.001,
+            "volatility_threshold": 0.05,
+        },
+    }
+
+    result, meta = ev.evaluate_pipeline(
+        small_candle_history,
+        policy=sample_policy,
+        configs=cfg,
+    )
+
+    assert result["regime"] == "bull"
+    assert meta["observability"]["shadow_regime"]["authority"] == "bull"
+    assert len(captured_configs) == 2
+    for forwarded_cfg in captured_configs:
+        assert forwarded_cfg is not None
+        assert forwarded_cfg["multi_timeframe"]["regime_intelligence"]["authority_mode"] == (
+            "regime_module"
+        )
+        assert (
+            forwarded_cfg["multi_timeframe"]["regime_intelligence"]["regime_definition"][
+                "adx_trend_threshold"
+            ]
+            == 25.0
+        )
+
+
+def test_evaluate_pipeline_regime_module_explicit_defaults_match_absent_override(
+    monkeypatch,
+    sample_policy: dict[str, Any],
+    small_candle_history: dict[str, Any],
+) -> None:
+    monkeypatch.setenv("GENESIS_DISABLE_METRICS", "1")
+
+    from core.indicators import adx as adx_module
+    from core.indicators import atr as atr_module
+    from core.indicators import ema as ema_module
+    from core.strategy import evaluate as ev
+    from core.strategy import regime_unified as ru
+
+    class _DummyChampion:
+        config: dict = {}
+        source: str = "dummy"
+
+    monkeypatch.setattr(ev.champion_loader, "load_cached", lambda *_a, **_k: _DummyChampion())
+    monkeypatch.setattr(
+        ev,
+        "extract_features_backtest",
+        lambda *_a, **_k: (
+            {"atr_14": 1.0},
+            {
+                "current_atr_used": 1.0,
+                "atr_percentiles": None,
+                "htf_fibonacci": {"available": False},
+                "ltf_fibonacci": {"available": False},
+            },
+        ),
+    )
+    monkeypatch.setattr(
+        ev,
+        "predict_proba_for",
+        lambda *_a, **_k: ({"up": 0.5, "down": 0.5}, {"schema": [], "versions": {}}),
+    )
+    monkeypatch.setattr(
+        ev,
+        "compute_confidence",
+        lambda *_a, **_k: ({"buy": 0.0, "sell": 0.0, "overall": 0.0}, {}),
+    )
+    monkeypatch.setattr(ev, "log_fib_flow", lambda *_a, **_k: None)
+    monkeypatch.setattr(
+        ev,
+        "decide",
+        lambda *_a, **_k: ("NONE", {"size": 0.0, "reasons": [], "state_out": {}}),
+    )
+    monkeypatch.setattr(ru, "detect_regime_unified", lambda *_a, **_k: "bear")
+
+    monkeypatch.setattr(
+        ema_module, "calculate_ema", lambda close, _period: [close[-1]] * len(close)
+    )
+    monkeypatch.setattr(adx_module, "calculate_adx", lambda *_a, **_k: [18.0] * 10)
+    monkeypatch.setattr(atr_module, "calculate_atr", lambda *_a, **_k: [1.0] * 10)
+
+    base_cfg = {
+        "_global_index": len(small_candle_history["close"]) - 1,
+        "quality": {"pipeline": {}},
+        "meta": {},
+        "multi_timeframe": {"regime_intelligence": {"authority_mode": "regime_module"}},
+    }
+    explicit_defaults_cfg = deepcopy(base_cfg)
+    explicit_defaults_cfg["multi_timeframe"]["regime_intelligence"]["regime_definition"] = {
+        "adx_trend_threshold": 25.0,
+        "adx_range_threshold": 20.0,
+        "slope_threshold": 0.001,
+        "volatility_threshold": 0.05,
+    }
+
+    result_base, meta_base = ev.evaluate_pipeline(
+        small_candle_history,
+        policy=sample_policy,
+        configs=deepcopy(base_cfg),
+        state={},
+    )
+    result_explicit, meta_explicit = ev.evaluate_pipeline(
+        small_candle_history,
+        policy=sample_policy,
+        configs=deepcopy(explicit_defaults_cfg),
+        state={},
+    )
+
+    assert {
+        "action": result_base["action"],
+        "confidence": result_base["confidence"],
+        "regime": result_base["regime"],
+        "shadow": meta_base["observability"]["shadow_regime"],
+    } == {
+        "action": result_explicit["action"],
+        "confidence": result_explicit["confidence"],
+        "regime": result_explicit["regime"],
+        "shadow": meta_explicit["observability"]["shadow_regime"],
+    }
+
+
 def test_evaluate_pipeline_authority_mode_conflict_canonical_wins(
     monkeypatch,
     sample_policy: dict[str, Any],
@@ -326,7 +556,7 @@ def test_evaluate_pipeline_shadow_error_rate_contract(
 
     shadow_sequence = ["ranging", "bull", "ranging", "bear"]
 
-    def _shadow_sequence(_candles: dict[str, Any]) -> str:
+    def _shadow_sequence(_candles: dict[str, Any], _cfg: dict[str, Any] | None = None) -> str:
         if not shadow_sequence:
             raise AssertionError("shadow sequence exhausted unexpectedly")
         return shadow_sequence.pop(0)

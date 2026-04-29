@@ -21,6 +21,7 @@ def build_htf_fibonacci_context(
 ) -> tuple[dict[str, Any], dict[str, Any] | None]:
     htf_selector_meta: dict[str, Any] | None = None
     try:
+        config_dict = as_config_dict_fn(config)
         candles_for_htf = {
             "high": highs.tolist() if isinstance(highs, np.ndarray) else highs,
             "low": lows.tolist() if isinstance(lows, np.ndarray) else lows,
@@ -30,8 +31,8 @@ def build_htf_fibonacci_context(
         mtf_cfg_value = None
         if hasattr(config, "multi_timeframe"):
             mtf_cfg_value = config.multi_timeframe
-        elif isinstance(config, dict):
-            mtf_cfg_value = (config or {}).get("multi_timeframe")
+        else:
+            mtf_cfg_value = config_dict.get("multi_timeframe")
         multi_timeframe_cfg = as_config_dict_fn(mtf_cfg_value)
         selector_cfg = multi_timeframe_cfg.get("htf_selector")
         if not selector_cfg and multi_timeframe_cfg.get("htf_timeframe"):
@@ -40,11 +41,16 @@ def build_htf_fibonacci_context(
                 "per_timeframe": multi_timeframe_cfg.get("htf_timeframe", {}),
             }
         htf_timeframe, htf_selector_meta = select_htf_timeframe_fn(timeframe or "", selector_cfg)
+        htf_context_kwargs: dict[str, Any] = {}
+        data_source_policy = config_dict.get("data_source_policy")
+        if data_source_policy is not None:
+            htf_context_kwargs["data_source_policy"] = data_source_policy
         htf_fibonacci_context = get_htf_fibonacci_context_fn(
             candles_for_htf,
             timeframe=timeframe,
             symbol=symbol or "tBTCUSD",
             htf_timeframe=htf_timeframe,
+            **htf_context_kwargs,
         )
         if htf_selector_meta:
             htf_fibonacci_context["selector"] = htf_selector_meta

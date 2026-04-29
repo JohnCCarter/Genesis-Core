@@ -39,11 +39,6 @@ if str(ROOT_DIR) not in sys.path:
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-# Ensure config package resolvable
-CONFIG_DIR = ROOT_DIR / "config"
-CONFIG_DIR.mkdir(exist_ok=True)
-(CONFIG_DIR / "__init__.py").touch(exist_ok=True)
-
 from core.backtest.metrics import calculate_metrics, print_metrics_report  # noqa: E402
 from core.backtest.intelligence_shadow import BacktestIntelligenceShadowRecorder  # noqa: E402
 from core.backtest.trade_logger import TradeLogger  # noqa: E402
@@ -296,6 +291,16 @@ def main():
         type=Path,
         help="Optional JSON-fil med override av runtime-config",
     )
+    parser.add_argument(
+        "--data-source-policy",
+        type=str,
+        default="frozen_first",
+        choices=["frozen_first", "curated_only"],
+        help=(
+            "Backtest candle source policy: frozen_first keeps current behavior, "
+            "curated_only uses only curated/v1 candles."
+        ),
+    )
     fast_group = parser.add_mutually_exclusive_group()
     fast_group.add_argument(
         "--fast-window",
@@ -410,7 +415,8 @@ def main():
         "[MODE] "
         f"GENESIS_FAST_WINDOW={os.environ.get('GENESIS_FAST_WINDOW')} "
         f"GENESIS_PRECOMPUTE_FEATURES={os.environ.get('GENESIS_PRECOMPUTE_FEATURES')} "
-        f"GENESIS_RANDOM_SEED={os.environ.get('GENESIS_RANDOM_SEED')}"
+        f"GENESIS_RANDOM_SEED={os.environ.get('GENESIS_RANDOM_SEED')} "
+        f"DATA_SOURCE_POLICY={args.data_source_policy}"
     )
 
     # If user forced a non-canonical mode, make it loud: this is debug-only.
@@ -435,6 +441,7 @@ def main():
             commission=args.commission,
             slippage=args.slippage,
             warmup_bars=args.warmup,
+            data_source_policy=args.data_source_policy,
         )
 
         intelligence_shadow = None
@@ -472,6 +479,7 @@ def main():
             "runtime_version_used": runtime_version,
             "config_file": str(args.config_file) if args.config_file else None,
             "config_file_is_complete": False,
+            "data_source_policy": args.data_source_policy,
         }
 
         if args.config_file:

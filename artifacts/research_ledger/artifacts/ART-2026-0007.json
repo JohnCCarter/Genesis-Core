@@ -1,0 +1,28 @@
+{
+  "entity_id": "ART-2026-0007",
+  "entity_type": "artifact",
+  "created_at": "2026-04-28T18:40:00+00:00",
+  "schema_version": "research_ledger.v1",
+  "metadata": {
+    "strategy_family": "ri",
+    "strategy_family_source": "family_registry_v1",
+    "classification_role": "descriptive_only",
+    "runtime_authority": "none",
+    "lane": "findings_bank_extension_2026-04-28",
+    "finding_id": "FIND-2026-0006",
+    "finding_outcome": "direction_lock",
+    "notes": [
+      "This ArtifactRecord identifies a research-only local-window-shape finding bundle.",
+      "The bundle preserves the concentration-versus-recurrence constraint for substituted continuation weakness.",
+      "The payload is descriptive evidence and not executable runtime config."
+    ]
+  },
+  "experiment_id": null,
+  "artifact_kind": "evidence_bundle",
+  "path": "artifacts/bundles/findings/ri_policy_router/FIND-2026-0006_substituted_continuation_local_tail_windows_direction_lock.json",
+  "role": "research_finding_bundle",
+  "format": "json",
+  "checksum_sha256": "1572876c4ce1c47df772785ef198b9719643aa23154698280965f8a46a0a0403",
+  "size_bytes": 2763,
+  "intelligence_refs": []
+}

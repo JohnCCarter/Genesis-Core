@@ -8,6 +8,7 @@ from typing import Any
 import pandas as pd
 
 from core.indicators.fibonacci import FibonacciConfig
+from core.indicators.htf_fibonacci_data import normalize_data_source_policy
 from core.utils.logging_redaction import get_logger
 
 _LOGGER = get_logger(__name__)
@@ -72,6 +73,7 @@ def get_htf_fibonacci_context_impl(
 ) -> dict[str, Any]:
     """Get HTF Fibonacci context with injected cache and loader/compute functions."""
 
+    data_source_policy = normalize_data_source_policy(kwargs.pop("data_source_policy", None))
     del kwargs
 
     def _reference_timestamp() -> pd.Timestamp | None:
@@ -99,9 +101,17 @@ def get_htf_fibonacci_context_impl(
         except Exception:
             config_hash = str(hash(str(config)))
 
-    cache_key = f"{symbol}_{htf_timeframe}_{config_hash}"
+    cache_key = f"{symbol}_{htf_timeframe}_{data_source_policy}_{config_hash}"
+    legacy_cache_key = f"{symbol}_{htf_timeframe}_{config_hash}"
     cache_entry = htf_context_cache.setdefault(cache_key, {})
     fib_df = cache_entry.get("fib_df")
+    if fib_df is None and data_source_policy == "frozen_first":
+        legacy_cache_entry = htf_context_cache.get(legacy_cache_key)
+        if isinstance(legacy_cache_entry, dict):
+            legacy_fib_df = legacy_cache_entry.get("fib_df")
+            if legacy_fib_df is not None:
+                fib_df = legacy_fib_df
+                cache_entry["fib_df"] = legacy_fib_df
 
     tf_raw = "" if timeframe is None else str(timeframe)
     tf_norm = tf_raw.strip().lower()
@@ -118,7 +128,7 @@ def get_htf_fibonacci_context_impl(
     if not tf_norm:
         return {"available": False, "reason": "HTF_TIMEFRAME_MISSING"}
 
-    if tf_norm not in ["1h", "30m", "6h", "15m"]:
+    if tf_norm not in ["15m", "30m", "1h", "3h", "6h"]:
         return {
             "available": False,
             "reason": "HTF_NOT_APPLICABLE",
@@ -128,7 +138,11 @@ def get_htf_fibonacci_context_impl(
 
     if fib_df is None:
         try:
-            htf_candles = load_candles_data_fn(symbol, htf_timeframe)
+            htf_candles = load_candles_data_fn(
+                symbol,
+                htf_timeframe,
+                data_source_policy=data_source_policy,
+            )
             if htf_candles is not None:
                 fib_df = compute_htf_fibonacci_levels_fn(htf_candles, config or FibonacciConfig())
                 cache_entry["fib_df"] = fib_df

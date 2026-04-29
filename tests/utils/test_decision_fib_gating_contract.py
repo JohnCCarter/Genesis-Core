@@ -294,6 +294,18 @@ def test_apply_fib_gating_uses_ltf_entry_range_override_when_threshold_override_
     assert htf_debug["override"]["confidence"] == pytest.approx(0.7)
     assert htf_debug["override"]["min"] == pytest.approx(0.65)
     assert htf_debug["override"]["max"] == pytest.approx(0.75)
+    assert list(state_out["ltf_override_debug"].keys()) == [
+        "candidate",
+        "confidence",
+        "history_key",
+        "history_len",
+        "history_window",
+        "baseline_threshold",
+        "effective_threshold",
+        "adaptive_enabled",
+        "regime",
+        "details",
+    ]
     assert state_out["ltf_override_debug"]["effective_threshold"] == pytest.approx(0.85)
     assert state_out["fib_gate_summary"]["htf"]["reason"] == "LONG_BELOW_LEVEL_OVERRIDE"
     assert state_out["fib_gate_summary"]["htf"]["override"]["source"] == "ltf_entry_range"
@@ -357,6 +369,18 @@ def test_apply_fib_gating_does_not_use_ltf_entry_range_override_outside_range() 
     htf_debug = state_out["htf_fib_entry_debug"]
     assert htf_debug["reason"] == "LONG_BELOW_LEVEL"
     assert "override" not in htf_debug
+    assert list(state_out["ltf_override_debug"].keys()) == [
+        "candidate",
+        "confidence",
+        "history_key",
+        "history_len",
+        "history_window",
+        "baseline_threshold",
+        "effective_threshold",
+        "adaptive_enabled",
+        "regime",
+        "details",
+    ]
     assert state_out["ltf_override_debug"]["confidence"] == pytest.approx(0.6)
     assert state_out["ltf_override_debug"]["effective_threshold"] == pytest.approx(0.85)
     assert "fib_gate_summary" not in state_out

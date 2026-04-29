@@ -186,8 +186,29 @@ config/tmp/composite_*.json
 config/tmp/trial_*_analysis.json
 
 # Local diagnostics artifacts (generated, do not commit)
-artifacts/
+artifacts/*
 !artifacts/**/README.md
+
+# Findings bank persistence surfaces (repo-native, narrow allowlist)
+!artifacts/bundles/
+artifacts/bundles/*
+!artifacts/bundles/findings/
+!artifacts/bundles/findings/**
+
+!artifacts/research_ledger/
+artifacts/research_ledger/*
+!artifacts/research_ledger/artifacts/
+artifacts/research_ledger/artifacts/*
+!artifacts/research_ledger/artifacts/ART-2026-0002.json
+!artifacts/research_ledger/artifacts/ART-2026-0003.json
+!artifacts/research_ledger/artifacts/ART-2026-0004.json
+!artifacts/research_ledger/artifacts/ART-2026-0005.json
+!artifacts/research_ledger/artifacts/ART-2026-0006.json
+!artifacts/research_ledger/artifacts/ART-2026-0007.json
+!artifacts/research_ledger/artifacts/ART-2026-0008.json
+!artifacts/research_ledger/indexes/
+artifacts/research_ledger/indexes/*
+!artifacts/research_ledger/indexes/findings_index.json
 
 # Phase 3-5: Data files (historical candles, features, metadata)
 # Two-layer architecture: Raw Lake + Curated

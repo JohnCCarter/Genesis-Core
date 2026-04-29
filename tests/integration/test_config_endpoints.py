@@ -64,6 +64,20 @@ def test_config_endpoints():
         "gates": {"hysteresis_steps": 3, "cooldown_bars": 2},
         "regime_unified": {"authority_mode": "regime_module"},
     }
+    good_regime_definition = {
+        **good_authority_mode,
+        "multi_timeframe": {
+            "regime_intelligence": {
+                "authority_mode": "regime_module",
+                "regime_definition": {
+                    "adx_trend_threshold": 25.0,
+                    "adx_range_threshold": 20.0,
+                    "slope_threshold": 0.001,
+                    "volatility_threshold": 0.05,
+                },
+            }
+        },
+    }
     bad_authority_mode = {
         "strategy_family": "legacy",
         "multi_timeframe": {"regime_intelligence": {"authority_mode": "invalid_mode"}},
@@ -81,12 +95,27 @@ def test_config_endpoints():
         "multi_timeframe": {"regime_intelligence": {"authority_mode": "invalid_mode"}},
         "regime_unified": {"authority_mode": "regime_module"},
     }
+    bad_partial_regime_definition = {
+        **good_authority_mode,
+        "multi_timeframe": {
+            "regime_intelligence": {
+                "authority_mode": "regime_module",
+                "regime_definition": {
+                    "adx_trend_threshold": 25.0,
+                    "adx_range_threshold": 20.0,
+                },
+            }
+        },
+    }
 
     r = c.post("/config/runtime/validate", json=good_authority_mode)
     assert r.status_code == 200 and r.json().get("valid") is True
     assert r.json().get("cfg", {}).get("strategy_family") == "ri"
 
     r = c.post("/config/runtime/validate", json=good_authority_mode_alias)
+    assert r.status_code == 200 and r.json().get("valid") is True
+
+    r = c.post("/config/runtime/validate", json=good_regime_definition)
     assert r.status_code == 200 and r.json().get("valid") is True
 
     r = c.post("/config/runtime/validate", json=bad_authority_mode)
@@ -99,6 +128,9 @@ def test_config_endpoints():
     assert r.status_code == 200 and r.json().get("valid") is False
 
     r = c.post("/config/runtime/validate", json=bad_conflicting_authority_mode)
+    assert r.status_code == 200 and r.json().get("valid") is False
+
+    r = c.post("/config/runtime/validate", json=bad_partial_regime_definition)
     assert r.status_code == 200 and r.json().get("valid") is False
 
     bad_legacy_with_regime_module = {

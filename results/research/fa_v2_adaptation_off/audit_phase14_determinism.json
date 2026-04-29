@@ -1,0 +1,12 @@
+{
+  "non_self_outputs": ["EDGE_ORIGIN_REPORT.md"],
+  "run1_hashes": {
+    "EDGE_ORIGIN_REPORT.md": "693c47332c810dd5b12ad6ad362fe676f0890eb079a512645a5862c2ce7535a0"
+  },
+  "run2_hashes": {
+    "EDGE_ORIGIN_REPORT.md": "693c47332c810dd5b12ad6ad362fe676f0890eb079a512645a5862c2ce7535a0"
+  },
+  "run1_hash": "76f9275256ffb73e07295179b0a7409ebdbf5b2363b29765710e4eef1e9376c4",
+  "run2_hash": "76f9275256ffb73e07295179b0a7409ebdbf5b2363b29765710e4eef1e9376c4",
+  "match": true
+}

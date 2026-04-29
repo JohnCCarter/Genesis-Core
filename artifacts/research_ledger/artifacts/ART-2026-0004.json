@@ -1,0 +1,28 @@
+{
+  "entity_id": "ART-2026-0004",
+  "entity_type": "artifact",
+  "created_at": "2026-04-24T09:32:00+00:00",
+  "schema_version": "research_ledger.v1",
+  "metadata": {
+    "strategy_family": "ri",
+    "strategy_family_source": "family_registry_v1",
+    "classification_role": "descriptive_only",
+    "runtime_authority": "none",
+    "lane": "research_findings_bank_seed",
+    "finding_id": "FIND-2026-0003",
+    "finding_outcome": "positive",
+    "notes": [
+      "This ArtifactRecord identifies a research-only positive finding bundle.",
+      "The bundle captures that seam A is reachable and blockable under bounded continuation-local control.",
+      "The payload is descriptive evidence and not executable runtime config."
+    ]
+  },
+  "experiment_id": null,
+  "artifact_kind": "evidence_bundle",
+  "path": "artifacts/bundles/findings/ri_policy_router/FIND-2026-0003_weak_pre_aged_release_target_reachability_positive.json",
+  "role": "research_finding_bundle",
+  "format": "json",
+  "checksum_sha256": "c06422990dc26f9c13e49a304cec9661abecc0217940c814c04703fa425c58cd",
+  "size_bytes": 2000,
+  "intelligence_refs": []
+}

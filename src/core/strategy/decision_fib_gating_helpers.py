@@ -158,6 +158,57 @@ def prepare_override_context(
     }
 
 
+def build_ltf_override_debug(
+    *,
+    override_context: dict[str, Any],
+    candidate: Action,
+    confidence: dict[str, float] | None,
+    adaptive_cfg: dict[str, Any],
+    ltf_override_threshold: float,
+    regime_str: str,
+) -> dict[str, Any]:
+    if override_context:
+        return {
+            "candidate": candidate,
+            "confidence": override_context["conf_val"],
+            "history_key": override_context["history_key"],
+            "history_len": override_context["history_len"],
+            "history_window": override_context["history_window"],
+            "baseline_threshold": ltf_override_threshold,
+            "effective_threshold": override_context["effective_threshold"],
+            "adaptive_enabled": bool(adaptive_cfg.get("enabled")),
+            "regime": regime_str,
+            "details": override_context.get("adaptive_debug"),
+        }
+
+    fallback_conf = None
+    if confidence and isinstance(confidence, dict):
+        fallback_conf = safe_float(
+            confidence.get("buy" if candidate == "LONG" else "sell", 0.0),
+            0.0,
+        )
+    return {
+        "candidate": candidate,
+        "confidence": fallback_conf,
+        "history_key": None,
+        "history_len": 0,
+        "history_window": int(adaptive_cfg.get("window", 120)),
+        "baseline_threshold": ltf_override_threshold,
+        "effective_threshold": ltf_override_threshold,
+        "adaptive_enabled": bool(adaptive_cfg.get("enabled")),
+        "regime": regime_str,
+        "details": None,
+    }
+
+
+def build_fib_gate_summary(*, candidate: Action, state_out: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "candidate": candidate,
+        "htf": _summarize_fib_debug(state_out.get("htf_fib_entry_debug")),
+        "ltf": _summarize_fib_debug(state_out.get("ltf_fib_entry_debug")),
+    }
+
+
 def _apply_override(
     *,
     payload: dict[str, Any],
@@ -193,6 +244,77 @@ def _apply_override(
     return True
 
 
+def _try_multi_timeframe_threshold_override(
+    *,
+    allow_ltf_override_cfg: bool,
+    conf_val: float,
+    effective_threshold: float,
+    adaptive_debug: Any,
+    ltf_override_threshold: float,
+    payload: dict[str, Any],
+    state_out: dict[str, Any],
+    reasons: list[str],
+    logger: Any,
+    policy_symbol: str,
+    policy_timeframe: str,
+    candidate: Action,
+) -> bool:
+    if not allow_ltf_override_cfg or conf_val < effective_threshold:
+        return False
+
+    return _apply_override(
+        payload=payload,
+        source="multi_timeframe_threshold",
+        extra={
+            "threshold": effective_threshold,
+            "baseline": ltf_override_threshold,
+            "adaptive": adaptive_debug,
+        },
+        conf_val=conf_val,
+        state_out=state_out,
+        reasons=reasons,
+        logger=logger,
+        policy_symbol=policy_symbol,
+        policy_timeframe=policy_timeframe,
+        candidate=candidate,
+    )
+
+
+def _try_ltf_entry_range_override(
+    *,
+    ltf_entry_cfg: dict[str, Any],
+    conf_val: float,
+    payload: dict[str, Any],
+    state_out: dict[str, Any],
+    reasons: list[str],
+    logger: Any,
+    policy_symbol: str,
+    policy_timeframe: str,
+    candidate: Action,
+) -> bool:
+    override_cfg = ltf_entry_cfg.get("override_confidence") or {}
+    if not override_cfg.get("enabled"):
+        return False
+
+    min_conf = safe_float(override_cfg.get("min", 0.0), 0.0)
+    max_conf = safe_float(override_cfg.get("max", 1.0), 1.0)
+    if not min_conf <= conf_val <= max_conf:
+        return False
+
+    return _apply_override(
+        payload=payload,
+        source="ltf_entry_range",
+        extra={"min": min_conf, "max": max_conf},
+        conf_val=conf_val,
+        state_out=state_out,
+        reasons=reasons,
+        logger=logger,
+        policy_symbol=policy_symbol,
+        policy_timeframe=policy_timeframe,
+        candidate=candidate,
+    )
+
+
 def try_override_htf_block(
     *,
     ltf_entry_cfg: dict[str, Any],
@@ -222,42 +344,30 @@ def try_override_htf_block(
     )
     adaptive_debug = context.get("adaptive_debug")
 
-    if allow_ltf_override_cfg and conf_val >= effective_threshold:
-        return _apply_override(
-            payload=payload,
-            source="multi_timeframe_threshold",
-            extra={
-                "threshold": effective_threshold,
-                "baseline": ltf_override_threshold,
-                "adaptive": adaptive_debug,
-            },
-            conf_val=conf_val,
-            state_out=state_out,
-            reasons=reasons,
-            logger=logger,
-            policy_symbol=policy_symbol,
-            policy_timeframe=policy_timeframe,
-            candidate=candidate,
-        )
-
-    override_cfg = ltf_entry_cfg.get("override_confidence") or {}
-    if override_cfg.get("enabled"):
-        min_conf = safe_float(override_cfg.get("min", 0.0), 0.0)
-        max_conf = safe_float(override_cfg.get("max", 1.0), 1.0)
-        if min_conf <= conf_val <= max_conf:
-            return _apply_override(
-                payload=payload,
-                source="ltf_entry_range",
-                extra={"min": min_conf, "max": max_conf},
-                conf_val=conf_val,
-                state_out=state_out,
-                reasons=reasons,
-                logger=logger,
-                policy_symbol=policy_symbol,
-                policy_timeframe=policy_timeframe,
-                candidate=candidate,
-            )
-    return False
+    return _try_multi_timeframe_threshold_override(
+        allow_ltf_override_cfg=allow_ltf_override_cfg,
+        conf_val=conf_val,
+        effective_threshold=effective_threshold,
+        adaptive_debug=adaptive_debug,
+        ltf_override_threshold=ltf_override_threshold,
+        payload=payload,
+        state_out=state_out,
+        reasons=reasons,
+        logger=logger,
+        policy_symbol=policy_symbol,
+        policy_timeframe=policy_timeframe,
+        candidate=candidate,
+    ) or _try_ltf_entry_range_override(
+        ltf_entry_cfg=ltf_entry_cfg,
+        conf_val=conf_val,
+        payload=payload,
+        state_out=state_out,
+        reasons=reasons,
+        logger=logger,
+        policy_symbol=policy_symbol,
+        policy_timeframe=policy_timeframe,
+        candidate=candidate,
+    )
 
 
 def apply_htf_fib_gate(

@@ -23,14 +23,18 @@ from typing import Any
 
 import yaml
 
-from core.config.authority_mode_resolver import AUTHORITY_MODE_REGIME_MODULE
+from core.strategy.family_admission import (
+    StrategyFamilyAdmissionError,
+    validate_optimizer_family_admission,
+    validate_optimizer_strategy_family_identity,
+)
 from core.strategy.family_registry import (
     FAMILY_REGISTRY,
-    STRATEGY_FAMILY_LEGACY,
     STRATEGY_FAMILY_RI,
     StrategyFamilyValidationError,
     validate_strategy_family_name,
 )
+from core.strategy.run_intent import RunIntentValidationError
 
 BASE_RISK_MAP = [
     (0.48, 0.01),
@@ -183,51 +187,51 @@ def validate_optimizer_strategy_family(opt_cfg: dict[str, Any]) -> tuple[list[st
         errors.append("[ERROR] parameters måste vara en dict/mapping i optimizer-konfig")
         return errors, warnings
 
-    authority_spec = _get_param_spec(
-        params_spec, "multi_timeframe.regime_intelligence.authority_mode"
-    )
-    authority_is_regime_module = _spec_allows_value(authority_spec, AUTHORITY_MODE_REGIME_MODULE)
-    authority_is_exact_regime_module = _spec_requires_exact_value(
-        authority_spec, AUTHORITY_MODE_REGIME_MODULE
-    )
+    try:
+        validate_optimizer_strategy_family_identity(opt_cfg)
+    except StrategyFamilyValidationError as exc:
+        code = str(exc)
+        if code == "invalid_optimizer_parameters_mapping":
+            errors.append("[ERROR] parameters måste vara en dict/mapping i optimizer-konfig")
+        elif code == "invalid_strategy_family:legacy_regime_module":
+            errors.append(
+                "[ERROR] strategy_family=legacy är ogiltigt när authority_mode kan bli regime_module"
+            )
+        elif code == "invalid_strategy_family:legacy_hybrid_signature":
+            errors.append(
+                "[ERROR] strategy_family=legacy är ogiltigt med RI-signaturmarkörer i optimizer-konfig"
+            )
+        elif code == "invalid_strategy_family:ri_requires_regime_module":
+            errors.append("[ERROR] strategy_family=ri kräver authority_mode=fixed regime_module")
+        else:
+            errors.append(f"[ERROR] family_identity: {code}")
+        return errors, warnings
 
-    ri_rule = FAMILY_REGISTRY[STRATEGY_FAMILY_RI]
-    ri_cluster_matches = (
-        authority_is_exact_regime_module
-        and _spec_requires_exact_value(
-            _get_param_spec(params_spec, "thresholds.signal_adaptation.atr_period"),
-            ri_rule.required_atr_period,
-        )
-        and _spec_requires_exact_value(
-            _get_param_spec(params_spec, "gates.hysteresis_steps"),
-            ri_rule.required_gates[0],
-        )
-        and _spec_requires_exact_value(
-            _get_param_spec(params_spec, "gates.cooldown_bars"),
-            ri_rule.required_gates[1],
-        )
-        and all(
-            _spec_allows_value(_get_param_spec(params_spec, path), expected)
-            for path, expected in ri_rule.threshold_cluster.items()
-        )
-    )
-    ri_signature_markers_present = _has_optimizer_ri_signature_markers(params_spec)
+    if declared != STRATEGY_FAMILY_RI:
+        return errors, warnings
 
-    if declared == STRATEGY_FAMILY_LEGACY and authority_is_regime_module:
+    try:
+        _family, run_intent = validate_optimizer_family_admission(opt_cfg)
+    except RunIntentValidationError as exc:
+        code = str(exc)
+        if code == "missing_run_intent":
+            errors.append(
+                "[ERROR] run_intent är obligatoriskt för strategy_family=ri i optimizer-konfig"
+            )
+        else:
+            errors.append(
+                "[ERROR] run_intent måste vara 'research_slice', 'candidate', 'promotion_compare' eller 'champion_freeze'"
+            )
+        return errors, warnings
+    except StrategyFamilyAdmissionError as exc:
+        code = str(exc)
         errors.append(
-            "[ERROR] strategy_family=legacy är ogiltigt när authority_mode kan bli regime_module"
+            f"[ERROR] family_admission: strategy_family=ri är inte tillåten för valt run_intent ({code})"
         )
+        return errors, warnings
 
-    if declared == STRATEGY_FAMILY_LEGACY and ri_signature_markers_present:
-        errors.append(
-            "[ERROR] strategy_family=legacy är ogiltigt med RI-signaturmarkörer i optimizer-konfig"
-        )
-
-    if declared == STRATEGY_FAMILY_RI and not ri_cluster_matches:
-        errors.append("[ERROR] strategy_family=ri kräver komplett RI-kluster i optimizer-konfig")
-
-    if declared == STRATEGY_FAMILY_RI and not authority_is_exact_regime_module:
-        errors.append("[ERROR] strategy_family=ri kräver authority_mode=fixed regime_module")
+    if run_intent is not None:
+        warnings.append(f"[INFO] family_admission aktivt för run_intent={run_intent}")
 
     return errors, warnings
 

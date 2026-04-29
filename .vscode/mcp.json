@@ -1,30 +1,27 @@
 {
-	"servers": {
-		"genesis-core": {
-			"args": [
-				"-m",
-				"mcp_server.server"
-			],
-			"command": ".venv/bin/python",
-			"env": {
-				"GENESIS_FAST_HASH": "0",
-				"GENESIS_FAST_WINDOW": "1",
-				"GENESIS_PRECOMPUTE_FEATURES": "1"
-			},
-			"type": "stdio"
-		},
-		"genesis-core-windows": {
-			"args": [
-				"-m",
-				"mcp_server.server"
-			],
-			"command": ".venv/Scripts/python.exe",
-			"env": {
-				"GENESIS_FAST_HASH": "0",
-				"GENESIS_FAST_WINDOW": "1",
-				"GENESIS_PRECOMPUTE_FEATURES": "1"
-			},
-			"type": "stdio"
-		}
-	}
+  "servers": {
+    "genesis-core": {
+      "args": ["-m", "mcp_server.server"],
+      "command": ".venv/bin/python",
+      "env": {
+        "GENESIS_FAST_HASH": "0",
+        "GENESIS_FAST_WINDOW": "1",
+        "GENESIS_PRECOMPUTE_FEATURES": "1"
+      },
+      "type": "stdio"
+    },
+    "genesis-core-windows": {
+      "args": ["-m", "mcp_server.server"],
+      "command": ".venv/Scripts/python.exe",
+      "env": {
+        "AZURE_CLIENT_ID": "d6182e11-831a-4f47-84cc-e4e164e93077",
+        "AZURE_CLIENT_SECRET": "<ditt secret från Certificates & secrets>",
+        "AZURE_TENANT_ID": "e74f2bfa-a385-4c79-a481-a9b63d3f3022",
+        "GENESIS_FAST_HASH": "0",
+        "GENESIS_FAST_WINDOW": "1",
+        "GENESIS_PRECOMPUTE_FEATURES": "1"
+      },
+      "type": "stdio"
+    }
+  }
 }

@@ -12,6 +12,7 @@ from scripts.preflight.preflight_optuna_check import (
     check_champion_drift_smoke,
     check_htf_requirements,
     check_mode_flags_consistency,
+    check_parameters_valid,
     check_requested_data_coverage,
     check_storage_resume_sanity,
 )
@@ -360,3 +361,89 @@ parameters: {}
 
     monkeypatch.setattr(sys, "argv", ["preflight_optuna_check.py", str(cfg_path)])
     assert preflight.main() == 1
+
+
+def test_check_parameters_valid_counts_int_ranges_as_searchable() -> None:
+    ok, msg = check_parameters_valid(
+        {
+            "strategy_family": "legacy",
+            "parameters": {
+                "thresholds.entry_conf_overall": {"type": "int", "low": 1, "high": 3, "step": 1},
+                "risk.risk_map_deltas": {"type": "fixed", "value": 0},
+                "exit.max_hold_bars": {"type": "fixed", "value": 8},
+            },
+        }
+    )
+
+    assert ok is True
+    assert "1 sökbara parametrar hittade" in msg
+
+
+def test_check_parameters_valid_accepts_ri_research_slice_with_int_gate_ranges() -> None:
+    ok, msg = check_parameters_valid(
+        {
+            "strategy_family": "ri",
+            "meta": {"runs": {"run_intent": "research_slice"}},
+            "parameters": {
+                "multi_timeframe.regime_intelligence.authority_mode": {
+                    "type": "fixed",
+                    "value": "regime_module",
+                },
+                "thresholds.signal_adaptation.atr_period": {"type": "fixed", "value": 14},
+                "gates.hysteresis_steps": {"type": "int", "low": 2, "high": 4, "step": 1},
+                "gates.cooldown_bars": {"type": "int", "low": 1, "high": 3, "step": 1},
+                "thresholds.entry_conf_overall": {"type": "fixed", "value": 0.28},
+                "thresholds.regime_proba.balanced": {"type": "fixed", "value": 0.36},
+                "thresholds.signal_adaptation.zones.low.entry_conf_overall": {
+                    "type": "fixed",
+                    "value": 0.14,
+                },
+                "thresholds.signal_adaptation.zones.low.regime_proba": {
+                    "type": "fixed",
+                    "value": 0.32,
+                },
+                "thresholds.signal_adaptation.zones.mid.entry_conf_overall": {
+                    "type": "fixed",
+                    "value": 0.42,
+                },
+                "thresholds.signal_adaptation.zones.mid.regime_proba": {
+                    "type": "fixed",
+                    "value": 0.52,
+                },
+                "thresholds.signal_adaptation.zones.high.entry_conf_overall": {
+                    "type": "fixed",
+                    "value": 0.34,
+                },
+                "thresholds.signal_adaptation.zones.high.regime_proba": {
+                    "type": "fixed",
+                    "value": 0.58,
+                },
+                "risk.risk_map_deltas": {"type": "fixed", "value": 0},
+                "exit.max_hold_bars": {"type": "fixed", "value": 8},
+            },
+        }
+    )
+
+    assert ok is True
+    assert "2 sökbara parametrar hittade" in msg
+    assert "family admission godkänd för run_intent=research_slice" in msg
+
+
+def test_check_parameters_valid_rejects_missing_run_intent_for_ri() -> None:
+    ok, msg = check_parameters_valid(
+        {
+            "strategy_family": "ri",
+            "parameters": {
+                "multi_timeframe.regime_intelligence.authority_mode": {
+                    "type": "fixed",
+                    "value": "regime_module",
+                },
+                "thresholds": {"type": "fixed", "value": 0},
+                "risk": {"type": "fixed", "value": 0},
+                "exit": {"type": "fixed", "value": 0},
+            },
+        }
+    )
+
+    assert ok is False
+    assert "kräver explicit run_intent" in msg

@@ -2,6 +2,8 @@
 
 from datetime import datetime
 
+import pytest
+
 from core.backtest.position_tracker import Position, PositionTracker
 
 
@@ -239,6 +241,47 @@ def test_get_summary():
     assert summary["losing_trades"] == 1
     assert summary["win_rate"] == 50.0
     assert summary["total_return"] > 0  # Net positive
+
+
+def test_get_position_summary_reconstructs_net_partial_exit_positions():
+    """Partial exits should keep legacy event summary but expose net per-position truth."""
+    tracker = PositionTracker(initial_capital=10000.0, commission_rate=0.01, slippage_rate=0.0)
+    timestamp = datetime.now()
+
+    tracker.execute_action(
+        action="LONG", size=10.0, price=100.0, timestamp=timestamp, symbol="tBTCUSD"
+    )
+    partial_trade = tracker.partial_close(4.0, 110.0, timestamp, reason="TP1")
+    assert partial_trade is not None
+
+    final_trade = tracker.close_position_with_reason(90.0, timestamp, reason="STOP")
+    assert final_trade is not None
+
+    summary = tracker.get_summary()
+    position_summary = tracker.get_position_summary()
+
+    assert summary["num_trades"] == 2
+    assert summary["winning_trades"] == 1
+    assert summary["losing_trades"] == 1
+    assert summary["win_rate"] == 50.0
+    assert summary["avg_win"] == pytest.approx(40.0)
+    assert summary["avg_loss"] == pytest.approx(-20.0)
+
+    assert position_summary["pnl_basis"] == "net_after_commission"
+    assert position_summary["num_positions"] == 1
+    assert position_summary["winning_positions"] == 0
+    assert position_summary["losing_positions"] == 1
+    assert position_summary["breakeven_positions"] == 0
+    assert position_summary["win_rate"] == 0.0
+    assert position_summary["avg_win"] == 0.0
+    assert position_summary["avg_loss"] == pytest.approx(-39.8)
+    assert position_summary["profit_factor"] == 0.0
+    assert position_summary["gross_pnl"] == pytest.approx(-20.0)
+    assert position_summary["entry_commission"] == pytest.approx(10.0)
+    assert position_summary["exit_commission"] == pytest.approx(9.8)
+    assert position_summary["total_commission"] == pytest.approx(19.8)
+    assert position_summary["net_pnl"] == pytest.approx(summary["total_return_usd"])
+    assert position_summary["multi_event_positions"] == 1
 
 
 def test_close_all_positions():

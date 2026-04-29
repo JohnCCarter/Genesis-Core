@@ -1,0 +1,16 @@
+{
+  "admissibility": "admissible",
+  "reproducibility": "verified",
+  "baseline_backtest_complete": true,
+  "stability_analysis_complete": true,
+  "comparative_analysis_complete": true,
+  "optuna_allowed": false,
+  "fib_status": "admissible_but_not_useful",
+  "promotion_decision": "reject",
+  "reason": "no_incremental_value_detected",
+  "evidence": {
+    "phase1": "results/research/fib_baseline_backtest_v1",
+    "phase2": "results/research/fib_stability_analysis_v1",
+    "phase3": "results/research/fib_incremental_value_v1"
+  }
+}

@@ -30,6 +30,11 @@ def test_get_htf_fibonacci_context_requires_reference_ts_to_avoid_lookahead(ltf_
         }
     )
 
+    # Keep the legacy-key coverage deterministic even if another test populated
+    # the current-format cache entry first.
+    htf._htf_context_cache.clear()
+
+    # Intentional legacy cache-key format for backward-compatibility coverage.
     cache_key = "tBTCUSD_1D_default"
     htf._htf_context_cache[cache_key] = {"fib_df": fib_df}
 

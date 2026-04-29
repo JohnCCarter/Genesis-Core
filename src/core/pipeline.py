@@ -99,6 +99,8 @@ class GenesisPipeline:
         commission: float | None = None,
         slippage: float | None = None,
         warmup_bars: int | None = None,
+        *,
+        data_source_policy: str = "frozen_first",
     ) -> BacktestEngine:
         """Creates and initializes a BacktestEngine with defaults."""
 
@@ -122,6 +124,7 @@ class GenesisPipeline:
             slippage_rate=slippage,
             warmup_bars=warmup_bars,
             fast_window=use_fast_window,
+            data_source_policy=data_source_policy,
         )  # Precompute flag is handled by engine.load_data() checking env var or property
         # But we can set it explicitly if needed
         if os.environ.get("GENESIS_PRECOMPUTE_FEATURES") == "1":

@@ -119,6 +119,33 @@ def _deep_merge(base: dict, override: dict) -> dict:
     return deep_merge_dicts(base, override)
 
 
+def _ri_runtime_observability_enabled(state: dict[str, Any] | None) -> bool:
+    if not isinstance(state, dict):
+        return False
+    observability = state.get("observability")
+    if not isinstance(observability, dict):
+        return False
+    return bool(observability.get("scpe_ri_v1"))
+
+
+def _build_ri_runtime_observability_payload(
+    *,
+    shadow_regime_observability: dict[str, Any],
+) -> dict[str, Any]:
+    return {
+        "family_tag": "ri",
+        "lane": "runtime_observability",
+        "observational_only": True,
+        "decision_input": False,
+        "enabled_via": "state.observability.scpe_ri_v1",
+        "authority_mode": shadow_regime_observability.get("authority_mode"),
+        "authority_mode_source": shadow_regime_observability.get("authority_mode_source"),
+        "authoritative_regime": shadow_regime_observability.get("authority"),
+        "shadow_regime": shadow_regime_observability.get("shadow"),
+        "regime_mismatch": shadow_regime_observability.get("mismatch"),
+    }
+
+
 def compute_htf_regime(
     htf_fib_data: dict[str, Any] | None,
     current_price: float | None = None,
@@ -134,7 +161,10 @@ def compute_htf_regime(
     )
 
 
-def _detect_shadow_regime_from_regime_module(candles: dict[str, Any]) -> str | None:
+def _detect_shadow_regime_from_regime_module(
+    candles: dict[str, Any],
+    configs: dict[str, Any] | None = None,
+) -> str | None:
     """Compatibility wrapper for shadow observer logic.
 
     Keep this symbol local in evaluate.py for tests/monkeypatching parity.
@@ -143,7 +173,7 @@ def _detect_shadow_regime_from_regime_module(candles: dict[str, Any]) -> str | N
     try:
         from core.strategy.regime import detect_regime_from_candles
 
-        return str(detect_regime_from_candles(candles))
+        return str(detect_regime_from_candles(candles, config=configs))
     except Exception:
         return None
 
@@ -156,7 +186,7 @@ def _detect_authoritative_regime(candles: dict[str, Any], configs: dict[str, Any
 
     authority_mode, _source = _resolve_authority_mode_with_source(configs)
     if authority_mode == AUTHORITY_MODE_REGIME_MODULE:
-        observed = _detect_shadow_regime_from_regime_module(candles)
+        observed = _detect_shadow_regime_from_regime_module(candles, configs)
         return _normalize_intelligence_authoritative_regime(observed)
 
     from core.strategy import regime_unified as _regime_unified
@@ -185,6 +215,7 @@ def evaluate_pipeline(
     policy = dict(policy or {})
     configs = dict(configs or {})
     state = dict(state or {})
+    ri_runtime_observability_enabled = _ri_runtime_observability_enabled(state)
 
     metrics_enabled = _metrics_enabled()
     if metrics_enabled:
@@ -249,7 +280,7 @@ def evaluate_pipeline(
 
     # Shadow-only observer path (T2): compute regime.py signal for observability only.
     # Authority for decision path remains `detect_regime_unified` above.
-    shadow_regime = _detect_shadow_regime_from_regime_module(candles)
+    shadow_regime = _detect_shadow_regime_from_regime_module(candles, configs)
     shadow_regime_mismatch: bool | None = None
     if shadow_regime is not None:
         shadow_regime_mismatch = str(shadow_regime) != str(current_regime)
@@ -466,4 +497,9 @@ def evaluate_pipeline(
             }
         },
     }
+    if ri_runtime_observability_enabled:
+        shadow_regime_observability = meta["observability"]["shadow_regime"]
+        meta["observability"]["scpe_ri_v1"] = _build_ri_runtime_observability_payload(
+            shadow_regime_observability=shadow_regime_observability,
+        )
     return result, meta

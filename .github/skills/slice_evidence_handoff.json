@@ -1,0 +1,72 @@
+{
+  "governance": {
+    "skill_type": "SPEC",
+    "contract_owner": "opus-4.6",
+    "implementation_owner": "codex-5.3",
+    "pass_definition_locked": true,
+    "scope_locked": true,
+    "evolution_mode": "additive_only",
+    "forbidden": [
+      "runtime_default_drift",
+      "governance_authority_drift",
+      "ready_for_review_redefinition",
+      "auto_write_report_generation",
+      "scope_broadening"
+    ],
+    "stop_conditions": [
+      "detected_authority_drift",
+      "detected_ready_for_review_drift",
+      "attempted_scope_change"
+    ]
+  },
+  "id": "slice_evidence_handoff",
+  "version": "0.1.0",
+  "title": "Slice evidence handoff",
+  "description": "Workflow-spec för Genesis-Core slice evidence handoff: samla scope, filändringar, exakta kommandon, gates, selectors/artifacts, residual risks och READY_FOR_REVIEW-evidens som already-required checklist, utan att skapa authority eller auto-write.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "tags": ["slice", "evidence", "handoff", "review", "workflow"],
+  "rules": {
+    "must": [
+      "Sammanfatta Scope IN/OUT exakt som faktiskt implementerats och respekterats.",
+      "Lista exakt vilka filer som ändrats och vad varje fil ändrades för.",
+      "Registrera de exakta kommandon som faktiskt körts samt deras observerade pass/fail-utfall.",
+      "Bevara selectors, artifacts, logg- eller output-paths när sådana finns.",
+      "Dokumentera residual risks och eventuella follow-ups utan att dölja osäkerhet.",
+      "Kontrollera READY_FOR_REVIEW-evidens mot befintliga SSOT-ytor i stället för att uppfinna nya krav."
+    ],
+    "must_not": [
+      "Behandla skill-invocation som bevis på compliance eller approval i sig.",
+      "Definiera, försvaga eller ersätta REQUIRED gates, READY_FOR_REVIEW eller reviewer judgment.",
+      "Auto-generera eller auto-skriva PR-, report- eller packet-filer.",
+      "Dölja failed, skipped eller unrun gates bakom generiska sammanfattningar.",
+      "Påstå authority, merge-readiness eller governance verdict utan befintligt verifierat underlag."
+    ]
+  },
+  "references": [
+    {
+      "type": "doc",
+      "value": "docs/governance/slice_evidence_handoff_bootstrap_packet_2026-04-24.md"
+    },
+    {
+      "type": "doc",
+      "value": "docs/governance/templates/command_packet.md"
+    },
+    {
+      "type": "doc",
+      "value": ".github/pull_request_template.md"
+    },
+    {
+      "type": "doc",
+      "value": ".github/agents/Codex53.agent.md"
+    },
+    {
+      "type": "doc",
+      "value": ".github/agents/Opus46.agent.md"
+    },
+    {
+      "type": "doc",
+      "value": "docs/ideas/REGIME_INTELLIGENCE_T9A_IMPLEMENTATION_REPORT_2026-03-04.md"
+    }
+  ]
+}

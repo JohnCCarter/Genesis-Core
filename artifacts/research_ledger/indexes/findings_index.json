@@ -1,0 +1,201 @@
+{
+  "schema_version": "research_findings_index.v1",
+  "entity_type": "finding",
+  "authoritative_source": {
+    "bundle_schema_path": "artifacts/bundles/findings/schema/research_findings_bundle_v1.schema.json",
+    "ledger_record_type": "artifact",
+    "identity_authority": "artifact_record_and_bundle"
+  },
+  "rebuildable": true,
+  "runtime_authority": "none",
+  "notes": [
+    "This index is a derived, rebuildable projection over finding bundles and ArtifactRecords.",
+    "It is not a governance gate, runtime surface, readiness surface, or promotion surface."
+  ],
+  "items": [
+    {
+      "finding_id": "FIND-2026-0001",
+      "artifact_id": "ART-2026-0002",
+      "finding_outcome": "negative",
+      "subject": "ri_policy_router",
+      "domain": "ri_policy_router",
+      "symbol": "tBTCUSD",
+      "timeframe": "3h",
+      "seam_class": "aged_weak_continuation_guard",
+      "bundle_path": "artifacts/bundles/findings/ri_policy_router/FIND-2026-0001_aged_weak_continuation_guard_failset_negative.json",
+      "artifact_record_path": "artifacts/research_ledger/artifacts/ART-2026-0002.json",
+      "summary": "The aged weak continuation guard worsened both December fail windows and did not remove the intended late-December losing seam.",
+      "candidate_refs": [
+        "docs/governance/ri_policy_router_aged_weak_continuation_guard_implementation_packet_2026-04-24.md"
+      ],
+      "key_timestamps": [
+        "2023-12-22T15:00:00+00:00",
+        "2023-12-24T21:00:00+00:00",
+        "2023-12-28T06:00:00+00:00",
+        "2023-12-30T18:00:00+00:00"
+      ],
+      "do_not_repeat": [
+        "Do not treat the late-December losing rows as one homogeneous aged weak continuation seam.",
+        "Do not advance this candidate to keep-set or stress-set verification."
+      ]
+    },
+    {
+      "finding_id": "FIND-2026-0002",
+      "artifact_id": "ART-2026-0003",
+      "finding_outcome": "direction_lock",
+      "subject": "ri_policy_router",
+      "domain": "ri_policy_router",
+      "symbol": "tBTCUSD",
+      "timeframe": "3h",
+      "seam_class": "continuation_split_direction_lock",
+      "bundle_path": "artifacts/bundles/findings/ri_policy_router/FIND-2026-0002_continuation_split_seam_direction_lock.json",
+      "artifact_record_path": "artifacts/research_ledger/artifacts/ART-2026-0003.json",
+      "summary": "The late-December continuation issue is split across two distinct seam classes, so the next candidate must choose one target instead of bundling both together.",
+      "candidate_refs": [
+        "docs/governance/ri_policy_router_continuation_split_seam_direction_packet_2026-04-24.md"
+      ],
+      "key_timestamps": [
+        "2023-12-22T15:00:00+00:00",
+        "2023-12-24T21:00:00+00:00"
+      ],
+      "do_not_repeat": [
+        "Do not bundle seam A and seam B into one weak-continuation-only candidate.",
+        "Do not touch already-strong continuation semantics without a newly scoped packet."
+      ]
+    },
+    {
+      "finding_id": "FIND-2026-0003",
+      "artifact_id": "ART-2026-0004",
+      "finding_outcome": "positive",
+      "subject": "ri_policy_router",
+      "domain": "ri_policy_router",
+      "symbol": "tBTCUSD",
+      "timeframe": "3h",
+      "seam_class": "weak_pre_aged_release_target_reachability",
+      "bundle_path": "artifacts/bundles/findings/ri_policy_router/FIND-2026-0003_weak_pre_aged_release_target_reachability_positive.json",
+      "artifact_record_path": "artifacts/research_ledger/artifacts/ART-2026-0004.json",
+      "summary": "The weak pre-aged release seam at 2023-12-22 15:00 is reachable and can be blocked by a bounded continuation-local guard.",
+      "candidate_refs": [
+        "docs/governance/ri_policy_router_weak_pre_aged_release_implementation_packet_2026-04-24.md"
+      ],
+      "key_timestamps": ["2023-12-22T15:00:00+00:00"],
+      "do_not_repeat": [
+        "Do not claim seam A is unreachable or untestable.",
+        "Do not reopen seam discovery for 2023-12-22 15:00 without citing this reachability result."
+      ]
+    },
+    {
+      "finding_id": "FIND-2026-0004",
+      "artifact_id": "ART-2026-0005",
+      "finding_outcome": "negative",
+      "subject": "ri_policy_router",
+      "domain": "ri_policy_router",
+      "symbol": "tBTCUSD",
+      "timeframe": "3h",
+      "seam_class": "weak_pre_aged_release_failset_outcome",
+      "bundle_path": "artifacts/bundles/findings/ri_policy_router/FIND-2026-0004_weak_pre_aged_release_failset_negative.json",
+      "artifact_record_path": "artifacts/research_ledger/artifacts/ART-2026-0005.json",
+      "summary": "The weak pre-aged release candidate hits the intended seam-A row but still worsens both fail-set windows through broader action churn.",
+      "candidate_refs": [
+        "docs/governance/ri_policy_router_weak_pre_aged_release_implementation_packet_2026-04-24.md"
+      ],
+      "key_timestamps": [
+        "2023-12-20T03:00:00+00:00",
+        "2023-12-21T18:00:00+00:00",
+        "2023-12-22T09:00:00+00:00",
+        "2023-12-22T15:00:00+00:00",
+        "2023-12-24T21:00:00+00:00"
+      ],
+      "do_not_repeat": [
+        "Do not treat 'target row hit' as sufficient evidence of improvement.",
+        "Do not advance this candidate to keep-set or stress-set verification in its current form."
+      ]
+    },
+    {
+      "finding_id": "FIND-2026-0005",
+      "artifact_id": "ART-2026-0006",
+      "finding_outcome": "negative",
+      "subject": "ri_policy_router",
+      "domain": "ri_policy_router",
+      "symbol": "tBTCUSD",
+      "timeframe": "3h",
+      "seam_class": "cooldown_displacement_loop",
+      "bundle_path": "artifacts/bundles/findings/ri_policy_router/FIND-2026-0005_cooldown_displacement_loop_negative.json",
+      "artifact_record_path": "artifacts/research_ledger/artifacts/ART-2026-0006.json",
+      "summary": "The seam-A candidate fails through repeated no-trade chaining plus a recurring two-bar cooldown displacement loop, not because the intended row was missed.",
+      "candidate_refs": [
+        "docs/governance/ri_policy_router_weak_pre_aged_release_implementation_packet_2026-04-24.md"
+      ],
+      "key_timestamps": [
+        "2023-12-21T18:00:00+00:00",
+        "2023-12-22T09:00:00+00:00",
+        "2023-12-22T15:00:00+00:00",
+        "2023-12-22T18:00:00+00:00",
+        "2023-12-23T00:00:00+00:00",
+        "2023-12-24T21:00:00+00:00"
+      ],
+      "do_not_repeat": [
+        "Do not frame the next seam-A candidate as a simple one-row veto.",
+        "Do not ignore repeated previous_policy equals RI_no_trade_policy chaining when designing the next seam-A candidate."
+      ]
+    },
+    {
+      "finding_id": "FIND-2026-0006",
+      "artifact_id": "ART-2026-0007",
+      "finding_outcome": "direction_lock",
+      "subject": "ri_policy_router",
+      "domain": "ri_policy_router",
+      "symbol": "tBTCUSD",
+      "timeframe": "3h",
+      "seam_class": "substituted_continuation_local_window_shape",
+      "bundle_path": "artifacts/bundles/findings/ri_policy_router/FIND-2026-0006_substituted_continuation_local_tail_windows_direction_lock.json",
+      "artifact_record_path": "artifacts/research_ledger/artifacts/ART-2026-0007.json",
+      "summary": "Substituted-continuation weakness does not follow one universal annual shape on the curated observational surface: 2020 concentrates bad rows into a few acute windows, 2018 and 2022 revisit recurrent multi-row weak windows, and 2025 is weaker in a more fragmented form.",
+      "candidate_refs": [
+        "docs/governance/ri_policy_router_substituted_continuation_local_tail_windows_2026-04-28.md"
+      ],
+      "key_timestamps": [
+        "2018-01-29T12:00:00+00:00",
+        "2018-11-22T21:00:00+00:00",
+        "2020-03-11T03:00:00+00:00",
+        "2022-06-09T21:00:00+00:00",
+        "2025-03-08T06:00:00+00:00",
+        "2025-11-29T18:00:00+00:00"
+      ],
+      "do_not_repeat": [
+        "Do not treat continuation weakness as one universal positive-versus-negative annual rule.",
+        "Do not collapse acute 2020 concentration and recurrent 2018 or 2022 multi-window weakness into the same local shape.",
+        "Do not reopen runtime tuning directly from this local-window packaging finding."
+      ]
+    },
+    {
+      "finding_id": "FIND-2026-0007",
+      "artifact_id": "ART-2026-0008",
+      "finding_outcome": "direction_lock",
+      "subject": "ri_policy_router",
+      "domain": "ri_policy_router",
+      "symbol": "tBTCUSD",
+      "timeframe": "3h",
+      "seam_class": "blocked_vs_substituted_same_window_phase_ordering",
+      "bundle_path": "artifacts/bundles/findings/ri_policy_router/FIND-2026-0007_blocked_vs_substituted_same_windows_direction_lock.json",
+      "artifact_record_path": "artifacts/research_ledger/artifacts/ART-2026-0008.json",
+      "summary": "Even inside fixed mixed local windows, blocked-versus-substituted balance is phase-sensitive rather than universal: blocked rows look locally stronger in the mixed March 2020 window but locally weaker in the recurrent hostile March 2018 window.",
+      "candidate_refs": [
+        "docs/governance/ri_policy_router_blocked_vs_substituted_same_windows_2026-04-28.md"
+      ],
+      "key_timestamps": [
+        "2018-03-20T06:00:00+00:00",
+        "2018-03-22T09:00:00+00:00",
+        "2018-03-24T18:00:00+00:00",
+        "2020-03-14T09:00:00+00:00",
+        "2020-03-15T15:00:00+00:00",
+        "2020-03-19T06:00:00+00:00"
+      ],
+      "do_not_repeat": [
+        "Do not treat same-window overlap as row-matched proof of universal blocked-versus-substituted superiority.",
+        "Do not widen to more same-window subjects before resolving phase ordering on the existing 2020 and 2018 windows.",
+        "Do not use these two fixed windows as runtime tuning or promotion authority."
+      ]
+    }
+  ]
+}

@@ -49,6 +49,7 @@ Active focus right now:
 - the bounded default-off RI-local runtime policy-router lane remains historically implemented and validated under `docs/governance/ri_policy_router_runtime_integration_packet_2026-04-23.md`, but it is not the active tuning lane today
 - the tiny findings-bank hardening slice is now re-verified green on `HEAD` `e9500e1d`: live-checkout validator pass, packet-starter smoke, focused tests, and detached-worktree clean-checkout-like proof all passed without widening CI or `artifacts/**`
 - the current local `defensive_probe` evidence anchor is now `docs/governance/ri_policy_router_defensive_probe_exact_carrier_evidence_2026-04-29.md`, which localizes the line to one exact two-row selected-defensive pocket and keeps the concept non-authorizing for runtime/config/default follow-up
+- the newest policy-improvement evidence anchor is now `docs/governance/ri_policy_router_blocked_reason_split_2026-04-29.md`, which shows the blocked baseline-long divider is a mixed surface split across `stable_continuation_state` displacement plus the true suppressors `AGED_WEAK_CONTINUATION_GUARD` and `insufficient_evidence`
 - any future reopen on the aged-weak surface must start with fresh docs-only evidence anchored to the active carrier truth rather than reuse of the falsified `2023-12-30 21:00` residual-row premise
 - this file is only a drift anchor; detailed closeout logic belongs in the governance notes above rather than here
 
@@ -109,6 +110,7 @@ Unless the user reopens them explicitly with the needed authority, do **not** tr
 - the latest RI local-window findings are now also registered in the repo-native findings bank as `FIND-2026-0006` (`substituted_continuation_local_window_shape`) and `FIND-2026-0007` (`blocked_vs_substituted_same_window_phase_ordering`), and the narrow findings-bank persistence surface is now git-trackable on this checkout through the findings bundles, their exact ArtifactRecords, the findings schema, and `artifacts/research_ledger/indexes/findings_index.json`; these remain research-only `direction_lock` findings rather than runtime or promotion authority
 - `docs/governance/ri_policy_router_defensive_probe_concept_precode_packet_2026-04-29.md` now defines the bounded concept-only question for whether the raw `defensive_transition_state` substrate is coherent enough to warrant a future `defensive_probe` candidate; it explicitly forbids treating that candidate as already implemented or as runtime authority
 - `docs/governance/ri_policy_router_defensive_probe_exact_carrier_evidence_2026-04-29.md` now localizes that concept line to the smallest honest carrier on current repo-visible evidence: one two-row selected-defensive pocket containing the lone baseline `defensive_transition_state` selected-defensive row plus its stronger `transition_pressure_detected` sibling
+- `docs/governance/ri_policy_router_blocked_reason_split_2026-04-29.md` now splits the blocked baseline-long cohort by reason and shows that the annual divider is not purely one suppressor seam: `stable_continuation_state` is the largest blocked bucket, while `insufficient_evidence` shows the strongest negative-vs-positive gap among the true suppressors
 - `registry/schemas/strategy_candidate_manifest.schema.json` defines the closed archival schema for strategy-candidate lifecycle metadata only
 - `registry/manifests/strategy_candidates.dev.json` seeds the first preserved RI candidate identities without creating promotion or runtime authority
 - `config/strategy/candidates/README.md` now documents the candidate-bank lifecycle manifest and explicitly keeps `promotion_compare`, `champion_freeze`, `readiness`, `cutover`, and live-near authority out of ordinary runtime selection semantics
@@ -120,6 +122,8 @@ Unless the user reopens them explicitly with the needed authority, do **not** tr
 - the historical SCPE replay script and approved eight-file replay root exist locally as comparison/reference context only
 - the baseline fresh replay surface still shows raw defensive `30` versus selected defensive `2`
 - the smallest honest `defensive_probe` carrier on current repo-visible evidence is the two-row selected-defensive pocket at `2024-01-16T00:00:00` / `2024-01-17T12:00:00`, where the lone `defensive_transition_state` selected-defensive row sits beside the stronger `transition_pressure_detected` row and the nearest retained no-trade comparator does not begin until `21` bars since regime change
+- the blocked baseline-long annual divider is now proven to be mixed rather than single-seam: `stable_continuation_state` is the largest blocked bucket in both positive and negative year groups, so the action-layer blocked cohort still contains major continuation-displacement / timing mass
+- among the true suppressors inside that blocked cohort, `insufficient_evidence` now shows a stronger negative-vs-positive `fwd_16` gap than `AGED_WEAK_CONTINUATION_GUARD`, while `switch_blocked_by_min_dwell` does not look like the leading annual blocker on this surface
 - `switch_threshold: 2 -> 1` and `defensive_transition_state mandate/confidence: 1 -> 2` are behavior-equivalent on the current frozen surface
 - `min_dwell: 3 -> 1` increases continuation dominance rather than improving defensive separation
 - `hysteresis: 1 -> 0` is a no-op on the baseline surface, and the apparent hysteresis blocker reduces to raw mandate `1` versus continuation mandate `2/3`
@@ -165,7 +169,7 @@ Choose the smallest valid next step that matches the user request:
 1. use `docs/governance/ri_policy_router_reanchor_post_aged_weak_closeouts_2026-04-27.md` and `docs/governance/ri_policy_router_aged_weak_active_carrier_truth_parked_handoff_2026-04-27.md` as the current truthful state anchors for this chain
 2. do **not** reopen the findings-bank hardening proof unless a concrete CI discrepancy appears; the live-checkout and detached-worktree proof bundle is already green on this branch
 3. the exact-carrier `defensive_probe` slice is now complete; on current repo-visible evidence it localizes to one tiny fresh low-zone pocket and does **not** justify runtime/config/default follow-up from this state alone
-4. otherwise leave the RI-router chain parked and move to another research lane; no Optuna or aged-weak runtime reopening is admissible from the current state alone
+4. if the user wants to continue policy-improvement work on this chain, the next honest step is one exact local `insufficient_evidence` carrier window in the negative-year blocked low-zone bars-`8+` cohort, explicitly separated from `stable_continuation_state` displacement; do not jump straight to runtime tuning from annual aggregates alone
 
 ## Hard stops
 

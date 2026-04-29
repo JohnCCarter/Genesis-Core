@@ -28,7 +28,7 @@ This file does **not**:
 
 ## Current branch and mode anchor
 
-- Branch: `feature/ri-role-map-implementation-2026-03-24`
+- Branch: `feature/next-slice-2026-04-29`
 - Expected mode on this branch: `RESEARCH`
 - RESEARCH allows the smallest reproducible, traceable step
 - RESEARCH does **not** authorize drift into strict-only surfaces, runtime-default authority, promotion, or champion claims without the required lane/packet
@@ -43,10 +43,12 @@ It selects among predefined policies based on observable state, and any switchin
 
 Active focus right now:
 
-- the RI-router tuning chain is parked after the positive bars-7 closeout and the negative aged-weak closeouts; there is currently no active admissible RI-router runtime packet on this chain
+- the RI-router tuning chain remains parked after the positive bars-7 closeout, the negative aged-weak closeouts, and the fixed-window phase-ordering reread; there is currently no active admissible RI-router runtime packet on this chain
 - the only retained positive runtime slice in the recent chain is `docs/governance/ri_policy_router_bars7_continuation_persistence_runtime_closeout_2026-04-27.md`
 - the aged-weak second-hit and aged-weak plus stability families are both closed negative / reverted, and the active-carrier handoff is now recorded in `docs/governance/ri_policy_router_aged_weak_active_carrier_truth_parked_handoff_2026-04-27.md`
 - the bounded default-off RI-local runtime policy-router lane remains historically implemented and validated under `docs/governance/ri_policy_router_runtime_integration_packet_2026-04-23.md`, but it is not the active tuning lane today
+- the tiny findings-bank hardening slice is now re-verified green on `HEAD` `3d8bfcaf`: live-checkout validator pass, packet-starter smoke, focused tests, and detached-worktree clean-checkout-like proof all passed without widening CI or `artifacts/**`
+- the next honest move is no longer another findings-bank proof or wider RI-router evidence pass; it is either a docs-only `defensive_probe` concept/precode slice or a pivot to another research lane
 - any future reopen on the aged-weak surface must start with fresh docs-only evidence anchored to the active carrier truth rather than reuse of the falsified `2023-12-30 21:00` residual-row premise
 - this file is only a drift anchor; detailed closeout logic belongs in the governance notes above rather than here
 
@@ -147,7 +149,7 @@ Unless the user reopens them explicitly with the needed authority, do **not** tr
 - the new same-window note now shows that even inside fixed mixed local windows there is no single blocked-versus-substituted winner: the March 2020 mixed window is continuation-left-tail-loaded early and blocked-stronger later, while the March 2018 recurrent hostile window points the other way, so local comparison is best treated as phase-ordering evidence rather than universal cohort ranking
 - the two newest RI findings now sit on the narrow tracked findings-bank persistence surface and remain discoverable by preflight lookup, while the rest of `artifacts/` stays ignored; this resolves the earlier `.gitignore` mismatch without widening runtime, promotion, or general generated-artifact semantics
 - `scripts/preflight/findings_preflight_lookup.py` now also exposes an explicit `--validate-index-projection` mode that derives the expected `artifacts/research_ledger/indexes/findings_index.json` from the committed findings bundles plus their ArtifactRecords and fails loudly when the local materialized index is missing or diverges; default lookup behavior remains unchanged and packet-starter import/usage still passes on the current checkout
-- a fresh `HEAD` export under `tmp/findings_clean_checkout_proof_20260429/repo` now also passes `scripts/preflight/findings_preflight_lookup.py --validate-index-projection`, packet-starter smoke, and the focused preflight test selectors, so the findings-bank validator is verified on a clean-checkout-like surface and not only in the live worktree
+- on `feature/next-slice-2026-04-29` at `HEAD` `3d8bfcaf`, both the live checkout and a detached temporary worktree pass `scripts/preflight/findings_preflight_lookup.py --validate-index-projection`, packet-starter smoke, and the focused preflight test selectors, so the findings-bank validator is re-verified on a clean-checkout-like surface without relying on the earlier archived proof folder
 - the first repo-native candidate lifecycle registry slice has now passed focused registry validation, import smoke, determinism smoke, feature-cache invariance selectors, and pipeline fast-hash guard selectors without widening runtime/default/champion authority
 - `src/core/governance/registry.py` now validates optional `strategy_candidates*.json` manifests additively, including duplicate candidate-id checks, duplicate `config_path` checks, and existence checks for referenced candidate configs
 - the current closed schema intentionally allows only `research`, `candidate`, `promotion_compare`, and `champion_freeze`, and fences `config_path` to `config/strategy/candidates/**/*.json`
@@ -158,8 +160,8 @@ Unless the user reopens them explicitly with the needed authority, do **not** tr
 Choose the smallest valid next step that matches the user request:
 
 1. use `docs/governance/ri_policy_router_reanchor_post_aged_weak_closeouts_2026-04-27.md` and `docs/governance/ri_policy_router_aged_weak_active_carrier_truth_parked_handoff_2026-04-27.md` as the current truthful state anchors for this chain
-2. if the user wants one more hardening step on the findings bank, the cheapest next move is a tiny read-only CI-selector proof around `scripts/preflight/findings_preflight_lookup.py --validate-index-projection`; do not widen `artifacts/`, add auto-write fallback, or touch CI unless that proof reveals a real gap first
-3. if the user wants another RI-router slice, keep it docs-only and re-anchor it to fresh active-carrier evidence plus the annual evidence notes before proposing any new candidate family or runtime packet; after the fixed-window phase-ordering note, the cheapest honest local follow-up is either a narrow findings-bank registration of that chronology result or to leave the same-window chain parked, not widening to more years/windows and not any new runtime tuning
+2. do **not** reopen the findings-bank hardening proof unless a concrete CI discrepancy appears; the live-checkout and detached-worktree proof bundle is already green on this branch
+3. if the user wants another RI-router slice, keep it docs-only and re-anchor it to fresh active-carrier evidence plus the annual evidence notes before proposing any new candidate family or runtime packet; the cleanest next candidate is a conceptual `defensive_probe` precode slice, not more years/windows and not any new runtime tuning
 4. otherwise leave the RI-router chain parked and move to another research lane; no Optuna or aged-weak runtime reopening is admissible from the current state alone
 
 ## Hard stops

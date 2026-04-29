@@ -31,7 +31,7 @@ Create the fifth Regime Intelligence Optuna campaign for `tBTCUSD` on `3h` that:
 | `results/hparam_search/run_20260319_111953/validation/trial_004.json` | same validation score and metrics; confirms plateau persistence                                                               |
 | `results/hparam_search/run_20260319_111953/validation/trial_005.json` | same validation score and metrics; confirms plateau persistence                                                               |
 | `results/hparam_search/run_20260318_134535/validation/trial_001.json` | slice-3 validation score `0.22289051935876203`; slice 4 improved only marginally over this level                              |
-| `docs/analysis/tBTCUSD_3h_candidate_recommendation_2026-03-18.md`     | incumbent champion remains stronger at validation score `0.2617`; RI family remains research track, not promotion             |
+| `docs/analysis/recommendations/tBTCUSD_3h_candidate_recommendation_2026-03-18.md`     | incumbent champion remains stronger at validation score `0.2617`; RI family remains research track, not promotion             |
 
 ### Deterministic anchor rule
 

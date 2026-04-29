@@ -38,9 +38,9 @@
 
 | Deliverable                                                                      | Purpose                                                               |
 | -------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| `docs/analysis/regime_intelligence_default_cutover_gap_analysis_2026-03-17.md`   | exact gap analysis for a future default cutover                       |
-| `docs/analysis/regime_intelligence_parity_artifact_matrix_2026-03-17.md`         | traceability matrix across selectors, artifacts, and readiness claims |
-| `docs/analysis/regime_intelligence_cutover_readiness_2026-03-17.md`            | governance-oriented readiness assessment                              |
+| `docs/analysis/regime_intelligence/core/regime_intelligence_default_cutover_gap_analysis_2026-03-17.md`   | exact gap analysis for a future default cutover                       |
+| `docs/analysis/regime_intelligence/core/regime_intelligence_parity_artifact_matrix_2026-03-17.md`         | traceability matrix across selectors, artifacts, and readiness claims |
+| `docs/analysis/regime_intelligence/core/regime_intelligence_cutover_readiness_2026-03-17.md`            | governance-oriented readiness assessment                              |
 | `artifacts/regime_intelligence/ri_cutover_analysis_gate_summary_2026-03-17.json` | machine-readable gate summary for this analysis slice                 |
 | `tests/governance/test_regime_intelligence_cutover_parity.py`                    | focused authority/cutover parity assertions without runtime changes   |
 

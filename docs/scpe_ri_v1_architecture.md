@@ -19,7 +19,7 @@ Status: `active / docs-only / governance-and-architecture packet`
 
 - **Scope IN:**
   - `docs/scpe_ri_v1_architecture.md`
-  - `docs/analysis/scpe_ri_v1_router_replay_plan_2026-04-20.md`
+  - `docs/analysis/scpe_ri_v1/scpe_ri_v1_router_replay_plan_2026-04-20.md`
 - **Scope OUT:**
   - `src/**`
   - `tests/**`
@@ -33,12 +33,12 @@ Status: `active / docs-only / governance-and-architecture packet`
   - any adaptive runtime behavior, online learning, or ML model work
 - **Expected changed files:**
   - `docs/scpe_ri_v1_architecture.md`
-  - `docs/analysis/scpe_ri_v1_router_replay_plan_2026-04-20.md`
+  - `docs/analysis/scpe_ri_v1/scpe_ri_v1_router_replay_plan_2026-04-20.md`
 - **Max files touched:** `2`
 
 ### Gates required
 
-- `pre-commit run --files docs/scpe_ri_v1_architecture.md docs/analysis/scpe_ri_v1_router_replay_plan_2026-04-20.md`
+- `pre-commit run --files docs/scpe_ri_v1_architecture.md docs/analysis/scpe_ri_v1/scpe_ri_v1_router_replay_plan_2026-04-20.md`
 
 ### Stop Conditions
 

@@ -27,7 +27,7 @@ Create the sixth Regime Intelligence Optuna campaign for `tBTCUSD` on `3h` that:
 | `results/hparam_search/run_20260319_111953/run_meta.json`                                                                            | slice-4 used committed SHA `9566e8d9017d278356bcf086ee6f16db46ff231e`; 96 trials; best train value `0.28077646648091525`                     |
 | `results/hparam_search/run_20260319_122140/validation/tBTCUSD_3h_trial_001.json`                                                     | slice-5 validation still produced `66` trades and `3.1761%` max DD even after reopening exit/hold/override cadence                           |
 | `docs/audit/refactor/regime_intelligence/command_packet_regime_intelligence_optuna_challenger_family_slice5_execution_2026-03-19.md` | slice-5 execution is explicitly recorded as hypothesis not confirmed and not promotable                                                      |
-| `docs/analysis/tBTCUSD_3h_candidate_recommendation_2026-03-18.md`                                                                    | incumbent still leads at validation score `0.2617` with only `37` trades and `1.47%` max DD                                                  |
+| `docs/analysis/recommendations/tBTCUSD_3h_candidate_recommendation_2026-03-18.md`                                                                    | incumbent still leads at validation score `0.2617` with only `37` trades and `1.47%` max DD                                                  |
 
 ### Deterministic anchor rule
 

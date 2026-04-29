@@ -22,9 +22,9 @@
 ### Scope
 
 - **Scope IN:**
-  - move `docs/decisions/ri_policy_router_defensive_probe_concept_precode_packet_2026-04-29.md` into the decisions zone
-  - move `docs/analysis/ri_policy_router_defensive_probe_exact_carrier_evidence_2026-04-29.md` into the analysis zone
-  - move `docs/analysis/ri_policy_router_blocked_reason_split_2026-04-29.md` into the analysis zone
+  - move `docs/decisions/regime_intelligence/policy_router/ri_policy_router_defensive_probe_concept_precode_packet_2026-04-29.md` into the decisions zone
+  - move `docs/analysis/regime_intelligence/policy_router/ri_policy_router_defensive_probe_exact_carrier_evidence_2026-04-29.md` into the analysis zone
+  - move `docs/analysis/regime_intelligence/policy_router/ri_policy_router_blocked_reason_split_2026-04-29.md` into the analysis zone
   - update exact path references in the moved files and `GENESIS_WORKING_CONTRACT.md`
   - add this migration decision record
 - **Scope OUT:**
@@ -39,7 +39,7 @@
 
 ### Gates required
 
-- `pre-commit run --files GENESIS_WORKING_CONTRACT.md docs/decisions/ri_policy_router_defensive_probe_concept_precode_packet_2026-04-29.md docs/analysis/ri_policy_router_defensive_probe_exact_carrier_evidence_2026-04-29.md docs/analysis/ri_policy_router_blocked_reason_split_2026-04-29.md docs/decisions/document_taxonomy_migration_slice1_packet_2026-04-29.md`
+- `pre-commit run --files GENESIS_WORKING_CONTRACT.md docs/decisions/regime_intelligence/policy_router/ri_policy_router_defensive_probe_concept_precode_packet_2026-04-29.md docs/analysis/regime_intelligence/policy_router/ri_policy_router_defensive_probe_exact_carrier_evidence_2026-04-29.md docs/analysis/regime_intelligence/policy_router/ri_policy_router_blocked_reason_split_2026-04-29.md docs/decisions/document_taxonomy_migration_slice1_packet_2026-04-29.md`
 - `git diff --stat`
 - `git diff`
 - exact-path search for the old file names

@@ -13,7 +13,7 @@
     "end": "2025-11-29T18:00:00+00:00"
   },
   "candidate_refs": [
-    "docs/analysis/ri_policy_router_substituted_continuation_local_tail_windows_2026-04-28.md"
+    "docs/analysis/regime_intelligence/policy_router/ri_policy_router_substituted_continuation_local_tail_windows_2026-04-28.md"
   ],
   "finding_outcome": "direction_lock",
   "summary": "Substituted-continuation weakness does not follow one universal annual shape on the curated observational surface: 2020 concentrates bad rows into a few acute windows, 2018 and 2022 revisit recurrent multi-row weak windows, and 2025 is weaker in a more fragmented form.",
@@ -29,7 +29,7 @@
   ],
   "evidence_refs": [
     {
-      "path": "docs/analysis/ri_policy_router_substituted_continuation_local_tail_windows_2026-04-28.md",
+      "path": "docs/analysis/regime_intelligence/policy_router/ri_policy_router_substituted_continuation_local_tail_windows_2026-04-28.md",
       "role": "governance_note"
     },
     {

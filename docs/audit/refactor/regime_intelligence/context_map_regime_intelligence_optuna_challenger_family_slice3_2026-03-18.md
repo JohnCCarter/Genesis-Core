@@ -26,8 +26,8 @@ Create the third Regime Intelligence Optuna campaign for `tBTCUSD` on `3h` that:
 | `results/hparam_search/run_20260318_131831/best_trial.json`                       | slice-2 best train candidate was `trial_006`, proving the RI family can produce strong train behavior                    |
 | `results/hparam_search/run_20260318_131831/validation/trial_001.json`             | slice-2 top validation score tied at `0.21086175290248949`, below incumbent                                              |
 | `tmp/champion_validation_eb005af4.log`                                            | incumbent champion still leads validation on same HEAD/canonical flags with score `0.2617`                               |
-| `docs/analysis/regime_intelligence_champion_compatibility_findings_2026-03-18.md` | RI should be treated as a `new strategy family`; overlaying RI onto the incumbent is not the main path                   |
-| `docs/analysis/tBTCUSD_3h_candidate_recommendation_2026-03-18.md`                 | next search should continue inside the RI challenger family, but must beat incumbent on stronger standards               |
+| `docs/analysis/regime_intelligence/core/regime_intelligence_champion_compatibility_findings_2026-03-18.md` | RI should be treated as a `new strategy family`; overlaying RI onto the incumbent is not the main path                   |
+| `docs/analysis/recommendations/tBTCUSD_3h_candidate_recommendation_2026-03-18.md`                 | next search should continue inside the RI challenger family, but must beat incumbent on stronger standards               |
 
 ### Why slice-2 should NOT just be rerun with 200 trials
 

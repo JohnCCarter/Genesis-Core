@@ -197,7 +197,7 @@ No fresh reruns or regenerated outputs were created to close the remaining phase
 
 - Status: `completed`
 - Evidence basis:
-  - `docs/decisions/feature_attribution_post_phase14_phase0_reactivation_packet_2026-04-02.md`
+  - `docs/decisions/feature_attribution/post_phase14/feature_attribution_post_phase14_phase0_reactivation_packet_2026-04-02.md`
 - Closeout meaning:
   - the post-Phase-14 restart boundary was locked
   - frozen-route vs current-route provenance was separated
@@ -207,8 +207,8 @@ No fresh reruns or regenerated outputs were created to close the remaining phase
 
 - Status: `completed`
 - Evidence basis:
-  - `docs/decisions/feature_attribution_post_phase14_phase1_rebaseline_reconciliation_packet_2026-04-02.md`
-  - `docs/analysis/feature_attribution_post_phase14_rebaseline_reconciliation_2026-04-02.md`
+  - `docs/decisions/feature_attribution/post_phase14/feature_attribution_post_phase14_phase1_rebaseline_reconciliation_packet_2026-04-02.md`
+  - `docs/analysis/diagnostics/feature_attribution_post_phase14_rebaseline_reconciliation_2026-04-02.md`
 - Closeout meaning:
   - frozen historical baseline and current executable-route baseline were separated cleanly
   - current-route prioritization was explicitly anchored to the executable route rather than historical frozen labels alone
@@ -220,7 +220,7 @@ No fresh reruns or regenerated outputs were created to close the remaining phase
   - `results/research/feature_attribution_v1/reports/fa_v1_full_admitted_units_synthesis_20260331_01.md`
   - `results/research/feature_attribution_v1/reports/fa_v1_operator_summary_20260331_01.md`
   - `results/research/feature_attribution_v1/manifests/fa_v1_full_admitted_units_synthesis_20260331_01.json`
-  - `docs/analysis/feature_attribution_post_phase14_rebaseline_reconciliation_2026-04-02.md`
+  - `docs/analysis/diagnostics/feature_attribution_post_phase14_rebaseline_reconciliation_2026-04-02.md`
 - Closeout meaning:
   - `Volatility sizing cluster` remains the strongest current-route mover by absolute `total_return_pct` delta
   - neutralizing it improves upside and PF but worsens DD materially
@@ -232,7 +232,7 @@ No fresh reruns or regenerated outputs were created to close the remaining phase
 - Evidence basis:
   - `results/research/feature_attribution_v1/reports/fa_v1_full_admitted_units_synthesis_20260331_01.md`
   - `results/research/feature_attribution_v1/reports/fa_v1_operator_summary_20260331_01.md`
-  - `docs/analysis/feature_attribution_post_phase14_rebaseline_reconciliation_2026-04-02.md`
+  - `docs/analysis/diagnostics/feature_attribution_post_phase14_rebaseline_reconciliation_2026-04-02.md`
 - Closeout meaning:
   - `Signal-adaptation threshold cluster` remains the clearest harmful current-route surface in plain-language terms
   - the carried-forward interpretation is harmfulness, but not exclusive mechanism proof
@@ -254,7 +254,7 @@ No fresh reruns or regenerated outputs were created to close the remaining phase
 - Status: `closed / bounded synthesis`
 - Evidence basis:
   - `results/research/fa_v2_adaptation_off/EDGE_ORIGIN_REPORT.md`
-  - `docs/analysis/feature_attribution_post_phase14_rebaseline_reconciliation_2026-04-02.md`
+  - `docs/analysis/diagnostics/feature_attribution_post_phase14_rebaseline_reconciliation_2026-04-02.md`
   - `results/research/feature_attribution_v1/reports/fa_v1_full_admitted_units_synthesis_20260331_01.md`
 - Closeout meaning:
   - within the current admitted-unit evidence surface, no carried-forward cluster finding downgrades the best-supported broader hypothesis `emergent_system_behavior`
@@ -266,7 +266,7 @@ No fresh reruns or regenerated outputs were created to close the remaining phase
 - Status: `closed / stop unless separately reopened`
 - Evidence basis:
   - `results/research/fa_v2_adaptation_off/EDGE_ORIGIN_REPORT.md`
-  - `docs/analysis/feature_attribution_post_phase14_rebaseline_reconciliation_2026-04-02.md`
+  - `docs/analysis/diagnostics/feature_attribution_post_phase14_rebaseline_reconciliation_2026-04-02.md`
 - Closeout meaning:
   - this roadmap should stop here
   - the next admissible move, if any, is not immediate continuation but a separately governed residual-falsification slice

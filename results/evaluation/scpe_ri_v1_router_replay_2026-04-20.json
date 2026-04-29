@@ -6,10 +6,10 @@
   "scope": "SCPE RI V1 tracked replay-script promotion plus curated evidence summary only; no runtime/config/default/results-research policy change",
   "canonical_script_path": "scripts/analyze/scpe_ri_v1_router_replay.py",
   "source_scratch_script_path": "tmp/scpe_ri_v1_router_replay_20260420.py",
-  "packet_path": "docs/decisions/scpe_ri_v1_router_replay_script_promotion_packet_2026-04-20.md",
+  "packet_path": "docs/decisions/scpe_ri_v1/scpe_ri_v1_router_replay_script_promotion_packet_2026-04-20.md",
   "prior_packets": [
-    "docs/decisions/scpe_ri_v1_router_replay_implementation_packet_2026-04-20.md",
-    "docs/decisions/scpe_ri_v1_router_replay_metric_semantics_revision_packet_2026-04-20.md"
+    "docs/decisions/scpe_ri_v1/scpe_ri_v1_router_replay_implementation_packet_2026-04-20.md",
+    "docs/decisions/scpe_ri_v1/scpe_ri_v1_router_replay_metric_semantics_revision_packet_2026-04-20.md"
   ],
   "replay_output_root": "results/research/scpe_v1_ri",
   "recommendation": "NEEDS_REVISION",

@@ -37,9 +37,9 @@
 
 This packet is downstream of the following already tracked RI research decisions:
 
-- `docs/decisions/regime_intelligence_optuna_challenger_family_anchor_decision_governance_review_summary_2026-03-26.md`
-- `docs/decisions/regime_intelligence_optuna_challenger_family_candidate_definition_packet_2026-03-26.md`
-- `docs/decisions/regime_intelligence_optuna_challenger_family_incumbent_comparison_prep_packet_2026-03-26.md`
+- `docs/decisions/regime_intelligence/optuna/challenger_family/regime_intelligence_optuna_challenger_family_anchor_decision_governance_review_summary_2026-03-26.md`
+- `docs/decisions/regime_intelligence/optuna/challenger_family/regime_intelligence_optuna_challenger_family_candidate_definition_packet_2026-03-26.md`
+- `docs/decisions/regime_intelligence/optuna/challenger_family/regime_intelligence_optuna_challenger_family_incumbent_comparison_prep_packet_2026-03-26.md`
 
 These upstream artifacts establish only the following:
 

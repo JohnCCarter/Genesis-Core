@@ -133,6 +133,7 @@ def test_multi_timeframe_research_policy_router_whitelisted(tmp_path: Path) -> N
                     "enabled": True,
                     "switch_threshold": 2,
                     "hysteresis": 1,
+                    "continuation_release_hysteresis": 0,
                     "min_dwell": 3,
                     "defensive_size_multiplier": 0.5,
                 },
@@ -148,6 +149,7 @@ def test_multi_timeframe_research_policy_router_whitelisted(tmp_path: Path) -> N
     assert router_cfg.enabled is True
     assert router_cfg.switch_threshold == 2
     assert router_cfg.hysteresis == 1
+    assert router_cfg.continuation_release_hysteresis == 0
     assert router_cfg.min_dwell == 3
     assert router_cfg.defensive_size_multiplier == pytest.approx(0.5)
 
@@ -156,6 +158,7 @@ def test_multi_timeframe_research_policy_router_whitelisted(tmp_path: Path) -> N
         "enabled": True,
         "switch_threshold": 2,
         "hysteresis": 1,
+        "continuation_release_hysteresis": 0,
         "min_dwell": 3,
         "defensive_size_multiplier": 0.5,
     }

@@ -457,6 +457,7 @@ def test_research_policy_router_absent_matches_enabled_false() -> None:
             "enabled": False,
             "switch_threshold": 2,
             "hysteresis": 1,
+            "continuation_release_hysteresis": 1,
             "min_dwell": 3,
             "defensive_size_multiplier": 0.5,
         },

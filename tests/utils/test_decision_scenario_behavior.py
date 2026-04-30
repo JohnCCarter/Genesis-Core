@@ -1422,6 +1422,90 @@ def test_decide_enabled_policy_router_blocks_weak_pre_aged_release_from_no_trade
     )
 
 
+def test_decide_enabled_policy_router_continuation_release_hysteresis_zero_restores_full_size() -> (
+    None
+):
+    cfg_default = deepcopy(_BASE_CFG)
+    cfg_default["ev"] = {"R_default": 0.46 / (0.54 - 0.02)}
+    cfg_default["thresholds"] = {
+        "entry_conf_overall": 0.3,
+        "regime_proba": {"bull": 0.5},
+    }
+    cfg_default["risk"] = {"risk_map": [[0.3, 1.0]], "min_combined_multiplier": 0.1}
+    cfg_default["multi_timeframe"] = {
+        "use_htf_block": False,
+        "allow_ltf_override": False,
+        "research_policy_router": {
+            "enabled": True,
+            "switch_threshold": 2,
+            "hysteresis": 1,
+            "min_dwell": 3,
+            "defensive_size_multiplier": 0.5,
+        },
+    }
+    cfg_default["htf_fib"] = {"entry": {"enabled": False}}
+    cfg_default["ltf_fib"] = {"entry": {"enabled": False}}
+
+    cfg_release = deepcopy(cfg_default)
+    cfg_release["multi_timeframe"]["research_policy_router"]["continuation_release_hysteresis"] = 0
+
+    state = {
+        "bars_since_regime_change": 10,
+        "last_regime": "bear",
+        "research_policy_router_state": {
+            "selected_policy": "RI_defensive_transition_policy",
+            "mandate_level": 2,
+            "confidence": 2,
+            "dwell_duration": 3,
+        },
+    }
+    common_kwargs = {
+        "probas": {"buy": 0.54, "sell": 0.46},
+        "confidence": {"buy": 0.54, "sell": 0.46},
+        "regime": "bear",
+        "risk_ctx": {},
+        "policy": {},
+    }
+
+    action_default, meta_default = decide(cfg=cfg_default, state=deepcopy(state), **common_kwargs)
+    action_release, meta_release = decide(cfg=cfg_release, state=deepcopy(state), **common_kwargs)
+
+    assert action_default == action_release == "LONG"
+    assert "RESEARCH_POLICY_ROUTER_DEFENSIVE" in meta_default["reasons"]
+    assert meta_default["reasons"][-1] == "ENTRY_LONG"
+    assert float(meta_default["size"]) == pytest.approx(0.5)
+    assert meta_default["state_out"]["research_policy_router_state"]["selected_policy"] == (
+        "RI_defensive_transition_policy"
+    )
+    assert meta_default["state_out"]["research_policy_router_debug"]["switch_reason"] == (
+        "switch_blocked_by_hysteresis"
+    )
+    assert meta_default["state_out"]["research_policy_router_debug"]["switch_control_mode"] == (
+        "continuation_release"
+    )
+    assert meta_default["state_out"]["research_policy_router_debug"]["effective_hysteresis"] == 1
+
+    assert "RESEARCH_POLICY_ROUTER_CONTINUATION" in meta_release["reasons"]
+    assert meta_release["reasons"][-1] == "ENTRY_LONG"
+    assert float(meta_release["size"]) == pytest.approx(1.0)
+    assert meta_release["state_out"]["research_policy_router_state"]["selected_policy"] == (
+        "RI_continuation_policy"
+    )
+    assert meta_release["state_out"]["research_policy_router_debug"]["switch_reason"] == (
+        "continuation_state_supported"
+    )
+    assert meta_release["state_out"]["research_policy_router_debug"]["switch_control_mode"] == (
+        "continuation_release"
+    )
+    assert meta_release["state_out"]["research_policy_router_debug"]["effective_hysteresis"] == 0
+    assert (
+        meta_release["state_out"]["research_policy_router_debug"]["router_params"][
+            "continuation_release_hysteresis"
+        ]
+        == 0
+    )
+
+
 def test_decide_enabled_policy_router_allows_second_same_pocket_release_after_single_veto() -> None:
     cfg = deepcopy(_BASE_CFG)
     cfg["thresholds"] = {

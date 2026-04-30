@@ -200,7 +200,7 @@ def test_run_displacement_crosscheck_provenance_is_fail_closed(
 
     def _fake_load_json(path: object) -> list[dict[str, object]]:
         try:
-            return fake_payloads[str(path).split("\\")[-1]]
+            return fake_payloads[str(path).replace("\\", "/").split("/")[-1]]
         except KeyError as exc:  # pragma: no cover - defensive guard for unexpected calls
             raise AssertionError(f"Unexpected artifact path: {path}") from exc
 

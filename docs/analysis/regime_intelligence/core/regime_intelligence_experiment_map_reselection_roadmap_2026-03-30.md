@@ -2,7 +2,13 @@
 
 Date: 2026-03-30
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `planning-only / research sequencing / no launch authorization`
+Status: `historical predecessor / planning-only / research sequencing / no launch authorization`
+
+> Current status note:
+>
+> - This roadmap is no longer the active sequencing surface; the March 30 chain proceeded into later packet-boundary and post-binding docs.
+> - Preserve it as historical reselection context only.
+> - Do not treat its phase ordering as a current launch path on the present branch.
 
 ## COMMAND PACKET
 

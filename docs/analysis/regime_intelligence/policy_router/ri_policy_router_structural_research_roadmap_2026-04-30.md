@@ -2,7 +2,13 @@
 
 Date: 2026-04-30
 Branch: `feature/next-slice-2026-04-29`
-Status: `planning-only / non-executable / no authorization`
+Status: `reference / partially superseded / non-executable / no authorization`
+
+> Current status note:
+>
+> - This roadmap still governs source precedence between `Genesis-Core router research — codebase-aware re-evaluation.md` and `genesis_core_router_research.md`.
+> - Its follow-up sequencing is partially superseded wherever later anchored evidence or `GENESIS_WORKING_CONTRACT.md` differs.
+> - Keep it as a reference planning note, not as the current execution order for the active `continuation_release_hysteresis` lane.
 
 This document is a planning artifact in `RESEARCH` and grants no implementation, runtime, readiness, launch, paper-trading, cutover, or promotion authority.
 It exists to answer one narrow question only:

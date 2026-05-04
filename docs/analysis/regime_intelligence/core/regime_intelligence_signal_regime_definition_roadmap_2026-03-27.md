@@ -2,7 +2,13 @@
 
 Date: 2026-03-27
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `planning-only / research sequencing / no launch authorization`
+Status: `historical predecessor / planning-only / research sequencing / no launch authorization`
+
+> Current status note:
+>
+> - This roadmap belongs to the earlier `feature/ri-role-map-implementation-2026-03-24` chain and is not the active lane on the current branch.
+> - Preserve it as the predecessor that selected the `SIGNAL / regime-definition` direction before later experiment-map reselection and post-binding docs.
+> - Do not treat it as the current next-step order without a fresh re-selection packet.
 
 ## COMMAND PACKET
 

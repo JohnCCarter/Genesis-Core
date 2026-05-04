@@ -2,7 +2,13 @@
 
 Date: 2026-03-27
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `roadmap-defined / research-only / no launch authority by roadmap alone`
+Status: `historical parked alternative / research-only / no launch authority by roadmap alone`
+
+> Current status note:
+>
+> - This decision-lane roadmap is not the chosen active path on the current branch.
+> - Preserve it as a historical parked alternative from the earlier `feature/ri-role-map-implementation-2026-03-24` chain.
+> - Reactivate only via explicit user request or a fresh packet that deliberately reselects the `DECISION` lane.
 
 ## Purpose
 

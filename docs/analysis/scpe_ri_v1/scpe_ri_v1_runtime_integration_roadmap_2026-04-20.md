@@ -2,7 +2,13 @@
 
 Date: 2026-04-20
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `planning-only / non-executable / no authorization`
+Status: `historical / future-only / non-executable / no authorization`
+
+> Current status note:
+>
+> - This roadmap is not an active lane on `feature/next-slice-2026-04-29` and should not be treated as the next live path.
+> - Preserve it as a historical future-only governance path for SCPE RI follow-up after the 2026-04-20 closeout.
+> - `GENESIS_WORKING_CONTRACT.md` already treats the SCPE replay surfaces as historical reference context only.
 
 This document is a planning artifact in `RESEARCH` and grants no implementation, runtime, readiness, cutover, launch, deployment, or promotion authority. It must not be used as approval to begin code, config, test, runtime, paper-trading, or operational changes. Every future phase below requires a separate commit contract, separate command packet, Opus pre-code review, and its own verification.
 

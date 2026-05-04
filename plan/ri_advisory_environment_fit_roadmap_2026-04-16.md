@@ -3,7 +3,14 @@
 Date: 2026-04-16
 Mode: `RESEARCH`
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `active / planning-only / advisory-only / no-runtime-authority`
+Status: `historical / not active on current branch / planning-only / advisory-only / no-runtime-authority`
+
+> Current status note:
+>
+> - This roadmap is not the active lane for `feature/next-slice-2026-04-29`.
+> - Preserve it as historical branch-specific planning context from `feature/ri-role-map-implementation-2026-03-24`.
+> - Reactivate only via explicit user request or a fresh packet that deliberately reopens the advisory-environment-fit line.
+> - Current active lane authority remains `GENESIS_WORKING_CONTRACT.md` plus the active RI policy-router packet/analysis chain.
 
 ## Why this roadmap exists
 

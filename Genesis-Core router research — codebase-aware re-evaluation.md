@@ -1,8 +1,15 @@
 Genesis-Core router research — codebase-aware re-evaluation
 Date: 2026-04-30
-Status: synthesis note (read-only, no code changes proposed inline)
+Status: primary synthesis note / partially superseded / normalization pending
 Companion to: genesis_core_router_research.md (generic research, dated 2026-04-30)
 Scope: re-evaluate the generic research recommendations against the actual feature/ri-role-map-implementation-2026-03-24 branch you shared.
+
+Current status note:
+
+- Between the two router-research notes, this remains the primary repo-aware synthesis note.
+- It is partially superseded wherever later anchored evidence or `GENESIS_WORKING_CONTRACT.md` differs.
+- It is a synthesis/reference artifact, not a packet, run plan, or active execution order for the current `feature/next-slice-2026-04-29` lane.
+- If retained long-term, normalization is still pending: move it into `docs/analysis/regime_intelligence/policy_router/` and keep wording aligned to later anchored evidence.
 
 This note is descriptive and structural. It is not a runtime change proposal and does not bypass the packet workflow. Where it points at a candidate next step, that step is described as a future bounded RI-local pre-code packet, not as work to start now.
 
@@ -13,7 +20,7 @@ The single most important finding is already in your own evidence, not in mine. 
 
 Therefore the open gap is not activation/release semantics (already partly handled and one more brick — asymmetric release — was just merged). The open gap is conditional discrimination: the suppression criteria are environment-blind.
 
-The smallest honest next step is research-evidence-lane work to confirm which features inside the shared pocket distinguish "should suppress" from "should not suppress", with the eventual deterministic, replayable runtime form being a per-state Δ(s) gate computed offline from admissible decision-time fields. Bumpless transfer / exit-side / cross-family routing should remain deferred per your 2026-04-30 payoff-state translation packet.
+The smallest honest next step is no longer to reopen the already-exhausted March 2021 / March 2025 discriminator loop. It is research-evidence-lane work on one genuinely new bounded `insufficient_evidence` surface to test which admissible decision-time fields distinguish "should suppress" from "should not suppress", with the eventual deterministic, replayable runtime form still being a per-state Δ(s) gate computed offline from admissible decision-time fields. Bumpless transfer / exit-side / cross-family routing should remain deferred per your 2026-04-30 payoff-state translation packet.
 
 Section A — what generic research recommended vs what you already have
 The generic research note ranked ten concrete recommendations. Here is the mapping.
@@ -42,14 +49,14 @@ Status: Done.
 A4. Size-first defensiveness (Observed)
 Research: prefer reducing size before flipping policy — recovers most of the loss-avoidance benefit without the cost of mis-suppressing good entries.
 
-Repo: `\_SWITCH_DEFAULTS["defensive_size_multiplier"] = 0.5` and `decision_sizing.py` applies it in conjunction with clarity multiplier and `risk_state` (`drawdown_guard`, `transition_guard`).
+Repo: `\_SWITCH_DEFAULTS["defensive_size_multiplier"] = 0.5` and `src/core/strategy/decision_sizing.py` applies it in conjunction with clarity multiplier and `src/core/intelligence/regime/risk_state.py` (`drawdown_guard`, `transition_guard`).
 
 Status: Done in size lane. Note from the 2026-04-30 payoff-state translation packet: size-first defensiveness is admissible early; cross-family routing and exit-side moves are explicitly deferred.
 
 A5. Post-switch settling / transition guard (Observed)
 Research: hold sized-down state for k bars after any switch, regardless of the new state's confidence — avoids re-entering full size into a still-noisy regime.
 
-Repo: risk_state.py has transition_guard (post-switch dwell with size suppression) layered on top of drawdown_guard.
+Repo: `src/core/intelligence/regime/risk_state.py` has `transition_guard` (post-switch dwell with size suppression) layered on top of `drawdown_guard`.
 
 Status: Done.
 
@@ -58,7 +65,7 @@ Repo-specific: \_should_guard_aged_weak_continuation triggers AGED_WEAK_CONTINUA
 
 This is structurally consistent with the research's "expectancy-decay" framing (edge declines with state age) but is implemented locally as a deterministic guard, not a payoff statistic. That matches your "no payoff at runtime" constraint.
 
-Status: Implemented and currently the dominant suppressive reason in the negative-year regression pocket, per ri_policy_router_2024_regression_pocket_isolation_2026-04-30.md and ri_policy_router_negative_year_pocket_isolation_2026-04-28.md.
+Status: Implemented, but later bounded rereads sharpen the local picture: on the exact 2024 regression pocket, `AGED_WEAK_CONTINUATION_GUARD` remains present but mixed, while `insufficient_evidence` is the clearer local weak subset, per `ri_policy_router_2024_regression_pocket_reason_split_2026-04-30.md` and `ri_policy_router_2024_regression_pocket_isolation_2026-04-30.md`.
 
 A7. Single-veto latch / one-shot suppressors (Inferred)
 Research did not name this; it is a more careful pattern than what I described.
@@ -77,7 +84,7 @@ Status: Already architected. Could be hardened by exposing the gap explicitly as
 A9. Risk_state veto layer (Observed)
 Research: keep an independent veto layer outside the router so policy never overrides hard risk constraints.
 
-Repo: risk_state.py (drawdown_guard, transition_guard) sits as a downstream multiplier in decision_sizing.py.
+Repo: `src/core/intelligence/regime/risk_state.py` (`drawdown_guard`, `transition_guard`) sits as a downstream multiplier in `src/core/strategy/decision_sizing.py`.
 
 Status: Done.
 
@@ -142,20 +149,20 @@ C3 is the "structure not indicators" answer.
 Section D — bounded next steps consistent with the packet workflow
 These are not implementation proposals. They are candidate future research-evidence-lane pre-code packets, ranked by smallest first.
 
-D1. Conditional-quality discriminator slice (research-evidence lane)
-A read-only follow-up to ri_policy_router_shared_pocket_outcome_quality_2026-04-28.md that, inside the same shared low-zone bars-≥8 pocket, asks which decision-time admissible features correlate with the sign flip on fwd_16 between positive and negative year groups.
+D1. Conditional-quality discriminator slice on a genuinely new bounded `insufficient_evidence` surface (research-evidence lane)
+A read-only follow-up that does **not** reopen the exhausted March 2021 / March 2025 loop. Instead, it asks on one genuinely new bounded `insufficient_evidence` surface — for example the fixed 2024 local pocket plus one fresh positive-year control on the same suppressor shape — which decision-time admissible features correlate with the sign flip on the chosen offline payoff proxy.
 
 Lane: Research-evidence. Risk: LOW. No runtime change.
 
-Inputs: same evidence inputs already used in the 2026-04-28 slice.
+Inputs: one fixed non-exhausted negative-year `insufficient_evidence` pocket, one fresh positive-year control pocket on the same suppressor shape, and only the already admissible decision-time fields available on that bounded surface.
 
 Constraints: features restricted to fields actually present in the action-diff JSON / RI snapshot at decision time. No payoff-state, no MFE/MAE, no future leakage.
 
-Output: one analysis note describing whether any single admissible field, or any small ordered split, separates the "router-was-right-to-suppress" subset from the "router-was-wrong-to-suppress" subset within the shared pocket.
+Output: one analysis note describing whether any single admissible field, or any small ordered split, separates the "router-was-right-to-suppress" subset from the "router-was-wrong-to-suppress" subset on that new bounded surface.
 
-Stop condition: if no admissible single-field or shallow split achieves a meaningful descriptive separation, this lane should not advance to runtime.
+Stop condition: if no admissible single-field or shallow split achieves a meaningful descriptive separation on the new bounded surface, this lane should not advance to runtime.
 
-This is the cheapest honest next step. It directly tests C3.
+This is the cheapest honest next step. It directly tests C3 without pretending the old shared-pocket loop is still open.
 
 D2. Per-state Δ(s) confidence-bound gate (concept-only pre-code packet)
 If D1 surfaces an admissible-state separator, the natural runtime form is a deterministic per-state suppression gate, where the gate is computed offline from a calibration window and stored as a static lookup keyed by quantized decision-time state.
@@ -235,4 +242,4 @@ I am not recommending introducing new indicators.
 
 I am not recommending payoff-state, MFE, or MAE as runtime inputs.
 
-The single thing I am recommending is: the next pre-code packet, when one is opened, should be D1, framed as a Research-evidence-lane read-only descriptive slice that asks which admissible decision-time field, if any, distinguishes "router-was-right-to-suppress" from "router-was-wrong-to-suppress" within the already-isolated shared pocket.
+The single thing I am recommending is: the next pre-code packet, when one is opened, should be D1, framed as a Research-evidence-lane read-only descriptive slice on one genuinely new bounded `insufficient_evidence` surface that asks which admissible decision-time field, if any, distinguishes "router-was-right-to-suppress" from "router-was-wrong-to-suppress".

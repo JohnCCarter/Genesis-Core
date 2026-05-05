@@ -2,12 +2,12 @@
 
 Date: 2026-03-30
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `historical / documentary chain / future-only / no authorization`
+Status: `historical / documentary chain / archive-only / future-only / no authorization`
 
 > Current status note:
 >
-> - This roadmap is not an active lane on `feature/next-slice-2026-04-29`.
-> - Preserve it as a historical documentary governance chain for the earlier March 30 post-binding path.
+> - [ARCHIVED 2026-05-05] This roadmap is not an active lane on `feature/next-slice-2026-05-05`.
+> - Preserve it as an archived historical documentary governance chain for the earlier March 30 post-binding path.
 > - Any future reuse still requires a fresh compatibility decision or packet.
 
 ## COMMAND PACKET

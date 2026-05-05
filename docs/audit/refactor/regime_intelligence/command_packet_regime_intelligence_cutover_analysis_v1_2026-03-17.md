@@ -12,9 +12,9 @@
 - **Scope IN:**
   - `docs/audit/refactor/regime_intelligence/command_packet_regime_intelligence_cutover_analysis_v1_2026-03-17.md`
   - `docs/audit/refactor/regime_intelligence/context_map_regime_intelligence_cutover_analysis_v1_2026-03-17.md`
-  - `docs/analysis/regime_intelligence_default_cutover_gap_analysis_2026-03-17.md`
-  - `docs/analysis/regime_intelligence_parity_artifact_matrix_2026-03-17.md`
-  - `docs/governance/regime_intelligence_cutover_readiness_2026-03-17.md`
+  - `docs/analysis/regime_intelligence/core/regime_intelligence_default_cutover_gap_analysis_2026-03-17.md`
+  - `docs/analysis/regime_intelligence/core/regime_intelligence_parity_artifact_matrix_2026-03-17.md`
+  - `docs/analysis/regime_intelligence/core/regime_intelligence_cutover_readiness_2026-03-17.md`
   - `artifacts/regime_intelligence/ri_cutover_analysis_gate_summary_2026-03-17.json`
   - `tests/governance/test_regime_intelligence_cutover_parity.py`
 - **Scope OUT:**
@@ -32,7 +32,7 @@
 
 ### Gates required
 
-- `pre-commit run --files docs/audit/refactor/regime_intelligence/command_packet_regime_intelligence_cutover_analysis_v1_2026-03-17.md docs/audit/refactor/regime_intelligence/context_map_regime_intelligence_cutover_analysis_v1_2026-03-17.md docs/analysis/regime_intelligence_default_cutover_gap_analysis_2026-03-17.md docs/analysis/regime_intelligence_parity_artifact_matrix_2026-03-17.md docs/governance/regime_intelligence_cutover_readiness_2026-03-17.md artifacts/regime_intelligence/ri_cutover_analysis_gate_summary_2026-03-17.json tests/governance/test_regime_intelligence_cutover_parity.py`
+- `pre-commit run --files docs/audit/refactor/regime_intelligence/command_packet_regime_intelligence_cutover_analysis_v1_2026-03-17.md docs/audit/refactor/regime_intelligence/context_map_regime_intelligence_cutover_analysis_v1_2026-03-17.md docs/analysis/regime_intelligence/core/regime_intelligence_default_cutover_gap_analysis_2026-03-17.md docs/analysis/regime_intelligence/core/regime_intelligence_parity_artifact_matrix_2026-03-17.md docs/analysis/regime_intelligence/core/regime_intelligence_cutover_readiness_2026-03-17.md artifacts/regime_intelligence/ri_cutover_analysis_gate_summary_2026-03-17.json tests/governance/test_regime_intelligence_cutover_parity.py`
 - `python -m black --check tests/governance/test_regime_intelligence_cutover_parity.py`
 - `python -m ruff check tests/governance/test_regime_intelligence_cutover_parity.py`
 - `python -m pytest -q tests/governance/test_regime_intelligence_cutover_parity.py`

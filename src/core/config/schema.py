@@ -189,6 +189,7 @@ class ResearchPolicyRouterConfig(RuntimeSection):
     enabled: bool = Field(default=False)
     switch_threshold: int = Field(default=2, ge=1)
     hysteresis: int = Field(default=1, ge=0)
+    continuation_release_hysteresis: int = Field(default=1, ge=0)
     min_dwell: int = Field(default=3, ge=0)
     defensive_size_multiplier: float = Field(default=0.5, ge=0.0, le=1.0)
 
@@ -369,6 +370,13 @@ class RuntimeConfig(RuntimeSection):
                 and bool(research_policy_router_cfg.get("enabled", False))
             ):
                 mtf_cfg.pop("research_policy_router", None)
+            elif self.multi_timeframe.research_policy_router is not None and (
+                "continuation_release_hysteresis"
+                not in self.multi_timeframe.research_policy_router.model_fields_set
+                or research_policy_router_cfg.get("continuation_release_hysteresis")
+                == research_policy_router_cfg.get("hysteresis")
+            ):
+                research_policy_router_cfg.pop("continuation_release_hysteresis", None)
         return data
 
 

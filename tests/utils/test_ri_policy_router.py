@@ -341,6 +341,66 @@ def test_policy_router_returns_to_continuation_after_dwell_and_hysteresis_allow(
     assert outcome.size_multiplier == 1.0
 
 
+def test_policy_router_continuation_release_hysteresis_zero_releases_mandate2_continuation() -> (
+    None
+):
+    blocked = resolve_research_policy_router(
+        candidate="LONG",
+        conf_val_gate=0.54,
+        p_buy=0.54,
+        p_sell=0.46,
+        max_ev=0.02,
+        r_default=1.0,
+        regime="bear",
+        state_in={
+            "bars_since_regime_change": 10,
+            "research_policy_router_state": {
+                "selected_policy": POLICY_DEFENSIVE,
+                "mandate_level": 2,
+                "confidence": 2,
+                "dwell_duration": 3,
+            },
+        },
+        cfg=_router_cfg(),
+        zone="base",
+    )
+
+    assert blocked is not None
+    assert blocked.selected_policy == POLICY_DEFENSIVE
+    assert blocked.switch_blocked is True
+    assert blocked.switch_reason == "switch_blocked_by_hysteresis"
+    assert blocked.debug["switch_control_mode"] == "continuation_release"
+    assert blocked.debug["effective_hysteresis"] == 1
+
+    released = resolve_research_policy_router(
+        candidate="LONG",
+        conf_val_gate=0.54,
+        p_buy=0.54,
+        p_sell=0.46,
+        max_ev=0.02,
+        r_default=1.0,
+        regime="bear",
+        state_in={
+            "bars_since_regime_change": 10,
+            "research_policy_router_state": {
+                "selected_policy": POLICY_DEFENSIVE,
+                "mandate_level": 2,
+                "confidence": 2,
+                "dwell_duration": 3,
+            },
+        },
+        cfg=_router_cfg(continuation_release_hysteresis=0),
+        zone="base",
+    )
+
+    assert released is not None
+    assert released.selected_policy == POLICY_CONTINUATION
+    assert released.switch_blocked is False
+    assert released.switch_reason == "continuation_state_supported"
+    assert released.debug["switch_control_mode"] == "continuation_release"
+    assert released.debug["effective_hysteresis"] == 0
+
+
 def test_policy_router_forces_no_trade_when_evidence_floor_fails() -> None:
     outcome = resolve_research_policy_router(
         candidate="LONG",
@@ -360,6 +420,116 @@ def test_policy_router_forces_no_trade_when_evidence_floor_fails() -> None:
     assert outcome.no_trade is True
     assert outcome.size_multiplier == 0.0
     assert outcome.debug["switch_reason"] == "insufficient_evidence"
+
+
+def test_policy_router_continuation_release_hysteresis_override_remains_local_to_release_path() -> (
+    None
+):
+    cfg = _router_cfg(continuation_release_hysteresis=0)
+
+    continuation_to_defensive = resolve_research_policy_router(
+        candidate="LONG",
+        conf_val_gate=0.53,
+        p_buy=0.52,
+        p_sell=0.48,
+        max_ev=0.04,
+        r_default=1.0,
+        regime="bull",
+        state_in={
+            "bars_since_regime_change": 2,
+            "research_policy_router_state": {
+                "selected_policy": POLICY_CONTINUATION,
+                "mandate_level": 2,
+                "confidence": 2,
+                "dwell_duration": 3,
+            },
+        },
+        cfg=cfg,
+        zone="high",
+    )
+
+    assert continuation_to_defensive is not None
+    assert continuation_to_defensive.selected_policy == POLICY_CONTINUATION
+    assert continuation_to_defensive.debug["switch_control_mode"] == "default"
+    assert continuation_to_defensive.debug["effective_hysteresis"] == 1
+
+    defensive_to_defensive = resolve_research_policy_router(
+        candidate="LONG",
+        conf_val_gate=0.53,
+        p_buy=0.52,
+        p_sell=0.48,
+        max_ev=0.04,
+        r_default=1.0,
+        regime="bull",
+        state_in={
+            "bars_since_regime_change": 2,
+            "research_policy_router_state": {
+                "selected_policy": POLICY_DEFENSIVE,
+                "mandate_level": 2,
+                "confidence": 2,
+                "dwell_duration": 3,
+            },
+        },
+        cfg=cfg,
+        zone="high",
+    )
+
+    assert defensive_to_defensive is not None
+    assert defensive_to_defensive.selected_policy == POLICY_DEFENSIVE
+    assert defensive_to_defensive.debug["switch_control_mode"] == "default"
+    assert defensive_to_defensive.debug["effective_hysteresis"] == 1
+
+    continuation_to_continuation = resolve_research_policy_router(
+        candidate="LONG",
+        conf_val_gate=0.55,
+        p_buy=0.60,
+        p_sell=0.40,
+        max_ev=0.10,
+        r_default=1.0,
+        regime="bear",
+        state_in={
+            "bars_since_regime_change": 16,
+            "research_policy_router_state": {
+                "selected_policy": POLICY_CONTINUATION,
+                "mandate_level": 3,
+                "confidence": 3,
+                "dwell_duration": 3,
+            },
+        },
+        cfg=cfg,
+        zone="base",
+    )
+
+    assert continuation_to_continuation is not None
+    assert continuation_to_continuation.selected_policy == POLICY_CONTINUATION
+    assert continuation_to_continuation.debug["switch_control_mode"] == "default"
+    assert continuation_to_continuation.debug["effective_hysteresis"] == 1
+
+    defensive_to_no_trade = resolve_research_policy_router(
+        candidate="LONG",
+        conf_val_gate=0.50,
+        p_buy=0.51,
+        p_sell=0.49,
+        max_ev=0.02,
+        r_default=1.0,
+        regime="bull",
+        state_in={
+            "bars_since_regime_change": 2,
+            "research_policy_router_state": {
+                "selected_policy": POLICY_DEFENSIVE,
+                "mandate_level": 2,
+                "confidence": 2,
+                "dwell_duration": 3,
+            },
+        },
+        cfg=cfg,
+        zone="base",
+    )
+
+    assert defensive_to_no_trade is not None
+    assert defensive_to_no_trade.selected_policy == POLICY_NO_TRADE
+    assert defensive_to_no_trade.debug["switch_control_mode"] == "default"
+    assert defensive_to_no_trade.debug["effective_hysteresis"] == 1
 
 
 def test_policy_router_reconsiders_exact_bars7_continuation_signature() -> None:

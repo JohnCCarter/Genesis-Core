@@ -1,0 +1,1483 @@
+{
+  "artifact_row_lock": {
+    "available_optional_fields": [
+      "clarity_raw",
+      "dwell_duration"
+    ],
+    "candidate_fields_used_for_selection": [
+      "bars_since_regime_change",
+      "action_edge",
+      "confidence_gate",
+      "clarity_score",
+      "clarity_raw",
+      "dwell_duration"
+    ],
+    "context_rows_excluded_from_selection": true,
+    "control_context_timestamps": [
+      "2022-06-23T03:00:00+00:00",
+      "2022-06-23T09:00:00+00:00",
+      "2022-06-23T12:00:00+00:00",
+      "2022-06-23T18:00:00+00:00"
+    ],
+    "control_target_timestamps": [
+      "2022-06-24T03:00:00+00:00",
+      "2022-06-24T21:00:00+00:00",
+      "2022-06-25T06:00:00+00:00",
+      "2022-06-25T15:00:00+00:00",
+      "2022-06-26T00:00:00+00:00"
+    ],
+    "harmful_context_timestamps": [
+      "2019-06-12T06:00:00+00:00"
+    ],
+    "harmful_target_timestamps": [
+      "2019-06-13T06:00:00+00:00",
+      "2019-06-13T15:00:00+00:00",
+      "2019-06-14T00:00:00+00:00",
+      "2019-06-14T09:00:00+00:00",
+      "2019-06-15T06:00:00+00:00"
+    ],
+    "observational_only_authority": true,
+    "search_shapes_considered": [
+      "single_threshold",
+      "two_field_conjunction"
+    ],
+    "skipped_optional_fields": []
+  },
+  "audit_version": "ri-policy-router-insufficient-evidence-d1-exact-subject-pair-2019-06-vs-2022-06-2026-05-04",
+  "base_sha": "164d5c97770d9f20cfd30bc28cf91f2d1d71f087",
+  "best_single_field_by_field": [
+    {
+      "accepted_as_d1_answer": true,
+      "descriptive_only_reason": null,
+      "field_name": "action_edge",
+      "perfect_target_control_separation": true,
+      "rule": {
+        "field_name": "action_edge",
+        "operator": ">=",
+        "threshold": 0.027801
+      },
+      "search_shape": "single_threshold",
+      "selected_control_target_count": 0,
+      "selected_harmful_target_count": 5,
+      "selection_by_cohort": {
+        "control_context": {
+          "evaluable_count": 4,
+          "rejected_timestamps": [],
+          "row_count": 4,
+          "selected_count": 4,
+          "selected_timestamps": [
+            "2022-06-23T03:00:00+00:00",
+            "2022-06-23T09:00:00+00:00",
+            "2022-06-23T12:00:00+00:00",
+            "2022-06-23T18:00:00+00:00"
+          ],
+          "selection_rate": 1.0,
+          "unavailable_timestamps": []
+        },
+        "control_target": {
+          "evaluable_count": 5,
+          "rejected_timestamps": [
+            "2022-06-24T03:00:00+00:00",
+            "2022-06-24T21:00:00+00:00",
+            "2022-06-25T06:00:00+00:00",
+            "2022-06-25T15:00:00+00:00",
+            "2022-06-26T00:00:00+00:00"
+          ],
+          "row_count": 5,
+          "selected_count": 0,
+          "selected_timestamps": [],
+          "selection_rate": 0.0,
+          "unavailable_timestamps": []
+        },
+        "harmful_context": {
+          "evaluable_count": 1,
+          "rejected_timestamps": [],
+          "row_count": 1,
+          "selected_count": 1,
+          "selected_timestamps": [
+            "2019-06-12T06:00:00+00:00"
+          ],
+          "selection_rate": 1.0,
+          "unavailable_timestamps": []
+        },
+        "harmful_target": {
+          "evaluable_count": 5,
+          "rejected_timestamps": [],
+          "row_count": 5,
+          "selected_count": 5,
+          "selected_timestamps": [
+            "2019-06-13T06:00:00+00:00",
+            "2019-06-13T15:00:00+00:00",
+            "2019-06-14T00:00:00+00:00",
+            "2019-06-14T09:00:00+00:00",
+            "2019-06-15T06:00:00+00:00"
+          ],
+          "selection_rate": 1.0,
+          "unavailable_timestamps": []
+        }
+      }
+    },
+    {
+      "accepted_as_d1_answer": true,
+      "descriptive_only_reason": null,
+      "field_name": "clarity_raw",
+      "perfect_target_control_separation": true,
+      "rule": {
+        "field_name": "clarity_raw",
+        "operator": ">=",
+        "threshold": 0.36128
+      },
+      "search_shape": "single_threshold",
+      "selected_control_target_count": 0,
+      "selected_harmful_target_count": 5,
+      "selection_by_cohort": {
+        "control_context": {
+          "evaluable_count": 4,
+          "rejected_timestamps": [],
+          "row_count": 4,
+          "selected_count": 4,
+          "selected_timestamps": [
+            "2022-06-23T03:00:00+00:00",
+            "2022-06-23T09:00:00+00:00",
+            "2022-06-23T12:00:00+00:00",
+            "2022-06-23T18:00:00+00:00"
+          ],
+          "selection_rate": 1.0,
+          "unavailable_timestamps": []
+        },
+        "control_target": {
+          "evaluable_count": 5,
+          "rejected_timestamps": [
+            "2022-06-24T03:00:00+00:00",
+            "2022-06-24T21:00:00+00:00",
+            "2022-06-25T06:00:00+00:00",
+            "2022-06-25T15:00:00+00:00",
+            "2022-06-26T00:00:00+00:00"
+          ],
+          "row_count": 5,
+          "selected_count": 0,
+          "selected_timestamps": [],
+          "selection_rate": 0.0,
+          "unavailable_timestamps": []
+        },
+        "harmful_context": {
+          "evaluable_count": 1,
+          "rejected_timestamps": [],
+          "row_count": 1,
+          "selected_count": 1,
+          "selected_timestamps": [
+            "2019-06-12T06:00:00+00:00"
+          ],
+          "selection_rate": 1.0,
+          "unavailable_timestamps": []
+        },
+        "harmful_target": {
+          "evaluable_count": 5,
+          "rejected_timestamps": [],
+          "row_count": 5,
+          "selected_count": 5,
+          "selected_timestamps": [
+            "2019-06-13T06:00:00+00:00",
+            "2019-06-13T15:00:00+00:00",
+            "2019-06-14T00:00:00+00:00",
+            "2019-06-14T09:00:00+00:00",
+            "2019-06-15T06:00:00+00:00"
+          ],
+          "selection_rate": 1.0,
+          "unavailable_timestamps": []
+        }
+      }
+    },
+    {
+      "accepted_as_d1_answer": true,
+      "descriptive_only_reason": null,
+      "field_name": "confidence_gate",
+      "perfect_target_control_separation": true,
+      "rule": {
+        "field_name": "confidence_gate",
+        "operator": ">=",
+        "threshold": 0.513901
+      },
+      "search_shape": "single_threshold",
+      "selected_control_target_count": 0,
+      "selected_harmful_target_count": 5,
+      "selection_by_cohort": {
+        "control_context": {
+          "evaluable_count": 4,
+          "rejected_timestamps": [],
+          "row_count": 4,
+          "selected_count": 4,
+          "selected_timestamps": [
+            "2022-06-23T03:00:00+00:00",
+            "2022-06-23T09:00:00+00:00",
+            "2022-06-23T12:00:00+00:00",
+            "2022-06-23T18:00:00+00:00"
+          ],
+          "selection_rate": 1.0,
+          "unavailable_timestamps": []
+        },
+        "control_target": {
+          "evaluable_count": 5,
+          "rejected_timestamps": [
+            "2022-06-24T03:00:00+00:00",
+            "2022-06-24T21:00:00+00:00",
+            "2022-06-25T06:00:00+00:00",
+            "2022-06-25T15:00:00+00:00",
+            "2022-06-26T00:00:00+00:00"
+          ],
+          "row_count": 5,
+          "selected_count": 0,
+          "selected_timestamps": [],
+          "selection_rate": 0.0,
+          "unavailable_timestamps": []
+        },
+        "harmful_context": {
+          "evaluable_count": 1,
+          "rejected_timestamps": [],
+          "row_count": 1,
+          "selected_count": 1,
+          "selected_timestamps": [
+            "2019-06-12T06:00:00+00:00"
+          ],
+          "selection_rate": 1.0,
+          "unavailable_timestamps": []
+        },
+        "harmful_target": {
+          "evaluable_count": 5,
+          "rejected_timestamps": [],
+          "row_count": 5,
+          "selected_count": 5,
+          "selected_timestamps": [
+            "2019-06-13T06:00:00+00:00",
+            "2019-06-13T15:00:00+00:00",
+            "2019-06-14T00:00:00+00:00",
+            "2019-06-14T09:00:00+00:00",
+            "2019-06-15T06:00:00+00:00"
+          ],
+          "selection_rate": 1.0,
+          "unavailable_timestamps": []
+        }
+      }
+    },
+    {
+      "accepted_as_d1_answer": false,
+      "descriptive_only_reason": "pure_cross_envelope_age_split_not_accepted",
+      "field_name": "bars_since_regime_change",
+      "perfect_target_control_separation": true,
+      "rule": {
+        "field_name": "bars_since_regime_change",
+        "operator": "<=",
+        "threshold": 164.0
+      },
+      "search_shape": "single_threshold",
+      "selected_control_target_count": 0,
+      "selected_harmful_target_count": 5,
+      "selection_by_cohort": {
+        "control_context": {
+          "evaluable_count": 4,
+          "rejected_timestamps": [
+            "2022-06-23T03:00:00+00:00",
+            "2022-06-23T09:00:00+00:00",
+            "2022-06-23T12:00:00+00:00",
+            "2022-06-23T18:00:00+00:00"
+          ],
+          "row_count": 4,
+          "selected_count": 0,
+          "selected_timestamps": [],
+          "selection_rate": 0.0,
+          "unavailable_timestamps": []
+        },
+        "control_target": {
+          "evaluable_count": 5,
+          "rejected_timestamps": [
+            "2022-06-24T03:00:00+00:00",
+            "2022-06-24T21:00:00+00:00",
+            "2022-06-25T06:00:00+00:00",
+            "2022-06-25T15:00:00+00:00",
+            "2022-06-26T00:00:00+00:00"
+          ],
+          "row_count": 5,
+          "selected_count": 0,
+          "selected_timestamps": [],
+          "selection_rate": 0.0,
+          "unavailable_timestamps": []
+        },
+        "harmful_context": {
+          "evaluable_count": 1,
+          "rejected_timestamps": [],
+          "row_count": 1,
+          "selected_count": 1,
+          "selected_timestamps": [
+            "2019-06-12T06:00:00+00:00"
+          ],
+          "selection_rate": 1.0,
+          "unavailable_timestamps": []
+        },
+        "harmful_target": {
+          "evaluable_count": 5,
+          "rejected_timestamps": [],
+          "row_count": 5,
+          "selected_count": 5,
+          "selected_timestamps": [
+            "2019-06-13T06:00:00+00:00",
+            "2019-06-13T15:00:00+00:00",
+            "2019-06-14T00:00:00+00:00",
+            "2019-06-14T09:00:00+00:00",
+            "2019-06-15T06:00:00+00:00"
+          ],
+          "selection_rate": 1.0,
+          "unavailable_timestamps": []
+        }
+      }
+    },
+    {
+      "accepted_as_d1_answer": false,
+      "descriptive_only_reason": null,
+      "field_name": "dwell_duration",
+      "perfect_target_control_separation": false,
+      "rule": {
+        "field_name": "dwell_duration",
+        "operator": ">=",
+        "threshold": 11.0
+      },
+      "search_shape": "single_threshold",
+      "selected_control_target_count": 2,
+      "selected_harmful_target_count": 5,
+      "selection_by_cohort": {
+        "control_context": {
+          "evaluable_count": 4,
+          "rejected_timestamps": [
+            "2022-06-23T03:00:00+00:00",
+            "2022-06-23T09:00:00+00:00",
+            "2022-06-23T12:00:00+00:00",
+            "2022-06-23T18:00:00+00:00"
+          ],
+          "row_count": 4,
+          "selected_count": 0,
+          "selected_timestamps": [],
+          "selection_rate": 0.0,
+          "unavailable_timestamps": []
+        },
+        "control_target": {
+          "evaluable_count": 5,
+          "rejected_timestamps": [
+            "2022-06-24T03:00:00+00:00",
+            "2022-06-24T21:00:00+00:00",
+            "2022-06-25T06:00:00+00:00"
+          ],
+          "row_count": 5,
+          "selected_count": 2,
+          "selected_timestamps": [
+            "2022-06-25T15:00:00+00:00",
+            "2022-06-26T00:00:00+00:00"
+          ],
+          "selection_rate": 0.4,
+          "unavailable_timestamps": []
+        },
+        "harmful_context": {
+          "evaluable_count": 1,
+          "rejected_timestamps": [
+            "2019-06-12T06:00:00+00:00"
+          ],
+          "row_count": 1,
+          "selected_count": 0,
+          "selected_timestamps": [],
+          "selection_rate": 0.0,
+          "unavailable_timestamps": []
+        },
+        "harmful_target": {
+          "evaluable_count": 5,
+          "rejected_timestamps": [],
+          "row_count": 5,
+          "selected_count": 5,
+          "selected_timestamps": [
+            "2019-06-13T06:00:00+00:00",
+            "2019-06-13T15:00:00+00:00",
+            "2019-06-14T00:00:00+00:00",
+            "2019-06-14T09:00:00+00:00",
+            "2019-06-15T06:00:00+00:00"
+          ],
+          "selection_rate": 1.0,
+          "unavailable_timestamps": []
+        }
+      }
+    },
+    {
+      "accepted_as_d1_answer": false,
+      "descriptive_only_reason": null,
+      "field_name": "clarity_score",
+      "perfect_target_control_separation": false,
+      "rule": {
+        "field_name": "clarity_score",
+        "operator": ">=",
+        "threshold": 36.0
+      },
+      "search_shape": "single_threshold",
+      "selected_control_target_count": 4,
+      "selected_harmful_target_count": 5,
+      "selection_by_cohort": {
+        "control_context": {
+          "evaluable_count": 4,
+          "rejected_timestamps": [],
+          "row_count": 4,
+          "selected_count": 4,
+          "selected_timestamps": [
+            "2022-06-23T03:00:00+00:00",
+            "2022-06-23T09:00:00+00:00",
+            "2022-06-23T12:00:00+00:00",
+            "2022-06-23T18:00:00+00:00"
+          ],
+          "selection_rate": 1.0,
+          "unavailable_timestamps": []
+        },
+        "control_target": {
+          "evaluable_count": 5,
+          "rejected_timestamps": [
+            "2022-06-25T06:00:00+00:00"
+          ],
+          "row_count": 5,
+          "selected_count": 4,
+          "selected_timestamps": [
+            "2022-06-24T03:00:00+00:00",
+            "2022-06-24T21:00:00+00:00",
+            "2022-06-25T15:00:00+00:00",
+            "2022-06-26T00:00:00+00:00"
+          ],
+          "selection_rate": 0.8,
+          "unavailable_timestamps": []
+        },
+        "harmful_context": {
+          "evaluable_count": 1,
+          "rejected_timestamps": [],
+          "row_count": 1,
+          "selected_count": 1,
+          "selected_timestamps": [
+            "2019-06-12T06:00:00+00:00"
+          ],
+          "selection_rate": 1.0,
+          "unavailable_timestamps": []
+        },
+        "harmful_target": {
+          "evaluable_count": 5,
+          "rejected_timestamps": [],
+          "row_count": 5,
+          "selected_count": 5,
+          "selected_timestamps": [
+            "2019-06-13T06:00:00+00:00",
+            "2019-06-13T15:00:00+00:00",
+            "2019-06-14T00:00:00+00:00",
+            "2019-06-14T09:00:00+00:00",
+            "2019-06-15T06:00:00+00:00"
+          ],
+          "selection_rate": 1.0,
+          "unavailable_timestamps": []
+        }
+      }
+    }
+  ],
+  "cohorts": {
+    "control_context": {
+      "metric_summary": {
+        "action_edge": {
+          "count": 4,
+          "gt_zero_share": 1.0,
+          "max": 0.112293,
+          "mean": 0.093059,
+          "median": 0.093059,
+          "min": 0.073824
+        },
+        "bars_since_regime_change": {
+          "count": 4,
+          "gt_zero_share": 1.0,
+          "max": 183.0,
+          "mean": 182.5,
+          "median": 182.5,
+          "min": 182.0
+        },
+        "clarity_raw": {
+          "count": 4,
+          "gt_zero_share": 1.0,
+          "max": 0.412444,
+          "mean": 0.400796,
+          "median": 0.400796,
+          "min": 0.389149
+        },
+        "clarity_score": {
+          "count": 4,
+          "gt_zero_share": 1.0,
+          "max": 41.0,
+          "mean": 40.0,
+          "median": 40.0,
+          "min": 39.0
+        },
+        "confidence_gate": {
+          "count": 4,
+          "gt_zero_share": 1.0,
+          "max": 0.556147,
+          "mean": 0.546529,
+          "median": 0.546529,
+          "min": 0.536912
+        },
+        "dwell_duration": {
+          "count": 4,
+          "gt_zero_share": 1.0,
+          "max": 5.0,
+          "mean": 4.5,
+          "median": 4.5,
+          "min": 4.0
+        },
+        "fwd_16_close_return_pct": {
+          "count": 4,
+          "gt_zero_share": 1.0,
+          "max": 4.395097,
+          "mean": 3.165801,
+          "median": 3.077851,
+          "min": 2.112405
+        },
+        "fwd_4_close_return_pct": {
+          "count": 4,
+          "gt_zero_share": 0.75,
+          "max": 2.733977,
+          "mean": 1.5181,
+          "median": 1.711059,
+          "min": -0.083694
+        },
+        "fwd_8_close_return_pct": {
+          "count": 4,
+          "gt_zero_share": 1.0,
+          "max": 2.756991,
+          "mean": 2.459441,
+          "median": 2.585135,
+          "min": 1.910503
+        },
+        "mae_16_pct": {
+          "count": 4,
+          "gt_zero_share": 0.0,
+          "max": -0.697719,
+          "mean": -1.441619,
+          "median": -1.435024,
+          "min": -2.198709
+        },
+        "mfe_16_pct": {
+          "count": 4,
+          "gt_zero_share": 1.0,
+          "max": 6.089996,
+          "mean": 4.938111,
+          "median": 4.877611,
+          "min": 3.907227
+        }
+      },
+      "row_count": 4,
+      "rows": [
+        {
+          "absent_action": "NONE",
+          "action_edge": 0.112293,
+          "action_pair": "NONE->LONG",
+          "bars_since_regime_change": 182,
+          "candidate": "LONG",
+          "clarity_raw": 0.412444,
+          "clarity_score": 41.0,
+          "cohort_name": "control_context",
+          "confidence_gate": 0.556147,
+          "dwell_duration": 4.0,
+          "enabled_action": "LONG",
+          "entry_close": 20312.0,
+          "future_bars_available": 16,
+          "fwd_16_close_return_pct": 4.395097,
+          "fwd_4_close_return_pct": -0.083694,
+          "fwd_8_close_return_pct": 2.756991,
+          "mae_16_pct": -0.797558,
+          "matched_candle_index": 17599,
+          "mfe_16_pct": 6.089996,
+          "previous_policy": "RI_continuation_policy",
+          "raw_target_policy": "RI_continuation_policy",
+          "selected_policy": "RI_continuation_policy",
+          "switch_reason": "stable_continuation_state",
+          "timestamp": "2022-06-23T03:00:00+00:00",
+          "year": "2022",
+          "zone": "low"
+        },
+        {
+          "absent_action": "LONG",
+          "action_edge": 0.112293,
+          "action_pair": "LONG->NONE",
+          "bars_since_regime_change": 182,
+          "candidate": "LONG",
+          "clarity_raw": 0.412444,
+          "clarity_score": 41.0,
+          "cohort_name": "control_context",
+          "confidence_gate": 0.556147,
+          "dwell_duration": 4.0,
+          "enabled_action": "NONE",
+          "entry_close": 20603.0,
+          "future_bars_available": 16,
+          "fwd_16_close_return_pct": 3.504344,
+          "fwd_4_close_return_pct": 2.286075,
+          "fwd_8_close_return_pct": 2.625831,
+          "mae_16_pct": -2.198709,
+          "matched_candle_index": 17601,
+          "mfe_16_pct": 4.809979,
+          "previous_policy": "RI_continuation_policy",
+          "raw_target_policy": "RI_continuation_policy",
+          "selected_policy": "RI_continuation_policy",
+          "switch_reason": "stable_continuation_state",
+          "timestamp": "2022-06-23T09:00:00+00:00",
+          "year": "2022",
+          "zone": "low"
+        },
+        {
+          "absent_action": "NONE",
+          "action_edge": 0.073824,
+          "action_pair": "NONE->LONG",
+          "bars_since_regime_change": 183,
+          "candidate": "LONG",
+          "clarity_raw": 0.389149,
+          "clarity_score": 39.0,
+          "cohort_name": "control_context",
+          "confidence_gate": 0.536912,
+          "dwell_duration": 5.0,
+          "enabled_action": "LONG",
+          "entry_close": 20576.444762,
+          "future_bars_available": 16,
+          "fwd_16_close_return_pct": 2.651358,
+          "fwd_4_close_return_pct": 2.733977,
+          "fwd_8_close_return_pct": 2.54444,
+          "mae_16_pct": -2.07249,
+          "matched_candle_index": 17602,
+          "mfe_16_pct": 4.945243,
+          "previous_policy": "RI_continuation_policy",
+          "raw_target_policy": "RI_continuation_policy",
+          "selected_policy": "RI_continuation_policy",
+          "switch_reason": "stable_continuation_state",
+          "timestamp": "2022-06-23T12:00:00+00:00",
+          "year": "2022",
+          "zone": "low"
+        },
+        {
+          "absent_action": "LONG",
+          "action_edge": 0.073824,
+          "action_pair": "LONG->NONE",
+          "bars_since_regime_change": 183,
+          "candidate": "LONG",
+          "clarity_raw": 0.389149,
+          "clarity_score": 39.0,
+          "cohort_name": "control_context",
+          "confidence_gate": 0.536912,
+          "dwell_duration": 5.0,
+          "enabled_action": "NONE",
+          "entry_close": 20782.0,
+          "future_bars_available": 16,
+          "fwd_16_close_return_pct": 2.112405,
+          "fwd_4_close_return_pct": 1.136044,
+          "fwd_8_close_return_pct": 1.910503,
+          "mae_16_pct": -0.697719,
+          "matched_candle_index": 17604,
+          "mfe_16_pct": 3.907227,
+          "previous_policy": "RI_continuation_policy",
+          "raw_target_policy": "RI_continuation_policy",
+          "selected_policy": "RI_continuation_policy",
+          "switch_reason": "stable_continuation_state",
+          "timestamp": "2022-06-23T18:00:00+00:00",
+          "year": "2022",
+          "zone": "low"
+        }
+      ],
+      "timestamps": [
+        "2022-06-23T03:00:00+00:00",
+        "2022-06-23T09:00:00+00:00",
+        "2022-06-23T12:00:00+00:00",
+        "2022-06-23T18:00:00+00:00"
+      ]
+    },
+    "control_target": {
+      "metric_summary": {
+        "action_edge": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 0.025468,
+          "mean": 0.018855,
+          "median": 0.01925,
+          "min": 0.012063
+        },
+        "bars_since_regime_change": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 184.0,
+          "mean": 184.0,
+          "median": 184.0,
+          "min": 184.0
+        },
+        "clarity_raw": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 0.359867,
+          "mean": 0.355862,
+          "median": 0.356102,
+          "min": 0.351749
+        },
+        "clarity_score": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 36.0,
+          "mean": 35.8,
+          "median": 36.0,
+          "min": 35.0
+        },
+        "confidence_gate": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 0.512734,
+          "mean": 0.509427,
+          "median": 0.509625,
+          "min": 0.506031
+        },
+        "dwell_duration": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 15.0,
+          "mean": 9.0,
+          "median": 9.0,
+          "min": 3.0
+        },
+        "fwd_16_close_return_pct": {
+          "count": 5,
+          "gt_zero_share": 0.4,
+          "max": 2.673438,
+          "mean": -0.528871,
+          "median": -0.814923,
+          "min": -3.31458
+        },
+        "fwd_4_close_return_pct": {
+          "count": 5,
+          "gt_zero_share": 0.8,
+          "max": 1.626595,
+          "mean": 0.402737,
+          "median": 0.354542,
+          "min": -0.766893
+        },
+        "fwd_8_close_return_pct": {
+          "count": 5,
+          "gt_zero_share": 0.8,
+          "max": 1.594156,
+          "mean": 0.595997,
+          "median": 0.867833,
+          "min": -0.879211
+        },
+        "mae_16_pct": {
+          "count": 5,
+          "gt_zero_share": 0.0,
+          "max": -0.804906,
+          "mean": -2.170306,
+          "median": -2.300678,
+          "min": -3.853727
+        },
+        "mfe_16_pct": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 4.424527,
+          "mean": 3.562799,
+          "median": 3.45918,
+          "min": 2.969371
+        }
+      },
+      "row_count": 5,
+      "rows": [
+        {
+          "absent_action": "LONG",
+          "action_edge": 0.019933,
+          "action_pair": "LONG->NONE",
+          "bars_since_regime_change": 184,
+          "candidate": "LONG",
+          "clarity_raw": 0.356515,
+          "clarity_score": 36.0,
+          "cohort_name": "control_target",
+          "confidence_gate": 0.509966,
+          "dwell_duration": 3.0,
+          "enabled_action": "NONE",
+          "entry_close": 20872.0,
+          "future_bars_available": 16,
+          "fwd_16_close_return_pct": 2.673438,
+          "fwd_4_close_return_pct": 0.354542,
+          "fwd_8_close_return_pct": 1.594156,
+          "mae_16_pct": -0.804906,
+          "matched_candle_index": 17607,
+          "mfe_16_pct": 3.45918,
+          "previous_policy": "RI_no_trade_policy",
+          "raw_target_policy": "RI_no_trade_policy",
+          "selected_policy": "RI_no_trade_policy",
+          "switch_reason": "insufficient_evidence",
+          "timestamp": "2022-06-24T03:00:00+00:00",
+          "year": "2022",
+          "zone": "low"
+        },
+        {
+          "absent_action": "LONG",
+          "action_edge": 0.01925,
+          "action_pair": "LONG->NONE",
+          "bars_since_regime_change": 184,
+          "candidate": "LONG",
+          "clarity_raw": 0.356102,
+          "clarity_score": 36.0,
+          "cohort_name": "control_target",
+          "confidence_gate": 0.509625,
+          "dwell_duration": 6.0,
+          "enabled_action": "NONE",
+          "entry_close": 21229.0,
+          "future_bars_available": 16,
+          "fwd_16_close_return_pct": -0.814923,
+          "fwd_4_close_return_pct": 0.452212,
+          "fwd_8_close_return_pct": 1.149371,
+          "mae_16_pct": -1.582741,
+          "matched_candle_index": 17613,
+          "mfe_16_pct": 3.726035,
+          "previous_policy": "RI_no_trade_policy",
+          "raw_target_policy": "RI_no_trade_policy",
+          "selected_policy": "RI_no_trade_policy",
+          "switch_reason": "insufficient_evidence",
+          "timestamp": "2022-06-24T21:00:00+00:00",
+          "year": "2022",
+          "zone": "low"
+        },
+        {
+          "absent_action": "LONG",
+          "action_edge": 0.012063,
+          "action_pair": "LONG->NONE",
+          "bars_since_regime_change": 184,
+          "candidate": "LONG",
+          "clarity_raw": 0.351749,
+          "clarity_score": 35.0,
+          "cohort_name": "control_target",
+          "confidence_gate": 0.506031,
+          "dwell_duration": 9.0,
+          "enabled_action": "NONE",
+          "entry_close": 21385.0,
+          "future_bars_available": 16,
+          "fwd_16_close_return_pct": 0.528408,
+          "fwd_4_close_return_pct": -0.766893,
+          "fwd_8_close_return_pct": 0.247837,
+          "mae_16_pct": -2.300678,
+          "matched_candle_index": 17616,
+          "mfe_16_pct": 2.969371,
+          "previous_policy": "RI_no_trade_policy",
+          "raw_target_policy": "RI_no_trade_policy",
+          "selected_policy": "RI_no_trade_policy",
+          "switch_reason": "insufficient_evidence",
+          "timestamp": "2022-06-25T06:00:00+00:00",
+          "year": "2022",
+          "zone": "low"
+        },
+        {
+          "absent_action": "LONG",
+          "action_edge": 0.025468,
+          "action_pair": "LONG->NONE",
+          "bars_since_regime_change": 184,
+          "candidate": "LONG",
+          "clarity_raw": 0.359867,
+          "clarity_score": 36.0,
+          "cohort_name": "control_target",
+          "confidence_gate": 0.512734,
+          "dwell_duration": 12.0,
+          "enabled_action": "NONE",
+          "entry_close": 21087.0,
+          "future_bars_available": 16,
+          "fwd_16_close_return_pct": -1.716697,
+          "fwd_4_close_return_pct": 1.626595,
+          "fwd_8_close_return_pct": 0.867833,
+          "mae_16_pct": -2.30948,
+          "matched_candle_index": 17619,
+          "mfe_16_pct": 4.424527,
+          "previous_policy": "RI_no_trade_policy",
+          "raw_target_policy": "RI_no_trade_policy",
+          "selected_policy": "RI_no_trade_policy",
+          "switch_reason": "insufficient_evidence",
+          "timestamp": "2022-06-25T15:00:00+00:00",
+          "year": "2022",
+          "zone": "low"
+        },
+        {
+          "absent_action": "LONG",
+          "action_edge": 0.01756,
+          "action_pair": "LONG->NONE",
+          "bars_since_regime_change": 184,
+          "candidate": "LONG",
+          "clarity_raw": 0.355078,
+          "clarity_score": 36.0,
+          "cohort_name": "control_target",
+          "confidence_gate": 0.50878,
+          "dwell_duration": 15.0,
+          "enabled_action": "NONE",
+          "entry_close": 21330.0,
+          "future_bars_available": 16,
+          "fwd_16_close_return_pct": -3.31458,
+          "fwd_4_close_return_pct": 0.347231,
+          "fwd_8_close_return_pct": -0.879211,
+          "mae_16_pct": -3.853727,
+          "matched_candle_index": 17622,
+          "mfe_16_pct": 3.23488,
+          "previous_policy": "RI_no_trade_policy",
+          "raw_target_policy": "RI_no_trade_policy",
+          "selected_policy": "RI_no_trade_policy",
+          "switch_reason": "insufficient_evidence",
+          "timestamp": "2022-06-26T00:00:00+00:00",
+          "year": "2022",
+          "zone": "low"
+        }
+      ],
+      "timestamps": [
+        "2022-06-24T03:00:00+00:00",
+        "2022-06-24T21:00:00+00:00",
+        "2022-06-25T06:00:00+00:00",
+        "2022-06-25T15:00:00+00:00",
+        "2022-06-26T00:00:00+00:00"
+      ]
+    },
+    "harmful_context": {
+      "metric_summary": {
+        "action_edge": {
+          "count": 1,
+          "gt_zero_share": 1.0,
+          "max": 0.042122,
+          "mean": 0.042122,
+          "median": 0.042122,
+          "min": 0.042122
+        },
+        "bars_since_regime_change": {
+          "count": 1,
+          "gt_zero_share": 1.0,
+          "max": 164.0,
+          "mean": 164.0,
+          "median": 164.0,
+          "min": 164.0
+        },
+        "clarity_raw": {
+          "count": 1,
+          "gt_zero_share": 1.0,
+          "max": 0.369952,
+          "mean": 0.369952,
+          "median": 0.369952,
+          "min": 0.369952
+        },
+        "clarity_score": {
+          "count": 1,
+          "gt_zero_share": 1.0,
+          "max": 37.0,
+          "mean": 37.0,
+          "median": 37.0,
+          "min": 37.0
+        },
+        "confidence_gate": {
+          "count": 1,
+          "gt_zero_share": 1.0,
+          "max": 0.521061,
+          "mean": 0.521061,
+          "median": 0.521061,
+          "min": 0.521061
+        },
+        "dwell_duration": {
+          "count": 1,
+          "gt_zero_share": 1.0,
+          "max": 5.0,
+          "mean": 5.0,
+          "median": 5.0,
+          "min": 5.0
+        },
+        "fwd_16_close_return_pct": {
+          "count": 1,
+          "gt_zero_share": 1.0,
+          "max": 4.157475,
+          "mean": 4.157475,
+          "median": 4.157475,
+          "min": 4.157475
+        },
+        "fwd_4_close_return_pct": {
+          "count": 1,
+          "gt_zero_share": 1.0,
+          "max": 1.672293,
+          "mean": 1.672293,
+          "median": 1.672293,
+          "min": 1.672293
+        },
+        "fwd_8_close_return_pct": {
+          "count": 1,
+          "gt_zero_share": 1.0,
+          "max": 1.907651,
+          "mean": 1.907651,
+          "median": 1.907651,
+          "min": 1.907651
+        },
+        "mae_16_pct": {
+          "count": 1,
+          "gt_zero_share": 0.0,
+          "max": -0.694375,
+          "mean": -0.694375,
+          "median": -0.694375,
+          "min": -0.694375
+        },
+        "mfe_16_pct": {
+          "count": 1,
+          "gt_zero_share": 1.0,
+          "max": 4.4445,
+          "mean": 4.4445,
+          "median": 4.4445,
+          "min": 4.4445
+        }
+      },
+      "row_count": 1,
+      "rows": [
+        {
+          "absent_action": "LONG",
+          "action_edge": 0.042122,
+          "action_pair": "LONG->NONE",
+          "bars_since_regime_change": 164,
+          "candidate": "LONG",
+          "clarity_raw": 0.369952,
+          "clarity_score": 37.0,
+          "cohort_name": "harmful_context",
+          "confidence_gate": 0.521061,
+          "dwell_duration": 5.0,
+          "enabled_action": "NONE",
+          "entry_close": 7978.4,
+          "future_bars_available": 16,
+          "fwd_16_close_return_pct": 4.157475,
+          "fwd_4_close_return_pct": 1.672293,
+          "fwd_8_close_return_pct": 1.907651,
+          "mae_16_pct": -0.694375,
+          "matched_candle_index": 8744,
+          "mfe_16_pct": 4.4445,
+          "previous_policy": "RI_no_trade_policy",
+          "raw_target_policy": "RI_no_trade_policy",
+          "selected_policy": "RI_no_trade_policy",
+          "switch_reason": "AGED_WEAK_CONTINUATION_GUARD",
+          "timestamp": "2019-06-12T06:00:00+00:00",
+          "year": "2019",
+          "zone": "low"
+        }
+      ],
+      "timestamps": [
+        "2019-06-12T06:00:00+00:00"
+      ]
+    },
+    "harmful_target": {
+      "metric_summary": {
+        "action_edge": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 0.033803,
+          "mean": 0.031428,
+          "median": 0.032288,
+          "min": 0.027801
+        },
+        "bars_since_regime_change": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 164.0,
+          "mean": 164.0,
+          "median": 164.0,
+          "min": 164.0
+        },
+        "clarity_raw": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 0.364914,
+          "mean": 0.363476,
+          "median": 0.363997,
+          "min": 0.36128
+        },
+        "clarity_score": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 36.0,
+          "mean": 36.0,
+          "median": 36.0,
+          "min": 36.0
+        },
+        "confidence_gate": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 0.516902,
+          "mean": 0.515714,
+          "median": 0.516144,
+          "min": 0.513901
+        },
+        "dwell_duration": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 23.0,
+          "mean": 17.0,
+          "median": 17.0,
+          "min": 11.0
+        },
+        "fwd_16_close_return_pct": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 10.550149,
+          "mean": 8.104614,
+          "median": 7.805325,
+          "min": 5.827197
+        },
+        "fwd_4_close_return_pct": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 4.923081,
+          "mean": 2.102206,
+          "median": 1.689912,
+          "min": 0.428676
+        },
+        "fwd_8_close_return_pct": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 5.571841,
+          "mean": 3.83844,
+          "median": 4.19006,
+          "min": 2.207709
+        },
+        "mae_16_pct": {
+          "count": 5,
+          "gt_zero_share": 0.0,
+          "max": -0.068321,
+          "mean": -0.518994,
+          "median": -0.321202,
+          "min": -1.286498
+        },
+        "mfe_16_pct": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 13.453039,
+          "mean": 9.664259,
+          "median": 9.062042,
+          "min": 7.618134
+        }
+      },
+      "row_count": 5,
+      "rows": [
+        {
+          "absent_action": "LONG",
+          "action_edge": 0.032288,
+          "action_pair": "LONG->NONE",
+          "bars_since_regime_change": 164,
+          "candidate": "LONG",
+          "clarity_raw": 0.363997,
+          "clarity_score": 36.0,
+          "cohort_name": "harmful_target",
+          "confidence_gate": 0.516144,
+          "dwell_duration": 11.0,
+          "enabled_action": "NONE",
+          "entry_close": 8130.6,
+          "future_bars_available": 16,
+          "fwd_16_close_return_pct": 6.904779,
+          "fwd_4_close_return_pct": 1.689912,
+          "fwd_8_close_return_pct": 2.207709,
+          "mae_16_pct": -1.286498,
+          "matched_candle_index": 8752,
+          "mfe_16_pct": 7.618134,
+          "previous_policy": "RI_no_trade_policy",
+          "raw_target_policy": "RI_no_trade_policy",
+          "selected_policy": "RI_no_trade_policy",
+          "switch_reason": "insufficient_evidence",
+          "timestamp": "2019-06-13T06:00:00+00:00",
+          "year": "2019",
+          "zone": "low"
+        },
+        {
+          "absent_action": "LONG",
+          "action_edge": 0.032452,
+          "action_pair": "LONG->NONE",
+          "bars_since_regime_change": 164,
+          "candidate": "LONG",
+          "clarity_raw": 0.364096,
+          "clarity_score": 36.0,
+          "cohort_name": "harmful_target",
+          "confidence_gate": 0.516226,
+          "dwell_duration": 14.0,
+          "enabled_action": "NONE",
+          "entry_close": 8188.0,
+          "future_bars_available": 16,
+          "fwd_16_close_return_pct": 7.805325,
+          "fwd_4_close_return_pct": 0.428676,
+          "fwd_8_close_return_pct": 2.496336,
+          "mae_16_pct": -0.321202,
+          "matched_candle_index": 8755,
+          "mfe_16_pct": 9.062042,
+          "previous_policy": "RI_no_trade_policy",
+          "raw_target_policy": "RI_no_trade_policy",
+          "selected_policy": "RI_no_trade_policy",
+          "switch_reason": "insufficient_evidence",
+          "timestamp": "2019-06-13T15:00:00+00:00",
+          "year": "2019",
+          "zone": "low"
+        },
+        {
+          "absent_action": "LONG",
+          "action_edge": 0.033803,
+          "action_pair": "LONG->NONE",
+          "bars_since_regime_change": 164,
+          "candidate": "LONG",
+          "clarity_raw": 0.364914,
+          "clarity_score": 36.0,
+          "cohort_name": "harmful_target",
+          "confidence_gate": 0.516902,
+          "dwell_duration": 17.0,
+          "enabled_action": "NONE",
+          "entry_close": 8196.6,
+          "future_bars_available": 16,
+          "fwd_16_close_return_pct": 9.43562,
+          "fwd_4_close_return_pct": 2.320027,
+          "fwd_8_close_return_pct": 5.571841,
+          "mae_16_pct": -0.068321,
+          "matched_candle_index": 8758,
+          "mfe_16_pct": 10.094429,
+          "previous_policy": "RI_no_trade_policy",
+          "raw_target_policy": "RI_no_trade_policy",
+          "selected_policy": "RI_no_trade_policy",
+          "switch_reason": "insufficient_evidence",
+          "timestamp": "2019-06-14T00:00:00+00:00",
+          "year": "2019",
+          "zone": "low"
+        },
+        {
+          "absent_action": "LONG",
+          "action_edge": 0.030797,
+          "action_pair": "LONG->NONE",
+          "bars_since_regime_change": 164,
+          "candidate": "LONG",
+          "clarity_raw": 0.363094,
+          "clarity_score": 36.0,
+          "cohort_name": "harmful_target",
+          "confidence_gate": 0.515399,
+          "dwell_duration": 20.0,
+          "enabled_action": "NONE",
+          "entry_close": 8281.4,
+          "future_bars_available": 16,
+          "fwd_16_close_return_pct": 10.550149,
+          "fwd_4_close_return_pct": 4.923081,
+          "fwd_8_close_return_pct": 4.726254,
+          "mae_16_pct": -0.140073,
+          "matched_candle_index": 8761,
+          "mfe_16_pct": 13.453039,
+          "previous_policy": "RI_no_trade_policy",
+          "raw_target_policy": "RI_no_trade_policy",
+          "selected_policy": "RI_no_trade_policy",
+          "switch_reason": "insufficient_evidence",
+          "timestamp": "2019-06-14T09:00:00+00:00",
+          "year": "2019",
+          "zone": "low"
+        },
+        {
+          "absent_action": "LONG",
+          "action_edge": 0.027801,
+          "action_pair": "LONG->NONE",
+          "bars_since_regime_change": 164,
+          "candidate": "LONG",
+          "clarity_raw": 0.36128,
+          "clarity_score": 36.0,
+          "cohort_name": "harmful_target",
+          "confidence_gate": 0.513901,
+          "dwell_duration": 23.0,
+          "enabled_action": "NONE",
+          "entry_close": 8692.0,
+          "future_bars_available": 16,
+          "fwd_16_close_return_pct": 5.827197,
+          "fwd_4_close_return_pct": 1.149333,
+          "fwd_8_close_return_pct": 4.19006,
+          "mae_16_pct": -0.778877,
+          "matched_candle_index": 8768,
+          "mfe_16_pct": 8.093649,
+          "previous_policy": "RI_no_trade_policy",
+          "raw_target_policy": "RI_no_trade_policy",
+          "selected_policy": "RI_no_trade_policy",
+          "switch_reason": "insufficient_evidence",
+          "timestamp": "2019-06-15T06:00:00+00:00",
+          "year": "2019",
+          "zone": "low"
+        }
+      ],
+      "timestamps": [
+        "2019-06-13T06:00:00+00:00",
+        "2019-06-13T15:00:00+00:00",
+        "2019-06-14T00:00:00+00:00",
+        "2019-06-14T09:00:00+00:00",
+        "2019-06-15T06:00:00+00:00"
+      ]
+    }
+  },
+  "context_rows_excluded_from_selection": true,
+  "descriptive_age_only_rule": {
+    "accepted_as_d1_answer": false,
+    "descriptive_only_reason": "pure_cross_envelope_age_split_not_accepted",
+    "field_name": "bars_since_regime_change",
+    "perfect_target_control_separation": true,
+    "rule": {
+      "field_name": "bars_since_regime_change",
+      "operator": "<=",
+      "threshold": 164.0
+    },
+    "search_shape": "single_threshold",
+    "selected_control_target_count": 0,
+    "selected_harmful_target_count": 5,
+    "selection_by_cohort": {
+      "control_context": {
+        "evaluable_count": 4,
+        "rejected_timestamps": [
+          "2022-06-23T03:00:00+00:00",
+          "2022-06-23T09:00:00+00:00",
+          "2022-06-23T12:00:00+00:00",
+          "2022-06-23T18:00:00+00:00"
+        ],
+        "row_count": 4,
+        "selected_count": 0,
+        "selected_timestamps": [],
+        "selection_rate": 0.0,
+        "unavailable_timestamps": []
+      },
+      "control_target": {
+        "evaluable_count": 5,
+        "rejected_timestamps": [
+          "2022-06-24T03:00:00+00:00",
+          "2022-06-24T21:00:00+00:00",
+          "2022-06-25T06:00:00+00:00",
+          "2022-06-25T15:00:00+00:00",
+          "2022-06-26T00:00:00+00:00"
+        ],
+        "row_count": 5,
+        "selected_count": 0,
+        "selected_timestamps": [],
+        "selection_rate": 0.0,
+        "unavailable_timestamps": []
+      },
+      "harmful_context": {
+        "evaluable_count": 1,
+        "rejected_timestamps": [],
+        "row_count": 1,
+        "selected_count": 1,
+        "selected_timestamps": [
+          "2019-06-12T06:00:00+00:00"
+        ],
+        "selection_rate": 1.0,
+        "unavailable_timestamps": []
+      },
+      "harmful_target": {
+        "evaluable_count": 5,
+        "rejected_timestamps": [],
+        "row_count": 5,
+        "selected_count": 5,
+        "selected_timestamps": [
+          "2019-06-13T06:00:00+00:00",
+          "2019-06-13T15:00:00+00:00",
+          "2019-06-14T00:00:00+00:00",
+          "2019-06-14T09:00:00+00:00",
+          "2019-06-15T06:00:00+00:00"
+        ],
+        "selection_rate": 1.0,
+        "unavailable_timestamps": []
+      }
+    }
+  },
+  "fail_closed_contract": {
+    "statement": "The helper reads only the exact locked 2019 and 2022 annual enabled-vs-absent action-diff rows plus curated candles, aborts on any row-lock or truth-polarity drift, uses only direct decision-time fields on the locked target rows, excludes context rows from separator fitting and selection, and keeps every outcome descriptive only with zero runtime, policy, promotion, or readiness authority."
+  },
+  "inputs": {
+    "action_diff_root": "results\\backtests\\ri_policy_router_enabled_vs_absent_all_years_20260428_curated_only",
+    "control_diff": "results\\backtests\\ri_policy_router_enabled_vs_absent_all_years_20260428_curated_only\\2022_enabled_vs_absent_action_diffs.json",
+    "curated_candles": "data\\curated\\v1\\candles\\tBTCUSD_3h.parquet",
+    "harmful_diff": "results\\backtests\\ri_policy_router_enabled_vs_absent_all_years_20260428_curated_only\\2019_enabled_vs_absent_action_diffs.json"
+  },
+  "non_authoritative": true,
+  "observational_only": true,
+  "search_boundary": {
+    "statement": "Permitted search is capped at best single-threshold evaluation per admitted field and, if no accepted non-age single-field separator exists, one two-field conjunction built from the two strongest non-age single-field rules. No optimizer, grid search, cross-window tuning, backfilled features, or reconstructed fields are allowed."
+  },
+  "selected_rule": {
+    "accepted_as_d1_answer": true,
+    "descriptive_only_reason": null,
+    "field_name": "action_edge",
+    "perfect_target_control_separation": true,
+    "rule": {
+      "field_name": "action_edge",
+      "operator": ">=",
+      "threshold": 0.027801
+    },
+    "search_shape": "single_threshold",
+    "selected_control_target_count": 0,
+    "selected_harmful_target_count": 5,
+    "selection_by_cohort": {
+      "control_context": {
+        "evaluable_count": 4,
+        "rejected_timestamps": [],
+        "row_count": 4,
+        "selected_count": 4,
+        "selected_timestamps": [
+          "2022-06-23T03:00:00+00:00",
+          "2022-06-23T09:00:00+00:00",
+          "2022-06-23T12:00:00+00:00",
+          "2022-06-23T18:00:00+00:00"
+        ],
+        "selection_rate": 1.0,
+        "unavailable_timestamps": []
+      },
+      "control_target": {
+        "evaluable_count": 5,
+        "rejected_timestamps": [
+          "2022-06-24T03:00:00+00:00",
+          "2022-06-24T21:00:00+00:00",
+          "2022-06-25T06:00:00+00:00",
+          "2022-06-25T15:00:00+00:00",
+          "2022-06-26T00:00:00+00:00"
+        ],
+        "row_count": 5,
+        "selected_count": 0,
+        "selected_timestamps": [],
+        "selection_rate": 0.0,
+        "unavailable_timestamps": []
+      },
+      "harmful_context": {
+        "evaluable_count": 1,
+        "rejected_timestamps": [],
+        "row_count": 1,
+        "selected_count": 1,
+        "selected_timestamps": [
+          "2019-06-12T06:00:00+00:00"
+        ],
+        "selection_rate": 1.0,
+        "unavailable_timestamps": []
+      },
+      "harmful_target": {
+        "evaluable_count": 5,
+        "rejected_timestamps": [],
+        "row_count": 5,
+        "selected_count": 5,
+        "selected_timestamps": [
+          "2019-06-13T06:00:00+00:00",
+          "2019-06-13T15:00:00+00:00",
+          "2019-06-14T00:00:00+00:00",
+          "2019-06-14T09:00:00+00:00",
+          "2019-06-15T06:00:00+00:00"
+        ],
+        "selection_rate": 1.0,
+        "unavailable_timestamps": []
+      }
+    }
+  },
+  "selected_rule_search_shape": "single_threshold",
+  "skill_usage": [
+    "decision_gate_debug",
+    "python_engineering"
+  ],
+  "status": "accepted_single_threshold_separator",
+  "subject": {
+    "control_reference": "docs\\analysis\\regime_intelligence\\policy_router\\ri_policy_router_insufficient_evidence_2022_06_weak_signal_holdout_2026-05-04.md",
+    "control_year": "2022",
+    "harmful_year": "2019",
+    "packet_reference": "docs\\decisions\\regime_intelligence\\policy_router\\ri_policy_router_insufficient_evidence_d1_exact_subject_pair_precode_packet_2026-05-04.md",
+    "parking_reference": "docs\\analysis\\regime_intelligence\\policy_router\\ri_policy_router_insufficient_evidence_translation_parking_synthesis_2026-05-04.md",
+    "symbol": "tBTCUSD",
+    "timeframe": "3h"
+  },
+  "tested_two_field_conjunction": null,
+  "truth_polarity": {
+    "control_target_correct_suppression_proxy_holds": true,
+    "control_target_fwd_16_mean": -0.528871,
+    "harmful_minus_control_fwd_16_mean_gap": 8.633485,
+    "harmful_target_fwd_16_mean": 8.104614,
+    "harmful_target_harmful_proxy_holds": true
+  }
+}

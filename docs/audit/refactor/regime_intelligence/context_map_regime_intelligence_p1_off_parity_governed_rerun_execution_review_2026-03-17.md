@@ -13,7 +13,7 @@ It does **not** start the rerun. It evaluates whether execution may be approved 
 | Reviewed branch                | `feature/regime-intelligence-cutover-analysis-v1`                                               | verified from local git state |
 | Reviewed short SHA             | `1c2f38ad`                                                                                      | verified from local git state |
 | Reviewed full SHA              | `1c2f38ad88723034b819b7844c69d138a7702086`                                                      | verified from local git state |
-| Reviewed execution-plan packet | `docs/governance/regime_intelligence_p1_off_parity_governed_rerun_execution_plan_2026-03-17.md` | present                       |
+| Reviewed execution-plan packet | `docs/decisions/regime_intelligence/p1_off_parity/regime_intelligence_p1_off_parity_governed_rerun_execution_plan_2026-03-17.md` | present                       |
 
 ### Baseline Provenance Status
 

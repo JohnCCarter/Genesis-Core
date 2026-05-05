@@ -14,12 +14,12 @@ Perform a repo-wide semantic alignment pass so active repository guidance matche
 ## Scope IN
 
 - `docs/features/feature-regime-intelligence-strategy-family-1.md`
-- `docs/governance/regime_intelligence_strategy_family_integration_stub_2026-03-18.md`
-- `docs/analysis/regime_intelligence_champion_compatibility_findings_2026-03-18.md`
+- `docs/analysis/regime_intelligence/core/regime_intelligence_strategy_family_integration_stub_2026-03-18.md`
+- `docs/analysis/regime_intelligence/core/regime_intelligence_champion_compatibility_findings_2026-03-18.md`
 
 ## Scope OUT
 
-- `docs/analysis/tBTCUSD_3h_candidate_recommendation_2026-03-18.md`
+- `docs/analysis/recommendations/tBTCUSD_3h_candidate_recommendation_2026-03-18.md`
 - `tests/utils/test_validate_optimizer_config.py`
 - `tests/core/strategy/test_families.py`
 - `scripts/validate/validate_optimizer_config.py`
@@ -39,13 +39,13 @@ Perform a repo-wide semantic alignment pass so active repository guidance matche
    - still presents historical classifier/storage labels (`legacy_family`, `ri_family`, `invalid_hybrid_overlay`) as if they are the active canonical labels
    - needs alignment to current canonical labels `legacy | ri` and fail-closed hybrid handling
 
-2. `docs/governance/regime_intelligence_strategy_family_integration_stub_2026-03-18.md`
+2. `docs/analysis/regime_intelligence/core/regime_intelligence_strategy_family_integration_stub_2026-03-18.md`
    - partially clarified already, but still mixes current-state language with historical stub labels and proposed artifacts
    - needs tighter wording so readers do not infer a third persisted family label or active overlay-compatible path
 
 ### B. Historical docs requiring clarification only
 
-1. `docs/analysis/regime_intelligence_champion_compatibility_findings_2026-03-18.md`
+1. `docs/analysis/regime_intelligence/core/regime_intelligence_champion_compatibility_findings_2026-03-18.md`
    - overlay language is historically correct, but can benefit from a small clarification that the finding describes a rejected compatibility probe, not an accepted architecture mode
 
 ### C. No change needed unless new evidence appears
@@ -53,7 +53,7 @@ Perform a repo-wide semantic alignment pass so active repository guidance matche
 1. `handoff.md`
    - already states RI is its own strategy family and warns against reintroducing overlay semantics
 
-2. `docs/analysis/tBTCUSD_3h_candidate_recommendation_2026-03-18.md`
+2. `docs/analysis/recommendations/tBTCUSD_3h_candidate_recommendation_2026-03-18.md`
    - already aligned; keep unchanged in this slice
 
 3. `src/core/strategy/family_registry.py`

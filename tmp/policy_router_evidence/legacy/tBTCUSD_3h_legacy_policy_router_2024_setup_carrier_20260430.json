@@ -1,0 +1,108 @@
+{
+  "trial_id": "legacy_policy_router_2024_setup_control",
+  "source_config": "config/runtime.seed.json",
+  "runtime_bridge": {
+    "purpose": "Setup-only true Legacy carrier with explicit legacy authority and enabled research_policy_router leaf for the first 2024 control proof.",
+    "notes": [
+      "Derived from Legacy seed defaults rather than RI bridge artifacts.",
+      "Evidence-only setup artifact; not a champion, not promotion evidence, and not backtest authorization by itself.",
+      "A future Legacy absent variant should be derived by explicit later packet rather than treated as already materialized here."
+    ]
+  },
+  "cfg": {
+    "strategy_family": "legacy",
+    "thresholds": {
+      "entry_conf_overall": 0.26,
+      "regime_proba": {
+        "ranging": 0.5,
+        "bull": 0.52,
+        "bear": 0.48,
+        "balanced": 0.5
+      },
+      "signal_adaptation": {
+        "atr_period": 28,
+        "zones": {
+          "low": {
+            "entry_conf_overall": 0.24,
+            "regime_proba": 0.36
+          },
+          "mid": {
+            "entry_conf_overall": 0.3,
+            "regime_proba": 0.44
+          },
+          "high": {
+            "entry_conf_overall": 0.36,
+            "regime_proba": 0.56
+          }
+        }
+      }
+    },
+    "gates": {
+      "hysteresis_steps": 2,
+      "cooldown_bars": 0
+    },
+    "risk": {
+      "risk_map": [
+        [0.45, 0.015],
+        [0.55, 0.025],
+        [0.65, 0.035]
+      ]
+    },
+    "exit": {
+      "enabled": true,
+      "exit_conf_threshold": 0.4,
+      "max_hold_bars": 20,
+      "regime_aware_exits": true,
+      "stop_loss_pct": 0.02,
+      "take_profit_pct": 0.05,
+      "trailing_stop_enabled": true,
+      "trailing_stop_pct": 0.015
+    },
+    "multi_timeframe": {
+      "use_htf_block": true,
+      "allow_ltf_override": true,
+      "ltf_override_threshold": 0.85,
+      "ltf_override_adaptive": {
+        "enabled": true,
+        "window": 120,
+        "percentile": 0.85,
+        "min_history": 30,
+        "min_floor": null,
+        "max_ceiling": null,
+        "fallback_threshold": null,
+        "regime_multipliers": {}
+      },
+      "htf_selector": {
+        "mode": "fixed",
+        "default_timeframe": null,
+        "default_multiplier": null,
+        "fallback_timeframe": "1D",
+        "per_timeframe": {
+          "1h": {
+            "multiplier": 6
+          },
+          "3h": {
+            "timeframe": "1D"
+          },
+          "6h": {
+            "timeframe": "1D"
+          }
+        }
+      },
+      "regime_intelligence": {
+        "authority_mode": "legacy"
+      },
+      "research_policy_router": {
+        "enabled": true,
+        "switch_threshold": 2,
+        "hysteresis": 1,
+        "min_dwell": 3,
+        "defensive_size_multiplier": 0.5
+      }
+    },
+    "ev": {
+      "R_default": 1.8
+    },
+    "warmup_bars": 120
+  }
+}

@@ -11,12 +11,12 @@
       "config_path": "config/strategy/candidates/3h/tBTCUSD_3h_slice8_runtime_bridge_20260326.json",
       "created_at": "2026-03-26",
       "governance_refs": [
-        "docs/governance/regime_intelligence_optuna_challenger_family_runtime_bridge_classification_2026-03-26.md",
-        "docs/governance/ri_router_replay_defensive_transition_backtest_execution_summary_2026-04-23.md"
+        "docs/analysis/regime_intelligence/optuna/challenger_family/regime_intelligence_optuna_challenger_family_runtime_bridge_classification_2026-03-26.md",
+        "docs/analysis/regime_intelligence/router_replay/ri_router_replay_defensive_transition_backtest_execution_summary_2026-04-23.md"
       ],
       "evidence_refs": [
-        "docs/analysis/ri_advisory_environment_fit_phase3_direct_baseline_admissibility_2026-04-16.md",
-        "docs/governance/scpe_ri_v1_shadow_backtest_bridge_slice1_execution_summary_2026-04-21.md"
+        "docs/analysis/regime_intelligence/advisory_environment_fit/ri_advisory_environment_fit_phase3_direct_baseline_admissibility_2026-04-16.md",
+        "docs/analysis/scpe_ri_v1/scpe_ri_v1_shadow_backtest_bridge_slice1_execution_summary_2026-04-21.md"
       ],
       "lineage": {
         "source_run": "run_20260324_174006",
@@ -36,12 +36,12 @@
       "config_path": "config/strategy/candidates/3h/tBTCUSD_3h_slice8_runtime_bridge_defensive_transition_20260423.json",
       "created_at": "2026-04-23",
       "governance_refs": [
-        "docs/governance/ri_router_replay_defensive_transition_bridge_activation_implementation_packet_2026-04-23.md",
-        "docs/governance/ri_router_replay_defensive_transition_backtest_execution_summary_2026-04-23.md"
+        "docs/decisions/regime_intelligence/router_replay/ri_router_replay_defensive_transition_bridge_activation_implementation_packet_2026-04-23.md",
+        "docs/analysis/regime_intelligence/router_replay/ri_router_replay_defensive_transition_backtest_execution_summary_2026-04-23.md"
       ],
       "evidence_refs": [
-        "docs/governance/ri_router_replay_defensive_transition_backtest_launch_boundary_packet_2026-04-23.md",
-        "docs/governance/ri_router_replay_defensive_transition_backtest_execution_summary_2026-04-23.md"
+        "docs/decisions/regime_intelligence/router_replay/ri_router_replay_defensive_transition_backtest_launch_boundary_packet_2026-04-23.md",
+        "docs/analysis/regime_intelligence/router_replay/ri_router_replay_defensive_transition_backtest_execution_summary_2026-04-23.md"
       ],
       "lineage": {
         "parent_candidate_id": "tbtcusd_3h_slice8_runtime_bridge_20260326",

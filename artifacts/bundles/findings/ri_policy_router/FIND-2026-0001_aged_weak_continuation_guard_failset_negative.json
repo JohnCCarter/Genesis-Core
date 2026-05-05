@@ -13,7 +13,7 @@
     "end": "2023-12-31T23:59:59+00:00"
   },
   "candidate_refs": [
-    "docs/governance/ri_policy_router_aged_weak_continuation_guard_implementation_packet_2026-04-24.md"
+    "docs/decisions/regime_intelligence/policy_router/ri_policy_router_aged_weak_continuation_guard_implementation_packet_2026-04-24.md"
   ],
   "finding_outcome": "negative",
   "summary": "The aged weak continuation guard worsened both December fail windows and did not remove the intended late-December losing seam.",
@@ -27,11 +27,11 @@
   ],
   "evidence_refs": [
     {
-      "path": "docs/governance/ri_policy_router_aged_weak_continuation_guard_failset_evidence_2026-04-24.md",
+      "path": "docs/analysis/regime_intelligence/policy_router/ri_policy_router_aged_weak_continuation_guard_failset_evidence_2026-04-24.md",
       "role": "primary_evidence"
     },
     {
-      "path": "docs/governance/ri_policy_router_continuation_split_seam_direction_packet_2026-04-24.md",
+      "path": "docs/decisions/regime_intelligence/policy_router/ri_policy_router_continuation_split_seam_direction_packet_2026-04-24.md",
       "role": "seam_interpretation"
     }
   ],

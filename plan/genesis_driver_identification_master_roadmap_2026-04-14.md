@@ -6,6 +6,13 @@ Branch: `feature/ri-role-map-implementation-2026-03-24`
 Status: `closed / bounded closeout complete / docs-only authority`
 Supersedes as live continuation anchor: `plan/feature_attribution_post_phase14_reactivation_roadmap_2026-04-02.md`
 
+> Current status note:
+>
+> - This roadmap is not active on `feature/next-slice-2026-04-29`.
+> - Preserve it as a historical closed roadmap from the earlier `feature/ri-role-map-implementation-2026-03-24` branch context.
+> - The current active lane authority remains `GENESIS_WORKING_CONTRACT.md` plus the active RI policy-router packet/analysis chain.
+> - Reopen only via explicit user request or a fresh packet that deliberately returns to Genesis driver-identification work.
+
 ## Why this roadmap exists
 
 We have accumulated several valid research slices, but the lane has become too fragmented.
@@ -175,8 +182,8 @@ Turn the current fragmented research state into one live working roadmap with ex
 ### Status
 
 - `completed on docs-only basis`
-- packet anchor: `docs/governance/execution_proxy_partition_phase1_packet_2026-04-14.md`
-- analysis anchor: `docs/analysis/execution_proxy_partition_phase1_2026-04-14.md`
+- packet anchor: `docs/decisions/diagnostic_campaigns/execution_proxy_partition_phase1_packet_2026-04-14.md`
+- analysis anchor: `docs/analysis/diagnostics/execution_proxy_partition_phase1_2026-04-14.md`
 - verdict: `stricter execution lane justified`
 
 ### Why this is first
@@ -194,10 +201,10 @@ Does the proxy surface contain a strong asymmetry that materially narrows the Ge
 
 ### Required inputs
 
-- `docs/analysis/execution_proxy_first_read_2026-04-02.md`
+- `docs/analysis/diagnostics/execution_proxy_first_read_2026-04-02.md`
 - local home-machine artifacts under `results/research/fa_v2_adaptation_off/phase10_execution_proxy_evidence/`
 - `results/research/fa_v2_adaptation_off/EDGE_ORIGIN_REPORT.md`
-- `docs/analysis/execution_inefficiency_artifact_gap_2026-04-02.md`
+- `docs/analysis/diagnostics/execution_inefficiency_artifact_gap_2026-04-02.md`
 
 ### Required partition axes
 
@@ -240,8 +247,8 @@ The next bounded move on the current roadmap is therefore:
 ### Status
 
 - `completed on docs-only basis`
-- packet anchor: `docs/governance/sizing_chain_synthesis_phase2_packet_2026-04-14.md`
-- analysis anchor: `docs/analysis/sizing_chain_synthesis_phase2_2026-04-14.md`
+- packet anchor: `docs/decisions/diagnostic_campaigns/sizing_chain_synthesis_phase2_packet_2026-04-14.md`
+- analysis anchor: `docs/analysis/diagnostics/sizing_chain_synthesis_phase2_2026-04-14.md`
 - conclusion: `sizing chain matters but does not beat emergent_system_behavior`
 
 ### Why this is second
@@ -268,8 +275,8 @@ Fuse the following into one bounded driver ladder:
 ### Required inputs
 
 - `plan/feature_attribution_post_phase14_reactivation_roadmap_2026-04-02.md`
-- `docs/analysis/feature_attribution_post_phase14_rebaseline_reconciliation_2026-04-02.md`
-- `docs/governance/survival_boundary_phase4_packet_2026-04-01.md`
+- `docs/analysis/diagnostics/feature_attribution_post_phase14_rebaseline_reconciliation_2026-04-02.md`
+- `docs/decisions/diagnostic_campaigns/survival_boundary_phase4_packet_2026-04-01.md`
 - `results/research/fa_v2_adaptation_off/EDGE_ORIGIN_REPORT.md`
 
 ### Required output
@@ -310,8 +317,8 @@ The next bounded move on the current roadmap is therefore:
 ### Status
 
 - `completed on docs-only basis`
-- packet anchor: `docs/governance/residual_drift_separation_phase3_packet_2026-04-14.md`
-- analysis anchor: `docs/analysis/residual_drift_separation_phase3_2026-04-14.md`
+- packet anchor: `docs/decisions/diagnostic_campaigns/residual_drift_separation_phase3_packet_2026-04-14.md`
+- analysis anchor: `docs/analysis/diagnostics/residual_drift_separation_phase3_2026-04-14.md`
 - verdict: `drift compatibility strengthened`
 
 ### Why this is third
@@ -337,7 +344,7 @@ can be narrowed into something more informative than a generic residual class.
 
 ### Required inputs
 
-- `docs/analysis/regime_independent_drift_artifact_gap_2026-04-02.md`
+- `docs/analysis/diagnostics/regime_independent_drift_artifact_gap_2026-04-02.md`
 - `results/research/fa_v2_adaptation_off/EDGE_ORIGIN_REPORT.md`
 - the outputs of Phase 1 and Phase 2
 
@@ -367,8 +374,8 @@ The next bounded move on the current roadmap is therefore:
 ### Status
 
 - `completed on docs-only basis`
-- packet anchor: `docs/governance/microstructure_triage_phase4_packet_2026-04-14.md`
-- analysis anchor: `docs/analysis/microstructure_triage_phase4_2026-04-14.md`
+- packet anchor: `docs/decisions/diagnostic_campaigns/microstructure_triage_phase4_packet_2026-04-14.md`
+- analysis anchor: `docs/analysis/diagnostics/microstructure_triage_phase4_2026-04-14.md`
 - decision: `future stricter lane only`
 
 ### Why this is not earlier
@@ -409,7 +416,7 @@ The next bounded move on the current roadmap is therefore:
 ### Status
 
 - `completed on docs-only basis`
-- analysis anchor: `docs/analysis/genesis_driver_final_synthesis_2026-04-14.md`
+- analysis anchor: `docs/analysis/diagnostics/genesis_driver_final_synthesis_2026-04-14.md`
 - final label: `emergent_system_behavior remains best-supported`
 
 ### Goal

@@ -46,7 +46,7 @@
   "references": [
     {
       "type": "doc",
-      "value": "docs/governance/slice_scout_preflight_bootstrap_packet_2026-04-24.md"
+      "value": "docs/decisions/research_findings/slice_scout_preflight_bootstrap_packet_2026-04-24.md"
     },
     {
       "type": "file",

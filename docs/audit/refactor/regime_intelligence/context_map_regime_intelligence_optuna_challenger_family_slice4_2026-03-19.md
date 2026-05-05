@@ -29,8 +29,8 @@ Create the fourth Regime Intelligence Optuna campaign for `tBTCUSD` on `3h` that
 | `results/hparam_search/run_20260318_134535/validation/trial_003.json`             | same validation score and metrics; another confirmation of plateau                                                       |
 | `results/hparam_search/run_20260318_134535/validation/trial_004.json`             | same validation score and metrics; threshold micro-variation did not change validation result                            |
 | `results/hparam_search/run_20260318_134535/validation/trial_005.json`             | same validation score and metrics; exit/fib-adjacent variations still collapsed to the same validation cluster           |
-| `docs/analysis/tBTCUSD_3h_candidate_recommendation_2026-03-18.md`                 | incumbent champion remains stronger at validation score `0.2617`; RI family remains research track, not promotion        |
-| `docs/analysis/regime_intelligence_champion_compatibility_findings_2026-03-18.md` | RI should be treated as a new strategy family; champion overlay is not the main path                                     |
+| `docs/analysis/recommendations/tBTCUSD_3h_candidate_recommendation_2026-03-18.md`                 | incumbent champion remains stronger at validation score `0.2617`; RI family remains research track, not promotion        |
+| `docs/analysis/regime_intelligence/core/regime_intelligence_champion_compatibility_findings_2026-03-18.md` | RI should be treated as a new strategy family; champion overlay is not the main path                                     |
 
 ### Why slice-4 should NOT reopen thresholds / exits / override / fib breadth
 

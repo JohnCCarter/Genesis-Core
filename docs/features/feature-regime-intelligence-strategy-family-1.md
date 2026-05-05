@@ -78,8 +78,8 @@ This hybrid should not be treated as a valid RI promotion candidate because the 
 
 The family definition in this document is grounded in the following evidence:
 
-- `docs/analysis/regime_intelligence_champion_compatibility_findings_2026-03-18.md`
-- `docs/analysis/tBTCUSD_3h_candidate_recommendation_2026-03-18.md`
+- `docs/analysis/regime_intelligence/core/regime_intelligence_champion_compatibility_findings_2026-03-18.md`
+- `docs/analysis/recommendations/tBTCUSD_3h_candidate_recommendation_2026-03-18.md`
 - `docs/features/feature-ri-optuna-train-validate-blind-1.md`
 - `docs/audit/refactor/regime_intelligence/context_map_regime_intelligence_optuna_challenger_family_slice3_2026-03-18.md`
 - `results/hparam_search/run_20260318_112046/*`
@@ -460,10 +460,10 @@ Until contrary evidence exists, the default stance is:
 ## 9. Files
 
 - **FILE-001**: `docs/features/feature-regime-intelligence-strategy-family-1.md` — this formal family-definition artifact
-- **FILE-002**: `docs/analysis/regime_intelligence_champion_compatibility_findings_2026-03-18.md` — compatibility evidence basis
-- **FILE-003**: `docs/analysis/tBTCUSD_3h_candidate_recommendation_2026-03-18.md` — candidate-status evidence basis
+- **FILE-002**: `docs/analysis/regime_intelligence/core/regime_intelligence_champion_compatibility_findings_2026-03-18.md` — compatibility evidence basis
+- **FILE-003**: `docs/analysis/recommendations/tBTCUSD_3h_candidate_recommendation_2026-03-18.md` — candidate-status evidence basis
 - **FILE-004**: `docs/features/feature-ri-optuna-train-validate-blind-1.md` — experiment-framework reference
-- **FILE-005**: `docs/governance/regime_intelligence_strategy_family_integration_stub_2026-03-18.md` — companion docs-only implementation stub for metadata labeling, orchestration, and family-aware comparison
+- **FILE-005**: `docs/analysis/regime_intelligence/core/regime_intelligence_strategy_family_integration_stub_2026-03-18.md` — companion docs-only implementation stub for metadata labeling, orchestration, and family-aware comparison
 
 ## 10. Validation
 
@@ -481,9 +481,9 @@ Until contrary evidence exists, the default stance is:
 
 ## 12. Related Specifications / Further Reading
 
-- `docs/analysis/regime_intelligence_champion_compatibility_findings_2026-03-18.md`
-- `docs/analysis/tBTCUSD_3h_candidate_recommendation_2026-03-18.md`
+- `docs/analysis/regime_intelligence/core/regime_intelligence_champion_compatibility_findings_2026-03-18.md`
+- `docs/analysis/recommendations/tBTCUSD_3h_candidate_recommendation_2026-03-18.md`
 - `docs/features/feature-ri-optuna-train-validate-blind-1.md`
-- `docs/governance/regime_intelligence_strategy_family_integration_stub_2026-03-18.md`
+- `docs/analysis/regime_intelligence/core/regime_intelligence_strategy_family_integration_stub_2026-03-18.md`
 - `docs/audit/refactor/regime_intelligence/context_map_regime_intelligence_optuna_challenger_family_slice3_2026-03-18.md`
 - `results/archive/bundles/ri_slices_bundle_20260318_1458.zip`

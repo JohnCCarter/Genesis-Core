@@ -16,10 +16,10 @@ It does **not** start the rerun, does **not** enact baseline approval, and does 
 
 | Source doc                                                                                                  | Inherited role                                                                                            |
 | ----------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `docs/governance/regime_intelligence_p1_off_parity_governed_baseline_reset_execution_prep_2026-03-17.md`    | selects fallback path and retires evidence recovery as the preferred next step                            |
-| `docs/governance/regime_intelligence_p1_off_parity_governed_baseline_reset_execution_runbook_2026-03-17.md` | locks execution provenance, command surfaces, canonical artifact path, metadata contract, and gate bundle |
-| `docs/governance/regime_intelligence_p1_off_parity_governed_rerun_execution_plan_2026-03-17.md`             | preserves canonical artifact semantics and full future execution flow                                     |
-| `docs/governance/regime_intelligence_p1_off_parity_governed_rerun_execution_review_2026-03-17.md`           | preserves the rule that execution is not auto-approved by structural completeness                         |
+| `docs/decisions/regime_intelligence/p1_off_parity/regime_intelligence_p1_off_parity_governed_baseline_reset_execution_prep_2026-03-17.md`    | selects fallback path and retires evidence recovery as the preferred next step                            |
+| `docs/decisions/regime_intelligence/p1_off_parity/regime_intelligence_p1_off_parity_governed_baseline_reset_execution_runbook_2026-03-17.md` | locks execution provenance, command surfaces, canonical artifact path, metadata contract, and gate bundle |
+| `docs/decisions/regime_intelligence/p1_off_parity/regime_intelligence_p1_off_parity_governed_rerun_execution_plan_2026-03-17.md`             | preserves canonical artifact semantics and full future execution flow                                     |
+| `docs/decisions/regime_intelligence/p1_off_parity/regime_intelligence_p1_off_parity_governed_rerun_execution_review_2026-03-17.md`           | preserves the rule that execution is not auto-approved by structural completeness                         |
 
 ### Pinned execution provenance inherited from the runbook
 

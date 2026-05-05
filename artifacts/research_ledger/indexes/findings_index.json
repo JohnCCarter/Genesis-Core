@@ -26,7 +26,7 @@
       "artifact_record_path": "artifacts/research_ledger/artifacts/ART-2026-0002.json",
       "summary": "The aged weak continuation guard worsened both December fail windows and did not remove the intended late-December losing seam.",
       "candidate_refs": [
-        "docs/governance/ri_policy_router_aged_weak_continuation_guard_implementation_packet_2026-04-24.md"
+        "docs/decisions/regime_intelligence/policy_router/ri_policy_router_aged_weak_continuation_guard_implementation_packet_2026-04-24.md"
       ],
       "key_timestamps": [
         "2023-12-22T15:00:00+00:00",
@@ -52,7 +52,7 @@
       "artifact_record_path": "artifacts/research_ledger/artifacts/ART-2026-0003.json",
       "summary": "The late-December continuation issue is split across two distinct seam classes, so the next candidate must choose one target instead of bundling both together.",
       "candidate_refs": [
-        "docs/governance/ri_policy_router_continuation_split_seam_direction_packet_2026-04-24.md"
+        "docs/decisions/regime_intelligence/policy_router/ri_policy_router_continuation_split_seam_direction_packet_2026-04-24.md"
       ],
       "key_timestamps": [
         "2023-12-22T15:00:00+00:00",
@@ -76,7 +76,7 @@
       "artifact_record_path": "artifacts/research_ledger/artifacts/ART-2026-0004.json",
       "summary": "The weak pre-aged release seam at 2023-12-22 15:00 is reachable and can be blocked by a bounded continuation-local guard.",
       "candidate_refs": [
-        "docs/governance/ri_policy_router_weak_pre_aged_release_implementation_packet_2026-04-24.md"
+        "docs/decisions/regime_intelligence/policy_router/ri_policy_router_weak_pre_aged_release_implementation_packet_2026-04-24.md"
       ],
       "key_timestamps": ["2023-12-22T15:00:00+00:00"],
       "do_not_repeat": [
@@ -97,7 +97,7 @@
       "artifact_record_path": "artifacts/research_ledger/artifacts/ART-2026-0005.json",
       "summary": "The weak pre-aged release candidate hits the intended seam-A row but still worsens both fail-set windows through broader action churn.",
       "candidate_refs": [
-        "docs/governance/ri_policy_router_weak_pre_aged_release_implementation_packet_2026-04-24.md"
+        "docs/decisions/regime_intelligence/policy_router/ri_policy_router_weak_pre_aged_release_implementation_packet_2026-04-24.md"
       ],
       "key_timestamps": [
         "2023-12-20T03:00:00+00:00",
@@ -124,7 +124,7 @@
       "artifact_record_path": "artifacts/research_ledger/artifacts/ART-2026-0006.json",
       "summary": "The seam-A candidate fails through repeated no-trade chaining plus a recurring two-bar cooldown displacement loop, not because the intended row was missed.",
       "candidate_refs": [
-        "docs/governance/ri_policy_router_weak_pre_aged_release_implementation_packet_2026-04-24.md"
+        "docs/decisions/regime_intelligence/policy_router/ri_policy_router_weak_pre_aged_release_implementation_packet_2026-04-24.md"
       ],
       "key_timestamps": [
         "2023-12-21T18:00:00+00:00",
@@ -152,7 +152,7 @@
       "artifact_record_path": "artifacts/research_ledger/artifacts/ART-2026-0007.json",
       "summary": "Substituted-continuation weakness does not follow one universal annual shape on the curated observational surface: 2020 concentrates bad rows into a few acute windows, 2018 and 2022 revisit recurrent multi-row weak windows, and 2025 is weaker in a more fragmented form.",
       "candidate_refs": [
-        "docs/governance/ri_policy_router_substituted_continuation_local_tail_windows_2026-04-28.md"
+        "docs/analysis/regime_intelligence/policy_router/ri_policy_router_substituted_continuation_local_tail_windows_2026-04-28.md"
       ],
       "key_timestamps": [
         "2018-01-29T12:00:00+00:00",
@@ -181,7 +181,7 @@
       "artifact_record_path": "artifacts/research_ledger/artifacts/ART-2026-0008.json",
       "summary": "Even inside fixed mixed local windows, blocked-versus-substituted balance is phase-sensitive rather than universal: blocked rows look locally stronger in the mixed March 2020 window but locally weaker in the recurrent hostile March 2018 window.",
       "candidate_refs": [
-        "docs/governance/ri_policy_router_blocked_vs_substituted_same_windows_2026-04-28.md"
+        "docs/analysis/regime_intelligence/policy_router/ri_policy_router_blocked_vs_substituted_same_windows_2026-04-28.md"
       ],
       "key_timestamps": [
         "2018-03-20T06:00:00+00:00",

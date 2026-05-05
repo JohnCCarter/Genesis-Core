@@ -300,6 +300,67 @@ def test_validate_research_policy_router_enabled_preserves_leaf_in_canonical_dum
     }
 
 
+def test_validate_research_policy_router_explicit_release_override_is_preserved() -> None:
+    proposal = {
+        "strategy_family": "legacy",
+        "thresholds": {
+            "entry_conf_overall": 0.3,
+            "regime_proba": {"balanced": 0.5},
+        },
+        "multi_timeframe": {
+            "research_policy_router": {
+                "enabled": True,
+                "switch_threshold": 3,
+                "hysteresis": 2,
+                "continuation_release_hysteresis": 0,
+                "min_dwell": 4,
+                "defensive_size_multiplier": 0.4,
+            }
+        },
+    }
+
+    dumped = ConfigAuthority().validate(proposal).model_dump_canonical()
+
+    assert dumped["multi_timeframe"]["research_policy_router"] == {
+        "enabled": True,
+        "switch_threshold": 3,
+        "hysteresis": 2,
+        "continuation_release_hysteresis": 0,
+        "min_dwell": 4,
+        "defensive_size_multiplier": 0.4,
+    }
+
+
+def test_validate_research_policy_router_equal_release_override_is_elided() -> None:
+    proposal = {
+        "strategy_family": "legacy",
+        "thresholds": {
+            "entry_conf_overall": 0.3,
+            "regime_proba": {"balanced": 0.5},
+        },
+        "multi_timeframe": {
+            "research_policy_router": {
+                "enabled": True,
+                "switch_threshold": 3,
+                "hysteresis": 2,
+                "continuation_release_hysteresis": 2,
+                "min_dwell": 4,
+                "defensive_size_multiplier": 0.4,
+            }
+        },
+    }
+
+    dumped = ConfigAuthority().validate(proposal).model_dump_canonical()
+
+    assert dumped["multi_timeframe"]["research_policy_router"] == {
+        "enabled": True,
+        "switch_threshold": 3,
+        "hysteresis": 2,
+        "min_dwell": 4,
+        "defensive_size_multiplier": 0.4,
+    }
+
+
 def test_validate_research_policy_router_absent_matches_explicit_false_leaf() -> None:
     proposal_absent = {
         "strategy_family": "legacy",
@@ -319,6 +380,7 @@ def test_validate_research_policy_router_absent_matches_explicit_false_leaf() ->
                 "enabled": False,
                 "switch_threshold": 2,
                 "hysteresis": 1,
+                "continuation_release_hysteresis": 1,
                 "min_dwell": 3,
                 "defensive_size_multiplier": 0.5,
             }

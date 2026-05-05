@@ -123,7 +123,43 @@ def _router_config(cfg: dict[str, Any]) -> dict[str, Any] | None:
         0.0,
         min(1.0, _safe_float(normalized["defensive_size_multiplier"], 0.5)),
     )
+    continuation_release_hysteresis = router_cfg.get("continuation_release_hysteresis")
+    if continuation_release_hysteresis is None:
+        normalized["continuation_release_hysteresis"] = int(normalized["hysteresis"])
+    else:
+        normalized["continuation_release_hysteresis"] = max(
+            0,
+            int(
+                _safe_float(
+                    continuation_release_hysteresis,
+                    float(normalized["hysteresis"]),
+                )
+            ),
+        )
     return normalized
+
+
+def _resolve_switch_controls(
+    *,
+    raw_decision: _RawRouterDecision,
+    previous_state: _PreviousRouterState | None,
+    switch_threshold: int,
+    hysteresis: int,
+    continuation_release_hysteresis: int,
+) -> tuple[int, int, str]:
+    effective_switch_threshold = switch_threshold
+    effective_hysteresis = hysteresis
+    switch_control_mode = "default"
+
+    if (
+        previous_state is not None
+        and previous_state.selected_policy == POLICY_DEFENSIVE
+        and raw_decision.target_policy == POLICY_CONTINUATION
+    ):
+        effective_hysteresis = continuation_release_hysteresis
+        switch_control_mode = "continuation_release"
+
+    return effective_switch_threshold, effective_hysteresis, switch_control_mode
 
 
 def _previous_router_state(state_in: dict[str, Any]) -> _PreviousRouterState | None:
@@ -355,6 +391,7 @@ def _apply_stability_controls(
     bars_since_regime_change: float,
     switch_threshold: int,
     hysteresis: int,
+    continuation_release_hysteresis: int,
     min_dwell: int,
 ) -> _StabilityControlledDecision:
     if previous_state is None:
@@ -426,7 +463,15 @@ def _apply_stability_controls(
             no_trade=previous_state.selected_policy == POLICY_NO_TRADE,
         )
 
-    if raw_decision.mandate_level < switch_threshold:
+    effective_switch_threshold, effective_hysteresis, _ = _resolve_switch_controls(
+        raw_decision=raw_decision,
+        previous_state=previous_state,
+        switch_threshold=switch_threshold,
+        hysteresis=hysteresis,
+        continuation_release_hysteresis=continuation_release_hysteresis,
+    )
+
+    if raw_decision.mandate_level < effective_switch_threshold:
         return _StabilityControlledDecision(
             selected_policy=previous_state.selected_policy,
             switch_reason="confidence_below_threshold",
@@ -439,7 +484,7 @@ def _apply_stability_controls(
             no_trade=previous_state.selected_policy == POLICY_NO_TRADE,
         )
 
-    if raw_decision.mandate_level < previous_state.mandate_level + hysteresis:
+    if raw_decision.mandate_level < previous_state.mandate_level + effective_hysteresis:
         return _StabilityControlledDecision(
             selected_policy=previous_state.selected_policy,
             switch_reason="switch_blocked_by_hysteresis",
@@ -529,7 +574,17 @@ def resolve_research_policy_router(
         bars_since_regime_change=float(bars_since_regime_change),
         switch_threshold=int(router_cfg["switch_threshold"]),
         hysteresis=int(router_cfg["hysteresis"]),
+        continuation_release_hysteresis=int(router_cfg["continuation_release_hysteresis"]),
         min_dwell=int(router_cfg["min_dwell"]),
+    )
+    effective_switch_threshold, effective_hysteresis, switch_control_mode = (
+        _resolve_switch_controls(
+            raw_decision=raw_decision,
+            previous_state=previous_state,
+            switch_threshold=int(router_cfg["switch_threshold"]),
+            hysteresis=int(router_cfg["hysteresis"]),
+            continuation_release_hysteresis=int(router_cfg["continuation_release_hysteresis"]),
+        )
     )
     weak_pre_aged_single_veto_latch = _next_weak_pre_aged_single_veto_latch(
         raw_decision=raw_decision,
@@ -574,6 +629,9 @@ def resolve_research_policy_router(
         "mandate_level": routed_decision.mandate_level,
         "confidence_level": routed_decision.confidence_level,
         "dwell_duration": routed_decision.dwell_duration,
+        "effective_switch_threshold": effective_switch_threshold,
+        "effective_hysteresis": effective_hysteresis,
+        "switch_control_mode": switch_control_mode,
         _WEAK_PRE_AGED_SINGLE_VETO_LATCH_KEY: weak_pre_aged_single_veto_latch,
         _BARS7_CONTINUATION_PERSISTENCE_RECONSIDERATION_KEY: (
             raw_decision.bars7_continuation_persistence_reconsideration_applied
@@ -582,6 +640,7 @@ def resolve_research_policy_router(
         "router_params": {
             "switch_threshold": int(router_cfg["switch_threshold"]),
             "hysteresis": int(router_cfg["hysteresis"]),
+            "continuation_release_hysteresis": int(router_cfg["continuation_release_hysteresis"]),
             "min_dwell": int(router_cfg["min_dwell"]),
             "defensive_size_multiplier": float(router_cfg["defensive_size_multiplier"]),
         },

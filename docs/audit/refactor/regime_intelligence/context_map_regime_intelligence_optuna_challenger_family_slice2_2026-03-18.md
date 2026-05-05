@@ -23,8 +23,8 @@ Create the second Regime Intelligence Optuna campaign for `tBTCUSD` on `3h` that
 
 | Artifact                                                                          | Key finding                                                                                                       |
 | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `docs/analysis/tBTCUSD_3h_candidate_recommendation_2026-03-18.md`                 | incumbent champion remains best current validated candidate; RI `trial_001/002/005` is the lead challenger family |
-| `docs/analysis/regime_intelligence_champion_compatibility_findings_2026-03-18.md` | RI should be developed as a separate strategy family, not as a thin overlay on the incumbent champion             |
+| `docs/analysis/recommendations/tBTCUSD_3h_candidate_recommendation_2026-03-18.md`                 | incumbent champion remains best current validated candidate; RI `trial_001/002/005` is the lead challenger family |
+| `docs/analysis/regime_intelligence/core/regime_intelligence_champion_compatibility_findings_2026-03-18.md` | RI should be developed as a separate strategy family, not as a thin overlay on the incumbent champion             |
 | `results/hparam_search/run_20260318_112046/validation/trial_001.json`             | lead challenger family member with score `0.22729723723866666`                                                    |
 | `results/hparam_search/run_20260318_112046/validation/trial_002.json`             | equivalent family member with the same validation outcome as `trial_001`                                          |
 | `results/hparam_search/run_20260318_112046/validation/trial_005.json`             | equivalent family member with the same validation outcome as `trial_001`                                          |

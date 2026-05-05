@@ -345,6 +345,7 @@ class ConfigAuthority:
                             "enabled",
                             "switch_threshold",
                             "hysteresis",
+                            "continuation_release_hysteresis",
                             "min_dwell",
                             "defensive_size_multiplier",
                         }

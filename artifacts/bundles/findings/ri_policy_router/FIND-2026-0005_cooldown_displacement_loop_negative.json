@@ -13,7 +13,7 @@
     "end": "2023-12-25T15:00:00+00:00"
   },
   "candidate_refs": [
-    "docs/governance/ri_policy_router_weak_pre_aged_release_implementation_packet_2026-04-24.md"
+    "docs/decisions/regime_intelligence/policy_router/ri_policy_router_weak_pre_aged_release_implementation_packet_2026-04-24.md"
   ],
   "finding_outcome": "negative",
   "summary": "The seam-A candidate fails through repeated no-trade chaining plus a recurring two-bar cooldown displacement loop, not because the intended row was missed.",
@@ -29,11 +29,11 @@
   ],
   "evidence_refs": [
     {
-      "path": "docs/governance/ri_policy_router_weak_pre_aged_release_cooldown_displacement_diagnosis_2026-04-24.md",
+      "path": "docs/analysis/regime_intelligence/policy_router/ri_policy_router_weak_pre_aged_release_cooldown_displacement_diagnosis_2026-04-24.md",
       "role": "mechanism_diagnosis"
     },
     {
-      "path": "docs/governance/ri_policy_router_weak_pre_aged_release_failset_evidence_2026-04-24.md",
+      "path": "docs/analysis/regime_intelligence/policy_router/ri_policy_router_weak_pre_aged_release_failset_evidence_2026-04-24.md",
       "role": "supporting_evidence"
     }
   ],

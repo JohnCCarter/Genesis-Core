@@ -30,7 +30,7 @@ Create the seventh Regime Intelligence Optuna campaign for `tBTCUSD` on `3h` tha
 | `results/hparam_search/run_20260324_155438/validation/trial_005.json`                                                   | same validation plateau as `trial_001`, but also the highest train score among the tied winners; chosen as deterministic slice-7 anchor         |
 | `docs/audit/refactor/regime_intelligence/context_map_regime_intelligence_optuna_challenger_family_slice6_2026-03-19.md` | slice-6 already reopened only bounded selectivity; exit/override/risk breadth and topology were intentionally kept fixed                        |
 | `results/backtests/tBTCUSD_3h_20260324_170603.json`                                                                     | incumbent same-head control still leads at score `0.2616884080730424` with only `37` trades and `1.4705%` max drawdown                          |
-| `docs/analysis/tBTCUSD_3h_candidate_recommendation_2026-03-18.md`                                                       | incumbent remains the governed control baseline until a challenger beats it on a direct comparison path                                         |
+| `docs/analysis/recommendations/tBTCUSD_3h_candidate_recommendation_2026-03-18.md`                                                       | incumbent remains the governed control baseline until a challenger beats it on a direct comparison path                                         |
 
 ### Deterministic anchor rule
 

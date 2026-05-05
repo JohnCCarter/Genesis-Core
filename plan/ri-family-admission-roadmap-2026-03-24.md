@@ -3,6 +3,14 @@
 Date: 2026-03-24
 Branch context: `feature/ri-role-map-implementation-2026-03-24`
 Mode: `RESEARCH`
+Status: `historical / branch-scoped / not active on current branch / no-behavior-change roadmap`
+
+> Current status note:
+>
+> - This roadmap belongs to the earlier `feature/ri-role-map-implementation-2026-03-24` branch context and is not an active lane on `feature/next-slice-2026-04-29`.
+> - Preserve it as historical refactor-planning context for family-admission work.
+> - Reopen only via explicit user request or a fresh packet that deliberately re-enters this family-admission refactor surface.
+
 Default constraint: `NO BEHAVIOR CHANGE` unless a narrower packet explicitly says otherwise.
 
 ## Objective

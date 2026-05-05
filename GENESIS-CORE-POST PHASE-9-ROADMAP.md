@@ -1,5 +1,13 @@
-📦 GENESIS-CORE — POST PHASE 9 ROADMAP
+📦 GENESIS-CORE — POST PHASE 9 ROADMAP (PARKED / HISTORICAL)
 Scope: Edge Origin Isolation & Structural Attribution
+
+🚦 STATUS
+Formal classification: `parked / historical macro-roadmap`
+Operational status: this file is not the active roadmap for the current `RESEARCH` lane on `feature/next-slice-2026-04-29`.
+Current active lane anchor: `GENESIS_WORKING_CONTRACT.md` plus the active RI policy-router packets and analysis notes.
+Reactivation rule: reopen this roadmap only via explicit user request or a fresh packet that returns the branch to bounded system-level edge-origin attribution work.
+Authority note: background guidance only; this file does not override `.github/copilot-instructions.md`, `docs/governance_mode.md`, `GENESIS_WORKING_CONTRACT.md`, or the active packet/analysis chain.
+
 🧾 0. VERIFIED BASELINE (LOCKED CONTEXT)
 Observed (från artifacts)
 Phase 6–7 → signal layer invalidated

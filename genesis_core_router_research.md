@@ -1,3 +1,10 @@
+> **Status update (2026-05-05):** Historical generic background note only.
+>
+> - This file is **not** the active repo-aware synthesis or execution guide for the current `RESEARCH` lane.
+> - The repo-aware April 2026 companion remains `Genesis-Core router research — codebase-aware re-evaluation.md`.
+> - The current active anchors are `GENESIS_WORKING_CONTRACT.md` plus the latest RI policy-router notes under `docs/analysis/regime_intelligence/policy_router/`, including the D1 four-surface synthesis and D1 context-clean falsifier dated `2026-05-05`.
+> - Use this file for historical structural background only; do not treat its recommendations as current next-step authority.
+
 Genesis-Core: Structural Improvements to Policy Activation
 A deep-research note on payoff-risk detection, robust router gating, and state-machine design for a deterministic, replayable trading system. Focused on structure, not indicators. Every claim is tagged \[Observed\] (literature/known practice), \[Inferred\] (reasoning from your description), or \[Speculative\] (new hypotheses to test).
 

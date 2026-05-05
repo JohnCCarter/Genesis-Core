@@ -1,15 +1,23 @@
 Genesis-Core router research — codebase-aware re-evaluation
 Date: 2026-04-30
-Status: primary synthesis note / partially superseded / normalization pending
+Status: historical synthesis note / materially stale as execution guidance / retained for structural reasoning
 Companion to: genesis_core_router_research.md (generic research, dated 2026-04-30)
 Scope: re-evaluate the generic research recommendations against the actual feature/ri-role-map-implementation-2026-03-24 branch you shared.
 
 Current status note:
 
-- Between the two router-research notes, this remains the primary repo-aware synthesis note.
-- It is partially superseded wherever later anchored evidence or `GENESIS_WORKING_CONTRACT.md` differs.
+- Between the two router-research notes, this remains the primary repo-aware April 2026 synthesis note, but it is no longer the active execution guide.
+- It is materially superseded wherever later anchored evidence or `GENESIS_WORKING_CONTRACT.md` differs.
 - It is a synthesis/reference artifact, not a packet, run plan, or active execution order for the current `feature/next-slice-2026-04-29` lane.
 - If retained long-term, normalization is still pending: move it into `docs/analysis/regime_intelligence/policy_router/` and keep wording aligned to later anchored evidence.
+
+Status update (2026-05-05):
+
+- The D1 insufficient-evidence line this note recommended as the next bounded step is now completed across the 2026-05-04/05 exact-subject, recurrence, synthesis, and context-clean follow-up anchors.
+- The current active lane anchor is `GENESIS_WORKING_CONTRACT.md`, plus the latest RI policy-router notes under `docs/analysis/regime_intelligence/policy_router/`, especially the D1 four-surface synthesis and D1 context-clean falsifier dated `2026-05-05`.
+- Sections `B`, `C`, `E`, and `F` remain useful as historical structural reasoning.
+- Sections `D` and `H` should now be read as historical recommendation state, not as current next-step instructions.
+- Treat this file as a historical synthesis/reference artifact unless a later note explicitly re-normalizes it.
 
 This note is descriptive and structural. It is not a runtime change proposal and does not bypass the packet workflow. Where it points at a candidate next step, that step is described as a future bounded RI-local pre-code packet, not as work to start now.
 

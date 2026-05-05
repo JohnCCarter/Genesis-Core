@@ -2,13 +2,13 @@ Genesis-Core router research — codebase-aware re-evaluation
 Date: 2026-04-30
 Status: historical synthesis note / materially stale as execution guidance / retained for structural reasoning
 Companion to: genesis_core_router_research.md (generic research, dated 2026-04-30)
-Scope: re-evaluate the generic research recommendations against the actual feature/ri-role-map-implementation-2026-03-24 branch you shared.
+Scope: originally re-evaluate the generic research recommendations against `feature/ri-role-map-implementation-2026-03-24`; retain it now as a historical synthesis artifact on `feature/next-slice-2026-05-05`.
 
 Current status note:
 
 - Between the two router-research notes, this remains the primary repo-aware April 2026 synthesis note, but it is no longer the active execution guide.
 - It is materially superseded wherever later anchored evidence or `GENESIS_WORKING_CONTRACT.md` differs.
-- It is a synthesis/reference artifact, not a packet, run plan, or active execution order for the current `feature/next-slice-2026-04-29` lane.
+- It is a synthesis/reference artifact, not a packet, run plan, or active execution order for the current `feature/next-slice-2026-05-05` lane.
 - If retained long-term, normalization is still pending: move it into `docs/analysis/regime_intelligence/policy_router/` and keep wording aligned to later anchored evidence.
 
 Status update (2026-05-05):

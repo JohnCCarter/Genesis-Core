@@ -6,7 +6,7 @@ Status: `historical / future-only / non-executable / no authorization`
 
 > Current status note:
 >
-> - This roadmap is not an active lane on `feature/next-slice-2026-04-29` and should not be treated as the next live path.
+> - This roadmap is not an active lane on `feature/next-slice-2026-05-05` and should not be treated as the next live path.
 > - Preserve it as a historical future-only governance path for SCPE RI follow-up after the 2026-04-20 closeout.
 > - `GENESIS_WORKING_CONTRACT.md` already treats the SCPE replay surfaces as historical reference context only.
 

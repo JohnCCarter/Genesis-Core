@@ -1,15 +1,15 @@
 # HANDOFF — RI/R1 vs legacy role-map kickoff
 
-Senast uppdaterad: 2026-04-02
+Senast statusmarkerad: 2026-05-05 (underliggande takeover-block från 2026-04-02 bevarat som historik)
 
-## Uppdatering 2026-04-02 — aktuell WFH-handoff för nästa agent
+## Uppdatering 2026-04-02 — historisk WFH-handoff för nästa agent
 
-Detta är den **aktuella takeover-sektionen**. Äldre block längre ned i filen är bevarade för spårbarhet, men nästa agent ska börja här eftersom nuläget har flyttat från tidig role-map-kickoff till en senare RESEARCH-lane runt Phase 10 execution evidence.
+Detta var den då **aktuella takeover-sektionen**. Den bevaras för spårbarhet, men nästa agent ska inte använda den som live anchor; använd i stället `GENESIS_WORKING_CONTRACT.md` plus den aktuella RI policy-router-kedjan på `feature/next-slice-2026-05-05`.
 
-### Live status som är verifierad i denna arbetskopia
+### Historisk live status från snapshoten 2026-04-02
 
 - **Repo:** `Genesis-Core`
-- **Aktiv branch:** `feature/ri-role-map-implementation-2026-03-24`
+- **Då aktiv branch:** `feature/ri-role-map-implementation-2026-03-24`
 - **Governance mode:** `RESEARCH` via branch-mappning i `docs/governance_mode.md`
 - **HEAD:** `0d01247798478769a88ee29c9c3683bf62e5a46a`
 - **Senaste pushade commit:** `0d012477` — `docs: add execution proxy first read`

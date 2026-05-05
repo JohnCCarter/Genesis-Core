@@ -2,7 +2,13 @@
 
 Date: 2026-03-26
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `launch authorization decision recorded / fail-closed / authorized now under exact verified state`
+Status: `historical state-bound launch snapshot / branch-specific / no active execution authority`
+
+> Current status note:
+>
+> - [HISTORICAL 2026-05-05] This file records a point-in-time state-bound launch decision on `feature/ri-role-map-implementation-2026-03-24`, not an active launch authority on `feature/next-slice-2026-05-05`.
+> - Its own fail-closed and self-revoking conditions tie the decision to the exact verified local state recorded in this packet.
+> - Preserve this file as historical launch provenance only.
 
 ## COMMAND PACKET
 

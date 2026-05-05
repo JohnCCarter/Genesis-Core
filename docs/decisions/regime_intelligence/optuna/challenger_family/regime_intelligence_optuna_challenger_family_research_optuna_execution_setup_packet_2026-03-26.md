@@ -2,7 +2,13 @@
 
 Date: 2026-03-26
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `föreslagen / execution setup only / not run authorization`
+Status: `historical setup snapshot / consumed by later launch authorization chain / no active setup authority`
+
+> Current status note:
+>
+> - [HISTORICAL 2026-05-05] This file records an earlier RI research execution-setup stage on `feature/ri-role-map-implementation-2026-03-24`, not an active setup authority on `feature/next-slice-2026-05-05`.
+> - Its setup role was later consumed by the downstream launch-authorization and re-authorization packets in the same RI research lane.
+> - Preserve this file as historical setup provenance only.
 
 ## COMMAND PACKET
 

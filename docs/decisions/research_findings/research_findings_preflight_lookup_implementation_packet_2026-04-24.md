@@ -2,7 +2,13 @@
 
 Date: 2026-04-24
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `proposed / pre-code / non-runtime lookup helper`
+Status: `historical implementation snapshot / consumed by non-runtime lookup helper / no active packet authority`
+
+> Current status note:
+>
+> - HISTORICAL 2026-05-05: this file records the bounded implementation authorization for the non-runtime findings preflight lookup helper on `feature/ri-role-map-implementation-2026-03-24`, not an active packet authority on `feature/next-slice-2026-05-05`.
+> - Its implementation role is reflected in `scripts/preflight/findings_preflight_lookup.py` and `tests/utils/test_findings_preflight_lookup.py`.
+> - Preserve this file as historical lookup-governance provenance only.
 
 ## COMMAND PACKET
 

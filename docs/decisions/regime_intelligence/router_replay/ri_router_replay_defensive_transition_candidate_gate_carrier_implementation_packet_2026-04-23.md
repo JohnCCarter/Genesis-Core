@@ -2,7 +2,13 @@
 
 Date: 2026-04-23
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `implementation contract proposed / default path unchanged intended`
+Status: `historical implementation packet / implemented and absorbed by later bridge-activation chain / no active implementation authority`
+
+> Current status note:
+>
+> - [HISTORICAL 2026-05-05] This packet is not an active implementation authority on `feature/next-slice-2026-05-05`.
+> - The bounded `decision_gates.py` plus config-authority carrier was later implemented and then absorbed into the bridge-activation / launch-boundary / execution-summary chain tracked from `GENESIS_WORKING_CONTRACT.md`.
+> - Preserve this file as historical contract provenance only.
 
 ## COMMAND PACKET
 

@@ -2,7 +2,13 @@
 
 Date: 2026-04-23
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `implementation contract proposed / default path unchanged intended`
+Status: `historical implementation hypothesis / decision_sizing carrier falsified and superseded / no active implementation authority`
+
+> Current status note:
+>
+> - [HISTORICAL 2026-05-05] This single-file `decision_sizing.py` carrier packet is not the active lane on `feature/next-slice-2026-05-05`.
+> - Later router-replay docs recorded that this carrier hypothesis was honestly falsified and widened to the `decision_gates.py` plus config-authority carrier path.
+> - Preserve this file as historical seam-probing provenance only.
 
 ## COMMAND PACKET
 

@@ -1,9 +1,10 @@
-https://outlook.live.com/mail/
-
 # REGIME INTELLIGENCE T9A — COMMAND PACKET
 
 Date: 2026-03-04
-Status: `proposed`
+Status: `historical command packet / implementation report exists / not active on current branch`
+
+> [HISTORICAL 2026-05-05] This T9A packet is preserved as historical implementation context only.
+> It is not an active next-step packet on `feature/next-slice-2026-05-05`; use `GENESIS_WORKING_CONTRACT.md` and later RI anchors for live guidance.
 
 ## COMMAND PACKET
 

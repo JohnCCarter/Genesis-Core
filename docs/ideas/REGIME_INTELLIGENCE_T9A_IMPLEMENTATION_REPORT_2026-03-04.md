@@ -5,6 +5,9 @@ Mode: `RESEARCH` (source: `feature/* -> RESEARCH`)
 Risk: `HIGH`
 Category: `api`
 
+> [HISTORICAL 2026-05-05] This report is preserved as completed historical evidence for the T9A clarity experiment.
+> It is not a live runtime or promotion guide on `feature/next-slice-2026-05-05`; current active RI work is tracked elsewhere.
+
 ## Scope summary
 
 ### Scope IN (implemented)

@@ -2,7 +2,13 @@
 
 Date: 2026-03-26
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `slice8-first follow-up lane open / research only / no setup or launch authorization`
+Status: `historical lane-selection snapshot / superseded by later question chain / no active lane authority`
+
+> Current status note:
+>
+> - [HISTORICAL 2026-05-05] This file records an earlier slice8-first lane selection on `feature/ri-role-map-implementation-2026-03-24`, not an active lane authority on `feature/next-slice-2026-05-05`.
+> - Its forward role was later narrowed through the downstream cross-regime and structural-search-space question chain.
+> - Preserve this file as historical lane-selection provenance only.
 
 ## COMMAND PACKET
 

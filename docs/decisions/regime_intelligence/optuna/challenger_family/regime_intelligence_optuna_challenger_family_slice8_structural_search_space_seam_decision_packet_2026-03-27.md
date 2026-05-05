@@ -2,7 +2,13 @@
 
 Date: 2026-03-27
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `decision-only / exact seam selected / no config or launch scope`
+Status: `historical seam-selection snapshot / superseded by later design and launch chain / no active seam authority`
+
+> Current status note:
+>
+> - [HISTORICAL 2026-05-05] This file records an earlier structural seam-selection step on `feature/ri-role-map-implementation-2026-03-24`, not an active seam authority on `feature/next-slice-2026-05-05`.
+> - Its selected seam was later carried into the downstream management/override design, launch, and execution packets.
+> - Preserve this file as historical seam-selection provenance only.
 
 ## COMMAND PACKET
 

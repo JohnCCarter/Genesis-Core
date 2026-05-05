@@ -2,7 +2,13 @@
 
 Date: 2026-03-27
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `design-authorization only / exact config surface and ranges selected / no launch authorization`
+Status: `historical design-authorization snapshot / superseded by later slice10 launch and execution chain / no active design authority`
+
+> Current status note:
+>
+> - [HISTORICAL 2026-05-05] This file records an earlier design-authorization step on `feature/ri-role-map-implementation-2026-03-24`, not an active design authority on `feature/next-slice-2026-05-05`.
+> - The downstream slice10 launch-authorization and execution-signoff packets now hold the later historical chain for this line.
+> - Preserve this file as historical design provenance only.
 
 ## COMMAND PACKET
 

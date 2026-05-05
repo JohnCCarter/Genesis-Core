@@ -185,15 +185,15 @@ All optimizations are **100% backward compatible**:
 - Fallbacks for systems without orjson
 - Thread-safe module-level caches
 
-## Future Optimizations (Deferred)
+## Identified but not prioritized (exploratory candidates)
 
-The following optimizations were identified but deferred as low-priority:
+The following optimizations were identified during review but are not currently prioritized for implementation:
 
 1. **Config file caching**: Extend mtime-based caching to all config reads
 2. **Conditional logging**: Move detailed logging outside hot loops
 3. **Value cloning**: Optimize `_expand_value()` to avoid deep copy for primitives
 
-These can be implemented if profiling shows they're bottlenecks.
+Revisit them only if later profiling shows they are real bottlenecks.
 
 ## Monitoring
 

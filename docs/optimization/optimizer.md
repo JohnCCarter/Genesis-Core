@@ -45,9 +45,9 @@ python scripts/check_trial_config_equivalence.py --run-dir results/hparam_search
 
 Förväntat utfall är `[OK]` per trial. Om `[MISMATCH]`: stoppa och felsök innan fler trials körs.
 
-4. **Full validation** (optional) - confirm the best candidate with an explicit campaign YAML under the active timeframe layout, for example `config/optimizer/1h/...` or `config/optimizer/3h/...`.
-5. **Champion update** - promote the best trial by updating `config/strategy/champions/<symbol>_<tf>.json`.
-6. **Document** - record the results in `docs/daily_summaries/daily_summary_YYYY-MM-DD.md` and this file.
+5. **Full validation** (optional) - confirm the best candidate with an explicit campaign YAML under the active timeframe layout, for example `config/optimizer/1h/...` or `config/optimizer/3h/...`.
+6. **Champion update** - promote the best trial by updating `config/strategy/champions/<symbol>_<tf>.json`.
+7. **Document** - record the results in `docs/daily_summaries/daily_summary_YYYY-MM-DD.md` and this file.
 
 ### Legacy 1h note
 
@@ -91,7 +91,10 @@ python scripts/optimizer.py summarize run_20251023_141747 --top 5
 - `tests/test_champion_loader.py` - champion fallback/auto-reload.
 - `tests/test_evaluate_pipeline.py` - ensures champion metadata is injected into pipeline meta.
 
-## 7. Action items for next agent
+## 7. Historical next-agent notes
+
+These notes are preserved as historical follow-up ideas from the original optimizer rollout period.
+Treat them as exploratory candidates rather than as the active optimizer backlog.
 
 1. Monitor performance of the new champion; roll back if unexpected behaviour is observed.
 2. Decide on micro-tuning (very tight ranges or additional parameters - e.g. Fibonacci).

@@ -258,14 +258,15 @@ To adopt:
 3. Enable `--precompute-features` for longer runs
 4. Enjoy faster optimization loops!
 
-## Future Optimizations
+## Further optimization candidates (exploratory, not committed)
 
-Planned improvements:
+The following enhancements remain exploratory candidates only.
+They are not an active committed backlog and should be revisited only if profiling shows they are real bottlenecks:
 
-- [ ] Incremental indicator updates (avoid full recomputation)
-- [ ] Parallel trial execution for optimizer
-- [ ] JIT compilation for hot paths (Numba)
-- [ ] Vectorized decision logic
+- Incremental indicator updates (avoid full recomputation)
+- Parallel trial execution for optimizer
+- JIT compilation for hot paths (Numba)
+- Vectorized decision logic
 
 ## See Also
 

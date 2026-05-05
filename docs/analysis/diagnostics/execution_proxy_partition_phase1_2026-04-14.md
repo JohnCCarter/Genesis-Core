@@ -5,6 +5,11 @@ It partitions the already generated execution-proxy surface so the repository ca
 
 Governance packet: `docs/decisions/diagnostic_campaigns/execution_proxy_partition_phase1_packet_2026-04-14.md`
 
+> Current status note:
+>
+> - HISTORICAL 2026-05-05: this memo remains a valid observational closeout for the bounded partition slice, but its remaining roadmap-language is historical rather than live guidance on `feature/next-slice-2026-05-05`.
+> - Preserve the partition findings and the `stricter execution lane justified` verdict, but do not read the old “next best move” phrasing as the current repo execution order.
+
 ## Source surface used
 
 This memo uses only the already generated execution-proxy artifacts and previously tracked boundary notes:
@@ -129,7 +134,7 @@ The current best reading is therefore:
 
 This slice should **de-escalate further proxy-only execution iteration** on the current bounded surface.
 
-That means the master-roadmap consequence is:
+That meant the then-current master-roadmap consequence was:
 
 1. keep the execution residual unresolved on the current surface
 2. record that a stricter execution lane is justified if execution becomes a priority again
@@ -150,4 +155,4 @@ So the correct Phase 1 closeout is not an execution-mechanism claim.
 It is a sharper boundary:
 
 - **execution remains unresolved here, and any serious next execution step now needs a stricter evidence surface**.
-- **within the current bounded roadmap, the next best move is Phase 2: sizing-chain synthesis**.
+- **within the then-current bounded roadmap, the next best move was Phase 2: sizing-chain synthesis**.

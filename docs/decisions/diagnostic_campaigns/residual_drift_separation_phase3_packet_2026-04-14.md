@@ -2,7 +2,13 @@
 
 Date: 2026-04-14
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `proposed / docs-only / no-runtime-authority`
+Status: `historical phase snapshot / consumed by phase 3 memo and closeout / no active packet authority`
+
+> Current status note:
+>
+> - HISTORICAL 2026-05-05: this file records the bounded authorization for the Phase 3 residual-drift reread on `feature/ri-role-map-implementation-2026-03-24`, not an active packet authority on `feature/next-slice-2026-05-05`.
+> - Its packet role was consumed by `docs/analysis/diagnostics/residual_drift_separation_phase3_2026-04-14.md` and later by the archived closeout chain anchored in `docs/analysis/diagnostics/genesis_driver_final_synthesis_2026-04-14.md` and `plan/genesis_driver_identification_master_roadmap_2026-04-14.md`.
+> - Preserve this file as historical phase-governance provenance only.
 
 ## COMMAND PACKET
 

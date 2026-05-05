@@ -4,7 +4,7 @@ version: 1
 date_created: 2026-03-18
 last_updated: 2026-03-18
 owner: fa06662
-status: "Planned"
+status: "Archived historical design"
 tags:
   - feature
   - regime
@@ -16,7 +16,10 @@ tags:
 
 # Introduction
 
-![Status: Planned](https://img.shields.io/badge/status-Planned-blue)
+![Status: Historical](https://img.shields.io/badge/status-Historical-lightgrey)
+
+> [ARCHIVED 2026-05-05] This RI strategy-family document is not an active design lane on `feature/next-slice-2026-05-05`.
+> Preserve it as historical decision-framing context only; current live anchors belong to `GENESIS_WORKING_CONTRACT.md` plus the later RI policy-router and governed RI follow-up docs.
 
 Formalize Regime Intelligence (RI) as a **separate strategy family** for `tBTCUSD_3h`, rather than as a thin overlay or migration patch on the current incumbent champion. This document defines the family boundary, the minimum RI baseline, classification rules for future candidates, integration notes for research/optimizer workflows, and the promotion implications of treating RI as its own topology.
 

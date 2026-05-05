@@ -4,7 +4,7 @@ version: 1
 date_created: 2026-03-18
 last_updated: 2026-03-18
 owner: fa06662
-status: "Planned"
+status: "Archived historical plan"
 tags:
   - feature
   - intelligence
@@ -16,7 +16,10 @@ tags:
 
 # Introduction
 
-![Status: Planned](https://img.shields.io/badge/status-Planned-blue)
+![Status: Historical](https://img.shields.io/badge/status-Historical-lightgrey)
+
+> [ARCHIVED 2026-05-05] This Optuna experiment plan is not an active lane on `feature/next-slice-2026-05-05`.
+> Preserve it as historical RI experiment-planning context only; use `GENESIS_WORKING_CONTRACT.md` and the current RI policy-router chain for live anchors.
 
 Define a deterministic experiment plan to test whether regime intelligence can improve the existing `tBTCUSD_3h` champion through Optuna-based parameter search on historical development windows, then evaluate the frozen candidate on a blind 2025 holdout. The plan preserves current champion defaults, uses canonical execution mode, and requires explicit separation between tuning data and blind evaluation data.
 

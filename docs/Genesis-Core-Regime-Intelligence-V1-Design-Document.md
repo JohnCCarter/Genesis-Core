@@ -1,11 +1,14 @@
 📘 Genesis-Core
 Regime Intelligence v1 – Design Document
 
-Status: Proposed
+Status: Historical design reference
 Branch Target: feature/regime-intelligence-v1
 Prerequisite: Phase 2 merged into master
 Scope: Regime perception upgrade + adaptive risk curve
 Non-goal: No rewrite of core execution engine
+
+> [HISTORICAL 2026-05-05] This early RI v1 design document is retained for design provenance only.
+> It is not the active execution or promotion guide on `feature/next-slice-2026-05-05`; use `GENESIS_WORKING_CONTRACT.md` and the later RI decision/analysis chain for current live anchors.
 
 1. Purpose
 

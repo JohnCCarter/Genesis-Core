@@ -1,0 +1,1322 @@
+{
+  "artifact_row_lock": {
+    "context_bank_row_count": 14,
+    "context_rows_excluded_from_selection": true,
+    "control_2020_context_timestamps": [
+      "2020-11-02T03:00:00+00:00",
+      "2020-11-02T09:00:00+00:00",
+      "2020-11-02T21:00:00+00:00",
+      "2020-11-03T03:00:00+00:00"
+    ],
+    "control_2020_target_timestamps": [
+      "2020-10-31T21:00:00+00:00",
+      "2020-11-01T06:00:00+00:00",
+      "2020-11-01T15:00:00+00:00",
+      "2020-11-02T00:00:00+00:00"
+    ],
+    "control_2022_context_timestamps": [
+      "2022-06-23T03:00:00+00:00",
+      "2022-06-23T09:00:00+00:00",
+      "2022-06-23T12:00:00+00:00",
+      "2022-06-23T18:00:00+00:00"
+    ],
+    "control_2022_target_timestamps": [
+      "2022-06-24T03:00:00+00:00",
+      "2022-06-24T21:00:00+00:00",
+      "2022-06-25T06:00:00+00:00",
+      "2022-06-25T15:00:00+00:00",
+      "2022-06-26T00:00:00+00:00"
+    ],
+    "control_2025_context_timestamps": [
+      "2025-03-13T15:00:00+00:00",
+      "2025-03-14T00:00:00+00:00",
+      "2025-03-13T21:00:00+00:00",
+      "2025-03-14T06:00:00+00:00",
+      "2025-03-16T12:00:00+00:00"
+    ],
+    "control_2025_target_timestamps": [
+      "2025-03-14T15:00:00+00:00",
+      "2025-03-15T00:00:00+00:00",
+      "2025-03-15T09:00:00+00:00",
+      "2025-03-15T18:00:00+00:00",
+      "2025-03-16T03:00:00+00:00"
+    ],
+    "harmful_context_timestamps": [
+      "2019-06-12T06:00:00+00:00"
+    ],
+    "harmful_target_timestamps": [
+      "2019-06-13T06:00:00+00:00",
+      "2019-06-13T15:00:00+00:00",
+      "2019-06-14T00:00:00+00:00",
+      "2019-06-14T09:00:00+00:00",
+      "2019-06-15T06:00:00+00:00"
+    ],
+    "observational_only_authority": true,
+    "row_role_registry": [
+      {
+        "action_pair": "LONG->NONE",
+        "claim_eligible": false,
+        "cohort_name": "harmful_context",
+        "row_role": "context",
+        "surface_id": "harmful_2019",
+        "switch_reason": "AGED_WEAK_CONTINUATION_GUARD",
+        "timestamp": "2019-06-12T06:00:00+00:00"
+      },
+      {
+        "action_pair": "LONG->NONE",
+        "claim_eligible": true,
+        "cohort_name": "harmful_target",
+        "row_role": "harmful_target",
+        "surface_id": "harmful_2019",
+        "switch_reason": "insufficient_evidence",
+        "timestamp": "2019-06-13T06:00:00+00:00"
+      },
+      {
+        "action_pair": "LONG->NONE",
+        "claim_eligible": true,
+        "cohort_name": "harmful_target",
+        "row_role": "harmful_target",
+        "surface_id": "harmful_2019",
+        "switch_reason": "insufficient_evidence",
+        "timestamp": "2019-06-13T15:00:00+00:00"
+      },
+      {
+        "action_pair": "LONG->NONE",
+        "claim_eligible": true,
+        "cohort_name": "harmful_target",
+        "row_role": "harmful_target",
+        "surface_id": "harmful_2019",
+        "switch_reason": "insufficient_evidence",
+        "timestamp": "2019-06-14T00:00:00+00:00"
+      },
+      {
+        "action_pair": "LONG->NONE",
+        "claim_eligible": true,
+        "cohort_name": "harmful_target",
+        "row_role": "harmful_target",
+        "surface_id": "harmful_2019",
+        "switch_reason": "insufficient_evidence",
+        "timestamp": "2019-06-14T09:00:00+00:00"
+      },
+      {
+        "action_pair": "LONG->NONE",
+        "claim_eligible": true,
+        "cohort_name": "harmful_target",
+        "row_role": "harmful_target",
+        "surface_id": "harmful_2019",
+        "switch_reason": "insufficient_evidence",
+        "timestamp": "2019-06-15T06:00:00+00:00"
+      },
+      {
+        "action_pair": "LONG->NONE",
+        "claim_eligible": true,
+        "cohort_name": "control_2020_target",
+        "row_role": "control_target",
+        "surface_id": "control_2020",
+        "switch_reason": "insufficient_evidence",
+        "timestamp": "2020-10-31T21:00:00+00:00"
+      },
+      {
+        "action_pair": "LONG->NONE",
+        "claim_eligible": true,
+        "cohort_name": "control_2020_target",
+        "row_role": "control_target",
+        "surface_id": "control_2020",
+        "switch_reason": "insufficient_evidence",
+        "timestamp": "2020-11-01T06:00:00+00:00"
+      },
+      {
+        "action_pair": "LONG->NONE",
+        "claim_eligible": true,
+        "cohort_name": "control_2020_target",
+        "row_role": "control_target",
+        "surface_id": "control_2020",
+        "switch_reason": "insufficient_evidence",
+        "timestamp": "2020-11-01T15:00:00+00:00"
+      },
+      {
+        "action_pair": "LONG->NONE",
+        "claim_eligible": true,
+        "cohort_name": "control_2020_target",
+        "row_role": "control_target",
+        "surface_id": "control_2020",
+        "switch_reason": "insufficient_evidence",
+        "timestamp": "2020-11-02T00:00:00+00:00"
+      },
+      {
+        "action_pair": "NONE->LONG",
+        "claim_eligible": false,
+        "cohort_name": "control_2020_nearby_displacement",
+        "row_role": "context",
+        "surface_id": "control_2020",
+        "switch_reason": "stable_continuation_state",
+        "timestamp": "2020-11-02T03:00:00+00:00"
+      },
+      {
+        "action_pair": "LONG->NONE",
+        "claim_eligible": false,
+        "cohort_name": "control_2020_nearby_blocked_context",
+        "row_role": "context",
+        "surface_id": "control_2020",
+        "switch_reason": "stable_continuation_state",
+        "timestamp": "2020-11-02T09:00:00+00:00"
+      },
+      {
+        "action_pair": "NONE->LONG",
+        "claim_eligible": false,
+        "cohort_name": "control_2020_nearby_displacement",
+        "row_role": "context",
+        "surface_id": "control_2020",
+        "switch_reason": "stable_continuation_state",
+        "timestamp": "2020-11-02T21:00:00+00:00"
+      },
+      {
+        "action_pair": "LONG->NONE",
+        "claim_eligible": false,
+        "cohort_name": "control_2020_nearby_blocked_context",
+        "row_role": "context",
+        "surface_id": "control_2020",
+        "switch_reason": "stable_continuation_state",
+        "timestamp": "2020-11-03T03:00:00+00:00"
+      },
+      {
+        "action_pair": "NONE->LONG",
+        "claim_eligible": false,
+        "cohort_name": "control_context",
+        "row_role": "context",
+        "surface_id": "control_2022",
+        "switch_reason": "stable_continuation_state",
+        "timestamp": "2022-06-23T03:00:00+00:00"
+      },
+      {
+        "action_pair": "LONG->NONE",
+        "claim_eligible": false,
+        "cohort_name": "control_context",
+        "row_role": "context",
+        "surface_id": "control_2022",
+        "switch_reason": "stable_continuation_state",
+        "timestamp": "2022-06-23T09:00:00+00:00"
+      },
+      {
+        "action_pair": "NONE->LONG",
+        "claim_eligible": false,
+        "cohort_name": "control_context",
+        "row_role": "context",
+        "surface_id": "control_2022",
+        "switch_reason": "stable_continuation_state",
+        "timestamp": "2022-06-23T12:00:00+00:00"
+      },
+      {
+        "action_pair": "LONG->NONE",
+        "claim_eligible": false,
+        "cohort_name": "control_context",
+        "row_role": "context",
+        "surface_id": "control_2022",
+        "switch_reason": "stable_continuation_state",
+        "timestamp": "2022-06-23T18:00:00+00:00"
+      },
+      {
+        "action_pair": "LONG->NONE",
+        "claim_eligible": true,
+        "cohort_name": "control_target",
+        "row_role": "control_target",
+        "surface_id": "control_2022",
+        "switch_reason": "insufficient_evidence",
+        "timestamp": "2022-06-24T03:00:00+00:00"
+      },
+      {
+        "action_pair": "LONG->NONE",
+        "claim_eligible": true,
+        "cohort_name": "control_target",
+        "row_role": "control_target",
+        "surface_id": "control_2022",
+        "switch_reason": "insufficient_evidence",
+        "timestamp": "2022-06-24T21:00:00+00:00"
+      },
+      {
+        "action_pair": "LONG->NONE",
+        "claim_eligible": true,
+        "cohort_name": "control_target",
+        "row_role": "control_target",
+        "surface_id": "control_2022",
+        "switch_reason": "insufficient_evidence",
+        "timestamp": "2022-06-25T06:00:00+00:00"
+      },
+      {
+        "action_pair": "LONG->NONE",
+        "claim_eligible": true,
+        "cohort_name": "control_target",
+        "row_role": "control_target",
+        "surface_id": "control_2022",
+        "switch_reason": "insufficient_evidence",
+        "timestamp": "2022-06-25T15:00:00+00:00"
+      },
+      {
+        "action_pair": "LONG->NONE",
+        "claim_eligible": true,
+        "cohort_name": "control_target",
+        "row_role": "control_target",
+        "surface_id": "control_2022",
+        "switch_reason": "insufficient_evidence",
+        "timestamp": "2022-06-26T00:00:00+00:00"
+      },
+      {
+        "action_pair": "NONE->LONG",
+        "claim_eligible": false,
+        "cohort_name": "control_displacement_context",
+        "row_role": "context",
+        "surface_id": "control_2025",
+        "switch_reason": "stable_continuation_state",
+        "timestamp": "2025-03-13T15:00:00+00:00"
+      },
+      {
+        "action_pair": "LONG->NONE",
+        "claim_eligible": false,
+        "cohort_name": "control_blocked_context",
+        "row_role": "context",
+        "surface_id": "control_2025",
+        "switch_reason": "stable_continuation_state",
+        "timestamp": "2025-03-13T21:00:00+00:00"
+      },
+      {
+        "action_pair": "NONE->LONG",
+        "claim_eligible": false,
+        "cohort_name": "control_displacement_context",
+        "row_role": "context",
+        "surface_id": "control_2025",
+        "switch_reason": "stable_continuation_state",
+        "timestamp": "2025-03-14T00:00:00+00:00"
+      },
+      {
+        "action_pair": "LONG->NONE",
+        "claim_eligible": false,
+        "cohort_name": "control_blocked_context",
+        "row_role": "context",
+        "surface_id": "control_2025",
+        "switch_reason": "stable_continuation_state",
+        "timestamp": "2025-03-14T06:00:00+00:00"
+      },
+      {
+        "action_pair": "LONG->NONE",
+        "claim_eligible": true,
+        "cohort_name": "control_target",
+        "row_role": "control_target",
+        "surface_id": "control_2025",
+        "switch_reason": "insufficient_evidence",
+        "timestamp": "2025-03-14T15:00:00+00:00"
+      },
+      {
+        "action_pair": "LONG->NONE",
+        "claim_eligible": true,
+        "cohort_name": "control_target",
+        "row_role": "control_target",
+        "surface_id": "control_2025",
+        "switch_reason": "insufficient_evidence",
+        "timestamp": "2025-03-15T00:00:00+00:00"
+      },
+      {
+        "action_pair": "LONG->NONE",
+        "claim_eligible": true,
+        "cohort_name": "control_target",
+        "row_role": "control_target",
+        "surface_id": "control_2025",
+        "switch_reason": "insufficient_evidence",
+        "timestamp": "2025-03-15T09:00:00+00:00"
+      },
+      {
+        "action_pair": "LONG->NONE",
+        "claim_eligible": true,
+        "cohort_name": "control_target",
+        "row_role": "control_target",
+        "surface_id": "control_2025",
+        "switch_reason": "insufficient_evidence",
+        "timestamp": "2025-03-15T18:00:00+00:00"
+      },
+      {
+        "action_pair": "LONG->NONE",
+        "claim_eligible": true,
+        "cohort_name": "control_target",
+        "row_role": "control_target",
+        "surface_id": "control_2025",
+        "switch_reason": "insufficient_evidence",
+        "timestamp": "2025-03-16T03:00:00+00:00"
+      },
+      {
+        "action_pair": "LONG->NONE",
+        "claim_eligible": false,
+        "cohort_name": "control_aged_weak_context",
+        "row_role": "context",
+        "surface_id": "control_2025",
+        "switch_reason": "AGED_WEAK_CONTINUATION_GUARD",
+        "timestamp": "2025-03-16T12:00:00+00:00"
+      }
+    ],
+    "shared_2019_surface_match": true,
+    "target_bank_row_count": 19
+  },
+  "audit_version": "ri-policy-router-insufficient-evidence-d1-context-clean-selectivity-falsifier-2026-05-05",
+  "base_sha": "6ac59ef0c08cb3328348d5e64ad40d83ccd4f9f9",
+  "context_clean_summary": {
+    "bounded_signal_present": true,
+    "claim_fields_without_signal": [],
+    "non_null_field_names": [
+      "action_edge",
+      "confidence_gate",
+      "clarity_raw"
+    ]
+  },
+  "context_rows_excluded_from_selection": true,
+  "fail_closed_contract": {
+    "statement": "The helper reads only the three fixed D1 evaluation artifacts, locks the exact 2019 / 2022 / 2025 / 2020 target-context bank, aborts on any row-lock or shared-2019 drift, evaluates only the pre-registered target-bank ceiling reread, excludes all context rows from claim eligibility, and keeps every outcome exact-surface only, descriptive only, and non-authoritative."
+  },
+  "field_admission": {
+    "action_edge": {
+      "missing_timestamps": [],
+      "row_count_checked": 33,
+      "status": "evaluable"
+    },
+    "clarity_raw": {
+      "missing_timestamps": [],
+      "row_count_checked": 33,
+      "status": "evaluable"
+    },
+    "clarity_score": {
+      "missing_timestamps": [],
+      "row_count_checked": 33,
+      "status": "evaluable"
+    },
+    "confidence_gate": {
+      "missing_timestamps": [],
+      "row_count_checked": 33,
+      "status": "evaluable"
+    }
+  },
+  "field_context_clean_evaluations": [
+    {
+      "admission": {
+        "missing_timestamps": [],
+        "row_count_checked": 33,
+        "status": "evaluable"
+      },
+      "claim_status": "evaluated",
+      "context_bank_min": 0.042122,
+      "context_bank_min_source_timestamps": [
+        "2019-06-12T06:00:00+00:00"
+      ],
+      "descriptive_only": false,
+      "excluded_from_pass_fail": false,
+      "field_name": "action_edge",
+      "global_separation_margin": 0.008319,
+      "leaky_context_timestamps": [],
+      "passes_context_clean_test": true,
+      "surface_extrema": {
+        "control_2020": {
+          "context_min": 0.091692,
+          "context_min_source_timestamps": [
+            "2020-11-02T21:00:00+00:00",
+            "2020-11-03T03:00:00+00:00"
+          ],
+          "separation_margin": 0.059708,
+          "target_max": 0.031984,
+          "target_max_source_timestamps": [
+            "2020-11-01T06:00:00+00:00"
+          ]
+        },
+        "control_2022": {
+          "context_min": 0.073824,
+          "context_min_source_timestamps": [
+            "2022-06-23T12:00:00+00:00",
+            "2022-06-23T18:00:00+00:00"
+          ],
+          "separation_margin": 0.048356,
+          "target_max": 0.025468,
+          "target_max_source_timestamps": [
+            "2022-06-25T15:00:00+00:00"
+          ]
+        },
+        "control_2025": {
+          "context_min": 0.047301,
+          "context_min_source_timestamps": [
+            "2025-03-16T12:00:00+00:00"
+          ],
+          "separation_margin": 0.025155,
+          "target_max": 0.022146,
+          "target_max_source_timestamps": [
+            "2025-03-15T09:00:00+00:00"
+          ]
+        },
+        "harmful_2019": {
+          "context_min": 0.042122,
+          "context_min_source_timestamps": [
+            "2019-06-12T06:00:00+00:00"
+          ],
+          "separation_margin": 0.008319,
+          "target_max": 0.033803,
+          "target_max_source_timestamps": [
+            "2019-06-14T00:00:00+00:00"
+          ]
+        }
+      },
+      "target_bank_ceiling": 0.033803,
+      "target_bank_ceiling_source_timestamps": [
+        "2019-06-14T00:00:00+00:00"
+      ]
+    },
+    {
+      "admission": {
+        "missing_timestamps": [],
+        "row_count_checked": 33,
+        "status": "evaluable"
+      },
+      "claim_status": "evaluated",
+      "context_bank_min": 0.521061,
+      "context_bank_min_source_timestamps": [
+        "2019-06-12T06:00:00+00:00"
+      ],
+      "descriptive_only": false,
+      "excluded_from_pass_fail": false,
+      "field_name": "confidence_gate",
+      "global_separation_margin": 0.004159,
+      "leaky_context_timestamps": [],
+      "passes_context_clean_test": true,
+      "surface_extrema": {
+        "control_2020": {
+          "context_min": 0.545846,
+          "context_min_source_timestamps": [
+            "2020-11-02T21:00:00+00:00",
+            "2020-11-03T03:00:00+00:00"
+          ],
+          "separation_margin": 0.029854,
+          "target_max": 0.515992,
+          "target_max_source_timestamps": [
+            "2020-11-01T06:00:00+00:00"
+          ]
+        },
+        "control_2022": {
+          "context_min": 0.536912,
+          "context_min_source_timestamps": [
+            "2022-06-23T12:00:00+00:00",
+            "2022-06-23T18:00:00+00:00"
+          ],
+          "separation_margin": 0.024178,
+          "target_max": 0.512734,
+          "target_max_source_timestamps": [
+            "2022-06-25T15:00:00+00:00"
+          ]
+        },
+        "control_2025": {
+          "context_min": 0.523651,
+          "context_min_source_timestamps": [
+            "2025-03-16T12:00:00+00:00"
+          ],
+          "separation_margin": 0.012578,
+          "target_max": 0.511073,
+          "target_max_source_timestamps": [
+            "2025-03-15T09:00:00+00:00"
+          ]
+        },
+        "harmful_2019": {
+          "context_min": 0.521061,
+          "context_min_source_timestamps": [
+            "2019-06-12T06:00:00+00:00"
+          ],
+          "separation_margin": 0.004159,
+          "target_max": 0.516902,
+          "target_max_source_timestamps": [
+            "2019-06-14T00:00:00+00:00"
+          ]
+        }
+      },
+      "target_bank_ceiling": 0.516902,
+      "target_bank_ceiling_source_timestamps": [
+        "2019-06-14T00:00:00+00:00"
+      ]
+    },
+    {
+      "admission": {
+        "missing_timestamps": [],
+        "row_count_checked": 33,
+        "status": "evaluable"
+      },
+      "claim_status": "evaluated",
+      "context_bank_min": 0.369952,
+      "context_bank_min_source_timestamps": [
+        "2019-06-12T06:00:00+00:00"
+      ],
+      "descriptive_only": false,
+      "excluded_from_pass_fail": false,
+      "field_name": "clarity_raw",
+      "global_separation_margin": 0.005038,
+      "leaky_context_timestamps": [],
+      "passes_context_clean_test": true,
+      "surface_extrema": {
+        "control_2020": {
+          "context_min": 0.399969,
+          "context_min_source_timestamps": [
+            "2020-11-02T21:00:00+00:00",
+            "2020-11-03T03:00:00+00:00"
+          ],
+          "separation_margin": 0.036156,
+          "target_max": 0.363813,
+          "target_max_source_timestamps": [
+            "2020-11-01T06:00:00+00:00"
+          ]
+        },
+        "control_2022": {
+          "context_min": 0.389149,
+          "context_min_source_timestamps": [
+            "2022-06-23T12:00:00+00:00",
+            "2022-06-23T18:00:00+00:00"
+          ],
+          "separation_margin": 0.029282,
+          "target_max": 0.359867,
+          "target_max_source_timestamps": [
+            "2022-06-25T15:00:00+00:00"
+          ]
+        },
+        "control_2025": {
+          "context_min": 0.373088,
+          "context_min_source_timestamps": [
+            "2025-03-16T12:00:00+00:00"
+          ],
+          "separation_margin": 0.015233,
+          "target_max": 0.357855,
+          "target_max_source_timestamps": [
+            "2025-03-15T09:00:00+00:00"
+          ]
+        },
+        "harmful_2019": {
+          "context_min": 0.369952,
+          "context_min_source_timestamps": [
+            "2019-06-12T06:00:00+00:00"
+          ],
+          "separation_margin": 0.005038,
+          "target_max": 0.364914,
+          "target_max_source_timestamps": [
+            "2019-06-14T00:00:00+00:00"
+          ]
+        }
+      },
+      "target_bank_ceiling": 0.364914,
+      "target_bank_ceiling_source_timestamps": [
+        "2019-06-14T00:00:00+00:00"
+      ]
+    },
+    {
+      "admission": {
+        "missing_timestamps": [],
+        "row_count_checked": 33,
+        "status": "evaluable"
+      },
+      "claim_status": "evaluated",
+      "context_bank_min": 37.0,
+      "context_bank_min_source_timestamps": [
+        "2019-06-12T06:00:00+00:00",
+        "2025-03-16T12:00:00+00:00"
+      ],
+      "descriptive_only": true,
+      "excluded_from_pass_fail": true,
+      "field_name": "clarity_score",
+      "global_separation_margin": 1.0,
+      "leaky_context_timestamps": [],
+      "passes_context_clean_test": true,
+      "surface_extrema": {
+        "control_2020": {
+          "context_min": 40.0,
+          "context_min_source_timestamps": [
+            "2020-11-02T21:00:00+00:00",
+            "2020-11-03T03:00:00+00:00"
+          ],
+          "separation_margin": 4.0,
+          "target_max": 36.0,
+          "target_max_source_timestamps": [
+            "2020-10-31T21:00:00+00:00",
+            "2020-11-01T06:00:00+00:00",
+            "2020-11-01T15:00:00+00:00",
+            "2020-11-02T00:00:00+00:00"
+          ]
+        },
+        "control_2022": {
+          "context_min": 39.0,
+          "context_min_source_timestamps": [
+            "2022-06-23T12:00:00+00:00",
+            "2022-06-23T18:00:00+00:00"
+          ],
+          "separation_margin": 3.0,
+          "target_max": 36.0,
+          "target_max_source_timestamps": [
+            "2022-06-24T03:00:00+00:00",
+            "2022-06-24T21:00:00+00:00",
+            "2022-06-25T15:00:00+00:00",
+            "2022-06-26T00:00:00+00:00"
+          ]
+        },
+        "control_2025": {
+          "context_min": 37.0,
+          "context_min_source_timestamps": [
+            "2025-03-16T12:00:00+00:00"
+          ],
+          "separation_margin": 1.0,
+          "target_max": 36.0,
+          "target_max_source_timestamps": [
+            "2025-03-15T09:00:00+00:00",
+            "2025-03-15T18:00:00+00:00"
+          ]
+        },
+        "harmful_2019": {
+          "context_min": 37.0,
+          "context_min_source_timestamps": [
+            "2019-06-12T06:00:00+00:00"
+          ],
+          "separation_margin": 1.0,
+          "target_max": 36.0,
+          "target_max_source_timestamps": [
+            "2019-06-13T06:00:00+00:00",
+            "2019-06-13T15:00:00+00:00",
+            "2019-06-14T00:00:00+00:00",
+            "2019-06-14T09:00:00+00:00",
+            "2019-06-15T06:00:00+00:00"
+          ]
+        }
+      },
+      "target_bank_ceiling": 36.0,
+      "target_bank_ceiling_source_timestamps": [
+        "2019-06-13T06:00:00+00:00",
+        "2019-06-13T15:00:00+00:00",
+        "2019-06-14T00:00:00+00:00",
+        "2019-06-14T09:00:00+00:00",
+        "2019-06-15T06:00:00+00:00",
+        "2020-10-31T21:00:00+00:00",
+        "2020-11-01T06:00:00+00:00",
+        "2020-11-01T15:00:00+00:00",
+        "2020-11-02T00:00:00+00:00",
+        "2022-06-24T03:00:00+00:00",
+        "2022-06-24T21:00:00+00:00",
+        "2022-06-25T15:00:00+00:00",
+        "2022-06-26T00:00:00+00:00",
+        "2025-03-15T09:00:00+00:00",
+        "2025-03-15T18:00:00+00:00"
+      ]
+    }
+  ],
+  "inputs": {
+    "first_pair_artifact": {
+      "audit_version": "ri-policy-router-insufficient-evidence-d1-exact-subject-pair-2019-06-vs-2022-06-2026-05-04",
+      "base_sha": "164d5c97770d9f20cfd30bc28cf91f2d1d71f087",
+      "path": "results\\evaluation\\ri_policy_router_insufficient_evidence_d1_exact_subject_pair_2019_06_vs_2022_06_2026-05-04.json",
+      "status": "accepted_single_threshold_separator"
+    },
+    "second_pair_artifact": {
+      "audit_version": "ri-policy-router-insufficient-evidence-d1-family-survival-2019-06-vs-2025-03-2026-05-04",
+      "base_sha": "cbd03a763a22f8ab0902e2b7a8db73e8d581e7d5",
+      "path": "results\\evaluation\\ri_policy_router_insufficient_evidence_d1_family_survival_2019_06_vs_2025_03_2026-05-04.json",
+      "status": "fixed_non_age_family_survives"
+    },
+    "transport_artifact": {
+      "audit_version": "ri-policy-router-insufficient-evidence-d1-boundary-gap-transport-check-2019-06-vs-2020-10-11-2026-05-04",
+      "base_sha": "6ac59ef0c08cb3328348d5e64ad40d83ccd4f9f9",
+      "path": "results\\evaluation\\ri_policy_router_insufficient_evidence_d1_boundary_gap_transport_check_2019_06_vs_2020_10_11_2026-05-04.json",
+      "status": "bounded_boundary_gap_signal_present"
+    }
+  },
+  "non_authoritative": true,
+  "observational_only": true,
+  "search_boundary": {
+    "statement": "No threshold search, conjunction search, source widening, raw rereads, subject widening, or July/March/late-2024 reopening is allowed. This slice tests only whether the fixed four-surface target bank sits cleanly below the fixed context bank on the admitted D1 family."
+  },
+  "skill_usage": [
+    "decision_gate_debug",
+    "python_engineering"
+  ],
+  "status": "bounded_context_clean_selectivity_present",
+  "subject": {
+    "boundary_gap_reference": "docs\\analysis\\regime_intelligence\\policy_router\\ri_policy_router_insufficient_evidence_d1_boundary_gap_to_local_context_floor_2026-05-04.md",
+    "first_pair_reference": "docs\\analysis\\regime_intelligence\\policy_router\\ri_policy_router_insufficient_evidence_d1_exact_subject_pair_2019_06_vs_2022_06_2026-05-04.md",
+    "packet_reference": "docs\\decisions\\regime_intelligence\\policy_router\\ri_policy_router_insufficient_evidence_d1_context_clean_selectivity_falsifier_precode_packet_2026-05-05.md",
+    "second_pair_reference": "docs\\analysis\\regime_intelligence\\policy_router\\ri_policy_router_insufficient_evidence_d1_family_survival_2019_06_vs_2025_03_2026-05-04.md",
+    "symbol": "tBTCUSD",
+    "synthesis_reference": "docs\\analysis\\regime_intelligence\\policy_router\\ri_policy_router_insufficient_evidence_d1_four_surface_synthesis_2026-05-05.md",
+    "timeframe": "3h",
+    "transport_reference": "docs\\analysis\\regime_intelligence\\policy_router\\ri_policy_router_insufficient_evidence_d1_boundary_gap_transport_check_2019_06_vs_2020_10_11_2026-05-04.md",
+    "working_contract_reference": "GENESIS_WORKING_CONTRACT.md"
+  },
+  "surfaces": {
+    "control_2020": {
+      "context_metric_summary": {
+        "action_edge": {
+          "count": 4,
+          "gt_zero_share": 1.0,
+          "max": 0.100899,
+          "mean": 0.096296,
+          "median": 0.096296,
+          "min": 0.091692
+        },
+        "bars_since_regime_change": {
+          "count": 4,
+          "gt_zero_share": 1.0,
+          "max": 304.0,
+          "mean": 303.0,
+          "median": 303.0,
+          "min": 302.0
+        },
+        "clarity_raw": {
+          "count": 4,
+          "gt_zero_share": 1.0,
+          "max": 0.405544,
+          "mean": 0.402757,
+          "median": 0.402757,
+          "min": 0.399969
+        },
+        "clarity_score": {
+          "count": 4,
+          "gt_zero_share": 1.0,
+          "max": 41.0,
+          "mean": 40.5,
+          "median": 40.5,
+          "min": 40.0
+        },
+        "confidence_gate": {
+          "count": 4,
+          "gt_zero_share": 1.0,
+          "max": 0.550449,
+          "mean": 0.548148,
+          "median": 0.548148,
+          "min": 0.545846
+        },
+        "fwd_16_close_return_pct": {
+          "count": 0,
+          "gt_zero_share": null,
+          "max": null,
+          "mean": null,
+          "median": null,
+          "min": null
+        }
+      },
+      "context_row_count": 4,
+      "context_timestamps": [
+        "2020-11-02T03:00:00+00:00",
+        "2020-11-02T09:00:00+00:00",
+        "2020-11-02T21:00:00+00:00",
+        "2020-11-03T03:00:00+00:00"
+      ],
+      "primary_source": "transport_artifact",
+      "secondary_source": null,
+      "surface_role": "control",
+      "target_metric_summary": {
+        "action_edge": {
+          "count": 4,
+          "gt_zero_share": 1.0,
+          "max": 0.031984,
+          "mean": 0.027054,
+          "median": 0.026802,
+          "min": 0.022628
+        },
+        "bars_since_regime_change": {
+          "count": 4,
+          "gt_zero_share": 1.0,
+          "max": 302.0,
+          "mean": 302.0,
+          "median": 302.0,
+          "min": 302.0
+        },
+        "clarity_raw": {
+          "count": 4,
+          "gt_zero_share": 1.0,
+          "max": 0.363813,
+          "mean": 0.360827,
+          "median": 0.360675,
+          "min": 0.358147
+        },
+        "clarity_score": {
+          "count": 4,
+          "gt_zero_share": 1.0,
+          "max": 36.0,
+          "mean": 36.0,
+          "median": 36.0,
+          "min": 36.0
+        },
+        "confidence_gate": {
+          "count": 4,
+          "gt_zero_share": 1.0,
+          "max": 0.515992,
+          "mean": 0.513527,
+          "median": 0.513401,
+          "min": 0.511314
+        },
+        "fwd_16_close_return_pct": {
+          "count": 0,
+          "gt_zero_share": null,
+          "max": null,
+          "mean": null,
+          "median": null,
+          "min": null
+        }
+      },
+      "target_row_count": 4,
+      "target_timestamps": [
+        "2020-10-31T21:00:00+00:00",
+        "2020-11-01T06:00:00+00:00",
+        "2020-11-01T15:00:00+00:00",
+        "2020-11-02T00:00:00+00:00"
+      ]
+    },
+    "control_2022": {
+      "context_metric_summary": {
+        "action_edge": {
+          "count": 4,
+          "gt_zero_share": 1.0,
+          "max": 0.112293,
+          "mean": 0.093059,
+          "median": 0.093059,
+          "min": 0.073824
+        },
+        "bars_since_regime_change": {
+          "count": 4,
+          "gt_zero_share": 1.0,
+          "max": 183.0,
+          "mean": 182.5,
+          "median": 182.5,
+          "min": 182.0
+        },
+        "clarity_raw": {
+          "count": 4,
+          "gt_zero_share": 1.0,
+          "max": 0.412444,
+          "mean": 0.400796,
+          "median": 0.400796,
+          "min": 0.389149
+        },
+        "clarity_score": {
+          "count": 4,
+          "gt_zero_share": 1.0,
+          "max": 41.0,
+          "mean": 40.0,
+          "median": 40.0,
+          "min": 39.0
+        },
+        "confidence_gate": {
+          "count": 4,
+          "gt_zero_share": 1.0,
+          "max": 0.556147,
+          "mean": 0.546529,
+          "median": 0.546529,
+          "min": 0.536912
+        },
+        "fwd_16_close_return_pct": {
+          "count": 4,
+          "gt_zero_share": 1.0,
+          "max": 4.395097,
+          "mean": 3.165801,
+          "median": 3.077851,
+          "min": 2.112405
+        }
+      },
+      "context_row_count": 4,
+      "context_timestamps": [
+        "2022-06-23T03:00:00+00:00",
+        "2022-06-23T09:00:00+00:00",
+        "2022-06-23T12:00:00+00:00",
+        "2022-06-23T18:00:00+00:00"
+      ],
+      "primary_source": "first_pair_artifact",
+      "secondary_source": null,
+      "surface_role": "control",
+      "target_metric_summary": {
+        "action_edge": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 0.025468,
+          "mean": 0.018855,
+          "median": 0.01925,
+          "min": 0.012063
+        },
+        "bars_since_regime_change": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 184.0,
+          "mean": 184.0,
+          "median": 184.0,
+          "min": 184.0
+        },
+        "clarity_raw": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 0.359867,
+          "mean": 0.355862,
+          "median": 0.356102,
+          "min": 0.351749
+        },
+        "clarity_score": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 36.0,
+          "mean": 35.8,
+          "median": 36.0,
+          "min": 35.0
+        },
+        "confidence_gate": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 0.512734,
+          "mean": 0.509427,
+          "median": 0.509625,
+          "min": 0.506031
+        },
+        "fwd_16_close_return_pct": {
+          "count": 5,
+          "gt_zero_share": 0.4,
+          "max": 2.673438,
+          "mean": -0.528871,
+          "median": -0.814923,
+          "min": -3.31458
+        }
+      },
+      "target_row_count": 5,
+      "target_timestamps": [
+        "2022-06-24T03:00:00+00:00",
+        "2022-06-24T21:00:00+00:00",
+        "2022-06-25T06:00:00+00:00",
+        "2022-06-25T15:00:00+00:00",
+        "2022-06-26T00:00:00+00:00"
+      ]
+    },
+    "control_2025": {
+      "context_metric_summary": {
+        "action_edge": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 0.107332,
+          "mean": 0.095047,
+          "median": 0.106634,
+          "min": 0.047301
+        },
+        "bars_since_regime_change": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 65.0,
+          "mean": 63.8,
+          "median": 64.0,
+          "min": 63.0
+        },
+        "clarity_raw": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 0.40944,
+          "mean": 0.402,
+          "median": 0.409017,
+          "min": 0.373088
+        },
+        "clarity_score": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 41.0,
+          "mean": 40.2,
+          "median": 41.0,
+          "min": 37.0
+        },
+        "confidence_gate": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 0.553666,
+          "mean": 0.547523,
+          "median": 0.553317,
+          "min": 0.523651
+        },
+        "fwd_16_close_return_pct": {
+          "count": 5,
+          "gt_zero_share": 0.8,
+          "max": 5.533937,
+          "mean": 2.372572,
+          "median": 2.119914,
+          "min": -1.790137
+        }
+      },
+      "context_row_count": 5,
+      "context_timestamps": [
+        "2025-03-13T15:00:00+00:00",
+        "2025-03-13T21:00:00+00:00",
+        "2025-03-14T00:00:00+00:00",
+        "2025-03-14T06:00:00+00:00",
+        "2025-03-16T12:00:00+00:00"
+      ],
+      "primary_source": "second_pair_artifact",
+      "secondary_source": null,
+      "surface_role": "control",
+      "target_metric_summary": {
+        "action_edge": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 0.022146,
+          "mean": 0.016712,
+          "median": 0.017081,
+          "min": 0.011946
+        },
+        "bars_since_regime_change": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 65.0,
+          "mean": 65.0,
+          "median": 65.0,
+          "min": 65.0
+        },
+        "clarity_raw": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 0.357855,
+          "mean": 0.354564,
+          "median": 0.354788,
+          "min": 0.351678
+        },
+        "clarity_score": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 36.0,
+          "mean": 35.4,
+          "median": 35.0,
+          "min": 35.0
+        },
+        "confidence_gate": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 0.511073,
+          "mean": 0.508356,
+          "median": 0.50854,
+          "min": 0.505973
+        },
+        "fwd_16_close_return_pct": {
+          "count": 5,
+          "gt_zero_share": 0.0,
+          "max": -0.528462,
+          "mean": -1.017927,
+          "median": -0.732922,
+          "min": -1.619123
+        }
+      },
+      "target_row_count": 5,
+      "target_timestamps": [
+        "2025-03-14T15:00:00+00:00",
+        "2025-03-15T00:00:00+00:00",
+        "2025-03-15T09:00:00+00:00",
+        "2025-03-15T18:00:00+00:00",
+        "2025-03-16T03:00:00+00:00"
+      ]
+    },
+    "harmful_2019": {
+      "context_metric_summary": {
+        "action_edge": {
+          "count": 1,
+          "gt_zero_share": 1.0,
+          "max": 0.042122,
+          "mean": 0.042122,
+          "median": 0.042122,
+          "min": 0.042122
+        },
+        "bars_since_regime_change": {
+          "count": 1,
+          "gt_zero_share": 1.0,
+          "max": 164.0,
+          "mean": 164.0,
+          "median": 164.0,
+          "min": 164.0
+        },
+        "clarity_raw": {
+          "count": 1,
+          "gt_zero_share": 1.0,
+          "max": 0.369952,
+          "mean": 0.369952,
+          "median": 0.369952,
+          "min": 0.369952
+        },
+        "clarity_score": {
+          "count": 1,
+          "gt_zero_share": 1.0,
+          "max": 37.0,
+          "mean": 37.0,
+          "median": 37.0,
+          "min": 37.0
+        },
+        "confidence_gate": {
+          "count": 1,
+          "gt_zero_share": 1.0,
+          "max": 0.521061,
+          "mean": 0.521061,
+          "median": 0.521061,
+          "min": 0.521061
+        },
+        "fwd_16_close_return_pct": {
+          "count": 1,
+          "gt_zero_share": 1.0,
+          "max": 4.157475,
+          "mean": 4.157475,
+          "median": 4.157475,
+          "min": 4.157475
+        }
+      },
+      "context_row_count": 1,
+      "context_timestamps": [
+        "2019-06-12T06:00:00+00:00"
+      ],
+      "primary_source": "first_pair_artifact",
+      "secondary_source": "second_pair_artifact",
+      "surface_role": "harmful",
+      "target_metric_summary": {
+        "action_edge": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 0.033803,
+          "mean": 0.031428,
+          "median": 0.032288,
+          "min": 0.027801
+        },
+        "bars_since_regime_change": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 164.0,
+          "mean": 164.0,
+          "median": 164.0,
+          "min": 164.0
+        },
+        "clarity_raw": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 0.364914,
+          "mean": 0.363476,
+          "median": 0.363997,
+          "min": 0.36128
+        },
+        "clarity_score": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 36.0,
+          "mean": 36.0,
+          "median": 36.0,
+          "min": 36.0
+        },
+        "confidence_gate": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 0.516902,
+          "mean": 0.515714,
+          "median": 0.516144,
+          "min": 0.513901
+        },
+        "fwd_16_close_return_pct": {
+          "count": 5,
+          "gt_zero_share": 1.0,
+          "max": 10.550149,
+          "mean": 8.104614,
+          "median": 7.805325,
+          "min": 5.827197
+        }
+      },
+      "target_row_count": 5,
+      "target_timestamps": [
+        "2019-06-13T06:00:00+00:00",
+        "2019-06-13T15:00:00+00:00",
+        "2019-06-14T00:00:00+00:00",
+        "2019-06-14T09:00:00+00:00",
+        "2019-06-15T06:00:00+00:00"
+      ]
+    }
+  },
+  "transport_control_2020_source_backed_field_proof": {
+    "field_names_checked": [
+      "action_edge",
+      "confidence_gate",
+      "clarity_raw",
+      "clarity_score",
+      "bars_since_regime_change"
+    ],
+    "raw_action_diff_path": "results\\backtests\\ri_policy_router_enabled_vs_absent_all_years_20260428_curated_only\\2020_enabled_vs_absent_action_diffs.json",
+    "rows": [
+      {
+        "action_edge": 0.022628,
+        "action_pair": "LONG->NONE",
+        "bars_since_regime_change": 302,
+        "clarity_raw": 0.358147,
+        "clarity_score": 36.0,
+        "confidence_gate": 0.511314,
+        "selected_policy": "RI_no_trade_policy",
+        "switch_reason": "insufficient_evidence",
+        "timestamp": "2020-10-31T21:00:00+00:00"
+      },
+      {
+        "action_edge": 0.031984,
+        "action_pair": "LONG->NONE",
+        "bars_since_regime_change": 302,
+        "clarity_raw": 0.363813,
+        "clarity_score": 36.0,
+        "confidence_gate": 0.515992,
+        "selected_policy": "RI_no_trade_policy",
+        "switch_reason": "insufficient_evidence",
+        "timestamp": "2020-11-01T06:00:00+00:00"
+      },
+      {
+        "action_edge": 0.024786,
+        "action_pair": "LONG->NONE",
+        "bars_since_regime_change": 302,
+        "clarity_raw": 0.359454,
+        "clarity_score": 36.0,
+        "confidence_gate": 0.512393,
+        "selected_policy": "RI_no_trade_policy",
+        "switch_reason": "insufficient_evidence",
+        "timestamp": "2020-11-01T15:00:00+00:00"
+      },
+      {
+        "action_edge": 0.028818,
+        "action_pair": "LONG->NONE",
+        "bars_since_regime_change": 302,
+        "clarity_raw": 0.361895,
+        "clarity_score": 36.0,
+        "confidence_gate": 0.514409,
+        "selected_policy": "RI_no_trade_policy",
+        "switch_reason": "insufficient_evidence",
+        "timestamp": "2020-11-02T00:00:00+00:00"
+      },
+      {
+        "action_edge": 0.100899,
+        "action_pair": "NONE->LONG",
+        "bars_since_regime_change": 302,
+        "clarity_raw": 0.405544,
+        "clarity_score": 41.0,
+        "confidence_gate": 0.550449,
+        "selected_policy": "RI_continuation_policy",
+        "switch_reason": "stable_continuation_state",
+        "timestamp": "2020-11-02T03:00:00+00:00"
+      },
+      {
+        "action_edge": 0.100899,
+        "action_pair": "LONG->NONE",
+        "bars_since_regime_change": 302,
+        "clarity_raw": 0.405544,
+        "clarity_score": 41.0,
+        "confidence_gate": 0.550449,
+        "selected_policy": "RI_continuation_policy",
+        "switch_reason": "stable_continuation_state",
+        "timestamp": "2020-11-02T09:00:00+00:00"
+      },
+      {
+        "action_edge": 0.091692,
+        "action_pair": "NONE->LONG",
+        "bars_since_regime_change": 304,
+        "clarity_raw": 0.399969,
+        "clarity_score": 40.0,
+        "confidence_gate": 0.545846,
+        "selected_policy": "RI_continuation_policy",
+        "switch_reason": "stable_continuation_state",
+        "timestamp": "2020-11-02T21:00:00+00:00"
+      },
+      {
+        "action_edge": 0.091692,
+        "action_pair": "LONG->NONE",
+        "bars_since_regime_change": 304,
+        "clarity_raw": 0.399969,
+        "clarity_score": 40.0,
+        "confidence_gate": 0.545846,
+        "selected_policy": "RI_continuation_policy",
+        "switch_reason": "stable_continuation_state",
+        "timestamp": "2020-11-03T03:00:00+00:00"
+      }
+    ]
+  }
+}

@@ -3,7 +3,10 @@
 **Start Date:** 2026-02-04 09:29 UTC
 **Champion:** v5a_sizing_exp1 (tBTCUSD_1h)
 **Period:** 6 weeks (2026-02-04 to 2026-03-17)
-**Status:** ✅ ACTIVE
+**Status:** ✅ COMPLETED (archived 2026-05-05)
+
+> [HISTORICAL 2026-05-05] This summary documents the completed Phase 3 paper-trading period and is retained for provenance only.
+> Do not treat the operational, freeze, or incident-response sections below as current live instructions.
 
 ---
 
@@ -193,7 +196,9 @@ python scripts/calculate_paper_trading_metrics.py \
 
 ---
 
-## CI Re-verification Plan
+## CI Re-verification Plan (historical)
+
+> [HISTORICAL 2026-05-05] This GitHub Actions incident-response plan is preserved for provenance only; no live monitoring or re-verification is required from this document.
 
 **Context:**
 
@@ -264,7 +269,7 @@ python scripts/calculate_paper_trading_metrics.py \
    git push
    ```
 
-**Status:** ⏳ Monitoring GitHub Actions recovery
+**Status:** historical incident-response note (closed)
 
 ---
 
@@ -277,7 +282,7 @@ python scripts/calculate_paper_trading_metrics.py \
 3. Check `docs/bugs/known_issues.md` for documented problems
 4. Escalate blocking issues immediately (freeze period is time-limited)
 
-**Freeze period:** 2026-02-04 to 2026-03-17
+**Freeze period (historical):** 2026-02-04 to 2026-03-17
 
 - NO changes to champion config
 - CI freeze-guard active

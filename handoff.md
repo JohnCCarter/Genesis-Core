@@ -6,6 +6,12 @@ Senast statusmarkerad: 2026-05-05 (underliggande takeover-block från 2026-04-02
 
 Detta var den då **aktuella takeover-sektionen**. Den bevaras för spårbarhet, men nästa agent ska inte använda den som live anchor; använd i stället `GENESIS_WORKING_CONTRACT.md` plus den aktuella RI policy-router-kedjan på `feature/next-slice-2026-05-05`.
 
+> Current status note:
+>
+> - HISTORICAL 2026-05-05: den då rekommenderade execution-proxy-partitionen är inte längre ett framtidssteg; den är senare dokumenterad i `docs/analysis/diagnostics/execution_proxy_partition_phase1_2026-04-14.md` med packet-provenans i `docs/decisions/diagnostic_campaigns/execution_proxy_partition_phase1_packet_2026-04-14.md`.
+> - De senare execution-proxy missingness-diagnostikerna är inte längre bara kandidatnivå; de återspeglas i `scripts/analyze/execution_proxy_evidence.py`, `tests/backtest/test_execution_proxy_evidence.py` och det historiska packetet `docs/decisions/diagnostic_campaigns/execution_proxy_missingness_cause_packet_2026-04-14.md`.
+> - Läsordning och “nästa steg”-språk längre ned i denna 2026-04-02-sektion ska därför läsas som historisk snapshot, inte som live arbetsorder.
+
 ### Historisk live status från snapshoten 2026-04-02
 
 - **Repo:** `Genesis-Core`
@@ -40,6 +46,13 @@ Följande är genomfört, verifierat och redan pushat på denna branch:
    - Första tolkningen är pushad i:
      - `docs/decisions/diagnostic_campaigns/execution_proxy_first_read_packet_2026-04-02.md`
      - `docs/analysis/diagnostics/execution_proxy_first_read_2026-04-02.md`
+   - Den senare partition-closeouten är spårad i:
+     - `docs/decisions/diagnostic_campaigns/execution_proxy_partition_phase1_packet_2026-04-14.md`
+     - `docs/analysis/diagnostics/execution_proxy_partition_phase1_2026-04-14.md`
+   - Senare missingness-diagnostik är spårad i:
+     - `docs/decisions/diagnostic_campaigns/execution_proxy_missingness_cause_packet_2026-04-14.md`
+     - `scripts/analyze/execution_proxy_evidence.py`
+     - `tests/backtest/test_execution_proxy_evidence.py`
 
 5. **Branch-hygien är redan städad**
    - Inga meningsfulla lokala diffar återstod efter senaste steget
@@ -75,7 +88,7 @@ Det viktigaste som ändrats sedan äldre delar av denna handoff är:
 
 Nästa agent på samma hemdator kan läsa dessa direkt. Nästa agent på en annan maskin får **inte** anta att de finns bara för att docs-memon refererar till dem.
 
-### Vad nästa agent bör läsa först
+### Vad nästa agent då bör läsa först
 
 Läs i denna ordning innan nytt arbete startar:
 
@@ -92,11 +105,11 @@ Om nästa steg kräver tillbaka-länkning till föregående lane, läs därefter
 - `tests/backtest/test_edge_origin_isolation.py`
 - `results/research/fa_v2_adaptation_off/EDGE_ORIGIN_REPORT.md`
 
-### Rekommenderat nästa minsta admissible steg
+### Då rekommenderat nästa minsta admissible steg
 
 Starta **inte** med runtime-ändringar, inte med ny PR mot `master`, och inte med en bred ny optimizer-kampanj.
 
-Det bästa nästa lilla steget är i stället en **andra analys-slice över de redan genererade execution-proxy-artifakterna**, exempelvis en partitionering av proxy-surface efter:
+Det bästa nästa lilla steget var då en **andra analys-slice över de redan genererade execution-proxy-artifakterna**, exempelvis en partitionering av proxy-surface efter:
 
 - `full-window` vs `sparse-window`
 - resolved vs omitted exit proxy price
@@ -114,9 +127,9 @@ Det håller arbetet inom `RESEARCH`, bygger vidare på befintlig evidens och und
 - håll diffen liten och fortsätt bara med nästa minsta admissible slice
 - om arbete riskerar att gå in i strict-only surfaces, stoppa och reklassificera först
 
-### Kort enradig takeover-summary
+### Kort enradig historisk takeover-summary
 
-Branchens läge är grönt och pushat, execution-proxy-lanen finns nu i kod + test + docs, lokala proxy-resultat finns på hemdatorn, och nästa agent bör fortsätta med en liten partitionerad proxy-analys — inte med runtime- eller merge-orienterade steg.
+Branchens läge var då grönt och pushat, execution-proxy-lanen fanns i kod + test + docs, lokala proxy-resultat fanns på hemdatorn, och nästa agent borde då ha fortsatt med en liten partitionerad proxy-analys — inte med runtime- eller merge-orienterade steg.
 
 ## Uppdatering 2026-04-01 — ChatGPT-handoff för Phase 4 survival boundary
 

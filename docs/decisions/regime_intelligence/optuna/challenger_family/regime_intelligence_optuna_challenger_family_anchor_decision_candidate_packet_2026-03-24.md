@@ -2,7 +2,13 @@
 
 Date: 2026-03-24
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `prep-only / ready_for_governance_review / no anchor approved by this packet`
+Status: `historical decision-prep snapshot / superseded by later refreshed packet and governance review / no active review authority`
+
+> Current status note:
+>
+> - [HISTORICAL 2026-05-05] This file records an earlier anchor-decision prep surface on `feature/ri-role-map-implementation-2026-03-24`, not an active review authority on `feature/next-slice-2026-05-05`.
+> - It was later superseded by the refreshed `2026-03-26` anchor-decision packet and then consumed by the downstream governance review summary.
+> - Preserve this file as historical decision-prep provenance only.
 
 ## COMMAND PACKET
 

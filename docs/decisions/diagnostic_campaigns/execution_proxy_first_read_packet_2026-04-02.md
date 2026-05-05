@@ -2,7 +2,13 @@
 
 Date: 2026-04-02
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `proposed / docs-only / no-runtime-authority`
+Status: `historical first-read snapshot / superseded by later partition synthesis / no active packet authority`
+
+> Current status note:
+>
+> - [HISTORICAL 2026-05-05] This file records the first bounded interpretation of the execution-proxy lane on `feature/ri-role-map-implementation-2026-03-24`, not an active interpretation packet on `feature/next-slice-2026-05-05`.
+> - Its first-read role was later narrowed by `docs/decisions/diagnostic_campaigns/execution_proxy_partition_phase1_packet_2026-04-14.md` and reflected historically in `handoff.md`.
+> - Preserve this file as historical first-read governance provenance only.
 
 ## COMMAND PACKET
 

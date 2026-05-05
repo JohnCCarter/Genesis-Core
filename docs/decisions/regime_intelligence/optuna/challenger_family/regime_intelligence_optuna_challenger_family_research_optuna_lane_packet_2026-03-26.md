@@ -2,7 +2,13 @@
 
 Date: 2026-03-26
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `research-lane open / RI-family-internal only / no comparison or promotion scope`
+Status: `historical lane-opening snapshot / narrowed by later RI follow-up chain / no active lane authority`
+
+> Current status note:
+>
+> - [HISTORICAL 2026-05-05] This file records the initial RI research-lane opening on `feature/ri-role-map-implementation-2026-03-24`, not an active lane authority on `feature/next-slice-2026-05-05`.
+> - Its broad lane-opening role was later specialized by the execution-setup / launch packet chain and then narrowed by the slice8 follow-up, cross-regime, and structural-search-space question chain.
+> - Preserve this file as historical lane-opening provenance only.
 
 ## COMMAND PACKET
 

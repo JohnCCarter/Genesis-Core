@@ -2,7 +2,13 @@
 
 Date: 2026-03-27
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `launch-candidate / research-only / not promotion authority`
+Status: `historical launch authorization / consumed by later execution signoff / no active execution authority`
+
+> Current status note:
+>
+> - [HISTORICAL 2026-05-05] This file records a point-in-time pre-execution authorization on `feature/ri-role-map-implementation-2026-03-24`, not an active launch authority on `feature/next-slice-2026-05-05`.
+> - The later execution outcome is recorded in `docs/decisions/regime_intelligence/optuna/decision/regime_intelligence_optuna_decision_ev_edge_slice1_execution_outcome_signoff_summary_2026-03-27.md`.
+> - Preserve this packet as historical launch provenance only.
 
 ## COMMAND PACKET
 

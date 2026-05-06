@@ -3,6 +3,12 @@
 This note is observational only.
 It records the first admissible reading of the new execution-proxy artifact surface generated from `trace_rows.fib_phase.ltf_debug.price` and preserves the boundary that proxy evidence is not the same thing as realized execution authority.
 
+> Current status note:
+>
+> - HISTORICAL 2026-05-05: this first-read memo is no longer the live forward pointer for the execution-proxy lane on `feature/next-slice-2026-05-05`.
+> - Its then-next-step recommendation was later consumed by `docs/analysis/diagnostics/execution_proxy_partition_phase1_2026-04-14.md` and its packet `docs/decisions/diagnostic_campaigns/execution_proxy_partition_phase1_packet_2026-04-14.md`.
+> - Preserve this note as the first bounded interpretation of the proxy surface, not as current roadmap authority.
+
 ## What the new proxy lane now attests
 
 The new proxy lane adds a deterministic price-path surface that did not exist in the original locked Phase 10 execution artifact set.
@@ -78,17 +84,17 @@ The best current reading is:
 - the new proxy lane does **not** yet make execution a supported mechanism class
 - the residual class `execution_inefficiency` therefore remains unresolved, but with a more informative intermediate surface than the original Phase 10 execution artifact alone
 
-## Next admissible step
+## Then-next admissible step from this first read
 
-The next admissible step is not a runtime change.
-It is a second analysis slice over the new proxy artifacts, for example one that partitions the proxy surface by:
+From this first-read snapshot, the then-next admissible step was not a runtime change.
+It was a second analysis slice over the new proxy artifacts, for example one that partitions the proxy surface by:
 
 - resolved versus omitted exit proxy price
 - full-window versus sparse-window trades
 - short fixed horizons versus longer proxy windows
 - winners versus losers on the realized ledger
 
-That would reduce uncertainty further while still preserving the boundary between proxy evidence and realized execution authority.
+That follow-up would reduce uncertainty further while still preserving the boundary between proxy evidence and realized execution authority.
 
 ## Bottom line
 

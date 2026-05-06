@@ -2,7 +2,13 @@
 
 Date: 2026-03-26
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `prep-only / refreshed with slice9 evidence / ready_for_governance_review / no canonical anchor approved by this packet`
+Status: `historical decision-prep snapshot / consumed by later governance review summary / no active review authority`
+
+> Current status note:
+>
+> - [HISTORICAL 2026-05-05] This file records an earlier anchor-decision prep surface on `feature/ri-role-map-implementation-2026-03-24`, not an active review authority on `feature/next-slice-2026-05-05`.
+> - Its review role was later consumed by `docs/decisions/regime_intelligence/optuna/challenger_family/regime_intelligence_optuna_challenger_family_anchor_decision_governance_review_summary_2026-03-26.md`.
+> - Preserve this file as historical decision-prep provenance only.
 
 ## COMMAND PACKET
 

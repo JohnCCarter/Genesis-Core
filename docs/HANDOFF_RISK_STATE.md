@@ -1,4 +1,12 @@
-# Handoff: Risk State (Phase D) — Branch `feature/Optuna-Phased-v4`
+# Handoff: Risk State (Phase D) — Historical snapshot from branch `feature/Optuna-Phased-v4`
+
+Status: `historical handoff snapshot / branch-specific provenance / not active on feature/next-slice-2026-05-05`
+
+> Current status note:
+>
+> - [HISTORICAL 2026-05-05] This handoff is preserved as branch-specific provenance from `feature/Optuna-Phased-v4`, not as an active lane on `feature/next-slice-2026-05-05`.
+> - Statements below about merge, next steps, and commands are historical snapshot guidance from that branch context only.
+> - Preserve this file as implementation provenance rather than current execution authority.
 
 ## Vad som gjorts
 
@@ -75,14 +83,14 @@ risk_state:
     mult: 0.40 # 60% reduktion under transitions
 ```
 
-## Nästa steg att överväga
+## Historical next steps from that snapshot
 
 1. **Testa på mer volatil period** — data med 10-20% drawdowns för att se risk_state i aktion.
 2. **Testa andra instrument** — tETHUSD eller liknande med högre volatilitet.
 3. **Sänka drawdown_guard thresholds** — nuvarande 6% triggas aldrig i OOS. Testa 2-3% thresholds.
 4. **Merge till master** — risk_state-koden är ren, testad, och neutral (enabled=false by default).
 
-## Kommandon
+## Historical reproduction commands
 
 ```bash
 # Kör alla tester

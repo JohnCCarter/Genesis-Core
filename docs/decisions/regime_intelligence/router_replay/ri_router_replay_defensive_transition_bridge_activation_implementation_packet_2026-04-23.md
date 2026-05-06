@@ -2,7 +2,13 @@
 
 Date: 2026-04-23
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `implementation contract proposed / config-only candidate artifact creation / baseline unchanged intended`
+Status: `historical implementation packet / candidate bridge artifact created and absorbed / no active implementation authority`
+
+> Current status note:
+>
+> - [HISTORICAL 2026-05-05] This packet is not an active implementation authority on `feature/next-slice-2026-05-05`.
+> - The separate bridge artifact was later created and folded into the broader bridge-activation / launch / execution chain summarized from `GENESIS_WORKING_CONTRACT.md`.
+> - Preserve this file as historical config-artifact provenance only.
 
 ## COMMAND PACKET
 

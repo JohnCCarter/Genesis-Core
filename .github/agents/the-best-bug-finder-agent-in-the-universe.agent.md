@@ -1,7 +1,7 @@
 ---
 name: the-best-bug-finder-agent-in-the-universe
-description: Describe what this custom agent does and when to use it.
-argument-hint: The inputs this agent expects, e.g., "a task to implement" or "a question to answer".
+description: "Adaptive root-cause debugging agent. Use for failing tests, regressions, incorrect outputs, silent behavior changes, dataset/source selection errors, determinism violations, config precedence issues, backtest anomalies, and hard-to-explain system behavior. Produces ranked hypotheses with evidence, not speculative fixes."
+argument-hint: "Describe a failing test, bug symptom, suspicious file or subsystem, regression, anomalous output, or determinism problem to investigate."
 tools:
   - vscode/getProjectSetupInfo
   - vscode/memory

@@ -5,7 +5,7 @@ Branch: `feature/next-slice-2026-04-29`
 Mode: `RESEARCH`
 Status: `pre-code-defined / docs-only / RI chosen / no implementation or execution authority`
 
-This packet translates the root research note `genesis_core_router_research.md` into a
+This packet translates the generic router research note `docs/analysis/regime_intelligence/policy_router/genesis_core_router_research_generic_background_2026-04-30.md` into a
 Genesis-compatible RI lane.
 
 It freezes one explicit direction choice:
@@ -73,7 +73,7 @@ Current repo-visible evidence also makes that choice the cleaner implementation 
 
 ## Evidence anchors
 
-- `genesis_core_router_research.md`
+- `docs/analysis/regime_intelligence/policy_router/genesis_core_router_research_generic_background_2026-04-30.md`
 - `docs/scpe_ri_v1_architecture.md`
 - `src/core/strategy/ri_policy_router.py`
 - `src/core/strategy/decision.py`

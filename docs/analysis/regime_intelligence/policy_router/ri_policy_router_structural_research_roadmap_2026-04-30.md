@@ -2,13 +2,14 @@
 
 Date: 2026-04-30
 Branch: `feature/next-slice-2026-04-29`
-Status: `reference / partially superseded / non-executable / no authorization`
+Status: `historical reference / materially stale as execution order / non-executable / no authorization`
 
 > Current status note:
 >
-> - This roadmap still governs source precedence between `Genesis-Core router research — codebase-aware re-evaluation.md` and `genesis_core_router_research.md`.
-> - Its follow-up sequencing is partially superseded wherever later anchored evidence or `GENESIS_WORKING_CONTRACT.md` differs.
-> - Keep it as a reference planning note, not as the current execution order for the active `continuation_release_hysteresis` lane.
+> - [STATUS 2026-05-05] On `feature/next-slice-2026-05-05`, this roadmap is now a historical structural reference, not the current execution order.
+> - It still preserves the correct asymmetric source precedence between `docs/analysis/regime_intelligence/policy_router/genesis_core_router_research_codebase_aware_re_evaluation_2026-04-30.md` and `docs/analysis/regime_intelligence/policy_router/genesis_core_router_research_generic_background_2026-04-30.md`.
+> - Its former forward-looking Phases 2-4 were overtaken by the later bounded D1 evidence chain, which is now closed/parked on the current repo-visible surface per `GENESIS_WORKING_CONTRACT.md` and the merged RI policy-router anchors.
+> - Keep this file for structural framing, completed note-normalization context, and widening deferrals only.
 
 This document is a planning artifact in `RESEARCH` and grants no implementation, runtime, readiness, launch, paper-trading, cutover, or promotion authority.
 It exists to answer one narrow question only:
@@ -57,8 +58,8 @@ It exists to answer one narrow question only:
 
 For future planning on this branch, use the two notes with **asymmetric authority**:
 
-1. **Primary planning note:** `Genesis-Core router research — codebase-aware re-evaluation.md`
-2. **Background structural note only:** `genesis_core_router_research.md`
+1. **Primary planning note:** `docs/analysis/regime_intelligence/policy_router/genesis_core_router_research_codebase_aware_re_evaluation_2026-04-30.md`
+2. **Background structural note only:** `docs/analysis/regime_intelligence/policy_router/genesis_core_router_research_generic_background_2026-04-30.md`
 
 This is the correct ordering because:
 
@@ -101,7 +102,7 @@ These anchors already establish four important planning facts:
 
 ## What from the second note should be kept
 
-The following ideas from `Genesis-Core router research — codebase-aware re-evaluation.md` should be kept as active planning truth:
+The following ideas from `docs/analysis/regime_intelligence/policy_router/genesis_core_router_research_codebase_aware_re_evaluation_2026-04-30.md` should be kept as active planning truth:
 
 - the main open structural gap is **conditional suppression discrimination**, not more naive activation/release tuning
 - RI is the right runtime family-local lane
@@ -167,23 +168,27 @@ Stop if:
 - any later note starts citing the first note as if it were the execution contract
 - any later note restarts the old D1 loop on the already-closed March 2021 / March 2025 surface
 
-### Phase 1 — Normalize the synthesis note as a truthful repo-facing reference
+### Phase 1 — Normalize the synthesis notes as truthful repo-facing references
 
 Goal:
 
-- if the second note is to be retained, make it repo-truthful and layout-clean before using it as a future reference anchor
+- record that the two router-research notes are now normalized into `docs/analysis/regime_intelligence/policy_router/` and should be maintained there rather than in the repo root
 
-Required future actions (docs-only, separately scoped if opened):
+Completed historical actions on `2026-05-05`:
 
-- move the second note out of its ad hoc location into an appropriate `docs/analysis/regime_intelligence/policy_router/` home
-- soften the aged-weak-overstatement
-- update the D1 wording so it no longer reads as if the old discriminator loop is still untested
+- moved the codebase-aware synthesis note into `docs/analysis/regime_intelligence/policy_router/genesis_core_router_research_codebase_aware_re_evaluation_2026-04-30.md`
+- moved the generic background note into `docs/analysis/regime_intelligence/policy_router/genesis_core_router_research_generic_background_2026-04-30.md`
+
+Still-valid wording hygiene if a later docs-only cleanup reopens this area:
+
+- soften the aged-weak-overstatement where needed
+- keep the D1 wording aligned so it does not read as if the old discriminator loop is still untested
 - align any `risk_state.py` path references to the actual file location under `src/core/intelligence/regime/`
 
 Important boundary:
 
-- this roadmap does not perform that normalization
-- this roadmap only records that such cleanup should happen before the note is treated as a stable long-lived repo anchor
+- this roadmap now records the normalization as completed history
+- future cleanup in this area should be wording-truth maintenance only, not renewed root placement debt
 
 ### Phase 2 — Open one genuinely new bounded evidence slice
 
@@ -278,9 +283,9 @@ The following lines remain explicitly deferred unless separately reopened:
 - bumpless-transfer implementation
 - defensive-probe runtime/config/default follow-up
 
-## Practical execution order
+## Practical execution order (historical as of 2026-05-05)
 
-If the user wants to “go through the roadmap” in order, the planning sequence should be:
+At the time this roadmap was written, the planning sequence was:
 
 1. **Accept source precedence**
    - second note = primary synthesis note
@@ -288,9 +293,10 @@ If the user wants to “go through the roadmap” in order, the planning sequenc
 2. **Do not reopen old D1 on the exhausted March 2021 / March 2025 surface**
 3. **Optionally normalize the second note** as a repo-facing docs artifact
 4. **Open one new bounded `insufficient_evidence` counterfactual-screen packet**
+   - historical note: the later bounded follow-up chain did run, widened through the exact D1 bank, and is now parked/non-authoritative on the current repo-visible surface
 5. **End with a hard fork:**
-   - no clean selector -> park the line
-   - clean selector on new surface -> concept-only packet for smallest deterministic runtime form
+   - historical outcome: the line is currently parked rather than open as an active next-step selector from this roadmap
+   - any future reopen now requires a fresh packet posing a genuinely new falsifier or synthesis question
 
 ## What this roadmap explicitly does not authorize
 
@@ -307,11 +313,12 @@ This roadmap does **not** authorize:
 
 ## Bottom line
 
-The correct way forward is:
+The historical direction captured here was:
 
 - **drive planning from the second, codebase-aware note**,
 - **keep the first note as structural background only**,
 - **treat the already-closed March 2021 / March 2025 discriminator loop as closed**, and
 - **make the next real step one new bounded `insufficient_evidence` counterfactual-screen packet on a genuinely new surface**.
 
-That is the clearest fail-closed roadmap available now.
+That was the clearest fail-closed roadmap available on `2026-04-30`.
+The current truthful read on `2026-05-05` is narrower: preserve this file as a historical structural reference, but take active lane authority from `GENESIS_WORKING_CONTRACT.md` plus the merged RI policy-router anchors, where the later bounded D1 follow-up chain is now explicitly parked and non-authoritative.

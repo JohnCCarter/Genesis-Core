@@ -19,7 +19,7 @@
 
 ### Added/updated governance evidence
 
-- `docs/audit/refactor/command_packet_candidate19_delete_docs_archive_phase6_legacy_core_2026-03-09.md`
+- `docs/audit/refactor/candidates/command_packet_candidate19_delete_docs_archive_phase6_legacy_core_2026-03-09.md` _(current retained path after later taxonomy move)_
 - `docs/audit/refactor/evidence/docs_archive_triage_matrix_2026-03-09.tsv`
 - `docs/audit/refactor/evidence/docs_archive_triage_summary_2026-03-09.txt`
 - `docs/audit/refactor/evidence/docs_archive_triage_phase6_legacy_core_decision_2026-03-09.md`

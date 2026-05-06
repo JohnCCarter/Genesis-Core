@@ -2,7 +2,13 @@
 
 Date: 2026-04-23
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `pre-code reviewed / APPROVED_WITH_NOTES / implementation may proceed inside exact scope`
+Status: `historical implementation packet / implemented on earlier RI-local router line / no active implementation authority`
+
+> Current status note:
+>
+> - [HISTORICAL 2026-05-05] This packet is not an active implementation authority on `feature/next-slice-2026-05-05`.
+> - The bounded default-off RI-local router slice was historically implemented and validated, but later anchors in `GENESIS_WORKING_CONTRACT.md` overtook this file as the live truth surface.
+> - Preserve this file as contract provenance for the original default-off integration lane only.
 
 ## COMMAND PACKET
 

@@ -2,7 +2,13 @@
 
 Date: 2026-03-26
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `setup-only / slice8-first follow-up lane / no launch authorization`
+Status: `historical setup snapshot / consumed by later follow-up launch chain / no active setup authority`
+
+> Current status note:
+>
+> - [HISTORICAL 2026-05-05] This file records an earlier slice8 follow-up setup stage on `feature/ri-role-map-implementation-2026-03-24`, not an active setup authority on `feature/next-slice-2026-05-05`.
+> - Its active setup role was later consumed by `docs/decisions/regime_intelligence/optuna/challenger_family/regime_intelligence_optuna_challenger_family_slice8_followup_launch_authorization_packet_2026-03-26.md` and the downstream follow-up packet chain.
+> - Preserve this file as historical setup provenance only.
 
 ## COMMAND PACKET
 

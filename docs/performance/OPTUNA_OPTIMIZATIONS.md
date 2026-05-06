@@ -4,6 +4,12 @@
 **Author**: GitHub Copilot
 **Status**: Implemented
 
+> Current status note:
+>
+> - This is the canonical active location for the optimization guide after the 2026-03-10 archive-promotion batch.
+> - Older docs may still refer to the historical path `docs/OPTUNA_OPTIMIZATIONS.md`.
+> - The current repo-tracked validation anchor for the performance tests is `tests/utils/test_optimizer_performance.py`; there is no dedicated `scripts/benchmark_optuna_performance.py` file in the current tree.
+
 ## Overview
 
 This document describes the performance optimizations implemented in the Genesis-Core Optuna integration to improve throughput and reduce overhead in long-running optimization studies.
@@ -18,6 +24,7 @@ During analysis of the Optuna integration, several performance bottlenecks were 
 4. **Function call overhead** in JSON wrapper functions
 
 These issues become particularly problematic in:
+
 - Long optimization runs (>1000 trials)
 - High concurrency scenarios (8+ workers)
 - Resume scenarios with many existing trials
@@ -31,12 +38,14 @@ These issues become particularly problematic in:
 **Function**: `_load_existing_trials()`
 
 **Before**:
+
 ```python
 content = trial_path.read_text(encoding="utf-8")
 trial_data = _json_loads(content)  # Wrapper adds overhead
 ```
 
 **After**:
+
 ```python
 content = trial_path.read_text(encoding="utf-8")
 if _HAS_ORJSON:
@@ -54,6 +63,7 @@ else:
 **New Method**: `seen_batch()`
 
 **Before** (N lookups):
+
 ```python
 for sig in signatures:
     if guard.seen(sig):  # Individual SQL query
@@ -61,6 +71,7 @@ for sig in signatures:
 ```
 
 **After** (1 batch query):
+
 ```python
 results = guard.seen_batch(signatures)  # Single SQL query with IN clause
 for sig, is_seen in results.items():
@@ -69,6 +80,7 @@ for sig, is_seen in results.items():
 ```
 
 **Implementation**:
+
 ```python
 def seen_batch(self, sigs: list[str]) -> dict[str, bool]:
     """Check multiple signatures at once.
@@ -96,6 +108,7 @@ def seen_batch(self, sigs: list[str]) -> dict[str, bool]:
 **Function**: `_suggest_parameters()`
 
 **Before** (per-call cache):
+
 ```python
 def _suggest_parameters(trial, spec):
     _step_decimals_cache = {}  # Reset every call
@@ -103,6 +116,7 @@ def _suggest_parameters(trial, spec):
 ```
 
 **After** (module-level cache):
+
 ```python
 # At module level
 _STEP_DECIMALS_CACHE: dict[float, int] = {}
@@ -119,33 +133,34 @@ def _suggest_parameters(trial, spec):
 
 ### SQLite Deduplication (1000 operations)
 
-| Operation | Before | After | Speedup |
-|-----------|--------|-------|---------|
-| Individual add | 1272ms | 1272ms | 1x (baseline) |
-| Batch add | 1272ms | 3.9ms | **328x** |
+| Operation               | Before | After  | Speedup       |
+| ----------------------- | ------ | ------ | ------------- |
+| Individual add          | 1272ms | 1272ms | 1x (baseline) |
+| Batch add               | 1272ms | 3.9ms  | **328x**      |
 | Individual lookup (100) | 29.6ms | 29.6ms | 1x (baseline) |
-| Batch lookup (100) | N/A | 0.52ms | **57x** |
+| Batch lookup (100)      | N/A    | 0.52ms | **57x**       |
 
 ### Trial Loading (100 files)
 
-| Metric | Before | After | Improvement |
-|--------|--------|-------|-------------|
-| Load time | ~5.5ms | ~4.6ms | ~16% |
-| Throughput | ~18k/s | ~22k/s | ~22% |
+| Metric     | Before | After  | Improvement |
+| ---------- | ------ | ------ | ----------- |
+| Load time  | ~5.5ms | ~4.6ms | ~16%        |
+| Throughput | ~18k/s | ~22k/s | ~22%        |
 
 ### Parameter Signature (1000 operations)
 
-| Cache State | Time | Throughput |
-|-------------|------|------------|
-| Cold cache | 11.2ms | 89k ops/s |
-| Warm cache | 3.7ms | 268k ops/s |
-| **Speedup** | - | **3x** |
+| Cache State | Time   | Throughput |
+| ----------- | ------ | ---------- |
+| Cold cache  | 11.2ms | 89k ops/s  |
+| Warm cache  | 3.7ms  | 268k ops/s |
+| **Speedup** | -      | **3x**     |
 
 ## Usage Guidelines
 
 ### When to Use Batch Lookup
 
 **Good**: Pre-filtering a large set of candidate parameters
+
 ```python
 # Check 1000 candidates at once
 signatures = [param_signature(p) for p in candidate_params]
@@ -154,6 +169,7 @@ unseen = [p for p, s in zip(candidate_params, signatures) if not seen_map[s]]
 ```
 
 **Bad**: Single parameter checks in tight loops
+
 ```python
 # Use regular seen() for single checks
 if guard.seen(sig):
@@ -169,7 +185,7 @@ if guard.seen(sig):
 
 ## Test Coverage
 
-New tests added in `tests/test_optimizer_performance.py`:
+New tests added in `tests/utils/test_optimizer_performance.py`:
 
 1. `test_nodupe_batch_seen()` - Validates batch lookup correctness and performance
 2. `test_trial_key_cache_limit()` - Ensures cache doesn't grow unbounded
@@ -180,20 +196,21 @@ All existing tests pass with no regressions.
 ## Backward Compatibility
 
 All optimizations are **100% backward compatible**:
+
 - No API changes to existing functions
 - New `seen_batch()` method is optional
 - Fallbacks for systems without orjson
 - Thread-safe module-level caches
 
-## Future Optimizations (Deferred)
+## Identified but not prioritized (exploratory candidates)
 
-The following optimizations were identified but deferred as low-priority:
+The following optimizations were identified during review but are not currently prioritized for implementation:
 
 1. **Config file caching**: Extend mtime-based caching to all config reads
 2. **Conditional logging**: Move detailed logging outside hot loops
 3. **Value cloning**: Optimize `_expand_value()` to avoid deep copy for primitives
 
-These can be implemented if profiling shows they're bottlenecks.
+Revisit them only if later profiling shows they are real bottlenecks.
 
 ## Monitoring
 
@@ -209,13 +226,14 @@ logging.getLogger("core.utils.optuna_helpers").setLevel(logging.INFO)
 ```
 
 Look for log messages like:
+
 ```
 [CACHE STATS] 450/500 trials cached (90.0% hit rate), 50 unique backtests
 ```
 
 ## References
 
-- Benchmark script: `scripts/benchmark_optuna_performance.py`
-- Test suite: `tests/test_optimizer_performance.py`
+- Repo-tracked benchmark script: none currently present in `scripts/`
+- Test suite: `tests/utils/test_optimizer_performance.py`
 - Implementation: `src/core/optimizer/runner.py`, `src/core/utils/optuna_helpers.py`
 - Issue: "Identify and suggest improvements to slow or inefficient code in optuna"

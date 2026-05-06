@@ -2,7 +2,13 @@
 
 Date: 2026-04-02
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `proposed / implementation / non-runtime-authority`
+Status: `historical implementation snapshot / consumed by implemented phase 10 engine / no active implementation authority`
+
+> Current status note:
+>
+> - HISTORICAL 2026-05-05: this file records the bounded implementation authorization for the read-only Phase 10 edge-origin isolation engine on `feature/ri-role-map-implementation-2026-03-24`, not an active implementation authority on `feature/next-slice-2026-05-05`.
+> - Its implementation role is reflected in `scripts/analyze/edge_origin_isolation.py`, `tests/backtest/test_edge_origin_isolation.py`, and the current top status note of `handoff.md`.
+> - Preserve this file as historical implementation-governance provenance only.
 
 ## COMMAND PACKET
 

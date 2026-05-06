@@ -4,8 +4,14 @@ Date: 2026-03-26
 Branch: `feature/ri-role-map-implementation-2026-03-24`
 Mode: `RESEARCH`
 Category: `obs`
-Status: `comparison-prep only / no execution approval / no promotion approved`
+Status: `historical comparison-prep snapshot / consumed by later comparison-surface decision chain / no active prep authority`
 Constraint: `NO BEHAVIOR CHANGE`
+
+> Current status note:
+>
+> - [HISTORICAL 2026-05-05] This file records an earlier comparison-prep surface on `feature/ri-role-map-implementation-2026-03-24`, not an active prep authority on `feature/next-slice-2026-05-05`.
+> - Its prep role was later consumed by `docs/decisions/regime_intelligence/optuna/challenger_family/regime_intelligence_optuna_challenger_family_comparison_input_surface_decision_packet_2026-03-26.md` and `docs/decisions/regime_intelligence/optuna/challenger_family/regime_intelligence_optuna_challenger_family_non_runtime_comparison_surface_packet_2026-03-26.md`.
+> - Preserve this file as historical comparison-prep provenance only.
 
 ## Purpose
 

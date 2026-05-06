@@ -2,7 +2,13 @@
 
 Date: 2026-04-14
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `proposed / docs-only / no-runtime-authority`
+Status: `historical partition snapshot / consumed by partition analysis note / no active packet authority`
+
+> Current status note:
+>
+> - HISTORICAL 2026-05-05: This file records the bounded authorization for the execution-proxy partition read on `feature/ri-role-map-implementation-2026-03-24`, not an active packet authority on `feature/next-slice-2026-05-05`.
+> - Its packet role was consumed by `docs/analysis/diagnostics/execution_proxy_partition_phase1_2026-04-14.md`, which closed the slice with the verdict `stricter execution lane justified`.
+> - Preserve this file as historical partition-governance provenance only.
 
 ## COMMAND PACKET
 

@@ -15,7 +15,7 @@
 
 ## Evidence links
 
-- Command packet: `docs/audit/refactor/command_packet_candidate24_delete_docs_archive_optuna_phase_batch_2026-03-10.md`
+- Command packet (current retained path): `docs/audit/refactor/candidates/command_packet_candidate24_delete_docs_archive_optuna_phase_batch_2026-03-10.md`
 - Decision file: `docs/audit/refactor/evidence/docs_archive_triage_optuna_phase_batch_candidate24_decision_2026-03-10.md`
 - Delete manifest: `docs/audit/refactor/evidence/candidate24_optuna_phase_delete_manifest_2026-03-10.tsv`
 - Path refcheck: `docs/audit/refactor/evidence/candidate24_optuna_phase_path_refcheck_2026-03-10.txt`
@@ -27,6 +27,7 @@
 ## Gates
 
 Pre and post gates executed:
+
 - `python -m pre_commit run --all-files`
 - `python -m pytest -q tests/test_backtest_determinism_smoke.py`
 - `python -m pytest -q tests/test_feature_cache.py`

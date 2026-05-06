@@ -2,7 +2,10 @@
 
 Date: 2026-03-04
 Category: `docs`
-Status: **proposed for review**
+Status: **historical contract reference / not active on current branch**
+
+> [HISTORICAL 2026-05-05] This T9 clarity contract is not an active RI lane on `feature/next-slice-2026-05-05`.
+> Preserve it as historical contract context only; current live RI anchors are tracked via `GENESIS_WORKING_CONTRACT.md` and the later RI policy-router chain.
 
 DoD reference: `docs/ideas/REGIME_INTELLIGENCE_DOD_P1_P2_2026-02-27.md`
 Design reference: `docs/ideas/REGIME_INTELLIGENCE_DESIGN_2026-02-23.md`

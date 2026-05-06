@@ -2,7 +2,13 @@
 
 Date: 2026-04-02
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `proposed / implementation / no-runtime-authority`
+Status: `historical implementation snapshot / consumed by later run and partition chain / no active implementation authority`
+
+> Current status note:
+>
+> - [HISTORICAL 2026-05-05] This file records the initial implementation authorization for the additive execution-proxy evidence lane on `feature/ri-role-map-implementation-2026-03-24`, not an active implementation authority on `feature/next-slice-2026-05-05`.
+> - Its implementation role was consumed by the downstream run packet, first-read packet, and later partition/missingness follow-up chain.
+> - Preserve this file as historical implementation-governance provenance only.
 
 ## COMMAND PACKET
 

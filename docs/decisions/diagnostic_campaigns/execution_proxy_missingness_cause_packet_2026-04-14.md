@@ -2,7 +2,13 @@
 
 Date: 2026-04-14
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `proposed / implementation / no-runtime-authority`
+Status: `historical implementation snapshot / consumed by later missingness diagnostics / no active implementation authority`
+
+> Current status note:
+>
+> - HISTORICAL 2026-05-05: This file records the bounded authorization for the additive execution-proxy missingness diagnostics on `feature/ri-role-map-implementation-2026-03-24`, not an active implementation authority on `feature/next-slice-2026-05-05`.
+> - Its implementation role is reflected in the currently tracked missingness-pattern coverage surfaces in `scripts/analyze/execution_proxy_evidence.py` and `tests/backtest/test_execution_proxy_evidence.py`.
+> - Preserve this file as historical missingness-governance provenance only.
 
 ## COMMAND PACKET
 

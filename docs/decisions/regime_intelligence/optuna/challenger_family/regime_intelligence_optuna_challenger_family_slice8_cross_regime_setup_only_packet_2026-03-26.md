@@ -2,7 +2,13 @@
 
 Date: 2026-03-26
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `setup-only / docs-only / no config materialization / no launch authorization`
+Status: `historical setup snapshot / consumed by later cross-regime launch and signoff chain / no active setup authority`
+
+> Current status note:
+>
+> - [HISTORICAL 2026-05-05] This file records an earlier cross-regime setup-only stage on `feature/ri-role-map-implementation-2026-03-24`, not an active setup authority on `feature/next-slice-2026-05-05`.
+> - Its active setup role was later consumed by `docs/decisions/regime_intelligence/optuna/challenger_family/regime_intelligence_optuna_challenger_family_slice8_cross_regime_launch_authorization_packet_2026-03-26.md` and `docs/decisions/regime_intelligence/optuna/challenger_family/regime_intelligence_optuna_challenger_family_slice8_cross_regime_execution_outcome_signoff_summary_2026-03-26.md`.
+> - Preserve this file as historical setup provenance only.
 
 ## COMMAND PACKET
 

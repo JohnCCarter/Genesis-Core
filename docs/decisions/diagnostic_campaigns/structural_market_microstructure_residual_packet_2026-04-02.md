@@ -2,7 +2,13 @@
 
 Date: 2026-04-02
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `proposed / docs-only / no-runtime-authority`
+Status: `historical residual snapshot / frozen as docs-only gap / no active packet authority`
+
+> Current status note:
+>
+> - HISTORICAL 2026-05-05: this file records the bounded packet that froze `structural_market_microstructure` as a residual docs-only gap on `feature/ri-role-map-implementation-2026-03-24`, not an active packet authority on `feature/next-slice-2026-05-05`.
+> - Its historical closeout role is reflected in `docs/analysis/diagnostics/structural_market_microstructure_artifact_gap_2026-04-02.md` and in the current top status note of `handoff.md`.
+> - Preserve this file as historical residual-governance provenance only.
 
 ## COMMAND PACKET
 

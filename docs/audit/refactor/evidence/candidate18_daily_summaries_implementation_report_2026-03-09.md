@@ -10,7 +10,7 @@
 
 - Deleted: 34 files from `docs/archive/deprecated_2026-02-24/docs/daily_summaries/` (manifest-driven).
 - Added/updated governance artifacts:
-  - `docs/audit/refactor/command_packet_candidate18_delete_docs_archive_daily_summaries_2026-03-09.md`
+  - `docs/audit/refactor/candidates/command_packet_candidate18_delete_docs_archive_daily_summaries_2026-03-09.md` _(current retained path after later taxonomy move)_
   - `docs/audit/refactor/evidence/candidate18_daily_summaries_delete_manifest_2026-03-09.tsv`
   - `docs/audit/refactor/evidence/candidate18_daily_summaries_path_refcheck_2026-03-09.txt`
   - `docs/audit/refactor/evidence/candidate18_post_delete_scope_drift_2026-03-09.txt`

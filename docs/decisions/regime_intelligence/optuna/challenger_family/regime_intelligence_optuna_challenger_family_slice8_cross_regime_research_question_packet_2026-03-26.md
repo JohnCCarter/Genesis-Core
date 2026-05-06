@@ -2,7 +2,13 @@
 
 Date: 2026-03-26
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `research-question only / docs-only / no setup or launch authorization / no replay-window decision`
+Status: `historical research-question snapshot / superseded by later structural-search-space question / no active question authority`
+
+> Current status note:
+>
+> - [HISTORICAL 2026-05-05] This file records an earlier bounded cross-regime question on `feature/ri-role-map-implementation-2026-03-24`, not an active question authority on `feature/next-slice-2026-05-05`.
+> - The later active forward question was reframed in `docs/decisions/regime_intelligence/optuna/challenger_family/regime_intelligence_optuna_challenger_family_slice8_structural_search_space_research_question_packet_2026-03-26.md`.
+> - Preserve this file as historical question-provenance only.
 
 ## COMMAND PACKET
 

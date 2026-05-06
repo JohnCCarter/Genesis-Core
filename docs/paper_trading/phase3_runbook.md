@@ -1,5 +1,8 @@
 # Phase 3 Paper Trading Runbook
 
+> [ARCHIVED 2026-05-05] This runbook documents the completed Phase 3 period (`2026-02-04` to `2026-03-17`) and is preserved as historical operations context only.
+> For current paper-trading status/context, read `docs/paper_trading/operations_summary.md` first.
+
 **Period:** 2026-02-04 to 2026-03-17 (6 weeks)
 **Objective:** 24h dry-run validation → 41 days live-paper with champion freeze
 **Champion:** `config/strategy/champions/tBTCUSD_1h.json` (frozen)

@@ -2,7 +2,13 @@
 
 Date: 2026-04-02
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `proposed / run-only / no-runtime-authority`
+Status: `historical run snapshot / consumed by later first-read and partition chain / no active run authority`
+
+> Current status note:
+>
+> - [HISTORICAL 2026-05-05] This file records the bounded execution of the additive execution-proxy evidence lane on `feature/ri-role-map-implementation-2026-03-24`, not an active run authority on `feature/next-slice-2026-05-05`.
+> - Its run role was later consumed by `docs/decisions/diagnostic_campaigns/execution_proxy_first_read_packet_2026-04-02.md` and the downstream `execution_proxy_partition_phase1_packet_2026-04-14.md`.
+> - Preserve this file as historical run-governance provenance only.
 
 ## COMMAND PACKET
 

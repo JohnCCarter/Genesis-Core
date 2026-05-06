@@ -30,7 +30,7 @@ No runtime, config, API, or test logic files were modified.
 
 - `docs/audit/refactor/evidence/docs_archive_triage_matrix_2026-03-09.tsv`
 - `docs/audit/refactor/evidence/docs_archive_triage_summary_2026-03-09.txt`
-- `docs/audit/refactor/command_packet_candidate23_delete_docs_archive_paper_trading_templates_batch_2026-03-10.md`
+- `docs/audit/refactor/candidates/command_packet_candidate23_delete_docs_archive_paper_trading_templates_batch_2026-03-10.md` _(current retained path after later taxonomy move)_
 - `docs/audit/refactor/evidence/candidate23_paper_trading_templates_path_refcheck_2026-03-10.txt`
 
 ### Added

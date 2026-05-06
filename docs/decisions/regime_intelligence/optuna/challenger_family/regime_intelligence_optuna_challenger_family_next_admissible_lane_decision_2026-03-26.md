@@ -2,7 +2,13 @@
 
 Date: 2026-03-26
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `decision-only / next lane selected / no readiness or promotion scope`
+Status: `historical next-lane snapshot / consumed by later RI research-lane chain / no active lane-routing authority`
+
+> Current status note:
+>
+> - [HISTORICAL 2026-05-05] This file records an earlier next-lane routing decision on `feature/ri-role-map-implementation-2026-03-24`, not an active lane-routing authority on `feature/next-slice-2026-05-05`.
+> - Its selected `Research lane` route was later carried forward by `docs/decisions/regime_intelligence/optuna/challenger_family/regime_intelligence_optuna_challenger_family_research_optuna_lane_packet_2026-03-26.md` and the downstream RI follow-up packet chain.
+> - Preserve this file as historical lane-routing provenance only.
 
 ## COMMAND PACKET
 

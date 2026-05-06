@@ -2,7 +2,13 @@
 
 Date: 2026-03-26
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `re-authorized on current clean launch surface / self-revoking / research only`
+Status: `historical state-bound re-authorization snapshot / branch-specific / no active execution authority`
+
+> Current status note:
+>
+> - [HISTORICAL 2026-05-05] This file records a point-in-time re-authorization decision on `feature/ri-role-map-implementation-2026-03-24`, not an active launch authority on `feature/next-slice-2026-05-05`.
+> - Later slice8 follow-up and cross-regime packets use the reproduced slice8 launch surface as historical input rather than current authority.
+> - Preserve this file as historical launch-governance provenance only.
 
 ## COMMAND PACKET
 

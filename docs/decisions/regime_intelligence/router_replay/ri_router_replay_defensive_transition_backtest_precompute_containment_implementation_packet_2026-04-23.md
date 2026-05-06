@@ -2,7 +2,13 @@
 
 Date: 2026-04-23
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `implementation contract proposed / default path unchanged intended`
+Status: `historical implementation packet / suppression-path slice implemented / no active implementation authority`
+
+> Current status note:
+>
+> - [HISTORICAL 2026-05-05] This packet is not an active implementation authority on `feature/next-slice-2026-05-05`.
+> - The bounded `GENESIS_PRECOMPUTE_CACHE_WRITE=0` containment slice was later implemented and re-used by the paired launch/execution chain tracked from `GENESIS_WORKING_CONTRACT.md`.
+> - Preserve this file as historical runtime-containment provenance only.
 
 ## COMMAND PACKET
 

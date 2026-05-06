@@ -3,7 +3,13 @@
 Date: 2026-04-27
 Branch: `feature/ri-role-map-implementation-2026-03-24`
 Mode: `RESEARCH`
-Status: `pre-code reviewed / APPROVED_WITH_NOTES / implementation may proceed inside exact scope`
+Status: `historical implementation packet / aged-weak seam-A line parked / no active implementation authority`
+
+> Current status note:
+>
+> - [HISTORICAL 2026-05-05] This packet is not an active implementation authority on `feature/next-slice-2026-05-05`.
+> - `docs/decisions/regime_intelligence/policy_router/ri_policy_router_reanchor_post_aged_weak_closeouts_2026-04-27.md` later parked this seam-A follow-up as historical chain context rather than a live next step.
+> - Preserve this file as historical packet context only.
 
 ## COMMAND PACKET
 

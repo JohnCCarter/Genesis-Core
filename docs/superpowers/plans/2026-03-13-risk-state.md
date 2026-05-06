@@ -1,5 +1,13 @@
 # Risk State Implementation Plan
 
+Status: `historical implementation plan / branch-specific / not active on feature/next-slice-2026-05-05`
+
+> Current status note:
+>
+> - [HISTORICAL 2026-05-05] This file is a preserved implementation plan, not an active work order on `feature/next-slice-2026-05-05`.
+> - `docs/HANDOFF_RISK_STATE.md` records this line as historically implemented/tested on the separate branch snapshot `feature/Optuna-Phased-v4`.
+> - Preserve this file as branch-specific planning provenance only.
+
 > **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add a `risk_state` multiplier to position sizing that reduces size during equity drawdowns and regime transitions, making Phase D Optuna optimization possible.

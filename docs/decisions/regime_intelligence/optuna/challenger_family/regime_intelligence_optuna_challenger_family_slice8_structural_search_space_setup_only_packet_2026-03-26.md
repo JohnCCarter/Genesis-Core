@@ -2,7 +2,13 @@
 
 Date: 2026-03-26
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `setup-only / docs-only / no config materialization / no launch authorization`
+Status: `historical setup snapshot / superseded by later seam and design chain / no active setup authority`
+
+> Current status note:
+>
+> - [HISTORICAL 2026-05-05] This file records an earlier setup-only stage on `feature/ri-role-map-implementation-2026-03-24`, not an active setup authority on `feature/next-slice-2026-05-05`.
+> - Its forward role was later narrowed by the structural seam-decision and management/override design-authorization packets.
+> - Preserve this file as historical setup provenance only.
 
 ## COMMAND PACKET
 

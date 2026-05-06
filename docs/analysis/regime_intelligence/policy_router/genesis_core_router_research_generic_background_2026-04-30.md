@@ -1,7 +1,7 @@
 > **Status update (2026-05-05):** Historical generic background note only.
 >
 > - This file is **not** the active repo-aware synthesis or execution guide for the current `RESEARCH` lane.
-> - The repo-aware April 2026 companion remains `Genesis-Core router research — codebase-aware re-evaluation.md`.
+> - The repo-aware April 2026 companion remains `genesis_core_router_research_codebase_aware_re_evaluation_2026-04-30.md`.
 > - The current active anchors are `GENESIS_WORKING_CONTRACT.md` plus the latest RI policy-router notes under `docs/analysis/regime_intelligence/policy_router/`, including the D1 four-surface synthesis and D1 context-clean falsifier dated `2026-05-05`.
 > - Use this file for historical structural background only; do not treat its recommendations as current next-step authority.
 

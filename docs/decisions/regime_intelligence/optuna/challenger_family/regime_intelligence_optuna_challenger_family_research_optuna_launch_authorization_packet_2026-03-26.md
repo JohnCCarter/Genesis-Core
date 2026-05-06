@@ -2,7 +2,13 @@
 
 Date: 2026-03-26
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `launch authorization decision recorded / fail-closed / not authorized now`
+Status: `historical fail-closed launch snapshot / superseded by later re-authorization review / no active launch authority`
+
+> Current status note:
+>
+> - [HISTORICAL 2026-05-05] This file records an earlier fail-closed launch decision on `feature/ri-role-map-implementation-2026-03-24`, not an active decision surface on `feature/next-slice-2026-05-05`.
+> - It was later revisited by `docs/decisions/regime_intelligence/optuna/challenger_family/regime_intelligence_optuna_challenger_family_research_optuna_launch_reauthorization_packet_2026-03-26.md`.
+> - Preserve this file as historical launch-governance provenance only.
 
 ## COMMAND PACKET
 

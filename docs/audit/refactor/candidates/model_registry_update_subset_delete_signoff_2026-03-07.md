@@ -21,11 +21,11 @@ Candidate: `delete_archive_model_registry_update_subset`
   - `scripts/archive/model_registry_update/update_registry_mapping.py`
   - `scripts/archive/model_registry_update/verify_model_registry.py`
 - Added/updated candidate evidence/contract files:
-  - `docs/audit/refactor/command_packet_candidate10_delete_model_registry_update_subset_2026-03-07.md`
+-  - `docs/audit/refactor/candidates/command_packet_candidate10_delete_model_registry_update_subset_2026-03-07.md`
   - `docs/audit/refactor/evidence/candidate10_model_registry_update_manifest_2026-03-07.txt`
   - `docs/audit/refactor/evidence/candidate10_model_registry_update_path_refcheck_2026-03-07.txt`
   - `docs/audit/refactor/evidence/candidate10_model_registry_update_exact_path_refcheck_2026-03-07.json`
-  - `docs/audit/refactor/model_registry_update_subset_delete_signoff_2026-03-07.md`
+-  - `docs/audit/refactor/candidates/model_registry_update_subset_delete_signoff_2026-03-07.md`
   - `docs/audit/refactor/evidence/candidate10_final_rerun_transcript_2026-03-07.txt` (post-delete artifact)
 - `candidate7_test_prototypes_path_refcheck_2026-03-06.txt` was not touched in this Candidate 10 run.
 

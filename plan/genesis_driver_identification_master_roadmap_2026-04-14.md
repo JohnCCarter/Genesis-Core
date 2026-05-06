@@ -3,13 +3,13 @@
 Date: 2026-04-14
 Mode: `RESEARCH`
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `closed / bounded closeout complete / docs-only authority`
-Supersedes as live continuation anchor: `plan/feature_attribution_post_phase14_reactivation_roadmap_2026-04-02.md`
+Status: `closed / historical / archive-only / bounded closeout complete / docs-only authority`
+Historical lineage note: this roadmap closed the continuation work that had previously superseded `plan/feature_attribution_post_phase14_reactivation_roadmap_2026-04-02.md`
 
 > Current status note:
 >
-> - This roadmap is not active on `feature/next-slice-2026-04-29`.
-> - Preserve it as a historical closed roadmap from the earlier `feature/ri-role-map-implementation-2026-03-24` branch context.
+> - [ARCHIVED 2026-05-05] This roadmap is not active on `feature/next-slice-2026-05-05`.
+> - Preserve it as an archived historical closed roadmap from the earlier `feature/ri-role-map-implementation-2026-03-24` branch context.
 > - The current active lane authority remains `GENESIS_WORKING_CONTRACT.md` plus the active RI policy-router packet/analysis chain.
 > - Reopen only via explicit user request or a fresh packet that deliberately returns to Genesis driver-identification work.
 

@@ -2,7 +2,13 @@
 
 Date: 2026-04-23
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `launch authorization refreshed / pre-execution only / authorized now`
+Status: `historical launch packet / pre-execution authorization consumed by later completed execution / no active execution authority`
+
+> Current status note:
+>
+> - [HISTORICAL 2026-05-05] This packet no longer acts as an active execution authority on `feature/next-slice-2026-05-05`.
+> - The exact paired defensive-transition run was later completed and summarized in the downstream execution chain referenced from `GENESIS_WORKING_CONTRACT.md`.
+> - Preserve this file as historical launch-decision provenance only.
 
 ## COMMAND PACKET
 

@@ -7,7 +7,7 @@ Candidate: `delete_archive_test_prototypes`
 
 - Deleted exactly 36 files under `scripts/archive/test_prototypes/**`.
 - Added/updated candidate evidence/contract files:
-  - `docs/audit/refactor/command_packet_candidate7_delete_test_prototypes_2026-03-06.md`
+-  - `docs/audit/refactor/candidates/command_packet_candidate7_delete_test_prototypes_2026-03-06.md`
   - `docs/audit/refactor/evidence/candidate7_test_prototypes_manifest_2026-03-06.txt`
   - `docs/audit/refactor/evidence/candidate7_test_prototypes_refcheck_2026-03-06.json`
   - `docs/audit/refactor/evidence/candidate7_test_prototypes_path_refcheck_2026-03-06.txt`

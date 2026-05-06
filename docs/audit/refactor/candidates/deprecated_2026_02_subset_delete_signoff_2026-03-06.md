@@ -12,11 +12,11 @@ Candidate: `delete_archive_deprecated_2026_02_subset`
   - `scripts/archive/deprecated_2026-02/sweep_optuna_holdout_top_trials.py`
   - `scripts/archive/deprecated_2026-02/sync_precompute_and_train.py`
 - Added/updated candidate evidence/contract files:
-  - `docs/audit/refactor/command_packet_candidate8_delete_deprecated_2026_02_subset_2026-03-06.md`
+-  - `docs/audit/refactor/candidates/command_packet_candidate8_delete_deprecated_2026_02_subset_2026-03-06.md`
   - `docs/audit/refactor/evidence/candidate8_deprecated_2026_02_manifest_2026-03-06.txt`
   - `docs/audit/refactor/evidence/candidate8_deprecated_2026_02_path_refcheck_2026-03-06.txt`
   - `docs/audit/refactor/evidence/candidate8_deprecated_2026_02_exact_path_refcheck_2026-03-06.json`
-  - `docs/audit/refactor/deprecated_2026_02_subset_delete_signoff_2026-03-06.md`
+-  - `docs/audit/refactor/candidates/deprecated_2026_02_subset_delete_signoff_2026-03-06.md`
 - Required pre-commit EOF hook also normalized:
   - `docs/audit/refactor/evidence/candidate7_test_prototypes_path_refcheck_2026-03-06.txt`
 

@@ -13,11 +13,11 @@ Candidate: `delete_archive_experiments_subset`
   - `scripts/archive/experiments/train_meta_model.py`
   - `scripts/archive/experiments/train_regression_model.py`
 - Added/updated candidate evidence/contract files:
-  - `docs/audit/refactor/command_packet_candidate9_delete_experiments_subset_2026-03-06.md`
+-  - `docs/audit/refactor/candidates/command_packet_candidate9_delete_experiments_subset_2026-03-06.md`
   - `docs/audit/refactor/evidence/candidate9_experiments_manifest_2026-03-06.txt`
   - `docs/audit/refactor/evidence/candidate9_experiments_path_refcheck_2026-03-06.txt`
   - `docs/audit/refactor/evidence/candidate9_experiments_exact_path_refcheck_2026-03-06.json`
-  - `docs/audit/refactor/experiments_subset_delete_signoff_2026-03-06.md`
+-  - `docs/audit/refactor/candidates/experiments_subset_delete_signoff_2026-03-06.md`
 - `candidate7_test_prototypes_path_refcheck_2026-03-06.txt` was not touched in this Candidate 9 run.
 
 ## Reference safety evidence

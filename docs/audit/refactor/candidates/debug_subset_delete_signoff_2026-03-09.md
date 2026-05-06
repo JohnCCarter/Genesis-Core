@@ -10,12 +10,12 @@ Candidate: `delete_archive_debug_subset_except_diagnose_zero_trades`
 - Explicitly preserved:
   - `scripts/archive/debug/2026-02-14/diagnose_zero_trades.py`
 - Added candidate artifacts:
-  - `docs/audit/refactor/command_packet_candidate11_delete_archive_debug_subset_2026-03-09.md`
+-  - `docs/audit/refactor/candidates/command_packet_candidate11_delete_archive_debug_subset_2026-03-09.md`
   - `docs/audit/refactor/evidence/candidate11_debug_subset_manifest_2026-03-09.txt`
   - `docs/audit/refactor/evidence/candidate11_debug_subset_path_refcheck_2026-03-09.txt`
   - `docs/audit/refactor/evidence/candidate11_debug_subset_exact_path_refcheck_2026-03-09.json`
   - `docs/audit/refactor/evidence/candidate11_final_rerun_transcript_2026-03-09.txt`
-  - `docs/audit/refactor/debug_subset_delete_signoff_2026-03-09.md`
+-  - `docs/audit/refactor/candidates/debug_subset_delete_signoff_2026-03-09.md`
 
 ## Reference safety evidence
 

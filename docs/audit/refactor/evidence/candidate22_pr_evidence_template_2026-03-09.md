@@ -15,7 +15,7 @@
 
 ## Evidence links
 
-- Command packet: `docs/audit/refactor/command_packet_candidate22_delete_docs_archive_performance_batch2_2026-03-09.md`
+- Command packet (current retained path): `docs/audit/refactor/candidates/command_packet_candidate22_delete_docs_archive_performance_batch2_2026-03-09.md`
 - Decision file: `docs/audit/refactor/evidence/docs_archive_triage_performance_batch2_decision_2026-03-09.md`
 - Delete manifest: `docs/audit/refactor/evidence/candidate22_performance_batch2_delete_manifest_2026-03-09.tsv`
 - Path refcheck: `docs/audit/refactor/evidence/candidate22_performance_batch2_path_refcheck_2026-03-09.txt`

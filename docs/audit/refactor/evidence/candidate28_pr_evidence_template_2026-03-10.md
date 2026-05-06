@@ -15,7 +15,7 @@
 
 ## Evidence links
 
-- Command packet: `docs/audit/refactor/command_packet_candidate28_delete_docs_archive_fibonacci_exit_logic_batch_2026-03-10.md`
+- Command packet (current retained path): `docs/audit/refactor/candidates/command_packet_candidate28_delete_docs_archive_fibonacci_exit_logic_batch_2026-03-10.md`
 - Decision file: `docs/audit/refactor/evidence/docs_archive_triage_fibonacci_exit_logic_batch_candidate28_decision_2026-03-10.md`
 - Delete manifest: `docs/audit/refactor/evidence/candidate28_fibonacci_exit_logic_delete_manifest_2026-03-10.tsv`
 - Path refcheck: `docs/audit/refactor/evidence/candidate28_fibonacci_exit_logic_path_refcheck_2026-03-10.txt`

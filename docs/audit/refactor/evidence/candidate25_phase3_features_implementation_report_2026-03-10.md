@@ -29,7 +29,7 @@ No runtime, config, API, or test logic files were modified.
 
 - `docs/audit/refactor/evidence/docs_archive_triage_matrix_2026-03-09.tsv`
 - `docs/audit/refactor/evidence/docs_archive_triage_summary_2026-03-09.txt`
-- `docs/audit/refactor/command_packet_candidate25_delete_docs_archive_phase3_features_batch_2026-03-10.md`
+- `docs/audit/refactor/candidates/command_packet_candidate25_delete_docs_archive_phase3_features_batch_2026-03-10.md` _(current retained path after later taxonomy move)_
 
 ### Added
 

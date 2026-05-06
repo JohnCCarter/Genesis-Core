@@ -27,7 +27,7 @@
 
 ## Evidence artifacts
 
-- Packet: `docs/audit/refactor/command_packet_candidate20_delete_docs_archive_validation_batch_2026-03-09.md`
+- Packet (current retained path): `docs/audit/refactor/candidates/command_packet_candidate20_delete_docs_archive_validation_batch_2026-03-09.md`
 - Manifest: `docs/audit/refactor/evidence/candidate20_validation_delete_manifest_2026-03-09.tsv`
 - Refcheck: `docs/audit/refactor/evidence/candidate20_validation_path_refcheck_2026-03-09.txt`
 - Scope drift: `docs/audit/refactor/evidence/candidate20_post_delete_scope_drift_2026-03-09.txt`

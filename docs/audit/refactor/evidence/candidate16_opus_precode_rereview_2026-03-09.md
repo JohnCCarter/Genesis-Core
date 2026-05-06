@@ -12,7 +12,7 @@
 
 ## Referenced artifacts
 
-- `docs/audit/refactor/command_packet_candidate16_archive_mixed_assets_curation_2026-03-09.md`
+- `docs/audit/refactor/candidates/command_packet_candidate16_archive_mixed_assets_curation_2026-03-09.md` _(current retained path after later taxonomy move)_
 - `docs/audit/refactor/evidence/candidate16_archive_inventory_2026-03-09.txt`
 - `docs/audit/refactor/evidence/candidate16_exact_old_new_manifest_2026-03-09.tsv`
 - `docs/audit/refactor/evidence/candidate16_proposed_mapping_plan_2026-03-09.md`

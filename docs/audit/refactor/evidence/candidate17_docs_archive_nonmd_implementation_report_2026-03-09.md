@@ -21,7 +21,7 @@
 
 ### Governance/evidence artifacts
 
-- `docs/audit/refactor/command_packet_candidate17_docs_archive_nonmd_curation_2026-03-09.md`
+- `docs/audit/refactor/candidates/command_packet_candidate17_docs_archive_nonmd_curation_2026-03-09.md` _(current retained path after later taxonomy move)_
 - `docs/audit/refactor/evidence/docs_archive_review_kickoff_2026-03-09.md`
 - `docs/audit/refactor/evidence/docs_archive_nonmd_proposed_manifest_2026-03-09.tsv` (rows marked `EXECUTED`)
 - `docs/audit/refactor/evidence/candidate17_docs_archive_nonmd_precheck_2026-03-09.txt`
@@ -39,6 +39,7 @@ Pre and post execution, all required gates passed:
 - `python scripts/run/run_backtest.py --help` -> PASS
 
 Evidence:
+
 - `docs/audit/refactor/evidence/candidate17_docs_archive_nonmd_gate_transcript_2026-03-09.md`
 
 ## Additional verification

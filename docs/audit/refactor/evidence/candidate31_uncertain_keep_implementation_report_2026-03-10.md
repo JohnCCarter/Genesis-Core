@@ -20,7 +20,7 @@ No runtime, config, API, or test logic files were modified.
 
 ### Added
 
-- `docs/audit/refactor/command_packet_candidate31_resolve_docs_archive_uncertain_keep_batch_2026-03-10.md`
+- `docs/audit/refactor/candidates/command_packet_candidate31_resolve_docs_archive_uncertain_keep_batch_2026-03-10.md` _(current retained path after later taxonomy move)_
 - `docs/audit/refactor/evidence/docs_archive_triage_uncertain_keep_batch_candidate31_decision_2026-03-10.md`
 - `docs/audit/refactor/evidence/candidate31_uncertain_keep_manifest_2026-03-10.tsv`
 - `docs/audit/refactor/evidence/candidate31_uncertain_retention_refcheck_2026-03-10.txt`

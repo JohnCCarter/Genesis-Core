@@ -16,7 +16,7 @@
 
 ## Evidence links
 
-- Command packet: `docs/audit/refactor/command_packet_candidate32_promote_kept_archive_docs_2026-03-10.md`
+- Command packet (current retained path): `docs/audit/refactor/candidates/command_packet_candidate32_promote_kept_archive_docs_2026-03-10.md`
 - Decision file: `docs/audit/refactor/evidence/docs_archive_triage_promote_kept_batch_candidate32_decision_2026-03-10.md`
 - Promote manifest: `docs/audit/refactor/evidence/candidate32_promote_manifest_2026-03-10.tsv`
 - Path refcheck: `docs/audit/refactor/evidence/candidate32_promote_path_refcheck_2026-03-10.txt`

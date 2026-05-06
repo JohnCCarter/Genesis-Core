@@ -16,7 +16,7 @@
 
 ## Evidence links
 
-- Command packet: `docs/audit/refactor/command_packet_candidate31_resolve_docs_archive_uncertain_keep_batch_2026-03-10.md`
+- Command packet (current retained path): `docs/audit/refactor/candidates/command_packet_candidate31_resolve_docs_archive_uncertain_keep_batch_2026-03-10.md`
 - Decision file: `docs/audit/refactor/evidence/docs_archive_triage_uncertain_keep_batch_candidate31_decision_2026-03-10.md`
 - KEEP manifest: `docs/audit/refactor/evidence/candidate31_uncertain_keep_manifest_2026-03-10.tsv`
 - Retention refcheck: `docs/audit/refactor/evidence/candidate31_uncertain_retention_refcheck_2026-03-10.txt`

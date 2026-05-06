@@ -27,6 +27,7 @@
 ## Gates
 
 Pre and post gates executed:
+
 - `python -m pre_commit run --all-files`
 - `python -m pytest -q tests/test_backtest_determinism_smoke.py`
 - `python -m pytest -q tests/test_feature_cache.py`

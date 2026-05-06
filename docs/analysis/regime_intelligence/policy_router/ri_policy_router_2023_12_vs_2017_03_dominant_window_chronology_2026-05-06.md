@@ -48,10 +48,10 @@ The chronology delta is carried by wave ordering and gap structure rather than a
 
 These are the two dominant late-December windows already named in the landed concentration note:
 
-| Wave | Start | End | Rows | Gap to next retained window |
-| --- | --- | --- | ---: | ---: |
-| 1 | `2023-12-15T21:00:00+00:00` | `2023-12-17T18:00:00+00:00` | 6 | `117h` |
-| 2 | `2023-12-22T15:00:00+00:00` | `2023-12-26T00:00:00+00:00` | 7 | — |
+| Wave | Start                       | End                         | Rows | Gap to next retained window |
+| ---- | --------------------------- | --------------------------- | ---: | --------------------------: |
+| 1    | `2023-12-15T21:00:00+00:00` | `2023-12-17T18:00:00+00:00` |    6 |                      `117h` |
+| 2    | `2023-12-22T15:00:00+00:00` | `2023-12-26T00:00:00+00:00` |    7 |                           — |
 
 Retained chronology coverage for this reread:
 
@@ -61,11 +61,11 @@ Retained chronology coverage for this reread:
 
 These are the largest already-named March window plus both already-named tied `3`-row revisit windows:
 
-| Wave | Start | End | Rows | Gap to next retained window |
-| --- | --- | --- | ---: | ---: |
-| 1 | `2017-03-04T09:00:00+00:00` | `2017-03-05T21:00:00+00:00` | 4 | `429h` |
-| 2 | `2017-03-23T18:00:00+00:00` | `2017-03-24T12:00:00+00:00` | 3 | `129h` |
-| 3 | `2017-03-29T21:00:00+00:00` | `2017-03-30T15:00:00+00:00` | 3 | — |
+| Wave | Start                       | End                         | Rows | Gap to next retained window |
+| ---- | --------------------------- | --------------------------- | ---: | --------------------------: |
+| 1    | `2017-03-04T09:00:00+00:00` | `2017-03-05T21:00:00+00:00` |    4 |                      `429h` |
+| 2    | `2017-03-23T18:00:00+00:00` | `2017-03-24T12:00:00+00:00` |    3 |                      `129h` |
+| 3    | `2017-03-29T21:00:00+00:00` | `2017-03-30T15:00:00+00:00` |    3 |                           — |
 
 Retained chronology coverage for this reread:
 

@@ -319,8 +319,10 @@ def test_mixed_year_pocket_isolation_fails_closed_when_2023_surface_is_missing(m
 
     assert result["status"] == "fail_closed_missing_2023_annual_surface"
     assert result["failure_reason"].startswith("Missing annual summary surface at ")
-    assert result["failure_reason"].endswith(
-        "results\\backtests\\ri_policy_router_enabled_vs_absent_all_years_20260428_curated_only\\enabled_vs_absent_all_years_summary.json"
+    assert (
+        result["failure_reason"]
+        .replace("\\", "/")
+        .endswith(subject.ANNUAL_SUMMARY_RELATIVE.as_posix())
     )
 
 

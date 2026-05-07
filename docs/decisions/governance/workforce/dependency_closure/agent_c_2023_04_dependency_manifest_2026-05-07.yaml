@@ -1,0 +1,86 @@
+schema_version: dependency_manifest.manual_draft.v1
+manual_draft: true
+non_authoritative: true
+task_id: workforce_v1_agent_c_2023_04_dependency_closure
+dispatch_id: workforce_v1_agent_c_2023_04_dependency_closure_2026-05-07
+worker_task_ref: workforce_v1_wave1_agent_c_d1_2023_04_cloud_dispatch_2026-05-07
+worker_class: deep-dive
+lane: research-evidence
+resolved_mode: RESEARCH
+base_branch: feature/next-slice-2026-05-06
+base_sha: cf852ad8a559dfd8313405c3c30806fd3ff00e08 # pragma: allowlist secret
+question_fingerprint: qfp_d1_2023_04_fallback_packet_v1
+dispatch_allowed: false
+dispatch_block_reason: missing_required_operational_state
+notes:
+  - Manual dependency-closure draft only; not consumed by runtime or dispatch tooling.
+  - Agent C's fallback packet path remains a prospective output target and is not itself a required input dependency.
+  - No suitable repository skill was found for this bounded docs/governance slice.
+source_dispatch:
+  batch_dispatch: docs/decisions/governance/workforce/workforce_v1_wave1_cloud_batch_dispatch_2026-05-07.md
+  worker_dispatch: docs/decisions/governance/workforce/workforce_v1_wave1_agent_c_d1_2023_04_cloud_dispatch_2026-05-07.md
+  worker_envelope: docs/governance/worker_governance_envelope.md
+required_repo_files:
+  - path: docs/decisions/governance/workforce/workforce_v1_wave1_cloud_batch_dispatch_2026-05-07.md
+    role: batch_dispatch_brief
+    tracked: true
+    remote_visible: true
+    required: true
+    sha256: 608a7226cbdb172b1668fa24f671be6396f9d5b0db57eadad4049eb67c670cf9 # pragma: allowlist secret
+    size_bytes: 4942
+  - path: docs/decisions/governance/workforce/workforce_v1_wave1_agent_c_d1_2023_04_cloud_dispatch_2026-05-07.md
+    role: worker_dispatch_brief
+    tracked: true
+    remote_visible: true
+    required: true
+    sha256: 4b5472391f495e4777b8406cdc2e377b5b81c54c2e569a723882766b74e2a397 # pragma: allowlist secret
+    size_bytes: 3959
+  - path: docs/governance/worker_governance_envelope.md
+    role: worker_envelope
+    tracked: true
+    remote_visible: true
+    required: true
+    sha256: 89978bb58884e8e2c7f3dbb51294b0a98f5dcf836b31942ed88af0ab81a545f2 # pragma: allowlist secret
+    size_bytes: 14943
+  - path: docs/analysis/regime_intelligence/policy_router/ri_policy_router_2023_mixed_year_pocket_isolation_2026-05-06.md
+    role: mixed_year_pocket_anchor
+    tracked: true
+    remote_visible: true
+    required: true
+    sha256: 644273f0964431e471ee109be2669afecf9bca897eb12b7c57c59da39bb35f11 # pragma: allowlist secret
+    size_bytes: 9117
+  - path: docs/analysis/regime_intelligence/policy_router/ri_policy_router_enabled_vs_absent_curated_annual_evidence_2026-04-28.md
+    role: annual_evidence_anchor
+    tracked: true
+    remote_visible: true
+    required: true
+    sha256: ad254afaff162c1258249c9e27f0437b6b0c19e74d4103a97fec5686259aef4d # pragma: allowlist secret
+    size_bytes: 4748
+required_artifacts: []
+required_operational_state:
+  - state_label: explicit_control_plane_activation
+    kind: control_plane_activation_gate
+    required: true
+    satisfied: false
+    evidence_ref: control_plane_activation://workforce_v1_wave1/agent_c_2023_04
+    remote_visible: false
+    reason_unsatisfied: no repo-visible activation note, envelope override, or explicitly captured activation evidence exists for Agent C
+    worker_required_behavior:
+      - remain_dormant
+      - do_not_self_activate
+      - do_not_emit_fallback_packet
+      - stop_or_fail_closed
+    recommended_capture_mode: explicit_activation_record_or_bundled_dispatch_override
+dependency_policy:
+  missing_required: fail-closed
+  hash_mismatch: fail-closed
+  undeclared_input_access: forbidden
+  ad_hoc_discovery: forbidden
+closure_summary:
+  required_repo_file_count: 5
+  required_artifact_count: 0
+  satisfied_required_artifact_count: 0
+  missing_required_artifact_count: 0
+  required_operational_state_count: 1
+  unsatisfied_required_operational_state_count: 1
+  cloud_ready: false

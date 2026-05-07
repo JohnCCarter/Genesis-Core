@@ -1,0 +1,30 @@
+schema_version: repo_snapshot_manifest.manual_draft.v1
+manual_draft: true
+non_authoritative: true
+task_id: workforce_v1_agent_c_2023_04_dependency_closure
+dispatch_id: workforce_v1_agent_c_2023_04_dependency_closure_2026-05-07
+base_branch: feature/next-slice-2026-05-06
+base_sha: cf852ad8a559dfd8313405c3c30806fd3ff00e08 # pragma: allowlist secret
+tracked_inputs:
+  - path: docs/decisions/governance/workforce/workforce_v1_wave1_cloud_batch_dispatch_2026-05-07.md
+    role: batch_dispatch_brief
+    sha256: 608a7226cbdb172b1668fa24f671be6396f9d5b0db57eadad4049eb67c670cf9 # pragma: allowlist secret
+  - path: docs/decisions/governance/workforce/workforce_v1_wave1_agent_c_d1_2023_04_cloud_dispatch_2026-05-07.md
+    role: worker_dispatch_brief
+    sha256: 4b5472391f495e4777b8406cdc2e377b5b81c54c2e569a723882766b74e2a397 # pragma: allowlist secret
+  - path: docs/governance/worker_governance_envelope.md
+    role: worker_envelope
+    sha256: 89978bb58884e8e2c7f3dbb51294b0a98f5dcf836b31942ed88af0ab81a545f2 # pragma: allowlist secret
+  - path: docs/analysis/regime_intelligence/policy_router/ri_policy_router_2023_mixed_year_pocket_isolation_2026-05-06.md
+    role: mixed_year_pocket_anchor
+    sha256: 644273f0964431e471ee109be2669afecf9bca897eb12b7c57c59da39bb35f11 # pragma: allowlist secret
+  - path: docs/analysis/regime_intelligence/policy_router/ri_policy_router_enabled_vs_absent_curated_annual_evidence_2026-04-28.md
+    role: annual_evidence_anchor
+    sha256: ad254afaff162c1258249c9e27f0437b6b0c19e74d4103a97fec5686259aef4d # pragma: allowlist secret
+notes:
+  - Repo snapshot completeness is limited to tracked clean-clone inputs.
+  - Snapshot completeness does not satisfy Agent C's missing explicit control-plane activation requirement.
+  - The absent `2023-04` fallback packet path is a prospective output target, not a missing snapshot input.
+excluded_from_snapshot:
+  - state_label: explicit_control_plane_activation
+    reason: required operational activation evidence is non-repo state and is not satisfied by clean-clone repo visibility alone

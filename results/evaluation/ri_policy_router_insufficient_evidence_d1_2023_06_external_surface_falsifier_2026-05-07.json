@@ -1,0 +1,98 @@
+{
+  "audit_version": "ri-policy-router-insufficient-evidence-d1-2023-06-external-surface-falsifier-2026-05-07",
+  "base_sha": "2fb6e9a4824de97934786e6230131ae2008cdc28",
+  "fail_closed_contract": {
+    "statement": "The helper reads only the frozen D1 context-clean artifact for bank ceilings and the 2023 annual diff artifact for the external surface. If the annual diff source is absent it emits source_data_unavailable without backfill or rescue. clarity_raw is always not_evaluable on this surface because annual diff router_debug does not carry clarity_raw. clarity_score is descriptive-only with no PASS/FAIL authority."
+  },
+  "inputs": {
+    "annual_2023_diff_source": {
+      "available": false,
+      "path": "results/backtests/ri_policy_router_enabled_vs_absent_all_years_20260428_curated_only/2023_enabled_vs_absent_action_diffs.json"
+    },
+    "context_clean_artifact": {
+      "audit_version": "ri-policy-router-insufficient-evidence-d1-context-clean-selectivity-falsifier-2026-05-05",
+      "base_sha": "6ac59ef0c08cb3328348d5e64ad40d83ccd4f9f9",
+      "path": "results/evaluation/ri_policy_router_insufficient_evidence_d1_context_clean_selectivity_falsifier_2026-05-05.json",
+      "status": "bounded_context_clean_selectivity_present"
+    }
+  },
+  "non_authoritative": true,
+  "observational_only": true,
+  "skill_usage": [
+    "python_engineering"
+  ],
+  "source_unavailable_reason": "Annual diff source not found at results/backtests/ri_policy_router_enabled_vs_absent_all_years_20260428_curated_only/2023_enabled_vs_absent_action_diffs.json. This path is git-ignored (results/backtests/**) and absent in the cloud checkout. Run the backtest locally and re-execute this helper with the source present to obtain an evaluable result.",
+  "status": "source_data_unavailable",
+  "subject": {
+    "bank_state_reference": "docs/analysis/regime_intelligence/policy_router/ri_policy_router_insufficient_evidence_d1_bank_state_synthesis_2026-05-06.md",
+    "context_clean_reference": "docs/analysis/regime_intelligence/policy_router/ri_policy_router_insufficient_evidence_d1_context_clean_selectivity_falsifier_2026-05-05.md",
+    "month": "2023-06",
+    "packet_reference": "docs/decisions/regime_intelligence/policy_router/ri_policy_router_insufficient_evidence_d1_2023_06_external_surface_falsifier_precode_packet_2026-05-07.md",
+    "pocket_isolation_reference": "docs/analysis/regime_intelligence/policy_router/ri_policy_router_2023_mixed_year_pocket_isolation_2026-05-06.md",
+    "symbol": "tBTCUSD",
+    "timeframe": "3h",
+    "working_contract_reference": "GENESIS_WORKING_CONTRACT.md",
+    "year": "2023"
+  },
+  "transport_ceiling_registry": {
+    "action_edge": {
+      "context_bank_min": 0.042122,
+      "descriptive_only": false,
+      "global_separation_margin": 0.008319,
+      "target_bank_ceiling": 0.033803,
+      "target_bank_ceiling_source_timestamps": [
+        "2019-06-14T00:00:00+00:00"
+      ]
+    },
+    "clarity_raw": {
+      "context_bank_min": 0.369952,
+      "descriptive_only": false,
+      "global_separation_margin": 0.005038,
+      "target_bank_ceiling": 0.364914,
+      "target_bank_ceiling_source_timestamps": [
+        "2019-06-14T00:00:00+00:00"
+      ]
+    },
+    "clarity_score": {
+      "context_bank_min": 37.0,
+      "descriptive_only": true,
+      "global_separation_margin": 1.0,
+      "target_bank_ceiling": 36.0,
+      "target_bank_ceiling_source_timestamps": [
+        "2019-06-13T06:00:00+00:00",
+        "2019-06-13T15:00:00+00:00",
+        "2019-06-14T00:00:00+00:00",
+        "2019-06-14T09:00:00+00:00",
+        "2019-06-15T06:00:00+00:00",
+        "2020-10-31T21:00:00+00:00",
+        "2020-11-01T06:00:00+00:00",
+        "2020-11-01T15:00:00+00:00",
+        "2020-11-02T00:00:00+00:00",
+        "2022-06-24T03:00:00+00:00",
+        "2022-06-24T21:00:00+00:00",
+        "2022-06-25T15:00:00+00:00",
+        "2022-06-26T00:00:00+00:00",
+        "2025-03-15T09:00:00+00:00",
+        "2025-03-15T18:00:00+00:00"
+      ]
+    },
+    "confidence_gate": {
+      "context_bank_min": 0.521061,
+      "descriptive_only": false,
+      "global_separation_margin": 0.004159,
+      "target_bank_ceiling": 0.516902,
+      "target_bank_ceiling_source_timestamps": [
+        "2019-06-14T00:00:00+00:00"
+      ]
+    }
+  },
+  "transport_rubric": {
+    "antitarget_switch_reasons": [
+      "AGED_WEAK_CONTINUATION_GUARD",
+      "stable_continuation_state"
+    ],
+    "pass_condition": "all target rows selected (field_value <= ceiling) AND zero antitarget rows selected",
+    "statement": "Each admitted claim field is evaluated independently. Overall status is external_surface_survivor iff at least one admitted claim field passes the full transport test. external_surface_falsified iff all admitted fields are transport_falsified or not_evaluable with at least one transport_falsified.",
+    "target_cohort": "month=2023-06, zone=low, absent_action=LONG, enabled_action=NONE, switch_reason=insufficient_evidence"
+  }
+}

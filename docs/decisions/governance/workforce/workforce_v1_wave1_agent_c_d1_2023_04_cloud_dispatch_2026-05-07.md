@@ -33,8 +33,7 @@ If the primary `2023-06` lane stalls, returns null, or loses integration priorit
 ## Source anchors
 
 - `docs/analysis/regime_intelligence/policy_router/ri_policy_router_2023_mixed_year_pocket_isolation_2026-05-06.md`
-- `results/evaluation/ri_policy_router_2023_mixed_year_pocket_isolation_2026-05-06.json`
-- `results/backtests/ri_policy_router_enabled_vs_absent_all_years_20260428_curated_only/2023_enabled_vs_absent_action_diffs.json`
+- `docs/analysis/regime_intelligence/policy_router/ri_policy_router_enabled_vs_absent_curated_annual_evidence_2026-04-28.md`
 
 ## Activation rule
 
@@ -66,6 +65,8 @@ Agent C ska förbli dormant tills minst en av följande inträffar:
 - all source anchors listed above
 - `workforce_roadmap.md`
 - `docs/governance/worker_governance_envelope.md`
+
+Raw JSON- eller backtest-artefakter som bara nämns inuti source anchors är inte required cloud inputs om de inte finns på base branch.
 
 ## Allowed outputs
 

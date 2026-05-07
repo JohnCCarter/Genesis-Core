@@ -30,6 +30,14 @@ Endast control / integration lane får promotera resultat till backlog, roadmap,
 - **Resolved mode:** `RESEARCH`
 - **Primary objective:** öppna en liten cloud-batch som producerar användbar bounded evidence utan att skapa mer integrationsbörda än systemet kan adjudikera ärligt
 
+## Cloud-visible input rule
+
+För just denna dispatch-våg gäller:
+
+- cloud workers får bara använda inputs som är commitade i repo:t och synliga på den dispatchade branchens remote
+- lokala, `gitignored` eller ännu inte pushade artefakter är inte admissible cloud inputs i denna våg
+- om en analysis note nämner ett regenerate-on-demand JSON är markdown-filen den cloud-visible evidence anchor; JSON-filen är inte required input om den inte finns på base branch
+
 ## Integrationsregel
 
 Batchen får inte optimeras för maximal parallellism.

@@ -34,8 +34,7 @@ Should one exact `2017-06` low-zone suppression surface be opened later as a cor
 
 - `docs/analysis/regime_intelligence/policy_router/ri_policy_router_2023_vs_2017_mixed_year_shape_comparison_2026-05-06.md`
 - `docs/analysis/regime_intelligence/policy_router/ri_policy_router_2023_mixed_year_pocket_isolation_2026-05-06.md`
-- `results/evaluation/ri_policy_router_2023_vs_2017_mixed_year_shape_comparison_2026-05-06.json`
-- `results/backtests/ri_policy_router_enabled_vs_absent_all_years_20260428_curated_only/2017_enabled_vs_absent_action_diffs.json`
+- `docs/analysis/regime_intelligence/policy_router/ri_policy_router_enabled_vs_absent_curated_annual_evidence_2026-04-28.md`
 
 ## Scope IN
 
@@ -60,6 +59,8 @@ Should one exact `2017-06` low-zone suppression surface be opened later as a cor
 - all source anchors listed above
 - `workforce_roadmap.md`
 - `docs/governance/worker_governance_envelope.md`
+
+Raw JSON- eller backtest-artefakter som bara nämns inuti source anchors är inte required cloud inputs om de inte finns på base branch.
 
 ## Allowed outputs
 

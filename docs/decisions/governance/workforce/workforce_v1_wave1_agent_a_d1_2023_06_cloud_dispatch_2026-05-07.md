@@ -41,8 +41,7 @@ Primary current-branch anchors:
 - `docs/analysis/regime_intelligence/policy_router/ri_policy_router_insufficient_evidence_d1_bank_state_synthesis_2026-05-06.md`
 - `docs/analysis/regime_intelligence/policy_router/ri_policy_router_2023_mixed_year_pocket_isolation_2026-05-06.md`
 - `docs/analysis/regime_intelligence/policy_router/ri_policy_router_2023_vs_2017_mixed_year_shape_comparison_2026-05-06.md`
-- `results/evaluation/ri_policy_router_2023_mixed_year_pocket_isolation_2026-05-06.json`
-- `results/backtests/ri_policy_router_enabled_vs_absent_all_years_20260428_curated_only/2023_enabled_vs_absent_action_diffs.json`
+- `docs/analysis/regime_intelligence/policy_router/ri_policy_router_enabled_vs_absent_curated_annual_evidence_2026-04-28.md`
 
 Historical provenance anchor only:
 
@@ -52,6 +51,7 @@ Historical provenance anchor only:
 
 Den branch-lokala packeten ovan är provenance only.
 Det här dispatch-dokumentet är det kontrollerande kontraktet för cloud-körningen.
+Om en source anchor i sin tur nämner regenerate-on-demand JSON är markdown-filen den cloud-visible evidence anchor; råartefakten är inte required input om den inte finns på base branch.
 
 ## Scope IN
 
@@ -77,8 +77,9 @@ Det här dispatch-dokumentet är det kontrollerande kontraktet för cloud-körni
 ## Allowed inputs
 
 - all source anchors listed above
-- `results/evaluation/ri_policy_router_insufficient_evidence_d1_context_clean_selectivity_falsifier_2026-05-05.json`
-- `results/evaluation/ri_policy_router_2023_vs_2017_mixed_year_shape_comparison_2026-05-06.json`
+- `results/evaluation/ri_policy_router_insufficient_evidence_d1_context_clean_selectivity_falsifier_2026-05-05.json` (committed on base branch)
+
+Övriga raw JSON- eller backtest-artefakter som nämns i analysis notes är descriptive/provenance only för cloud-körningen om de inte finns på base branch.
 
 ## Allowed outputs
 

@@ -6,10 +6,11 @@ from typing import Any
 from core.indicators.fibonacci import FibonacciConfig, detect_swing_points
 
 DEFAULT_ENTRY_LOW = 0.5
-DEFAULT_ENTRY_HIGH = 0.618
+DEFAULT_ENTRY_HIGH = 0.768
 DEFAULT_EXTENSION_TARGETS: tuple[float, ...] = (1.272, 1.618)
 DEFAULT_TARGET_FRACTIONS: tuple[float, float, float] = (0.333, 0.333, 0.334)
 DEFAULT_ATR_DEPTH = 6.0
+DEFAULT_TREND_LOOKBACK = 200  # 6h bars ≈ 50 dagar
 MIN_BARS_REQUIRED = 60
 
 
@@ -21,6 +22,8 @@ class FibStrategyParams:
     target_fractions: tuple[float, float, float] = DEFAULT_TARGET_FRACTIONS
     atr_depth: float = DEFAULT_ATR_DEPTH
     require_confirmation: bool = True
+    trend_filter_enabled: bool = True
+    trend_filter_lookback: int = DEFAULT_TREND_LOOKBACK
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -30,6 +33,8 @@ class FibStrategyParams:
             "target_fractions": list(self.target_fractions),
             "atr_depth": self.atr_depth,
             "require_confirmation": self.require_confirmation,
+            "trend_filter_enabled": self.trend_filter_enabled,
+            "trend_filter_lookback": self.trend_filter_lookback,
         }
 
 
@@ -63,6 +68,21 @@ class FibSignal:
 
 def _none(reason: str) -> FibSignal:
     return FibSignal(action="NONE", reason=reason)
+
+
+def trend_aligned(direction: str, closes: list[float], lookback: int) -> bool:
+    """Block counter-trend setups: a SHORT against a 50-day uptrend, or LONG against a downtrend.
+
+    Compares closes[-1] to closes[-lookback]. If the long-horizon move opposes
+    the immediate HTF swing direction, return False (reject).
+    """
+    if lookback <= 0 or len(closes) < lookback + 1:
+        return True  # not enough history → fail-open
+    recent = float(closes[-1])
+    older = float(closes[-lookback])
+    if direction == "up":
+        return recent >= older
+    return recent <= older
 
 
 def _validate_candles(candles: dict[str, Any]) -> bool:
@@ -236,6 +256,16 @@ def compute_signal(
     if htf_swing is None:
         return _none("no_htf_swing")
     direction, a_idx, b_idx, a_px, b_px = htf_swing
+
+    if p.trend_filter_enabled and not trend_aligned(
+        direction, htf_candles["close"], p.trend_filter_lookback
+    ):
+        return FibSignal(
+            action="NONE",
+            reason="trend_filter_reject",
+            htf_swing={"a": a_px, "b": b_px, "direction": direction},
+        )
+
     htf_zone = _retracement_zone(direction, a_px, b_px, p.entry_zone_low, p.entry_zone_high)
 
     if not _last_close_in_zone(htf_candles["close"], htf_zone):

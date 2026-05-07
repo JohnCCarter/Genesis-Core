@@ -96,6 +96,14 @@ from mcp_server.tools import (
     search_code,
     write_file,
 )
+from mcp_server.trading_tools import (
+    append_decision_log,
+    read_account_state,
+    read_candles,
+    read_decision_log,
+    run_strategy,
+    submit_paper_order,
+)
 from mcp_server.utils import safe_args_for_logging, setup_logging
 
 logger = logging.getLogger(__name__)
@@ -224,6 +232,82 @@ TOOLS = [
         description="Get Git status information including current branch, modified files, staged files, and untracked files.",
         inputSchema={"type": "object", "properties": {}},
     ),
+    Tool(
+        name="read_account_state",
+        description="Read Bitfinex wallets, positions, and open orders. Returns empty lists if API keys are missing.",
+        inputSchema={"type": "object", "properties": {}},
+    ),
+    Tool(
+        name="read_candles",
+        description="Fetch normalised OHLCV candles from Bitfinex public API. Allowed timeframes: 1m,5m,15m,30m,1h,3h,6h,12h,1D,1W,14D,1M.",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "symbol": {"type": "string", "default": "tBTCUSD"},
+                "timeframe": {"type": "string", "default": "1h"},
+                "limit": {"type": "integer", "minimum": 1, "maximum": 1000, "default": 300},
+            },
+            "required": ["symbol", "timeframe"],
+        },
+    ),
+    Tool(
+        name="run_strategy",
+        description="Run the nested top-down Fibonacci strategy. Pulls HTF+LTF candles (or accepts pre-fetched), produces a deterministic decision record, and appends to the audit log when persist=true.",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "symbol": {"type": "string"},
+                "trend_tf": {"type": "string", "default": "6h"},
+                "entry_tf": {"type": "string", "default": "1h"},
+                "params": {"type": "object"},
+                "risk_state": {"type": "object"},
+                "risk_pct": {"type": "number", "default": 0.01},
+                "persist": {"type": "boolean", "default": True},
+                "candle_limit": {"type": "integer", "minimum": 60, "maximum": 1000, "default": 300},
+                "htf_candles": {"type": "object"},
+                "ltf_candles": {"type": "object"},
+            },
+            "required": ["symbol"],
+        },
+    ),
+    Tool(
+        name="submit_paper_order",
+        description="Submit a paper order to Bitfinex. When decision_id is supplied, refuses to submit if that decision's risk_check.passed=false unless force=true.",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "symbol": {"type": "string"},
+                "side": {"type": "string", "enum": ["LONG", "SHORT"]},
+                "size": {"type": "number"},
+                "type": {"type": "string", "enum": ["MARKET", "LIMIT"], "default": "MARKET"},
+                "price": {"type": "number"},
+                "decision_id": {"type": "string"},
+                "force": {"type": "boolean", "default": False},
+            },
+            "required": ["symbol", "side", "size"],
+        },
+    ),
+    Tool(
+        name="read_decision_log",
+        description="Read recent agent decision records from logs/agent_decisions.jsonl, optionally filtered by symbol or decision_id.",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "symbol": {"type": "string"},
+                "decision_id": {"type": "string"},
+                "limit": {"type": "integer", "minimum": 1, "maximum": 500, "default": 50},
+            },
+        },
+    ),
+    Tool(
+        name="append_decision_log",
+        description="Append a DecisionRecord-shaped dict to logs/agent_decisions.jsonl (used for human review markers).",
+        inputSchema={
+            "type": "object",
+            "properties": {"record": {"type": "object"}},
+            "required": ["record"],
+        },
+    ),
 ]
 
 
@@ -267,6 +351,49 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
             )
         elif name == "get_git_status":
             result = await get_git_status(config)
+        elif name == "read_account_state":
+            result = await read_account_state(config)
+        elif name == "read_candles":
+            result = await read_candles(
+                arguments.get("symbol", "tBTCUSD"),
+                arguments.get("timeframe", "1h"),
+                int(arguments.get("limit", 300) or 300),
+                config,
+            )
+        elif name == "run_strategy":
+            result = await run_strategy(
+                arguments.get("symbol", ""),
+                arguments.get("trend_tf", "6h"),
+                arguments.get("entry_tf", "1h"),
+                config,
+                htf_candles=arguments.get("htf_candles"),
+                ltf_candles=arguments.get("ltf_candles"),
+                params=arguments.get("params"),
+                risk_state=arguments.get("risk_state"),
+                risk_pct=float(arguments.get("risk_pct", 0.01) or 0.01),
+                persist=bool(arguments.get("persist", True)),
+                candle_limit=int(arguments.get("candle_limit", 300) or 300),
+            )
+        elif name == "submit_paper_order":
+            result = await submit_paper_order(
+                arguments.get("symbol", ""),
+                arguments.get("side", ""),
+                float(arguments.get("size", 0) or 0),
+                config,
+                type=str(arguments.get("type", "MARKET")),
+                price=arguments.get("price"),
+                decision_id=arguments.get("decision_id"),
+                force=bool(arguments.get("force", False)),
+            )
+        elif name == "read_decision_log":
+            result = await read_decision_log(
+                config,
+                symbol=arguments.get("symbol"),
+                decision_id=arguments.get("decision_id"),
+                limit=int(arguments.get("limit", 50) or 50),
+            )
+        elif name == "append_decision_log":
+            result = await append_decision_log(arguments.get("record", {}), config)
         else:
             result = {"success": False, "error": f"Unknown tool: {name}"}
 

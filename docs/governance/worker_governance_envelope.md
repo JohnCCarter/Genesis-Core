@@ -100,8 +100,9 @@ Varje worker ska utgå från:
 Molnexecution ska därför förstås som:
 
 - en worker = en isolerad branch/checkout
-- en worker = en bounded fråga
-- en worker = ett eget outputkontrakt
+- en worker = en långlivad exekveringsenhet
+- en aktiv slice / execution leg = en bounded fråga
+- en aktiv slice = ett eget outputkontrakt
 
 Lokala worktrees kan användas av control plane för koordinering eller debugging, men de är bara en operatörskonveniens.
 De är inte workforce-definitionen, inte ett krav för cloud execution och inte en auktoritetssurface.
@@ -130,6 +131,21 @@ Anledningen är att `wt/...` inte matchar `feature/*`, `research/*`, `sandbox/*`
 - checkout-lokala filer får aldrig användas för att override:a resolved mode
 - workers får inte dela muterbart tillstånd med varandra
 - session recovery ska utgå från envelope, dispatch-status och artefaktregister, inte från att tidigare chatthistorik råkar finnas kvar
+
+### Långlivad worker, en aktiv slice åt gången
+
+En cloud worker får vara långlivad över flera timmar eller dagar, men den får inte behandlas som en stående auktoritetsdomän.
+
+Det som får leva länge är worker-identiteten.
+Det som alltid måste vara bounded är den aktiva slicen.
+
+Som huvudregel gäller därför:
+
+- en worker får bara äga en **aktiv** slice åt gången
+- samma worker får fortsätta till nästa slice först när aktuell slice har returnerat sin bounded output och control plane / integration plane har klassificerat returen explicit
+- varje continuation kräver en explicit nästa admissible slice och en refreshed bounded envelope
+- workern får inte själv välja nästa slice, bredda subject, eller bära standing write-/runtime-auktoritet mellan slices
+- om nästa steg skulle kräva bredare accessyta, annan lane eller annan authority-tolkning innan en ny envelope finns, ska workern stoppa eller eskalera
 
 ---
 
@@ -192,6 +208,23 @@ Det sker i integration plane.
 | `escalation_conditions` | när workern ska lämna tillbaka jobbet till control plane           |
 
 Om något av de här fälten är oklart ska workern inte gissa. Den ska stoppa eller eskalera.
+
+## Föreslagna continuation-tillägg för långlivade workers
+
+Följande continuation-metadata är **föreslagna** som operativa förtydliganden för långlivade workers.
+De är envelope-metadata på slice-nivå; de är inte en ny SSOT, inte standing authority och inte en självauktoriserande processyta.
+
+| Fält                        | Syfte                                                                                  |
+| --------------------------- | -------------------------------------------------------------------------------------- |
+| `active_slice_id`           | stabil identitet för den aktuella bounded execution leg workern äger just nu           |
+| `access_frame`              | slice-bunden beskrivning av vilka resursklasser/path-ytor som får läsas/köras/skrivas  |
+| `continuation_policy`       | om workern ska stoppa efter retur eller får invänta explicit nästa admissible slice    |
+| `return_state_requirements` | vilket handoff-/returpaket som minst måste lämnas innan control plane kan routa vidare |
+| `next_slice_constraints`    | vilka continuation-gränser som gäller utan att subject, lane eller authority breddas   |
+
+En access frame ska förstås som ett slice-bundet deskriptorblock inne i envelope:n.
+Det beskriver vilka resursklasser eller paths som får läsas, köras eller skrivas för just den slicen.
+Det ger inte stående auktoritet, det breddar inte scope och det återställs när en ny slice dispatchas.
 
 ---
 
@@ -257,6 +290,39 @@ escalation_conditions:
   - shared_truth_update_needed
 ```
 
+Föreslaget continuation-tillägg för långlivad worker:
+
+```yaml
+active_slice_id: d1-2017-06-corroborative
+access_frame:
+  docs_read:
+    - docs/analysis/regime_intelligence/policy_router/**
+    - docs/decisions/governance/workforce/**
+  repo_write:
+    - docs/decisions/regime_intelligence/policy_router/**
+  code_read: []
+  config_read: []
+  scripts_execute: []
+  backtest_execute: []
+continuation_policy:
+  worker_lifetime: long_lived
+  max_active_slices: 1
+  explicit_redispatch_required: true
+return_state_requirements:
+  - status
+  - observed
+  - inferred
+  - unverified
+  - what_this_does_not_prove
+  - recommended_next_step
+  - blocked_by
+  - scope_adherence_report
+next_slice_constraints:
+  - same_mission_family_only
+  - no_self_widening
+  - refreshed_envelope_required
+```
+
 ---
 
 ## Outputkontrakt från worker tillbaka till control plane
@@ -278,6 +344,13 @@ Varje worker ska lämna minst följande:
 - `base_sha_confirmed`
 - `scope_adherence_report`
 
+För långlivade workers får returen dessutom bära **advisory handoff metadata** såsom:
+
+- `blocked_by`
+- `handoff_state`
+- `next_admissible_slice_candidate`
+- `access_frame_delta`
+
 Epistemisk separation är hård:
 
 - `observed` = direkt stödbara utsagor från returnerade artefakter
@@ -286,6 +359,9 @@ Epistemisk separation är hård:
 
 Worker outputs förblir alltid proposals/evidence only.
 De blir inte authoritative truth, merge approval eller runtime-authority utan kontrollplansgranskning.
+
+Handoff-/continuation-fält är därför bara routinghjälp för control plane.
+De får inte tolkas som att workern nu själv har fått rätt att fortsätta, ta fler samtidiga slices eller byta lane.
 
 Tillåtna värden för `recommended_integration_class`:
 
@@ -375,6 +451,17 @@ Integration plane avgör om resultatet ska:
 - integreras i shared truth
 
 Worker producerar bounded evidens. Integration plane avgör vad evidensen betyder i den större kartan.
+
+### 6. Control plane öppnar nästa slice eller stoppar workern
+
+Om samma worker ska fortsätta vidare måste control plane / integration plane först:
+
+- stänga eller klassificera den aktuella slicen explicit
+- avgöra vad som är nästa admissible slice
+- kompilera en refreshed bounded envelope för nästa slice
+- uppdatera access frame, stop/escalation-villkor och return state-krav där det behövs
+
+Utan detta ska workern stoppa, lämna sin retur och invänta ny explicit dispatch.
 
 ---
 

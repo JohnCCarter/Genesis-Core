@@ -130,6 +130,10 @@ Varje worker får:
 - en exakt fråga
 - ett kompilerat kontrakt
 
+En worker ska här förstås som en långlivad worker-identitet.
+Den aktiva arbetsenheten är däremot alltid en bounded slice / execution leg.
+Samma worker får därför arbeta över flera slices över tid, men aldrig äga mer än en aktiv slice åt gången och aldrig fortsätta utan explicit nästa admissible slice från control / integration plane.
+
 Lokala worktrees kan användas av control- eller integration plane för koordinering och debugging, men de är inte workforce-definitionen och inte en auktoritetssurface.
 
 Kort sagt: detta är muskeln.
@@ -293,6 +297,8 @@ Frågan är hur många returer integration plane kan adjudikera utan att börja 
 Cloud workers ska kunna återuppta från envelope, dispatch-status och registrerade artefakter.
 De ska inte kräva full chatthistorik för att förstå sitt uppdrag.
 
+För långlivade workers gäller samma sak mellan slices: continuation ska utgå från explicit retur-/handoff-state, ny envelope och registrerade artefakter, inte från att workern "minns" tidigare chatt eller improviserar nästa steg.
+
 ---
 
 ## Version 1: enkel men riktig
@@ -312,7 +318,12 @@ En bra första batch är:
 - `1` corroborative deep-dive eller inventory-slice
 - `1` packet-only fallback
 
-Hård regel: en worker = en bounded slice = en branch = en PR.
+Hård regel:
+
+- en **aktiv slice / execution leg** = en bounded slice = en branch = en PR
+- en långlivad worker får ta flera execution legs sekventiellt över tid
+- samma worker får aldrig äga fler än en aktiv slice samtidigt
+- continuation kräver explicit klassificerad retur och refreshed bounded envelope; workern får inte själv välja nästa slice
 
 ### Tillåtna deep-dive-domäner just nu
 
@@ -337,6 +348,7 @@ Det workers faktiskt ska arbeta efter är:
 - sin envelope / sitt dispatch-kontrakt
 - sin pinnade startpunkt
 - sina tillåtna inputs
+- vid continuation: sin explicit refererade handoff-/returstate från föregående slice
 
 Det är därför den operativa specen nu är bruten ur roadmapen och lagd i:
 
@@ -348,11 +360,14 @@ Det är därför den operativa specen nu är bruten ur roadmapen och lagd i:
 
 När modellen ska skärpas vidare är de viktigaste nästa stegen:
 
-1. definiera integrationsklassificering för `ignore / park / duplicate / contradicted / deep-dive / integrate`
-2. definiera evidence graph med lineage-, contradiction- och supersession-kanter
-3. definiera artifact registry och canonical naming
-4. definiera scheduler som väger integrationsbacklogg mot nytt research-värde
-5. definiera retry/idempotency-regler för cloud workers
+1. **föreslagen:** definiera hur control plane routar från avslutad slice till nästa admissible slice utan self-widening
+2. **föreslagen:** definiera slice-bundna access frames för docs / code / config / scripts / backtests / artifacts
+3. **föreslagen:** definiera retur-/handoff-state för långlivade workers mellan slices
+4. definiera integrationsklassificering för `ignore / park / duplicate / contradicted / deep-dive / integrate`
+5. definiera evidence graph med lineage-, contradiction- och supersession-kanter
+6. definiera artifact registry och canonical naming
+7. definiera scheduler som väger integrationsbacklogg mot nytt research-värde
+8. definiera retry/idempotency-regler för cloud workers
 
 ---
 

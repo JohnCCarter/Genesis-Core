@@ -30,6 +30,16 @@ Endast control / integration lane får promotera resultat till backlog, roadmap,
 - **Resolved mode:** `RESEARCH`
 - **Primary objective:** öppna en liten cloud-batch som producerar användbar bounded evidence utan att skapa mer integrationsbörda än systemet kan adjudikera ärligt
 
+## Klarifiering (2026-05-08)
+
+Det här dokumentet förblir en daterad wave1-dispatch-artefakt från `2026-05-07`.
+Följande är en additiv klarifiering av hur batchen ska tolkas operativt:
+
+- en cloud worker är en långlivad exekveringsenhet, inte en stående auktoritetsdomän
+- samma worker får slutföra flera sekventiella slices över tid, men aldrig mer än en **aktiv** slice åt gången
+- continuation kräver explicit returklassificering och en refreshed bounded dispatch/envelope från control / integration lane
+- advisory hints som `next admissible slice`, `blocked_by` eller `access delta` får hjälpa routing, men de ger aldrig self-authorization
+
 ## Cloud-visible input rule
 
 För just denna dispatch-våg gäller:
@@ -48,15 +58,16 @@ Som huvudregel gäller:
 - inga tysta merges
 - inga direkta shared-truth writes från workers
 - ingen worker får äga fler än en slice samtidigt
+- samma worker får bara fortsätta till nästa slice efter explicit returklassificering och refreshed bounded dispatch/envelope
 - om två workers börjar konvergera mot samma ownership tuple ska den senare workern stoppa och eskalera
 
 ## Ownership matrix
 
-| Agent | Window | Question class | Output class | Activation state | Proposed branch |
-| --- | --- | --- | --- | --- | --- |
-| Agent A | `2023-06` | `D1 external falsifier` | `implementation-prepared deep-dive` | `primary` | `feature/cloud/deepdive/d1-2023-06-falsifier` |
-| Agent B | `2017-06` | `corroborative packet framing` | `packet-first bounded prep` | `secondary` | `feature/cloud/deepdive/d1-2017-06-corroborative` |
-| Agent C | `2023-04` | `fallback packet framing` | `packet-only` | `dormant until activated` | `feature/cloud/deepdive/d1-2023-04-fallback` |
+| Agent   | Window    | Question class                 | Output class                        | Activation state          | Proposed branch                                   |
+| ------- | --------- | ------------------------------ | ----------------------------------- | ------------------------- | ------------------------------------------------- |
+| Agent A | `2023-06` | `D1 external falsifier`        | `implementation-prepared deep-dive` | `primary`                 | `feature/cloud/deepdive/d1-2023-06-falsifier`     |
+| Agent B | `2017-06` | `corroborative packet framing` | `packet-first bounded prep`         | `secondary`               | `feature/cloud/deepdive/d1-2017-06-corroborative` |
+| Agent C | `2023-04` | `fallback packet framing`      | `packet-only`                       | `dormant until activated` | `feature/cloud/deepdive/d1-2023-04-fallback`      |
 
 Varje agent äger en distinkt tuple av:
 
@@ -111,8 +122,16 @@ Varje agent måste returnera minst:
 - `base_sha_confirmed`
 - `scope_adherence_report`
 
+För långlivade workers får returen också bära advisory handoff hints såsom:
+
+- `blocked_by`
+- `next_admissible_slice_candidate`
+- `access_frame_delta`
+- `handoff_state`
+
 Det här är inte en automatisk integrationsväg.
 Control / integration lane måste klassificera varje retur explicit som till exempel `ignore`, `park`, `deep-dive`, `duplicate`, `contradicted` eller `integrate`.
+De advisory continuation-fälten får inte tolkas som att workern därmed får fortsätta utan ny explicit dispatch.
 
 ## Briefs in this batch
 

@@ -133,6 +133,7 @@ example_blocked_output:
   timeframe: 3h
   slice_id: year_worker_ri_policy_router_2024_tbtcusd_3h
   base_sha: <PINNED_BASE_SHA>
+  artifact_namespace: results/workforce/year_workers/{year}/{symbol}/{timeframe}/{lane}/{slice_id}/{run_id}/
   manifest_hashes:
     envelope_hash: <ENVELOPE_HASH>
     dependency_manifest_hash: <DEPENDENCY_MANIFEST_HASH>
@@ -141,10 +142,10 @@ example_blocked_output:
     generated_overlay_hash: null
   artifacts_produced:
     - role: validation_report
-      path: results/workforce/year_workers/<run_id>/validation_report.json
+      path: results/workforce/year_workers/{year}/{symbol}/{timeframe}/{lane}/{slice_id}/{run_id}/validation_report.json
       status: produced
     - role: worker_output_contract
-      path: results/workforce/year_workers/<run_id>/worker_output_contract.yaml
+      path: results/workforce/year_workers/{year}/{symbol}/{timeframe}/{lane}/{slice_id}/{run_id}/worker_output_contract.yaml
       status: produced
   observed:
     - generated_overlay_ref was absent at startup preflight

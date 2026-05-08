@@ -292,6 +292,8 @@ Where:
 
 `results/workforce/year_workers/{year}/{symbol}/{timeframe}/{lane}/{slice_id}/{run_id}/`
 
+All neighboring contract examples should expand under this full root. `run_id` is the terminal segment inside this hierarchy, not a substitute for the full directory structure.
+
 ### Required artifact paths inside the namespace
 
 | Artifact role                       | Proposed path                                 |

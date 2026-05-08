@@ -80,7 +80,7 @@ optional_fields:
   - name: notes
     type: array
     description: Human-readable caveats about draft/manual status.
-  - name: what_this_queue_item_does_not_prove
+  - name: what_this_manifest_does_not_prove
     type: array
     description: Explicit non-claims about dispatch progression or dispatch authority.
 allowed_enum_values:
@@ -141,6 +141,7 @@ queue_policy:
     - required_artifact_refs must be explicit; workers may not discover or infer missing inputs ad hoc.
     - generated_from records lineage only and does not inherit authority from upstream material.
     - status and admissibility_state are queue bookkeeping, not runtime truth.
+    - Queue progression remains fail-closed and blocked while dependency closure, manifest compilation, overlay materialization, or dispatch review remains unresolved.
 baseline_config_policy:
   rules:
     - baseline_config_ref must include path_or_id, selector when applicable, and pinned hash when known.

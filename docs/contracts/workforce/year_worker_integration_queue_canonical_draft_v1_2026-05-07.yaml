@@ -157,8 +157,8 @@ example_blocked_intake:
     repo_snapshot_manifest_hash: <REPO_SNAPSHOT_MANIFEST_HASH>
     runtime_execution_manifest_hash: <RUNTIME_EXECUTION_MANIFEST_HASH>
     generated_overlay_hash: <GENERATED_OVERLAY_HASH>
-  artifact_namespace: results/workforce/year_workers/<run_id>/
-  worker_output_contract_ref: results/workforce/year_workers/<run_id>/worker_output_contract.yaml
+  artifact_namespace: results/workforce/year_workers/{year}/{symbol}/{timeframe}/{lane}/{slice_id}/{run_id}/
+  worker_output_contract_ref: results/workforce/year_workers/{year}/{symbol}/{timeframe}/{lane}/{slice_id}/{run_id}/worker_output_contract.yaml
   intake_verification:
     base_sha_match: true
     manifest_hash_match: false

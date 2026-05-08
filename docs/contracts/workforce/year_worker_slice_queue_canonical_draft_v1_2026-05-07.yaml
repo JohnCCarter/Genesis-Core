@@ -1,0 +1,178 @@
+# Status: proposed manual draft for the research-evidence lane only.
+# Non-authoritative. Not consumed by runtime, dispatch, validation, promotion,
+# or shared-truth workflows.
+schema_version: year_worker_slice_queue.canonical_draft.v1
+draft_status: proposed_non_authoritative
+manual_proposal: true
+runtime_authority: none
+dispatch_authority: none
+promotion_authority: none
+purpose: >-
+  Proposed reusable manual form for representing one year-worker research slice in
+  the control-plane queue before dispatch. This draft is docs-only,
+  non-authoritative, and does not itself authorize manifest compilation,
+  overlay generation, or cloud execution.
+required_fields:
+  - name: slice_id
+    type: string
+    description: Stable identity of one bounded year-worker slice.
+  - name: lane
+    type: enum
+    description: Cheapest admissible lane for the slice.
+  - name: family
+    type: string
+    description: Research family or domain that owns the slice.
+  - name: year
+    type: integer
+    description: Year targeted by the slice.
+  - name: symbol
+    type: string
+    description: Trading symbol pinned for the slice.
+  - name: timeframe
+    type: string
+    description: Timeframe pinned for the slice.
+  - name: question
+    type: string
+    description: Exact bounded question the worker is allowed to answer.
+  - name: base_sha
+    type: string
+    description: Pinned repo state for the queue item.
+  - name: baseline_config_ref
+    type: object
+    description: Immutable baseline config identity to be reused across comparable years.
+  - name: required_artifact_refs
+    type: array
+    description: Explicit required artifacts or inputs the slice depends on.
+  - name: priority
+    type: enum
+    description: Queue priority only; not dispatch authority.
+  - name: status
+    type: enum
+    description: Queue bookkeeping state only.
+  - name: blocking_reason
+    type: enum
+    description: Explicit reason the slice cannot advance.
+  - name: generated_from
+    type: object
+    description: Lineage pointer to the source shortlist, inventory, or analysis anchor.
+  - name: admissibility_state
+    type: enum
+    description: Current admissibility state for the slice.
+optional_fields:
+  - name: dispatch_id
+    type: string
+    description: Dispatch identity once the slice is promoted beyond candidate state.
+  - name: envelope_ref
+    type: string_or_null
+    description: Reference to the compiled worker envelope when it exists.
+  - name: dependency_manifest_ref
+    type: string_or_null
+    description: Reference to dependency closure once compiled.
+  - name: repo_snapshot_manifest_ref
+    type: string_or_null
+    description: Reference to clean-clone repo snapshot once compiled.
+  - name: runtime_execution_manifest_ref
+    type: string_or_null
+    description: Reference to runtime binding once compiled.
+  - name: generated_overlay_ref
+    type: string_or_null
+    description: Reference to the generated year overlay once materialized.
+  - name: notes
+    type: array
+    description: Human-readable caveats about draft/manual status.
+  - name: what_this_queue_item_does_not_prove
+    type: array
+    description: Explicit non-claims about dispatch progression or dispatch authority.
+allowed_enum_values:
+  draft_status:
+    - proposed_non_authoritative
+  lane:
+    - concept
+    - research-evidence
+    - runtime-integration
+  priority:
+    - critical
+    - high
+    - normal
+    - low
+    - parked
+  status:
+    - candidate_discovered
+    - awaiting_admissibility_review
+    - inadmissible
+    - admissible_pending_closure
+    - closure_blocked
+    - manifests_pending
+    - overlay_pending
+    - dispatch_blocked
+    - dispatch_review_blocked
+    - dispatched
+    - returned
+    - integrated
+    - retired
+  blocking_reason:
+    - none
+    - subject_not_bounded
+    - missing_baseline_config
+    - required_artifact_missing
+    - dependency_closure_pending
+    - dependency_closure_blocked
+    - repo_snapshot_unverified
+    - runtime_manifest_incomplete
+    - overlay_not_materialized
+    - conflicting_active_slice
+    - integration_backlog_limit
+    - forbidden_surface_entered
+    - unknown
+  admissibility_state:
+    - candidate_only
+    - bounded_question_confirmed
+    - inadmissible
+    - admissible_pending_dependency_closure
+    - admissible_pending_manifest_compilation
+    - admissible_pending_overlay
+    - admissible_pending_dispatch_review
+    - dispatch_blocked
+    - dispatch_review_blocked
+queue_policy:
+  rules:
+    - Queue presence does not authorize dispatch.
+    - baseline_config_ref becomes immutable within a wave once the slice is admitted.
+    - required_artifact_refs must be explicit; workers may not discover or infer missing inputs ad hoc.
+    - generated_from records lineage only and does not inherit authority from upstream material.
+    - status and admissibility_state are queue bookkeeping, not runtime truth.
+baseline_config_policy:
+  rules:
+    - baseline_config_ref must include path_or_id, selector when applicable, and pinned hash when known.
+    - baseline_config_ref must not be replaced year by year inside the same comparison wave.
+    - If baseline_config_ref changes, the slice must move to a new wave or re-enter admissibility review.
+example_blocked_candidate:
+  slice_id: year_worker_ri_policy_router_2024_tbtcusd_3h
+  lane: research-evidence
+  family: regime_intelligence/policy_router
+  year: 2024
+  symbol: tBTCUSD
+  timeframe: 3h
+  question: Can one exact 2024 year-worker run be prepared without widening beyond the declared policy-router family and without changing strategy identity?
+  base_sha: <PINNED_BASE_SHA>
+  baseline_config_ref:
+    path: config/strategy/champions/tBTCUSD_3h.json
+    selector: merged_config
+    sha256: <PINNED_BASELINE_CONFIG_SHA256>
+    immutable_within_wave: true
+  required_artifact_refs:
+    - label: required_context_artifact
+      ref: results/evaluation/<required_context_artifact>.json
+      required: true
+      remote_visible: unverified
+  priority: normal
+  status: admissible_pending_closure
+  blocking_reason: dependency_closure_pending
+  generated_from:
+    source_type: inventory_shortlist
+    source_ref: docs/analysis/<source_shortlist_or_note>.md
+  admissibility_state: admissible_pending_dependency_closure
+what_this_manifest_does_not_prove:
+  - That a queued slice may advance toward dispatch.
+  - That required_artifact_refs are already cloud-visible.
+  - That baseline_config_ref may drift across years in the same wave.

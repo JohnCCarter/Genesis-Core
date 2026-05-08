@@ -24,7 +24,8 @@ def candles_hash(candles: dict[str, Any]) -> str:
 
 
 def _decision_id() -> str:
-    return uuid.uuid4().hex
+    ts = dt.datetime.now(dt.UTC).strftime("%Y%m%dT%H%M%S%f")
+    return f"{ts}_{uuid.uuid4().hex}"
 
 
 @dataclass(slots=True)

@@ -279,12 +279,16 @@ async def submit_paper_order(
         record = find_decision(decision_id)
         if record is None:
             return _err("decision_not_found", decision_id=decision_id)
-        if not force and not record.get("risk_check", {}).get("passed", False):
-            return _err(
-                "risk_blocked",
-                decision_id=decision_id,
-                reasons=record["risk_check"].get("reasons", []),
-            )
+        if not force:
+            risk_check = record.get("risk_check")
+            if not isinstance(risk_check, dict):
+                return _err("decision_missing_risk_check", decision_id=decision_id)
+            if not risk_check.get("passed", False):
+                return _err(
+                    "risk_blocked",
+                    decision_id=decision_id,
+                    reasons=risk_check.get("reasons", []),
+                )
 
     try:
         from core.api.paper import paper_submit

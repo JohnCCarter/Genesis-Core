@@ -127,8 +127,22 @@ def test_mega_zone_touch_required_default_true() -> None:
     assert p.to_dict()["mega_zone_touch_required"] is True
 
 
-def test_per_tier_atr_defaults_to_global() -> None:
-    p = FibStrategyParams(atr_depth=5.0)
+def test_per_tier_atr_uses_native_btcusd_defaults() -> None:
+    """Default per-tier ATR is tuned for native 1D+6h+1h on BTC/USD."""
+    p = FibStrategyParams()
+    assert p.resolve_mega_atr() == 6.0
+    assert p.resolve_major_atr() == 5.5  # tuned for 6h
+    assert p.resolve_minor_atr() == 6.0
+
+
+def test_per_tier_atr_falls_back_when_explicitly_none() -> None:
+    """Setting per-tier to None re-enables fall-back to global atr_depth."""
+    p = FibStrategyParams(
+        atr_depth=5.0,
+        mega_atr_depth=None,
+        major_atr_depth=None,
+        minor_atr_depth=None,
+    )
     assert p.resolve_mega_atr() == 5.0
     assert p.resolve_major_atr() == 5.0
     assert p.resolve_minor_atr() == 5.0
@@ -150,10 +164,11 @@ def test_per_tier_atr_overrides_apply_independently() -> None:
     assert d["minor_atr_depth"] == 2.5
 
 
-def test_per_tier_atr_partial_override_falls_back_for_unset() -> None:
+def test_per_tier_atr_partial_override_keeps_other_defaults() -> None:
+    """Overriding one tier leaves the others at their tuned defaults."""
     p = FibStrategyParams(atr_depth=6.0, minor_atr_depth=3.0)
-    assert p.resolve_mega_atr() == 6.0  # falls back
-    assert p.resolve_major_atr() == 6.0  # falls back
+    assert p.resolve_mega_atr() == 6.0   # default
+    assert p.resolve_major_atr() == 5.5  # tuned default kept
     assert p.resolve_minor_atr() == 3.0  # overridden
 
 

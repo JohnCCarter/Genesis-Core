@@ -10,6 +10,12 @@ DEFAULT_ENTRY_HIGH = 0.786
 DEFAULT_EXTENSION_TARGETS: tuple[float, ...] = (1.272, 1.618)
 DEFAULT_TARGET_FRACTIONS: tuple[float, float, float] = (0.333, 0.333, 0.334)
 DEFAULT_ATR_DEPTH = 6.0
+# Per-tier defaults tuned for native Bitfinex 1D + 6h + 1h on BTC/USD.
+# Stepwise ablation found major=5.5 removes one losing trade vs uniform 6.0
+# without affecting winners (PF 1.15 → 1.44 on 24m of native data).
+DEFAULT_MEGA_ATR_DEPTH = 6.0
+DEFAULT_MAJOR_ATR_DEPTH = 5.5
+DEFAULT_MINOR_ATR_DEPTH = 6.0
 DEFAULT_TREND_LOOKBACK = 50  # bars (e.g. 1D-bars ≈ 50 days)
 MIN_BARS_REQUIRED = 60
 
@@ -21,10 +27,11 @@ class FibStrategyParams:
     extension_levels: tuple[float, ...] = DEFAULT_EXTENSION_TARGETS
     target_fractions: tuple[float, float, float] = DEFAULT_TARGET_FRACTIONS
     atr_depth: float = DEFAULT_ATR_DEPTH
-    # Per-tier overrides for compute_signal_nested. None = fall back to atr_depth.
-    mega_atr_depth: float | None = None
-    major_atr_depth: float | None = None
-    minor_atr_depth: float | None = None
+    # Per-tier values for compute_signal_nested.
+    # None = fall back to atr_depth. Defaults tuned for native 1D + 6h + 1h.
+    mega_atr_depth: float | None = DEFAULT_MEGA_ATR_DEPTH
+    major_atr_depth: float | None = DEFAULT_MAJOR_ATR_DEPTH
+    minor_atr_depth: float | None = DEFAULT_MINOR_ATR_DEPTH
     require_confirmation: bool = True
     trend_filter_enabled: bool = True
     trend_filter_lookback: int = DEFAULT_TREND_LOOKBACK

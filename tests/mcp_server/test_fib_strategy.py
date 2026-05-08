@@ -140,8 +140,8 @@ def test_compute_signal_trend_filter_rejects_short_in_uptrend() -> None:
     # Now drop sharply at the end so a recent HTF swing flips to "down"
     closes += [closes[-1] - i * 200.0 for i in range(1, 30)]
     opens = [closes[0]] + closes[:-1]
-    highs = [max(o, c) + 100.0 for o, c in zip(opens, closes, strict=False)]
-    lows = [min(o, c) - 100.0 for o, c in zip(opens, closes, strict=False)]
+    highs = [max(o, c) + 100.0 for o, c in zip(opens, closes, strict=True)]
+    lows = [min(o, c) - 100.0 for o, c in zip(opens, closes, strict=True)]
     htf = {
         "open": opens,
         "high": highs,

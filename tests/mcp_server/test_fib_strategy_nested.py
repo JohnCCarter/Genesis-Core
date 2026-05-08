@@ -15,8 +15,8 @@ from core.agent.fib_strategy import (
 def _make_uptrend(n: int = 80, start: float = 40000.0, end: float = 50000.0) -> dict:
     closes = [start + (end - start) * i / (n - 1) for i in range(n)]
     opens = [closes[0]] + closes[:-1]
-    highs = [max(o, c) + 50.0 for o, c in zip(opens, closes, strict=False)]
-    lows = [min(o, c) - 50.0 for o, c in zip(opens, closes, strict=False)]
+    highs = [max(o, c) + 50.0 for o, c in zip(opens, closes, strict=True)]
+    lows = [min(o, c) - 50.0 for o, c in zip(opens, closes, strict=True)]
     return {"open": opens, "high": highs, "low": lows, "close": closes, "volume": [10.0] * n}
 
 
@@ -91,8 +91,8 @@ def test_compute_signal_nested_no_mega_zone_touch() -> None:
     closes = [40000.0 + (10000.0 / (n_up - 1)) * i for i in range(n_up)]
     closes += [closes[-1]] * 40  # pris stannar i toppen, ovanför zonen
     opens = [closes[0]] + closes[:-1]
-    highs = [max(o, c) + 50.0 for o, c in zip(opens, closes, strict=False)]
-    lows = [min(o, c) - 50.0 for o, c in zip(opens, closes, strict=False)]
+    highs = [max(o, c) + 50.0 for o, c in zip(opens, closes, strict=True)]
+    lows = [min(o, c) - 50.0 for o, c in zip(opens, closes, strict=True)]
     cs = {
         "open": opens,
         "high": highs,
@@ -111,8 +111,8 @@ def test_compute_signal_nested_trend_filter_blocks_counter_trend() -> None:
     closes = [40000.0 + i * 50.0 for i in range(120)]
     closes += [closes[-1] - 200.0 * i for i in range(1, 30)]
     opens = [closes[0]] + closes[:-1]
-    highs = [max(o, c) + 100.0 for o, c in zip(opens, closes, strict=False)]
-    lows = [min(o, c) - 100.0 for o, c in zip(opens, closes, strict=False)]
+    highs = [max(o, c) + 100.0 for o, c in zip(opens, closes, strict=True)]
+    lows = [min(o, c) - 100.0 for o, c in zip(opens, closes, strict=True)]
     cs = {
         "open": opens,
         "high": highs,
@@ -139,8 +139,8 @@ def test_compute_signal_nested_uses_minor_close_as_entry() -> None:
     n = 80
     closes = [40000.0 + i * 50.0 for i in range(n)]
     opens = [closes[0]] + closes[:-1]
-    highs = [max(o, c) + 50.0 for o, c in zip(opens, closes, strict=False)]
-    lows = [min(o, c) - 50.0 for o, c in zip(opens, closes, strict=False)]
+    highs = [max(o, c) + 50.0 for o, c in zip(opens, closes, strict=True)]
+    lows = [min(o, c) - 50.0 for o, c in zip(opens, closes, strict=True)]
     minor = {"open": opens, "high": highs, "low": lows, "close": closes, "volume": [1.0] * n}
     sig = compute_signal_nested(minor, minor, minor, FibStrategyParams(trend_filter_enabled=False))
     # entry, when populated, MUST equal minor's last close
@@ -209,8 +209,8 @@ def test_mega_zone_touch_off_skips_no_mega_zone_touch_reject() -> None:
     closes = [40000.0 + (10000.0 / (n_up - 1)) * i for i in range(n_up)]
     closes += [closes[-1] - i * 20.0 for i in range(1, 80)]  # very shallow pullback
     opens = [closes[0]] + closes[:-1]
-    highs = [max(o, c) + 50.0 for o, c in zip(opens, closes, strict=False)]
-    lows = [min(o, c) - 50.0 for o, c in zip(opens, closes, strict=False)]
+    highs = [max(o, c) + 50.0 for o, c in zip(opens, closes, strict=True)]
+    lows = [min(o, c) - 50.0 for o, c in zip(opens, closes, strict=True)]
     cs = {
         "open": opens,
         "high": highs,

@@ -275,13 +275,11 @@ async def submit_paper_order(
     if size <= 0:
         return _err("invalid_size")
 
-    record = None
     if decision_id:
         record = find_decision(decision_id)
         if record is None:
             return _err("decision_not_found", decision_id=decision_id)
-    if record is not None and not force:
-        if not record.get("risk_check", {}).get("passed", False):
+        if not force and not record.get("risk_check", {}).get("passed", False):
             return _err(
                 "risk_blocked",
                 decision_id=decision_id,

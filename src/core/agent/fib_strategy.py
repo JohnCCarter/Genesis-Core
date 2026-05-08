@@ -237,7 +237,7 @@ def _ltf_swing_within_htf_zone(
             l_idx = low_idx[i]
             l_price = low_px[i]
             earlier_highs = [
-                (hi, hp) for hi, hp in zip(high_idx, high_px, strict=False) if hi < l_idx
+                (hi, hp) for hi, hp in zip(high_idx, high_px, strict=True) if hi < l_idx
             ]
             if not earlier_highs:
                 continue
@@ -255,7 +255,7 @@ def _ltf_swing_within_htf_zone(
     for i in range(len(high_idx) - 1, -1, -1):
         h_idx = high_idx[i]
         h_price = high_px[i]
-        earlier_lows = [(li, lp) for li, lp in zip(low_idx, low_px, strict=False) if li < h_idx]
+        earlier_lows = [(li, lp) for li, lp in zip(low_idx, low_px, strict=True) if li < h_idx]
         if not earlier_lows:
             continue
         l_idx, l_price = earlier_lows[-1]
@@ -364,7 +364,7 @@ def compute_signal(
     targets: list[dict[str, Any]] = []
     fractions = list(p.target_fractions)
     for level, price, fraction in zip(
-        p.extension_levels, extension_prices, fractions[:-1], strict=False
+        p.extension_levels, extension_prices, fractions[:-1], strict=True
     ):
         targets.append({"level": float(level), "price": float(price), "fraction": float(fraction)})
     targets.append({"level": "trailing", "fraction": float(fractions[-1])})
@@ -444,7 +444,7 @@ def _latest_swing_in_direction(
         last_high_idx = high_idx[-1]
         last_high_px = high_px[-1]
         earlier_lows = [
-            (li, lp) for li, lp in zip(low_idx, low_px, strict=False) if li < last_high_idx
+            (li, lp) for li, lp in zip(low_idx, low_px, strict=True) if li < last_high_idx
         ]
         if not earlier_lows:
             return None
@@ -453,7 +453,7 @@ def _latest_swing_in_direction(
     last_low_idx = low_idx[-1]
     last_low_px = low_px[-1]
     earlier_highs = [
-        (hi, hp) for hi, hp in zip(high_idx, high_px, strict=False) if hi < last_low_idx
+        (hi, hp) for hi, hp in zip(high_idx, high_px, strict=True) if hi < last_low_idx
     ]
     if not earlier_highs:
         return None
@@ -627,7 +627,7 @@ def compute_signal_nested(
     targets: list[dict[str, Any]] = []
     fractions = list(p.target_fractions)
     for level, price, frac in zip(
-        p.extension_levels, extension_prices, fractions[:-1], strict=False
+        p.extension_levels, extension_prices, fractions[:-1], strict=True
     ):
         targets.append({"level": float(level), "price": float(price), "fraction": float(frac)})
     targets.append({"level": "trailing", "fraction": float(fractions[-1])})

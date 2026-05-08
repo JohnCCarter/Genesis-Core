@@ -1,0 +1,83 @@
+# This artifact is a blocked, docs-only integration-side receipt-intake specimen.
+# It records review-only classification about receipt and artifact claims and
+# does not issue receipts, accept artifacts, verify truth, imply storage,
+# promote claims, or assign cross-year meaning.
+document_kind: blocked_integration_receipt_intake_specimen
+authority: non_authoritative
+skill_usage: no_suitable_repository_skill_identified_for_docs_only_research_evidence_slice
+simulation_mode: RESEARCH
+simulation_state: blocked
+documentary_intake_state: blocked
+acceptance_state: not_accepted
+promotion_state: none
+cross_year_meaning_state: separate_and_unassigned
+economic_validity_state: never_inferred
+receipt_claim_presence_rule: receipt_claim_presence_does_not_imply_artifact_acceptance
+registry_presence_rule: registry_presence_does_not_imply_truth
+worker_output_presence_rule: worker_output_presence_does_not_imply_integration_acceptance
+integration_authority_rule: integration_intake_may_classify_but_not_promote
+cross_year_boundary_rule: cross_year_meaning_remains_separate_from_receipt_intake
+economic_inference_rule: economic_validity_is_never_inferred_from_artifact_existence
+base_branch: feature/next-slice-2026-05-06
+base_sha: 044096e70ea5596181392e77217dab275d603e93 # pragma: allowlist secret
+intake_id_pattern: intake::<slice_id>::<claim_slot>::<review_slot>
+receipt_claim_refs:
+  receipt_model_ref: docs/contracts/workforce/artifact_receipt_model_draft_2026-05-07.md
+  receipt_specimen_ref: docs/contracts/workforce/artifact_receipt_specimen_blocked_2026-05-07.yaml
+  current_claim_state: no_materialized_receipt_claims_in_blocked_specimen
+artifact_registry_refs:
+  registry_model_ref: docs/contracts/workforce/artifact_registry_index_model_draft_2026-05-07.yaml
+  registry_presence_semantics: bookkeeping_only_non_truth_non_acceptance
+worker_output_contract_refs:
+  dry_run_output_contract_ref: docs/contracts/workforce/year_worker_dry_run_output_contract_2026-05-07.yaml
+  output_contract_role: advisory_worker_side_artifact_reporting_only
+lineage_refs:
+  queue_item_ref: docs/contracts/workforce/year_worker_dry_run_queue_item_2026-05-07.yaml
+  envelope_ref: docs/contracts/workforce/year_worker_dry_run_envelope_2026-05-07.yaml
+  dependency_manifest_ref: docs/contracts/workforce/year_worker_dry_run_dependency_manifest_2026-05-07.yaml
+  runtime_preflight_ref: docs/contracts/workforce/year_worker_runtime_preflight_admissibility_specimen_2026-05-07.yaml
+  dispatch_package_ref: docs/contracts/workforce/year_worker_dispatch_package_manifest_specimen_2026-05-07.yaml
+  output_contract_ref: docs/contracts/workforce/year_worker_dry_run_output_contract_2026-05-07.yaml
+  prior_integration_intake_ref: docs/contracts/workforce/year_worker_dry_run_integration_intake_2026-05-07.yaml
+expected_artifact_refs:
+  - artifact_role: worker_output_contract
+    declared_by_ref: docs/contracts/workforce/year_worker_dry_run_output_contract_2026-05-07.yaml
+    expectation_state: declared_expected
+  - artifact_role: receipt_claim_documentation
+    declared_by_ref: docs/contracts/workforce/artifact_receipt_specimen_blocked_2026-05-07.yaml
+    expectation_state: declared_expected
+reported_artifact_refs:
+  - source_ref: docs/contracts/workforce/artifact_receipt_specimen_blocked_2026-05-07.yaml
+    reported_claim_field: reported_receipt_claims
+    report_state: empty_claim_set_in_blocked_specimen
+integration_classification_vocabulary:
+  blocked: intake_cannot_honestly_advance
+  not_accepted: claim_remains_unaccepted_for_integration_use
+  fail_closed: contradiction_or_policy_breach_forces_hard_stop
+  out_of_scope: cross_year_or_promotion_meaning_is_not_owned_by_receipt_intake
+missing_receipt_behavior: keep_blocked_and_not_accepted_until_manual_integration_review
+undeclared_artifact_behavior: reject_claim_and_keep_not_accepted
+hash_mismatch_behavior: fail_closed_and_keep_not_accepted
+duplicate_artifact_behavior: block_conflicting_claims_pending_manual_review
+stale_artifact_behavior: block_when_claim_context_no_longer_matches_active_lineage_or_base_context
+review_requirements:
+  - receipt_claim_ref_is_present_or_explicitly_missing
+  - registry_model_ref_is_present
+  - worker_output_contract_ref_is_present
+  - lineage_refs_are_contextually_aligned
+  - expected_artifact_refs_and_reported_artifact_refs_remain_separate
+  - no_cross_year_meaning_is_assigned
+  - no_economic_validity_is_inferred
+final_review_state:
+  documentary_intake_state: blocked
+  acceptance_state: not_accepted
+  promotion_state: none
+  cross_year_meaning_state: separate_and_unassigned
+  economic_validity_state: never_inferred
+what_this_specimen_does_not_prove:
+  - receipt_claim_presence_implies_artifact_acceptance
+  - registry_presence_implies_truth
+  - worker_output_presence_implies_integration_acceptance
+  - integration_classification_implies_promotion
+  - receipt_intake_assigns_cross_year_meaning
+  - artifact_existence_implies_economic_validity

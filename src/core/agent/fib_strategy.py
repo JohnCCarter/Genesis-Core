@@ -21,6 +21,10 @@ class FibStrategyParams:
     extension_levels: tuple[float, ...] = DEFAULT_EXTENSION_TARGETS
     target_fractions: tuple[float, float, float] = DEFAULT_TARGET_FRACTIONS
     atr_depth: float = DEFAULT_ATR_DEPTH
+    # Per-tier overrides for compute_signal_nested. None = fall back to atr_depth.
+    mega_atr_depth: float | None = None
+    major_atr_depth: float | None = None
+    minor_atr_depth: float | None = None
     require_confirmation: bool = True
     trend_filter_enabled: bool = True
     trend_filter_lookback: int = DEFAULT_TREND_LOOKBACK
@@ -34,12 +38,24 @@ class FibStrategyParams:
             "extension_levels": list(self.extension_levels),
             "target_fractions": list(self.target_fractions),
             "atr_depth": self.atr_depth,
+            "mega_atr_depth": self.mega_atr_depth,
+            "major_atr_depth": self.major_atr_depth,
+            "minor_atr_depth": self.minor_atr_depth,
             "require_confirmation": self.require_confirmation,
             "trend_filter_enabled": self.trend_filter_enabled,
             "trend_filter_lookback": self.trend_filter_lookback,
             "confluence_required": self.confluence_required,
             "mega_zone_touch_required": self.mega_zone_touch_required,
         }
+
+    def resolve_mega_atr(self) -> float:
+        return self.mega_atr_depth if self.mega_atr_depth is not None else self.atr_depth
+
+    def resolve_major_atr(self) -> float:
+        return self.major_atr_depth if self.major_atr_depth is not None else self.atr_depth
+
+    def resolve_minor_atr(self) -> float:
+        return self.minor_atr_depth if self.minor_atr_depth is not None else self.atr_depth
 
 
 @dataclass(slots=True)
@@ -459,7 +475,8 @@ def compute_signal_nested(
         return _none("insufficient_candles")
 
     mega_swing = _latest_swing(
-        mega_candles["high"], mega_candles["low"], mega_candles["close"], p.atr_depth
+        mega_candles["high"], mega_candles["low"], mega_candles["close"],
+        p.resolve_mega_atr(),
     )
     if mega_swing is None:
         return _none("no_mega_swing")
@@ -489,7 +506,7 @@ def compute_signal_nested(
 
     major_swing = _latest_swing_in_direction(
         major_candles["high"], major_candles["low"], major_candles["close"],
-        direction, p.atr_depth,
+        direction, p.resolve_major_atr(),
     )
     if major_swing is None:
         return FibSignal(
@@ -511,7 +528,7 @@ def compute_signal_nested(
 
     minor_swing = _latest_swing_in_direction(
         minor_candles["high"], minor_candles["low"], minor_candles["close"],
-        direction, p.atr_depth,
+        direction, p.resolve_minor_atr(),
     )
     if minor_swing is None:
         return FibSignal(

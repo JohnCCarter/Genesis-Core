@@ -127,6 +127,36 @@ def test_mega_zone_touch_required_default_true() -> None:
     assert p.to_dict()["mega_zone_touch_required"] is True
 
 
+def test_per_tier_atr_defaults_to_global() -> None:
+    p = FibStrategyParams(atr_depth=5.0)
+    assert p.resolve_mega_atr() == 5.0
+    assert p.resolve_major_atr() == 5.0
+    assert p.resolve_minor_atr() == 5.0
+
+
+def test_per_tier_atr_overrides_apply_independently() -> None:
+    p = FibStrategyParams(
+        atr_depth=6.0,
+        mega_atr_depth=7.0,
+        major_atr_depth=4.0,
+        minor_atr_depth=2.5,
+    )
+    assert p.resolve_mega_atr() == 7.0
+    assert p.resolve_major_atr() == 4.0
+    assert p.resolve_minor_atr() == 2.5
+    d = p.to_dict()
+    assert d["mega_atr_depth"] == 7.0
+    assert d["major_atr_depth"] == 4.0
+    assert d["minor_atr_depth"] == 2.5
+
+
+def test_per_tier_atr_partial_override_falls_back_for_unset() -> None:
+    p = FibStrategyParams(atr_depth=6.0, minor_atr_depth=3.0)
+    assert p.resolve_mega_atr() == 6.0  # falls back
+    assert p.resolve_major_atr() == 6.0  # falls back
+    assert p.resolve_minor_atr() == 3.0  # overridden
+
+
 def test_mega_zone_touch_off_skips_no_mega_zone_touch_reject() -> None:
     """With mega_zone_touch_required=False, a price outside the 1D zone
     should not produce a `no_mega_zone_touch` rejection."""

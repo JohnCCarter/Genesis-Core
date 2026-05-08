@@ -78,6 +78,7 @@ Ignored by `.gitignore`:
 **File naming:** `{SYMBOL}_{TIMEFRAME}_v1.json`
 
 **Examples:**
+
 - `tBTCUSD_6h_v1.json`
 - `tETHUSD_1h_v1.json`
 

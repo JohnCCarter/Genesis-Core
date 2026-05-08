@@ -1,0 +1,139 @@
+# This artifact is a blocked, non-executing research-evidence simulation/specimen.
+# It is non-authoritative and must not be used to authorize dispatch,
+# render a runnable command, infer cloud runtime support, or claim
+# execution/replay correctness. Any unresolved reference, missing binding,
+# or authority ambiguity fails closed to intentionally_blocked or
+# forbidden_to_infer.
+# Local existence, Git-tracked state, pinned provenance, and descriptive
+# runtime references are evidentiary only; they do not establish admissibility.
+document_kind: blocked_nonexecuting_specimen
+authority: non_authoritative
+execution_prohibited: true
+simulated_terminal_state: blocked_preflight_complete
+placement_note: between_clean_clone_evidence_and_any_later_runtime_activity_for_analysis_only
+skill_usage: no_suitable_repository_skill_identified_for_docs_only_research_evidence_slice
+source_chain:
+  bundle_id: year_worker_dry_run_bundle_tbtcusd_3h_2024_2026-05-07
+  base_branch: feature/next-slice-2026-05-06
+  base_sha: 044096e70ea5596181392e77217dab275d603e93 # pragma: allowlist secret
+  blocked_lineage_root_ref: docs/contracts/workforce/year_worker_dry_run_packet_bundle_2026-05-07.md
+  clean_clone_coherence_ref: docs/contracts/workforce/year_worker_clean_clone_environmental_coherence_report_2026-05-07.md
+  clean_clone_admissibility_ref: docs/contracts/workforce/year_worker_clean_clone_admissibility_matrix_2026-05-07.md
+  state_machine_ref: docs/contracts/workforce/year_worker_runtime_preflight_state_machine_2026-05-07.md
+  gap_matrix_ref: docs/contracts/workforce/year_worker_runtime_binding_gap_matrix_2026-05-07.md
+classification_legend:
+  structurally_satisfiable: document_shape_is_describable_without_local_healing
+  partially_satisfiable: policy_or_boundary_is_visible_but_carrier_or_binding_is_absent
+  unresolved: required_binding_surfaces_are_named_but_not_closed
+  intentionally_blocked: the_only_honest_state_or_terminal_is_blocked
+  forbidden_to_infer: operational_meaning_would_exceed_repo_visible_evidence
+evidentiary_only_rule:
+  local_existence: does_not_establish_admissibility
+  git_tracked_state: does_not_establish_admissibility
+  pinned_provenance: does_not_close_binding_gaps
+  descriptive_runtime_refs: do_not_establish_cloud_runtime_support
+surface_specimen:
+  lineage_loading:
+    classification: structurally_satisfiable
+    evidence_refs:
+      - docs/contracts/workforce/year_worker_dry_run_packet_bundle_2026-05-07.md
+      - docs/contracts/workforce/year_worker_dry_run_lineage_summary_2026-05-07.md
+      - docs/contracts/workforce/year_worker_clean_clone_traversal_map_2026-05-07.md
+    meaning: blocked_ancestry_and_terminal_summary_are_repo_visible
+    forbidden_to_infer:
+      - readable_lineage_authorizes_runtime_activity
+  manifest_loading:
+    classification: structurally_satisfiable
+    evidence_refs:
+      - docs/contracts/workforce/year_worker_dry_run_envelope_2026-05-07.yaml
+      - docs/contracts/workforce/year_worker_dry_run_dependency_manifest_2026-05-07.yaml
+      - docs/contracts/workforce/year_worker_dry_run_repo_snapshot_manifest_2026-05-07.yaml
+      - docs/contracts/workforce/year_worker_dry_run_runtime_execution_manifest_2026-05-07.yaml
+      - docs/contracts/workforce/year_worker_dry_run_generated_overlay_2026-05-07.yaml
+      - docs/contracts/workforce/year_worker_dry_run_output_contract_2026-05-07.yaml
+      - docs/contracts/workforce/year_worker_dry_run_integration_intake_2026-05-07.yaml
+      - docs/contracts/workforce/year_worker_dry_run_cross_year_admission_2026-05-07.yaml
+    meaning: required_docs_and_specimens_are_visible_in_declared_order
+    forbidden_to_infer:
+      - visible_manifests_close_runtime_gaps
+  structural_integrity_checks:
+    classification: structurally_satisfiable
+    evidence_refs:
+      - docs/contracts/workforce/year_worker_clean_clone_environmental_coherence_report_2026-05-07.md
+      - docs/contracts/workforce/year_worker_clean_clone_traversal_map_2026-05-07.md
+    meaning: continuity_and_blocked_state_transparency_are_observable
+    forbidden_to_infer:
+      - continuity_equals_binding_proof
+  authority_boundary_validation:
+    classification: structurally_satisfiable
+    evidence_refs:
+      - docs/governance/worker_governance_envelope.md
+      - docs/contracts/workforce/year_worker_dry_run_envelope_2026-05-07.yaml
+      - docs/contracts/workforce/year_worker_dry_run_runtime_execution_manifest_2026-05-07.yaml
+      - docs/contracts/workforce/year_worker_dry_run_cross_year_admission_2026-05-07.yaml
+    meaning: queue_envelope_runtime_and_integration_boundaries_remain_separate
+    forbidden_to_infer:
+      - descriptive_layer_proximity_implies_authority_inheritance
+  overlay_admissibility_validation:
+    classification: partially_satisfiable
+    evidence_refs:
+      - docs/contracts/workforce/year_worker_dry_run_generated_overlay_2026-05-07.yaml
+      - docs/contracts/workforce/year_worker_execution_chain_design_2026-05-07.md
+    meaning: whitelist_boundary_is_reviewable_while_carrier_absence_remains_explicit
+    unresolved_references:
+      - materialized_overlay_carrier_missing
+    forbidden_to_infer:
+      - overlay_policy_equals_overlay_materialization
+  runtime_binding_validation:
+    classification: unresolved
+    evidence_refs:
+      - docs/contracts/workforce/year_worker_dry_run_runtime_execution_manifest_2026-05-07.yaml
+      - docs/contracts/workforce/year_worker_clean_clone_environmental_gap_report_2026-05-07.md
+    binding_surfaces_named:
+      - baseline_config_identity
+      - runner_identity
+      - manifest_hash_closure
+      - effective_config_closure
+      - artifact_namespace_materialization
+    unresolved_references:
+      - baseline_config_attestation_missing
+      - runtime_entrypoint_attestation_missing
+      - bound_manifest_hash_set_missing
+      - effective_config_binding_missing
+      - artifact_namespace_not_materialized
+    forbidden_to_infer:
+      - tracked_refs_close_binding_gaps
+      - named_runner_ref_implies_cloud_runtime_support
+  execution_prohibition_enforcement:
+    classification: intentionally_blocked
+    evidence_refs:
+      - docs/contracts/workforce/year_worker_dry_run_runtime_execution_manifest_2026-05-07.yaml
+      - docs/contracts/workforce/fail_closed_runtime_matrix_2026-05-07.md
+    meaning: runtime_activity_remains_prohibited_and_non-authoritative
+    prohibited_claims:
+      - runnable_string_exists
+      - produced_artifacts_exist
+      - replay_correctness_established
+      - larger_meaning_is_promoted_from_this_layer
+    forbidden_to_infer:
+      - preflight_shape_allows_runtime_activity
+  blocked_preflight_completion:
+    classification: intentionally_blocked
+    terminal: true
+    outgoing_edges: []
+    evidence_refs:
+      - docs/contracts/workforce/year_worker_runtime_preflight_state_machine_2026-05-07.md
+      - docs/contracts/workforce/year_worker_runtime_preflight_checklist_2026-05-07.yaml
+    meaning: blocked_terminal_state_is_descriptive_only
+    forbidden_to_infer:
+      - blocked_completion_is_runtime_approval
+      - blocked_completion_can_be_upgraded_by_local_state
+prohibited_operational_claims:
+  - dispatch_permission_established
+  - runnable_string_rendered
+  - produced_artifacts_attested
+  - cloud_runtime_support_established
+  - replay_correctness_established
+next_bounded_step:
+  classification: intentionally_blocked
+  note: blocked_nonexecuting_dispatch_assembly_simulation_only_after_this_specimen_and_its_supporting_docs_are_validated_and_reaudited

@@ -38,6 +38,19 @@ Om den behöver det har control plane inte kompilerat governance tillräckligt l
 
 ---
 
+## Default worker model
+
+Den operativa defaultmodellen för Genesis cloud execution är:
+
+- en cloud worker = en **autonomous slice worker**
+- samma worker-typ ska normalt kunna användas på många olika bounded slices
+- skillnaden mellan två workers ska i första hand uttryckas i envelope-fälten (`question`, `subject`, `scope_in`, `scope_out`, `allowed_inputs`, `done_criteria`, `gates_required`) och inte i olika agentpersonligheter
+- daterade batchroller som `primary`, `corroborative` eller `fallback` får förekomma i dispatch-artefakter, men de är routingval i en viss våg och inte den långsiktiga worker-definitionen
+
+Det betyder att envelope:n i normalfallet ska beskriva **vad slicen är**, inte försöka skapa en särskild worker-art för varje år, kontrollsubject eller hypotes.
+
+---
+
 ## Auktoritet och precedence
 
 ### Global governance är alltid auktoritativ
@@ -124,6 +137,20 @@ Undvik:
 
 Anledningen är att `wt/...` inte matchar `feature/*`, `research/*`, `sandbox/*` eller `spike/*` och därför riskerar att falla tillbaka till `STRICT`.
 
+### Aktivering är alltid explicit
+
+Att en workflow finns, att en branch finns på remote eller att en tidigare slice redan har returnerat betyder inte att en worker är aktiverad.
+
+Som huvudregel gäller:
+
+- varje aktiv slice kräver en explicit dispatch från control / integration plane
+- om control plane vill att två workers ska arbeta parallellt måste båda startas explicit
+- en worker får inte självaktivera nästa slice
+- en worker får inte implicit kedjestarta en annan worker
+
+Det här gäller även när flera workers delar samma grundroll.
+Arbetsmodellen är homogena slice-workers med explicit aktivering, inte en självorkestrerande agentkedja.
+
 ### Hårda branchregler
 
 - samma branch ska inte checkas ut aktivt i flera workers samtidigt
@@ -151,6 +178,9 @@ Som huvudregel gäller därför:
 
 ## Worker-klasser och kapabiliteter
 
+Worker-klasser ska förstås som kapabilitetsprofiler, inte som olika personligheter eller långlivade auktoritetsdomäner.
+I normalfallet bör de flesta cloud workers dela samma grundläggande slice-worker-roll och bara skilja sig åt genom envelope-kontraktet för den aktuella slicen.
+
 | Worker-klass   | Repo-write?                               | Commit allowed?                           | Shared truth write?              | Typiska outputs                                          | Kommentar                                |
 | -------------- | ----------------------------------------- | ----------------------------------------- | -------------------------------- | -------------------------------------------------------- | ---------------------------------------- |
 | Inventory      | Normalt nej                               | Normalt nej                               | Nej                              | shortlist, ranking, artifacts, summary                   | read-only med hårda gränser              |
@@ -159,6 +189,9 @@ Som huvudregel gäller därför:
 | Runtime/strict | Endast via explicit separat auktorisering | Endast via explicit separat auktorisering | Endast när uttryckligen tillåtet | strikt styrda ändringar                                  | reserverad klass, normalt avstängd i MVP |
 
 Den viktigaste regeln är att ingen worker själv får uppgradera betydelsen av sitt resultat.
+
+För nuvarande målmodell betyder det praktiskt att samma cloud worker-typ normalt ska kunna ta nästa bounded slice utan att workforce-systemet behöver introducera en ny worker-personlighet.
+Det som byts är envelope:n, inte worker-artens grundnatur.
 
 En worker får hitta något intressant, men får inte själv besluta att resultatet nu är:
 
@@ -297,7 +330,7 @@ active_slice_id: d1-2017-06-corroborative
 access_frame:
   docs_read:
     - docs/analysis/regime_intelligence/policy_router/**
-    - docs/decisions/governance/workforce/**
+    - docs/decisions/regime_intelligence/policy_router/**
   repo_write:
     - docs/decisions/regime_intelligence/policy_router/**
   code_read: []

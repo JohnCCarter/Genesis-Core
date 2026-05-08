@@ -24,6 +24,16 @@ Om minsta tvekan finns: eskalera till Lite/Full path.
 4. Självgranska för dold behaviorpåverkan
 5. Rapportera kort Implementation Report
 
+## Cloud slice note
+
+Quick Path får användas av en autonomous slice worker bara om dispatch-kontraktet själv förblir trivialt:
+
+- explicit bounded slice
+- docs/comments/metadata-only
+- inga shared-truth writes
+- ingen implicit continuation till nästa slice
+- retur måste fortfarande klassificeras explicit av control / integration lane
+
 ## Merge policy
 
 - Merge sker via normal PR-flöde med branch protection/checks

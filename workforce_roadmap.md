@@ -6,6 +6,9 @@ Det här dokumentet beskriver den övergripande arbetsmodellen för att köra m�
 
 Det här är **översiktsdokumentet**.
 
+Det här är också en **retained target-model surface** för explicit aktiverade slice-workers.
+Det skapar inte stående worker-identiteter och ger inte implicit worker-till-worker-kedjning någon auktoritet.
+
 Det är inte:
 
 - mode-SSOT
@@ -138,6 +141,17 @@ Lokala worktrees kan användas av control- eller integration plane för koordine
 
 Kort sagt: detta är muskeln.
 
+### Default worker model
+
+Den operativa defaultmodellen för Genesis cloud execution ska vara:
+
+- en cloud worker = en **autonomous slice worker**
+- de flesta cloud workers delar samma grundroll, samma governance-ram och samma returformat
+- variation ska i första hand ligga i slice-kontraktet: år/window, fråga, scope, inputs, gates och done criteria
+- asymmetriska batchroller som `primary`, `corroborative` eller `fallback` får förekomma som daterade dispatch-strategier, men de är inte workforce-definitionen och ska inte behandlas som långsiktiga worker-personligheter
+
+Det betyder att workforce-systemet i normalfallet ska dispatcha samma sorts worker på olika bounded slices, snarare än att uppfinna olika agentpersonligheter för varje år eller uppgift.
+
 ### 5. Evidence store
 
 Evidence store innehåller bounded output som ännu inte är repo-sanning.
@@ -203,6 +217,10 @@ Som huvudregel är det bara integration plane som får uppdatera shared truth, t
 
 Det är viktigt att skilja på jobbtyp och worker-klass.
 
+Det är också viktigt att skilja på worker-klass och worker-personlighet.
+En worker-klass beskriver främst kapabilitets- och permissionsyta.
+Den ska inte i normalfallet användas för att skapa flera olika långlivade cloud-agentidentiteter när samma grundworker kan dispatchas på olika bounded slices.
+
 ### Jobbfamiljer
 
 | Jobbfamilj | Syfte                                                   |
@@ -221,6 +239,9 @@ Det är viktigt att skilja på jobbtyp och worker-klass.
 | Runtime/strict | reserverad klass för explicit separat auktorisering     |
 
 Worker-specifika kapabiliteter, precedence-regler och manifestfält hör hemma i den separata envelope-specen.
+
+Som operativ default bör de flesta cloud workers i Genesis dispatchas som samma grundläggande slice-worker-modell inom samma kapabilitetsklass, och skiljas åt av sin envelope snarare än av sin identitet.
+Inventory-, integration- och runtime/strict-klasserna förblir specialiseringar, inte ett krav på en asymmetrisk worker-flotta.
 
 ---
 
@@ -308,15 +329,19 @@ Version 1 av modellen bör hållas enkel.
 ### Rekommenderad startnivå
 
 - Aktiva cloud workers samtidigt: `1–3`
-- Primär deep-dive-worker: `1`
-- Corroborative eller packet-only workers: `0–2`
+- Default worker-roll: `autonomous slice worker`
+- Dominerande dispatch-mönster: samma worker-roll på olika bounded slices
+- Asymmetrisk batchdesign: tillåten som pilot eller när integrationsrisk kräver det, men inte default
 - Integration lane: `1`
 
-En bra första batch är:
+En bra första batch är därför normalt:
 
-- `1` primär deep-dive
-- `1` corroborative deep-dive eller inventory-slice
-- `1` packet-only fallback
+- `1–3` slice-workers med samma grundroll
+- distinkta ownership tuples per worker
+- en aktiv slice per worker
+- explicit integration-lane-kapacitet att ta emot alla returer
+
+Om en asymmetrisk wave används i pilotform ska det vara en uttrycklig dispatch-strategi, inte ett antagande om att workers i sig har olika permanenta roller.
 
 Hård regel:
 

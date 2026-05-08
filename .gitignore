@@ -270,3 +270,10 @@ config/optimizer/archive/
 # Agent communication (not tracked in git)
 .agent_messages/
 !.agent_messages/README.md
+
+# Claude session state — lives in ~/.claude/state/genesis-core/, not here
+docs/governance/CURRENT_STATE.md
+docs/governance/ACTIVE_TASK.md
+docs/governance/SESSION_HANDOFF.md
+docs/governance/GOVERNANCE_STATUS.md
+docs/governance/RESEARCH_SUMMARY.md

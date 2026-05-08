@@ -83,6 +83,23 @@ Genesis-Core/
 
 Governance SSOT: `docs/governance_mode.md`
 
+## Output Discipline
+
+- Never output full diffs, logs, or test stdout to chat unless explicitly requested.
+- Analysis outputs > 300 tokens → write to `artifacts/diagnostics/<task>_<date>.md`, return path only.
+- Agent/Explore results → return: verdict + findings (≤5 bullets) + artifact path + next action.
+- Governance gate outputs → pass/fail verdict + failing assertion only; never dump full stdout.
+- Large file reads needed for context → summarize inline, reference path for full content.
+
+## Session Protocol
+
+Session start: read `docs/governance/runbooks/session_start.md`
+Session end: follow `docs/governance/runbooks/session_end.md`
+Quick governance ref: `docs/governance/QUICK_REF.md` (load instead of full governance docs)
+
+Session state files (CURRENT_STATE, ACTIVE_TASK, SESSION_HANDOFF, GOVERNANCE_STATUS):
+→ stored at `~/.claude/state/genesis-core/` — NOT in this repo.
+
 ## Working lane model
 
 - Use the canonical workflow guidance in `docs/governance/concept_evidence_runtime_lane_model_2026-04-23.md`

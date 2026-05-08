@@ -61,6 +61,12 @@ def test_append_then_read_roundtrip(tmp_path) -> None:
     assert all(r["symbol"] == "tBTCUSD" for r in btc)
 
 
+def test_decision_ids_are_unique() -> None:
+    rec1 = _make_record()
+    rec2 = _make_record()
+    assert rec1.decision_id != rec2.decision_id
+
+
 def test_read_decisions_missing_file_returns_empty(tmp_path) -> None:
     assert read_decisions(path=tmp_path / "nope.jsonl") == []
 

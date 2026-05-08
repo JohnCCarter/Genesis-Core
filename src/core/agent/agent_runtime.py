@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime as dt
+from dataclasses import fields
 from pathlib import Path
 from typing import Any
 
@@ -21,17 +22,7 @@ def _coerce_params(params: dict[str, Any] | FibStrategyParams | None) -> FibStra
         return FibStrategyParams()
     if isinstance(params, FibStrategyParams):
         return params
-    allowed = {
-        "entry_zone_low",
-        "entry_zone_high",
-        "extension_levels",
-        "target_fractions",
-        "atr_depth",
-        "require_confirmation",
-        "trend_filter_enabled",
-        "trend_filter_lookback",
-        "confluence_required",
-    }
+    allowed = {field.name for field in fields(FibStrategyParams)}
     kwargs: dict[str, Any] = {}
     for key, value in params.items():
         if key not in allowed:
@@ -96,8 +87,12 @@ def evaluate_and_record(
 
     if mid_candles is not None:
         signal = compute_signal_nested(
-            htf_candles, mid_candles, ltf_candles, fib_params,
-            equity_usd=equity, risk_pct=risk_pct,
+            htf_candles,
+            mid_candles,
+            ltf_candles,
+            fib_params,
+            equity_usd=equity,
+            risk_pct=risk_pct,
         )
         candles_hashes = {
             "mega": candles_hash(htf_candles),
@@ -106,8 +101,11 @@ def evaluate_and_record(
         }
     else:
         signal = compute_signal(
-            htf_candles, ltf_candles, fib_params,
-            equity_usd=equity, risk_pct=risk_pct,
+            htf_candles,
+            ltf_candles,
+            fib_params,
+            equity_usd=equity,
+            risk_pct=risk_pct,
         )
         candles_hashes = {
             "htf": candles_hash(htf_candles),
@@ -118,6 +116,7 @@ def evaluate_and_record(
         ts_utc=dt.datetime.now(dt.UTC).isoformat(),
         symbol=symbol,
         trend_tf=trend_tf,
+        mid_tf=mid_tf,
         entry_tf=entry_tf,
         candles_hash=candles_hashes,
         params_hash=canonical_hash(fib_params.to_dict()),

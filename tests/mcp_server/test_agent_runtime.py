@@ -16,6 +16,21 @@ def test_coerce_params_filters_unknown_keys() -> None:
     assert p.entry_zone_low == 0.4
 
 
+def test_coerce_params_allows_nested_strategy_knobs() -> None:
+    p = _coerce_params(
+        {
+            "mega_atr_depth": 7.0,
+            "major_atr_depth": 4.5,
+            "minor_atr_depth": 3.5,
+            "mega_zone_touch_required": False,
+        }
+    )
+    assert p.mega_atr_depth == 7.0
+    assert p.major_atr_depth == 4.5
+    assert p.minor_atr_depth == 3.5
+    assert p.mega_zone_touch_required is False
+
+
 def test_evaluate_risk_default_passes() -> None:
     out = _evaluate_risk(None)
     assert out["passed"] is True
@@ -96,3 +111,19 @@ def test_evaluate_and_record_blocked_record_still_returned(
     )
     assert record.risk_check["passed"] is False
     assert "daily_loss_breached" in record.risk_check["reasons"]
+
+
+def test_evaluate_and_record_persists_mid_tf_when_nested(
+    htf_uptrend_pullback, ltf_uptrend_pullback
+) -> None:
+    record = evaluate_and_record(
+        htf_candles=htf_uptrend_pullback,
+        mid_candles=htf_uptrend_pullback,
+        ltf_candles=ltf_uptrend_pullback,
+        symbol="tBTCUSD",
+        trend_tf="1D",
+        mid_tf="6h",
+        entry_tf="1h",
+        persist=False,
+    )
+    assert record.mid_tf == "6h"

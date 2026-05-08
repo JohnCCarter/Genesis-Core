@@ -3,6 +3,7 @@ from __future__ import annotations
 import datetime as dt
 import hashlib
 import json
+import uuid
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
@@ -23,7 +24,7 @@ def candles_hash(candles: dict[str, Any]) -> str:
 
 
 def _decision_id() -> str:
-    return dt.datetime.now(dt.UTC).strftime("%Y%m%dT%H%M%S%f")
+    return uuid.uuid4().hex
 
 
 @dataclass(slots=True)
@@ -36,6 +37,7 @@ class DecisionRecord:
     params_hash: str
     fib_signal: dict[str, Any]
     risk_check: dict[str, Any]
+    mid_tf: str | None = None
     submission: dict[str, Any] | None = None
     schema_version: str = SCHEMA_VERSION
     decision_id: str = field(default_factory=_decision_id)

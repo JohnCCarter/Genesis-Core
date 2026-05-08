@@ -114,10 +114,14 @@ def trend_aligned(direction: str, closes: list[float], lookback: int) -> bool:
 
 def _validate_candles(candles: dict[str, Any]) -> bool:
     needed = ("open", "high", "low", "close")
+    lengths: set[int] = set()
     for key in needed:
         seq = candles.get(key)
         if not isinstance(seq, list) or len(seq) < MIN_BARS_REQUIRED:
             return False
+        lengths.add(len(seq))
+    if len(lengths) != 1:
+        return False
     return True
 
 
@@ -233,7 +237,7 @@ def _ltf_swing_within_htf_zone(
             l_idx = low_idx[i]
             l_price = low_px[i]
             earlier_highs = [
-                (hi, hp) for hi, hp in zip(high_idx, high_px) if hi < l_idx
+                (hi, hp) for hi, hp in zip(high_idx, high_px, strict=False) if hi < l_idx
             ]
             if not earlier_highs:
                 continue
@@ -251,7 +255,7 @@ def _ltf_swing_within_htf_zone(
     for i in range(len(high_idx) - 1, -1, -1):
         h_idx = high_idx[i]
         h_price = high_px[i]
-        earlier_lows = [(li, lp) for li, lp in zip(low_idx, low_px) if li < h_idx]
+        earlier_lows = [(li, lp) for li, lp in zip(low_idx, low_px, strict=False) if li < h_idx]
         if not earlier_lows:
             continue
         l_idx, l_price = earlier_lows[-1]
@@ -359,7 +363,9 @@ def compute_signal(
     extension_prices = _extension_prices(direction, a_px, b_px, p.extension_levels)
     targets: list[dict[str, Any]] = []
     fractions = list(p.target_fractions)
-    for level, price, fraction in zip(p.extension_levels, extension_prices, fractions[:-1]):
+    for level, price, fraction in zip(
+        p.extension_levels, extension_prices, fractions[:-1], strict=False
+    ):
         targets.append({"level": float(level), "price": float(price), "fraction": float(fraction)})
     targets.append({"level": "trailing", "fraction": float(fractions[-1])})
 
@@ -390,11 +396,13 @@ def aggregate_candles(candles: dict[str, Any], factor: int) -> dict[str, Any]:
 
     Drops the trailing partial group so we never emit a half-formed bar.
     """
+    if isinstance(factor, bool) or not isinstance(factor, int) or factor < 1:
+        raise ValueError("factor must be an integer >= 1")
     closes = candles.get("close") or []
     n_groups = len(closes) // factor
     if n_groups == 0:
         return {"open": [], "high": [], "low": [], "close": [], "volume": []}
-    o, h, l, c, v = [], [], [], [], []
+    opens_out, highs_out, lows_out, closes_out, volumes_out = [], [], [], [], []
     opens = candles["open"]
     highs = candles["high"]
     lows = candles["low"]
@@ -402,12 +410,18 @@ def aggregate_candles(candles: dict[str, Any], factor: int) -> dict[str, Any]:
     for i in range(n_groups):
         s = i * factor
         e = s + factor
-        o.append(opens[s])
-        c.append(closes[e - 1])
-        h.append(max(highs[s:e]))
-        l.append(min(lows[s:e]))
-        v.append(sum(vols[s:e]))
-    return {"open": o, "high": h, "low": l, "close": c, "volume": v}
+        opens_out.append(opens[s])
+        closes_out.append(closes[e - 1])
+        highs_out.append(max(highs[s:e]))
+        lows_out.append(min(lows[s:e]))
+        volumes_out.append(sum(vols[s:e]))
+    return {
+        "open": opens_out,
+        "high": highs_out,
+        "low": lows_out,
+        "close": closes_out,
+        "volume": volumes_out,
+    }
 
 
 def _latest_swing_in_direction(
@@ -429,14 +443,18 @@ def _latest_swing_in_direction(
     if direction == "up":
         last_high_idx = high_idx[-1]
         last_high_px = high_px[-1]
-        earlier_lows = [(li, lp) for li, lp in zip(low_idx, low_px) if li < last_high_idx]
+        earlier_lows = [
+            (li, lp) for li, lp in zip(low_idx, low_px, strict=False) if li < last_high_idx
+        ]
         if not earlier_lows:
             return None
         l_idx, l_px = earlier_lows[-1]
         return ("up", l_idx, last_high_idx, float(l_px), float(last_high_px))
     last_low_idx = low_idx[-1]
     last_low_px = low_px[-1]
-    earlier_highs = [(hi, hp) for hi, hp in zip(high_idx, high_px) if hi < last_low_idx]
+    earlier_highs = [
+        (hi, hp) for hi, hp in zip(high_idx, high_px, strict=False) if hi < last_low_idx
+    ]
     if not earlier_highs:
         return None
     h_idx, h_px = earlier_highs[-1]
@@ -482,7 +500,9 @@ def compute_signal_nested(
         return _none("insufficient_candles")
 
     mega_swing = _latest_swing(
-        mega_candles["high"], mega_candles["low"], mega_candles["close"],
+        mega_candles["high"],
+        mega_candles["low"],
+        mega_candles["close"],
         p.resolve_mega_atr(),
     )
     if mega_swing is None:
@@ -512,12 +532,16 @@ def compute_signal_nested(
         )
 
     major_swing = _latest_swing_in_direction(
-        major_candles["high"], major_candles["low"], major_candles["close"],
-        direction, p.resolve_major_atr(),
+        major_candles["high"],
+        major_candles["low"],
+        major_candles["close"],
+        direction,
+        p.resolve_major_atr(),
     )
     if major_swing is None:
         return FibSignal(
-            action="NONE", reason="no_major_swing",
+            action="NONE",
+            reason="no_major_swing",
             htf_swing={"a": mega_a, "b": mega_b, "direction": direction},
             htf_zone=mega_zone,
         )
@@ -526,7 +550,8 @@ def compute_signal_nested(
 
     if not (major_zone["low"] <= last_close_minor <= major_zone["high"]):
         return FibSignal(
-            action="NONE", reason="no_major_zone_touch",
+            action="NONE",
+            reason="no_major_zone_touch",
             htf_swing={"a": mega_a, "b": mega_b, "direction": direction},
             htf_zone=mega_zone,
             ltf_swing={"a": major_a, "b": major_b, "direction": direction},
@@ -534,12 +559,16 @@ def compute_signal_nested(
         )
 
     minor_swing = _latest_swing_in_direction(
-        minor_candles["high"], minor_candles["low"], minor_candles["close"],
-        direction, p.resolve_minor_atr(),
+        minor_candles["high"],
+        minor_candles["low"],
+        minor_candles["close"],
+        direction,
+        p.resolve_minor_atr(),
     )
     if minor_swing is None:
         return FibSignal(
-            action="NONE", reason="no_minor_swing",
+            action="NONE",
+            reason="no_minor_swing",
             htf_swing={"a": mega_a, "b": mega_b, "direction": direction},
             htf_zone=mega_zone,
         )
@@ -548,7 +577,8 @@ def compute_signal_nested(
 
     if not (minor_zone["low"] <= last_close_minor <= minor_zone["high"]):
         return FibSignal(
-            action="NONE", reason="no_minor_zone_touch",
+            action="NONE",
+            reason="no_minor_zone_touch",
             htf_swing={"a": mega_a, "b": mega_b, "direction": direction},
             htf_zone=mega_zone,
             ltf_swing={"a": minor_a, "b": minor_b, "direction": direction},
@@ -563,7 +593,8 @@ def compute_signal_nested(
             confluence_zones.insert(0, mega_zone)
         if not _zones_overlap_at_price(confluence_zones, last_close_minor):
             return FibSignal(
-                action="NONE", reason="no_confluence",
+                action="NONE",
+                reason="no_confluence",
                 htf_swing={"a": mega_a, "b": mega_b, "direction": direction},
                 htf_zone=mega_zone,
                 ltf_swing={"a": minor_a, "b": minor_b, "direction": direction},
@@ -574,7 +605,8 @@ def compute_signal_nested(
         direction, minor_candles["open"], minor_candles["close"]
     ):
         return FibSignal(
-            action="NONE", reason="no_confirmation",
+            action="NONE",
+            reason="no_confirmation",
             htf_swing={"a": mega_a, "b": mega_b, "direction": direction},
             htf_zone=mega_zone,
             ltf_swing={"a": minor_a, "b": minor_b, "direction": direction},
@@ -594,7 +626,9 @@ def compute_signal_nested(
     extension_prices = _extension_prices(direction, major_a, major_b, p.extension_levels)
     targets: list[dict[str, Any]] = []
     fractions = list(p.target_fractions)
-    for level, price, frac in zip(p.extension_levels, extension_prices, fractions[:-1]):
+    for level, price, frac in zip(
+        p.extension_levels, extension_prices, fractions[:-1], strict=False
+    ):
         targets.append({"level": float(level), "price": float(price), "fraction": float(frac)})
     targets.append({"level": "trailing", "fraction": float(fractions[-1])})
 

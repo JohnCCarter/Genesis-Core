@@ -32,7 +32,7 @@ class ExitConfig:
 @dataclass(slots=True)
 class ExitEvent:
     bar_index: int
-    reason: str  # "tp1" | "tp2" | "stop" | "trail" | "force_close"
+    reason: str  # "tp1" | "tp2" | "stop" | "breakeven" | "trail" | "force_close"
     price: float
     fraction: float
     pnl_unit: float  # PnL per 1 unit of original size (signed)
@@ -120,8 +120,9 @@ def update(state: TradeState, *, bar_index: int, high: float, low: float) -> lis
             reason = "breakeven" if abs(state.stop - state.entry) < 1e-9 else "stop"
         else:
             reason = "stop"
-        ev = ExitEvent(bar_index=bar_index, reason=reason, price=state.stop,
-                       fraction=fraction, pnl_unit=pnl)
+        ev = ExitEvent(
+            bar_index=bar_index, reason=reason, price=state.stop, fraction=fraction, pnl_unit=pnl
+        )
         events.append(ev)
         state.exits.append(ev)
         state.realized_pnl_unit += pnl
@@ -139,8 +140,13 @@ def update(state: TradeState, *, bar_index: int, high: float, low: float) -> lis
                 if long
                 else _pnl_short(state.entry, state.target_tp1, fraction)
             )
-            ev = ExitEvent(bar_index=bar_index, reason="tp1",
-                           price=state.target_tp1, fraction=fraction, pnl_unit=pnl)
+            ev = ExitEvent(
+                bar_index=bar_index,
+                reason="tp1",
+                price=state.target_tp1,
+                fraction=fraction,
+                pnl_unit=pnl,
+            )
             events.append(ev)
             state.exits.append(ev)
             state.realized_pnl_unit += pnl
@@ -159,8 +165,13 @@ def update(state: TradeState, *, bar_index: int, high: float, low: float) -> lis
                 if long
                 else _pnl_short(state.entry, state.target_tp2, fraction)
             )
-            ev = ExitEvent(bar_index=bar_index, reason="tp2",
-                           price=state.target_tp2, fraction=fraction, pnl_unit=pnl)
+            ev = ExitEvent(
+                bar_index=bar_index,
+                reason="tp2",
+                price=state.target_tp2,
+                fraction=fraction,
+                pnl_unit=pnl,
+            )
             events.append(ev)
             state.exits.append(ev)
             state.realized_pnl_unit += pnl
@@ -197,8 +208,9 @@ def force_close(state: TradeState, *, bar_index: int, price: float) -> ExitEvent
         if state.side == "LONG"
         else _pnl_short(state.entry, price, fraction)
     )
-    ev = ExitEvent(bar_index=bar_index, reason="force_close", price=price,
-                   fraction=fraction, pnl_unit=pnl)
+    ev = ExitEvent(
+        bar_index=bar_index, reason="force_close", price=price, fraction=fraction, pnl_unit=pnl
+    )
     state.exits.append(ev)
     state.realized_pnl_unit += pnl
     state.qty_remaining = 0.0
@@ -220,8 +232,13 @@ def state_to_dict(state: TradeState) -> dict[str, Any]:
         "qty_remaining": state.qty_remaining,
         "realized_pnl_unit": state.realized_pnl_unit,
         "exits": [
-            {"bar": e.bar_index, "reason": e.reason, "price": e.price,
-             "fraction": e.fraction, "pnl_unit": e.pnl_unit}
+            {
+                "bar": e.bar_index,
+                "reason": e.reason,
+                "price": e.price,
+                "fraction": e.fraction,
+                "pnl_unit": e.pnl_unit,
+            }
             for e in state.exits
         ],
     }

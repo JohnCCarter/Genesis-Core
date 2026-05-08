@@ -16,8 +16,6 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
-from .config import MCPConfig
-
 logger = logging.getLogger(__name__)
 
 # Genesis-Core uses src-layout. Ensure src/ is importable when running the MCP
@@ -30,13 +28,15 @@ if str(_SRC) not in sys.path:
 from core.agent.agent_runtime import evaluate_and_record  # noqa: E402
 from core.agent.decision_record import (  # noqa: E402
     DEFAULT_LOG_PATH,
-    DecisionRecord,
     SCHEMA_VERSION,
+    DecisionRecord,
     append_decision,
     append_followup,
     find_decision,
     read_decisions,
 )
+
+from .config import MCPConfig  # noqa: E402
 
 ALLOWED_TIMEFRAMES = {
     "1m",
@@ -68,8 +68,8 @@ async def read_account_state(config: MCPConfig) -> dict[str, Any]:
     this keeps the tool usable for inspection without auth.
     """
     try:
-        from core.io.bitfinex import read_helpers as bfx_read
         from core.config.settings import get_settings
+        from core.io.bitfinex import read_helpers as bfx_read
     except Exception as exc:  # pragma: no cover - import-only path
         return _err(f"import_failed: {exc}")
 
@@ -200,8 +200,10 @@ async def run_strategy(
     persist: bool = True,
     candle_limit: int = 300,
 ) -> dict[str, Any]:
-    """Evaluate the fib agent. If mid_tf is provided (e.g. "4h" or aggregated 6h),
-    runs the 3-tier nested-confluence strategy. Otherwise falls back to 2-tier.
+    """Evaluate the fib agent.
+
+    If mid_tf is provided (e.g. native "6h"), runs the 3-tier
+    nested-confluence strategy. Otherwise falls back to 2-tier.
     """
     if not symbol:
         return _err("missing_symbol")
@@ -273,10 +275,12 @@ async def submit_paper_order(
     if size <= 0:
         return _err("invalid_size")
 
-    if decision_id and not force:
+    record = None
+    if decision_id:
         record = find_decision(decision_id)
         if record is None:
             return _err("decision_not_found", decision_id=decision_id)
+    if record is not None and not force:
         if not record.get("risk_check", {}).get("passed", False):
             return _err(
                 "risk_blocked",

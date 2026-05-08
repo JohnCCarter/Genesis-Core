@@ -26,7 +26,7 @@ than possibly `logs/agent_decisions.jsonl` if it has been written locally.
 
 ## Hypothesis under test
 
-> A nested top-down Fibonacci rule (HTF identifies trend + 0.5–0.618 zone, LTF
+> A nested top-down Fibonacci rule (HTF identifies trend + 0.5–0.786 zone, LTF
 > confirms a swing inside the zone, entry on a confirmation candle, stop beyond
 > the LTF swing, targets at HTF fib-extensions 1.272 / 1.618 / trailing) can be
 > evaluated deterministically through MCP tooling against Bitfinex paper, with
@@ -76,8 +76,9 @@ Until those exist, the agent is a **probe**, not a runtime feature.
 
 ## Operational defaults
 
-- `trend_tf = "6h"`, `entry_tf = "1h"` (Bitfinex native; 4h is not supported)
-- Entry zone: 0.5–0.618 retracement on both HTF and LTF
+- Default 2-tier MCP inputs: `trend_tf = "6h"`, `entry_tf = "1h"`
+- Recommended native 3-tier inputs: `trend_tf = "1D"`, `mid_tf = "6h"`, `entry_tf = "1h"`
+- Entry zone default: 0.5–0.786 retracement on both HTF and LTF
 - ATR-swing depth: 6.0 (matches `FibonacciConfig` default)
 - Risk per trade: 1% of caller-provided current equity
 - Stop: beyond LTF swing-extreme
@@ -88,5 +89,5 @@ Until those exist, the agent is a **probe**, not a runtime feature.
 ## Out of scope for v1
 
 WebSocket scheduler, persistent equity-baseline tracker, persistent
-positions tracker, multi-symbol orchestration, confluence mode, time-stops,
+positions tracker, multi-symbol orchestration, time-stops,
 notifications, automatic exit-order management.

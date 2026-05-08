@@ -3,6 +3,7 @@ from __future__ import annotations
 from core.agent.fib_strategy import (
     FibStrategyParams,
     _retracement_zone,
+    _validate_candles,
     compute_signal,
 )
 
@@ -26,6 +27,16 @@ def test_compute_signal_insufficient_candles_returns_none() -> None:
     sig = compute_signal(short, short)
     assert sig.action == "NONE"
     assert sig.reason == "insufficient_candles"
+
+
+def test_validate_candles_rejects_mismatched_ohlc_lengths() -> None:
+    candles = {
+        "open": [1.0] * 60,
+        "high": [1.0] * 60,
+        "low": [1.0] * 59,
+        "close": [1.0] * 60,
+    }
+    assert _validate_candles(candles) is False
 
 
 def test_compute_signal_flat_market_no_zone_touch(flat_candles) -> None:
@@ -129,10 +140,15 @@ def test_compute_signal_trend_filter_rejects_short_in_uptrend() -> None:
     # Now drop sharply at the end so a recent HTF swing flips to "down"
     closes += [closes[-1] - i * 200.0 for i in range(1, 30)]
     opens = [closes[0]] + closes[:-1]
-    highs = [max(o, c) + 100.0 for o, c in zip(opens, closes)]
-    lows = [min(o, c) - 100.0 for o, c in zip(opens, closes)]
-    htf = {"open": opens, "high": highs, "low": lows, "close": closes,
-           "volume": [10.0] * len(closes)}
+    highs = [max(o, c) + 100.0 for o, c in zip(opens, closes, strict=False)]
+    lows = [min(o, c) - 100.0 for o, c in zip(opens, closes, strict=False)]
+    htf = {
+        "open": opens,
+        "high": highs,
+        "low": lows,
+        "close": closes,
+        "volume": [10.0] * len(closes),
+    }
     sig_with = compute_signal(htf, htf, FibStrategyParams(trend_filter_enabled=True))
     sig_without = compute_signal(htf, htf, FibStrategyParams(trend_filter_enabled=False))
     if sig_with.htf_swing and sig_with.htf_swing["direction"] == "down":

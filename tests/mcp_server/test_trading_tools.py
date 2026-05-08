@@ -129,17 +129,13 @@ def test_submit_paper_order_calls_paper_submit(mcp_config, monkeypatch) -> None:
 
     from mcp_server.trading_tools import submit_paper_order
 
-    result = _run(
-        submit_paper_order("tTESTBTC:TESTUSD", "LONG", 0.001, mcp_config, force=True)
-    )
+    result = _run(submit_paper_order("tTESTBTC:TESTUSD", "LONG", 0.001, mcp_config, force=True))
     assert result["success"] is True
     assert result["submission"]["submitted"] is True
     assert captured["payload"]["side"] == "LONG"
 
 
-def test_submit_paper_order_blocks_when_risk_failed(
-    mcp_config, monkeypatch, tmp_log_path
-) -> None:
+def test_submit_paper_order_blocks_when_risk_failed(mcp_config, monkeypatch, tmp_log_path) -> None:
     record = DecisionRecord(
         ts_utc="2026-05-07T00:00:00+00:00",
         symbol="tBTCUSD",
@@ -174,9 +170,7 @@ def test_submit_paper_order_blocks_when_risk_failed(
     assert result["error"] == "risk_blocked"
 
 
-def test_submit_paper_order_force_overrides_block(
-    mcp_config, monkeypatch, tmp_log_path
-) -> None:
+def test_submit_paper_order_force_overrides_block(mcp_config, monkeypatch, tmp_log_path) -> None:
     record = DecisionRecord(
         ts_utc="2026-05-07T00:00:00+00:00",
         symbol="tBTCUSD",
@@ -214,6 +208,30 @@ def test_submit_paper_order_force_overrides_block(
     assert result["success"] is True
     assert len(calls) == 1
     assert result["submission"]["force"] is True
+
+
+def test_submit_paper_order_force_still_requires_known_decision_id(mcp_config, monkeypatch) -> None:
+    async def fake_submit(payload: dict) -> dict:
+        raise AssertionError("paper_submit should not be called when decision_id is unknown")
+
+    from core.api import paper as paper_mod
+
+    monkeypatch.setattr(paper_mod, "paper_submit", fake_submit)
+
+    from mcp_server.trading_tools import submit_paper_order
+
+    result = _run(
+        submit_paper_order(
+            "tTESTBTC:TESTUSD",
+            "LONG",
+            0.001,
+            mcp_config,
+            decision_id="missing-decision",
+            force=True,
+        )
+    )
+    assert result["success"] is False
+    assert result["error"] == "decision_not_found"
 
 
 def test_append_decision_log_validates_required_fields(mcp_config, tmp_log_path) -> None:

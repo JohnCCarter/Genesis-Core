@@ -252,14 +252,17 @@ TOOLS = [
     ),
     Tool(
         name="run_strategy",
-        description="Run the nested top-down Fibonacci strategy. 2-tier (HTF+LTF) when mid_tf is omitted, or 3-tier (mega/major/minor with confluence-overlap) when mid_tf is supplied. Recommended 3-tier defaults: trend_tf=1D, mid_tf=6h, entry_tf=1h (all native Bitfinex timeframes).",
+        description="Run the nested top-down Fibonacci strategy. 2-tier (HTF+LTF) when mid_tf is omitted, or 3-tier (mega/major/minor with confluence-overlap) when mid_tf is supplied. Default 2-tier inputs are trend_tf=6h and entry_tf=1h; recommended native 3-tier inputs are trend_tf=1D, mid_tf=6h, entry_tf=1h.",
         inputSchema={
             "type": "object",
             "properties": {
                 "symbol": {"type": "string"},
-                "trend_tf": {"type": "string", "default": "1D"},
+                "trend_tf": {"type": "string", "default": "6h"},
                 "entry_tf": {"type": "string", "default": "1h"},
-                "mid_tf": {"type": "string", "description": "Optional middle TF for 3-tier mode, e.g. \"6h\". Must be a native Bitfinex timeframe."},
+                "mid_tf": {
+                    "type": "string",
+                    "description": 'Optional middle TF for 3-tier mode, e.g. "6h". Must be a native Bitfinex timeframe.',
+                },
                 "params": {"type": "object"},
                 "risk_state": {"type": "object"},
                 "risk_pct": {"type": "number", "default": 0.01},

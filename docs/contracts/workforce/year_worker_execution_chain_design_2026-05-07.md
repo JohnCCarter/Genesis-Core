@@ -26,7 +26,7 @@ This design block is a proposed manual draft for the research-evidence lane only
 
 ### Research-evidence lane
 
-- **Baseline / frozen references:** `workforce_roadmap.md`, `docs/governance/worker_governance_envelope.md`, dependency-closure canonical drafts under `docs/contracts/workforce/`, `worker_runtime_execution_manifest_canonical_draft_v1_2026-05-07.yaml`, and `worker_runtime_execution_manifest_example_year_worker_2026-05-07.yaml`
+- **Baseline / frozen references:** `workforce_roadmap.md`, external `docs/governance/worker_governance_envelope.md` context from the reviewed source branch (unresolved on the clean master landing branch), dependency-closure canonical drafts under `docs/contracts/workforce/`, `worker_runtime_execution_manifest_canonical_draft_v1_2026-05-07.yaml`, and `worker_runtime_execution_manifest_example_year_worker_2026-05-07.yaml`
 - **Candidate / comparison surface:** current separated workforce draft blocks versus one proposed end-to-end lifecycle description
 - **Vad ska förbättras:** make the year-worker chain understandable as one lineage from slice queue to cross-year synthesis
 - **Vad får inte brytas / drifta:** no runtime authority, no config mutation, no worker tuning, no inferred missing inputs, no worker global conclusions, no shared-truth writes

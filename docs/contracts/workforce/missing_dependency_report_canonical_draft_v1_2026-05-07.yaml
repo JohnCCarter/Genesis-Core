@@ -1,0 +1,101 @@
+schema_version: missing_dependency_report.canonical_draft.v1
+draft_status: proposed_non_authoritative
+manual_proposal: true
+runtime_authority: none
+dispatch_authority: none
+promotion_authority: none
+purpose: >-
+  Proposed reusable manual form for documenting unsatisfied dependencies that block
+  or limit cloud execution. This draft is docs-only and records why the closure
+  fails closed; it does not itself resolve the dependency.
+required_fields:
+  - name: schema_version
+    type: string
+    description: Identifies the canonical draft form version.
+  - name: draft_status
+    type: enum
+    description: Must state proposed/non-authoritative status.
+  - name: task_id
+    type: string
+    description: Task identity for the dependency failure.
+  - name: dispatch_id
+    type: string
+    description: Dispatch instance identity.
+  - name: base_branch
+    type: string
+    description: Branch context for cloud visibility evaluation.
+  - name: base_sha
+    type: string
+    description: Pinned repo state used during closure evaluation.
+  - name: dispatch_allowed
+    type: boolean
+    description: Must remain false when a required dependency is missing.
+  - name: missing_dependencies
+    type: array
+    description: Each missing required or optional dependency with explicit status and handling.
+optional_fields:
+  - name: summary
+    type: object
+    description: Aggregate counts and next-step suggestion.
+allowed_enum_values:
+  draft_status:
+    - proposed_non_authoritative
+  dependency_class:
+    - required_artifact
+    - optional_artifact
+    - required_dataset
+    - optional_dataset
+    - required_operational_state
+    - optional_operational_state
+  local_visibility_class:
+    - local_only_untracked
+    - local_only_ignored
+    - remote_unknown
+  current_effect:
+    - blocks_honest_cloud_dispatch
+    - limits_optional_context
+  recommended_handling:
+    - register_through_approved_immutable_artifact_mechanism
+    - capture_through_explicit_bundle
+    - keep_local_only_and_forbid_cloud_use
+hash_policy:
+  algorithm: sha256
+  rules:
+    - Missing dependency identity should carry SHA256 when the local object exists.
+    - Unknown or absent hashes must remain explicit and must not be inferred.
+cloud_visibility_policy:
+  rules:
+    - tracked false means remote_visible false for repo-based cloud workers unless separately captured.
+    - local object existence must never be treated as dispatch satisfaction by itself.
+missing_dependency_behavior:
+  rules:
+    - required missing dependency forces dispatch_allowed false
+    - worker must stop, block, or fail-closed per envelope policy
+    - worker must not substitute or search ad hoc
+fail_closed_conditions:
+  - required missing dependency is present
+  - missing dependency hash mismatches a claimed captured object
+  - worker would need undeclared input access to continue
+example_agent_a_2023_06:
+  task_id: workforce_v1_agent_a_2023_06_dependency_closure
+  dispatch_id: workforce_v1_agent_a_2023_06_dependency_closure_2026-05-07
+  base_branch: feature/next-slice-2026-05-06
+  base_sha: cf852ad8a559dfd8313405c3c30806fd3ff00e08 # pragma: allowlist secret
+  dispatch_allowed: false
+  missing_dependencies:
+    - dependency_label: annual_2023_enabled_vs_absent_action_diffs
+      dependency_class: required_artifact
+      path: results/backtests/ri_policy_router_enabled_vs_absent_all_years_20260428_curated_only/2023_enabled_vs_absent_action_diffs.json
+      exists_local: true
+      tracked: false
+      remote_visible: false
+      sha256: 8b8ca2434056cf046202f064d33736d24bb9b8e41fdafc71d84d202e9c085940 # pragma: allowlist secret
+      local_visibility_class: local_only_untracked
+      current_effect: blocks_honest_cloud_dispatch
+      recommended_handling:
+        - register_through_approved_immutable_artifact_mechanism
+        - capture_through_explicit_bundle
+what_this_manifest_does_not_prove:
+  - That the missing artifact contents are correct or reproducible.
+  - That any artifact-store backend has already been chosen.
+  - That the dependency has been resolved merely because it was documented.

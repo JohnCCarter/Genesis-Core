@@ -67,11 +67,12 @@ surface_specimen:
   authority_boundary_validation:
     classification: structurally_satisfiable
     evidence_refs:
-      - docs/governance/worker_governance_envelope.md
       - docs/contracts/workforce/year_worker_dry_run_envelope_2026-05-07.yaml
       - docs/contracts/workforce/year_worker_dry_run_runtime_execution_manifest_2026-05-07.yaml
       - docs/contracts/workforce/year_worker_dry_run_cross_year_admission_2026-05-07.yaml
-    meaning: queue_envelope_runtime_and_integration_boundaries_remain_separate
+    meaning: queue_envelope_runtime_and_integration_boundaries_remain_separate_within_the_workforce_landing_docs
+    unresolved_references:
+      - external_governance_envelope_context_not_present_on_clean_master_landing_branch
     forbidden_to_infer:
       - descriptive_layer_proximity_implies_authority_inheritance
   overlay_admissibility_validation:

@@ -35,7 +35,7 @@ Local existence, Git-tracked state, pinned provenance, and descriptive runtime r
 
 ### Research-evidence lane
 
-- **Baseline / frozen references:** the 11-object blocked dry-run bundle, clean-clone coherence/gap/admissibility docs, runtime-preflight report/checklist/state machine/admissibility specimen, chain design, fail-closed runtime matrix, governance envelope, and governance mode SSOT
+- **Baseline / frozen references:** the 11-object blocked dry-run bundle, clean-clone coherence/gap/admissibility docs, runtime-preflight report/checklist/state machine/admissibility specimen, chain design, fail-closed runtime matrix, external governance-envelope context from the reviewed source branch, and governance mode SSOT
 - **Candidate / comparison surface:** runtime-preflight blocked terminal versus a still-blocked documentary dispatch-package assembly surface
 - **Vad ska förbättras:** make the dispatch-package seam explicit enough to inspect without implying dispatch authority, runtime support, or artifact production
 - **Vad får inte brytas / drifta:** no command rendering, no worker spawning, no cloud orchestration, no receipt/proof claims, no readiness language, no authority inheritance from documentary refs
@@ -136,7 +136,7 @@ The answer remains yes for documentary assembly shape and no for operational use
 
 - `docs/contracts/workforce/year_worker_execution_chain_design_2026-05-07.md`
 - `docs/contracts/workforce/fail_closed_runtime_matrix_2026-05-07.md`
-- `docs/governance/worker_governance_envelope.md`
+- `docs/governance/worker_governance_envelope.md` _(external governance context from the reviewed source branch; unresolved on the clean master landing branch because this workforce-only landing does not add `docs/governance/**`)_
 - `docs/governance_mode.md`
 - `docs/governance/templates/command_packet.md`
 

@@ -164,7 +164,7 @@ required_context_docs:
     clean_clone_visibility: repo_tracked_docs_visible
 required_governance_context:
   - path: docs/governance/worker_governance_envelope.md
-    reason: worker-envelope contract semantics
+    reason: external worker-envelope contract semantics reference from the reviewed source branch; unresolved on the clean master landing branch because this workforce-only landing does not add docs/governance/**
   - path: docs/governance_mode.md
     reason: resolved-mode authority referenced by the envelope
 required_hash_placeholders:

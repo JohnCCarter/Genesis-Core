@@ -40,7 +40,7 @@ scope_in:
   - docs/contracts/workforce/worker_runtime_execution_manifest_example_year_worker_2026-05-07.yaml
   - docs/contracts/workforce/dependency_manifest_canonical_draft_v1_2026-05-07.yaml
   - docs/contracts/workforce/repo_snapshot_manifest_canonical_draft_v1_2026-05-07.yaml
-  - docs/governance/worker_governance_envelope.md
+  - docs/governance/worker_governance_envelope.md # external governance context; unresolved on clean master landing branch
 scope_out:
   - src/**
   - config/**
@@ -64,7 +64,7 @@ allowed_inputs:
   - docs/contracts/workforce/worker_runtime_execution_manifest_example_year_worker_2026-05-07.yaml
   - docs/contracts/workforce/dependency_manifest_canonical_draft_v1_2026-05-07.yaml
   - docs/contracts/workforce/repo_snapshot_manifest_canonical_draft_v1_2026-05-07.yaml
-  - docs/governance/worker_governance_envelope.md
+  - docs/governance/worker_governance_envelope.md # external governance context; unresolved on clean master landing branch
 input_artifact_hashes:
   - ref: docs/contracts/workforce/year_worker_dry_run_queue_item_2026-05-07.yaml
     sha256: UNBOUND_PLACEHOLDER_SHA256

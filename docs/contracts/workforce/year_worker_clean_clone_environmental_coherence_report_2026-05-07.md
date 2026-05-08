@@ -99,7 +99,7 @@ This report is derived from declared repository artifacts only:
 - `docs/contracts/workforce/worker_runtime_execution_manifest_example_year_worker_2026-05-07.yaml`
 - `docs/contracts/workforce/dependency_manifest_canonical_draft_v1_2026-05-07.yaml`
 - `docs/contracts/workforce/repo_snapshot_manifest_canonical_draft_v1_2026-05-07.yaml`
-- `docs/governance/worker_governance_envelope.md`
+- `docs/governance/worker_governance_envelope.md` _(external governance context from the reviewed source branch; unresolved on the clean master landing branch because this workforce-only landing does not add `docs/governance/**`)_
 - `docs/governance_mode.md`
 
 No hidden local file, cache, result artifact, or runtime-generated output was used to reconstruct the chain.
@@ -147,9 +147,10 @@ The clean clone can follow all lineage refs among the 11 blocked objects:
 The clean clone can also follow declared context refs to:
 
 - the chain design
-- the worker governance envelope
 - the governance-mode SSOT
 - canonical dependency/runtime snapshot drafts
+
+The worker governance envelope remains a cited external governance-context dependency from the reviewed source branch, but it is unresolved on the clean master landing branch and must not be treated as locally followable here.
 
 ### Refs that remain explicit but unresolved
 

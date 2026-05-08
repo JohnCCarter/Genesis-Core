@@ -45,11 +45,6 @@ tracked_inputs:
     remote_visibility_class: repo_tracked_docs_visible
     sha256: UNBOUND_PLACEHOLDER_SHA256
     hash_binding_state: unbound_placeholder
-  - path: docs/governance/worker_governance_envelope.md
-    role: governance_envelope_anchor
-    remote_visibility_class: repo_tracked_docs_visible
-    sha256: UNBOUND_PLACEHOLDER_SHA256
-    hash_binding_state: unbound_placeholder
 tracked_state_assumptions:
   - Only repo-tracked, docs-visible inputs are treated as visible in this blocked bundle.
   - Branch and commit fields describe authoring context only and do not attest dispatch eligibility.
@@ -59,6 +54,8 @@ clean_clone_assumptions:
   - This blocked bundle does not attest or require retrieval of runtime-generated outputs.
   - This blocked bundle does not claim that clean clone alone is sufficient for execution.
 excluded_from_snapshot:
+  - ref: docs/governance/worker_governance_envelope.md
+    reason: external governance-context reference from the reviewed source branch; not present on the clean master landing branch and therefore not snapshot-satisfied in this workforce-only landing
   - ref: config/strategy/champions/tBTCUSD_3h.json:merged_config
     reason: descriptive baseline config reference only; not attested as execution-admissible in this docs-only blocked bundle
   - ref: scripts/run/run_backtest.py

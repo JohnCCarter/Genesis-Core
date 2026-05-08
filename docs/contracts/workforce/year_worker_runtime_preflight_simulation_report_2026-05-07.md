@@ -79,7 +79,7 @@ This layer sits between clean-clone reconstruction evidence and any later runtim
 
 - `docs/contracts/workforce/year_worker_execution_chain_design_2026-05-07.md`
 - `docs/contracts/workforce/fail_closed_runtime_matrix_2026-05-07.md`
-- `docs/governance/worker_governance_envelope.md`
+- `docs/governance/worker_governance_envelope.md` _(external governance context from the reviewed source branch; unresolved on the clean master landing branch because this workforce-only landing does not add `docs/governance/**`)_
 - `docs/governance_mode.md`
 
 No hidden local state, undeclared artifact, or runtime-generated fact was used.

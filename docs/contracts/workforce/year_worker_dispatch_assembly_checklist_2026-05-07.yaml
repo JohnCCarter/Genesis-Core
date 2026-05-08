@@ -111,9 +111,10 @@ assembly_checks:
     classification: intentionally_blocked
     required_evidence:
       - docs/contracts/workforce/fail_closed_runtime_matrix_2026-05-07.md
-      - docs/governance/worker_governance_envelope.md
       - docs/contracts/workforce/year_worker_dispatch_package_manifest_specimen_2026-05-07.yaml
-    documentary_finding: the_package_can_only_terminate_with_dispatch_state_denied_and_dispatch_allowed_false
+    unresolved_context_refs:
+      - docs/governance/worker_governance_envelope.md remains external governance context from the reviewed source branch and is unresolved on the clean master landing branch
+    documentary_finding: the_package_can_only_terminate_with_dispatch_state_denied_and_dispatch_allowed_false_within_the_workforce_landing_docs
     denied_because: unresolved_bindings_and_absent_receipts_remain_open_by_design
     forbidden_to_infer:
       - documentary_completion_equals_operational_permission

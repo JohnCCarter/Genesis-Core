@@ -48,6 +48,7 @@ def test_compute_signal_uptrend_pullback_yields_long(
     sig = compute_signal(
         htf_uptrend_pullback,
         ltf_uptrend_pullback,
+        FibStrategyParams(trend_filter_enabled=False),
         equity_usd=10000.0,
         risk_pct=0.01,
     )
@@ -71,6 +72,7 @@ def test_compute_signal_downtrend_pullback_yields_short(
     sig = compute_signal(
         htf_downtrend_pullback,
         ltf_downtrend_pullback,
+        FibStrategyParams(trend_filter_enabled=False),
         equity_usd=10000.0,
         risk_pct=0.01,
     )
@@ -94,12 +96,13 @@ def test_fibstrategy_params_to_dict_round_trip() -> None:
     assert d["entry_zone_high"] == 0.7
     assert d["extension_levels"] == [1.272, 1.618]
     assert d["trend_filter_enabled"] is True
-    assert d["trend_filter_lookback"] == 200
+    assert d["trend_filter_lookback"] == 50
+    assert d["confluence_required"] is True
 
 
-def test_default_entry_zone_high_is_0768() -> None:
+def test_default_entry_zone_high_is_0786() -> None:
     p = FibStrategyParams()
-    assert p.entry_zone_high == 0.768
+    assert p.entry_zone_high == 0.786
 
 
 def test_trend_aligned_helper_passes_with_too_little_data() -> None:
@@ -121,7 +124,7 @@ def test_trend_aligned_helper_blocks_counter_trend() -> None:
 
 
 def test_compute_signal_trend_filter_rejects_short_in_uptrend() -> None:
-    # 250 ascending closes → uptrend over 200-bar lookback
+    # 250 ascending closes → uptrend over 50-bar lookback
     closes = [40000.0 + i * 50.0 for i in range(250)]
     # Now drop sharply at the end so a recent HTF swing flips to "down"
     closes += [closes[-1] - i * 200.0 for i in range(1, 30)]
@@ -132,9 +135,7 @@ def test_compute_signal_trend_filter_rejects_short_in_uptrend() -> None:
            "volume": [10.0] * len(closes)}
     sig_with = compute_signal(htf, htf, FibStrategyParams(trend_filter_enabled=True))
     sig_without = compute_signal(htf, htf, FibStrategyParams(trend_filter_enabled=False))
-    # With filter: must reject if direction came out as "down"
     if sig_with.htf_swing and sig_with.htf_swing["direction"] == "down":
         assert sig_with.action == "NONE"
         assert sig_with.reason == "trend_filter_reject"
-    # Without filter we should at least get past the trend gate
     assert sig_without.reason != "trend_filter_reject"

@@ -192,16 +192,23 @@ async def run_strategy(
     *,
     htf_candles: dict[str, Any] | None = None,
     ltf_candles: dict[str, Any] | None = None,
+    mid_candles: dict[str, Any] | None = None,
+    mid_tf: str | None = None,
     params: dict[str, Any] | None = None,
     risk_state: dict[str, Any] | None = None,
     risk_pct: float = 0.01,
     persist: bool = True,
     candle_limit: int = 300,
 ) -> dict[str, Any]:
+    """Evaluate the fib agent. If mid_tf is provided (e.g. "4h" or aggregated 6h),
+    runs the 3-tier nested-confluence strategy. Otherwise falls back to 2-tier.
+    """
     if not symbol:
         return _err("missing_symbol")
     if trend_tf not in ALLOWED_TIMEFRAMES or entry_tf not in ALLOWED_TIMEFRAMES:
         return _err("invalid_timeframe", allowed=sorted(ALLOWED_TIMEFRAMES))
+    if mid_tf is not None and mid_tf not in ALLOWED_TIMEFRAMES and mid_tf != "4h":
+        return _err("invalid_mid_timeframe", mid_tf=mid_tf)
 
     if htf_candles is None:
         htf = await read_candles(symbol, trend_tf, candle_limit, config)
@@ -214,10 +221,29 @@ async def run_strategy(
             return _err("ltf_candles_failed", detail=ltf)
         ltf_candles = {k: ltf.get(k, []) for k in ("open", "high", "low", "close", "volume")}
 
+    if mid_tf == "4h" and mid_candles is None:
+        # Bitfinex has no native 4h: aggregate from 1h
+        from core.agent.fib_strategy import aggregate_candles
+        if entry_tf == "1h":
+            mid_candles = aggregate_candles(ltf_candles, factor=4)
+        else:
+            ltf_1h = await read_candles(symbol, "1h", candle_limit * 4, config)
+            if not ltf_1h.get("success"):
+                return _err("mid_candles_failed", detail=ltf_1h)
+            ltf_1h_dict = {k: ltf_1h.get(k, []) for k in ("open", "high", "low", "close", "volume")}
+            mid_candles = aggregate_candles(ltf_1h_dict, factor=4)
+    elif mid_tf is not None and mid_candles is None:
+        mid_resp = await read_candles(symbol, mid_tf, candle_limit, config)
+        if not mid_resp.get("success"):
+            return _err("mid_candles_failed", detail=mid_resp)
+        mid_candles = {k: mid_resp.get(k, []) for k in ("open", "high", "low", "close", "volume")}
+
     try:
         record = evaluate_and_record(
             htf_candles=htf_candles,
             ltf_candles=ltf_candles,
+            mid_candles=mid_candles,
+            mid_tf=mid_tf,
             symbol=symbol,
             trend_tf=trend_tf,
             entry_tf=entry_tf,

@@ -252,13 +252,14 @@ TOOLS = [
     ),
     Tool(
         name="run_strategy",
-        description="Run the nested top-down Fibonacci strategy. Pulls HTF+LTF candles (or accepts pre-fetched), produces a deterministic decision record, and appends to the audit log when persist=true.",
+        description="Run the nested top-down Fibonacci strategy. 2-tier (HTF+LTF) by default, or 3-tier (mega/major/minor with confluence-overlap) when mid_tf is provided. mid_tf=\"4h\" auto-aggregates from 1h since Bitfinex lacks native 4h.",
         inputSchema={
             "type": "object",
             "properties": {
                 "symbol": {"type": "string"},
-                "trend_tf": {"type": "string", "default": "6h"},
+                "trend_tf": {"type": "string", "default": "1D"},
                 "entry_tf": {"type": "string", "default": "1h"},
+                "mid_tf": {"type": "string", "description": "Optional middle TF for 3-tier mode, e.g. \"4h\""},
                 "params": {"type": "object"},
                 "risk_state": {"type": "object"},
                 "risk_pct": {"type": "number", "default": 0.01},
@@ -266,6 +267,7 @@ TOOLS = [
                 "candle_limit": {"type": "integer", "minimum": 60, "maximum": 1000, "default": 300},
                 "htf_candles": {"type": "object"},
                 "ltf_candles": {"type": "object"},
+                "mid_candles": {"type": "object"},
             },
             "required": ["symbol"],
         },
@@ -363,11 +365,13 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
         elif name == "run_strategy":
             result = await run_strategy(
                 arguments.get("symbol", ""),
-                arguments.get("trend_tf", "6h"),
+                arguments.get("trend_tf", "1D"),
                 arguments.get("entry_tf", "1h"),
                 config,
                 htf_candles=arguments.get("htf_candles"),
                 ltf_candles=arguments.get("ltf_candles"),
+                mid_candles=arguments.get("mid_candles"),
+                mid_tf=arguments.get("mid_tf"),
                 params=arguments.get("params"),
                 risk_state=arguments.get("risk_state"),
                 risk_pct=float(arguments.get("risk_pct", 0.01) or 0.01),

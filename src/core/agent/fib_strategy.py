@@ -6,11 +6,11 @@ from typing import Any
 from core.indicators.fibonacci import FibonacciConfig, detect_swing_points
 
 DEFAULT_ENTRY_LOW = 0.5
-DEFAULT_ENTRY_HIGH = 0.768
+DEFAULT_ENTRY_HIGH = 0.786
 DEFAULT_EXTENSION_TARGETS: tuple[float, ...] = (1.272, 1.618)
 DEFAULT_TARGET_FRACTIONS: tuple[float, float, float] = (0.333, 0.333, 0.334)
 DEFAULT_ATR_DEPTH = 6.0
-DEFAULT_TREND_LOOKBACK = 200  # 6h bars ≈ 50 dagar
+DEFAULT_TREND_LOOKBACK = 50  # bars (e.g. 1D-bars ≈ 50 days)
 MIN_BARS_REQUIRED = 60
 
 
@@ -24,6 +24,7 @@ class FibStrategyParams:
     require_confirmation: bool = True
     trend_filter_enabled: bool = True
     trend_filter_lookback: int = DEFAULT_TREND_LOOKBACK
+    confluence_required: bool = True
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -35,6 +36,7 @@ class FibStrategyParams:
             "require_confirmation": self.require_confirmation,
             "trend_filter_enabled": self.trend_filter_enabled,
             "trend_filter_lookback": self.trend_filter_lookback,
+            "confluence_required": self.confluence_required,
         }
 
 
@@ -348,6 +350,234 @@ def compute_signal(
         htf_zone=htf_zone,
         ltf_swing={"a": l_a_px, "b": l_b_px, "direction": ltf_dir},
         ltf_zone=ltf_zone,
+        entry=entry,
+        stop=stop,
+        targets=targets,
+        size=size,
+    )
+
+
+# =============================================================================
+# 3-tier nested fib strategy (mega → major → minor on same direction)
+# =============================================================================
+def aggregate_candles(candles: dict[str, Any], factor: int) -> dict[str, Any]:
+    """Roll up `factor` adjacent bars into one (e.g. 1h × 4 → 4h).
+
+    Drops the trailing partial group so we never emit a half-formed bar.
+    """
+    closes = candles.get("close") or []
+    n_groups = len(closes) // factor
+    if n_groups == 0:
+        return {"open": [], "high": [], "low": [], "close": [], "volume": []}
+    o, h, l, c, v = [], [], [], [], []
+    opens = candles["open"]
+    highs = candles["high"]
+    lows = candles["low"]
+    vols = candles.get("volume", [0.0] * len(closes))
+    for i in range(n_groups):
+        s = i * factor
+        e = s + factor
+        o.append(opens[s])
+        c.append(closes[e - 1])
+        h.append(max(highs[s:e]))
+        l.append(min(lows[s:e]))
+        v.append(sum(vols[s:e]))
+    return {"open": o, "high": h, "low": l, "close": c, "volume": v}
+
+
+def _latest_swing_in_direction(
+    highs: list[float],
+    lows: list[float],
+    closes: list[float],
+    direction: str,
+    atr_depth: float,
+) -> tuple[str, int, int, float, float] | None:
+    """Find the most recent swing in a specific direction (pro-trend leg).
+
+    For "up": (a=swing-low, b=swing-high) where high is more recent.
+    For "down": (a=swing-high, b=swing-low) where low is more recent.
+    """
+    cfg = FibonacciConfig(atr_depth=atr_depth)
+    high_idx, low_idx, high_px, low_px = detect_swing_points(highs, lows, closes, cfg)
+    if not high_idx or not low_idx:
+        return None
+    if direction == "up":
+        last_high_idx = high_idx[-1]
+        last_high_px = high_px[-1]
+        earlier_lows = [(li, lp) for li, lp in zip(low_idx, low_px) if li < last_high_idx]
+        if not earlier_lows:
+            return None
+        l_idx, l_px = earlier_lows[-1]
+        return ("up", l_idx, last_high_idx, float(l_px), float(last_high_px))
+    last_low_idx = low_idx[-1]
+    last_low_px = low_px[-1]
+    earlier_highs = [(hi, hp) for hi, hp in zip(high_idx, high_px) if hi < last_low_idx]
+    if not earlier_highs:
+        return None
+    h_idx, h_px = earlier_highs[-1]
+    return ("down", h_idx, last_low_idx, float(h_px), float(last_low_px))
+
+
+def _zones_overlap_at_price(zones: list[dict[str, float]], price: float) -> bool:
+    return all(z["low"] <= price <= z["high"] for z in zones)
+
+
+def _zones_intersection(zones: list[dict[str, float]]) -> dict[str, float] | None:
+    if not zones:
+        return None
+    lo = max(z["low"] for z in zones)
+    hi = min(z["high"] for z in zones)
+    if lo > hi:
+        return None
+    return {"low": lo, "high": hi}
+
+
+def compute_signal_nested(
+    mega_candles: dict[str, Any],
+    major_candles: dict[str, Any],
+    minor_candles: dict[str, Any],
+    params: FibStrategyParams | None = None,
+    *,
+    equity_usd: float = 0.0,
+    risk_pct: float = 0.01,
+) -> FibSignal:
+    """3-tier nested fib confluence strategy.
+
+    All three swings (mega/major/minor) must be in the same direction. Entry
+    happens when the current price sits inside all three retracement zones
+    simultaneously (confluence) and a confirmation candle prints in the
+    trend direction.
+    """
+    p = params or FibStrategyParams()
+    if (
+        not _validate_candles(mega_candles)
+        or not _validate_candles(major_candles)
+        or not _validate_candles(minor_candles)
+    ):
+        return _none("insufficient_candles")
+
+    mega_swing = _latest_swing(
+        mega_candles["high"], mega_candles["low"], mega_candles["close"], p.atr_depth
+    )
+    if mega_swing is None:
+        return _none("no_mega_swing")
+    direction, _, _, mega_a, mega_b = mega_swing
+
+    if p.trend_filter_enabled and not trend_aligned(
+        direction, mega_candles["close"], p.trend_filter_lookback
+    ):
+        return FibSignal(
+            action="NONE",
+            reason="trend_filter_reject",
+            htf_swing={"a": mega_a, "b": mega_b, "direction": direction},
+        )
+
+    mega_zone = _retracement_zone(direction, mega_a, mega_b, p.entry_zone_low, p.entry_zone_high)
+
+    last_close_minor = float(minor_candles["close"][-1])
+    if not (mega_zone["low"] <= last_close_minor <= mega_zone["high"]):
+        return FibSignal(
+            action="NONE",
+            reason="no_mega_zone_touch",
+            htf_swing={"a": mega_a, "b": mega_b, "direction": direction},
+            htf_zone=mega_zone,
+        )
+
+    major_swing = _latest_swing_in_direction(
+        major_candles["high"], major_candles["low"], major_candles["close"],
+        direction, p.atr_depth,
+    )
+    if major_swing is None:
+        return FibSignal(
+            action="NONE", reason="no_major_swing",
+            htf_swing={"a": mega_a, "b": mega_b, "direction": direction},
+            htf_zone=mega_zone,
+        )
+    _, _, _, major_a, major_b = major_swing
+    major_zone = _retracement_zone(direction, major_a, major_b, p.entry_zone_low, p.entry_zone_high)
+
+    if not (major_zone["low"] <= last_close_minor <= major_zone["high"]):
+        return FibSignal(
+            action="NONE", reason="no_major_zone_touch",
+            htf_swing={"a": mega_a, "b": mega_b, "direction": direction},
+            htf_zone=mega_zone,
+            ltf_swing={"a": major_a, "b": major_b, "direction": direction},
+            ltf_zone=major_zone,
+        )
+
+    minor_swing = _latest_swing_in_direction(
+        minor_candles["high"], minor_candles["low"], minor_candles["close"],
+        direction, p.atr_depth,
+    )
+    if minor_swing is None:
+        return FibSignal(
+            action="NONE", reason="no_minor_swing",
+            htf_swing={"a": mega_a, "b": mega_b, "direction": direction},
+            htf_zone=mega_zone,
+        )
+    _, _, _, minor_a, minor_b = minor_swing
+    minor_zone = _retracement_zone(direction, minor_a, minor_b, p.entry_zone_low, p.entry_zone_high)
+
+    if not (minor_zone["low"] <= last_close_minor <= minor_zone["high"]):
+        return FibSignal(
+            action="NONE", reason="no_minor_zone_touch",
+            htf_swing={"a": mega_a, "b": mega_b, "direction": direction},
+            htf_zone=mega_zone,
+            ltf_swing={"a": minor_a, "b": minor_b, "direction": direction},
+            ltf_zone=minor_zone,
+        )
+
+    if p.confluence_required and not _zones_overlap_at_price(
+        [mega_zone, major_zone, minor_zone], last_close_minor
+    ):
+        return FibSignal(
+            action="NONE", reason="no_confluence",
+            htf_swing={"a": mega_a, "b": mega_b, "direction": direction},
+            htf_zone=mega_zone,
+            ltf_swing={"a": minor_a, "b": minor_b, "direction": direction},
+            ltf_zone=minor_zone,
+        )
+
+    if p.require_confirmation and not _is_confirmation_candle(
+        direction, minor_candles["open"], minor_candles["close"]
+    ):
+        return FibSignal(
+            action="NONE", reason="no_confirmation",
+            htf_swing={"a": mega_a, "b": mega_b, "direction": direction},
+            htf_zone=mega_zone,
+            ltf_swing={"a": minor_a, "b": minor_b, "direction": direction},
+            ltf_zone=minor_zone,
+        )
+
+    entry = last_close_minor
+    if direction == "up":
+        stop = float(min(minor_a, minor_zone["low"]))
+    else:
+        stop = float(max(minor_a, minor_zone["high"]))
+    stop_distance = abs(entry - stop)
+    if stop_distance <= 0.0:
+        return _none("invalid_stop_distance")
+
+    # Targets at MAJOR fib-extension (closer than mega; more reachable)
+    extension_prices = _extension_prices(direction, major_a, major_b, p.extension_levels)
+    targets: list[dict[str, Any]] = []
+    fractions = list(p.target_fractions)
+    for level, price, frac in zip(p.extension_levels, extension_prices, fractions[:-1]):
+        targets.append({"level": float(level), "price": float(price), "fraction": float(frac)})
+    targets.append({"level": "trailing", "fraction": float(fractions[-1])})
+
+    size: float | None = None
+    if equity_usd > 0 and risk_pct > 0:
+        size = (equity_usd * risk_pct) / stop_distance
+
+    action = "LONG" if direction == "up" else "SHORT"
+    return FibSignal(
+        action=action,
+        reason="nested_confluence_confirmation",
+        htf_swing={"a": mega_a, "b": mega_b, "direction": direction},
+        htf_zone=mega_zone,
+        ltf_swing={"a": minor_a, "b": minor_b, "direction": direction},
+        ltf_zone=minor_zone,
         entry=entry,
         stop=stop,
         targets=targets,

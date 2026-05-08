@@ -13,7 +13,7 @@ from .decision_record import (
     candles_hash,
     canonical_hash,
 )
-from .fib_strategy import FibStrategyParams, compute_signal
+from .fib_strategy import FibStrategyParams, compute_signal, compute_signal_nested
 
 
 def _coerce_params(params: dict[str, Any] | FibStrategyParams | None) -> FibStrategyParams:
@@ -28,6 +28,9 @@ def _coerce_params(params: dict[str, Any] | FibStrategyParams | None) -> FibStra
         "target_fractions",
         "atr_depth",
         "require_confirmation",
+        "trend_filter_enabled",
+        "trend_filter_lookback",
+        "confluence_required",
     }
     kwargs: dict[str, Any] = {}
     for key, value in params.items():
@@ -77,28 +80,46 @@ def evaluate_and_record(
     risk_pct: float = 0.01,
     persist: bool = True,
     log_path: Path | None = None,
+    mid_candles: dict[str, Any] | None = None,
+    mid_tf: str | None = None,
 ) -> DecisionRecord:
+    """Evaluate strategy and emit a DecisionRecord.
+
+    Two modes (auto-selected):
+      - 2-tier (legacy): when mid_candles is None. HTF trend + LTF counter-leg.
+      - 3-tier (nested confluence): when mid_candles is provided. Mega/major/minor
+        all in same direction; entry on confluence overlap.
+    """
     fib_params = _coerce_params(params)
     risk_check = _evaluate_risk(risk_state)
     equity = float(risk_check.get("current_equity_usd") or 0.0)
 
-    signal = compute_signal(
-        htf_candles,
-        ltf_candles,
-        fib_params,
-        equity_usd=equity,
-        risk_pct=risk_pct,
-    )
+    if mid_candles is not None:
+        signal = compute_signal_nested(
+            htf_candles, mid_candles, ltf_candles, fib_params,
+            equity_usd=equity, risk_pct=risk_pct,
+        )
+        candles_hashes = {
+            "mega": candles_hash(htf_candles),
+            "major": candles_hash(mid_candles),
+            "minor": candles_hash(ltf_candles),
+        }
+    else:
+        signal = compute_signal(
+            htf_candles, ltf_candles, fib_params,
+            equity_usd=equity, risk_pct=risk_pct,
+        )
+        candles_hashes = {
+            "htf": candles_hash(htf_candles),
+            "ltf": candles_hash(ltf_candles),
+        }
 
     record = DecisionRecord(
         ts_utc=dt.datetime.now(dt.UTC).isoformat(),
         symbol=symbol,
         trend_tf=trend_tf,
         entry_tf=entry_tf,
-        candles_hash={
-            "htf": candles_hash(htf_candles),
-            "ltf": candles_hash(ltf_candles),
-        },
+        candles_hash=candles_hashes,
         params_hash=canonical_hash(fib_params.to_dict()),
         fib_signal=signal.to_dict(),
         risk_check=risk_check,

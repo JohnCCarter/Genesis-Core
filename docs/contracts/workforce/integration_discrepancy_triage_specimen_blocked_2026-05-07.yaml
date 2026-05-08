@@ -1,0 +1,119 @@
+# This artifact is a blocked, docs-only integration discrepancy-triage specimen.
+# It records review-only comparison and reconciliation labels about expected and
+# reported documentary surfaces and does not accept artifacts, assign truth,
+# imply correctness, authorize dispatch, or infer economic meaning.
+document_kind: blocked_integration_discrepancy_triage_specimen
+authority: non_authoritative
+skill_usage: no_matching_repository_skill_has_been_identified_for_this_docs_only_discrepancy_triage_example
+simulation_mode: RESEARCH
+simulation_state: blocked
+policy_state: review_only_blocked
+reconciliation_state: blocked
+acceptance_state: not_accepted
+promotion_state: none
+cross_year_meaning_state: separate_and_unassigned
+economic_validity_state: never_inferred
+runtime_correctness_state: never_inferred
+dispatch_authorization_state: never_inferred
+reconciliation_rule: reconciliation_does_not_imply_acceptance
+classification_rule: classification_does_not_imply_truth
+matching_refs_rule: matching_refs_do_not_imply_correctness
+economic_inference_rule: artifact_existence_does_not_imply_economic_validity
+missing_evidence_rule: integration_plane_may_classify_discrepancies_but_may_not_silently_resolve_missing_evidence
+cross_year_boundary_rule: cross_year_meaning_remains_outside_discrepancy_triage
+review_recommendation_rule: triage_may_recommend_review_never_promotion
+triage_id_pattern: triage::<slice_slot>::<comparison_slot>::<review_slot>
+policy_refs:
+  triage_policy_ref: docs/contracts/workforce/integration_discrepancy_triage_policy_draft_2026-05-07.md
+  reconciliation_matrix_ref: docs/contracts/workforce/integration_discrepancy_reconciliation_matrix_2026-05-07.md
+expected_artifact_refs:
+  - artifact_role: worker_output_contract
+    expected_from_ref: docs/contracts/workforce/year_worker_dry_run_output_contract_2026-05-07.yaml
+    expectation_state: declared_expected
+  - artifact_role: receipt_claim_documentation
+    expected_from_ref: docs/contracts/workforce/artifact_receipt_specimen_blocked_2026-05-07.yaml
+    expectation_state: declared_expected
+reported_artifact_refs:
+  - source_ref: docs/contracts/workforce/artifact_receipt_specimen_blocked_2026-05-07.yaml
+    reported_surface: reported_receipt_claims
+    report_state: documentary_claim_surface_only
+  - source_ref: docs/contracts/workforce/year_worker_dry_run_output_contract_2026-05-07.yaml
+    reported_surface: artifacts_produced
+    report_state: advisory_reporting_surface_only
+receipt_claim_refs:
+  receipt_model_ref: docs/contracts/workforce/artifact_receipt_model_draft_2026-05-07.md
+  receipt_specimen_ref: docs/contracts/workforce/artifact_receipt_specimen_blocked_2026-05-07.yaml
+  receipt_claim_state: unresolved_documentary_claim_surface
+registry_refs:
+  registry_model_ref: docs/contracts/workforce/artifact_registry_index_model_draft_2026-05-07.yaml
+  registry_ref_state: bookkeeping_only_non_truth_non_acceptance
+intake_state_refs:
+  intake_policy_ref: docs/contracts/workforce/integration_receipt_intake_policy_draft_2026-05-07.md
+  intake_specimen_ref: docs/contracts/workforce/integration_receipt_intake_specimen_blocked_2026-05-07.yaml
+  intake_matrix_ref: docs/contracts/workforce/integration_receipt_intake_denial_matrix_2026-05-07.md
+  intake_state_context: prior_blocked_not_accepted_review_surface_only
+lineage_refs:
+  queue_item_ref: docs/contracts/workforce/year_worker_dry_run_queue_item_2026-05-07.yaml
+  envelope_ref: docs/contracts/workforce/year_worker_dry_run_envelope_2026-05-07.yaml
+  dependency_manifest_ref: docs/contracts/workforce/year_worker_dry_run_dependency_manifest_2026-05-07.yaml
+  runtime_preflight_ref: docs/contracts/workforce/year_worker_runtime_preflight_admissibility_specimen_2026-05-07.yaml
+  dispatch_package_ref: docs/contracts/workforce/year_worker_dispatch_package_manifest_specimen_2026-05-07.yaml
+  output_contract_ref: docs/contracts/workforce/year_worker_dry_run_output_contract_2026-05-07.yaml
+  prior_integration_intake_ref: docs/contracts/workforce/year_worker_dry_run_integration_intake_2026-05-07.yaml
+comparison_classification_vocabulary:
+  structurally_consistent: compared_ref_shapes_align_without_acceptance_truth_or_correctness_inference
+  partially_consistent: some_compared_ref_shapes_align_while_other_relations_remain_missing_or_mismatched
+  unresolved: evidence_is_insufficient_to_close_the_comparison
+  intentionally_blocked: policy_forbids_closure_or_upgrade_in_this_slice
+  forbidden_to_infer: truth_correctness_economic_runtime_and_dispatch_inference_are_prohibited
+  discrepancy_detected: compared_refs_or_claim_states_do_not_align
+  reconciliation_denied: integration_plane_may_not_close_the_gap_in_this_slice
+  review_required: manual_review_is_mandatory_before_any_later_layer_can_say_more
+comparison_cases:
+  - comparison_case: aligned_expected_and_reported_ref_shape_with_unresolved_receipt
+    comparison_classification: structurally_consistent
+    inference_guard: forbidden_to_infer
+    review_disposition: unresolved
+  - comparison_case: declared_role_has_partial_alignment_but_registry_ref_is_misaligned
+    comparison_classification: partially_consistent
+    inference_guard: forbidden_to_infer
+    review_disposition: review_required
+  - comparison_case: expected_role_missing_from_reported_refs
+    comparison_classification: discrepancy_detected
+    inference_guard: forbidden_to_infer
+    review_disposition: review_required
+receipt_claim_mismatch_behavior: discrepancy_detected_then_review_required
+registry_ref_mismatch_behavior: discrepancy_detected_then_reconciliation_denied
+stale_artifact_behavior: intentionally_blocked_then_review_required
+duplicate_artifact_behavior: discrepancy_detected_then_review_required
+undeclared_artifact_behavior: discrepancy_detected_then_reconciliation_denied
+lineage_mismatch_behavior: intentionally_blocked_then_reconciliation_denied
+unresolved_receipt_behavior: unresolved_then_review_required
+prohibited_upgrade_semantics:
+  matching_refs_do_not_upgrade_to_acceptance: forbidden
+  classification_does_not_upgrade_to_truth: forbidden
+  structural_alignment_does_not_upgrade_to_correctness: forbidden
+  discrepancy_triage_does_not_upgrade_to_runtime_correctness: forbidden
+  discrepancy_triage_does_not_upgrade_to_dispatch_authorization: forbidden
+  review_recommendation_does_not_upgrade_to_promotion: forbidden
+  missing_evidence_may_not_be_silently_resolved: forbidden
+  cross_year_meaning_may_not_be_assigned_here: forbidden
+final_review_state:
+  reconciliation_state: blocked
+  acceptance_state: not_accepted
+  promotion_state: none
+  cross_year_meaning_state: separate_and_unassigned
+  economic_validity_state: never_inferred
+  runtime_correctness_state: never_inferred
+  dispatch_authorization_state: never_inferred
+  closing_disposition: review_required
+what_this_specimen_does_not_prove:
+  - reconciliation_implies_acceptance
+  - classification_implies_truth
+  - matching_refs_imply_correctness
+  - artifact_existence_implies_economic_validity
+  - discrepancy_triage_may_silently_resolve_missing_evidence
+  - cross_year_meaning_may_be_assigned_here
+  - triage_may_recommend_promotion
+  - triage_may_authorize_dispatch
+  - triage_may_infer_runtime_correctness

@@ -1,0 +1,162 @@
+schema_version: dependency_manifest.canonical_draft.v1
+draft_status: proposed_non_authoritative
+manual_proposal: true
+runtime_authority: none
+dispatch_authority: none
+promotion_authority: none
+purpose: >-
+  Proposed reusable manual form for declaring the dependency closure of one cloud
+  workforce task. This draft is docs-only, non-authoritative, and does not itself
+  authorize dispatch or prove dependency completeness.
+required_fields:
+  - name: schema_version
+    type: string
+    description: Identifies the canonical draft form version.
+  - name: draft_status
+    type: enum
+    description: Must explicitly mark the form as proposed and non-authoritative.
+  - name: task_id
+    type: string
+    description: Stable task identity for the worker slice.
+  - name: dispatch_id
+    type: string
+    description: Dispatch-instance identity for the concrete run.
+  - name: worker_class
+    type: enum
+    description: Worker capability class for the slice.
+  - name: lane
+    type: enum
+    description: Cheapest admissible lane for the slice.
+  - name: resolved_mode
+    type: enum
+    description: Pre-resolved governance mode supplied by control plane.
+  - name: base_branch
+    type: string
+    description: Branch used for the dispatch wave.
+  - name: base_sha
+    type: string
+    description: Pinned repo startpoint used for closure resolution.
+  - name: dispatch_allowed
+    type: boolean
+    description: Whether the dependency closure is complete enough to allow dispatch.
+  - name: dispatch_block_reason
+    type: string_or_null
+    description: Explicit block reason when dispatch_allowed is false.
+  - name: required_repo_files
+    type: array
+    description: Repo-tracked files required by the worker.
+  - name: required_artifacts
+    type: array
+    description: Tracked or external artifacts required by the worker.
+  - name: dependency_policy
+    type: object
+    description: Required fail-closed behavior rules for missing or undeclared inputs.
+optional_fields:
+  - name: notes
+    type: array
+    description: Human-readable caveats about draft/manual status.
+  - name: question_fingerprint
+    type: string
+    description: Stable question identity when available.
+  - name: source_dispatch
+    type: object
+    description: Pointers back to the originating dispatch brief(s).
+  - name: required_operational_state
+    type: array
+    description: Explicitly captured non-repo state files if needed.
+  - name: closure_summary
+    type: object
+    description: Aggregate counts and closure status summary.
+allowed_enum_values:
+  draft_status:
+    - proposed_non_authoritative
+  worker_class:
+    - inventory
+    - deep-dive
+    - integration
+    - runtime/strict
+  lane:
+    - concept
+    - research-evidence
+    - runtime-integration
+  resolved_mode:
+    - RESEARCH
+    - STRICT
+    - SANDBOX
+  required_artifacts_status:
+    - satisfied
+    - missing_from_cloud_closure
+    - optional_missing
+    - forbidden
+    - unverified
+hash_policy:
+  algorithm: sha256
+  rules:
+    - Every required repo-visible file should carry a pinned SHA256.
+    - Every required artifact should carry a SHA256 if content identity is known.
+    - Unknown hashes must be explicit and must not be treated as satisfied.
+cloud_visibility_policy:
+  rules:
+    - Local existence does not imply cloud visibility.
+    - Repo cloud visibility requires tracked state on the target branch.
+    - Non-repo inputs require explicit artifact-store or bundle reference before they are cloud-visible.
+    - Undeclared repo files must not be used even if present in a local checkout.
+missing_dependency_behavior:
+  required_dependency:
+    expected_status: blocked_or_fail_closed
+    worker_must:
+      - stop_or_fail_closed
+      - report_exact_missing_ref
+      - avoid_substitution
+      - avoid_local_filesystem_discovery
+  optional_dependency:
+    expected_status: explicit_limitation_only
+    worker_must:
+      - continue_only_if_envelope_allows
+      - state_limitation_explicitly
+      - update_what_this_does_not_prove
+fail_closed_conditions:
+  - dispatch_allowed is false and a required dependency is missing
+  - any pinned hash mismatches the fetched or local content
+  - required cloud visibility cannot be proven
+  - undeclared input access would be needed to continue
+example_agent_a_2023_06:
+  task_id: workforce_v1_agent_a_2023_06_dependency_closure
+  dispatch_id: workforce_v1_agent_a_2023_06_dependency_closure_2026-05-07
+  worker_class: deep-dive
+  lane: research-evidence
+  resolved_mode: RESEARCH
+  base_branch: feature/next-slice-2026-05-06
+  base_sha: cf852ad8a559dfd8313405c3c30806fd3ff00e08 # pragma: allowlist secret
+  dispatch_allowed: false
+  dispatch_block_reason: missing_required_artifact
+  required_repo_files:
+    - path: docs/decisions/governance/workforce/workforce_v1_wave1_agent_a_d1_2023_06_cloud_dispatch_2026-05-07.md
+      tracked: true
+      remote_visible: true
+      sha256: 34d70e8deda007d14f3fc63115c4b4899db0998902f7e3f50a1bcd87cf06f8e5 # pragma: allowlist secret
+    - path: docs/governance/worker_governance_envelope.md
+      tracked: false
+      remote_visible: false
+      sha256: null
+      note: external governance context from the reviewed source branch; unresolved on the clean master landing branch
+  required_artifacts:
+    - path: results/evaluation/ri_policy_router_insufficient_evidence_d1_context_clean_selectivity_falsifier_2026-05-05.json
+      tracked: true
+      remote_visible: true
+      status: satisfied
+      sha256: 194e4e6f188999277ecefa6ad72c399f30a1bfbec219cc072fdfea7aa2d9be04 # pragma: allowlist secret
+    - path: results/backtests/ri_policy_router_enabled_vs_absent_all_years_20260428_curated_only/2023_enabled_vs_absent_action_diffs.json
+      tracked: false
+      remote_visible: false
+      status: missing_from_cloud_closure
+      sha256: 8b8ca2434056cf046202f064d33736d24bb9b8e41fdafc71d84d202e9c085940 # pragma: allowlist secret
+  dependency_policy:
+    missing_required: fail-closed
+    hash_mismatch: fail-closed
+    undeclared_input_access: forbidden
+    ad_hoc_discovery: forbidden
+what_this_manifest_does_not_prove:
+  - That the worker's task is currently admissible for dispatch in the current repo state.
+  - That all local-only dependencies are reproducible or safe to expose.
+  - That the manifest draft is authoritative SSOT or active tooling contract.

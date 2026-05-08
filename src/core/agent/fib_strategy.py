@@ -25,6 +25,7 @@ class FibStrategyParams:
     trend_filter_enabled: bool = True
     trend_filter_lookback: int = DEFAULT_TREND_LOOKBACK
     confluence_required: bool = True
+    mega_zone_touch_required: bool = True
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -37,6 +38,7 @@ class FibStrategyParams:
             "trend_filter_enabled": self.trend_filter_enabled,
             "trend_filter_lookback": self.trend_filter_lookback,
             "confluence_required": self.confluence_required,
+            "mega_zone_touch_required": self.mega_zone_touch_required,
         }
 
 
@@ -475,7 +477,9 @@ def compute_signal_nested(
     mega_zone = _retracement_zone(direction, mega_a, mega_b, p.entry_zone_low, p.entry_zone_high)
 
     last_close_minor = float(minor_candles["close"][-1])
-    if not (mega_zone["low"] <= last_close_minor <= mega_zone["high"]):
+    if p.mega_zone_touch_required and not (
+        mega_zone["low"] <= last_close_minor <= mega_zone["high"]
+    ):
         return FibSignal(
             action="NONE",
             reason="no_mega_zone_touch",
@@ -527,16 +531,20 @@ def compute_signal_nested(
             ltf_zone=minor_zone,
         )
 
-    if p.confluence_required and not _zones_overlap_at_price(
-        [mega_zone, major_zone, minor_zone], last_close_minor
-    ):
-        return FibSignal(
-            action="NONE", reason="no_confluence",
-            htf_swing={"a": mega_a, "b": mega_b, "direction": direction},
-            htf_zone=mega_zone,
-            ltf_swing={"a": minor_a, "b": minor_b, "direction": direction},
-            ltf_zone=minor_zone,
-        )
+    if p.confluence_required:
+        # When mega zone-touch is not required, mega-zone may not contain the
+        # current price; only check confluence on the zones that ARE required.
+        confluence_zones = [major_zone, minor_zone]
+        if p.mega_zone_touch_required:
+            confluence_zones.insert(0, mega_zone)
+        if not _zones_overlap_at_price(confluence_zones, last_close_minor):
+            return FibSignal(
+                action="NONE", reason="no_confluence",
+                htf_swing={"a": mega_a, "b": mega_b, "direction": direction},
+                htf_zone=mega_zone,
+                ltf_swing={"a": minor_a, "b": minor_b, "direction": direction},
+                ltf_zone=minor_zone,
+            )
 
     if p.require_confirmation and not _is_confirmation_candle(
         direction, minor_candles["open"], minor_candles["close"]

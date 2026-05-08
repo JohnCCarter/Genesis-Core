@@ -119,3 +119,38 @@ def test_compute_signal_nested_uses_minor_close_as_entry() -> None:
     # entry, when populated, MUST equal minor's last close
     if sig.entry is not None:
         assert sig.entry == closes[-1]
+
+
+def test_mega_zone_touch_required_default_true() -> None:
+    p = FibStrategyParams()
+    assert p.mega_zone_touch_required is True
+    assert p.to_dict()["mega_zone_touch_required"] is True
+
+
+def test_mega_zone_touch_off_skips_no_mega_zone_touch_reject() -> None:
+    """With mega_zone_touch_required=False, a price outside the 1D zone
+    should not produce a `no_mega_zone_touch` rejection."""
+    # Build a long uptrend, then a tiny pullback that does NOT reach the 0.5
+    # of the mega swing. Without the mega-zone-touch gate, evaluation should
+    # progress past mega-zone and fail elsewhere (or reach a trade).
+    n_up = 80
+    closes = [40000.0 + (10000.0 / (n_up - 1)) * i for i in range(n_up)]
+    closes += [closes[-1] - i * 20.0 for i in range(1, 80)]  # very shallow pullback
+    opens = [closes[0]] + closes[:-1]
+    highs = [max(o, c) + 50.0 for o, c in zip(opens, closes)]
+    lows = [min(o, c) - 50.0 for o, c in zip(opens, closes)]
+    cs = {"open": opens, "high": highs, "low": lows, "close": closes,
+          "volume": [10.0] * len(closes)}
+
+    sig_strict = compute_signal_nested(
+        cs, cs, cs,
+        FibStrategyParams(trend_filter_enabled=False, mega_zone_touch_required=True),
+    )
+    sig_loose = compute_signal_nested(
+        cs, cs, cs,
+        FibStrategyParams(trend_filter_enabled=False, mega_zone_touch_required=False),
+    )
+    # Strict should reject on mega zone
+    assert sig_strict.reason == "no_mega_zone_touch"
+    # Loose should bypass that gate (any other reason or even an entry is fine)
+    assert sig_loose.reason != "no_mega_zone_touch"

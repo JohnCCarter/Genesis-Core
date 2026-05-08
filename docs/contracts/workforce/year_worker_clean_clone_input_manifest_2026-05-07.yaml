@@ -1,0 +1,206 @@
+# This artifact is a simulation/specimen only. It is non-authoritative,
+# non-operational, and fail-closed on unresolved refs. It does not authorize
+# dispatch, execution, materialization, admission, or proof of runtime readiness.
+schema_version: year_worker_clean_clone_input_manifest.v1
+draft_status: proposed_non_authoritative
+manual_proposal: true
+simulation_mode: RESEARCH
+simulation_state: blocked
+dispatch_allowed: false
+execution_authority: none
+proof_authority: none
+shared_truth_effect: none
+simulation_id: year_worker_clean_clone_environmental_coherence_tbtcusd_3h_2024_2026-05-07
+source_bundle:
+  bundle_id: year_worker_dry_run_bundle_tbtcusd_3h_2024_2026-05-07
+  root_ref: docs/contracts/workforce/year_worker_dry_run_packet_bundle_2026-05-07.md
+  lineage_summary_ref: docs/contracts/workforce/year_worker_dry_run_lineage_summary_2026-05-07.md
+  base_branch: feature/next-slice-2026-05-06
+  base_sha_resolution: DECLARED_IN_SOURCE_BUNDLE
+clean_clone_environment:
+  visibility_rule: repo_tracked_docs_manifests_and_contracts_only
+  starts_with:
+    - clean clone of the repository at the source bundle branch/base context
+    - repo-tracked docs/manifests/contracts referenced by the blocked bundle
+  intentionally_absent:
+    - local cache
+    - local operator state
+    - undeclared artifacts
+    - runtime-generated outputs
+    - materialized overlay payload
+    - bound manifest hash set
+    - output namespace receipts
+  fail_closed_on:
+    - UNRESOLVED_REFERENCE
+    - UNRESOLVED_HASH_BINDING
+    - DESCRIPTIVE_ONLY_RUNTIME_REF
+    - NOT_AVAILABLE_IN_CLEAN_CLONE
+required_declared_objects:
+  - sequence_index: 0
+    object_id: ywdr.bundle.root.tbtcusd_3h_2024.v1
+    ref: docs/contracts/workforce/year_worker_dry_run_packet_bundle_2026-05-07.md
+    role: bundle_root
+    clean_clone_visibility: repo_tracked_docs_visible
+    placeholder_bindings_observed:
+      self_hash_sha256: UNBOUND_PLACEHOLDER_SHA256
+    unresolved_refs: []
+  - sequence_index: 1
+    object_id: ywdr.bundle.queue_item.tbtcusd_3h_2024.v1
+    ref: docs/contracts/workforce/year_worker_dry_run_queue_item_2026-05-07.yaml
+    role: queue_object
+    clean_clone_visibility: repo_tracked_docs_visible
+    placeholder_bindings_observed:
+      self_hash_sha256: UNBOUND_PLACEHOLDER_SHA256
+      baseline_config_ref_sha256: UNBOUND_PLACEHOLDER_SHA256
+    unresolved_refs:
+      - BASELINE_CONFIG_ATTESTATION_MISSING
+  - sequence_index: 2
+    object_id: ywdr.bundle.envelope.tbtcusd_3h_2024.v1
+    ref: docs/contracts/workforce/year_worker_dry_run_envelope_2026-05-07.yaml
+    role: worker_envelope
+    clean_clone_visibility: repo_tracked_docs_visible
+    placeholder_bindings_observed:
+      envelope_hash: UNBOUND_PLACEHOLDER_SHA256
+    unresolved_refs:
+      - ENVELOPE_HASH_NOT_BOUND
+  - sequence_index: 3
+    object_id: ywdr.bundle.dependency_manifest.tbtcusd_3h_2024.v1
+    ref: docs/contracts/workforce/year_worker_dry_run_dependency_manifest_2026-05-07.yaml
+    role: dependency_closure
+    clean_clone_visibility: repo_tracked_docs_visible
+    placeholder_bindings_observed:
+      self_hash_sha256: UNBOUND_PLACEHOLDER_SHA256
+      required_repo_file_hashes: UNBOUND_PLACEHOLDER_SHA256
+    unresolved_refs:
+      - MATERIALIZED_GENERATED_OVERLAY_CARRIER_NOT_AVAILABLE_IN_CLEAN_CLONE
+      - HASH_ATTESTATION_PAYLOAD_NOT_AVAILABLE_IN_CLEAN_CLONE
+      - RUNTIME_ENTRYPOINT_ATTESTATION_MISSING
+      - BASELINE_CONFIG_ATTESTATION_MISSING
+  - sequence_index: 4
+    object_id: ywdr.bundle.repo_snapshot.tbtcusd_3h_2024.v1
+    ref: docs/contracts/workforce/year_worker_dry_run_repo_snapshot_manifest_2026-05-07.yaml
+    role: repo_snapshot
+    clean_clone_visibility: repo_tracked_docs_visible
+    placeholder_bindings_observed:
+      tracked_input_hashes: UNBOUND_PLACEHOLDER_SHA256
+    unresolved_refs:
+      - EXCLUDED_RUNTIME_REFS_REMAIN_NON_ADMISSIBLE
+  - sequence_index: 5
+    object_id: ywdr.bundle.runtime_manifest.tbtcusd_3h_2024.v1
+    ref: docs/contracts/workforce/year_worker_dry_run_runtime_execution_manifest_2026-05-07.yaml
+    role: runtime_shape
+    clean_clone_visibility: repo_tracked_docs_visible
+    placeholder_bindings_observed:
+      self_hash_sha256: UNBOUND_PLACEHOLDER_SHA256
+      baseline_config_ref_sha256: UNBOUND_PLACEHOLDER_SHA256
+    unresolved_refs:
+      - COMMAND_RENDERING_PROHIBITED
+      - OVERLAY_NOT_MATERIALIZED
+      - ARTIFACT_NAMESPACE_NOT_MATERIALIZED
+  - sequence_index: 6
+    object_id: ywdr.bundle.generated_overlay.tbtcusd_3h_2024.v1
+    ref: docs/contracts/workforce/year_worker_dry_run_generated_overlay_2026-05-07.yaml
+    role: overlay_shape
+    clean_clone_visibility: repo_tracked_docs_visible
+    placeholder_bindings_observed:
+      self_hash_sha256: UNBOUND_PLACEHOLDER_SHA256
+      manifest_hash_short: UNBOUND_PLACEHOLDER_SHORT
+    unresolved_refs:
+      - MATERIALIZED_OVERLAY_PAYLOAD_NOT_AVAILABLE_IN_CLEAN_CLONE
+  - sequence_index: 7
+    object_id: ywdr.bundle.output_contract.tbtcusd_3h_2024.v1
+    ref: docs/contracts/workforce/year_worker_dry_run_output_contract_2026-05-07.yaml
+    role: output_contract
+    clean_clone_visibility: repo_tracked_docs_visible
+    placeholder_bindings_observed:
+      manifest_hashes: UNBOUND_PLACEHOLDER_SHA256
+    unresolved_refs:
+      - OUTPUT_ARTIFACTS_NOT_PRODUCED
+      - OUTPUT_NAMESPACE_NOT_MATERIALIZED
+  - sequence_index: 8
+    object_id: ywdr.bundle.integration_intake.tbtcusd_3h_2024.v1
+    ref: docs/contracts/workforce/year_worker_dry_run_integration_intake_2026-05-07.yaml
+    role: intake_object
+    clean_clone_visibility: repo_tracked_docs_visible
+    placeholder_bindings_observed:
+      manifest_hash_matching: UNBOUND_PLACEHOLDER_SHA256
+    unresolved_refs:
+      - RECEIPT_MATCHING_NOT_POSSIBLE_WITHOUT_OUTPUTS
+  - sequence_index: 9
+    object_id: ywdr.bundle.cross_year_admission.tbtcusd_3h_2024.v1
+    ref: docs/contracts/workforce/year_worker_dry_run_cross_year_admission_2026-05-07.yaml
+    role: cross_year_boundary
+    clean_clone_visibility: repo_tracked_docs_visible
+    placeholder_bindings_observed: {}
+    unresolved_refs:
+      - COMPARABLE_VERIFIED_YEAR_SET_NOT_AVAILABLE
+  - sequence_index: 10
+    object_id: ywdr.bundle.lineage_summary.tbtcusd_3h_2024.v1
+    ref: docs/contracts/workforce/year_worker_dry_run_lineage_summary_2026-05-07.md
+    role: terminal_summary
+    clean_clone_visibility: repo_tracked_docs_visible
+    placeholder_bindings_observed:
+      self_hash_sha256: UNBOUND_PLACEHOLDER_SHA256
+    unresolved_refs:
+      - TERMINAL_SUMMARY_IS_DESCRIPTIVE_ONLY
+required_context_docs:
+  - path: docs/contracts/workforce/year_worker_execution_chain_design_2026-05-07.md
+    reason: declared chain-design anchor referenced by the blocked bundle
+    clean_clone_visibility: repo_tracked_docs_visible
+  - path: docs/contracts/workforce/fail_closed_runtime_matrix_2026-05-07.md
+    reason: fail-closed interpretation anchor for blocked transitions
+    clean_clone_visibility: repo_tracked_docs_visible
+  - path: docs/contracts/workforce/worker_runtime_execution_manifest_canonical_draft_v1_2026-05-07.yaml
+    reason: canonical runtime-plan shape referenced by the clean-clone simulation
+    clean_clone_visibility: repo_tracked_docs_visible
+  - path: docs/contracts/workforce/worker_runtime_execution_manifest_example_year_worker_2026-05-07.yaml
+    reason: example runtime-shape anchor referenced from queue and chain design
+    clean_clone_visibility: repo_tracked_docs_visible
+  - path: docs/contracts/workforce/dependency_manifest_canonical_draft_v1_2026-05-07.yaml
+    reason: canonical dependency-closure interpretation anchor
+    clean_clone_visibility: repo_tracked_docs_visible
+  - path: docs/contracts/workforce/repo_snapshot_manifest_canonical_draft_v1_2026-05-07.yaml
+    reason: canonical repo-snapshot interpretation anchor
+    clean_clone_visibility: repo_tracked_docs_visible
+required_governance_context:
+  - path: docs/governance/worker_governance_envelope.md
+    reason: worker-envelope contract semantics
+  - path: docs/governance_mode.md
+    reason: resolved-mode authority referenced by the envelope
+required_hash_placeholders:
+  source_placeholder_token: UNBOUND_PLACEHOLDER_SHA256
+  source_binding_state: unbound_placeholder
+  meaning_in_clean_clone: placeholder_is_visible_but_not_bound
+unresolved_references:
+  - id: BASELINE_CONFIG_ATTESTATION_MISSING
+    source_field: queue.baseline_config_ref and runtime_manifest.baseline_config_ref
+    resolution_state: NOT_ATTESTED_IN_CLEAN_CLONE
+    forbidden_inference: local_or_repo_existence_implies_dispatch_readiness
+  - id: RUNTIME_ENTRYPOINT_ATTESTATION_MISSING
+    source_field: dependency_manifest.missing_dependencies[attested_runtime_entrypoint_input]
+    resolution_state: DESCRIPTIVE_ONLY_RUNTIME_REF
+    forbidden_inference: declared_runner_ref_implies_executable_authority
+  - id: MATERIALIZED_GENERATED_OVERLAY_CARRIER_NOT_AVAILABLE_IN_CLEAN_CLONE
+    source_field: dependency_manifest.required_artifacts[materialized_generated_overlay_carrier]
+    resolution_state: NOT_AVAILABLE_IN_CLEAN_CLONE
+    forbidden_inference: overlay_shape_equals_materialized_overlay_payload
+  - id: HASH_ATTESTATION_PAYLOAD_NOT_AVAILABLE_IN_CLEAN_CLONE
+    source_field: dependency_manifest.required_artifacts[bound_manifest_hash_set]
+    resolution_state: NOT_AVAILABLE_IN_CLEAN_CLONE
+    forbidden_inference: placeholder_hashes_equal_real_hash_binding
+  - id: OUTPUT_ARTIFACTS_NOT_PRODUCED
+    source_field: output_contract.artifacts_produced
+    resolution_state: NOT_AVAILABLE_IN_CLEAN_CLONE
+    forbidden_inference: empty_output_contract_proves_runtime_failure_or_success
+  - id: COMPARABLE_VERIFIED_YEAR_SET_NOT_AVAILABLE
+    source_field: cross_year_admission.comparable_tuple_requirements
+    resolution_state: FUTURE_IMPLEMENTATION_REQUIRED
+    forbidden_inference: one_blocked_year_implies_cross_year_truth
+forbidden_to_infer:
+  - queue_presence_implies_dispatch
+  - envelope_presence_implies_runtime_activation
+  - placeholder_hash_implies_binding
+  - overlay_shape_implies_tuning_or_materialization
+  - output_contract_implies_execution
+  - intake_shape_implies_receipt_validation
+  - cross_year_categories_imply_admission

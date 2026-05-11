@@ -251,6 +251,12 @@ def _load_year_family_rows(year: str) -> tuple[list[dict[str, Any]], dict[str, A
             continue
         family_rows.append(_normalize_family_row(row, family_name=family_name, expected_year=year))
 
+    if not family_rows:
+        raise MissingMixedYearSurfaceError(
+            f"Missing mixed-year surface for {year}: no qualifying family rows in annual diff "
+            f"surface at {path}"
+        )
+
     return sorted(family_rows, key=lambda row: (row["month_number"], row["timestamp"])), {
         "path": str(relative),
         "row_count": len(payload),

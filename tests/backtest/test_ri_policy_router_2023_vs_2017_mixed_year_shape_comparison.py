@@ -346,6 +346,57 @@ def test_mixed_year_shape_comparison_fails_closed_when_required_surface_is_missi
     )
 
 
+def test_mixed_year_shape_comparison_fails_closed_when_year_has_no_qualifying_family_rows(
+    monkeypatch,
+) -> None:
+    summary_payload = _summary_payload()
+    non_qualifying_rows_2017 = [
+        _row(
+            "2017-07-10T00:00:00+00:00",
+            absent_action="LONG",
+            enabled_action="NONE",
+            zone="mid",
+            switch_reason="insufficient_evidence",
+            selected_policy="RI_no_trade_policy",
+            previous_policy="RI_continuation_policy",
+        ),
+        _row(
+            "2017-07-11T00:00:00+00:00",
+            absent_action="NONE",
+            enabled_action="NONE",
+            zone="low",
+            switch_reason="stable_continuation_state",
+            selected_policy="RI_continuation_policy",
+            previous_policy="RI_no_trade_policy",
+        ),
+    ]
+    annual_rows_2023 = _annual_rows_2023()
+
+    def _fake_load_json(path):
+        if path == subject.ROOT_DIR / subject.ANNUAL_SUMMARY_RELATIVE:
+            return copy.deepcopy(summary_payload)
+        if path == subject.ROOT_DIR / subject.ANNUAL_DIFF_RELATIVE_BY_YEAR["2017"]:
+            return copy.deepcopy(non_qualifying_rows_2017)
+        if path == subject.ROOT_DIR / subject.ANNUAL_DIFF_RELATIVE_BY_YEAR["2023"]:
+            return copy.deepcopy(annual_rows_2023)
+        raise AssertionError(f"Unexpected JSON load path: {path}")
+
+    monkeypatch.setattr(subject, "_load_json", _fake_load_json)
+
+    result = subject.run_2023_vs_2017_mixed_year_shape_comparison(base_sha="test-sha")
+
+    assert result["status"] == subject.STATUS_FAIL_CLOSED
+    assert result["failure_reason"].startswith(
+        "Missing mixed-year surface for 2017: no qualifying family rows in annual diff "
+        "surface at "
+    )
+    assert (
+        result["failure_reason"]
+        .replace("\\", "/")
+        .endswith(subject.ANNUAL_DIFF_RELATIVE_BY_YEAR["2017"].as_posix())
+    )
+
+
 def test_mixed_year_shape_comparison_rejects_malformed_rows(monkeypatch) -> None:
     summary_payload = _summary_payload()
     broken_rows_2017 = [

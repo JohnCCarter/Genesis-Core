@@ -13,14 +13,15 @@ Before producing the return, read and follow:
 - [Worker governance envelope](../../docs/governance/worker_governance_envelope.md)
 - [Editor slice worker dispatch runbook](../../docs/governance/runbooks/editor_slice_worker_dispatch.md)
 
-Normalize the supplied material into the standard Genesis-Core worker return package.
-If information is missing, mark it explicitly as missing instead of inventing it.
+Convert the supplied material into the standard Genesis-Core worker return package structure.
+If information is missing, mark it as `[MISSING]` instead of inventing it. If the input is malformed, say so explicitly and identify the field that needs correction.
 
 ## Output format
 
 ### Status
 
 - `pass | null | blocked | fail-closed`
+- If status is missing or unsupported, write `[MISSING]` and note the valid values.
 
 ### Summary
 

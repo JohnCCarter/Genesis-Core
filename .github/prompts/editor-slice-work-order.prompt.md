@@ -19,7 +19,8 @@ Before acting, load and follow:
 - [Tooling slice rules](../instructions/tooling-slices.instructions.md)
 
 Treat the user input as a draft work order for exactly one bounded slice.
-If any required field is missing, ask only for the missing field or fields.
+If any required field is missing or ambiguous, ask only for the missing clarification.
+If a referenced governance document is unavailable, stop and ask for clarification or an alternate reference.
 
 ## Required work-order fields
 
@@ -35,14 +36,14 @@ If any required field is missing, ask only for the missing field or fields.
 
 ## Execution rules
 
-- Resolve mode and use the smallest admissible governance path.
-- Treat the slice as fail-closed: do not widen subject, lane, or mission.
-- Reuse the supplied baseline, artifacts, and anchor years; do not invent a new baseline.
+- Resolve mode and choose the smallest admissible, least-permissive governance path that still satisfies the repo rules for the current slice. If that path is unclear, fail closed and escalate rather than widen scope.
+- Treat the current slice as fail-closed: within this slice, do not widen subject, lane, or mission.
+- Reuse the supplied baseline, artifacts, and anchor years. If any are missing or unclear, ask for clarification or return blocked instead of inventing a new baseline.
 - If the slice is non-trivial, create a todo plan and obtain the required governance review before editing.
-- Continue working until one of these is true:
+- Continue working only until one of these is true:
   1. the done criteria are satisfied
   2. a stop condition is reached
-  3. an escalation condition requires explicit redispatch or review
+  3. an escalation condition is triggered; in that case, stop the current slice and return it for explicit redispatch or review instead of widening scope yourself
 
 ## Annual-slice rule
 

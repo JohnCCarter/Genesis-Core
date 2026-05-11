@@ -1,21 +1,23 @@
-# Cloud Slice Worker Dispatch
+# Editor Slice Worker Dispatch
 
-Operational runbook for starting and receiving one bounded cloud-worker slice.
+Operational runbook for starting and receiving one bounded editor-worker slice.
 
 This runbook is subordinate to the repository's higher-order governance documents.
 It does not change mode resolution, freeze rules, or shared-truth authority.
 
 This is a retained target-model surface for explicitly activated slice workers.
 It does not create standing worker identities or implicit worker-to-worker chaining authority.
+This terminology refresh updates the retained worker model in live governance docs only.
+It does not by itself change runtime capabilities, automation guarantees, or authority boundaries.
 
 ## Purpose
 
-Use this runbook when control / integration lane wants to dispatch one real cloud worker
+Use this runbook when control / integration lane wants to dispatch one real editor worker
 on one bounded slice.
 
 The default Genesis model is:
 
-- one cloud worker = one **autonomous slice worker**
+- one editor worker = one **autonomous slice worker**
 - most workers share the same ground role
 - workers differ mainly by slice contract, not by permanent personality
 - one worker may live a long time, but may own only one **active** slice at a time
@@ -24,7 +26,7 @@ The default Genesis model is:
 
 This runbook helps control plane answer:
 
-1. Is the slice admissible for cloud execution now?
+1. Is the slice admissible for editor-attached execution now?
 2. What must be pinned before the worker starts?
 3. What may the worker do autonomously inside the slice?
 4. What must happen before the worker may continue to a next slice?
@@ -35,15 +37,15 @@ A worker is active only after **explicit dispatch**.
 
 Important consequences:
 
-- a workflow existing on `master` does not activate a worker
-- a branch existing on `origin` does not activate a worker
+- an open editor window does not activate a worker
+- an attached workspace or loaded checkout does not activate a worker
 - starting Worker A does **not** start Worker B
 - same-role workers may run in parallel only when each receives its own bounded slice contract
 - no worker may self-activate a next slice
 
 ## Preconditions before dispatch
 
-Before starting a cloud worker, control / integration lane should confirm all of the following:
+Before starting an editor worker, control / integration lane should confirm all of the following:
 
 - `base_branch` and `base_sha` are pinned
 - the slice question is exact and bounded
@@ -57,20 +59,21 @@ Before starting a cloud worker, control / integration lane should confirm all of
 
 If any one of these is unclear, the honest answer is: do not dispatch yet.
 
-## Cloud-visible input rule
+## Editor-visible input rule
 
 Default rule:
 
-- workers may rely on repo-visible tracked inputs on the dispatched branch remote
+- workers may rely on repo-visible tracked inputs in the active editor checkout
+- workspace visibility does not by itself expand authority
+- workspace-local or non-repo inputs are admissible only if the slice contract or direct user instruction explicitly allows them
 
-Non-repo inputs are admissible only if the slice contract explicitly defines how they become
-cloud-visible, for example:
+Examples of explicit non-repo admission paths:
 
 - bounded artifact bundle
-- approved remote fetch recipe
+- approved workspace path or fetch recipe
 - deterministic regenerate-on-demand recipe
 
-Local-only, `gitignored`, unstaged, or operator-mounted files are not admissible by default.
+Local-only, `gitignored`, unstaged, or operator-mounted files outside declared scope are not admissible by default.
 
 ## Dispatch steps
 
@@ -107,9 +110,9 @@ The worker-facing dispatch should include at least:
 If the slice may run scripts, helpers, tests, or backtests, control plane must confirm that:
 
 - runner entrypoint is declared
-- required runtime inputs are admissible in cloud
+- required runtime inputs are admissible in the active editor/workspace context
 - output namespace is explicit
-- local-only data is not being smuggled in as if it were repo-visible
+- local-only data is not being smuggled in as if it were in scope automatically
 
 ### 4. Start the worker explicitly
 
@@ -152,7 +155,7 @@ The worker must not:
 
 ## Required return package
 
-Each cloud worker should return at least:
+Each editor worker should return at least:
 
 - `status`
 - artifact or packet paths
@@ -215,7 +218,7 @@ Escalate rather than improvising if:
 
 ## Practical default
 
-A good steady-state cloud batch should usually look like this:
+A good steady-state editor-worker batch should usually look like this:
 
 - same ground-role worker type
 - different bounded slices

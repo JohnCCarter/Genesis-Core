@@ -2,7 +2,7 @@
 
 ## Syfte
 
-Det här dokumentet definierar den worker-facing operativa specen för parallella cloud workers och andra isolerade branch/checkouts.
+Det här dokumentet definierar den worker-facing operativa specen för parallella editor workers och andra isolerade branch/checkouts.
 
 Det är här den kompilerade governance-envelope:n beskrivs: alltså det kontrakt som control plane ger till en worker så att workern kan arbeta säkert utan att själv behöva tolka hela repo-governance-stacken.
 
@@ -40,14 +40,17 @@ Om den behöver det har control plane inte kompilerat governance tillräckligt l
 
 ## Default worker model
 
-Den operativa defaultmodellen för Genesis cloud execution är:
+Den operativa defaultmodellen för Genesis editor workers är:
 
-- en cloud worker = en **autonomous slice worker**
+- en editor worker = en **autonomous slice worker**
 - samma worker-typ ska normalt kunna användas på många olika bounded slices
 - skillnaden mellan två workers ska i första hand uttryckas i envelope-fälten (`question`, `subject`, `scope_in`, `scope_out`, `allowed_inputs`, `done_criteria`, `gates_required`) och inte i olika agentpersonligheter
 - daterade batchroller som `primary`, `corroborative` eller `fallback` får förekomma i dispatch-artefakter, men de är routingval i en viss våg och inte den långsiktiga worker-definitionen
 
 Det betyder att envelope:n i normalfallet ska beskriva **vad slicen är**, inte försöka skapa en särskild worker-art för varje år, kontrollsubject eller hypotes.
+
+En editor worker är en editor-attached agent som exekverar en explicit aktiverad, bounded slice i den aktuella sessionen.
+Workspace-visibility breddar inte dess auktoritet: bara inputs som explicit ligger i scope via slice-kontraktet eller direkt användarinstruktion får användas, och integration-owned truth förblir oförändrad.
 
 ---
 
@@ -110,26 +113,29 @@ Varje worker ska utgå från:
 - egen isolerad checkout
 - egen dispatch-instans
 
-Molnexecution ska därför förstås som:
+Editor-worker execution ska därför förstås som:
 
-- en worker = en isolerad branch/checkout
+- en worker = en editor-attached, isolerad branch/checkout
 - en worker = en långlivad exekveringsenhet
 - en aktiv slice / execution leg = en bounded fråga
 - en aktiv slice = ett eget outputkontrakt
 
-Lokala worktrees kan användas av control plane för koordinering eller debugging, men de är bara en operatörskonveniens.
-De är inte workforce-definitionen, inte ett krav för cloud execution och inte en auktoritetssurface.
+Lokala worktrees kan användas av control plane för koordinering eller debugging, och för editor workers är de också den normala exekveringsytan.
+De är däremot inte workforce-definitionen, inte en separat governance-auktoritet och inte en genväg runt envelope-kontraktet.
 
 ### Branchnamn ska bära mode där det är möjligt
 
 Eftersom `docs/governance_mode.md` använder branchmappning ska worker-brancher bära mode i namnet.
 
+Exemplen nedan är illustrativa.
+De definierar inte ett obligatoriskt branchprefix eller en ny authority-yta.
+
 Exempel:
 
-- `feature/cloud/mixed/2017-2023-chronology`
-- `feature/cloud/inventory/annual-scan-batch-a`
-- `research/cloud/sign/insufficient-evidence-holdout`
-- `sandbox/cloud/probe/example-x`
+- `feature/mixed/2017-2023-chronology`
+- `feature/inventory/annual-scan-batch-a`
+- `research/sign/insufficient-evidence-holdout`
+- `sandbox/probe/example-x`
 
 Undvik:
 
@@ -161,7 +167,7 @@ Arbetsmodellen är homogena slice-workers med explicit aktivering, inte en själ
 
 ### Långlivad worker, en aktiv slice åt gången
 
-En cloud worker får vara långlivad över flera timmar eller dagar, men den får inte behandlas som en stående auktoritetsdomän.
+En editor worker får vara långlivad över flera timmar eller dagar, men den får inte behandlas som en stående auktoritetsdomän.
 
 Det som får leva länge är worker-identiteten.
 Det som alltid måste vara bounded är den aktiva slicen.
@@ -179,7 +185,7 @@ Som huvudregel gäller därför:
 ## Worker-klasser och kapabiliteter
 
 Worker-klasser ska förstås som kapabilitetsprofiler, inte som olika personligheter eller långlivade auktoritetsdomäner.
-I normalfallet bör de flesta cloud workers dela samma grundläggande slice-worker-roll och bara skilja sig åt genom envelope-kontraktet för den aktuella slicen.
+I normalfallet bör de flesta editor workers dela samma grundläggande slice-worker-roll och bara skilja sig åt genom envelope-kontraktet för den aktuella slicen.
 
 | Worker-klass   | Repo-write?                               | Commit allowed?                           | Shared truth write?              | Typiska outputs                                          | Kommentar                                |
 | -------------- | ----------------------------------------- | ----------------------------------------- | -------------------------------- | -------------------------------------------------------- | ---------------------------------------- |
@@ -190,7 +196,7 @@ I normalfallet bör de flesta cloud workers dela samma grundläggande slice-work
 
 Den viktigaste regeln är att ingen worker själv får uppgradera betydelsen av sitt resultat.
 
-För nuvarande målmodell betyder det praktiskt att samma cloud worker-typ normalt ska kunna ta nästa bounded slice utan att workforce-systemet behöver introducera en ny worker-personlighet.
+För nuvarande målmodell betyder det praktiskt att samma editor worker-typ normalt ska kunna ta nästa bounded slice utan att workforce-systemet behöver introducera en ny worker-personlighet.
 Det som byts är envelope:n, inte worker-artens grundnatur.
 
 En worker får hitta något intressant, men får inte själv besluta att resultatet nu är:
@@ -269,9 +275,9 @@ dispatch_id: mixed-2017-2023-cadence-run-001
 worker_class: deep-dive
 base_branch: feature/next-slice-2026-05-06
 base_sha: <PINNED_SHA>
-worker_branch: feature/cloud/mixed/2017-2023-cadence
+worker_branch: feature/mixed/2017-2023-cadence
 resolved_mode: RESEARCH
-mode_source: branch:feature/cloud/mixed/2017-2023-cadence
+mode_source: branch:feature/mixed/2017-2023-cadence
 authority_source: docs/governance_mode.md
 change_class: docs-only
 lane: research-evidence

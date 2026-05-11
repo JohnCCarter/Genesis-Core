@@ -22,7 +22,7 @@ Minimum load sequence for any Genesis-Core session. Do not read full governance 
 ## Step 4 — Load task packet (only if continuing a specific slice)
 
 9. Read the command packet for the active slice (path in ACTIVE_TASK.md → Artifact)
-10. If the active work is a cloud-worker slice, also read `docs/governance/runbooks/cloud_slice_worker_dispatch.md`
+10. If the active work is an editor-worker slice, also read `docs/governance/runbooks/editor_slice_worker_dispatch.md`
 11. Do NOT read: AGENTS.md, OPUS_46_GOVERNANCE.md, governance_mode.md, copilot-instructions.md
     — these are stable; QUICK_REF.md covers what you need for routine sessions
 
@@ -33,9 +33,9 @@ Minimum load sequence for any Genesis-Core session. Do not read full governance 
 - Constitutional question → read AGENTS.md
 - Operational contract dispute → read .github/copilot-instructions.md
 
-## Cloud-slice activation rule
+## Editor-slice activation rule
 
 - A worker is active only after explicit dispatch.
-- Existing workflow/setup on `master` does not by itself activate a worker.
+- An open editor session or attached workspace does not by itself activate a worker.
 - Starting one worker does not implicitly start another worker.
 - Same-role workers may run in parallel only when each has its own bounded slice, branch target, and dispatch contract.

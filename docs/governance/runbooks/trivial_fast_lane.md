@@ -24,9 +24,9 @@ Om minsta tvekan finns: eskalera till Lite/Full path.
 4. Självgranska för dold behaviorpåverkan
 5. Rapportera kort Implementation Report
 
-## Cloud slice note
+## Editor slice note
 
-Quick Path får användas av en autonomous slice worker bara om dispatch-kontraktet själv förblir trivialt:
+Quick Path får användas av en autonomous editor worker bara om dispatch-kontraktet själv förblir trivialt:
 
 - explicit bounded slice
 - docs/comments/metadata-only

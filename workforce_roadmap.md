@@ -8,6 +8,8 @@ Det här är **översiktsdokumentet**.
 
 Det här är också en **retained target-model surface** för explicit aktiverade slice-workers.
 Det skapar inte stående worker-identiteter och ger inte implicit worker-till-worker-kedjning någon auktoritet.
+Den levande terminologin i retained governance-docs beskriver numera editor workers som defaultmodell.
+Det i sig ändrar inte runtime-kapabiliteter, automationsgarantier eller authority boundaries.
 
 Det är inte:
 
@@ -128,7 +130,7 @@ Worker plane är allt som kör parallellt.
 
 Varje worker får:
 
-- en isolerad branch/checkout i molnet
+- en isolerad editor-attached branch/checkout
 - en egen branch
 - en exakt fråga
 - ett kompilerat kontrakt
@@ -137,16 +139,17 @@ En worker ska här förstås som en långlivad worker-identitet.
 Den aktiva arbetsenheten är däremot alltid en bounded slice / execution leg.
 Samma worker får därför arbeta över flera slices över tid, men aldrig äga mer än en aktiv slice åt gången och aldrig fortsätta utan explicit nästa admissible slice från control / integration plane.
 
-Lokala worktrees kan användas av control- eller integration plane för koordinering och debugging, men de är inte workforce-definitionen och inte en auktoritetssurface.
+Lokala worktrees kan användas av control- eller integration plane för koordinering och debugging, och för editor workers är den editor-attached branchen/worktreen den normala exekveringsytan.
+Den är däremot inte workforce-definitionen och inte en auktoritetssurface.
 
 Kort sagt: detta är muskeln.
 
 ### Default worker model
 
-Den operativa defaultmodellen för Genesis cloud execution ska vara:
+Den operativa defaultmodellen för Genesis editor workers ska vara:
 
-- en cloud worker = en **autonomous slice worker**
-- de flesta cloud workers delar samma grundroll, samma governance-ram och samma returformat
+- en editor worker = en **autonomous slice worker**
+- de flesta editor workers delar samma grundroll, samma governance-ram och samma returformat
 - variation ska i första hand ligga i slice-kontraktet: år/window, fråga, scope, inputs, gates och done criteria
 - asymmetriska batchroller som `primary`, `corroborative` eller `fallback` får förekomma som daterade dispatch-strategier, men de är inte workforce-definitionen och ska inte behandlas som långsiktiga worker-personligheter
 
@@ -219,7 +222,7 @@ Det är viktigt att skilja på jobbtyp och worker-klass.
 
 Det är också viktigt att skilja på worker-klass och worker-personlighet.
 En worker-klass beskriver främst kapabilitets- och permissionsyta.
-Den ska inte i normalfallet användas för att skapa flera olika långlivade cloud-agentidentiteter när samma grundworker kan dispatchas på olika bounded slices.
+Den ska inte i normalfallet användas för att skapa flera olika långlivade editor-worker-identiteter när samma grundworker kan dispatchas på olika bounded slices.
 
 ### Jobbfamiljer
 
@@ -240,7 +243,7 @@ Den ska inte i normalfallet användas för att skapa flera olika långlivade clo
 
 Worker-specifika kapabiliteter, precedence-regler och manifestfält hör hemma i den separata envelope-specen.
 
-Som operativ default bör de flesta cloud workers i Genesis dispatchas som samma grundläggande slice-worker-modell inom samma kapabilitetsklass, och skiljas åt av sin envelope snarare än av sin identitet.
+Som operativ default bör de flesta editor workers i Genesis dispatchas som samma grundläggande slice-worker-modell inom samma kapabilitetsklass, och skiljas åt av sin envelope snarare än av sin identitet.
 Inventory-, integration- och runtime/strict-klasserna förblir specialiseringar, inte ett krav på en asymmetrisk worker-flotta.
 
 ---
@@ -251,7 +254,7 @@ Gemensam control-plane-branch i den här vågen är:
 
 - `feature/next-slice-2026-05-06`
 
-Varje cloud worker ska utgå från:
+Varje editor worker ska utgå från:
 
 - samma basgren eller auktoriserad integrationsgren
 - samma `base_sha` för vågen
@@ -259,19 +262,21 @@ Varje cloud worker ska utgå från:
 - egen isolerad checkout
 - egen issue eller dispatch-brief
 
-Lokala worktrees kan användas av control plane för koordinering eller debugging, men de är bara en operatörskonveniens.
-De är inte workforce-definitionen, inte ett krav för cloud execution och inte en auktoritetssurface.
+Lokala worktrees kan användas av control plane för koordinering eller debugging, och för editor workers är de också den normala editor-attached exekveringsytan.
+De är däremot inte workforce-definitionen, inte en separat governance-auktoritet och inte en genväg runt envelope-kontraktet.
 
 Branchnamn bör bära mode där det är möjligt, till exempel:
 
-- `feature/cloud/inventory/...`
-- `feature/cloud/deepdive/...`
-- `research/cloud/sign/...`
-- `sandbox/cloud/probe/...`
+Exemplen nedan är illustrativa.
+De definierar inte ett obligatoriskt branchprefix eller ett nytt authority-lager.
+
+- `feature/inventory/...`
+- `feature/deepdive/...`
+- `research/sign/...`
+- `sandbox/probe/...`
 
 Undvik:
 
-- `cloud/...` utan mode-prefix
 - `wt/...` som definition av workforce-modellen
 
 Detaljerad branch- och envelope-disciplin finns i:
@@ -315,7 +320,7 @@ Frågan är hur många returer integration plane kan adjudikera utan att börja 
 
 ### 7. Session recovery ska vara artefaktdriven
 
-Cloud workers ska kunna återuppta från envelope, dispatch-status och registrerade artefakter.
+Editor workers ska kunna återuppta från envelope, dispatch-status och registrerade artefakter.
 De ska inte kräva full chatthistorik för att förstå sitt uppdrag.
 
 För långlivade workers gäller samma sak mellan slices: continuation ska utgå från explicit retur-/handoff-state, ny envelope och registrerade artefakter, inte från att workern "minns" tidigare chatt eller improviserar nästa steg.
@@ -328,7 +333,7 @@ Version 1 av modellen bör hållas enkel.
 
 ### Rekommenderad startnivå
 
-- Aktiva cloud workers samtidigt: `1–3`
+- Aktiva editor workers samtidigt: `1–3`
 - Default worker-roll: `autonomous slice worker`
 - Dominerande dispatch-mönster: samma worker-roll på olika bounded slices
 - Asymmetrisk batchdesign: tillåten som pilot eller när integrationsrisk kräver det, men inte default
@@ -392,7 +397,7 @@ När modellen ska skärpas vidare är de viktigaste nästa stegen:
 5. definiera evidence graph med lineage-, contradiction- och supersession-kanter
 6. definiera artifact registry och canonical naming
 7. definiera scheduler som väger integrationsbacklogg mot nytt research-värde
-8. definiera retry/idempotency-regler för cloud workers
+8. definiera retry/idempotency-regler för editor workers
 
 ---
 
@@ -405,11 +410,11 @@ Poängen är att göra varje worker smalare, säkrare och lättare att styra.
 Kort slutbild:
 
 - en control-plane-branch
-- många domain-isolerade cloud workers på egna branches/checkouts
+- många domain-isolerade editor workers på egna branches/checkouts
 - en branch per worker
 - inventory brett
 - deep-dive selektivt
 - shared truth bara via integration
-- molnet som worker-fabrik
-- lokala worktrees bara som operatörskonveniens
+- editorn som worker-yta
+- lokala worktrees som editor-attached exekveringsyta, inte som separat governance-lager
 - repo som sanningslager

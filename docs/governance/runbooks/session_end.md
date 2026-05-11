@@ -28,7 +28,7 @@ Write to: `~/.claude/state/genesis-core/GOVERNANCE_STATUS.md`
 - Update gate checkboxes
 - Record Opus review verdict + date if a review happened
 
-## Step 3a — If the active work was a cloud-worker slice
+## Step 3a — If the active work was an editor-worker slice
 
 Record explicitly before handoff:
 
@@ -65,7 +65,7 @@ Mode: <MODE> (source: <reason>)
 - AGENTS.md, OPUS_46_GOVERNANCE.md, governance_mode.md, copilot-instructions.md
 ```
 
-If the session involved a cloud-worker slice, also include:
+If the session involved an editor-worker slice, also include:
 
 - the worker/slice identifier
 - artifact or packet paths returned

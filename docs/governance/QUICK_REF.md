@@ -56,16 +56,16 @@ pre-commit / lint → smoke tests → determinism replay → feature cache invar
 - `föreslagen` = proposed, not yet in repo
 - `införd` = implemented and verified in repo
 
-## Cloud Worker Defaults
+## Editor Worker Defaults
 
 - Defaultmodell: `autonomous slice worker`
 - Samma grundroll bör normalt återanvändas på olika bounded slices/windows
 - Skillnader mellan workers ska främst ligga i dispatch/envelope, inte i olika agentpersonligheter
 - Aktivering är explicit per worker/slice; att starta A startar inte automatiskt B
-- Cloud workers får bara lita på repo-synliga inputs om inte workflow/dispatch uttryckligen provisionerar mer
+- Editor workers får bara lita på repo- eller workspace-synliga inputs som den aktiva slicen eller direkt användarinstruktion explicit tillåter
 - Daterade asymmetriska wave-roller (`primary`, `corroborative`, `fallback`) ska tolkas som pilot-routing, inte som global worker-SSOT
 
-När du definierar eller adjudikerar en cloud-worker-slice, läs även:
+När du definierar eller adjudikerar en editor-worker-slice, läs även:
 
 - `workforce_roadmap.md`
 - `docs/governance/worker_governance_envelope.md`

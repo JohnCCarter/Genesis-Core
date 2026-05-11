@@ -9,6 +9,15 @@ This file is the practical reference for collaboration between:
 
 Use this as the default operating contract for non-trivial changes, but always resolve governance mode first and size packet/review/gates by change class and touched surfaces within that mode.
 
+## How to use this file
+
+Read this file in the following order:
+
+1. Resolve governance mode via `docs/governance_mode.md`.
+2. Decide whether the slice qualifies for the quick path or requires the full gated protocol in this file.
+3. If runtime/contract-touching or high-sensitivity surfaces are entered, follow the stricter governed path described below.
+4. When this file points to supplemental references, those references do not override the source-of-truth and precedence rules defined here.
+
 ## Applicability and scope
 
 - Skills may evolve additively via explicit proposals; they must not self-modify, broaden scope, alter determinism guarantees, or redefine PASS without governance approval.
@@ -20,6 +29,13 @@ Use this as the default operating contract for non-trivial changes, but always r
 - `docs/governance/README.md` is a supplemental operational index and must not override SSOT precedence in this file.
 - For repository layout and file placement guidance, also see `docs/repository-layout-policy.md`. It is a subordinate practical reference and must not override higher-order governance or mode documents.
 
+## Terminology note
+
+- `commit-brief` means the task or request Codex starts from.
+- `commit contract` means the explicit scope, constraints, and done criteria used when the gated protocol applies.
+
+This note is descriptive only. It does not create a new requirement or replace the named sections below.
+
 ## Quick path for trivial changes
 
 A change is trivial only if all conditions are true:
@@ -28,6 +44,8 @@ A change is trivial only if all conditions are true:
 - No runtime behavior change (docs/comments/metadata/editor config only).
 - No dependency, API contract, env/config semantics, or schema interpretation changes.
 - No files in high-sensitivity zones are touched.
+
+See also the `High-sensitivity zones (extra strict)` section below when deciding whether the quick path remains valid.
 
 Quick path steps:
 

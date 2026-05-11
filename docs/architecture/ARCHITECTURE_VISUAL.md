@@ -606,7 +606,7 @@ Proof checklist (Diagram 6): no arrows.
 
 These assets exist under `src/config/...` but the loader/writer defaults target repo-root `config/...`:
 
-- Orphaned champions path (quarantined): `archive/_orphaned/src_config_strategy_champions/*` (moved from `src/config/...` to preserve history while eliminating PATH_MISMATCH risk)
+- Historical note: this document previously cited `archive/_orphaned/src_config_strategy_champions/*` as the quarantined landing zone for orphaned champions, but that path is not present in the current repo-visible tree. The current repo-visible `_orphaned` surface is `archive/_orphaned/results/**`, while the loader/writer defaults still target repo-root `config/strategy/champions/`.
   - Loader default: `src/core/strategy/champion_loader.py:13-20` (`CHAMPIONS_DIR = ROOT / "config" / "strategy" / "champions"`)
   - Writer default: `src/core/optimizer/champion.py:67-85` (`repo_root / "config" / "strategy" / "champions"`)
 
@@ -614,17 +614,18 @@ Repro commands:
 
 - `rg -n 'CHAMPIONS_DIR' src/core/strategy/champion_loader.py`
 - `rg -n 'champions_dir\s*=\s*champions_dir or' src/core/optimizer/champion.py`
-- `Get-ChildItem archive\\_orphaned\\src_config_strategy_champions -File`
+- `Test-Path archive\\_orphaned\\src_config_strategy_champions`
+- `Get-ChildItem archive\\_orphaned -Recurse -File`
 
 ## 7) Next actions (safe clean-up checklist)
 
 Note: this section is intentionally the **last section in the file**. Keep it last so action items never end up below it.
 
-1. Quarantine (stability-first) orphaned champions: keep them under `archive/_orphaned/src_config_strategy_champions/*` (do not delete in this PR). If you ever need to restore/migrate, move the desired file(s) into repo-root `config/strategy/champions/` (the loader/writer default) and re-run your baseline checks (`src/core/strategy/champion_loader.py:13-20`, `src/core/optimizer/champion.py:67-85`).
-2. For each `NEVER_IMPORTED` module, decide keep vs delete:
+1. `_orphaned` champion note is currently historical-only: there is no repo-visible `archive/_orphaned/src_config_strategy_champions/*` payload in this workspace, so do not treat that path as a current cleanup target or restore source without re-anchoring it first. If champion files ever need quarantine again, record the actual path explicitly and re-run your baseline checks before any restore/migration into repo-root `config/strategy/champions/`.
+1. For each `NEVER_IMPORTED` module, decide keep vs delete:
    - prove “unused” by running the `rg` commands in the evidence table (Section 6) and confirming no runtime entrypoint imports it.
-3. For each `TEST_ONLY` module, decide whether it should be promoted into runtime or moved under `tests/` helpers (evidence table, Section 6).
-4. Importtime-gate (recommended before any deletion): capture “what actually executes” using _real entrypoints_ so you also include **local imports inside functions**. Note: `-X importtime` writes to stderr.
+1. For each `TEST_ONLY` module, decide whether it should be promoted into runtime or moved under `tests/` helpers (evidence table, Section 6).
+1. Importtime-gate (recommended before any deletion): capture “what actually executes” using _real entrypoints_ so you also include **local imports inside functions**. Note: `-X importtime` writes to stderr.
 
 - Backtest path: `python -X importtime -m scripts.run_backtest ... 2> logs/importtime_backtest.txt`
 - API import baseline: `python -X importtime -c "import core.server; print('core.server imported')" 2> logs/importtime_server_import.txt`

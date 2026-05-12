@@ -28,7 +28,7 @@ This file does **not**:
 
 ## Current branch and mode anchor
 
-- Branch: `feature/next-slice-2026-05-06`
+- Branch: `feature/editor-worker-orchestrator`
 - Expected mode on this branch: `RESEARCH`
 - RESEARCH allows the smallest reproducible, traceable step
 - RESEARCH does **not** authorize drift into strict-only surfaces, runtime-default authority, promotion, or champion claims without the required lane/packet

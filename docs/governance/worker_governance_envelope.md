@@ -273,7 +273,7 @@ Det ger inte stående auktoritet, det breddar inte scope och det återställs n�
 task_id: mixed-2017-2023-cadence
 dispatch_id: mixed-2017-2023-cadence-run-001
 worker_class: deep-dive
-base_branch: feature/next-slice-2026-05-06
+base_branch: feature/editor-worker-orchestrator
 base_sha: <PINNED_SHA>
 worker_branch: feature/mixed/2017-2023-cadence
 resolved_mode: RESEARCH

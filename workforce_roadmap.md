@@ -252,7 +252,11 @@ Inventory-, integration- och runtime/strict-klasserna förblir specialiseringar,
 
 Gemensam control-plane-branch i den här vågen är:
 
-- `feature/next-slice-2026-05-06`
+- `feature/editor-worker-orchestrator`
+
+Den praktiska starttopologin för branch/worktree-disciplin dokumenteras i:
+
+- [`docs/governance/runbooks/editor_slice_worker_dispatch.md`](docs/governance/runbooks/editor_slice_worker_dispatch.md)
 
 Varje editor worker ska utgå från:
 

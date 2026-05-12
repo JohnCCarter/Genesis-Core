@@ -75,6 +75,58 @@ Examples of explicit non-repo admission paths:
 
 Local-only, `gitignored`, unstaged, or operator-mounted files outside declared scope are not admissible by default.
 
+## Practical branch and worktree setup
+
+For the current editor-worker model, the practical default topology is:
+
+- `master` = stable shared baseline
+- `feature/editor-worker-orchestrator` = long-lived control-plane branch for this wave
+- one bounded slice = one worker branch = one PR
+- one editor-attached worktree/checkout = one worker execution surface
+
+Operationally:
+
+- control / integration lane may stay on `feature/editor-worker-orchestrator`
+- initial worker scouting may be read-only in the shared editor context
+- any worker that will write, commit, or open a PR should move onto its own branch and preferably its own isolated worktree/checkout first
+- the pinned `base_sha` for the slice still wins over whatever branch happens to be open in the editor
+
+This means the branch/worktree is an execution surface, not a source of authority.
+The worker is still governed by the bounded slice contract, global governance, and the pinned `base_sha`.
+
+When in doubt, use the smaller honest rule:
+
+- read-only comparison or inventory work may begin without a dedicated worker branch if the slice contract allows it
+- repo-write work should not start until the worker has its own branch target and isolated editor-attached worktree/checkout
+
+## Optional startup bundle for new editor chats
+
+If control plane wants a ready-to-pick setup for new editor chats, the recommended custom agent bundle is:
+
+- `.github/agents/editor-scout-weakness.agent.md`
+- `.github/agents/editor-scout-control.agent.md`
+- `.github/agents/editor-scout-contradiction.agent.md`
+- `.github/agents/editor-scout-reference.agent.md`
+
+These agents are read-only scouting workers for an initial pass.
+They are selectable from the chat agent picker, but a new editor chat still does **not** auto-select one on open.
+
+If control plane prefers prompt-first startup instead of agent-picker startup, the equivalent prompt bundle is:
+
+- `.github/prompts/editor-scout-weakness.prompt.md`
+- `.github/prompts/editor-scout-control.prompt.md`
+- `.github/prompts/editor-scout-contradiction.prompt.md`
+- `.github/prompts/editor-scout-reference.prompt.md`
+
+Use these only as read-only scouting lenses for an initial pass.
+They do not create standing worker identities, branches, worktrees, or write authority.
+
+Important operator rule:
+
+- a new editor chat does **not** auto-bind itself to one of these agents or prompts
+- control plane must select exactly one startup agent in the picker, or invoke/paste exactly one startup prompt, for each new chat explicitly
+- if a scouting chat needs repo-write, commit, or PR work, stop the scouting pass and move that slice onto its own branch target and preferably its own isolated editor-attached worktree/checkout before continuing
+
 ## Dispatch steps
 
 ### 1. Choose one bounded slice

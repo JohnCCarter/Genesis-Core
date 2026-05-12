@@ -129,7 +129,7 @@ Important operator rule:
 
 One concrete read-only specimen for the current startup setup lives at:
 
-- `docs/contracts/workforce/editor_worker_startup_test_dispatch_2026-05-12.md`
+- `docs/contracts/editor_workers/editor_worker_startup_test_dispatch_2026-05-12.md`
 
 ## Dispatch steps
 

@@ -2,7 +2,7 @@
 
 ## Syfte
 
-Det här dokumentet definierar den worker-facing operativa specen för parallella editor workers och andra isolerade branch/checkouts.
+Det här dokumentet definierar den worker-facing operativa specen för parallella editor workers och deras exekveringsytor (normalt delad lokal checkout, ibland separat branch/worktree).
 
 Det är här den kompilerade governance-envelope:n beskrivs: alltså det kontrakt som control plane ger till en worker så att workern kan arbeta säkert utan att själv behöva tolka hela repo-governance-stacken.
 
@@ -45,12 +45,14 @@ Den operativa defaultmodellen för Genesis editor workers är:
 - en editor worker = en **autonomous slice worker**
 - samma worker-typ ska normalt kunna användas på många olika bounded slices
 - skillnaden mellan två workers ska i första hand uttryckas i envelope-fälten (`question`, `subject`, `scope_in`, `scope_out`, `allowed_inputs`, `done_criteria`, `gates_required`) och inte i olika agentpersonligheter
+- flera lokala editor workers får normalt dela samma checkout så länge scope, ownership och repo-write-rättigheter är explicit bounded och non-overlapping
 - daterade batchroller som `primary`, `corroborative` eller `fallback` får förekomma i dispatch-artefakter, men de är routingval i en viss våg och inte den långsiktiga worker-definitionen
 
 Det betyder att envelope:n i normalfallet ska beskriva **vad slicen är**, inte försöka skapa en särskild worker-art för varje år, kontrollsubject eller hypotes.
 
 En editor worker är en editor-attached agent som exekverar en explicit aktiverad, bounded slice i den aktuella sessionen.
 Workspace-visibility breddar inte dess auktoritet: bara inputs som explicit ligger i scope via slice-kontraktet eller direkt användarinstruktion får användas, och integration-owned truth förblir oförändrad.
+Det innebär att flera lokala editor workers tekniskt kan se samma checkout-lokala filer i delad körning, men lokala, gitignored eller untracked inputs är fortfarande otillåtna om inte dispatchen explicit släpper in dem.
 
 ---
 
@@ -109,23 +111,25 @@ Varje worker ska utgå från:
 
 - samma integrationsgren eller samma auktoriserade basgren
 - samma `base_sha` för den aktuella dispatch-vågen
-- egen branch
-- egen isolerad checkout
+- samma lokala checkout när control plane valt delad exekveringsyta
+- separat branch/worktree bara när explicit isolering har tilldelats
 - egen dispatch-instans
+- eget bounded ownership-scope
 
 Editor-worker execution ska därför förstås som:
 
-- en worker = en editor-attached, isolerad branch/checkout
+- en worker = en editor-attached exekveringsenhet på den av control plane valda exekveringsytan
+- flera workers får dela samma checkout om deras slices är explicit bounded och non-overlapping
 - en worker = en långlivad exekveringsenhet
 - en aktiv slice / execution leg = en bounded fråga
 - en aktiv slice = ett eget outputkontrakt
 
-Lokala worktrees kan användas av control plane för koordinering eller debugging, och för editor workers är de också den normala exekveringsytan.
-De är däremot inte workforce-definitionen, inte en separat governance-auktoritet och inte en genväg runt envelope-kontraktet.
+Lokala worktrees kan användas av control plane för koordinering eller debugging när en slice behöver branch-isolering, konfliktfri repo-write, destruktiva git-operationer eller PR-förberedelse.
+De är däremot inte defaultmodellen, inte workforce-definitionen, inte en separat governance-auktoritet och inte en genväg runt envelope-kontraktet.
 
 ### Branchnamn ska bära mode där det är möjligt
 
-Eftersom `docs/governance_mode.md` använder branchmappning ska worker-brancher bära mode i namnet.
+Eftersom `docs/governance_mode.md` använder branchmappning ska separata worker-brancher bära mode i namnet när en slice uttryckligen flyttas till egen branch.
 
 Exemplen nedan är illustrativa.
 De definierar inte ett obligatoriskt branchprefix eller en ny authority-yta.
@@ -159,10 +163,11 @@ Arbetsmodellen är homogena slice-workers med explicit aktivering, inte en själ
 
 ### Hårda branchregler
 
-- samma branch ska inte checkas ut aktivt i flera workers samtidigt
-- en worker får inte själv byta branchkonvention mitt under ett jobb
+- flera workers får dela samma aktiva checkout/branch bara när scope, ownership och repo-write-rättigheter är explicit bounded och non-overlapping
+- om två slices riskerar att röra samma filer, samma git/index-state eller samma muterbara lokala resurser ska workern stoppa eller eskalera till separat isolering
+- en worker får inte själv byta exekveringsyta eller branchkonvention mitt under ett jobb
 - checkout-lokala filer får aldrig användas för att override:a resolved mode
-- workers får inte dela muterbart tillstånd med varandra
+- delat muterbart tillstånd måste behandlas som konflikt-risk och kräver stop eller isolering när envelope:n inte uttryckligen tillåter det
 - session recovery ska utgå från envelope, dispatch-status och artefaktregister, inte från att tidigare chatthistorik råkar finnas kvar
 
 ### Långlivad worker, en aktiv slice åt gången
@@ -187,12 +192,12 @@ Som huvudregel gäller därför:
 Worker-klasser ska förstås som kapabilitetsprofiler, inte som olika personligheter eller långlivade auktoritetsdomäner.
 I normalfallet bör de flesta editor workers dela samma grundläggande slice-worker-roll och bara skilja sig åt genom envelope-kontraktet för den aktuella slicen.
 
-| Worker-klass   | Repo-write?                               | Commit allowed?                           | Shared truth write?              | Typiska outputs                                          | Kommentar                                |
-| -------------- | ----------------------------------------- | ----------------------------------------- | -------------------------------- | -------------------------------------------------------- | ---------------------------------------- |
-| Inventory      | Normalt nej                               | Normalt nej                               | Nej                              | shortlist, ranking, artifacts, summary                   | read-only med hårda gränser              |
-| Deep-dive      | Ja, inom exakt scope                      | Ja                                        | Nej                              | packet, analysis note, ev. explicit tillåten helper/test | bounded repo-write i egen branch         |
-| Integration    | Ja                                        | Ja                                        | Ja                               | re-anchor, synthesis, integration decisions              | enda normala vägen för shared truth      |
-| Runtime/strict | Endast via explicit separat auktorisering | Endast via explicit separat auktorisering | Endast när uttryckligen tillåtet | strikt styrda ändringar                                  | reserverad klass, normalt avstängd i MVP |
+| Worker-klass   | Repo-write?                               | Commit allowed?                           | Shared truth write?              | Typiska outputs                                          | Kommentar                                                                                |
+| -------------- | ----------------------------------------- | ----------------------------------------- | -------------------------------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Inventory      | Normalt nej                               | Normalt nej                               | Nej                              | shortlist, ranking, artifacts, summary                   | read-only med hårda gränser                                                              |
+| Deep-dive      | Ja, inom exakt scope                      | Ja                                        | Nej                              | packet, analysis note, ev. explicit tillåten helper/test | bounded repo-write inom explicit scope; separat branch/worktree bara när isolering krävs |
+| Integration    | Ja                                        | Ja                                        | Ja                               | re-anchor, synthesis, integration decisions              | enda normala vägen för shared truth                                                      |
+| Runtime/strict | Endast via explicit separat auktorisering | Endast via explicit separat auktorisering | Endast när uttryckligen tillåtet | strikt styrda ändringar                                  | reserverad klass, normalt avstängd i MVP                                                 |
 
 Den viktigaste regeln är att ingen worker själv får uppgradera betydelsen av sitt resultat.
 
@@ -212,39 +217,40 @@ Det sker i integration plane.
 
 ## Fält som varje envelope minst ska innehålla
 
-| Fält                    | Syfte                                                              |
-| ----------------------- | ------------------------------------------------------------------ |
-| `task_id`               | unik identifierare för jobbet                                      |
-| `dispatch_id`           | identifierare för själva dispatch-instansen                        |
-| `worker_class`          | vilken kapabilitetsklass workern tillhör                           |
-| `base_branch`           | basgren för dispatch-vågen                                         |
-| `base_sha`              | pinnad startpunkt                                                  |
-| `worker_branch`         | worker-specifik branch                                             |
-| `resolved_mode`         | mode som redan lösts av control plane                              |
-| `mode_source`           | varför mode blev som det blev                                      |
-| `authority_source`      | vilken SSOT som gav mode/auktoritet                                |
-| `change_class`          | t.ex. `docs-only`, `tooling`, `runtime-touching`                   |
-| `lane`                  | arbetslane, t.ex. `research-evidence`                              |
-| `question`              | exakt fråga som ska besvaras                                       |
-| `question_fingerprint`  | stabil identitet för frågan så att duplicat/överlapp kan upptäckas |
-| `subject`               | avgränsat subject för jobbet                                       |
-| `scope_in`              | vad workern får röra                                               |
-| `scope_out`             | vad workern uttryckligen inte får röra                             |
-| `allowed_inputs`        | godkända datakällor och artefakter                                 |
-| `input_artifact_hashes` | låsta referenshashar för kritiska inputs när slicen kräver det     |
-| `allowed_output_types`  | vilka outputtyper workern får producera                            |
-| `artifact_contract`     | vilken artifact-familj och naming-regel som workern ska följa      |
-| `output_schema_version` | version av outputformatet som måste följas                         |
-| `envelope_hash`         | kontrollhash för det kompilerade kontraktet                        |
-| `forbidden_surfaces`    | ytor som alltid ska behandlas som förbjudna                        |
-| `repo_write_allowed`    | om worker får skriva till repo över huvud taget                    |
-| `commit_allowed`        | om worker får göra commits                                         |
-| `shared_truth_write`    | om worker får uppdatera shared truth                               |
-| `review_required`       | om review krävs innan landing                                      |
-| `gates_required`        | vilka gates som måste köras                                        |
-| `done_criteria`         | vad som räknas som klar output                                     |
-| `stop_conditions`       | när workern måste stoppa direkt                                    |
-| `escalation_conditions` | när workern ska lämna tillbaka jobbet till control plane           |
+| Fält                    | Syfte                                                                |
+| ----------------------- | -------------------------------------------------------------------- |
+| `task_id`               | unik identifierare för jobbet                                        |
+| `dispatch_id`           | identifierare för själva dispatch-instansen                          |
+| `worker_class`          | vilken kapabilitetsklass workern tillhör                             |
+| `base_branch`           | basgren för dispatch-vågen                                           |
+| `base_sha`              | pinnad startpunkt                                                    |
+| `execution_surface`     | delad aktiv checkout eller separat branch/worktree-target för slicen |
+| `worker_branch`         | valfri dedicated branch när explicit isolering används               |
+| `resolved_mode`         | mode som redan lösts av control plane                                |
+| `mode_source`           | varför mode blev som det blev                                        |
+| `authority_source`      | vilken SSOT som gav mode/auktoritet                                  |
+| `change_class`          | t.ex. `docs-only`, `tooling`, `runtime-touching`                     |
+| `lane`                  | arbetslane, t.ex. `research-evidence`                                |
+| `question`              | exakt fråga som ska besvaras                                         |
+| `question_fingerprint`  | stabil identitet för frågan så att duplicat/överlapp kan upptäckas   |
+| `subject`               | avgränsat subject för jobbet                                         |
+| `scope_in`              | vad workern får röra                                                 |
+| `scope_out`             | vad workern uttryckligen inte får röra                               |
+| `allowed_inputs`        | godkända datakällor och artefakter                                   |
+| `input_artifact_hashes` | låsta referenshashar för kritiska inputs när slicen kräver det       |
+| `allowed_output_types`  | vilka outputtyper workern får producera                              |
+| `artifact_contract`     | vilken artifact-familj och naming-regel som workern ska följa        |
+| `output_schema_version` | version av outputformatet som måste följas                           |
+| `envelope_hash`         | kontrollhash för det kompilerade kontraktet                          |
+| `forbidden_surfaces`    | ytor som alltid ska behandlas som förbjudna                          |
+| `repo_write_allowed`    | om worker får skriva till repo över huvud taget                      |
+| `commit_allowed`        | om worker får göra commits                                           |
+| `shared_truth_write`    | om worker får uppdatera shared truth                                 |
+| `review_required`       | om review krävs innan landing                                        |
+| `gates_required`        | vilka gates som måste köras                                          |
+| `done_criteria`         | vad som räknas som klar output                                       |
+| `stop_conditions`       | när workern måste stoppa direkt                                      |
+| `escalation_conditions` | när workern ska lämna tillbaka jobbet till control plane             |
 
 Om något av de här fälten är oklart ska workern inte gissa. Den ska stoppa eller eskalera.
 
@@ -275,9 +281,12 @@ dispatch_id: mixed-2017-2023-cadence-run-001
 worker_class: deep-dive
 base_branch: feature/editor-worker-orchestrator
 base_sha: <PINNED_SHA>
-worker_branch: feature/mixed/2017-2023-cadence
+execution_surface:
+  kind: shared-checkout
+  branch: feature/editor-worker-orchestrator
+  checkout: active Genesis-Core repo
 resolved_mode: RESEARCH
-mode_source: branch:feature/mixed/2017-2023-cadence
+mode_source: branch:feature/editor-worker-orchestrator
 authority_source: docs/governance_mode.md
 change_class: docs-only
 lane: research-evidence

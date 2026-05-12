@@ -72,7 +72,7 @@ Som huvudregel gäller därför:
 
 - dispatch styrs av integrationsbacklogg, inte bara av lediga workers
 - samma fråga ska inte öppnas i flera workers samtidigt
-- varje worker ska äga en egen domän, en egen branch och en egen outputyta
+- varje worker ska äga en egen domän, ett eget bounded scope och en egen outputyta
 - integration plane måste klassificera varje retur explicit
 
 ---
@@ -130,8 +130,8 @@ Worker plane är allt som kör parallellt.
 
 Varje worker får:
 
-- en isolerad editor-attached branch/checkout
-- en egen branch
+- en editor-attached exekveringsyta (normalt den delade lokala `Genesis-Core`-checkouten på `feature/editor-worker-orchestrator`)
+- en egen bounded ownership-tuple / scope
 - en exakt fråga
 - ett kompilerat kontrakt
 
@@ -139,8 +139,8 @@ En worker ska här förstås som en långlivad worker-identitet.
 Den aktiva arbetsenheten är däremot alltid en bounded slice / execution leg.
 Samma worker får därför arbeta över flera slices över tid, men aldrig äga mer än en aktiv slice åt gången och aldrig fortsätta utan explicit nästa admissible slice från control / integration plane.
 
-Lokala worktrees kan användas av control- eller integration plane för koordinering och debugging, och för editor workers är den editor-attached branchen/worktreen den normala exekveringsytan.
-Den är däremot inte workforce-definitionen och inte en auktoritetssurface.
+Den normala lokala editor-worker-ytan är den delade `Genesis-Core`-checkouten på `feature/editor-worker-orchestrator`.
+Separata worktrees kan användas av control- eller integration plane när explicit isolering krävs, men de är inte defaultmodellen, inte workforce-definitionen och inte en auktoritetssurface.
 
 Kort sagt: detta är muskeln.
 
@@ -150,12 +150,11 @@ Den operativa defaultmodellen för Genesis editor workers ska vara:
 
 - en editor worker = en **autonomous slice worker**
 - de flesta editor workers delar samma grundroll, samma governance-ram och samma returformat
-- samma custom agent eller promptyta ska normalt återanvändas över flera editorfönster/worktrees; skillnaden mellan workers ska uttryckas i deras envelope, branch/worktree och slice, inte i olika standardpersonligheter
+- samma custom agent eller promptyta ska normalt återanvändas över flera editorfönster i samma checkout; skillnaden mellan workers ska uttryckas i deras envelope, bounded scope och slice, inte i olika standardpersonligheter eller separata worktrees som default
 - variation ska i första hand ligga i slice-kontraktet: år/window, fråga, scope, inputs, gates och done criteria
 - asymmetriska batchroller som `primary`, `corroborative` eller `fallback` får förekomma som daterade dispatch-strategier, men de är inte workforce-definitionen och ska inte behandlas som långsiktiga worker-personligheter
 
 Det betyder att workforce-systemet i normalfallet ska dispatcha samma sorts worker på olika bounded slices, snarare än att uppfinna olika agentpersonligheter för varje år eller uppgift.
-Historiska scout-etiketter som `weakness`, `control`, `contradiction` eller `reference` ska därför förstås som tidigare pilotlinser eller slot-labels, inte som den nuvarande defaultmodellen.
 
 ### 5. Evidence store
 
@@ -264,14 +263,14 @@ Varje editor worker ska utgå från:
 
 - samma basgren eller auktoriserad integrationsgren
 - samma `base_sha` för vågen
-- egen branch
-- egen isolerad checkout
+- samma lokala checkout om inte separat isolering uttryckligen krävs
+- ett eget bounded ownership-scope
 - egen issue eller dispatch-brief
 
-Lokala worktrees kan användas av control plane för koordinering eller debugging, och för editor workers är de också den normala editor-attached exekveringsytan.
-De är däremot inte workforce-definitionen, inte en separat governance-auktoritet och inte en genväg runt envelope-kontraktet.
+Lokala worktrees kan användas av control plane för koordinering eller debugging när en slice kräver branch-isolering, konfliktfri repo-write, destruktiva git-operationer eller PR-förberedelse.
+De är däremot inte defaultmodellen, inte workforce-definitionen, inte en separat governance-auktoritet och inte en genväg runt envelope-kontraktet.
 
-Branchnamn bör bära mode där det är möjligt, till exempel:
+Om en slice uttryckligen flyttas till separat branch bör branchnamnet bära mode där det är möjligt, till exempel:
 
 Exemplen nedan är illustrativa.
 De definierar inte ett obligatoriskt branchprefix eller ett nytt authority-lager.
@@ -356,7 +355,8 @@ Om en asymmetrisk wave används i pilotform ska det vara en uttrycklig dispatch-
 
 Hård regel:
 
-- en **aktiv slice / execution leg** = en bounded slice = en branch = en PR
+- en **aktiv slice / execution leg** = en bounded slice = ett explicit ownership-kontrakt i den valda exekveringsytan
+- separat branch/PR behövs först när slicen uttryckligen flyttas till en isolerad landing-yta
 - en långlivad worker får ta flera execution legs sekventiellt över tid
 - samma worker får aldrig äga fler än en aktiv slice samtidigt
 - continuation kräver explicit klassificerad retur och refreshed bounded envelope; workern får inte själv välja nästa slice
@@ -416,11 +416,11 @@ Poängen är att göra varje worker smalare, säkrare och lättare att styra.
 Kort slutbild:
 
 - en control-plane-branch
-- många domain-isolerade editor workers på egna branches/checkouts
-- en branch per worker
+- flera domain-isolerade editor workers med olika bounded scopes i samma checkout som default
+- separat branch/worktree bara när explicit isolering behövs
 - inventory brett
 - deep-dive selektivt
 - shared truth bara via integration
 - editorn som worker-yta
-- lokala worktrees som editor-attached exekveringsyta, inte som separat governance-lager
+- lokala worktrees som valfri isoleringsyta, inte som separat governance-lager
 - repo som sanningslager

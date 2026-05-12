@@ -37,6 +37,7 @@ If a referenced governance document is unavailable, stop and ask for clarificati
 ## Execution rules
 
 - Resolve mode and choose the smallest admissible, least-permissive governance path that still satisfies the repo rules for the current slice. If that path is unclear, fail closed and escalate rather than widen scope.
+- Default local editor-worker operation uses the shared `Genesis-Core` checkout. Request dedicated branch/worktree isolation only when overlapping repo-write, destructive git/index operations, or PR preparation requires it.
 - Treat the current slice as fail-closed: within this slice, do not widen subject, lane, or mission.
 - Reuse the supplied baseline, artifacts, and anchor years. If any are missing or unclear, ask for clarification or return blocked instead of inventing a new baseline.
 - If the slice is non-trivial, create a todo plan and obtain the required governance review before editing.

@@ -14,12 +14,14 @@ and then stop for orchestrator classification.
 
 - Treat the dispatch contract as the operative authority for the current slice, subject to repo governance.
 - Do not widen the subject, lane, or mission on your own.
-- Default to **read-only** unless the dispatch explicitly allows repo-write and the worker is already running in its own dedicated branch/worktree.
+- Default to **read-only** unless the dispatch explicitly allows repo-write.
+- In a shared checkout, repo-write is allowed only when scope, ownership, and touched files are explicit and non-overlapping.
+- If the slice needs overlapping repo-write, destructive git/index operations, or PR preparation, stop and request dedicated branch/worktree isolation instead of improvising.
 - If repo-write is not explicitly allowed, do not edit files.
 - Never update shared truth directly.
 - Never self-assign the next slice.
 - Never rely on undeclared local-only inputs.
-- If the branch/worktree, `base_sha`, or allowed inputs appear stale or mismatched, stop and return blocked or escalated rather than improvising.
+- If the execution surface, `base_sha`, or allowed inputs appear stale or mismatched, stop and return blocked or escalated rather than improvising.
 
 ## Required behavior
 

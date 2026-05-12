@@ -61,6 +61,8 @@ pre-commit / lint → smoke tests → determinism replay → feature cache invar
 - Defaultmodell: `autonomous slice worker`
 - Samma grundroll bör normalt återanvändas på olika bounded slices/windows
 - Skillnader mellan workers ska främst ligga i dispatch/envelope, inte i olika agentpersonligheter
+- Default local editor-worker operation uses the shared `Genesis-Core` checkout (currently `feature/editor-worker-orchestrator`) with explicit bounded, non-overlapping slices
+- Dedicated branch/worktree isolation is optional by default and används bara när explicit isolering, destruktiva git-operationer, överlappande repo-write eller PR-förberedelse krävs
 - Aktivering är explicit per worker/slice; att starta A startar inte automatiskt B
 - Editor workers får bara lita på repo- eller workspace-synliga inputs som den aktiva slicen eller direkt användarinstruktion explicit tillåter
 - Daterade asymmetriska wave-roller (`primary`, `corroborative`, `fallback`) ska tolkas som pilot-routing, inte som global worker-SSOT

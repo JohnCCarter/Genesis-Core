@@ -18,8 +18,8 @@ It does **not** authorize repo-write, commits, PR creation, runtime execution, o
 
 ## How to use this test
 
-1. Open any dedicated worker worktree prepared by control plane for this trial.
-2. Open a new editor chat in that worktree.
+1. Open the active `Genesis-Core` checkout on `feature/editor-worker-orchestrator`.
+2. Open a new editor chat in that checkout.
 3. Select the `Editor Slice Worker` agent.
 4. Paste the specimen dispatch below into that chat.
 5. Require a read-only return package only.
@@ -38,7 +38,7 @@ worker_class: inventory
 resolved_mode: RESEARCH
 base_branch: feature/editor-worker-orchestrator
 base_sha: <PINNED_SHA>
-branch_target: <prepared worker branch for this trial>
+execution_surface: <shared active checkout or explicit dedicated isolation if assigned>
 question: <exact bounded question>
 subject: <bounded file surface, year, window, or seam>
 scope_in:
@@ -72,7 +72,7 @@ base_sha: fcab59aa
 branch_target: <prepared worker branch chosen by control plane>
 question: >
   Build the current reference picture for the generic editor-worker startup bundle:
-  which tracked files define the startup surface, what branch/worktree model is
+  which tracked files define the startup surface, what shared-checkout model is
   documented, and what limits still remain operator-manual.
 subject: generic editor-worker startup bundle file surface
 scope_in:
@@ -91,12 +91,12 @@ scope_out:
   - repo-write actions
 allowed_inputs:
   - repo-visible tracked files inside scope_in
-  - current branch and worktree metadata already prepared by control plane
+  - current branch and execution-surface metadata already prepared by control plane
 allowed_output_types:
   - read-only scouting return
 done_criteria:
   - identify the canonical startup files
-  - state the documented branch/worktree model
+  - state the documented shared-checkout model
   - state what is still manual in the operator workflow
   - return observed / inferred / unverified cleanly separated
 stop_conditions:
@@ -106,7 +106,7 @@ stop_conditions:
 escalation_conditions:
   - startup truth appears internally contradictory
   - a docs repair is required to answer honestly
-  - branch/worktree state appears stale versus base_sha
+  - execution-surface state appears stale versus base_sha
 reference_anchors:
   - docs/governance/runbooks/editor_slice_worker_dispatch.md
   - workforce_roadmap.md
@@ -143,7 +143,7 @@ The test counts as successful if the worker:
 This test does **not** prove:
 
 - automatic agent selection on chat open
-- automatic worktree or branch binding by VS Code
+- automatic execution-surface binding by VS Code when explicit isolation is later required
 - repo-write dispatch correctness
 - PR flow correctness
 - runtime or backtest execution admission

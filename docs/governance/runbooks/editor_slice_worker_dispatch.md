@@ -54,7 +54,7 @@ Before starting an editor worker, control / integration lane should confirm all 
 - allowed inputs are explicit
 - allowed outputs are explicit
 - required gates / checks are explicit
-- branch target or worker branch naming is decided
+- execution surface is decided (`shared local checkout` som default; dedicated branch/worktree bara när explicit isolering krävs)
 - repo-visible inputs are sufficient, or an explicit non-repo admission path is defined
 
 If any one of these is unclear, the honest answer is: do not dispatch yet.
@@ -75,29 +75,30 @@ Examples of explicit non-repo admission paths:
 
 Local-only, `gitignored`, unstaged, or operator-mounted files outside declared scope are not admissible by default.
 
-## Practical branch and worktree setup
+## Practical execution-surface setup
 
 For the current editor-worker model, the practical default topology is:
 
 - `master` = stable shared baseline
-- `feature/editor-worker-orchestrator` = long-lived control-plane branch for this wave
-- one bounded slice = one worker branch = one PR
-- one editor-attached worktree/checkout = one worker execution surface
+- `feature/editor-worker-orchestrator` = long-lived shared local editor branch for this wave
+- default local editor setup = multiple bounded workers share the active `Genesis-Core` checkout on `feature/editor-worker-orchestrator`
+- dedicated branch/worktree isolation is optional and used only when the slice explicitly needs isolation, destructive git work, or PR preparation
 
 Operationally:
 
 - control / integration lane may stay on `feature/editor-worker-orchestrator`
-- initial worker scouting may be read-only in the shared editor context
-- any worker that will write, commit, or open a PR should move onto its own branch and preferably its own isolated worktree/checkout first
+- most local worker slices may start in the shared active checkout
+- any worker that needs overlapping repo-write, destructive git/index operations, or PR preparation should move onto its own branch and preferably its own isolated worktree/checkout first
 - the pinned `base_sha` for the slice still wins over whatever branch happens to be open in the editor
 
-This means the branch/worktree is an execution surface, not a source of authority.
+This means the chosen execution surface is not a source of authority.
 The worker is still governed by the bounded slice contract, global governance, and the pinned `base_sha`.
 
 When in doubt, use the smaller honest rule:
 
-- read-only comparison or inventory work may begin without a dedicated worker branch if the slice contract allows it
-- repo-write work should not start until the worker has its own branch target and isolated editor-attached worktree/checkout
+- read-only comparison or inventory work may begin in the shared checkout if the slice contract allows it
+- repo-write in the shared checkout is admissible only when scope, ownership, and touched files are explicitly bounded and non-overlapping
+- if overlap, conflict-risk, destructive git work, or PR preparation appears, move the slice to a dedicated branch/worktree first
 
 ## Default startup bundle for new editor chats
 
@@ -114,22 +115,19 @@ prompt surfaces are:
 
 The difference between `worker-01`, `worker-02`, `worker-03`, and `worker-04` belongs in:
 
-- their branch/worktree
+- their bounded slice / ownership scope
 - their pinned `base_sha`
+- their optional execution-surface metadata when explicit isolation is assigned
 - their bounded slice contract
 
 It does **not** belong in four different default worker personalities.
-
-Historical weakness / control / contradiction / reference scout labels from an earlier
-pilot should be treated as superseded startup surfaces rather than the retained default
-model.
 
 Important operator rule:
 
 - a new editor chat does **not** auto-bind itself to the generic agent or prompts
 - control plane must select the same generic worker agent in the picker, or invoke the same work-order prompt, for each new chat explicitly and then attach the correct bounded slice contract
-- if a local pilot surface still carries an older scout label in its branch or worktree name, treat that label as a slot label only and not as standing role authority
-- if a scouting chat needs repo-write, commit, or PR work, stop the scouting pass and move that slice onto its own branch target and preferably its own isolated editor-attached worktree/checkout before continuing
+- if multiple local workers share the same checkout, their scopes, ownership, and repo-write permissions must stay explicit and non-overlapping
+- if a slice needs overlapping repo-write, destructive git/index work, or PR preparation, stop the shared-checkout pass and move that slice onto its own branch target and preferably its own isolated editor-attached worktree/checkout before continuing
 
 One concrete read-only specimen for the current startup setup lives at:
 
@@ -176,12 +174,12 @@ If the slice may run scripts, helpers, tests, or backtests, control plane must c
 
 ### 4. Start the worker explicitly
 
-Dispatch the worker on its branch target and slice contract.
+Dispatch the worker on its chosen execution surface and slice contract.
 
 Record at minimum:
 
 - worker identifier
-- branch target
+- execution surface
 - dispatch id
 - base SHA
 - activation time
@@ -281,6 +279,7 @@ Escalate rather than improvising if:
 A good steady-state editor-worker batch should usually look like this:
 
 - same ground-role worker type
+- shared checkout by default or explicit isolated surface when needed
 - different bounded slices
 - one active slice per worker
 - explicit activation per worker

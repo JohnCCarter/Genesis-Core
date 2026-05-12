@@ -93,8 +93,8 @@ Governance SSOT: `docs/governance_mode.md`
 
 ## Session Protocol
 
-Session start: read `docs/governance/runbooks/session_start.md`
-Session end: follow `docs/governance/runbooks/session_end.md`
+Session start: read `.claude/session_start.md`
+Session end: follow `.claude/session_end.md`
 Quick governance ref: `docs/governance/QUICK_REF.md` (load instead of full governance docs)
 
 Session state files (CURRENT_STATE, ACTIVE_TASK, SESSION_HANDOFF, GOVERNANCE_STATUS):

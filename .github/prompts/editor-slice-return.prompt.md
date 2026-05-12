@@ -36,7 +36,7 @@ If information is missing, mark it as `[MISSING]` instead of inventing it. If th
 ### Artifacts
 
 - artifact or packet paths
-- any branch or worktree identifiers if relevant
+- any execution-surface identifiers if relevant (for example shared checkout, or dedicated branch/worktree when explicit isolation was used)
 
 ### Findings
 
@@ -60,4 +60,5 @@ If information is missing, mark it as `[MISSING]` instead of inventing it. If th
 
 - Keep epistemic separation hard: observed is directly supported, inferred is interpretation, unverified is still open.
 - Do not upgrade the slice result into shared truth, readiness, or runtime authority.
+- Treat shared checkout as the default local execution surface; mention dedicated branch/worktree only when explicit isolation was part of the slice contract or return provenance.
 - If the slice suggests a follow-up, describe it as the next admissible slice rather than an automatic continuation.

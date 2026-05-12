@@ -150,10 +150,12 @@ Den operativa defaultmodellen för Genesis editor workers ska vara:
 
 - en editor worker = en **autonomous slice worker**
 - de flesta editor workers delar samma grundroll, samma governance-ram och samma returformat
+- samma custom agent eller promptyta ska normalt återanvändas över flera editorfönster/worktrees; skillnaden mellan workers ska uttryckas i deras envelope, branch/worktree och slice, inte i olika standardpersonligheter
 - variation ska i första hand ligga i slice-kontraktet: år/window, fråga, scope, inputs, gates och done criteria
 - asymmetriska batchroller som `primary`, `corroborative` eller `fallback` får förekomma som daterade dispatch-strategier, men de är inte workforce-definitionen och ska inte behandlas som långsiktiga worker-personligheter
 
 Det betyder att workforce-systemet i normalfallet ska dispatcha samma sorts worker på olika bounded slices, snarare än att uppfinna olika agentpersonligheter för varje år eller uppgift.
+Historiska scout-etiketter som `weakness`, `control`, `contradiction` eller `reference` ska därför förstås som tidigare pilotlinser eller slot-labels, inte som den nuvarande defaultmodellen.
 
 ### 5. Evidence store
 

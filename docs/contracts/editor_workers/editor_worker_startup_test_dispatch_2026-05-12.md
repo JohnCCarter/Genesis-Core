@@ -12,15 +12,15 @@ This document is a **single concrete test dispatch specimen** for the current ed
 
 It is meant to answer one practical question:
 
-> Can one newly opened editor worker run a bounded read-only scouting pass on the new startup bundle and return a usable package without widening scope?
+> Can one newly opened generic editor worker run a bounded read-only pass on the startup bundle and return a usable package without widening scope?
 
 It does **not** authorize repo-write, commits, PR creation, runtime execution, or shared-truth updates.
 
 ## How to use this test
 
-1. Open the dedicated reference worker worktree prepared by control plane.
+1. Open any dedicated worker worktree prepared by control plane for this trial.
 2. Open a new editor chat in that worktree.
-3. Select the `Editor Scout Reference` agent.
+3. Select the `Editor Slice Worker` agent.
 4. Paste the specimen dispatch below into that chat.
 5. Require a read-only return package only.
 
@@ -28,17 +28,17 @@ If the worker needs repo-write or a wider subject, the correct behavior is to st
 
 ## Reusable minimal dispatch template
 
-Use this skeleton for future scouting dispatches:
+Use this skeleton for future bounded worker dispatches:
 
 ```yaml
 task_id: <short-stable-task-id>
 dispatch_id: <task-id-run-001>
-worker_agent: <Editor Scout Weakness | Editor Scout Control | Editor Scout Contradiction | Editor Scout Reference>
+worker_agent: Editor Slice Worker
 worker_class: inventory
 resolved_mode: RESEARCH
 base_branch: feature/editor-worker-orchestrator
 base_sha: <PINNED_SHA>
-branch_target: <worker-branch>
+branch_target: <prepared worker branch for this trial>
 question: <exact bounded question>
 subject: <bounded file surface, year, window, or seam>
 scope_in:
@@ -59,25 +59,26 @@ reference_anchors:
   - <baseline or canonical files>
 ```
 
-## Concrete specimen for the first test
+## Concrete specimen for the first generic test
 
 ```yaml
-task_id: editor-worker-startup-reference-test
-dispatch_id: editor-worker-startup-reference-test-001
-worker_agent: Editor Scout Reference
+task_id: editor-worker-startup-generic-test
+dispatch_id: editor-worker-startup-generic-test-001
+worker_agent: Editor Slice Worker
 worker_class: inventory
 resolved_mode: RESEARCH
 base_branch: feature/editor-worker-orchestrator
-base_sha: d968a0f2
-branch_target: research/editor-scout-reference
+base_sha: fcab59aa
+branch_target: <prepared worker branch chosen by control plane>
 question: >
-  Build the current reference picture for the editor-worker startup bundle:
+  Build the current reference picture for the generic editor-worker startup bundle:
   which tracked files define the startup surface, what branch/worktree model is
   documented, and what limits still remain operator-manual.
-subject: editor-worker startup bundle file surface
+subject: generic editor-worker startup bundle file surface
 scope_in:
-  - .github/agents/editor-scout-*.agent.md
-  - .github/prompts/editor-scout-*.prompt.md
+  - .github/agents/editor-slice-worker.agent.md
+  - .github/prompts/editor-slice-work-order.prompt.md
+  - .github/prompts/editor-slice-return.prompt.md
   - docs/governance/runbooks/editor_slice_worker_dispatch.md
   - workforce_roadmap.md
 scope_out:
@@ -109,8 +110,9 @@ escalation_conditions:
 reference_anchors:
   - docs/governance/runbooks/editor_slice_worker_dispatch.md
   - workforce_roadmap.md
-  - .github/agents/editor-scout-reference.agent.md
-  - .github/prompts/editor-scout-reference.prompt.md
+  - .github/agents/editor-slice-worker.agent.md
+  - .github/prompts/editor-slice-work-order.prompt.md
+  - .github/prompts/editor-slice-return.prompt.md
 ```
 
 ## Expected return contract for the test
@@ -146,4 +148,4 @@ This test does **not** prove:
 - PR flow correctness
 - runtime or backtest execution admission
 
-It proves only that the current startup bundle can support one honest, bounded, read-only editor-worker dispatch.
+It proves only that the current generic startup bundle can support one honest, bounded, read-only editor-worker dispatch.

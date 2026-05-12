@@ -99,32 +99,36 @@ When in doubt, use the smaller honest rule:
 - read-only comparison or inventory work may begin without a dedicated worker branch if the slice contract allows it
 - repo-write work should not start until the worker has its own branch target and isolated editor-attached worktree/checkout
 
-## Optional startup bundle for new editor chats
+## Default startup bundle for new editor chats
 
-If control plane wants a ready-to-pick setup for new editor chats, the recommended custom agent bundle is:
+For the current simplified model, new editor chats should normally all start from the
+same generic worker surface:
 
-- `.github/agents/editor-scout-weakness.agent.md`
-- `.github/agents/editor-scout-control.agent.md`
-- `.github/agents/editor-scout-contradiction.agent.md`
-- `.github/agents/editor-scout-reference.agent.md`
+- `.github/agents/editor-slice-worker.agent.md`
 
-These agents are read-only scouting workers for an initial pass.
-They are selectable from the chat agent picker, but a new editor chat still does **not** auto-select one on open.
+If control plane prefers prompt-first startup instead of agent-picker startup, the
+prompt surfaces are:
 
-If control plane prefers prompt-first startup instead of agent-picker startup, the equivalent prompt bundle is:
+- `.github/prompts/editor-slice-work-order.prompt.md`
+- `.github/prompts/editor-slice-return.prompt.md`
 
-- `.github/prompts/editor-scout-weakness.prompt.md`
-- `.github/prompts/editor-scout-control.prompt.md`
-- `.github/prompts/editor-scout-contradiction.prompt.md`
-- `.github/prompts/editor-scout-reference.prompt.md`
+The difference between `worker-01`, `worker-02`, `worker-03`, and `worker-04` belongs in:
 
-Use these only as read-only scouting lenses for an initial pass.
-They do not create standing worker identities, branches, worktrees, or write authority.
+- their branch/worktree
+- their pinned `base_sha`
+- their bounded slice contract
+
+It does **not** belong in four different default worker personalities.
+
+Historical weakness / control / contradiction / reference scout labels from an earlier
+pilot should be treated as superseded startup surfaces rather than the retained default
+model.
 
 Important operator rule:
 
-- a new editor chat does **not** auto-bind itself to one of these agents or prompts
-- control plane must select exactly one startup agent in the picker, or invoke/paste exactly one startup prompt, for each new chat explicitly
+- a new editor chat does **not** auto-bind itself to the generic agent or prompts
+- control plane must select the same generic worker agent in the picker, or invoke the same work-order prompt, for each new chat explicitly and then attach the correct bounded slice contract
+- if a local pilot surface still carries an older scout label in its branch or worktree name, treat that label as a slot label only and not as standing role authority
 - if a scouting chat needs repo-write, commit, or PR work, stop the scouting pass and move that slice onto its own branch target and preferably its own isolated editor-attached worktree/checkout before continuing
 
 One concrete read-only specimen for the current startup setup lives at:

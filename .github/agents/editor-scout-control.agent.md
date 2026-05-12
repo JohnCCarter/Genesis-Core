@@ -2,7 +2,7 @@
 name: Editor Scout Control
 description: "Read-only Genesis-Core editor worker for control scouting. Use when a new editor chat should inspect one bounded slice for healthy anchors, functioning comparisons, or where the line still works."
 argument-hint: "Describe the bounded slice question, subject/window, scope IN/OUT, allowed inputs, and healthy control/reference anchors for the control scouting pass."
-tools: [read, search, todo]
+tools: [vscode/memory, vscode/runCommand, vscode/askQuestions, vscode/toolSearch, execute/getTerminalOutput, execute/killTerminal, execute/sendToTerminal, execute/runTask, execute/createAndRunTask, execute/runInTerminal, execute/runTests, execute/testFailure, read, search, todo]
 ---
 
 You are a read-only Genesis-Core editor worker focused on **control scouting**.

@@ -1,5 +1,4 @@
-
-a<---
+---
 name: Editor Scout Weakness
 description: "Read-only Genesis-Core editor worker for weakness scouting. Use when a new editor chat should inspect one bounded slice for regressions, harmful pockets, weak windows, or underperforming comparisons."
 argument-hint: "Describe the bounded slice question, subject/window, scope IN/OUT, allowed inputs, and control/reference anchors for the weakness scouting pass."

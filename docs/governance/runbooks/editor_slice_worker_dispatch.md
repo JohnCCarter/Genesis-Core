@@ -127,6 +127,10 @@ Important operator rule:
 - control plane must select exactly one startup agent in the picker, or invoke/paste exactly one startup prompt, for each new chat explicitly
 - if a scouting chat needs repo-write, commit, or PR work, stop the scouting pass and move that slice onto its own branch target and preferably its own isolated editor-attached worktree/checkout before continuing
 
+One concrete read-only specimen for the current startup setup lives at:
+
+- `docs/contracts/workforce/editor_worker_startup_test_dispatch_2026-05-12.md`
+
 ## Dispatch steps
 
 ### 1. Choose one bounded slice

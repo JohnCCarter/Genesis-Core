@@ -18,7 +18,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-
 DEFAULT_SEED = 20260402
 DEFAULT_SHUFFLE_ITERATIONS = 5000
 OUTPUT_FILES = (
@@ -32,6 +31,9 @@ OUTPUT_FILES = (
     "selection_summary.md",
     "counterfactual_matrix.json",
 )
+DETERMINISM_AUDIT_FILE = "audit_phase10_determinism.json"
+MANIFEST_FILE = "manifest.json"
+NON_SELF_OUTPUT_FILES = OUTPUT_FILES + (DETERMINISM_AUDIT_FILE,)
 
 
 class EdgeOriginIsolationError(RuntimeError):
@@ -213,7 +215,7 @@ def _load_trade_signatures(payload: dict[str, Any]) -> list[TradeSignature]:
 
 
 def _eligible_rows_by_timestamp(
-    trace_rows: list[dict[str, Any]]
+    trace_rows: list[dict[str, Any]],
 ) -> tuple[dict[str, dict[str, Any]], int]:
     bucket: dict[str, list[dict[str, Any]]] = {}
     for row in trace_rows:
@@ -569,7 +571,7 @@ def _build_path_dependency(
 
 
 def _collect_unique_eligible_timestamps(
-    payload: dict[str, Any]
+    payload: dict[str, Any],
 ) -> tuple[set[str] | None, dict[str, Any]]:
     trace_rows = _require_list(payload.get("trace_rows"), context="trace_rows")
     timestamps: list[str] = []
@@ -691,6 +693,46 @@ def _build_manifest_hash(output_hashes: dict[str, str]) -> str:
     return _sha256_text(_canonical_json(output_hashes))
 
 
+def _build_manifest_output(
+    baseline_payload: dict[str, Any],
+    adaptation_payload: dict[str, Any],
+    *,
+    seed: int,
+    shuffle_iterations: int,
+    outputs: dict[str, Any],
+    determinism_match: bool,
+) -> dict[str, Any]:
+    missing_outputs = [name for name in NON_SELF_OUTPUT_FILES if name not in outputs]
+    if missing_outputs:
+        raise EdgeOriginIsolationError(
+            f"missing approved output(s) for manifest: {', '.join(missing_outputs)}"
+        )
+
+    unexpected_outputs = [name for name in outputs if name not in NON_SELF_OUTPUT_FILES]
+    if unexpected_outputs:
+        raise EdgeOriginIsolationError(
+            "unexpected non-self output(s) for manifest: " + ", ".join(sorted(unexpected_outputs))
+        )
+
+    non_self_outputs = {name: outputs[name] for name in NON_SELF_OUTPUT_FILES}
+    output_hashes = _build_non_self_hashes(non_self_outputs)
+
+    return {
+        "input_payload_hashes": {
+            "adaptation_off_sha256": _sha256_text(_canonical_json(adaptation_payload)),
+            "baseline_current_sha256": _sha256_text(_canonical_json(baseline_payload)),
+        },
+        "seed": int(seed),
+        "shuffle_iterations": int(shuffle_iterations),
+        "manifest_file": MANIFEST_FILE,
+        "approved_output_files": sorted(NON_SELF_OUTPUT_FILES),
+        "output_hashes": output_hashes,
+        "output_manifest_hash": _build_manifest_hash(output_hashes),
+        "determinism_match": bool(determinism_match),
+        "observational_only": True,
+    }
+
+
 def build_edge_origin_outputs(
     baseline_payload: dict[str, Any],
     adaptation_payload: dict[str, Any],
@@ -765,7 +807,15 @@ def run_edge_origin_isolation(
     }
 
     outputs = dict(run1)
-    outputs["audit_phase10_determinism.json"] = audit_payload
+    outputs[DETERMINISM_AUDIT_FILE] = audit_payload
+    outputs[MANIFEST_FILE] = _build_manifest_output(
+        baseline_payload,
+        adaptation_payload,
+        seed=seed,
+        shuffle_iterations=shuffle_iterations,
+        outputs=outputs,
+        determinism_match=outputs[DETERMINISM_AUDIT_FILE]["match"],
+    )
     return outputs
 
 
@@ -809,7 +859,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.out_dir is not None:
         written = write_outputs(outputs, args.out_dir)
 
-    audit = outputs["audit_phase10_determinism.json"]
+    audit = outputs[DETERMINISM_AUDIT_FILE]
     payload = {
         "status": "PASS" if audit["match"] else "FAIL",
         "seed": int(args.seed),

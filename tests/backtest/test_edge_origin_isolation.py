@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -138,6 +139,7 @@ def test_run_edge_origin_isolation_outputs_required_surfaces() -> None:
             "counterfactual_matrix.json",
             "execution_attribution.json",
             "execution_summary.md",
+            "manifest.json",
             "path_dependency.json",
             "path_summary.md",
             "selection_attribution.json",
@@ -173,8 +175,46 @@ def test_run_edge_origin_isolation_outputs_required_surfaces() -> None:
     assert all(item["status"] == "PASS" for item in matrix)
 
     audit = outputs["audit_phase10_determinism.json"]
+    manifest = outputs["manifest.json"]
     assert audit["match"] is True
     assert audit["join_integrity"]["join_status"] == "EXACT_ONE_MATCH_PER_TRADE"
+    assert manifest["input_payload_hashes"] == {
+        "adaptation_off_sha256": hashlib.sha256(
+            json.dumps(
+                adaptation_off,
+                sort_keys=True,
+                separators=(",", ":"),
+                ensure_ascii=False,
+            ).encode("utf-8")
+        ).hexdigest(),
+        "baseline_current_sha256": hashlib.sha256(
+            json.dumps(
+                baseline,
+                sort_keys=True,
+                separators=(",", ":"),
+                ensure_ascii=False,
+            ).encode("utf-8")
+        ).hexdigest(),
+    }
+    assert manifest["seed"] == 20260402
+    assert manifest["shuffle_iterations"] == 32
+    assert manifest["manifest_file"] == "manifest.json"
+    assert manifest["approved_output_files"] == [
+        "audit_phase10_determinism.json",
+        "counterfactual_matrix.json",
+        "execution_attribution.json",
+        "execution_summary.md",
+        "path_dependency.json",
+        "path_summary.md",
+        "selection_attribution.json",
+        "selection_summary.md",
+        "sizing_attribution.json",
+        "sizing_summary.md",
+    ]
+    assert sorted(manifest["output_hashes"]) == manifest["approved_output_files"]
+    assert len(manifest["output_manifest_hash"]) == 64
+    assert manifest["determinism_match"] is True
+    assert manifest["observational_only"] is True
 
 
 def test_run_edge_origin_isolation_repeatable_with_same_seed() -> None:
@@ -184,6 +224,22 @@ def test_run_edge_origin_isolation_repeatable_with_same_seed() -> None:
     run2 = run_edge_origin_isolation(baseline, adaptation_off, seed=20260402, shuffle_iterations=24)
 
     assert run1 == run2
+
+
+def test_run_edge_origin_isolation_manifest_is_non_self_and_repeatable() -> None:
+    baseline, adaptation_off = _build_payloads()
+
+    run1 = run_edge_origin_isolation(baseline, adaptation_off, seed=20260402, shuffle_iterations=24)
+    run2 = run_edge_origin_isolation(baseline, adaptation_off, seed=20260402, shuffle_iterations=24)
+
+    manifest1 = run1["manifest.json"]
+    manifest2 = run2["manifest.json"]
+
+    assert manifest1 == manifest2
+    assert "manifest.json" not in manifest1["approved_output_files"]
+    assert "manifest.json" not in manifest1["output_hashes"]
+    assert set(manifest1["approved_output_files"]) == set(manifest1["output_hashes"])
+    assert sorted(run1) == sorted(manifest1["approved_output_files"] + ["manifest.json"])
 
 
 def test_run_edge_origin_isolation_rejects_duplicate_normalized_trace_timestamp() -> None:
@@ -241,5 +297,72 @@ def test_edge_origin_isolation_cli_smoke(tmp_path: Path, capsys) -> None:
         "selection_summary.md",
         "counterfactual_matrix.json",
         "audit_phase10_determinism.json",
+        "manifest.json",
     }
     assert expected_files == {path.name for path in out_dir.iterdir()}
+
+
+def test_edge_origin_isolation_cli_repeatable_outputs(tmp_path: Path, capsys) -> None:
+    baseline, adaptation_off = _build_payloads()
+    baseline_path = tmp_path / "trace_baseline_current.json"
+    adaptation_path = tmp_path / "trace_adaptation_off.json"
+    out_dir_1 = tmp_path / "out1"
+    out_dir_2 = tmp_path / "out2"
+
+    baseline_path.write_text(json.dumps(baseline), encoding="utf-8")
+    adaptation_path.write_text(json.dumps(adaptation_off), encoding="utf-8")
+
+    rc1 = main(
+        [
+            str(baseline_path),
+            str(adaptation_path),
+            "--out-dir",
+            str(out_dir_1),
+            "--seed",
+            "20260402",
+            "--shuffle-iterations",
+            "16",
+            "--json",
+        ]
+    )
+    stdout1 = capsys.readouterr().out
+    rc2 = main(
+        [
+            str(baseline_path),
+            str(adaptation_path),
+            "--out-dir",
+            str(out_dir_2),
+            "--seed",
+            "20260402",
+            "--shuffle-iterations",
+            "16",
+            "--json",
+        ]
+    )
+    stdout2 = capsys.readouterr().out
+
+    assert rc1 == 0
+    assert rc2 == 0
+    assert json.loads(stdout1)["match"] is True
+    assert json.loads(stdout2)["match"] is True
+
+    expected_files = {
+        "execution_attribution.json",
+        "execution_summary.md",
+        "sizing_attribution.json",
+        "sizing_summary.md",
+        "path_dependency.json",
+        "path_summary.md",
+        "selection_attribution.json",
+        "selection_summary.md",
+        "counterfactual_matrix.json",
+        "audit_phase10_determinism.json",
+        "manifest.json",
+    }
+    assert expected_files == {path.name for path in out_dir_1.iterdir()}
+    assert expected_files == {path.name for path in out_dir_2.iterdir()}
+
+    for name in sorted(expected_files):
+        assert (out_dir_1 / name).read_text(encoding="utf-8") == (out_dir_2 / name).read_text(
+            encoding="utf-8"
+        )

@@ -23,6 +23,9 @@ OUTPUT_FILES = (
     "execution_proxy_evidence.json",
     "execution_proxy_summary.md",
 )
+DETERMINISM_AUDIT_FILE = "audit_execution_proxy_determinism.json"
+MANIFEST_FILE = "manifest.json"
+NON_SELF_OUTPUT_FILES = OUTPUT_FILES + (DETERMINISM_AUDIT_FILE,)
 
 
 class ExecutionProxyEvidenceError(RuntimeError):
@@ -232,7 +235,7 @@ def _trade_sort_key(trade: TradeSignature) -> tuple[Any, ...]:
 
 
 def join_baseline_trades(
-    payload: dict[str, Any]
+    payload: dict[str, Any],
 ) -> tuple[list[JoinedTrade], dict[str, Any], list[dict[str, Any]]]:
     payload_name = payload.get("name")
     if payload_name is not None and payload_name != "baseline_current":
@@ -543,6 +546,40 @@ def _build_manifest_hash(output_hashes: dict[str, str]) -> str:
     return _sha256_text(_canonical_json(output_hashes))
 
 
+def _build_manifest_output(
+    baseline_payload: dict[str, Any],
+    *,
+    horizons: tuple[int, ...],
+    outputs: dict[str, Any],
+    determinism_match: bool,
+) -> dict[str, Any]:
+    missing_outputs = [name for name in NON_SELF_OUTPUT_FILES if name not in outputs]
+    if missing_outputs:
+        raise ExecutionProxyEvidenceError(
+            f"missing approved output(s) for manifest: {', '.join(missing_outputs)}"
+        )
+
+    unexpected_outputs = [name for name in outputs if name not in NON_SELF_OUTPUT_FILES]
+    if unexpected_outputs:
+        raise ExecutionProxyEvidenceError(
+            "unexpected non-self output(s) for manifest: " + ", ".join(sorted(unexpected_outputs))
+        )
+
+    non_self_outputs = {name: outputs[name] for name in NON_SELF_OUTPUT_FILES}
+    output_hashes = _build_non_self_hashes(non_self_outputs)
+
+    return {
+        "input_payload_sha256": _sha256_text(_canonical_json(baseline_payload)),
+        "horizons": [int(value) for value in horizons],
+        "manifest_file": MANIFEST_FILE,
+        "approved_output_files": sorted(NON_SELF_OUTPUT_FILES),
+        "output_hashes": output_hashes,
+        "output_manifest_hash": _build_manifest_hash(output_hashes),
+        "determinism_match": bool(determinism_match),
+        "observational_only": True,
+    }
+
+
 def build_execution_proxy_outputs(
     baseline_payload: dict[str, Any],
     *,
@@ -773,7 +810,7 @@ def run_execution_proxy_evidence(
     run2_hash = _build_manifest_hash(run2_hashes)
 
     outputs = dict(run1)
-    outputs["audit_execution_proxy_determinism.json"] = {
+    outputs[DETERMINISM_AUDIT_FILE] = {
         "non_self_outputs": sorted(run1_hashes),
         "run1_hashes": run1_hashes,
         "run2_hashes": run2_hashes,
@@ -781,6 +818,12 @@ def run_execution_proxy_evidence(
         "run2_hash": run2_hash,
         "match": bool(run1_hashes == run2_hashes and run1_hash == run2_hash),
     }
+    outputs[MANIFEST_FILE] = _build_manifest_output(
+        baseline_payload,
+        horizons=horizons,
+        outputs=outputs,
+        determinism_match=outputs[DETERMINISM_AUDIT_FILE]["match"],
+    )
     return outputs
 
 
@@ -823,7 +866,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.out_dir is not None:
         written = write_outputs(outputs, args.out_dir)
 
-    audit = outputs["audit_execution_proxy_determinism.json"]
+    audit = outputs[DETERMINISM_AUDIT_FILE]
     payload = {
         "status": "PASS" if audit["match"] else "FAIL",
         "horizons": [int(value) for value in args.horizons],

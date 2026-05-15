@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -106,6 +107,7 @@ def test_run_execution_proxy_evidence_outputs_proxy_surfaces() -> None:
         [
             "audit_execution_proxy_determinism.json",
             "execution_proxy_evidence.json",
+            "manifest.json",
             "execution_proxy_summary.md",
         ]
     )
@@ -197,9 +199,52 @@ def test_run_execution_proxy_evidence_outputs_proxy_surfaces() -> None:
     ]
 
     audit = outputs["audit_execution_proxy_determinism.json"]
+    manifest = outputs["manifest.json"]
     assert audit["match"] is True
+    assert manifest["manifest_file"] == "manifest.json"
+    assert manifest["approved_output_files"] == [
+        "audit_execution_proxy_determinism.json",
+        "execution_proxy_evidence.json",
+        "execution_proxy_summary.md",
+    ]
+    assert manifest["determinism_match"] is True
+    assert manifest["observational_only"] is True
     assert "does not attest realized execution price" in outputs["execution_proxy_summary.md"]
     assert "proxy price-path coverage and missingness only" in outputs["execution_proxy_summary.md"]
+
+
+def test_run_execution_proxy_evidence_manifest_is_non_self_and_repeatable() -> None:
+    payload = _build_payload()
+
+    run1 = run_execution_proxy_evidence(payload, horizons=(1, 2))
+    run2 = run_execution_proxy_evidence(payload, horizons=(1, 2))
+
+    manifest1 = run1["manifest.json"]
+    manifest2 = run2["manifest.json"]
+    expected_input_hash = hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode(
+            "utf-8"
+        )
+    ).hexdigest()
+    expected_output_manifest_hash = hashlib.sha256(
+        json.dumps(
+            manifest1["output_hashes"],
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+        ).encode("utf-8")
+    ).hexdigest()
+
+    assert manifest1 == manifest2
+    assert manifest1["input_payload_sha256"] == expected_input_hash
+    assert manifest1["horizons"] == [1, 2]
+    assert manifest1["manifest_file"] == "manifest.json"
+    assert "manifest.json" not in manifest1["approved_output_files"]
+    assert "manifest.json" not in manifest1["output_hashes"]
+    assert set(manifest1["output_hashes"]) == set(manifest1["approved_output_files"])
+    assert manifest1["output_manifest_hash"] == expected_output_manifest_hash
+    assert manifest1["determinism_match"] is True
+    assert manifest1["observational_only"] is True
 
 
 def test_run_execution_proxy_evidence_classifies_interior_proxy_missingness() -> None:
@@ -493,6 +538,7 @@ def test_execution_proxy_evidence_cli_smoke(tmp_path: Path, capsys) -> None:
         "execution_proxy_evidence.json",
         "execution_proxy_summary.md",
         "audit_execution_proxy_determinism.json",
+        "manifest.json",
     }
     assert expected_files == {path.name for path in out_dir.iterdir()}
 
@@ -517,6 +563,7 @@ def test_execution_proxy_evidence_cli_repeatable_outputs(tmp_path: Path, capsys)
         "execution_proxy_evidence.json",
         "execution_proxy_summary.md",
         "audit_execution_proxy_determinism.json",
+        "manifest.json",
     }
     assert expected_files == {path.name for path in out_dir_1.iterdir()}
     assert expected_files == {path.name for path in out_dir_2.iterdir()}

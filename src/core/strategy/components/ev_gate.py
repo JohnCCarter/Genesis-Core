@@ -5,6 +5,7 @@ Allows entry only if expected value meets or exceeds threshold.
 Phase 2 Component: Stateless, entry-only, binary veto.
 """
 
+import math
 from typing import Any
 
 from core.strategy.components.base import ComponentResult, StrategyComponent
@@ -89,6 +90,18 @@ class EVGateComponent(StrategyComponent):
                     "min_ev": self.min_ev,
                     "ev_value": None,
                     "ev_raw": str(ev),
+                },
+            )
+
+        if math.isnan(ev_float) or (math.isinf(ev_float) and ev_float > 0):
+            return ComponentResult(
+                allowed=False,
+                reason="EV_MISSING",
+                confidence=0.0,
+                metadata={
+                    "component": self.name(),
+                    "min_ev": self.min_ev,
+                    "ev_value": None,
                 },
             )
 

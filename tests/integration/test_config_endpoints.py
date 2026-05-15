@@ -209,3 +209,58 @@ def test_runtime_endpoints_do_not_leak_exceptions(monkeypatch):
     )
     assert r.status_code == 500
     assert "SECRET_SHOULD_NOT_LEAK" not in r.text
+
+
+def test_runtime_propose_nested_non_whitelisted_detail_is_coarse(monkeypatch):
+    c = TestClient(app)
+
+    r = c.get("/config/runtime")
+    assert r.status_code == 200
+    v0 = int(r.json().get("version") or 0)
+
+    monkeypatch.setenv("BEARER_TOKEN", "test-secret")
+    r = c.post(
+        "/config/runtime/propose",
+        headers={"Authorization": "Bearer test-secret"},
+        json={
+            "patch": {
+                "multi_timeframe": {
+                    "regime_intelligence": {
+                        "regime_definition": {
+                            "adx_trend_threshold": 25.0,
+                        }
+                    }
+                }
+            },
+            "actor": "test",
+            "expected_version": v0,
+        },
+    )
+
+    assert r.status_code == 400
+    assert r.json() == {"detail": "non_whitelisted_field"}
+    assert "regime_definition" not in r.text
+    assert "adx_trend_threshold" not in r.text
+    assert ":" not in r.json()["detail"]
+
+
+def test_runtime_propose_invalid_value_stays_bad_request(monkeypatch):
+    c = TestClient(app)
+
+    r = c.get("/config/runtime")
+    assert r.status_code == 200
+    v0 = int(r.json().get("version") or 0)
+
+    monkeypatch.setenv("BEARER_TOKEN", "test-secret")
+    r = c.post(
+        "/config/runtime/propose",
+        headers={"Authorization": "Bearer test-secret"},
+        json={
+            "patch": {"strategy_family": "not-a-valid-family"},
+            "actor": "test",
+            "expected_version": v0,
+        },
+    )
+
+    assert r.status_code == 400
+    assert r.json() == {"detail": "bad_request"}

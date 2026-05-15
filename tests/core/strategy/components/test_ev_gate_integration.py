@@ -131,3 +131,78 @@ class TestEVGateCalibration:
             f"{'allow' if should_allow else 'veto'} "
             f"buy={buy_proba}, sell={sell_proba}"
         )
+
+
+class TestEVGateFiniteBoundaryParity:
+    """Test that valid finite EV behavior remains unchanged around the threshold."""
+
+    @pytest.mark.parametrize(
+        "raw_ev,min_ev,expected_allowed,expected_reason",
+        [
+            pytest.param(0.09, 0.10, False, "EV_BELOW_THRESHOLD", id="below-threshold"),
+            pytest.param(0.10, 0.10, True, None, id="at-threshold"),
+            pytest.param(0.11, 0.10, True, None, id="above-threshold"),
+            pytest.param("0.10", 0.10, True, None, id="string-at-threshold"),
+        ],
+    )
+    def test_ev_gate_preserves_finite_boundary_behavior(
+        self,
+        raw_ev: float | str,
+        min_ev: float,
+        expected_allowed: bool,
+        expected_reason: str | None,
+    ) -> None:
+        ev_gate = EVGateComponent(min_ev=min_ev)
+
+        ev_result = ev_gate.evaluate({"expected_value": raw_ev})
+
+        assert ev_result.allowed is expected_allowed
+        assert ev_result.reason == expected_reason
+
+
+class TestEVGateNonFiniteHardening:
+    """Test fail-closed handling for non-finite EV inputs."""
+
+    @pytest.mark.parametrize(
+        "raw_ev",
+        [
+            pytest.param(float("nan"), id="nan-float"),
+            pytest.param("nan", id="nan-string"),
+            pytest.param(float("inf"), id="pos-inf-float"),
+            pytest.param("inf", id="pos-inf-string"),
+        ],
+    )
+    def test_ev_gate_non_finite_inputs_fail_closed_to_ev_missing(self, raw_ev) -> None:
+        ev_gate = EVGateComponent(min_ev=0.1)
+
+        ev_result = ev_gate.evaluate({"expected_value": raw_ev})
+
+        assert ev_result.allowed is False
+        assert ev_result.reason == "EV_MISSING"
+        assert ev_result.confidence == pytest.approx(0.0)
+        assert ev_result.metadata == {
+            "component": ev_gate.name(),
+            "min_ev": 0.1,
+            "ev_value": None,
+        }
+
+    @pytest.mark.parametrize(
+        "raw_ev",
+        [
+            pytest.param(float("-inf"), id="neg-inf-float"),
+            pytest.param("-inf", id="neg-inf-string"),
+        ],
+    )
+    def test_ev_gate_negative_infinity_preserves_threshold_veto_path(self, raw_ev) -> None:
+        ev_gate = EVGateComponent(min_ev=0.1)
+
+        ev_result = ev_gate.evaluate({"expected_value": raw_ev})
+
+        assert ev_result.allowed is False
+        assert ev_result.reason == "EV_BELOW_THRESHOLD"
+        assert ev_result.confidence == pytest.approx(0.0)
+        assert ev_result.metadata == {
+            "component": ev_gate.name(),
+            "min_ev": 0.1,
+            "ev_value": float("-inf"),
+        }

@@ -5,6 +5,7 @@ from copy import deepcopy
 import pytest
 
 from core.strategy.decision import decide
+from core.strategy.decision_gates import safe_float
 
 
 def test_decide_stub_shapes():
@@ -250,6 +251,199 @@ def test_decide_handles_non_numeric_confidence_without_typeerror() -> None:
 
     assert action == "NONE"
     assert "CONF_TOO_LOW" in (meta.get("reasons") or [])
+
+
+def test_safe_float_returns_default_for_overflowing_int_input() -> None:
+    assert safe_float(10**1000, 1.5) == pytest.approx(1.5)
+
+
+def test_decide_preserves_finite_hysteresis_string_behavior() -> None:
+    cfg_int = {
+        "thresholds": {"entry_conf_overall": 0.7, "regime_proba": {"balanced": 0.7}},
+        "risk": {"risk_map": [[0.7, 0.01]]},
+        "gates": {"cooldown_bars": 0, "hysteresis_steps": 1},
+    }
+    cfg_str = deepcopy(cfg_int)
+    cfg_str["gates"]["hysteresis_steps"] = "1"
+
+    kwargs = {
+        "policy": {},
+        "probas": {"buy": 0.8, "sell": 0.1},
+        "confidence": {"buy": 0.8, "sell": 0.1},
+        "regime": "balanced",
+        "state": {"last_action": "SHORT", "decision_steps": 0},
+        "risk_ctx": {},
+    }
+
+    action_int, meta_int = decide(cfg=cfg_int, **kwargs)
+    action_str, meta_str = decide(cfg=cfg_str, **kwargs)
+
+    assert action_int == action_str == "LONG"
+    assert meta_int.get("reasons") == meta_str.get("reasons")
+
+
+def test_decide_preserves_finite_atr_period_string_behavior() -> None:
+    cfg_int = {
+        "thresholds": {
+            "entry_conf_overall": 0.7,
+            "signal_adaptation": {
+                "atr_period": 1,
+                "zones": {
+                    "high": {
+                        "entry_conf_overall": 0.9,
+                    }
+                },
+            },
+        },
+        "risk": {"risk_map": [[0.7, 0.01]]},
+        "gates": {"cooldown_bars": 0},
+    }
+    cfg_str = deepcopy(cfg_int)
+    cfg_str["thresholds"]["signal_adaptation"]["atr_period"] = "1"
+
+    kwargs = {
+        "policy": {},
+        "probas": {"buy": 0.85, "sell": 0.1},
+        "confidence": {"buy": 0.95, "sell": 0.1},
+        "regime": "balanced",
+        "state": {
+            "current_atr": 2.0,
+            "atr_percentiles": {
+                "1": {"p40": 0.5, "p80": 1.0},
+            },
+        },
+        "risk_ctx": {},
+    }
+
+    action_int, meta_int = decide(cfg=cfg_int, **kwargs)
+    action_str, meta_str = decide(cfg=cfg_str, **kwargs)
+
+    assert action_int == action_str == "NONE"
+    assert meta_int.get("reasons") == meta_str.get("reasons")
+
+
+def test_decide_preserves_finite_decision_steps_string_behavior() -> None:
+    cfg = {
+        "thresholds": {"entry_conf_overall": 0.7, "regime_proba": {"balanced": 0.7}},
+        "risk": {"risk_map": [[0.7, 0.01]]},
+        "gates": {"cooldown_bars": 0, "hysteresis_steps": 2},
+    }
+
+    kwargs = {
+        "policy": {},
+        "probas": {"buy": 0.8, "sell": 0.1},
+        "confidence": {"buy": 0.8, "sell": 0.1},
+        "regime": "balanced",
+        "risk_ctx": {},
+        "cfg": cfg,
+    }
+
+    action_int, meta_int = decide(
+        state={"last_action": "SHORT", "decision_steps": 1},
+        **kwargs,
+    )
+    action_str, meta_str = decide(
+        state={"last_action": "SHORT", "decision_steps": "1"},
+        **kwargs,
+    )
+
+    assert action_int == action_str == "LONG"
+    assert meta_int.get("reasons") == meta_str.get("reasons")
+
+
+def test_decide_preserves_finite_cooldown_remaining_string_behavior() -> None:
+    cfg = {
+        "thresholds": {"entry_conf_overall": 0.7, "regime_proba": {"balanced": 0.7}},
+        "risk": {"risk_map": [[0.7, 0.01]]},
+        "gates": {"cooldown_bars": 0},
+    }
+
+    kwargs = {
+        "policy": {},
+        "probas": {"buy": 0.8, "sell": 0.1},
+        "confidence": {"buy": 0.8, "sell": 0.1},
+        "regime": "balanced",
+        "risk_ctx": {},
+        "cfg": cfg,
+    }
+
+    action_int, meta_int = decide(
+        state={"cooldown_remaining": 1},
+        **kwargs,
+    )
+    action_str, meta_str = decide(
+        state={"cooldown_remaining": "1"},
+        **kwargs,
+    )
+
+    assert action_int == action_str == "NONE"
+    assert meta_int.get("reasons") == meta_str.get("reasons")
+    assert "COOLDOWN_ACTIVE" in (meta_str.get("reasons") or [])
+
+
+@pytest.mark.parametrize(
+    "raw_confidence",
+    [float("nan"), float("inf"), float("-inf"), "nan", "inf", "-inf"],
+)
+def test_decide_non_finite_confidence_matches_invalid_path(raw_confidence: object) -> None:
+    cfg = {
+        "thresholds": {"entry_conf_overall": 0.7, "regime_proba": {"balanced": 0.7}},
+        "risk": {"risk_map": [[0.7, 0.01]]},
+        "gates": {"cooldown_bars": 0},
+    }
+
+    baseline_action, baseline_meta = decide(
+        {},
+        probas={"buy": 0.8, "sell": 0.1},
+        confidence={"buy": None, "sell": 0.1},
+        regime="balanced",
+        state={},
+        risk_ctx={},
+        cfg=cfg,
+    )
+    action, meta = decide(
+        {},
+        probas={"buy": 0.8, "sell": 0.1},
+        confidence={"buy": raw_confidence, "sell": 0.1},
+        regime="balanced",
+        state={},
+        risk_ctx={},
+        cfg=cfg,
+    )
+
+    assert baseline_action == action == "NONE"
+    assert baseline_meta.get("reasons") == meta.get("reasons")
+    assert "CONF_TOO_LOW" in (meta.get("reasons") or [])
+
+
+@pytest.mark.parametrize(
+    "raw_hysteresis_steps",
+    [float("nan"), float("inf"), float("-inf"), "nan", "inf", "-inf"],
+)
+def test_decide_non_finite_hysteresis_matches_default_path(raw_hysteresis_steps: object) -> None:
+    cfg_default = {
+        "thresholds": {"entry_conf_overall": 0.7, "regime_proba": {"balanced": 0.7}},
+        "risk": {"risk_map": [[0.7, 0.01]]},
+        "gates": {"cooldown_bars": 0},
+    }
+    cfg_non_finite = deepcopy(cfg_default)
+    cfg_non_finite["gates"]["hysteresis_steps"] = raw_hysteresis_steps
+
+    kwargs = {
+        "policy": {},
+        "probas": {"buy": 0.8, "sell": 0.1},
+        "confidence": {"buy": 0.8, "sell": 0.1},
+        "regime": "balanced",
+        "state": {"last_action": "SHORT", "decision_steps": 0},
+        "risk_ctx": {},
+    }
+
+    baseline_action, baseline_meta = decide(cfg=cfg_default, **kwargs)
+    action, meta = decide(cfg=cfg_non_finite, **kwargs)
+
+    assert baseline_action == action == "NONE"
+    assert baseline_meta.get("reasons") == meta.get("reasons")
+    assert "HYST_WAIT" in (meta.get("reasons") or [])
 
 
 def test_clarity_score_v2_on_round_policy_tie_half_even_deterministic() -> None:

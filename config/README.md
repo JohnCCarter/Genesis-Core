@@ -11,6 +11,15 @@ Detta är en snabb karta över vad som faktiskt används i dagens körvägar.
 - `config/strategy/champions/`
   - Champion-konfigurationer per symbol/tidsram (konsumeras av pipeline).
 
+## Runtime live-update boundary
+
+- `config/runtime.json` är runtime-SSOT på disk.
+- `POST /config/runtime/validate` validerar payload mot `RuntimeConfig`, men avgör **inte** om fältet får skrivas live via config-API:t.
+- `POST /config/runtime/propose` är den guardade live-write-pathen och accepterar bara allowlistade patchytor.
+- Nuvarande live-skrivbara toppytor är `strategy_family`, `thresholds`, `gates`, `risk` (endast `risk_map`), `ev` (endast `R_default`) och utvalda `multi_timeframe`-underytor.
+- Ytor som `exit`, `warmup_bars`, `features`, `htf_exit_config`, `htf_fib` och `ltf_fib` är deklarerade i runtime-schemat men är för närvarande **inte** live-skrivbara via propose-pathen.
+- För exakt current-state-matris, se `docs/governance/runtime_config_live_update_matrix_2026-05-15.md`.
+
 ## Används av scripts/verktyg (inte trading-pipeline)
 
 - `config/champion_weights.json`

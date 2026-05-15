@@ -85,10 +85,10 @@ That means this queue starts **after** the earlier premortem candidate set is cl
 
 ### Slice 5 — transport/falsifier gate for RI/policy-router candidate promotion
 
-- **Status:** `queued`
+- **Status:** `selected and completed in this slice`
 - **Why it remains important:** the premortem explicitly warns against local-pocket overfitting and implied runtime-candidate promotion from exact-window research
-- **Expected shape:** bounded docs/research-governance slice unless a later narrower implementation seam becomes obvious
-- **Must not widen into:** runtime family/policy changes or broad strategy redesign
+- **Artifact:** `docs/decisions/governance/ri_policy_router_d1_transport_falsifier_evidence_boundary_packet_2026-05-15.md`
+- **Outcome target:** record that the current D1 transport/falsifier chain remains an evidence-boundary line only and that no runtime, candidate-promotion, or config authority follows from Slice 5
 
 ### Slice 6 — paper-shadow / live-paper isolation seam check
 
@@ -112,6 +112,7 @@ When this queue advances, the next admissible slice should be the smallest candi
 - the next phase is now framed as a workshop queue rather than as unfinished premortem work
 - the first three post-closeout slices were selected and completed as bounded docs-only steps
 - the fourth post-closeout slice landed as a bounded fixture + focused-test implementation for `execution_proxy_evidence`
+- the fifth post-closeout slice closed the current RI/policy-router D1 transport/falsifier line as a docs-only evidence boundary without opening candidate-promotion semantics
 - the replay-smoke line is now narrowed to `execution_proxy_evidence`, and its carrier strategy is fixed to a tracked minimal fixture rather than ignored results inputs
 - future work is ordered by risk-reduction payoff, not by nearby file proximity
 
@@ -122,7 +123,8 @@ When this queue advances, the next admissible slice should be the smallest candi
 - no strategy/backtest behavior
 - no paper/live semantics
 - no promotion or readiness stance
+- no runtime, candidate-promotion, or config authority from Slice 5
 
 ## Bottom line
 
-The next phase is now explicit: reduce one real risk at a time through bounded slices, starting with orchestration/customization drift, then replay-smoke candidate selection, then the `execution_proxy_evidence` fixture-containment decision, and now one landed tracked-fixture smoke implementation, with transport/falsifier gating plus paper/live isolation remaining queued behind that completed line.
+The next phase is now explicit: reduce one real risk at a time through bounded slices, starting with orchestration/customization drift, then replay-smoke candidate selection, then the `execution_proxy_evidence` fixture-containment decision, then one landed tracked-fixture smoke implementation, and now a docs-only RI/policy-router transport/falsifier evidence-boundary closeout, with paper/live isolation remaining queued behind those completed lines.

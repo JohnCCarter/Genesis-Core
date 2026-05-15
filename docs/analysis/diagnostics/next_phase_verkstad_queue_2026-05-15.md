@@ -119,6 +119,7 @@ When this queue advances, the next admissible slice should be the smallest candi
 - the seventh post-closeout slice closed the current `execution_proxy_evidence` replay wording at `fixture-level` and recorded explicit prerequisites before `historical-trace-level` or `full-chain clean-checkout-level` wording could be used
 - the eighth post-closeout slice chose one tracked minimal fixture pair under `registry/fixtures/` as the first commit-safe carrier strategy for `edge_origin_isolation` and kept ignored results roots out of replay portability claims
 - the ninth post-closeout slice narrowed the SCPE-derived line to the exact `defensive_probe` two-row selected-defensive pocket as primary carrier instead of inheriting confidence from the broader replay root
+- the tenth post-closeout slice tightened the mandatory minimum claim-header envelope for decision-influencing evidence in the existing template/runbook surfaces and made `Input carrier` explicit
 - future work is ordered by risk-reduction payoff, not by nearby file proximity
 
 ## What did not change
@@ -128,6 +129,7 @@ When this queue advances, the next admissible slice should be the smallest candi
 - no strategy/backtest behavior
 - no paper/live semantics
 - no broader replay authority from Slices 7-9
+- no new SSOT or universal note mandate from Slice 10
 - no promotion or readiness stance
 - no runtime, candidate-promotion, or config authority from Slice 5
 - no runtime, deployment, readiness, or paper/live authority from Slice 6
@@ -193,14 +195,17 @@ These labels are interpretation discipline only. They do **not** authorize stron
 
 ### Slice 10 — decision-influencing claim-header discipline
 
-- **Status:** `queued / next`
-- **Why it remains important:** reproducibility claims stay fragile if the evidence envelope is remembered informally instead of being named directly in every decision-influencing note
-- **Expected shape:** bounded docs/runbook/diagnostics-governance slice
-- **Outcome target:** define a compact mandatory claim header for decision-influencing evidence that names at minimum `SHA`, `branch`, `clean/dirty status`, `input carrier`, `env/cache/data-policy`, and `authority level`
+- **Status:** `selected and completed in this slice`
+- **Why it came next:** reproducibility claims stayed fragile as long as the evidence envelope could still be remembered informally instead of being named directly in every decision-influencing note
+- **Artifact(s):**
+  - `docs/decisions/governance/decision_influencing_claim_header_boundary_packet_2026-05-15.md`
+  - `docs/governance/templates/evidence_claim_header.md`
+  - `docs/governance/runbooks/evidence_claim_adoption.md`
+- **Outcome target:** define the compact mandatory minimum for decision-influencing evidence in the existing template/runbook surfaces, including explicit `Input carrier`, while keeping adoption trigger-based rather than universal
 
 ### Slice 11 — ignored-artifact dependency inventory
 
-- **Status:** `queued`
+- **Status:** `queued / next`
 - **Why it remains important:** the branch has reduced one ignored-input dependency, but many later claim-bearing chains may still rely on ignored `results/**`, caches, or workstation-local artifacts
 - **Expected shape:** bounded diagnostics inventory slice
 - **Outcome target:** inventory which decision-influencing chains still depend on ignored or local-only inputs and rank the next admissible carrier decisions behind them
@@ -224,4 +229,4 @@ When the successor phase advances, the next admissible slice should prefer the s
 
 ## Successor bottom line
 
-The initial six-slice queue is closed, and the successor phase has now landed a claim-discipline slice plus two separate carrier decisions. The branch still needs the next narrower moves: harden claim headers for decision-influencing evidence, reduce ignored-artifact dependencies, and keep queue freshness as an active risk control without widening replay authority by shorthand.
+The initial six-slice queue is closed, and the successor phase has now landed a claim-discipline slice, two separate carrier decisions, and the claim-header minimum for decision-influencing evidence. The branch still needs the next narrower moves: inventory ignored-artifact dependencies and keep queue freshness as an active risk control without widening replay authority by shorthand.

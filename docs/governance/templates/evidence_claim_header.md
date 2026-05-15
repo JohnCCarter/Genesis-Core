@@ -23,19 +23,38 @@ This template is **not** meant to turn every scratch note into a heavyweight rit
 
 At minimum, capture:
 
+- branch
 - authority level
 - claim status (`observed`, `inferred`, `unverified`)
 - runtime base SHA
 - evidence commit SHA, or an explicit note that the current slice did not rerun the evidence
-- config path and hash when relevant
-- symbol/timeframe/window/warmup when relevant
+- input carrier
+- working-tree clean/dirty status
 - data-source policy
-- symbol mode
 - relevant env flags
 - cache policy
-- working-tree clean/dirty status
+- config path and hash when relevant
+- symbol/timeframe/window/warmup when relevant
+- symbol mode
 - artifact path(s) and hash(es) when generated or cited
 - a short `does not authorize` boundary
+
+## Mandatory minimum for decision-influencing evidence
+
+When a note is likely to influence a later packet, review, carrier decision, or runtime-adjacent discussion, the claim header must name at minimum:
+
+- `Branch`
+- `Runtime base SHA`
+- `Evidence commit SHA` or explicit non-rerun wording
+- `Working-tree status`
+- `Input carrier`
+- `Data-source policy`
+- `Env flags`
+- `Cache policy`
+- `Authority level`
+- `Does not authorize`
+
+`Config path` and `Config hash` remain required whenever the note depends on config-bearing meaning.
 
 ## Copyable header
 
@@ -52,6 +71,7 @@ At minimum, capture:
 - **Objective:**
 - **Baseline reference(s):**
 - **Candidate / comparison surface:**
+- **Input carrier:**
 - **Runtime base SHA:**
 - **Evidence commit SHA:**
 - **Working-tree status:** `clean / dirty / not checked in this slice`
@@ -100,6 +120,15 @@ Examples:
 - `Does not authorize runtime/default changes.`
 - `Does not imply promotion or champion readiness.`
 - `Historical reference only; not active execution guidance.`
+
+### 5. Name the input carrier explicitly for decision-bearing notes
+
+`Input carrier` should name the exact surface the note depends on, for example:
+
+- one tracked fixture path
+- one exact historical artifact path or root
+- one retained bundle pointer
+- one summary artifact when the note is summary-only by construction
 
 ## Intent
 

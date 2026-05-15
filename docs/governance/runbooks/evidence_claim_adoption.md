@@ -121,10 +121,37 @@ Low-priority cases:
 4. if the evidence was not rerun in this slice, say so explicitly
 5. if the subject approaches runtime/default/paper/live/champion surfaces, stop treating the header as enough and open the appropriate governed path
 
+## Mandatory minimum for decision-influencing evidence
+
+When the note is likely to influence a later packet, review, carrier decision, runtime-adjacent discussion, or reproducibility claim, the claim header must name at minimum:
+
+- `Branch`
+- `Runtime base SHA`
+- `Evidence commit SHA` or explicit non-rerun wording
+- `Working-tree status`
+- `Input carrier`
+- `Data-source policy`
+- `Env flags`
+- `Cache policy`
+- `Authority level`
+- `Does not authorize`
+
+`Config path` and `Config hash` remain required whenever the note depends on config-bearing meaning.
+
+`Input carrier` should name the exact artifact/control surface the note depends on, for example:
+
+- one tracked fixture path
+- one exact frozen historical artifact path or root
+- one retained bundle pointer
+- one exact summary artifact when the note is summary-only by construction
+
+This minimum is **mandatory for decision-influencing evidence**, but it is **not** a blanket requirement for every exploratory note.
+
 ## Common failure modes to avoid
 
 - using a scratch note as if it were a packet-grade evidence anchor
 - backfilling guessed SHAs, hashes, or provenance from memory
+- omitting the exact `Input carrier` and assuming later readers will infer it from nearby prose
 - treating `validate` success as proof of live-write authority
 - adding the header and then blurring `observed` versus `inferred`
 - assuming the header itself grants readiness, promotion, or runtime authority

@@ -172,7 +172,7 @@ class TestEVGateNonFiniteHardening:
             pytest.param("inf", id="pos-inf-string"),
         ],
     )
-    def test_ev_gate_non_finite_fail_open_cases_map_to_ev_missing(self, raw_ev) -> None:
+    def test_ev_gate_non_finite_inputs_fail_closed_to_ev_missing(self, raw_ev) -> None:
         ev_gate = EVGateComponent(min_ev=0.1)
 
         ev_result = ev_gate.evaluate({"expected_value": raw_ev})

@@ -5,11 +5,10 @@ tools:
   [
     vscode/memory,
     vscode/askQuestions,
-    read/readFile,
-    read/readNotebookCellOutput,
-    read/terminalSelection,
-    read/terminalLastCommand,
-    read/getTaskOutput,
+    vscode/toolSearch,
+    execute/getTerminalOutput,
+    execute/sendToTerminal,
+    read,
     search,
     todo,
   ]

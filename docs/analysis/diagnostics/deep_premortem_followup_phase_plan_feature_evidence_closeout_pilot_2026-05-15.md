@@ -10,6 +10,11 @@ Status: `docs-only / planning-only / non-executable / no runtime authority`
 > - It does **not** reopen `docs/analysis/diagnostics/next_phase_verkstad_queue_2026-05-15.md` and it does **not** authorize execution by implication.
 > - Any later slice selected from this plan must still be reopened explicitly as its own bounded docs, tooling, evidence, or stricter-governed packet.
 
+> Later progress note:
+>
+> - Phase 1B local-only reference containment is now införd in the tracked docs that cited the local untracked note path.
+> - This is a wording-boundary cleanup only; working-contract re-anchor remains a separate later bounded reopen, so Phase 1 is not otherwise re-scoped or closed here.
+
 ## COMMAND PACKET (planning-only)
 
 - **Mode:** `RESEARCH` — source: `docs/governance_mode.md` via `feature/* -> RESEARCH`

@@ -18,9 +18,30 @@ def safe_float(value: Any, default: float = 0.0) -> float:
     if value is None:
         return default
     try:
-        return float(value)
+        numeric = float(value)
     except (TypeError, ValueError):
         return default
+    if not math.isfinite(numeric):
+        return default
+    return numeric
+
+
+def _is_non_finite_numeric(value: Any) -> bool:
+    if value is None:
+        return False
+    try:
+        return not math.isfinite(float(value))
+    except (TypeError, ValueError, OverflowError):
+        return False
+
+
+def _int_or_default_for_non_finite(value: Any, default: int) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError, OverflowError):
+        if _is_non_finite_numeric(value):
+            return int(default)
+        raise
 
 
 def compute_percentile(values: list[float], q: float) -> float:
@@ -238,7 +259,7 @@ def select_candidate(
     zone_debug: dict[str, Any] = {}
     if adaptation_cfg and atr_percentiles:
         zones = adaptation_cfg.get("zones", {})
-        atr_period = int(adaptation_cfg.get("atr_period", 14))
+        atr_period = _int_or_default_for_non_finite(adaptation_cfg.get("atr_period", 14), 14)
         if atr is not None:
             atr_p = atr_percentiles.get(str(atr_period)) or atr_percentiles.get(atr_period) or {}
             atr_safe = safe_float(atr, 0.0)
@@ -542,9 +563,12 @@ def apply_post_fib_gates(
                 action, meta = _none_result(versions, reasons, state_out)
                 return action, meta, {}
 
-    hysteresis_steps = int((cfg.get("gates") or {}).get("hysteresis_steps") or 2)
+    hysteresis_steps = _int_or_default_for_non_finite(
+        (cfg.get("gates") or {}).get("hysteresis_steps") or 2,
+        2,
+    )
     last_action = state_in.get("last_action")
-    decision_steps = int(state_in.get("decision_steps", 0))
+    decision_steps = _int_or_default_for_non_finite(state_in.get("decision_steps", 0), 0)
     if last_action in ("LONG", "SHORT") and candidate != last_action:
         decision_steps += 1
         if decision_steps < hysteresis_steps:
@@ -563,7 +587,7 @@ def apply_post_fib_gates(
         decision_steps = 0
     state_out["decision_steps"] = decision_steps
 
-    cooldown_left = int(state_in.get("cooldown_remaining", 0))
+    cooldown_left = _int_or_default_for_non_finite(state_in.get("cooldown_remaining", 0), 0)
     if cooldown_left > 0:
         reasons.append("COOLDOWN_ACTIVE")
         log_decision_event("COOLDOWN_ACTIVE", remaining=cooldown_left)

@@ -2,9 +2,9 @@
 
 Date: 2026-05-15
 Branch: `feature/evidence-closeout-pilot`
-Status: `initial queue closed / successor phase active / docs-only / non-authorizing`
+Status: `initial queue closed / successor phase closed / docs-only / non-authorizing`
 
-This document records the initial post-premortem execution queue after the completed premortem closeout and evidence-manifest boundary work. The initial six-slice queue below is now historical, and the successor phase reopened from the branch premortem reading is active later in this document. This remains a sequencing artifact in `RESEARCH`; it grants no runtime, config-authority, paper/live, promotion, or champion authority by itself.
+This document records the initial post-premortem execution queue after the completed premortem closeout and evidence-manifest boundary work. The initial six-slice queue below is now historical, and the successor phase reopened from the branch premortem reading is now also historical and closed later in this document. This remains a sequencing artifact in `RESEARCH`; it grants no runtime, config-authority, paper/live, promotion, or champion authority by itself.
 
 ## Mode and lane
 
@@ -121,6 +121,7 @@ When this queue advances, the next admissible slice should be the smallest candi
 - the ninth post-closeout slice narrowed the SCPE-derived line to the exact `defensive_probe` two-row selected-defensive pocket as primary carrier instead of inheriting confidence from the broader replay root
 - the tenth post-closeout slice tightened the mandatory minimum claim-header envelope for decision-influencing evidence in the existing template/runbook surfaces and made `Input carrier` explicit
 - the eleventh post-closeout slice inventoried four representative ignored/local-only dependency families and ranked the next admissible carrier follow-ups behind them
+- the twelfth post-closeout slice closed the current successor queue by defining one minimal same-slice freshness rule for queue truth, touched artifact framing, and touched next-step prose
 - future work is ordered by risk-reduction payoff, not by nearby file proximity
 
 ## What did not change
@@ -132,6 +133,7 @@ When this queue advances, the next admissible slice should be the smallest candi
 - no broader replay authority from Slices 7-9
 - no new SSOT or universal note mandate from Slice 10
 - no carrier implementation or runtime authority from Slice 11
+- no new status framework or archive-wide rewrite from Slice 12
 - no promotion or readiness stance
 - no runtime, candidate-promotion, or config authority from Slice 5
 - no runtime, deployment, readiness, or paper/live authority from Slice 6
@@ -214,10 +216,10 @@ These labels are interpretation discipline only. They do **not** authorize stron
 
 ### Slice 12 — queue/status freshness guard
 
-- **Status:** `queued / next`
-- **Why it stays in queue:** stale “next step” text is a real steering hazard once multiple packets and diagnostics notes exist in parallel
-- **Expected shape:** bounded docs/governance slice
-- **Outcome target:** define the minimal rule for when queue status, historical packet framing, and “next step” prose must be updated in the same slice so stale sequencing text cannot silently take control
+- **Status:** `selected and completed in this slice`
+- **Why it came next:** stale “next step” text remained a real steering hazard once multiple packets and diagnostics notes existed in parallel
+- **Artifact:** `docs/decisions/governance/queue_status_freshness_guard_packet_2026-05-15.md`
+- **Outcome target:** define the minimal same-slice freshness bundle for queue truth, touched artifact framing, and touched next-step prose so stale sequencing text cannot silently take control
 
 ## Successor selection rule
 
@@ -231,4 +233,4 @@ When the successor phase advances, the next admissible slice should prefer the s
 
 ## Successor bottom line
 
-The initial six-slice queue is closed, and the successor phase has now landed a claim-discipline slice, two separate carrier decisions, the claim-header minimum for decision-influencing evidence, and one bounded ignored-artifact dependency inventory. The current successor queue now narrows to one remaining explicit control-plane slice: keep queue/status freshness as an active risk control without widening replay authority by shorthand.
+The initial six-slice queue is closed, and the successor phase is now closed as well. This successor phase landed a claim-discipline slice, two separate carrier decisions, the claim-header minimum for decision-influencing evidence, one bounded ignored-artifact dependency inventory, and a minimal freshness guard for queue truth. Any further slice should now be reopened explicitly from the latest branch state rather than inherited from stale “next” prose in this document.

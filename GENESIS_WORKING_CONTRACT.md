@@ -1,12 +1,14 @@
 # GENESIS_WORKING_CONTRACT.md
 
-> Working anchor for day-start and resumed sessions.
+> Retained historical working-contract / drift-reference anchor for the `feature/editor-worker-orchestrator` branch context captured below.
 > This file is **not SSOT** and must not override repo governance documents.
+
+**Status note (2026-05-15):** This document is retained as a historical working-contract / drift-reference anchor for the `feature/editor-worker-orchestrator` branch context captured below. It is **not** current execution guidance for `feature/evidence-closeout-pilot`, and this slice does **not** establish a replacement branch-current anchor set.
 
 ## Purpose
 
-This file exists to prevent session drift.
-Before starting new work, the agent should re-anchor against the latest validated lane, known blockers, and next admissible step.
+This file exists to prevent session drift when its captured branch context is still the active one.
+Before starting new work, the agent should re-anchor against the latest validated lane, known blockers, and next admissible step for the actual active branch context rather than assuming this retained file is current on every branch.
 
 ## Non-purpose
 
@@ -16,6 +18,7 @@ This file does **not**:
 - grant execution authority by itself
 - override `.github/copilot-instructions.md`, `docs/governance_mode.md`, `AGENTS.md`, or explicit user instructions
 - replace packets, reports, or verified evidence artifacts
+- serve as branch-current control-plane truth once the captured branch/lane context below is no longer current
 
 ## Authority order
 
@@ -26,12 +29,12 @@ This file does **not**:
 5. `AGENTS.md`
 6. This file (`GENESIS_WORKING_CONTRACT.md`)
 
-## Current branch and mode anchor
+## Historical branch and mode anchor (captured on `feature/editor-worker-orchestrator`)
 
-- Branch: `feature/editor-worker-orchestrator`
-- Expected mode on this branch: `RESEARCH`
-- RESEARCH allows the smallest reproducible, traceable step
-- RESEARCH does **not** authorize drift into strict-only surfaces, runtime-default authority, promotion, or champion claims without the required lane/packet
+- Captured branch: `feature/editor-worker-orchestrator`
+- Expected mode for that captured branch: `RESEARCH`
+- RESEARCH allowed the smallest reproducible, traceable step
+- RESEARCH did **not** authorize drift into strict-only surfaces, runtime-default authority, promotion, or champion claims without the required lane/packet
 
 ## Core conceptual lock
 
@@ -39,9 +42,11 @@ Genesis must be treated as a **deterministic policy-selection system**.
 It is **not** an adaptive system.
 It selects among predefined policies based on observable state, and any switching must remain exact, traceable, and reproducible.
 
-## Current validated lane
+## Historical validated lane at capture time
 
-Active focus right now:
+Captured focus at that time:
+
+Any `current`, `active`, or `live` wording inside the retained bullets below refers to that captured branch context only.
 
 - the new RI target-selection anchor is now `docs/decisions/regime_intelligence/policy_router/ri_policy_router_payoff_state_translation_precode_packet_2026-04-30.md`, which freezes the user's direction choice to continue on **RI rather than Legacy**, preserves payoff-state as the research/evaluation target truth, and keeps decision-time-only RI state as the first admissible runtime carrier
 - the active bounded RI-router runtime anchor is now `docs/decisions/regime_intelligence/policy_router/ri_policy_router_continuation_release_hysteresis_runtime_packet_2026-04-30.md`, which implements one enabled-only `continuation_release_hysteresis` seam for `RI_defensive_transition_policy -> RI_continuation_policy`, keeps default/off parity and canonical backcompat intact, and is green on focused plus high-sensitivity selectors with Opus post-diff `APPROVED`
@@ -82,9 +87,9 @@ Active focus right now:
 - any future reopen on the aged-weak surface must start with fresh docs-only evidence anchored to the active carrier truth rather than reuse of the falsified `2023-12-30 21:00` residual-row premise
 - this file is only a drift anchor; detailed closeout logic belongs in the governance notes above rather than here
 
-## Explicitly not active by default
+## Explicitly not active by default in this retained historical anchor
 
-Unless the user reopens them explicitly with the needed authority, do **not** treat these as active:
+Within this retained historical anchor, unless the user reopens them explicitly with the needed authority, do **not** treat these as active:
 
 - the earlier `3h` historical validation lane from the prior working anchor
 - inherited runtime/integration authority from RI research docs
@@ -92,7 +97,7 @@ Unless the user reopens them explicitly with the needed authority, do **not** tr
 - paper-shadow follow-up fixes
 - promotion/champion claims from isolated research evidence
 
-## Key anchors already verified
+## Key anchors already verified at capture time
 
 - `docs/governance/concept_evidence_runtime_lane_model_2026-04-23.md` is the canonical practical definition of concept / research-evidence / runtime-integration lanes
 - `.github/copilot-instructions.md` already says to prefer the cheapest admissible lane before proposing durable runtime structure
@@ -144,7 +149,9 @@ Unless the user reopens them explicitly with the needed authority, do **not** tr
 - `registry/manifests/strategy_candidates.dev.json` seeds the first preserved RI candidate identities without creating promotion or runtime authority
 - `config/strategy/candidates/README.md` now documents the candidate-bank lifecycle manifest and explicitly keeps `promotion_compare`, `champion_freeze`, `readiness`, `cutover`, and live-near authority out of ordinary runtime selection semantics
 
-## Last verified facts relevant to today
+## Last verified facts retained from capture time
+
+Any `current`, `active`, or `live` wording inside the retained bullets below refers to that captured branch context only.
 
 - the fresh pre-code RI replay packet already freezes the allowed future input/output envelope and explicit non-inheritance rule
 - the frozen Phase C evidence inputs exist locally under `results/research/ri_advisory_environment_fit/phase3_phasec_evidence_capture_v2_2026-04-17/`
@@ -226,9 +233,11 @@ Unless the user reopens them explicitly with the needed authority, do **not** tr
 - the first dedicated opposite-sign exact subject for that seam is now fixed to `tBTCUSD`, `3h`, `2018-03-01 -> 2018-03-31`, warmup `120`, `curated_only`, same weak-pre-aged release-guard carrier: baseline preserves a twelve-row continuation-release cluster while `release_zero` exits that mode after the first six rows, trade count remains `13 -> 13`, `action_diff_count` remains `0`, and `continuation_release_hysteresis = 0` underperforms by `-0.9371672999986913` USD and `-0.009371672999986924` return points despite the same bounded policy/size-path change shape (`2` size diffs, `6` policy diffs, `6` reason diffs, `35` behavioral row diffs)
 - the complete full-calendar-month top-line-divergent bench for that seam is now closed as the three-subject exact triad `2021-08`, `2025-10`, `2018-03`: the frozen monthly windows artifact contains no fourth `topline_changed = true` month, the triad preserves unchanged trade count and `action_diff_count = 0` throughout, the same release-from-defensive policy/size-path mechanism is visible in every subject, and the resulting top-line sign is mixed rather than stable (`+`, `+`, `-`)
 
-## Next admissible steps
+## Historical next admissible steps at capture time (not live queue)
 
-Choose the smallest valid next step that matches the user request:
+These were the smallest valid next steps in the captured branch context; they are **not** the live queue for `feature/evidence-closeout-pilot`:
+
+Any `current`, `active`, or `live` wording inside the retained items below refers to that captured branch context only.
 
 1. use `docs/decisions/regime_intelligence/policy_router/ri_policy_router_reanchor_post_aged_weak_closeouts_2026-04-27.md` and `docs/decisions/regime_intelligence/policy_router/ri_policy_router_aged_weak_active_carrier_truth_parked_handoff_2026-04-27.md` as the current truthful state anchors for this chain
 2. do **not** reopen the findings-bank hardening proof unless a concrete CI discrepancy appears; the live-checkout and detached-worktree proof bundle is already green on this branch
@@ -237,9 +246,9 @@ Choose the smallest valid next step that matches the user request:
 5. if the user wants to continue the insufficient-evidence RI line after the completed July `2024`, late-2024, `2022-06`, exact `2019-06` vs `2022-06` D1 pair, exact `2019-06` vs `2025-03` second-pair survival slice, exact `2019-06` / `2022-06` / `2025-03` boundary-gap reread, exact `2019-06` vs `2020-10/11` source-backed third-control transport check, the completed four-surface synthesis re-anchor, the completed four-surface context-clean falsifier, the completed late-2024 external-surface falsifier, and the completed D1 bank-state synthesis, keep the bounded July-2024 -> `2022-06` translation chain parked and do **not** reopen it as transport logic. The current D1 line should now be treated as a bounded evidence bank with one completed docs-only bank-state synthesis, one bounded context-clean bank reread, and one bounded external-surface falsifier rather than as an automatically widening recurrence loop. Any further continuation must therefore start from a fresh packet posing a genuinely new falsifier or a genuinely new interpretation question not already answered by the current synthesis, not from another cheap recurrence check by default and not from late-2024 as a recycled holdout. Do **not** treat the current D1 bank read as runtime or concept authority, do **not** reopen March subjects, July as a primary subject, late-2024 as an already-spent external surface, or the closed `2024` versus `2020` control logic without a new governed packet, and keep runtime, config-authority, and policy-promotion changes out of scope
 6. if the user wants to continue the mixed-year annual line after the completed exact `2023` pocket-isolation slice, the completed `2017` vs `2023` comparison, the completed `2023-12` vs `2017-03` continuation local-window concentration slice, the completed dominant-window chronology reread, and the completed dominant-window internal-cadence reread, do **not** reopen the now-answered annual-shape, month-packaging, chronology, or internal-cadence packets as if those questions were still unresolved. The closed read is now narrower and more truthful: June-led suppression is shared across both mixed full years, the continuation tops diverge (`2017`: `March`, `2023`: `December`), `2023-12` is two-window concentrated and chronologically organized as a compact late dual-wave burst, `2017-03` is more fragmented and chronologically organized as an early anchor plus two later revisit waves, and both months still share the same internal `9h`/`18h` cadence alphabet even though December absorbs more skipped-bar elasticity inside one late wave while March expresses more of the divergence by reopening separate revisit waves. Any further continuation must therefore start from a fresh packet posing a genuinely new exact-window cross-wave or within-window composition question not already answered by the current concentration/chronology/cadence chain, not from another cheap reread of the same fixed windows. Do **not** widen beyond read-only exact-window or month-local evidence by default, and keep runtime, config-authority, and policy-promotion changes out of scope
 
-## Hard stops
+## Historical hard stops retained with this anchor
 
-Stop and re-anchor before proceeding if any of the following happens:
+If this retained historical anchor is ever reused in its captured context, stop and re-anchor before proceeding if any of the following happens:
 
 - the next step starts relying on memory instead of cited anchors
 - concept or research language starts implying runtime/family/authority status
@@ -247,23 +256,23 @@ Stop and re-anchor before proceeding if any of the following happens:
 - a task touches strict-only surfaces or champion/promotion semantics
 - the lane is no longer obvious from the latest user request
 
-## Required day-start / resume ritual
+## Historical day-start / resume ritual retained with this anchor
 
-At the start of a new day or resumed session, do this before reasoning forward:
+At the start of a new day or resumed session in the captured branch context, do this before reasoning forward:
 
 1. read this file
 2. read persistent user memory relevant to workflow
-3. read current repo memory items relevant to the active lane
-4. identify the latest validated lane and the latest non-active lanes
+3. read repo memory items relevant to the captured active lane
+4. identify the latest validated lane and the latest non-active lanes for that captured context
 5. state the next smallest admissible step before making claims
 
-## Update rule
+## Update rule for this retained historical anchor
 
 Update this file only when one of these changes:
 
-- active lane
-- blocked/not-active lane status
+- captured active lane
+- captured blocked/not-active lane status
 - known verified blocker
-- next admissible action
+- captured next admissible action
 
 Keep it short. If detail is needed, point to the authoritative doc instead of copying it here.

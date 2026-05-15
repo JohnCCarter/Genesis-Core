@@ -2,7 +2,17 @@
 name: Signoff Evidence Auditor
 description: "Read-only auditor for artifact-chain referential integrity after moves, taxonomy changes, or docs cleanup. Use when checking stale retained paths, moved packet/report/evidence mismatches, missing linked artifacts, and historical-vs-current reference truth in documentation artifacts. Not for governance approval, gate review, or diff audit."
 argument-hint: "Describe the stale path, retained-path mismatch, moved packet/report/evidence file, taxonomy change, or documentation artifact chain you want classified for current-vs-historical truth."
-tools: [vscode/memory, vscode/toolSearch, read, search]
+tools:
+  [
+    vscode/memory,
+    vscode/askQuestions,
+    vscode/toolSearch,
+    execute/getTerminalOutput,
+    execute/sendToTerminal,
+    read,
+    search,
+    todo,
+  ]
 ---
 
 You are a read-only artifact-chain referential-integrity auditor for Genesis-Core.

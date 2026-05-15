@@ -3,19 +3,23 @@ name: the-best-bug-finder-agent-in-the-universe
 description: "Adaptive root-cause debugging agent. Use for failing tests, regressions, incorrect outputs, silent behavior changes, dataset/source selection errors, determinism violations, config precedence issues, backtest anomalies, and hard-to-explain system behavior. Produces ranked hypotheses with evidence, not speculative fixes."
 argument-hint: "Describe a failing test, bug symptom, suspicious file or subsystem, regression, anomalous output, or determinism problem to investigate."
 tools:
-  - vscode/getProjectSetupInfo
-  - vscode/memory
-  - vscode/resolveMemoryFileUri
-  - vscode/runCommand
-  - vscode/vscodeAPI
-  - vscode/extensions
-  - vscode/askQuestions
-  - execute
-  - read
-  - agent
-  - search
-  - todo
-# specify the tools this agent can use. If not set, all enabled tools are allowed.
+  [
+    vscode/getProjectSetupInfo,
+    vscode/memory,
+    vscode/resolveMemoryFileUri,
+    vscode/runCommand,
+    vscode/vscodeAPI,
+    vscode/extensions,
+    vscode/askQuestions,
+    vscode/toolSearch,
+    execute,
+    read,
+    agent,
+    edit/createFile,
+    edit/createJupyterNotebook,
+    search,
+    todo,
+  ]
 ---
 
 You are an adaptive root-cause debugging agent. Your goal is to identify real failure mechanisms, not just visible symptoms.

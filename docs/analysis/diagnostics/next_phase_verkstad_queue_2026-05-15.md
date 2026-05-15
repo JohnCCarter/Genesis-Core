@@ -117,6 +117,7 @@ When this queue advances, the next admissible slice should be the smallest candi
 - the replay-smoke line is now narrowed to `execution_proxy_evidence`, and its carrier strategy is fixed to a tracked minimal fixture rather than ignored results inputs
 - the initial six-slice workshop queue is now exhausted; any further slice selection should be reopened explicitly rather than inherited from this document
 - the seventh post-closeout slice closed the current `execution_proxy_evidence` replay wording at `fixture-level` and recorded explicit prerequisites before `historical-trace-level` or `full-chain clean-checkout-level` wording could be used
+- the eighth post-closeout slice chose one tracked minimal fixture pair under `registry/fixtures/` as the first commit-safe carrier strategy for `edge_origin_isolation` and kept ignored results roots out of replay portability claims
 - future work is ordered by risk-reduction payoff, not by nearby file proximity
 
 ## What did not change
@@ -125,7 +126,7 @@ When this queue advances, the next admissible slice should be the smallest candi
 - no config-authority semantics
 - no strategy/backtest behavior
 - no paper/live semantics
-- no broader replay authority from Slice 7
+- no broader replay authority from Slices 7-8
 - no promotion or readiness stance
 - no runtime, candidate-promotion, or config authority from Slice 5
 - no runtime, deployment, readiness, or paper/live authority from Slice 6
@@ -177,14 +178,14 @@ These labels are interpretation discipline only. They do **not** authorize stron
 
 ### Slice 8 — edge-origin isolation carrier decision
 
-- **Status:** `queued / next`
-- **Why it is next:** `edge_origin_isolation` is the next obvious claim-bearing artifact chain that could inherit replay confidence without its own commit-safe carrier decision
-- **Expected shape:** bounded candidate-selection / carrier-boundary slice
-- **Outcome target:** choose one exact commit-safe carrier decision or explicitly record why the current chain remains non-portable on a clean checkout
+- **Status:** `selected and completed in this slice`
+- **Why it came next:** `edge_origin_isolation` was the next obvious claim-bearing artifact chain that could inherit replay confidence without its own commit-safe carrier decision
+- **Artifact:** `docs/decisions/governance/edge_origin_isolation_carrier_decision_packet_2026-05-15.md`
+- **Outcome target:** choose one tracked minimal fixture pair under `registry/fixtures/` as the first commit-safe carrier strategy for `edge_origin_isolation` and keep ignored results roots and summary-only citations out of replay portability authority
 
 ### Slice 9 — SCPE replay-surface carrier decision
 
-- **Status:** `queued`
+- **Status:** `queued / next`
 - **Why it remains important:** SCPE replay-style surfaces could easily inherit replay confidence from unrelated artifact chains unless they receive their own carrier boundary
 - **Expected shape:** bounded candidate-selection / carrier-boundary slice
 - **Outcome target:** choose one exact SCPE replay surface for a commit-safe carrier decision and keep runtime, paper/live, and broader SCPE integration semantics out of scope
@@ -222,4 +223,4 @@ When the successor phase advances, the next admissible slice should prefer the s
 
 ## Successor bottom line
 
-The initial six-slice queue is closed, and the successor phase has now landed its first claim-discipline slice. The branch still needs the next narrower moves: choose separate carriers for other claim-bearing chains such as `edge_origin_isolation` and one bounded SCPE replay surface, harden claim headers for decision-influencing evidence, reduce ignored-artifact dependencies, and keep queue freshness as an active risk control without widening replay authority by shorthand.
+The initial six-slice queue is closed, and the successor phase has now landed a claim-discipline slice plus the next carrier decision. The branch still needs the next narrower moves: choose a separate carrier for one bounded SCPE replay surface, harden claim headers for decision-influencing evidence, reduce ignored-artifact dependencies, and keep queue freshness as an active risk control without widening replay authority by shorthand.

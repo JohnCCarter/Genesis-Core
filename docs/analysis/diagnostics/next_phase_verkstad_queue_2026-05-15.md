@@ -118,6 +118,7 @@ When this queue advances, the next admissible slice should be the smallest candi
 - the initial six-slice workshop queue is now exhausted; any further slice selection should be reopened explicitly rather than inherited from this document
 - the seventh post-closeout slice closed the current `execution_proxy_evidence` replay wording at `fixture-level` and recorded explicit prerequisites before `historical-trace-level` or `full-chain clean-checkout-level` wording could be used
 - the eighth post-closeout slice chose one tracked minimal fixture pair under `registry/fixtures/` as the first commit-safe carrier strategy for `edge_origin_isolation` and kept ignored results roots out of replay portability claims
+- the ninth post-closeout slice narrowed the SCPE-derived line to the exact `defensive_probe` two-row selected-defensive pocket as primary carrier instead of inheriting confidence from the broader replay root
 - future work is ordered by risk-reduction payoff, not by nearby file proximity
 
 ## What did not change
@@ -126,7 +127,7 @@ When this queue advances, the next admissible slice should be the smallest candi
 - no config-authority semantics
 - no strategy/backtest behavior
 - no paper/live semantics
-- no broader replay authority from Slices 7-8
+- no broader replay authority from Slices 7-9
 - no promotion or readiness stance
 - no runtime, candidate-promotion, or config authority from Slice 5
 - no runtime, deployment, readiness, or paper/live authority from Slice 6
@@ -185,14 +186,14 @@ These labels are interpretation discipline only. They do **not** authorize stron
 
 ### Slice 9 — SCPE replay-surface carrier decision
 
-- **Status:** `queued / next`
-- **Why it remains important:** SCPE replay-style surfaces could easily inherit replay confidence from unrelated artifact chains unless they receive their own carrier boundary
-- **Expected shape:** bounded candidate-selection / carrier-boundary slice
-- **Outcome target:** choose one exact SCPE replay surface for a commit-safe carrier decision and keep runtime, paper/live, and broader SCPE integration semantics out of scope
+- **Status:** `selected and completed in this slice`
+- **Why it came next:** SCPE replay-style surfaces could easily inherit replay confidence from unrelated artifact chains unless they received their own exact carrier boundary
+- **Artifact:** `docs/decisions/governance/scpe_defensive_probe_carrier_decision_packet_2026-05-15.md`
+- **Outcome target:** choose the exact `defensive_probe` two-row selected-defensive pocket as the first SCPE-derived commit-safe carrier and keep broader replay-root, runtime, paper/live, and integration semantics out of scope
 
 ### Slice 10 — decision-influencing claim-header discipline
 
-- **Status:** `queued`
+- **Status:** `queued / next`
 - **Why it remains important:** reproducibility claims stay fragile if the evidence envelope is remembered informally instead of being named directly in every decision-influencing note
 - **Expected shape:** bounded docs/runbook/diagnostics-governance slice
 - **Outcome target:** define a compact mandatory claim header for decision-influencing evidence that names at minimum `SHA`, `branch`, `clean/dirty status`, `input carrier`, `env/cache/data-policy`, and `authority level`
@@ -223,4 +224,4 @@ When the successor phase advances, the next admissible slice should prefer the s
 
 ## Successor bottom line
 
-The initial six-slice queue is closed, and the successor phase has now landed a claim-discipline slice plus the next carrier decision. The branch still needs the next narrower moves: choose a separate carrier for one bounded SCPE replay surface, harden claim headers for decision-influencing evidence, reduce ignored-artifact dependencies, and keep queue freshness as an active risk control without widening replay authority by shorthand.
+The initial six-slice queue is closed, and the successor phase has now landed a claim-discipline slice plus two separate carrier decisions. The branch still needs the next narrower moves: harden claim headers for decision-influencing evidence, reduce ignored-artifact dependencies, and keep queue freshness as an active risk control without widening replay authority by shorthand.

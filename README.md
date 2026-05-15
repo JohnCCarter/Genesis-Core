@@ -100,7 +100,7 @@ Se `docs/features/FEATURE_COMPUTATION_MODES.md` för detaljer, inkl. `GENESIS_MO
 - API:
   - `GET /config/runtime` → `{ cfg, version, hash }`
   - `POST /config/runtime/validate` → `{ valid, errors, cfg? }` — validerar payload mot runtime-schemat; `valid=true` betyder inte i sig att fältet är live-skrivbart
-  - `POST /config/runtime/propose` (kräver Bearer) → `{ cfg, version, hash }` — patchar endast allowlistade live-update-fält via den guardade propose-pathen och använder `expected_version` för optimistic locking
+  - `POST /config/runtime/propose` (kräver Bearer) → `{ cfg, version, hash }` — patchar endast allowlistade live-update-fält via den guardade propose-pathen och använder `expected_version` för optimistic locking; schema-valid men live-blockade patchar returnerar det grova publika felet `non_whitelisted_field`
 - Bearer‑auth: sätt env `BEARER_TOKEN` i backend. Skicka `Authorization: Bearer <token>` i UI/klient.
 - Audit: ändringar loggas i `logs/config_audit.jsonl` (rotation vid ~5MB). Innehåller `actor`, `paths`, `hash_before/after`.
 - Aktuell current-state-matris för schema-valid vs live-skrivbar runtime-config finns i `docs/governance/runtime_config_live_update_matrix_2026-05-15.md`.

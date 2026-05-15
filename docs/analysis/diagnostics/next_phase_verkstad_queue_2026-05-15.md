@@ -76,10 +76,12 @@ That means this queue starts **after** the earlier premortem candidate set is cl
 
 ### Slice 4 — execution-proxy tracked-fixture smoke implementation
 
-- **Status:** `queued`
-- **Why it is next:** the carrier strategy is now explicit, so the next smallest implementation move is to add one tracked minimal fixture and focused smoke coverage for `execution_proxy_evidence`
-- **Expected shape:** bounded tooling/test slice centered on one fixture under `registry/fixtures/` and focused updates in `tests/backtest/test_execution_proxy_evidence.py`
-- **Must not widen into:** script behavior changes, bundle/LFS rollout, edge-origin rollout, or generic replay framework extraction
+- **Status:** `selected and completed in this slice`
+- **Why it is next:** the carrier strategy became explicit, so the next smallest implementation move was to add one tracked minimal fixture and focused smoke coverage for `execution_proxy_evidence`
+- **Artifact(s):**
+  - `registry/fixtures/execution_proxy_baseline_current_minimal.json`
+  - `tests/backtest/test_execution_proxy_evidence.py`
+- **Outcome target:** prove that `execution_proxy_evidence` can run and reproduce deterministic outputs from one tracked commit-safe fixture without relying on ignored `results/research/**` inputs
 
 ### Slice 5 — transport/falsifier gate for RI/policy-router candidate promotion
 
@@ -109,6 +111,7 @@ When this queue advances, the next admissible slice should be the smallest candi
 
 - the next phase is now framed as a workshop queue rather than as unfinished premortem work
 - the first three post-closeout slices were selected and completed as bounded docs-only steps
+- the fourth post-closeout slice landed as a bounded fixture + focused-test implementation for `execution_proxy_evidence`
 - the replay-smoke line is now narrowed to `execution_proxy_evidence`, and its carrier strategy is fixed to a tracked minimal fixture rather than ignored results inputs
 - future work is ordered by risk-reduction payoff, not by nearby file proximity
 
@@ -122,4 +125,4 @@ When this queue advances, the next admissible slice should be the smallest candi
 
 ## Bottom line
 
-The next phase is now explicit: reduce one real risk at a time through bounded slices, starting with orchestration/customization drift, then replay-smoke candidate selection, then the `execution_proxy_evidence` fixture-containment decision, with the next direct implementation move narrowed to one tracked-fixture smoke slice and transport/falsifier gating plus paper/live isolation remaining queued behind it.
+The next phase is now explicit: reduce one real risk at a time through bounded slices, starting with orchestration/customization drift, then replay-smoke candidate selection, then the `execution_proxy_evidence` fixture-containment decision, and now one landed tracked-fixture smoke implementation, with transport/falsifier gating plus paper/live isolation remaining queued behind that completed line.

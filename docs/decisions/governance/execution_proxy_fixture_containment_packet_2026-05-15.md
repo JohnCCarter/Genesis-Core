@@ -6,6 +6,16 @@ Status: `packet-defined / docs-only / non-authorizing`
 
 This document records the exact commit-safe carrier strategy to use if the `execution_proxy_evidence` clean-checkout replay-smoke line is reopened. It grants no source, test, runtime, config-authority, paper/live, promotion, or replay-attestation authority by itself.
 
+> Current implementation-status note:
+>
+> - The carrier strategy framed by this packet has since been landed in a separate bounded slice limited to `registry/fixtures/execution_proxy_baseline_current_minimal.json` and `tests/backtest/test_execution_proxy_evidence.py`.
+> - Verification on that later slice was green on touched-file `black --check` / `ruff check` and the focused execution-proxy evidence test file.
+> - Executed selectors / outcomes for that later slice:
+>   - `black --check tests/backtest/test_execution_proxy_evidence.py` → `pass`
+>   - `ruff check tests/backtest/test_execution_proxy_evidence.py` → `pass`
+>   - `pytest tests/backtest/test_execution_proxy_evidence.py -v --tb=short` → `21 passed`
+> - This packet remains the historical pre-code framing artifact and does not retroactively authorize broader replay-framework or runtime work.
+
 ## COMMAND PACKET
 
 - **Mode:** `RESEARCH` — source: `docs/governance_mode.md` via `feature/* -> RESEARCH`

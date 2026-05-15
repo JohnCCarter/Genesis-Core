@@ -1,0 +1,85 @@
+{
+  "name": "baseline_current",
+  "trade_signatures": [
+    {
+      "entry_timestamp": "2024-01-01T00:00:00",
+      "exit_timestamp": "2024-01-01T06:00:00",
+      "side": "CLOSE_LONG",
+      "size": 1.0,
+      "pnl": 5.0
+    },
+    {
+      "entry_timestamp": "2024-01-01T12:00:00",
+      "exit_timestamp": "2024-01-01T12:00:00",
+      "side": "CLOSE_SHORT",
+      "size": 1.0,
+      "pnl": -1.0
+    }
+  ],
+  "trace_rows": [
+    {
+      "bar_index": 0,
+      "timestamp": "2024-01-01T00:00:00+00:00",
+      "sizing_phase": {
+        "final_size": 1.0
+      },
+      "fib_phase": {
+        "ltf_debug": {
+          "price": 100.0,
+          "atr": 100.0,
+          "tolerance": 125.0
+        }
+      }
+    },
+    {
+      "bar_index": 1,
+      "timestamp": "2024-01-01T03:00:00+00:00",
+      "sizing_phase": null,
+      "fib_phase": {
+        "ltf_debug": {
+          "price": 95.0,
+          "atr": 100.0,
+          "tolerance": 125.0
+        }
+      }
+    },
+    {
+      "bar_index": 2,
+      "timestamp": "2024-01-01T06:00:00+00:00",
+      "sizing_phase": null,
+      "fib_phase": {
+        "ltf_debug": {
+          "price": 110.0,
+          "atr": 100.0,
+          "tolerance": 125.0
+        }
+      }
+    },
+    {
+      "bar_index": 3,
+      "timestamp": "2024-01-01T09:00:00+00:00",
+      "sizing_phase": null,
+      "fib_phase": {
+        "ltf_debug": {
+          "price": 104.0,
+          "atr": 100.0,
+          "tolerance": 125.0
+        }
+      }
+    },
+    {
+      "bar_index": 4,
+      "timestamp": "2024-01-01T12:00:00+00:00",
+      "sizing_phase": {
+        "final_size": 1.0
+      },
+      "fib_phase": {
+        "ltf_debug": {
+          "price": 90.0,
+          "atr": 100.0,
+          "tolerance": 125.0
+        }
+      }
+    }
+  ]
+}

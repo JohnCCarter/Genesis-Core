@@ -11,6 +11,11 @@ from scripts.analyze.execution_proxy_evidence import (
     run_execution_proxy_evidence,
 )
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+TRACKED_FIXTURE_PATH = (
+    REPO_ROOT / "registry" / "fixtures" / "execution_proxy_baseline_current_minimal.json"
+)
+
 
 def _trace_row(
     *,
@@ -93,6 +98,17 @@ def _build_payload() -> dict[str, object]:
 
 def _deep_copy_payload() -> dict[str, object]:
     return json.loads(json.dumps(_build_payload()))
+
+
+def _load_tracked_fixture_payload() -> dict[str, object]:
+    payload = json.loads(TRACKED_FIXTURE_PATH.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise AssertionError("tracked execution proxy fixture must be a JSON object")
+    return payload
+
+
+def test_tracked_execution_proxy_fixture_matches_minimal_payload() -> None:
+    assert _load_tracked_fixture_payload() == _build_payload()
 
 
 def test_normalize_timestamp_removes_suffix_once() -> None:
@@ -552,6 +568,73 @@ def test_execution_proxy_evidence_cli_repeatable_outputs(tmp_path: Path, capsys)
     rc1 = main([str(baseline_path), "--out-dir", str(out_dir_1), "--horizons", "1", "--json"])
     stdout1 = capsys.readouterr().out
     rc2 = main([str(baseline_path), "--out-dir", str(out_dir_2), "--horizons", "1", "--json"])
+    stdout2 = capsys.readouterr().out
+
+    assert rc1 == 0
+    assert rc2 == 0
+    assert json.loads(stdout1)["match"] is True
+    assert json.loads(stdout2)["match"] is True
+
+    expected_files = {
+        "execution_proxy_evidence.json",
+        "execution_proxy_summary.md",
+        "audit_execution_proxy_determinism.json",
+        "manifest.json",
+    }
+    assert expected_files == {path.name for path in out_dir_1.iterdir()}
+    assert expected_files == {path.name for path in out_dir_2.iterdir()}
+
+    for name in sorted(expected_files):
+        assert (out_dir_1 / name).read_text(encoding="utf-8") == (out_dir_2 / name).read_text(
+            encoding="utf-8"
+        )
+
+
+def test_execution_proxy_evidence_cli_smoke_from_tracked_fixture(tmp_path: Path, capsys) -> None:
+    out_dir = tmp_path / "out"
+
+    rc = main([str(TRACKED_FIXTURE_PATH), "--out-dir", str(out_dir), "--horizons", "1", "--json"])
+    assert rc == 0
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["status"] == "PASS"
+    assert payload["match"] is True
+    assert payload["horizons"] == [1]
+
+    expected_files = {
+        "execution_proxy_evidence.json",
+        "execution_proxy_summary.md",
+        "audit_execution_proxy_determinism.json",
+        "manifest.json",
+    }
+    assert expected_files == {path.name for path in out_dir.iterdir()}
+
+    fixture_payload = _load_tracked_fixture_payload()
+    expected_input_hash = hashlib.sha256(
+        json.dumps(
+            fixture_payload,
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+        ).encode("utf-8")
+    ).hexdigest()
+    manifest = json.loads((out_dir / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["input_payload_sha256"] == expected_input_hash
+
+
+def test_execution_proxy_evidence_tracked_fixture_cli_repeatable_outputs(
+    tmp_path: Path, capsys
+) -> None:
+    out_dir_1 = tmp_path / "out1"
+    out_dir_2 = tmp_path / "out2"
+
+    rc1 = main(
+        [str(TRACKED_FIXTURE_PATH), "--out-dir", str(out_dir_1), "--horizons", "1", "--json"]
+    )
+    stdout1 = capsys.readouterr().out
+    rc2 = main(
+        [str(TRACKED_FIXTURE_PATH), "--out-dir", str(out_dir_2), "--horizons", "1", "--json"]
+    )
     stdout2 = capsys.readouterr().out
 
     assert rc1 == 0

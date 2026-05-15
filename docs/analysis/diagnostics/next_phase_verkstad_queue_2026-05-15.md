@@ -60,19 +60,28 @@ That means this queue starts **after** the earlier premortem candidate set is cl
 
 ### Slice 2 — decision-influencing artifact replay smoke candidate selection
 
-- **Status:** `queued`
-- **Why it is next:** the premortem still ranks determinism illusion from artifact/cache/env drift as a top failure mode, and the next useful move is to pick one decision-influencing artifact chain for a clean-checkout replay smoke candidate
-- **Expected shape:** bounded tooling/evidence slice, likely script/test/docs only
-- **Must not widen into:** repo-wide replay framework or multi-chain rollout in one step
+- **Status:** `selected and completed in this slice`
+- **Why it is next:** the premortem still ranks determinism illusion from artifact/cache/env drift as a top failure mode, and the next useful move was to pick one decision-influencing artifact chain for a clean-checkout replay smoke candidate
+- **Artifact(s):**
+  - `docs/analysis/diagnostics/decision_influencing_replay_smoke_candidate_selection_2026-05-15.md`
+  - `docs/decisions/governance/execution_proxy_clean_checkout_replay_smoke_boundary_packet_2026-05-15.md`
+- **Outcome target:** select `execution_proxy_evidence` as the first bounded replay-smoke candidate and lock the current fixture-containment gap as a separate follow-up boundary instead of jumping straight to implementation
 
-### Slice 3 — transport/falsifier gate for RI/policy-router candidate promotion
+### Slice 3 — execution-proxy fixture containment packet
+
+- **Status:** `queued`
+- **Why it is next:** the candidate-selection slice showed that the current `execution_proxy_evidence` input trace is locally present but ignored/untracked, so a clean-checkout replay smoke cannot yet be implemented honestly from the tracked repo surface
+- **Expected shape:** bounded docs/pre-code packet for one exact commit-safe fixture or carrier strategy tied only to `execution_proxy_evidence`
+- **Must not widen into:** edge-origin or SCPE replay rollout, generic replay framework extraction, or multi-chain automation
+
+### Slice 4 — transport/falsifier gate for RI/policy-router candidate promotion
 
 - **Status:** `queued`
 - **Why it remains important:** the premortem explicitly warns against local-pocket overfitting and implied runtime-candidate promotion from exact-window research
 - **Expected shape:** bounded docs/research-governance slice unless a later narrower implementation seam becomes obvious
 - **Must not widen into:** runtime family/policy changes or broad strategy redesign
 
-### Slice 4 — paper-shadow / live-paper isolation seam check
+### Slice 5 — paper-shadow / live-paper isolation seam check
 
 - **Status:** `queued`
 - **Why it stays in queue:** paper/live boundary regression remains low-frequency but very high impact in the premortem ranking
@@ -92,7 +101,8 @@ When this queue advances, the next admissible slice should be the smallest candi
 ## What changed now
 
 - the next phase is now framed as a workshop queue rather than as unfinished premortem work
-- the first post-closeout slice was selected and completed in the same bounded docs-only step
+- the first two post-closeout slices were selected and completed as bounded docs-only steps
+- the replay-smoke line is now narrowed to `execution_proxy_evidence`, with a separate fixture-containment follow-up explicitly queued
 - future work is ordered by risk-reduction payoff, not by nearby file proximity
 
 ## What did not change
@@ -105,4 +115,4 @@ When this queue advances, the next admissible slice should be the smallest candi
 
 ## Bottom line
 
-The next phase is now explicit: reduce one real risk at a time through bounded slices, starting with orchestration/customization drift, then moving to reproducibility smoke selection, transport/falsifier gating, and paper/live isolation only as separately bounded follow-ups.
+The next phase is now explicit: reduce one real risk at a time through bounded slices, starting with orchestration/customization drift, then replay-smoke candidate selection, then the `execution_proxy_evidence` fixture-containment follow-up, with transport/falsifier gating and paper/live isolation remaining queued as later separately bounded steps.

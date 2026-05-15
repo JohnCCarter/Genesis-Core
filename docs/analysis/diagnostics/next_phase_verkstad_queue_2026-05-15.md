@@ -120,6 +120,7 @@ When this queue advances, the next admissible slice should be the smallest candi
 - the eighth post-closeout slice chose one tracked minimal fixture pair under `registry/fixtures/` as the first commit-safe carrier strategy for `edge_origin_isolation` and kept ignored results roots out of replay portability claims
 - the ninth post-closeout slice narrowed the SCPE-derived line to the exact `defensive_probe` two-row selected-defensive pocket as primary carrier instead of inheriting confidence from the broader replay root
 - the tenth post-closeout slice tightened the mandatory minimum claim-header envelope for decision-influencing evidence in the existing template/runbook surfaces and made `Input carrier` explicit
+- the eleventh post-closeout slice inventoried four representative ignored/local-only dependency families and ranked the next admissible carrier follow-ups behind them
 - future work is ordered by risk-reduction payoff, not by nearby file proximity
 
 ## What did not change
@@ -130,6 +131,7 @@ When this queue advances, the next admissible slice should be the smallest candi
 - no paper/live semantics
 - no broader replay authority from Slices 7-9
 - no new SSOT or universal note mandate from Slice 10
+- no carrier implementation or runtime authority from Slice 11
 - no promotion or readiness stance
 - no runtime, candidate-promotion, or config authority from Slice 5
 - no runtime, deployment, readiness, or paper/live authority from Slice 6
@@ -205,14 +207,14 @@ These labels are interpretation discipline only. They do **not** authorize stron
 
 ### Slice 11 — ignored-artifact dependency inventory
 
-- **Status:** `queued / next`
-- **Why it remains important:** the branch has reduced one ignored-input dependency, but many later claim-bearing chains may still rely on ignored `results/**`, caches, or workstation-local artifacts
-- **Expected shape:** bounded diagnostics inventory slice
-- **Outcome target:** inventory which decision-influencing chains still depend on ignored or local-only inputs and rank the next admissible carrier decisions behind them
+- **Status:** `selected and completed in this slice`
+- **Why it came next:** the branch had reduced one ignored-input dependency, but several later claim-bearing chains still relied on ignored `results/**`, caches, or workstation-local artifacts
+- **Artifact:** `docs/analysis/diagnostics/ignored_artifact_dependency_inventory_2026-05-15.md`
+- **Outcome target:** inventory four representative decision-influencing dependency families that still depend on ignored or local-only inputs and rank the next admissible carrier follow-ups behind them
 
 ### Slice 12 — queue/status freshness guard
 
-- **Status:** `queued`
+- **Status:** `queued / next`
 - **Why it stays in queue:** stale “next step” text is a real steering hazard once multiple packets and diagnostics notes exist in parallel
 - **Expected shape:** bounded docs/governance slice
 - **Outcome target:** define the minimal rule for when queue status, historical packet framing, and “next step” prose must be updated in the same slice so stale sequencing text cannot silently take control
@@ -229,4 +231,4 @@ When the successor phase advances, the next admissible slice should prefer the s
 
 ## Successor bottom line
 
-The initial six-slice queue is closed, and the successor phase has now landed a claim-discipline slice, two separate carrier decisions, and the claim-header minimum for decision-influencing evidence. The branch still needs the next narrower moves: inventory ignored-artifact dependencies and keep queue freshness as an active risk control without widening replay authority by shorthand.
+The initial six-slice queue is closed, and the successor phase has now landed a claim-discipline slice, two separate carrier decisions, the claim-header minimum for decision-influencing evidence, and one bounded ignored-artifact dependency inventory. The current successor queue now narrows to one remaining explicit control-plane slice: keep queue/status freshness as an active risk control without widening replay authority by shorthand.

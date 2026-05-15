@@ -13,7 +13,9 @@ Status: `docs-only / planning-only / non-executable / no runtime authority`
 > Later progress note:
 >
 > - Phase 1B local-only reference containment is now införd in the tracked docs that cited the local untracked note path.
-> - This is a wording-boundary cleanup only; working-contract re-anchor remains a separate later bounded reopen, so Phase 1 is not otherwise re-scoped or closed here.
+> - Phase 1A working-contract branch-anchor demotion is now införd via `GENESIS_WORKING_CONTRACT.md` and `docs/decisions/governance/working_contract_branch_anchor_demotion_packet_2026-05-15.md`.
+> - Phase 1 is now effectively complete on this branch.
+> - The next bounded reopen should start in **Phase 2 — Claim-envelope and portability label hardening**, choosing the smallest docs-only slice under that phase rather than reopening Phase 1 or the closed successor queue.
 
 ## COMMAND PACKET (planning-only)
 

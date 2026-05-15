@@ -3,12 +3,16 @@ name: Opus 4.6 Governance Reviewer
 description: "Governance authority for pre-code plan review and post-code diff audit. Use when deciding whether scope, risk, gates, or a planned/implemented slice should be APPROVED, APPROVED_WITH_NOTES, or BLOCKED."
 argument-hint: "Provide mode/risk/path, scope IN/OUT, touched zones, planned or actual diff, gates run, and the specific governance question requiring an APPROVED / APPROVED_WITH_NOTES / BLOCKED verdict."
 tools:
-  - vscode/memory
-  - vscode/askQuestions
-  - vscode/toolSearch
-  - read
-  - search
-  - todo
+  [
+    vscode/memory,
+    vscode/askQuestions,
+    vscode/toolSearch,
+    execute/getTerminalOutput,
+    execute/sendToTerminal,
+    read,
+    search,
+    todo,
+  ]
 ---
 
 Skills may evolve additively via explicit proposals; they must not self-modify, broaden scope, alter determinism guarantees, or redefine PASS without governance approval.

@@ -2,9 +2,9 @@
 
 Date: 2026-05-15
 Branch: `feature/evidence-closeout-pilot`
-Status: `initial queue closed / docs-only / non-authorizing`
+Status: `initial queue closed / successor phase queued / docs-only / non-authorizing`
 
-This document records the initial post-premortem execution queue after the completed premortem closeout and evidence-manifest boundary work. It is now a historical sequencing artifact in `RESEARCH`; it grants no runtime, config-authority, paper/live, promotion, or champion authority by itself.
+This document records the initial post-premortem execution queue after the completed premortem closeout and evidence-manifest boundary work. The initial six-slice queue below is now historical, and the successor phase reopened from the branch premortem reading is queued later in this document. This remains a sequencing artifact in `RESEARCH`; it grants no runtime, config-authority, paper/live, promotion, or champion authority by itself.
 
 ## Mode and lane
 
@@ -131,3 +131,93 @@ When this queue advances, the next admissible slice should be the smallest candi
 ## Bottom line
 
 The next phase is now explicit: reduce one real risk at a time through bounded slices, starting with orchestration/customization drift, then replay-smoke candidate selection, then the `execution_proxy_evidence` fixture-containment decision, then one landed tracked-fixture smoke implementation, then a docs-only RI/policy-router transport/falsifier evidence-boundary closeout, and finally a docs-only SCPE RI paper-shadow / live-paper isolation boundary record. The initial six-slice queue is now closed; any next slice should be selected explicitly rather than assumed from this document.
+
+## Successor phase reopened from the branch premortem
+
+The initial six-slice queue reduced real risk, but the next branch-level failure pattern is now clearer: narrow reproducibility wins can still be remembered broader than they prove.
+
+The successor phase therefore stays in `RESEARCH`, remains docs/governance/tooling-first by default, and focuses on preventing five specific drifts:
+
+- `execution_proxy_evidence` must not be overgeneralized from one tracked fixture-smoke into a repo-wide clean-checkout replay claim
+- docs-only and evidence-only notes must not drift into implementation or approval authority
+- RI/policy-router exact-window findings must remain behind transport/falsifier gates
+- paper/live semantics must remain separate from replay/evidence-closeout semantics
+- queue/status freshness must be treated as a risk control rather than as optional cosmetics
+
+### Carry-forward constraints for the successor phase
+
+- do not describe the current `execution_proxy_evidence` line as anything stronger than a bounded tracked-fixture smoke unless a later packet proves the stronger claim explicitly
+- do not treat docs-only packets, diagnostics notes, or evidence summaries as implementation authority by citation drift
+- do not reopen RI/policy-router candidate language without a fresh transport/falsifier packet
+- do not cite replay or evidence-closeout work as paper/live readiness or operations safety
+- update queue/status text whenever a slice changes what the actual next admissible step is
+
+### Replay claim labels required in this phase
+
+- **`fixture-level`**
+  - one tracked compact carrier proves one bounded script/test path only
+  - current `execution_proxy_evidence` proof remains here unless later evidence says otherwise
+- **`historical-trace-level`**
+  - the original historical trace or equivalent retained carrier is tracked and reproducibly rerun for the named claim-bearing chain
+- **`full-chain clean-checkout-level`**
+  - a clean checkout can regenerate the full named claim-bearing chain from tracked inputs under an explicitly stated envelope
+
+These labels are interpretation discipline only. They do **not** authorize stronger replay claims by themselves.
+
+## Successor prioritized queue
+
+### Slice 7 — execution-proxy replay claim-level boundary
+
+- **Status:** `queued / next`
+- **Why it comes first:** the highest current branch risk is vocabulary compression from one tracked fixture-smoke into “clean-checkout replay solved”
+- **Expected shape:** bounded docs/governance slice
+- **Outcome target:** pin the current `execution_proxy_evidence` line to `fixture-level`, define what would have to be proven before `historical-trace-level` or `full-chain clean-checkout-level` wording could be used, and keep broader replay authority out of scope
+
+### Slice 8 — edge-origin isolation carrier decision
+
+- **Status:** `queued`
+- **Why it is next:** `edge_origin_isolation` is the next obvious claim-bearing artifact chain that could inherit replay confidence without its own commit-safe carrier decision
+- **Expected shape:** bounded candidate-selection / carrier-boundary slice
+- **Outcome target:** choose one exact commit-safe carrier decision or explicitly record why the current chain remains non-portable on a clean checkout
+
+### Slice 9 — SCPE replay-surface carrier decision
+
+- **Status:** `queued`
+- **Why it remains important:** SCPE replay-style surfaces could easily inherit replay confidence from unrelated artifact chains unless they receive their own carrier boundary
+- **Expected shape:** bounded candidate-selection / carrier-boundary slice
+- **Outcome target:** choose one exact SCPE replay surface for a commit-safe carrier decision and keep runtime, paper/live, and broader SCPE integration semantics out of scope
+
+### Slice 10 — decision-influencing claim-header discipline
+
+- **Status:** `queued`
+- **Why it remains important:** reproducibility claims stay fragile if the evidence envelope is remembered informally instead of being named directly in every decision-influencing note
+- **Expected shape:** bounded docs/runbook/diagnostics-governance slice
+- **Outcome target:** define a compact mandatory claim header for decision-influencing evidence that names at minimum `SHA`, `branch`, `clean/dirty status`, `input carrier`, `env/cache/data-policy`, and `authority level`
+
+### Slice 11 — ignored-artifact dependency inventory
+
+- **Status:** `queued`
+- **Why it remains important:** the branch has reduced one ignored-input dependency, but many later claim-bearing chains may still rely on ignored `results/**`, caches, or workstation-local artifacts
+- **Expected shape:** bounded diagnostics inventory slice
+- **Outcome target:** inventory which decision-influencing chains still depend on ignored or local-only inputs and rank the next admissible carrier decisions behind them
+
+### Slice 12 — queue/status freshness guard
+
+- **Status:** `queued`
+- **Why it stays in queue:** stale “next step” text is a real steering hazard once multiple packets and diagnostics notes exist in parallel
+- **Expected shape:** bounded docs/governance slice
+- **Outcome target:** define the minimal rule for when queue status, historical packet framing, and “next step” prose must be updated in the same slice so stale sequencing text cannot silently take control
+
+## Successor selection rule
+
+When the successor phase advances, the next admissible slice should prefer the smallest move that:
+
+- reduces overclaim or authority drift before expanding replay scope
+- chooses a carrier boundary before making a stronger portability claim
+- keeps RI/policy-router candidate language below transport/falsifier proof
+- keeps paper/live semantics separate from replay semantics
+- leaves historical packets clearly historical once a newer queue truth exists
+
+## Successor bottom line
+
+The initial six-slice queue is closed, but the branch is not done. The next phase is narrower and stricter in its language: prevent replay overclaim, keep evidence below authority, choose separate carriers for other claim-bearing chains such as `edge_origin_isolation` and one bounded SCPE replay surface, harden claim headers for decision-influencing evidence, reduce ignored-artifact dependencies, and keep queue freshness as an active risk control.

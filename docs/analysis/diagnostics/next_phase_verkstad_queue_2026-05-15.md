@@ -2,9 +2,9 @@
 
 Date: 2026-05-15
 Branch: `feature/evidence-closeout-pilot`
-Status: `active queue / docs-only / non-authorizing`
+Status: `initial queue closed / docs-only / non-authorizing`
 
-This document records the next post-premortem execution queue after the completed premortem closeout and evidence-manifest boundary work. It is a sequencing artifact in `RESEARCH`; it grants no runtime, config-authority, paper/live, promotion, or champion authority by itself.
+This document records the initial post-premortem execution queue after the completed premortem closeout and evidence-manifest boundary work. It is now a historical sequencing artifact in `RESEARCH`; it grants no runtime, config-authority, paper/live, promotion, or champion authority by itself.
 
 ## Mode and lane
 
@@ -92,10 +92,10 @@ That means this queue starts **after** the earlier premortem candidate set is cl
 
 ### Slice 6 — paper-shadow / live-paper isolation seam check
 
-- **Status:** `queued`
+- **Status:** `selected and completed in this slice`
 - **Why it stays in queue:** paper/live boundary regression remains low-frequency but very high impact in the premortem ranking
-- **Expected shape:** bounded docs/test seam check before any operational feature work touches that edge again
-- **Must not widen into:** live-paper feature additions or observability-driven contract expansion
+- **Artifact:** `docs/decisions/scpe_ri_v1/scpe_ri_v1_paper_shadow_live_paper_isolation_boundary_packet_2026-05-15.md`
+- **Outcome target:** record the currently cited RI paper-shadow vs live-paper isolation seam as a docs-only boundary and keep operational, readiness, deployment, and runtime semantics out of scope
 
 ## Selection rule for the next slice
 
@@ -113,7 +113,9 @@ When this queue advances, the next admissible slice should be the smallest candi
 - the first three post-closeout slices were selected and completed as bounded docs-only steps
 - the fourth post-closeout slice landed as a bounded fixture + focused-test implementation for `execution_proxy_evidence`
 - the fifth post-closeout slice closed the current RI/policy-router D1 transport/falsifier line as a docs-only evidence boundary without opening candidate-promotion semantics
+- the sixth post-closeout slice closed the current SCPE RI paper-shadow / live-paper seam as a docs-only isolation boundary record without opening operational or readiness semantics
 - the replay-smoke line is now narrowed to `execution_proxy_evidence`, and its carrier strategy is fixed to a tracked minimal fixture rather than ignored results inputs
+- the initial six-slice workshop queue is now exhausted; any further slice selection should be reopened explicitly rather than inherited from this document
 - future work is ordered by risk-reduction payoff, not by nearby file proximity
 
 ## What did not change
@@ -124,7 +126,8 @@ When this queue advances, the next admissible slice should be the smallest candi
 - no paper/live semantics
 - no promotion or readiness stance
 - no runtime, candidate-promotion, or config authority from Slice 5
+- no runtime, deployment, readiness, or paper/live authority from Slice 6
 
 ## Bottom line
 
-The next phase is now explicit: reduce one real risk at a time through bounded slices, starting with orchestration/customization drift, then replay-smoke candidate selection, then the `execution_proxy_evidence` fixture-containment decision, then one landed tracked-fixture smoke implementation, and now a docs-only RI/policy-router transport/falsifier evidence-boundary closeout, with paper/live isolation remaining queued behind those completed lines.
+The next phase is now explicit: reduce one real risk at a time through bounded slices, starting with orchestration/customization drift, then replay-smoke candidate selection, then the `execution_proxy_evidence` fixture-containment decision, then one landed tracked-fixture smoke implementation, then a docs-only RI/policy-router transport/falsifier evidence-boundary closeout, and finally a docs-only SCPE RI paper-shadow / live-paper isolation boundary record. The initial six-slice queue is now closed; any next slice should be selected explicitly rather than assumed from this document.

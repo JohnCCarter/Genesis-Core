@@ -53,7 +53,11 @@ def propose_runtime(payload: dict, authorization: str | None = Header(default=No
             "version": snap.version,
         }
     except ValueError as e:
-        # Avoid leaking exception-derived details; callers should treat 400 uniformly.
+        message = str(e)
+        if message == "non_whitelisted_field" or message.startswith("non_whitelisted_field:"):
+            # Expose only one coarse stable detail for guarded live-write rejections.
+            raise HTTPException(status_code=400, detail="non_whitelisted_field") from e
+        # Avoid leaking exception-derived details for all other 400 failure paths.
         raise HTTPException(status_code=400, detail="bad_request") from e
     except RuntimeError as e:
         if "version_conflict" in str(e):

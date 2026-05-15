@@ -166,3 +166,73 @@ def test_runtime_endpoints_e2e_regime_unified_alias_bridge(monkeypatch):
         == "legacy"
     )
     assert out2.get("cfg", {}).get("strategy_family") == "legacy"
+
+
+def test_runtime_endpoints_e2e_schema_valid_live_blocked_field_returns_coarse_detail(
+    monkeypatch,
+):
+    c = TestClient(app)
+
+    validate_payload = {
+        "strategy_family": "legacy",
+        "warmup_bars": 12,
+    }
+    r = c.post(
+        "/config/runtime/validate",
+        json=validate_payload,
+    )
+    assert r.status_code == 200
+    assert r.json().get("valid") is True
+    assert r.json().get("cfg", {}).get("warmup_bars") == 12
+
+    r = c.get("/config/runtime")
+    assert r.status_code == 200
+    v0 = int(r.json().get("version") or 0)
+
+    monkeypatch.setenv("BEARER_TOKEN", "test-secret")
+    r = c.post(
+        "/config/runtime/propose",
+        headers={"Authorization": "Bearer test-secret"},
+        json={
+            "patch": {"warmup_bars": 12},
+            "actor": "test",
+            "expected_version": v0,
+        },
+    )
+
+    assert r.status_code == 400
+    assert r.json() == {"detail": "non_whitelisted_field"}
+    assert "warmup_bars" not in r.text
+
+
+def test_runtime_endpoints_e2e_version_conflict_detail_preserved(monkeypatch):
+    c = TestClient(app)
+
+    r = c.get("/config/runtime")
+    assert r.status_code == 200
+    v0 = int(r.json().get("version") or 0)
+
+    monkeypatch.setenv("BEARER_TOKEN", "test-secret")
+    first_patch = _legacy_runtime_patch(entry_conf_overall=0.63)
+    first = c.post(
+        "/config/runtime/propose",
+        headers={"Authorization": "Bearer test-secret"},
+        json={
+            "patch": first_patch,
+            "actor": "test",
+            "expected_version": v0,
+        },
+    )
+    assert first.status_code == 200
+
+    second = c.post(
+        "/config/runtime/propose",
+        headers={"Authorization": "Bearer test-secret"},
+        json={
+            "patch": _legacy_runtime_patch(entry_conf_overall=0.64),
+            "actor": "test",
+            "expected_version": v0,
+        },
+    )
+    assert second.status_code == 409
+    assert second.json() == {"detail": "version_conflict"}

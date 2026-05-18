@@ -1,14 +1,16 @@
 # Editor worker startup test dispatch
 
 Date: 2026-05-12
-Branch: `feature/editor-worker-orchestrator`
-Mode: `RESEARCH`
-Status: `ready for read-only trial`
-Dispatch allowed: `true`
-Execution authority: `read-only scouting only`
+Originating branch: `feature/editor-worker-orchestrator`
+Mode at capture: `RESEARCH`
+Status: `historical/paused specimen / not current trial target`
+Original dispatch allowed: `true`
+Original execution authority: `read-only scouting only`
 Shared truth effect: `none`
 
-This document is a **single concrete test dispatch specimen** for the current editor-worker startup setup.
+> Status note (2026-05-18): This specimen is retained as a historical/paused reference from the earlier `feature/editor-worker-orchestrator` startup model. It is not currently presented as an active or trial-ready startup test-dispatch contract on `feature/evidence-closeout-pilot`.
+
+This document is a **single concrete test dispatch specimen** for the captured editor-worker startup setup.
 
 It is meant to answer one practical question:
 
@@ -16,7 +18,7 @@ It is meant to answer one practical question:
 
 It does **not** authorize repo-write, commits, PR creation, runtime execution, or shared-truth updates.
 
-## How to use this test
+## How this test was intended to be used
 
 1. Open the active `Genesis-Core` checkout on `feature/editor-worker-orchestrator`.
 2. Open a new editor chat in that checkout.
@@ -28,7 +30,7 @@ If the worker needs repo-write or a wider subject, the correct behavior is to st
 
 ## Reusable minimal dispatch template
 
-Use this skeleton for future bounded worker dispatches:
+This skeleton captures the minimal dispatch shape used for bounded worker dispatches in that startup model:
 
 ```yaml
 task_id: <short-stable-task-id>
@@ -59,7 +61,7 @@ reference_anchors:
   - <baseline or canonical files>
 ```
 
-## Concrete specimen for the first generic test
+## Concrete specimen for the captured first generic test
 
 ```yaml
 task_id: editor-worker-startup-generic-test
@@ -71,7 +73,7 @@ base_branch: feature/editor-worker-orchestrator
 base_sha: fcab59aa
 branch_target: <prepared worker branch chosen by control plane>
 question: >
-  Build the current reference picture for the generic editor-worker startup bundle:
+  Build the captured reference picture for the generic editor-worker startup bundle:
   which tracked files define the startup surface, what shared-checkout model is
   documented, and what limits still remain operator-manual.
 subject: generic editor-worker startup bundle file surface
@@ -91,7 +93,7 @@ scope_out:
   - repo-write actions
 allowed_inputs:
   - repo-visible tracked files inside scope_in
-  - current branch and execution-surface metadata already prepared by control plane
+  - captured branch and execution-surface metadata already prepared by control plane
 allowed_output_types:
   - read-only scouting return
 done_criteria:
@@ -129,7 +131,7 @@ The worker should return at least:
 - `recommended_next_step`
 - `scope_adherence_report`
 
-## Pass condition for this trial
+## Captured pass condition for this trial
 
 The test counts as successful if the worker:
 
@@ -148,4 +150,4 @@ This test does **not** prove:
 - PR flow correctness
 - runtime or backtest execution admission
 
-It proves only that the current generic startup bundle can support one honest, bounded, read-only editor-worker dispatch.
+It proves only that the captured generic startup bundle could support one honest, bounded, read-only editor-worker dispatch.

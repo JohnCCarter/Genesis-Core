@@ -4,6 +4,8 @@ Den här mappen samlar governance-specifika dokument och indexytor för Genesis-
 
 `docs/governance/**` är ett komplement till de högre styrlagren. Den här README:n är ett index, inte en egen SSOT.
 
+> Status note (2026-05-18): De editor-worker-/multi-editor-material som fortfarande finns under `docs/governance/**` och `docs/contracts/editor_workers/**` är retained historical/paused references. De bevaras för spårbarhet och möjlig senare omprövning, men de ska inte läsas som nuvarande default-workflow på `feature/evidence-closeout-pilot`.
+
 ## Roll i dokumenttaxonomin
 
 Framåt ska `docs/governance/` användas för material som verkligen hör till governance-ytan, till exempel:
@@ -52,6 +54,12 @@ Operativa dokument i `docs/governance/**` är **kompletterande**, inte överstyr
 - `templates/evidence_claim_header.md` — lätt claim-header-mall för claim-bearing evidensnoter där provenance och authority-gränser behöver bli tydliga
 - `runbooks/evidence_claim_adoption.md` — trigger-baserad användningsgräns för när claim-headern behövs och när scratch-noter fortfarande får vara lätta
 - `runbooks/trivial_fast_lane.md` — snabbspår för triviala ändringar
+
+### Retained historical/paused editor-worker references
+
+- `worker_governance_envelope.md` — retained referens för den pausade editor-worker-envelope-modellen; inte current default governance-workflow
+- `runbooks/editor_slice_worker_dispatch.md` — retained dispatch-runbook för samma pausade modell; inte current default runbook
+- `../contracts/editor_workers/editor_worker_startup_test_dispatch_2026-05-12.md` — historiskt startup-specimen för den pausade modellen; inte en aktiv eller trial-ready dispatch-yta idag
 
 Historiska packet-, signoff- och closeout-dokument som låg direkt i governance-roten har flyttats till `docs/decisions/` eller `docs/analysis/` enligt faktisk dokumentroll.
 Äldre material i andra ytor ska fortfarande läsas med respekt för innehållets faktiska roll, inte enbart efter mappnamnet.

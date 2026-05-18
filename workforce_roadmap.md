@@ -6,9 +6,11 @@ Det här dokumentet beskriver den övergripande arbetsmodellen för att köra m�
 
 Det här är **översiktsdokumentet**.
 
+> Status note (2026-05-18): Detta roadmap-dokument är en retained historical/paused target-model surface från den tidigare `feature/editor-worker-orchestrator`-kontexten. Det är inte branch-current workflow eller standing default på senare branch-kontexter; default-språket nedan beskriver den fångade målmodellen, inte en nuvarande auktoritativ dispatch-standard.
+
 Det här är också en **retained target-model surface** för explicit aktiverade slice-workers.
 Det skapar inte stående worker-identiteter och ger inte implicit worker-till-worker-kedjning någon auktoritet.
-Den levande terminologin i retained governance-docs beskriver numera editor workers som defaultmodell.
+Terminologin nedan beskriver den fångade editor-worker target-modellen, inte en branch-current defaultmodell.
 Det i sig ändrar inte runtime-kapabiliteter, automationsgarantier eller authority boundaries.
 
 Det är inte:
@@ -26,7 +28,7 @@ Global mode- och governance-auktoritet finns i:
 
 - [`docs/governance_mode.md`](docs/governance_mode.md)
 
-Aktiv branch-sanning och nuvarande admissible steg hålls i:
+Aktuell branch-sanning och nuvarande admissible steg löses inte från detta retained roadmap-dokument. Den närliggande companion-ytan från samma fångade kontext är:
 
 - `GENESIS_WORKING_CONTRACT.md`
 
@@ -139,14 +141,14 @@ En worker ska här förstås som en långlivad worker-identitet.
 Den aktiva arbetsenheten är däremot alltid en bounded slice / execution leg.
 Samma worker får därför arbeta över flera slices över tid, men aldrig äga mer än en aktiv slice åt gången och aldrig fortsätta utan explicit nästa admissible slice från control / integration plane.
 
-Den normala lokala editor-worker-ytan är den delade `Genesis-Core`-checkouten på `feature/editor-worker-orchestrator`.
+I den fångade target-modellen var den normala lokala editor-worker-ytan den delade `Genesis-Core`-checkouten på `feature/editor-worker-orchestrator`.
 Separata worktrees kan användas av control- eller integration plane när explicit isolering krävs, men de är inte defaultmodellen, inte workforce-definitionen och inte en auktoritetssurface.
 
 Kort sagt: detta är muskeln.
 
-### Default worker model
+### Captured target-model worker default
 
-Den operativa defaultmodellen för Genesis editor workers ska vara:
+I den fångade target-modellen var den operativa defaulten för Genesis editor workers tänkt att vara:
 
 - en editor worker = en **autonomous slice worker**
 - de flesta editor workers delar samma grundroll, samma governance-ram och samma returformat
@@ -154,7 +156,7 @@ Den operativa defaultmodellen för Genesis editor workers ska vara:
 - variation ska i första hand ligga i slice-kontraktet: år/window, fråga, scope, inputs, gates och done criteria
 - asymmetriska batchroller som `primary`, `corroborative` eller `fallback` får förekomma som daterade dispatch-strategier, men de är inte workforce-definitionen och ska inte behandlas som långsiktiga worker-personligheter
 
-Det betyder att workforce-systemet i normalfallet ska dispatcha samma sorts worker på olika bounded slices, snarare än att uppfinna olika agentpersonligheter för varje år eller uppgift.
+Det betyder att workforce-systemet i den fångade modellen normalt skulle dispatcha samma sorts worker på olika bounded slices, snarare än att uppfinna olika agentpersonligheter för varje år eller uppgift.
 
 ### 5. Evidence store
 
@@ -251,7 +253,7 @@ Inventory-, integration- och runtime/strict-klasserna förblir specialiseringar,
 
 ## Branches, checkouts och isolation
 
-Gemensam control-plane-branch i den här vågen är:
+Den gemensamma control-plane-branchen i den fångade roadmap-vågen var:
 
 - `feature/editor-worker-orchestrator`
 

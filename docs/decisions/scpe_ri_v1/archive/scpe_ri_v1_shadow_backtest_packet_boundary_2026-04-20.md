@@ -4,13 +4,19 @@ Date: 2026-04-20
 Branch: `feature/ri-role-map-implementation-2026-03-24`
 Status: `packet-boundary-defined / planning-only / no authorization`
 
+> Archival note (2026-05-18):
+>
+> - This document was moved into this local `archive/` subfolder for taxonomy clarity.
+> - Historical packet content, authority framing, dates, and time-stamped path references remain unchanged.
+> - Only present-day navigation references may be updated after this relocation.
+
 This document is a planning artifact in `RESEARCH` and grants no implementation, runtime, readiness, cutover, launch, execution, deployment, paper-trading, or promotion authority. It must not be used as approval to begin code, config, test, backtest, runtime, or operational changes. Any future RI shadow-backtest step requires its own separate commit contract, separate command packet, fresh scope approval, and separate verification.
 
 > Later-status note (2026-05-18):
 >
 > - This packet is retained as a historical record of the 2026-04-20 packet-boundary assessment.
 > - References below to the next admissible packet type or future RI shadow-backtest lane reflect branch understanding at that time only.
-> - Later downstream status for this historical chain was recorded in `docs/decisions/scpe_ri_v1/scpe_ri_v1_runtime_observability_transition_packet_2026-04-21.md`, while current branch interpretation of the historical execution-summary surface is narrowed in `docs/decisions/scpe_ri_v1/scpe_ri_v1_shadow_backtest_execution_summary_current_state_portability_boundary_packet_2026-05-18.md`.
+> - Later downstream status for this historical chain was recorded in `docs/decisions/scpe_ri_v1/archive/scpe_ri_v1_runtime_observability_transition_packet_2026-04-21.md`, while current branch interpretation of the historical execution-summary surface is narrowed in `docs/decisions/scpe_ri_v1/scpe_ri_v1_shadow_backtest_execution_summary_current_state_portability_boundary_packet_2026-05-18.md`.
 > - The original packet-boundary reasoning below remains unchanged.
 
 ## Future packet scaffold (planning-only, non-executable placeholder)
@@ -63,8 +69,8 @@ It does **not**:
 This note is downstream of the following tracked artifacts:
 
 - `docs/decisions/scpe_ri_v1/scpe_ri_v1_research_closeout_report_2026-04-20.md`
-- `docs/analysis/scpe_ri_v1/scpe_ri_v1_runtime_integration_roadmap_2026-04-20.md`
-- `docs/analysis/scpe_ri_v1/scpe_ri_v1_runtime_integration_seam_inventory_2026-04-20.md`
+- `docs/analysis/scpe_ri_v1/archive/scpe_ri_v1_runtime_integration_roadmap_2026-04-20.md`
+- `docs/analysis/scpe_ri_v1/archive/scpe_ri_v1_runtime_integration_seam_inventory_2026-04-20.md`
 - `docs/audit/research_system/command_packet_backtest_champion_shadow_intelligence_v1_2026-03-18.md`
 - `docs/features/feature-champion-shadow-intelligence-1.md`
 

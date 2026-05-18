@@ -4,6 +4,12 @@ Date: 2026-04-20
 Branch: `feature/ri-role-map-implementation-2026-03-24`
 Status: `planning-only / inventory-only / no authorization`
 
+> Archival note (2026-05-18):
+>
+> - This document was moved into this local `archive/` subfolder for taxonomy clarity.
+> - Historical packet content, authority framing, dates, and time-stamped path references remain unchanged.
+> - Only present-day navigation references may be updated after this relocation.
+
 This document is a planning artifact in `RESEARCH` and grants no implementation, runtime, readiness, cutover, launch, deployment, paper-trading, or promotion authority. It must not be used as approval to begin code, config, test, or operational changes. Any future lane identified here requires its own commit contract, its own command packet, explicit Opus review where required, and separate verification.
 
 > Later-status note (2026-05-18):
@@ -61,7 +67,7 @@ It does **not**:
 This note is downstream of:
 
 - `docs/decisions/scpe_ri_v1/scpe_ri_v1_research_closeout_report_2026-04-20.md`
-- `docs/analysis/scpe_ri_v1/scpe_ri_v1_runtime_integration_roadmap_2026-04-20.md`
+- `docs/analysis/scpe_ri_v1/archive/scpe_ri_v1_runtime_integration_roadmap_2026-04-20.md`
 
 Those documents already fixed the following boundary:
 

@@ -5,6 +5,11 @@ Branch: `feature/ri-role-map-implementation-2026-03-24`
 Mode: `RESEARCH` — source: `branch:feature/ri-role-map-implementation-2026-03-24`
 Status: `implemented / docs-only / file-scoped-validation-passed / post-diff-audited`
 
+> Reference update note (2026-05-18):
+>
+> - The cited historical transition packet `docs/decisions/scpe_ri_v1/scpe_ri_v1_runtime_observability_closeout_transition_packet_2026-04-21.md` now resides at `docs/decisions/scpe_ri_v1/archive/scpe_ri_v1_runtime_observability_closeout_transition_packet_2026-04-21.md`.
+> - This is an editorial relocation only; the historical scope summaries and command lines below remain unchanged.
+
 ## Scope summary
 
 ### Scope IN

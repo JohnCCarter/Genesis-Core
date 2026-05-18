@@ -4,6 +4,12 @@ Date: 2026-04-21
 Branch: `feature/ri-role-map-implementation-2026-03-24`
 Status: `phase-2-closed / phase-3-opening-defined / docs-only / no direct code authorization`
 
+> Archival note (2026-05-18):
+>
+> - This document was moved into this local `archive/` subfolder for taxonomy clarity.
+> - Historical packet content, authority framing, dates, and time-stamped path references remain unchanged.
+> - Only present-day navigation references may be updated after this relocation.
+
 This document is a governance transition artifact in `RESEARCH`.
 It records that the separately governed phase-2 shadow-backtest prerequisite is now closed and determines the exact next admissible runtime/integration-adjacent lane.
 It does **not** itself authorize code changes, config changes, test changes, runtime deployment, paper-shadow, readiness, cutover, or promotion.
@@ -12,7 +18,7 @@ It does **not** itself authorize code changes, config changes, test changes, run
 >
 > - This packet is retained as a historical record of the 2026-04-21 runtime-observability lane-opening assessment.
 > - References below to the exact next admissible lane or phase opening reflect branch understanding at that time only.
-> - Later downstream status for this chain was recorded in `docs/decisions/scpe_ri_v1/scpe_ri_v1_runtime_observability_closeout_transition_packet_2026-04-21.md`, and current branch interpretation of the later paper/live seam is bounded in `docs/decisions/scpe_ri_v1/scpe_ri_v1_paper_shadow_live_paper_isolation_boundary_packet_2026-05-15.md`.
+> - Later downstream status for this chain was recorded in `docs/decisions/scpe_ri_v1/archive/scpe_ri_v1_runtime_observability_closeout_transition_packet_2026-04-21.md`, and current branch interpretation of the later paper/live seam is bounded in `docs/decisions/scpe_ri_v1/scpe_ri_v1_paper_shadow_live_paper_isolation_boundary_packet_2026-05-15.md`.
 > - The original transition logic and constraints below remain unchanged.
 
 ## COMMAND PACKET
@@ -60,9 +66,9 @@ It does **not** itself authorize code changes, config changes, test changes, run
 
 This packet is downstream of:
 
-- `docs/analysis/scpe_ri_v1/scpe_ri_v1_runtime_integration_roadmap_2026-04-20.md`
-- `docs/analysis/scpe_ri_v1/scpe_ri_v1_runtime_integration_seam_inventory_2026-04-20.md`
-- `docs/decisions/scpe_ri_v1/scpe_ri_v1_shadow_backtest_packet_boundary_2026-04-20.md`
+- `docs/analysis/scpe_ri_v1/archive/scpe_ri_v1_runtime_integration_roadmap_2026-04-20.md`
+- `docs/analysis/scpe_ri_v1/archive/scpe_ri_v1_runtime_integration_seam_inventory_2026-04-20.md`
+- `docs/decisions/scpe_ri_v1/archive/scpe_ri_v1_shadow_backtest_packet_boundary_2026-04-20.md`
 - `docs/decisions/scpe_ri_v1/scpe_ri_v1_shadow_backtest_bridge_slice1_final_launch_authorization_packet_2026-04-21.md`
 - `docs/analysis/scpe_ri_v1/scpe_ri_v1_shadow_backtest_bridge_slice1_execution_summary_2026-04-21.md`
 - `docs/decisions/scpe_ri_v1/scpe_ri_v1_research_closeout_report_2026-04-20.md`

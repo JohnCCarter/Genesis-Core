@@ -4,6 +4,12 @@ Date: 2026-04-21
 Branch: `feature/ri-role-map-implementation-2026-03-24`
 Status: `lane-closed / next-lane-defined / docs-only / no code authorization`
 
+> Archival note (2026-05-18):
+>
+> - This document was moved into this local `archive/` subfolder for taxonomy clarity.
+> - Historical packet content, authority framing, dates, and time-stamped path references remain unchanged.
+> - Only present-day navigation references may be updated after this relocation.
+
 This document is a governance closeout artifact in `RESEARCH`.
 It records that the separately governed SCPE RI runtime-observability lane is now closed enough to freeze its carry-forward constraints and define the exact next admissible later lane.
 It does **not** itself authorize code changes, config changes, test changes, runtime deployment, paper execution, live-paper execution, readiness, cutover, or promotion.
@@ -68,9 +74,9 @@ The later paper-shadow lane named here remains `candidate-only / precode-only`; 
 
 This packet is downstream of:
 
-- `docs/analysis/scpe_ri_v1/scpe_ri_v1_runtime_integration_roadmap_2026-04-20.md`
-- `docs/analysis/scpe_ri_v1/scpe_ri_v1_runtime_integration_seam_inventory_2026-04-20.md`
-- `docs/decisions/scpe_ri_v1/scpe_ri_v1_runtime_observability_transition_packet_2026-04-21.md`
+- `docs/analysis/scpe_ri_v1/archive/scpe_ri_v1_runtime_integration_roadmap_2026-04-20.md`
+- `docs/analysis/scpe_ri_v1/archive/scpe_ri_v1_runtime_integration_seam_inventory_2026-04-20.md`
+- `docs/decisions/scpe_ri_v1/archive/scpe_ri_v1_runtime_observability_transition_packet_2026-04-21.md`
 - `docs/decisions/scpe_ri_v1/scpe_ri_v1_runtime_observability_slice1_precode_packet_2026-04-21.md`
 - `docs/analysis/scpe_ri_v1/scpe_ri_v1_runtime_observability_slice1_implementation_report_2026-04-21.md`
 - `docs/analysis/scpe_ri_v1/scpe_ri_v1_runtime_observability_smoke_evidence_2026-04-21.md`

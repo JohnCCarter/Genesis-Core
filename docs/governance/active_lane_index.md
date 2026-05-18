@@ -57,7 +57,7 @@ Key parked/closed references:
 
 - `docs/decisions/regime_intelligence/policy_router/ri_policy_router_aged_weak_active_carrier_truth_parked_handoff_2026-04-27.md`
 - `docs/analysis/regime_intelligence/policy_router/ri_policy_router_insufficient_evidence_translation_parking_synthesis_2026-05-04.md`
-- `docs/analysis/scpe_ri_v1/scpe_ri_v1_runtime_integration_roadmap_2026-04-20.md`
+- `docs/analysis/scpe_ri_v1/archive/scpe_ri_v1_runtime_integration_roadmap_2026-04-20.md`
 
 ## Not active by default
 

@@ -4,6 +4,12 @@ Date: 2026-04-20
 Branch: `feature/ri-role-map-implementation-2026-03-24`
 Status: `historical / future-only / non-executable / no authorization`
 
+> Archival note (2026-05-18):
+>
+> - This document was moved into this local `archive/` subfolder for taxonomy clarity.
+> - Historical packet content, authority framing, dates, and time-stamped path references remain unchanged.
+> - Only present-day navigation references may be updated after this relocation.
+
 > Current status note:
 >
 > - This roadmap is not an active lane on `feature/next-slice-2026-05-05` and should not be treated as the next live path.

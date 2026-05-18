@@ -1,6 +1,11 @@
 from fastapi.testclient import TestClient
 
-from core.config.validator import diff_config, validate_config
+from core.config.validator import (
+    diff_config,
+    diff_legacy_config,
+    validate_config,
+    validate_legacy_config,
+)
 from core.server import app
 
 
@@ -9,12 +14,17 @@ def test_config_validation_and_diff_helpers():
     bad = {"dry_run": "yes"}
     assert validate_config(good) == []
     assert any("is not of type" in e for e in validate_config(bad))
+    assert validate_legacy_config(good) == []
+    assert any("is not of type" in e for e in validate_legacy_config(bad))
 
     a = {"x": 1}
     b = {"x": 2, "y": 3}
     d = diff_config(a, b)
+    d_legacy = diff_legacy_config(a, b)
     keys = {c["key"] for c in d}
+    legacy_keys = {c["key"] for c in d_legacy}
     assert keys == {"x", "y"}
+    assert legacy_keys == {"x", "y"}
 
 
 def test_config_endpoints():

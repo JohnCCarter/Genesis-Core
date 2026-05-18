@@ -97,6 +97,7 @@ Se `docs/features/FEATURE_COMPUTATION_MODES.md` för detaljer, inkl. `GENESIS_MO
 ## Konfiguration (SSOT)
 
 - Runtime config lagras i `config/runtime.json` (SSOT). Filen ignoreras av git; `config/runtime.seed.json` används som seed.
+- Managed ändringar ska gå via config-API:t / `ConfigAuthority`-vägen. Direkt fil-edit av `config/runtime.json` är tekniskt möjlig som lokal nödlösning/debug, men bypassar audit-spår, actor/path-metadata och optimistic-locking från propose-pathen.
 - API:
   - `GET /config/runtime` → `{ cfg, version, hash }`
   - `POST /config/runtime/validate` → `{ valid, errors, cfg? }` — validerar payload mot runtime-schemat; `valid=true` betyder inte i sig att fältet är live-skrivbart

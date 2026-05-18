@@ -56,18 +56,20 @@ pre-commit / lint → smoke tests → determinism replay → feature cache invar
 - `föreslagen` = proposed, not yet in repo
 - `införd` = implemented and verified in repo
 
-## Editor Worker Defaults
+## Paused editor-worker target model
 
-- Defaultmodell: `autonomous slice worker`
-- Samma grundroll bör normalt återanvändas på olika bounded slices/windows
-- Skillnader mellan workers ska främst ligga i dispatch/envelope, inte i olika agentpersonligheter
-- Default local editor-worker operation uses the shared `Genesis-Core` checkout (currently `feature/editor-worker-orchestrator`) with explicit bounded, non-overlapping slices
-- Dedicated branch/worktree isolation is optional by default and används bara när explicit isolering, destruktiva git-operationer, överlappande repo-write eller PR-förberedelse krävs
+> Use this section only if the retained editor-worker model is explicitly reopened for a bounded slice. It is not the default workflow for ordinary Genesis-Core sessions.
+
+- Defaultformen i den fångade target-modellen är `autonomous slice worker`
+- Samma grundroll bör där normalt återanvändas på olika bounded slices/windows
+- Skillnader mellan workers ska där främst ligga i dispatch/envelope, inte i olika agentpersonligheter
+- I den fångade target-modellen användes den delade `Genesis-Core`-checkouten (fångad på `feature/editor-worker-orchestrator`) med explicita bounded, non-overlapping slices
+- Dedicated branch/worktree isolation var där optional by default och användes bara när explicit isolering, destruktiva git-operationer, överlappande repo-write eller PR-förberedelse krävdes
 - Aktivering är explicit per worker/slice; att starta A startar inte automatiskt B
 - Editor workers får bara lita på repo- eller workspace-synliga inputs som den aktiva slicen eller direkt användarinstruktion explicit tillåter
 - Daterade asymmetriska wave-roller (`primary`, `corroborative`, `fallback`) ska tolkas som pilot-routing, inte som global worker-SSOT
 
-När du definierar eller adjudikerar en editor-worker-slice, läs även:
+Om en editor-worker-slice uttryckligen återöppnas, läs även:
 
 - `workforce_roadmap.md`
 - `docs/governance/worker_governance_envelope.md`

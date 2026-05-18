@@ -36,3 +36,31 @@ def test_htf_exit_engine_env_can_force_legacy_even_with_config(monkeypatch):
     engine._init_htf_exit_engine({"enable_partials": True})
 
     assert getattr(engine, "_use_new_exit_engine", False) is False
+
+
+def test_htf_exit_engine_env_can_force_new_with_empty_config(monkeypatch):
+    """If GENESIS_HTF_EXITS is explicitly set to 1, it must win over empty config."""
+
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "0")
+    monkeypatch.setenv("GENESIS_HTF_EXITS", "1")
+
+    from core.backtest.engine import BacktestEngine
+
+    engine = BacktestEngine(symbol="tBTCUSD", timeframe="1h")
+    engine._init_htf_exit_engine({})
+
+    assert getattr(engine, "_use_new_exit_engine", False) is True
+
+
+def test_htf_exit_engine_env_unset_keeps_legacy_with_empty_config(monkeypatch):
+    """With env unset, empty config must preserve the current legacy fallback."""
+
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "0")
+    monkeypatch.delenv("GENESIS_HTF_EXITS", raising=False)
+
+    from core.backtest.engine import BacktestEngine
+
+    engine = BacktestEngine(symbol="tBTCUSD", timeframe="1h")
+    engine._init_htf_exit_engine({})
+
+    assert getattr(engine, "_use_new_exit_engine", False) is False

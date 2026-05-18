@@ -6,6 +6,8 @@ Status: `decision-recorded / docs-only / non-authorizing`
 
 This packet records an evidence-boundary closeout only for the current D1 insufficient-evidence transport/falsifier chain. It does **not** authorize candidate-promotion discussion, runtime integration, champion comparison, writeback, family-rule changes, config-authority changes, or paper/live interpretation.
 
+> Historical status note (2026-05-18): `docs/analysis/diagnostics/genesis_core_premortem_feature_evidence_closeout_pilot_2026-05-15.md` is now repository-tracked. It remains historical reference context only and is not required to interpret this packet or any current queue / reopen / authority decision.
+
 ## COMMAND PACKET
 
 - **Mode:** `RESEARCH` — source: `docs/governance_mode.md` via `feature/* -> RESEARCH`
@@ -45,7 +47,7 @@ This packet answers one narrow question only:
 1. `docs/analysis/diagnostics/next_phase_verkstad_queue_2026-05-15.md` already frames Slice 5 as a bounded docs/research-governance slice and explicitly keeps runtime family/policy changes out of scope.
 2. `docs/analysis/regime_intelligence/policy_router/ri_policy_router_insufficient_evidence_d1_boundary_gap_transport_check_2019_06_vs_2020_10_11_2026-05-04.md` records a bounded non-null exact-surface transport result, but also states that the result remains exact-surface only, observational only, non-authoritative, and unsuitable as runtime, policy, promotion, or transport authority by itself.
 3. `docs/analysis/regime_intelligence/policy_router/ri_policy_router_insufficient_evidence_d1_late_2024_external_surface_falsifier_2026-05-06.md` records `external_surface_falsified` on the first fresh late-2024 external surface, with no admitted claim field surviving unchanged transport there, and states that the current D1 line is insufficient for runtime, policy, or promotion authority.
-4. The local-only, untracked historical note path `docs/analysis/diagnostics/genesis_core_premortem_feature_evidence_closeout_pilot_2026-05-15.md` is retained only as historical reference context for how this slice was framed; it is not repository-tracked authority and is not required to interpret this packet.
+4. The repository-tracked historical diagnostics note `docs/analysis/diagnostics/genesis_core_premortem_feature_evidence_closeout_pilot_2026-05-15.md` is retained only as historical reference context for how this slice was framed; it is not a current queue, reopen, or authority surface and is not required to interpret this packet.
 5. The March 26 challenger-family promotion-readiness documents show a stricter, docs-only precedent in which discussion-opening and `not yet` readiness are recorded as separate bounded decisions below promotion approval.
 
 ### Inferred

@@ -35,13 +35,33 @@ from core.strategy.champion_loader import ChampionLoader
 from core.strategy.evaluate import evaluate_pipeline
 
 _LOGGER = get_logger(__name__)
+_PER_BAR_ERROR_POLICY = "continue_collect_raise_after_loop"
 
 
 # B1: On-disk precompute cache versioning.
 #
 # This guards against silently reusing stale cached indicators/swings after code or
 # configuration changes that affect the precomputed outputs.
+# Bump this when the persisted meaning or shape of the on-disk precompute artifact
+# changes (for example: indicator periods/spec, swing-detection payload semantics,
+# HTF mapping payload semantics, or metadata-bearing cache contract expectations).
+# Do not bump it for comments, logging, tests, or refactors that leave the serialized
+# cache artifact unchanged.
 PRECOMPUTE_SCHEMA_VERSION = 3
+_PRECOMPUTE_CACHE_METADATA_KEY = "cache_meta_json"
+_PRECOMPUTE_CACHE_DENSE_KEYS = (
+    "atr_14",
+    "atr_50",
+    "ema_20",
+    "ema_50",
+    "rsi_14",
+    "bb_position_20_2",
+    "adx_14",
+)
+_PRECOMPUTE_CACHE_SWING_KEY_PAIRS = (
+    ("fib_high_idx", "fib_high_px"),
+    ("fib_low_idx", "fib_low_px"),
+)
 
 
 def _precompute_cache_key_material() -> str:
@@ -72,6 +92,83 @@ def _precompute_cache_key_material() -> str:
     return f"v{int(PRECOMPUTE_SCHEMA_VERSION)}_{digest12}"
 
 
+def _build_precompute_cache_metadata(*, candle_count: int) -> dict[str, Any]:
+    return {
+        "schema_version": int(PRECOMPUTE_SCHEMA_VERSION),
+        "material": _precompute_cache_key_material(),
+        "candle_count": int(candle_count),
+    }
+
+
+def _extract_precompute_cache_metadata(npz: Any) -> tuple[bool, dict[str, Any] | None]:
+    files = tuple(getattr(npz, "files", ()))
+    if _PRECOMPUTE_CACHE_METADATA_KEY not in files:
+        return True, None
+
+    try:
+        raw = npz[_PRECOMPUTE_CACHE_METADATA_KEY]
+        if hasattr(raw, "tolist"):
+            raw = raw.tolist()
+        if isinstance(raw, bytes):
+            raw = raw.decode("utf-8")
+        if not isinstance(raw, str):
+            return False, None
+        parsed = json.loads(raw)
+    except Exception:
+        return False, None
+
+    if not isinstance(parsed, dict):
+        return False, None
+    return True, parsed
+
+
+def _validate_metadata_bearing_precompute_cache(
+    npz: Any, *, candle_count: int
+) -> tuple[bool, str | None]:
+    metadata_ok, metadata = _extract_precompute_cache_metadata(npz)
+    if not metadata_ok:
+        return False, "invalid_metadata"
+    if metadata is None:
+        return True, None
+
+    expected_metadata = _build_precompute_cache_metadata(candle_count=candle_count)
+    for key, expected_value in expected_metadata.items():
+        if metadata.get(key) != expected_value:
+            return False, f"metadata_mismatch:{key}"
+
+    files = tuple(getattr(npz, "files", ()))
+    for dense_key in _PRECOMPUTE_CACHE_DENSE_KEYS:
+        if dense_key not in files:
+            return False, f"missing_field:{dense_key}"
+        dense_size = int(getattr(npz[dense_key], "size", 0))
+        if dense_size != candle_count:
+            return False, f"invalid_length:{dense_key}"
+
+    for idx_key, px_key in _PRECOMPUTE_CACHE_SWING_KEY_PAIRS:
+        if idx_key not in files or px_key not in files:
+            missing_key = idx_key if idx_key not in files else px_key
+            return False, f"missing_field:{missing_key}"
+        idx_size = int(getattr(npz[idx_key], "size", 0))
+        px_size = int(getattr(npz[px_key], "size", 0))
+        if idx_size != px_size:
+            return False, f"misaligned_swing_pair:{idx_key}"
+
+    return True, None
+
+
+def _load_precompute_cache_payload(npz: Any) -> dict[str, list[float]]:
+    pre: dict[str, list[float]] = {}
+    files = tuple(getattr(npz, "files", ()))
+    for name in files:
+        if name == _PRECOMPUTE_CACHE_METADATA_KEY:
+            continue
+        pre[name] = npz[name].astype(float).tolist()
+    for swing_key in ("fib_high_idx", "fib_low_idx"):
+        if swing_key in files:
+            pre[swing_key] = npz[swing_key].astype(int).tolist()
+    return pre
+
+
 def _debug_backtest_enabled() -> bool:
     """Return whether verbose error output should be enabled for backtests."""
 
@@ -93,6 +190,41 @@ def _precompute_cache_write_enabled() -> bool:
 VALID_DATA_SOURCE_POLICIES = ("frozen_first", "curated_only")
 
 
+def _describe_per_bar_error(error: Exception) -> str:
+    return f"{type(error).__name__}: {error}"
+
+
+def _record_per_bar_error(
+    *,
+    bar_index: int,
+    error: Exception,
+    error_count: int,
+    first_error: tuple[int, str] | None,
+) -> tuple[int, tuple[int, str] | None]:
+    updated_count = error_count + 1
+    if first_error is None:
+        first_error = (bar_index, _describe_per_bar_error(error))
+    return updated_count, first_error
+
+
+def _raise_if_per_bar_errors(
+    *,
+    error_count: int,
+    first_error: tuple[int, str] | None,
+) -> None:
+    if error_count <= 0:
+        return
+
+    first_bar = first_error[0] if first_error else -1
+    first_message = first_error[1] if first_error else "unknown error"
+    error_msg = (
+        "Backtest aborted due to per-bar evaluation errors: "
+        f"count={error_count}, first_at_bar={first_bar}, first_error={first_message}"
+    )
+    _LOGGER.error("%s | policy=%s", error_msg, _PER_BAR_ERROR_POLICY)
+    raise RuntimeError(error_msg)
+
+
 def _normalize_data_source_policy(policy: str | None) -> str:
     """Return a validated backtest data-source policy."""
 
@@ -101,6 +233,21 @@ def _normalize_data_source_policy(policy: str | None) -> str:
         allowed = ", ".join(VALID_DATA_SOURCE_POLICIES)
         raise ValueError(f"Invalid data_source_policy={policy!r}. Expected one of: {allowed}")
     return normalized
+
+
+def _resolve_htf_exit_engine_selection(
+    *, env_flag: str | None, htf_exit_config: dict | None
+) -> bool:
+    """Return the current HTF exit-engine selection predicate unchanged.
+
+    Precedence is intentionally explicit and parity-locked:
+    - an explicit ``GENESIS_HTF_EXITS`` setting is authoritative;
+    - otherwise the existing truthiness of ``htf_exit_config`` is used.
+    """
+
+    if env_flag is not None:
+        return env_flag == "1"
+    return isinstance(htf_exit_config, dict) and bool(htf_exit_config)
 
 
 class CandleCache:
@@ -296,10 +443,10 @@ class BacktestEngine:
                 "GENESIS_HTF_EXITS expected '0' or '1'; got %r. Treating as legacy.",
                 env_flag,
             )
-        if env_flag is not None:
-            use_new_engine = env_flag == "1"
-        else:
-            use_new_engine = isinstance(htf_exit_config, dict) and bool(htf_exit_config)
+        use_new_engine = _resolve_htf_exit_engine_selection(
+            env_flag=env_flag,
+            htf_exit_config=htf_exit_config,
+        )
         if use_new_engine and NewExitEngine:
             _LOGGER.info("Using NEW HTF Exit Engine (Phase 1)")
             self.htf_exit_engine = NewExitEngine(self.htf_exit_config)
@@ -528,15 +675,26 @@ class BacktestEngine:
                 pre: dict[str, list[float]] = {}
                 if cache_path.exists():
                     try:
-                        npz = _np.load(cache_path, allow_pickle=False)
-                        for name in npz.files:
-                            pre[name] = npz[name].astype(float).tolist()
-                        # Load swings if present (stored as float but indices are integers originally)
-                        for swing_key in ("fib_high_idx", "fib_low_idx"):
-                            if swing_key in npz.files:
-                                pre[swing_key] = npz[swing_key].astype(int).tolist()
-                        loaded = True
-                        _LOGGER.debug("Loaded precomputed features from cache: %s", cache_path.name)
+                        with _np.load(cache_path, allow_pickle=False) as npz:
+                            cache_valid, invalid_reason = (
+                                _validate_metadata_bearing_precompute_cache(
+                                    npz,
+                                    candle_count=len(closes_all),
+                                )
+                            )
+                            if cache_valid:
+                                pre = _load_precompute_cache_payload(npz)
+                                loaded = True
+                                _LOGGER.debug(
+                                    "Loaded precomputed features from cache: %s",
+                                    cache_path.name,
+                                )
+                            else:
+                                _LOGGER.warning(
+                                    "Ignoring precompute cache %s: %s",
+                                    cache_path.name,
+                                    invalid_reason,
+                                )
                     except Exception:
                         loaded = False
 
@@ -585,6 +743,12 @@ class BacktestEngine:
                         try:
                             _np.savez_compressed(
                                 cache_path,
+                                cache_meta_json=json.dumps(
+                                    _build_precompute_cache_metadata(candle_count=len(closes_all)),
+                                    sort_keys=True,
+                                    separators=(",", ":"),
+                                    ensure_ascii=False,
+                                ),
                                 atr_14=_np.asarray(atr_14, dtype=float),
                                 atr_50=_np.asarray(atr_50, dtype=float),
                                 ema_20=_np.asarray(ema_20, dtype=float),
@@ -797,6 +961,12 @@ class BacktestEngine:
 
         Returns:
             Dict with backtest results
+
+        Notes:
+            Per-bar pipeline exceptions follow the internal
+            ``continue_collect_raise_after_loop`` policy: the loop keeps running
+            to finish bar replay, then raises ``RuntimeError`` after completion
+            if any per-bar errors were collected.
         """
         # Reset state for isolation (Step 3: Eliminate Hidden State)
         self.position_tracker = PositionTracker(
@@ -1106,9 +1276,12 @@ class BacktestEngine:
                 self.bar_count += 1
 
             except Exception as e:
-                per_bar_error_count += 1
-                if first_per_bar_error is None:
-                    first_per_bar_error = (i, f"{type(e).__name__}: {e}")
+                per_bar_error_count, first_per_bar_error = _record_per_bar_error(
+                    bar_index=i,
+                    error=e,
+                    error_count=per_bar_error_count,
+                    first_error=first_per_bar_error,
+                )
                 if verbose or _debug_backtest_enabled():
                     try:
                         import sys  # noqa: PLC0415
@@ -1128,15 +1301,10 @@ class BacktestEngine:
 
         pbar.close()
 
-        if per_bar_error_count > 0:
-            first_bar = first_per_bar_error[0] if first_per_bar_error else -1
-            first_error = first_per_bar_error[1] if first_per_bar_error else "unknown error"
-            error_msg = (
-                "Backtest aborted due to per-bar evaluation errors: "
-                f"count={per_bar_error_count}, first_at_bar={first_bar}, first_error={first_error}"
-            )
-            _LOGGER.error(error_msg)
-            raise RuntimeError(error_msg)
+        _raise_if_per_bar_errors(
+            error_count=per_bar_error_count,
+            first_error=first_per_bar_error,
+        )
 
         # Report feature hit counts
         try:

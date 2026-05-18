@@ -1,6 +1,7 @@
 """Tests for backtest engine."""
 
 import builtins
+import json
 from datetime import datetime
 from pathlib import Path
 
@@ -889,17 +890,56 @@ def test_engine_state_persistence(sample_candles_data):
 
 
 def test_engine_raises_on_pipeline_errors(sample_candles_data, monkeypatch):
-    """Backtest must fail if per-bar pipeline exceptions occurred."""
+    """Backtest must keep collecting per-bar failures and raise after loop completion."""
     engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m", warmup_bars=10)
     engine.candles_df = sample_candles_data.head(20)
+    calls = {"n": 0}
 
     def _raise_pipeline_error(*_args, **_kwargs):
+        calls["n"] += 1
         raise ValueError("forced per-bar failure")
 
     monkeypatch.setattr("core.backtest.engine.evaluate_pipeline", _raise_pipeline_error)
 
-    with pytest.raises(RuntimeError, match="per-bar evaluation errors"):
+    with pytest.raises(
+        RuntimeError,
+        match=r"count=10, first_at_bar=10, first_error=ValueError: forced per-bar failure",
+    ):
         engine.run(configs={})
+
+    assert calls["n"] == 10
+
+
+def test_engine_error_policy_continues_loop_before_raising(sample_candles_data, monkeypatch):
+    """A single per-bar failure must still let the engine finish replay before raising."""
+
+    engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m", warmup_bars=10)
+    engine.candles_df = sample_candles_data.head(20)
+
+    processed_bars: list[int] = []
+
+    def _pipeline_with_single_failure(*_args, **_kwargs):
+        bar_index = len(processed_bars) + engine.warmup_bars
+        processed_bars.append(bar_index)
+        if len(processed_bars) == 1:
+            raise ValueError("first processed bar failed")
+        return (
+            {"action": "NONE", "confidence": 0.5, "regime": "BALANCED", "features": {}},
+            {"decision": {"size": 0.0, "state_out": {}, "reasons": []}},
+        )
+
+    monkeypatch.setattr(
+        "core.backtest.engine.evaluate_pipeline",
+        _pipeline_with_single_failure,
+    )
+
+    with pytest.raises(
+        RuntimeError,
+        match=r"count=1, first_at_bar=10, first_error=ValueError: first processed bar failed",
+    ):
+        engine.run(configs={"exit": {"enabled": False}})
+
+    assert processed_bars == list(range(10, 20))
 
 
 def test_engine_with_verbose_mode(sample_candles_data, capsys):
@@ -1079,6 +1119,310 @@ def test_engine_precompute_cache_write_disabled_still_reads_existing_cache(tmp_p
     assert engine._precomputed_features is not None
     assert engine._precomputed_features["atr_14"] == [1.0, 1.0]
     assert save_calls["count"] == 0
+
+
+def test_engine_precompute_cache_metadata_payload_loads_when_valid(tmp_path, monkeypatch):
+    import numpy as np
+
+    import core.backtest.engine as engine_mod
+
+    BacktestEngine._candles_cache.clear()
+
+    fake_engine_file = tmp_path / "src" / "core" / "backtest" / "engine.py"
+    fake_engine_file.parent.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(engine_mod, "__file__", str(fake_engine_file))
+
+    data_raw = tmp_path / "data" / "raw"
+    data_raw.mkdir(parents=True, exist_ok=True)
+
+    ltf_ts = pd.date_range("2025-01-01", periods=48, freq="15min", tz="UTC")
+    ltf = pd.DataFrame(
+        {
+            "timestamp": ltf_ts,
+            "open": [100.0 + i * 0.1 for i in range(len(ltf_ts))],
+            "high": [100.5 + i * 0.1 for i in range(len(ltf_ts))],
+            "low": [99.5 + i * 0.1 for i in range(len(ltf_ts))],
+            "close": [100.2 + i * 0.1 for i in range(len(ltf_ts))],
+            "volume": [1000.0 + i for i in range(len(ltf_ts))],
+        }
+    )
+    ltf.to_parquet(data_raw / "tBTCUSD_15m_frozen.parquet", index=False)
+
+    cache_dir = tmp_path / "cache" / "precomputed"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    key = "pytest_precompute_metadata_valid"
+    candle_count = len(ltf_ts)
+    metadata = json.dumps(
+        {
+            "schema_version": int(engine_mod.PRECOMPUTE_SCHEMA_VERSION),
+            "material": engine_mod._precompute_cache_key_material(),
+            "candle_count": candle_count,
+        },
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    )
+
+    np.savez_compressed(
+        cache_dir / f"{key}.npz",
+        **{
+            engine_mod._PRECOMPUTE_CACHE_METADATA_KEY: metadata,
+            "atr_14": np.full(candle_count, 7.0, dtype=float),
+            "atr_50": np.full(candle_count, 8.0, dtype=float),
+            "ema_20": np.full(candle_count, 9.0, dtype=float),
+            "ema_50": np.full(candle_count, 10.0, dtype=float),
+            "rsi_14": np.full(candle_count, 11.0, dtype=float),
+            "bb_position_20_2": np.full(candle_count, 12.0, dtype=float),
+            "adx_14": np.full(candle_count, 13.0, dtype=float),
+            "fib_high_idx": np.asarray([0, 16, 32], dtype=int),
+            "fib_low_idx": np.asarray([8, 24, 40], dtype=int),
+            "fib_high_px": np.asarray([101.0, 111.0, 121.0], dtype=float),
+            "fib_low_px": np.asarray([99.0, 109.0, 119.0], dtype=float),
+        },
+    )
+
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "1")
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_CACHE_WRITE", "0")
+
+    engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m", warmup_bars=10, fast_window=True)
+    monkeypatch.setattr(engine, "_precompute_cache_key", lambda _df: key)
+
+    assert engine.load_data() is True
+    assert engine._precomputed_features is not None
+    assert len(engine._precomputed_features["atr_14"]) == candle_count
+    assert engine._precomputed_features["atr_14"][0] == pytest.approx(7.0)
+    assert engine._precomputed_features["fib_high_idx"] == [0, 16, 32]
+
+
+def test_engine_precompute_cache_metadata_payload_recomputes_on_dense_length_mismatch(
+    tmp_path, monkeypatch, caplog
+):
+    import numpy as np
+
+    import core.backtest.engine as engine_mod
+
+    BacktestEngine._candles_cache.clear()
+
+    fake_engine_file = tmp_path / "src" / "core" / "backtest" / "engine.py"
+    fake_engine_file.parent.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(engine_mod, "__file__", str(fake_engine_file))
+
+    data_raw = tmp_path / "data" / "raw"
+    data_raw.mkdir(parents=True, exist_ok=True)
+
+    ltf_ts = pd.date_range("2025-01-01", periods=48, freq="15min", tz="UTC")
+    ltf = pd.DataFrame(
+        {
+            "timestamp": ltf_ts,
+            "open": [100.0 + i * 0.1 for i in range(len(ltf_ts))],
+            "high": [100.5 + i * 0.1 for i in range(len(ltf_ts))],
+            "low": [99.5 + i * 0.1 for i in range(len(ltf_ts))],
+            "close": [100.2 + i * 0.1 for i in range(len(ltf_ts))],
+            "volume": [1000.0 + i for i in range(len(ltf_ts))],
+        }
+    )
+    ltf.to_parquet(data_raw / "tBTCUSD_15m_frozen.parquet", index=False)
+
+    cache_dir = tmp_path / "cache" / "precomputed"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    key = "pytest_precompute_metadata_invalid"
+    candle_count = len(ltf_ts)
+    metadata = json.dumps(
+        {
+            "schema_version": int(engine_mod.PRECOMPUTE_SCHEMA_VERSION),
+            "material": engine_mod._precompute_cache_key_material(),
+            "candle_count": candle_count,
+        },
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    )
+
+    np.savez_compressed(
+        cache_dir / f"{key}.npz",
+        **{
+            engine_mod._PRECOMPUTE_CACHE_METADATA_KEY: metadata,
+            "atr_14": np.asarray([999.0, 999.0], dtype=float),
+            "atr_50": np.asarray([999.0, 999.0], dtype=float),
+            "ema_20": np.asarray([999.0, 999.0], dtype=float),
+            "ema_50": np.asarray([999.0, 999.0], dtype=float),
+            "rsi_14": np.asarray([999.0, 999.0], dtype=float),
+            "bb_position_20_2": np.asarray([999.0, 999.0], dtype=float),
+            "adx_14": np.asarray([999.0, 999.0], dtype=float),
+            "fib_high_idx": np.asarray([0, 16, 32], dtype=int),
+            "fib_low_idx": np.asarray([8, 24, 40], dtype=int),
+            "fib_high_px": np.asarray([101.0, 111.0, 121.0], dtype=float),
+            "fib_low_px": np.asarray([99.0, 109.0, 119.0], dtype=float),
+        },
+    )
+
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "1")
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_CACHE_WRITE", "0")
+
+    engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m", warmup_bars=10, fast_window=True)
+    monkeypatch.setattr(engine, "_precompute_cache_key", lambda _df: key)
+
+    with caplog.at_level("WARNING"):
+        assert engine.load_data() is True
+
+    assert engine._precomputed_features is not None
+    assert len(engine._precomputed_features["atr_14"]) == candle_count
+    assert engine._precomputed_features["atr_14"][0] != pytest.approx(999.0)
+    assert "Ignoring precompute cache" in caplog.text
+
+
+def test_engine_precompute_cache_metadata_payload_recomputes_on_material_mismatch(
+    tmp_path, monkeypatch, caplog
+):
+    import numpy as np
+
+    import core.backtest.engine as engine_mod
+
+    BacktestEngine._candles_cache.clear()
+
+    fake_engine_file = tmp_path / "src" / "core" / "backtest" / "engine.py"
+    fake_engine_file.parent.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(engine_mod, "__file__", str(fake_engine_file))
+
+    data_raw = tmp_path / "data" / "raw"
+    data_raw.mkdir(parents=True, exist_ok=True)
+
+    ltf_ts = pd.date_range("2025-01-01", periods=48, freq="15min", tz="UTC")
+    ltf = pd.DataFrame(
+        {
+            "timestamp": ltf_ts,
+            "open": [100.0 + i * 0.1 for i in range(len(ltf_ts))],
+            "high": [100.5 + i * 0.1 for i in range(len(ltf_ts))],
+            "low": [99.5 + i * 0.1 for i in range(len(ltf_ts))],
+            "close": [100.2 + i * 0.1 for i in range(len(ltf_ts))],
+            "volume": [1000.0 + i for i in range(len(ltf_ts))],
+        }
+    )
+    ltf.to_parquet(data_raw / "tBTCUSD_15m_frozen.parquet", index=False)
+
+    cache_dir = tmp_path / "cache" / "precomputed"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    key = "pytest_precompute_metadata_material_mismatch"
+    candle_count = len(ltf_ts)
+    metadata = json.dumps(
+        {
+            "schema_version": int(engine_mod.PRECOMPUTE_SCHEMA_VERSION),
+            "material": "v999_wrong_material",
+            "candle_count": candle_count,
+        },
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    )
+
+    np.savez_compressed(
+        cache_dir / f"{key}.npz",
+        **{
+            engine_mod._PRECOMPUTE_CACHE_METADATA_KEY: metadata,
+            "atr_14": np.full(candle_count, 777.0, dtype=float),
+            "atr_50": np.full(candle_count, 778.0, dtype=float),
+            "ema_20": np.full(candle_count, 779.0, dtype=float),
+            "ema_50": np.full(candle_count, 780.0, dtype=float),
+            "rsi_14": np.full(candle_count, 781.0, dtype=float),
+            "bb_position_20_2": np.full(candle_count, 782.0, dtype=float),
+            "adx_14": np.full(candle_count, 783.0, dtype=float),
+            "fib_high_idx": np.asarray([0, 16, 32], dtype=int),
+            "fib_low_idx": np.asarray([8, 24, 40], dtype=int),
+            "fib_high_px": np.asarray([101.0, 111.0, 121.0], dtype=float),
+            "fib_low_px": np.asarray([99.0, 109.0, 119.0], dtype=float),
+        },
+    )
+
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "1")
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_CACHE_WRITE", "0")
+
+    engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m", warmup_bars=10, fast_window=True)
+    monkeypatch.setattr(engine, "_precompute_cache_key", lambda _df: key)
+
+    with caplog.at_level("WARNING"):
+        assert engine.load_data() is True
+
+    assert engine._precomputed_features is not None
+    assert len(engine._precomputed_features["atr_14"]) == candle_count
+    assert engine._precomputed_features["atr_14"][0] != pytest.approx(777.0)
+    assert "metadata_mismatch:material" in caplog.text
+
+
+def test_engine_precompute_cache_metadata_payload_recomputes_on_swing_pair_misalignment(
+    tmp_path, monkeypatch, caplog
+):
+    import numpy as np
+
+    import core.backtest.engine as engine_mod
+
+    BacktestEngine._candles_cache.clear()
+
+    fake_engine_file = tmp_path / "src" / "core" / "backtest" / "engine.py"
+    fake_engine_file.parent.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(engine_mod, "__file__", str(fake_engine_file))
+
+    data_raw = tmp_path / "data" / "raw"
+    data_raw.mkdir(parents=True, exist_ok=True)
+
+    ltf_ts = pd.date_range("2025-01-01", periods=48, freq="15min", tz="UTC")
+    ltf = pd.DataFrame(
+        {
+            "timestamp": ltf_ts,
+            "open": [100.0 + i * 0.1 for i in range(len(ltf_ts))],
+            "high": [100.5 + i * 0.1 for i in range(len(ltf_ts))],
+            "low": [99.5 + i * 0.1 for i in range(len(ltf_ts))],
+            "close": [100.2 + i * 0.1 for i in range(len(ltf_ts))],
+            "volume": [1000.0 + i for i in range(len(ltf_ts))],
+        }
+    )
+    ltf.to_parquet(data_raw / "tBTCUSD_15m_frozen.parquet", index=False)
+
+    cache_dir = tmp_path / "cache" / "precomputed"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    key = "pytest_precompute_metadata_swing_mismatch"
+    candle_count = len(ltf_ts)
+    metadata = json.dumps(
+        {
+            "schema_version": int(engine_mod.PRECOMPUTE_SCHEMA_VERSION),
+            "material": engine_mod._precompute_cache_key_material(),
+            "candle_count": candle_count,
+        },
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    )
+
+    np.savez_compressed(
+        cache_dir / f"{key}.npz",
+        **{
+            engine_mod._PRECOMPUTE_CACHE_METADATA_KEY: metadata,
+            "atr_14": np.full(candle_count, 555.0, dtype=float),
+            "atr_50": np.full(candle_count, 556.0, dtype=float),
+            "ema_20": np.full(candle_count, 557.0, dtype=float),
+            "ema_50": np.full(candle_count, 558.0, dtype=float),
+            "rsi_14": np.full(candle_count, 559.0, dtype=float),
+            "bb_position_20_2": np.full(candle_count, 560.0, dtype=float),
+            "adx_14": np.full(candle_count, 561.0, dtype=float),
+            "fib_high_idx": np.asarray([0, 16, 32], dtype=int),
+            "fib_low_idx": np.asarray([8, 24, 40], dtype=int),
+            "fib_high_px": np.asarray([101.0, 111.0], dtype=float),
+            "fib_low_px": np.asarray([99.0, 109.0, 119.0], dtype=float),
+        },
+    )
+
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "1")
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_CACHE_WRITE", "0")
+
+    engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m", warmup_bars=10, fast_window=True)
+    monkeypatch.setattr(engine, "_precompute_cache_key", lambda _df: key)
+
+    with caplog.at_level("WARNING"):
+        assert engine.load_data() is True
+
+    assert engine._precomputed_features is not None
+    assert len(engine._precomputed_features["atr_14"]) == candle_count
+    assert engine._precomputed_features["atr_14"][0] != pytest.approx(555.0)
+    assert "misaligned_swing_pair:fib_high_idx" in caplog.text
 
 
 def test_engine_precompute_cache_write_disabled_preserves_cache_miss_runtime_parity(

@@ -14,6 +14,8 @@ Detta är en snabb karta över vad som faktiskt används i dagens körvägar.
 ## Runtime live-update boundary
 
 - `config/runtime.json` är runtime-SSOT på disk.
+- Repo:t blockerar inte manuella/off-path writes till `config/runtime.json`, så direkt fil-edit är möjlig men bypassar `ConfigAuthority`-spåret: audit-logg i `logs/config_audit.jsonl`, actor/path-attribution och `expected_version`-baserad optimistic locking.
+- För hanterade live-ändringar ska du därför använda `POST /config/runtime/propose` eller motsvarande `ConfigAuthority`-styrd path, inte direkt filskrivning.
 - `POST /config/runtime/validate` validerar payload mot `RuntimeConfig`, men avgör **inte** om fältet får skrivas live via config-API:t.
 - `POST /config/runtime/propose` är den guardade live-write-pathen och accepterar bara allowlistade patchytor; schema-valida men live-blockade patchar returnerar det grova publika felet `non_whitelisted_field` i stället för intern fältdetalj.
 - Nuvarande live-skrivbara toppytor är `strategy_family`, `thresholds`, `gates`, `risk` (endast `risk_map`), `ev` (endast `R_default`) och utvalda `multi_timeframe`-underytor.

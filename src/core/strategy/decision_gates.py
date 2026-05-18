@@ -19,29 +19,25 @@ def safe_float(value: Any, default: float = 0.0) -> float:
         return default
     try:
         numeric = float(value)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
         return default
     if not math.isfinite(numeric):
         return default
     return numeric
 
 
-def _is_non_finite_numeric(value: Any) -> bool:
-    if value is None:
-        return False
-    try:
-        return not math.isfinite(float(value))
-    except (TypeError, ValueError, OverflowError):
-        return False
-
-
 def _int_or_default_for_non_finite(value: Any, default: int) -> int:
+    """Return int(value), defaulting only for non-finite numeric inputs."""
     try:
         return int(value)
-    except (TypeError, ValueError, OverflowError):
-        if _is_non_finite_numeric(value):
+    except (TypeError, ValueError, OverflowError) as exc:
+        try:
+            numeric = float(value)
+        except (TypeError, ValueError, OverflowError):
+            raise exc from None
+        if not math.isfinite(numeric):
             return int(default)
-        raise
+        raise exc from None
 
 
 def compute_percentile(values: list[float], q: float) -> float:

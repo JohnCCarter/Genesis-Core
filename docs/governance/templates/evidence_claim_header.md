@@ -100,6 +100,10 @@ If none of these labels fit because the note is concept-only, planning-only, or 
 - **Baseline reference(s):**
 - **Candidate / comparison surface:**
 - **Input carrier:**
+- **Objective:**
+- **Baseline reference(s):**
+- **Candidate / comparison surface:**
+- **Input carrier:**
 - **Runtime base SHA:**
 - **Evidence commit SHA:**
 - **Working-tree status:** `clean / dirty / not checked in this slice`

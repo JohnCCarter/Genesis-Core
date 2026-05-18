@@ -5,6 +5,7 @@ from copy import deepcopy
 import pytest
 
 from core.strategy.decision import decide
+from core.strategy.decision_gates import safe_float
 
 
 def test_decide_stub_shapes():
@@ -250,6 +251,10 @@ def test_decide_handles_non_numeric_confidence_without_typeerror() -> None:
 
     assert action == "NONE"
     assert "CONF_TOO_LOW" in (meta.get("reasons") or [])
+
+
+def test_safe_float_returns_default_for_overflowing_int_input() -> None:
+    assert safe_float(10**1000, 1.5) == pytest.approx(1.5)
 
 
 def test_decide_preserves_finite_hysteresis_string_behavior() -> None:

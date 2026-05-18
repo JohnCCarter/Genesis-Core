@@ -93,7 +93,7 @@ class EVGateComponent(StrategyComponent):
                 },
             )
 
-        if math.isnan(ev_float) or ev_float == float("inf"):
+        if math.isnan(ev_float) or (math.isinf(ev_float) and ev_float > 0):
             return ComponentResult(
                 allowed=False,
                 reason="EV_MISSING",

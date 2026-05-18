@@ -75,7 +75,7 @@ def _sanitize_for_logging(value: object) -> object:
         return [_sanitize_for_logging(item) for item in value]
     if isinstance(value, tuple):
         return tuple(_sanitize_for_logging(item) for item in value)
-    return value
+    return "***"
 
 
 def print_data(data: dict, pretty: bool = False) -> None:

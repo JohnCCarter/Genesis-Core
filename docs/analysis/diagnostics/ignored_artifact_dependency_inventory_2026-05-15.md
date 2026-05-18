@@ -20,7 +20,7 @@
 - **Authority level:** `bounded research-evidence`
 - **Claim status:** `observed`
 - **Objective:** inventory the smallest current set of decision-influencing dependency families that still depend on ignored `results/**`, cache posture, or workstation-local artifacts, and rank the next admissible follow-ups behind them
-- **Baseline reference(s):** `docs/analysis/diagnostics/next_phase_verkstad_queue_2026-05-15.md`, `docs/analysis/diagnostics/genesis_core_premortem_feature_evidence_closeout_pilot_2026-05-15.md` (`local-only / untracked / historical reference only / not repository-tracked authority`), `docs/governance/runbooks/evidence_claim_adoption.md`, `docs/governance/templates/evidence_claim_header.md`, `docs/governance/runbooks/editor_slice_worker_dispatch.md`
+- **Baseline reference(s):** `docs/analysis/diagnostics/next_phase_verkstad_queue_2026-05-15.md`, `docs/analysis/diagnostics/genesis_core_premortem_feature_evidence_closeout_pilot_2026-05-15.md` (`repository-tracked historical diagnostics note / historical risk framing only / not current queue, priority, or reopen authority`), `docs/governance/runbooks/evidence_claim_adoption.md`, `docs/governance/templates/evidence_claim_header.md`, `docs/governance/runbooks/editor_slice_worker_dispatch.md`
 - **Candidate / comparison surface:** `family-level inventory across Phase 10 historical-trace notes, SCPE replay-root derived notes, volatility-policy env-profile notes, and router-replay execution summaries`
 - **Input carrier:** `tracked docs and cited historical notes only; no underlying replay/backtest evidence was rerun in this slice`
 - **Runtime base SHA:** `06aafa872099402a1df70a822b66d93340f71192`

@@ -48,7 +48,7 @@ Operativa dokument i `docs/governance/**` är **kompletterande**, inte överstyr
 
 - `concept_evidence_runtime_lane_model_2026-04-23.md` — kanonisk praktisk definition av koncept-, evidens- och runtime-integrations-lanes
 - `GENESIS_HYBRID_V1_1.md` — operativt kontrakt (hybridmodell)
-- `active_lane_index.md` — kort current-state-index som pekar på aktiv lane, parkerade lanes och förbjudna inheritance-gränser utan att bli ny SSOT
+- `active_lane_index.md` — kort retained historical pointer till den fångade `feature/editor-worker-orchestrator`-kontexten; inte branch-current lane-selector eller ny SSOT
 - `runtime_config_live_update_matrix_2026-05-15.md` — current-state-matris för vilka runtime-config-ytor som är schema-valida, validate-accepterade respektive live-skrivbara via propose-pathen
 - `templates/command_packet.md` — standardmall för start av uppgift
 - `templates/evidence_claim_header.md` — lätt claim-header-mall för claim-bearing evidensnoter där provenance och authority-gränser behöver bli tydliga

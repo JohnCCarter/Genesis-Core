@@ -67,19 +67,19 @@ These labels describe the portability boundary of the claim, not its strength, q
 Use one of these labels explicitly when they fit:
 
 - **`same-local-checkout only`**
-	- observed on this exact working state only
-	- portability stops at this checkout/workstation surface
-	- pair it with `Working-tree status`, `Evidence commit SHA` or explicit non-rerun wording, and the exact `Input carrier`
+  - observed on this exact working state only
+  - portability stops at this checkout/workstation surface
+  - pair it with `Working-tree status`, `Evidence commit SHA` or explicit non-rerun wording, and the exact `Input carrier`
 - **`fixture-level`**
-	- observed from one tracked fixture or other narrow commit-safe carrier only
-	- do not let this drift into broader replay or clean-checkout portability language
-	- pair it with the exact fixture/carrier path under `Input carrier`
+  - observed from one tracked fixture or other narrow commit-safe carrier only
+  - do not let this drift into broader replay or clean-checkout portability language
+  - pair it with the exact fixture/carrier path under `Input carrier`
 - **`historical-trace-level`**
-	- observed from one fixed retained historical trace, bundle, or frozen root
-	- portability remains tied to that retained carrier, not to a fresh full-chain rerun
-	- pair it with the exact retained carrier/root under `Input carrier`
+  - observed from one fixed retained historical trace, bundle, or frozen root
+  - portability remains tied to that retained carrier, not to a fresh full-chain rerun
+  - pair it with the exact retained carrier/root under `Input carrier`
 - **`full-chain clean-checkout-level`**
-	- use only when a clean checkout can regenerate the named claim-bearing chain from tracked inputs under the stated envelope
+  - use only when a clean checkout can regenerate the named claim-bearing chain from tracked inputs under the stated envelope
 
 If none of these labels fit because the note is concept-only, planning-only, or historical-reference-only, say that explicitly instead of implying a portability level.
 

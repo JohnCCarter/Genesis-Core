@@ -4,6 +4,22 @@ Date: 2026-04-23
 Branch: `feature/ri-role-map-implementation-2026-03-24`
 Status: `executed / bounded / no observed divergence`
 
+> Later portability classification note (2026-05-18):
+>
+> - Preserve this file as a historical execution summary for the exact launch surface it recorded.
+> - For current branch interpretation discipline, read this note as **`same-local-checkout only`** evidence rather than as `historical-trace-level` or `full-chain clean-checkout-level` portability proof.
+> - The exact bounded outputs were locally materialized decision-row files under `results/backtests/ri_router_defensive_transition_backtest_20260423/`, and the exact command surface also included a workstation-local interpreter path.
+> - This note remains execution-reporting only; it does not establish runtime, paper, readiness, cutover, or promotion authority.
+
+## Later claim-envelope checkpoint
+
+- **Input carrier:** tracked bridge configs, tracked code surfaces named in the launch snapshot, explicit launch env/cache posture, and same-local-checkout materialized decision-row outputs under `results/backtests/ri_router_defensive_transition_backtest_20260423/`
+- **Output carrier:** the two locally materialized bounded decision-row files only; this slice did not create a tracked commit-safe replay carrier
+- **Portability label:** `same-local-checkout only`
+- **Not claimed here:** `historical-trace-level` portability, `full-chain clean-checkout-level` portability, zero-filesystem interaction, or clean-worktree portability beyond the exact observed launch surface
+- **Dirty/clean state:** one unrelated tracked diff at launch (`data/DATA_FORMAT.md`); no observed launch diff on the paired bridge files, `scripts/run/run_backtest.py`, `src/core/backtest/engine.py`, or `src/core/config/authority.py`
+- **Authority boundary:** execution-reporting evidence only; no runtime-default, paper, readiness, cutover, or promotion authority
+
 ## COMMAND PACKET
 
 - **Mode:** `RESEARCH` — source: `branch:feature/ri-role-map-implementation-2026-03-24`
@@ -159,6 +175,8 @@ For the exact authorized defensive-transition paired backtest subject:
 - no observed divergence was emitted on this exact `tBTCUSD` / `3h` / `2024-01-02 -> 2024-12-31` window
 
 This execution is therefore **green as bounded execution evidence for this exact RI-only observational surface only**.
+
+More precisely for later reuse, it is green as **bounded same-local-checkout execution evidence** for this exact RI-only observational surface only.
 
 It is **not** runtime-default evidence, paper evidence, readiness evidence, cutover evidence, or promotion evidence.
 

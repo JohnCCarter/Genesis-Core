@@ -221,6 +221,15 @@ These labels are interpretation discipline only. They do **not** authorize stron
 - **Artifact:** `docs/decisions/governance/queue_status_freshness_guard_packet_2026-05-15.md`
 - **Outcome target:** define the minimal same-slice freshness bundle for queue truth, touched artifact framing, and touched next-step prose so stale sequencing text cannot silently take control
 
+## Later explicit reopen after successor closure
+
+### Slice 13 — edge-origin manifest-pilot portability boundary
+
+- **Status:** `selected and completed in this slice`
+- **Why it came next:** after the later SCPE, router-replay, and volatility closeouts, the smallest remaining dependency/overclaim seam on this branch was the current manifest-backed `edge_origin_isolation` claim surface above its already-separated future fixture-pair carrier decision
+- **Artifact:** `docs/decisions/governance/edge_origin_isolation_manifest_pilot_portability_boundary_packet_2026-05-18.md`
+- **Outcome target:** pin the current manifest-pilot `edge_origin_isolation` surface to `same-local-checkout only`, keep stronger portability wording out of bounds, and preserve the future tracked-fixture carrier path as separately bounded
+
 ## Successor selection rule
 
 When the successor phase advances, the next admissible slice should prefer the smallest move that:

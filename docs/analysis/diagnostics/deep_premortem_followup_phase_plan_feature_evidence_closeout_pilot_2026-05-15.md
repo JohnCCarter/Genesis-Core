@@ -15,7 +15,10 @@ Status: `docs-only / planning-only / non-executable / no runtime authority`
 > - Phase 1B local-only reference containment is now införd in the tracked docs that cited the local untracked note path.
 > - Phase 1A working-contract branch-anchor demotion is now införd via `GENESIS_WORKING_CONTRACT.md` and `docs/decisions/governance/working_contract_branch_anchor_demotion_packet_2026-05-15.md`.
 > - Phase 1 is now effectively complete on this branch.
-> - The next bounded reopen should start in **Phase 2 — Claim-envelope and portability label hardening**, choosing the smallest docs-only slice under that phase rather than reopening Phase 1 or the closed successor queue.
+> - Phase 2 claim-envelope and portability label hardening is now införd on this branch via `docs/analysis/regime_intelligence/router_replay/ri_router_replay_defensive_transition_backtest_execution_summary_2026-04-23.md`, `docs/analysis/regime_intelligence/router_replay/ri_router_replay_concept_case_2026-04-23.md`, `docs/governance/templates/evidence_claim_header.md`, and `docs/governance/runbooks/evidence_claim_adoption.md`.
+> - Phase 3 highest unresolved dependency-root containment is now införd on this branch via `docs/decisions/governance/scpe_phasec_mixed_replay_non_portability_boundary_packet_2026-05-18.md`.
+> - If a later reopen is still needed from this plan, the next candidate phase is **Phase 4 — Runtime-adjacent inheritance guards**.
+> - Any such later Phase 4 reopen remains separate, bounded, and non-authorizing.
 
 ## COMMAND PACKET (planning-only)
 
@@ -198,6 +201,7 @@ If the user wants to continue from this plan, the next admissible phase should p
 - created one branch-current phase plan derived from the deep premortem
 - translated the deep premortem's recommended next checks into four bounded follow-up phases
 - kept the plan explicitly separate from the already-closed successor queue
+- refreshed the later progress note so the tracked next-candidate phase matches current branch state after Phase 2 and Phase 3 landed
 
 ## What did not change
 
@@ -211,3 +215,5 @@ If the user wants to continue from this plan, the next admissible phase should p
 The deep branch premortem does not call for another broad workshop queue. It calls for a short phased follow-up that prevents **precision loss after partial success**.
 
 That makes the next honest shape simple: re-anchor the control plane first, harden claim and portability wording second, contain the highest unresolved dependency root third, and only then revisit runtime-adjacent inheritance guards under explicit bounded reopen decisions.
+
+On current branch state, the first three steps above are now recorded as landed. If any later reopen is still needed from this plan, the next candidate phase is therefore Phase 4 under a separate bounded decision.

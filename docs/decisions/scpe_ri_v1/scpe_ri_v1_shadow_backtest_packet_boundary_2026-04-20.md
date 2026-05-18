@@ -6,6 +6,13 @@ Status: `packet-boundary-defined / planning-only / no authorization`
 
 This document is a planning artifact in `RESEARCH` and grants no implementation, runtime, readiness, cutover, launch, execution, deployment, paper-trading, or promotion authority. It must not be used as approval to begin code, config, test, backtest, runtime, or operational changes. Any future RI shadow-backtest step requires its own separate commit contract, separate command packet, fresh scope approval, and separate verification.
 
+> Later-status note (2026-05-18):
+>
+> - This packet is retained as a historical record of the 2026-04-20 packet-boundary assessment.
+> - References below to the next admissible packet type or future RI shadow-backtest lane reflect branch understanding at that time only.
+> - Later downstream status for this historical chain was recorded in `docs/decisions/scpe_ri_v1/scpe_ri_v1_runtime_observability_transition_packet_2026-04-21.md`, while current branch interpretation of the historical execution-summary surface is narrowed in `docs/decisions/scpe_ri_v1/scpe_ri_v1_shadow_backtest_execution_summary_current_state_portability_boundary_packet_2026-05-18.md`.
+> - The original packet-boundary reasoning below remains unchanged.
+
 ## Future packet scaffold (planning-only, non-executable placeholder)
 
 - **Mode:** `RESEARCH` — source: `docs/governance_mode.md` via branch mapping for `feature/ri-role-map-implementation-2026-03-24`
@@ -131,9 +138,9 @@ This is a narrow boundary conclusion only.
 
 It does **not** imply that an RI shadow-backtest slice is now greenlit.
 
-### What the next admissible packet may be
+### What the next admissible packet was assessed to be (historical only, 2026-04-20)
 
-If work continues, the next admissible step may only be:
+At the time, if work continued, the next admissible step was assessed to be only:
 
 - a **separate pre-code packet** for one exact bounded **RI-only shadow-backtest slice**
 
@@ -188,12 +195,12 @@ This note does **not** constitute:
 
 Its sole purpose is to determine the required packet type before any future SCPE RI shadow-backtest slice could be considered.
 
-## Bottom line
+## Bottom line (historical packet-boundary assessment as of 2026-04-20)
 
 The packet boundary is now defined as follows:
 
 - no new generic shadow-plumbing implementation packet is required for the already visible repository seam
 - no runtime-observability, paper-shadow, or behavior-change packet is the next admissible step
-- the next admissible step, if work continues, may only be a **separate pre-code packet for one exact bounded RI-only shadow-backtest slice**
+- the next admissible step, if work continued, was assessed to be only a **separate pre-code packet for one exact bounded RI-only shadow-backtest slice**
 
 Nothing in this note authorizes implementation, execution, runtime instrumentation, paper activity, readiness, cutover, or promotion.

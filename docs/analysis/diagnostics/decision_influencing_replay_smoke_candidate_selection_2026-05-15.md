@@ -1,5 +1,14 @@
 # Decision-influencing replay smoke candidate selection
 
+> Later-status note (2026-05-18): The ranking and candidate framing below preserves the
+> 2026-05-15 selection input as written. Its immediate next-step language for
+> `execution_proxy_evidence` was later consumed by
+> `docs/decisions/governance/execution_proxy_fixture_containment_packet_2026-05-15.md`, the
+> landed tracked-fixture smoke recorded in
+> `docs/analysis/diagnostics/next_phase_verkstad_queue_2026-05-15.md`, and
+> `docs/decisions/governance/execution_proxy_replay_claim_level_boundary_packet_2026-05-15.md`.
+> This note is therefore historical selection input, not a standing branch recommendation.
+
 ## Claim header
 
 - **Date:** `2026-05-15`

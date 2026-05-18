@@ -17,8 +17,10 @@ Status: `docs-only / planning-only / non-executable / no runtime authority`
 > - Phase 1 is now effectively complete on this branch.
 > - Phase 2 claim-envelope and portability label hardening is now införd on this branch via `docs/analysis/regime_intelligence/router_replay/ri_router_replay_defensive_transition_backtest_execution_summary_2026-04-23.md`, `docs/analysis/regime_intelligence/router_replay/ri_router_replay_concept_case_2026-04-23.md`, `docs/governance/templates/evidence_claim_header.md`, and `docs/governance/runbooks/evidence_claim_adoption.md`.
 > - Phase 3 highest unresolved dependency-root containment is now införd on this branch via `docs/decisions/governance/scpe_phasec_mixed_replay_non_portability_boundary_packet_2026-05-18.md`.
-> - If a later reopen is still needed from this plan, the next candidate phase is **Phase 4 — Runtime-adjacent inheritance guards**.
-> - Any such later Phase 4 reopen remains separate, bounded, and non-authorizing.
+> - On 2026-05-15 branch state, the next candidate phase was **Phase 4 — Runtime-adjacent inheritance guards**.
+> - Later 2026-05-18 closeout work consumed the clearest execution-summary portability seams in that phase via `docs/decisions/governance/current_atr_900_env_profile_same_local_checkout_boundary_packet_2026-05-18.md`, `docs/decisions/governance/edge_origin_isolation_manifest_pilot_portability_boundary_packet_2026-05-18.md`, and `docs/decisions/scpe_ri_v1/scpe_ri_v1_shadow_backtest_execution_summary_current_state_portability_boundary_packet_2026-05-18.md`.
+> - Any further reopen from this plan is therefore no longer one branch-current microslice by implication; it is either a broader historical refresh of stale status surfaces or a separately chosen new lane/question.
+> - Any such later reopen remains separate, bounded, and non-authorizing.
 
 ## COMMAND PACKET (planning-only)
 

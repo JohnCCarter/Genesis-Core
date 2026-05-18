@@ -4,6 +4,11 @@ Date: 2026-05-15
 Branch: `feature/evidence-closeout-pilot`
 Status: `initial queue closed / successor phase closed / docs-only / non-authorizing`
 
+> Queue sync note (2026-05-18): This file remains a record of the 2026-05-15 queue state and its
+> later closeout annotations. Entries below may be annotated as later consumed or narrowed by
+> cited follow-up work, but this list is not the current execution queue or current priority order
+> on branch state after the later 2026-05-18 closeouts and broader historical refresh.
+
 This document records the initial post-premortem execution queue after the completed premortem closeout and evidence-manifest boundary work. The initial six-slice queue below is now historical, and the successor phase reopened from the branch premortem reading is now also historical and closed later in this document. This remains a sequencing artifact in `RESEARCH`; it grants no runtime, config-authority, paper/live, promotion, or champion authority by itself.
 
 ## Mode and lane

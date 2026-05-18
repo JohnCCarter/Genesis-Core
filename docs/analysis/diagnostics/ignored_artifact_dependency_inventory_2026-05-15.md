@@ -1,5 +1,15 @@
 # Ignored-artifact dependency inventory
 
+> Historical status note (2026-05-18): This document preserves the 2026-05-15 inventory and
+> ranking as written. Later branch-closeout work recorded more explicit current-state boundaries
+> for `docs/decisions/governance/scpe_phasec_mixed_replay_non_portability_boundary_packet_2026-05-18.md`,
+> `docs/decisions/governance/current_atr_900_env_profile_same_local_checkout_boundary_packet_2026-05-18.md`,
+> `docs/analysis/regime_intelligence/router_replay/ri_router_replay_defensive_transition_backtest_execution_summary_2026-04-23.md`,
+> `docs/decisions/governance/edge_origin_isolation_manifest_pilot_portability_boundary_packet_2026-05-18.md`,
+> and `docs/decisions/scpe_ri_v1/scpe_ri_v1_shadow_backtest_execution_summary_current_state_portability_boundary_packet_2026-05-18.md`.
+> The ranking and “smallest next admissible follow-up” language below is therefore historical
+> 2026-05-15 selection input, not current branch priority authority.
+
 ## Claim header
 
 - **Date:** `2026-05-15`

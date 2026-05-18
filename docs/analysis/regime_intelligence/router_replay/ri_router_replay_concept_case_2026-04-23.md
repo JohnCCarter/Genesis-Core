@@ -5,6 +5,22 @@ Mode: `RESEARCH`
 Branch: `feature/ri-role-map-implementation-2026-03-24`
 Status: `concept-only / docs-only / no-runtime-authority`
 
+> Later claim-envelope clarification note (2026-05-18):
+>
+> - Preserve this file as a historical concept-lane framing note for the exact branch state named above.
+> - For current branch interpretation discipline, treat it as **concept framing only**; it does not rerun, re-prove, or freshly capture evidence by itself.
+> - Any cited docs or frozen research roots here remain reference anchors only unless a later bounded evidence packet explicitly reopens them on its own subject.
+> - This note does not create runtime authority, execution authority, replay portability authority, or inherited approval from older SCPE replay lineage.
+
+## Later claim-envelope checkpoint
+
+- **Input carrier:** cited tracked docs plus cited frozen research-root references as concept anchors only; no fresh evidence subject is frozen by this file itself
+- **Output carrier:** this historical concept note only; no replay trace, metrics artifact, manifest, or evaluation payload is materialized here
+- **Runtime base SHA / evidence commit SHA:** not recorded by this note and not to be inferred retroactively from later packets
+- **Working-tree status / env flags:** not applicable here because this slice did not execute code, run a replay, or capture a result envelope
+- **Not claimed here:** `same-local-checkout`, `historical-trace-level`, or `full-chain clean-checkout-level` portability; execution proof; reproducibility proof; runtime/default/family authority
+- **Authority boundary:** concept-lane framing only; this file may motivate or bound later slices but does not authorize them by itself
+
 ## Why this is the right first concept case
 
 If the three-lane model is going to be useful, the first real test should be a candidate that is:

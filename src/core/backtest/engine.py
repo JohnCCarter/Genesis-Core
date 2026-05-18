@@ -35,6 +35,7 @@ from core.strategy.champion_loader import ChampionLoader
 from core.strategy.evaluate import evaluate_pipeline
 
 _LOGGER = get_logger(__name__)
+_PER_BAR_ERROR_POLICY = "continue_collect_raise_after_loop"
 
 
 # B1: On-disk precompute cache versioning.
@@ -93,6 +94,41 @@ def _precompute_cache_write_enabled() -> bool:
 VALID_DATA_SOURCE_POLICIES = ("frozen_first", "curated_only")
 
 
+def _describe_per_bar_error(error: Exception) -> str:
+    return f"{type(error).__name__}: {error}"
+
+
+def _record_per_bar_error(
+    *,
+    bar_index: int,
+    error: Exception,
+    error_count: int,
+    first_error: tuple[int, str] | None,
+) -> tuple[int, tuple[int, str] | None]:
+    updated_count = error_count + 1
+    if first_error is None:
+        first_error = (bar_index, _describe_per_bar_error(error))
+    return updated_count, first_error
+
+
+def _raise_if_per_bar_errors(
+    *,
+    error_count: int,
+    first_error: tuple[int, str] | None,
+) -> None:
+    if error_count <= 0:
+        return
+
+    first_bar = first_error[0] if first_error else -1
+    first_message = first_error[1] if first_error else "unknown error"
+    error_msg = (
+        "Backtest aborted due to per-bar evaluation errors: "
+        f"count={error_count}, first_at_bar={first_bar}, first_error={first_message}"
+    )
+    _LOGGER.error("%s | policy=%s", error_msg, _PER_BAR_ERROR_POLICY)
+    raise RuntimeError(error_msg)
+
+
 def _normalize_data_source_policy(policy: str | None) -> str:
     """Return a validated backtest data-source policy."""
 
@@ -101,6 +137,21 @@ def _normalize_data_source_policy(policy: str | None) -> str:
         allowed = ", ".join(VALID_DATA_SOURCE_POLICIES)
         raise ValueError(f"Invalid data_source_policy={policy!r}. Expected one of: {allowed}")
     return normalized
+
+
+def _resolve_htf_exit_engine_selection(
+    *, env_flag: str | None, htf_exit_config: dict | None
+) -> bool:
+    """Return the current HTF exit-engine selection predicate unchanged.
+
+    Precedence is intentionally explicit and parity-locked:
+    - an explicit ``GENESIS_HTF_EXITS`` setting is authoritative;
+    - otherwise the existing truthiness of ``htf_exit_config`` is used.
+    """
+
+    if env_flag is not None:
+        return env_flag == "1"
+    return isinstance(htf_exit_config, dict) and bool(htf_exit_config)
 
 
 class CandleCache:
@@ -296,10 +347,10 @@ class BacktestEngine:
                 "GENESIS_HTF_EXITS expected '0' or '1'; got %r. Treating as legacy.",
                 env_flag,
             )
-        if env_flag is not None:
-            use_new_engine = env_flag == "1"
-        else:
-            use_new_engine = isinstance(htf_exit_config, dict) and bool(htf_exit_config)
+        use_new_engine = _resolve_htf_exit_engine_selection(
+            env_flag=env_flag,
+            htf_exit_config=htf_exit_config,
+        )
         if use_new_engine and NewExitEngine:
             _LOGGER.info("Using NEW HTF Exit Engine (Phase 1)")
             self.htf_exit_engine = NewExitEngine(self.htf_exit_config)
@@ -797,6 +848,12 @@ class BacktestEngine:
 
         Returns:
             Dict with backtest results
+
+        Notes:
+            Per-bar pipeline exceptions follow the internal
+            ``continue_collect_raise_after_loop`` policy: the loop keeps running
+            to finish bar replay, then raises ``RuntimeError`` after completion
+            if any per-bar errors were collected.
         """
         # Reset state for isolation (Step 3: Eliminate Hidden State)
         self.position_tracker = PositionTracker(
@@ -1106,9 +1163,12 @@ class BacktestEngine:
                 self.bar_count += 1
 
             except Exception as e:
-                per_bar_error_count += 1
-                if first_per_bar_error is None:
-                    first_per_bar_error = (i, f"{type(e).__name__}: {e}")
+                per_bar_error_count, first_per_bar_error = _record_per_bar_error(
+                    bar_index=i,
+                    error=e,
+                    error_count=per_bar_error_count,
+                    first_error=first_per_bar_error,
+                )
                 if verbose or _debug_backtest_enabled():
                     try:
                         import sys  # noqa: PLC0415
@@ -1128,15 +1188,10 @@ class BacktestEngine:
 
         pbar.close()
 
-        if per_bar_error_count > 0:
-            first_bar = first_per_bar_error[0] if first_per_bar_error else -1
-            first_error = first_per_bar_error[1] if first_per_bar_error else "unknown error"
-            error_msg = (
-                "Backtest aborted due to per-bar evaluation errors: "
-                f"count={per_bar_error_count}, first_at_bar={first_bar}, first_error={first_error}"
-            )
-            _LOGGER.error(error_msg)
-            raise RuntimeError(error_msg)
+        _raise_if_per_bar_errors(
+            error_count=per_bar_error_count,
+            first_error=first_per_bar_error,
+        )
 
         # Report feature hit counts
         try:

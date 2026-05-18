@@ -889,17 +889,56 @@ def test_engine_state_persistence(sample_candles_data):
 
 
 def test_engine_raises_on_pipeline_errors(sample_candles_data, monkeypatch):
-    """Backtest must fail if per-bar pipeline exceptions occurred."""
+    """Backtest must keep collecting per-bar failures and raise after loop completion."""
     engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m", warmup_bars=10)
     engine.candles_df = sample_candles_data.head(20)
+    calls = {"n": 0}
 
     def _raise_pipeline_error(*_args, **_kwargs):
+        calls["n"] += 1
         raise ValueError("forced per-bar failure")
 
     monkeypatch.setattr("core.backtest.engine.evaluate_pipeline", _raise_pipeline_error)
 
-    with pytest.raises(RuntimeError, match="per-bar evaluation errors"):
+    with pytest.raises(
+        RuntimeError,
+        match=r"count=10, first_at_bar=10, first_error=ValueError: forced per-bar failure",
+    ):
         engine.run(configs={})
+
+    assert calls["n"] == 10
+
+
+def test_engine_error_policy_continues_loop_before_raising(sample_candles_data, monkeypatch):
+    """A single per-bar failure must still let the engine finish replay before raising."""
+
+    engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m", warmup_bars=10)
+    engine.candles_df = sample_candles_data.head(20)
+
+    processed_bars: list[int] = []
+
+    def _pipeline_with_single_failure(*_args, **_kwargs):
+        bar_index = len(processed_bars) + engine.warmup_bars
+        processed_bars.append(bar_index)
+        if len(processed_bars) == 1:
+            raise ValueError("first processed bar failed")
+        return (
+            {"action": "NONE", "confidence": 0.5, "regime": "BALANCED", "features": {}},
+            {"decision": {"size": 0.0, "state_out": {}, "reasons": []}},
+        )
+
+    monkeypatch.setattr(
+        "core.backtest.engine.evaluate_pipeline",
+        _pipeline_with_single_failure,
+    )
+
+    with pytest.raises(
+        RuntimeError,
+        match=r"count=1, first_at_bar=10, first_error=ValueError: first processed bar failed",
+    ):
+        engine.run(configs={"exit": {"enabled": False}})
+
+    assert processed_bars == list(range(10, 20))
 
 
 def test_engine_with_verbose_mode(sample_candles_data, capsys):

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 
 import httpx
@@ -16,6 +17,48 @@ from core.utils.nonce_manager import bump_nonce, get_nonce
 _HTTP_CLIENT: httpx.AsyncClient | None = None
 _BASE_URL = "https://api.bitfinex.com"
 _LOGGER = get_logger(__name__)
+_MAX_SIGNED_REQUEST_ATTEMPTS = 3
+_NONCE_ERROR_CODE = 10114
+_RETRYABLE_STATUS_CODES = {429}
+
+
+def _collect_error_markers(payload: Any, *, codes: set[int], texts: list[str]) -> None:
+    if isinstance(payload, dict):
+        for value in payload.values():
+            _collect_error_markers(value, codes=codes, texts=texts)
+        return
+    if isinstance(payload, list | tuple):
+        for value in payload:
+            _collect_error_markers(value, codes=codes, texts=texts)
+        return
+    if isinstance(payload, int):
+        codes.add(payload)
+        return
+    if isinstance(payload, str):
+        texts.append(payload.lower())
+
+
+def _extract_error_markers(response: Any | None) -> tuple[set[int], list[str]]:
+    codes: set[int] = set()
+    texts: list[str] = []
+    if response is None:
+        return codes, texts
+
+    try:
+        payload = response.json()
+    except Exception:
+        payload = None
+    _collect_error_markers(payload, codes=codes, texts=texts)
+
+    text = getattr(response, "text", "")
+    if isinstance(text, str) and text:
+        texts.append(text.lower())
+        for match in re.findall(r"\b\d+\b", text):
+            try:
+                codes.add(int(match))
+            except ValueError:
+                continue
+    return codes, texts
 
 
 async def aclose_http_client() -> None:
@@ -50,7 +93,7 @@ class ExchangeClient:
 
     - Bygger signerade headers med NonceManager
     - Skickar requests (GET/POST)
-    - Engångs-retry med enkel jitter-backoff vid 10114/429/5xx
+    - Begränsad retry med jitter-backoff för 10114/429/5xx och transienta request-fel
     """
 
     def __init__(self) -> None:
@@ -73,6 +116,17 @@ class ExchangeClient:
             "bfx-signature": signature,
             "Content-Type": "application/json",
         }
+
+    @staticmethod
+    def _is_retryable_status(status_code: int | None) -> bool:
+        return status_code is not None and (
+            status_code in _RETRYABLE_STATUS_CODES or status_code >= 500
+        )
+
+    @staticmethod
+    def _is_nonce_error(response: Any | None) -> bool:
+        codes, texts = _extract_error_markers(response)
+        return _NONCE_ERROR_CODE in codes or any("nonce" in text for text in texts)
 
     async def signed_request(
         self,
@@ -98,93 +152,130 @@ class ExchangeClient:
             _LOGGER.debug("log_error: %s", log_err)
         client = _get_http_client()
         url = f"{_BASE_URL}/v2/{endpoint}"
-        headers = self._build_headers(endpoint, body)
+        api_key = (self._settings.BITFINEX_API_KEY or "").strip()
 
-        async def _do() -> httpx.Response:
+        async def _do(request_headers: dict[str, str]) -> httpx.Response:
             # Viktigt: använd exakt samma JSON‑serialisering för innehållet som vid signering
             body_str = json.dumps(body, separators=(",", ":"))
             req = getattr(client, method.lower())
-            kwargs: dict[str, Any] = {"headers": headers, "content": body_str}
+            kwargs: dict[str, Any] = {"headers": request_headers, "content": body_str}
             if timeout is not None:
                 kwargs["timeout"] = timeout
             return await req(url, **kwargs)
 
-        # Första försök
-        try:
-            resp = await _do()
-            if resp.status_code in (429,) or resp.status_code >= 500:
-                metrics.inc("rest_auth_retry_triggered")
-                try:
-                    _LOGGER.info(
-                        "REST retry %s %s status=%s",
-                        method.upper(),
-                        endpoint,
-                        resp.status_code,
-                    )
-                except Exception as log_err:
-                    _LOGGER.debug("log_error: %s", log_err)
-                await self._sleep_jitter()
-                # Engångs-retry
-                headers = self._build_headers(endpoint, body)
-                resp = await _do()
-            resp.raise_for_status()
-            metrics.inc("rest_auth_success")
+        for attempt in range(_MAX_SIGNED_REQUEST_ATTEMPTS):
+            headers = self._build_headers(endpoint, body)
             try:
-                metrics.event(
-                    "rest_auth_ok",
-                    {"endpoint": endpoint, "status": resp.status_code},
-                )
-            except Exception as m_err:
-                _LOGGER.debug("metrics_error: %s", m_err)
-            return resp
-        except httpx.HTTPStatusError as e:
-            text = e.response.text if e.response is not None else ""
-            if "nonce" in text.lower() or "10114" in text:
-                # Bumpa noncen och prova en gång till
-                api_key = (self._settings.BITFINEX_API_KEY or "").strip()
-                metrics.inc("rest_auth_nonce_bump")
-                try:
-                    _LOGGER.info("REST nonce bump + retry for %s", endpoint)
-                except Exception as log_err:
-                    _LOGGER.debug("log_error: %s", log_err)
-                bump_nonce(api_key)
-                headers = self._build_headers(endpoint, body)
-                resp2 = await _do()
-                resp2.raise_for_status()
+                resp = await _do(headers)
+                resp.raise_for_status()
                 metrics.inc("rest_auth_success")
                 try:
                     metrics.event(
                         "rest_auth_ok",
-                        {"endpoint": endpoint, "status": resp2.status_code},
+                        {"endpoint": endpoint, "status": resp.status_code},
                     )
                 except Exception as m_err:
                     _LOGGER.debug("metrics_error: %s", m_err)
-                return resp2
-            metrics.inc("rest_auth_error")
-            try:
-                metrics.event(
-                    "rest_auth_error",
-                    {
-                        "endpoint": endpoint,
-                        "status": getattr(e.response, "status_code", None),
-                    },
-                )
-                _LOGGER.info(
-                    "REST error %s %s status=%s",
-                    method.upper(),
-                    endpoint,
-                    getattr(e.response, "status_code", None),
-                )
-            except Exception as log_err:
-                _LOGGER.debug("log_error: %s", log_err)
-            raise
+                return resp
+            except httpx.HTTPStatusError as e:
+                status_code = getattr(e.response, "status_code", None)
+                if self._is_nonce_error(e.response) and attempt + 1 < _MAX_SIGNED_REQUEST_ATTEMPTS:
+                    metrics.inc("rest_auth_nonce_bump")
+                    try:
+                        _LOGGER.info(
+                            "REST nonce bump + retry for %s attempt=%s/%s",
+                            endpoint,
+                            attempt + 2,
+                            _MAX_SIGNED_REQUEST_ATTEMPTS,
+                        )
+                    except Exception as log_err:
+                        _LOGGER.debug("log_error: %s", log_err)
+                    bump_nonce(api_key)
+                    await self._sleep_jitter(attempt + 1)
+                    continue
+                if (
+                    self._is_retryable_status(status_code)
+                    and attempt + 1 < _MAX_SIGNED_REQUEST_ATTEMPTS
+                ):
+                    metrics.inc("rest_auth_retry_triggered")
+                    try:
+                        _LOGGER.info(
+                            "REST retry %s %s status=%s attempt=%s/%s",
+                            method.upper(),
+                            endpoint,
+                            status_code,
+                            attempt + 2,
+                            _MAX_SIGNED_REQUEST_ATTEMPTS,
+                        )
+                    except Exception as log_err:
+                        _LOGGER.debug("log_error: %s", log_err)
+                    await self._sleep_jitter(attempt + 1)
+                    continue
+                metrics.inc("rest_auth_error")
+                try:
+                    metrics.event(
+                        "rest_auth_error",
+                        {
+                            "endpoint": endpoint,
+                            "status": status_code,
+                        },
+                    )
+                    _LOGGER.info(
+                        "REST error %s %s status=%s",
+                        method.upper(),
+                        endpoint,
+                        status_code,
+                    )
+                except Exception as log_err:
+                    _LOGGER.debug("log_error: %s", log_err)
+                raise
+            except httpx.RequestError as e:
+                if attempt + 1 < _MAX_SIGNED_REQUEST_ATTEMPTS:
+                    metrics.inc("rest_auth_retry_triggered")
+                    try:
+                        _LOGGER.info(
+                            "REST retry %s %s request_error=%s attempt=%s/%s",
+                            method.upper(),
+                            endpoint,
+                            type(e).__name__,
+                            attempt + 2,
+                            _MAX_SIGNED_REQUEST_ATTEMPTS,
+                        )
+                    except Exception as log_err:
+                        _LOGGER.debug("log_error: %s", log_err)
+                    await self._sleep_jitter(attempt + 1)
+                    continue
+                metrics.inc("rest_auth_error")
+                try:
+                    metrics.event(
+                        "rest_auth_error",
+                        {
+                            "endpoint": endpoint,
+                            "status": None,
+                        },
+                    )
+                    _LOGGER.info(
+                        "REST error %s %s request_error=%s",
+                        method.upper(),
+                        endpoint,
+                        type(e).__name__,
+                    )
+                except Exception as log_err:
+                    _LOGGER.debug("log_error: %s", log_err)
+                raise
 
-    async def _sleep_jitter(self) -> None:
+        raise RuntimeError("signed_request_retry_loop_exhausted_without_return")
+
+    async def _sleep_jitter(self, attempt: int = 1) -> None:
         # Enhetlig backoff/jitter via util (en mild fördröjning)
         import asyncio
 
         delay = exponential_backoff_delay(
-            0, base_delay=0.0, max_backoff=0.3, jitter_min_ms=100, jitter_max_ms=300
+            attempt,
+            base_delay=0.05,
+            max_backoff=0.4,
+            jitter_min_ms=100,
+            jitter_max_ms=300,
         )
         await asyncio.sleep(delay)
 

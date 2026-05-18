@@ -1014,6 +1014,47 @@ def test_engine_precompute_cache_write_failure_logs_warning(monkeypatch, caplog)
     assert "Failed to write precompute cache" in caplog.text
 
 
+def test_engine_precompute_cache_key_failure_remains_non_fatal(tmp_path, monkeypatch, caplog):
+    import core.backtest.engine as engine_mod
+
+    BacktestEngine._candles_cache.clear()
+
+    fake_engine_file = tmp_path / "src" / "core" / "backtest" / "engine.py"
+    fake_engine_file.parent.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(engine_mod, "__file__", str(fake_engine_file))
+
+    data_raw = tmp_path / "data" / "raw"
+    data_raw.mkdir(parents=True, exist_ok=True)
+
+    ltf_ts = pd.date_range("2025-01-01", periods=48, freq="15min", tz="UTC")
+    ltf = pd.DataFrame(
+        {
+            "timestamp": ltf_ts,
+            "open": [100.0 + i * 0.1 for i in range(len(ltf_ts))],
+            "high": [100.5 + i * 0.1 for i in range(len(ltf_ts))],
+            "low": [99.5 + i * 0.1 for i in range(len(ltf_ts))],
+            "close": [100.2 + i * 0.1 for i in range(len(ltf_ts))],
+            "volume": [1000.0 + i for i in range(len(ltf_ts))],
+        }
+    )
+    ltf.to_parquet(data_raw / "tBTCUSD_15m_frozen.parquet", index=False)
+
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "1")
+    engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m", warmup_bars=10, fast_window=True)
+    monkeypatch.setattr(
+        engine,
+        "_precompute_cache_key",
+        lambda _df: (_ for _ in ()).throw(RuntimeError("key boom")),
+    )
+
+    with caplog.at_level("WARNING"):
+        ok = engine.load_data()
+
+    assert ok is True
+    assert engine._precomputed_features is None
+    assert "Precomputation failed (non-fatal): key boom" in caplog.text
+
+
 def test_engine_precompute_cache_write_can_be_disabled_without_creating_cache_dir(
     tmp_path, monkeypatch
 ):

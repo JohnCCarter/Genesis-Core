@@ -1,8 +1,10 @@
 # Premortem follow-up phase plan
 
 Date: 2026-05-15
-Branch: `feature/editor-worker-orchestrator`
-Status: `docs-only / planning + phase-1 kickoff / non-executable / no runtime authority`
+Originating branch: `feature/editor-worker-orchestrator`
+Status: `historical planning artifact / non-executable / no runtime authority`
+
+> 2026-05-18 note (`feature/evidence-closeout-pilot`): This document is retained as the original docs-first framing artifact from the earlier `feature/editor-worker-orchestrator` context. The bounded candidate set selected by this plan has now been completed, and this file should not be read as a branch-current work selector or new authority surface.
 
 > Current status note:
 >

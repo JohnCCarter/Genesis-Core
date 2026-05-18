@@ -139,15 +139,15 @@ Why this is the honest default:
 - the queue is already closed and requires explicit reopen rather than inheritance
 - the highest-ranked dependency families now have current-state boundary packets or later interpretation notes
 - the major control-plane confusion surfaces were already demoted or paused
-- the remaining identified seam is local citation drift, not an unfinished branch-wide premortem program
+- the only seam identified at Base SHA `cd556710` was local citation drift, and that seam was later corrected in tracked docs without reopening the premortem lane
 
 If a later reopen is needed, the smallest admissible reopen candidate is:
 
-- **one bounded docs-only citation-alignment slice** correcting the tracked-vs-local-only labeling drift described above
+- **a genuinely new bounded question**, not any unfinished citation-alignment work from this note
 
-This note does **not** reopen that slice.
+This note does **not** reopen any new slice by implication.
 Any such reopen would still need its own explicit Scope IN/OUT and validation.
 
 ## Bottom line
 
-The 2026-05-15 premortem chain did real work, but its open questions were later narrowed, historicalized, or closed by explicit branch-state boundary packets and control-plane demotions. On current branch-visible evidence, there is no honest basis for treating premortem as a still-live multi-phase lane. The honest branch-state reading is closeout, with at most one future bounded docs-consistency reopen if the tracked/local-only citation drift is worth correcting separately.
+The 2026-05-15 premortem chain did real work, but its open questions were later narrowed, historicalized, or closed by explicit branch-state boundary packets and control-plane demotions. On current branch-visible evidence, there is no honest basis for treating premortem as a still-live multi-phase lane. The honest branch-state reading is closeout, and the previously identified citation-drift seam has since been corrected in tracked docs rather than left as an implied follow-up queue.

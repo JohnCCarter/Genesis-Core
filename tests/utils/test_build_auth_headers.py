@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from scripts.build.build_auth_headers import build_headers, main
+from scripts.build.build_auth_headers import _sanitize_for_logging, build_headers, main
 
 MOCK_API_TOKEN_A = "credential_alpha"
 MOCK_API_TOKEN_B = "credential_beta"
@@ -173,3 +173,93 @@ def test_build_headers_missing_credentials():
 
         with pytest.raises(RuntimeError, match="BITFINEX API credentials saknas"):
             build_headers("auth/r/alerts", {})
+
+
+# ---------------------------------------------------------------------------
+# _sanitize_for_logging tests
+# ---------------------------------------------------------------------------
+
+
+def test_sanitize_flat_dict_masks_sensitive_keys():
+    """Sensitive keys in a flat dict are replaced with '***'."""
+    data = {"apikey": "real_key", "secret": "real_secret", "safe_field": "visible"}
+    result = _sanitize_for_logging(data)
+    assert result["apikey"] == "***"
+    assert result["secret"] == "***"
+    assert result["safe_field"] == "visible"
+
+
+def test_sanitize_flat_dict_leaves_non_sensitive_keys_unchanged():
+    """Non-sensitive keys are preserved with their original values."""
+    data = {"endpoint": "/api/v2/auth", "nonce": "12345", "Content-Type": "application/json"}
+    result = _sanitize_for_logging(data)
+    assert result == data
+
+
+def test_sanitize_nested_dict_masks_sensitive_keys_recursively():
+    """Sensitive keys nested inside dicts are recursively masked."""
+    data = {"outer": {"inner_password": "s3cr3t", "public_info": "ok"}}
+    result = _sanitize_for_logging(data)
+    assert result["outer"]["inner_password"] == "***"
+    assert result["outer"]["public_info"] == "ok"
+
+
+def test_sanitize_list_of_dicts():
+    """Dicts inside a list are sanitized recursively."""
+    data = [{"token": "abc123", "name": "test"}, {"value": 42}]
+    result = _sanitize_for_logging(data)
+    assert isinstance(result, list)
+    assert result[0]["token"] == "***"
+    assert result[0]["name"] == "test"
+    assert result[1]["value"] == 42
+
+
+def test_sanitize_tuple_of_dicts():
+    """Dicts inside a tuple are sanitized recursively and result is a tuple."""
+    data = ({"password": "hunter2"}, {"safe": "yes"})
+    result = _sanitize_for_logging(data)
+    assert isinstance(result, tuple)
+    assert result[0]["password"] == "***"
+    assert result[1]["safe"] == "yes"
+
+
+def test_sanitize_fragment_based_key_matching():
+    """Keys containing sensitive fragments (not exact matches) are masked."""
+    data = {
+        "bfx-apikey": "real_key",
+        "x-auth-token": "bearer_xyz",
+        "my_password_hash": "hashed",
+        "normal_key": "value",
+    }
+    result = _sanitize_for_logging(data)
+    assert result["bfx-apikey"] == "***"
+    assert result["x-auth-token"] == "***"
+    assert result["my_password_hash"] == "***"
+    assert result["normal_key"] == "value"
+
+
+def test_sanitize_mixed_nested_structure():
+    """Mixed nesting of dicts, lists, and tuples is fully sanitized."""
+    data = {
+        "headers": [{"bfx-signature": "sig_value", "Content-Type": "application/json"}],
+        "meta": {"info": "safe", "authorization": "Bearer token_abc"},
+    }
+    result = _sanitize_for_logging(data)
+    assert result["headers"][0]["bfx-signature"] == "***"
+    assert result["headers"][0]["Content-Type"] == "application/json"
+    assert result["meta"]["info"] == "safe"
+    assert result["meta"]["authorization"] == "***"
+
+
+def test_sanitize_non_dict_scalar_passthrough():
+    """Scalar values (int, str, None) pass through unchanged."""
+    assert _sanitize_for_logging(42) == 42
+    assert _sanitize_for_logging("plain string") == "plain string"
+    assert _sanitize_for_logging(None) is None
+
+
+def test_sanitize_empty_structures():
+    """Empty dict, list, and tuple return their empty equivalents."""
+    assert _sanitize_for_logging({}) == {}
+    assert _sanitize_for_logging([]) == []
+    assert _sanitize_for_logging(()) == ()

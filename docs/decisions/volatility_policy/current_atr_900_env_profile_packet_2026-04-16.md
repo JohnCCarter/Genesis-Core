@@ -1,3 +1,19 @@
+> Later portability classification note (2026-05-18):
+>
+> - Preserve this file as a historical observational env-profile packet for the exact local execution surface it recorded.
+> - For current branch interpretation discipline, read this packet as **`same-local-checkout only`** evidence for the `current_atr >= 900` environment-profile line.
+> - The exact command/input surface depended on `tmp/current_atr_900_env_profile_20260416.py`, locked local config artifacts under `results/research/fa_v2_adaptation_off/**`, and local-only outputs under `results/research/fa_v2_adaptation_off/phase15_bull_high_persistence_override/current_atr_900_env_profile_2026-04-16/`.
+> - The packet also carried explicit containment watch over mutable local surfaces including `cache/precomputed/`; later citations do not upgrade this chain into `historical-trace-level` or `full-chain clean-checkout-level` portability proof.
+
+## Later claim-envelope checkpoint
+
+- **Input carrier:** exact research script `tmp/current_atr_900_env_profile_20260416.py`; exact locked baseline/candidate config artifacts cited from `results/research/fa_v2_adaptation_off/phase15_bull_high_persistence_override/**`; explicit env flags and containment watch over mutable local surfaces including `cache/precomputed/`
+- **Output carrier:** local-only `manifest.json`, `env_summary.json`, and `closeout.md` under `results/research/fa_v2_adaptation_off/phase15_bull_high_persistence_override/current_atr_900_env_profile_2026-04-16/`; this slice did not create a tracked commit-safe carrier
+- **Portability label:** `same-local-checkout only`
+- **Not claimed here:** tracked-carrier portability, `historical-trace-level` portability, `full-chain clean-checkout-level` portability, cache-independence, or clean-checkout regeneration
+- **Working-tree / local-state note:** the original packet records containment and mutable-path watch discipline, but it does not by itself prove clean-worktree portability or cache-free regeneration beyond the exact observed local surface
+- **Authority boundary:** observational replay research only; no runtime-default, policy, readiness, paper/live, or promotion authority
+
 # COMMAND PACKET
 
 - **Mode:** `RESEARCH` — source: `branch:feature/ri-role-map-implementation-2026-03-24`

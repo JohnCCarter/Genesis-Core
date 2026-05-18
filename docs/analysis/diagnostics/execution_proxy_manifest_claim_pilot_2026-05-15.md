@@ -3,7 +3,7 @@
 > Current status note:
 >
 > - This note records the first manifest-backed claim-bearing pilot observed on `feature/editor-worker-orchestrator` at `ba6955a2` before the later branch split.
-> - It is now carried on `feature/evidence-closeout-pilot` as the active starting point for the evidence-closeout follow-up, not as runtime or promotion authority.
+> - It is now carried on `feature/evidence-closeout-pilot` as one historical manifest-backed pilot in the evidence-closeout chain, not as a branch-current selector, runtime authority, or promotion authority.
 
 ## Claim header
 

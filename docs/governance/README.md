@@ -55,6 +55,8 @@ Operativa dokument i `docs/governance/**` är **kompletterande**, inte överstyr
 - `runbooks/evidence_claim_adoption.md` — trigger-baserad användningsgräns för när claim-headern behövs och när scratch-noter fortfarande får vara lätta
 - `runbooks/trivial_fast_lane.md` — snabbspår för triviala ändringar
 
+För decision-influencing evidence notes som gör reproducerbarhets-, portabilitets-, proveniens- eller boundary-claims används claim-header-mallen tillsammans med adoption-runbooken för att göra claim-status och bäraryta tydligare och mer reviewbar. Dessa helper-ytor klargör claim-gränser och adoptionsläge; de är inte i sig en ny authority-källa eller precedence-regel.
+
 ### Retained historical/paused editor-worker references
 
 - `worker_governance_envelope.md` — retained referens för den pausade editor-worker-envelope-modellen; inte current default governance-workflow

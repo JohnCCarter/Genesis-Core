@@ -138,12 +138,10 @@ for i in range(len(df)):
 **Keep BOTH methods but use them CORRECTLY:**
 
 1. **Live Trading:** Use `extract_features()`
-
    - Call with `now_index = len(candles) - 1`
    - Gets features from last CLOSED bar
 
 2. **Backtesting:** Use `calculate_all_features_vectorized()`
-
    - Precompute ALL features at once
    - 27,734× faster
    - All bars are closed historical data
@@ -203,6 +201,7 @@ För att accelerera backtests och Optuna‑körningar finns två växlar:
 - CLI‑flagga i backtest: `--precompute-features`
 - Effekt: EMA50, swing points m.fl. förberäknas och cachas på disk (`cache/precomputed/*.npz`), vilket accelererar efterföljande körningar.
 - Semantik: Backtestläget förblir deterministiskt och använder stängda bars (ingen lookahead).
+- Current-state boundary för schema-bump enforcement runt denna on-disk precompute-cache är dokumenterad i `docs/decisions/governance/cache_schema_bump_enforcement_boundary_packet_2026-05-18.md`; noten beskriver befintlig versioneringsdisciplin och vad som ännu inte är repo-enforced, utan att införa någon ny runtime-regel här.
 
 ### Canonical policy (quality decisions)
 
@@ -270,7 +269,7 @@ Det betyder att v17-featurefilerna är bit-exakta mot runtime (ingen längre avv
 | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
 | Uppdatera hela v17-filen | `python scripts/precompute_features_v17.py --symbol tBTCUSD --timeframe 1h`                                                             |
 | Snabb sample (200 bar)   | `python scripts/precompute_features_v17.py --symbol tBTCUSD --timeframe 1h --candles-file tests/data/tBTCUSD_1h_sample.parquet --quiet` |
-| Paritetskontroll         | `python -m pytest tests/test_feature_parity.py tests/integration/test_precompute_vs_runtime.py`                                                     |
+| Paritetskontroll         | `python -m pytest tests/test_feature_parity.py tests/integration/test_precompute_vs_runtime.py`                                         |
 
 Alla ändringar ovan säkerställer att:
 

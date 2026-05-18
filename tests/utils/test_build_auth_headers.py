@@ -5,7 +5,12 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from scripts.build.build_auth_headers import _sanitize_for_logging, build_headers, main
+from scripts.build.build_auth_headers import (
+    SENSITIVE_KEY_FRAGMENTS,
+    _sanitize_for_logging,
+    build_headers,
+    main,
+)
 
 MOCK_API_TOKEN_A = "credential_alpha"
 MOCK_API_TOKEN_B = "credential_beta"
@@ -181,7 +186,14 @@ def test_build_headers_missing_credentials():
 
 
 def test_sanitize_flat_dict_masks_sensitive_keys():
-    """Sensitive keys in a flat dict are replaced with '***'."""
+    """Sensitive keys in a flat dict are replaced with '***'.
+
+    Keys are matched by fragment: any key whose lowercase form contains a
+    fragment from SENSITIVE_KEY_FRAGMENTS is redacted.
+    """
+    # "apikey" and "secret" are exact members of SENSITIVE_KEY_FRAGMENTS
+    assert "apikey" in SENSITIVE_KEY_FRAGMENTS
+    assert "secret" in SENSITIVE_KEY_FRAGMENTS
     data = {"apikey": "real_key", "secret": "real_secret", "safe_field": "visible"}
     result = _sanitize_for_logging(data)
     assert result["apikey"] == "***"
@@ -252,10 +264,18 @@ def test_sanitize_mixed_nested_structure():
 
 
 def test_sanitize_non_dict_scalar_passthrough():
-    """Scalar values (int, str, None) pass through unchanged."""
+    """Scalar values (int, str, None) pass through unchanged.
+
+    Only dict *keys* trigger redaction; standalone scalars that look like
+    secret values (e.g. "password123") are not masked because there is no
+    key context — the sanitizer only redacts by dict key name.
+    """
     assert _sanitize_for_logging(42) == 42
     assert _sanitize_for_logging("plain string") == "plain string"
     assert _sanitize_for_logging(None) is None
+    # Scalar that *contains* a sensitive fragment in its own text is NOT masked
+    assert _sanitize_for_logging("password123") == "password123"
+    assert _sanitize_for_logging("my_secret_value") == "my_secret_value"
 
 
 def test_sanitize_empty_structures():

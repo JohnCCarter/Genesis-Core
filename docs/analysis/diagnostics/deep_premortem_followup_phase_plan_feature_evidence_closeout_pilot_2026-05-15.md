@@ -203,7 +203,7 @@ If the user wants to continue from this plan, the next admissible phase should p
 - created one branch-current phase plan derived from the deep premortem
 - translated the deep premortem's recommended next checks into four bounded follow-up phases
 - kept the plan explicitly separate from the already-closed successor queue
-- refreshed the later progress note so the tracked next-candidate phase matches current branch state after Phase 2 and Phase 3 landed
+- retained this as a four-phase planning artifact while recording that, as of 2026-05-18, the clearest seams that had supported a possible Phase 4 follow-on were later consumed by separate closeout work, so the note no longer implies an active next microslice
 
 ## What did not change
 
@@ -216,6 +216,6 @@ If the user wants to continue from this plan, the next admissible phase should p
 
 The deep branch premortem does not call for another broad workshop queue. It calls for a short phased follow-up that prevents **precision loss after partial success**.
 
-That makes the next honest shape simple: re-anchor the control plane first, harden claim and portability wording second, contain the highest unresolved dependency root third, and only then revisit runtime-adjacent inheritance guards under explicit bounded reopen decisions.
+That makes the planning shape recorded here simple: re-anchor the control plane first, harden claim and portability wording second, contain the highest unresolved dependency root third, and only then revisit runtime-adjacent inheritance guards under explicit bounded decisions.
 
-On current branch state, the first three steps above are now recorded as landed. If any later reopen is still needed from this plan, the next candidate phase is therefore Phase 4 under a separate bounded decision.
+As of 2026-05-18, the first three steps above are recorded as landed, while the clearest seams that had supported a possible Phase 4 follow-on were later consumed by separate closeout work. This document therefore remains a retained four-phase planning artifact rather than an implied selector for an active next microslice; any future follow-on would require an explicit new packet.

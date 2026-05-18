@@ -26,6 +26,7 @@ At minimum, capture:
 - branch
 - authority level
 - claim status (`observed`, `inferred`, `unverified`)
+- checkout scope / portability label when reproducibility or portability meaning is in play
 - runtime base SHA
 - evidence commit SHA, or an explicit note that the current slice did not rerun the evidence
 - input carrier
@@ -46,6 +47,7 @@ When a note is likely to influence a later packet, review, carrier decision, or 
 - `Branch`
 - `Runtime base SHA`
 - `Evidence commit SHA` or explicit non-rerun wording
+- `Checkout scope / portability label` when the note makes reproducibility or portability claims
 - `Working-tree status`
 - `Input carrier`
 - `Data-source policy`
@@ -55,6 +57,31 @@ When a note is likely to influence a later packet, review, carrier decision, or 
 - `Does not authorize`
 
 `Config path` and `Config hash` remain required whenever the note depends on config-bearing meaning.
+
+## Quick scope reference for `observed` claims
+
+When `Claim status: observed` is doing reproducibility or portability work, do not leave the checkout scope implicit.
+
+These labels describe the portability boundary of the claim, not its strength, quality, or authority level.
+
+Use one of these labels explicitly when they fit:
+
+- **`same-local-checkout only`**
+	- observed on this exact working state only
+	- portability stops at this checkout/workstation surface
+	- pair it with `Working-tree status`, `Evidence commit SHA` or explicit non-rerun wording, and the exact `Input carrier`
+- **`fixture-level`**
+	- observed from one tracked fixture or other narrow commit-safe carrier only
+	- do not let this drift into broader replay or clean-checkout portability language
+	- pair it with the exact fixture/carrier path under `Input carrier`
+- **`historical-trace-level`**
+	- observed from one fixed retained historical trace, bundle, or frozen root
+	- portability remains tied to that retained carrier, not to a fresh full-chain rerun
+	- pair it with the exact retained carrier/root under `Input carrier`
+- **`full-chain clean-checkout-level`**
+	- use only when a clean checkout can regenerate the named claim-bearing chain from tracked inputs under the stated envelope
+
+If none of these labels fit because the note is concept-only, planning-only, or historical-reference-only, say that explicitly instead of implying a portability level.
 
 ## Copyable header
 
@@ -68,6 +95,7 @@ When a note is likely to influence a later packet, review, carrier decision, or 
 - **Status:** `observational / evidence summary / comparison / planning-only`
 - **Authority level:** `observational only / bounded research-evidence / historical reference / other`
 - **Claim status:** `observed / inferred / unverified`
+- **Checkout scope / portability label:**
 - **Objective:**
 - **Baseline reference(s):**
 - **Candidate / comparison surface:**

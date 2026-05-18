@@ -21,6 +21,21 @@ Use the claim header **when the note is likely to carry decision weight outside 
 
 Do **not** use it as a blanket requirement for every exploratory read.
 
+## Checkout-scope clarification for `observed` claims
+
+When a claim-bearing note uses `Claim status: observed` and that observation is likely to be reused as reproducibility or portability language, the note should also name checkout scope explicitly.
+
+These labels describe the portability boundary of the claim, not its strength, quality, or authority level.
+
+Use these labels when they fit:
+
+- **`same-local-checkout only`** — observed on this exact working state only; portability stops at this checkout/workstation surface
+- **`fixture-level`** — observed from one tracked fixture or other narrow commit-safe carrier only
+- **`historical-trace-level`** — observed from one retained historical trace, bundle, or frozen root only
+- **`full-chain clean-checkout-level`** — use only when a clean checkout can regenerate the named claim-bearing chain from tracked inputs under the stated envelope
+
+If none of those labels fit because the note is concept-only, planning-only, or historical-reference-only, say that explicitly instead of implying a portability level by tone.
+
 ## Use the claim header when any of these are true
 
 - the note claims a result is reproducible
@@ -128,6 +143,7 @@ When the note is likely to influence a later packet, review, carrier decision, r
 - `Branch`
 - `Runtime base SHA`
 - `Evidence commit SHA` or explicit non-rerun wording
+- `Checkout scope / portability label` when reproducibility or portability meaning is in play
 - `Working-tree status`
 - `Input carrier`
 - `Data-source policy`

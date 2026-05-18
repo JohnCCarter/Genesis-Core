@@ -6,6 +6,7 @@ import hashlib
 import hmac
 import json
 import os
+import re
 import sys
 
 from core.config.settings import get_settings
@@ -28,6 +29,10 @@ SENSITIVE_KEY_FRAGMENTS = {
     "auth",
     "cookie",
 }
+_SENSITIVE_KEY_PATTERNS = [
+    re.compile(rf"(?<![a-z0-9]){re.escape(fragment)}(?![a-z0-9])")
+    for fragment in SENSITIVE_KEY_FRAGMENTS
+]
 
 
 def _mask_sensitive_headers(headers: dict[str, str]) -> dict[str, str]:
@@ -66,7 +71,7 @@ def _sanitize_for_logging(value: object) -> object:
         sanitized: dict[object, object] = {}
         for key, item in value.items():
             key_str = str(key).lower()
-            if any(fragment in key_str for fragment in SENSITIVE_KEY_FRAGMENTS):
+            if any(pattern.search(key_str) for pattern in _SENSITIVE_KEY_PATTERNS):
                 sanitized[key] = "***"
             else:
                 sanitized[key] = _sanitize_for_logging(item)

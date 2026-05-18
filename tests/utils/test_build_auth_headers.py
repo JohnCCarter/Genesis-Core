@@ -194,7 +194,11 @@ def test_sanitize_flat_dict_masks_sensitive_keys():
     # "apikey" and "secret" are exact members of SENSITIVE_KEY_FRAGMENTS
     assert "apikey" in SENSITIVE_KEY_FRAGMENTS
     assert "secret" in SENSITIVE_KEY_FRAGMENTS
-    data = {"apikey": "real_key", "secret": "real_secret", "safe_field": "visible"}
+    data = {
+        "apikey": "real_key",  # pragma: allowlist secret
+        "secret": "real_secret",  # pragma: allowlist secret
+        "safe_field": "visible",
+    }
     result = _sanitize_for_logging(data)
     assert result["apikey"] == "***"
     assert result["secret"] == "***"
@@ -210,7 +214,7 @@ def test_sanitize_flat_dict_leaves_non_sensitive_keys_unchanged():
 
 def test_sanitize_nested_dict_masks_sensitive_keys_recursively():
     """Sensitive keys nested inside dicts are recursively masked."""
-    data = {"outer": {"inner_password": "s3cr3t", "public_info": "ok"}}
+    data = {"outer": {"inner_password": "s3cr3t", "public_info": "ok"}}  # pragma: allowlist secret
     result = _sanitize_for_logging(data)
     assert result["outer"]["inner_password"] == "***"
     assert result["outer"]["public_info"] == "ok"
@@ -228,7 +232,7 @@ def test_sanitize_list_of_dicts():
 
 def test_sanitize_tuple_of_dicts():
     """Dicts inside a tuple are sanitized recursively and result is a tuple."""
-    data = ({"password": "hunter2"}, {"safe": "yes"})
+    data = ({"password": "hunter2"}, {"safe": "yes"})  # pragma: allowlist secret
     result = _sanitize_for_logging(data)
     assert isinstance(result, tuple)
     assert result[0]["password"] == "***"
@@ -238,9 +242,9 @@ def test_sanitize_tuple_of_dicts():
 def test_sanitize_fragment_based_key_matching():
     """Keys containing sensitive fragments (not exact matches) are masked."""
     data = {
-        "bfx-apikey": "real_key",
+        "bfx-apikey": "real_key",  # pragma: allowlist secret
         "x-auth-token": "bearer_xyz",
-        "my_password_hash": "hashed",
+        "my_password_hash": "hashed",  # pragma: allowlist secret
         "normal_key": "value",
     }
     result = _sanitize_for_logging(data)
@@ -248,6 +252,21 @@ def test_sanitize_fragment_based_key_matching():
     assert result["x-auth-token"] == "***"
     assert result["my_password_hash"] == "***"
     assert result["normal_key"] == "value"
+
+
+def test_sanitize_does_not_overredact_embedded_substrings():
+    """Generic fragments should not redact unrelated words like 'author'."""
+    data = {
+        "author": "visible",
+        "authored_at": "2026-05-18",
+        "tokenized": "visible",
+        "x-auth-token": "masked",  # pragma: allowlist secret
+    }
+    result = _sanitize_for_logging(data)
+    assert result["author"] == "visible"
+    assert result["authored_at"] == "2026-05-18"
+    assert result["tokenized"] == "visible"
+    assert result["x-auth-token"] == "***"
 
 
 def test_sanitize_mixed_nested_structure():

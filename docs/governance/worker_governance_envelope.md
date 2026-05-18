@@ -2,7 +2,12 @@
 
 ## Syfte
 
-Det här dokumentet definierar den worker-facing operativa specen för parallella editor workers och deras exekveringsytor (normalt delad lokal checkout, ibland separat branch/worktree).
+> Status note (2026-05-18): This document is retained as a historical/paused reference for the earlier editor-worker orchestration model. It is not the current default governance workflow on `feature/evidence-closeout-pilot`, and it does not by itself authorize parallel editor-worker activation.
+>
+> - Unless this model is explicitly reopened, the requirements below are preserved in normative form for traceability only.
+> - The text remains a retained target model, not standing live instruction.
+
+Det här dokumentet beskriver den worker-facing operativa spec som togs fram för parallella editor workers och deras exekveringsytor (normalt delad lokal checkout, ibland separat branch/worktree).
 
 Det är här den kompilerade governance-envelope:n beskrivs: alltså det kontrakt som control plane ger till en worker så att workern kan arbeta säkert utan att själv behöva tolka hela repo-governance-stacken.
 
@@ -14,7 +19,7 @@ Auktoritativa källor förblir:
 - `.github/copilot-instructions.md`
 - `AGENTS.md`
 
-`workforce_roadmap.md` beskriver systemet på hög nivå. Det här dokumentet beskriver vad en worker faktiskt ska få och följa.
+`workforce_roadmap.md` beskriver systemet på hög nivå. Det här dokumentet beskriver vad en worker faktiskt skulle få och följa inom den pausade modellen.
 
 ---
 
@@ -38,9 +43,9 @@ Om den behöver det har control plane inte kompilerat governance tillräckligt l
 
 ---
 
-## Default worker model
+## Retained worker model
 
-Den operativa defaultmodellen för Genesis editor workers är:
+Den operativa målmodell som dokumenterades för Genesis editor workers var:
 
 - en editor worker = en **autonomous slice worker**
 - samma worker-typ ska normalt kunna användas på många olika bounded slices
@@ -107,7 +112,7 @@ Den får däremot inte själv ändra dem.
 
 ## Branch-, checkout- och dispatch-disciplin
 
-Varje worker ska utgå från:
+I den pausade modellen skulle varje worker utgå från:
 
 - samma integrationsgren eller samma auktoriserade basgren
 - samma `base_sha` för den aktuella dispatch-vågen
@@ -116,7 +121,7 @@ Varje worker ska utgå från:
 - egen dispatch-instans
 - eget bounded ownership-scope
 
-Editor-worker execution ska därför förstås som:
+I den pausade modellen skulle editor-worker execution därför förstås som:
 
 - en worker = en editor-attached exekveringsenhet på den av control plane valda exekveringsytan
 - flera workers får dela samma checkout om deras slices är explicit bounded och non-overlapping

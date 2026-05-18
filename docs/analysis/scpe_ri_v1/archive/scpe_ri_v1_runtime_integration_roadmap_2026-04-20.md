@@ -4,11 +4,24 @@ Date: 2026-04-20
 Branch: `feature/ri-role-map-implementation-2026-03-24`
 Status: `historical / future-only / non-executable / no authorization`
 
+> Archival note (2026-05-18):
+>
+> - This document was moved into this local `archive/` subfolder for taxonomy clarity.
+> - Historical packet content, authority framing, dates, and time-stamped path references remain unchanged.
+> - Only present-day navigation references may be updated after this relocation.
+
 > Current status note:
 >
 > - This roadmap is not an active lane on `feature/next-slice-2026-05-05` and should not be treated as the next live path.
 > - Preserve it as a historical future-only governance path for SCPE RI follow-up after the 2026-04-20 closeout.
 > - `GENESIS_WORKING_CONTRACT.md` already treats the SCPE replay surfaces as historical reference context only.
+
+> Later-status note (2026-05-18):
+>
+> - This roadmap is retained as a historical record of the 2026-04-20 planning assessment.
+> - References below to future phases, next admissible lanes, or later candidate lanes reflect branch understanding at that time only.
+> - For current-status interpretation on `feature/evidence-closeout-pilot`, later branch-closeout boundaries are recorded in `docs/decisions/scpe_ri_v1/scpe_ri_v1_paper_shadow_live_paper_isolation_boundary_packet_2026-05-15.md` and `docs/decisions/scpe_ri_v1/scpe_ri_v1_shadow_backtest_execution_summary_current_state_portability_boundary_packet_2026-05-18.md`.
+> - The original planning constraints and boundary logic below remain unchanged.
 
 This document is a planning artifact in `RESEARCH` and grants no implementation, runtime, readiness, cutover, launch, deployment, or promotion authority. It must not be used as approval to begin code, config, test, runtime, paper-trading, or operational changes. Every future phase below requires a separate commit contract, separate command packet, Opus pre-code review, and its own verification.
 
@@ -288,13 +301,13 @@ Stop if:
 
 - the roadmap starts sounding like a launch checklist
 
-## Bottom line
+## Bottom line (historical planning stance as of 2026-04-20)
 
 The bounded SCPE RI research lane is closed, but it does not hand over implementation authority.
 
-The correct next governance shape is therefore not “start integrating RI now.”
+At the time, the correct next governance shape was therefore not “start integrating RI now.”
 
-It is a fail-closed sequencing path:
+At the time, it was a fail-closed sequencing path:
 
 1. preserve the closeout boundary
 2. inventory seams before selecting any implementation-adjacent lane

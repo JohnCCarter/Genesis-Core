@@ -4,6 +4,11 @@ Date: 2026-05-15
 Branch: `feature/evidence-closeout-pilot`
 Status: `initial queue closed / successor phase closed / docs-only / non-authorizing`
 
+> Queue sync note (2026-05-18): This file remains a record of the 2026-05-15 queue state and its
+> later closeout annotations. Entries below may be annotated as later consumed or narrowed by
+> cited follow-up work, but this list is not the current execution queue or current priority order
+> on branch state after the later 2026-05-18 closeouts and broader historical refresh.
+
 This document records the initial post-premortem execution queue after the completed premortem closeout and evidence-manifest boundary work. The initial six-slice queue below is now historical, and the successor phase reopened from the branch premortem reading is now also historical and closed later in this document. This remains a sequencing artifact in `RESEARCH`; it grants no runtime, config-authority, paper/live, promotion, or champion authority by itself.
 
 ## Mode and lane
@@ -220,6 +225,22 @@ These labels are interpretation discipline only. They do **not** authorize stron
 - **Why it came next:** stale “next step” text remained a real steering hazard once multiple packets and diagnostics notes existed in parallel
 - **Artifact:** `docs/decisions/governance/queue_status_freshness_guard_packet_2026-05-15.md`
 - **Outcome target:** define the minimal same-slice freshness bundle for queue truth, touched artifact framing, and touched next-step prose so stale sequencing text cannot silently take control
+
+## Later explicit reopen after successor closure
+
+### Slice 13 — edge-origin manifest-pilot portability boundary
+
+- **Status:** `selected and completed in this slice`
+- **Why it came next:** after the later SCPE, router-replay, and volatility closeouts, the smallest remaining dependency/overclaim seam on this branch was the current manifest-backed `edge_origin_isolation` claim surface above its already-separated future fixture-pair carrier decision
+- **Artifact:** `docs/decisions/governance/edge_origin_isolation_manifest_pilot_portability_boundary_packet_2026-05-18.md`
+- **Outcome target:** pin the current manifest-pilot `edge_origin_isolation` surface to `same-local-checkout only`, keep stronger portability wording out of bounds, and preserve the future tracked-fixture carrier path as separately bounded
+
+### Slice 14 — SCPE shadow-backtest execution-summary portability boundary
+
+- **Status:** `selected and completed in this slice`
+- **Why it came next:** after the edge-origin closeout, the smallest remaining runtime-adjacent inheritance seam was the historical 2026-04-21 SCPE shadow-backtest execution-summary surface, which already denied runtime/paper/readiness authority but still lacked a current-state portability label
+- **Artifact:** `docs/decisions/scpe_ri_v1/scpe_ri_v1_shadow_backtest_execution_summary_current_state_portability_boundary_packet_2026-05-18.md`
+- **Outcome target:** classify only the 2026-04-21 execution-summary surface as `same-local-checkout only`, keep the historical summary untouched, and leave the separate paper-shadow/live-paper isolation packet separate and unchanged
 
 ## Successor selection rule
 

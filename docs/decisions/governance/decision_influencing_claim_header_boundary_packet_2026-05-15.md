@@ -15,7 +15,7 @@ This document records the compact mandatory claim-header minimum for decision-in
 - **Lane:** `Research-evidence` — why: this packet narrows the minimum provenance envelope for decision-influencing evidence without turning all research notes into packet-grade process
 - **Objective:** tighten the existing claim-header template and adoption runbook so decision-influencing evidence must name a compact minimum envelope, especially `Input carrier`
 - **Base SHA:** `9f5e08098ba2c4035d4b1e101034e20d016b75b3`
-- **Related artifacts:** `docs/analysis/diagnostics/next_phase_verkstad_queue_2026-05-15.md`, `docs/analysis/diagnostics/genesis_core_premortem_feature_evidence_closeout_pilot_2026-05-15.md` (`local-only / untracked / historical reference only / not repository-tracked authority`), `docs/governance/templates/evidence_claim_header.md`, `docs/governance/runbooks/evidence_claim_adoption.md`, `docs/analysis/diagnostics/decision_influencing_replay_smoke_candidate_selection_2026-05-15.md`
+- **Related artifacts:** `docs/analysis/diagnostics/next_phase_verkstad_queue_2026-05-15.md`, `docs/analysis/diagnostics/genesis_core_premortem_feature_evidence_closeout_pilot_2026-05-15.md` (`repository-tracked historical diagnostics note / historical risk framing only / not current queue, priority, or reopen authority`), `docs/governance/templates/evidence_claim_header.md`, `docs/governance/runbooks/evidence_claim_adoption.md`, `docs/analysis/diagnostics/decision_influencing_replay_smoke_candidate_selection_2026-05-15.md`
 
 ### Scope
 

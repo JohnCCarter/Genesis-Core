@@ -4,10 +4,23 @@ Date: 2026-04-21
 Branch: `feature/ri-role-map-implementation-2026-03-24`
 Status: `lane-closed / next-lane-defined / docs-only / no code authorization`
 
+> Archival note (2026-05-18):
+>
+> - This document was moved into this local `archive/` subfolder for taxonomy clarity.
+> - Historical packet content, authority framing, dates, and time-stamped path references remain unchanged.
+> - Only present-day navigation references may be updated after this relocation.
+
 This document is a governance closeout artifact in `RESEARCH`.
 It records that the separately governed SCPE RI runtime-observability lane is now closed enough to freeze its carry-forward constraints and define the exact next admissible later lane.
 It does **not** itself authorize code changes, config changes, test changes, runtime deployment, paper execution, live-paper execution, readiness, cutover, or promotion.
 The later paper-shadow lane named here remains `candidate-only / precode-only`; this step grants no implementation or operational authority for that later lane.
+
+> Later-status note (2026-05-18):
+>
+> - This packet is retained as a historical record of the 2026-04-21 runtime-observability closeout transition.
+> - References below to the exact next admissible later lane or paper-shadow candidate lane reflect branch understanding at that time only.
+> - For current-status interpretation on `feature/evidence-closeout-pilot`, the paper/live seam is bounded by `docs/decisions/scpe_ri_v1/scpe_ri_v1_paper_shadow_live_paper_isolation_boundary_packet_2026-05-15.md`.
+> - The original closeout observations, carry-forward constraints, and non-authorization logic below remain unchanged.
 
 ## COMMAND PACKET
 
@@ -61,9 +74,9 @@ The later paper-shadow lane named here remains `candidate-only / precode-only`; 
 
 This packet is downstream of:
 
-- `docs/analysis/scpe_ri_v1/scpe_ri_v1_runtime_integration_roadmap_2026-04-20.md`
-- `docs/analysis/scpe_ri_v1/scpe_ri_v1_runtime_integration_seam_inventory_2026-04-20.md`
-- `docs/decisions/scpe_ri_v1/scpe_ri_v1_runtime_observability_transition_packet_2026-04-21.md`
+- `docs/analysis/scpe_ri_v1/archive/scpe_ri_v1_runtime_integration_roadmap_2026-04-20.md`
+- `docs/analysis/scpe_ri_v1/archive/scpe_ri_v1_runtime_integration_seam_inventory_2026-04-20.md`
+- `docs/decisions/scpe_ri_v1/archive/scpe_ri_v1_runtime_observability_transition_packet_2026-04-21.md`
 - `docs/decisions/scpe_ri_v1/scpe_ri_v1_runtime_observability_slice1_precode_packet_2026-04-21.md`
 - `docs/analysis/scpe_ri_v1/scpe_ri_v1_runtime_observability_slice1_implementation_report_2026-04-21.md`
 - `docs/analysis/scpe_ri_v1/scpe_ri_v1_runtime_observability_smoke_evidence_2026-04-21.md`
@@ -104,9 +117,9 @@ Therefore this closeout may define the next lane, but it cannot authorize it dir
 
 ### Decision
 
-- **The bounded runtime-observability lane is closed enough to open exactly one later paper-shadow candidate lane**
+- **As of 2026-04-21, the bounded runtime-observability lane was assessed as closed enough to open exactly one later paper-shadow candidate lane**
 
-### Exact next admissible lane
+### Exact next admissible lane (historical 2026-04-21 closeout assessment)
 
 The next admissible lane is **not**:
 
@@ -116,7 +129,7 @@ The next admissible lane is **not**:
 - readiness, cutover, launch, deployment, or promotion work
 - any behavior-changing lane
 
-The next admissible lane is only:
+The next admissible lane was assessed to be only:
 
 - **one bounded, default-OFF, dry-run-only, observational SCPE RI paper-shadow bridge slice on `scripts/paper_trading_runner.py` that may request the already-existing `meta["observability"]["scpe_ri_v1"]` payload and surface it additively in runner-side observability without changing order authority**
 
@@ -164,12 +177,12 @@ This packet does **not** authorize:
 - runtime default change
 - readiness, cutover, launch, deployment, or promotion
 
-Its sole job is to close the completed runtime-observability lane and define the exact next admissible later lane.
+Its sole job is to preserve the historical closeout transition and define the exact next admissible later lane as assessed on 2026-04-21.
 
-## Bottom line
+## Bottom line (historical closeout transition outcome as of 2026-04-21)
 
-The runtime-observability lane is now closed enough to move the runtime/integration roadmap forward by **one** step only.
+The runtime-observability lane was then closed enough to move the runtime/integration roadmap forward by **one** step only.
 
-That step is a separate pre-code implementation packet for one bounded, dry-run-only, default-OFF, observational SCPE RI paper-shadow bridge slice on the paper runner.
+At the time, that step was a separate pre-code implementation packet for one bounded, dry-run-only, default-OFF, observational SCPE RI paper-shadow bridge slice on the paper runner.
 
 Nothing broader is opened here.

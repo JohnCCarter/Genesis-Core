@@ -1,12 +1,14 @@
 # Runtime config live-update matrix
 
 Date: 2026-05-15
-Branch: `feature/editor-worker-orchestrator`
-Status: `current-state reference / docs-only / no behavior change / no new authority`
+Originating branch: `feature/editor-worker-orchestrator`
+Status: `complementary snapshot reference / docs-only / no behavior change / no new authority`
+
+> 2026-05-18 note (`feature/evidence-closeout-pilot`): This document is retained as a complementary snapshot from the earlier `feature/editor-worker-orchestrator` documentation context. It is not a branch-current selector, a fresh approval, or authority to expand runtime live-write semantics; the matrix below is preserved unchanged for reference only.
 
 > Current status note:
 >
-> - This note documents the **current observed boundary** between `RuntimeConfig`, `/config/runtime/validate`, and `/config/runtime/propose`.
+> - This note records the observed boundary, as documented in the earlier `feature/editor-worker-orchestrator` context, between `RuntimeConfig`, `/config/runtime/validate`, and `/config/runtime/propose`.
 > - It does **not** change the whitelist, API behavior, or runtime/config-authority semantics.
 > - It should be read as a reference note that reduces confusion around live-updatability, not as approval for expanding the live-write surface.
 

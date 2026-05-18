@@ -5,17 +5,22 @@ Operational runbook for starting and receiving one bounded editor-worker slice.
 This runbook is subordinate to the repository's higher-order governance documents.
 It does not change mode resolution, freeze rules, or shared-truth authority.
 
-This is a retained target-model surface for explicitly activated slice workers.
+> Status note (2026-05-18): This runbook is retained as a historical/paused reference for the earlier editor-worker orchestration model. It does not describe the current default governance workflow on `feature/evidence-closeout-pilot`, and it should not be read as standing instruction to open or coordinate multiple editor workers.
+>
+> - The operational guidance below is preserved for traceability and possible future reconsideration.
+> - Unless that model is explicitly reopened, this document remains complementary reference material only.
+
+This is a retained historical target-model surface for explicitly activated slice workers.
 It does not create standing worker identities or implicit worker-to-worker chaining authority.
-This terminology refresh updates the retained worker model in live governance docs only.
+This terminology refresh is preserved for traceability rather than presented as a live default in governance docs today.
 It does not by itself change runtime capabilities, automation guarantees, or authority boundaries.
 
 ## Purpose
 
-Use this runbook when control / integration lane wants to dispatch one real editor worker
+Use this runbook only if the paused editor-worker model is explicitly reopened for one real editor worker
 on one bounded slice.
 
-The default Genesis model is:
+Within that retained model, the intended worker shape was:
 
 - one editor worker = one **autonomous slice worker**
 - most workers share the same ground role
@@ -77,14 +82,14 @@ Local-only, `gitignored`, unstaged, or operator-mounted files outside declared s
 
 ## Practical execution-surface setup
 
-For the current editor-worker model, the practical default topology is:
+For the retained editor-worker model captured here, the practical default topology was:
 
 - `master` = stable shared baseline
 - `feature/editor-worker-orchestrator` = long-lived shared local editor branch for this wave
-- default local editor setup = multiple bounded workers share the active `Genesis-Core` checkout on `feature/editor-worker-orchestrator`
+- retained local editor setup = multiple bounded workers share the active `Genesis-Core` checkout on `feature/editor-worker-orchestrator`
 - dedicated branch/worktree isolation is optional and used only when the slice explicitly needs isolation, destructive git work, or PR preparation
 
-Operationally:
+Operationally, that meant:
 
 - control / integration lane may stay on `feature/editor-worker-orchestrator`
 - most local worker slices may start in the shared active checkout
@@ -100,9 +105,9 @@ When in doubt, use the smaller honest rule:
 - repo-write in the shared checkout is admissible only when scope, ownership, and touched files are explicitly bounded and non-overlapping
 - if overlap, conflict-risk, destructive git work, or PR preparation appears, move the slice to a dedicated branch/worktree first
 
-## Default startup bundle for new editor chats
+## Retained startup bundle for new editor chats
 
-For the current simplified model, new editor chats should normally all start from the
+For the retained simplified model, new editor chats would normally all start from the
 same generic worker surface:
 
 - `.github/agents/editor-slice-worker.agent.md`
@@ -129,7 +134,7 @@ Important operator rule:
 - if multiple local workers share the same checkout, their scopes, ownership, and repo-write permissions must stay explicit and non-overlapping
 - if a slice needs overlapping repo-write, destructive git/index work, or PR preparation, stop the shared-checkout pass and move that slice onto its own branch target and preferably its own isolated editor-attached worktree/checkout before continuing
 
-One concrete read-only specimen for the current startup setup lives at:
+One concrete read-only specimen for that paused startup setup lives at:
 
 - `docs/contracts/editor_workers/editor_worker_startup_test_dispatch_2026-05-12.md`
 
@@ -274,9 +279,9 @@ Escalate rather than improvising if:
 - the result needs shared-truth write or larger synthesis
 - a new slice is needed to make the result meaningful
 
-## Practical default
+## Retained practical default
 
-A good steady-state editor-worker batch should usually look like this:
+In that paused model, a good steady-state editor-worker batch would usually look like this:
 
 - same ground-role worker type
 - shared checkout by default or explicit isolated surface when needed

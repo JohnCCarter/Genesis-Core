@@ -1,5 +1,14 @@
 # Genesis-Core deep premortem for `feature/evidence-closeout-pilot`
 
+> Historical status note (2026-05-18): This note preserves the 2026-05-15 deep premortem as
+> written. Later tracked follow-up work on `docs/analysis/diagnostics/deep_premortem_followup_phase_plan_feature_evidence_closeout_pilot_2026-05-15.md`,
+> `docs/decisions/governance/scpe_phasec_mixed_replay_non_portability_boundary_packet_2026-05-18.md`,
+> `docs/decisions/governance/edge_origin_isolation_manifest_pilot_portability_boundary_packet_2026-05-18.md`,
+> `docs/decisions/scpe_ri_v1/scpe_ri_v1_shadow_backtest_execution_summary_current_state_portability_boundary_packet_2026-05-18.md`,
+> and `docs/analysis/diagnostics/next_phase_verkstad_queue_2026-05-15.md` consumed or narrowed
+> several then-current checks. The recommended-check language below is therefore historical
+> branch-risk framing, not current branch selection authority.
+
 ## Claim header
 
 - **Date:** `2026-05-15`

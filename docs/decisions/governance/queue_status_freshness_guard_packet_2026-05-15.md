@@ -15,7 +15,7 @@ This document records the minimal same-slice freshness rule for queue status, hi
 - **Lane:** `Research-evidence` — why: the packet reduces stale sequencing drift in the current docs/control-plane surfaces without widening into a new status framework
 - **Objective:** define the smallest same-slice update rule that prevents stale queue status or stale next-step prose from silently taking control
 - **Base SHA:** `ad21fa4ffe10ce1a61c16c797ecb720ae3391017`
-- **Related artifacts:** `docs/analysis/diagnostics/next_phase_verkstad_queue_2026-05-15.md`, `docs/analysis/diagnostics/genesis_core_premortem_feature_evidence_closeout_pilot_2026-05-15.md` (`local-only / untracked / historical reference only / not repository-tracked authority`), `GENESIS_WORKING_CONTRACT.md`, `docs/governance/active_lane_index.md`
+- **Related artifacts:** `docs/analysis/diagnostics/next_phase_verkstad_queue_2026-05-15.md`, `docs/analysis/diagnostics/genesis_core_premortem_feature_evidence_closeout_pilot_2026-05-15.md` (`repository-tracked historical diagnostics note / historical risk framing only / not current queue, priority, or reopen authority`), `GENESIS_WORKING_CONTRACT.md`, `docs/governance/active_lane_index.md`
 
 ### Scope
 

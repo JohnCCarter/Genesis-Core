@@ -93,7 +93,7 @@ Fail-closed interpretation:
 
 This packet is downstream of the following tracked documents:
 
-- `docs/decisions/scpe_ri_v1/scpe_ri_v1_shadow_backtest_packet_boundary_2026-04-20.md`
+- `docs/decisions/scpe_ri_v1/archive/scpe_ri_v1_shadow_backtest_packet_boundary_2026-04-20.md`
 - `docs/decisions/scpe_ri_v1/scpe_ri_v1_shadow_backtest_bridge_slice1_precode_packet_2026-04-21.md`
 - `docs/decisions/scpe_ri_v1/scpe_ri_v1_shadow_backtest_bridge_slice1_setup_only_packet_2026-04-21.md`
 

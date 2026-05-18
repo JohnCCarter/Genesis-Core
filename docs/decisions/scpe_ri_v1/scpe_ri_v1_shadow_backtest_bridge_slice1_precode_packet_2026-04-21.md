@@ -58,9 +58,9 @@ It does **not**:
 This packet is downstream of the following tracked artifacts:
 
 - `docs/decisions/scpe_ri_v1/scpe_ri_v1_research_closeout_report_2026-04-20.md`
-- `docs/analysis/scpe_ri_v1/scpe_ri_v1_runtime_integration_roadmap_2026-04-20.md`
-- `docs/analysis/scpe_ri_v1/scpe_ri_v1_runtime_integration_seam_inventory_2026-04-20.md`
-- `docs/decisions/scpe_ri_v1/scpe_ri_v1_shadow_backtest_packet_boundary_2026-04-20.md`
+- `docs/analysis/scpe_ri_v1/archive/scpe_ri_v1_runtime_integration_roadmap_2026-04-20.md`
+- `docs/analysis/scpe_ri_v1/archive/scpe_ri_v1_runtime_integration_seam_inventory_2026-04-20.md`
+- `docs/decisions/scpe_ri_v1/archive/scpe_ri_v1_shadow_backtest_packet_boundary_2026-04-20.md`
 - `docs/analysis/regime_intelligence/advisory_environment_fit/ri_advisory_environment_fit_phase3_direct_baseline_admissibility_2026-04-16.md`
 - `config/strategy/candidates/3h/tBTCUSD_3h_slice8_runtime_bridge_20260326.json`
 

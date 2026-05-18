@@ -17,8 +17,10 @@ Status: `docs-only / planning-only / non-executable / no runtime authority`
 > - Phase 1 is now effectively complete on this branch.
 > - Phase 2 claim-envelope and portability label hardening is now införd on this branch via `docs/analysis/regime_intelligence/router_replay/ri_router_replay_defensive_transition_backtest_execution_summary_2026-04-23.md`, `docs/analysis/regime_intelligence/router_replay/ri_router_replay_concept_case_2026-04-23.md`, `docs/governance/templates/evidence_claim_header.md`, and `docs/governance/runbooks/evidence_claim_adoption.md`.
 > - Phase 3 highest unresolved dependency-root containment is now införd on this branch via `docs/decisions/governance/scpe_phasec_mixed_replay_non_portability_boundary_packet_2026-05-18.md`.
-> - If a later reopen is still needed from this plan, the next candidate phase is **Phase 4 — Runtime-adjacent inheritance guards**.
-> - Any such later Phase 4 reopen remains separate, bounded, and non-authorizing.
+> - On 2026-05-15 branch state, the next candidate phase was **Phase 4 — Runtime-adjacent inheritance guards**.
+> - Later 2026-05-18 closeout work consumed the clearest execution-summary portability seams in that phase via `docs/decisions/governance/current_atr_900_env_profile_same_local_checkout_boundary_packet_2026-05-18.md`, `docs/decisions/governance/edge_origin_isolation_manifest_pilot_portability_boundary_packet_2026-05-18.md`, and `docs/decisions/scpe_ri_v1/scpe_ri_v1_shadow_backtest_execution_summary_current_state_portability_boundary_packet_2026-05-18.md`.
+> - Any further reopen from this plan is therefore no longer one branch-current microslice by implication; it is either a broader historical refresh of stale status surfaces or a separately chosen new lane/question.
+> - Any such later reopen remains separate, bounded, and non-authorizing.
 
 ## COMMAND PACKET (planning-only)
 
@@ -201,7 +203,7 @@ If the user wants to continue from this plan, the next admissible phase should p
 - created one branch-current phase plan derived from the deep premortem
 - translated the deep premortem's recommended next checks into four bounded follow-up phases
 - kept the plan explicitly separate from the already-closed successor queue
-- refreshed the later progress note so the tracked next-candidate phase matches current branch state after Phase 2 and Phase 3 landed
+- retained this as a four-phase planning artifact while recording that, as of 2026-05-18, the clearest seams that had supported a possible Phase 4 follow-on were later consumed by separate closeout work, so the note no longer implies an active next microslice
 
 ## What did not change
 
@@ -214,6 +216,6 @@ If the user wants to continue from this plan, the next admissible phase should p
 
 The deep branch premortem does not call for another broad workshop queue. It calls for a short phased follow-up that prevents **precision loss after partial success**.
 
-That makes the next honest shape simple: re-anchor the control plane first, harden claim and portability wording second, contain the highest unresolved dependency root third, and only then revisit runtime-adjacent inheritance guards under explicit bounded reopen decisions.
+That makes the planning shape recorded here simple: re-anchor the control plane first, harden claim and portability wording second, contain the highest unresolved dependency root third, and only then revisit runtime-adjacent inheritance guards under explicit bounded decisions.
 
-On current branch state, the first three steps above are now recorded as landed. If any later reopen is still needed from this plan, the next candidate phase is therefore Phase 4 under a separate bounded decision.
+As of 2026-05-18, the first three steps above are recorded as landed, while the clearest seams that had supported a possible Phase 4 follow-on were later consumed by separate closeout work. This document therefore remains a retained four-phase planning artifact rather than an implied selector for an active next microslice; any future follow-on would require an explicit new packet.

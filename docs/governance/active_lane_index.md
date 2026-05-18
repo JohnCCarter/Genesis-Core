@@ -2,13 +2,19 @@
 
 Date: 2026-05-15
 Branch: `feature/editor-worker-orchestrator`
-Status: `current-state reference index / complementary / no new authority`
+Status: `historical branch-context pointer / complementary / no new authority`
 
 > Use this page as a short pointer only.
 >
 > - `GENESIS_WORKING_CONTRACT.md` remains the current drift anchor.
 > - The cited packets, synthesis notes, and closeouts remain the actual lane anchors.
 > - This index is meant to reduce reread overhead and evidence-to-authority drift, not to replace the underlying documents.
+>
+> Later-status note (2026-05-18):
+>
+> - On `feature/evidence-closeout-pilot`, this document is retained as a complementary historical pointer to the earlier `feature/editor-worker-orchestrator` control-plane context.
+> - The branch, mode, and lane anchors below therefore reflect that earlier context and should not be read as the branch-current selector for the present docs-closeout work.
+> - Any current branch interpretation must still be resolved from the current branch state, touched surfaces, and higher-order anchors rather than inferred from this document alone.
 
 ## What this file does not do
 
@@ -57,7 +63,7 @@ Key parked/closed references:
 
 - `docs/decisions/regime_intelligence/policy_router/ri_policy_router_aged_weak_active_carrier_truth_parked_handoff_2026-04-27.md`
 - `docs/analysis/regime_intelligence/policy_router/ri_policy_router_insufficient_evidence_translation_parking_synthesis_2026-05-04.md`
-- `docs/analysis/scpe_ri_v1/scpe_ri_v1_runtime_integration_roadmap_2026-04-20.md`
+- `docs/analysis/scpe_ri_v1/archive/scpe_ri_v1_runtime_integration_roadmap_2026-04-20.md`
 
 ## Not active by default
 

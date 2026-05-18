@@ -4,7 +4,20 @@ Date: 2026-04-20
 Branch: `feature/ri-role-map-implementation-2026-03-24`
 Status: `planning-only / inventory-only / no authorization`
 
+> Archival note (2026-05-18):
+>
+> - This document was moved into this local `archive/` subfolder for taxonomy clarity.
+> - Historical packet content, authority framing, dates, and time-stamped path references remain unchanged.
+> - Only present-day navigation references may be updated after this relocation.
+
 This document is a planning artifact in `RESEARCH` and grants no implementation, runtime, readiness, cutover, launch, deployment, paper-trading, or promotion authority. It must not be used as approval to begin code, config, test, or operational changes. Any future lane identified here requires its own commit contract, its own command packet, explicit Opus review where required, and separate verification.
+
+> Later-status note (2026-05-18):
+>
+> - This seam inventory is retained as a historical record of the 2026-04-20 seam mapping.
+> - References below to the next admissible lane, future lane sequencing, or later candidate seams reflect branch understanding at that time only.
+> - For current-status interpretation on `feature/evidence-closeout-pilot`, later branch-closeout boundaries are recorded in `docs/decisions/scpe_ri_v1/scpe_ri_v1_paper_shadow_live_paper_isolation_boundary_packet_2026-05-15.md` and `docs/decisions/scpe_ri_v1/scpe_ri_v1_shadow_backtest_execution_summary_current_state_portability_boundary_packet_2026-05-18.md`.
+> - The seam descriptions, authority boundaries, and inventory logic below remain unchanged.
 
 ## Future packet scaffold (planning-only, non-executable placeholder)
 
@@ -54,7 +67,7 @@ It does **not**:
 This note is downstream of:
 
 - `docs/decisions/scpe_ri_v1/scpe_ri_v1_research_closeout_report_2026-04-20.md`
-- `docs/analysis/scpe_ri_v1/scpe_ri_v1_runtime_integration_roadmap_2026-04-20.md`
+- `docs/analysis/scpe_ri_v1/archive/scpe_ri_v1_runtime_integration_roadmap_2026-04-20.md`
 
 Those documents already fixed the following boundary:
 
@@ -339,9 +352,9 @@ Least compatible with an early lane:
 - paper-runner order-path adjacency
 - anything that reads like cutover, readiness, or promotion
 
-## Recommended sequencing interpretation
+## Recommended sequencing interpretation (historical 2026-04-20 assessment)
 
-This inventory supports the following fail-closed interpretation of the roadmap:
+This inventory supported the following fail-closed interpretation of the roadmap at the time:
 
 1. any future implementation-adjacent work should begin with a separate packeted assessment of whether a **shadow-only backtest lane** is admissible
 2. a **runtime-observability lane** should remain later and separately justified
@@ -363,7 +376,7 @@ A future packet built from this inventory should stop immediately if it would re
 - paper/live operational semantics without a dedicated operational lane
 - any wording that claims readiness, cutover, or promotion
 
-## Bottom line
+## Bottom line (historical seam-ranking snapshot as of 2026-04-20)
 
 The repository does expose real seams for future SCPE RI integration work, but they are not equal in governance distance.
 
@@ -372,7 +385,7 @@ The repository does expose real seams for future SCPE RI integration work, but t
 - the **runtime config-authority seam** is primarily a boundary to avoid early
 - the **paper-runner seam** is visible but operationally too close to execution for an early lane
 
-So the correct next move after this inventory is still fail-closed:
+At the time, the correct next move after this inventory was still fail-closed:
 
 - if a future implementation-adjacent step is proposed at all, the smallest currently visible seam to evaluate first is the backtest-shadow seam, and that evaluation would still require a separate packet, separate approval, and separate verification.
 

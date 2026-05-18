@@ -36,6 +36,7 @@ from core.optimizer.runner_optuna_orchestration import (
     verify_or_set_optuna_study_score_version_impl,
     verify_or_set_optuna_study_signature_impl,
 )
+from core.optimizer.runner_validation import run_validation_stage_impl
 from core.optimizer.scoring import MetricThresholds, score_backtest
 from core.utils.diffing import summarize_metrics_diff
 from core.utils.diffing.optuna_guard import estimate_zero_trade
@@ -1467,103 +1468,38 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
     except (OSError, json.JSONDecodeError):
         run_meta = {}
 
+    def _write_serialized_run_meta(path: Path, meta_payload: dict[str, Any]) -> None:
+        _atomic_write_text(path, _json_dumps(_serialize_meta(meta_payload)))
+
     # Optional two-stage flow: explore on the primary window, then validate top-N candidates
     # on a (typically longer/stricter) validation window before champion promotion.
     validation_cfg = runs_cfg.get("validation")
-    validation_results: list[dict[str, Any]] | None = None
-    if isinstance(validation_cfg, dict) and _as_bool(validation_cfg.get("enabled", True)):
-        try:
-            top_n_raw = validation_cfg.get("top_n", 0)
-            top_n = int(top_n_raw) if top_n_raw is not None else 0
-        except (TypeError, ValueError):
-            top_n = 0
-
-        if top_n > 0:
-            # Rank explore results by score (including soft constraint penalties) and pick top-N
-            ranked: list[tuple[float, dict[str, Any]]] = []
-            for r in results:
-                if r.get("error") or r.get("skipped"):
-                    continue
-                score_block = r.get("score") or {}
-                try:
-                    s = float(score_block.get("score"))
-                except (TypeError, ValueError):
-                    continue
-                ranked.append((s, r))
-            ranked.sort(key=lambda x: x[0], reverse=True)
-            selected = [r for _s, r in ranked[:top_n]]
-
-            # Fallback: Om vi inte har några lokala results (t.ex. resume efter avbrott)
-            # försök hämta top-N direkt från Optuna storage.
-            if not selected and strategy == OptimizerStrategy.OPTUNA:
-                selected = _select_top_n_from_optuna_storage(run_meta, top_n)
-
-            if selected:
-                val_start: str | None = None
-                val_end: str | None = None
-                if _as_bool(validation_cfg.get("use_sample_range")):
-                    val_start, val_end = _resolve_sample_range(
-                        str(meta.get("snapshot_id", "")),
-                        validation_cfg,
-                    )
-
-                val_dir = (run_dir / "validation").resolve()
-                val_dir.mkdir(parents=True, exist_ok=True)
-                val_allow_resume = bool(validation_cfg.get("resume", allow_resume))
-                val_existing_trials = {}
-                if val_allow_resume and val_dir.exists():
-                    val_existing_trials = _load_existing_trials(val_dir)
-                val_constraints_cfg = validation_cfg.get("constraints")
-                if val_constraints_cfg is None:
-                    val_constraints_cfg = config.get("constraints")
-                if not isinstance(val_constraints_cfg, dict):
-                    val_constraints_cfg = None
-
-                validation_results = []
-                for idx, base_result in enumerate(selected, start=1):
-                    params = dict(base_result.get("parameters") or {})
-                    trial_cfg = TrialConfig(
-                        snapshot_id=str(meta.get("snapshot_id", "")),
-                        symbol=symbol,
-                        timeframe=timeframe,
-                        warmup_bars=int(meta.get("warmup_bars", 150)),
-                        parameters=params,
-                        start_date=val_start,
-                        end_date=val_end,
-                    )
-                    payload = run_trial(
-                        trial_cfg,
-                        run_id=run_id_resolved,
-                        index=idx,
-                        run_dir=val_dir,
-                        allow_resume=val_allow_resume,
-                        existing_trials=val_existing_trials,
-                        max_attempts=max_attempts,
-                        constraints_cfg=val_constraints_cfg,
-                        cache_enabled=True,
-                        seen_param_keys=None,
-                        seen_param_lock=None,
-                        baseline_results=baseline_results_data,
-                        baseline_label=baseline_label,
-                        optuna_context=None,
-                    )
-                    if isinstance(payload, dict):
-                        payload.setdefault("stage", "validation")
-                    validation_results.append(payload)
-
-                # Attach validation metadata to run_meta for traceability
-                run_meta.setdefault("validation", {}).update(
-                    {
-                        "enabled": True,
-                        "top_n": top_n,
-                        "sample_start": val_start,
-                        "sample_end": val_end,
-                        "constraints": val_constraints_cfg,
-                        "validated": len(validation_results),
-                        "validation_dir": str(val_dir),
-                    }
-                )
-                _atomic_write_text(run_meta_path, _json_dumps(_serialize_meta(run_meta)))
+    validation_results = run_validation_stage_impl(
+        validation_cfg=validation_cfg,
+        results=results,
+        strategy=strategy,
+        optuna_strategy=OptimizerStrategy.OPTUNA,
+        run_meta=run_meta,
+        run_meta_path=run_meta_path,
+        run_dir=run_dir,
+        run_id=run_id_resolved,
+        allow_resume=allow_resume,
+        max_attempts=max_attempts,
+        config_constraints=config.get("constraints"),
+        snapshot_id=str(meta.get("snapshot_id", "")),
+        symbol=symbol,
+        timeframe=timeframe,
+        warmup_bars=int(meta.get("warmup_bars", 150)),
+        baseline_results=baseline_results_data,
+        baseline_label=baseline_label,
+        as_bool=_as_bool,
+        resolve_sample_range=_resolve_sample_range,
+        select_top_n_from_optuna_storage=_select_top_n_from_optuna_storage,
+        load_existing_trials=_load_existing_trials,
+        run_trial=run_trial,
+        trial_config_cls=TrialConfig,
+        write_serialized_run_meta=_write_serialized_run_meta,
+    )
 
     # If validation ran, prefer champion promotion based on validation outcomes.
     results_for_promotion = validation_results if validation_results is not None else results

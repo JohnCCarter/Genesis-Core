@@ -580,6 +580,94 @@ def test_run_optimizer_validation_stage_promotes_validation_best(tmp_path: Path)
         assert call_kwargs["candidate"].score == pytest.approx(130.0)
 
 
+@pytest.mark.parametrize(
+    "validation_payload",
+    [
+        {"error": "no_data", "results_path": "validation_missing.json"},
+        {"skipped": True, "reason": "validation_data_missing"},
+    ],
+    ids=["validation_error_no_data", "validation_skipped_no_data"],
+)
+def test_run_optimizer_validation_missing_data_blocks_promotion(
+    tmp_path: Path,
+    validation_payload: dict[str, Any],
+) -> None:
+    config = {
+        "meta": {
+            "symbol": TEST_SYMBOL,
+            "timeframe": TEST_TIMEFRAME,
+            "snapshot_id": TEST_SNAPSHOT_ID,
+            "warmup_bars": 50,
+            "runs": {
+                "max_trials": 1,
+                "resume": False,
+                "validation": {
+                    "top_n": 1,
+                    "use_sample_range": False,
+                },
+            },
+        },
+        "parameters": {
+            "thresholds": {
+                "entry_conf_overall": {
+                    "type": "grid",
+                    "values": [0.4],
+                }
+            }
+        },
+    }
+    config_path = tmp_path / "search_with_validation_missing_data.yaml"
+    _write_yaml(config_path, config)
+
+    results_root, run_meta_payload = _optimizer_test_context(tmp_path)
+
+    def fake_run_trial(*args: Any, **kwargs: Any) -> dict[str, Any]:
+        trial_cfg = args[0]
+        run_dir = kwargs.get("run_dir")
+        params = getattr(trial_cfg, "parameters", {}) or {}
+
+        if run_dir is None or "validation" not in str(run_dir):
+            return {
+                "trial_id": "trial_001",
+                "parameters": params,
+                "score": {"score": 120.0, "metrics": {"num_trades": 10}, "hard_failures": []},
+                "constraints": _ok_constraints(),
+                "results_path": "explore_good.json",
+            }
+
+        return {
+            "trial_id": "trial_001_validation",
+            "parameters": params,
+            **validation_payload,
+        }
+
+    fake_ensure = _make_fake_ensure_writer(run_meta_payload)
+
+    with _champion_test_patch_context(
+        results_root=results_root,
+        expand_values=[_entry_conf_params(0.4)],
+        run_trial_side_effect=fake_run_trial,
+        ensure_run_metadata_side_effect=fake_ensure,
+        tmp_path=tmp_path,
+    ) as manager_cls:
+        manager_instance = _configure_manager(manager_cls)
+
+        results = _run_optimizer_with_test_id(config_path)
+
+        assert len(results) == 2
+        manager_instance.write_champion.assert_not_called()
+
+        validation_entries = [r for r in results if r.get("stage") == "validation"]
+        assert len(validation_entries) == 1
+
+        validation_entry = validation_entries[0]
+        if validation_payload.get("error"):
+            assert validation_entry.get("error") == "no_data"
+        else:
+            assert validation_entry.get("skipped") is True
+            assert validation_entry.get("reason") == "validation_data_missing"
+
+
 def test_trial_requests_htf_exits_detects_htf_exit_config() -> None:
     assert runner._trial_requests_htf_exits({"htf_exit_config": {"partial_1_pct": 0.5}}) is True
     assert runner._trial_requests_htf_exits({"htf_exit_config": {}}) is False

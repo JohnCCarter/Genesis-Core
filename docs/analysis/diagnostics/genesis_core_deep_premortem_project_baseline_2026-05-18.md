@@ -196,6 +196,8 @@ Optimizer-pelaren har **två risk-vektorer som korrelerar**:
 - mode #20 (nonce string-match) är en konkret bräcklighet på `exchange_client.py:142`. Detection-strängarna `"nonce"` och `"10114"` är hårdkodade. Om Bitfinex ändrar error-format (vilket tredjeparts-APIer gör utan förvarning) tappar retry-logiken sin trigger.
 - mode #21 (single-retry signed REST) är öppet erkänd i koden (`_sleep_jitter` använder `base_delay=0.0, max_backoff=0.3, jitter 100-300ms`). Det är **inte exponential backoff** — det är en jitter-baserad engångs-fördröjning. Under burst-rate-limit räcker det inte.
 
+  Later-branch truthfulness note (2026-05-19, `feature/risk-hardening-wave2`): the `#21` sentence above remains a historical 2026-05-18 baseline assessment and should not be read as current branch evidence for this checkout. Current `src/core/io/bitfinex/exchange_client.py` defines `_MAX_SIGNED_REQUEST_ATTEMPTS = 3`, retries nonce / retryable-status / transient request errors inside `signed_request(...)`, and routes `_sleep_jitter(...)` through `exponential_backoff_delay(...)` with `base_delay=0.05`, `max_backoff=0.4`, and jitter `100-300ms`; `tests/utils/test_exchange_client.py` provides focused proof for structured nonce retry and retry-through-third-attempt behavior. This narrows current-branch truthfulness only and does not prove burst-rate-limit sufficiency or preclude a later reopen on retry budget / operational evidence. See `docs/decisions/governance/bitfinex_signed_rest_retry_truthfulness_packet_2026-05-19.md`.
+
 Båda är begränsade till en boundary-yta (inte spridda över repot), vilket gör dem
 hanterbara — men det är **inga tracked tester sett som simulerar Bitfinex burst-fel-flöde**.
 

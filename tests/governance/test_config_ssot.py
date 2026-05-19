@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+import core.config.authority as authority_mod
 from core.config.authority import ConfigAuthority
 
 
@@ -40,6 +41,125 @@ def test_config_roundtrip_and_hash(tmp_path: Path) -> None:
     # Hash should be stable for the same canonical content
     snap2 = auth.load()
     assert snap2.hash == snap.hash
+
+
+def test_authority_init_does_not_warn_when_runtime_matches_latest_audit(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    runtime_path = tmp_path / "runtime.json"
+    audit_path = tmp_path / "config_audit.jsonl"
+    monkeypatch.setattr(authority_mod, "AUDIT_LOG", audit_path)
+
+    auth = ConfigAuthority(runtime_path)
+    auth.propose_update(
+        {"thresholds": {"entry_conf_overall": 0.5}},
+        actor="t",
+        expected_version=0,
+    )
+
+    caplog.set_level("WARNING")
+    _ = ConfigAuthority(runtime_path)
+
+    assert not any(
+        "runtime_config_state_diverged_from_audit" in rec.message for rec in caplog.records
+    )
+
+
+def test_authority_init_warns_on_runtime_drift_without_side_effects(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    runtime_path = tmp_path / "runtime.json"
+    audit_path = tmp_path / "config_audit.jsonl"
+    monkeypatch.setattr(authority_mod, "AUDIT_LOG", audit_path)
+
+    writer = ConfigAuthority(runtime_path)
+    writer.propose_update(
+        {"thresholds": {"entry_conf_overall": 0.5}},
+        actor="t",
+        expected_version=0,
+    )
+
+    drifted_payload = json.loads(runtime_path.read_text(encoding="utf-8"))
+    drifted_payload["cfg"]["thresholds"]["entry_conf_overall"] = 0.75
+    drifted_text = authority_mod._json_dumps_canonical(drifted_payload)
+    runtime_path.write_text(drifted_text, encoding="utf-8")
+
+    audit_before = audit_path.read_text(encoding="utf-8")
+
+    caplog.set_level("WARNING")
+    auth = ConfigAuthority(runtime_path)
+    cfg, _hash, version = auth.get()
+
+    assert version == 1
+    assert cfg.thresholds.entry_conf_overall == pytest.approx(0.75)
+    assert runtime_path.read_text(encoding="utf-8") == drifted_text
+    assert audit_path.read_text(encoding="utf-8") == audit_before
+    assert any("runtime_config_state_diverged_from_audit" in rec.message for rec in caplog.records)
+
+
+def test_authority_init_fails_open_without_audit_log(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    runtime_path = tmp_path / "runtime.json"
+    audit_path = tmp_path / "config_audit.jsonl"
+    monkeypatch.setattr(authority_mod, "AUDIT_LOG", audit_path)
+
+    writer = ConfigAuthority(runtime_path)
+    writer.propose_update(
+        {"thresholds": {"entry_conf_overall": 0.5}},
+        actor="t",
+        expected_version=0,
+    )
+    audit_path.unlink()
+
+    caplog.set_level("WARNING")
+    auth = ConfigAuthority(runtime_path)
+    cfg, _hash, version = auth.get()
+
+    assert version == 1
+    assert cfg.thresholds.entry_conf_overall == pytest.approx(0.5)
+    assert not any(
+        "runtime_config_state_diverged_from_audit" in rec.message for rec in caplog.records
+    )
+
+
+def test_authority_init_fails_open_when_latest_audit_line_is_not_comparable(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    runtime_path = tmp_path / "runtime.json"
+    audit_path = tmp_path / "config_audit.jsonl"
+    monkeypatch.setattr(authority_mod, "AUDIT_LOG", audit_path)
+
+    writer = ConfigAuthority(runtime_path)
+    writer.propose_update(
+        {"thresholds": {"entry_conf_overall": 0.5}},
+        actor="t",
+        expected_version=0,
+    )
+
+    runtime_before = runtime_path.read_text(encoding="utf-8")
+    audit_with_non_comparable_tail = audit_path.read_text(encoding="utf-8") + '{"ts": 1}\n'
+    audit_path.write_text(audit_with_non_comparable_tail, encoding="utf-8")
+
+    caplog.set_level("WARNING")
+    auth = ConfigAuthority(runtime_path)
+    cfg, _hash, version = auth.get()
+
+    assert version == 1
+    assert cfg.thresholds.entry_conf_overall == pytest.approx(0.5)
+    assert runtime_path.read_text(encoding="utf-8") == runtime_before
+    assert audit_path.read_text(encoding="utf-8") == audit_with_non_comparable_tail
+    assert not any(
+        "runtime_config_state_diverged_from_audit" in rec.message for rec in caplog.records
+    )
 
 
 def test_propose_update_atomic_locking_conflict(tmp_path: Path) -> None:

@@ -34,6 +34,12 @@ _SENSITIVE_KEY_PATTERNS = [
 ]
 
 
+def _normalize_key_for_sensitive_matching(key: object) -> str:
+    key_str = str(key)
+    key_with_boundaries = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", key_str)
+    return key_with_boundaries.lower()
+
+
 def _mask_sensitive_headers(headers: dict[str, str]) -> dict[str, str]:
     """
     Mask known sensitive header values so that no secrets are printed.
@@ -69,7 +75,7 @@ def _sanitize_for_logging(value: object) -> object:
     if isinstance(value, dict):
         sanitized: dict[object, object] = {}
         for key, item in value.items():
-            key_str = str(key).lower()
+            key_str = _normalize_key_for_sensitive_matching(key)
             if any(pattern.search(key_str) for pattern in _SENSITIVE_KEY_PATTERNS):
                 sanitized[key] = "***"
             else:

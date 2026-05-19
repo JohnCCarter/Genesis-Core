@@ -254,6 +254,17 @@ def test_sanitize_fragment_based_key_matching():
     assert result["normal_key"] == "value"
 
 
+def test_sanitize_masks_camel_case_sensitive_keys():
+    """CamelCase sensitive keys like apiSecret are masked."""
+    data = {
+        "apiSecret": "super_secret_value",  # pragma: allowlist secret
+        "normal_key": "value",
+    }
+    result = _sanitize_for_logging(data)
+    assert result["apiSecret"] == "***"
+    assert result["normal_key"] == "value"
+
+
 def test_sanitize_does_not_overredact_embedded_substrings():
     """Generic fragments should not redact unrelated words like 'author'."""
     data = {

@@ -37,6 +37,7 @@ from core.strategy.evaluate import evaluate_pipeline
 
 _LOGGER = get_logger(__name__)
 _PER_BAR_ERROR_POLICY = "continue_collect_raise_after_loop"
+_VALID_PER_BAR_ERROR_POLICIES = (_PER_BAR_ERROR_POLICY, "fail_fast")
 
 
 # B1: On-disk precompute cache versioning.
@@ -212,6 +213,7 @@ def _raise_if_per_bar_errors(
     *,
     error_count: int,
     first_error: tuple[int, str] | None,
+    error_policy: str,
 ) -> None:
     if error_count <= 0:
         return
@@ -222,7 +224,7 @@ def _raise_if_per_bar_errors(
         "Backtest aborted due to per-bar evaluation errors: "
         f"count={error_count}, first_at_bar={first_bar}, first_error={first_message}"
     )
-    _LOGGER.error("%s | policy=%s", error_msg, _PER_BAR_ERROR_POLICY)
+    _LOGGER.error("%s | policy=%s", error_msg, error_policy)
     raise RuntimeError(error_msg)
 
 
@@ -233,6 +235,16 @@ def _normalize_data_source_policy(policy: str | None) -> str:
     if normalized not in VALID_DATA_SOURCE_POLICIES:
         allowed = ", ".join(VALID_DATA_SOURCE_POLICIES)
         raise ValueError(f"Invalid data_source_policy={policy!r}. Expected one of: {allowed}")
+    return normalized
+
+
+def _normalize_per_bar_error_policy(policy: str) -> str:
+    """Return a validated per-bar error policy."""
+
+    normalized = str(policy).strip()
+    if normalized not in _VALID_PER_BAR_ERROR_POLICIES:
+        allowed = ", ".join(_VALID_PER_BAR_ERROR_POLICIES)
+        raise ValueError(f"Invalid error_policy={policy!r}. Expected one of: {allowed}")
     return normalized
 
 
@@ -807,6 +819,7 @@ class BacktestEngine:
         configs: dict | None = None,
         verbose: bool = False,
         pruning_callback: Any | None = None,
+        error_policy: str = _PER_BAR_ERROR_POLICY,
     ) -> dict:
         """
         Run backtest.
@@ -816,6 +829,9 @@ class BacktestEngine:
             configs: Strategy configs (thresholds, risk, etc.)
             verbose: Print detailed progress
             pruning_callback: Optional callback(step, value) -> bool. If returns True, abort.
+            error_policy: Per-bar pipeline failure policy. ``continue_collect_raise_after_loop``
+                          preserves the current default behavior; ``fail_fast`` raises on the
+                          first per-bar evaluation error.
 
         Returns:
             Dict with backtest results
@@ -844,6 +860,8 @@ class BacktestEngine:
                 "No candles available (empty dataset). Check date filters and data range."
             )
             return {"error": "no_data"}
+
+        active_error_policy = _normalize_per_bar_error_policy(error_policy)
 
         # Ensure numpy arrays are prepared for fast window extraction
         if self._np_arrays is None:
@@ -1153,6 +1171,12 @@ class BacktestEngine:
                         print(f"\n[ERROR] Bar {i}: {e}{where}")
                     except Exception:
                         print(f"\n[ERROR] Bar {i}: {e}")
+                if active_error_policy == "fail_fast":
+                    _raise_if_per_bar_errors(
+                        error_count=per_bar_error_count,
+                        first_error=first_per_bar_error,
+                        error_policy=active_error_policy,
+                    )
                 # Continue on error (robust backtest)
 
             pbar.update(1)
@@ -1162,6 +1186,7 @@ class BacktestEngine:
         _raise_if_per_bar_errors(
             error_count=per_bar_error_count,
             first_error=first_per_bar_error,
+            error_policy=active_error_policy,
         )
 
         # Report feature hit counts

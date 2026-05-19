@@ -988,6 +988,45 @@ def test_engine_error_policy_continues_loop_before_raising(sample_candles_data, 
     assert processed_bars == list(range(10, 20))
 
 
+def test_engine_error_policy_fail_fast_raises_on_first_processed_bar(
+    sample_candles_data, monkeypatch
+):
+    """fail_fast must stop replay on the first processed-bar pipeline error."""
+
+    engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m", warmup_bars=10)
+    engine.candles_df = sample_candles_data.head(20)
+
+    processed_bars: list[int] = []
+
+    def _pipeline_with_single_failure(*_args, **_kwargs):
+        bar_index = len(processed_bars) + engine.warmup_bars
+        processed_bars.append(bar_index)
+        raise ValueError("first processed bar failed")
+
+    monkeypatch.setattr(
+        "core.backtest.engine.evaluate_pipeline",
+        _pipeline_with_single_failure,
+    )
+
+    with pytest.raises(
+        RuntimeError,
+        match=r"count=1, first_at_bar=10, first_error=ValueError: first processed bar failed",
+    ):
+        engine.run(configs={"exit": {"enabled": False}}, error_policy="fail_fast")
+
+    assert processed_bars == [10]
+
+
+def test_engine_run_rejects_invalid_error_policy(sample_candles_data):
+    """Invalid explicit error_policy values must fail before replay starts."""
+
+    engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m", warmup_bars=10)
+    engine.candles_df = sample_candles_data.head(20)
+
+    with pytest.raises(ValueError, match="Invalid error_policy"):
+        engine.run(configs={"exit": {"enabled": False}}, error_policy="best_effort")
+
+
 def test_engine_with_verbose_mode(sample_candles_data, capsys):
     """Test engine verbose mode emits some user-facing progress/log output."""
     engine = BacktestEngine(

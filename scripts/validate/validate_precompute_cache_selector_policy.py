@@ -57,6 +57,8 @@ def _git(*args: str) -> str:
         check=True,
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
     )
     return proc.stdout.strip()
 

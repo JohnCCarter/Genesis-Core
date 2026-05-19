@@ -3,6 +3,7 @@ from __future__ import annotations
 import subprocess
 import textwrap
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -83,6 +84,29 @@ def _bootstrap_repo(tmp_path: Path) -> tuple[Path, Path, str]:
     _git(repo, "commit", "-m", "base")
     base_sha = _git(repo, "rev-parse", "HEAD")
     return repo, engine_path, base_sha
+
+
+def test_git_helper_uses_utf8_replace_decoding(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, object] = {}
+
+    def _fake_run(*args, **kwargs):
+        captured["args"] = args
+        captured["kwargs"] = kwargs
+        return SimpleNamespace(stdout="ok\n")
+
+    monkeypatch.setattr(selector_policy.subprocess, "run", _fake_run)
+    monkeypatch.setattr(selector_policy, "_repo_root", lambda: tmp_path)
+
+    assert selector_policy._git("status") == "ok"
+    assert captured["kwargs"]["cwd"] == tmp_path
+    assert captured["kwargs"]["check"] is True
+    assert captured["kwargs"]["capture_output"] is True
+    assert captured["kwargs"]["text"] is True
+    assert captured["kwargs"]["encoding"] == "utf-8"
+    assert captured["kwargs"]["errors"] == "replace"
 
 
 @pytest.mark.skipif(

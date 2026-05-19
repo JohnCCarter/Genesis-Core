@@ -49,6 +49,10 @@ jobs:
         if: github.event_name == 'pull_request'
         run: python scripts/validate/validate_registry.py --ci-diff-base origin/${{ github.base_ref }}
 
+      - name: Validate precompute selector policy (PR)
+        if: github.event_name == 'pull_request'
+        run: python scripts/validate/validate_precompute_cache_selector_policy.py --ci-diff-base origin/${{ github.base_ref }}
+
       - name: Validate registry (push)
         if: github.event_name != 'pull_request'
         run: python scripts/validate/validate_registry.py

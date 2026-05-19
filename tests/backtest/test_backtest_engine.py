@@ -447,6 +447,52 @@ def test_build_candles_window_at_start(sample_candles_data):
     assert len(window["timestamp"]) == 11
 
 
+@pytest.mark.parametrize(
+    ("end_idx", "window_size"),
+    [
+        (10, 50),
+        (100, 50),
+        (199, 200),
+    ],
+)
+def test_build_candles_window_fast_window_matches_numpy_path(
+    monkeypatch: pytest.MonkeyPatch,
+    sample_candles_data,
+    end_idx: int,
+    window_size: int,
+):
+    """Regression: fast-window slicing must match the normal prefix window exactly."""
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "1")
+
+    engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m", fast_window=True)
+    engine.candles_df = sample_candles_data
+    engine._prepare_numpy_arrays()
+
+    engine._col_open = sample_candles_data["open"].to_numpy(copy=False)
+    engine._col_high = sample_candles_data["high"].to_numpy(copy=False)
+    engine._col_low = sample_candles_data["low"].to_numpy(copy=False)
+    engine._col_close = sample_candles_data["close"].to_numpy(copy=False)
+    engine._col_volume = sample_candles_data["volume"].to_numpy(copy=False)
+    engine._col_timestamp = sample_candles_data["timestamp"].tolist()
+
+    def _normalize_window(window: dict) -> dict[str, list]:
+        return {
+            "open": [float(value) for value in window["open"]],
+            "high": [float(value) for value in window["high"]],
+            "low": [float(value) for value in window["low"]],
+            "close": [float(value) for value in window["close"]],
+            "volume": [float(value) for value in window["volume"]],
+            "timestamp": [pd.Timestamp(value) for value in window["timestamp"]],
+        }
+
+    fast_window = _normalize_window(engine._build_candles_window(end_idx, window_size))
+
+    engine.fast_window = False
+    numpy_window = _normalize_window(engine._build_candles_window(end_idx, window_size))
+
+    assert fast_window == numpy_window
+
+
 def test_engine_run_no_data():
     """Test engine fails gracefully when no data is loaded."""
     engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m")

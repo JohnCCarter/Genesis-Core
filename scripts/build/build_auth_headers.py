@@ -130,7 +130,12 @@ def main(argv: list[str] | None = None) -> int:
             )
             return 3
 
-    out = _mask_sensitive_headers(headers)
+    out = {
+        "bfx-apikey": "***",
+        "bfx-signature": "***",
+        "bfx-nonce": headers["bfx-nonce"],
+        "Content-Type": headers["Content-Type"],
+    }
     if args.reveal:
         out["info"] = "Reveal acknowledgement accepted, but secrets remain masked for safe logging."
     else:

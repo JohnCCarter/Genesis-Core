@@ -12,7 +12,6 @@ import sys
 from core.config.settings import get_settings
 from core.utils.nonce_manager import get_nonce
 
-
 REVEAL_ACK_ENV = "GENESIS_ALLOW_SECRET_OUTPUT"
 REVEAL_ACK_VALUE = "1"
 SENSITIVE_HEADER_KEYS = {"bfx-apikey", "bfx-signature"}

@@ -5,6 +5,9 @@
 > premortem-lanen som "explicitly closed for now" är respekterad: detta dokument reopens lanen
 > bara med en ny bounded anchor-fråga (se nedan) och förändrar inte status, queue eller
 > auktoritet i någon befintlig premortem-doc.
+> Den lane-lokala closeout-läsningen ovan betyder därför inte "projektet är klart" eller att alla
+> risker är eliminerade; den betyder bara att fortsatt arbete måste öppnas explicit som nya bounded
+> frågor i stället för att ärvas från gammal premortem-prosa.
 >
 > Detta dokument är `historical-trace-level` — det är en frusen ögonblicksbild av branchens
 > risk-yta som helhet, syntetiserad från tracked governance/audit-docs och tracked code-state.
@@ -138,6 +141,9 @@ och de är välskrivna. Risken är att **disciplin-ytorna själva blir det som m
 
 - modes #4 och #5 är båda **partially mitigated** — pointers/docs har fått status-banners ("historical reference only", "paused"), men en lazy reader kan fortfarande tolka dem som current om de hoppar över status-bannern.
 - mode #6 är subtil och är delvis orsakad av denna doc själv (att skriva en ny premortem efter en re-anchor som sa "closed" kan tolkas som motsägelse). Re-anchor-doc:en sa explicit att "if a new bounded question reopens it" är acceptabel reopen-shape — denna doc använder den exit-klausul.
+
+  Later-branch truthfulness note (2026-05-19, `feature/risk-hardening-wave2`): the `closed for now` verdict above should be read as closeout of the inherited premortem lane only, not as `all risk eliminated`, `project complete`, or `vi är klara`. The honest current-branch reading is: the old lane no longer stays open by implication, but broader project-baseline risks and later bounded hardening slices may still exist and must be reopened explicitly.
+
 - mode #19 (parallella premortem-kedjor) blir mätbart värre med varje ny premortem-doc om de inte cross-linkas och labelas tydligt. Denna doc cross-linkar 2026-05-15 + 2026-05-18 i baseline references och deklarerar sig själv project-baseline.
 
 ### ConfigAuthority / SSOT (#7, #17, #22)

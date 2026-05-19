@@ -253,6 +253,62 @@ def test_decide_handles_non_numeric_confidence_without_typeerror() -> None:
     assert "CONF_TOO_LOW" in (meta.get("reasons") or [])
 
 
+@pytest.mark.parametrize(
+    "probas",
+    [[], "oops", 123],
+    ids=["list_probas", "string_probas", "int_probas"],
+)
+def test_decide_handles_non_dict_probas_fail_safe_without_typeerror(probas: object) -> None:
+    cfg = {
+        "thresholds": {"entry_conf_overall": 0.7, "regime_proba": {"balanced": 0.7}},
+        "risk": {"risk_map": [[0.7, 0.01]]},
+        "gates": {"cooldown_bars": 0},
+    }
+
+    action, meta = decide(
+        {},
+        probas=probas,
+        confidence={"buy": 0.9, "sell": 0.1},
+        regime="balanced",
+        state={},
+        risk_ctx={},
+        cfg=cfg,
+    )
+
+    assert action == "NONE"
+    assert isinstance(meta, dict)
+    assert "FAIL_SAFE_NULL" in (meta.get("reasons") or [])
+
+
+@pytest.mark.parametrize(
+    "confidence",
+    [[], "oops", 123],
+    ids=["list_confidence", "string_confidence", "int_confidence"],
+)
+def test_decide_handles_non_dict_confidence_fail_safe_without_typeerror(
+    confidence: object,
+) -> None:
+    cfg = {
+        "thresholds": {"entry_conf_overall": 0.7, "regime_proba": {"balanced": 0.7}},
+        "risk": {"risk_map": [[0.7, 0.01]]},
+        "gates": {"cooldown_bars": 0},
+    }
+
+    action, meta = decide(
+        {},
+        probas={"buy": 0.8, "sell": 0.1},
+        confidence=confidence,
+        regime="balanced",
+        state={},
+        risk_ctx={},
+        cfg=cfg,
+    )
+
+    assert action == "NONE"
+    assert isinstance(meta, dict)
+    assert "FAIL_SAFE_NULL" in (meta.get("reasons") or [])
+
+
 def test_safe_float_returns_default_for_overflowing_int_input() -> None:
     assert safe_float(10**1000, 1.5) == pytest.approx(1.5)
 

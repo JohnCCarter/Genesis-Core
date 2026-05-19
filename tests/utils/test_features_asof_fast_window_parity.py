@@ -101,6 +101,9 @@ def _build_precomputed(candles: dict[str, list[float]]) -> dict[str, list[float]
 def _assert_feature_dicts_close(
     expected: dict[str, float],
     actual: dict[str, float],
+    *,
+    rel: float = 1e-9,
+    abs_tol: float = 1e-9,
 ) -> None:
     assert set(expected) == set(actual)
 
@@ -109,7 +112,7 @@ def _assert_feature_dicts_close(
         actual_value = actual[key]
         assert math.isfinite(float(expected_value)), f"Expected non-finite feature {key}"
         assert math.isfinite(float(actual_value)), f"Actual non-finite feature {key}"
-        assert actual_value == pytest.approx(expected_value, rel=1e-9, abs=1e-9), key
+        assert actual_value == pytest.approx(expected_value, rel=rel, abs=abs_tol), key
 
 
 def _run_with_fresh_caches(fn):
@@ -191,3 +194,48 @@ def test_extract_features_backtest_remapped_precompute_is_prefix_invariant_on_fa
     )
 
     _assert_feature_dicts_close(precompute_features, mutated_precompute_features)
+
+
+def test_extract_features_backtest_fast_window_matches_full_runtime_on_same_global_bar(
+    monkeypatch,
+) -> None:
+    candles = _make_candles(260)
+    global_idx = 230
+    precomputed = _build_precomputed(candles)
+    window_size = 200
+    window_start_idx = max(0, global_idx - window_size + 1)
+    candles_window = {
+        key: list(values[window_start_idx : global_idx + 1]) for key, values in candles.items()
+    }
+    local_asof_bar = len(candles_window["close"]) - 1
+
+    monkeypatch.delenv("GENESIS_PRECOMPUTE_FEATURES", raising=False)
+    runtime_features = _run_with_fresh_caches(
+        lambda: features_asof.extract_features_backtest(
+            candles,
+            global_idx,
+            timeframe="3h",
+            symbol="tBTCUSD",
+        )[0]
+    )
+
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "1")
+    fast_window_features = _run_with_fresh_caches(
+        lambda: features_asof.extract_features_backtest(
+            candles_window,
+            local_asof_bar,
+            timeframe="3h",
+            symbol="tBTCUSD",
+            config={
+                "_global_index": global_idx,
+                "precomputed_features": precomputed,
+            },
+        )[0]
+    )
+
+    _assert_feature_dicts_close(
+        runtime_features,
+        fast_window_features,
+        rel=1e-6,
+        abs_tol=1e-6,
+    )

@@ -12,8 +12,8 @@ Status: `historical branch-context pointer / complementary / no new authority`
 >
 > Later-status note (2026-05-18):
 >
-> - On `feature/evidence-closeout-pilot`, this document is retained as a complementary historical pointer to the earlier `feature/editor-worker-orchestrator` control-plane context.
-> - The branch, mode, and lane anchors below therefore reflect that earlier context and should not be read as the branch-current selector for the present docs-closeout work.
+> - On later branch contexts — including `feature/evidence-closeout-pilot` and `feature/risk-hardening-wave2` — this document remains a complementary historical pointer to the earlier `feature/editor-worker-orchestrator` control-plane context.
+> - If the current branch is not `feature/editor-worker-orchestrator`, the branch, mode, and lane anchors below must not be read as branch-current execution guidance or lane-selection authority.
 > - Any current branch interpretation must still be resolved from the current branch state, touched surfaces, and higher-order anchors rather than inferred from this document alone.
 
 ## What this file does not do
@@ -91,7 +91,7 @@ Practical reading rule:
 
 ## Historical quick-use ritual
 
-1. confirm branch and mode
+1. confirm branch and mode; if the branch is not `feature/editor-worker-orchestrator`, treat this page as historical pointer content only
 2. read `GENESIS_WORKING_CONTRACT.md`
 3. use this page to identify the captured active versus parked anchors for that earlier branch context
 4. cite the exact anchor docs in any new packet, note, or report

@@ -4,7 +4,18 @@ Date: 2026-05-19
 Branch: `feature/risk-hardening-wave2`
 Status: `precode-defined / docs-only / non-authorizing`
 
-This document opens one bounded pre-code packet for the exact field set `exit.enabled` only. The current slice is docs-only and does not approve implementation, change runtime behavior, widen the live-write whitelist, alter public API behavior, or change truthfulness claims outside this packet.
+This document opens one bounded pre-code packet for the exact field set `exit.enabled` only. Any later code slice must keep admission fail-closed to the singleton nested patch shape `{"exit": {"enabled": <bool>}}` only; empty dicts, sibling keys, mixed keys, and partial application remain out of bounds. The current slice is docs-only and does not approve implementation, change runtime behavior, widen the live-write whitelist, alter public API behavior, or change truthfulness claims outside this packet.
+
+## Implementation-status note (2026-05-19)
+
+The later bounded runtime slice framed by this packet has now been landed in the current branch.
+
+- `src/core/config/authority.py` now admits only the singleton nested patch shape `{"exit": {"enabled": <bool>}}` for live updates
+- non-dict, empty-dict, sibling-only, and mixed-key `exit` payloads remain rejected atomically before merge
+- targeted proofs were added in `tests/governance/test_config_ssot.py`, `tests/integration/test_config_endpoints.py`, and `tests/integration/test_config_api_e2e.py`
+- verification completed with focused config-authority/API tests plus determinism replay, feature parity / precompute-runtime parity, pipeline invariant, `black --check`, `ruff check`, and `.venv\Scripts\bandit.exe -q -r src/core/config/authority.py`
+
+This status note records the later implementation outcome only. It does not widen the original packet scope.
 
 ## COMMAND PACKET
 
@@ -140,10 +151,11 @@ A later implementation slice for this candidate must keep the following out of s
 
 A later implementation-bearing packet for this candidate must define at minimum:
 
-- the exact authority admission rule for `exit.enabled`
-- the exact mechanism that keeps sibling `exit.*` leaves rejected
-- whether whole-object `exit` patches stay rejected unless they contain only exact supported shape for `enabled`
-- whether current merge/propose semantics are sufficient or whether they would need widening
+- the exact singleton nested patch shape admitted for `exit.enabled`
+- the exact pre-merge guard that rejects non-dict, empty-dict, sibling-only, and mixed-key `exit` payloads atomically
+- the exact mechanism that keeps sibling `exit.*` leaves rejected with no partial-apply behavior
+- whether whole-object `exit` patches stay rejected unless they match the singleton `{"enabled": <bool>}` shape exactly
+- whether current merge/propose semantics are sufficient without widening any broader selector path
 - the exact targeted tests proving leaf-only containment
 - the exact rollback boundary if the change needs to be reverted
 
@@ -154,10 +166,12 @@ If this candidate advances to code later, the later packet must require at minim
 1. `black --check .`
 2. `ruff check .`
 3. `bandit -r src -c bandit.yaml`
-4. focused pytest subset for config authority / API semantics
+4. focused pytest subset for config authority / API semantics, including accept/reject proofs for singleton, empty, non-dict, sibling-only, and mixed-key `exit` payloads
 5. one exact-containment proof that:
-   - `exit.enabled` becomes live-writable
+   - `exit.enabled` becomes live-writable only for the singleton nested patch shape
+   - empty, non-dict, sibling-only, and mixed-key `exit` payloads remain rejected
    - sibling `exit.*` leaves remain rejected
+   - rejected proposals do not partially apply and leave persisted config unchanged
    - no implicit widening to whole-object `exit` admission occurs
 6. one replay/parity proof for unchanged config states
 7. one feature-cache invariance check

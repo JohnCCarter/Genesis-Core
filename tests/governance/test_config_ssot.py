@@ -61,6 +61,51 @@ def test_only_whitelisted_keys_change(tmp_path: Path) -> None:
         )
 
 
+def test_exit_enabled_singleton_patch_is_whitelisted(tmp_path: Path) -> None:
+    path = tmp_path / "runtime.json"
+    auth = ConfigAuthority(path)
+
+    snap = auth.propose_update(
+        {"exit": {"enabled": False}},
+        actor="t",
+        expected_version=0,
+    )
+
+    assert snap.version == 1
+    assert snap.cfg.exit.enabled is False
+    assert snap.cfg.exit.stop_loss_pct == pytest.approx(0.02)
+
+    persisted = json.loads(path.read_text(encoding="utf-8"))
+    assert persisted["cfg"]["exit"]["enabled"] is False
+    assert persisted["cfg"]["exit"]["stop_loss_pct"] == pytest.approx(0.02)
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {"exit": False},
+        {"exit": {}},
+        {"exit": {"stop_loss_pct": 0.01}},
+        {"exit": {"enabled": False, "stop_loss_pct": 0.01}},
+    ],
+)
+def test_exit_patch_rejects_non_singleton_shapes_atomically(
+    tmp_path: Path, payload: dict[str, object]
+) -> None:
+    path = tmp_path / "runtime.json"
+    auth = ConfigAuthority(path)
+
+    initial_cfg, initial_hash, initial_version = auth.get()
+
+    with pytest.raises(ValueError, match="non_whitelisted_field:exit"):
+        auth.propose_update(payload, actor="t", expected_version=initial_version)
+
+    cfg_after, hash_after, version_after = auth.get()
+    assert version_after == initial_version
+    assert hash_after == initial_hash
+    assert cfg_after.model_dump_canonical() == initial_cfg.model_dump_canonical()
+
+
 def test_multi_timeframe_regime_intelligence_authority_mode_whitelisted(tmp_path: Path) -> None:
     path = tmp_path / "runtime.json"
     auth = ConfigAuthority(path)

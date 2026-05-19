@@ -66,6 +66,11 @@ def _canonicalize_authority_mode_alias(patch: dict[str, Any]) -> dict[str, Any]:
     return canonicalize_authority_mode_alias_strict(patch)
 
 
+def _validate_exit_patch_whitelist(exit_patch: Any) -> None:
+    if not isinstance(exit_patch, dict) or set(exit_patch.keys()) != {"enabled"}:
+        raise ValueError("non_whitelisted_field:exit")
+
+
 def _raise_missing_strategy_family_backcompat_error() -> None:
     raise _MissingStrategyFamilyBackcompatError(
         _MISSING_STRATEGY_FAMILY_BACKCOMPAT_MSG,
@@ -226,12 +231,15 @@ class ConfigAuthority:
                     "gates",
                     "risk",
                     "ev",
+                    "exit",
                     "multi_timeframe",
                 }:
                     raise ValueError("non_whitelisted_field")
                 if k == "strategy_family":
                     if str(v).strip().lower() not in {"legacy", "ri"}:
                         raise ValueError("invalid_value:strategy_family")
+                if k == "exit":
+                    _validate_exit_patch_whitelist(v)
                 if k == "risk":
                     if not isinstance(v, dict) or any(subk != "risk_map" for subk in v.keys()):
                         raise ValueError("non_whitelisted_field:risk")

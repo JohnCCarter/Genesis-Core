@@ -603,6 +603,71 @@ def test_check_htf_exit_invalid_precomputed_context_forces_unavailable(sample_ca
     assert engine._htf_context_seen is False
 
 
+def test_check_htf_exit_out_of_range_precomputed_context_does_not_fallback_to_meta(
+    sample_candles_data,
+):
+    """Regression: out-of-range precomputed HTF access must not silently fall back to meta."""
+    engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m")
+    engine.candles_df = sample_candles_data
+    engine._prepare_numpy_arrays()
+
+    engine.position_tracker.position = Position(
+        symbol="tBTCUSD",
+        side="LONG",
+        initial_size=1.0,
+        current_size=1.0,
+        entry_price=100.0,
+        entry_time=datetime(2025, 1, 1),
+    )
+
+    engine._precomputed_features = {
+        "htf_fib_0382": [99.5],
+        "htf_fib_05": [100.0],
+        "htf_fib_0618": [100.5],
+        "htf_swing_high": [102.0],
+        "htf_swing_low": [98.0],
+    }
+
+    captured_context: dict = {}
+
+    def _fake_check_exits(_position, _bar_data, htf_context, _indicators):
+        captured_context["value"] = htf_context
+        return []
+
+    engine.htf_exit_engine.check_exits = _fake_check_exits
+
+    reason = engine._check_htf_exit_conditions(
+        current_price=100.0,
+        timestamp=datetime(2025, 1, 1, 0, 15),
+        bar_data={
+            "timestamp": datetime(2025, 1, 1, 0, 15),
+            "open": 100.0,
+            "high": 101.0,
+            "low": 99.0,
+            "close": 100.0,
+            "volume": 1000.0,
+        },
+        result={"features": {}, "confidence": 1.0, "regime": "NEUTRAL"},
+        meta={
+            "decision": {"state_out": {}},
+            "features": {
+                "htf_fibonacci": {
+                    "available": True,
+                    "levels": {0.382: 111.0, 0.5: 112.0, 0.618: 113.0},
+                    "swing_high": 120.0,
+                    "swing_low": 90.0,
+                }
+            },
+        },
+        configs={"exit": {"enabled": True}},
+        bar_index=1,
+    )
+
+    assert reason is None
+    assert captured_context["value"] == {"available": False}
+    assert engine._htf_context_seen is False
+
+
 def test_check_htf_exit_valid_precomputed_context_remains_available(sample_candles_data):
     """Regression: valid precomputed HTF values should still be forwarded as available."""
     engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m")

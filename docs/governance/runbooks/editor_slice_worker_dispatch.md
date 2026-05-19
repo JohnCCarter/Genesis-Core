@@ -9,6 +9,8 @@ It does not change mode resolution, freeze rules, or shared-truth authority.
 >
 > - The operational guidance below is preserved for traceability and possible future reconsideration.
 > - Unless that model is explicitly reopened, this document remains complementary reference material only.
+>
+> Later-branch truthfulness note (2026-05-19): This retained historical/paused status is not limited to `feature/evidence-closeout-pilot`; in the later-branch context covered here, including `feature/risk-hardening-wave2`, this runbook also remains non-current reference material unless explicitly reopened. This note records status only and does not designate a replacement or branch-current default workflow.
 
 This is a retained historical target-model surface for explicitly activated slice workers.
 It does not create standing worker identities or implicit worker-to-worker chaining authority.

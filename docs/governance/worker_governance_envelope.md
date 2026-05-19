@@ -6,6 +6,8 @@
 >
 > - Unless this model is explicitly reopened, the requirements below are preserved in normative form for traceability only.
 > - The text remains a retained target model, not standing live instruction.
+>
+> Later-branch truthfulness note (2026-05-19): This retained historical/paused status is not limited to `feature/evidence-closeout-pilot`; in the later-branch context covered here, including `feature/risk-hardening-wave2`, this document also remains non-current reference material unless explicitly reopened. This note records status only and does not designate a replacement or branch-current default workflow.
 
 Det här dokumentet beskriver den worker-facing operativa spec som togs fram för parallella editor workers och deras exekveringsytor (normalt delad lokal checkout, ibland separat branch/worktree).
 

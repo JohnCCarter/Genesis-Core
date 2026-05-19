@@ -4,6 +4,20 @@ This README is a navigation aid for the files currently present in this folder.
 It does not replace or reinterpret the underlying audit or evidence documents.
 For authoritative details, open the referenced command packet and context map files directly.
 
+> Later-status note (2026-05-19): On `feature/risk-hardening-wave2`, treat this folder as
+> **historical optimizer refactor traceability only**. It is not a branch-current approval,
+> completion signal, or active refactor queue by itself.
+>
+> Current observed branch-state context at HEAD `481269a7`:
+>
+> - `src/core/optimizer/runner.py` = 1625 lines
+> - `src/core/optimizer/runner_optuna_orchestration.py` = 1113 lines
+> - `src/core/optimizer/runner_config.py` = 830 lines
+>
+> If a later bounded reopen is needed, the first admissible subtopic is the
+> **orchestration / validation / promotion boundary** across current `runner.py` and
+> `runner_optuna_orchestration.py`, rather than blanket continuation of all March split artifacts.
+
 ## What lives here
 
 This folder currently holds optimizer refactor planning/evidence artifacts for the `runner.py` split work.

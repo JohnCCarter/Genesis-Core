@@ -27,7 +27,7 @@
 - **Ingen traditionell databas** — filbaserad SSOT
 - **Runtime-config**: `config/runtime.json` (atomic writes)
 - **Audit-logg**: `logs/config_audit.jsonl` (append-only)
-- **Feature-cache**: PyArrow-columnar data på disk (schema_version=1)
+- **Feature artifacts (training/read-side)**: `.feather` / `.parquet`-filer under `data/curated/v1/features`, `data/archive/features` och `data/features`
 - **Modell-registry**: `config/models/registry.json`
 - **Champion-configs**: `config/strategy/champions/*.json`
 - **Optimizer search spaces**: `config/optimizer/<timeframe>/**/*.yaml`

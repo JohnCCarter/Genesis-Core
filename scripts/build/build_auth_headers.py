@@ -84,7 +84,7 @@ def print_data(data: dict, pretty: bool = False) -> None:
     """
     sanitized = _sanitize_for_logging(data)
     # CodeQL [py/clear-text-logging-sensitive-data]: sink-side recursive redaction applied.
-    print(json.dumps(sanitized, indent=2 if pretty else None))  # nosec B101 - Safe logging
+    print(json.dumps(sanitized, indent=2 if pretty else None))
 
 
 def main(argv: list[str] | None = None) -> int:

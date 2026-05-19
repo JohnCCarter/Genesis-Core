@@ -40,6 +40,14 @@ def _int_or_default_for_non_finite(value: Any, default: int) -> int:
         raise exc from None
 
 
+def _state_counter_or_default(value: Any, default: int) -> int:
+    """Return int(value), defaulting malformed state counters to the baseline path."""
+    try:
+        return int(value)
+    except (TypeError, ValueError, OverflowError):
+        return int(default)
+
+
 def compute_percentile(values: list[float], q: float) -> float:
     if not values:
         raise ValueError("values in percentile computation must not be empty")
@@ -564,7 +572,7 @@ def apply_post_fib_gates(
         2,
     )
     last_action = state_in.get("last_action")
-    decision_steps = _int_or_default_for_non_finite(state_in.get("decision_steps", 0), 0)
+    decision_steps = _state_counter_or_default(state_in.get("decision_steps", 0), 0)
     if last_action in ("LONG", "SHORT") and candidate != last_action:
         decision_steps += 1
         if decision_steps < hysteresis_steps:
@@ -583,7 +591,9 @@ def apply_post_fib_gates(
         decision_steps = 0
     state_out["decision_steps"] = decision_steps
 
-    cooldown_left = _int_or_default_for_non_finite(state_in.get("cooldown_remaining", 0), 0)
+    cooldown_left = _state_counter_or_default(state_in.get("cooldown_remaining", 0), 0)
+    if "cooldown_remaining" in state_in:
+        state_out["cooldown_remaining"] = cooldown_left
     if cooldown_left > 0:
         reasons.append("COOLDOWN_ACTIVE")
         log_decision_event("COOLDOWN_ACTIVE", remaining=cooldown_left)

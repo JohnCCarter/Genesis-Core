@@ -8,6 +8,12 @@ Status: `diagnostics delta / docs-only / non-authorizing`
 > It does **not** reopen any queue, replace SSOT, change governance mode, or authorize runtime, config, test, results, paper/live, readiness, promotion, or carrier-materialization work.
 >
 > Later status note (2026-05-18, post-re-anchor docs alignment): the tracked-vs-local-only citation seam named below was later corrected in the affected tracked docs. This note should therefore be read as a historical snapshot at Base SHA `cd556710`, not as a still-open current-branch requirement.
+>
+> Reader-routing note (2026-05-19): Treat this note as the **later branch-state re-anchor** for
+> the 2026-05-15 premortem chain only. For the original implementation-time risk frame, read
+> `docs/analysis/diagnostics/genesis_core_premortem_feature_evidence_closeout_pilot_2026-05-15.md`.
+> For the broader project-baseline sweep beyond the evidence-closeout-pilot scope, read
+> `docs/analysis/diagnostics/genesis_core_deep_premortem_project_baseline_2026-05-18.md`.
 
 ## Claim header
 

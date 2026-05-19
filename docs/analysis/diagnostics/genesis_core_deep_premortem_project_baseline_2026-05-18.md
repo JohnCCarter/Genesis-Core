@@ -8,6 +8,12 @@
 >
 > Detta dokument är `historical-trace-level` — det är en frusen ögonblicksbild av branchens
 > risk-yta som helhet, syntetiserad från tracked governance/audit-docs och tracked code-state.
+>
+> Reader-routing note (2026-05-19): Treat this note as the **broader project-baseline sweep**.
+> For the branch-specific implementation-time risk frame, read
+> `docs/analysis/diagnostics/genesis_core_premortem_feature_evidence_closeout_pilot_2026-05-15.md`.
+> For the later branch-state re-anchor of that premortem chain, read
+> `docs/analysis/diagnostics/premortem_delta_reanchor_feature_evidence_closeout_pilot_2026-05-18.md`.
 
 ## Claim header
 

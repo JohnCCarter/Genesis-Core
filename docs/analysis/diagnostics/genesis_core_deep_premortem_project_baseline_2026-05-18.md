@@ -173,6 +173,8 @@ Mode #17 (legacy validator misuse) har en konkret rename-fix föreslagen i Fynd 
 landad. Risk-toppen är att en framtida agent kallar `validate_config` på en runtime-config och
 får PASS för att legacy-schemat bara validerar 3 fält.
 
+Later-branch partial reclassification note (2026-05-19, `feature/risk-hardening-wave2`): the exact `#17` rename/hard-separation action above should no longer be read as unlanded current-branch work for this checkout. Current `src/core/config/validator.py` already exposes `LEGACY_SCHEMA_PATH`, `validate_legacy_config`, and `diff_legacy_config`, and current selectors in `tests/governance/test_dead_code_tripwires.py` and `tests/integration/test_config_endpoints.py` pass while explicitly enforcing those legacy-only names. This narrows the current residual to stale branch-visible wording and future misuse risk, not an unchanged live code seam where `validate_config` / `schema_v1.json` still remain the active helper surface. See `docs/decisions/governance/legacy_validator_misuse_partial_reclassification_packet_2026-05-19.md`.
+
 Mode #22 är **strukturell**: ConfigAuthority är konvention, inte teknisk gate. Inget hindrar att
 en mänsklig operatör eller en off-path-script skriver direkt till `config/runtime.json` och
 bumpar hash utan audit-trail. Mitigationen är detektion (hash-mismatch-warning vid init), inte

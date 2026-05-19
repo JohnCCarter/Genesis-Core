@@ -155,9 +155,9 @@ Important boundary:
 
 ### Legacy helper surface
 
-- `core.config.validator.validate_config`
-- `core.config.validator.diff_config`
-- `schema_v1.json`
+- `core.config.validator.validate_legacy_config`
+- `core.config.validator.diff_legacy_config`
+- `legacy_schema_v1.json`
 
 These legacy helpers are explicitly described as test-only / legacy helpers and must not be mistaken for the current runtime live-update contract.
 

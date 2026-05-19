@@ -22,7 +22,7 @@
 
 - Per-nyckel µs-nonce med beständig lagring och låsning för REST.
 - WS-auth använder samma källa men konverterar µs→ms.
-- Engångs-retry vid "nonce too small" (10114) med `bump_nonce()`.
+- Signerade REST-anrop använder strukturerad felmarkör-extraktion och bounded retry upp till tre försök för nonce-fel (`10114` / `nonce`-markörer), `429`/`5xx`, och transienta request-fel; nonce-specifika retries använder `bump_nonce()` och bounded jitter-backoff.
 
 ### WS reconnect (skelett)
 

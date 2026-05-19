@@ -173,6 +173,9 @@ Engine-pelaren har **mest öppet dokumenterad risk**:
 - mode #2 (precompute cache silent stale-reuse) är Fynd C i BACKTEST_ENGINE_AUDIT.md. Cache-key inkluderar schema-version + spec-digest + symbol/timeframe + längd + start/end ns. Men `GENESIS_PRECOMPUTE_CONFIG_HASH` är **valfritt**, vilket innebär att två körningar med olika strategi-konfig kan dela cache. Konsekvensen är inte test-fel — det är **olika resultat utan att någon larmar**.
 - mode #8 + #9 (HTF-relaterade) handlar båda om att samma logiska intent (kör HTF-exits) realiseras via olika kod-paths beroende på empty-dict vs explicit-enabled vs precomputed-mapping. Audit-rekommendationen är `htf_exit_config["enabled"]` opt-in.
 - mode #15 (`engine.py` 1522 rader) är **partially mitigated** — MEMORY.md visar att en engine-modul-split pågår på separat worktree (slice 1 + slice 2 landade där, slice 3 planerad). Men på `feature/evidence-closeout-pilot` är `engine.py` fortfarande 1522 rader, och split-arbetet är inte mergat hit.
+
+  Later-branch truthfulness note (2026-05-19, `feature/risk-hardening-wave2`): the `#15` sentence above remains a historical 2026-05-18 observation and should not be read as current tracked branch evidence for this checkout. The current review on `feature/risk-hardening-wave2` did not identify a tracked `MEMORY.md` carrier for that claim; current tracked `htf_exit*` split artifacts are a different seam and do not by themselves resolve `src/core/backtest/engine.py`. See `docs/decisions/governance/backtest_engine_split_track_reconcile_packet_2026-05-19.md`.
+
 - mode #18 (error-policy continue+raise) är öppet erkänd som "kan överraska användare" i Fynd D. Korrekt mitigation är explicit `error_policy` parameter, inte hide-the-error.
 
 ### Optimizer (#10, #16)

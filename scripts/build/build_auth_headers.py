@@ -14,6 +14,8 @@ from core.utils.nonce_manager import get_nonce
 
 REVEAL_ACK_ENV = "GENESIS_ALLOW_SECRET_OUTPUT"
 REVEAL_ACK_VALUE = "1"
+SAFE_REDACTION = "***"
+GENERATED_VALUE_PLACEHOLDER = "<generated>"
 SENSITIVE_HEADER_KEYS = {"bfx-apikey", "bfx-signature"}
 SENSITIVE_KEY_FRAGMENTS = {
     "apikey",
@@ -48,6 +50,26 @@ def _mask_sensitive_headers(headers: dict[str, str]) -> dict[str, str]:
         key: ("***" if key.lower() in SENSITIVE_HEADER_KEYS else value)
         for key, value in headers.items()
     }
+
+
+def _build_safe_cli_preview(reveal_requested: bool) -> dict[str, str]:
+    preview = {
+        "bfx-apikey": SAFE_REDACTION,
+        "bfx-nonce": GENERATED_VALUE_PLACEHOLDER,
+        "bfx-signature": SAFE_REDACTION,
+        "Content-Type": "application/json",
+    }
+    if reveal_requested:
+        preview["info"] = (
+            "Reveal acknowledgement accepted, but CLI output stays redacted. "
+            "Import build_headers() for in-process use instead of logging secrets."
+        )
+    else:
+        preview["info"] = (
+            "Sensitive header values are never printed. "
+            "Import build_headers() for in-process use instead of logging secrets."
+        )
+    return preview
 
 
 def build_headers(endpoint: str, body: dict | None) -> dict[str, str]:
@@ -93,7 +115,6 @@ def print_data(data: dict, pretty: bool = False) -> None:
     Write only sanitized data to stdout.
     """
     sanitized = _sanitize_for_logging(data)
-    # CodeQL [py/clear-text-logging-sensitive-data]: sink-side recursive redaction applied.
     print(json.dumps(sanitized, indent=2 if pretty else None))
 
 
@@ -127,7 +148,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Invalid JSON body: {e}", file=sys.stderr)
         return 2
 
-    headers = build_headers(args.endpoint, body)
+    _ = build_headers(args.endpoint, body)
 
     if args.reveal:
         if os.getenv(REVEAL_ACK_ENV, "").strip() != REVEAL_ACK_VALUE:
@@ -140,18 +161,7 @@ def main(argv: list[str] | None = None) -> int:
             )
             return 3
 
-    out = {
-        "bfx-apikey": "***",
-        "bfx-signature": "***",
-        "bfx-nonce": headers["bfx-nonce"],
-        "Content-Type": headers["Content-Type"],
-    }
-    if args.reveal:
-        out["info"] = "Reveal acknowledgement accepted, but secrets remain masked for safe logging."
-    else:
-        out["info"] = (
-            "Secrets are masked by default. --reveal requires explicit acknowledgement and still does not show clear text."
-        )
+    out = _build_safe_cli_preview(reveal_requested=args.reveal)
 
     print_data(out, args.pretty)
     return 0

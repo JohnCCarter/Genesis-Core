@@ -59,9 +59,12 @@ def test_main_without_reveal(mock_settings, mock_nonce, capsys):
     # Without --reveal, sensitive values should be masked by default
     assert output["bfx-apikey"] == "***"
     assert output["bfx-signature"] == "***"
-    assert output["bfx-nonce"] == "1234567890000000"
+    assert output["bfx-nonce"] == "<generated>"
     assert output["Content-Type"] == "application/json"
     assert "info" in output
+    assert MOCK_API_TOKEN_A not in captured.out
+    assert MOCK_API_TOKEN_B not in captured.out
+    assert "1234567890000000" not in captured.out
 
 
 def test_main_with_reveal(mock_settings, mock_nonce, capsys):
@@ -121,9 +124,12 @@ def test_main_with_reveal_and_ack_masks_sensitive_values(
 
     assert output["bfx-apikey"] == "***"
     assert output["bfx-signature"] == "***"
-    assert output["bfx-nonce"] == "1234567890000000"
+    assert output["bfx-nonce"] == "<generated>"
     assert output["Content-Type"] == "application/json"
     assert "info" in output
+    assert MOCK_API_TOKEN_A not in captured.out
+    assert MOCK_API_TOKEN_B not in captured.out
+    assert "1234567890000000" not in captured.out
 
 
 def test_main_with_reveal_and_wrong_ack_is_blocked(mock_settings, mock_nonce, capsys, monkeypatch):

@@ -8,7 +8,6 @@ import hashlib
 import json
 import math
 import os
-import subprocess
 import warnings
 from datetime import datetime
 from pathlib import Path
@@ -17,6 +16,11 @@ from typing import Any
 import pandas as pd
 from tqdm import tqdm
 
+from core.backtest.engine_precompute import (
+    get_persisted_precompute_spec,
+    prepare_precomputed_features,
+)
+from core.backtest.engine_results import _build_backtest_results_payload
 from core.backtest.htf_exit_engine import ExitAction
 from core.backtest.htf_exit_engine import HTFFibonacciExitEngine as LegacyExitEngine
 from core.config.merge_policy import resolve_champion_merge_for_engine
@@ -36,6 +40,7 @@ from core.strategy.evaluate import evaluate_pipeline
 
 _LOGGER = get_logger(__name__)
 _PER_BAR_ERROR_POLICY = "continue_collect_raise_after_loop"
+_VALID_PER_BAR_ERROR_POLICIES = (_PER_BAR_ERROR_POLICY, "fail_fast")
 
 
 # B1: On-disk precompute cache versioning.
@@ -72,20 +77,7 @@ def _precompute_cache_key_material() -> str:
 
     spec = {
         "schema_version": int(PRECOMPUTE_SCHEMA_VERSION),
-        "indicators": {
-            "atr_periods": [14, 50],
-            "ema_periods": [20, 50],
-            "rsi_period": 14,
-            "bb": {"period": 20, "std_dev": 2.0},
-            "adx_period": 14,
-        },
-        "fib_cfg": {
-            "atr_depth": 3.0,
-            "max_swings": 8,
-            "min_swings": 1,
-            "precompute_swing_history": "full",
-            "precompute_max_lookback": "full",
-        },
+        "persisted_precompute_spec": get_persisted_precompute_spec(),
     }
     canon = json.dumps(spec, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     digest12 = hashlib.sha256(canon.encode("utf-8")).hexdigest()[:12]
@@ -211,6 +203,7 @@ def _raise_if_per_bar_errors(
     *,
     error_count: int,
     first_error: tuple[int, str] | None,
+    error_policy: str,
 ) -> None:
     if error_count <= 0:
         return
@@ -221,7 +214,7 @@ def _raise_if_per_bar_errors(
         "Backtest aborted due to per-bar evaluation errors: "
         f"count={error_count}, first_at_bar={first_bar}, first_error={first_message}"
     )
-    _LOGGER.error("%s | policy=%s", error_msg, _PER_BAR_ERROR_POLICY)
+    _LOGGER.error("%s | policy=%s", error_msg, error_policy)
     raise RuntimeError(error_msg)
 
 
@@ -232,6 +225,16 @@ def _normalize_data_source_policy(policy: str | None) -> str:
     if normalized not in VALID_DATA_SOURCE_POLICIES:
         allowed = ", ".join(VALID_DATA_SOURCE_POLICIES)
         raise ValueError(f"Invalid data_source_policy={policy!r}. Expected one of: {allowed}")
+    return normalized
+
+
+def _normalize_per_bar_error_policy(policy: str) -> str:
+    """Return a validated per-bar error policy."""
+
+    normalized = str(policy).strip()
+    if normalized not in _VALID_PER_BAR_ERROR_POLICIES:
+        allowed = ", ".join(_VALID_PER_BAR_ERROR_POLICIES)
+        raise ValueError(f"Invalid error_policy={policy!r}. Expected one of: {allowed}")
     return normalized
 
 
@@ -643,24 +646,6 @@ class BacktestEngine:
         if getattr(self, "precompute_features", False):
             try:
                 _LOGGER.info("Precompute enabled: starting feature precomputation")
-                closes_all = self.candles_df["close"].tolist()
-                highs_all = self.candles_df["high"].tolist()
-                lows_all = self.candles_df["low"].tolist()
-                import numpy as _np
-
-                from core.indicators.adx import calculate_adx as _calc_adx
-                from core.indicators.atr import calculate_atr as _calc_atr
-                from core.indicators.bollinger import bollinger_bands as _bb
-                from core.indicators.ema import calculate_ema as _calc_ema
-                from core.indicators.fibonacci import FibonacciConfig as _FibCfg
-                from core.indicators.fibonacci import detect_swing_points as _detect_swings
-                from core.indicators.rsi import calculate_rsi as _calc_rsi
-
-                # Fib config is used both for LTF swing precompute and HTF mapping.
-                # It must exist even when we load indicators from the on-disk cache.
-                fib_cfg = _FibCfg(atr_depth=3.0, max_swings=8, min_swings=1)
-
-                # Try on-disk cache first
                 cache_dir = Path(__file__).resolve().parents[3] / "cache" / "precomputed"
                 cache_write_enabled = _precompute_cache_write_enabled()
                 if cache_write_enabled:
@@ -671,146 +656,21 @@ class BacktestEngine:
                 # cached features can drastically change strategy decisions.
                 key = self._precompute_cache_key(self.candles_df)
                 cache_path = cache_dir / f"{key}.npz"
-                loaded = False
-                pre: dict[str, list[float]] = {}
-                if cache_path.exists():
-                    try:
-                        with _np.load(cache_path, allow_pickle=False) as npz:
-                            cache_valid, invalid_reason = (
-                                _validate_metadata_bearing_precompute_cache(
-                                    npz,
-                                    candle_count=len(closes_all),
-                                )
-                            )
-                            if cache_valid:
-                                pre = _load_precompute_cache_payload(npz)
-                                loaded = True
-                                _LOGGER.debug(
-                                    "Loaded precomputed features from cache: %s",
-                                    cache_path.name,
-                                )
-                            else:
-                                _LOGGER.warning(
-                                    "Ignoring precompute cache %s: %s",
-                                    cache_path.name,
-                                    invalid_reason,
-                                )
-                    except Exception:
-                        loaded = False
-
-                if not loaded:
-                    _LOGGER.info("Precompute: computing indicators")
-                    import time
-
-                    start_time = time.perf_counter()
-                    atr_14 = _calc_atr(highs_all, lows_all, closes_all, period=14)
-                    atr_50 = _calc_atr(highs_all, lows_all, closes_all, period=50)
-                    # Precompute two common EMA periods used by features
-                    ema_20 = _calc_ema(closes_all, period=20)
-                    ema_50 = _calc_ema(closes_all, period=50)
-                    rsi_14 = _calc_rsi(closes_all, period=14)
-                    bb_all = _bb(closes_all, period=20, std_dev=2.0)
-                    bb_pos = list(bb_all.get("position") or [])
-                    adx_14 = _calc_adx(highs_all, lows_all, closes_all, period=14)
-
-                    # Precompute Fibonacci swings (LTF) for reuse in feature calculation
-                    # Use pandas only for Series conversion inside detect function to keep parity
-                    import pandas as _pd
-
-                    fib_precompute_cfg = _FibCfg(
-                        levels=list(fib_cfg.levels),
-                        weights=dict(fib_cfg.weights),
-                        atr_depth=fib_cfg.atr_depth,
-                        max_swings=max(1, len(closes_all)),
-                        min_swings=fib_cfg.min_swings,
-                        max_lookback=max(fib_cfg.max_lookback, len(closes_all)),
-                        swing_threshold_multiple=fib_cfg.swing_threshold_multiple,
-                        swing_threshold_min=fib_cfg.swing_threshold_min,
-                        swing_threshold_step=fib_cfg.swing_threshold_step,
-                    )
-                    sh_idx, sl_idx, sh_px, sl_px = _detect_swings(
-                        _pd.Series(highs_all),
-                        _pd.Series(lows_all),
-                        _pd.Series(closes_all),
-                        fib_precompute_cfg,
-                    )
-
-                    elapsed = time.perf_counter() - start_time
-                    _LOGGER.info("Precompute: computed indicators in %.2fs", elapsed)
-
-                    # Optional on-disk cache for reuse between runs
-                    if cache_write_enabled:
-                        try:
-                            _np.savez_compressed(
-                                cache_path,
-                                cache_meta_json=json.dumps(
-                                    _build_precompute_cache_metadata(candle_count=len(closes_all)),
-                                    sort_keys=True,
-                                    separators=(",", ":"),
-                                    ensure_ascii=False,
-                                ),
-                                atr_14=_np.asarray(atr_14, dtype=float),
-                                atr_50=_np.asarray(atr_50, dtype=float),
-                                ema_20=_np.asarray(ema_20, dtype=float),
-                                ema_50=_np.asarray(ema_50, dtype=float),
-                                rsi_14=_np.asarray(rsi_14, dtype=float),
-                                bb_position_20_2=_np.asarray(bb_pos, dtype=float),
-                                adx_14=_np.asarray(adx_14, dtype=float),
-                                fib_high_idx=_np.asarray(sh_idx, dtype=int),
-                                fib_low_idx=_np.asarray(sl_idx, dtype=int),
-                                fib_high_px=_np.asarray(sh_px, dtype=float),
-                                fib_low_px=_np.asarray(sl_px, dtype=float),
-                            )
-                            _LOGGER.debug("Cached precomputed features: %s", cache_path.name)
-                        except Exception as cache_err:  # nosec B110
-                            _LOGGER.warning(
-                                "Failed to write precompute cache %s: %s",
-                                cache_path,
-                                cache_err,
-                            )
-                    else:
-                        _LOGGER.debug(
-                            "Precompute cache writes disabled via GENESIS_PRECOMPUTE_CACHE_WRITE; "
-                            "using in-memory precomputed features only for this run"
-                        )
-
-                    pre = {
-                        "atr_14": atr_14,
-                        "atr_50": atr_50,
-                        "ema_20": ema_20,
-                        "ema_50": ema_50,
-                        "rsi_14": rsi_14,
-                        "bb_position_20_2": bb_pos,
-                        "adx_14": adx_14,
-                        "fib_high_idx": list(sh_idx),
-                        "fib_low_idx": list(sl_idx),
-                        "fib_high_px": list(sh_px),
-                        "fib_low_px": list(sl_px),
-                    }
-
-                self._precomputed_features = pre
-
-                # Precompute HTF Mapping if available
-                if self.htf_candles_df is not None:
-                    from core.indicators.htf_fibonacci import compute_htf_fibonacci_mapping
-
-                    _LOGGER.info("Precompute: mapping HTF Fibonacci levels")
-                    htf_map = compute_htf_fibonacci_mapping(
-                        self.htf_candles_df, self.candles_df, fib_cfg
-                    )
-                    # Store in precomputed features (as lists)
-                    for col in [
-                        "htf_fib_0382",
-                        "htf_fib_05",
-                        "htf_fib_0618",
-                        "htf_swing_high",
-                        "htf_swing_low",
-                    ]:
-                        if col in htf_map.columns:
-                            self._precomputed_features[col] = htf_map[col].fillna(0.0).tolist()
-                    _LOGGER.info("Precompute: HTF Fibonacci mapping complete")
-
-                _LOGGER.info("Precompute: features ready")
+                self._precomputed_features = prepare_precomputed_features(
+                    candles_df=self.candles_df,
+                    htf_candles_df=self.htf_candles_df,
+                    cache_path=cache_path,
+                    cache_write_enabled=cache_write_enabled,
+                    logger=_LOGGER,
+                    build_cache_metadata=lambda candle_count: _build_precompute_cache_metadata(
+                        candle_count=candle_count
+                    ),
+                    validate_cache=lambda npz, candle_count: _validate_metadata_bearing_precompute_cache(
+                        npz,
+                        candle_count=candle_count,
+                    ),
+                    load_cache_payload=_load_precompute_cache_payload,
+                )
             except Exception as e:
                 # Non-fatal: skip precompute if indicators unavailable
                 _LOGGER.warning("Precomputation failed (non-fatal): %s", e)
@@ -949,6 +809,7 @@ class BacktestEngine:
         configs: dict | None = None,
         verbose: bool = False,
         pruning_callback: Any | None = None,
+        error_policy: str = _PER_BAR_ERROR_POLICY,
     ) -> dict:
         """
         Run backtest.
@@ -958,6 +819,9 @@ class BacktestEngine:
             configs: Strategy configs (thresholds, risk, etc.)
             verbose: Print detailed progress
             pruning_callback: Optional callback(step, value) -> bool. If returns True, abort.
+            error_policy: Per-bar pipeline failure policy. ``continue_collect_raise_after_loop``
+                          preserves the current default behavior; ``fail_fast`` raises on the
+                          first per-bar evaluation error.
 
         Returns:
             Dict with backtest results
@@ -986,6 +850,8 @@ class BacktestEngine:
                 "No candles available (empty dataset). Check date filters and data range."
             )
             return {"error": "no_data"}
+
+        active_error_policy = _normalize_per_bar_error_policy(error_policy)
 
         # Ensure numpy arrays are prepared for fast window extraction
         if self._np_arrays is None:
@@ -1295,6 +1161,12 @@ class BacktestEngine:
                         print(f"\n[ERROR] Bar {i}: {e}{where}")
                     except Exception:
                         print(f"\n[ERROR] Bar {i}: {e}")
+                if active_error_policy == "fail_fast":
+                    _raise_if_per_bar_errors(
+                        error_count=per_bar_error_count,
+                        first_error=first_per_bar_error,
+                        error_policy=active_error_policy,
+                    )
                 # Continue on error (robust backtest)
 
             pbar.update(1)
@@ -1304,6 +1176,7 @@ class BacktestEngine:
         _raise_if_per_bar_errors(
             error_count=per_bar_error_count,
             first_error=first_per_bar_error,
+            error_policy=active_error_policy,
         )
 
         # Report feature hit counts
@@ -1754,94 +1627,7 @@ class BacktestEngine:
 
     def _build_results(self) -> dict:
         """Build final backtest results."""
-        summary = self.position_tracker.get_summary()
-        position_summary = self.position_tracker.get_position_summary()
-
-        # Resolve git executable to an absolute path (Bandit B607) and keep failure non-fatal.
-        git_hash = "unknown"
-        try:
-            import shutil
-
-            git_exe = shutil.which("git")
-            if git_exe:
-                git_hash = subprocess.check_output(
-                    [git_exe, "rev-parse", "HEAD"], text=True
-                ).strip()
-        except (OSError, subprocess.SubprocessError):
-            git_hash = "unknown"
-
-        return {
-            "backtest_info": {
-                "symbol": self.symbol,
-                "timeframe": self.timeframe,
-                "data_source_policy": self.data_source_policy,
-                "ltf_candles_source": self.candles_source,
-                "start_date": str(self.candles_df["timestamp"].min()),
-                "end_date": str(self.candles_df["timestamp"].max()),
-                "bars_total": len(self.candles_df),
-                "bars_processed": self.bar_count,
-                "warmup_bars": self.warmup_bars,
-                "initial_capital": self.position_tracker.initial_capital,
-                "commission_rate": self.position_tracker.commission_rate,
-                "slippage_rate": self.position_tracker.slippage_rate,
-                "execution_mode": {
-                    "fast_window": bool(self.fast_window),
-                    "env_precompute_features": os.environ.get("GENESIS_PRECOMPUTE_FEATURES"),
-                    "precompute_enabled": bool(getattr(self, "precompute_features", False)),
-                    "precomputed_ready": bool(getattr(self, "_precomputed_features", None)),
-                    "mode_explicit": os.environ.get("GENESIS_MODE_EXPLICIT"),
-                },
-                "htf": {
-                    "env_htf_exits": os.environ.get("GENESIS_HTF_EXITS"),
-                    "use_new_exit_engine": bool(getattr(self, "_use_new_exit_engine", False)),
-                    "htf_candles_loaded": bool(self.htf_candles_df is not None),
-                    "htf_candles_source": self.htf_candles_source,
-                    "htf_context_seen": bool(getattr(self, "_htf_context_seen", False)),
-                },
-                "effective_config_fingerprint": getattr(
-                    self, "_effective_config_fingerprint", None
-                ),
-                "git_hash": git_hash,
-                "seed": os.environ.get("GENESIS_RANDOM_SEED", "unknown"),
-                "timestamp": datetime.now().isoformat(),
-            },
-            "summary": summary,
-            "position_summary": position_summary,
-            # Add top-level metrics for convenience (duplicates summary fields)
-            "metrics": {
-                "total_trades": summary.get("num_trades", 0),
-                "num_trades": summary.get("num_trades", 0),
-                "total_return": summary.get("total_return", 0.0) / 100.0,  # Convert to fraction
-                "total_return_pct": summary.get("total_return", 0.0),
-                "win_rate": summary.get("win_rate", 0.0) / 100.0,  # Convert to fraction
-                "profit_factor": summary.get("profit_factor", 0.0),
-                "max_drawdown": summary.get("max_drawdown", 0.0) / 100.0,  # Convert to fraction
-            },
-            "trades": [
-                {
-                    "symbol": t.symbol,
-                    "side": t.side,
-                    "size": t.size,
-                    "entry_price": t.entry_price,
-                    "entry_time": t.entry_time.isoformat(),
-                    "entry_regime": t.entry_regime,
-                    "exit_price": t.exit_price,
-                    "exit_time": t.exit_time.isoformat(),
-                    "pnl": t.pnl,
-                    "pnl_pct": t.pnl_pct,
-                    "commission": t.commission,
-                    "exit_reason": t.exit_reason,
-                    "is_partial": t.is_partial,
-                    "remaining_size": t.remaining_size,
-                    "position_id": t.position_id,
-                    "entry_reasons": t.entry_reasons,
-                    "entry_fib_debug": t.entry_fib_debug,
-                    "exit_fib_debug": t.exit_fib_debug,
-                }
-                for t in self.position_tracker.trades
-            ],
-            "equity_curve": self.position_tracker.equity_curve,
-        }
+        return _build_backtest_results_payload(self)
 
     def _initialize_position_exit_context(
         self, result: dict, meta: dict, entry_price: float, timestamp: datetime

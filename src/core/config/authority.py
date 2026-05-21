@@ -66,6 +66,11 @@ def _canonicalize_authority_mode_alias(patch: dict[str, Any]) -> dict[str, Any]:
     return canonicalize_authority_mode_alias_strict(patch)
 
 
+def _validate_exit_patch_whitelist(exit_patch: Any) -> None:
+    if not isinstance(exit_patch, dict) or set(exit_patch.keys()) != {"enabled"}:
+        raise ValueError("non_whitelisted_field:exit")
+
+
 def _raise_missing_strategy_family_backcompat_error() -> None:
     raise _MissingStrategyFamilyBackcompatError(
         _MISSING_STRATEGY_FAMILY_BACKCOMPAT_MSG,
@@ -88,11 +93,89 @@ def _normalize_loaded_runtime_cfg(cfg: dict[str, Any]) -> dict[str, Any]:
     return normalized
 
 
+def _load_latest_audit_signature(audit_path: Path) -> tuple[int, str] | None:
+    if not audit_path.exists():
+        return None
+    try:
+        lines = audit_path.read_text(encoding="utf-8").splitlines()
+    except Exception as e:
+        _LOGGER.debug("audit_read_error: %s", e)
+        return None
+
+    for line in reversed(lines):
+        stripped = line.strip()
+        if not stripped:
+            continue
+        try:
+            payload = json.loads(stripped)
+        except Exception as e:
+            _LOGGER.debug("audit_parse_error: %s", e)
+            return None
+        if not isinstance(payload, dict):
+            return None
+
+        version = payload.get("new_version")
+        hash_after = payload.get("hash_after")
+        if not isinstance(version, int):
+            return None
+        if not isinstance(hash_after, str) or not hash_after.strip():
+            return None
+        return version, hash_after
+
+    return None
+
+
 class ConfigAuthority:
     def __init__(self, path: Path | None = None) -> None:
         self.path = path or RUNTIME_PATH
         self.path.parent.mkdir(parents=True, exist_ok=True)
         AUDIT_LOG.parent.mkdir(parents=True, exist_ok=True)
+        self._warn_if_runtime_state_diverged_from_latest_audit()
+
+    def _current_runtime_signature_for_drift_check(self) -> tuple[int, str] | None:
+        if not self.path.exists():
+            return None
+
+        try:
+            version, cfg_raw = self._read()
+            cfg_raw = _normalize_loaded_runtime_cfg(cfg_raw)
+            cfg = RuntimeConfig(**cfg_raw)
+        except _MissingStrategyFamilyBackcompatError as e:
+            _LOGGER.debug("runtime_drift_check_missing_strategy_family: %s", e)
+            return None
+        except ValidationError as e:
+            _LOGGER.debug("runtime_drift_check_validation_error: %s", e)
+            return None
+        except Exception as e:
+            _LOGGER.debug("runtime_drift_check_error: %s", e)
+            return None
+
+        cfg_canon = cfg.model_dump_canonical()
+        return version, self._hash_cfg(cfg_canon)
+
+    def _warn_if_runtime_state_diverged_from_latest_audit(self) -> None:
+        audited_state = _load_latest_audit_signature(AUDIT_LOG)
+        if audited_state is None:
+            return
+
+        current_state = self._current_runtime_signature_for_drift_check()
+        if current_state is None:
+            return
+
+        current_version, current_hash = current_state
+        audited_version, audited_hash = audited_state
+        if current_version == audited_version and current_hash == audited_hash:
+            return
+
+        _LOGGER.warning(
+            "runtime_config_state_diverged_from_audit: path=%s current_version=%s "
+            "audited_version=%s current_hash=%s audited_hash=%s",
+            self.path,
+            current_version,
+            audited_version,
+            current_hash,
+            audited_hash,
+        )
 
     def _read(self) -> tuple[int, dict[str, Any]]:
         if not self.path.exists():
@@ -226,12 +309,15 @@ class ConfigAuthority:
                     "gates",
                     "risk",
                     "ev",
+                    "exit",
                     "multi_timeframe",
                 }:
                     raise ValueError("non_whitelisted_field")
                 if k == "strategy_family":
                     if str(v).strip().lower() not in {"legacy", "ri"}:
                         raise ValueError("invalid_value:strategy_family")
+                if k == "exit":
+                    _validate_exit_patch_whitelist(v)
                 if k == "risk":
                     if not isinstance(v, dict) or any(subk != "risk_map" for subk in v.keys()):
                         raise ValueError("non_whitelisted_field:risk")

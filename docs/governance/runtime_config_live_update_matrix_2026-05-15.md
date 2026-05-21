@@ -11,6 +11,7 @@ Status: `complementary snapshot reference / docs-only / no behavior change / no 
 > - This note records the observed boundary, as documented in the earlier `feature/editor-worker-orchestrator` context, between `RuntimeConfig`, `/config/runtime/validate`, and `/config/runtime/propose`.
 > - It does **not** change the whitelist, API behavior, or runtime/config-authority semantics.
 > - It should be read as a reference note that reduces confusion around live-updatability, not as approval for expanding the live-write surface.
+> - The current executable boundary is still the narrow live-write surface enforced by `ConfigAuthority.propose_update()` and covered by `tests/governance/test_config_ssot.py`, `tests/integration/test_config_endpoints.py`, and `tests/integration/test_config_api_e2e.py`.
 
 ## Purpose
 
@@ -132,13 +133,16 @@ The current repo surface behaves like this:
 2. `propose` answers: can this patch be live-written through the guarded authority path?
 3. The live-write surface is intentionally narrower than the full declared runtime schema.
 
-### Inferred current policy reading
+### Current governed reading
 
-Based on current code plus `docs/audit/CONFIG_GOVERNANCE_AUDIT.md`, the repository currently behaves closest to:
+Based on the current authority path plus the current config endpoint tests, the approved reading on the present repo surface is:
 
 - **B1 (safety-model reading):** keep a stricter live whitelist and document it clearly
 
-This is an **inference about current behavior**, not a claim that the future policy decision is permanently settled.
+Important boundary:
+
+- `RuntimeConfig` still defines a broader persisted/runtime config shape than the fields currently approved for live mutation through `/config/runtime/propose`.
+- **B2 (whitelist expansion)** remains a separate behavior-change candidate and is not approved by this docs-only reference note.
 
 ## Do not confuse these surfaces
 
@@ -151,9 +155,9 @@ This is an **inference about current behavior**, not a claim that the future pol
 
 ### Legacy helper surface
 
-- `core.config.validator.validate_config`
-- `core.config.validator.diff_config`
-- `schema_v1.json`
+- `core.config.validator.validate_legacy_config`
+- `core.config.validator.diff_legacy_config`
+- `legacy_schema_v1.json`
 
 These legacy helpers are explicitly described as test-only / legacy helpers and must not be mistaken for the current runtime live-update contract.
 

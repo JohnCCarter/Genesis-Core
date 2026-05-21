@@ -7,6 +7,12 @@
 > `docs/analysis/diagnostics/next_phase_verkstad_queue_2026-05-15.md` advanced branch state well
 > beyond the immediate slice-4 context described below. This file therefore remains a historical
 > risk frame, not current queue or priority authority.
+>
+> Reader-routing note (2026-05-19): Treat this note as the **branch-specific implementation-time
+> risk frame** only. For the later branch-state re-anchor after the 2026-05-18 closeout work, read
+> `docs/analysis/diagnostics/premortem_delta_reanchor_feature_evidence_closeout_pilot_2026-05-18.md`.
+> For the broader cross-pillar project sweep, read
+> `docs/analysis/diagnostics/genesis_core_deep_premortem_project_baseline_2026-05-18.md`.
 
 ## Claim header
 

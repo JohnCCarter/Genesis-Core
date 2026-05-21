@@ -1,29 +1,25 @@
+from pathlib import Path
+
 from fastapi.testclient import TestClient
 
+from core.config.authority import ConfigAuthority
 from core.config.validator import (
-    diff_config,
     diff_legacy_config,
-    validate_config,
     validate_legacy_config,
 )
 from core.server import app
 
 
-def test_config_validation_and_diff_helpers():
+def test_legacy_config_validation_and_diff_helpers():
     good = {"dry_run": True, "position_cap_pct": 20}
     bad = {"dry_run": "yes"}
-    assert validate_config(good) == []
-    assert any("is not of type" in e for e in validate_config(bad))
     assert validate_legacy_config(good) == []
     assert any("is not of type" in e for e in validate_legacy_config(bad))
 
     a = {"x": 1}
     b = {"x": 2, "y": 3}
-    d = diff_config(a, b)
     d_legacy = diff_legacy_config(a, b)
-    keys = {c["key"] for c in d}
     legacy_keys = {c["key"] for c in d_legacy}
-    assert keys == {"x", "y"}
     assert legacy_keys == {"x", "y"}
 
 
@@ -252,6 +248,70 @@ def test_runtime_propose_nested_non_whitelisted_detail_is_coarse(monkeypatch):
     assert "regime_definition" not in r.text
     assert "adx_trend_threshold" not in r.text
     assert ":" not in r.json()["detail"]
+
+
+def test_runtime_propose_exit_enabled_singleton_is_admitted(monkeypatch, tmp_path: Path):
+    c = TestClient(app)
+
+    import core.api.config as api
+
+    monkeypatch.setattr(api, "authority", ConfigAuthority(tmp_path / "runtime.json"))
+
+    r = c.get("/config/runtime")
+    assert r.status_code == 200
+    v0 = int(r.json().get("version") or 0)
+
+    monkeypatch.setenv("BEARER_TOKEN", "test-secret")
+    r = c.post(
+        "/config/runtime/propose",
+        headers={"Authorization": "Bearer test-secret"},
+        json={
+            "patch": {"exit": {"enabled": False}},
+            "actor": "test",
+            "expected_version": v0,
+        },
+    )
+
+    assert r.status_code == 200
+    body = r.json()
+    assert int(body.get("version", -1)) == v0 + 1
+    assert body.get("cfg", {}).get("exit", {}).get("enabled") is False
+    assert body.get("cfg", {}).get("exit", {}).get("stop_loss_pct") == 0.02
+
+
+def test_runtime_propose_exit_mixed_patch_is_coarse_and_atomic(monkeypatch, tmp_path: Path):
+    c = TestClient(app)
+
+    import core.api.config as api
+
+    monkeypatch.setattr(api, "authority", ConfigAuthority(tmp_path / "runtime.json"))
+
+    r = c.get("/config/runtime")
+    assert r.status_code == 200
+    initial = r.json()
+    v0 = int(initial.get("version") or 0)
+    initial_cfg = initial.get("cfg", {})
+
+    monkeypatch.setenv("BEARER_TOKEN", "test-secret")
+    r = c.post(
+        "/config/runtime/propose",
+        headers={"Authorization": "Bearer test-secret"},
+        json={
+            "patch": {"exit": {"enabled": False, "stop_loss_pct": 0.01}},
+            "actor": "test",
+            "expected_version": v0,
+        },
+    )
+
+    assert r.status_code == 400
+    assert r.json() == {"detail": "non_whitelisted_field"}
+    assert "stop_loss_pct" not in r.text
+    assert "enabled" not in r.text
+
+    after = c.get("/config/runtime")
+    assert after.status_code == 200
+    assert int(after.json().get("version", -1)) == v0
+    assert after.json().get("cfg") == initial_cfg
 
 
 def test_runtime_propose_invalid_value_stays_bad_request(monkeypatch):

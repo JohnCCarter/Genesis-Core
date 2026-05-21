@@ -15,14 +15,14 @@
   - `GET /config/runtime` – läser runtime snapshot (`cfg`, `hash`, `version`).
   - `POST /config/runtime/validate` – validerar en föreslagen runtime-config mot runtime-schemat (returnerar `valid` + felkod), men `valid=true` innebär inte i sig live-write-authority.
   - `POST /config/runtime/propose` – patchar whitelistade live-update-fält, kräver bearer + `expected_version`, skriver atomiskt till `config/runtime.json` och loggar append-only audit till `logs/config_audit.jsonl`; schema-valida men live-blockade patchar returnerar det grova publika felet `non_whitelisted_field`.
-  - Not: JSON Schema v1 helpers finns som funktioner (`core.config.validator.validate_config`, `core.config.validator.diff_config`).
+  - Not: `core.config.validator` exposes only the legacy/test-only helpers `LEGACY_SCHEMA_PATH`, `validate_legacy_config`, and `diff_legacy_config`; runtime config authority and API endpoint behavior do not depend on this module.
   - Current-state-matris för schema-valid vs live-skrivbar runtime-config finns i `docs/governance/runtime_config_live_update_matrix_2026-05-15.md`.
 
 ### NonceManager
 
 - Per-nyckel µs-nonce med beständig lagring och låsning för REST.
 - WS-auth använder samma källa men konverterar µs→ms.
-- Engångs-retry vid "nonce too small" (10114) med `bump_nonce()`.
+- Signerade REST-anrop använder strukturerad felmarkör-extraktion och bounded retry upp till tre försök för nonce-fel (`10114` / `nonce`-markörer), `429`/`5xx`, och transienta request-fel; nonce-specifika retries använder `bump_nonce()` och bounded jitter-backoff.
 
 ### WS reconnect (skelett)
 

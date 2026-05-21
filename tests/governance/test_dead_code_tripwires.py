@@ -245,3 +245,19 @@ def test_runtime_source_must_not_import_core_config_validator() -> None:
     assert not violations, "Runtime source must not import core.config.validator:\n" + "\n".join(
         violations
     )
+
+
+def test_legacy_validator_exports_only_legacy_named_helpers() -> None:
+    """Tripwire: legacy-validatorn ska inte exponera generiska alias igen."""
+
+    import core.config.validator as validator
+
+    assert getattr(validator, "__all__", ()) == [
+        "LEGACY_SCHEMA_PATH",
+        "validate_legacy_config",
+        "diff_legacy_config",
+    ]
+
+    for alias in ("SCHEMA_PATH", "validate_config", "diff_config"):
+        assert alias not in getattr(validator, "__all__", ())
+        assert not hasattr(validator, alias)

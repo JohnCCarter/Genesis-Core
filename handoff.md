@@ -1,3 +1,240 @@
+# HANDOFF — risk-hardening wave3 kickoff
+
+Senast statusmarkerad: 2026-05-21
+
+## Uppdatering 2026-05-21 — wave3 `#2 + #12` re-resolved
+
+Detta korta tillägg är nu den **aktuella live-noten** för nästa agent på `feature/risk-hardening-wave3`.
+Kickoff-blocket från 2026-05-19 nedan är fortfarande det detaljerade bakgrundsblocket och ska
+fortsatt läsas, men branchens nuvarande ärliga läge efter 2026-05-21-reframen är:
+
+- `docs/decisions/governance/precompute_feature_cache_medium_track_reframe_packet_2026-05-21.md`
+  är nu den aktuella bounded reframe-punkten för den tidigare grupperade medium-ytan `#2 + #12`
+- `docs/decisions/governance/precompute_cache_config_identity_followup_selection_packet_2026-05-21.md`
+  låser nu nästa ärliga `#2`-line efter reframen: config-identity / config-context isolation,
+  inte en ny slice för att återvälja den redan tracked selector-policy / validator-pathen
+- `docs/decisions/governance/precompute_cache_config_subset_identity_precode_packet_2026-05-21.md`
+  groundar nu den exakta bounded `#2`-kandidaten: producer-adjacent persisted precompute-spec
+  identity, inte bred hashing av hela strategy-configen
+- `docs/decisions/governance/feature_cache_writer_schema_owner_trace_packet_2026-05-21.md`
+  groundar nu nästa ärliga `#12`-läsning: current branch visar fortfarande read-side feature-artifact
+  consumer, men ingen current tracked writer/schema-owner eller live `schema_version=1`-owner på
+  `src/**` / `scripts/**`; nästa admissible `#12`-move är därför docs-truthfulness narrowing,
+  inte implementation
+- `docs/decisions/governance/feature_cache_docs_truthfulness_narrowing_packet_2026-05-21.md`
+  landar nu själva docs-only narrowing-slicen för `#12`: stale referenser till absent standalone
+  producer/helper-pathar är borttagna eller omformulerade till current branch reality i
+  `docs/features/FEATURE_COMPUTATION_MODES.md`, `scripts/docs/DATA_FETCH_GUIDE.md` och
+  `data/DATA_FORMAT.md`
+- `docs/decisions/governance/backtest_error_policy_reopen_shape_packet_2026-05-19.md`
+  bär nu en later-branch truthfulness note för `#18`: current branch har redan
+  `BacktestEngine.run(..., error_policy=...)` med default `continue_collect_raise_after_loop`,
+  explicit `fail_fast`, och invalid-policy reject tests; kvarvarande `#18`-residual är därför bara
+  bredare policy-widening, inte en saknad run-level surface
+- `docs/decisions/governance/backtest_engine_build_results_seam_packet_2026-05-19.md`
+  bär nu en later-branch truthfulness note för `#15`: current branch har redan landat den lilla
+  no-behavior-change-extraktionen av `_build_results()` till interna
+  `src/core/backtest/engine_results.py`; `BacktestEngine._build_results()` är fortfarande enda
+  engine entry point och consumer-visible result contract hålls fast via targeted proof +
+  determinism/cache/hash-gates
+- `docs/decisions/governance/runtime_config_exit_enabled_live_update_precode_packet_2026-05-19.md`
+  bär implementation-status note för `#7`: både den lägre-risk `non_whitelisted_field`-linjen och
+  den exakta `exit.enabled`-singletonadmissionen är redan landade på current branch; återberätta
+  inte `#7` som om dess minsta exakta seam fortfarande vore öppen utan ny family-level rescreening
+- `docs/decisions/governance/optimizer_validation_promotion_contract_seam_packet_2026-05-21.md`
+  bär nu en later-branch truthfulness note för `#16`: den första kodbärande current-branch-seamen
+  är redan landad som en liten no-behavior-change helper-extraktion för promotion-candidate-scanen
+  i `runner_trial_results.py`, medan runner-level `_candidate_from_result()`-patchytan hålls fast;
+  bred optimizer-refactor eller March-queue-återaktivering är fortfarande inte öppnad
+- `docs/decisions/governance/evidence_to_authority_optimizer_baseline_surface_selection_packet_2026-05-21.md`
+  records now the first fresh `#1` surface selection on wave3: the frequently reused premortem
+  baseline's `#16` optimizer carry-forward sentence is narrowed to current-branch truth, while the
+  broader family-level evidence-to-authority drift risk remains open
+- `docs/decisions/governance/backtest_engine_run_setup_surface_selection_packet_2026-05-21.md`
+   records now the next fresh `#15` surface on wave3: the pre-loop run-setup/config-preparation
+   block inside `BacktestEngine.run(...)`, not the already-landed `_build_results()` seam and not a
+   revived whole-engine split story
+- `docs/decisions/governance/optimizer_validation_payload_carrier_surface_selection_packet_2026-05-21.md`
+   records now the next fresh `#16` surface on wave3: the validation result-payload carrier in
+   `runner_validation.py::run_validation_stage_impl(...)`; `docs/audit/refactor/optimizer/README.md`
+   is narrowed accordingly so `runner_optuna_orchestration.py` is no longer implied default next
+   locus by carry-forward language alone
+- `docs/decisions/governance/evidence_to_authority_analysis_readme_surface_selection_packet_2026-05-21.md`
+   records now the next fresh `#1` surface on wave3: root `docs/analysis/README.md` is narrowed to
+   retained historical RI/R1 reading-order context rather than branch-current kickoff/work-order
+   guidance
+- behåll `#2 + #12` tillsammans endast som en gemensam `silent stale-reuse`-familjelabel
+- `#2` har på current branch redan fått både bounded runtime hardening och en producer-owned
+   persisted precompute-spec carrier mellan `engine.py` och `engine_precompute.py`; återöppna inte
+   whole-strategy-config hashing eller selector-policy/validator reselection utan ny bounded evidence
+- `#12` writer/schema-owner trace och docs-truthfulness narrowing är redan landade; återöppna inte
+   samma seam utan ny tracked writer/schema-owner evidence
+- `#15` exakt `_build_results()`-seam är landad och dess nästa fresh wave3-surface är nu separat
+   vald som `run()`-preambeln; återberätta varken `_build_results()` eller den gamla
+   worktree-split-berättelsen som om de fortfarande vore branch-current öppna
+- `#16` första code-bearing contract seam är landad och dess nästa fresh wave3-surface är nu
+   separat vald som validation payload carrier; återberätta inte broad
+   `runner.py` + `runner_optuna_orchestration.py` som default nästa reopen av gammal vana
+- `#1` har nu två separat konsumerade current-branch surfaces på wave3 — premortem-baselineytan och
+   root `docs/analysis/README.md`; återberätta inte någon av dem som fortfarande o-narrowade
+   kickoff/authority-ytor
+- efter denna pass finns ingen redan förvald liten carry-forward-seam kvar på wave3; ytterligare
+   arbete i `#15`, `#16` eller `#1` kräver ny bounded evidence/surface-selection i stället för
+   återberättad familjelabel
+
+Äldre block längre ned i filen ska fortsatt bevaras som historik och detaljerad bakgrund, men det
+är denna 2026-05-21-note plus den refererade reframe-packeten som nu är live anchor för exakt
+`#2 + #12`-läsning på wave3.
+
+## Uppdatering 2026-05-19 — wave3-handoff för nästa agent
+
+Detta är det **detaljerade kickoff-blocket** som låg till grund för wave3-handoffen på
+`feature/risk-hardening-wave3`.
+Efter 2026-05-21-reframen ska detta block läsas som detaljerad bakgrund under den nyare live-noten
+ovan, inte som den enda live anchor-punkten för branchen.
+
+### Live status
+
+- **Repo:** `Genesis-Core`
+- **Aktiv branch:** `feature/risk-hardening-wave3`
+- **Governance mode:** `RESEARCH` via branch-mappningen `feature/* -> RESEARCH`
+- **Branch-skapad från:** `feature/risk-hardening-wave2` vid HEAD `e0c3ca97`
+- **Wave2-topcommit vid branch cut:** `e0c3ca97` — `test: narrow #13 fast-window parity`
+- **Working tree vid branch cut:** clean
+- **Syfte med wave3:** bära vidare nästa medium-spår utan att blanda ihop dem med de redan avslutade små bounded slicarna
+
+### Vad som faktiskt blev klart på wave2
+
+Följande bounded slices är genomförda, verifierade och pushade innan wave3 skapades:
+
+1. **`#10` optimizer validation drift narrowed**
+   - commit: `a725abaf`
+   - status: docs/tests-backed narrowing redan pushad före denna handoff
+
+2. **`#9` HTF-context divergence narrowed**
+   - commit: `119c182d`
+   - status: focused BacktestEngine consumer-path proof lades till och pushades
+
+3. **`#1` residual scope reanchrad ärligt**
+   - commit: `ba14d5eb`
+   - status: family-level retelling/adoption risk kvarstår, men den tidigare lilla seam-läsningen återanvänds inte längre oärligt
+
+4. **`#17` legacy validator drift narrowed**
+   - commit: `0bd4fb6d`
+   - status: docs-only truthfulness/reclassification; rename/hard-separation var redan landad i kod och test
+
+5. **`#14` decision-input fail-safe narrowed**
+   - commit: `698d3de4`
+   - status: test+docs partial reclassification; flera malformed `probas` / `confidence`-former bevisas fail-safe snarare än crasha
+
+6. **`#13` fast-window parity narrowed**
+   - commit: `e0c3ca97`
+   - status: explicit same-bar regression lades till, men ärligt formulerad som bounded-window recursive-indicator tolerance snarare än exakt full-history-identitet från truncerat fönster
+
+### Vad wave2 inte gjorde
+
+- inga medium-spår öppnades efter att första nivån små bounded slicer var klar
+- inga nya runtime-beteendeförändringar landades i `src/core/backtest/**` eller `src/core/strategy/**` för `#13`, `#14` eller `#17`; de slicesen höll sig till tests/docs truthfulness eller proof
+- de tidigare orelaterade lokala docs-ändringarna följde inte med i commits; branchen lämnades ren
+
+### Vad som återstår nu — fokus för nästa agent
+
+Det **nästa verkliga spåret** är den tidigare grupperade medium-ytan **`#2 + #12`**.
+
+#### `#2` — precompute cache silent stale-reuse
+
+Detta är fortfarande en **aktuell runtime-adjacent seam** på nuvarande branch:
+
+- baseline: `docs/analysis/diagnostics/genesis_core_deep_premortem_project_baseline_2026-05-18.md`
+- audit-anchor: `docs/audit/BACKTEST_ENGINE_AUDIT.md` Fynd C
+- code: `src/core/backtest/engine.py`, `src/core/backtest/engine_precompute.py`
+- current guardrails/tests:
+  - `tests/backtest/test_precompute_cache_key.py`
+  - `tests/backtest/test_precompute_cache_key_versioning.py`
+  - `scripts/validate/validate_precompute_cache_selector_policy.py`
+  - `tests/utils/test_validate_precompute_cache_selector_policy.py`
+
+Det som är öppet är **inte** huruvida cache-nyckeln redan innehåller något schema-material — det gör
+den. Det öppna är om dagens kontrakt fortfarande lämnar ett ärligt stale-reuse-gap eftersom:
+
+- `GENESIS_PRECOMPUTE_CONFIG_HASH` fortfarande är valfritt
+- korrekt invalidation fortfarande beror på mänsklig discipline kring `PRECOMPUTE_SCHEMA_VERSION`
+- nästa steg kan bli antingen en dokumenterad/gatad bump-policy eller en starkare deterministic config-subset-identitet i key
+
+#### `#12` — feature-cache / schema-version seam
+
+`#12` ska **inte** längre läsas som en enkel implementation-kusin till `#2` utan vidare. Current branch
+har redan smalnat denna seam genom två docs-spår:
+
+- `docs/decisions/governance/feature_cache_carrier_trace_packet_2026-05-19.md`
+- `docs/decisions/governance/feature_cache_architecture_claim_truthfulness_packet_2026-05-19.md`
+
+Den viktiga nuvarande läsningen är:
+
+- runtime-sidan har en **in-memory feature cache** i `src/core/strategy/features_asof.py`
+- backtest-sidan har en separat **on-disk precompute cache** i `.npz` via `engine.py` / `engine_precompute.py`
+- den starkare äldre claimen om en aktiv tracked **PyArrow feature-cache med `schema_version=1`** är redan
+  delvis nedtagen som överstark och är fortfarande **under-traced / inte implementation-ready** på den nuvarande branchytan
+
+Det betyder att nästa agent inte ska hoppa direkt till enforcement för `#12` som om carrier/schema-owner
+redan vore fullt grounded. Den viktigaste kvarvarande `#12`-slutsatsen är nu:
+
+- writer/schema-owner-tracen är nu tagen i
+  `docs/decisions/governance/feature_cache_writer_schema_owner_trace_packet_2026-05-21.md`
+- current branch visar fortfarande read-side feature-artifact reader i training path, men ingen current
+  tracked writer/schema-owner eller live `schema_version=1`-owner för samma carrier
+- docs-truthfulness narrowing är nu också landad; `#12` ska därför inte återöppnas på samma branch
+  utan ny tracked writer/schema-owner evidence
+
+### Rekommenderad läsordning för nästa agent
+
+Läs i denna ordning innan nytt arbete startar:
+
+1. denna toppsektion i `handoff.md`
+2. `docs/analysis/diagnostics/genesis_core_deep_premortem_project_baseline_2026-05-18.md`
+3. `docs/audit/BACKTEST_ENGINE_AUDIT.md`
+4. `docs/decisions/governance/feature_cache_carrier_trace_packet_2026-05-19.md`
+5. `docs/decisions/governance/feature_cache_architecture_claim_truthfulness_packet_2026-05-19.md`
+6. `docs/decisions/governance/feature_cache_writer_schema_owner_trace_packet_2026-05-21.md`
+7. `docs/decisions/governance/feature_cache_docs_truthfulness_narrowing_packet_2026-05-21.md`
+8. `docs/features/FEATURE_COMPUTATION_MODES.md`
+9. `scripts/docs/DATA_FETCH_GUIDE.md`
+10. `data/DATA_FORMAT.md`
+
+### Nästa minsta admissible steg
+
+Nästa agent bör **inte** starta med bred runtime-ombyggnad av cache-ytor. Reframen av `#2 + #12`,
+writer/schema-owner-tracen för `#12`, och docs-truthfulness narrowing för samma seam är nu redan
+landade. Om arbete därefter går tillbaka till kodbärande `#2`-frågor i `src/core/backtest/**`, ska
+nästa agent ta en ny governance-pass innan runtime-semantik ändras. Om nästa slice väljs utanför
+`#2`, välj då i stället bland de kvarvarande öppna spåren (`#7`, `#18`, `#15`, `#1`, `#16`) utan att
+återöppna `#12` på gammal stale producer-berättelse.
+
+### Övrigt som fortfarande återstår efter landad `#12`-truthfulness narrowing
+
+Efter den nu landade `#12`-truthfulness narrowing återstår fortfarande minst dessa öppna spår:
+
+- `#7` — whitelist vs schema policy-frågan i ConfigAuthority
+- `#18` — endast om bredare error-policy widening väljs; den exakta run-level surface:n är redan landad
+- `#15` — `engine.py` blast-radius / split-frågan
+- `#1` — family-level evidence-to-authority retelling risk (inte den tidigare lilla seamen)
+- `#16` — optimizer orchestration fragmentation
+
+### Guardrails för takeover
+
+- behandla `#2` och `#12` som **relaterade men inte längre identiska** problem
+- överclaim:a inte `#12` som om en live tracked PyArrow `schema_version=1`-writer redan vore bevisad
+- håll `observed`, `inferred` och `unverified` tydligt separerade i varje nytt packet
+- om arbete går från docs/evidence till faktisk runtime-ändring i `src/core/backtest/**`, ta ny review-pass först
+- bevara de äldre blocken i denna fil som historik; använd inte dem som live anchor för wave3
+
+### Kort takeover-summary
+
+Wave2 stängde hela nivån små bounded slicer med ärliga tests/docs-baserade narrowing-slices. Wave3 står nu
+på en branch där `#2` redan har fått en bounded runtime hardening och `#12` nu har fått både separat
+writer/schema-owner trace och docs-truthfulness narrowing. `#12` ska därför inte dras tillbaka till samma
+stale producer-spår utan ny tracked evidence.
+
 # HANDOFF — RI/R1 vs legacy role-map kickoff
 
 Senast statusmarkerad: 2026-05-05 (underliggande takeover-block från 2026-04-02 bevarat som historik)

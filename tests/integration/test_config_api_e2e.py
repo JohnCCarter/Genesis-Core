@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from fastapi.testclient import TestClient
 
+from core.config.authority import ConfigAuthority
 from core.server import app
 
 
@@ -203,6 +206,74 @@ def test_runtime_endpoints_e2e_schema_valid_live_blocked_field_returns_coarse_de
     assert r.status_code == 400
     assert r.json() == {"detail": "non_whitelisted_field"}
     assert "warmup_bars" not in r.text
+
+
+def test_runtime_endpoints_e2e_exit_enabled_singleton_is_live_and_mixed_patch_is_atomic(
+    monkeypatch, tmp_path: Path
+):
+    c = TestClient(app)
+
+    import core.api.config as api
+
+    monkeypatch.setattr(api, "authority", ConfigAuthority(tmp_path / "runtime.json"))
+
+    r = c.get("/config/runtime")
+    assert r.status_code == 200
+    initial = r.json()
+    v0 = int(initial["version"]) or 0
+    initial_exit = initial["cfg"]["exit"]
+
+    monkeypatch.setenv("BEARER_TOKEN", "test-secret")
+
+    accept = c.post(
+        "/config/runtime/propose",
+        headers={"Authorization": "Bearer test-secret"},
+        json={
+            "patch": {"exit": {"enabled": False}},
+            "actor": "test",
+            "expected_version": v0,
+        },
+    )
+    assert accept.status_code == 200
+    accepted = accept.json()
+    assert int(accepted.get("version", -1)) == v0 + 1
+    assert accepted.get("cfg", {}).get("exit", {}).get("enabled") is False
+    assert (
+        accepted.get("cfg", {}).get("exit", {}).get("stop_loss_pct")
+        == initial_exit["stop_loss_pct"]
+    )
+
+    after_accept = c.get("/config/runtime")
+    assert after_accept.status_code == 200
+    after_accept_body = after_accept.json()
+    assert int(after_accept_body.get("version", -1)) == v0 + 1
+    assert after_accept_body.get("cfg", {}).get("exit", {}).get("enabled") is False
+    assert (
+        after_accept_body.get("cfg", {}).get("exit", {}).get("stop_loss_pct")
+        == initial_exit["stop_loss_pct"]
+    )
+
+    reject = c.post(
+        "/config/runtime/propose",
+        headers={"Authorization": "Bearer test-secret"},
+        json={
+            "patch": {"exit": {"enabled": True, "stop_loss_pct": 0.01}},
+            "actor": "test",
+            "expected_version": v0 + 1,
+        },
+    )
+    assert reject.status_code == 400
+    assert reject.json() == {"detail": "non_whitelisted_field"}
+
+    after_reject = c.get("/config/runtime")
+    assert after_reject.status_code == 200
+    after_reject_body = after_reject.json()
+    assert int(after_reject_body.get("version", -1)) == v0 + 1
+    assert after_reject_body.get("cfg", {}).get("exit", {}).get("enabled") is False
+    assert (
+        after_reject_body.get("cfg", {}).get("exit", {}).get("stop_loss_pct")
+        == initial_exit["stop_loss_pct"]
+    )
 
 
 def test_runtime_endpoints_e2e_version_conflict_detail_preserved(monkeypatch):

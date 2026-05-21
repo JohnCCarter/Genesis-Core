@@ -447,6 +447,52 @@ def test_build_candles_window_at_start(sample_candles_data):
     assert len(window["timestamp"]) == 11
 
 
+@pytest.mark.parametrize(
+    ("end_idx", "window_size"),
+    [
+        (10, 50),
+        (100, 50),
+        (199, 200),
+    ],
+)
+def test_build_candles_window_fast_window_matches_numpy_path(
+    monkeypatch: pytest.MonkeyPatch,
+    sample_candles_data,
+    end_idx: int,
+    window_size: int,
+):
+    """Regression: fast-window slicing must match the normal prefix window exactly."""
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "1")
+
+    engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m", fast_window=True)
+    engine.candles_df = sample_candles_data
+    engine._prepare_numpy_arrays()
+
+    engine._col_open = sample_candles_data["open"].to_numpy(copy=False)
+    engine._col_high = sample_candles_data["high"].to_numpy(copy=False)
+    engine._col_low = sample_candles_data["low"].to_numpy(copy=False)
+    engine._col_close = sample_candles_data["close"].to_numpy(copy=False)
+    engine._col_volume = sample_candles_data["volume"].to_numpy(copy=False)
+    engine._col_timestamp = sample_candles_data["timestamp"].tolist()
+
+    def _normalize_window(window: dict) -> dict[str, list]:
+        return {
+            "open": [float(value) for value in window["open"]],
+            "high": [float(value) for value in window["high"]],
+            "low": [float(value) for value in window["low"]],
+            "close": [float(value) for value in window["close"]],
+            "volume": [float(value) for value in window["volume"]],
+            "timestamp": [pd.Timestamp(value) for value in window["timestamp"]],
+        }
+
+    fast_window = _normalize_window(engine._build_candles_window(end_idx, window_size))
+
+    engine.fast_window = False
+    numpy_window = _normalize_window(engine._build_candles_window(end_idx, window_size))
+
+    assert fast_window == numpy_window
+
+
 def test_engine_run_no_data():
     """Test engine fails gracefully when no data is loaded."""
     engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m")
@@ -554,6 +600,71 @@ def test_check_htf_exit_invalid_precomputed_context_forces_unavailable(sample_ca
 
     assert reason is None
     assert captured_context["value"]["available"] is False
+    assert engine._htf_context_seen is False
+
+
+def test_check_htf_exit_out_of_range_precomputed_context_does_not_fallback_to_meta(
+    sample_candles_data,
+):
+    """Regression: out-of-range precomputed HTF access must not silently fall back to meta."""
+    engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m")
+    engine.candles_df = sample_candles_data
+    engine._prepare_numpy_arrays()
+
+    engine.position_tracker.position = Position(
+        symbol="tBTCUSD",
+        side="LONG",
+        initial_size=1.0,
+        current_size=1.0,
+        entry_price=100.0,
+        entry_time=datetime(2025, 1, 1),
+    )
+
+    engine._precomputed_features = {
+        "htf_fib_0382": [99.5],
+        "htf_fib_05": [100.0],
+        "htf_fib_0618": [100.5],
+        "htf_swing_high": [102.0],
+        "htf_swing_low": [98.0],
+    }
+
+    captured_context: dict = {}
+
+    def _fake_check_exits(_position, _bar_data, htf_context, _indicators):
+        captured_context["value"] = htf_context
+        return []
+
+    engine.htf_exit_engine.check_exits = _fake_check_exits
+
+    reason = engine._check_htf_exit_conditions(
+        current_price=100.0,
+        timestamp=datetime(2025, 1, 1, 0, 15),
+        bar_data={
+            "timestamp": datetime(2025, 1, 1, 0, 15),
+            "open": 100.0,
+            "high": 101.0,
+            "low": 99.0,
+            "close": 100.0,
+            "volume": 1000.0,
+        },
+        result={"features": {}, "confidence": 1.0, "regime": "NEUTRAL"},
+        meta={
+            "decision": {"state_out": {}},
+            "features": {
+                "htf_fibonacci": {
+                    "available": True,
+                    "levels": {0.382: 111.0, 0.5: 112.0, 0.618: 113.0},
+                    "swing_high": 120.0,
+                    "swing_low": 90.0,
+                }
+            },
+        },
+        configs={"exit": {"enabled": True}},
+        bar_index=1,
+    )
+
+    assert reason is None
+    assert captured_context["value"] == {"available": False}
     assert engine._htf_context_seen is False
 
 
@@ -801,6 +912,15 @@ def test_engine_results_format(sample_candles_data):
 
     results = engine.run()
 
+    assert list(results.keys()) == [
+        "backtest_info",
+        "summary",
+        "position_summary",
+        "metrics",
+        "trades",
+        "equity_curve",
+    ]
+
     # Check backtest_info
     assert "symbol" in results["backtest_info"]
     assert "timeframe" in results["backtest_info"]
@@ -942,6 +1062,45 @@ def test_engine_error_policy_continues_loop_before_raising(sample_candles_data, 
     assert processed_bars == list(range(10, 20))
 
 
+def test_engine_error_policy_fail_fast_raises_on_first_processed_bar(
+    sample_candles_data, monkeypatch
+):
+    """fail_fast must stop replay on the first processed-bar pipeline error."""
+
+    engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m", warmup_bars=10)
+    engine.candles_df = sample_candles_data.head(20)
+
+    processed_bars: list[int] = []
+
+    def _pipeline_with_single_failure(*_args, **_kwargs):
+        bar_index = len(processed_bars) + engine.warmup_bars
+        processed_bars.append(bar_index)
+        raise ValueError("first processed bar failed")
+
+    monkeypatch.setattr(
+        "core.backtest.engine.evaluate_pipeline",
+        _pipeline_with_single_failure,
+    )
+
+    with pytest.raises(
+        RuntimeError,
+        match=r"count=1, first_at_bar=10, first_error=ValueError: first processed bar failed",
+    ):
+        engine.run(configs={"exit": {"enabled": False}}, error_policy="fail_fast")
+
+    assert processed_bars == [10]
+
+
+def test_engine_run_rejects_invalid_error_policy(sample_candles_data):
+    """Invalid explicit error_policy values must fail before replay starts."""
+
+    engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m", warmup_bars=10)
+    engine.candles_df = sample_candles_data.head(20)
+
+    with pytest.raises(ValueError, match="Invalid error_policy"):
+        engine.run(configs={"exit": {"enabled": False}}, error_policy="best_effort")
+
+
 def test_engine_with_verbose_mode(sample_candles_data, capsys):
     """Test engine verbose mode emits some user-facing progress/log output."""
     engine = BacktestEngine(
@@ -1012,6 +1171,47 @@ def test_engine_precompute_cache_write_failure_logs_warning(monkeypatch, caplog)
 
     assert ok is True
     assert "Failed to write precompute cache" in caplog.text
+
+
+def test_engine_precompute_cache_key_failure_remains_non_fatal(tmp_path, monkeypatch, caplog):
+    import core.backtest.engine as engine_mod
+
+    BacktestEngine._candles_cache.clear()
+
+    fake_engine_file = tmp_path / "src" / "core" / "backtest" / "engine.py"
+    fake_engine_file.parent.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(engine_mod, "__file__", str(fake_engine_file))
+
+    data_raw = tmp_path / "data" / "raw"
+    data_raw.mkdir(parents=True, exist_ok=True)
+
+    ltf_ts = pd.date_range("2025-01-01", periods=48, freq="15min", tz="UTC")
+    ltf = pd.DataFrame(
+        {
+            "timestamp": ltf_ts,
+            "open": [100.0 + i * 0.1 for i in range(len(ltf_ts))],
+            "high": [100.5 + i * 0.1 for i in range(len(ltf_ts))],
+            "low": [99.5 + i * 0.1 for i in range(len(ltf_ts))],
+            "close": [100.2 + i * 0.1 for i in range(len(ltf_ts))],
+            "volume": [1000.0 + i for i in range(len(ltf_ts))],
+        }
+    )
+    ltf.to_parquet(data_raw / "tBTCUSD_15m_frozen.parquet", index=False)
+
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "1")
+    engine = BacktestEngine(symbol="tBTCUSD", timeframe="15m", warmup_bars=10, fast_window=True)
+    monkeypatch.setattr(
+        engine,
+        "_precompute_cache_key",
+        lambda _df: (_ for _ in ()).throw(RuntimeError("key boom")),
+    )
+
+    with caplog.at_level("WARNING"):
+        ok = engine.load_data()
+
+    assert ok is True
+    assert engine._precomputed_features is None
+    assert "Precomputation failed (non-fatal): key boom" in caplog.text
 
 
 def test_engine_precompute_cache_write_can_be_disabled_without_creating_cache_dir(

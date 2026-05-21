@@ -63,6 +63,8 @@ Använd för mänskligt läsbara synteser och diagnoser.
 Här hör tolkning, sammanfattning och begreppsarbete hemma — inte governance-SSOT och inte råa experimentbundlar.
 Rooten används nu främst för zon-guide; huvuddelen av analyskorpusen ligger i grova, domändrivna undermappar som beskrivs i `docs/analysis/README.md`.
 
+Analysis- och evidensnoter förblir icke-auktoriserande i sig. När sådana noter gör reproducerbarhets-, portabilitets-, proveniens- eller boundary-claims som kan påverka senare beslut bör de följa governance-ytans claim-header- och adoption-guidance i stället för att låta tonen ensam bära claimens tyngd.
+
 Typiska exempel:
 
 - findings-synteser
@@ -105,3 +107,5 @@ Läs alltid innehållet i rätt lagerordning:
 2. contracts
 3. decisions
 4. analysis / research artifacts
+
+Det gäller även när en analys- eller evidensnot är välskriven, ofta citerad eller hash-/artifact-bärande: sådana noter kan påverka beslut, men de blir inte authority bara av format eller frekvent återanvändning.

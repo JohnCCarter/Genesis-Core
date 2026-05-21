@@ -30,12 +30,16 @@
 **Nästa steg:**
 
 ```powershell
-# 1. Precompute features (vektoriserat - snabbt!)
-python scripts/precompute_features_v17.py --symbol tBTCUSD --timeframe 1h
+# 1. Warm runtime precompute-cache för snabbare backtests (optional)
+python scripts/run/run_backtest.py --symbol tBTCUSD --timeframe 1h --fast-window --precompute-features --no-save
 
 # 2. Train model
 python scripts/train/train_model.py --symbol tBTCUSD --timeframe 1h --use-holdout
 ```
+
+> **Obs:** Current branch exponerar ingen tracked standalone `scripts/precompute_features_v17.py`.
+> `--precompute-features` på backtest-CLI:n värmer runtime-precompute-cache för backtests; den
+> fungerar inte som en separat tracked read-side feature-artifact writer.
 
 ---
 
@@ -160,16 +164,16 @@ python scripts/train/train_model.py --symbol tBTCUSD --timeframe 1h --use-holdou
 
 ## 📝 After Fetching Data
 
-**1. Validate data integrity:**
+**1. Review curated metadata + current validators:**
+
+- Inspect `data/metadata/curated/*_v1.json` for `missing_candles`, `quality_score`, and date span.
+- Use the specific validator under `scripts/validate/` that matches your task; current branch has
+  no standalone `scripts/validate_data.py`.
+
+**2. Warm runtime precompute-cache for backtests (optional):**
 
 ```powershell
-python scripts/validate_data.py --symbol tBTCUSD --timeframe 1h
-```
-
-**2. Precompute features (VECTORIZED - FAST!):**
-
-```powershell
-python scripts/precompute_features_v17.py --symbol tBTCUSD --timeframe 1h
+python scripts/run/run_backtest.py --symbol tBTCUSD --timeframe 1h --fast-window --precompute-features --no-save
 ```
 
 **3. Train model:**
@@ -178,11 +182,10 @@ python scripts/precompute_features_v17.py --symbol tBTCUSD --timeframe 1h
 python scripts/train/train_model.py --symbol tBTCUSD --timeframe 1h --use-holdout --save-provenance
 ```
 
-**4. Run comprehensive analysis:**
+**4. Run task-specific analysis:**
 
-```powershell
-python scripts/comprehensive_feature_analysis.py --symbol tBTCUSD --timeframe 1h
-```
+- Choose the relevant script under `scripts/analyze/` or `scripts/audit/` for your current slice;
+  current branch has no standalone `scripts/comprehensive_feature_analysis.py`.
 
 ---
 
@@ -226,10 +229,11 @@ Solution: This is OK! Script overwrites existing files.
 
 ## 📚 See Also
 
-- `README.agents.md` - Full ML pipeline workflow
+- `README.md` - Repo overview och grundläggande workflow
 - `data/DATA_FORMAT.md` - Data format specifications
 - `scripts/fetch/fetch_historical.py` - Individual fetch script (advanced use)
-- `AGENTS.md` - Current project status, deliverables and next steps
+- `scripts/run/run_backtest.py` - Canonical backtest CLI med runtime precompute-flaggor
+- `AGENTS.md` - Constitutional governance boundary for agents
 
 ---
 

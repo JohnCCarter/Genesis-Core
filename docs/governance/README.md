@@ -5,6 +5,8 @@ Den här mappen samlar governance-specifika dokument och indexytor för Genesis-
 `docs/governance/**` är ett komplement till de högre styrlagren. Den här README:n är ett index, inte en egen SSOT.
 
 > Status note (2026-05-18): De editor-worker-/multi-editor-material som fortfarande finns under `docs/governance/**` och `docs/contracts/editor_workers/**` är retained historical/paused references. De bevaras för spårbarhet och möjlig senare omprövning, men de ska inte läsas som nuvarande default-workflow på `feature/evidence-closeout-pilot`.
+>
+> Later-branch truthfulness note (2026-05-19): Denna retained historical/paused-status är inte begränsad till `feature/evidence-closeout-pilot`; i den senare branchkontext som behandlas här, inklusive `feature/risk-hardening-wave2`, förblir dessa material icke-normativa referenser snarare än branch-current default-workflow. Denna not utser inte någon ersättande nuvarande workflow.
 
 ## Roll i dokumenttaxonomin
 
@@ -54,6 +56,8 @@ Operativa dokument i `docs/governance/**` är **kompletterande**, inte överstyr
 - `templates/evidence_claim_header.md` — lätt claim-header-mall för claim-bearing evidensnoter där provenance och authority-gränser behöver bli tydliga
 - `runbooks/evidence_claim_adoption.md` — trigger-baserad användningsgräns för när claim-headern behövs och när scratch-noter fortfarande får vara lätta
 - `runbooks/trivial_fast_lane.md` — snabbspår för triviala ändringar
+
+För decision-influencing evidence notes som gör reproducerbarhets-, portabilitets-, proveniens- eller boundary-claims används claim-header-mallen tillsammans med adoption-runbooken för att göra claim-status och bäraryta tydligare och mer reviewbar. Dessa helper-ytor klargör claim-gränser och adoptionsläge; de är inte i sig en ny authority-källa eller precedence-regel.
 
 ### Retained historical/paused editor-worker references
 

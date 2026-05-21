@@ -138,12 +138,10 @@ for i in range(len(df)):
 **Keep BOTH methods but use them CORRECTLY:**
 
 1. **Live Trading:** Use `extract_features()`
-
    - Call with `now_index = len(candles) - 1`
    - Gets features from last CLOSED bar
 
 2. **Backtesting:** Use `calculate_all_features_vectorized()`
-
    - Precompute ALL features at once
    - 27,734× faster
    - All bars are closed historical data
@@ -203,6 +201,7 @@ För att accelerera backtests och Optuna‑körningar finns två växlar:
 - CLI‑flagga i backtest: `--precompute-features`
 - Effekt: EMA50, swing points m.fl. förberäknas och cachas på disk (`cache/precomputed/*.npz`), vilket accelererar efterföljande körningar.
 - Semantik: Backtestläget förblir deterministiskt och använder stängda bars (ingen lookahead).
+- Current-state boundary för schema-bump enforcement runt denna on-disk precompute-cache är dokumenterad i `docs/decisions/governance/cache_schema_bump_enforcement_boundary_packet_2026-05-18.md`; noten beskriver befintlig versioneringsdisciplin och vad som ännu inte är repo-enforced, utan att införa någon ny runtime-regel här.
 
 ### Canonical policy (quality decisions)
 
@@ -220,7 +219,7 @@ Det betyder att standardflöden aktivt undviker att “sticky” shell‑env rå
 0/0 (ingen fast_window + ingen precompute) är tillåtet för felsökning, men är **inte** jämförbart med canonical resultat.
 
 - För att tillåta icke‑canonical mode måste du sätta `GENESIS_MODE_EXPLICIT=1`.
-- Rekommenderat sätt är att använda CLI‑flaggor i `scripts/run_backtest.py` (t.ex.
+- Rekommenderat sätt är att använda CLI‑flaggor i `scripts/run/run_backtest.py` (t.ex.
   `--no-fast-window --no-precompute-features`), vilket markerar läget explicit.
 
 Tips: Backtest‑artifacts sparar nu `backtest_info.execution_mode` så att du kan se exakt vilket läge som kördes.
@@ -240,7 +239,7 @@ Tips: Backtest‑artifacts sparar nu `backtest_info.execution_mode` så att du k
 # Snabb backtest med fast window + precompute
 $Env:GENESIS_FAST_WINDOW='1'
 $Env:GENESIS_PRECOMPUTE_FEATURES='1'
-python scripts/run_backtest.py --symbol tBTCUSD --timeframe 1h --start 2024-10-22 --end 2025-10-01 --fast-window --precompute-features
+python scripts/run/run_backtest.py --symbol tBTCUSD --timeframe 1h --start 2024-10-22 --end 2025-10-01 --fast-window --precompute-features
 ```
 
 ---
@@ -249,30 +248,38 @@ python scripts/run_backtest.py --symbol tBTCUSD --timeframe 1h --start 2024-10-2
 
 För att garantera att alla pipelines producerar identiska features lades två pytest-case till:
 
-1. `tests/test_feature_parity.py`
+1. `tests/utils/test_feature_parity.py`
    - Kör `_extract_asof()` bar-för-bar och jämför mot v17-featurefiler.
    - Dataset: `tests/data/tBTCUSD_1h_sample.parquet` + `tests/data/tBTCUSD_1h_features_v17.parquet` (200 barer, december 2024).
 2. `tests/integration/test_precompute_vs_runtime.py`
    - Bygger `precomputed_features` exakt som `BacktestEngine` och validerar att `_extract_asof()` med/utan precompute ger samma resultat.
 
-### Precompute-scriptet
+### Current branch reality för v17-paritet
 
-`scripts/precompute_features_v17.py` genererar nu featurefiler genom att anropa `_extract_asof()` direkt. Nya flaggor:
+`tests/utils/test_feature_parity.py` jämför fortfarande runtime-pathen bar-för-bar mot den historiska
+fixture-filen `tests/data/tBTCUSD_1h_features_v17.parquet`, och
+`tests/integration/test_precompute_vs_runtime.py` verifierar current runtime-precompute-pathen i
+backtestmotorn.
 
-- `--start-index / --end-index` – begränsa datafönster för snabba tester.
-- `--candles-file` – kör mot valfri parquet (ex. `tests/data/tBTCUSD_1h_sample.parquet`).
+Current branch exponerar däremot **inte** någon tracked standalone
+`scripts/precompute_features_v17.py`. Den repo-visible performanceytan är i stället backtest-CLI:n:
 
-Det betyder att v17-featurefilerna är bit-exakta mot runtime (ingen längre avvikelse mellan vectorized och live-kod).
+- `python scripts/run/run_backtest.py --symbol tBTCUSD --timeframe 1h --fast-window --precompute-features --no-save`
+
+Det betyder att v17-featurefilen i `tests/data/` på denna branch ska läsas som parity/reference artifact
+på read-side, inte som output från en current producer-CLI.
 
 ### Rekommenderat flöde
 
-| Scenario                 | Kommando                                                                                                                                |
-| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Uppdatera hela v17-filen | `python scripts/precompute_features_v17.py --symbol tBTCUSD --timeframe 1h`                                                             |
-| Snabb sample (200 bar)   | `python scripts/precompute_features_v17.py --symbol tBTCUSD --timeframe 1h --candles-file tests/data/tBTCUSD_1h_sample.parquet --quiet` |
-| Paritetskontroll         | `python -m pytest tests/test_feature_parity.py tests/integration/test_precompute_vs_runtime.py`                                                     |
+| Scenario            | Kommando                                                                                                           |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Runtime cache smoke | `python scripts/run/run_backtest.py --symbol tBTCUSD --timeframe 1h --fast-window --precompute-features --no-save` |
+| Training consumer   | `python scripts/train/train_model.py --symbol tBTCUSD --timeframe 1h --use-holdout`                                |
+| Paritetskontroll    | `python -m pytest tests/utils/test_feature_parity.py tests/integration/test_precompute_vs_runtime.py`              |
 
 Alla ändringar ovan säkerställer att:
 
-- Backtest/Optuna (runtime) ↔ precompute ↔ ML-training använder samma definitioner.
-- Regressionstester fångar om någon bryter pariteten framöver.
+- current runtime precompute/cache path är grounded via `scripts/run/run_backtest.py` plus
+  `tests/integration/test_precompute_vs_runtime.py`
+- den historiska v17-fixturen förblir en användbar parity/reference artifact, men någon tracked
+  standalone producer-CLI för att regenerera den exponeras inte på denna branch

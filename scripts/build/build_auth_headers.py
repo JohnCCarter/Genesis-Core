@@ -6,15 +6,38 @@ import hashlib
 import hmac
 import json
 import os
+import re
 import sys
 
 from core.config.settings import get_settings
 from core.utils.nonce_manager import get_nonce
 
-
 REVEAL_ACK_ENV = "GENESIS_ALLOW_SECRET_OUTPUT"
 REVEAL_ACK_VALUE = "1"
 SENSITIVE_HEADER_KEYS = {"bfx-apikey", "bfx-signature"}
+SENSITIVE_KEY_FRAGMENTS = {
+    "apikey",
+    "api_key",
+    "secret",
+    "signature",
+    "token",
+    "password",
+    "passwd",
+    "pwd",
+    "authorization",
+    "auth",
+    "cookie",
+}
+_SENSITIVE_KEY_PATTERNS = [
+    re.compile(rf"(?<![a-z0-9]){re.escape(fragment)}(?![a-z0-9])")
+    for fragment in SENSITIVE_KEY_FRAGMENTS
+]
+
+
+def _normalize_key_for_sensitive_matching(key: object) -> str:
+    key_str = str(key)
+    key_with_boundaries = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", key_str)
+    return key_with_boundaries.lower()
 
 
 def _mask_sensitive_headers(headers: dict[str, str]) -> dict[str, str]:
@@ -45,12 +68,33 @@ def build_headers(endpoint: str, body: dict | None) -> dict[str, str]:
     }
 
 
+def _sanitize_for_logging(value: object) -> object:
+    """
+    Recursively sanitize structures before logging to prevent secret leakage.
+    """
+    if isinstance(value, dict):
+        sanitized: dict[object, object] = {}
+        for key, item in value.items():
+            key_str = _normalize_key_for_sensitive_matching(key)
+            if any(pattern.search(key_str) for pattern in _SENSITIVE_KEY_PATTERNS):
+                sanitized[key] = "***"
+            else:
+                sanitized[key] = _sanitize_for_logging(item)
+        return sanitized
+    if isinstance(value, list):
+        return [_sanitize_for_logging(item) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_sanitize_for_logging(item) for item in value)
+    return value
+
+
 def print_data(data: dict, pretty: bool = False) -> None:
     """
     Write only sanitized data to stdout.
     """
-    # CodeQL [py/clear-text-logging-sensitive-data]: The data is sanitized (no secrets).
-    print(json.dumps(data, indent=2 if pretty else None))  # nosec B101 - Safe logging
+    sanitized = _sanitize_for_logging(data)
+    # CodeQL [py/clear-text-logging-sensitive-data]: sink-side recursive redaction applied.
+    print(json.dumps(sanitized, indent=2 if pretty else None))
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -96,7 +140,12 @@ def main(argv: list[str] | None = None) -> int:
             )
             return 3
 
-    out = _mask_sensitive_headers(headers)
+    out = {
+        "bfx-apikey": "***",
+        "bfx-signature": "***",
+        "bfx-nonce": headers["bfx-nonce"],
+        "Content-Type": headers["Content-Type"],
+    }
     if args.reveal:
         out["info"] = "Reveal acknowledgement accepted, but secrets remain masked for safe logging."
     else:

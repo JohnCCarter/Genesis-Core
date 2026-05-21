@@ -253,6 +253,62 @@ def test_decide_handles_non_numeric_confidence_without_typeerror() -> None:
     assert "CONF_TOO_LOW" in (meta.get("reasons") or [])
 
 
+@pytest.mark.parametrize(
+    "probas",
+    [[], "oops", 123],
+    ids=["list_probas", "string_probas", "int_probas"],
+)
+def test_decide_handles_non_dict_probas_fail_safe_without_typeerror(probas: object) -> None:
+    cfg = {
+        "thresholds": {"entry_conf_overall": 0.7, "regime_proba": {"balanced": 0.7}},
+        "risk": {"risk_map": [[0.7, 0.01]]},
+        "gates": {"cooldown_bars": 0},
+    }
+
+    action, meta = decide(
+        {},
+        probas=probas,
+        confidence={"buy": 0.9, "sell": 0.1},
+        regime="balanced",
+        state={},
+        risk_ctx={},
+        cfg=cfg,
+    )
+
+    assert action == "NONE"
+    assert isinstance(meta, dict)
+    assert "FAIL_SAFE_NULL" in (meta.get("reasons") or [])
+
+
+@pytest.mark.parametrize(
+    "confidence",
+    [[], "oops", 123],
+    ids=["list_confidence", "string_confidence", "int_confidence"],
+)
+def test_decide_handles_non_dict_confidence_fail_safe_without_typeerror(
+    confidence: object,
+) -> None:
+    cfg = {
+        "thresholds": {"entry_conf_overall": 0.7, "regime_proba": {"balanced": 0.7}},
+        "risk": {"risk_map": [[0.7, 0.01]]},
+        "gates": {"cooldown_bars": 0},
+    }
+
+    action, meta = decide(
+        {},
+        probas={"buy": 0.8, "sell": 0.1},
+        confidence=confidence,
+        regime="balanced",
+        state={},
+        risk_ctx={},
+        cfg=cfg,
+    )
+
+    assert action == "NONE"
+    assert isinstance(meta, dict)
+    assert "FAIL_SAFE_NULL" in (meta.get("reasons") or [])
+
+
 def test_safe_float_returns_default_for_overflowing_int_input() -> None:
     assert safe_float(10**1000, 1.5) == pytest.approx(1.5)
 
@@ -351,6 +407,39 @@ def test_decide_preserves_finite_decision_steps_string_behavior() -> None:
     assert meta_int.get("reasons") == meta_str.get("reasons")
 
 
+@pytest.mark.parametrize("raw_decision_steps", [None, "abc"])
+def test_decide_malformed_decision_steps_matches_zero_baseline(
+    raw_decision_steps: object,
+) -> None:
+    cfg = {
+        "thresholds": {"entry_conf_overall": 0.7, "regime_proba": {"balanced": 0.7}},
+        "risk": {"risk_map": [[0.7, 0.01]]},
+        "gates": {"cooldown_bars": 0, "hysteresis_steps": 2},
+    }
+
+    kwargs = {
+        "policy": {},
+        "probas": {"buy": 0.8, "sell": 0.1},
+        "confidence": {"buy": 0.8, "sell": 0.1},
+        "regime": "balanced",
+        "risk_ctx": {},
+        "cfg": cfg,
+    }
+
+    baseline_action, baseline_meta = decide(
+        state={"last_action": "SHORT", "decision_steps": 0},
+        **kwargs,
+    )
+    action, meta = decide(
+        state={"last_action": "SHORT", "decision_steps": raw_decision_steps},
+        **kwargs,
+    )
+
+    assert baseline_action == action == "NONE"
+    assert baseline_meta.get("reasons") == meta.get("reasons")
+    assert baseline_meta.get("state_out") == meta.get("state_out")
+
+
 def test_decide_preserves_finite_cooldown_remaining_string_behavior() -> None:
     cfg = {
         "thresholds": {"entry_conf_overall": 0.7, "regime_proba": {"balanced": 0.7}},
@@ -379,6 +468,39 @@ def test_decide_preserves_finite_cooldown_remaining_string_behavior() -> None:
     assert action_int == action_str == "NONE"
     assert meta_int.get("reasons") == meta_str.get("reasons")
     assert "COOLDOWN_ACTIVE" in (meta_str.get("reasons") or [])
+
+
+@pytest.mark.parametrize("raw_cooldown_remaining", [None, "abc"])
+def test_decide_malformed_cooldown_remaining_matches_zero_baseline(
+    raw_cooldown_remaining: object,
+) -> None:
+    cfg = {
+        "thresholds": {"entry_conf_overall": 0.7, "regime_proba": {"balanced": 0.7}},
+        "risk": {"risk_map": [[0.7, 0.01]]},
+        "gates": {"cooldown_bars": 0},
+    }
+
+    kwargs = {
+        "policy": {},
+        "probas": {"buy": 0.8, "sell": 0.1},
+        "confidence": {"buy": 0.8, "sell": 0.1},
+        "regime": "balanced",
+        "risk_ctx": {},
+        "cfg": cfg,
+    }
+
+    baseline_action, baseline_meta = decide(
+        state={"cooldown_remaining": 0},
+        **kwargs,
+    )
+    action, meta = decide(
+        state={"cooldown_remaining": raw_cooldown_remaining},
+        **kwargs,
+    )
+
+    assert baseline_action == action == "LONG"
+    assert baseline_meta.get("reasons") == meta.get("reasons")
+    assert baseline_meta.get("state_out") == meta.get("state_out")
 
 
 @pytest.mark.parametrize(

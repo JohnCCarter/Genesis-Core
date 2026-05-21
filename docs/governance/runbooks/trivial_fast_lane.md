@@ -24,15 +24,15 @@ Om minsta tvekan finns: eskalera till Lite/Full path.
 4. Självgranska för dold behaviorpåverkan
 5. Rapportera kort Implementation Report
 
-## Editor slice note
+## Bounded slice note
 
-Quick Path får användas av en autonomous editor worker bara om dispatch-kontraktet själv förblir trivialt:
+Quick Path får användas för en bounded slice bara om slice-kontraktet själv förblir trivialt:
 
-- explicit bounded slice
+- explicit bounded scope
 - docs/comments/metadata-only
 - inga shared-truth writes
 - ingen implicit continuation till nästa slice
-- retur måste fortfarande klassificeras explicit av control / integration lane
+- eventuellt nästa steg måste fortfarande beslutas explicit
 
 ## Merge policy
 

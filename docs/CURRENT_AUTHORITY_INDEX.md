@@ -40,7 +40,6 @@ Canonical support:
 
 - `docs/README.md` (`Historiska dokument...`, `Viktig försiktighetsregel`)
 - `docs/governance/README.md` (`Historiska packet-, signoff- och closeout-dokument... läsas med respekt för innehållets faktiska roll, inte enbart efter mappnamnet`)
-- `docs/governance/active_lane_index.md` (`Forbidden inheritance boundaries`)
 
 ## Active governance and workflow references
 
@@ -64,12 +63,9 @@ Canonical support:
 
 ## Retained historical or paused references
 
-| Surface                                         | Status    | What it may be used for                                                                                                                | What it may not be used for                                                    | Canonical support                                                                                                                                      |
-| ----------------------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `handoff.md`                                    | `DORMANT` | Historical branch-context handoff traceability for the captured `feature/risk-hardening-wave3` note and retained older takeover blocks | Branch-current live anchor or current execution guidance on unrelated branches | `handoff.md` (`Later-status note (2026-05-21, feature/knowledge-authority-layer)`, `Äldre block längre ned i filen ska fortsatt bevaras som historik`) |
-| `GENESIS_WORKING_CONTRACT.md`                   | `DORMANT` | Historical branch-context drift anchor for the captured `feature/editor-worker-orchestrator` context                                   | Branch-current SSOT or current execution guidance by default                   | `GENESIS_WORKING_CONTRACT.md` (`Retained historical working-contract / drift-reference anchor`, `This file is not SSOT`)                               |
-| `docs/governance/active_lane_index.md`          | `DORMANT` | Historical pointer to the captured `feature/editor-worker-orchestrator` lane context                                                   | Branch-current lane-selection authority on other branches                      | `docs/governance/active_lane_index.md` (`Status: historical branch-context pointer`, `Later-status note`)                                              |
-| `docs/governance/worker_governance_envelope.md` | `DORMANT` | Retained traceability reference for the paused editor-worker model                                                                     | Current default governance workflow or activation authority                    | `docs/governance/worker_governance_envelope.md` (`retained historical/paused reference`, `It is not the current default governance workflow`)          |
+| Surface      | Status    | What it may be used for                                                                                                                | What it may not be used for                                                    | Canonical support                                                                                                                                      |
+| ------------ | --------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `handoff.md` | `DORMANT` | Historical branch-context handoff traceability for the captured `feature/risk-hardening-wave3` note and retained older takeover blocks | Branch-current live anchor or current execution guidance on unrelated branches | `handoff.md` (`Later-status note (2026-05-21, feature/knowledge-authority-layer)`, `Äldre block längre ned i filen ska fortsatt bevaras som historik`) |
 
 ## Explicitly unresolved in this slice
 

@@ -53,7 +53,6 @@ Canonical support:
 
 - `docs/README.md` (`Den här README:n är den praktiska kartan... Den är inte en egen SSOT`)
 - `docs/governance/concept_evidence_runtime_lane_model_2026-04-23.md` (`What this model is not`)
-- `docs/governance/active_lane_index.md` (`Forbidden inheritance boundaries`)
 
 ### Rule 2 — Fail closed
 
@@ -79,7 +78,6 @@ Canonical support:
 
 - `docs/README.md` (`Historiska dokument kan fortfarande ligga i äldre mappar`)
 - `docs/governance/README.md` (`Äldre material i andra ytor ska fortfarande läsas med respekt för innehållets faktiska roll, inte enbart efter mappnamnet`)
-- `docs/governance/active_lane_index.md` (`Forbidden inheritance boundaries`)
 
 ### Rule 4 — Artifact and conclusion are classified separately
 
@@ -111,7 +109,7 @@ Canonical support:
 
 - `docs/README.md` (`Analysis- och evidensnoter förblir icke-auktoriserande i sig`)
 - `docs/governance/concept_evidence_runtime_lane_model_2026-04-23.md` (`What this model is not`)
-- `docs/governance/worker_governance_envelope.md` (`Worker outputs förblir alltid proposals/evidence only`)
+- `docs/governance/README.md` (`Operativa dokument i docs/governance/** är kompletterande, inte överstyrande`)
 
 ## Status model
 

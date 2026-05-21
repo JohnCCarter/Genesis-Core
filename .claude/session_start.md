@@ -6,7 +6,7 @@ Minimum load sequence for any Genesis-Core session. Do not read full governance 
 
 1. Read `~/.claude/state/genesis-core/SESSION_HANDOFF.md` (if exists from prior session)
 2. Read `~/.claude/state/genesis-core/CURRENT_STATE.md`
-3. Read `docs/governance/QUICK_REF.md`
+3. Read `.claude/QUICK_REF.md`
 
 ## Step 2 — Load task (if active work)
 
@@ -22,8 +22,7 @@ Minimum load sequence for any Genesis-Core session. Do not read full governance 
 ## Step 4 — Load task packet (only if continuing a specific slice)
 
 9. Read the command packet for the active slice (path in ACTIVE_TASK.md → Artifact)
-10. If the active work is an editor-worker slice, also read `docs/governance/runbooks/editor_slice_worker_dispatch.md`
-11. Do NOT read: AGENTS.md, OPUS_46_GOVERNANCE.md, governance_mode.md, copilot-instructions.md
+10. Do NOT read: AGENTS.md, OPUS_46_GOVERNANCE.md, governance_mode.md, copilot-instructions.md
     — these are stable; QUICK_REF.md covers what you need for routine sessions
 
 ## When to load full governance docs
@@ -33,9 +32,9 @@ Minimum load sequence for any Genesis-Core session. Do not read full governance 
 - Constitutional question → read AGENTS.md
 - Operational contract dispute → read .github/copilot-instructions.md
 
-## Editor-slice activation rule
+## Explicit slice activation rule
 
-- A worker is active only after explicit dispatch.
-- An open editor session or attached workspace does not by itself activate a worker.
-- Starting one worker does not implicitly start another worker.
-- Same-role workers may run in parallel only when each has its own bounded slice, branch target, and dispatch contract.
+- A slice is active only after explicit user instruction or an explicit task packet.
+- An open editor session or attached workspace does not by itself create a live task.
+- Starting one slice does not implicitly start another.
+- Parallel slices require explicit, non-overlapping scope.

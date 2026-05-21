@@ -28,17 +28,16 @@ Write to: `~/.claude/state/genesis-core/GOVERNANCE_STATUS.md`
 - Update gate checkboxes
 - Record Opus review verdict + date if a review happened
 
-## Step 3a — If the active work was an editor-worker slice
+## Step 3a — If the active work was a bounded slice handoff
 
 Record explicitly before handoff:
 
 - return `status`
-- `recommended_integration_class`
 - `blocked_by` or equivalent blocker state
-- `next_admissible_slice_candidate` only as advisory routing
-- whether a refreshed envelope / explicit redispatch is required before the next slice
+- `next_admissible_step` only as advisory routing
+- whether explicit new instruction or a refreshed task packet is required before follow-on work
 
-Never imply that the worker auto-continues merely because it returned usable output.
+Never imply that work auto-continues merely because it produced usable output.
 
 ## Step 4 — Write SESSION_HANDOFF.md
 
@@ -58,19 +57,19 @@ Mode: <MODE> (source: <reason>)
 ## Next session: load these files first
 1. ~/.claude/state/genesis-core/CURRENT_STATE.md
 2. ~/.claude/state/genesis-core/ACTIVE_TASK.md (if active)
-3. docs/governance/QUICK_REF.md
+3. .claude/QUICK_REF.md
 4. <command packet path if relevant>
 
 ## Do NOT re-read
 - AGENTS.md, OPUS_46_GOVERNANCE.md, governance_mode.md, copilot-instructions.md
 ```
 
-If the session involved an editor-worker slice, also include:
+If the session involved a bounded slice handoff, also include:
 
-- the worker/slice identifier
+- the slice or task identifier
 - artifact or packet paths returned
 - explicit return classification if already adjudicated
-- whether the next step is `stop`, `park`, `redispatch`, or `integration review`
+- whether the next step is `stop`, `park`, `new task`, or `integration review`
 
 ## Step 5 — Commit artifacts (optional)
 

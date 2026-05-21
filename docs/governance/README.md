@@ -4,10 +4,6 @@ Den här mappen samlar governance-specifika dokument och indexytor för Genesis-
 
 `docs/governance/**` är ett komplement till de högre styrlagren. Den här README:n är ett index, inte en egen SSOT.
 
-> Status note (2026-05-18): De editor-worker-/multi-editor-material som fortfarande finns under `docs/governance/**` och `docs/contracts/editor_workers/**` är retained historical/paused references. De bevaras för spårbarhet och möjlig senare omprövning, men de ska inte läsas som nuvarande default-workflow på `feature/evidence-closeout-pilot`.
->
-> Later-branch truthfulness note (2026-05-19): Denna retained historical/paused-status är inte begränsad till `feature/evidence-closeout-pilot`; i den senare branchkontext som behandlas här, inklusive `feature/risk-hardening-wave2`, förblir dessa material icke-normativa referenser snarare än branch-current default-workflow. Denna not utser inte någon ersättande nuvarande workflow.
-
 ## Roll i dokumenttaxonomin
 
 Framåt ska `docs/governance/` användas för material som verkligen hör till governance-ytan, till exempel:
@@ -50,7 +46,6 @@ Operativa dokument i `docs/governance/**` är **kompletterande**, inte överstyr
 
 - `concept_evidence_runtime_lane_model_2026-04-23.md` — kanonisk praktisk definition av koncept-, evidens- och runtime-integrations-lanes
 - `GENESIS_HYBRID_V1_1.md` — operativt kontrakt (hybridmodell)
-- `active_lane_index.md` — kort retained historical pointer till den fångade `feature/editor-worker-orchestrator`-kontexten; inte branch-current lane-selector eller ny SSOT
 - `runtime_config_live_update_matrix_2026-05-15.md` — current-state-matris för vilka runtime-config-ytor som är schema-valida, validate-accepterade respektive live-skrivbara via propose-pathen
 - `templates/command_packet.md` — standardmall för start av uppgift
 - `templates/evidence_claim_header.md` — lätt claim-header-mall för claim-bearing evidensnoter där provenance och authority-gränser behöver bli tydliga
@@ -58,12 +53,6 @@ Operativa dokument i `docs/governance/**` är **kompletterande**, inte överstyr
 - `runbooks/trivial_fast_lane.md` — snabbspår för triviala ändringar
 
 För decision-influencing evidence notes som gör reproducerbarhets-, portabilitets-, proveniens- eller boundary-claims används claim-header-mallen tillsammans med adoption-runbooken för att göra claim-status och bäraryta tydligare och mer reviewbar. Dessa helper-ytor klargör claim-gränser och adoptionsläge; de är inte i sig en ny authority-källa eller precedence-regel.
-
-### Retained historical/paused editor-worker references
-
-- `worker_governance_envelope.md` — retained referens för den pausade editor-worker-envelope-modellen; inte current default governance-workflow
-- `runbooks/editor_slice_worker_dispatch.md` — retained dispatch-runbook för samma pausade modell; inte current default runbook
-- `../contracts/editor_workers/editor_worker_startup_test_dispatch_2026-05-12.md` — historiskt startup-specimen för den pausade modellen; inte en aktiv eller trial-ready dispatch-yta idag
 
 Historiska packet-, signoff- och closeout-dokument som låg direkt i governance-roten har flyttats till `docs/decisions/` eller `docs/analysis/` enligt faktisk dokumentroll.
 Äldre material i andra ytor ska fortfarande läsas med respekt för innehållets faktiska roll, inte enbart efter mappnamnet.

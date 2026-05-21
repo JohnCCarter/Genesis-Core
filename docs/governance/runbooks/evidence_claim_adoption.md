@@ -177,7 +177,6 @@ This minimum is **mandatory for decision-influencing evidence**, but it is **not
 Use together with:
 
 - `docs/governance/templates/evidence_claim_header.md` — the actual copyable header
-- `docs/governance/active_lane_index.md` — short pointer to current versus parked lanes
 - `docs/governance/runtime_config_live_update_matrix_2026-05-15.md` — example of a current-state claim-bearing reference note
 
 ## Bottom line

@@ -4,6 +4,21 @@ Date: 2026-05-21
 Branch: `feature/risk-hardening-wave3`
 Status: `precode-defined / docs-only / non-authorizing`
 
+Later-branch truthfulness note (2026-05-21): the first code-bearing follow-up on this exact seam
+has now been landed on `feature/risk-hardening-wave3`. `src/core/optimizer/runner.py` now
+delegates the best-candidate scan to
+`src/core/optimizer/runner_trial_results.py::_select_best_candidate_from_results(...)`, while the
+runner-level `_candidate_from_result(...)` patch surface remains preserved via callback injection.
+Observed behavior of the landed slice remains no-behavior-change for validation-result preference,
+candidate eligibility semantics, score-version/comparability policy, and champion write policy.
+Observed gate stack for that later branch implementation: touched-file `black --check`; touched-file
+`ruff check`; `pytest tests/utils/test_optimizer_runner.py -q`; `pytest`
+`tests/governance/test_import_smoke_backtest_optuna.py -q`; `pytest`
+`tests/backtest/test_backtest_determinism_smoke.py -q`; `pytest`
+`tests/utils/test_features_asof_cache_key_deterministic.py -q`; and `pytest`
+`tests/governance/test_pipeline_fast_hash_guard.py -q`. This packet remains a historical pre-code
+selection artifact only; the note above records later-branch truthfulness, not new authority.
+
 This document opens one bounded current-branch pre-code packet for `#16` only. It selects the
 smallest exact future sub-boundary inside the already-chosen optimizer orchestration /
 validation / promotion area: the validation → promotion result-contract seam around
@@ -27,7 +42,7 @@ behavior changes, March refactor continuation, or queue activation by implicatio
   orchestration / validation / promotion boundary, without reviving the full March optimizer split
   queue
 - **Candidate:** `future validation → promotion contract seam around run_validation_stage_impl(),
-  results_for_promotion, and _candidate_from_result()`
+results_for_promotion, and _candidate_from_result()`
 - **Base SHA:** `44ed6b4a`
 - **Related artifacts:**
   `docs/decisions/governance/optimizer_refactor_trace_reopen_shape_packet_2026-05-19.md`,

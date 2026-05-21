@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -55,6 +56,25 @@ def _candidate_from_result(result: dict[str, Any]) -> ChampionCandidate | None:
         results_path=str(result.get("results_path", "")),
         merged_config=result.get("merged_config"),
     )
+
+
+def _select_best_candidate_from_results(
+    results: list[dict[str, Any]],
+    *,
+    candidate_from_result: Callable[[dict[str, Any]], ChampionCandidate | None],
+) -> tuple[ChampionCandidate | None, dict[str, Any] | None]:
+    best_candidate: ChampionCandidate | None = None
+    best_result: dict[str, Any] | None = None
+
+    for result in results:
+        candidate = candidate_from_result(result)
+        if candidate is None:
+            continue
+        if best_candidate is None or candidate.score > best_candidate.score:
+            best_candidate = candidate
+            best_result = result
+
+    return best_candidate, best_result
 
 
 def _extract_num_trades(payload: dict[str, Any]) -> int | None:

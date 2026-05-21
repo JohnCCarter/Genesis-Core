@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Any
 
 from core.optimizer import runner_config as runner_config_lib
-from core.optimizer.champion import ChampionCandidate, ChampionManager
+from core.optimizer.champion import ChampionManager
 from core.optimizer.constraints import enforce_constraints
 from core.optimizer.runner_optuna_orchestration import (
     collect_comparability_warnings_impl,
@@ -166,6 +166,7 @@ from core.optimizer.runner_trial_results import (  # noqa: E402
     _check_abort_heuristic,
     _extract_num_trades,
     _extract_results_path_from_log,
+    _select_best_candidate_from_results,
 )
 
 
@@ -1512,15 +1513,10 @@ def run_optimizer(config_path: Path, *, run_id: str | None = None) -> list[dict[
     except (TypeError, ValueError):
         min_improvement = 0.0
 
-    best_candidate: ChampionCandidate | None = None
-    best_result: dict[str, Any] | None = None
-    for result in results_for_promotion:
-        candidate = _candidate_from_result(result)
-        if candidate is None:
-            continue
-        if best_candidate is None or candidate.score > best_candidate.score:
-            best_candidate = candidate
-            best_result = result
+    best_candidate, best_result = _select_best_candidate_from_results(
+        results_for_promotion,
+        candidate_from_result=_candidate_from_result,
+    )
 
     if best_candidate is not None and promotion_enabled:
         manager = ChampionManager()

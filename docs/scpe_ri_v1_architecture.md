@@ -3,7 +3,11 @@
 Date: 2026-04-20
 Mode: RESEARCH
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `active / docs-only / governance-and-architecture packet`
+Status: `historical / docs-only / governance-and-architecture packet / branch-specific provenance`
+
+> Later-status note (2026-05-21, `feature/knowledge-authority-layer`): This document is preserved as the historical 2026-04-20 SCPE RI V1 architecture packet from `feature/ri-role-map-implementation-2026-03-24`. It is not current branch guidance, not a live lane selector, and not current execution authority on later branches.
+>
+> Current-use rule: treat this file as bounded historical architecture context only. Resolve any current branch guidance from current branch state, higher-order governance docs, and later anchored packets/evidence instead.
 
 ## COMMAND PACKET
 

@@ -6,6 +6,8 @@ Status: `reopen-shape-proposed / docs-only / non-authorizing`
 
 This document is a planning / decision artifact in `RESEARCH` and grants no implementation, runtime, test, API/result-contract, env/config, paper/live, launch, or promotion authority. It must not be used as approval to change `BacktestEngine` behavior.
 
+> Later-branch truthfulness note (2026-05-21, `feature/risk-hardening-wave3`): the proposed first reopen shape below is no longer purely future-tense for the current checkout. Current `src/core/backtest/engine.py` already exposes `BacktestEngine.run(..., error_policy=...)`, preserves `continue_collect_raise_after_loop` as the default, supports `fail_fast`, and rejects invalid policy strings before replay; focused tests in `tests/backtest/test_backtest_engine.py` now lock the default late-raise path, `fail_fast`, and invalid-policy reject behavior. This note preserves the packet as a historical pre-implementation selection artifact only. It does **not** widen current truth to constructor-level defaults, env/config semantics, `best_effort`, or returned-`errors` payload forms.
+
 ## COMMAND PACKET
 
 - **Mode:** `RESEARCH` — source: `docs/governance_mode.md` via branch mapping for `feature/risk-hardening-wave2`

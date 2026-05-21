@@ -271,15 +271,15 @@ på read-side, inte som output från en current producer-CLI.
 
 ### Rekommenderat flöde
 
-| Scenario                 | Kommando                                                                                                          |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------------- |
-| Runtime cache smoke      | `python scripts/run/run_backtest.py --symbol tBTCUSD --timeframe 1h --fast-window --precompute-features --no-save` |
-| Training consumer        | `python scripts/train/train_model.py --symbol tBTCUSD --timeframe 1h --use-holdout`                               |
-| Paritetskontroll         | `python -m pytest tests/utils/test_feature_parity.py tests/integration/test_precompute_vs_runtime.py`             |
+| Scenario            | Kommando                                                                                                           |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Runtime cache smoke | `python scripts/run/run_backtest.py --symbol tBTCUSD --timeframe 1h --fast-window --precompute-features --no-save` |
+| Training consumer   | `python scripts/train/train_model.py --symbol tBTCUSD --timeframe 1h --use-holdout`                                |
+| Paritetskontroll    | `python -m pytest tests/utils/test_feature_parity.py tests/integration/test_precompute_vs_runtime.py`              |
 
 Alla ändringar ovan säkerställer att:
 
 - current runtime precompute/cache path är grounded via `scripts/run/run_backtest.py` plus
-   `tests/integration/test_precompute_vs_runtime.py`
+  `tests/integration/test_precompute_vs_runtime.py`
 - den historiska v17-fixturen förblir en användbar parity/reference artifact, men någon tracked
-   standalone producer-CLI för att regenerera den exponeras inte på denna branch
+  standalone producer-CLI för att regenerera den exponeras inte på denna branch

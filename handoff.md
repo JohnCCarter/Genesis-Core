@@ -22,10 +22,15 @@ fortsatt läsas, men branchens nuvarande ärliga läge efter 2026-05-21-reframen
   `src/**` / `scripts/**`; nästa admissible `#12`-move är därför docs-truthfulness narrowing,
   inte implementation
 - `docs/decisions/governance/feature_cache_docs_truthfulness_narrowing_packet_2026-05-21.md`
-   landar nu själva docs-only narrowing-slicen för `#12`: stale referenser till absent standalone
-   producer/helper-pathar är borttagna eller omformulerade till current branch reality i
-   `docs/features/FEATURE_COMPUTATION_MODES.md`, `scripts/docs/DATA_FETCH_GUIDE.md` och
-   `data/DATA_FORMAT.md`
+  landar nu själva docs-only narrowing-slicen för `#12`: stale referenser till absent standalone
+  producer/helper-pathar är borttagna eller omformulerade till current branch reality i
+  `docs/features/FEATURE_COMPUTATION_MODES.md`, `scripts/docs/DATA_FETCH_GUIDE.md` och
+  `data/DATA_FORMAT.md`
+- `docs/decisions/governance/backtest_error_policy_reopen_shape_packet_2026-05-19.md`
+  bär nu en later-branch truthfulness note för `#18`: current branch har redan
+  `BacktestEngine.run(..., error_policy=...)` med default `continue_collect_raise_after_loop`,
+  explicit `fail_fast`, och invalid-policy reject tests; kvarvarande `#18`-residual är därför bara
+  bredare policy-widening, inte en saknad run-level surface
 - behåll `#2 + #12` tillsammans endast som en gemensam `silent stale-reuse`-familjelabel
 - splitta exekvering omedelbart:
   - `#2` = implementation-bearing precompute-cache policy/enforcement seam
@@ -36,7 +41,7 @@ fortsatt läsas, men branchens nuvarande ärliga läge efter 2026-05-21-reframen
       owner/helper mellan key-material och producer path; routea inte första kandidaten via bred
       strategy-config-fingerprint och återöppna inte den redan tracked validator-pathen
   2.  `#12`: writer/schema-owner trace och docs-truthfulness narrowing är nu båda landade; öppna
-     inte ett nytt `#12`-spår igen om inte ny tracked writer/schema-owner evidence faktiskt dyker upp
+      inte ett nytt `#12`-spår igen om inte ny tracked writer/schema-owner evidence faktiskt dyker upp
 - hoppa inte vidare ännu till `#7`, `#18`, `#15`, `#1` eller `#16` som om `#2/#12` redan vore
   omhändertaget och post-reframe-spåret valt
 
@@ -142,7 +147,7 @@ redan vore fullt grounded. Den viktigaste kvarvarande `#12`-slutsatsen är nu:
 - current branch visar fortfarande read-side feature-artifact reader i training path, men ingen current
   tracked writer/schema-owner eller live `schema_version=1`-owner för samma carrier
 - docs-truthfulness narrowing är nu också landad; `#12` ska därför inte återöppnas på samma branch
-   utan ny tracked writer/schema-owner evidence
+  utan ny tracked writer/schema-owner evidence
 
 ### Rekommenderad läsordning för nästa agent
 
@@ -173,7 +178,7 @@ nästa agent ta en ny governance-pass innan runtime-semantik ändras. Om nästa 
 Efter den nu landade `#12`-truthfulness narrowing återstår fortfarande minst dessa öppna spår:
 
 - `#7` — whitelist vs schema policy-frågan i ConfigAuthority
-- `#18` — explicit error-policy i backtest-motorn
+- `#18` — endast om bredare error-policy widening väljs; den exakta run-level surface:n är redan landad
 - `#15` — `engine.py` blast-radius / split-frågan
 - `#1` — family-level evidence-to-authority retelling risk (inte den tidigare lilla seamen)
 - `#16` — optimizer orchestration fragmentation

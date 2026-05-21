@@ -197,6 +197,8 @@ Engine-pelaren har **mest öppet dokumenterad risk**:
 
 - mode #18 (error-policy continue+raise) är öppet erkänd som "kan överraska användare" i Fynd D. Korrekt mitigation är explicit `error_policy` parameter, inte hide-the-error.
 
+  Later-branch partial reclassification note (2026-05-21, `feature/risk-hardening-wave3`): the exact `#18` carry-forward reading above should now be narrowed for the current checkout. `src/core/backtest/engine.py::BacktestEngine.run(...)` already exposes `error_policy`, defaults to `continue_collect_raise_after_loop`, supports `fail_fast`, and rejects invalid explicit policy values before replay via `_normalize_per_bar_error_policy(...)`; focused tests in `tests/backtest/test_backtest_engine.py` now prove the default continue+raise-after-loop behavior, `fail_fast` on the first processed-bar failure, and invalid-policy reject behavior. This narrows the current residual to broader future policy widening (`best_effort`, returned `errors` payload, constructor-level defaults, or env/config-controlled policy), not an unchanged missing-explicit-policy seam. See `docs/decisions/governance/backtest_error_policy_reopen_shape_packet_2026-05-19.md`.
+
 ### Optimizer (#10, #16)
 
 Optimizer-pelaren har **två risk-vektorer som korrelerar**:

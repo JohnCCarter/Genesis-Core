@@ -168,7 +168,7 @@ python scripts/train/train_model.py --symbol tBTCUSD --timeframe 1h --use-holdou
 
 - Inspect `data/metadata/curated/*_v1.json` for `missing_candles`, `quality_score`, and date span.
 - Use the specific validator under `scripts/validate/` that matches your task; current branch has
-    no standalone `scripts/validate_data.py`.
+  no standalone `scripts/validate_data.py`.
 
 **2. Warm runtime precompute-cache for backtests (optional):**
 
@@ -185,7 +185,7 @@ python scripts/train/train_model.py --symbol tBTCUSD --timeframe 1h --use-holdou
 **4. Run task-specific analysis:**
 
 - Choose the relevant script under `scripts/analyze/` or `scripts/audit/` for your current slice;
-    current branch has no standalone `scripts/comprehensive_feature_analysis.py`.
+  current branch has no standalone `scripts/comprehensive_feature_analysis.py`.
 
 ---
 

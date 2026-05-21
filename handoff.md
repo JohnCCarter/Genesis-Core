@@ -31,6 +31,12 @@ fortsatt läsas, men branchens nuvarande ärliga läge efter 2026-05-21-reframen
   `BacktestEngine.run(..., error_policy=...)` med default `continue_collect_raise_after_loop`,
   explicit `fail_fast`, och invalid-policy reject tests; kvarvarande `#18`-residual är därför bara
   bredare policy-widening, inte en saknad run-level surface
+- `docs/decisions/governance/backtest_engine_build_results_seam_packet_2026-05-19.md`
+  bär nu en later-branch truthfulness note för `#15`: current branch har redan landat den lilla
+  no-behavior-change-extraktionen av `_build_results()` till interna
+  `src/core/backtest/engine_results.py`; `BacktestEngine._build_results()` är fortfarande enda
+  engine entry point och consumer-visible result contract hålls fast via targeted proof +
+  determinism/cache/hash-gates
 - behåll `#2 + #12` tillsammans endast som en gemensam `silent stale-reuse`-familjelabel
 - splitta exekvering omedelbart:
   - `#2` = implementation-bearing precompute-cache policy/enforcement seam
@@ -42,8 +48,10 @@ fortsatt läsas, men branchens nuvarande ärliga läge efter 2026-05-21-reframen
       strategy-config-fingerprint och återöppna inte den redan tracked validator-pathen
   2.  `#12`: writer/schema-owner trace och docs-truthfulness narrowing är nu båda landade; öppna
       inte ett nytt `#12`-spår igen om inte ny tracked writer/schema-owner evidence faktiskt dyker upp
-- hoppa inte vidare ännu till `#7`, `#18`, `#15`, `#1` eller `#16` som om `#2/#12` redan vore
-  omhändertaget och post-reframe-spåret valt
+- `#15` exakt `_build_results()`-seam är nu också landad; återöppna inte samma seam på denna branch
+  utan ny bounded evidence om kvarvarande hot-file-risk på en annan yta
+- nästa ärliga öppna spår efter detta ligger därför sannolikt bland `#7`, `#1` eller `#16`, inte i
+  att återberätta `#12`, `#18` eller den redan landade exakta `#15`-seamen som oavslutade
 
 Äldre block längre ned i filen ska fortsatt bevaras som historik och detaljerad bakgrund, men det
 är denna 2026-05-21-note plus den refererade reframe-packeten som nu är live anchor för exakt

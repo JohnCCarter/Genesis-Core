@@ -4,6 +4,22 @@ Date: 2026-05-19
 Branch: `feature/risk-hardening-wave2`
 Status: `proposed candidate-selection packet only / docs-only / non-authorizing`
 
+Later-branch truthfulness note (2026-05-21): this exact candidate has now been implemented on
+`feature/risk-hardening-wave3` as a no-behavior-change internal extraction into
+`src/core/backtest/engine_results.py`. `BacktestEngine._build_results()` remains the only engine
+entry point and now delegates to the internal helper; result payload schema, top-level key
+set/order, nested `backtest_info` consumer surface, and git-hash provenance logic remained
+unchanged in the landed slice. Observed gate stack for that later branch implementation:
+`black --check` and `ruff check` on the touched runtime/proof files; `pytest`
+`tests/backtest/test_backtest_engine.py`; `pytest`
+`tests/backtest/test_extract_backtest_provenance.py`; `pytest`
+`tests/backtest/test_backtest_determinism_smoke.py`; `pytest`
+`tests/utils/test_features_asof_cache.py`; `pytest`
+`tests/utils/test_features_asof_cache_key_deterministic.py`; `pytest`
+`tests/governance/test_pipeline_fast_hash_guard.py`; and `pytest`
+`tests/governance/test_import_smoke_backtest_optuna.py`. This packet remains a historical pre-code
+selection artifact only; the note above is for later-branch truthfulness, not new authority.
+
 This document records one bounded candidate-selection packet only. It does not authorize implementation, module extraction, schema changes, or broader `src/core/backtest/engine.py` modularization. Any later runtime work would require a fresh strict pre-code packet and post-change audit against then-current `HEAD`.
 
 ## COMMAND PACKET

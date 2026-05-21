@@ -912,6 +912,15 @@ def test_engine_results_format(sample_candles_data):
 
     results = engine.run()
 
+    assert list(results.keys()) == [
+        "backtest_info",
+        "summary",
+        "position_summary",
+        "metrics",
+        "trades",
+        "equity_curve",
+    ]
+
     # Check backtest_info
     assert "symbol" in results["backtest_info"]
     assert "timeframe" in results["backtest_info"]

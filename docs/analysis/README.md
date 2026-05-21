@@ -3,6 +3,13 @@
 Datum: 2026-03-20
 Status: zon-guide med bevarad historisk RI/R1-serieöversikt
 
+> Routing status (2026-05-21, `feature/knowledge-authority-layer`): denna README är en
+> `NON_AUTHORIZING` routingyta för analysartefakter i `docs/analysis/`. Den får användas
+> för navigation, placering och historisk kontextframing inom mappen, men den etablerar
+> inte i sig slutsatser, readiness, promotion-status, runtime authority eller
+> branch-current arbetsordning. Se `docs/CURRENT_AUTHORITY_INDEX.md` och
+> `docs/knowledge/KNOWLEDGE_AUTHORITY_RULES.md`.
+
 Later-branch truthfulness note (2026-05-21, `feature/risk-hardening-wave3`): denna README
 förblir en zon-guide plus en retained historical RI/R1-serieöversikt. Läsordningen,
 "master-diff-reviewn", och "nästa prioriterade analysyta" längre ned ska inte läsas som

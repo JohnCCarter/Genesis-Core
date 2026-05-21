@@ -426,6 +426,31 @@ Observed evidence:
 - The file states: `It is not the current default governance workflow`.
 - The file states: `Auktoritativa källor förblir` and then points to higher-order sources.
 
+Inferred interpretation:
+
+- `NONE`
+
+Unverified assumptions:
+
+- `NONE`
+
+Decision impact:
+`GOVERNANCE_ONLY`
+
+Supersedes:
+
+- `NONE`
+
+Superseded by:
+
+- `NONE`
+
+Confidence:
+`HIGH`
+
+Authority note:
+May be used for traceability about the paused editor-worker model. Must not be used to activate or authorize that workflow by implication.
+
 ## CONCLUSION-ID: AUTH-011
 
 Status:
@@ -472,6 +497,25 @@ Confidence:
 Authority note:
 May be used for repository layout and file-placement guidance within its subordinate scope. Must not be used to override higher-order governance or mode documents.
 
+## CONCLUSION-ID: AUTH-012
+
+Status:
+`NON_AUTHORIZING`
+
+Conclusion statement:
+`docs/analysis/README.md` is a non-authorizing routing surface for `docs/analysis/` and retained historical context framing; it does not, by itself, establish conclusions, readiness, promotion status, runtime authority, or branch-current work order.
+
+Canonical artifact reference:
+
+- `docs/analysis/README.md`
+- headings: `Routing status (2026-05-21, feature/knowledge-authority-layer)`, `Later-branch truthfulness note (2026-05-21, feature/risk-hardening-wave3)`, `Syfte för mappen`
+
+Observed evidence:
+
+- The file states: `denna README är en NON_AUTHORIZING routingyta för analysartefakter i docs/analysis/.`
+- The file states it `inte i sig` establishes `slutsatser, readiness, promotion-status, runtime authority eller branch-current arbetsordning`.
+- The file describes `docs/analysis/` as a surface for `synteser, diagnoser och findings` and not for governance-SSOT.
+
 Inferred interpretation:
 
 - `NONE`
@@ -495,4 +539,48 @@ Confidence:
 `HIGH`
 
 Authority note:
-May be used for traceability about the paused editor-worker model. Must not be used to activate or authorize that workflow by implication.
+May be used for routing and placement within `docs/analysis/`. Must not be used to assign status to individual notes or to establish conclusions, readiness, promotion status, runtime authority, or branch-current work order.
+
+## CONCLUSION-ID: AUTH-013
+
+Status:
+`NON_AUTHORIZING`
+
+Conclusion statement:
+`docs/decisions/README.md` is a non-authorizing routing surface for `docs/decisions/`; it guides placement and navigation for decision-record documents but does not, by itself, confer approval, readiness, promotion status, runtime authority, or governance SSOT status.
+
+Canonical artifact reference:
+
+- `docs/decisions/README.md`
+- headings: `Routing status (2026-05-21, feature/knowledge-authority-layer)`, `Syfte`
+
+Observed evidence:
+
+- The file states: `denna README är en NON_AUTHORIZING routingyta för beslutsdokument i docs/decisions/.`
+- The file states it does not `ge i sig approval, readiness, promotion-status, runtime authority eller SSOT-status`.
+- The file states the folder is `inte governance-SSOT`.
+
+Inferred interpretation:
+
+- `NONE`
+
+Unverified assumptions:
+
+- `NONE`
+
+Decision impact:
+`GOVERNANCE_ONLY`
+
+Supersedes:
+
+- `NONE`
+
+Superseded by:
+
+- `NONE`
+
+Confidence:
+`HIGH`
+
+Authority note:
+May be used for routing and placement within `docs/decisions/`. Must not be used to confer approval or to assign status to individual packets, signoffs, closeouts, or adjacent decision documents.

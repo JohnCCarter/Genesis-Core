@@ -55,10 +55,12 @@ Canonical support:
 
 ## Non-authorizing routing and taxonomy references
 
-| Surface                     | Status            | What it may be used for                           | What it may not be used for                   | Canonical support                                                                         |
-| --------------------------- | ----------------- | ------------------------------------------------- | --------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `docs/README.md`            | `NON_AUTHORIZING` | Documentation taxonomy and reading-order guidance | Standing SSOT or independent authority source | `docs/README.md` (`Den här README:n är den praktiska kartan... Den är inte en egen SSOT`) |
-| `docs/governance/README.md` | `NON_AUTHORIZING` | Governance-zone index and placement guidance      | Independent SSOT or override surface          | `docs/governance/README.md` (`Den här README:n är ett index, inte en egen SSOT`)          |
+| Surface                     | Status            | What it may be used for                                                 | What it may not be used for                                                                     | Canonical support                                                                                                                           |
+| --------------------------- | ----------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `docs/README.md`            | `NON_AUTHORIZING` | Documentation taxonomy and reading-order guidance                       | Standing SSOT or independent authority source                                                   | `docs/README.md` (`Den här README:n är den praktiska kartan... Den är inte en egen SSOT`)                                                   |
+| `docs/governance/README.md` | `NON_AUTHORIZING` | Governance-zone index and placement guidance                            | Independent SSOT or override surface                                                            | `docs/governance/README.md` (`Den här README:n är ett index, inte en egen SSOT`)                                                            |
+| `docs/analysis/README.md`   | `NON_AUTHORIZING` | Analysis-zone routing, placement guidance, and retained-context framing | Establishing conclusions, branch-current work order, readiness, promotion, or runtime authority | `docs/analysis/README.md` (`Routing status (2026-05-21, feature/knowledge-authority-layer)`, `Later-branch truthfulness note`)              |
+| `docs/decisions/README.md`  | `NON_AUTHORIZING` | Decision-zone routing, placement guidance, and taxonomy framing         | Approval, readiness, promotion, runtime authority, or governance SSOT                           | `docs/decisions/README.md` (`Routing status (2026-05-21, feature/knowledge-authority-layer)`, `Den här mappen är ... inte governance-SSOT`) |
 
 ## Retained historical or paused references
 
@@ -77,6 +79,9 @@ The following surfaces remain `UNRESOLVED` at the classification level in this f
 - domain-specific contract surfaces outside the governance/top-level routing set above
 - research lineage chains beyond the top-level governance surfaces
 - edge relationships beyond explicit top-level authority boundaries
+
+The explicit `NON_AUTHORIZING` status of `docs/analysis/README.md` and `docs/decisions/README.md`
+does not assign status to the documents they route to.
 
 This file does not infer a status for those domains from absence, recency, folder, or convenience.
 

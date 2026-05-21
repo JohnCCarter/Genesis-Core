@@ -1,5 +1,11 @@
 # Decision records
 
+> Routing status (2026-05-21, `feature/knowledge-authority-layer`): denna README är en
+> `NON_AUTHORIZING` routingyta för beslutsdokument i `docs/decisions/`. Den får användas
+> för navigation, placering och taxonomiguide inom mappen, men den ger inte i sig
+> approval, readiness, promotion-status, runtime authority eller SSOT-status. Se
+> `docs/CURRENT_AUTHORITY_INDEX.md` och `docs/knowledge/KNOWLEDGE_AUTHORITY_RULES.md`.
+
 Den här mappen är den framåtriktade ytan för beslutsspår i Genesis-Core.
 Den är **inte** governance-SSOT och den är **inte** den primära platsen för råa research-artefakter.
 

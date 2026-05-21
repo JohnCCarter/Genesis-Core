@@ -1,0 +1,63 @@
+{
+  "governance": {
+    "skill_type": "SPEC",
+    "contract_owner": "opus-4.6",
+    "implementation_owner": "codex-5.3",
+    "pass_definition_locked": true,
+    "scope_locked": true,
+    "evolution_mode": "additive_only",
+    "forbidden": [
+      "authority_drift",
+      "pass_semantic_broadening",
+      "research_conclusion_synthesis",
+      "runtime_readiness_promotion_authorization",
+      "scope_broadening"
+    ],
+    "stop_conditions": [
+      "detected_authority_drift",
+      "detected_pass_semantic_broadening",
+      "detected_unsupported_classification",
+      "attempted_scope_change"
+    ]
+  },
+  "id": "docs_classification_taxonomy_routing",
+  "version": "0.1.0",
+  "title": "Docs classification taxonomy routing guard",
+  "description": "SPEC för citation-bound klassificering av zon-guider och routingytor i Genesis-Core. Använd när README- eller indexytor ska märkas som routing/non-authorizing utan att skapa ny authority, nya research conclusions eller readiness/promotion-semantik.",
+  "status": "dev",
+  "owners": ["fa06662"],
+  "tags": ["docs", "classification", "routing", "taxonomy", "governance"],
+  "rules": {
+    "must": [
+      "Behandla zone-guide- och routing-README-filer som citation-bound klassificeringsytor, inte som nya authority-källor.",
+      "Kräv explicit textstöd innan en yta märks NON_AUTHORIZING, DORMANT eller ACTIVE i knowledge-lagret.",
+      "Fall tillbaka till UNRESOLVED när stöd är ofullständigt, tvetydigt eller kräver tvärdokument-syntes.",
+      "Håll README-förtydliganden strikt routing-/navigationsfokuserade och länka vidare till befintliga authority-index eller regler i stället för att duplicera dem.",
+      "Separera artifacts status från conclusion-status i index/register när en routingyta klassificeras."
+    ],
+    "must_not": [
+      "Behandla foldernamn, README-närvaro eller recency som tillräckligt stöd för authority-status.",
+      "Skapa nya research conclusions eller nya aktiva authority-påståenden genom att kombinera flera docs.",
+      "Använd skillen för att godkänna readiness, promotion, runtime behavior eller PASS-semantik.",
+      "Klassificera enskilda packets eller analysnoter när scopet bara gäller zon-guider eller routingytor."
+    ]
+  },
+  "references": [
+    {
+      "type": "doc",
+      "value": "docs/templates/skills/docs_classification_taxonomy_routing.md"
+    },
+    {
+      "type": "file",
+      "value": "docs/CURRENT_AUTHORITY_INDEX.md"
+    },
+    {
+      "type": "file",
+      "value": "docs/knowledge/KNOWLEDGE_AUTHORITY_RULES.md"
+    },
+    {
+      "type": "file",
+      "value": "docs/README.md"
+    }
+  ]
+}

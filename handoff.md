@@ -50,24 +50,37 @@ fortsatt läsas, men branchens nuvarande ärliga läge efter 2026-05-21-reframen
   records now the first fresh `#1` surface selection on wave3: the frequently reused premortem
   baseline's `#16` optimizer carry-forward sentence is narrowed to current-branch truth, while the
   broader family-level evidence-to-authority drift risk remains open
+- `docs/decisions/governance/backtest_engine_run_setup_surface_selection_packet_2026-05-21.md`
+   records now the next fresh `#15` surface on wave3: the pre-loop run-setup/config-preparation
+   block inside `BacktestEngine.run(...)`, not the already-landed `_build_results()` seam and not a
+   revived whole-engine split story
+- `docs/decisions/governance/optimizer_validation_payload_carrier_surface_selection_packet_2026-05-21.md`
+   records now the next fresh `#16` surface on wave3: the validation result-payload carrier in
+   `runner_validation.py::run_validation_stage_impl(...)`; `docs/audit/refactor/optimizer/README.md`
+   is narrowed accordingly so `runner_optuna_orchestration.py` is no longer implied default next
+   locus by carry-forward language alone
+- `docs/decisions/governance/evidence_to_authority_analysis_readme_surface_selection_packet_2026-05-21.md`
+   records now the next fresh `#1` surface on wave3: root `docs/analysis/README.md` is narrowed to
+   retained historical RI/R1 reading-order context rather than branch-current kickoff/work-order
+   guidance
 - behåll `#2 + #12` tillsammans endast som en gemensam `silent stale-reuse`-familjelabel
-- splitta exekvering omedelbart:
-  - `#2` = implementation-bearing precompute-cache policy/enforcement seam
-  - `#12` = evidence-first feature-artifact/schema trace seam
-- nästa admissible move om wave3 fortsätter på denna lane är därför:
-  1.  `#2`: om spåret fortsätter till kod, ta en ny governance-pass för en liten runtime-bearing
-      kandidat som extraherar den producer-owned persisted precompute-specen till en gemensam
-      owner/helper mellan key-material och producer path; routea inte första kandidaten via bred
-      strategy-config-fingerprint och återöppna inte den redan tracked validator-pathen
-  2.  `#12`: writer/schema-owner trace och docs-truthfulness narrowing är nu båda landade; öppna
-      inte ett nytt `#12`-spår igen om inte ny tracked writer/schema-owner evidence faktiskt dyker upp
-- `#15` exakt `_build_results()`-seam är nu också landad; återöppna inte samma seam på denna branch
-  utan ny bounded evidence om kvarvarande hot-file-risk på en annan yta
-- nästa ärliga öppna spår efter detta ligger därför sannolikt i `#1` via fresh surface selection
-  på en annan fortfarande missvisande surface, eller i en separat ny `#16`-surface-selection om ny
-  optimizer-boundary evidence dyker upp, inte i att återberätta `#7`, `#12`, `#18`, den redan
-  landade exakta `#15`-seamen, den nu landade första `#16`-contract-seamen eller den nu
-  smalnade premortem-baseline-ytan som oavslutade
+- `#2` har på current branch redan fått både bounded runtime hardening och en producer-owned
+   persisted precompute-spec carrier mellan `engine.py` och `engine_precompute.py`; återöppna inte
+   whole-strategy-config hashing eller selector-policy/validator reselection utan ny bounded evidence
+- `#12` writer/schema-owner trace och docs-truthfulness narrowing är redan landade; återöppna inte
+   samma seam utan ny tracked writer/schema-owner evidence
+- `#15` exakt `_build_results()`-seam är landad och dess nästa fresh wave3-surface är nu separat
+   vald som `run()`-preambeln; återberätta varken `_build_results()` eller den gamla
+   worktree-split-berättelsen som om de fortfarande vore branch-current öppna
+- `#16` första code-bearing contract seam är landad och dess nästa fresh wave3-surface är nu
+   separat vald som validation payload carrier; återberätta inte broad
+   `runner.py` + `runner_optuna_orchestration.py` som default nästa reopen av gammal vana
+- `#1` har nu två separat konsumerade current-branch surfaces på wave3 — premortem-baselineytan och
+   root `docs/analysis/README.md`; återberätta inte någon av dem som fortfarande o-narrowade
+   kickoff/authority-ytor
+- efter denna pass finns ingen redan förvald liten carry-forward-seam kvar på wave3; ytterligare
+   arbete i `#15`, `#16` eller `#1` kräver ny bounded evidence/surface-selection i stället för
+   återberättad familjelabel
 
 Äldre block längre ned i filen ska fortsatt bevaras som historik och detaljerad bakgrund, men det
 är denna 2026-05-21-note plus den refererade reframe-packeten som nu är live anchor för exakt

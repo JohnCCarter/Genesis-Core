@@ -3,6 +3,13 @@
 Datum: 2026-03-20
 Status: zon-guide med bevarad historisk RI/R1-serieöversikt
 
+Later-branch truthfulness note (2026-05-21, `feature/risk-hardening-wave3`): denna README
+förblir en zon-guide plus en retained historical RI/R1-serieöversikt. Läsordningen,
+"master-diff-reviewn", och "nästa prioriterade analysyta" längre ned ska inte läsas som
+branch-current kickoff/work-order guidance för wave3. På denna branch är det den aktuella toppen i
+`handoff.md` plus nuvarande governance-packets som bär live arbetsordning; RI/R1-sektionen nedan
+bevaras som historisk analyskontext och inte som ny authority-yta.
+
 ## Syfte för mappen
 
 `docs/analysis/` är den framåtriktade ytan för mänskligt läsbara synteser, diagnoser och findings i Genesis-Core.

@@ -20,6 +20,14 @@ unchanged in the landed slice. Observed gate stack for that later branch impleme
 `tests/governance/test_import_smoke_backtest_optuna.py`. This packet remains a historical pre-code
 selection artifact only; the note above is for later-branch truthfulness, not new authority.
 
+Later-branch next-surface note (2026-05-21): with this exact `_build_results()` seam now landed,
+the next fresh current-branch `#15` surface should not be read back through this packet as if the
+same candidate were still open. The later wave3 surface-selection note is now
+`docs/decisions/governance/backtest_engine_run_setup_surface_selection_packet_2026-05-21.md`,
+which narrows any future `#15` reopen to the pre-loop run-setup/config-preparation block inside
+`BacktestEngine.run(...)`, not to `_build_results()` again and not to the old worktree-split
+story.
+
 This document records one bounded candidate-selection packet only. It does not authorize implementation, module extraction, schema changes, or broader `src/core/backtest/engine.py` modularization. Any later runtime work would require a fresh strict pre-code packet and post-change audit against then-current `HEAD`.
 
 ## COMMAND PACKET

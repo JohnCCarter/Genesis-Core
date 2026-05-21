@@ -1,12 +1,44 @@
 # HANDOFF — risk-hardening wave3 kickoff
 
-Senast statusmarkerad: 2026-05-19
+Senast statusmarkerad: 2026-05-21
+
+## Uppdatering 2026-05-21 — wave3 `#2 + #12` re-resolved
+
+Detta korta tillägg är nu den **aktuella live-noten** för nästa agent på `feature/risk-hardening-wave3`.
+Kickoff-blocket från 2026-05-19 nedan är fortfarande det detaljerade bakgrundsblocket och ska
+fortsatt läsas, men branchens nuvarande ärliga läge efter 2026-05-21-reframen är:
+
+- `docs/decisions/governance/precompute_feature_cache_medium_track_reframe_packet_2026-05-21.md`
+  är nu den aktuella bounded reframe-punkten för den tidigare grupperade medium-ytan `#2 + #12`
+- `docs/decisions/governance/precompute_cache_config_identity_followup_selection_packet_2026-05-21.md`
+  låser nu nästa ärliga `#2`-line efter reframen: config-identity / config-context isolation,
+  inte en ny slice för att återvälja den redan tracked selector-policy / validator-pathen
+- `docs/decisions/governance/precompute_cache_config_subset_identity_precode_packet_2026-05-21.md`
+  groundar nu den exakta bounded `#2`-kandidaten: producer-adjacent persisted precompute-spec
+  identity, inte bred hashing av hela strategy-configen
+- behåll `#2 + #12` tillsammans endast som en gemensam `silent stale-reuse`-familjelabel
+- splitta exekvering omedelbart:
+  - `#2` = implementation-bearing precompute-cache policy/enforcement seam
+  - `#12` = evidence-first feature-artifact/schema trace seam
+- nästa admissible move om wave3 fortsätter på denna lane är därför:
+  1.  `#2`: om spåret fortsätter till kod, ta en ny governance-pass för en liten runtime-bearing
+      kandidat som extraherar den producer-owned persisted precompute-specen till en gemensam
+      owner/helper mellan key-material och producer path; routea inte första kandidaten via bred
+      strategy-config-fingerprint och återöppna inte den redan tracked validator-pathen
+  2.  `#12`: separat writer/schema-owner trace eller docs-truthfulness narrowing only
+- hoppa inte vidare ännu till `#7`, `#18`, `#15`, `#1` eller `#16` som om `#2/#12` redan vore
+  omhändertaget och post-reframe-spåret valt
+
+Äldre block längre ned i filen ska fortsatt bevaras som historik och detaljerad bakgrund, men det
+är denna 2026-05-21-note plus den refererade reframe-packeten som nu är live anchor för exakt
+`#2 + #12`-läsning på wave3.
 
 ## Uppdatering 2026-05-19 — wave3-handoff för nästa agent
 
-Detta är den **aktuella** takeover-sektionen för nästa agent på `feature/risk-hardening-wave3`.
-Äldre block längre ned i filen bevaras som historik och spårbarhet, men ska inte användas som
-live anchor för den här branchen.
+Detta är det **detaljerade kickoff-blocket** som låg till grund för wave3-handoffen på
+`feature/risk-hardening-wave3`.
+Efter 2026-05-21-reframen ska detta block läsas som detaljerad bakgrund under den nyare live-noten
+ovan, inte som den enda live anchor-punkten för branchen.
 
 ### Live status
 

@@ -37,6 +37,14 @@ fortsatt läsas, men branchens nuvarande ärliga läge efter 2026-05-21-reframen
   `src/core/backtest/engine_results.py`; `BacktestEngine._build_results()` är fortfarande enda
   engine entry point och consumer-visible result contract hålls fast via targeted proof +
   determinism/cache/hash-gates
+- `docs/decisions/governance/runtime_config_exit_enabled_live_update_precode_packet_2026-05-19.md`
+   bär implementation-status note för `#7`: både den lägre-risk `non_whitelisted_field`-linjen och
+   den exakta `exit.enabled`-singletonadmissionen är redan landade på current branch; återberätta
+   inte `#7` som om dess minsta exakta seam fortfarande vore öppen utan ny family-level rescreening
+- `docs/decisions/governance/optimizer_validation_promotion_contract_seam_packet_2026-05-21.md`
+   groundar nu `#16` till en exakt current-branch seam: validation → promotion contract-yta runt
+   `run_validation_stage_impl()`, `results_for_promotion` och `_candidate_from_result()`, inte en
+   tyst återaktivering av hela den historiska March optimizer-split-kön
 - behåll `#2 + #12` tillsammans endast som en gemensam `silent stale-reuse`-familjelabel
 - splitta exekvering omedelbart:
   - `#2` = implementation-bearing precompute-cache policy/enforcement seam
@@ -50,8 +58,9 @@ fortsatt läsas, men branchens nuvarande ärliga läge efter 2026-05-21-reframen
       inte ett nytt `#12`-spår igen om inte ny tracked writer/schema-owner evidence faktiskt dyker upp
 - `#15` exakt `_build_results()`-seam är nu också landad; återöppna inte samma seam på denna branch
   utan ny bounded evidence om kvarvarande hot-file-risk på en annan yta
-- nästa ärliga öppna spår efter detta ligger därför sannolikt bland `#7`, `#1` eller `#16`, inte i
-  att återberätta `#12`, `#18` eller den redan landade exakta `#15`-seamen som oavslutade
+- nästa ärliga öppna spår efter detta ligger därför sannolikt i `#16` via den nu smalnade
+   validation → promotion contract-seamen eller i `#1` via fresh surface selection, inte i att
+   återberätta `#7`, `#12`, `#18` eller den redan landade exakta `#15`-seamen som oavslutade
 
 Äldre block längre ned i filen ska fortsatt bevaras som historik och detaljerad bakgrund, men det
 är denna 2026-05-21-note plus den refererade reframe-packeten som nu är live anchor för exakt

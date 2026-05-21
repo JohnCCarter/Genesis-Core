@@ -4,7 +4,7 @@ Status: `historical handoff snapshot / branch-specific provenance / not active o
 
 > Current status note:
 >
-> - [HISTORICAL 2026-05-05] This handoff is preserved as branch-specific provenance from `feature/Optuna-Phased-v4`, not as an active lane on `feature/next-slice-2026-05-05`.
+> - `HISTORICAL 2026-05-05`: This handoff is preserved as branch-specific provenance from `feature/Optuna-Phased-v4`, not as current branch guidance on later contexts such as `feature/next-slice-2026-05-05`.
 > - Statements below about merge, next steps, and commands are historical snapshot guidance from that branch context only.
 > - Preserve this file as implementation provenance rather than current execution authority.
 
@@ -29,7 +29,7 @@ Branch `feature/Optuna-Phased-v4` bygger på master efter den stora refaktorn (r
    - Beräknar `risk_state_mult` via `compute_risk_state_multiplier()` och multiplicerar in i `combined_mult`.
    - Skriver `ri_risk_state_*` debug-keys till `state_out`.
 
-3. **`src/core/strategy/regime_intelligence.py`**: Ny funktion `compute_risk_state_multiplier(cfg, equity_drawdown_pct, bars_since_regime_change)`. Returnerar dict med `multiplier` [0.05–1.0], `drawdown_mult`, `transition_mult`.
+3. **`src/core/strategy/regime_intelligence.py`**: Ny funktion `compute_risk_state_multiplier(cfg, equity_drawdown_pct, bars_since_regime_change)`. Returnerar dict med `multiplier` i intervallet `0.05–1.0`, `drawdown_mult`, `transition_mult`.
 
 4. **`src/core/optimizer/runner.py`**: `_inject_base_phase_params()` fixad att acceptera direkt JSON-sökväg (`.json` suffix) utöver katalog.
 

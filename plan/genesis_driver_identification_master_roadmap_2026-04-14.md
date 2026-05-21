@@ -8,9 +8,9 @@ Historical lineage note: this roadmap closed the continuation work that had prev
 
 > Current status note:
 >
-> - [ARCHIVED 2026-05-05] This roadmap is not active on `feature/next-slice-2026-05-05`.
+> - `ARCHIVED 2026-05-05`: This roadmap is not current branch guidance on `feature/next-slice-2026-05-05`.
 > - Preserve it as an archived historical closed roadmap from the earlier `feature/ri-role-map-implementation-2026-03-24` branch context.
-> - The current active lane authority remains `GENESIS_WORKING_CONTRACT.md` plus the active RI policy-router packet/analysis chain.
+> - Resolve any current branch guidance from current branch state, higher-order governance docs, and later anchored evidence rather than from this archived roadmap.
 > - Reopen only via explicit user request or a fresh packet that deliberately returns to Genesis driver-identification work.
 
 ## Why this roadmap exists

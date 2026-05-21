@@ -6,9 +6,9 @@ Status: `historical reference / materially stale as execution order / non-execut
 
 > Current status note:
 >
-> - [STATUS 2026-05-05] On `feature/next-slice-2026-05-05`, this roadmap is now a historical structural reference, not the current execution order.
+> - `STATUS 2026-05-05`: On `feature/next-slice-2026-05-05`, this roadmap is now a historical structural reference, not current branch guidance.
 > - It still preserves the correct asymmetric source precedence between `docs/analysis/regime_intelligence/policy_router/genesis_core_router_research_codebase_aware_re_evaluation_2026-04-30.md` and `docs/analysis/regime_intelligence/policy_router/genesis_core_router_research_generic_background_2026-04-30.md`.
-> - Its former forward-looking Phases 2-4 were overtaken by the later bounded D1 evidence chain, which is now closed/parked on the current repo-visible surface per `GENESIS_WORKING_CONTRACT.md` and the merged RI policy-router anchors.
+> - Its former forward-looking Phases 2-4 were overtaken by the later bounded D1 evidence chain, which is now closed/parked on the current repo-visible surface described by later anchored evidence and higher-order governance docs.
 > - Keep this file for structural framing, completed note-normalization context, and widening deferrals only.
 
 This document is a planning artifact in `RESEARCH` and grants no implementation, runtime, readiness, launch, paper-trading, cutover, or promotion authority.
@@ -31,7 +31,7 @@ It exists to answer one narrow question only:
 - **Hypotes / idé:** the codebase-aware re-evaluation note should become the primary planning driver, while the generic structural research note should remain a background idea bank only
 - **Varför det kan vara bättre:** the second note is already grounded in Genesis-Core architecture and RI lane choices, but it needs to be interpreted through the latest anchored 2026-04-30 evidence notes rather than treated as a self-sufficient next-step authority
 - **Vad skulle falsifiera idén:** if the latest anchored evidence actually re-opened the generic note as the more truthful execution driver, or if the codebase-aware note proved materially inconsistent with the current validated lane
-- **Billigaste tillåtna ytor:** `docs/analysis/regime_intelligence/policy_router/**`, `docs/decisions/regime_intelligence/policy_router/**`, `GENESIS_WORKING_CONTRACT.md`, existing read-only evidence anchors
+- **Billigaste tillåtna ytor:** `docs/analysis/regime_intelligence/policy_router/**`, `docs/decisions/regime_intelligence/policy_router/**`, and existing read-only evidence anchors under the current higher-order governance stack
 - **Nästa bounded evidence-steg:** one new bounded `insufficient_evidence` counterfactual-screen packet on a genuinely new surface, not a reopen of the closed March 2021 / March 2025 discriminator loop
 
 ### Scope
@@ -85,7 +85,6 @@ It must **not** be used as:
 
 Before either note is used for next-step planning, the following current anchors remain authoritative:
 
-- `GENESIS_WORKING_CONTRACT.md`
 - `docs/decisions/regime_intelligence/policy_router/ri_policy_router_payoff_state_translation_precode_packet_2026-04-30.md`
 - `docs/decisions/regime_intelligence/policy_router/ri_policy_router_continuation_release_hysteresis_runtime_packet_2026-04-30.md`
 - `docs/analysis/regime_intelligence/policy_router/ri_policy_router_insufficient_evidence_selective_feature_gate_contrast_2026-04-30.md`
@@ -321,4 +320,4 @@ The historical direction captured here was:
 - **make the next real step one new bounded `insufficient_evidence` counterfactual-screen packet on a genuinely new surface**.
 
 That was the clearest fail-closed roadmap available on `2026-04-30`.
-The current truthful read on `2026-05-05` is narrower: preserve this file as a historical structural reference, but take active lane authority from `GENESIS_WORKING_CONTRACT.md` plus the merged RI policy-router anchors, where the later bounded D1 follow-up chain is now explicitly parked and non-authoritative.
+The current truthful read on `2026-05-05` is narrower: preserve this file as a historical structural reference only, and resolve any current branch guidance from current branch state, higher-order governance docs, and later anchored evidence rather than from lane-authority language inside this roadmap.

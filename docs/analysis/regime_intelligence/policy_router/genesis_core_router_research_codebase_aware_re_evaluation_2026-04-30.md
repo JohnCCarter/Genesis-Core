@@ -7,14 +7,14 @@ Scope: originally re-evaluate the generic research recommendations against `feat
 Current status note:
 
 - Between the two router-research notes, this remains the primary repo-aware April 2026 synthesis note, but it is no longer the active execution guide.
-- It is materially superseded wherever later anchored evidence or `GENESIS_WORKING_CONTRACT.md` differs.
+- It is materially superseded wherever later anchored evidence or current higher-order governance and branch-state routing differs.
 - It is a synthesis/reference artifact, not a packet, run plan, or active execution order for the current `feature/next-slice-2026-05-05` lane.
 - Normalization completed on `2026-05-05`: this note now lives under `docs/analysis/regime_intelligence/policy_router/`; keep wording aligned to later anchored evidence.
 
 Status update (2026-05-05):
 
 - The D1 insufficient-evidence line this note recommended as the next bounded step is now completed across the 2026-05-04/05 exact-subject, recurrence, synthesis, and context-clean follow-up anchors.
-- The current active lane anchor is `GENESIS_WORKING_CONTRACT.md`, plus the latest RI policy-router notes under `docs/analysis/regime_intelligence/policy_router/`, especially the D1 four-surface synthesis and D1 context-clean falsifier dated `2026-05-05`.
+- At the time of the `2026-05-05` normalization, branch-current routing was still being described through an older working-contract/policy-router anchor stack that has since been retired; for current use, treat this note as historical synthesis only and rely on current branch state plus later anchored evidence.
 - Sections `B`, `C`, `E`, and `F` remain useful as historical structural reasoning.
 - Sections `D` and `H` should now be read as historical recommendation state, not as current next-step instructions.
 - Treat this file as a historical synthesis/reference artifact unless a later note explicitly supersedes or reinterprets it.

@@ -7,8 +7,8 @@ Status: `historical / parked / archive-only / not active on current branch / pla
 
 > Current status note:
 >
-> - [ARCHIVED 2026-05-05] This roadmap is not the active lane for `feature/next-slice-2026-05-05`.
-> - Current active lane authority after the merge of PR `#79` is `GENESIS_WORKING_CONTRACT.md` plus the merged RI policy-router packet/analysis chain.
+> - `ARCHIVED 2026-05-05`: This roadmap is not current branch guidance on `feature/next-slice-2026-05-05`.
+> - Resolve any current branch guidance from current branch state, higher-order governance docs, and later anchored evidence rather than from this archived roadmap.
 > - Preserve it as archived branch-specific planning context from `feature/ri-role-map-implementation-2026-03-24`.
 > - Reactivate only via explicit user request or a fresh packet that deliberately reopens the advisory-environment-fit line.
 

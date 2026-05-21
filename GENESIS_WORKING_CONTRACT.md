@@ -3,7 +3,7 @@
 > Retained historical working-contract / drift-reference anchor for the `feature/editor-worker-orchestrator` branch context captured below.
 > This file is **not SSOT** and must not override repo governance documents.
 
-**Status note (2026-05-15):** This document is retained as a historical working-contract / drift-reference anchor for the `feature/editor-worker-orchestrator` branch context captured below. It is **not** current execution guidance for `feature/evidence-closeout-pilot`, and this slice does **not** establish a replacement branch-current anchor set.
+**Status note (2026-05-21):** This document is retained as a historical working-contract / drift-reference anchor for the `feature/editor-worker-orchestrator` branch context captured below. It is **not** current execution guidance for later unrelated branches such as `feature/evidence-closeout-pilot`, `feature/risk-hardening-wave3`, or `feature/knowledge-authority-layer`, and this slice does **not** establish a replacement branch-current anchor set.
 
 ## Purpose
 

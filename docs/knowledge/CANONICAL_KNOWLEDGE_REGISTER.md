@@ -584,3 +584,47 @@ Confidence:
 
 Authority note:
 May be used for routing and placement within `docs/decisions/`. Must not be used to confer approval or to assign status to individual packets, signoffs, closeouts, or adjacent decision documents.
+
+## CONCLUSION-ID: AUTH-014
+
+Status:
+`DORMANT`
+
+Conclusion statement:
+`handoff.md` is a retained branch-context handoff surface. Its wave3 live note is limited to `feature/risk-hardening-wave3`; on unrelated branches, including `feature/knowledge-authority-layer`, it is historical context and not current execution guidance.
+
+Canonical artifact reference:
+
+- `handoff.md`
+- headings: `Later-status note (2026-05-21, feature/knowledge-authority-layer)`, `Uppdatering 2026-05-21 — wave3 #2 + #12 re-resolved`
+
+Observed evidence:
+
+- The file states: `wave3-noten nedan är retained branch-context history för feature/risk-hardening-wave3`.
+- The file states: `På unrelated branches, inklusive feature/knowledge-authority-layer, är den inte current execution guidance eller live execution anchor`.
+- The file preserves older takeover blocks as retained history rather than rewriting them as current branch instruction.
+
+Inferred interpretation:
+
+- `NONE`
+
+Unverified assumptions:
+
+- `NONE`
+
+Decision impact:
+`GOVERNANCE_ONLY`
+
+Supersedes:
+
+- `NONE`
+
+Superseded by:
+
+- `NONE`
+
+Confidence:
+`HIGH`
+
+Authority note:
+May be used for historical branch-context traceability only. Must not be used as branch-current work order or execution guidance on unrelated branches.

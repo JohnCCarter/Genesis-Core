@@ -2,6 +2,13 @@
 
 Senast statusmarkerad: 2026-05-21
 
+> Later-status note (2026-05-21, `feature/knowledge-authority-layer`): wave3-noten nedan
+> är retained branch-context history för `feature/risk-hardening-wave3`. På unrelated
+> branches, inklusive `feature/knowledge-authority-layer`, är den inte current
+> execution guidance eller live execution anchor. Current branch interpretation måste
+> i stället lösas från faktisk aktiv branch-state och högre governance-ankare, inte
+> infereras från denna fil ensam.
+
 ## Uppdatering 2026-05-21 — wave3 `#2 + #12` re-resolved
 
 Detta korta tillägg är nu den **aktuella live-noten** för nästa agent på `feature/risk-hardening-wave3`.
@@ -51,36 +58,36 @@ fortsatt läsas, men branchens nuvarande ärliga läge efter 2026-05-21-reframen
   baseline's `#16` optimizer carry-forward sentence is narrowed to current-branch truth, while the
   broader family-level evidence-to-authority drift risk remains open
 - `docs/decisions/governance/backtest_engine_run_setup_surface_selection_packet_2026-05-21.md`
-   records now the next fresh `#15` surface on wave3: the pre-loop run-setup/config-preparation
-   block inside `BacktestEngine.run(...)`, not the already-landed `_build_results()` seam and not a
-   revived whole-engine split story
+  records now the next fresh `#15` surface on wave3: the pre-loop run-setup/config-preparation
+  block inside `BacktestEngine.run(...)`, not the already-landed `_build_results()` seam and not a
+  revived whole-engine split story
 - `docs/decisions/governance/optimizer_validation_payload_carrier_surface_selection_packet_2026-05-21.md`
-   records now the next fresh `#16` surface on wave3: the validation result-payload carrier in
-   `runner_validation.py::run_validation_stage_impl(...)`; `docs/audit/refactor/optimizer/README.md`
-   is narrowed accordingly so `runner_optuna_orchestration.py` is no longer implied default next
-   locus by carry-forward language alone
+  records now the next fresh `#16` surface on wave3: the validation result-payload carrier in
+  `runner_validation.py::run_validation_stage_impl(...)`; `docs/audit/refactor/optimizer/README.md`
+  is narrowed accordingly so `runner_optuna_orchestration.py` is no longer implied default next
+  locus by carry-forward language alone
 - `docs/decisions/governance/evidence_to_authority_analysis_readme_surface_selection_packet_2026-05-21.md`
-   records now the next fresh `#1` surface on wave3: root `docs/analysis/README.md` is narrowed to
-   retained historical RI/R1 reading-order context rather than branch-current kickoff/work-order
-   guidance
+  records now the next fresh `#1` surface on wave3: root `docs/analysis/README.md` is narrowed to
+  retained historical RI/R1 reading-order context rather than branch-current kickoff/work-order
+  guidance
 - behåll `#2 + #12` tillsammans endast som en gemensam `silent stale-reuse`-familjelabel
 - `#2` har på current branch redan fått både bounded runtime hardening och en producer-owned
-   persisted precompute-spec carrier mellan `engine.py` och `engine_precompute.py`; återöppna inte
-   whole-strategy-config hashing eller selector-policy/validator reselection utan ny bounded evidence
+  persisted precompute-spec carrier mellan `engine.py` och `engine_precompute.py`; återöppna inte
+  whole-strategy-config hashing eller selector-policy/validator reselection utan ny bounded evidence
 - `#12` writer/schema-owner trace och docs-truthfulness narrowing är redan landade; återöppna inte
-   samma seam utan ny tracked writer/schema-owner evidence
+  samma seam utan ny tracked writer/schema-owner evidence
 - `#15` exakt `_build_results()`-seam är landad och dess nästa fresh wave3-surface är nu separat
-   vald som `run()`-preambeln; återberätta varken `_build_results()` eller den gamla
-   worktree-split-berättelsen som om de fortfarande vore branch-current öppna
+  vald som `run()`-preambeln; återberätta varken `_build_results()` eller den gamla
+  worktree-split-berättelsen som om de fortfarande vore branch-current öppna
 - `#16` första code-bearing contract seam är landad och dess nästa fresh wave3-surface är nu
-   separat vald som validation payload carrier; återberätta inte broad
-   `runner.py` + `runner_optuna_orchestration.py` som default nästa reopen av gammal vana
+  separat vald som validation payload carrier; återberätta inte broad
+  `runner.py` + `runner_optuna_orchestration.py` som default nästa reopen av gammal vana
 - `#1` har nu två separat konsumerade current-branch surfaces på wave3 — premortem-baselineytan och
-   root `docs/analysis/README.md`; återberätta inte någon av dem som fortfarande o-narrowade
-   kickoff/authority-ytor
+  root `docs/analysis/README.md`; återberätta inte någon av dem som fortfarande o-narrowade
+  kickoff/authority-ytor
 - efter denna pass finns ingen redan förvald liten carry-forward-seam kvar på wave3; ytterligare
-   arbete i `#15`, `#16` eller `#1` kräver ny bounded evidence/surface-selection i stället för
-   återberättad familjelabel
+  arbete i `#15`, `#16` eller `#1` kräver ny bounded evidence/surface-selection i stället för
+  återberättad familjelabel
 
 Äldre block längre ned i filen ska fortsatt bevaras som historik och detaljerad bakgrund, men det
 är denna 2026-05-21-note plus den refererade reframe-packeten som nu är live anchor för exakt

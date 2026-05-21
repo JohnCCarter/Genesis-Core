@@ -12,7 +12,7 @@ Status: `historical branch-context pointer / complementary / no new authority`
 >
 > Later-status note (2026-05-18):
 >
-> - On later branch contexts — including `feature/evidence-closeout-pilot` and `feature/risk-hardening-wave2` — this document remains a complementary historical pointer to the earlier `feature/editor-worker-orchestrator` control-plane context.
+> - On later branch contexts — including `feature/evidence-closeout-pilot`, `feature/risk-hardening-wave2`, `feature/risk-hardening-wave3`, and `feature/knowledge-authority-layer` — this document remains a complementary historical pointer to the earlier `feature/editor-worker-orchestrator` control-plane context.
 > - If the current branch is not `feature/editor-worker-orchestrator`, the branch, mode, and lane anchors below must not be read as branch-current execution guidance or lane-selection authority.
 > - Any current branch interpretation must still be resolved from the current branch state, touched surfaces, and higher-order anchors rather than inferred from this document alone.
 

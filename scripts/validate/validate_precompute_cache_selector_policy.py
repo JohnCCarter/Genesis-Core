@@ -21,15 +21,23 @@ import sys
 from collections.abc import Callable
 from pathlib import Path
 
-TARGET_FILE = Path("src/core/backtest/engine.py")
-TARGET_FUNCTIONS = {
-    "_precompute_cache_key_material",
-    "_build_precompute_cache_metadata",
-    "_validate_metadata_bearing_precompute_cache",
-    "_precompute_cache_key",
+TARGET_SURFACES: dict[Path, dict[str, object]] = {
+    Path("src/core/backtest/engine.py"): {
+        "functions": {
+            "_precompute_cache_key_material",
+            "_build_precompute_cache_metadata",
+            "_validate_metadata_bearing_precompute_cache",
+            "_precompute_cache_key",
+        },
+        "assignments": {"PRECOMPUTE_SCHEMA_VERSION"},
+        "call_label": "load_data.prepare_precomputed_features",
+    },
+    Path("src/core/backtest/engine_precompute.py"): {
+        "functions": {"get_persisted_precompute_spec"},
+        "assignments": set(),
+        "call_label": None,
+    },
 }
-TARGET_ASSIGNMENTS = {"PRECOMPUTE_SCHEMA_VERSION"}
-TARGET_CALL_LABEL = "load_data.prepare_precomputed_features"
 TARGET_SELECTORS: tuple[str, ...] = (
     "tests/backtest/test_precompute_cache_key_versioning.py::test_precompute_cache_key_changes_when_schema_version_changes",
     "tests/backtest/test_backtest_engine.py::test_engine_precompute_cache_metadata_payload_loads_when_valid",
@@ -65,6 +73,10 @@ def _git(*args: str) -> str:
 
 def _relative_git_path(path: Path) -> str:
     return path.as_posix()
+
+
+def _target_rel_paths() -> tuple[str, ...]:
+    return tuple(_relative_git_path(path) for path in TARGET_SURFACES)
 
 
 def _diff_name_only(*, base_ref: str | None) -> set[str]:
@@ -155,27 +167,33 @@ def _span_intersects(span: tuple[int, int], ranges: list[tuple[int, int]]) -> bo
     return False
 
 
-def _collect_target_spans(source: str) -> dict[str, tuple[int, int]]:
+def _collect_target_spans(
+    source: str,
+    *,
+    target_functions: set[str],
+    target_assignments: set[str],
+    target_call_label: str | None,
+) -> dict[str, tuple[int, int]]:
     tree = ast.parse(source)
     spans: dict[str, tuple[int, int]] = {}
 
     class _Visitor(ast.NodeVisitor):
         def visit_Assign(self, node: ast.Assign) -> None:  # noqa: N802
             for target in node.targets:
-                if isinstance(target, ast.Name) and target.id in TARGET_ASSIGNMENTS:
+                if isinstance(target, ast.Name) and target.id in target_assignments:
                     spans[target.id] = (node.lineno, getattr(node, "end_lineno", node.lineno))
             self.generic_visit(node)
 
         def visit_AnnAssign(self, node: ast.AnnAssign) -> None:  # noqa: N802
             target = node.target
-            if isinstance(target, ast.Name) and target.id in TARGET_ASSIGNMENTS:
+            if isinstance(target, ast.Name) and target.id in target_assignments:
                 spans[target.id] = (node.lineno, getattr(node, "end_lineno", node.lineno))
             self.generic_visit(node)
 
         def visit_FunctionDef(self, node: ast.FunctionDef) -> None:  # noqa: N802
-            if node.name in TARGET_FUNCTIONS:
+            if node.name in target_functions:
                 spans[node.name] = (node.lineno, getattr(node, "end_lineno", node.lineno))
-            if node.name == "load_data":
+            if target_call_label and node.name == "load_data":
                 for child in ast.walk(node):
                     if not isinstance(child, ast.Call):
                         continue
@@ -186,7 +204,7 @@ def _collect_target_spans(source: str) -> dict[str, tuple[int, int]]:
                     elif isinstance(func, ast.Attribute):
                         func_name = func.attr
                     if func_name == "prepare_precomputed_features":
-                        spans[TARGET_CALL_LABEL] = (
+                        spans[target_call_label] = (
                             child.lineno,
                             getattr(child, "end_lineno", child.lineno),
                         )
@@ -201,41 +219,70 @@ def _touched_labels_for_source(
     source: str | None,
     ranges: list[tuple[int, int]],
     label: str,
+    rel_path: str,
+    target_functions: set[str],
+    target_assignments: set[str],
+    target_call_label: str | None,
 ) -> set[str]:
     if source is None or not ranges:
         return set()
 
     try:
-        spans = _collect_target_spans(source)
+        spans = _collect_target_spans(
+            source,
+            target_functions=target_functions,
+            target_assignments=target_assignments,
+            target_call_label=target_call_label,
+        )
     except SyntaxError as exc:  # pragma: no cover - exercised through validate_selector_policy
         raise RuntimeError(f"Could not parse {label}: {exc}") from exc
 
-    return {name for name, span in spans.items() if _span_intersects(span, ranges)}
+    prefix = Path(rel_path).name
+    return {f"{prefix}::{name}" for name, span in spans.items() if _span_intersects(span, ranges)}
 
 
 def _detect_touched_targets(*, base_ref: str | None) -> list[str]:
-    rel_path = _relative_git_path(TARGET_FILE)
     touched: set[str] = set()
 
-    for old_ref, new_ref, diff_text in _diff_batches(base_ref=base_ref, rel_path=rel_path):
-        old_ranges, new_ranges = _parse_hunk_ranges(diff_text)
-        if old_ranges:
-            old_source = _read_revision_text(old_ref, rel_path) if old_ref is not None else None
-            touched.update(
-                _touched_labels_for_source(
-                    source=old_source, ranges=old_ranges, label=f"{old_ref}:{rel_path}"
+    for target_path, target_spec in TARGET_SURFACES.items():
+        rel_path = _relative_git_path(target_path)
+        target_functions = set(target_spec["functions"])
+        target_assignments = set(target_spec["assignments"])
+        target_call_label = target_spec["call_label"]
+
+        for old_ref, new_ref, diff_text in _diff_batches(base_ref=base_ref, rel_path=rel_path):
+            old_ranges, new_ranges = _parse_hunk_ranges(diff_text)
+            if old_ranges:
+                old_source = _read_revision_text(old_ref, rel_path) if old_ref is not None else None
+                touched.update(
+                    _touched_labels_for_source(
+                        source=old_source,
+                        ranges=old_ranges,
+                        label=f"{old_ref}:{rel_path}",
+                        rel_path=rel_path,
+                        target_functions=target_functions,
+                        target_assignments=target_assignments,
+                        target_call_label=target_call_label,
+                    )
                 )
-            )
-        if new_ranges:
-            if new_ref is None:
-                new_source = _read_worktree_text(rel_path)
-                source_label = rel_path
-            else:
-                new_source = _read_revision_text(new_ref, rel_path)
-                source_label = f"{new_ref}:{rel_path}"
-            touched.update(
-                _touched_labels_for_source(source=new_source, ranges=new_ranges, label=source_label)
-            )
+            if new_ranges:
+                if new_ref is None:
+                    new_source = _read_worktree_text(rel_path)
+                    source_label = rel_path
+                else:
+                    new_source = _read_revision_text(new_ref, rel_path)
+                    source_label = f"{new_ref}:{rel_path}"
+                touched.update(
+                    _touched_labels_for_source(
+                        source=new_source,
+                        ranges=new_ranges,
+                        label=source_label,
+                        rel_path=rel_path,
+                        target_functions=target_functions,
+                        target_assignments=target_assignments,
+                        target_call_label=target_call_label,
+                    )
+                )
 
     return sorted(touched)
 
@@ -254,10 +301,10 @@ def validate_selector_policy(
     base_ref: str | None = None,
     run_pytest_fn: Callable[[tuple[str, ...]], int] | None = None,
 ) -> int:
-    rel_path = _relative_git_path(TARGET_FILE)
     changed_files = _diff_name_only(base_ref=base_ref)
+    target_rel_paths = set(_target_rel_paths())
 
-    if rel_path not in changed_files:
+    if not (target_rel_paths & changed_files):
         print("[PRECOMPUTE_SELECTOR_POLICY] OK: tracked engine surface untouched")
         return 0
 

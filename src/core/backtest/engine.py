@@ -17,7 +17,10 @@ from typing import Any
 import pandas as pd
 from tqdm import tqdm
 
-from core.backtest.engine_precompute import prepare_precomputed_features
+from core.backtest.engine_precompute import (
+    get_persisted_precompute_spec,
+    prepare_precomputed_features,
+)
 from core.backtest.htf_exit_engine import ExitAction
 from core.backtest.htf_exit_engine import HTFFibonacciExitEngine as LegacyExitEngine
 from core.config.merge_policy import resolve_champion_merge_for_engine
@@ -74,20 +77,7 @@ def _precompute_cache_key_material() -> str:
 
     spec = {
         "schema_version": int(PRECOMPUTE_SCHEMA_VERSION),
-        "indicators": {
-            "atr_periods": [14, 50],
-            "ema_periods": [20, 50],
-            "rsi_period": 14,
-            "bb": {"period": 20, "std_dev": 2.0},
-            "adx_period": 14,
-        },
-        "fib_cfg": {
-            "atr_depth": 3.0,
-            "max_swings": 8,
-            "min_swings": 1,
-            "precompute_swing_history": "full",
-            "precompute_max_lookback": "full",
-        },
+        "persisted_precompute_spec": get_persisted_precompute_spec(),
     }
     canon = json.dumps(spec, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     digest12 = hashlib.sha256(canon.encode("utf-8")).hexdigest()[:12]

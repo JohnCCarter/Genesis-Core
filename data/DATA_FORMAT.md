@@ -102,16 +102,20 @@ Ignored by `.gitignore`:
 
 ## 🚀 Usage
 
-> **Note:** Tidigare standalone-skript (`fetch_historical.py`, `precompute_features.py`,
-> `validate_data.py`) har flyttats/ersatts. Se underkataloger i `scripts/`:
+> **Note:** Current branch håller datahämtning under `scripts/fetch/`, targeted validation under
+> `scripts/validate/`, och runtime precompute/cache-warming via
+> `scripts/run/run_backtest.py --precompute-features`.
+>
+> Den exponerar inte längre några tracked standalone `precompute_features.py` eller
+> `validate_data.py` på de äldre top-level patharna. Se i stället nuvarande surfaces under
+> `scripts/`:
 >
 > - `scripts/fetch/` – datahämtning
-> - `scripts/validate/` – datavalidering
+> - `scripts/validate/` – targeted validation
 > - `scripts/analyze/` / `scripts/audit/` – analys & audit
+> - `scripts/run/run_backtest.py` – runtime precompute/cache CLI
 >
-> Konsultera respektive katalogs README/skript för aktuella kommandon.
-
-```
+> Konsultera respektive katalog/CLI för aktuella kommandon.
 
 ---
 
@@ -120,7 +124,7 @@ Ignored by `.gitignore`:
 **Per Symbol/Timeframe (6 months):**
 
 | Timeframe | Candles | Raw Size | Compressed (Parquet) |
-|-----------|---------|----------|----------------------|
+| --------- | ------- | -------- | -------------------- |
 | 1m        | 262,800 | ~12 MB   | ~2-3 MB              |
 | 5m        | 52,560  | ~2.5 MB  | ~500 KB              |
 | 15m       | 17,520  | ~850 KB  | ~170 KB              |
@@ -163,4 +167,3 @@ Ignored by `.gitignore`:
 ## Metadata
 
 - `metadata/curated/`: JSON metadata, samt `.json` filer bredvid varje feature-feather (version, skapad tid, source).
-```

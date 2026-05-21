@@ -21,6 +21,11 @@ fortsatt läsas, men branchens nuvarande ärliga läge efter 2026-05-21-reframen
   consumer, men ingen current tracked writer/schema-owner eller live `schema_version=1`-owner på
   `src/**` / `scripts/**`; nästa admissible `#12`-move är därför docs-truthfulness narrowing,
   inte implementation
+- `docs/decisions/governance/feature_cache_docs_truthfulness_narrowing_packet_2026-05-21.md`
+   landar nu själva docs-only narrowing-slicen för `#12`: stale referenser till absent standalone
+   producer/helper-pathar är borttagna eller omformulerade till current branch reality i
+   `docs/features/FEATURE_COMPUTATION_MODES.md`, `scripts/docs/DATA_FETCH_GUIDE.md` och
+   `data/DATA_FORMAT.md`
 - behåll `#2 + #12` tillsammans endast som en gemensam `silent stale-reuse`-familjelabel
 - splitta exekvering omedelbart:
   - `#2` = implementation-bearing precompute-cache policy/enforcement seam
@@ -30,9 +35,8 @@ fortsatt läsas, men branchens nuvarande ärliga läge efter 2026-05-21-reframen
       kandidat som extraherar den producer-owned persisted precompute-specen till en gemensam
       owner/helper mellan key-material och producer path; routea inte första kandidaten via bred
       strategy-config-fingerprint och återöppna inte den redan tracked validator-pathen
-  2.  `#12`: writer/schema-owner trace är nu tagen; om spåret fortsätter härnäst ska det vara en
-      separat docs-truthfulness narrowing av kvarvarande writer/schema-språk, inte en code-bearing
-      implementation-slice
+  2.  `#12`: writer/schema-owner trace och docs-truthfulness narrowing är nu båda landade; öppna
+     inte ett nytt `#12`-spår igen om inte ny tracked writer/schema-owner evidence faktiskt dyker upp
 - hoppa inte vidare ännu till `#7`, `#18`, `#15`, `#1` eller `#16` som om `#2/#12` redan vore
   omhändertaget och post-reframe-spåret valt
 
@@ -137,8 +141,8 @@ redan vore fullt grounded. Den viktigaste kvarvarande `#12`-slutsatsen är nu:
   `docs/decisions/governance/feature_cache_writer_schema_owner_trace_packet_2026-05-21.md`
 - current branch visar fortfarande read-side feature-artifact reader i training path, men ingen current
   tracked writer/schema-owner eller live `schema_version=1`-owner för samma carrier
-- nästa ärliga `#12`-move är därför ytterligare **docs-truthfulness narrowing** om kvarvarande
-  docs fortfarande beskriver en live producer-yta som om den vore current
+- docs-truthfulness narrowing är nu också landad; `#12` ska därför inte återöppnas på samma branch
+   utan ny tracked writer/schema-owner evidence
 
 ### Rekommenderad läsordning för nästa agent
 
@@ -150,25 +154,23 @@ Läs i denna ordning innan nytt arbete startar:
 4. `docs/decisions/governance/feature_cache_carrier_trace_packet_2026-05-19.md`
 5. `docs/decisions/governance/feature_cache_architecture_claim_truthfulness_packet_2026-05-19.md`
 6. `docs/decisions/governance/feature_cache_writer_schema_owner_trace_packet_2026-05-21.md`
-7. `docs/features/FEATURE_COMPUTATION_MODES.md`
-8. `scripts/docs/DATA_FETCH_GUIDE.md`
+7. `docs/decisions/governance/feature_cache_docs_truthfulness_narrowing_packet_2026-05-21.md`
+8. `docs/features/FEATURE_COMPUTATION_MODES.md`
+9. `scripts/docs/DATA_FETCH_GUIDE.md`
+10. `data/DATA_FORMAT.md`
 
 ### Nästa minsta admissible steg
 
-Nästa agent bör **inte** starta med bred runtime-ombyggnad av cache-ytor. Reframen av `#2 + #12` är redan
-tagen och `#12` writer/schema-owner-tracen är nu också tagen. Det bästa nästa minsta steget är därför i
-stället en **bounded docs-truthfulness narrowing** för de docsytor som fortfarande beskriver en live
-feature-writer/producer som om den vore current branch reality, i första hand:
+Nästa agent bör **inte** starta med bred runtime-ombyggnad av cache-ytor. Reframen av `#2 + #12`,
+writer/schema-owner-tracen för `#12`, och docs-truthfulness narrowing för samma seam är nu redan
+landade. Om arbete därefter går tillbaka till kodbärande `#2`-frågor i `src/core/backtest/**`, ska
+nästa agent ta en ny governance-pass innan runtime-semantik ändras. Om nästa slice väljs utanför
+`#2`, välj då i stället bland de kvarvarande öppna spåren (`#7`, `#18`, `#15`, `#1`, `#16`) utan att
+återöppna `#12` på gammal stale producer-berättelse.
 
-- `docs/features/FEATURE_COMPUTATION_MODES.md`
-- `scripts/docs/DATA_FETCH_GUIDE.md`
+### Övrigt som fortfarande återstår efter landad `#12`-truthfulness narrowing
 
-Om arbete därefter går tillbaka till kodbärande `#2`-frågor i `src/core/backtest/**`, ska nästa agent ta
-en ny governance-pass innan runtime-semantik ändras.
-
-### Övrigt som fortfarande återstår efter kvarvarande `#12`-truthfulness narrowing
-
-Efter att nästa agent har hanterat kvarvarande `#12`-truthfulness narrowing återstår fortfarande minst dessa öppna spår:
+Efter den nu landade `#12`-truthfulness narrowing återstår fortfarande minst dessa öppna spår:
 
 - `#7` — whitelist vs schema policy-frågan i ConfigAuthority
 - `#18` — explicit error-policy i backtest-motorn
@@ -187,9 +189,9 @@ Efter att nästa agent har hanterat kvarvarande `#12`-truthfulness narrowing åt
 ### Kort takeover-summary
 
 Wave2 stängde hela nivån små bounded slicer med ärliga tests/docs-baserade narrowing-slices. Wave3 står nu
-på en ren branch där `#2` redan har fått en bounded runtime hardening och `#12` nu har fått en separat
-writer/schema-owner trace. Den närmaste återstående `#12`-uppgiften är därför docs-truthfulness narrowing
-av kvarvarande live writer/producer-språk, inte en ny code-bearing cache-implementation.
+på en branch där `#2` redan har fått en bounded runtime hardening och `#12` nu har fått både separat
+writer/schema-owner trace och docs-truthfulness narrowing. `#12` ska därför inte dras tillbaka till samma
+stale producer-spår utan ny tracked evidence.
 
 # HANDOFF — RI/R1 vs legacy role-map kickoff
 

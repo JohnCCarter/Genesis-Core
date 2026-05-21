@@ -46,6 +46,10 @@ fortsatt läsas, men branchens nuvarande ärliga läge efter 2026-05-21-reframen
   är redan landad som en liten no-behavior-change helper-extraktion för promotion-candidate-scanen
   i `runner_trial_results.py`, medan runner-level `_candidate_from_result()`-patchytan hålls fast;
   bred optimizer-refactor eller March-queue-återaktivering är fortfarande inte öppnad
+- `docs/decisions/governance/evidence_to_authority_optimizer_baseline_surface_selection_packet_2026-05-21.md`
+  records now the first fresh `#1` surface selection on wave3: the frequently reused premortem
+  baseline's `#16` optimizer carry-forward sentence is narrowed to current-branch truth, while the
+  broader family-level evidence-to-authority drift risk remains open
 - behåll `#2 + #12` tillsammans endast som en gemensam `silent stale-reuse`-familjelabel
 - splitta exekvering omedelbart:
   - `#2` = implementation-bearing precompute-cache policy/enforcement seam
@@ -60,9 +64,10 @@ fortsatt läsas, men branchens nuvarande ärliga läge efter 2026-05-21-reframen
 - `#15` exakt `_build_results()`-seam är nu också landad; återöppna inte samma seam på denna branch
   utan ny bounded evidence om kvarvarande hot-file-risk på en annan yta
 - nästa ärliga öppna spår efter detta ligger därför sannolikt i `#1` via fresh surface selection
-  eller i en separat ny `#16`-surface-selection om ny optimizer-boundary evidence dyker upp, inte
-  i att återberätta `#7`, `#12`, `#18`, den redan landade exakta `#15`-seamen eller den nu
-  landade första `#16`-contract-seamen som oavslutade
+  på en annan fortfarande missvisande surface, eller i en separat ny `#16`-surface-selection om ny
+  optimizer-boundary evidence dyker upp, inte i att återberätta `#7`, `#12`, `#18`, den redan
+  landade exakta `#15`-seamen, den nu landade första `#16`-contract-seamen eller den nu
+  smalnade premortem-baseline-ytan som oavslutade
 
 Äldre block längre ned i filen ska fortsatt bevaras som historik och detaljerad bakgrund, men det
 är denna 2026-05-21-note plus den refererade reframe-packeten som nu är live anchor för exakt

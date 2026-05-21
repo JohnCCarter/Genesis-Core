@@ -204,6 +204,20 @@ Engine-pelaren har **mest öppet dokumenterad risk**:
 Optimizer-pelaren har **två risk-vektorer som korrelerar**:
 
 - mode #16 (1463 + 1113 rader orchestration) är ren komplexitets-risk. Det finns ingen audit-doc specifikt för optimizer — det är ett tomrum i tracked diagnostics som borde nämnas.
+
+  Later-branch partial reclassification note (2026-05-21, `feature/risk-hardening-wave3`): the
+  exact `#16` carry-forward reading above should now be narrowed for the current checkout. The repo
+  still does not claim a full optimizer diagnostics closeout, but current branch evidence no longer
+  matches an unchanged “no tracked optimizer-specific seam work” reading: the repo now carries
+  `docs/decisions/governance/optimizer_refactor_trace_reopen_shape_packet_2026-05-19.md`,
+  `docs/decisions/governance/optimizer_validation_promotion_contract_seam_packet_2026-05-21.md`,
+  and a first code-bearing no-behavior-change helper extraction in
+  `src/core/optimizer/runner.py` / `src/core/optimizer/runner_trial_results.py` with focused
+  optimizer selectors green. This narrows the current residual to broader future optimizer-boundary
+  selection and remaining hot-file complexity risk, not unchanged absence of tracked
+  optimizer-specific seams. See
+  `docs/decisions/governance/evidence_to_authority_optimizer_baseline_surface_selection_packet_2026-05-21.md`.
+
 - mode #10 (off-sample / contradiction-year tyst skippable) är allvarligare i intent: gates som ska blocka promotion kan tyst skippas om data inte finns. Test-skip-mönster (`pytest.skip("Data not available")`) är legitimt på CI men problematiskt om samma mönster läcker in i promotion-väg.
 
   Later-branch partial reclassification note (2026-05-19, `feature/risk-hardening-wave2`): the exact `#10` carry-forward reading above should now be narrowed for the tracked optimizer promotion path. Current `src/core/optimizer/runner_validation.py` keeps missing-data validation payloads in `validation_results`, `src/core/optimizer/runner.py` prefers those validation results for promotion selection when validation ran, and `src/core/optimizer/runner_trial_results.py::_candidate_from_result()` rejects results marked `error` or `skipped`; the focused selector `tests/utils/test_optimizer_runner.py::test_run_optimizer_validation_missing_data_blocks_promotion` passes on this branch and confirms `write_champion()` is not called when validation returns missing-data `error` or `skipped` payloads. This narrows the current residual to future bypass/process drift or other skip contexts, not an unchanged silent-promotion-on-missing-data reading for the current promotion path. See `docs/decisions/governance/optimizer_validation_missing_data_partial_reclassification_packet_2026-05-19.md`.

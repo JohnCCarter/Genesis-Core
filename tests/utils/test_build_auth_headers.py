@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from scripts.build.build_auth_headers import build_headers, main
+from scripts.build.build_auth_headers import _sanitize_for_logging, build_headers, main
 
 MOCK_API_TOKEN_A = "credential_alpha"
 MOCK_API_TOKEN_B = "credential_beta"
@@ -173,3 +173,64 @@ def test_build_headers_missing_credentials():
 
         with pytest.raises(RuntimeError, match="BITFINEX API credentials saknas"):
             build_headers("auth/r/alerts", {})
+
+
+def test_sanitize_for_logging_masks_nested_sensitive_keys():
+    payload = {
+        "api_key": "top_level_key",  # pragma: allowlist secret
+        "nested": {
+            "TokenValue": "nested_token",  # pragma: allowlist secret
+            "items": [
+                {"userPassword": "pw1"},  # pragma: allowlist secret
+                {"safe": "ok"},
+            ],
+            "tuple_data": (
+                {"authorizationHeader": "Bearer secret"},  # pragma: allowlist secret
+                {"safe_key": "safe_value"},
+            ),
+        },
+    }
+
+    sanitized = _sanitize_for_logging(payload)
+
+    assert sanitized["api_key"] == "***"
+    assert sanitized["nested"]["TokenValue"] == "***"
+    assert sanitized["nested"]["items"][0]["userPassword"] == "***"
+    assert sanitized["nested"]["items"][1]["safe"] == "ok"
+    assert sanitized["nested"]["tuple_data"][0]["authorizationHeader"] == "***"
+    assert sanitized["nested"]["tuple_data"][1]["safe_key"] == "safe_value"
+
+
+def test_sanitize_for_logging_masks_camel_case_sensitive_keys():
+    data = {
+        "apiSecret": "super_secret_value",  # pragma: allowlist secret
+        "normal_key": "value",
+    }
+
+    sanitized = _sanitize_for_logging(data)
+
+    assert sanitized["apiSecret"] == "***"
+    assert sanitized["normal_key"] == "value"
+
+
+def test_sanitize_for_logging_does_not_overredact_embedded_substrings():
+    data = {
+        "author": "visible",
+        "authored_at": "2026-05-18",
+        "tokenized": "visible",
+        "x-auth-token": "masked",  # pragma: allowlist secret
+    }
+
+    sanitized = _sanitize_for_logging(data)
+
+    assert sanitized["author"] == "visible"
+    assert sanitized["authored_at"] == "2026-05-18"
+    assert sanitized["tokenized"] == "visible"
+    assert sanitized["x-auth-token"] == "***"
+
+
+def test_sanitize_for_logging_scalar_passthrough():
+    assert _sanitize_for_logging(42) == 42
+    assert _sanitize_for_logging("plain string") == "plain string"
+    assert _sanitize_for_logging(None) is None
+    assert _sanitize_for_logging("password123") == "password123"

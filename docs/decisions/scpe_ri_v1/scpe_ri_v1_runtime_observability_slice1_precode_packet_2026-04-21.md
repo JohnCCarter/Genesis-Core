@@ -2,7 +2,13 @@
 
 Date: 2026-04-21
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `proposed / bounded runtime-adjacent observational implementation / request-scoped / default unchanged`
+Status: `historical SCPE RI v1 runtime-observability slice1 precode packet / retained for provenance / not current branch guidance`
+
+> Later-status note (2026-05-22, `feature/genesis-topology-lifecycle-authority-map`): this file
+> is retained as historical branch-local runtime-observability packet context from
+> `feature/ri-role-map-implementation-2026-03-24`. The proposed/runtime-adjacent wording below
+> records what that earlier branch opened at the time; it does **not** reopen current branch
+> implementation authority, runtime authority, or paper/live semantics.
 
 This document defines the exact first implementation-adjacent slice that may open after the completed phase-2 shadow-backtest bridge lane.
 It remains in `RESEARCH`, must preserve `NO BEHAVIOR CHANGE`, and must stay explicitly below runtime authority, paper-shadow, behavior-change, readiness, cutover, and promotion semantics.

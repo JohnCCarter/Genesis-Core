@@ -2,7 +2,13 @@
 
 Date: 2026-04-21
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `proposed / bounded UI consumer implementation / default-off / no server-authority change`
+Status: `historical SCPE RI v1 runtime-observability slice2 UI-consumer precode packet / retained for provenance / not current branch guidance`
+
+> Later-status note (2026-05-22, `feature/genesis-topology-lifecycle-authority-map`): this file
+> is retained as historical branch-local runtime-observability UI-consumer packet context from
+> `feature/ri-role-map-implementation-2026-03-24`. The proposed/UI-consumer wording below records
+> what that earlier branch opened at the time; it does **not** reopen current branch
+> implementation authority, runtime authority, or paper/live semantics.
 
 This document defines the next bounded implementation slice after runtime-observability slice1 and the follow-up smoke/evidence lane.
 It remains in `RESEARCH`, preserves `NO BEHAVIOR CHANGE`, and stays strictly on the client-side consumer surface for the already implemented opt-in observability payload.

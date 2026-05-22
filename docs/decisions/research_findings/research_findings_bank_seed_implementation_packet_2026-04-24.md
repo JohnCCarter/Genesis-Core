@@ -2,7 +2,11 @@
 
 Date: 2026-04-24
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `proposed / non-runtime seed implementation / repo-native findings bank`
+Status: `historical seed-implementation packet / non-runtime / non-authorizing`
+
+> Current status note: this file is retained as historical seed-implementation proposal context for
+> the repo-native findings bank from `feature/ri-role-map-implementation-2026-03-24`. It is not
+> current branch implementation authority on later branches.
 
 ## COMMAND PACKET
 

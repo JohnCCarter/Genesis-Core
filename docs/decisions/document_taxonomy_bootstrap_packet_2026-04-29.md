@@ -1,5 +1,11 @@
 # Document taxonomy bootstrap packet — 2026-04-29
 
+Status: `historical taxonomy bootstrap packet / docs-only / non-authorizing`
+
+> Current status note: this file is retained as the historical 2026-04-29 taxonomy-bootstrap
+> packet from `feature/next-slice-2026-04-29`. It is not current branch migration authority or
+> current packet instruction on later branches.
+
 ## COMMAND PACKET
 
 - **Mode:** `RESEARCH` — source: `branch:feature/next-slice-2026-04-29`

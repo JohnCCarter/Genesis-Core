@@ -2,7 +2,11 @@
 
 Date: 2026-04-29
 Branch: `feature/next-slice-2026-04-29`
-Status: `approved scope proposed / doc-taxonomy-plus-anchor-updates / no behavior change`
+Status: `historical taxonomy migration packet / docs-only / non-authorizing`
+
+> Current status note: this file is retained as historical subfolder-migration decision context
+> from `feature/next-slice-2026-04-29`. It is not current branch migration authority or current
+> packet instruction on later branches.
 
 Relevant skill: `repo_clean_refactor`
 

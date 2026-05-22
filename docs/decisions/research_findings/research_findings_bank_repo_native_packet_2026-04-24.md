@@ -2,7 +2,11 @@
 
 Date: 2026-04-24
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `active / docs-only / findings tracking structure decision`
+Status: `historical foundation packet / docs-only / non-authorizing`
+
+> Current status note: this file is retained as the historical 2026-04-24 findings-bank
+> foundation packet from `feature/ri-role-map-implementation-2026-03-24`. Later findings-bank
+> surfaces may cite it, but it is not current branch packet authority on later branches.
 
 ## COMMAND PACKET
 

@@ -2,7 +2,11 @@
 
 Date: 2026-04-24
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `proposed / pre-code / non-runtime customization bootstrap`
+Status: `historical customization bootstrap packet / non-runtime / non-authorizing`
+
+> Current status note: this file is retained as historical customization-bootstrap context from
+> `feature/ri-role-map-implementation-2026-03-24`. It is not current branch authority to open or
+> implement this bootstrap on later branches.
 
 ## COMMAND PACKET
 

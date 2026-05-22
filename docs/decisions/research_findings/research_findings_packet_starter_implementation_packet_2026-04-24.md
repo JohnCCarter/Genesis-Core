@@ -2,7 +2,11 @@
 
 Date: 2026-04-24
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `proposed / pre-code / non-runtime advisory starter helper`
+Status: `historical proposal packet / non-runtime advisory helper / non-authorizing`
+
+> Current status note: this file is retained as historical proposal context for the non-runtime
+> advisory starter helper from `feature/ri-role-map-implementation-2026-03-24`. It is not current
+> branch implementation authority on later branches.
 
 ## COMMAND PACKET
 

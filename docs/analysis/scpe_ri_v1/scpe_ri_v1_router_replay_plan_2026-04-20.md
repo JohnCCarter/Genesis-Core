@@ -9,6 +9,10 @@ Status: `historical / docs-only / bounded research-only replay plan / branch-spe
 >
 > Current-use rule: treat this file as bounded historical replay-planning context only. Resolve any current branch guidance from current branch state, higher-order governance docs, and later anchored packets/evidence instead.
 
+> Current status note: the retained `COMMAND PACKET` below is historical replay-planning structure
+> only. It does not reopen this lane, select current work, or authorize implementation on later
+> branches.
+
 ## COMMAND PACKET
 
 - **Mode:** `RESEARCH` — source: `branch:feature/ri-role-map-implementation-2026-03-24`

@@ -4,6 +4,10 @@ Date: 2026-03-17
 Slice: `feature/regime-intelligence-cutover-analysis-v1`
 Status: `analysis-only / not a cutover approval`
 
+> Current status note: this 2026-03-17 assessment is a historical analysis checkpoint for whether a
+> later default-cutover slice might be proposed. It is not a current cutover decision, not current
+> branch readiness authority, and not promotion approval on later branches.
+
 ## Executive summary
 
 Regime Intelligence is already implemented, integrated, and functional as an opt-in runtime path.

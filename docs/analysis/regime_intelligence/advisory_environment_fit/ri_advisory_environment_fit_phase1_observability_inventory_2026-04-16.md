@@ -1,5 +1,11 @@
 # RI advisory environment-fit — Phase 1 observability inventory
 
+Status: `historical phase-1 inventory / docs-only / non-authorizing`
+
+> Current status note: this file is the retained phase-1 inventory within the 2026-04-16
+> advisory-environment-fit chain. Later phase-2 / phase-3 docs and packets carry the later chain
+> state; this file remains historical inventory context only.
+
 This memo is docs-only and observational.
 It inventories the already tracked `ri` observability surfaces that can support the advisory environment-fit roadmap without changing default behavior.
 

@@ -86,8 +86,11 @@ follow-up rather than forcing a cosmetic patch.
 
 - Zone: `scripts/`
 - Default speed/risk bucket: `YELLOW`
+- Current artifact: `docs/audit/scripts_lifecycle_inventory_batch_007.md`
 - Focus: classify active, deprecated, archived, and retained-support scripts and the docs that describe them
 - Expected outputs: lifecycle inventory, docs-only routing/status batches, later archive-prep recommendations
+- Current result: `scripts/docs/README.md` was carrying stale wrapper-first lifecycle guidance and references to non-existent lifecycle tools; a docs-only policy-alignment patch is admissible
+- Next admissible step: keep script code untouched in this batch and limit changes to lifecycle docs/routing surfaces unless a later bounded script-move slice is explicitly opened
 - Guardrail: do not move or rewrite script behavior in the audit/controller phase
 
 ## Queue discipline

@@ -4,6 +4,16 @@ Date: 2026-04-02
 Mode: `RESEARCH`
 Base SHA anchor: `b7a6a7de`
 Branch: `feature/ri-role-map-implementation-2026-03-24`
+Status: `historical rebaseline reconciliation memo / retained for provenance / not current live restart bridge`
+
+> Current status note (2026-05-22, `feature/genesis-topology-lifecycle-authority-map`): this memo
+> is retained as historical reconciliation context from the earlier
+> `feature/ri-role-map-implementation-2026-03-24` branch. References below to `live reference
+> surfaces`, `live prioritization`, and `start the replay lane` describe the then-current
+> executable-route reading only and do **not** reopen Feature Attribution or create current branch
+> authority. For the surrounding historical plan anchors, see
+> `plan/feature_attribution_post_phase14_reactivation_roadmap_2026-04-02.md` and
+> `plan/genesis_driver_identification_master_roadmap_2026-04-14.md`.
 
 ## 1. Purpose and boundary
 

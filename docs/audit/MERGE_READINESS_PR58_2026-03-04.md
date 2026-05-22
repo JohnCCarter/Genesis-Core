@@ -1,5 +1,14 @@
 # Merge Readiness — PR #58
 
+Status: `historical merge-readiness record / retained for traceability / not current merge policy`
+
+> Current status note (2026-05-22, `feature/genesis-topology-lifecycle-authority-map`): this
+> file is retained as historical PR-specific merge-readiness evidence for
+> `feature/regime-intelligence-p1-signoff` / PR #58. It is not itself current merge policy,
+> current approval, or current work order. For current authority, see
+> `docs/CURRENT_AUTHORITY_INDEX.md` and the current governance/decision documents referenced
+> there.
+
 Datum: 2026-03-04
 PR: https://github.com/JohnCCarter/Genesis-Core/pull/58
 Branch: `feature/regime-intelligence-p1-signoff`

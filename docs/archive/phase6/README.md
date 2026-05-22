@@ -1,8 +1,19 @@
 # Genesis-Core Documentation
 
+Status: `historical archive-era documentation index / retained for traceability / not current documentation status`
+
+> Current status note (2026-05-22, `feature/genesis-topology-lifecycle-authority-map`): this
+> README is retained as historical archive-era documentation context from `Phase-6c`. It is
+> not the current project documentation index, current onboarding route, or current system
+> readiness statement. For current entry points, use the repo root `README.md`, `docs/README.md`,
+> and `docs/CURRENT_AUTHORITY_INDEX.md`.
+
 **Last Updated:** 2025-10-10 (Phase-6c)
 
 ---
+
+Historical reading note: the `ACTIVE`, `CURRENT`, and readiness labels below are preserved
+as part of the archived Phase-6c snapshot and do not describe the current repository state.
 
 ## 📚 ACTIVE DOCUMENTATION
 

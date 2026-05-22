@@ -53,6 +53,7 @@ Operativa dokument i `docs/governance/**` är **kompletterande**, inte överstyr
 ## Innehåll just nu
 
 - `concept_evidence_runtime_lane_model_2026-04-23.md` — kanonisk praktisk definition av koncept-, evidens- och runtime-integrations-lanes
+- `docs_refactor_phase_model.md` — operativ `GREEN / YELLOW / RED`-guide för docs-refactor, där `GREEN` gäller säkra docs-only-förtydliganden, `YELLOW` kräver reference/path/canonical checks före move/rename/archive/merge, och `RED` reserveras för delete endast med strikt evidens
 - `GENESIS_HYBRID_V1_1.md` — operativt kontrakt (hybridmodell)
 - `runtime_config_live_update_matrix_2026-05-15.md` — current-state-matris för vilka runtime-config-ytor som är schema-valida, validate-accepterade respektive live-skrivbara via propose-pathen
 - `templates/command_packet.md` — standardmall för start av uppgift
@@ -79,6 +80,11 @@ orientera sannolik governance-tyngd och behavior-change-risk nära en zon.
 Denna speed lens är derivative shorthand only. Den ersätter inte den högre
 governance-stacken eller mode-resolution, och när en slice sträcker sig över flera band
 eller stödet är blandat ska processvalet eskalera uppåt snarare än nedåt.
+
+För fasindelad docs-refactor-guidance där arbete inte bara kartläggs utan också
+kan förtydligas, flyttas, mergas eller i sällsynta fall raderas, se
+`docs/governance/docs_refactor_phase_model.md`. Den är operativ vägledning only,
+skapar ingen ny authority och ersätter inte separata slice-beslut eller checks.
 
 Historiska packet-, signoff- och closeout-dokument som låg direkt i governance-roten har flyttats till `docs/decisions/` eller `docs/analysis/` enligt faktisk dokumentroll.
 Äldre material i andra ytor ska fortfarande läsas med respekt för innehållets faktiska roll, inte enbart efter mappnamnet.

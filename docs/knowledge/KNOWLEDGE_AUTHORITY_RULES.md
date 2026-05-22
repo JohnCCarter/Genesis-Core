@@ -10,6 +10,7 @@ It governs only the derivative surfaces below:
 - `docs/CURRENT_AUTHORITY_INDEX.md`
 - `docs/knowledge/CANONICAL_KNOWLEDGE_REGISTER.md`
 - `docs/knowledge/DOCUMENTATION_PROVENANCE_LINEAGE_MAP.md`
+- `docs/knowledge/GENESIS_TOPOLOGY_LIFECYCLE_AUTHORITY_MAP.md`
 - `docs/knowledge/RESEARCH_LINEAGE_MAP.md`
 - `docs/knowledge/EDGE_MAP.md`
 
@@ -196,7 +197,7 @@ Otherwise use `UNRESOLVED`.
 ## Coverage rule
 
 Uncovered domains must be declared explicitly rather than implied complete.
-This first slice covers only top-level governance and documentation-routing surfaces, plus a bounded documentation-surface provenance/orientation map.
+This first slice covers only top-level governance and documentation-routing surfaces, plus a bounded documentation-surface provenance/orientation map and a bounded repo-zone topology/lifecycle/authority orientation map.
 Domain-specific research, packet, and edge classification remains out of scope unless directly added in a later bounded slice.
 
 Canonical support:
@@ -213,6 +214,22 @@ Canonical support:
 
 - `docs/README.md` (`Viktig försiktighetsregel`)
 - `docs/governance/README.md` (`SSOT och precedence`)
+
+## Repository topology / lifecycle / authority map rule
+
+`docs/knowledge/GENESIS_TOPOLOGY_LIFECYCLE_AUTHORITY_MAP.md` may map repo zones only when each zone-level claim is directly supported by current cited text or by explicit observed current tree structure paired with a cited current-use source.
+It may classify lifecycle posture, authority posture, risk posture, and advisory next-step bias only at zone level.
+`Next-step bias` is an advisory working cue, not an approval state, permission grant, or governance override.
+It may include an advisory `GREEN / YELLOW / RED` speed lens only as derivative shorthand for behavior-change risk and proximity to runtime, promotion, config-authority, and data-semantics surfaces.
+That speed lens must remain non-authorizing, must not replace the higher-order governance stack or mode resolution, and should bias upward rather than downward when a slice crosses bands or support is mixed.
+It may not be treated as proof of runtime approval, promotion readiness, file-by-file authority, or permission to modify a zone.
+Unsupported or mixed-signal zones must remain `UNRESOLVED`.
+
+Canonical support:
+
+- `docs/README.md` (`Viktig försiktighetsregel`)
+- `docs/governance/README.md` (`SSOT och precedence`)
+- `docs/repository-layout-policy.md` (`Scope`, `Zone model`)
 
 ## Stub rule for lineage and edge maps
 

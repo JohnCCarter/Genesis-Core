@@ -59,6 +59,30 @@ Canonical support:
 - `docs/knowledge/KNOWLEDGE_AUTHORITY_RULES.md` (`Rule 1 — Derivative only`, `Rule 3 — No silent inheritance`, `Documentation provenance map rule`)
 - `docs/knowledge/DOCUMENTATION_PROVENANCE_LINEAGE_MAP.md` (`Purpose`, `Scope boundary`, `Reading rule`)
 
+## Derivative repository topology / lifecycle / authority aid
+
+Use `docs/knowledge/GENESIS_TOPOLOGY_LIFECYCLE_AUTHORITY_MAP.md` as a derivative
+navigation aid for repo-zone topology, lifecycle posture, authority posture, risk posture,
+and advisory next-step bias only.
+Authority remains with the cited source documents and the owned surfaces for each zone.
+
+The map also includes an advisory `GREEN / YELLOW / RED` speed lens for likely
+behavior-change risk and governance weight. That lens is derivative shorthand for process
+sizing only; it is not a permission grant, approval surface, or override to the
+higher-order governance stack.
+
+This map may not be used as:
+
+- a new authority layer
+- an approval or permission grant to edit a zone
+- an exhaustive file-by-file classification
+- proof that folder placement alone establishes current applicability, authority, or risk
+
+Canonical support:
+
+- `docs/knowledge/KNOWLEDGE_AUTHORITY_RULES.md` (`Rule 1 — Derivative only`, `Rule 3 — No silent inheritance`, `Repository topology / lifecycle / authority map rule`)
+- `docs/knowledge/GENESIS_TOPOLOGY_LIFECYCLE_AUTHORITY_MAP.md` (`Purpose`, `Scope boundary`, `Reading rule`)
+
 ## Active governance and workflow references
 
 | Surface                                                             | Status   | What it may be used for                                                             | What it may not be used for                                           | Canonical support                                                                                                                                                                                             |

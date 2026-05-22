@@ -4,7 +4,7 @@
 
 ## Scope boundary for this slice
 
-This first pass records only top-level governance, workflow, and documentation-routing conclusions that are directly supported by existing cited artifacts, plus one derivative documentation-surface provenance/orientation conclusion.
+This first pass records only top-level governance, workflow, and documentation-routing conclusions that are directly supported by existing cited artifacts, plus one derivative documentation-surface provenance/orientation conclusion and one derivative repo-zone topology/lifecycle/authority conclusion.
 
 The following remain outside the populated scope of this slice and therefore are not classified here as active truth:
 
@@ -544,3 +544,48 @@ Confidence:
 
 Authority note:
 May be used as a derivative documentation provenance/orientation aid only. Must not be used as an independent authority source, exhaustive repository classification, or proof of lineage/dependency without direct cited support. If this entry conflicts with the cited artifact, the cited artifact controls.
+
+## CONCLUSION-ID: AUTH-016
+
+Status:
+`NON_AUTHORIZING`
+
+Conclusion statement:
+`docs/knowledge/GENESIS_TOPOLOGY_LIFECYCLE_AUTHORITY_MAP.md` is a derivative, citation-bound, repo-zone orientation map for topology, lifecycle posture, authority posture, risk posture, and advisory next-step bias across directly supported Genesis-Core zones; it does not create authority, does not override cited sources, and leaves unsupported or mixed-signal areas `UNRESOLVED`.
+
+Canonical artifact reference:
+
+- `docs/knowledge/GENESIS_TOPOLOGY_LIFECYCLE_AUTHORITY_MAP.md`
+- headings: `Purpose`, `Scope boundary`, `Reading rule`, `Explicit unresolved boundary`
+
+Observed evidence:
+
+- The file states: `This document is a derivative, citation-bound orientation map.`
+- The file states it `does not create authority, does not override cited sources, and any unsupported area remains UNRESOLVED`.
+- The file states that `Next-step bias` is `an advisory working cue` and `not an approval state, permission grant, or governance override`.
+- The file limits itself to repo-zone orientation and explicitly excludes file-by-file classification, runtime approval, promotion readiness, and governance precedence changes.
+
+Inferred interpretation:
+
+- `NONE`
+
+Unverified assumptions:
+
+- `NONE`
+
+Decision impact:
+`GOVERNANCE_ONLY`
+
+Supersedes:
+
+- `NONE`
+
+Superseded by:
+
+- `NONE`
+
+Confidence:
+`HIGH`
+
+Authority note:
+May be used as a derivative repo-zone topology/lifecycle/authority aid only. Must not be used as an independent authority source, approval surface, exhaustive file-by-file classifier, or permission grant to modify a zone. If this entry conflicts with the cited artifact, the cited artifact controls.

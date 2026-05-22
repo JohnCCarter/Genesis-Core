@@ -41,6 +41,29 @@ Typiska exempel:
 
 Lägg **inte** nya slice-packets, signoffs eller lokala evidensnoter här om dokumentet inte själv är governance-policy.
 
+### `docs/knowledge/`
+
+Använd för derivative, citation-bound maps, index, register och andra orienteringsytor som
+hjälper läsaren förstå repo-topologi, dokumentroller, current-use boundaries eller bounded
+conclusion sets utan att skapa ny authority.
+
+Typiska exempel:
+
+- `docs/CURRENT_AUTHORITY_INDEX.md`
+- `docs/knowledge/CANONICAL_KNOWLEDGE_REGISTER.md`
+- `docs/knowledge/DOCUMENTATION_PROVENANCE_LINEAGE_MAP.md`
+- `docs/knowledge/GENESIS_TOPOLOGY_LIFECYCLE_AUTHORITY_MAP.md`
+
+Denna yta är derivative och citation-bound. Den får användas för navigation,
+klassificeringsstöd och orientering, men inte som egen SSOT, approval-yta eller
+silent authority layer.
+
+Om du är osäker på hur snabb eller tung processen bör vara för en docs- eller repo-zon-slice,
+se den rådgivande `GREEN / YELLOW / RED` speed lens i
+`docs/knowledge/GENESIS_TOPOLOGY_LIFECYCLE_AUTHORITY_MAP.md`.
+Den anger sannolik behavior-change-risk och governance-tyngd per zon, men ersätter inte
+den högre governance-stacken.
+
 ### `docs/contracts/`
 
 Använd för stabila former som binder ihop governance, kod och research.
@@ -98,14 +121,15 @@ Använd för kuraterade, commit-säkra, maskinläsbara sammanfattningar som andr
 
 ## Snabb placeringsguide
 
-| Fråga                                                     | Rätt yta              |
-| --------------------------------------------------------- | --------------------- |
-| Är detta en regel eller authority-definition?             | `docs/governance/`    |
-| Är detta en stabil form som andra ytor måste följa?       | `docs/contracts/`     |
-| Är detta ett slice-beslut, packet eller closeout?         | `docs/decisions/`     |
-| Är detta en tolkning eller syntes för mänsklig läsning?   | `docs/analysis/`      |
-| Är detta reproducerbar experimentoutput eller rå evidens? | `results/research/`   |
-| Är detta en liten kuraterad summary för vidare referens?  | `results/evaluation/` |
+| Fråga                                                        | Rätt yta              |
+| ------------------------------------------------------------ | --------------------- |
+| Är detta en regel eller authority-definition?                | `docs/governance/`    |
+| Är detta en derivative karta/index/register för orientering? | `docs/knowledge/`     |
+| Är detta en stabil form som andra ytor måste följa?          | `docs/contracts/`     |
+| Är detta ett slice-beslut, packet eller closeout?            | `docs/decisions/`     |
+| Är detta en tolkning eller syntes för mänsklig läsning?      | `docs/analysis/`      |
+| Är detta reproducerbar experimentoutput eller rå evidens?    | `results/research/`   |
+| Är detta en liten kuraterad summary för vidare referens?     | `results/evaluation/` |
 
 ## Viktig försiktighetsregel
 

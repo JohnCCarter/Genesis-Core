@@ -2,7 +2,17 @@
 
 Date: 2026-03-31
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `proposed / execution-slice / single-row only`
+Status: `historical Feature Attribution v1 execution slice 3 packet / retained for provenance / not current branch guidance`
+
+> Current status note (2026-05-22, `feature/genesis-topology-lifecycle-authority-map`): this
+> packet is retained as historical branch-local Feature Attribution v1 execution-packet
+> documentation from the earlier `feature/ri-role-map-implementation-2026-03-24` context. The
+> execution-slice, expected-changed-files, and output wording below does **not** by itself prove
+> that the referenced report/manifest was produced or reopen a current branch execution lane. Read
+> it as part of the locked historical v1 chain rooted at
+> `docs/decisions/feature_attribution/v1/feature_attribution_v1_phase0_scope_freeze_packet_2026-03-31.md`
+> and later historical plan anchors `plan/feature_attribution_post_phase14_reactivation_roadmap_2026-04-02.md`
+> and `plan/genesis_driver_identification_master_roadmap_2026-04-14.md`.
 
 ## COMMAND PACKET
 

@@ -1,5 +1,18 @@
 # Genesis (original) – Funktionsöversikt
 
+Status: `historical original-Genesis reference snapshot / retained for provenance / not current Genesis-Core architecture guidance`
+
+> Current status note (2026-05-22, `feature/genesis-topology-lifecycle-authority-map`): this
+> document summarizes legacy/original-Genesis features for historical reference and porting
+> context only. Present-tense descriptions and porting suggestions below do **not** by themselves
+> describe current Genesis-Core APIs, config authority, nonce behavior, or implementation roadmap.
+> For current repository architecture and authority surfaces, use the repo root `README.md`,
+> `docs/README.md`, and `docs/CURRENT_AUTHORITY_INDEX.md`.
+
+Historical reading note: module names, endpoints, services, and recommended porting steps below
+reflect the legacy/original-Genesis snapshot and may not exist, match, or be desired in the current
+repository state.
+
 Detta dokument sammanfattar de viktigaste funktionerna i original‑Genesis, som referens när vi mappar/porterar till Genesis‑Core.
 
 ## API‑yta (REST)

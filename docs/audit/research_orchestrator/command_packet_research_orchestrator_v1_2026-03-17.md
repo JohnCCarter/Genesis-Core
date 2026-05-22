@@ -1,3 +1,10 @@
+Status: `historical orchestrator audit command packet / retained for traceability / not current approval or work order`
+
+> Current status note (2026-05-22, `feature/genesis-topology-lifecycle-authority-map`): this
+> file is retained as historical audit packet evidence from
+> `feature/research-orchestrator-v1`. It is not current approval, current implementation
+> guidance, or current work order. For current authority, see `docs/CURRENT_AUTHORITY_INDEX.md`.
+
 ## COMMAND PACKET
 
 - **Mode:** `RESEARCH` — source: branch mapping (`feature/research-orchestrator-v1`)

@@ -1,3 +1,10 @@
+Status: `historical merge-readiness context map / retained for traceability / not current approval or work order`
+
+> Current status note (2026-05-22, `feature/genesis-topology-lifecycle-authority-map`): this
+> file is retained as historical context for the merge-readiness packet from
+> `feature/research-ledger-v1`. It is not current merge authority, current implementation
+> guidance, or current work order. For current authority, see `docs/CURRENT_AUTHORITY_INDEX.md`.
+
 ## Context Map
 
 ### Files to Modify

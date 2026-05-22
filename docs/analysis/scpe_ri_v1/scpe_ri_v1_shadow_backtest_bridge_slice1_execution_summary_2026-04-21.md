@@ -2,7 +2,13 @@
 
 Date: 2026-04-21
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `executed / bounded / observational-only`
+Status: `historical record / same-local-checkout only / observational`
+
+> Current status note (2026-05-22, `feature/genesis-topology-lifecycle-authority-map`): this
+> document records one local execution observed on 2026-04-21 in the then-current checkout. It is
+> retained as a historical record only; it does **not** reopen a current branch execution lane or
+> establish current-branch execution status, portability beyond that originating local checkout,
+> launch authority, or paper/live readiness.
 
 ## COMMAND PACKET
 

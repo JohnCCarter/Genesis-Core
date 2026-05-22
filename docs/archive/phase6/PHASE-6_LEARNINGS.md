@@ -1,5 +1,18 @@
 # Phase-6 Learnings & Discoveries
 
+Status: `historical Phase-6 findings snapshot / retained archive context / not current system status`
+
+> Current status note (2026-05-22, `feature/genesis-topology-lifecycle-authority-map`): this
+> document is preserved as a historical Phase-6 snapshot. Statements below about production
+> readiness, current system status, tests, recommendations, and decision-needed language reflect
+> the archive-time branch context and do **not** describe current Genesis-Core authority, current
+> readiness, or the current repository roadmap. For current entry points and authority surfaces,
+> use the repo root `README.md`, `docs/README.md`, and `docs/CURRENT_AUTHORITY_INDEX.md`.
+
+Historical reading note: findings, metrics, tool names, model references, and recommendations below
+are retained for provenance/context and may reflect historical paths, scripts, models, or phase
+assumptions.
+
 **Date:** 2025-10-10
 **Duration:** Full workday (~10 hours systematic work)
 **Focus:** System validation, synchronization, and market dynamics discovery

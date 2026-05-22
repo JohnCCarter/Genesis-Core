@@ -3,7 +3,13 @@
 Date: 2026-04-30
 Branch: `feature/next-slice-2026-04-29`
 Mode: `RESEARCH`
-Status: `implemented / config-test-docs / no backtest or runtime execution authority`
+Status: `historical Legacy policy-router 2024 control setup implementation packet / retained for provenance / not current branch guidance`
+
+> Later-status note (2026-05-22, `feature/genesis-topology-lifecycle-authority-map`): this file
+> is retained as historical branch-local Legacy policy-router setup-proof evidence from
+> `feature/next-slice-2026-04-29`. The implemented/config-test-docs wording below records what
+> that earlier branch completed at the time; it does **not** reopen current implementation,
+> execution, runtime, or cross-family authority on the present branch.
 
 This packet records the completed setup-proof slice for the first true Legacy-family
 policy-router control line.

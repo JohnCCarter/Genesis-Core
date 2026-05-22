@@ -3,7 +3,13 @@
 Date: 2026-04-30
 Branch: `feature/next-slice-2026-04-29`
 Mode: `RESEARCH`
-Status: `pre-code-defined / docs-only / setup-only / no implementation or execution authority`
+Status: `historical Legacy policy-router 2024 control setup pre-code packet / retained for provenance / not current branch guidance`
+
+> Later-status note (2026-05-22, `feature/genesis-topology-lifecycle-authority-map`): this file
+> is retained as historical branch-local Legacy policy-router setup context from
+> `feature/next-slice-2026-04-29`. The pre-code-defined wording below records what that earlier
+> branch froze at the time; it does **not** reopen current implementation, execution, runtime, or
+> cross-family authority on the present branch.
 
 This packet defines the first bounded setup question for a true Legacy-family policy-router
 control line.

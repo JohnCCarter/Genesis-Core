@@ -2,7 +2,14 @@
 
 Date: 2026-04-16
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `proposed / docs-only / research-only / non-authorizing`
+Status: `historical current_atr 1435 default-off trial boundary record / retained for provenance / not current branch guidance`
+
+> Later-status note (2026-05-22, `feature/genesis-topology-lifecycle-authority-map`): this file
+> is retained as a historical earlier trial-boundary record from
+> `feature/ri-role-map-implementation-2026-03-24`. Later same-family follow-up exists in the
+> `current_atr_1435_default_off_trial_packet_2026-04-16.md` packet. This retained packet does
+> **not** by itself state a current open trial boundary, launchable lane, runtime authority, or
+> promotion meaning.
 
 ## COMMAND PACKET
 

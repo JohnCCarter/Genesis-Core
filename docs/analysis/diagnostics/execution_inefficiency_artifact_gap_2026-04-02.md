@@ -1,5 +1,12 @@
 # Execution inefficiency artifact gap
 
+Status: `historical observational gap note / docs-only closeout / non-authorizing / no current roadmap authority`
+
+> Current status note:
+>
+> - HISTORICAL 2026-05-22: this memo remains the retained closeout explanation for why `execution_inefficiency` stayed `UNATTESTED` on the earlier locked artifact surface.
+> - Do not treat it as a current packet, roadmap, runtime, launch, or promotion authority on the present branch.
+
 This note is observational only.
 It explains why `execution_inefficiency` remains `UNATTESTED` on the current locked artifact surface and what minimum future evidence would be needed before stronger execution-mechanism claims become admissible.
 

@@ -2,7 +2,15 @@
 
 Date: 2026-04-21
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `setup-only / planning-only / no launch authorization`
+Status: `historical SCPE RI v1 shadow-backtest slice1 setup-only packet / retained for provenance / not current branch guidance`
+
+> Later-status note (2026-05-22, `feature/genesis-topology-lifecycle-authority-map`): this file
+> is retained as historical branch-local setup context from
+> `feature/ri-role-map-implementation-2026-03-24`. The setup-only wording below records what that
+> earlier branch defined before the later same-family launch-decision chain
+> (`launch_authorization`, `launch_reauthorization`, and `final_launch_authorization`) and does
+> **not** reopen current branch launch authority, execution authority, runtime authority, or
+> paper/live semantics.
 
 ## COMMAND PACKET
 

@@ -2,7 +2,12 @@
 
 Date: 2026-03-30
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `packet-boundary-defined / planning-only / no authorization`
+Status: `historical packet-boundary decision record / planning-only / non-authorizing / no current packet-boundary authority`
+
+> Current status note:
+>
+> - HISTORICAL 2026-05-22: in the present branch context, this document is retained as the exact earlier branch/state packet-boundary decision record only.
+> - The retained text below does not provide current packet-boundary authority, current candidate-surface authority, current pre-code sequencing authority, launch/execution authority, runtime authority, or promotion meaning.
 
 ## COMMAND PACKET
 

@@ -3,7 +3,15 @@
 Date: 2026-04-21
 Branch: `feature/ri-role-map-implementation-2026-03-24`
 Mode: `RESEARCH` — source: `branch:feature/ri-role-map-implementation-2026-03-24`
-Status: `implemented / gates-green / post-diff-audited`
+Status: `historical SCPE RI v1 paper-shadow slice1 implementation report / retained for provenance / not current branch guidance`
+
+> Later-status note (2026-05-22, `feature/genesis-topology-lifecycle-authority-map`): this file
+> is retained as historical branch-local paper-shadow implementation evidence from
+> `feature/ri-role-map-implementation-2026-03-24`. The implemented/gates-green wording below
+> records what that earlier branch completed at the time; it does **not** reopen current
+> paper-shadow implementation work or establish paper approval, live-paper approval, readiness,
+> launch, deployment, or promotion authority. For current interpretation, read it together with
+> `docs/decisions/scpe_ri_v1/scpe_ri_v1_paper_shadow_live_paper_isolation_boundary_packet_2026-05-15.md`.
 
 ## Scope summary
 

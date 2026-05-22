@@ -67,8 +67,11 @@ follow-up rather than forcing a cosmetic patch.
 
 - Zone: `docs/archive/` plus historical files outside archive taxonomy
 - Default speed/risk bucket: `YELLOW`
+- Current artifact: `docs/audit/archive_move_preflight_batch_005.md`
 - Focus: determine which already-historical surfaces are ready for archive placement versus still needed as active provenance anchors
 - Expected outputs: archive move reference audits, move-ready buckets
+- Current result: the smallest move-ready candidate remains `plan/ri-family-admission-roadmap-2026-03-24.md`, but execution is deferred because a required provenance reference surface is locally modified
+- Next admissible step: open the bounded move-class slice once `docs/knowledge/DOCUMENTATION_PROVENANCE_LINEAGE_MAP.md` is clean or explicitly in scope
 - Guardrail: no move without inbound-reference and map/provenance checks
 
 ## Batch 006 — config classification

@@ -4,17 +4,19 @@
 
 ## Scope boundary for this slice
 
-This first pass records only top-level governance, workflow, and documentation-routing conclusions that are directly supported by existing cited artifacts.
+This first pass records only top-level governance, workflow, and documentation-routing conclusions that are directly supported by existing cited artifacts, plus one derivative documentation-surface provenance/orientation conclusion.
 
 The following remain outside the populated scope of this slice and therefore are not classified here as active truth:
 
 - domain-specific research conclusions
 - packet-by-packet authority under `docs/decisions/**`
 - note-by-note authority under `docs/analysis/**`
-- lineage chains beyond top-level governance surfaces
+- deep lineage chains beyond the directly cited documentation surfaces in `docs/knowledge/DOCUMENTATION_PROVENANCE_LINEAGE_MAP.md`
 - edge relationships beyond top-level authority boundaries
 
 See `docs/knowledge/KNOWLEDGE_AUTHORITY_RULES.md` for the fail-closed rules used here.
+If a cited source conflicts with a register entry, the cited source controls.
+Register inclusion, omission, ordering, or conclusion-ID placement do not by themselves imply lineage, dependency, approval, or current applicability.
 
 ## CONCLUSION-ID: AUTH-001
 
@@ -497,3 +499,48 @@ Confidence:
 
 Authority note:
 May be used for historical branch-context traceability only. Must not be used as branch-current work order or execution guidance on unrelated branches.
+
+## CONCLUSION-ID: AUTH-015
+
+Status:
+`NON_AUTHORIZING`
+
+Conclusion statement:
+`docs/knowledge/DOCUMENTATION_PROVENANCE_LINEAGE_MAP.md` is a derivative, citation-bound, non-exhaustive orientation map for documentation-surface provenance and lineage; it may aid navigation across directly cited documentation surfaces but does not create authority, classify the entire repository, or prove dependency/supersession from chronology, prominence, folder placement, or index inclusion alone.
+
+Canonical artifact reference:
+
+- `docs/knowledge/DOCUMENTATION_PROVENANCE_LINEAGE_MAP.md`
+- headings: `Purpose`, `Scope boundary`, `Reading rule`, `Explicit unresolved boundary`
+
+Observed evidence:
+
+- The file states: `This document is a derivative, citation-bound orientation map.`
+- The file states it `does not create authority, does not classify the entire repository, and leaves uncited or deep corpora unresolved unless directly classified by a cited source`.
+- The file states it may be used for `navigation and provenance/origin context` and `may not be used as an independent SSOT, authority source, or proof that one document silently governs another`.
+- The file explicitly leaves packet-by-packet `docs/decisions/**`, note-by-note `docs/analysis/**`, and deeper uncited corpora unresolved.
+
+Inferred interpretation:
+
+- `NONE`
+
+Unverified assumptions:
+
+- `NONE`
+
+Decision impact:
+`GOVERNANCE_ONLY`
+
+Supersedes:
+
+- `NONE`
+
+Superseded by:
+
+- `NONE`
+
+Confidence:
+`HIGH`
+
+Authority note:
+May be used as a derivative documentation provenance/orientation aid only. Must not be used as an independent authority source, exhaustive repository classification, or proof of lineage/dependency without direct cited support. If this entry conflicts with the cited artifact, the cited artifact controls.

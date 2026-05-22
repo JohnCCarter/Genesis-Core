@@ -1,5 +1,13 @@
 # Auditrapport: Konfig & Governance (Genesis-Core)
 
+Status: `historical audit record / retained for traceability / not current approval or policy`
+
+> Current status note (2026-05-22, `feature/knowledge-authority-layer`): this file is
+> retained as historical audit evidence from `feature/composable-strategy-phase2`. It is
+> not itself current approval, current policy, or current work order. For current
+> authority, see `docs/CURRENT_AUTHORITY_INDEX.md` and the current governance/decision
+> documents referenced there.
+
 Datum: 2026-02-21
 Branch: feature/composable-strategy-phase2
 Scope: `src/core/config/*`, `src/core/governance/registry.py` samt tillhörande schema/validator.

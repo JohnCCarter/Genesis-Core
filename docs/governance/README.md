@@ -1,5 +1,13 @@
 # Governance docs index
 
+Status: `zone guide / non-authorizing / governance placement index`
+
+> Routing status (2026-05-22, `feature/knowledge-authority-layer`): denna README är en
+> `NON_AUTHORIZING` routingyta för `docs/governance/`. Den får användas för navigation,
+> placement guidance och sammanhang för governance-zonen, men den är inte i sig en SSOT,
+> precedence-yta eller självständig authority-källa. Se `docs/CURRENT_AUTHORITY_INDEX.md`
+> och `docs/knowledge/KNOWLEDGE_AUTHORITY_RULES.md`.
+
 Den här mappen samlar governance-specifika dokument och indexytor för Genesis-Core.
 
 `docs/governance/**` är ett komplement till de högre styrlagren. Den här README:n är ett index, inte en egen SSOT.

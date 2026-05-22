@@ -1,5 +1,13 @@
 # RI P1 OFF Signoff — Implementation Report
 
+Status: `historical signoff record / retained for traceability / not current approval or policy`
+
+> Current status note (2026-05-22, `feature/knowledge-authority-layer`): this file is
+> retained as historical signoff evidence from `feature/regime-intelligence-p1-signoff`.
+> It is not itself current approval, current policy, or current work order. For current
+> authority, see `docs/CURRENT_AUTHORITY_INDEX.md` and the current governance/decision
+> documents referenced there.
+
 Datum: 2026-03-04
 Branch: `feature/regime-intelligence-p1-signoff`
 Mode: `RESEARCH` (source=branch mapping `feature/*`)

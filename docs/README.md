@@ -1,5 +1,14 @@
 # Documentation taxonomy
 
+Status: `routing guide / non-authorizing / practical taxonomy map`
+
+> Routing status (2026-05-22, `feature/knowledge-authority-layer`): denna README är en
+> `NON_AUTHORIZING` routingyta för dokumenttaxonomi och läsordning i Genesis-Core. Den får
+> användas för navigation, placering och lagerordningsvägledning, men den ger inte i sig
+> governance-SSOT, readiness, promotion-status, runtime authority eller branch-current
+> arbetsordning. Se `docs/CURRENT_AUTHORITY_INDEX.md` och
+> `docs/knowledge/KNOWLEDGE_AUTHORITY_RULES.md`.
+
 Den här README:n är den praktiska kartan över dokumentytorna i Genesis-Core.
 Den är **inte** en egen SSOT och ändrar inte authority-precedence.
 

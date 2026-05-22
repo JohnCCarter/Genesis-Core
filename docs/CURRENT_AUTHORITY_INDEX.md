@@ -35,11 +35,29 @@ Canonical support for this scope boundary:
 
 Read these surfaces in their cited role only.
 Do not infer authority from filename prominence, recency, folder location, or reuse frequency alone.
+If a cited source conflicts with this index, the cited source controls.
+Inclusion, omission, chronology, filename prominence, folder placement, or index placement do not by themselves imply lineage, dependency, approval, or current applicability.
 
 Canonical support:
 
 - `docs/README.md` (`Historiska dokument...`, `Viktig försiktighetsregel`)
 - `docs/governance/README.md` (`Historiska packet-, signoff- och closeout-dokument... läsas med respekt för innehållets faktiska roll, inte enbart efter mappnamnet`)
+
+## Derivative documentation provenance aid
+
+Use `docs/knowledge/DOCUMENTATION_PROVENANCE_LINEAGE_MAP.md` as a derivative navigation aid for documentation-surface provenance and lineage only.
+Authority remains with the cited source documents and the active governance surfaces above.
+
+This map may not be used as:
+
+- a new authority layer
+- an exhaustive repository classification
+- proof that chronology, filename prominence, folder placement, or index inclusion establishes dependency, lineage, or supersession
+
+Canonical support:
+
+- `docs/knowledge/KNOWLEDGE_AUTHORITY_RULES.md` (`Rule 1 — Derivative only`, `Rule 3 — No silent inheritance`, `Documentation provenance map rule`)
+- `docs/knowledge/DOCUMENTATION_PROVENANCE_LINEAGE_MAP.md` (`Purpose`, `Scope boundary`, `Reading rule`)
 
 ## Active governance and workflow references
 
@@ -74,7 +92,7 @@ The following surfaces remain `UNRESOLVED` at the classification level in this f
 - domain-specific packets under `docs/decisions/**`
 - domain-specific notes under `docs/analysis/**`
 - domain-specific contract surfaces outside the governance/top-level routing set above
-- research lineage chains beyond the top-level governance surfaces
+- research lineage chains and deeper documentation lineage beyond the directly cited surfaces in `docs/knowledge/DOCUMENTATION_PROVENANCE_LINEAGE_MAP.md`
 - edge relationships beyond explicit top-level authority boundaries
 
 The explicit `NON_AUTHORIZING` status of `docs/analysis/README.md` and `docs/decisions/README.md`

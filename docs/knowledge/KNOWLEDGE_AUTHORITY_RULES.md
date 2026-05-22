@@ -9,6 +9,7 @@ It governs only the derivative surfaces below:
 
 - `docs/CURRENT_AUTHORITY_INDEX.md`
 - `docs/knowledge/CANONICAL_KNOWLEDGE_REGISTER.md`
+- `docs/knowledge/DOCUMENTATION_PROVENANCE_LINEAGE_MAP.md`
 - `docs/knowledge/RESEARCH_LINEAGE_MAP.md`
 - `docs/knowledge/EDGE_MAP.md`
 
@@ -48,6 +49,7 @@ Canonical support:
 
 These files may classify, point, mark, and link.
 They may not synthesize multiple documents into a new active conclusion.
+Classification of a derivative surface constrains how it may be used; it does not authorize the surface as a source of truth and does not authorize any mapped artifact.
 
 Canonical support:
 
@@ -71,8 +73,11 @@ Authority may not be inferred from:
 - recency alone
 - filename prominence
 - directory location alone
+- index placement alone
 - repeated citation frequency
 - broad narrative convenience
+
+Chronology, filename prominence, folder placement, or index placement do not by themselves prove lineage, authority, or dependency.
 
 Canonical support:
 
@@ -191,13 +196,23 @@ Otherwise use `UNRESOLVED`.
 ## Coverage rule
 
 Uncovered domains must be declared explicitly rather than implied complete.
-This first slice covers only top-level governance and documentation-routing surfaces.
+This first slice covers only top-level governance and documentation-routing surfaces, plus a bounded documentation-surface provenance/orientation map.
 Domain-specific research, packet, and edge classification remains out of scope unless directly added in a later bounded slice.
 
 Canonical support:
 
 - `docs/README.md` (`Kärnregel`, `Snabb placeringsguide`)
 - `docs/governance/concept_evidence_runtime_lane_model_2026-04-23.md` (`Short decision checklist`)
+
+## Documentation provenance map rule
+
+`docs/knowledge/DOCUMENTATION_PROVENANCE_LINEAGE_MAP.md` may map documentation-surface provenance and current-use boundaries only when each mapped surface is directly supported by cited current text.
+It may not be treated as proof that one document governs, supersedes, or depends on another unless that relationship is directly supported by a cited artifact.
+
+Canonical support:
+
+- `docs/README.md` (`Viktig försiktighetsregel`)
+- `docs/governance/README.md` (`SSOT och precedence`)
 
 ## Stub rule for lineage and edge maps
 

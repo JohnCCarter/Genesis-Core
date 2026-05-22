@@ -3,7 +3,17 @@
 Date: 2026-04-21
 Branch: `feature/ri-role-map-implementation-2026-03-24`
 Mode: `RESEARCH` — source: `branch:feature/ri-role-map-implementation-2026-03-24`
-Status: `smoke-run-completed / evidence-captured`
+Status: `historical SCPE RI v1 runtime-observability smoke evidence / retained for provenance / not current branch guidance`
+
+> Later-status note (2026-05-22, `feature/genesis-topology-lifecycle-authority-map`): this file
+> is retained as historical branch-local SCPE RI runtime-observability smoke evidence from
+> `feature/ri-role-map-implementation-2026-03-24`. The smoke-run and evidence wording below
+> records what that earlier branch captured at the time; it does **not** reopen a current branch
+> smoke lane or establish current execution priority. For current interpretation, read it together
+> with
+> `docs/decisions/scpe_ri_v1/archive/scpe_ri_v1_runtime_observability_closeout_transition_packet_2026-04-21.md`
+> and later queue/closeout anchors such as
+> `docs/analysis/diagnostics/next_phase_verkstad_queue_2026-05-15.md`.
 
 ## COMMAND PACKET
 

@@ -10,6 +10,7 @@ Status: `closed / historical / archive-only / evidence-carried / no-default-beha
 > - `ARCHIVED 2026-05-05`: This roadmap is not current branch guidance on `feature/next-slice-2026-05-05`.
 > - Preserve it as an archived historical closed roadmap for the earlier post-Phase-14 Feature Attribution reactivation line.
 > - Resolve any current branch guidance from current branch state, higher-order governance docs, and later anchored evidence rather than from this archived roadmap.
+> - For the later historical continuation/closeout of this line, see `plan/genesis_driver_identification_master_roadmap_2026-04-14.md`; that roadmap is also historical and must not be read as current branch guidance.
 > - Reopen only via explicit user request or a fresh packet that deliberately re-enters this Feature Attribution residual-falsification surface.
 
 ## Why this roadmap exists

@@ -13,6 +13,13 @@ Population of this map requires:
 - citation-bound lineage statements
 - bounded scope for the specific domain being mapped
 
+The following are not sufficient to populate lineage here:
+
+- nearby repository location
+- recency alone
+- semantic similarity alone
+- narrative convenience
+
 If those conditions are not met, the correct state is `UNRESOLVED`.
 
 ## Current status
@@ -38,4 +45,5 @@ A lineage entry may be added only in a later bounded slice that:
 - cites the exact artifacts being related
 - identifies whether the relation is observed, inferred, or still unverified
 - avoids creating a new active conclusion by combining weak signals
+- does not infer lineage merely because files are nearby, recent, or semantically related
 - keeps unresolved chains marked `UNRESOLVED`

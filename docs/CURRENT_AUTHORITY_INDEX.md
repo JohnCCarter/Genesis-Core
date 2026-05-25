@@ -6,9 +6,13 @@
 
 This index answers one bounded question for the current slice:
 
+- what is explicitly authoritative now
 - which already-existing documentation surfaces are currently usable as authority-bearing governance references or active supplemental guidance within their cited role
 - which surfaces are explicitly non-authorizing or retained historical references
 - which domains remain outside the classified scope of this first pass
+
+This index is not a historical cleanup ledger.
+It does not need to classify every older file in order to protect current authority.
 
 ## Scope boundary
 
@@ -21,6 +25,8 @@ This file does **not**:
 - classify every packet under `docs/decisions/**`
 - classify every note under `docs/analysis/**`
 - authorize runtime, promotion, readiness, or config interpretation
+
+Material that is not explicitly listed here, not cited by an active authority surface, and not promoted through a current governance packet remains non-authoritative by default for current operational use.
 
 Where support is absent or ambiguous, this index treats the surface as `UNRESOLVED`.
 
@@ -37,6 +43,12 @@ Read these surfaces in their cited role only.
 Do not infer authority from filename prominence, recency, folder location, or reuse frequency alone.
 If a cited source conflicts with this index, the cited source controls.
 Inclusion, omission, chronology, filename prominence, folder placement, or index placement do not by themselves imply lineage, dependency, approval, or current applicability.
+
+Canonical isolation reading rule:
+
+- repository material is non-authoritative by default unless explicitly listed here, cited by an active authority surface, or promoted through a current governance packet
+- historical, archive, audit, plan, analysis, research, and output surfaces may provide context or evidence without becoming current authority
+- absence from this index is not a hidden file-by-file classification exercise; it simply means no current authority has been granted here for that surface
 
 Canonical support:
 
@@ -76,7 +88,7 @@ This map may not be used as:
 - a new authority layer
 - an approval or permission grant to edit a zone
 - an exhaustive file-by-file classification
-- proof that folder placement alone establishes current applicability, authority, or risk
+- proof that folder placement alone establishes current applicability, authority, risk, or file-level truth
 
 Canonical support:
 
@@ -100,7 +112,7 @@ Canonical support:
 | --------------------------- | ----------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | `docs/README.md`            | `NON_AUTHORIZING` | Documentation taxonomy and reading-order guidance                       | Standing SSOT or independent authority source                                                   | `docs/README.md` (`Den här README:n är den praktiska kartan... Den är inte en egen SSOT`)                                                   |
 | `docs/governance/README.md` | `NON_AUTHORIZING` | Governance-zone index and placement guidance                            | Independent SSOT or override surface                                                            | `docs/governance/README.md` (`Den här README:n är ett index, inte en egen SSOT`)                                                            |
-| `docs/contracts/README.md`  | `NON_AUTHORIZING` | Contracts-zone routing, placement guidance, and stable-form framing     | Standing SSOT, independent authority source, or approval surface for runtime/readiness changes | `docs/contracts/README.md` (`Status`, `Den här README:n är en zon-guide, inte en egen SSOT.`) |
+| `docs/contracts/README.md`  | `NON_AUTHORIZING` | Contracts-zone routing, placement guidance, and stable-form framing     | Standing SSOT, independent authority source, or approval surface for runtime/readiness changes  | `docs/contracts/README.md` (`Status`, `Den här README:n är en zon-guide, inte en egen SSOT.`)                                               |
 | `docs/analysis/README.md`   | `NON_AUTHORIZING` | Analysis-zone routing, placement guidance, and retained-context framing | Establishing conclusions, branch-current work order, readiness, promotion, or runtime authority | `docs/analysis/README.md` (`Routing status (2026-05-21, feature/knowledge-authority-layer)`, `Later-branch truthfulness note`)              |
 | `docs/decisions/README.md`  | `NON_AUTHORIZING` | Decision-zone routing, placement guidance, and taxonomy framing         | Approval, readiness, promotion, runtime authority, or governance SSOT                           | `docs/decisions/README.md` (`Routing status (2026-05-21, feature/knowledge-authority-layer)`, `Den här mappen är ... inte governance-SSOT`) |
 
@@ -124,6 +136,7 @@ The explicit `NON_AUTHORIZING` status of `docs/analysis/README.md` and `docs/dec
 does not assign status to the documents they route to.
 
 This file does not infer a status for those domains from absence, recency, folder, or convenience.
+It also does not infer current authority for uncited research, archive, audit, plan, or output material merely because it exists nearby in the repository.
 
 ## No entries recorded in this slice
 

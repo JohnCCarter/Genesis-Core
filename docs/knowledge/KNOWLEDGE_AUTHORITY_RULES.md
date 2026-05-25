@@ -46,6 +46,19 @@ Canonical support:
 
 ## Core rules
 
+### Canonical Isolation Rule
+
+Repository material is non-authoritative by default unless it is explicitly listed in the current authority index, cited by an active authority surface, or promoted through a current governance packet.
+Historical, archive, audit, plan, analysis, research, and output surfaces may provide context or evidence, but they do not create current operational authority by existence, recency, path, detail, or volume.
+
+This layer therefore treats omission, proximity, and abundance as non-authorizing signals.
+If current authority is not explicit, the correct state is `NON_AUTHORIZING` or `UNRESOLVED`, not silent promotion.
+
+Canonical support:
+
+- `docs/CURRENT_AUTHORITY_INDEX.md` (`Purpose`, `Reading rule`)
+- `results/research/README.md` (`Research artifacts`, `Viktig gräns`)
+
 ### Rule 1 — Derivative only
 
 These files may classify, point, mark, and link.
@@ -116,6 +129,23 @@ Canonical support:
 - `docs/README.md` (`Analysis- och evidensnoter förblir icke-auktoriserande i sig`)
 - `docs/governance/concept_evidence_runtime_lane_model_2026-04-23.md` (`What this model is not`)
 - `docs/governance/README.md` (`Operativa dokument i docs/governance/** är kompletterande, inte överstyrande`)
+
+## Promotion boundary for research-derived material
+
+Research bundles, findings, audit outputs, and analysis notes may supply evidence, but they do not become canonical in this layer merely because they are recent, detailed, reproducible, or colocated.
+
+For this layer, the admissible promotion boundary is:
+
+1. research or evidence surface records observations
+2. a current cited authority surface or governance packet explicitly promotes, adopts, or cites the bounded conclusion
+3. only then may `docs/knowledge/CANONICAL_KNOWLEDGE_REGISTER.md` or `docs/CURRENT_AUTHORITY_INDEX.md` record the promoted conclusion or active surface
+
+If step 2 is absent, the material remains non-authoritative even when it is useful, reproducible, or widely referenced.
+
+Canonical support:
+
+- `results/research/README.md` (`Viktig gräns`)
+- `docs/CURRENT_AUTHORITY_INDEX.md` (`Purpose`, `Reading rule`)
 
 ## Status model
 

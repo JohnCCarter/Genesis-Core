@@ -6,6 +6,9 @@
 
 This first pass records only top-level governance, workflow, and documentation-routing conclusions that are directly supported by existing cited artifacts, plus one derivative documentation-surface provenance/orientation conclusion and one derivative repo-zone topology/lifecycle/authority conclusion.
 
+This register records promoted or explicitly cited canonical knowledge only.
+It does not absorb raw research bundles, hypotheses, uncited experiment conclusions, or unresolved lineage guesses into active truth.
+
 The following remain outside the populated scope of this slice and therefore are not classified here as active truth:
 
 - domain-specific research conclusions
@@ -17,6 +20,7 @@ The following remain outside the populated scope of this slice and therefore are
 See `docs/knowledge/KNOWLEDGE_AUTHORITY_RULES.md` for the fail-closed rules used here.
 If a cited source conflicts with a register entry, the cited source controls.
 Register inclusion, omission, ordering, or conclusion-ID placement do not by themselves imply lineage, dependency, approval, or current applicability.
+Research or evidence surfaces may inform later promotion, but they become canonical here only after explicit current-authority citation or promotion through the current governance path.
 
 ## CONCLUSION-ID: AUTH-001
 

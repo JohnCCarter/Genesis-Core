@@ -1,0 +1,720 @@
+{
+  "audit_version": "ri-policy-router-clean-continuation-holdout-generalization-pass-2026-05-25",
+  "base_sha": "580500092a3a9c6de95a4eb9649b2054cdd4bbef",
+  "holdout_subjects": {
+    "2017_03_continuation_family": {
+      "decision_time_state": {
+        "action_edge": {
+          "count": 17,
+          "gt_zero_share": 1.0,
+          "max": 0.136522,
+          "mean": 0.09287,
+          "min": 0.07079
+        },
+        "bars_since_regime_change": {
+          "count": 17,
+          "gt_zero_share": 1.0,
+          "max": 65.0,
+          "mean": 49.411765,
+          "min": 35.0
+        },
+        "clarity_score": {
+          "count": 17,
+          "gt_zero_share": 1.0,
+          "max": 43.0,
+          "mean": 40.058824,
+          "min": 39.0
+        },
+        "confidence_gate": {
+          "count": 17,
+          "gt_zero_share": 1.0,
+          "max": 0.568261,
+          "mean": 0.546435,
+          "min": 0.535395
+        },
+        "phase_label_counts": [
+          {
+            "count": 17,
+            "label": "<missing>"
+          }
+        ],
+        "previous_policy_counts": [
+          {
+            "count": 12,
+            "label": "RI_continuation_policy"
+          },
+          {
+            "count": 5,
+            "label": "RI_no_trade_policy"
+          }
+        ],
+        "selected_policy_counts": [
+          {
+            "count": 17,
+            "label": "RI_continuation_policy"
+          }
+        ],
+        "switch_reason_counts": [
+          {
+            "count": 17,
+            "label": "stable_continuation_state"
+          }
+        ],
+        "zone_counts": [
+          {
+            "count": 17,
+            "label": "low"
+          }
+        ]
+      },
+      "feature_transport_vs_reference": {
+        "action_edge": {
+          "distance_to_reference_range": 0.0,
+          "overlaps_reference_range": true,
+          "position": "overlaps_reference_range",
+          "within_reference_range": false
+        },
+        "bars_since_regime_change": {
+          "distance_to_reference_range": 298.0,
+          "overlaps_reference_range": false,
+          "position": "below_reference_range",
+          "within_reference_range": false
+        },
+        "clarity_score": {
+          "distance_to_reference_range": 0.0,
+          "overlaps_reference_range": true,
+          "position": "overlaps_reference_range",
+          "within_reference_range": true
+        },
+        "confidence_gate": {
+          "distance_to_reference_range": 0.0,
+          "overlaps_reference_range": true,
+          "position": "overlaps_reference_range",
+          "within_reference_range": false
+        }
+      },
+      "largest_windows": [
+        {
+          "bars_since_regime_change": {
+            "count": 4,
+            "gt_zero_share": 1.0,
+            "max": 39.0,
+            "mean": 37.5,
+            "min": 36.0
+          },
+          "end": "2017-03-05T21:00:00+00:00",
+          "row_count": 4,
+          "span_hours": 36.0,
+          "start": "2017-03-04T09:00:00+00:00",
+          "timestamps": [
+            "2017-03-04T09:00:00+00:00",
+            "2017-03-05T03:00:00+00:00",
+            "2017-03-05T12:00:00+00:00",
+            "2017-03-05T21:00:00+00:00"
+          ]
+        },
+        {
+          "bars_since_regime_change": {
+            "count": 3,
+            "gt_zero_share": 1.0,
+            "max": 60.0,
+            "mean": 59.0,
+            "min": 58.0
+          },
+          "end": "2017-03-24T12:00:00+00:00",
+          "row_count": 3,
+          "span_hours": 18.0,
+          "start": "2017-03-23T18:00:00+00:00",
+          "timestamps": [
+            "2017-03-23T18:00:00+00:00",
+            "2017-03-24T03:00:00+00:00",
+            "2017-03-24T12:00:00+00:00"
+          ]
+        },
+        {
+          "bars_since_regime_change": {
+            "count": 3,
+            "gt_zero_share": 1.0,
+            "max": 65.0,
+            "mean": 64.0,
+            "min": 63.0
+          },
+          "end": "2017-03-30T15:00:00+00:00",
+          "row_count": 3,
+          "span_hours": 18.0,
+          "start": "2017-03-29T21:00:00+00:00",
+          "timestamps": [
+            "2017-03-29T21:00:00+00:00",
+            "2017-03-30T06:00:00+00:00",
+            "2017-03-30T15:00:00+00:00"
+          ]
+        }
+      ],
+      "row_count": 17,
+      "source_kind": "annual_enabled_vs_absent_continuation_family_holdout",
+      "subject_id": "2017_03_continuation_family",
+      "support_context": {
+        "continuation_row_count": 17,
+        "largest_window": {
+          "end": "2017-03-05T21:00:00+00:00",
+          "row_count": 4,
+          "span_hours": 36.0,
+          "start": "2017-03-04T09:00:00+00:00",
+          "timestamps": [
+            "2017-03-04T09:00:00+00:00",
+            "2017-03-05T03:00:00+00:00",
+            "2017-03-05T12:00:00+00:00",
+            "2017-03-05T21:00:00+00:00"
+          ]
+        },
+        "source_artifact": "results\\evaluation\\ri_policy_router_2023_12_vs_2017_03_continuation_local_window_concentration_2026-05-06.json",
+        "top_two_window_share": 0.411765,
+        "window_count": 9
+      },
+      "threshold_transport": {
+        "boundary_count": 0,
+        "reference_range_overlap": {
+          "distance_to_reference_range": 298.0,
+          "overlaps_reference_range": false,
+          "position": "below_reference_range",
+          "within_reference_range": false
+        },
+        "threshold": 369.0,
+        "threshold_overlap": false,
+        "verdict": "outside_reference_envelope_lower",
+        "wave_one_side_count": 17,
+        "wave_two_side_count": 0
+      },
+      "visible_family_match": {
+        "absent_action": "NONE",
+        "enabled_action": "LONG",
+        "switch_reason": [
+          {
+            "count": 17,
+            "label": "stable_continuation_state"
+          }
+        ],
+        "zone": [
+          {
+            "count": 17,
+            "label": "low"
+          }
+        ]
+      },
+      "window_count": 9,
+      "window_size_sequence_desc": [
+        4,
+        3,
+        3,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    "harmful_2024_displacement": {
+      "decision_time_state": {
+        "action_edge": {
+          "count": 1,
+          "gt_zero_share": 1.0,
+          "max": 0.072747,
+          "mean": 0.072747,
+          "min": 0.072747
+        },
+        "bars_since_regime_change": {
+          "count": 1,
+          "gt_zero_share": 1.0,
+          "max": 281.0,
+          "mean": 281.0,
+          "min": 281.0
+        },
+        "clarity_score": {
+          "count": 1,
+          "gt_zero_share": 1.0,
+          "max": 39.0,
+          "mean": 39.0,
+          "min": 39.0
+        },
+        "confidence_gate": {
+          "count": 1,
+          "gt_zero_share": 1.0,
+          "max": 0.536374,
+          "mean": 0.536374,
+          "min": 0.536374
+        },
+        "phase_label_counts": [
+          {
+            "count": 1,
+            "label": "continuation_release"
+          }
+        ],
+        "previous_policy_counts": [
+          {
+            "count": 1,
+            "label": "RI_no_trade_policy"
+          }
+        ],
+        "selected_policy_counts": [
+          {
+            "count": 1,
+            "label": "RI_continuation_policy"
+          }
+        ],
+        "switch_reason_counts": [
+          {
+            "count": 1,
+            "label": "stable_continuation_state"
+          }
+        ],
+        "zone_counts": [
+          {
+            "count": 1,
+            "label": "low"
+          }
+        ]
+      },
+      "feature_transport_vs_reference": {
+        "action_edge": {
+          "distance_to_reference_range": 0.0,
+          "overlaps_reference_range": true,
+          "position": "overlaps_reference_range",
+          "within_reference_range": true
+        },
+        "bars_since_regime_change": {
+          "distance_to_reference_range": 82.0,
+          "overlaps_reference_range": false,
+          "position": "below_reference_range",
+          "within_reference_range": false
+        },
+        "clarity_score": {
+          "distance_to_reference_range": 0.0,
+          "overlaps_reference_range": true,
+          "position": "overlaps_reference_range",
+          "within_reference_range": true
+        },
+        "confidence_gate": {
+          "distance_to_reference_range": 0.0,
+          "overlaps_reference_range": true,
+          "position": "overlaps_reference_range",
+          "within_reference_range": true
+        }
+      },
+      "largest_windows": [
+        {
+          "bars_since_regime_change": {
+            "count": 1,
+            "gt_zero_share": 1.0,
+            "max": 281.0,
+            "mean": 281.0,
+            "min": 281.0
+          },
+          "end": "2024-12-01T00:00:00+00:00",
+          "row_count": 1,
+          "span_hours": 0.0,
+          "start": "2024-12-01T00:00:00+00:00",
+          "timestamps": [
+            "2024-12-01T00:00:00+00:00"
+          ]
+        }
+      ],
+      "row_count": 1,
+      "source_kind": "taxonomy_clean_continuation_holdout",
+      "subject_id": "harmful_2024_displacement",
+      "support_context": null,
+      "threshold_transport": {
+        "boundary_count": 0,
+        "reference_range_overlap": {
+          "distance_to_reference_range": 82.0,
+          "overlaps_reference_range": false,
+          "position": "below_reference_range",
+          "within_reference_range": false
+        },
+        "threshold": 369.0,
+        "threshold_overlap": false,
+        "verdict": "outside_reference_envelope_lower",
+        "wave_one_side_count": 1,
+        "wave_two_side_count": 0
+      },
+      "visible_family_match": {
+        "absent_action": "NONE",
+        "enabled_action": "LONG",
+        "switch_reason": [
+          {
+            "count": 1,
+            "label": "stable_continuation_state"
+          }
+        ],
+        "zone": [
+          {
+            "count": 1,
+            "label": "low"
+          }
+        ]
+      },
+      "window_count": 1,
+      "window_size_sequence_desc": [
+        1
+      ]
+    }
+  },
+  "inputs": {
+    "annual_2017_action_diff_surface": "results\\backtests\\ri_policy_router_enabled_vs_absent_all_years_20260428_curated_only\\2017_enabled_vs_absent_action_diffs.json",
+    "continuation_local_window_reference_2017": "results\\evaluation\\ri_policy_router_2023_12_vs_2017_03_continuation_local_window_concentration_2026-05-06.json",
+    "reference_rule_artifact": "results\\evaluation\\ri_policy_router_clean_continuation_wave_phase_discriminator_2026-05-25.json",
+    "taxonomy_artifact": "results\\evaluation\\ri_policy_router_fixed_subject_state_taxonomy_pass_2026-05-25.json"
+  },
+  "non_authoritative": true,
+  "observational_only": true,
+  "reference_rule": {
+    "accuracy": 1.0,
+    "feature": "bars_since_regime_change",
+    "operator": "<=",
+    "positive_wave": "wave_one",
+    "reference_envelopes": {
+      "combined": {
+        "max": 378.0,
+        "min": 363.0
+      },
+      "wave_one": {
+        "count": 6,
+        "max": 368.0,
+        "mean": 365.5,
+        "min": 363.0
+      },
+      "wave_two": {
+        "count": 7,
+        "max": 378.0,
+        "mean": 373.428571,
+        "min": 370.0
+      }
+    },
+    "threshold": 369.0
+  },
+  "reference_subjects": {
+    "continuation_2023_wave_one": {
+      "decision_time_state": {
+        "action_edge": {
+          "count": 6,
+          "gt_zero_share": 1.0,
+          "max": 0.139812,
+          "mean": 0.108708,
+          "min": 0.091018
+        },
+        "bars_since_regime_change": {
+          "count": 6,
+          "gt_zero_share": 1.0,
+          "max": 368.0,
+          "mean": 365.5,
+          "min": 363.0
+        },
+        "clarity_score": {
+          "count": 6,
+          "gt_zero_share": 1.0,
+          "max": 43.0,
+          "mean": 41.0,
+          "min": 40.0
+        },
+        "confidence_gate": {
+          "count": 6,
+          "gt_zero_share": 1.0,
+          "max": 0.569906,
+          "mean": 0.554354,
+          "min": 0.545509
+        },
+        "phase_label_counts": [
+          {
+            "count": 6,
+            "label": "continuation_release"
+          }
+        ],
+        "previous_policy_counts": [
+          {
+            "count": 5,
+            "label": "RI_continuation_policy"
+          },
+          {
+            "count": 1,
+            "label": "RI_no_trade_policy"
+          }
+        ],
+        "selected_policy_counts": [
+          {
+            "count": 6,
+            "label": "RI_continuation_policy"
+          }
+        ],
+        "switch_reason_counts": [
+          {
+            "count": 6,
+            "label": "stable_continuation_state"
+          }
+        ],
+        "zone_counts": [
+          {
+            "count": 6,
+            "label": "low"
+          }
+        ]
+      },
+      "feature_transport_vs_reference": {
+        "action_edge": {
+          "distance_to_reference_range": 0.0,
+          "overlaps_reference_range": true,
+          "position": "overlaps_reference_range",
+          "within_reference_range": true
+        },
+        "bars_since_regime_change": {
+          "distance_to_reference_range": 0.0,
+          "overlaps_reference_range": true,
+          "position": "overlaps_reference_range",
+          "within_reference_range": true
+        },
+        "clarity_score": {
+          "distance_to_reference_range": 0.0,
+          "overlaps_reference_range": true,
+          "position": "overlaps_reference_range",
+          "within_reference_range": true
+        },
+        "confidence_gate": {
+          "distance_to_reference_range": 0.0,
+          "overlaps_reference_range": true,
+          "position": "overlaps_reference_range",
+          "within_reference_range": true
+        }
+      },
+      "largest_windows": [
+        {
+          "bars_since_regime_change": {
+            "count": 6,
+            "gt_zero_share": 1.0,
+            "max": 368.0,
+            "mean": 365.5,
+            "min": 363.0
+          },
+          "end": "2023-12-17T18:00:00+00:00",
+          "row_count": 6,
+          "span_hours": 45.0,
+          "start": "2023-12-15T21:00:00+00:00",
+          "timestamps": [
+            "2023-12-15T21:00:00+00:00",
+            "2023-12-16T06:00:00+00:00",
+            "2023-12-16T15:00:00+00:00",
+            "2023-12-17T00:00:00+00:00",
+            "2023-12-17T09:00:00+00:00",
+            "2023-12-17T18:00:00+00:00"
+          ]
+        }
+      ],
+      "row_count": 6,
+      "source_kind": "taxonomy_clean_continuation_reference",
+      "subject_id": "continuation_2023_wave_one",
+      "support_context": null,
+      "threshold_transport": {
+        "boundary_count": 0,
+        "reference_range_overlap": {
+          "distance_to_reference_range": 0.0,
+          "overlaps_reference_range": true,
+          "position": "overlaps_reference_range",
+          "within_reference_range": true
+        },
+        "threshold": 369.0,
+        "threshold_overlap": false,
+        "verdict": "overlaps_reference_wave_one_side_only",
+        "wave_one_side_count": 6,
+        "wave_two_side_count": 0
+      },
+      "visible_family_match": {
+        "absent_action": "NONE",
+        "enabled_action": "LONG",
+        "switch_reason": [
+          {
+            "count": 6,
+            "label": "stable_continuation_state"
+          }
+        ],
+        "zone": [
+          {
+            "count": 6,
+            "label": "low"
+          }
+        ]
+      },
+      "window_count": 1,
+      "window_size_sequence_desc": [
+        6
+      ]
+    },
+    "continuation_2023_wave_two": {
+      "decision_time_state": {
+        "action_edge": {
+          "count": 7,
+          "gt_zero_share": 1.0,
+          "max": 0.134143,
+          "mean": 0.095016,
+          "min": 0.072364
+        },
+        "bars_since_regime_change": {
+          "count": 7,
+          "gt_zero_share": 1.0,
+          "max": 378.0,
+          "mean": 373.428571,
+          "min": 370.0
+        },
+        "clarity_score": {
+          "count": 7,
+          "gt_zero_share": 1.0,
+          "max": 43.0,
+          "mean": 40.285714,
+          "min": 39.0
+        },
+        "confidence_gate": {
+          "count": 7,
+          "gt_zero_share": 1.0,
+          "max": 0.567071,
+          "mean": 0.547508,
+          "min": 0.536182
+        },
+        "phase_label_counts": [
+          {
+            "count": 7,
+            "label": "continuation_release"
+          }
+        ],
+        "previous_policy_counts": [
+          {
+            "count": 5,
+            "label": "RI_continuation_policy"
+          },
+          {
+            "count": 2,
+            "label": "RI_no_trade_policy"
+          }
+        ],
+        "selected_policy_counts": [
+          {
+            "count": 7,
+            "label": "RI_continuation_policy"
+          }
+        ],
+        "switch_reason_counts": [
+          {
+            "count": 7,
+            "label": "stable_continuation_state"
+          }
+        ],
+        "zone_counts": [
+          {
+            "count": 7,
+            "label": "low"
+          }
+        ]
+      },
+      "feature_transport_vs_reference": {
+        "action_edge": {
+          "distance_to_reference_range": 0.0,
+          "overlaps_reference_range": true,
+          "position": "overlaps_reference_range",
+          "within_reference_range": true
+        },
+        "bars_since_regime_change": {
+          "distance_to_reference_range": 0.0,
+          "overlaps_reference_range": true,
+          "position": "overlaps_reference_range",
+          "within_reference_range": true
+        },
+        "clarity_score": {
+          "distance_to_reference_range": 0.0,
+          "overlaps_reference_range": true,
+          "position": "overlaps_reference_range",
+          "within_reference_range": true
+        },
+        "confidence_gate": {
+          "distance_to_reference_range": 0.0,
+          "overlaps_reference_range": true,
+          "position": "overlaps_reference_range",
+          "within_reference_range": true
+        }
+      },
+      "largest_windows": [
+        {
+          "bars_since_regime_change": {
+            "count": 7,
+            "gt_zero_share": 1.0,
+            "max": 378.0,
+            "mean": 373.428571,
+            "min": 370.0
+          },
+          "end": "2023-12-26T00:00:00+00:00",
+          "row_count": 7,
+          "span_hours": 81.0,
+          "start": "2023-12-22T15:00:00+00:00",
+          "timestamps": [
+            "2023-12-22T15:00:00+00:00",
+            "2023-12-23T00:00:00+00:00",
+            "2023-12-23T09:00:00+00:00",
+            "2023-12-24T03:00:00+00:00",
+            "2023-12-24T12:00:00+00:00",
+            "2023-12-25T06:00:00+00:00",
+            "2023-12-26T00:00:00+00:00"
+          ]
+        }
+      ],
+      "row_count": 7,
+      "source_kind": "taxonomy_clean_continuation_reference",
+      "subject_id": "continuation_2023_wave_two",
+      "support_context": null,
+      "threshold_transport": {
+        "boundary_count": 0,
+        "reference_range_overlap": {
+          "distance_to_reference_range": 0.0,
+          "overlaps_reference_range": true,
+          "position": "overlaps_reference_range",
+          "within_reference_range": true
+        },
+        "threshold": 369.0,
+        "threshold_overlap": false,
+        "verdict": "overlaps_reference_wave_two_side_only",
+        "wave_one_side_count": 0,
+        "wave_two_side_count": 7
+      },
+      "visible_family_match": {
+        "absent_action": "NONE",
+        "enabled_action": "LONG",
+        "switch_reason": [
+          {
+            "count": 7,
+            "label": "stable_continuation_state"
+          }
+        ],
+        "zone": [
+          {
+            "count": 7,
+            "label": "low"
+          }
+        ]
+      },
+      "window_count": 1,
+      "window_size_sequence_desc": [
+        7
+      ]
+    }
+  },
+  "transport_summary": {
+    "bars_overlap_holdout_count": 0,
+    "holdouts_evaluated": [
+      "harmful_2024_displacement",
+      "2017_03_continuation_family"
+    ],
+    "inference": "The learned clean-continuation split remains carrier-local in absolute regime-age terms; holdouts can preserve the visible continuation shell while living far below the 2023-12 absolute bars_since_regime_change envelope.",
+    "next_hypothesis": "A transportable phase-age discriminator likely needs subject-local normalization instead of a raw absolute bars_since_regime_change threshold.",
+    "non_age_feature_overlap_counts": {
+      "action_edge": 2,
+      "clarity_score": 2,
+      "confidence_gate": 2
+    },
+    "status": "absolute_clean_continuation_age_split_falsified_on_holdouts"
+  },
+  "working_contract_reference": "GENESIS_WORKING_CONTRACT.md"
+}

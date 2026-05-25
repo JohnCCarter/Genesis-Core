@@ -1,0 +1,2396 @@
+{
+  "audit_version": "ri-policy-router-clean-continuation-normalized-phase-age-transport-2026-05-25",
+  "base_sha": "6c683135c9c50204c8013bcdcef3af2c7d72bde6",
+  "classification_boundary": {
+    "candidate_feature_families": {
+      "baseline": [
+        "bars_since_regime_change"
+      ],
+      "subject_relative": [
+        "subject_offset_from_floor",
+        "subject_progress_pct",
+        "subject_rank_pct"
+      ],
+      "window_relative": [
+        "window_offset_from_start",
+        "window_progress_pct",
+        "window_rank_pct"
+      ]
+    },
+    "local_packaging_rule": {
+      "max_adjacency_hours": 24,
+      "statement": "Adjacent continuation timestamps separated by <=24h are packaged into the same descriptive local window before window-relative candidate features are computed."
+    },
+    "outcome_metrics_observational_only": true,
+    "reference_subject": "continuation_2023_combined",
+    "state_lock_required": "clean_continuation",
+    "wave_labels_derived_from": "cohort_label on the fixed taxonomy rows"
+  },
+  "holdout_subjects": {
+    "2017_03_continuation_family": {
+      "candidate_transport": {
+        "bars_since_regime_change": {
+          "holdout_distribution": {
+            "count": 17,
+            "gt_zero_share": 1.0,
+            "max": 65.0,
+            "mean": 49.411765,
+            "min": 35.0
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 298.0,
+            "overlaps_reference_range": false,
+            "position": "below_reference_range",
+            "within_reference_range": false
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 298.0,
+            "overlaps_reference_range": false,
+            "position": "below_reference_range",
+            "within_reference_range": false
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 305.0,
+            "overlaps_reference_range": false,
+            "position": "below_reference_range",
+            "within_reference_range": false
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": "<=",
+            "positive_wave": "wave_one",
+            "threshold": 369.0,
+            "wave_one_side_count": 17,
+            "wave_two_side_count": 0
+          },
+          "values": [
+            35.0,
+            36.0,
+            37.0,
+            38.0,
+            39.0,
+            40.0,
+            44.0,
+            48.0,
+            49.0,
+            50.0,
+            55.0,
+            58.0,
+            59.0,
+            60.0,
+            63.0,
+            64.0,
+            65.0
+          ],
+          "verdict": "outside_combined_reference_lower"
+        },
+        "subject_offset_from_floor": {
+          "holdout_distribution": {
+            "count": 17,
+            "gt_zero_share": 0.941176,
+            "max": 30.0,
+            "mean": 14.411765,
+            "min": 0.0
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": false
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": false
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": false
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": "<=",
+            "positive_wave": "wave_one",
+            "threshold": 6.0,
+            "wave_one_side_count": 6,
+            "wave_two_side_count": 11
+          },
+          "values": [
+            0.0,
+            1.0,
+            2.0,
+            3.0,
+            4.0,
+            5.0,
+            9.0,
+            13.0,
+            14.0,
+            15.0,
+            20.0,
+            23.0,
+            24.0,
+            25.0,
+            28.0,
+            29.0,
+            30.0
+          ],
+          "verdict": "spans_both_wave_envelopes"
+        },
+        "subject_progress_pct": {
+          "holdout_distribution": {
+            "count": 17,
+            "gt_zero_share": 0.941176,
+            "max": 1.0,
+            "mean": 0.480392,
+            "min": 0.0
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": false
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": false
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": "<=",
+            "positive_wave": "wave_one",
+            "threshold": 0.4,
+            "wave_one_side_count": 7,
+            "wave_two_side_count": 10
+          },
+          "values": [
+            0.0,
+            0.033333,
+            0.066667,
+            0.1,
+            0.133333,
+            0.166667,
+            0.3,
+            0.433333,
+            0.466667,
+            0.5,
+            0.666667,
+            0.766667,
+            0.8,
+            0.833333,
+            0.933333,
+            0.966667,
+            1.0
+          ],
+          "verdict": "spans_both_wave_envelopes"
+        },
+        "subject_rank_pct": {
+          "holdout_distribution": {
+            "count": 17,
+            "gt_zero_share": 0.941176,
+            "max": 1.0,
+            "mean": 0.5,
+            "min": 0.0
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": false
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": false
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": "<=",
+            "positive_wave": "wave_one",
+            "threshold": 0.458334,
+            "wave_one_side_count": 8,
+            "wave_two_side_count": 9
+          },
+          "values": [
+            0.0,
+            0.0625,
+            0.125,
+            0.1875,
+            0.25,
+            0.3125,
+            0.375,
+            0.4375,
+            0.5,
+            0.5625,
+            0.625,
+            0.6875,
+            0.75,
+            0.8125,
+            0.875,
+            0.9375,
+            1.0
+          ],
+          "verdict": "spans_both_wave_envelopes"
+        },
+        "window_offset_from_start": {
+          "holdout_distribution": {
+            "count": 17,
+            "gt_zero_share": 0.470588,
+            "max": 3.0,
+            "mean": 0.764706,
+            "min": 0.0
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": ">=",
+            "positive_wave": "wave_two",
+            "threshold": 5.5,
+            "wave_one_side_count": 17,
+            "wave_two_side_count": 0
+          },
+          "values": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            2.0,
+            2.0,
+            2.0,
+            3.0
+          ],
+          "verdict": "spans_both_wave_envelopes"
+        },
+        "window_progress_pct": {
+          "holdout_distribution": {
+            "count": 17,
+            "gt_zero_share": 0.470588,
+            "max": 1.0,
+            "mean": 0.352941,
+            "min": 0.0
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": "<=",
+            "positive_wave": "wave_two",
+            "threshold": 0.3875,
+            "wave_one_side_count": 7,
+            "wave_two_side_count": 10
+          },
+          "values": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.333333,
+            0.5,
+            0.5,
+            0.666667,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "verdict": "spans_both_wave_envelopes"
+        },
+        "window_rank_pct": {
+          "holdout_distribution": {
+            "count": 17,
+            "gt_zero_share": 0.470588,
+            "max": 1.0,
+            "mean": 0.352941,
+            "min": 0.0
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": "<=",
+            "positive_wave": "wave_two",
+            "threshold": 0.183334,
+            "wave_one_side_count": 8,
+            "wave_two_side_count": 9
+          },
+          "values": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.333333,
+            0.5,
+            0.5,
+            0.666667,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "verdict": "spans_both_wave_envelopes"
+        }
+      },
+      "row_count": 17,
+      "source_kind": "annual_enabled_vs_absent_continuation_family_holdout",
+      "subject_id": "2017_03_continuation_family",
+      "support_context": {
+        "chronology_reference": "docs\\analysis\\regime_intelligence\\policy_router\\ri_policy_router_2023_12_vs_2017_03_dominant_window_chronology_2026-05-06.md",
+        "local_window_reference": "results\\evaluation\\ri_policy_router_2023_12_vs_2017_03_continuation_local_window_concentration_2026-05-06.json"
+      },
+      "visible_shell": {
+        "phase_label_counts": [
+          {
+            "count": 17,
+            "label": "<missing>"
+          }
+        ],
+        "selected_policy_counts": [
+          {
+            "count": 17,
+            "label": "RI_continuation_policy"
+          }
+        ],
+        "switch_reason_counts": [
+          {
+            "count": 17,
+            "label": "stable_continuation_state"
+          }
+        ],
+        "zone_counts": [
+          {
+            "count": 17,
+            "label": "low"
+          }
+        ]
+      },
+      "windows": [
+        {
+          "bars_since_regime_change": {
+            "count": 1,
+            "gt_zero_share": 1.0,
+            "max": 35.0,
+            "mean": 35.0,
+            "min": 35.0
+          },
+          "end": "2017-03-01T03:00:00+00:00",
+          "row_count": 1,
+          "start": "2017-03-01T03:00:00+00:00",
+          "window_index": 0
+        },
+        {
+          "bars_since_regime_change": {
+            "count": 4,
+            "gt_zero_share": 1.0,
+            "max": 39.0,
+            "mean": 37.5,
+            "min": 36.0
+          },
+          "end": "2017-03-05T21:00:00+00:00",
+          "row_count": 4,
+          "start": "2017-03-04T09:00:00+00:00",
+          "window_index": 1
+        },
+        {
+          "bars_since_regime_change": {
+            "count": 1,
+            "gt_zero_share": 1.0,
+            "max": 40.0,
+            "mean": 40.0,
+            "min": 40.0
+          },
+          "end": "2017-03-07T06:00:00+00:00",
+          "row_count": 1,
+          "start": "2017-03-07T06:00:00+00:00",
+          "window_index": 2
+        },
+        {
+          "bars_since_regime_change": {
+            "count": 1,
+            "gt_zero_share": 1.0,
+            "max": 44.0,
+            "mean": 44.0,
+            "min": 44.0
+          },
+          "end": "2017-03-09T21:00:00+00:00",
+          "row_count": 1,
+          "start": "2017-03-09T21:00:00+00:00",
+          "window_index": 3
+        },
+        {
+          "bars_since_regime_change": {
+            "count": 2,
+            "gt_zero_share": 1.0,
+            "max": 49.0,
+            "mean": 48.5,
+            "min": 48.0
+          },
+          "end": "2017-03-12T12:00:00+00:00",
+          "row_count": 2,
+          "start": "2017-03-12T03:00:00+00:00",
+          "window_index": 4
+        },
+        {
+          "bars_since_regime_change": {
+            "count": 1,
+            "gt_zero_share": 1.0,
+            "max": 50.0,
+            "mean": 50.0,
+            "min": 50.0
+          },
+          "end": "2017-03-16T03:00:00+00:00",
+          "row_count": 1,
+          "start": "2017-03-16T03:00:00+00:00",
+          "window_index": 5
+        },
+        {
+          "bars_since_regime_change": {
+            "count": 1,
+            "gt_zero_share": 1.0,
+            "max": 55.0,
+            "mean": 55.0,
+            "min": 55.0
+          },
+          "end": "2017-03-19T21:00:00+00:00",
+          "row_count": 1,
+          "start": "2017-03-19T21:00:00+00:00",
+          "window_index": 6
+        },
+        {
+          "bars_since_regime_change": {
+            "count": 3,
+            "gt_zero_share": 1.0,
+            "max": 60.0,
+            "mean": 59.0,
+            "min": 58.0
+          },
+          "end": "2017-03-24T12:00:00+00:00",
+          "row_count": 3,
+          "start": "2017-03-23T18:00:00+00:00",
+          "window_index": 7
+        },
+        {
+          "bars_since_regime_change": {
+            "count": 3,
+            "gt_zero_share": 1.0,
+            "max": 65.0,
+            "mean": 64.0,
+            "min": 63.0
+          },
+          "end": "2017-03-30T15:00:00+00:00",
+          "row_count": 3,
+          "start": "2017-03-29T21:00:00+00:00",
+          "window_index": 8
+        }
+      ]
+    },
+    "2017_03_early_anchor": {
+      "candidate_transport": {
+        "bars_since_regime_change": {
+          "holdout_distribution": {
+            "count": 4,
+            "gt_zero_share": 1.0,
+            "max": 39.0,
+            "mean": 37.5,
+            "min": 36.0
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 324.0,
+            "overlaps_reference_range": false,
+            "position": "below_reference_range",
+            "within_reference_range": false
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 324.0,
+            "overlaps_reference_range": false,
+            "position": "below_reference_range",
+            "within_reference_range": false
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 331.0,
+            "overlaps_reference_range": false,
+            "position": "below_reference_range",
+            "within_reference_range": false
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": "<=",
+            "positive_wave": "wave_one",
+            "threshold": 369.0,
+            "wave_one_side_count": 4,
+            "wave_two_side_count": 0
+          },
+          "values": [
+            36.0,
+            37.0,
+            38.0,
+            39.0
+          ],
+          "verdict": "outside_combined_reference_lower"
+        },
+        "subject_offset_from_floor": {
+          "holdout_distribution": {
+            "count": 4,
+            "gt_zero_share": 1.0,
+            "max": 4.0,
+            "mean": 2.5,
+            "min": 1.0
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 3.0,
+            "overlaps_reference_range": false,
+            "position": "below_reference_range",
+            "within_reference_range": false
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": "<=",
+            "positive_wave": "wave_one",
+            "threshold": 6.0,
+            "wave_one_side_count": 4,
+            "wave_two_side_count": 0
+          },
+          "values": [
+            1.0,
+            2.0,
+            3.0,
+            4.0
+          ],
+          "verdict": "maps_to_wave_one_envelope_only"
+        },
+        "subject_progress_pct": {
+          "holdout_distribution": {
+            "count": 4,
+            "gt_zero_share": 1.0,
+            "max": 0.133333,
+            "mean": 0.083333,
+            "min": 0.033333
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 0.333334,
+            "overlaps_reference_range": false,
+            "position": "below_reference_range",
+            "within_reference_range": false
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": "<=",
+            "positive_wave": "wave_one",
+            "threshold": 0.4,
+            "wave_one_side_count": 4,
+            "wave_two_side_count": 0
+          },
+          "values": [
+            0.033333,
+            0.066667,
+            0.1,
+            0.133333
+          ],
+          "verdict": "maps_to_wave_one_envelope_only"
+        },
+        "subject_rank_pct": {
+          "holdout_distribution": {
+            "count": 4,
+            "gt_zero_share": 1.0,
+            "max": 0.25,
+            "mean": 0.15625,
+            "min": 0.0625
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 0.25,
+            "overlaps_reference_range": false,
+            "position": "below_reference_range",
+            "within_reference_range": false
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": "<=",
+            "positive_wave": "wave_one",
+            "threshold": 0.458334,
+            "wave_one_side_count": 4,
+            "wave_two_side_count": 0
+          },
+          "values": [
+            0.0625,
+            0.125,
+            0.1875,
+            0.25
+          ],
+          "verdict": "maps_to_wave_one_envelope_only"
+        },
+        "window_offset_from_start": {
+          "holdout_distribution": {
+            "count": 4,
+            "gt_zero_share": 0.75,
+            "max": 3.0,
+            "mean": 1.5,
+            "min": 0.0
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": ">=",
+            "positive_wave": "wave_two",
+            "threshold": 5.5,
+            "wave_one_side_count": 4,
+            "wave_two_side_count": 0
+          },
+          "values": [
+            0.0,
+            1.0,
+            2.0,
+            3.0
+          ],
+          "verdict": "spans_both_wave_envelopes"
+        },
+        "window_progress_pct": {
+          "holdout_distribution": {
+            "count": 4,
+            "gt_zero_share": 0.75,
+            "max": 1.0,
+            "mean": 0.5,
+            "min": 0.0
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": "<=",
+            "positive_wave": "wave_two",
+            "threshold": 0.3875,
+            "wave_one_side_count": 2,
+            "wave_two_side_count": 2
+          },
+          "values": [
+            0.0,
+            0.333333,
+            0.666667,
+            1.0
+          ],
+          "verdict": "spans_both_wave_envelopes"
+        },
+        "window_rank_pct": {
+          "holdout_distribution": {
+            "count": 4,
+            "gt_zero_share": 0.75,
+            "max": 1.0,
+            "mean": 0.5,
+            "min": 0.0
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": "<=",
+            "positive_wave": "wave_two",
+            "threshold": 0.183334,
+            "wave_one_side_count": 3,
+            "wave_two_side_count": 1
+          },
+          "values": [
+            0.0,
+            0.333333,
+            0.666667,
+            1.0
+          ],
+          "verdict": "spans_both_wave_envelopes"
+        }
+      },
+      "row_count": 4,
+      "source_kind": "named_2017_03_early_anchor_exact_holdout",
+      "subject_id": "2017_03_early_anchor",
+      "support_context": {
+        "end": "2017-03-05T21:00:00+00:00",
+        "row_count": 4,
+        "span_hours": 36.0,
+        "start": "2017-03-04T09:00:00+00:00",
+        "timestamps": [
+          "2017-03-04T09:00:00+00:00",
+          "2017-03-05T03:00:00+00:00",
+          "2017-03-05T12:00:00+00:00",
+          "2017-03-05T21:00:00+00:00"
+        ]
+      },
+      "visible_shell": {
+        "phase_label_counts": [
+          {
+            "count": 4,
+            "label": "<missing>"
+          }
+        ],
+        "selected_policy_counts": [
+          {
+            "count": 4,
+            "label": "RI_continuation_policy"
+          }
+        ],
+        "switch_reason_counts": [
+          {
+            "count": 4,
+            "label": "stable_continuation_state"
+          }
+        ],
+        "zone_counts": [
+          {
+            "count": 4,
+            "label": "low"
+          }
+        ]
+      },
+      "windows": [
+        {
+          "bars_since_regime_change": {
+            "count": 4,
+            "gt_zero_share": 1.0,
+            "max": 39.0,
+            "mean": 37.5,
+            "min": 36.0
+          },
+          "end": "2017-03-05T21:00:00+00:00",
+          "row_count": 4,
+          "start": "2017-03-04T09:00:00+00:00",
+          "window_index": 1
+        }
+      ]
+    },
+    "2017_03_late_revisit": {
+      "candidate_transport": {
+        "bars_since_regime_change": {
+          "holdout_distribution": {
+            "count": 3,
+            "gt_zero_share": 1.0,
+            "max": 60.0,
+            "mean": 59.0,
+            "min": 58.0
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 303.0,
+            "overlaps_reference_range": false,
+            "position": "below_reference_range",
+            "within_reference_range": false
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 303.0,
+            "overlaps_reference_range": false,
+            "position": "below_reference_range",
+            "within_reference_range": false
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 310.0,
+            "overlaps_reference_range": false,
+            "position": "below_reference_range",
+            "within_reference_range": false
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": "<=",
+            "positive_wave": "wave_one",
+            "threshold": 369.0,
+            "wave_one_side_count": 3,
+            "wave_two_side_count": 0
+          },
+          "values": [
+            58.0,
+            59.0,
+            60.0
+          ],
+          "verdict": "outside_combined_reference_lower"
+        },
+        "subject_offset_from_floor": {
+          "holdout_distribution": {
+            "count": 3,
+            "gt_zero_share": 1.0,
+            "max": 25.0,
+            "mean": 24.0,
+            "min": 23.0
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 8.0,
+            "overlaps_reference_range": false,
+            "position": "above_reference_range",
+            "within_reference_range": false
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 18.0,
+            "overlaps_reference_range": false,
+            "position": "above_reference_range",
+            "within_reference_range": false
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 8.0,
+            "overlaps_reference_range": false,
+            "position": "above_reference_range",
+            "within_reference_range": false
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": "<=",
+            "positive_wave": "wave_one",
+            "threshold": 6.0,
+            "wave_one_side_count": 0,
+            "wave_two_side_count": 3
+          },
+          "values": [
+            23.0,
+            24.0,
+            25.0
+          ],
+          "verdict": "outside_combined_reference_higher"
+        },
+        "subject_progress_pct": {
+          "holdout_distribution": {
+            "count": 3,
+            "gt_zero_share": 1.0,
+            "max": 0.833333,
+            "mean": 0.8,
+            "min": 0.766667
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 0.433334,
+            "overlaps_reference_range": false,
+            "position": "above_reference_range",
+            "within_reference_range": false
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": "<=",
+            "positive_wave": "wave_one",
+            "threshold": 0.4,
+            "wave_one_side_count": 0,
+            "wave_two_side_count": 3
+          },
+          "values": [
+            0.766667,
+            0.8,
+            0.833333
+          ],
+          "verdict": "maps_to_wave_two_envelope_only"
+        },
+        "subject_rank_pct": {
+          "holdout_distribution": {
+            "count": 3,
+            "gt_zero_share": 1.0,
+            "max": 0.8125,
+            "mean": 0.75,
+            "min": 0.6875
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 0.270833,
+            "overlaps_reference_range": false,
+            "position": "above_reference_range",
+            "within_reference_range": false
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": "<=",
+            "positive_wave": "wave_one",
+            "threshold": 0.458334,
+            "wave_one_side_count": 0,
+            "wave_two_side_count": 3
+          },
+          "values": [
+            0.6875,
+            0.75,
+            0.8125
+          ],
+          "verdict": "maps_to_wave_two_envelope_only"
+        },
+        "window_offset_from_start": {
+          "holdout_distribution": {
+            "count": 3,
+            "gt_zero_share": 0.666667,
+            "max": 2.0,
+            "mean": 1.0,
+            "min": 0.0
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": ">=",
+            "positive_wave": "wave_two",
+            "threshold": 5.5,
+            "wave_one_side_count": 3,
+            "wave_two_side_count": 0
+          },
+          "values": [
+            0.0,
+            1.0,
+            2.0
+          ],
+          "verdict": "spans_both_wave_envelopes"
+        },
+        "window_progress_pct": {
+          "holdout_distribution": {
+            "count": 3,
+            "gt_zero_share": 0.666667,
+            "max": 1.0,
+            "mean": 0.5,
+            "min": 0.0
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": "<=",
+            "positive_wave": "wave_two",
+            "threshold": 0.3875,
+            "wave_one_side_count": 2,
+            "wave_two_side_count": 1
+          },
+          "values": [
+            0.0,
+            0.5,
+            1.0
+          ],
+          "verdict": "spans_both_wave_envelopes"
+        },
+        "window_rank_pct": {
+          "holdout_distribution": {
+            "count": 3,
+            "gt_zero_share": 0.666667,
+            "max": 1.0,
+            "mean": 0.5,
+            "min": 0.0
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": "<=",
+            "positive_wave": "wave_two",
+            "threshold": 0.183334,
+            "wave_one_side_count": 2,
+            "wave_two_side_count": 1
+          },
+          "values": [
+            0.0,
+            0.5,
+            1.0
+          ],
+          "verdict": "spans_both_wave_envelopes"
+        }
+      },
+      "row_count": 3,
+      "source_kind": "named_2017_03_late_revisit_exact_holdout",
+      "subject_id": "2017_03_late_revisit",
+      "support_context": {
+        "end": "2017-03-24T12:00:00+00:00",
+        "row_count": 3,
+        "span_hours": 18.0,
+        "start": "2017-03-23T18:00:00+00:00",
+        "timestamps": [
+          "2017-03-23T18:00:00+00:00",
+          "2017-03-24T03:00:00+00:00",
+          "2017-03-24T12:00:00+00:00"
+        ]
+      },
+      "visible_shell": {
+        "phase_label_counts": [
+          {
+            "count": 3,
+            "label": "<missing>"
+          }
+        ],
+        "selected_policy_counts": [
+          {
+            "count": 3,
+            "label": "RI_continuation_policy"
+          }
+        ],
+        "switch_reason_counts": [
+          {
+            "count": 3,
+            "label": "stable_continuation_state"
+          }
+        ],
+        "zone_counts": [
+          {
+            "count": 3,
+            "label": "low"
+          }
+        ]
+      },
+      "windows": [
+        {
+          "bars_since_regime_change": {
+            "count": 3,
+            "gt_zero_share": 1.0,
+            "max": 60.0,
+            "mean": 59.0,
+            "min": 58.0
+          },
+          "end": "2017-03-24T12:00:00+00:00",
+          "row_count": 3,
+          "start": "2017-03-23T18:00:00+00:00",
+          "window_index": 7
+        }
+      ]
+    },
+    "2017_03_month_end_revisit": {
+      "candidate_transport": {
+        "bars_since_regime_change": {
+          "holdout_distribution": {
+            "count": 3,
+            "gt_zero_share": 1.0,
+            "max": 65.0,
+            "mean": 64.0,
+            "min": 63.0
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 298.0,
+            "overlaps_reference_range": false,
+            "position": "below_reference_range",
+            "within_reference_range": false
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 298.0,
+            "overlaps_reference_range": false,
+            "position": "below_reference_range",
+            "within_reference_range": false
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 305.0,
+            "overlaps_reference_range": false,
+            "position": "below_reference_range",
+            "within_reference_range": false
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": "<=",
+            "positive_wave": "wave_one",
+            "threshold": 369.0,
+            "wave_one_side_count": 3,
+            "wave_two_side_count": 0
+          },
+          "values": [
+            63.0,
+            64.0,
+            65.0
+          ],
+          "verdict": "outside_combined_reference_lower"
+        },
+        "subject_offset_from_floor": {
+          "holdout_distribution": {
+            "count": 3,
+            "gt_zero_share": 1.0,
+            "max": 30.0,
+            "mean": 29.0,
+            "min": 28.0
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 13.0,
+            "overlaps_reference_range": false,
+            "position": "above_reference_range",
+            "within_reference_range": false
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 23.0,
+            "overlaps_reference_range": false,
+            "position": "above_reference_range",
+            "within_reference_range": false
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 13.0,
+            "overlaps_reference_range": false,
+            "position": "above_reference_range",
+            "within_reference_range": false
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": "<=",
+            "positive_wave": "wave_one",
+            "threshold": 6.0,
+            "wave_one_side_count": 0,
+            "wave_two_side_count": 3
+          },
+          "values": [
+            28.0,
+            29.0,
+            30.0
+          ],
+          "verdict": "outside_combined_reference_higher"
+        },
+        "subject_progress_pct": {
+          "holdout_distribution": {
+            "count": 3,
+            "gt_zero_share": 1.0,
+            "max": 1.0,
+            "mean": 0.966667,
+            "min": 0.933333
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 0.6,
+            "overlaps_reference_range": false,
+            "position": "above_reference_range",
+            "within_reference_range": false
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": "<=",
+            "positive_wave": "wave_one",
+            "threshold": 0.4,
+            "wave_one_side_count": 0,
+            "wave_two_side_count": 3
+          },
+          "values": [
+            0.933333,
+            0.966667,
+            1.0
+          ],
+          "verdict": "maps_to_wave_two_envelope_only"
+        },
+        "subject_rank_pct": {
+          "holdout_distribution": {
+            "count": 3,
+            "gt_zero_share": 1.0,
+            "max": 1.0,
+            "mean": 0.9375,
+            "min": 0.875
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 0.458333,
+            "overlaps_reference_range": false,
+            "position": "above_reference_range",
+            "within_reference_range": false
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": "<=",
+            "positive_wave": "wave_one",
+            "threshold": 0.458334,
+            "wave_one_side_count": 0,
+            "wave_two_side_count": 3
+          },
+          "values": [
+            0.875,
+            0.9375,
+            1.0
+          ],
+          "verdict": "maps_to_wave_two_envelope_only"
+        },
+        "window_offset_from_start": {
+          "holdout_distribution": {
+            "count": 3,
+            "gt_zero_share": 0.666667,
+            "max": 2.0,
+            "mean": 1.0,
+            "min": 0.0
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": ">=",
+            "positive_wave": "wave_two",
+            "threshold": 5.5,
+            "wave_one_side_count": 3,
+            "wave_two_side_count": 0
+          },
+          "values": [
+            0.0,
+            1.0,
+            2.0
+          ],
+          "verdict": "spans_both_wave_envelopes"
+        },
+        "window_progress_pct": {
+          "holdout_distribution": {
+            "count": 3,
+            "gt_zero_share": 0.666667,
+            "max": 1.0,
+            "mean": 0.5,
+            "min": 0.0
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": "<=",
+            "positive_wave": "wave_two",
+            "threshold": 0.3875,
+            "wave_one_side_count": 2,
+            "wave_two_side_count": 1
+          },
+          "values": [
+            0.0,
+            0.5,
+            1.0
+          ],
+          "verdict": "spans_both_wave_envelopes"
+        },
+        "window_rank_pct": {
+          "holdout_distribution": {
+            "count": 3,
+            "gt_zero_share": 0.666667,
+            "max": 1.0,
+            "mean": 0.5,
+            "min": 0.0
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": "<=",
+            "positive_wave": "wave_two",
+            "threshold": 0.183334,
+            "wave_one_side_count": 2,
+            "wave_two_side_count": 1
+          },
+          "values": [
+            0.0,
+            0.5,
+            1.0
+          ],
+          "verdict": "spans_both_wave_envelopes"
+        }
+      },
+      "row_count": 3,
+      "source_kind": "named_2017_03_month_end_revisit_exact_holdout",
+      "subject_id": "2017_03_month_end_revisit",
+      "support_context": {
+        "end": "2017-03-30T15:00:00+00:00",
+        "row_count": 3,
+        "span_hours": 18.0,
+        "start": "2017-03-29T21:00:00+00:00",
+        "timestamps": [
+          "2017-03-29T21:00:00+00:00",
+          "2017-03-30T06:00:00+00:00",
+          "2017-03-30T15:00:00+00:00"
+        ]
+      },
+      "visible_shell": {
+        "phase_label_counts": [
+          {
+            "count": 3,
+            "label": "<missing>"
+          }
+        ],
+        "selected_policy_counts": [
+          {
+            "count": 3,
+            "label": "RI_continuation_policy"
+          }
+        ],
+        "switch_reason_counts": [
+          {
+            "count": 3,
+            "label": "stable_continuation_state"
+          }
+        ],
+        "zone_counts": [
+          {
+            "count": 3,
+            "label": "low"
+          }
+        ]
+      },
+      "windows": [
+        {
+          "bars_since_regime_change": {
+            "count": 3,
+            "gt_zero_share": 1.0,
+            "max": 65.0,
+            "mean": 64.0,
+            "min": 63.0
+          },
+          "end": "2017-03-30T15:00:00+00:00",
+          "row_count": 3,
+          "start": "2017-03-29T21:00:00+00:00",
+          "window_index": 8
+        }
+      ]
+    },
+    "harmful_2024_displacement": {
+      "candidate_transport": {
+        "bars_since_regime_change": {
+          "holdout_distribution": {
+            "count": 1,
+            "gt_zero_share": 1.0,
+            "max": 281.0,
+            "mean": 281.0,
+            "min": 281.0
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 82.0,
+            "overlaps_reference_range": false,
+            "position": "below_reference_range",
+            "within_reference_range": false
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 82.0,
+            "overlaps_reference_range": false,
+            "position": "below_reference_range",
+            "within_reference_range": false
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 89.0,
+            "overlaps_reference_range": false,
+            "position": "below_reference_range",
+            "within_reference_range": false
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": "<=",
+            "positive_wave": "wave_one",
+            "threshold": 369.0,
+            "wave_one_side_count": 1,
+            "wave_two_side_count": 0
+          },
+          "values": [
+            281.0
+          ],
+          "verdict": "outside_combined_reference_lower"
+        },
+        "subject_offset_from_floor": {
+          "holdout_distribution": {
+            "count": 1,
+            "gt_zero_share": 0.0,
+            "max": 0.0,
+            "mean": 0.0,
+            "min": 0.0
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 7.0,
+            "overlaps_reference_range": false,
+            "position": "below_reference_range",
+            "within_reference_range": false
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": "<=",
+            "positive_wave": "wave_one",
+            "threshold": 6.0,
+            "wave_one_side_count": 1,
+            "wave_two_side_count": 0
+          },
+          "values": [
+            0.0
+          ],
+          "verdict": "maps_to_wave_one_envelope_only"
+        },
+        "subject_progress_pct": {
+          "holdout_distribution": {
+            "count": 1,
+            "gt_zero_share": 0.0,
+            "max": 0.0,
+            "mean": 0.0,
+            "min": 0.0
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 0.466667,
+            "overlaps_reference_range": false,
+            "position": "below_reference_range",
+            "within_reference_range": false
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": "<=",
+            "positive_wave": "wave_one",
+            "threshold": 0.4,
+            "wave_one_side_count": 1,
+            "wave_two_side_count": 0
+          },
+          "values": [
+            0.0
+          ],
+          "verdict": "maps_to_wave_one_envelope_only"
+        },
+        "subject_rank_pct": {
+          "holdout_distribution": {
+            "count": 1,
+            "gt_zero_share": 0.0,
+            "max": 0.0,
+            "mean": 0.0,
+            "min": 0.0
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 0.5,
+            "overlaps_reference_range": false,
+            "position": "below_reference_range",
+            "within_reference_range": false
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": "<=",
+            "positive_wave": "wave_one",
+            "threshold": 0.458334,
+            "wave_one_side_count": 1,
+            "wave_two_side_count": 0
+          },
+          "values": [
+            0.0
+          ],
+          "verdict": "maps_to_wave_one_envelope_only"
+        },
+        "window_offset_from_start": {
+          "holdout_distribution": {
+            "count": 1,
+            "gt_zero_share": 0.0,
+            "max": 0.0,
+            "mean": 0.0,
+            "min": 0.0
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": ">=",
+            "positive_wave": "wave_two",
+            "threshold": 5.5,
+            "wave_one_side_count": 1,
+            "wave_two_side_count": 0
+          },
+          "values": [
+            0.0
+          ],
+          "verdict": "spans_both_wave_envelopes"
+        },
+        "window_progress_pct": {
+          "holdout_distribution": {
+            "count": 1,
+            "gt_zero_share": 0.0,
+            "max": 0.0,
+            "mean": 0.0,
+            "min": 0.0
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": "<=",
+            "positive_wave": "wave_two",
+            "threshold": 0.3875,
+            "wave_one_side_count": 0,
+            "wave_two_side_count": 1
+          },
+          "values": [
+            0.0
+          ],
+          "verdict": "spans_both_wave_envelopes"
+        },
+        "window_rank_pct": {
+          "holdout_distribution": {
+            "count": 1,
+            "gt_zero_share": 0.0,
+            "max": 0.0,
+            "mean": 0.0,
+            "min": 0.0
+          },
+          "reference_combined_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_one_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "reference_wave_two_range_overlap": {
+            "distance_to_reference_range": 0.0,
+            "overlaps_reference_range": true,
+            "position": "overlaps_reference_range",
+            "within_reference_range": true
+          },
+          "threshold_side_counts": {
+            "boundary_count": 0,
+            "operator": "<=",
+            "positive_wave": "wave_two",
+            "threshold": 0.183334,
+            "wave_one_side_count": 0,
+            "wave_two_side_count": 1
+          },
+          "values": [
+            0.0
+          ],
+          "verdict": "spans_both_wave_envelopes"
+        }
+      },
+      "row_count": 1,
+      "source_kind": "taxonomy_clean_continuation_exact_holdout",
+      "subject_id": "harmful_2024_displacement",
+      "support_context": {
+        "classification_reason": "all segments are clean continuation-release clusters with no blocked or defensive substructure",
+        "dominant_state_label": "clean_continuation"
+      },
+      "visible_shell": {
+        "phase_label_counts": [
+          {
+            "count": 1,
+            "label": "continuation_release"
+          }
+        ],
+        "selected_policy_counts": [
+          {
+            "count": 1,
+            "label": "RI_continuation_policy"
+          }
+        ],
+        "switch_reason_counts": [
+          {
+            "count": 1,
+            "label": "stable_continuation_state"
+          }
+        ],
+        "zone_counts": [
+          {
+            "count": 1,
+            "label": "low"
+          }
+        ]
+      },
+      "windows": [
+        {
+          "bars_since_regime_change": {
+            "count": 1,
+            "gt_zero_share": 1.0,
+            "max": 281.0,
+            "mean": 281.0,
+            "min": 281.0
+          },
+          "end": "2024-12-01T00:00:00+00:00",
+          "row_count": 1,
+          "start": "2024-12-01T00:00:00+00:00",
+          "window_index": 0
+        }
+      ]
+    }
+  },
+  "inputs": {
+    "annual_2017_action_diff_surface": "results\\backtests\\ri_policy_router_enabled_vs_absent_all_years_20260428_curated_only\\2017_enabled_vs_absent_action_diffs.json",
+    "chronology_reference_2017": "docs\\analysis\\regime_intelligence\\policy_router\\ri_policy_router_2023_12_vs_2017_03_dominant_window_chronology_2026-05-06.md",
+    "local_window_reference_2017": "results\\evaluation\\ri_policy_router_2023_12_vs_2017_03_continuation_local_window_concentration_2026-05-06.json",
+    "prior_holdout_artifact": "results\\evaluation\\ri_policy_router_clean_continuation_holdout_generalization_pass_2026-05-25.json",
+    "prior_holdout_status": "absolute_clean_continuation_age_split_falsified_on_holdouts",
+    "taxonomy_artifact": "results\\evaluation\\ri_policy_router_fixed_subject_state_taxonomy_pass_2026-05-25.json",
+    "wave_discriminator_artifact": "results\\evaluation\\ri_policy_router_clean_continuation_wave_phase_discriminator_2026-05-25.json",
+    "working_contract_reference": "GENESIS_WORKING_CONTRACT.md"
+  },
+  "non_authoritative": true,
+  "observational_only": true,
+  "reference_candidate_comparison": {
+    "bars_since_regime_change": {
+      "mean_gap_wave_two_minus_wave_one": 7.928571,
+      "range_overlap": false,
+      "separating_interval": {
+        "lower_exclusive": 368.0,
+        "upper_exclusive": 370.0
+      },
+      "wave_one": {
+        "count": 6,
+        "max": 368.0,
+        "mean": 365.5,
+        "min": 363.0
+      },
+      "wave_two": {
+        "count": 7,
+        "max": 378.0,
+        "mean": 373.428571,
+        "min": 370.0
+      }
+    },
+    "subject_offset_from_floor": {
+      "mean_gap_wave_two_minus_wave_one": 7.928571,
+      "range_overlap": false,
+      "separating_interval": {
+        "lower_exclusive": 5.0,
+        "upper_exclusive": 7.0
+      },
+      "wave_one": {
+        "count": 6,
+        "max": 5.0,
+        "mean": 2.5,
+        "min": 0.0
+      },
+      "wave_two": {
+        "count": 7,
+        "max": 15.0,
+        "mean": 10.428571,
+        "min": 7.0
+      }
+    },
+    "subject_progress_pct": {
+      "mean_gap_wave_two_minus_wave_one": 0.528571,
+      "range_overlap": false,
+      "separating_interval": {
+        "lower_exclusive": 0.333333,
+        "upper_exclusive": 0.466667
+      },
+      "wave_one": {
+        "count": 6,
+        "max": 0.333333,
+        "mean": 0.166667,
+        "min": 0.0
+      },
+      "wave_two": {
+        "count": 7,
+        "max": 1.0,
+        "mean": 0.695238,
+        "min": 0.466667
+      }
+    },
+    "subject_rank_pct": {
+      "mean_gap_wave_two_minus_wave_one": 0.541667,
+      "range_overlap": false,
+      "separating_interval": {
+        "lower_exclusive": 0.416667,
+        "upper_exclusive": 0.5
+      },
+      "wave_one": {
+        "count": 6,
+        "max": 0.416667,
+        "mean": 0.208333,
+        "min": 0.0
+      },
+      "wave_two": {
+        "count": 7,
+        "max": 1.0,
+        "mean": 0.75,
+        "min": 0.5
+      }
+    },
+    "window_offset_from_start": {
+      "mean_gap_wave_two_minus_wave_one": 0.928571,
+      "range_overlap": true,
+      "separating_interval": null,
+      "wave_one": {
+        "count": 6,
+        "max": 5.0,
+        "mean": 2.5,
+        "min": 0.0
+      },
+      "wave_two": {
+        "count": 7,
+        "max": 8.0,
+        "mean": 3.428571,
+        "min": 0.0
+      }
+    },
+    "window_progress_pct": {
+      "mean_gap_wave_two_minus_wave_one": -0.071429,
+      "range_overlap": true,
+      "separating_interval": null,
+      "wave_one": {
+        "count": 6,
+        "max": 1.0,
+        "mean": 0.5,
+        "min": 0.0
+      },
+      "wave_two": {
+        "count": 7,
+        "max": 1.0,
+        "mean": 0.428571,
+        "min": 0.0
+      }
+    },
+    "window_rank_pct": {
+      "mean_gap_wave_two_minus_wave_one": 0.0,
+      "range_overlap": true,
+      "separating_interval": null,
+      "wave_one": {
+        "count": 6,
+        "max": 1.0,
+        "mean": 0.5,
+        "min": 0.0
+      },
+      "wave_two": {
+        "count": 7,
+        "max": 1.0,
+        "mean": 0.5,
+        "min": 0.0
+      }
+    }
+  },
+  "reference_rule_search": {
+    "best_rule_per_feature": [
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 7,
+          "true_positive": 6
+        },
+        "feature": "bars_since_regime_change",
+        "operator": "<=",
+        "positive_wave": "wave_one",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 369.0
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 7,
+          "true_positive": 6
+        },
+        "feature": "subject_offset_from_floor",
+        "operator": "<=",
+        "positive_wave": "wave_one",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 6.0
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 7,
+          "true_positive": 6
+        },
+        "feature": "subject_progress_pct",
+        "operator": "<=",
+        "positive_wave": "wave_one",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 0.4
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 7,
+          "true_positive": 6
+        },
+        "feature": "subject_rank_pct",
+        "operator": "<=",
+        "positive_wave": "wave_one",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 0.458334
+      },
+      {
+        "accuracy": 0.615385,
+        "confusion": {
+          "false_negative": 5,
+          "false_positive": 0,
+          "true_negative": 6,
+          "true_positive": 2
+        },
+        "feature": "window_offset_from_start",
+        "operator": ">=",
+        "positive_wave": "wave_two",
+        "precision": 1.0,
+        "recall": 0.285714,
+        "threshold": 5.5
+      },
+      {
+        "accuracy": 0.615385,
+        "confusion": {
+          "false_negative": 3,
+          "false_positive": 2,
+          "true_negative": 4,
+          "true_positive": 4
+        },
+        "feature": "window_progress_pct",
+        "operator": "<=",
+        "positive_wave": "wave_two",
+        "precision": 0.666667,
+        "recall": 0.571429,
+        "threshold": 0.3875
+      },
+      {
+        "accuracy": 0.538462,
+        "confusion": {
+          "false_negative": 5,
+          "false_positive": 1,
+          "true_negative": 5,
+          "true_positive": 2
+        },
+        "feature": "window_rank_pct",
+        "operator": "<=",
+        "positive_wave": "wave_two",
+        "precision": 0.666667,
+        "recall": 0.285714,
+        "threshold": 0.183334
+      }
+    ],
+    "perfect_rules": [
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 7,
+          "true_positive": 6
+        },
+        "feature": "bars_since_regime_change",
+        "operator": "<=",
+        "positive_wave": "wave_one",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 369.0
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 6,
+          "true_positive": 7
+        },
+        "feature": "bars_since_regime_change",
+        "operator": ">=",
+        "positive_wave": "wave_two",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 369.0
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 7,
+          "true_positive": 6
+        },
+        "feature": "subject_offset_from_floor",
+        "operator": "<=",
+        "positive_wave": "wave_one",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 6.0
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 6,
+          "true_positive": 7
+        },
+        "feature": "subject_offset_from_floor",
+        "operator": ">=",
+        "positive_wave": "wave_two",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 6.0
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 7,
+          "true_positive": 6
+        },
+        "feature": "subject_progress_pct",
+        "operator": "<=",
+        "positive_wave": "wave_one",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 0.4
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 6,
+          "true_positive": 7
+        },
+        "feature": "subject_progress_pct",
+        "operator": ">=",
+        "positive_wave": "wave_two",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 0.4
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 7,
+          "true_positive": 6
+        },
+        "feature": "subject_rank_pct",
+        "operator": "<=",
+        "positive_wave": "wave_one",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 0.458334
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 6,
+          "true_positive": 7
+        },
+        "feature": "subject_rank_pct",
+        "operator": ">=",
+        "positive_wave": "wave_two",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 0.458334
+      }
+    ]
+  },
+  "reference_subjects": {
+    "continuation_2023_combined": {
+      "row_count": 13,
+      "wave_one_row_count": 6,
+      "wave_two_row_count": 7,
+      "windows": [
+        {
+          "bars_since_regime_change": {
+            "count": 6,
+            "gt_zero_share": 1.0,
+            "max": 368.0,
+            "mean": 365.5,
+            "min": 363.0
+          },
+          "end": "2023-12-17T18:00:00+00:00",
+          "row_count": 6,
+          "start": "2023-12-15T21:00:00+00:00",
+          "window_index": 0
+        },
+        {
+          "bars_since_regime_change": {
+            "count": 7,
+            "gt_zero_share": 1.0,
+            "max": 378.0,
+            "mean": 373.428571,
+            "min": 370.0
+          },
+          "end": "2023-12-26T00:00:00+00:00",
+          "row_count": 7,
+          "start": "2023-12-22T15:00:00+00:00",
+          "window_index": 1
+        }
+      ]
+    }
+  },
+  "status": "normalized_phase_age_transport_check_generated",
+  "transport_summary": {
+    "exact_holdout_single_side_mapping_counts": {
+      "bars_since_regime_change": 0,
+      "subject_offset_from_floor": 2,
+      "subject_progress_pct": 4,
+      "subject_rank_pct": 4,
+      "window_offset_from_start": 0,
+      "window_progress_pct": 0,
+      "window_rank_pct": 0
+    },
+    "full_family_spans_both_for_features": [
+      "subject_offset_from_floor",
+      "subject_progress_pct",
+      "subject_rank_pct",
+      "window_offset_from_start",
+      "window_progress_pct",
+      "window_rank_pct"
+    ],
+    "inference": "Scale-free subject-relative phase-age candidates preserve the original 2023-12 wave split and recover coherent single-side mappings on all exact holdouts, while the full 2017 family still spans both sides because it contains multiple waves.",
+    "next_hypothesis": "Subject-relative normalized phase-age looks more transportable than raw absolute age or window-reset progress, so the next honest test is to carry the same subject-relative candidates onto the continuation-release hysteresis holdout bench.",
+    "perfect_reference_features": [
+      "bars_since_regime_change",
+      "subject_offset_from_floor",
+      "subject_progress_pct",
+      "subject_rank_pct"
+    ],
+    "perfect_scale_free_reference_features": [
+      "subject_progress_pct",
+      "subject_rank_pct"
+    ],
+    "scale_free_exact_holdout_rescues": [
+      "subject_progress_pct",
+      "subject_rank_pct"
+    ],
+    "status": "subject_relative_normalized_phase_age_partially_recovers_transport",
+    "window_relative_reference_failures": [
+      "window_offset_from_start",
+      "window_progress_pct",
+      "window_rank_pct"
+    ]
+  }
+}

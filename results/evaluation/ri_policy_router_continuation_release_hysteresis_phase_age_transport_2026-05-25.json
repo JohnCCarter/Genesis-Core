@@ -1,0 +1,493 @@
+{
+  "audit_version": "ri-policy-router-continuation-release-hysteresis-phase-age-transport-2026-05-25",
+  "base_sha": "81bbc1bd937860fd557c4bb4267817a184208949",
+  "classification_boundary": {
+    "holdout_surface": "frozen continuation_release_hysteresis exact-subject triad",
+    "outcome_metrics_observational_only": true,
+    "reference_surface": "clean_continuation normalized phase-age wave envelopes from 2023-12",
+    "subject_definition": "Each exact subject is read from its tracked row-diff surface, and subject-relative phase-age is computed across the full exact-subject row-diff timeline before the continuation-release cluster and first decisive local split are projected onto the clean-continuation envelopes."
+  },
+  "holdout_subjects": {
+    "2018-03": {
+      "continuation_release_cluster": {
+        "bars_since_regime_change_values": [
+          1.0,
+          3.0,
+          4.0,
+          5.0
+        ],
+        "first_timestamp": "2018-03-16T09:00:00+00:00",
+        "last_timestamp": "2018-03-18T03:00:00+00:00",
+        "row_count": 12,
+        "transport": {
+          "subject_progress_pct": {
+            "distribution": {
+              "count": 12,
+              "max": 0.178571,
+              "mean": 0.116071,
+              "min": 0.035714
+            },
+            "reference_wave_one": {
+              "max": 0.333333,
+              "min": 0.0
+            },
+            "reference_wave_two": {
+              "max": 1.0,
+              "min": 0.466667
+            },
+            "values": [
+              0.035714,
+              0.035714,
+              0.035714,
+              0.107143,
+              0.107143,
+              0.107143,
+              0.142857,
+              0.142857,
+              0.142857,
+              0.178571,
+              0.178571,
+              0.178571
+            ],
+            "verdict": "maps_to_wave_one_envelope_only"
+          },
+          "subject_rank_pct": {
+            "distribution": {
+              "count": 12,
+              "max": 0.141667,
+              "mean": 0.089583,
+              "min": 0.025
+            },
+            "reference_wave_one": {
+              "max": 0.416667,
+              "min": 0.0
+            },
+            "reference_wave_two": {
+              "max": 1.0,
+              "min": 0.5
+            },
+            "values": [
+              0.025,
+              0.033333,
+              0.041667,
+              0.075,
+              0.083333,
+              0.091667,
+              0.1,
+              0.108333,
+              0.116667,
+              0.125,
+              0.133333,
+              0.141667
+            ],
+            "verdict": "maps_to_wave_one_envelope_only"
+          }
+        }
+      },
+      "final_capital_diff": -0.937167,
+      "first_decisive_local_split": {
+        "bars_since_regime_change": 3.0,
+        "baseline_selected_policy": "RI_defensive_transition_policy",
+        "baseline_switch_reason": "switch_blocked_by_hysteresis",
+        "release_zero_selected_policy": "RI_continuation_policy",
+        "release_zero_switch_reason": "continuation_state_supported",
+        "timestamp": "2018-03-17T03:00:00+00:00",
+        "transport": {
+          "subject_progress_pct": {
+            "distribution": {
+              "count": 1,
+              "max": 0.107143,
+              "mean": 0.107143,
+              "min": 0.107143
+            },
+            "reference_wave_one": {
+              "max": 0.333333,
+              "min": 0.0
+            },
+            "reference_wave_two": {
+              "max": 1.0,
+              "min": 0.466667
+            },
+            "values": [
+              0.107143
+            ],
+            "verdict": "maps_to_wave_one_envelope_only"
+          },
+          "subject_rank_pct": {
+            "distribution": {
+              "count": 1,
+              "max": 0.075,
+              "mean": 0.075,
+              "min": 0.075
+            },
+            "reference_wave_one": {
+              "max": 0.416667,
+              "min": 0.0
+            },
+            "reference_wave_two": {
+              "max": 1.0,
+              "min": 0.5
+            },
+            "values": [
+              0.075
+            ],
+            "verdict": "maps_to_wave_one_envelope_only"
+          }
+        }
+      },
+      "full_subject_surface": {
+        "bars_since_regime_change": {
+          "count": 121,
+          "max": 28.0,
+          "mean": 15.413223,
+          "min": 0.0
+        },
+        "first_timestamp": "2018-03-16T00:00:00+00:00",
+        "last_timestamp": "2018-03-31T00:00:00+00:00",
+        "row_count": 121
+      },
+      "subject_id": "2018-03",
+      "top_line_sign": "negative",
+      "total_return_diff": -0.009372
+    },
+    "2021-08": {
+      "continuation_release_cluster": {
+        "bars_since_regime_change_values": [
+          2.0,
+          4.0
+        ],
+        "first_timestamp": "2021-08-18T03:00:00+00:00",
+        "last_timestamp": "2021-08-19T09:00:00+00:00",
+        "row_count": 6,
+        "transport": {
+          "subject_progress_pct": {
+            "distribution": {
+              "count": 6,
+              "max": 0.222222,
+              "mean": 0.166666,
+              "min": 0.111111
+            },
+            "reference_wave_one": {
+              "max": 0.333333,
+              "min": 0.0
+            },
+            "reference_wave_two": {
+              "max": 1.0,
+              "min": 0.466667
+            },
+            "values": [
+              0.111111,
+              0.111111,
+              0.111111,
+              0.222222,
+              0.222222,
+              0.222222
+            ],
+            "verdict": "maps_to_wave_one_envelope_only"
+          },
+          "subject_rank_pct": {
+            "distribution": {
+              "count": 6,
+              "max": 0.205128,
+              "mean": 0.162393,
+              "min": 0.119658
+            },
+            "reference_wave_one": {
+              "max": 0.416667,
+              "min": 0.0
+            },
+            "reference_wave_two": {
+              "max": 1.0,
+              "min": 0.5
+            },
+            "values": [
+              0.119658,
+              0.128205,
+              0.136752,
+              0.188034,
+              0.196581,
+              0.205128
+            ],
+            "verdict": "maps_to_wave_one_envelope_only"
+          }
+        }
+      },
+      "final_capital_diff": 18.890086,
+      "first_decisive_local_split": {
+        "bars_since_regime_change": 4.0,
+        "baseline_selected_policy": "RI_defensive_transition_policy",
+        "baseline_switch_reason": "switch_blocked_by_hysteresis",
+        "release_zero_selected_policy": "RI_continuation_policy",
+        "release_zero_switch_reason": "continuation_state_supported",
+        "timestamp": "2021-08-19T03:00:00+00:00",
+        "transport": {
+          "subject_progress_pct": {
+            "distribution": {
+              "count": 1,
+              "max": 0.222222,
+              "mean": 0.222222,
+              "min": 0.222222
+            },
+            "reference_wave_one": {
+              "max": 0.333333,
+              "min": 0.0
+            },
+            "reference_wave_two": {
+              "max": 1.0,
+              "min": 0.466667
+            },
+            "values": [
+              0.222222
+            ],
+            "verdict": "maps_to_wave_one_envelope_only"
+          },
+          "subject_rank_pct": {
+            "distribution": {
+              "count": 1,
+              "max": 0.188034,
+              "mean": 0.188034,
+              "min": 0.188034
+            },
+            "reference_wave_one": {
+              "max": 0.416667,
+              "min": 0.0
+            },
+            "reference_wave_two": {
+              "max": 1.0,
+              "min": 0.5
+            },
+            "values": [
+              0.188034
+            ],
+            "verdict": "maps_to_wave_one_envelope_only"
+          }
+        }
+      },
+      "full_subject_surface": {
+        "bars_since_regime_change": {
+          "count": 118,
+          "max": 18.0,
+          "mean": 8.881356,
+          "min": 0.0
+        },
+        "first_timestamp": "2021-08-16T09:00:00+00:00",
+        "last_timestamp": "2021-08-31T00:00:00+00:00",
+        "row_count": 118
+      },
+      "subject_id": "2021-08",
+      "top_line_sign": "positive",
+      "total_return_diff": 0.188901
+    },
+    "2025-10": {
+      "continuation_release_cluster": {
+        "bars_since_regime_change_values": [
+          2.0,
+          3.0,
+          5.0
+        ],
+        "first_timestamp": "2025-10-17T00:00:00+00:00",
+        "last_timestamp": "2025-10-18T21:00:00+00:00",
+        "row_count": 13,
+        "transport": {
+          "subject_progress_pct": {
+            "distribution": {
+              "count": 13,
+              "max": 0.294118,
+              "mean": 0.171946,
+              "min": 0.117647
+            },
+            "reference_wave_one": {
+              "max": 0.333333,
+              "min": 0.0
+            },
+            "reference_wave_two": {
+              "max": 1.0,
+              "min": 0.466667
+            },
+            "values": [
+              0.117647,
+              0.117647,
+              0.117647,
+              0.117647,
+              0.117647,
+              0.117647,
+              0.117647,
+              0.176471,
+              0.176471,
+              0.176471,
+              0.294118,
+              0.294118,
+              0.294118
+            ],
+            "verdict": "maps_to_wave_one_envelope_only"
+          },
+          "subject_rank_pct": {
+            "distribution": {
+              "count": 13,
+              "max": 0.191667,
+              "mean": 0.122436,
+              "min": 0.066667
+            },
+            "reference_wave_one": {
+              "max": 0.416667,
+              "min": 0.0
+            },
+            "reference_wave_two": {
+              "max": 1.0,
+              "min": 0.5
+            },
+            "values": [
+              0.066667,
+              0.075,
+              0.083333,
+              0.091667,
+              0.1,
+              0.108333,
+              0.116667,
+              0.125,
+              0.133333,
+              0.141667,
+              0.175,
+              0.183333,
+              0.191667
+            ],
+            "verdict": "maps_to_wave_one_envelope_only"
+          }
+        }
+      },
+      "final_capital_diff": 17.13484,
+      "first_decisive_local_split": {
+        "bars_since_regime_change": 3.0,
+        "baseline_selected_policy": "RI_defensive_transition_policy",
+        "baseline_switch_reason": "switch_blocked_by_hysteresis",
+        "release_zero_selected_policy": "RI_continuation_policy",
+        "release_zero_switch_reason": "continuation_state_supported",
+        "timestamp": "2025-10-17T21:00:00+00:00",
+        "transport": {
+          "subject_progress_pct": {
+            "distribution": {
+              "count": 1,
+              "max": 0.176471,
+              "mean": 0.176471,
+              "min": 0.176471
+            },
+            "reference_wave_one": {
+              "max": 0.333333,
+              "min": 0.0
+            },
+            "reference_wave_two": {
+              "max": 1.0,
+              "min": 0.466667
+            },
+            "values": [
+              0.176471
+            ],
+            "verdict": "maps_to_wave_one_envelope_only"
+          },
+          "subject_rank_pct": {
+            "distribution": {
+              "count": 1,
+              "max": 0.125,
+              "mean": 0.125,
+              "min": 0.125
+            },
+            "reference_wave_one": {
+              "max": 0.416667,
+              "min": 0.0
+            },
+            "reference_wave_two": {
+              "max": 1.0,
+              "min": 0.5
+            },
+            "values": [
+              0.125
+            ],
+            "verdict": "maps_to_wave_one_envelope_only"
+          }
+        }
+      },
+      "full_subject_surface": {
+        "bars_since_regime_change": {
+          "count": 121,
+          "max": 17.0,
+          "mean": 9.760331,
+          "min": 0.0
+        },
+        "first_timestamp": "2025-10-16T00:00:00+00:00",
+        "last_timestamp": "2025-10-31T00:00:00+00:00",
+        "row_count": 121
+      },
+      "subject_id": "2025-10",
+      "top_line_sign": "positive",
+      "total_return_diff": 0.171348
+    }
+  },
+  "inputs": {
+    "exact_subjects": [
+      {
+        "row_diff_artifact": "results\\backtests\\ri_policy_router_continuation_release_hysteresis_topline_subject_20260504\\continuation_release_hysteresis_topline_subject_row_diffs.json",
+        "subject_id": "2021-08",
+        "summary_artifact": "results\\backtests\\ri_policy_router_continuation_release_hysteresis_topline_subject_20260504\\continuation_release_hysteresis_topline_subject_summary.json"
+      },
+      {
+        "row_diff_artifact": "results\\backtests\\ri_policy_router_continuation_release_hysteresis_topline_subject_2025_10_20260504\\continuation_release_hysteresis_topline_subject_2025_10_row_diffs.json",
+        "subject_id": "2025-10",
+        "summary_artifact": "results\\backtests\\ri_policy_router_continuation_release_hysteresis_topline_subject_2025_10_20260504\\continuation_release_hysteresis_topline_subject_2025_10_summary.json"
+      },
+      {
+        "row_diff_artifact": "results\\backtests\\ri_policy_router_continuation_release_hysteresis_topline_subject_2018_03_20260504\\continuation_release_hysteresis_topline_subject_2018_03_row_diffs.json",
+        "subject_id": "2018-03",
+        "summary_artifact": "results\\backtests\\ri_policy_router_continuation_release_hysteresis_topline_subject_2018_03_20260504\\continuation_release_hysteresis_topline_subject_2018_03_summary.json"
+      }
+    ],
+    "reference_phase_age_artifact": "results\\evaluation\\ri_policy_router_clean_continuation_normalized_phase_age_transport_2026-05-25.json",
+    "triad_synthesis_note": "docs\\analysis\\regime_intelligence\\policy_router\\ri_policy_router_continuation_release_hysteresis_topline_subject_triad_synthesis_2026-05-04.md",
+    "working_contract_reference": "GENESIS_WORKING_CONTRACT.md"
+  },
+  "non_authoritative": true,
+  "observational_only": true,
+  "reference_wave_envelopes": {
+    "subject_progress_pct": {
+      "wave_one": {
+        "max": 0.333333,
+        "min": 0.0
+      },
+      "wave_two": {
+        "max": 1.0,
+        "min": 0.466667
+      }
+    },
+    "subject_rank_pct": {
+      "wave_one": {
+        "max": 0.416667,
+        "min": 0.0
+      },
+      "wave_two": {
+        "max": 1.0,
+        "min": 0.5
+      }
+    }
+  },
+  "status": "continuation_release_hysteresis_phase_age_transport_generated",
+  "transport_summary": {
+    "cluster_wave_one_only_counts": {
+      "subject_progress_pct": 3,
+      "subject_rank_pct": 3
+    },
+    "decisive_wave_one_only_counts": {
+      "subject_progress_pct": 3,
+      "subject_rank_pct": 3
+    },
+    "inference": "On the frozen continuation_release_hysteresis exact-subject triad, clean-continuation subject-relative phase-age transports as an early-phase marker: every continuation-release cluster and every first decisive local split stays inside the same wave_one-like envelope, but that shared early-phase band does not separate positive from negative top-line sign.",
+    "mixed_signs_inside_same_phase_band": true,
+    "negative_subject_ids": [
+      "2018-03"
+    ],
+    "next_hypothesis": "If sign separation still matters on this seam, the next honest test is intra-band structure inside the early continuation-release zone (for example cluster length, decisive split timing within the cluster, or local edge/clarity path), not broader subject-relative phase-age alone.",
+    "positive_subject_ids": [
+      "2021-08",
+      "2025-10"
+    ],
+    "status": "subject_relative_phase_age_marks_early_hysteresis_release_without_sign_separation"
+  }
+}

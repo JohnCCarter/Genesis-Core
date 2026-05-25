@@ -1,0 +1,80 @@
+[
+  {
+    "path": "config/README.md",
+    "top_nonempty": "# Config-\u00f6versikt",
+    "top_markers": [],
+    "pattern_hits": {
+      "runtime.json": [
+        "7:- `config/runtime.json`",
+        "16:- `config/runtime.json` \u00e4r runtime-SSOT p\u00e5 disk.",
+        "17:- Repo:t blockerar inte manuella/off-path writes till `config/runtime.json`, s\u00e5 direkt fil-edit \u00e4r m\u00f6jlig men bypassar `ConfigAuthority`-sp\u00e5ret: audit-logg i `logs/config_audit.jsonl`, actor/path-attribution och `expected_version`-baserad optimistic locking."
+      ]
+    }
+  },
+  {
+    "path": "docs/governance/runtime_config_live_update_matrix_2026-05-15.md",
+    "top_nonempty": "# Runtime config live-update matrix",
+    "top_markers": [
+      "Status: `complementary snapshot reference / docs-only / no behavior change / no new authority`",
+      "> Current status note:"
+    ],
+    "pattern_hits": {
+      "runtime.json": [
+        "72:- writes atomically to `config/runtime.json`",
+        "151:- `config/runtime.json`"
+      ]
+    }
+  },
+  {
+    "path": "docs/audit/CONFIG_GOVERNANCE_AUDIT.md",
+    "top_nonempty": "# Auditrapport: Konfig & Governance (Genesis-Core)",
+    "top_markers": [
+      "Status: `historical audit record / retained for traceability / not current approval or policy`",
+      "> Current status note (2026-05-22, `feature/knowledge-authority-layer`): this file is"
+    ],
+    "pattern_hits": {
+      "runtime.json": [
+        "191:- `ConfigAuthority` anv\u00e4nder repo-root resolution via `pyproject.toml` och skriver `config/runtime.json` + `logs/config_audit.jsonl`."
+      ]
+    }
+  },
+  {
+    "path": "docs/config/CHAMPION_REPRODUCIBILITY.md",
+    "top_nonempty": "# Champion Reproducibility - Complete Config Storage",
+    "top_markers": [],
+    "pattern_hits": {
+      "core.config.config_authority": [
+        "306:from core.config.config_authority import ConfigAuthority"
+      ],
+      "scripts/run_backtest.py": [
+        "29:#### 1. Backtest Results (scripts/run_backtest.py)",
+        "131:python scripts/run_backtest.py --config-file config/strategy/champions/champion.json",
+        "159:python scripts/run_backtest.py --config-file config/tmp/aggressive.json"
+      ],
+      "merged_config": [
+        "35:if \"merged_config\" in override_payload:",
+        "38:override_cfg = override_payload[\"merged_config\"]",
+        "47:# Lines 210-212: Save merged_config to results",
+        "49:results[\"merged_config\"] = merged_cfg",
+        "56:# Lines 708-747: Extract merged_config from results",
+        "58:merged_config = results.get(\"merged_config\")",
+        "63:\"merged_config\": merged_config,",
+        "82:merged_config: JsonDict | None = None  # Complete merged config",
+        "88:merged_config: JsonDict | None = None  # Complete merged config",
+        "97:if self.merged_config is not None:"
+      ],
+      "runtime.json": [
+        "5:Champions created in one time period could produce different results when tested later if `runtime.json` changed between creation and testing.",
+        "11:runtime.json v1: ltf_override_threshold = 0.85",
+        "16:runtime.json v2: ltf_override_threshold = 0.70  \u2190 CHANGED",
+        "21:**Root Cause:** Champion files only stored trial parameter overrides (`cfg`), not the complete merged configuration. Testing required merging with whatever `runtime.json` existed at test time.",
+        "133:# \u2192 SKIPS runtime.json merge",
+        "160:# \u2192 Merges with current runtime.json",
+        "171:2. Merge: runtime.json + trial_params \u2192 merged_config",
+        "194:NO  \u2192 Merge with current runtime.json",
+        "203:**runtime.json (base):**",
+        "284:- Produce results based on current runtime.json"
+      ]
+    }
+  }
+]

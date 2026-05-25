@@ -1,0 +1,18 @@
+{
+  "batch": 22,
+  "date": "2026-05-22",
+  "mode": "RESEARCH",
+  "branch": "feature/genesis-topology-lifecycle-authority-map",
+  "scope": [
+    "docs/decisions/scpe_ri_v1/scpe_ri_v1_shadow_backtest_bridge_slice1_setup_only_packet_2026-04-21.md"
+  ],
+  "observed_status": "setup-only / planning-only / no launch authorization",
+  "classification": "READY_SUPERSEDED_POINTER",
+  "patch_shape": "top framing plus later-decision pointer only",
+  "supporting_refs": [
+    "docs/decisions/scpe_ri_v1/scpe_ri_v1_shadow_backtest_bridge_slice1_launch_authorization_packet_2026-04-21.md",
+    "docs/decisions/scpe_ri_v1/scpe_ri_v1_shadow_backtest_bridge_slice1_launch_reauthorization_packet_2026-04-21.md",
+    "docs/decisions/scpe_ri_v1/scpe_ri_v1_shadow_backtest_bridge_slice1_final_launch_authorization_packet_2026-04-21.md"
+  ],
+  "note": "The retained setup-only packet should read as historical branch-local setup context with a narrow pointer to the later same-family launch-decision chain, not as current branch authority."
+}

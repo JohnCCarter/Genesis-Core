@@ -1,0 +1,18 @@
+{
+  "batch": 21,
+  "date": "2026-05-22",
+  "mode": "RESEARCH",
+  "branch": "feature/genesis-topology-lifecycle-authority-map",
+  "scope": [
+    "docs/decisions/scpe_ri_v1/scpe_ri_v1_shadow_backtest_bridge_slice1_precode_packet_2026-04-21.md"
+  ],
+  "observed_status": "pre-code-defined / planning-only / no authorization",
+  "classification": "READY_STATUS_HEADER",
+  "patch_shape": "top framing only",
+  "supporting_refs": [
+    "docs/analysis/scpe_ri_v1/scpe_ri_v1_shadow_backtest_bridge_slice1_execution_summary_2026-04-21.md",
+    "docs/decisions/scpe_ri_v1/scpe_ri_v1_shadow_backtest_bridge_slice1_final_launch_authorization_packet_2026-04-21.md",
+    "docs/audit/scpe_ri_v1_runtime_observability_precode_historical_framing_audit_batch_020.md"
+  ],
+  "note": "The retained planning-only packet should read as historical branch-local packet context and not as current branch opening authority."
+}

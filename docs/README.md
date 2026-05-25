@@ -64,6 +64,19 @@ se den rådgivande `GREEN / YELLOW / RED` speed lens i
 Den anger sannolik behavior-change-risk och governance-tyngd per zon, men ersätter inte
 den högre governance-stacken.
 
+### `docs/system/`
+
+Använd för icke-auktoriserande controller-/queue-/systemkartor som koordinerar bounded
+docs- eller repo-hygienarbete över flera dokumentzoner utan att skapa ny authority.
+
+Typiska exempel:
+
+- `docs/system/GENESIS_TOPOLOGY_WORK_QUEUE.md`
+
+Denna yta är operativ och derivative. Den får användas för batch-routing,
+work-queue/controller-logik och planeringsstöd för docs-only slices, men inte som governance-SSOT,
+approval-yta, runtime-authority eller tyst taxonomi-överstyrning.
+
 ### `docs/contracts/`
 
 Använd för stabila former som binder ihop governance, kod och research.
@@ -125,6 +138,7 @@ Använd för kuraterade, commit-säkra, maskinläsbara sammanfattningar som andr
 | ------------------------------------------------------------ | --------------------- |
 | Är detta en regel eller authority-definition?                | `docs/governance/`    |
 | Är detta en derivative karta/index/register för orientering? | `docs/knowledge/`     |
+| Är detta en derivative controller/work queue för docs-slices?| `docs/system/`        |
 | Är detta en stabil form som andra ytor måste följa?          | `docs/contracts/`     |
 | Är detta ett slice-beslut, packet eller closeout?            | `docs/decisions/`     |
 | Är detta en tolkning eller syntes för mänsklig läsning?      | `docs/analysis/`      |

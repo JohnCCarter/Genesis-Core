@@ -1,0 +1,62 @@
+{
+  "batch": "012",
+  "date": "2026-05-22",
+  "mode": "RESEARCH",
+  "branch": "feature/genesis-topology-lifecycle-authority-map",
+  "zone": "docs/decisions/feature_attribution/v1 exec_slice packets",
+  "supporting_surfaces": [
+    "docs/audit/feature_attribution_v1_phase_packet_historical_framing_audit_batch_011.md",
+    "docs/decisions/feature_attribution/v1/feature_attribution_v1_phase0_scope_freeze_packet_2026-03-31.md",
+    "plan/feature_attribution_post_phase14_reactivation_roadmap_2026-04-02.md",
+    "plan/genesis_driver_identification_master_roadmap_2026-04-14.md"
+  ],
+  "candidates": [
+    {
+      "path": "docs/decisions/feature_attribution/v1/feature_attribution_v1_exec_slice1_min_edge_identification_packet_2026-03-31.md",
+      "observed_top_status": "proposed / execution-slice / single-row only",
+      "category": "obs",
+      "drift_reason": "execution-packet wording still reads like a current run-ready next slice"
+    },
+    {
+      "path": "docs/decisions/feature_attribution/v1/feature_attribution_v1_exec_slice2_hysteresis_identification_packet_2026-03-31.md",
+      "observed_top_status": "proposed / execution-slice / single-row only",
+      "category": "obs",
+      "drift_reason": "execution-packet wording still reads like a current run-ready next slice"
+    },
+    {
+      "path": "docs/decisions/feature_attribution/v1/feature_attribution_v1_exec_slice3_cooldown_identification_packet_2026-03-31.md",
+      "observed_top_status": "proposed / execution-slice / single-row only",
+      "category": "obs",
+      "drift_reason": "execution-packet wording still reads like a current run-ready next slice"
+    },
+    {
+      "path": "docs/decisions/feature_attribution/v1/feature_attribution_v1_exec_slice4_base_entry_confidence_identification_packet_2026-03-31.md",
+      "observed_top_status": "proposed / execution-slice / single-row only",
+      "category": "obs",
+      "drift_reason": "execution-packet wording still reads like a current run-ready next slice"
+    },
+    {
+      "path": "docs/decisions/feature_attribution/v1/feature_attribution_v1_exec_slice5_htf_block_identification_packet_2026-03-31.md",
+      "observed_top_status": "proposed / execution-slice / single-row only",
+      "category": "obs",
+      "drift_reason": "execution-packet wording still reads like a current run-ready next slice"
+    }
+  ],
+  "safe_patch_shape": [
+    "replace stale proposed execution-slice status labels with historical/current-use framing",
+    "add one narrow current-status note near the top of each packet",
+    "clarify that packet wording alone does not prove the referenced report/manifest was produced and does not reopen a current execution lane",
+    "preserve all packet bodies, gates, expected changed files, and output contracts below the framing"
+  ],
+  "out_of_scope": [
+    "editing results/research/feature_attribution_v1/**",
+    "editing exec_slice outputs or manifests",
+    "editing impl_slice packets",
+    "editing phase0 or phase1-phase9 packets",
+    "editing plan anchors",
+    "body rewrites",
+    "runtime, config, test, or script behavior changes",
+    "edits to docs/CURRENT_AUTHORITY_INDEX.md",
+    "edits to docs/knowledge/DOCUMENTATION_PROVENANCE_LINEAGE_MAP.md"
+  ]
+}

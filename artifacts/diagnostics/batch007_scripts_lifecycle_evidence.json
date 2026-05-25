@@ -1,0 +1,60 @@
+{
+  "branch": "feature/genesis-topology-lifecycle-authority-map",
+  "scripts_subdirs": [
+    "__pycache__",
+    "analyze",
+    "audit",
+    "build",
+    "deploy",
+    "docs",
+    "extract",
+    "fetch",
+    "mcp",
+    "ops",
+    "optimize",
+    "preflight",
+    "promote",
+    "run",
+    "train",
+    "validate"
+  ],
+  "scripts_root_files": [
+    "capture_paper_rc.sh",
+    "mcp_session_preflight.py",
+    "paper_trading_runner.py",
+    "run_skill.py",
+    "set_bitfinex_env.ps1",
+    "wait_for_paper.sh",
+    "weekend_bot_gate.sh"
+  ],
+  "evidence_targets": {
+    "scripts/audit_scripts.py_exists": false,
+    "scripts/deprecate_move.py_exists": false,
+    "scripts/deprecated-usage.log_exists": false
+  },
+  "readme_pattern_hits": {
+    "scripts/audit_scripts.py": [
+      ".\\scripts\\docs\\README.md:36:`python scripts/audit_scripts.py --root . --scripts-dir scripts --out reports/scripts_audit.csv --out-md reports/scripts_audit.md`"
+    ],
+    "scripts/deprecate_move.py": [
+      ".\\scripts\\docs\\README.md:57:`python scripts/deprecate_move.py --source scripts/<script>.py --archive-subdir <kategori> --dry-run`",
+      ".\\scripts\\docs\\README.md:61:`python scripts/deprecate_move.py --source scripts/<script>.py --archive-subdir <kategori>`"
+    ],
+    "scripts/deprecated-usage.log": [
+      ".\\scripts\\docs\\README.md:27:- loggar anv\u00e4ndning (en rad per k\u00f6rning) i `scripts/deprecated-usage.log`.",
+      ".\\scripts\\docs\\README.md:85:2. `scripts/deprecated-usage.log` visar **0 usage** f\u00f6r scriptets wrapper under hela 14-dagarsperioden."
+    ],
+    "wrapper": [
+      ".\\scripts\\docs\\README.md:14:  - Script som har flyttats till archive men fortfarande har wrapper p\u00e5 gamla pathen.",
+      ".\\scripts\\docs\\README.md:22:3. L\u00e4mna wrapper p\u00e5 gamla pathen som:",
+      ".\\scripts\\docs\\README.md:30:5. Under 14-dagarsf\u00f6nstret ska gamla paths forts\u00e4tta fungera via wrappers.",
+      ".\\scripts\\docs\\README.md:59:### Utf\u00f6r flytt + wrapper",
+      ".\\scripts\\docs\\README.md:78:4. K\u00f6r skarp move + wrapper.",
+      ".\\scripts\\docs\\README.md:85:2. `scripts/deprecated-usage.log` visar **0 usage** f\u00f6r scriptets wrapper under hela 14-dagarsperioden.",
+      ".\\scripts\\docs\\README.md:94:- f\u00f6rst wrapper p\u00e5 gamla pathen,"
+    ],
+    "wrappers": [
+      ".\\scripts\\docs\\README.md:30:5. Under 14-dagarsf\u00f6nstret ska gamla paths forts\u00e4tta fungera via wrappers."
+    ]
+  }
+}

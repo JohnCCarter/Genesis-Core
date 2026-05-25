@@ -1,0 +1,21 @@
+{
+  "batch": 26,
+  "date": "2026-05-22",
+  "mode": "RESEARCH",
+  "branch": "feature/genesis-topology-lifecycle-authority-map",
+  "scope": [
+    "docs/analysis/regime_intelligence/upstream_candidate_authority/ri_upstream_candidate_authority_slice1_2026-03-30.md",
+    "docs/analysis/regime_intelligence/upstream_candidate_authority/ri_upstream_candidate_authority_slice2_2026-03-30.md"
+  ],
+  "observed_statuses": [
+    "research-diagnostic / observability only / no runtime change",
+    "research-diagnostic / observability only / no runtime change"
+  ],
+  "classification": "READY_STATUS_HEADER",
+  "patch_shape": "top framing only",
+  "supporting_refs": [
+    "docs/decisions/regime_intelligence/upstream_candidate_authority/regime_intelligence_upstream_diagnostic_path_closeout_2026-03-30.md",
+    "docs/decisions/regime_intelligence/upstream_candidate_authority/regime_intelligence_upstream_candidate_authority_direction_packet_2026-03-30.md"
+  ],
+  "note": "The retained upstream diagnostic summaries should read as historical bounded diagnostics from the earlier branch state and not as current active diagnostics in the present tracked state."
+}

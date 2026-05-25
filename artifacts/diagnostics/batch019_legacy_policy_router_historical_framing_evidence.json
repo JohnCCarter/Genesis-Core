@@ -1,0 +1,27 @@
+{
+  "batch": 19,
+  "date": "2026-05-22",
+  "mode": "RESEARCH",
+  "branch": "feature/genesis-topology-lifecycle-authority-map",
+  "scope": [
+    "docs/decisions/legacy/policy_router/legacy_policy_router_surface_separation_precode_packet_2026-04-30.md",
+    "docs/decisions/legacy/policy_router/legacy_policy_router_2024_control_setup_precode_packet_2026-04-30.md",
+    "docs/decisions/legacy/policy_router/legacy_policy_router_2024_control_setup_implementation_packet_2026-04-30.md"
+  ],
+  "observed_statuses": [
+    "pre-code-defined / docs-only / no implementation or execution authority",
+    "pre-code-defined / docs-only / setup-only / no implementation or execution authority",
+    "implemented / config-test-docs / no backtest or runtime execution authority"
+  ],
+  "classification": "READY_STATUS_HEADER",
+  "external_citation_notes": [
+    "Single outside-family citation observed from docs/decisions/regime_intelligence/policy_router/ri_policy_router_payoff_state_translation_precode_packet_2026-04-30.md to the surface-separation packet",
+    "No exact stale top-status string match outside the target files"
+  ],
+  "patch_shape": "top framing only",
+  "note": "Historical Legacy policy-router packet wording does not reopen current implementation, execution, or cross-family authority.",
+  "supporting_refs": [
+    "docs/decisions/regime_intelligence/policy_router/ri_policy_router_payoff_state_translation_precode_packet_2026-04-30.md",
+    "docs/system/GENESIS_TOPOLOGY_WORK_QUEUE.md"
+  ]
+}

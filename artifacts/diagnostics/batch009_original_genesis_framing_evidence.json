@@ -1,0 +1,58 @@
+{
+  "batch": "009",
+  "date": "2026-05-22",
+  "mode": "RESEARCH",
+  "branch": "feature/genesis-topology-lifecycle-authority-map",
+  "candidate": "docs/archive/original_genesis/GENESIS_FEATURES.md",
+  "supporting_surfaces": [
+    "docs/audit/refactor/evidence/docs_archive_triage_phase6_legacy_core_decision_2026-03-09.md",
+    "docs/audit/refactor/evidence/docs_archive_triage_matrix_2026-03-09.tsv",
+    "docs/audit/refactor/evidence/candidate19_phase6_legacy_core_path_refcheck_2026-03-09.txt",
+    "docs/archive/phase6/README.md"
+  ],
+  "observed": {
+    "has_top_status_line": false,
+    "has_top_current_status_note": false,
+    "prior_triage_classification": "KEEP",
+    "prior_path_refcheck": "NO_HIT"
+  },
+  "skim_risk_matches": [
+    {
+      "line": 26,
+      "text": "- Unified Config API (`rest/unified_config_api.py`):"
+    },
+    {
+      "line": 75,
+      "text": "- Pydantic settings med `.env`, fallback till v1/v2 (`config/settings.py`)"
+    },
+    {
+      "line": 92,
+      "text": "### Portnings‑karta till Genesis‑Core (förslag)"
+    },
+    {
+      "line": 94,
+      "text": "- REST endpoints: börja med minsta nödvändiga (health/observability/config) och lägg till order/wallet/positions efter behov."
+    },
+    {
+      "line": 119,
+      "text": "- Rekommenderad portning till Genesis‑Core"
+    },
+    {
+      "line": 120,
+      "text": "  - Lägg till `NonceManager` och uppdatera REST/WS‑klienterna att använda den, inkl. engångs‑retry på 10114."
+    }
+  ],
+  "safe_patch_shape": [
+    "add top Status line",
+    "add one current-status routing note near file top",
+    "add one historical reading note clarifying that module names and porting suggestions are legacy reference only"
+  ],
+  "out_of_scope": [
+    "body rewrites",
+    "archive moves or deletes",
+    "changes to historical feature descriptions or porting notes",
+    "runtime, config, test, or script behavior changes",
+    "edits to docs/CURRENT_AUTHORITY_INDEX.md",
+    "edits to docs/knowledge/DOCUMENTATION_PROVENANCE_LINEAGE_MAP.md"
+  ]
+}

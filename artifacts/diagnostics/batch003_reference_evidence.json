@@ -1,0 +1,199 @@
+[
+  {
+    "path": "docs/decisions/document_taxonomy_bootstrap_packet_2026-04-29.md",
+    "title": "# Document taxonomy bootstrap packet \u2014 2026-04-29",
+    "top_marker": null,
+    "path_refs": [],
+    "filename_refs": [],
+    "slug_refs": [],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "queue_refs": [],
+    "note_markers": []
+  },
+  {
+    "path": "docs/decisions/document_taxonomy_migration_slice1_packet_2026-04-29.md",
+    "title": "# Document taxonomy migration slice 1 packet \u2014 2026-04-29",
+    "top_marker": null,
+    "path_refs": [],
+    "filename_refs": [],
+    "slug_refs": [],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "queue_refs": [],
+    "note_markers": []
+  },
+  {
+    "path": "docs/decisions/document_taxonomy_repo_wide_migration_packet_2026-04-29.md",
+    "title": "# Document taxonomy repo-wide migration packet",
+    "top_marker": "Status: `approved scope / docs-only / no behavior change`",
+    "path_refs": [],
+    "filename_refs": [],
+    "slug_refs": [],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "queue_refs": [],
+    "note_markers": [
+      "- any moved path is consumed by runtime/code/config/test logic in a way that is not documentation-only"
+    ]
+  },
+  {
+    "path": "docs/decisions/document_taxonomy_subfolder_migration_packet_2026-04-29.md",
+    "title": "# Document taxonomy subfolder migration packet",
+    "top_marker": "Status: `approved scope proposed / doc-taxonomy-plus-anchor-updates / no behavior change`",
+    "path_refs": [],
+    "filename_refs": [],
+    "slug_refs": [],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "queue_refs": [],
+    "note_markers": []
+  },
+  {
+    "path": "docs/decisions/research_findings/research_findings_bank_repo_native_packet_2026-04-24.md",
+    "title": "# Research findings bank repo-native packet",
+    "top_marker": "Status: `active / docs-only / findings tracking structure decision`",
+    "path_refs": [
+      ".\\docs\\decisions\\research_findings\\research_findings_preflight_lookup_implementation_packet_2026-04-24.md",
+      ".\\docs\\decisions\\research_findings\\research_findings_bank_seed_implementation_packet_2026-04-24.md",
+      ".\\docs\\analysis\\recommendations\\research_findings_bank_repo_native_structure_2026-04-24.md"
+    ],
+    "filename_refs": [
+      ".\\docs\\decisions\\research_findings\\research_findings_preflight_lookup_implementation_packet_2026-04-24.md",
+      ".\\docs\\decisions\\research_findings\\research_findings_bank_seed_implementation_packet_2026-04-24.md",
+      ".\\docs\\analysis\\recommendations\\research_findings_bank_repo_native_structure_2026-04-24.md"
+    ],
+    "slug_refs": [
+      ".\\docs\\analysis\\recommendations\\research_findings_bank_repo_native_structure_2026-04-24.md",
+      ".\\docs\\decisions\\research_findings\\research_findings_preflight_lookup_implementation_packet_2026-04-24.md",
+      ".\\docs\\decisions\\research_findings\\research_findings_bank_seed_implementation_packet_2026-04-24.md"
+    ],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "queue_refs": [],
+    "note_markers": []
+  },
+  {
+    "path": "docs/decisions/research_findings/slice_scout_preflight_bootstrap_packet_2026-04-24.md",
+    "title": "# Slice scout + preflight skill bootstrap packet",
+    "top_marker": "Status: `proposed / pre-code / non-runtime customization bootstrap`",
+    "path_refs": [],
+    "filename_refs": [],
+    "slug_refs": [],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "queue_refs": [],
+    "note_markers": []
+  },
+  {
+    "path": "docs/decisions/research_findings/research_findings_packet_starter_implementation_packet_2026-04-24.md",
+    "title": "# Research findings packet starter implementation packet",
+    "top_marker": "Status: `proposed / pre-code / non-runtime advisory starter helper`",
+    "path_refs": [],
+    "filename_refs": [],
+    "slug_refs": [],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "queue_refs": [],
+    "note_markers": []
+  },
+  {
+    "path": "docs/decisions/research_findings/research_findings_preflight_lookup_implementation_packet_2026-04-24.md",
+    "title": "# Research findings preflight lookup implementation packet",
+    "top_marker": "Status: `historical implementation snapshot / consumed by non-runtime lookup helper / no active packet authority`",
+    "path_refs": [
+      ".\\docs\\decisions\\research_findings\\research_findings_packet_starter_implementation_packet_2026-04-24.md"
+    ],
+    "filename_refs": [
+      ".\\docs\\decisions\\research_findings\\research_findings_packet_starter_implementation_packet_2026-04-24.md"
+    ],
+    "slug_refs": [
+      ".\\docs\\decisions\\research_findings\\research_findings_packet_starter_implementation_packet_2026-04-24.md"
+    ],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "queue_refs": [],
+    "note_markers": [
+      "Status: `historical implementation snapshot / consumed by non-runtime lookup helper / no active packet authority`",
+      "> Current status note:",
+      "> - HISTORICAL 2026-05-05: this file records the bounded implementation authorization for the non-runtime findings preflight lookup helper on `feature/ri-role-map-implementation-2026-03-24`, not an active packet authority on `feature/next-slice-2026-05-05`."
+    ]
+  },
+  {
+    "path": "docs/decisions/research_findings/research_findings_bank_seed_implementation_packet_2026-04-24.md",
+    "title": "# Research findings bank seed implementation packet",
+    "top_marker": "Status: `proposed / non-runtime seed implementation / repo-native findings bank`",
+    "path_refs": [
+      ".\\docs\\decisions\\research_findings\\research_findings_preflight_lookup_implementation_packet_2026-04-24.md"
+    ],
+    "filename_refs": [
+      ".\\docs\\decisions\\research_findings\\research_findings_preflight_lookup_implementation_packet_2026-04-24.md"
+    ],
+    "slug_refs": [
+      ".\\docs\\decisions\\research_findings\\research_findings_preflight_lookup_implementation_packet_2026-04-24.md"
+    ],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "queue_refs": [],
+    "note_markers": []
+  },
+  {
+    "path": "docs/decisions/research_findings/slice_evidence_handoff_bootstrap_packet_2026-04-24.md",
+    "title": "# Slice evidence handoff skill bootstrap packet",
+    "top_marker": "Status: `proposed / pre-code / non-runtime customization bootstrap`",
+    "path_refs": [],
+    "filename_refs": [],
+    "slug_refs": [],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "queue_refs": [],
+    "note_markers": []
+  },
+  {
+    "path": "docs/decisions/scpe_ri_v1/scpe_ri_v1_shadow_backtest_bridge_slice1_final_launch_authorization_packet_2026-04-21.md",
+    "title": "# SCPE RI V1 shadow-backtest bridge slice1 final launch authorization packet",
+    "top_marker": "Status: `AUTHORIZED NOW / state-bound / self-revoking`",
+    "path_refs": [
+      ".\\docs\\decisions\\scpe_ri_v1\\archive\\scpe_ri_v1_runtime_observability_transition_packet_2026-04-21.md",
+      ".\\docs\\analysis\\scpe_ri_v1\\scpe_ri_v1_shadow_backtest_bridge_slice1_execution_summary_2026-04-21.md"
+    ],
+    "filename_refs": [
+      ".\\docs\\analysis\\scpe_ri_v1\\scpe_ri_v1_shadow_backtest_bridge_slice1_execution_summary_2026-04-21.md",
+      ".\\docs\\decisions\\scpe_ri_v1\\archive\\scpe_ri_v1_runtime_observability_transition_packet_2026-04-21.md"
+    ],
+    "slug_refs": [
+      ".\\docs\\analysis\\scpe_ri_v1\\scpe_ri_v1_shadow_backtest_bridge_slice1_execution_summary_2026-04-21.md",
+      ".\\docs\\decisions\\scpe_ri_v1\\archive\\scpe_ri_v1_runtime_observability_transition_packet_2026-04-21.md"
+    ],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "queue_refs": [],
+    "note_markers": [
+      "Status: `AUTHORIZED NOW / state-bound / self-revoking`"
+    ]
+  },
+  {
+    "path": "docs/decisions/diagnostic_campaigns/backtest_curated_only_opt_in_precode_packet_2026-04-22.md",
+    "title": "# Backtest curated-only opt-in pre-code packet",
+    "top_marker": "Status: `pre-code-reviewed / APPROVED_WITH_NOTES / implementation authorized within locked scope only`",
+    "path_refs": [],
+    "filename_refs": [],
+    "slug_refs": [],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "queue_refs": [],
+    "note_markers": []
+  }
+]

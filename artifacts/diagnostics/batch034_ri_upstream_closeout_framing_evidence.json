@@ -1,0 +1,19 @@
+{
+  "batch": 34,
+  "date": "2026-05-22",
+  "mode": "RESEARCH",
+  "branch": "feature/genesis-topology-lifecycle-authority-map",
+  "scope": [
+    "docs/decisions/regime_intelligence/upstream_candidate_authority/regime_intelligence_upstream_diagnostic_path_closeout_2026-03-30.md"
+  ],
+  "classification": "YELLOW_NEEDS_REVIEW",
+  "patch_shape": "top framing plus one narrow historical current-status note only",
+  "immutability_boundary": "body preserved verbatim from '## COMMAND PACKET' downward",
+  "anchors": [
+    "docs/audit/ri_upstream_candidate_authority_direction_historical_framing_audit_batch_028.md",
+    "docs/analysis/regime_intelligence/core/regime_intelligence_experiment_map_reselection_roadmap_2026-03-30.md",
+    "docs/analysis/regime_intelligence/core/regime_intelligence_experiment_map_post_binding_roadmap_2026-03-30.md",
+    "docs/decisions/regime_intelligence/upstream_candidate_authority/regime_intelligence_upstream_candidate_authority_direction_packet_2026-03-30.md"
+  ],
+  "note": "Downstream March 30 reselection-chain documents are already historical/documentary in current branch context, so this closeout now functions as a historical exact-state record of an earlier branch/state lane-local closure, not as a current authority source."
+}

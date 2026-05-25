@@ -1,0 +1,59 @@
+{
+  "branch": "feature/genesis-topology-lifecycle-authority-map",
+  "candidate": "plan/ri-family-admission-roadmap-2026-03-24.md",
+  "proposed_destination": "docs/archive/plan/ri-family-admission-roadmap-2026-03-24.md",
+  "candidate_exists": true,
+  "destination_exists": false,
+  "candidate_status": "",
+  "reference_files": [
+    {
+      "path": "docs/knowledge/GENESIS_TOPOLOGY_LIFECYCLE_AUTHORITY_MAP.md",
+      "git_status": "",
+      "reference_lines": [
+        ".\\docs\\knowledge\\GENESIS_TOPOLOGY_LIFECYCLE_AUTHORITY_MAP.md:112:| `plan/`      | Planning zone with several reviewed files already carrying explicit archived/historical notes | `MIXED, CURRENTLY SKEWED HISTORICAL IN REVIEWED FILES` | Historical/planning context only unless a fresh current packet says otherwise | `HIGH`                | Preserve current status notes, run reference audits before moves, and do not treat `plan/` files as current branch guidance by default | `docs/knowledge/DOCUMENTATION_PROVENANCE_LINEAGE_MAP.md` (`High-visibility historical and provenance surfaces`), `plan/feature_attribution_post_phase14_reactivation_roadmap_2026-04-02.md` (`Current status note`), `plan/genesis_driver_identification_master_roadmap_2026-04-14.md` (`Current status note`), `plan/ri-family-admission-roadmap-2026-03-24.md` (`Current status note`), `plan/ri_advisory_environment_fit_roadmap_2026-04-16.md` (`Current status note`) |"
+      ]
+    },
+    {
+      "path": "docs/knowledge/DOCUMENTATION_PROVENANCE_LINEAGE_MAP.md",
+      "git_status": "M docs/knowledge/DOCUMENTATION_PROVENANCE_LINEAGE_MAP.md",
+      "reference_lines": [
+        ".\\docs\\knowledge\\DOCUMENTATION_PROVENANCE_LINEAGE_MAP.md:86:| `plan/ri-family-admission-roadmap-2026-03-24.md`                           | Archived roadmap from `feature/ri-role-map-implementation-2026-03-24`                                          | Archived historical planning context only; any current branch guidance must resolve elsewhere                                                                            | Not current branch guidance or current family-admission authority                                           | `plan/ri-family-admission-roadmap-2026-03-24.md` (`Current status note`)                                                                               |"
+      ]
+    },
+    {
+      "path": "docs/audit/DOCUMENTATION_DISPOSITION_MAP.md",
+      "git_status": "",
+      "reference_lines": [
+        ".\\docs\\audit\\DOCUMENTATION_DISPOSITION_MAP.md:126:| `plan/ri-family-admission-roadmap-2026-03-24.md`                           | Historical/parked/archive-only roadmap for family-admission refactor                    | Moderate: active-looking location can mask archive-only status                                          | `MOVE_TO_ARCHIVE_LATER`  | `none explicitly identified`                                      | Check active references and any still-live restart packets before moving; preserve branch-context and no-behavior-change wording                               | `HIGH`     | File `Status:` says `historical / parked / archive-only / not active on current branch`                                                                                  |"
+      ]
+    },
+    {
+      "path": "docs/audit/archive_move_reference_audit_batch_001.md",
+      "git_status": "",
+      "reference_lines": [
+        ".\\docs\\audit\\archive_move_reference_audit_batch_001.md:71:| `READY_ARCHIVE_MOVE`       |     1 | `plan/ri-family-admission-roadmap-2026-03-24.md`                                                                                              |",
+        ".\\docs\\audit\\archive_move_reference_audit_batch_001.md:83:| `plan/ri-family-admission-roadmap-2026-03-24.md`                           | `MOVE_TO_ARCHIVE_LATER`  | `3 / 3 / 3`                           | Yes \u2014 topology map + provenance map | Yes                                                 | No explicit later successor found                                       | `READY_ARCHIVE_MOVE`      |",
+        ".\\docs\\audit\\archive_move_reference_audit_batch_001.md:127:### 3) `plan/ri-family-admission-roadmap-2026-03-24.md`",
+        ".\\docs\\audit\\archive_move_reference_audit_batch_001.md:177:- the next admissible follow-up from this batch is **not** a patch, but a separate move-class slice for `plan/ri-family-admission-roadmap-2026-03-24.md` if and when the required reference-update scope is authorized"
+      ]
+    }
+  ],
+  "all_doc_refs_by_path": [
+    ".\\docs\\knowledge\\GENESIS_TOPOLOGY_LIFECYCLE_AUTHORITY_MAP.md:112:| `plan/`      | Planning zone with several reviewed files already carrying explicit archived/historical notes | `MIXED, CURRENTLY SKEWED HISTORICAL IN REVIEWED FILES` | Historical/planning context only unless a fresh current packet says otherwise | `HIGH`                | Preserve current status notes, run reference audits before moves, and do not treat `plan/` files as current branch guidance by default | `docs/knowledge/DOCUMENTATION_PROVENANCE_LINEAGE_MAP.md` (`High-visibility historical and provenance surfaces`), `plan/feature_attribution_post_phase14_reactivation_roadmap_2026-04-02.md` (`Current status note`), `plan/genesis_driver_identification_master_roadmap_2026-04-14.md` (`Current status note`), `plan/ri-family-admission-roadmap-2026-03-24.md` (`Current status note`), `plan/ri_advisory_environment_fit_roadmap_2026-04-16.md` (`Current status note`) |",
+    ".\\docs\\knowledge\\DOCUMENTATION_PROVENANCE_LINEAGE_MAP.md:86:| `plan/ri-family-admission-roadmap-2026-03-24.md`                           | Archived roadmap from `feature/ri-role-map-implementation-2026-03-24`                                          | Archived historical planning context only; any current branch guidance must resolve elsewhere                                                                            | Not current branch guidance or current family-admission authority                                           | `plan/ri-family-admission-roadmap-2026-03-24.md` (`Current status note`)                                                                               |",
+    ".\\docs\\audit\\archive_move_reference_audit_batch_001.md:71:| `READY_ARCHIVE_MOVE`       |     1 | `plan/ri-family-admission-roadmap-2026-03-24.md`                                                                                              |",
+    ".\\docs\\audit\\archive_move_reference_audit_batch_001.md:83:| `plan/ri-family-admission-roadmap-2026-03-24.md`                           | `MOVE_TO_ARCHIVE_LATER`  | `3 / 3 / 3`                           | Yes \u2014 topology map + provenance map | Yes                                                 | No explicit later successor found                                       | `READY_ARCHIVE_MOVE`      |",
+    ".\\docs\\audit\\archive_move_reference_audit_batch_001.md:127:### 3) `plan/ri-family-admission-roadmap-2026-03-24.md`",
+    ".\\docs\\audit\\archive_move_reference_audit_batch_001.md:177:- the next admissible follow-up from this batch is **not** a patch, but a separate move-class slice for `plan/ri-family-admission-roadmap-2026-03-24.md` if and when the required reference-update scope is authorized",
+    ".\\docs\\audit\\DOCUMENTATION_DISPOSITION_MAP.md:126:| `plan/ri-family-admission-roadmap-2026-03-24.md`                           | Historical/parked/archive-only roadmap for family-admission refactor                    | Moderate: active-looking location can mask archive-only status                                          | `MOVE_TO_ARCHIVE_LATER`  | `none explicitly identified`                                      | Check active references and any still-live restart packets before moving; preserve branch-context and no-behavior-change wording                               | `HIGH`     | File `Status:` says `historical / parked / archive-only / not active on current branch`                                                                                  |"
+  ],
+  "all_doc_refs_by_slug": [
+    ".\\docs\\knowledge\\GENESIS_TOPOLOGY_LIFECYCLE_AUTHORITY_MAP.md:112:| `plan/`      | Planning zone with several reviewed files already carrying explicit archived/historical notes | `MIXED, CURRENTLY SKEWED HISTORICAL IN REVIEWED FILES` | Historical/planning context only unless a fresh current packet says otherwise | `HIGH`                | Preserve current status notes, run reference audits before moves, and do not treat `plan/` files as current branch guidance by default | `docs/knowledge/DOCUMENTATION_PROVENANCE_LINEAGE_MAP.md` (`High-visibility historical and provenance surfaces`), `plan/feature_attribution_post_phase14_reactivation_roadmap_2026-04-02.md` (`Current status note`), `plan/genesis_driver_identification_master_roadmap_2026-04-14.md` (`Current status note`), `plan/ri-family-admission-roadmap-2026-03-24.md` (`Current status note`), `plan/ri_advisory_environment_fit_roadmap_2026-04-16.md` (`Current status note`) |",
+    ".\\docs\\knowledge\\DOCUMENTATION_PROVENANCE_LINEAGE_MAP.md:86:| `plan/ri-family-admission-roadmap-2026-03-24.md`                           | Archived roadmap from `feature/ri-role-map-implementation-2026-03-24`                                          | Archived historical planning context only; any current branch guidance must resolve elsewhere                                                                            | Not current branch guidance or current family-admission authority                                           | `plan/ri-family-admission-roadmap-2026-03-24.md` (`Current status note`)                                                                               |",
+    ".\\docs\\audit\\DOCUMENTATION_DISPOSITION_MAP.md:126:| `plan/ri-family-admission-roadmap-2026-03-24.md`                           | Historical/parked/archive-only roadmap for family-admission refactor                    | Moderate: active-looking location can mask archive-only status                                          | `MOVE_TO_ARCHIVE_LATER`  | `none explicitly identified`                                      | Check active references and any still-live restart packets before moving; preserve branch-context and no-behavior-change wording                               | `HIGH`     | File `Status:` says `historical / parked / archive-only / not active on current branch`                                                                                  |",
+    ".\\docs\\audit\\archive_move_reference_audit_batch_001.md:71:| `READY_ARCHIVE_MOVE`       |     1 | `plan/ri-family-admission-roadmap-2026-03-24.md`                                                                                              |",
+    ".\\docs\\audit\\archive_move_reference_audit_batch_001.md:83:| `plan/ri-family-admission-roadmap-2026-03-24.md`                           | `MOVE_TO_ARCHIVE_LATER`  | `3 / 3 / 3`                           | Yes \u2014 topology map + provenance map | Yes                                                 | No explicit later successor found                                       | `READY_ARCHIVE_MOVE`      |",
+    ".\\docs\\audit\\archive_move_reference_audit_batch_001.md:127:### 3) `plan/ri-family-admission-roadmap-2026-03-24.md`",
+    ".\\docs\\audit\\archive_move_reference_audit_batch_001.md:177:- the next admissible follow-up from this batch is **not** a patch, but a separate move-class slice for `plan/ri-family-admission-roadmap-2026-03-24.md` if and when the required reference-update scope is authorized"
+  ]
+}

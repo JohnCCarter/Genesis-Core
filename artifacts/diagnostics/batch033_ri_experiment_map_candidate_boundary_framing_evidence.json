@@ -1,0 +1,22 @@
+{
+  "batch": 33,
+  "date": "2026-05-22",
+  "mode": "RESEARCH",
+  "branch": "feature/genesis-topology-lifecycle-authority-map",
+  "scope": [
+    "docs/decisions/regime_intelligence/experiment_map/regime_intelligence_experiment_map_reselection_regime_definition_candidate_surface_packet_2026-03-30.md",
+    "docs/decisions/regime_intelligence/experiment_map/regime_intelligence_experiment_map_reselection_regime_definition_packet_boundary_2026-03-30.md"
+  ],
+  "classification": "YELLOW_NEEDS_REVIEW",
+  "patch_shape": "top framing plus one narrow historical current-status note in each target",
+  "immutability_boundary": {
+    "candidate_surface": "body preserved verbatim from '## COMMAND PACKET' downward",
+    "packet_boundary": "body preserved verbatim from '## COMMAND PACKET' downward"
+  },
+  "anchors": [
+    "docs/decisions/regime_intelligence/experiment_map/regime_intelligence_experiment_map_reselection_signal_segmentation_direction_packet_2026-03-30.md",
+    "docs/decisions/regime_intelligence/experiment_map/regime_intelligence_experiment_map_reselection_phase5_precode_binding_note_2026-03-30.md",
+    "docs/analysis/regime_intelligence/core/regime_intelligence_experiment_map_post_binding_roadmap_2026-03-30.md"
+  ],
+  "note": "In current branch context, both retained files should read only as historical earlier branch/state records. The first records the earlier candidate-surface decision; the second records the earlier packet-boundary decision. Neither should imply current candidate-surface authority, current packet-boundary authority, current pre-code sequencing authority, launch/execution authority, runtime authority, or promotion meaning."
+}

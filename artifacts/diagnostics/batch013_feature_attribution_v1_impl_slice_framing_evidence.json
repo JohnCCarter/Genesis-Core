@@ -1,0 +1,24 @@
+{
+  "batch": 13,
+  "date": "2026-05-22",
+  "mode": "RESEARCH",
+  "branch": "feature/genesis-topology-lifecycle-authority-map",
+  "family": "feature_attribution_v1_impl_slice",
+  "scope": [
+    "docs/decisions/feature_attribution/v1/feature_attribution_v1_impl_slice1_min_edge_neutralization_packet_2026-03-31.md",
+    "docs/decisions/feature_attribution/v1/feature_attribution_v1_impl_slice2_hysteresis_neutralization_packet_2026-03-31.md",
+    "docs/decisions/feature_attribution/v1/feature_attribution_v1_impl_slice3_cooldown_neutralization_packet_2026-03-31.md",
+    "docs/decisions/feature_attribution/v1/feature_attribution_v1_impl_slice5_htf_block_neutralization_packet_2026-03-31.md"
+  ],
+  "observed_status": "proposed / behavior-touching / explicit-opt-in only",
+  "classification": "READY_STATUS_HEADER",
+  "patch_shape": "top framing only",
+  "note": "Implementation-packet wording alone does not authorize code/test changes or reopen a current implementation lane.",
+  "supporting_refs": [
+    "docs/audit/feature_attribution_v1_phase_packet_historical_framing_audit_batch_011.md",
+    "docs/audit/feature_attribution_v1_exec_slice_historical_framing_audit_batch_012.md",
+    "docs/decisions/feature_attribution/v1/feature_attribution_v1_phase0_scope_freeze_packet_2026-03-31.md",
+    "plan/feature_attribution_post_phase14_reactivation_roadmap_2026-04-02.md",
+    "plan/genesis_driver_identification_master_roadmap_2026-04-14.md"
+  ]
+}

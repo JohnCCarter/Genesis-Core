@@ -1,0 +1,18 @@
+{
+  "batch": 24,
+  "date": "2026-05-22",
+  "mode": "RESEARCH",
+  "branch": "feature/genesis-topology-lifecycle-authority-map",
+  "scope": [
+    "docs/decisions/scpe_ri_v1/scpe_ri_v1_shadow_backtest_bridge_slice1_launch_authorization_packet_2026-04-21.md"
+  ],
+  "observed_status": "launch authorization decision recorded / fail-closed / not authorized now",
+  "classification": "YELLOW_NEEDS_REVIEW",
+  "patch_shape": "top framing plus later-status provenance note only",
+  "supporting_refs": [
+    "docs/audit/scpe_ri_v1_shadow_backtest_final_launch_authorization_historical_framing_audit_batch_018.md",
+    "docs/decisions/scpe_ri_v1/scpe_ri_v1_shadow_backtest_bridge_slice1_final_launch_authorization_packet_2026-04-21.md",
+    "docs/decisions/scpe_ri_v1/scpe_ri_v1_shadow_backtest_bridge_slice1_launch_reauthorization_packet_2026-04-21.md"
+  ],
+  "note": "The retained earlier launch-authorization packet should read as a historical earlier decision record for that branch/state only, with a pointer to later same-family follow-up, not as current blocker truth or current authority."
+}

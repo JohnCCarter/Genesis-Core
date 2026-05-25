@@ -1,0 +1,18 @@
+{
+  "batch": 30,
+  "date": "2026-05-22",
+  "mode": "RESEARCH",
+  "branch": "feature/genesis-topology-lifecycle-authority-map",
+  "scope": [
+    "docs/decisions/regime_intelligence/experiment_map/regime_intelligence_experiment_map_reselection_signal_segmentation_direction_packet_2026-03-30.md"
+  ],
+  "observed_status": "direction-selected / planning-only / no authorization",
+  "classification": "YELLOW_NEEDS_REVIEW",
+  "patch_shape": "top framing plus historical-current-use note only",
+  "supporting_refs": [
+    "docs/analysis/regime_intelligence/core/regime_intelligence_experiment_map_reselection_roadmap_2026-03-30.md",
+    "docs/analysis/regime_intelligence/core/regime_intelligence_experiment_map_post_binding_roadmap_2026-03-30.md",
+    "docs/audit/ri_upstream_candidate_authority_direction_historical_framing_audit_batch_028.md"
+  ],
+  "note": "The retained experiment-map reselection direction packet should read as a historical earlier branch-state direction-selection record only, not as the current active direction or any current slice-opening authority."
+}

@@ -1,0 +1,19 @@
+{
+  "batch": 35,
+  "date": "2026-05-22",
+  "mode": "RESEARCH",
+  "branch": "feature/genesis-topology-lifecycle-authority-map",
+  "scope": [
+    "docs/decisions/volatility_policy/current_atr_1435_default_off_trial_packet_2026-04-16.md"
+  ],
+  "classification": "YELLOW_NEEDS_REVIEW",
+  "patch_shape": "top framing plus one narrow historical current-status note only",
+  "immutability_boundary": "body preserved verbatim from '## COMMAND PACKET' downward",
+  "anchors": [
+    "docs/audit/volatility_policy_1435_boundary_pointer_audit_batch_029.md",
+    "docs/decisions/volatility_policy/current_atr_900_vs_1435_policy_handoff_2026-04-16.md",
+    "docs/decisions/volatility_policy/current_atr_1435_default_off_trial_precode_packet_2026-04-16.md",
+    "docs/decisions/volatility_policy/current_atr_1435_default_off_rollout_boundary_packet_2026-04-16.md"
+  ],
+  "note": "The later same-family handoff shifts the live question from 'run the 1435-only trial' to 'which candidate should be trialed first: 900 or 1435'. This supports historicalizing the present authority role of the 1435-only trial packet without adjudicating the validity of the 1435 candidate itself."
+}

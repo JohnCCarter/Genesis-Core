@@ -371,6 +371,12 @@ Use coarse, understandable taxonomy in support zones.
 For example, documentation should be grouped by operational purpose, audit class, architecture,
 feature area, or workflow stage rather than by author preference.
 
+Within `docs/`, `docs/system/` is an admissible support zone for non-authorizing controller,
+work-queue, or routing surfaces that coordinate bounded docs-only or repository-hygiene slices.
+Use it for operational guidance and queue/controller artifacts only.
+Do not use `docs/system/` as governance SSOT, runtime design authority, or a generic bucket for
+miscellaneous system notes.
+
 ### Rule 2: Keep governance, policy, audit, and operational docs distinct
 
 Do not mix constitutional or governance material with routine layout guidance, implementation notes,

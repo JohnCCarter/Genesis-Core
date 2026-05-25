@@ -20,7 +20,8 @@ The following remain outside the populated scope of this slice and therefore are
 See `docs/knowledge/KNOWLEDGE_AUTHORITY_RULES.md` for the fail-closed rules used here.
 If a cited source conflicts with a register entry, the cited source controls.
 Register inclusion, omission, ordering, or conclusion-ID placement do not by themselves imply lineage, dependency, approval, or current applicability.
-Research or evidence surfaces may inform later promotion, but they become canonical here only after explicit current-authority citation or promotion through the current governance path.
+Research or evidence surfaces may inform later promotion, but they become canonical here only after citation by an active authority surface or promotion through a current governance packet.
+Register inclusion records that promotion or citation; it does not create it by itself.
 
 ## CONCLUSION-ID: AUTH-001
 

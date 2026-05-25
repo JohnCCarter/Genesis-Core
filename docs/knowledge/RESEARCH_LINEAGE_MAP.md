@@ -27,6 +27,9 @@ If those conditions are not met, the correct state is `UNRESOLVED`.
 - File status in this slice: `UNRESOLVED`
 - Active lineage entries recorded in this slice: `NONE`
 
+Recording a lineage entry here would not by itself promote a research artifact, analysis note, or historical packet into canonical knowledge or current authority.
+Promotion remains outside this stub and requires citation by an active authority surface or promotion through a current governance packet.
+
 ## Why no active entries are recorded here yet
 
 This first pass classified only top-level governance and documentation-routing surfaces.

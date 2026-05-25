@@ -12,6 +12,7 @@ This map answers one bounded repository question only:
 
 It may be used for navigation and repo-orientation only.
 It may **not** be used as an independent SSOT, authority source, approval surface, or exhaustive file-by-file classifier.
+Inclusion of a zone here does not by itself grant current operational authority to the files, conclusions, or historical materials that happen to live inside that zone.
 
 ## Scope boundary
 
@@ -39,6 +40,7 @@ Use this map only after that step, as a derivative repo-zone orientation aid.
 
 If a cited source conflicts with this map, the cited source controls.
 Topology, lifecycle, authority posture, risk posture, and `next-step bias` here are zone-level orientation only.
+Files and materials inside a mapped zone remain non-authoritative by default unless current authority is established elsewhere by explicit listing, active-authority citation, or promotion through a current governance packet.
 
 `Next-step bias` is an advisory working cue inferred from cited sources; it is **not** an approval state, permission grant, or governance override.
 The `GREEN / YELLOW / RED` speed lens below is derivative shorthand only; it does **not** replace the higher-order governance stack, mode resolution, or cited source controls.
@@ -137,4 +139,4 @@ Use this map in the following order only:
 
 Genesis-Core is no longer just a code tree; it is a multi-zone repository with different lifecycle, authority, and risk postures living side by side.
 This map is the current derivative orientation aid for that repo-level shape.
-It is intentionally broad at the zone level, but still fail-closed: cited sources control, unsupported areas remain `UNRESOLVED`, and `next-step bias` stays advisory rather than authoritative.
+It is intentionally broad at the zone level, but still fail-closed: cited sources control, unsupported areas remain `UNRESOLVED`, inclusion here does not silently promote contained material, and `next-step bias` stays advisory rather than authoritative.

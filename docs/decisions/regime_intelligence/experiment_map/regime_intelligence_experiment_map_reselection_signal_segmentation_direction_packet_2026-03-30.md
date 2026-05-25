@@ -2,7 +2,12 @@
 
 Date: 2026-03-30
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `direction-selected / planning-only / no authorization`
+Status: `historical direction-selection record / planning-only / non-authorizing / no current active-direction authority`
+
+> Current status note:
+>
+> - HISTORICAL 2026-05-22: The chosen class below records the exact earlier branch/state direction-selection only.
+> - Do not treat this retained packet as the current active experiment-map direction, a slice-opening surface, a launchable lane, runtime authority, or promotion authority on the present branch.
 
 ## COMMAND PACKET
 

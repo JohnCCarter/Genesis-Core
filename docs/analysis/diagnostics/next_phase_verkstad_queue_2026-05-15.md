@@ -9,6 +9,10 @@ Status: `initial queue closed / successor phase closed / docs-only / non-authori
 > cited follow-up work, but this list is not the current execution queue or current priority order
 > on branch state after the later 2026-05-18 closeouts and broader historical refresh.
 
+> Current-use rule: treat both `Current prioritized queue` and `Successor prioritized queue`
+> below as closed historical sequencing sections only. Any new branch-current queue must be
+> reopened explicitly from later branch state rather than inherited from this document.
+
 This document records the initial post-premortem execution queue after the completed premortem closeout and evidence-manifest boundary work. The initial six-slice queue below is now historical, and the successor phase reopened from the branch premortem reading is now also historical and closed later in this document. This remains a sequencing artifact in `RESEARCH`; it grants no runtime, config-authority, paper/live, promotion, or champion authority by itself.
 
 ## Mode and lane

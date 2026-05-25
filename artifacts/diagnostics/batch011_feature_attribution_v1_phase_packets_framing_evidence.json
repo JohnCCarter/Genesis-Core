@@ -1,0 +1,77 @@
+{
+  "batch": "011",
+  "date": "2026-05-22",
+  "mode": "RESEARCH",
+  "branch": "feature/genesis-topology-lifecycle-authority-map",
+  "zone": "docs/decisions/feature_attribution/v1 docs-only phase packets",
+  "supporting_surfaces": [
+    "docs/decisions/feature_attribution/v1/feature_attribution_v1_phase0_scope_freeze_packet_2026-03-31.md",
+    "plan/feature_attribution_post_phase14_reactivation_roadmap_2026-04-02.md",
+    "plan/genesis_driver_identification_master_roadmap_2026-04-14.md"
+  ],
+  "candidates": [
+    {
+      "path": "docs/decisions/feature_attribution/v1/feature_attribution_v1_phase1_feature_inventory_packet_2026-03-31.md",
+      "observed_top_status": "phase1-proposed / docs-only / research-only / non-authorizing",
+      "drift_reason": "future inventory wording still reads like a current next slice"
+    },
+    {
+      "path": "docs/decisions/feature_attribution/v1/feature_attribution_v1_phase2_toggle_boundary_packet_2026-03-31.md",
+      "observed_top_status": "phase2-proposed / docs-only / research-only / non-authorizing",
+      "drift_reason": "future toggle-boundary wording still reads like a current next slice"
+    },
+    {
+      "path": "docs/decisions/feature_attribution/v1/feature_attribution_v1_phase3_baseline_metrics_packet_2026-03-31.md",
+      "observed_top_status": "phase3-proposed / docs-only / research-only / non-authorizing",
+      "drift_reason": "future baseline-metrics wording still reads like a current next slice"
+    },
+    {
+      "path": "docs/decisions/feature_attribution/v1/feature_attribution_v1_phase4_runner_boundary_packet_2026-03-31.md",
+      "observed_top_status": "phase4-proposed / docs-only / research-only / non-authorizing",
+      "drift_reason": "future runner-boundary wording still reads like a current next slice"
+    },
+    {
+      "path": "docs/decisions/feature_attribution/v1/feature_attribution_v1_phase5_classification_policy_packet_2026-03-31.md",
+      "observed_top_status": "phase5-proposed / docs-only / research-only / non-authorizing",
+      "drift_reason": "future classification-policy wording still reads like a current next slice"
+    },
+    {
+      "path": "docs/decisions/feature_attribution/v1/feature_attribution_v1_phase6_artifact_report_packet_2026-03-31.md",
+      "observed_top_status": "phase6-proposed / docs-only / research-only / non-authorizing",
+      "drift_reason": "future artifact/report wording still reads like a current next slice"
+    },
+    {
+      "path": "docs/decisions/feature_attribution/v1/feature_attribution_v1_phase7_determinism_contract_test_packet_2026-03-31.md",
+      "observed_top_status": "phase7-proposed / docs-only / research-only / non-authorizing",
+      "drift_reason": "future prerequisite-gate wording still reads like a current next slice"
+    },
+    {
+      "path": "docs/decisions/feature_attribution/v1/feature_attribution_v1_phase8_governance_review_packet_2026-03-31.md",
+      "observed_top_status": "phase8-proposed / docs-only / research-only / non-authorizing",
+      "drift_reason": "future governance-review wording still reads like a current next slice"
+    },
+    {
+      "path": "docs/decisions/feature_attribution/v1/feature_attribution_v1_phase9_post_attribution_gate_packet_2026-03-31.md",
+      "observed_top_status": "phase9-proposed / docs-only / research-only / non-authorizing",
+      "drift_reason": "future terminal-gate wording still reads like a current next slice"
+    }
+  ],
+  "positive_anchor": {
+    "path": "docs/decisions/feature_attribution/v1/feature_attribution_v1_phase0_scope_freeze_packet_2026-03-31.md",
+    "observed_top_status": "phase0-locked / docs-only / non-authorizing"
+  },
+  "safe_patch_shape": [
+    "replace stale phase1-phase9 proposed status labels with historical/current-use framing",
+    "add one narrow current-status note near the top of each packet",
+    "preserve all packet bodies, scope blocks, future boundaries, and conclusions below the framing"
+  ],
+  "out_of_scope": [
+    "editing phase0",
+    "editing exec_slice or impl_slice packets",
+    "editing plan anchors",
+    "body rewrites",
+    "runtime, config, test, or script behavior changes",
+    "edits to docs/CURRENT_AUTHORITY_INDEX.md",
+    "edits to docs/knowledge/DOCUMENTATION_PROVENANCE_LINEAGE_MAP.md"
+  ]
+}

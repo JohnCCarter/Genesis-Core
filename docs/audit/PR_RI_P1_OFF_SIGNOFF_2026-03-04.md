@@ -1,5 +1,15 @@
 # PR Title
 
+Status: `historical PR description artifact / retained for traceability / not current PR or policy text`
+
+> Current status note (2026-05-22, `feature/genesis-topology-lifecycle-authority-map`): this
+> file is retained as historical PR-description packaging for
+> `feature/regime-intelligence-p1-signoff`. It is not itself current approval, current PR
+> text, or current policy guidance. For the historical signoff companion, see
+> `docs/audit/RI_P1_OFF_SIGNOFF_2026-03-04.md`. For current authority, see
+> `docs/CURRENT_AUTHORITY_INDEX.md` and the current governance/decision documents referenced
+> there.
+
 `tooling: RI P1 OFF parity signoff, decision-row capture, and comparator None/None parity fix`
 
 # PR Description

@@ -1,95 +1,71 @@
 # Scripts i Genesis-Core
 
-Detta dokument beskriver hur script i `scripts/` organiseras, auditeras och avvecklas säkert.
+Status: `current scripts lifecycle guide / operational taxonomy pointer / docs-only`
+
+> Current status note (2026-05-22, `feature/genesis-topology-lifecycle-authority-map`): this
+> README describes the current `scripts/` taxonomy and lifecycle reading in the checked-in tree.
+> It does not by itself authorize runtime changes, archive moves, or wrapper-based compatibility
+> policy. For repo-wide placement rules, see `docs/repository-layout-policy.md`.
+
+Detta dokument beskriver hur script i `scripts/` organiseras och hur deras livscykel ska läsas i
+nuvarande repo.
 
 ## Kategorier
 
-- **stable**
-  - Script som används i ordinarie arbetsflöden (backtest, validering, preflight, produktion/paper-support).
-- **ops**
-  - Operativa script för drift, felsökning, health checks och miljöstöd.
-- **experimental**
-  - Script för tillfälliga experiment/hypoteser. Ska inte vara implicit del av produktionsflöde.
-- **deprecated**
-  - Script som har flyttats till archive men fortfarande har wrapper på gamla pathen.
-- **archive**
-  - Historiska script under `scripts/archive/**`. Behandlas som dead zone för intern referensräkning.
+- **purpose-based subfolders**
+  - Den primära modellen i aktuell tree är att script grupperas efter uppgift, till exempel
+    `analyze/`, `audit/`, `build/`, `deploy/`, `extract/`, `fetch/`, `mcp/`, `ops/`, `optimize/`,
+    `preflight/`, `promote/`, `run/`, `train/` och `validate/`.
+- **root-level helper entrypoints**
+  - Ett litet antal script ligger fortfarande direkt under `scripts/` som kvarhållna helper- eller
+    entrypoint-ytor. Dessa ska behandlas som explicita undantag, inte som standardmönster.
+- **docs**
+  - `scripts/docs/` beskriver scripts-zonen och ska spegla den aktuella taxonomin i tree.
+- **historical / archive-prep**
+  - Historiska eller avvecklingskandidater ska först behandlas i en separat bounded audit/move-slice.
+    Utgå inte från att wrapper-baserad kompatibilitet finns eller ska skapas som default.
 
-## Policy för säker städning
+## Aktuell lifecycle-regel
 
-1. **Inga hårda raderingar direkt**.
-2. Flytta script med `git mv` till `scripts/archive/YYYY-MM/...`.
-3. Lämna wrapper på gamla pathen som:
-   - skriver tydlig `DEPRECATED`-varning,
-   - vidarebefordrar alla argument,
+1. **Föredra canonical purpose-based placement.**
+2. Om ett aktivt script hör hemma i en annan scripts-undermapp, flytta det direkt till den
+   canonical platsen i samma slice.
+3. **Skapa inte wrappers, mappings eller duplicerade launchers som default.** Sådana kräver
+   explicit motivering och ska inte antas bara för att ett path byts.
+4. Behandla archive/deprecation som en separat bounded lifecycle-slice med referenskontroll, inte
+   som en implicit wrapper-rutin.
+5. Låt dokumentation bara peka på verktyg och flöden som faktiskt finns i den checkade tree:n.
 
-- returnerar samma exit code,
-- loggar användning (en rad per körning) i `scripts/deprecated-usage.log`.
+## Hur scripts-zonen ska auditeras just nu
 
-4. **Radera tidigast efter 14 dagar** från deprecate-flytt.
-5. Under 14-dagarsfönstret ska gamla paths fortsätta fungera via wrappers.
+Det finns för närvarande ingen checkad repo-bred lifecycle-CLI på de gamla namnen
+`scripts/audit_scripts.py` eller `scripts/deprecate_move.py`.
 
-## Kör scripts-audit
+Använd i stället en bounded audit-metod:
 
-Exempel:
-
-`python scripts/audit_scripts.py --root . --scripts-dir scripts --out reports/scripts_audit.csv --out-md reports/scripts_audit.md`
-
-Auditrapporten innehåller bland annat:
-
-- path
-- filtyp/ext
-- antal rader
-- filstorlek
-- senast ändrad (git om möjligt)
-- interna referenser i repot
-- riskflaggor och kandidatscore
-
-Noteringar:
-
-- `scripts/archive/**` ignoreras vid intern referensräkning (dead zone).
-- Stora/genererade mappar exkluderas från referenssökning (`data/`, `results/`, `.venv/`, `node_modules/`, `dist/`, `build/`, `__pycache__/`, `.git/`).
-
-## Deprecate-flytta ett script
-
-### Dry-run (rekommenderad först)
-
-`python scripts/deprecate_move.py --source scripts/<script>.py --archive-subdir <kategori> --dry-run`
-
-### Utför flytt + wrapper
-
-`python scripts/deprecate_move.py --source scripts/<script>.py --archive-subdir <kategori>`
-
-Valfria flaggor:
-
-- `--archive-month YYYY-MM` för att skriva till specifik arkivmånad.
-
-Wrapper-beteende per filtyp:
-
-- `.py`: varning till stderr + körning via `runpy.run_path(..., run_name="__main__")`
-- `.ps1`: `Write-Warning` + `& <newpath> @args` + `exit $LASTEXITCODE`
-- `.sh`: varning till stderr + `exec bash <newpath> "$@"`
+- läs aktuell taxonomi i `scripts/` och `scripts/docs/README.md`
+- verifiera repo-regler i `docs/repository-layout-policy.md`
+- gör fokuserad referenssökning för den kandidat eller undermapp som granskas
+- skriv resultatet i en bounded `docs/audit/**`-yta när slice-storleken kräver det
 
 ## Rekommenderat arbetssätt
 
-1. Kör audit.
-2. Välj kandidat med tydlig evidens (refs/risk/ålder/storlek).
-3. Kör `deprecate_move.py` i dry-run.
-4. Kör skarp move + wrapper.
-5. Verifiera att befintliga anrop fortfarande fungerar.
-6. Vänta minst 14 dagar innan eventuell slutlig borttagning.
+1. Inventera den aktuella kandidatens funktion, referenser och nuvarande hemvist.
+2. Avgör om scriptet ska:
+   - stanna kvar där det är,
+   - flyttas direkt till en canonical purpose-based undermapp, eller
+   - tas upp i en separat archive-prep-slice.
+3. Om ett aktivt script flyttas: uppdatera referenser och docs i samma bounded slice.
+4. Om ett script ser historiskt ut: gör först referens- och lineage-kontroll innan någon archive-
+   eller delete-diskussion öppnas.
+5. Validera berörda docs, anrop och verifieringsytor efter varje lifecycle-ändring.
 
-## Checklista för radering (efter deprecation window)
+## Archive-prep checklista
 
-1. Minst 14 dagar har passerat sedan flytt till `scripts/archive/YYYY-MM/...`.
-2. `scripts/deprecated-usage.log` visar **0 usage** för scriptets wrapper under hela 14-dagarsperioden.
-3. Externa triggers är verifierade innan radering:
+Öppna inte archive/move bara för att ett script ser gammalt ut. Kontrollera minst att:
 
-- Windows Task Scheduler
-- cron
-- CI schedules
-
-4. Radera i två steg:
-
-- först wrapper på gamla pathen,
-- därefter (valfritt) archive-kopian efter ytterligare grace-period.
+1. aktuell referensyta är liten nog att uppdatera sanningsenligt
+2. ingen aktiv docs-, test-, scheduler-, CI- eller operativ väg fortfarande kräver gamla pathen
+3. destinationen är en explicit icke-aktiv historisk yta
+4. historisk/provenance-dokumentation uppdateras sanningsenligt i samma slice eller i en tydligt
+   kopplad uppföljning

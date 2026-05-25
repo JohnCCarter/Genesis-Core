@@ -2,7 +2,15 @@
 
 Date: 2026-03-30
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `direction-selected / non-launch-authoritative / no slice opened`
+Status: `historical RI upstream candidate-authority direction record / retained for provenance / not current branch guidance`
+
+> Later-status note (2026-05-22, `feature/genesis-topology-lifecycle-authority-map`): this file
+> is retained as a historical exact-state direction-selection record from
+> `feature/ri-role-map-implementation-2026-03-24`. The chosen direction below records the exact
+> earlier branch/state forward selection only, and the narrow supersession clause below is
+> historical to that earlier state. This retained packet does **not** by itself state the current
+> active direction, slice-opening authority, launchable-lane status, runtime authority, or
+> promotion meaning.
 
 ## COMMAND PACKET
 

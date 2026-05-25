@@ -1,5 +1,7 @@
 # Execution proxy partition — Phase 1
 
+Status: `historical observational partition closeout / docs-only / non-authorizing / no current roadmap authority`
+
 This note is observational only.
 It partitions the already generated execution-proxy surface so the repository can decide whether execution is being narrowed meaningfully or whether the current proxy lane has reached its honest limit.
 

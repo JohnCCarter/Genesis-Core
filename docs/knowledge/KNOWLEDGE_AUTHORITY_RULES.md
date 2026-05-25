@@ -10,6 +10,7 @@ It governs only the derivative surfaces below:
 - `docs/CURRENT_AUTHORITY_INDEX.md`
 - `docs/knowledge/CANONICAL_KNOWLEDGE_REGISTER.md`
 - `docs/knowledge/DOCUMENTATION_PROVENANCE_LINEAGE_MAP.md`
+- `docs/knowledge/GENESIS_TOPOLOGY_LIFECYCLE_AUTHORITY_MAP.md`
 - `docs/knowledge/RESEARCH_LINEAGE_MAP.md`
 - `docs/knowledge/EDGE_MAP.md`
 
@@ -44,6 +45,19 @@ Canonical support:
 - `AGENTS.md` (`Authority precedence in conflicts`)
 
 ## Core rules
+
+### Canonical Isolation Rule
+
+Repository material is non-authoritative by default unless it is explicitly listed in the current authority index, cited by an active authority surface, or promoted through a current governance packet.
+Historical, archive, audit, plan, analysis, research, and output surfaces may provide context or evidence, but they do not create current operational authority by existence, recency, path, detail, or volume.
+
+This layer therefore treats omission, proximity, and abundance as non-authorizing signals.
+If current authority is not explicit, the correct state is `NON_AUTHORIZING` or `UNRESOLVED`, not silent promotion.
+
+Canonical support:
+
+- `docs/CURRENT_AUTHORITY_INDEX.md` (`Purpose`, `Reading rule`)
+- `results/research/README.md` (`Research artifacts`, `Viktig gräns`)
 
 ### Rule 1 — Derivative only
 
@@ -115,6 +129,23 @@ Canonical support:
 - `docs/README.md` (`Analysis- och evidensnoter förblir icke-auktoriserande i sig`)
 - `docs/governance/concept_evidence_runtime_lane_model_2026-04-23.md` (`What this model is not`)
 - `docs/governance/README.md` (`Operativa dokument i docs/governance/** är kompletterande, inte överstyrande`)
+
+## Promotion boundary for research-derived material
+
+Research bundles, findings, audit outputs, and analysis notes may supply evidence, but they do not become canonical in this layer merely because they are recent, detailed, reproducible, or colocated.
+
+For this layer, the admissible promotion boundary is:
+
+1. research or evidence surface records observations
+2. a current cited authority surface or governance packet explicitly promotes, adopts, or cites the bounded conclusion
+3. only then may `docs/knowledge/CANONICAL_KNOWLEDGE_REGISTER.md` or `docs/CURRENT_AUTHORITY_INDEX.md` record the promoted conclusion or active surface
+
+If step 2 is absent, the material remains non-authoritative even when it is useful, reproducible, or widely referenced.
+
+Canonical support:
+
+- `results/research/README.md` (`Viktig gräns`)
+- `docs/CURRENT_AUTHORITY_INDEX.md` (`Purpose`, `Reading rule`)
 
 ## Status model
 
@@ -196,7 +227,7 @@ Otherwise use `UNRESOLVED`.
 ## Coverage rule
 
 Uncovered domains must be declared explicitly rather than implied complete.
-This first slice covers only top-level governance and documentation-routing surfaces, plus a bounded documentation-surface provenance/orientation map.
+This first slice covers only top-level governance and documentation-routing surfaces, plus a bounded documentation-surface provenance/orientation map and a bounded repo-zone topology/lifecycle/authority orientation map.
 Domain-specific research, packet, and edge classification remains out of scope unless directly added in a later bounded slice.
 
 Canonical support:
@@ -213,6 +244,22 @@ Canonical support:
 
 - `docs/README.md` (`Viktig försiktighetsregel`)
 - `docs/governance/README.md` (`SSOT och precedence`)
+
+## Repository topology / lifecycle / authority map rule
+
+`docs/knowledge/GENESIS_TOPOLOGY_LIFECYCLE_AUTHORITY_MAP.md` may map repo zones only when each zone-level claim is directly supported by current cited text or by explicit observed current tree structure paired with a cited current-use source.
+It may classify lifecycle posture, authority posture, risk posture, and advisory next-step bias only at zone level.
+`Next-step bias` is an advisory working cue, not an approval state, permission grant, or governance override.
+It may include an advisory `GREEN / YELLOW / RED` speed lens only as derivative shorthand for behavior-change risk and proximity to runtime, promotion, config-authority, and data-semantics surfaces.
+That speed lens must remain non-authorizing, must not replace the higher-order governance stack or mode resolution, and should bias upward rather than downward when a slice crosses bands or support is mixed.
+It may not be treated as proof of runtime approval, promotion readiness, file-by-file authority, or permission to modify a zone.
+Unsupported or mixed-signal zones must remain `UNRESOLVED`.
+
+Canonical support:
+
+- `docs/README.md` (`Viktig försiktighetsregel`)
+- `docs/governance/README.md` (`SSOT och precedence`)
+- `docs/repository-layout-policy.md` (`Scope`, `Zone model`)
 
 ## Stub rule for lineage and edge maps
 

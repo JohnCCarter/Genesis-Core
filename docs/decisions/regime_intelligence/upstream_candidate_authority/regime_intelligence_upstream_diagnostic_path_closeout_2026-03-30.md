@@ -2,7 +2,12 @@
 
 Date: 2026-03-30
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `CLOSED_IN_CURRENT_TRACKED_STATE`
+Status: `historical exact-state closeout record / retained for provenance / not current branch authority`
+
+> Current status note:
+>
+> - HISTORICAL 2026-05-22: in the present branch context, this document is retained as the exact earlier branch/state lane-local closeout record only.
+> - The retained closeout below does not provide current active lane-routing authority, current experiment-map opening authority, launch/execution authority, runtime authority, or promotion meaning.
 
 ## COMMAND PACKET
 

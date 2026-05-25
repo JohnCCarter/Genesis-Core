@@ -1,5 +1,7 @@
 # Execution proxy first read
 
+Status: `historical observational first-read / proxy-evidence only / not runtime or roadmap authority`
+
 This note is observational only.
 It records the first admissible reading of the new execution-proxy artifact surface generated from `trace_rows.fib_phase.ltf_debug.price` and preserves the boundary that proxy evidence is not the same thing as realized execution authority.
 

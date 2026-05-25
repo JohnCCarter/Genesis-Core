@@ -2,7 +2,15 @@
 
 Date: 2026-04-21
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `docs-only audit / static repo-visible only / no authorization`
+Status: `historical SCPE RI v1 shadow-backtest slice1 write-boundary audit / retained for provenance / not current branch guidance`
+
+> Later-status note (2026-05-22, `feature/genesis-topology-lifecycle-authority-map`): this file
+> is retained as historical branch-local static write-boundary analysis from
+> `feature/ri-role-map-implementation-2026-03-24`. The static `NOT GREEN` containment conclusion
+> below records the pre-fix repo-visible assessment at that time; later same-family follow-up on
+> that branch continued through the containment-fix implementation packet/report and the launch
+> re-authorization packet. This retained audit does **not** by itself state current branch blocker
+> truth, launch authority, execution authority, runtime authority, or paper/live semantics.
 
 ## COMMAND PACKET
 

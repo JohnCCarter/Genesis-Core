@@ -2,7 +2,12 @@
 
 Date: 2026-03-30
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `phase5-resolved / planning-only / no authorization`
+Status: `historical Phase 5 binding record / planning-only / non-authorizing / no current active binding authority`
+
+> Current status note:
+>
+> - HISTORICAL 2026-05-22: in the present branch context, this document is retained as a historical earlier branch/state Phase 5 binding record only.
+> - The binding text below is preserved verbatim as the exact earlier reference-binding record and does not confer current active binding authority, current pre-code-reference authority, launch/execution authority, runtime authority, or promotion meaning.
 
 ## COMMAND PACKET
 

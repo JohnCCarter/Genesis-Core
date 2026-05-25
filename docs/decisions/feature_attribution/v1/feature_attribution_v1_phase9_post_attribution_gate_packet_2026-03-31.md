@@ -2,7 +2,16 @@
 
 Date: 2026-03-31
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `phase9-proposed / docs-only / research-only / non-authorizing`
+Status: `historical Feature Attribution v1 Phase 9 packet / retained for provenance / not current branch guidance`
+
+> Current status note (2026-05-22, `feature/genesis-topology-lifecycle-authority-map`): this
+> packet is retained as historical branch-local Feature Attribution v1 documentation from the
+> earlier `feature/ri-role-map-implementation-2026-03-24` context. The future-boundary and
+> next-step wording below remains provenance only and does **not** open a current branch slice,
+> execution lane, or approval surface. Read it as part of the locked historical v1 chain rooted at
+> `docs/decisions/feature_attribution/v1/feature_attribution_v1_phase0_scope_freeze_packet_2026-03-31.md`
+> and later historical plan anchors `plan/feature_attribution_post_phase14_reactivation_roadmap_2026-04-02.md`
+> and `plan/genesis_driver_identification_master_roadmap_2026-04-14.md`.
 
 ## COMMAND PACKET
 

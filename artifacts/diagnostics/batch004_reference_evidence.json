@@ -1,0 +1,303 @@
+[
+  {
+    "path": "docs/audit/STRATEGY_LOGIC_AUDIT.md",
+    "title": "# Auditrapport: Strategilogik (Genesis-Core)",
+    "top_marker": "Status: `historical audit record / retained for traceability / not current approval or policy`",
+    "path_refs": [
+      ".\\docs\\audit\\DOCUMENTATION_DISPOSITION_MAP.md"
+    ],
+    "filename_refs": [
+      ".\\docs\\audit\\DOCUMENTATION_DISPOSITION_MAP.md"
+    ],
+    "slug_refs": [
+      ".\\docs\\audit\\DOCUMENTATION_DISPOSITION_MAP.md"
+    ],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "queue_refs": [],
+    "note_markers": [
+      "Status: `historical audit record / retained for traceability / not current approval or policy`",
+      "> Current status note (2026-05-22, `feature/knowledge-authority-layer`): this file is",
+      "> retained as historical audit evidence from `feature/composable-strategy-phase2`. It is"
+    ]
+  },
+  {
+    "path": "docs/audit/CONFIG_GOVERNANCE_AUDIT.md",
+    "title": "# Auditrapport: Konfig & Governance (Genesis-Core)",
+    "top_marker": "Status: `historical audit record / retained for traceability / not current approval or policy`",
+    "path_refs": [
+      ".\\docs\\audit\\DOCUMENTATION_DISPOSITION_MAP.md",
+      ".\\docs\\analysis\\diagnostics\\genesis_core_deep_premortem_project_baseline_2026-05-18.md",
+      ".\\docs\\decisions\\governance\\runtime_config_live_update_policy_boundary_packet_2026-05-15.md",
+      ".\\docs\\decisions\\governance\\legacy_validator_misuse_partial_reclassification_packet_2026-05-19.md"
+    ],
+    "filename_refs": [
+      ".\\docs\\audit\\DOCUMENTATION_DISPOSITION_MAP.md",
+      ".\\docs\\analysis\\diagnostics\\genesis_core_deep_premortem_project_baseline_2026-05-18.md",
+      ".\\docs\\decisions\\governance\\runtime_config_live_update_policy_boundary_packet_2026-05-15.md",
+      ".\\docs\\decisions\\governance\\legacy_validator_misuse_partial_reclassification_packet_2026-05-19.md"
+    ],
+    "slug_refs": [
+      ".\\docs\\analysis\\diagnostics\\genesis_core_deep_premortem_project_baseline_2026-05-18.md",
+      ".\\docs\\audit\\DOCUMENTATION_DISPOSITION_MAP.md",
+      ".\\docs\\decisions\\governance\\legacy_validator_misuse_partial_reclassification_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\runtime_config_live_update_policy_boundary_packet_2026-05-15.md"
+    ],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "queue_refs": [],
+    "note_markers": [
+      "Status: `historical audit record / retained for traceability / not current approval or policy`",
+      "> Current status note (2026-05-22, `feature/knowledge-authority-layer`): this file is",
+      "> retained as historical audit evidence from `feature/composable-strategy-phase2`. It is"
+    ]
+  },
+  {
+    "path": "docs/audit/BACKTEST_ENGINE_AUDIT.md",
+    "title": "# Auditrapport: Backtest/Engine (Genesis-Core)",
+    "top_marker": "Status: `historical audit record / retained for traceability / not current approval or policy`",
+    "path_refs": [
+      ".\\handoff.md",
+      ".\\docs\\audit\\DOCUMENTATION_DISPOSITION_MAP.md",
+      ".\\docs\\analysis\\diagnostics\\genesis_core_deep_premortem_project_baseline_2026-05-18.md",
+      ".\\docs\\decisions\\governance\\backtest_engine_split_track_reconcile_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\backtest_engine_build_results_seam_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\precompute_cache_config_identity_followup_selection_packet_2026-05-21.md",
+      ".\\docs\\decisions\\governance\\htf_exit_engine_selection_partial_reclassification_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\cache_schema_bump_touch_triggered_selector_policy_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\cache_schema_bump_enforcement_boundary_packet_2026-05-18.md",
+      ".\\docs\\decisions\\governance\\backtest_htf_context_divergence_partial_reclassification_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\backtest_error_policy_reopen_shape_packet_2026-05-19.md"
+    ],
+    "filename_refs": [
+      ".\\handoff.md",
+      ".\\docs\\audit\\DOCUMENTATION_DISPOSITION_MAP.md",
+      ".\\docs\\decisions\\governance\\precompute_cache_config_identity_followup_selection_packet_2026-05-21.md",
+      ".\\docs\\analysis\\diagnostics\\genesis_core_deep_premortem_project_baseline_2026-05-18.md",
+      ".\\docs\\decisions\\governance\\backtest_htf_context_divergence_partial_reclassification_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\backtest_engine_build_results_seam_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\backtest_error_policy_reopen_shape_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\backtest_engine_split_track_reconcile_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\cache_schema_bump_touch_triggered_selector_policy_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\cache_schema_bump_enforcement_boundary_packet_2026-05-18.md",
+      ".\\docs\\decisions\\governance\\htf_exit_engine_selection_partial_reclassification_packet_2026-05-19.md"
+    ],
+    "slug_refs": [
+      ".\\handoff.md",
+      ".\\docs\\audit\\DOCUMENTATION_DISPOSITION_MAP.md",
+      ".\\docs\\decisions\\governance\\backtest_engine_build_results_seam_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\backtest_engine_split_track_reconcile_packet_2026-05-19.md",
+      ".\\docs\\analysis\\diagnostics\\genesis_core_deep_premortem_project_baseline_2026-05-18.md",
+      ".\\docs\\decisions\\governance\\cache_schema_bump_touch_triggered_selector_policy_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\backtest_htf_context_divergence_partial_reclassification_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\backtest_error_policy_reopen_shape_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\cache_schema_bump_enforcement_boundary_packet_2026-05-18.md",
+      ".\\docs\\decisions\\governance\\precompute_cache_config_identity_followup_selection_packet_2026-05-21.md",
+      ".\\docs\\decisions\\governance\\htf_exit_engine_selection_partial_reclassification_packet_2026-05-19.md"
+    ],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "queue_refs": [],
+    "note_markers": [
+      "Status: `historical audit record / retained for traceability / not current approval or policy`",
+      "> Current status note (2026-05-22, `feature/knowledge-authority-layer`): this file is",
+      "> retained as historical audit evidence from `feature/composable-strategy-phase2`. It is"
+    ]
+  },
+  {
+    "path": "docs/audit/RI_P1_OFF_SIGNOFF_2026-03-04.md",
+    "title": "# RI P1 OFF Signoff \u2014 Implementation Report",
+    "top_marker": "Status: `historical signoff record / retained for traceability / not current approval or policy`",
+    "path_refs": [
+      ".\\docs\\audit\\DOCUMENTATION_DISPOSITION_MAP.md",
+      ".\\docs\\audit\\PR_RI_P1_OFF_SIGNOFF_2026-03-04.md",
+      ".\\docs\\audit\\MERGE_READINESS_PR58_2026-03-04.md",
+      ".\\docs\\audit\\refactor\\regime_intelligence\\command_packet_regime_intelligence_p1_off_parity_governed_rerun_execution_review_2026-03-17.md",
+      ".\\docs\\audit\\refactor\\regime_intelligence\\context_map_regime_intelligence_cutover_analysis_v1_2026-03-17.md",
+      ".\\docs\\audit\\refactor\\regime_intelligence\\context_map_regime_intelligence_p1_off_parity_governed_rerun_2026-03-17.md",
+      ".\\docs\\analysis\\regime_intelligence\\core\\regime_intelligence_parity_artifact_matrix_2026-03-17.md",
+      ".\\docs\\analysis\\regime_intelligence\\core\\regime_intelligence_default_cutover_gap_analysis_2026-03-17.md"
+    ],
+    "filename_refs": [
+      ".\\docs\\audit\\refactor\\regime_intelligence\\context_map_regime_intelligence_p1_off_parity_governed_rerun_2026-03-17.md",
+      ".\\docs\\audit\\refactor\\regime_intelligence\\context_map_regime_intelligence_cutover_analysis_v1_2026-03-17.md",
+      ".\\docs\\audit\\refactor\\regime_intelligence\\command_packet_regime_intelligence_p1_off_parity_governed_rerun_execution_review_2026-03-17.md",
+      ".\\docs\\analysis\\regime_intelligence\\core\\regime_intelligence_default_cutover_gap_analysis_2026-03-17.md",
+      ".\\docs\\analysis\\regime_intelligence\\core\\regime_intelligence_parity_artifact_matrix_2026-03-17.md",
+      ".\\docs\\audit\\PR_RI_P1_OFF_SIGNOFF_2026-03-04.md",
+      ".\\docs\\audit\\MERGE_READINESS_PR58_2026-03-04.md",
+      ".\\docs\\audit\\DOCUMENTATION_DISPOSITION_MAP.md"
+    ],
+    "slug_refs": [
+      ".\\docs\\analysis\\regime_intelligence\\core\\regime_intelligence_parity_artifact_matrix_2026-03-17.md",
+      ".\\docs\\analysis\\regime_intelligence\\core\\regime_intelligence_default_cutover_gap_analysis_2026-03-17.md",
+      ".\\docs\\audit\\MERGE_READINESS_PR58_2026-03-04.md",
+      ".\\docs\\audit\\PR_RI_P1_OFF_SIGNOFF_2026-03-04.md",
+      ".\\docs\\audit\\DOCUMENTATION_DISPOSITION_MAP.md",
+      ".\\docs\\audit\\refactor\\regime_intelligence\\context_map_regime_intelligence_cutover_analysis_v1_2026-03-17.md",
+      ".\\docs\\audit\\refactor\\regime_intelligence\\command_packet_regime_intelligence_p1_off_parity_governed_rerun_execution_review_2026-03-17.md",
+      ".\\docs\\audit\\refactor\\regime_intelligence\\context_map_regime_intelligence_p1_off_parity_governed_rerun_2026-03-17.md"
+    ],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "queue_refs": [],
+    "note_markers": [
+      "Status: `historical signoff record / retained for traceability / not current approval or policy`",
+      "> Current status note (2026-05-22, `feature/knowledge-authority-layer`): this file is",
+      "> retained as historical signoff evidence from `feature/regime-intelligence-p1-signoff`."
+    ]
+  },
+  {
+    "path": "docs/audit/research_ledger/command_packet_research_ledger_v1_merge_readiness_2026-03-16.md",
+    "title": "## COMMAND PACKET",
+    "top_marker": null,
+    "path_refs": [],
+    "filename_refs": [],
+    "slug_refs": [],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "queue_refs": [],
+    "note_markers": []
+  },
+  {
+    "path": "docs/audit/research_ledger/context_map_research_ledger_v1_merge_readiness_2026-03-16.md",
+    "title": "## Context Map",
+    "top_marker": null,
+    "path_refs": [
+      ".\\docs\\audit\\research_ledger\\command_packet_research_ledger_v1_merge_readiness_2026-03-16.md"
+    ],
+    "filename_refs": [
+      ".\\docs\\audit\\research_ledger\\command_packet_research_ledger_v1_merge_readiness_2026-03-16.md"
+    ],
+    "slug_refs": [
+      ".\\docs\\audit\\research_ledger\\command_packet_research_ledger_v1_merge_readiness_2026-03-16.md"
+    ],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "queue_refs": [],
+    "note_markers": []
+  },
+  {
+    "path": "docs/audit/research_orchestrator/command_packet_research_orchestrator_v1_2026-03-17.md",
+    "title": "## COMMAND PACKET",
+    "top_marker": null,
+    "path_refs": [],
+    "filename_refs": [],
+    "slug_refs": [],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "queue_refs": [],
+    "note_markers": []
+  },
+  {
+    "path": "docs/audit/research_orchestrator/context_map_research_orchestrator_v1_2026-03-17.md",
+    "title": "## Context Map",
+    "top_marker": null,
+    "path_refs": [
+      ".\\docs\\audit\\research_orchestrator\\command_packet_research_orchestrator_v1_2026-03-17.md"
+    ],
+    "filename_refs": [
+      ".\\docs\\audit\\research_orchestrator\\command_packet_research_orchestrator_v1_2026-03-17.md"
+    ],
+    "slug_refs": [
+      ".\\docs\\audit\\research_orchestrator\\command_packet_research_orchestrator_v1_2026-03-17.md"
+    ],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "queue_refs": [],
+    "note_markers": []
+  },
+  {
+    "path": "docs/audit/research_system/command_packet_research_system_integration_v1_2026-03-17.md",
+    "title": "## COMMAND PACKET",
+    "top_marker": null,
+    "path_refs": [],
+    "filename_refs": [],
+    "slug_refs": [],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "queue_refs": [],
+    "note_markers": []
+  },
+  {
+    "path": "docs/audit/research_system/context_map_research_system_integration_v1_2026-03-17.md",
+    "title": "## Context Map",
+    "top_marker": null,
+    "path_refs": [
+      ".\\docs\\audit\\research_system\\command_packet_research_system_integration_v1_2026-03-17.md"
+    ],
+    "filename_refs": [
+      ".\\docs\\audit\\research_system\\command_packet_research_system_integration_v1_2026-03-17.md"
+    ],
+    "slug_refs": [
+      ".\\docs\\audit\\research_system\\command_packet_research_system_integration_v1_2026-03-17.md"
+    ],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "queue_refs": [],
+    "note_markers": []
+  },
+  {
+    "path": "docs/audit/research_system/command_packet_backtest_champion_shadow_intelligence_v1_2026-03-18.md",
+    "title": "## COMMAND PACKET",
+    "top_marker": null,
+    "path_refs": [
+      ".\\docs\\features\\feature-champion-shadow-intelligence-1.md",
+      ".\\docs\\audit\\research_system\\context_map_backtest_champion_shadow_intelligence_v1_2026-03-18.md",
+      ".\\docs\\decisions\\scpe_ri_v1\\archive\\scpe_ri_v1_shadow_backtest_packet_boundary_2026-04-20.md",
+      ".\\docs\\analysis\\scpe_ri_v1\\archive\\scpe_ri_v1_runtime_integration_roadmap_2026-04-20.md"
+    ],
+    "filename_refs": [
+      ".\\docs\\analysis\\scpe_ri_v1\\archive\\scpe_ri_v1_runtime_integration_roadmap_2026-04-20.md",
+      ".\\docs\\features\\feature-champion-shadow-intelligence-1.md",
+      ".\\docs\\decisions\\scpe_ri_v1\\archive\\scpe_ri_v1_shadow_backtest_packet_boundary_2026-04-20.md",
+      ".\\docs\\audit\\research_system\\context_map_backtest_champion_shadow_intelligence_v1_2026-03-18.md"
+    ],
+    "slug_refs": [
+      ".\\docs\\analysis\\scpe_ri_v1\\archive\\scpe_ri_v1_runtime_integration_roadmap_2026-04-20.md",
+      ".\\docs\\features\\feature-champion-shadow-intelligence-1.md",
+      ".\\docs\\decisions\\scpe_ri_v1\\archive\\scpe_ri_v1_shadow_backtest_packet_boundary_2026-04-20.md",
+      ".\\docs\\audit\\research_system\\context_map_backtest_champion_shadow_intelligence_v1_2026-03-18.md"
+    ],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "queue_refs": [],
+    "note_markers": []
+  },
+  {
+    "path": "docs/audit/research_system/context_map_backtest_champion_shadow_intelligence_v1_2026-03-18.md",
+    "title": "## Context Map",
+    "top_marker": null,
+    "path_refs": [
+      ".\\docs\\features\\feature-champion-shadow-intelligence-1.md",
+      ".\\docs\\analysis\\scpe_ri_v1\\archive\\scpe_ri_v1_runtime_integration_seam_inventory_2026-04-20.md",
+      ".\\docs\\audit\\research_system\\command_packet_backtest_champion_shadow_intelligence_v1_2026-03-18.md"
+    ],
+    "filename_refs": [
+      ".\\docs\\analysis\\scpe_ri_v1\\archive\\scpe_ri_v1_runtime_integration_seam_inventory_2026-04-20.md",
+      ".\\docs\\features\\feature-champion-shadow-intelligence-1.md",
+      ".\\docs\\audit\\research_system\\command_packet_backtest_champion_shadow_intelligence_v1_2026-03-18.md"
+    ],
+    "slug_refs": [
+      ".\\docs\\features\\feature-champion-shadow-intelligence-1.md",
+      ".\\docs\\audit\\research_system\\command_packet_backtest_champion_shadow_intelligence_v1_2026-03-18.md",
+      ".\\docs\\analysis\\scpe_ri_v1\\archive\\scpe_ri_v1_runtime_integration_seam_inventory_2026-04-20.md"
+    ],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "queue_refs": [],
+    "note_markers": []
+  }
+]

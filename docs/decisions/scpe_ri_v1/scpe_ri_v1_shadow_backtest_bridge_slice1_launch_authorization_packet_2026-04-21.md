@@ -2,7 +2,15 @@
 
 Date: 2026-04-21
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `launch authorization decision recorded / fail-closed / not authorized now`
+Status: `historical earlier SCPE RI v1 launch-authorization decision record / retained for provenance / not current branch guidance`
+
+> Later-status note (2026-05-22, `feature/genesis-topology-lifecycle-authority-map`): this file
+> is retained as a historical earlier launch-decision record from
+> `feature/ri-role-map-implementation-2026-03-24`. The `NOT AUTHORIZED NOW` verdict below records
+> the exact earlier branch/state assessment at that time only. Later same-family follow-up exists
+> in the launch re-authorization and final launch-authorization packets, but this retained packet
+> does **not** by itself state current branch blocker truth, current launch authority, execution
+> authority, runtime authority, or paper/live semantics.
 
 ## COMMAND PACKET
 

@@ -4,6 +4,11 @@ Mode: `RESEARCH`
 Branch: `feature/Regime-Intelligence`
 Category: `obs`
 Constraint: `NO BEHAVIOR CHANGE` in this document; analysis only.
+Status: `historical recommendation artifact / analysis-only / not champion writeback authority`
+
+> Current status note: this 2026-03-13 recommendation is preserved as historical recommendation
+> context for the then-current RI challenger line. It is not a current promotion decision, not
+> current champion authority, and not a substitute for later governed writeback/readiness review.
 
 ## Recommendation
 

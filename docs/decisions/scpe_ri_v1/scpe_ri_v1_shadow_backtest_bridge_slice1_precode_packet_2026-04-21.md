@@ -2,7 +2,13 @@
 
 Date: 2026-04-21
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `pre-code-defined / planning-only / no authorization`
+Status: `historical SCPE RI v1 shadow-backtest slice1 precode packet / retained for provenance / not current branch guidance`
+
+> Later-status note (2026-05-22, `feature/genesis-topology-lifecycle-authority-map`): this file
+> is retained as historical branch-local shadow-backtest planning packet context from
+> `feature/ri-role-map-implementation-2026-03-24`. The planning-only wording below records what
+> that earlier branch defined at the time; it does **not** reopen current branch implementation
+> authority, execution authority, runtime authority, or paper/live semantics.
 
 This document is a pre-code planning packet only. It does not authorize execution, artifact generation, code changes, config changes, test changes, runtime instrumentation, or implementation of any RI-only shadow-backtest slice. Any runnable slice requires a separate packet, fresh scope approval, separate risk/path classification, and separate verification.
 

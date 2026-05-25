@@ -1,0 +1,56 @@
+{
+  "batch": "008",
+  "date": "2026-05-22",
+  "mode": "RESEARCH",
+  "branch": "feature/genesis-topology-lifecycle-authority-map",
+  "candidate": "docs/archive/phase6/PHASE-6_LEARNINGS.md",
+  "supporting_surfaces": [
+    "docs/archive/phase6/README.md",
+    "docs/audit/refactor/evidence/docs_archive_triage_phase6_legacy_core_decision_2026-03-09.md",
+    "docs/audit/refactor/evidence/docs_archive_triage_matrix_2026-03-09.tsv",
+    "docs/audit/refactor/evidence/candidate19_phase6_legacy_core_path_refcheck_2026-03-09.txt"
+  ],
+  "observed": {
+    "has_top_status_line": false,
+    "has_top_current_status_note": false,
+    "prior_triage_classification": "KEEP",
+    "prior_path_refcheck": "NO_HIT",
+    "hardened_companion_exists": true,
+    "companion": "docs/archive/phase6/README.md"
+  },
+  "skim_risk_matches": [
+    {
+      "line": 26,
+      "text": "Ensure system is production-ready"
+    },
+    {
+      "line": 295,
+      "text": "## 📈 PERFORMANCE METRICS (Current System)"
+    },
+    {
+      "line": 395,
+      "text": "- All tests passing"
+    },
+    {
+      "line": 397,
+      "text": "- Production-ready"
+    },
+    {
+      "line": 407,
+      "text": "## 📋 DECISION NEEDED"
+    }
+  ],
+  "safe_patch_shape": [
+    "add top Status line",
+    "add one current-status routing note near file top",
+    "preserve all archived findings, metrics, recommendations, and historical wording below the added framing"
+  ],
+  "out_of_scope": [
+    "body rewrites",
+    "archive moves or deletes",
+    "changes to historical findings or recommendations",
+    "runtime, config, test, or script behavior changes",
+    "edits to docs/CURRENT_AUTHORITY_INDEX.md",
+    "edits to docs/knowledge/DOCUMENTATION_PROVENANCE_LINEAGE_MAP.md"
+  ]
+}

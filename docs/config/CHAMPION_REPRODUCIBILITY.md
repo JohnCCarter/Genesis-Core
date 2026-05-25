@@ -1,5 +1,14 @@
 # Champion Reproducibility - Complete Config Storage
 
+Status: `reproducibility reference context / retained for provenance / not standalone current config authority`
+
+> Current status note (2026-05-22, `feature/genesis-topology-lifecycle-authority-map`): this
+> page is retained as reproducibility/reference context for merged-config champion storage. For
+> current operational boundary guidance, see `config/README.md` and
+> `docs/governance/runtime_config_live_update_matrix_2026-05-15.md`. Examples below may reflect
+> historical import paths or CLI entrypoints and should be read as reference material, not current
+> operational instructions.
+
 ## Problem
 
 Champions created in one time period could produce different results when tested later if `runtime.json` changed between creation and testing.

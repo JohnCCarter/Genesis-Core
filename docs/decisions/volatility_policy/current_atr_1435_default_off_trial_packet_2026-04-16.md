@@ -2,7 +2,12 @@
 
 Date: 2026-04-16
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `proposed / research / execution-only / no-runtime-edits`
+Status: `historical 1435-only trial proposal / retained for provenance / not current branch authority`
+
+> Current status note:
+>
+> - HISTORICAL 2026-05-22: in the present branch context, this document is retained as the exact earlier branch/state `1435`-only execution-trial proposal only.
+> - The retained packet below does not provide current candidate-selection authority, current trial-first authority, launch/execution authority, runtime authority, or promotion meaning; any further movement must be established in a separate packeted slice.
 
 ## COMMAND PACKET
 

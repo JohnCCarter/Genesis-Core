@@ -1,0 +1,19 @@
+{
+  "batch": 28,
+  "date": "2026-05-22",
+  "mode": "RESEARCH",
+  "branch": "feature/genesis-topology-lifecycle-authority-map",
+  "scope": [
+    "docs/decisions/regime_intelligence/upstream_candidate_authority/regime_intelligence_upstream_candidate_authority_direction_packet_2026-03-30.md"
+  ],
+  "observed_status": "direction-selected / non-launch-authoritative / no slice opened",
+  "classification": "YELLOW_NEEDS_REVIEW",
+  "patch_shape": "top framing plus historical-current-use note only",
+  "supporting_refs": [
+    "docs/decisions/regime_intelligence/upstream_candidate_authority/regime_intelligence_upstream_diagnostic_path_closeout_2026-03-30.md",
+    "docs/decisions/regime_intelligence/optuna/signal/regime_intelligence_optuna_signal_hypothesis_direction_packet_2026-03-27.md",
+    "docs/audit/ri_upstream_candidate_authority_diagnostics_historical_framing_audit_batch_026.md",
+    "docs/audit/ri_signal_direction_superseded_pointer_audit_batch_027.md"
+  ],
+  "note": "The retained upstream candidate-authority direction packet should read as a historical earlier branch-state direction-selection record only, and not as the current active branch direction or slice-opening authority."
+}

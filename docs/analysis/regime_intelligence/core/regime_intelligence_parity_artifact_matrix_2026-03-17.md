@@ -2,6 +2,11 @@
 
 Date: 2026-03-17
 Slice: `feature/regime-intelligence-cutover-analysis-v1`
+Status: `historical parity evidence matrix / analysis-only / not cutover or promotion authority`
+
+> Current status note: this matrix records the 2026-03-17 parity evidence reading as historical
+> evidence context only. It is not a current cutover decision, not a live readiness checklist, and
+> not current authority without a later explicitly governed decision surface.
 
 | Claim / question                                                      | Evidence source                                                                                                                                                     | Current observed status                                                             | Gap / risk                                                                          | Required follow-up                                                                           |
 | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |

@@ -1,0 +1,22 @@
+{
+  "batch": 29,
+  "date": "2026-05-22",
+  "mode": "RESEARCH",
+  "branch": "feature/genesis-topology-lifecycle-authority-map",
+  "scope": [
+    "docs/decisions/volatility_policy/current_atr_1435_default_off_trial_precode_packet_2026-04-16.md",
+    "docs/decisions/volatility_policy/current_atr_1435_default_off_rollout_boundary_packet_2026-04-16.md"
+  ],
+  "observed_statuses": [
+    "proposed / docs-only / research-only / non-authorizing",
+    "proposed / docs-only / research-only / non-authorizing"
+  ],
+  "classification": "READY_SUPERSEDED_POINTER",
+  "patch_shape": "top framing plus later-status pointer only",
+  "supporting_refs": [
+    "docs/decisions/volatility_policy/current_atr_1435_default_off_trial_packet_2026-04-16.md",
+    "docs/decisions/volatility_policy/current_atr_1435_policy_validation_packet_2026-04-16.md",
+    "docs/decisions/volatility_policy/current_atr_900_vs_1435_policy_handoff_2026-04-16.md"
+  ],
+  "note": "The retained precode and rollout-boundary packets should read as historical earlier boundary records with a narrow pointer to the later default-off trial packet, not as current open execution boundaries."
+}

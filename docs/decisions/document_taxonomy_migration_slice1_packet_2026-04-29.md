@@ -1,5 +1,11 @@
 # Document taxonomy migration slice 1 packet — 2026-04-29
 
+Status: `historical migration slice packet / docs-only / non-authorizing`
+
+> Current status note: this file is retained as the historical 2026-04-29 migration-slice packet
+> from `feature/next-slice-2026-04-29`. It is not current branch move authority or current packet
+> instruction on later branches.
+
 ## COMMAND PACKET
 
 - **Mode:** `RESEARCH` — source: `branch:feature/next-slice-2026-04-29`

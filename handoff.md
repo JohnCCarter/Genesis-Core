@@ -1,5 +1,7 @@
 # HANDOFF — risk-hardening wave3 kickoff
 
+Status: `branch-scoped handoff / live only on feature/risk-hardening-wave3 / historical on unrelated branches`
+
 Senast statusmarkerad: 2026-05-21
 
 > Later-status note (2026-05-21, `feature/knowledge-authority-layer`): wave3-noten nedan

@@ -1,0 +1,22 @@
+{
+  "batch": 20,
+  "date": "2026-05-22",
+  "mode": "RESEARCH",
+  "branch": "feature/genesis-topology-lifecycle-authority-map",
+  "scope": [
+    "docs/decisions/scpe_ri_v1/scpe_ri_v1_runtime_observability_slice1_precode_packet_2026-04-21.md",
+    "docs/decisions/scpe_ri_v1/scpe_ri_v1_runtime_observability_slice2_ui_consumer_precode_packet_2026-04-21.md"
+  ],
+  "observed_statuses": [
+    "proposed / bounded runtime-adjacent observational implementation / request-scoped / default unchanged",
+    "proposed / bounded UI consumer implementation / default-off / no server-authority change"
+  ],
+  "classification": "READY_STATUS_HEADER",
+  "patch_shape": "top framing only",
+  "note": "Historical runtime-observability precode packet wording does not reopen current branch implementation authority.",
+  "supporting_refs": [
+    "docs/analysis/scpe_ri_v1/scpe_ri_v1_runtime_observability_slice1_implementation_report_2026-04-21.md",
+    "docs/analysis/scpe_ri_v1/scpe_ri_v1_runtime_observability_slice2_ui_consumer_implementation_report_2026-04-21.md",
+    "docs/decisions/scpe_ri_v1/archive/scpe_ri_v1_runtime_observability_closeout_transition_packet_2026-04-21.md"
+  ]
+}

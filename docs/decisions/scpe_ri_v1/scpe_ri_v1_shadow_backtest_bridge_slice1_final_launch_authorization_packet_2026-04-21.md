@@ -2,7 +2,11 @@
 
 Date: 2026-04-21
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `AUTHORIZED NOW / state-bound / self-revoking`
+Status: `historical authorization record / exact-state 2026-04-21 / not current authority`
+
+> Historical record only: this packet records the exact-state launch authorization assessed on
+> 2026-04-21. It does not grant current launch authority for the present branch/state or establish
+> current runtime evidence, paper/live readiness, or promotion meaning.
 
 ## COMMAND PACKET
 

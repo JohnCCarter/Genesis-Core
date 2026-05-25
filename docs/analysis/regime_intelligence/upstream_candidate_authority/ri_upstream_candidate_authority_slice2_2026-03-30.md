@@ -2,7 +2,14 @@
 
 Date: 2026-03-30
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `research-diagnostic / observability only / no runtime change`
+Status: `historical RI upstream candidate-authority diagnostic summary / retained for provenance / not current branch guidance`
+
+> Later-status note (2026-05-22, `feature/genesis-topology-lifecycle-authority-map`): this file
+> is retained as a historical bounded upstream diagnostic summary from
+> `feature/ri-role-map-implementation-2026-03-24`. The diagnostic observations below record that
+> earlier branch-state only. In the present tracked state, the fixed upstream diagnostic path was
+> later closed; this retained summary does **not** by itself state a current active diagnostic lane,
+> runtime authority, or promotion meaning.
 
 ## Purpose
 

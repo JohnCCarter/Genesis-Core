@@ -2,7 +2,14 @@
 
 Date: 2026-03-27
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `direction-selected / SIGNAL only / phases 3–8 deferred pending authority resolution`
+Status: `historical RI SIGNAL direction record / retained for provenance / not current branch guidance`
+
+> Later-status note (2026-05-22, `feature/genesis-topology-lifecycle-authority-map`): this file
+> is retained as a historical earlier forward-direction record from
+> `feature/ri-role-map-implementation-2026-03-24`. A later upstream candidate-authority direction
+> packet narrowly superseded this file only as the active forward direction selection. This
+> retained packet does **not** by itself state the current active direction, a launchable lane,
+> runtime authority, or promotion meaning.
 
 ## COMMAND PACKET
 

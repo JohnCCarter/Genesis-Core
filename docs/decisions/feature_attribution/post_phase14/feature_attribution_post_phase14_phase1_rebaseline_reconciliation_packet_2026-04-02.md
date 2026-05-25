@@ -2,7 +2,15 @@
 
 Date: 2026-04-02
 Branch: `feature/ri-role-map-implementation-2026-03-24`
-Status: `phase1-proposed / docs-plus-artifact / non-authorizing`
+Status: `historical post-Phase-14 reconciliation packet / retained for provenance / not current branch guidance`
+
+> Current status note (2026-05-22, `feature/genesis-topology-lifecycle-authority-map`): this
+> packet is retained as historical branch-local documentation from the earlier
+> `feature/ri-role-map-implementation-2026-03-24` context. The proposed-slice, memo-creation, and
+> future-review wording below do **not** by themselves open a current next slice or execution
+> authority on this branch. Read it together with the already historical/closed plan anchors in
+> `plan/feature_attribution_post_phase14_reactivation_roadmap_2026-04-02.md` and
+> `plan/genesis_driver_identification_master_roadmap_2026-04-14.md`.
 
 ## COMMAND PACKET
 

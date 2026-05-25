@@ -3,7 +3,16 @@
 Date: 2026-04-21
 Branch: `feature/ri-role-map-implementation-2026-03-24`
 Mode: `RESEARCH` — source: `branch:feature/ri-role-map-implementation-2026-03-24`
-Status: `implemented / docs-only / file-scoped-validation-passed / post-diff-audited`
+Status: `historical SCPE RI v1 closeout-to-paper-shadow implementation report / retained for provenance / not current branch guidance`
+
+> Later-status note (2026-05-22, `feature/genesis-topology-lifecycle-authority-map`): this file
+> is retained as historical branch-local docs-only closeout provenance from
+> `feature/ri-role-map-implementation-2026-03-24`. The implemented/docs-only wording below records
+> what that earlier branch completed at the time; it does **not** reopen current paper-shadow
+> work, establish current branch authority, or grant paper/live semantics, readiness, deployment,
+> or promotion meaning. For current interpretation, read it together with
+> `docs/decisions/scpe_ri_v1/archive/scpe_ri_v1_runtime_observability_closeout_transition_packet_2026-04-21.md`
+> and `docs/decisions/scpe_ri_v1/scpe_ri_v1_paper_shadow_live_paper_isolation_boundary_packet_2026-05-15.md`.
 
 > Reference update note (2026-05-18):
 >

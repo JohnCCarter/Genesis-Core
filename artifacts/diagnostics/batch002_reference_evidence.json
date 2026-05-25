@@ -1,0 +1,464 @@
+[
+  {
+    "path": "docs/analysis/diagnostics/next_phase_verkstad_queue_2026-05-15.md",
+    "title": "# Next phase verkstad queue",
+    "has_top_status_marker": true,
+    "top_status_marker": "Status: `initial queue closed / successor phase closed / docs-only / non-authorizing`",
+    "path_refs": [
+      ".\\docs\\decisions\\scpe_ri_v1\\scpe_ri_v1_shadow_backtest_execution_summary_current_state_portability_boundary_packet_2026-05-18.md",
+      ".\\docs\\decisions\\scpe_ri_v1\\scpe_ri_v1_paper_shadow_live_paper_isolation_boundary_packet_2026-05-15.md",
+      ".\\docs\\decisions\\governance\\working_contract_branch_anchor_demotion_packet_2026-05-15.md",
+      ".\\docs\\decisions\\governance\\scpe_defensive_probe_carrier_decision_packet_2026-05-15.md",
+      ".\\docs\\decisions\\governance\\ri_policy_router_d1_transport_falsifier_evidence_boundary_packet_2026-05-15.md",
+      ".\\docs\\decisions\\governance\\queue_status_freshness_guard_packet_2026-05-15.md",
+      ".\\docs\\decisions\\governance\\edge_origin_isolation_manifest_pilot_portability_boundary_packet_2026-05-18.md",
+      ".\\docs\\decisions\\governance\\edge_origin_isolation_carrier_decision_packet_2026-05-15.md",
+      ".\\docs\\decisions\\governance\\decision_influencing_claim_header_boundary_packet_2026-05-15.md",
+      ".\\docs\\analysis\\diagnostics\\premortem_delta_reanchor_feature_evidence_closeout_pilot_2026-05-18.md",
+      ".\\docs\\analysis\\diagnostics\\ignored_artifact_dependency_inventory_2026-05-15.md",
+      ".\\docs\\analysis\\diagnostics\\genesis_core_premortem_feature_evidence_closeout_pilot_2026-05-15.md",
+      ".\\docs\\analysis\\diagnostics\\genesis_core_deep_premortem_feature_evidence_closeout_pilot_2026-05-15.md",
+      ".\\docs\\analysis\\diagnostics\\deep_premortem_followup_phase_plan_feature_evidence_closeout_pilot_2026-05-15.md",
+      ".\\docs\\analysis\\diagnostics\\decision_influencing_replay_smoke_candidate_selection_2026-05-15.md"
+    ],
+    "filename_refs": [
+      ".\\docs\\decisions\\scpe_ri_v1\\scpe_ri_v1_shadow_backtest_execution_summary_current_state_portability_boundary_packet_2026-05-18.md",
+      ".\\docs\\decisions\\governance\\working_contract_branch_anchor_demotion_packet_2026-05-15.md",
+      ".\\docs\\decisions\\governance\\scpe_defensive_probe_carrier_decision_packet_2026-05-15.md",
+      ".\\docs\\decisions\\governance\\ri_policy_router_d1_transport_falsifier_evidence_boundary_packet_2026-05-15.md",
+      ".\\docs\\decisions\\governance\\queue_status_freshness_guard_packet_2026-05-15.md",
+      ".\\docs\\decisions\\governance\\edge_origin_isolation_manifest_pilot_portability_boundary_packet_2026-05-18.md",
+      ".\\docs\\decisions\\governance\\edge_origin_isolation_carrier_decision_packet_2026-05-15.md",
+      ".\\docs\\decisions\\governance\\decision_influencing_claim_header_boundary_packet_2026-05-15.md",
+      ".\\docs\\decisions\\scpe_ri_v1\\scpe_ri_v1_paper_shadow_live_paper_isolation_boundary_packet_2026-05-15.md",
+      ".\\docs\\analysis\\diagnostics\\premortem_delta_reanchor_feature_evidence_closeout_pilot_2026-05-18.md",
+      ".\\docs\\analysis\\diagnostics\\ignored_artifact_dependency_inventory_2026-05-15.md",
+      ".\\docs\\analysis\\diagnostics\\genesis_core_premortem_feature_evidence_closeout_pilot_2026-05-15.md",
+      ".\\docs\\analysis\\diagnostics\\genesis_core_deep_premortem_feature_evidence_closeout_pilot_2026-05-15.md",
+      ".\\docs\\analysis\\diagnostics\\deep_premortem_followup_phase_plan_feature_evidence_closeout_pilot_2026-05-15.md",
+      ".\\docs\\analysis\\diagnostics\\decision_influencing_replay_smoke_candidate_selection_2026-05-15.md"
+    ],
+    "slug_refs": [
+      ".\\docs\\decisions\\scpe_ri_v1\\scpe_ri_v1_shadow_backtest_execution_summary_current_state_portability_boundary_packet_2026-05-18.md",
+      ".\\docs\\decisions\\scpe_ri_v1\\scpe_ri_v1_paper_shadow_live_paper_isolation_boundary_packet_2026-05-15.md",
+      ".\\docs\\decisions\\governance\\edge_origin_isolation_carrier_decision_packet_2026-05-15.md",
+      ".\\docs\\decisions\\governance\\decision_influencing_claim_header_boundary_packet_2026-05-15.md",
+      ".\\docs\\decisions\\governance\\edge_origin_isolation_manifest_pilot_portability_boundary_packet_2026-05-18.md",
+      ".\\docs\\decisions\\governance\\working_contract_branch_anchor_demotion_packet_2026-05-15.md",
+      ".\\docs\\decisions\\governance\\scpe_defensive_probe_carrier_decision_packet_2026-05-15.md",
+      ".\\docs\\decisions\\governance\\ri_policy_router_d1_transport_falsifier_evidence_boundary_packet_2026-05-15.md",
+      ".\\docs\\decisions\\governance\\queue_status_freshness_guard_packet_2026-05-15.md",
+      ".\\docs\\analysis\\diagnostics\\premortem_delta_reanchor_feature_evidence_closeout_pilot_2026-05-18.md",
+      ".\\docs\\analysis\\diagnostics\\ignored_artifact_dependency_inventory_2026-05-15.md",
+      ".\\docs\\analysis\\diagnostics\\genesis_core_premortem_feature_evidence_closeout_pilot_2026-05-15.md",
+      ".\\docs\\analysis\\diagnostics\\genesis_core_deep_premortem_feature_evidence_closeout_pilot_2026-05-15.md",
+      ".\\docs\\analysis\\diagnostics\\deep_premortem_followup_phase_plan_feature_evidence_closeout_pilot_2026-05-15.md",
+      ".\\docs\\analysis\\diagnostics\\decision_influencing_replay_smoke_candidate_selection_2026-05-15.md"
+    ],
+    "title_refs": [],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "successor_markers": [
+      "Status: `initial queue closed / successor phase closed / docs-only / non-authorizing`",
+      "> Queue sync note (2026-05-18): This file remains a record of the 2026-05-15 queue state and its",
+      "This document records the initial post-premortem execution queue after the completed premortem closeout and evidence-manifest boundary work. The initial six-slice queue below is now historical, and the successor phase reopened from the branch premortem reading is now also historical and closed later in this document. This remains a sequencing artifact in `RESEARCH`; it grants no runtime, config-authority, paper/live, promotion, or champion authority by itself."
+    ]
+  },
+  {
+    "path": "docs/analysis/diagnostics/premortem_followup_phase_plan_2026-05-15.md",
+    "title": "# Premortem follow-up phase plan",
+    "has_top_status_marker": true,
+    "top_status_marker": "Status: `historical planning artifact / non-executable / no runtime authority`",
+    "path_refs": [
+      ".\\docs\\analysis\\diagnostics\\premortem_delta_reanchor_feature_evidence_closeout_pilot_2026-05-18.md"
+    ],
+    "filename_refs": [
+      ".\\docs\\analysis\\diagnostics\\premortem_delta_reanchor_feature_evidence_closeout_pilot_2026-05-18.md"
+    ],
+    "slug_refs": [
+      ".\\docs\\decisions\\scpe_ri_v1\\scpe_ri_v1_shadow_backtest_execution_summary_current_state_portability_boundary_packet_2026-05-18.md",
+      ".\\docs\\analysis\\diagnostics\\deep_premortem_followup_phase_plan_feature_evidence_closeout_pilot_2026-05-15.md",
+      ".\\docs\\analysis\\diagnostics\\premortem_delta_reanchor_feature_evidence_closeout_pilot_2026-05-18.md",
+      ".\\docs\\analysis\\diagnostics\\genesis_core_deep_premortem_feature_evidence_closeout_pilot_2026-05-15.md",
+      ".\\docs\\decisions\\governance\\working_contract_branch_anchor_demotion_packet_2026-05-15.md",
+      ".\\docs\\decisions\\governance\\scpe_phasec_mixed_replay_non_portability_boundary_packet_2026-05-18.md"
+    ],
+    "title_refs": [],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "successor_markers": [
+      "> Current status note:"
+    ]
+  },
+  {
+    "path": "docs/analysis/regime_intelligence/core/regime_intelligence_cutover_readiness_2026-03-17.md",
+    "title": "# Regime Intelligence cutover readiness assessment",
+    "has_top_status_marker": true,
+    "top_status_marker": "Status: `analysis-only / not a cutover approval`",
+    "path_refs": [
+      ".\\docs\\analysis\\regime_intelligence\\optuna\\challenger_family\\regime_intelligence_optuna_challenger_family_promotion_readiness_assessment_2026-03-26.md",
+      ".\\docs\\decisions\\regime_intelligence\\optuna\\challenger_family\\regime_intelligence_optuna_challenger_family_non_runtime_evidence_sufficiency_packet_2026-03-26.md",
+      ".\\docs\\audit\\refactor\\regime_intelligence\\context_map_regime_intelligence_cutover_analysis_v1_2026-03-17.md",
+      ".\\docs\\audit\\refactor\\regime_intelligence\\command_packet_regime_intelligence_cutover_analysis_v1_2026-03-17.md"
+    ],
+    "filename_refs": [
+      ".\\docs\\audit\\refactor\\regime_intelligence\\context_map_regime_intelligence_cutover_analysis_v1_2026-03-17.md",
+      ".\\docs\\audit\\refactor\\regime_intelligence\\command_packet_regime_intelligence_cutover_analysis_v1_2026-03-17.md",
+      ".\\docs\\analysis\\regime_intelligence\\optuna\\challenger_family\\regime_intelligence_optuna_challenger_family_promotion_readiness_assessment_2026-03-26.md",
+      ".\\docs\\decisions\\regime_intelligence\\optuna\\challenger_family\\regime_intelligence_optuna_challenger_family_non_runtime_evidence_sufficiency_packet_2026-03-26.md"
+    ],
+    "slug_refs": [
+      ".\\docs\\analysis\\regime_intelligence\\optuna\\challenger_family\\regime_intelligence_optuna_challenger_family_promotion_readiness_assessment_2026-03-26.md",
+      ".\\docs\\decisions\\regime_intelligence\\optuna\\challenger_family\\regime_intelligence_optuna_challenger_family_non_runtime_evidence_sufficiency_packet_2026-03-26.md",
+      ".\\docs\\audit\\refactor\\regime_intelligence\\command_packet_regime_intelligence_cutover_analysis_v1_2026-03-17.md",
+      ".\\docs\\audit\\refactor\\regime_intelligence\\context_map_regime_intelligence_cutover_analysis_v1_2026-03-17.md"
+    ],
+    "title_refs": [],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "successor_markers": []
+  },
+  {
+    "path": "docs/analysis/scpe_ri_v1/scpe_ri_v1_router_replay_plan_2026-04-20.md",
+    "title": "# SCPE RI V1 Router Replay Plan",
+    "has_top_status_marker": true,
+    "top_status_marker": "Status: `historical / docs-only / bounded research-only replay plan / branch-specific provenance`",
+    "path_refs": [
+      ".\\docs\\scpe_ri_v1_architecture.md",
+      ".\\docs\\knowledge\\DOCUMENTATION_PROVENANCE_LINEAGE_MAP.md",
+      ".\\docs\\analysis\\regime_intelligence\\router_replay\\ri_router_replay_concept_case_2026-04-23.md",
+      ".\\docs\\audit\\DOCUMENTATION_DISPOSITION_MAP.md",
+      ".\\docs\\decisions\\scpe_ri_v1\\scpe_ri_v1_router_replay_implementation_packet_2026-04-20.md",
+      ".\\docs\\decisions\\regime_intelligence\\router_replay\\ri_router_replay_implementation_packet_2026-04-23.md",
+      ".\\docs\\decisions\\regime_intelligence\\router_replay\\ri_router_replay_evidence_slice_precode_packet_2026-04-23.md",
+      ".\\docs\\analysis\\recommendations\\ri_bucket_sample_expansion_b1_findings_2026-04-21.md"
+    ],
+    "filename_refs": [
+      ".\\docs\\scpe_ri_v1_architecture.md",
+      ".\\docs\\knowledge\\DOCUMENTATION_PROVENANCE_LINEAGE_MAP.md",
+      ".\\docs\\decisions\\scpe_ri_v1\\scpe_ri_v1_router_replay_implementation_packet_2026-04-20.md",
+      ".\\docs\\audit\\DOCUMENTATION_DISPOSITION_MAP.md",
+      ".\\docs\\decisions\\regime_intelligence\\router_replay\\ri_router_replay_implementation_packet_2026-04-23.md",
+      ".\\docs\\decisions\\regime_intelligence\\router_replay\\ri_router_replay_evidence_slice_precode_packet_2026-04-23.md",
+      ".\\docs\\analysis\\regime_intelligence\\router_replay\\ri_router_replay_concept_case_2026-04-23.md",
+      ".\\docs\\analysis\\recommendations\\ri_bucket_sample_expansion_b1_findings_2026-04-21.md"
+    ],
+    "slug_refs": [
+      ".\\docs\\scpe_ri_v1_architecture.md",
+      ".\\docs\\knowledge\\DOCUMENTATION_PROVENANCE_LINEAGE_MAP.md",
+      ".\\docs\\decisions\\scpe_ri_v1\\scpe_ri_v1_router_replay_implementation_packet_2026-04-20.md",
+      ".\\docs\\decisions\\regime_intelligence\\router_replay\\ri_router_replay_implementation_packet_2026-04-23.md",
+      ".\\docs\\decisions\\regime_intelligence\\router_replay\\ri_router_replay_evidence_slice_precode_packet_2026-04-23.md",
+      ".\\docs\\audit\\DOCUMENTATION_DISPOSITION_MAP.md",
+      ".\\docs\\analysis\\regime_intelligence\\router_replay\\ri_router_replay_concept_case_2026-04-23.md",
+      ".\\docs\\analysis\\recommendations\\ri_bucket_sample_expansion_b1_findings_2026-04-21.md"
+    ],
+    "title_refs": [],
+    "topology_refs": [],
+    "provenance_refs": [
+      "82:| `docs/analysis/scpe_ri_v1/scpe_ri_v1_router_replay_plan_2026-04-20.md`     | Historical SCPE RI V1 replay-plan packet from `feature/ri-role-map-implementation-2026-03-24`                  | Bounded historical replay-planning context only                                                                                                                          | Not current branch guidance, live lane selector, or current execution authority on later branches           | `docs/analysis/scpe_ri_v1/scpe_ri_v1_router_replay_plan_2026-04-20.md` (`Status`, `Later-status note (2026-05-21, feature/knowledge-authority-layer)`) |"
+    ],
+    "current_authority_refs": [],
+    "successor_markers": [
+      "> Later-status note (2026-05-21, `feature/knowledge-authority-layer`): This document is preserved as the historical 2026-04-20 SCPE RI V1 replay-plan packet from `feature/ri-role-map-implementation-2026-03-24`. It is not current branch guidance, not a live lane selector, and not current execution authority on later branches."
+    ]
+  },
+  {
+    "path": "docs/analysis/regime_intelligence/core/regime_intelligence_parity_artifact_matrix_2026-03-17.md",
+    "title": "# Regime Intelligence parity artifact matrix",
+    "has_top_status_marker": false,
+    "top_status_marker": null,
+    "path_refs": [
+      ".\\docs\\analysis\\regime_intelligence\\optuna\\challenger_family\\regime_intelligence_optuna_challenger_family_champion_provenance_evidence_class_2026-03-26.md",
+      ".\\docs\\decisions\\regime_intelligence\\optuna\\challenger_family\\regime_intelligence_optuna_challenger_family_non_runtime_comparison_surface_packet_2026-03-26.md",
+      ".\\docs\\analysis\\README.md",
+      ".\\docs\\audit\\refactor\\regime_intelligence\\command_packet_regime_intelligence_cutover_analysis_v1_2026-03-17.md",
+      ".\\docs\\audit\\refactor\\regime_intelligence\\context_map_regime_intelligence_cutover_analysis_v1_2026-03-17.md",
+      ".\\docs\\decisions\\feature_attribution\\v1\\feature_attribution_v1_phase6_artifact_report_packet_2026-03-31.md",
+      ".\\docs\\decisions\\feature_attribution\\v1\\feature_attribution_v1_phase2_toggle_boundary_packet_2026-03-31.md"
+    ],
+    "filename_refs": [
+      ".\\docs\\analysis\\README.md",
+      ".\\docs\\analysis\\regime_intelligence\\optuna\\challenger_family\\regime_intelligence_optuna_challenger_family_champion_provenance_evidence_class_2026-03-26.md",
+      ".\\docs\\audit\\refactor\\regime_intelligence\\context_map_regime_intelligence_cutover_analysis_v1_2026-03-17.md",
+      ".\\docs\\audit\\refactor\\regime_intelligence\\command_packet_regime_intelligence_cutover_analysis_v1_2026-03-17.md",
+      ".\\docs\\decisions\\regime_intelligence\\optuna\\challenger_family\\regime_intelligence_optuna_challenger_family_non_runtime_comparison_surface_packet_2026-03-26.md",
+      ".\\docs\\decisions\\feature_attribution\\v1\\feature_attribution_v1_phase6_artifact_report_packet_2026-03-31.md",
+      ".\\docs\\decisions\\feature_attribution\\v1\\feature_attribution_v1_phase2_toggle_boundary_packet_2026-03-31.md"
+    ],
+    "slug_refs": [
+      ".\\docs\\analysis\\regime_intelligence\\optuna\\challenger_family\\regime_intelligence_optuna_challenger_family_champion_provenance_evidence_class_2026-03-26.md",
+      ".\\docs\\analysis\\README.md",
+      ".\\docs\\audit\\refactor\\regime_intelligence\\command_packet_regime_intelligence_cutover_analysis_v1_2026-03-17.md",
+      ".\\docs\\audit\\refactor\\regime_intelligence\\context_map_regime_intelligence_cutover_analysis_v1_2026-03-17.md",
+      ".\\docs\\decisions\\feature_attribution\\v1\\feature_attribution_v1_phase6_artifact_report_packet_2026-03-31.md",
+      ".\\docs\\decisions\\feature_attribution\\v1\\feature_attribution_v1_phase2_toggle_boundary_packet_2026-03-31.md",
+      ".\\docs\\decisions\\regime_intelligence\\optuna\\challenger_family\\regime_intelligence_optuna_challenger_family_non_runtime_comparison_surface_packet_2026-03-26.md"
+    ],
+    "title_refs": [],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "successor_markers": [
+      "| CI workflow retained parity evidence artifact                         | GitHub Actions run `22663511442`                                                                                                                                    | no; retained artifact is only `bandit-report`                                       | CI does not currently preserve PASS parity/baseline artifacts for independent audit | governed rerun should retain replayable evidence outside ignored paths                       |"
+    ]
+  },
+  {
+    "path": "docs/analysis/diagnostics/execution_proxy_first_read_2026-04-02.md",
+    "title": "# Execution proxy first read",
+    "has_top_status_marker": true,
+    "top_status_marker": "> Current status note:",
+    "path_refs": [
+      ".\\handoff.md",
+      ".\\plan\\genesis_driver_identification_master_roadmap_2026-04-14.md",
+      ".\\docs\\decisions\\diagnostic_campaigns\\execution_proxy_partition_phase1_packet_2026-04-14.md",
+      ".\\docs\\decisions\\diagnostic_campaigns\\execution_proxy_first_read_packet_2026-04-02.md",
+      ".\\docs\\analysis\\diagnostics\\execution_proxy_partition_phase1_2026-04-14.md"
+    ],
+    "filename_refs": [
+      ".\\plan\\genesis_driver_identification_master_roadmap_2026-04-14.md",
+      ".\\handoff.md",
+      ".\\docs\\decisions\\diagnostic_campaigns\\execution_proxy_partition_phase1_packet_2026-04-14.md",
+      ".\\docs\\decisions\\diagnostic_campaigns\\execution_proxy_first_read_packet_2026-04-02.md",
+      ".\\docs\\analysis\\diagnostics\\execution_proxy_partition_phase1_2026-04-14.md"
+    ],
+    "slug_refs": [
+      ".\\handoff.md",
+      ".\\plan\\genesis_driver_identification_master_roadmap_2026-04-14.md",
+      ".\\docs\\analysis\\diagnostics\\execution_proxy_partition_phase1_2026-04-14.md",
+      ".\\docs\\decisions\\diagnostic_campaigns\\execution_proxy_partition_phase1_packet_2026-04-14.md",
+      ".\\docs\\decisions\\diagnostic_campaigns\\execution_proxy_first_read_packet_2026-04-02.md",
+      ".\\docs\\decisions\\diagnostic_campaigns\\execution_proxy_evidence_run_packet_2026-04-02.md"
+    ],
+    "title_refs": [
+      ".\\docs\\decisions\\diagnostic_campaigns\\execution_proxy_first_read_packet_2026-04-02.md"
+    ],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "successor_markers": [
+      "> Current status note:",
+      "> - Its then-next-step recommendation was later consumed by `docs/analysis/diagnostics/execution_proxy_partition_phase1_2026-04-14.md` and its packet `docs/decisions/diagnostic_campaigns/execution_proxy_partition_phase1_packet_2026-04-14.md`."
+    ]
+  },
+  {
+    "path": "docs/analysis/recommendations/tBTCUSD_3h_champion_promotion_recommendation_2026-03-13.md",
+    "title": "# tBTCUSD 3h Champion Promotion Recommendation (2026-03-13)",
+    "has_top_status_marker": false,
+    "top_status_marker": null,
+    "path_refs": [
+      ".\\docs\\decisions\\regime_intelligence\\optuna\\challenger_family\\regime_intelligence_optuna_challenger_family_promotion_readiness_opening_decision_2026-03-26.md",
+      ".\\docs\\analysis\\regime_intelligence\\optuna\\challenger_family\\regime_intelligence_optuna_challenger_family_champion_provenance_evidence_class_2026-03-26.md",
+      ".\\docs\\analysis\\regime_intelligence\\optuna\\challenger_family\\regime_intelligence_optuna_challenger_family_champion_provenance_classification_2026-03-26.md"
+    ],
+    "filename_refs": [
+      ".\\docs\\analysis\\regime_intelligence\\optuna\\challenger_family\\regime_intelligence_optuna_challenger_family_champion_provenance_evidence_class_2026-03-26.md",
+      ".\\docs\\analysis\\regime_intelligence\\optuna\\challenger_family\\regime_intelligence_optuna_challenger_family_champion_provenance_classification_2026-03-26.md",
+      ".\\docs\\decisions\\regime_intelligence\\optuna\\challenger_family\\regime_intelligence_optuna_challenger_family_promotion_readiness_opening_decision_2026-03-26.md"
+    ],
+    "slug_refs": [
+      ".\\docs\\analysis\\regime_intelligence\\optuna\\challenger_family\\regime_intelligence_optuna_challenger_family_champion_provenance_evidence_class_2026-03-26.md",
+      ".\\docs\\analysis\\regime_intelligence\\optuna\\challenger_family\\regime_intelligence_optuna_challenger_family_champion_provenance_classification_2026-03-26.md",
+      ".\\docs\\decisions\\regime_intelligence\\optuna\\challenger_family\\regime_intelligence_optuna_challenger_family_promotion_readiness_opening_decision_2026-03-26.md"
+    ],
+    "title_refs": [],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "successor_markers": []
+  },
+  {
+    "path": "docs/analysis/diagnostics/genesis_core_deep_premortem_project_baseline_2026-05-18.md",
+    "title": "# Genesis-Core deep premortem \u2014 project baseline (2026-05-18)",
+    "has_top_status_marker": true,
+    "top_status_marker": "> Status note: This is a **frist\u00e5ende bred projekt-baseline-premortem**, inte en delta mot",
+    "path_refs": [
+      ".\\handoff.md",
+      ".\\docs\\decisions\\governance\\runtime_config_off_path_write_detection_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\ri_policy_router_exact_window_overreach_partial_reclassification_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\cache_schema_bump_enforcement_boundary_packet_2026-05-18.md",
+      ".\\docs\\decisions\\governance\\editor_worker_paused_reference_later_branch_truthfulness_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\bitfinex_signed_rest_retry_truthfulness_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\bitfinex_nonce_error_mapping_boundary_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\premortem_closeout_not_project_done_truthfulness_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\backtest_htf_context_divergence_partial_reclassification_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\premortem_anchor_role_disambiguation_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\decision_input_fail_safe_partial_reclassification_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\precompute_feature_cache_medium_track_reframe_packet_2026-05-21.md",
+      ".\\docs\\decisions\\governance\\backtest_engine_split_track_reconcile_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\precompute_cache_config_identity_followup_selection_packet_2026-05-21.md",
+      ".\\docs\\analysis\\diagnostics\\genesis_core_premortem_feature_evidence_closeout_pilot_2026-05-15.md",
+      ".\\docs\\decisions\\governance\\optimizer_validation_promotion_contract_seam_packet_2026-05-21.md",
+      ".\\docs\\decisions\\governance\\citation_framing_drift_later_branch_truthfulness_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\optimizer_validation_missing_data_partial_reclassification_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\optimizer_refactor_trace_reopen_shape_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\legacy_validator_misuse_partial_reclassification_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\htf_exit_engine_selection_partial_reclassification_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\fast_window_same_bar_parity_partial_reclassification_packet_2026-05-19.md",
+      ".\\docs\\analysis\\diagnostics\\premortem_delta_reanchor_feature_evidence_closeout_pilot_2026-05-18.md",
+      ".\\docs\\decisions\\governance\\evidence_to_authority_optimizer_baseline_surface_selection_packet_2026-05-21.md",
+      ".\\docs\\decisions\\governance\\evidence_to_authority_drift_residual_scope_reanchor_packet_2026-05-19.md"
+    ],
+    "filename_refs": [
+      ".\\handoff.md",
+      ".\\docs\\decisions\\governance\\runtime_config_off_path_write_detection_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\ri_policy_router_exact_window_overreach_partial_reclassification_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\premortem_closeout_not_project_done_truthfulness_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\premortem_anchor_role_disambiguation_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\precompute_feature_cache_medium_track_reframe_packet_2026-05-21.md",
+      ".\\docs\\decisions\\governance\\precompute_cache_config_identity_followup_selection_packet_2026-05-21.md",
+      ".\\docs\\decisions\\governance\\optimizer_validation_promotion_contract_seam_packet_2026-05-21.md",
+      ".\\docs\\decisions\\governance\\optimizer_validation_missing_data_partial_reclassification_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\optimizer_refactor_trace_reopen_shape_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\legacy_validator_misuse_partial_reclassification_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\htf_exit_engine_selection_partial_reclassification_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\fast_window_same_bar_parity_partial_reclassification_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\evidence_to_authority_optimizer_baseline_surface_selection_packet_2026-05-21.md",
+      ".\\docs\\decisions\\governance\\evidence_to_authority_drift_residual_scope_reanchor_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\editor_worker_paused_reference_later_branch_truthfulness_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\decision_input_fail_safe_partial_reclassification_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\citation_framing_drift_later_branch_truthfulness_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\cache_schema_bump_enforcement_boundary_packet_2026-05-18.md",
+      ".\\docs\\decisions\\governance\\bitfinex_signed_rest_retry_truthfulness_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\bitfinex_nonce_error_mapping_boundary_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\backtest_htf_context_divergence_partial_reclassification_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\backtest_engine_split_track_reconcile_packet_2026-05-19.md",
+      ".\\docs\\analysis\\diagnostics\\premortem_delta_reanchor_feature_evidence_closeout_pilot_2026-05-18.md",
+      ".\\docs\\analysis\\diagnostics\\genesis_core_premortem_feature_evidence_closeout_pilot_2026-05-15.md"
+    ],
+    "slug_refs": [
+      ".\\handoff.md",
+      ".\\docs\\decisions\\governance\\runtime_config_off_path_write_detection_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\ri_policy_router_exact_window_overreach_partial_reclassification_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\premortem_closeout_not_project_done_truthfulness_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\premortem_anchor_role_disambiguation_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\precompute_feature_cache_medium_track_reframe_packet_2026-05-21.md",
+      ".\\docs\\decisions\\governance\\precompute_cache_config_identity_followup_selection_packet_2026-05-21.md",
+      ".\\docs\\decisions\\governance\\optimizer_validation_promotion_contract_seam_packet_2026-05-21.md",
+      ".\\docs\\decisions\\governance\\optimizer_validation_missing_data_partial_reclassification_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\optimizer_refactor_trace_reopen_shape_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\legacy_validator_misuse_partial_reclassification_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\htf_exit_engine_selection_partial_reclassification_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\fast_window_same_bar_parity_partial_reclassification_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\evidence_to_authority_optimizer_baseline_surface_selection_packet_2026-05-21.md",
+      ".\\docs\\decisions\\governance\\evidence_to_authority_drift_residual_scope_reanchor_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\editor_worker_paused_reference_later_branch_truthfulness_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\decision_input_fail_safe_partial_reclassification_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\citation_framing_drift_later_branch_truthfulness_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\cache_schema_bump_enforcement_boundary_packet_2026-05-18.md",
+      ".\\docs\\decisions\\governance\\bitfinex_signed_rest_retry_truthfulness_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\bitfinex_nonce_error_mapping_boundary_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\backtest_htf_context_divergence_partial_reclassification_packet_2026-05-19.md",
+      ".\\docs\\decisions\\governance\\backtest_engine_split_track_reconcile_packet_2026-05-19.md",
+      ".\\docs\\analysis\\diagnostics\\premortem_delta_reanchor_feature_evidence_closeout_pilot_2026-05-18.md",
+      ".\\docs\\analysis\\diagnostics\\genesis_core_premortem_feature_evidence_closeout_pilot_2026-05-15.md"
+    ],
+    "title_refs": [],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "successor_markers": []
+  },
+  {
+    "path": "docs/analysis/regime_intelligence/core/regime_intelligence_experiment_map_post_binding_roadmap_2026-03-30.md",
+    "title": "# Regime Intelligence challenger family \u2014 experiment-map post-binding roadmap",
+    "has_top_status_marker": true,
+    "top_status_marker": "Status: `historical / documentary chain / archive-only / future-only / no authorization`",
+    "path_refs": [
+      ".\\docs\\decisions\\regime_intelligence\\core\\regime_intelligence_pre_fib_candidate_boundary_observability_opening_admissibility_packet_2026-03-30.md"
+    ],
+    "filename_refs": [
+      ".\\docs\\decisions\\regime_intelligence\\core\\regime_intelligence_pre_fib_candidate_boundary_observability_opening_admissibility_packet_2026-03-30.md"
+    ],
+    "slug_refs": [
+      ".\\docs\\decisions\\regime_intelligence\\core\\regime_intelligence_pre_fib_candidate_boundary_observability_opening_admissibility_packet_2026-03-30.md"
+    ],
+    "title_refs": [],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "successor_markers": [
+      "> Current status note:"
+    ]
+  },
+  {
+    "path": "docs/analysis/regime_intelligence/policy_router/genesis_core_router_research_generic_background_2026-04-30.md",
+    "title": "> **Status update (2026-05-05):** Historical generic background note only.",
+    "has_top_status_marker": true,
+    "top_status_marker": "> **Status update (2026-05-05):** Historical generic background note only.",
+    "path_refs": [
+      ".\\docs\\analysis\\regime_intelligence\\policy_router\\ri_policy_router_structural_research_roadmap_2026-04-30.md",
+      ".\\docs\\decisions\\regime_intelligence\\policy_router\\ri_policy_router_payoff_state_translation_precode_packet_2026-04-30.md"
+    ],
+    "filename_refs": [
+      ".\\docs\\decisions\\regime_intelligence\\policy_router\\ri_policy_router_payoff_state_translation_precode_packet_2026-04-30.md",
+      ".\\docs\\analysis\\regime_intelligence\\policy_router\\ri_policy_router_structural_research_roadmap_2026-04-30.md",
+      ".\\docs\\analysis\\regime_intelligence\\policy_router\\genesis_core_router_research_codebase_aware_re_evaluation_2026-04-30.md"
+    ],
+    "slug_refs": [
+      ".\\docs\\analysis\\regime_intelligence\\policy_router\\genesis_core_router_research_codebase_aware_re_evaluation_2026-04-30.md",
+      ".\\docs\\analysis\\regime_intelligence\\policy_router\\ri_policy_router_structural_research_roadmap_2026-04-30.md",
+      ".\\docs\\decisions\\regime_intelligence\\policy_router\\ri_policy_router_payoff_state_translation_precode_packet_2026-04-30.md"
+    ],
+    "title_refs": [],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "successor_markers": []
+  },
+  {
+    "path": "docs/analysis/regime_intelligence/advisory_environment_fit/ri_advisory_environment_fit_phase1_observability_inventory_2026-04-16.md",
+    "title": "# RI advisory environment-fit \u2014 Phase 1 observability inventory",
+    "has_top_status_marker": false,
+    "top_status_marker": null,
+    "path_refs": [
+      ".\\docs\\analysis\\regime_intelligence\\advisory_environment_fit\\ri_advisory_environment_fit_phase3_direct_baseline_admissibility_2026-04-16.md",
+      ".\\docs\\analysis\\regime_intelligence\\advisory_environment_fit\\ri_advisory_environment_fit_phase2_label_taxonomy_2026-04-16.md",
+      ".\\docs\\decisions\\regime_intelligence\\advisory_environment_fit\\ri_advisory_environment_fit_phase3_direct_baseline_admissibility_packet_2026-04-16.md",
+      ".\\docs\\decisions\\regime_intelligence\\advisory_environment_fit\\ri_advisory_environment_fit_phase2_label_taxonomy_packet_2026-04-16.md",
+      ".\\docs\\decisions\\regime_intelligence\\advisory_environment_fit\\ri_advisory_environment_fit_phase1_observability_inventory_packet_2026-04-16.md"
+    ],
+    "filename_refs": [
+      ".\\docs\\analysis\\regime_intelligence\\advisory_environment_fit\\ri_advisory_environment_fit_phase3_direct_baseline_admissibility_2026-04-16.md",
+      ".\\docs\\analysis\\regime_intelligence\\advisory_environment_fit\\ri_advisory_environment_fit_phase2_label_taxonomy_2026-04-16.md",
+      ".\\docs\\decisions\\regime_intelligence\\advisory_environment_fit\\ri_advisory_environment_fit_phase2_label_taxonomy_packet_2026-04-16.md",
+      ".\\docs\\decisions\\regime_intelligence\\advisory_environment_fit\\ri_advisory_environment_fit_phase1_observability_inventory_packet_2026-04-16.md",
+      ".\\docs\\decisions\\regime_intelligence\\advisory_environment_fit\\ri_advisory_environment_fit_phase3_direct_baseline_admissibility_packet_2026-04-16.md"
+    ],
+    "slug_refs": [
+      ".\\docs\\analysis\\regime_intelligence\\advisory_environment_fit\\ri_advisory_environment_fit_phase2_label_taxonomy_2026-04-16.md",
+      ".\\docs\\analysis\\regime_intelligence\\advisory_environment_fit\\ri_advisory_environment_fit_phase3_direct_baseline_admissibility_2026-04-16.md",
+      ".\\docs\\decisions\\regime_intelligence\\advisory_environment_fit\\ri_advisory_environment_fit_phase2_label_taxonomy_packet_2026-04-16.md",
+      ".\\docs\\decisions\\regime_intelligence\\advisory_environment_fit\\ri_advisory_environment_fit_phase1_observability_inventory_packet_2026-04-16.md",
+      ".\\docs\\decisions\\regime_intelligence\\advisory_environment_fit\\ri_advisory_environment_fit_phase3_direct_baseline_admissibility_packet_2026-04-16.md"
+    ],
+    "title_refs": [],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "successor_markers": []
+  },
+  {
+    "path": "docs/analysis/recommendations/ZERO_TRADE_ANALYSIS.md",
+    "title": "# Complete Decision Chain Analysis: Why Optuna Trials Generate Zero Trades",
+    "has_top_status_marker": false,
+    "top_status_marker": null,
+    "path_refs": [
+      ".\\docs\\analysis\\README.md"
+    ],
+    "filename_refs": [
+      ".\\docs\\analysis\\README.md"
+    ],
+    "slug_refs": [
+      ".\\docs\\analysis\\README.md"
+    ],
+    "title_refs": [],
+    "topology_refs": [],
+    "provenance_refs": [],
+    "current_authority_refs": [],
+    "successor_markers": []
+  }
+]

@@ -1,0 +1,56 @@
+{
+  "batch": "010",
+  "date": "2026-05-22",
+  "mode": "RESEARCH",
+  "branch": "feature/genesis-topology-lifecycle-authority-map",
+  "zone": "docs/decisions/feature_attribution/post_phase14 plus companion diagnostics memo",
+  "candidates": [
+    {
+      "path": "docs/decisions/feature_attribution/post_phase14/feature_attribution_post_phase14_phase0_reactivation_packet_2026-04-02.md",
+      "observed_top_status": "phase0-active / docs-only / non-authorizing",
+      "prior_plan_anchor": "plan/feature_attribution_post_phase14_reactivation_roadmap_2026-04-02.md",
+      "drift_reason": "packet remains historical, but active-status wording still reads like current lane opening"
+    },
+    {
+      "path": "docs/decisions/feature_attribution/post_phase14/feature_attribution_post_phase14_phase1_rebaseline_reconciliation_packet_2026-04-02.md",
+      "observed_top_status": "phase1-proposed / docs-plus-artifact / non-authorizing",
+      "prior_plan_anchor": "plan/feature_attribution_post_phase14_reactivation_roadmap_2026-04-02.md",
+      "drift_reason": "packet remains historical, but proposed-status wording still reads like an active next slice"
+    },
+    {
+      "path": "docs/decisions/feature_attribution/post_phase14/feature_attribution_post_phase14_phase2_6_closeout_packet_2026-04-02.md",
+      "observed_top_status": "closeout-active / docs-only / non-authorizing",
+      "prior_plan_anchor": "plan/feature_attribution_post_phase14_reactivation_roadmap_2026-04-02.md",
+      "drift_reason": "closeout packet remains historical, but active-status wording conflicts with later closed plan anchors"
+    },
+    {
+      "path": "docs/analysis/diagnostics/feature_attribution_post_phase14_rebaseline_reconciliation_2026-04-02.md",
+      "observed_top_status": null,
+      "observed_phrases": [
+        "live reference surfaces",
+        "start the replay lane",
+        "still-active Phase 14 emergent_system_behavior frame"
+      ],
+      "prior_plan_anchor": "plan/genesis_driver_identification_master_roadmap_2026-04-14.md",
+      "drift_reason": "memo is historical reconciliation context, but several phrases still read like current restart guidance"
+    }
+  ],
+  "supporting_surfaces": [
+    "plan/feature_attribution_post_phase14_reactivation_roadmap_2026-04-02.md",
+    "plan/genesis_driver_identification_master_roadmap_2026-04-14.md"
+  ],
+  "safe_patch_shape": [
+    "replace stale active/proposed packet status lines with historical/current-use framing",
+    "add one narrow current-status routing note near the top of each packet",
+    "add a top status/current-use frame to the reconciliation memo",
+    "preserve packet bodies, metrics, candidate ordering, and conclusions below the framing"
+  ],
+  "out_of_scope": [
+    "plan-file edits",
+    "body rewrites",
+    "execution authority changes",
+    "runtime, config, test, or script behavior changes",
+    "edits to docs/CURRENT_AUTHORITY_INDEX.md",
+    "edits to docs/knowledge/DOCUMENTATION_PROVENANCE_LINEAGE_MAP.md"
+  ]
+}

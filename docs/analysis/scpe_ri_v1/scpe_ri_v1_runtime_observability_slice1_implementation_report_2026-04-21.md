@@ -3,7 +3,16 @@
 Date: 2026-04-21
 Branch: `feature/ri-role-map-implementation-2026-03-24`
 Mode: `RESEARCH` — source: `branch:feature/ri-role-map-implementation-2026-03-24`
-Status: `implemented / gated / post-diff-audit-approved`
+Status: `historical SCPE RI v1 runtime-observability slice1 implementation report / retained for provenance / not current branch guidance`
+
+> Later-status note (2026-05-22, `feature/genesis-topology-lifecycle-authority-map`): this file
+> is retained as historical branch-local SCPE RI runtime-observability implementation evidence
+> from `feature/ri-role-map-implementation-2026-03-24`. The implemented/gated wording below
+> records what that earlier branch completed at the time; it does **not** reopen a current branch
+> implementation lane. For current interpretation, read it together with
+> `docs/decisions/scpe_ri_v1/archive/scpe_ri_v1_runtime_observability_closeout_transition_packet_2026-04-21.md`
+> and later queue/closeout anchors such as
+> `docs/analysis/diagnostics/next_phase_verkstad_queue_2026-05-15.md`.
 
 ## Scope summary
 

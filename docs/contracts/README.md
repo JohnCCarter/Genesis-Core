@@ -1,7 +1,18 @@
 # Documentation contracts
 
+Status: `zone guide / non-authorizing / contracts placement index`
+
+> Routing status (2026-05-22, `feature/genesis-topology-lifecycle-authority-map`): denna README är en
+> `NON_AUTHORIZING` routingyta för `docs/contracts/`. Den får användas för navigation,
+> placering och formkvalitetsguide inom mappen, men den är inte i sig en SSOT,
+> precedence-yta eller självständig authority-källa. Se `docs/CURRENT_AUTHORITY_INDEX.md`
+> och `docs/knowledge/KNOWLEDGE_AUTHORITY_RULES.md`.
+
 Den här mappen är avsedd för stabila dokumenterade gränssnitt mellan governance, kod och research.
 Fokus här är **form**, **invarians** och **tolkningsstabilitet** — inte slice-journalföring.
+
+`docs/contracts/**` är ett komplement till de högre styrlagren. Den här README:n är en
+zon-guide, inte en egen SSOT.
 
 ## Syfte
 

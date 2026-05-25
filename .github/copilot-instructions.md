@@ -28,6 +28,8 @@ Read this file in the following order:
 - Trivial changes may use the quick path below, but must escalate to full protocol if any uncertainty appears.
 - `docs/governance/README.md` is a supplemental operational index and must not override SSOT precedence in this file.
 - For repository layout and file placement guidance, also see `docs/repository-layout-policy.md`. It is a subordinate practical reference and must not override higher-order governance or mode documents.
+- For research/experiment infrastructure usage boundaries, also see `docs/contracts/research_experiment_infrastructure_inventory_contract.md`.
+- Unless explicitly promoted through the current authority path, treat `research_ledger`, `research_orchestrator`, findings bundles/indexes, and `results/research/**` outputs as non-authorizing research/evidence surfaces.
 
 ## Terminology note
 

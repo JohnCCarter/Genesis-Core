@@ -1,0 +1,764 @@
+{
+  "audit_version": "ri-policy-router-continuation-release-hysteresis-local-packet-candidate-2024-01-2026-05-26",
+  "base_sha": "b71b829e8251b99472040136e97695e872897c30",
+  "classification_boundary": {
+    "outcome_metrics_observational_only": true,
+    "question": "When the next widening candidate (`2024-01`) is rerun against the established control (`2023-05`) on the same carrier, does the new candidate preserve more of the frozen negative local asymmetry than the control?",
+    "reference_surface": "widening shortlist rerun as two exact full-month subjects on the same carrier, with the next negative-like candidate (`2024-01`) measured against the already characterized positive control (`2023-05`) on the frozen local negative rules"
+  },
+  "inputs": {
+    "carrier_path": "tmp\\policy_router_evidence\\tBTCUSD_3h_slice8_runtime_bridge_weak_pre_aged_release_guard_20260424.json",
+    "comparison": {
+      "baseline": "enabled carrier as-is (implicit shared hysteresis)",
+      "negative_like_candidate": "2024-01",
+      "positive_control": "2023-05",
+      "release_zero": "same enabled carrier with continuation_release_hysteresis=0",
+      "variant_setting": {
+        "baseline": "implicit shared hysteresis",
+        "field": "multi_timeframe.research_policy_router.continuation_release_hysteresis",
+        "release_zero": 0
+      }
+    },
+    "intra_band_sign_candidates_artifact": "results\\evaluation\\ri_policy_router_continuation_release_hysteresis_intra_band_sign_candidates_2026-05-26.json",
+    "monthly_inventory_windows": "results\\backtests\\ri_policy_router_continuation_release_hysteresis_monthly_inventory_20260504\\continuation_release_hysteresis_monthly_inventory_windows.json",
+    "subjects": [
+      "2024-01",
+      "2023-05"
+    ],
+    "widening_candidate_inventory_artifact": "results\\evaluation\\ri_policy_router_continuation_release_hysteresis_widening_candidate_inventory_2026-05-26.json",
+    "working_contract_reference": "GENESIS_WORKING_CONTRACT.md"
+  },
+  "non_authoritative": true,
+  "observational_only": true,
+  "packet_summary": {
+    "candidate_negative_rule_hit_count": 6,
+    "candidate_release_retention_ratio": 0.727273,
+    "candidate_span_compression_hours": 9.0,
+    "candidate_subject_id": "2024-01",
+    "control_negative_rule_hit_count": 4,
+    "control_release_retention_ratio": 1.0,
+    "control_span_compression_hours": 0.0,
+    "control_subject_id": "2023-05",
+    "inference": "The next negative-like widening candidate (`2024-01`) preserves more of the frozen triad's negative local asymmetry than the established positive control (`2023-05`) when both are rerun on the same carrier. That keeps `2024-01` alive as the next serious local-window target after `2020-06`.",
+    "next_hypothesis": "If this chain continues, the next honest slice is a strictly local envelope around the `2024-01` candidate cluster and the already-characterized `2023-05` control cluster to test whether this next widening target also collapses before execution or carries a different local decay pattern.",
+    "status": "negative_like_candidate_preserves_more_triad_local_asymmetry_than_control"
+  },
+  "status": "continuation_release_hysteresis_local_packet_candidate_2024_01_generated",
+  "subject_payloads": {
+    "2023-05": {
+      "cluster_context": {
+        "cluster_action_edge": {
+          "count": 7,
+          "max": 0.094719,
+          "mean": 0.094719,
+          "min": 0.094719
+        },
+        "cluster_clarity_score": {
+          "count": 7,
+          "max": 40.0,
+          "mean": 40.0,
+          "min": 40.0
+        },
+        "cluster_confidence_gate": {
+          "count": 7,
+          "max": 0.54736,
+          "mean": 0.54736,
+          "min": 0.54736
+        },
+        "first_decisive_timestamp": "2023-05-17T06:00:00+00:00"
+      },
+      "cluster_groups": {
+        "baseline": [
+          {
+            "end": "2023-05-18T00:00:00+00:00",
+            "row_count": 7,
+            "span_hours": 18.0,
+            "start": "2023-05-17T06:00:00+00:00",
+            "timestamps": [
+              "2023-05-17T06:00:00+00:00",
+              "2023-05-17T09:00:00+00:00",
+              "2023-05-17T12:00:00+00:00",
+              "2023-05-17T15:00:00+00:00",
+              "2023-05-17T18:00:00+00:00",
+              "2023-05-17T21:00:00+00:00",
+              "2023-05-18T00:00:00+00:00"
+            ]
+          }
+        ],
+        "baseline_minus_release_zero_span_hours": 0.0,
+        "release_zero": [
+          {
+            "end": "2023-05-18T00:00:00+00:00",
+            "row_count": 7,
+            "span_hours": 18.0,
+            "start": "2023-05-17T06:00:00+00:00",
+            "timestamps": [
+              "2023-05-17T06:00:00+00:00",
+              "2023-05-17T09:00:00+00:00",
+              "2023-05-17T12:00:00+00:00",
+              "2023-05-17T15:00:00+00:00",
+              "2023-05-17T18:00:00+00:00",
+              "2023-05-17T21:00:00+00:00",
+              "2023-05-18T00:00:00+00:00"
+            ]
+          }
+        ],
+        "union_diff_surface": [
+          {
+            "end": "2023-05-18T00:00:00+00:00",
+            "row_count": 7,
+            "span_hours": 18.0,
+            "start": "2023-05-17T06:00:00+00:00",
+            "timestamps": [
+              "2023-05-17T06:00:00+00:00",
+              "2023-05-17T09:00:00+00:00",
+              "2023-05-17T12:00:00+00:00",
+              "2023-05-17T15:00:00+00:00",
+              "2023-05-17T18:00:00+00:00",
+              "2023-05-17T21:00:00+00:00",
+              "2023-05-18T00:00:00+00:00"
+            ]
+          }
+        ]
+      },
+      "cluster_rows": [
+        {
+          "baseline_action_edge": 0.09471919747657098,
+          "baseline_bars_since_regime_change": 3.0,
+          "baseline_clarity_score": 40.0,
+          "baseline_confidence_gate": 0.5473595987382855,
+          "baseline_selected_policy": "RI_defensive_transition_policy",
+          "baseline_switch_control_mode": "continuation_release",
+          "baseline_switch_reason": "switch_blocked_by_hysteresis",
+          "baseline_zone": "low",
+          "behavior_changed": true,
+          "release_zero_selected_policy": "RI_continuation_policy",
+          "release_zero_switch_control_mode": "continuation_release",
+          "release_zero_switch_reason": "continuation_state_supported",
+          "selected_policy_changed": true,
+          "size_changed": true,
+          "switch_reason_changed": true,
+          "timestamp": "2023-05-17T06:00:00+00:00"
+        },
+        {
+          "baseline_action_edge": 0.09471919747657098,
+          "baseline_bars_since_regime_change": 3.0,
+          "baseline_clarity_score": 40.0,
+          "baseline_confidence_gate": 0.5473595987382855,
+          "baseline_selected_policy": "RI_defensive_transition_policy",
+          "baseline_switch_control_mode": "continuation_release",
+          "baseline_switch_reason": "switch_blocked_by_hysteresis",
+          "baseline_zone": "low",
+          "behavior_changed": true,
+          "release_zero_selected_policy": "RI_continuation_policy",
+          "release_zero_switch_control_mode": "continuation_release",
+          "release_zero_switch_reason": "continuation_state_supported",
+          "selected_policy_changed": true,
+          "size_changed": false,
+          "switch_reason_changed": true,
+          "timestamp": "2023-05-17T09:00:00+00:00"
+        },
+        {
+          "baseline_action_edge": 0.09471919747657098,
+          "baseline_bars_since_regime_change": 3.0,
+          "baseline_clarity_score": 40.0,
+          "baseline_confidence_gate": 0.5473595987382855,
+          "baseline_selected_policy": "RI_defensive_transition_policy",
+          "baseline_switch_control_mode": "continuation_release",
+          "baseline_switch_reason": "switch_blocked_by_hysteresis",
+          "baseline_zone": "low",
+          "behavior_changed": true,
+          "release_zero_selected_policy": "RI_continuation_policy",
+          "release_zero_switch_control_mode": "continuation_release",
+          "release_zero_switch_reason": "continuation_state_supported",
+          "selected_policy_changed": true,
+          "size_changed": false,
+          "switch_reason_changed": true,
+          "timestamp": "2023-05-17T12:00:00+00:00"
+        },
+        {
+          "baseline_action_edge": 0.09471919747657098,
+          "baseline_bars_since_regime_change": 3.0,
+          "baseline_clarity_score": 40.0,
+          "baseline_confidence_gate": 0.5473595987382855,
+          "baseline_selected_policy": "RI_defensive_transition_policy",
+          "baseline_switch_control_mode": "continuation_release",
+          "baseline_switch_reason": "switch_blocked_by_hysteresis",
+          "baseline_zone": "low",
+          "behavior_changed": true,
+          "release_zero_selected_policy": "RI_continuation_policy",
+          "release_zero_switch_control_mode": "continuation_release",
+          "release_zero_switch_reason": "continuation_state_supported",
+          "selected_policy_changed": true,
+          "size_changed": false,
+          "switch_reason_changed": true,
+          "timestamp": "2023-05-17T15:00:00+00:00"
+        },
+        {
+          "baseline_action_edge": 0.09471919747657098,
+          "baseline_bars_since_regime_change": 3.0,
+          "baseline_clarity_score": 40.0,
+          "baseline_confidence_gate": 0.5473595987382855,
+          "baseline_selected_policy": "RI_defensive_transition_policy",
+          "baseline_switch_control_mode": "continuation_release",
+          "baseline_switch_reason": "switch_blocked_by_hysteresis",
+          "baseline_zone": "low",
+          "behavior_changed": true,
+          "release_zero_selected_policy": "RI_continuation_policy",
+          "release_zero_switch_control_mode": "continuation_release",
+          "release_zero_switch_reason": "continuation_state_supported",
+          "selected_policy_changed": true,
+          "size_changed": false,
+          "switch_reason_changed": true,
+          "timestamp": "2023-05-17T18:00:00+00:00"
+        },
+        {
+          "baseline_action_edge": 0.09471919747657098,
+          "baseline_bars_since_regime_change": 3.0,
+          "baseline_clarity_score": 40.0,
+          "baseline_confidence_gate": 0.5473595987382855,
+          "baseline_selected_policy": "RI_defensive_transition_policy",
+          "baseline_switch_control_mode": "continuation_release",
+          "baseline_switch_reason": "switch_blocked_by_hysteresis",
+          "baseline_zone": "low",
+          "behavior_changed": true,
+          "release_zero_selected_policy": "RI_continuation_policy",
+          "release_zero_switch_control_mode": "continuation_release",
+          "release_zero_switch_reason": "continuation_state_supported",
+          "selected_policy_changed": true,
+          "size_changed": false,
+          "switch_reason_changed": true,
+          "timestamp": "2023-05-17T21:00:00+00:00"
+        },
+        {
+          "baseline_action_edge": 0.09471919747657098,
+          "baseline_bars_since_regime_change": 3.0,
+          "baseline_clarity_score": 40.0,
+          "baseline_confidence_gate": 0.5473595987382855,
+          "baseline_selected_policy": "RI_defensive_transition_policy",
+          "baseline_switch_control_mode": "continuation_release",
+          "baseline_switch_reason": "switch_blocked_by_hysteresis",
+          "baseline_zone": "low",
+          "behavior_changed": true,
+          "release_zero_selected_policy": "RI_continuation_policy",
+          "release_zero_switch_control_mode": "continuation_release",
+          "release_zero_switch_reason": "continuation_state_supported",
+          "selected_policy_changed": true,
+          "size_changed": false,
+          "switch_reason_changed": true,
+          "timestamp": "2023-05-18T00:00:00+00:00"
+        }
+      ],
+      "month_window": {
+        "end": "2023-05-31",
+        "inventory_final_capital_diff": 0.0,
+        "inventory_topline_changed": false,
+        "inventory_total_return_diff": 0.0,
+        "start": "2023-05-01"
+      },
+      "monthly_reproduction": {
+        "matches_inventory_final_capital_diff": true,
+        "matches_inventory_total_return_diff": true,
+        "rerun_final_capital_diff": 0.0,
+        "rerun_total_return_diff": 0.0,
+        "top_line_sign": "flat"
+      },
+      "negative_rule_evaluation": {
+        "evaluations": [
+          {
+            "feature": "release_retention_ratio",
+            "matched_negative_rule": false,
+            "operator": "<=",
+            "subject_value": 1.0,
+            "threshold": 0.5
+          },
+          {
+            "feature": "decisive_rank_pct",
+            "matched_negative_rule": true,
+            "operator": "<=",
+            "subject_value": 0.0,
+            "threshold": 0.272727
+          },
+          {
+            "feature": "decisive_hours_from_cluster_start",
+            "matched_negative_rule": true,
+            "operator": "<=",
+            "subject_value": 0.0,
+            "threshold": 18.0
+          },
+          {
+            "feature": "decisive_action_edge",
+            "matched_negative_rule": false,
+            "operator": "<=",
+            "subject_value": 0.094719,
+            "threshold": 0.075402
+          },
+          {
+            "feature": "decisive_confidence_gate",
+            "matched_negative_rule": false,
+            "operator": "<=",
+            "subject_value": 0.54736,
+            "threshold": 0.537701
+          },
+          {
+            "feature": "decisive_clarity_score",
+            "matched_negative_rule": false,
+            "operator": "<=",
+            "subject_value": 40.0,
+            "threshold": 39.0
+          },
+          {
+            "feature": "cluster_policy_diff_rows",
+            "matched_negative_rule": true,
+            "operator": ">=",
+            "subject_value": 7.0,
+            "threshold": 4.5
+          },
+          {
+            "feature": "cluster_switch_diff_rows",
+            "matched_negative_rule": true,
+            "operator": ">=",
+            "subject_value": 7.0,
+            "threshold": 4.5
+          },
+          {
+            "feature": "cluster_size_diff_rows",
+            "matched_negative_rule": false,
+            "operator": ">=",
+            "subject_value": 1.0,
+            "threshold": 1.5
+          }
+        ],
+        "hit_count": 4,
+        "hit_share": 0.444444,
+        "satisfied_features": [
+          "decisive_rank_pct",
+          "decisive_hours_from_cluster_start",
+          "cluster_policy_diff_rows",
+          "cluster_switch_diff_rows"
+        ],
+        "total": 9,
+        "unsatisfied_features": [
+          "release_retention_ratio",
+          "decisive_action_edge",
+          "decisive_confidence_gate",
+          "decisive_clarity_score",
+          "cluster_size_diff_rows"
+        ]
+      },
+      "role": "positive_control",
+      "subject_features": {
+        "cluster_policy_diff_rows": 7.0,
+        "cluster_row_count": 7.0,
+        "cluster_size_diff_rows": 1.0,
+        "cluster_switch_diff_rows": 7.0,
+        "decisive_action_edge": 0.094719,
+        "decisive_clarity_score": 40.0,
+        "decisive_confidence_gate": 0.54736,
+        "decisive_hours_from_cluster_start": 0.0,
+        "decisive_index_within_cluster": 0.0,
+        "decisive_rank_pct": 0.0,
+        "release_retention_ratio": 1.0
+      },
+      "subject_id": "2023-05"
+    },
+    "2024-01": {
+      "cluster_context": {
+        "cluster_action_edge": {
+          "count": 11,
+          "max": 0.141111,
+          "mean": 0.096931,
+          "min": 0.073054
+        },
+        "cluster_clarity_score": {
+          "count": 11,
+          "max": 43.0,
+          "mean": 40.363636,
+          "min": 39.0
+        },
+        "cluster_confidence_gate": {
+          "count": 11,
+          "max": 0.570555,
+          "mean": 0.548465,
+          "min": 0.536527
+        },
+        "first_decisive_timestamp": "2024-01-18T09:00:00+00:00"
+      },
+      "cluster_groups": {
+        "baseline": [
+          {
+            "end": "2024-01-19T06:00:00+00:00",
+            "row_count": 11,
+            "span_hours": 39.0,
+            "start": "2024-01-17T15:00:00+00:00",
+            "timestamps": [
+              "2024-01-17T15:00:00+00:00",
+              "2024-01-17T18:00:00+00:00",
+              "2024-01-17T21:00:00+00:00",
+              "2024-01-18T09:00:00+00:00",
+              "2024-01-18T12:00:00+00:00",
+              "2024-01-18T15:00:00+00:00",
+              "2024-01-18T18:00:00+00:00",
+              "2024-01-18T21:00:00+00:00",
+              "2024-01-19T00:00:00+00:00",
+              "2024-01-19T03:00:00+00:00",
+              "2024-01-19T06:00:00+00:00"
+            ]
+          }
+        ],
+        "baseline_minus_release_zero_span_hours": 9.0,
+        "release_zero": [
+          {
+            "end": "2024-01-18T21:00:00+00:00",
+            "row_count": 8,
+            "span_hours": 30.0,
+            "start": "2024-01-17T15:00:00+00:00",
+            "timestamps": [
+              "2024-01-17T15:00:00+00:00",
+              "2024-01-17T18:00:00+00:00",
+              "2024-01-17T21:00:00+00:00",
+              "2024-01-18T09:00:00+00:00",
+              "2024-01-18T12:00:00+00:00",
+              "2024-01-18T15:00:00+00:00",
+              "2024-01-18T18:00:00+00:00",
+              "2024-01-18T21:00:00+00:00"
+            ]
+          }
+        ],
+        "union_diff_surface": [
+          {
+            "end": "2024-01-19T06:00:00+00:00",
+            "row_count": 11,
+            "span_hours": 39.0,
+            "start": "2024-01-17T15:00:00+00:00",
+            "timestamps": [
+              "2024-01-17T15:00:00+00:00",
+              "2024-01-17T18:00:00+00:00",
+              "2024-01-17T21:00:00+00:00",
+              "2024-01-18T09:00:00+00:00",
+              "2024-01-18T12:00:00+00:00",
+              "2024-01-18T15:00:00+00:00",
+              "2024-01-18T18:00:00+00:00",
+              "2024-01-18T21:00:00+00:00",
+              "2024-01-19T00:00:00+00:00",
+              "2024-01-19T03:00:00+00:00",
+              "2024-01-19T06:00:00+00:00"
+            ]
+          }
+        ]
+      },
+      "cluster_rows": [
+        {
+          "baseline_action_edge": 0.0925455653113712,
+          "baseline_bars_since_regime_change": 2.0,
+          "baseline_clarity_score": 40.0,
+          "baseline_confidence_gate": 0.5462727826556856,
+          "baseline_selected_policy": "RI_defensive_transition_policy",
+          "baseline_switch_control_mode": "continuation_release",
+          "baseline_switch_reason": "switch_blocked_by_min_dwell",
+          "baseline_zone": "low",
+          "behavior_changed": true,
+          "release_zero_selected_policy": "RI_defensive_transition_policy",
+          "release_zero_switch_control_mode": "continuation_release",
+          "release_zero_switch_reason": "switch_blocked_by_min_dwell",
+          "selected_policy_changed": false,
+          "size_changed": false,
+          "switch_reason_changed": false,
+          "timestamp": "2024-01-17T15:00:00+00:00"
+        },
+        {
+          "baseline_action_edge": 0.0925455653113712,
+          "baseline_bars_since_regime_change": 2.0,
+          "baseline_clarity_score": 40.0,
+          "baseline_confidence_gate": 0.5462727826556856,
+          "baseline_selected_policy": "RI_defensive_transition_policy",
+          "baseline_switch_control_mode": "continuation_release",
+          "baseline_switch_reason": "switch_blocked_by_min_dwell",
+          "baseline_zone": "low",
+          "behavior_changed": true,
+          "release_zero_selected_policy": "RI_defensive_transition_policy",
+          "release_zero_switch_control_mode": "continuation_release",
+          "release_zero_switch_reason": "switch_blocked_by_min_dwell",
+          "selected_policy_changed": false,
+          "size_changed": false,
+          "switch_reason_changed": false,
+          "timestamp": "2024-01-17T18:00:00+00:00"
+        },
+        {
+          "baseline_action_edge": 0.0925455653113712,
+          "baseline_bars_since_regime_change": 2.0,
+          "baseline_clarity_score": 40.0,
+          "baseline_confidence_gate": 0.5462727826556856,
+          "baseline_selected_policy": "RI_defensive_transition_policy",
+          "baseline_switch_control_mode": "continuation_release",
+          "baseline_switch_reason": "switch_blocked_by_min_dwell",
+          "baseline_zone": "low",
+          "behavior_changed": true,
+          "release_zero_selected_policy": "RI_defensive_transition_policy",
+          "release_zero_switch_control_mode": "continuation_release",
+          "release_zero_switch_reason": "switch_blocked_by_min_dwell",
+          "selected_policy_changed": false,
+          "size_changed": false,
+          "switch_reason_changed": false,
+          "timestamp": "2024-01-17T21:00:00+00:00"
+        },
+        {
+          "baseline_action_edge": 0.07305372380358555,
+          "baseline_bars_since_regime_change": 4.0,
+          "baseline_clarity_score": 39.0,
+          "baseline_confidence_gate": 0.5365268619017928,
+          "baseline_selected_policy": "RI_defensive_transition_policy",
+          "baseline_switch_control_mode": "continuation_release",
+          "baseline_switch_reason": "switch_blocked_by_hysteresis",
+          "baseline_zone": "low",
+          "behavior_changed": true,
+          "release_zero_selected_policy": "RI_continuation_policy",
+          "release_zero_switch_control_mode": "continuation_release",
+          "release_zero_switch_reason": "continuation_state_supported",
+          "selected_policy_changed": true,
+          "size_changed": true,
+          "switch_reason_changed": true,
+          "timestamp": "2024-01-18T09:00:00+00:00"
+        },
+        {
+          "baseline_action_edge": 0.07305372380358555,
+          "baseline_bars_since_regime_change": 4.0,
+          "baseline_clarity_score": 39.0,
+          "baseline_confidence_gate": 0.5365268619017928,
+          "baseline_selected_policy": "RI_defensive_transition_policy",
+          "baseline_switch_control_mode": "continuation_release",
+          "baseline_switch_reason": "switch_blocked_by_hysteresis",
+          "baseline_zone": "low",
+          "behavior_changed": true,
+          "release_zero_selected_policy": "RI_continuation_policy",
+          "release_zero_switch_control_mode": "continuation_release",
+          "release_zero_switch_reason": "continuation_state_supported",
+          "selected_policy_changed": true,
+          "size_changed": false,
+          "switch_reason_changed": true,
+          "timestamp": "2024-01-18T12:00:00+00:00"
+        },
+        {
+          "baseline_action_edge": 0.07305372380358555,
+          "baseline_bars_since_regime_change": 4.0,
+          "baseline_clarity_score": 39.0,
+          "baseline_confidence_gate": 0.5365268619017928,
+          "baseline_selected_policy": "RI_defensive_transition_policy",
+          "baseline_switch_control_mode": "continuation_release",
+          "baseline_switch_reason": "switch_blocked_by_hysteresis",
+          "baseline_zone": "low",
+          "behavior_changed": true,
+          "release_zero_selected_policy": "RI_continuation_policy",
+          "release_zero_switch_control_mode": "continuation_release",
+          "release_zero_switch_reason": "continuation_state_supported",
+          "selected_policy_changed": true,
+          "size_changed": false,
+          "switch_reason_changed": true,
+          "timestamp": "2024-01-18T15:00:00+00:00"
+        },
+        {
+          "baseline_action_edge": 0.07305372380358555,
+          "baseline_bars_since_regime_change": 4.0,
+          "baseline_clarity_score": 39.0,
+          "baseline_confidence_gate": 0.5365268619017928,
+          "baseline_selected_policy": "RI_defensive_transition_policy",
+          "baseline_switch_control_mode": "continuation_release",
+          "baseline_switch_reason": "switch_blocked_by_hysteresis",
+          "baseline_zone": "low",
+          "behavior_changed": true,
+          "release_zero_selected_policy": "RI_continuation_policy",
+          "release_zero_switch_control_mode": "continuation_release",
+          "release_zero_switch_reason": "continuation_state_supported",
+          "selected_policy_changed": true,
+          "size_changed": false,
+          "switch_reason_changed": true,
+          "timestamp": "2024-01-18T18:00:00+00:00"
+        },
+        {
+          "baseline_action_edge": 0.07305372380358555,
+          "baseline_bars_since_regime_change": 4.0,
+          "baseline_clarity_score": 39.0,
+          "baseline_confidence_gate": 0.5365268619017928,
+          "baseline_selected_policy": "RI_defensive_transition_policy",
+          "baseline_switch_control_mode": "continuation_release",
+          "baseline_switch_reason": "switch_blocked_by_hysteresis",
+          "baseline_zone": "low",
+          "behavior_changed": true,
+          "release_zero_selected_policy": "RI_continuation_policy",
+          "release_zero_switch_control_mode": "continuation_release",
+          "release_zero_switch_reason": "continuation_state_supported",
+          "selected_policy_changed": true,
+          "size_changed": false,
+          "switch_reason_changed": true,
+          "timestamp": "2024-01-18T21:00:00+00:00"
+        },
+        {
+          "baseline_action_edge": 0.14111078494589402,
+          "baseline_bars_since_regime_change": 5.0,
+          "baseline_clarity_score": 43.0,
+          "baseline_confidence_gate": 0.570555392472947,
+          "baseline_selected_policy": "RI_continuation_policy",
+          "baseline_switch_control_mode": "continuation_release",
+          "baseline_switch_reason": "stable_continuation_state",
+          "baseline_zone": "high",
+          "behavior_changed": true,
+          "release_zero_selected_policy": "RI_continuation_policy",
+          "release_zero_switch_control_mode": "default",
+          "release_zero_switch_reason": "stable_continuation_state",
+          "selected_policy_changed": false,
+          "size_changed": false,
+          "switch_reason_changed": false,
+          "timestamp": "2024-01-19T00:00:00+00:00"
+        },
+        {
+          "baseline_action_edge": 0.14111078494589402,
+          "baseline_bars_since_regime_change": 5.0,
+          "baseline_clarity_score": 43.0,
+          "baseline_confidence_gate": 0.570555392472947,
+          "baseline_selected_policy": "RI_continuation_policy",
+          "baseline_switch_control_mode": "continuation_release",
+          "baseline_switch_reason": "stable_continuation_state",
+          "baseline_zone": "high",
+          "behavior_changed": true,
+          "release_zero_selected_policy": "RI_continuation_policy",
+          "release_zero_switch_control_mode": "default",
+          "release_zero_switch_reason": "stable_continuation_state",
+          "selected_policy_changed": false,
+          "size_changed": false,
+          "switch_reason_changed": false,
+          "timestamp": "2024-01-19T03:00:00+00:00"
+        },
+        {
+          "baseline_action_edge": 0.14111078494589402,
+          "baseline_bars_since_regime_change": 5.0,
+          "baseline_clarity_score": 43.0,
+          "baseline_confidence_gate": 0.570555392472947,
+          "baseline_selected_policy": "RI_continuation_policy",
+          "baseline_switch_control_mode": "continuation_release",
+          "baseline_switch_reason": "stable_continuation_state",
+          "baseline_zone": "high",
+          "behavior_changed": true,
+          "release_zero_selected_policy": "RI_continuation_policy",
+          "release_zero_switch_control_mode": "default",
+          "release_zero_switch_reason": "stable_continuation_state",
+          "selected_policy_changed": false,
+          "size_changed": false,
+          "switch_reason_changed": false,
+          "timestamp": "2024-01-19T06:00:00+00:00"
+        }
+      ],
+      "month_window": {
+        "end": "2024-01-31",
+        "inventory_final_capital_diff": 0.0,
+        "inventory_topline_changed": false,
+        "inventory_total_return_diff": 0.0,
+        "start": "2024-01-01"
+      },
+      "monthly_reproduction": {
+        "matches_inventory_final_capital_diff": true,
+        "matches_inventory_total_return_diff": true,
+        "rerun_final_capital_diff": 0.0,
+        "rerun_total_return_diff": 0.0,
+        "top_line_sign": "flat"
+      },
+      "negative_rule_evaluation": {
+        "evaluations": [
+          {
+            "feature": "release_retention_ratio",
+            "matched_negative_rule": false,
+            "operator": "<=",
+            "subject_value": 0.727273,
+            "threshold": 0.5
+          },
+          {
+            "feature": "decisive_rank_pct",
+            "matched_negative_rule": false,
+            "operator": "<=",
+            "subject_value": 0.3,
+            "threshold": 0.272727
+          },
+          {
+            "feature": "decisive_hours_from_cluster_start",
+            "matched_negative_rule": true,
+            "operator": "<=",
+            "subject_value": 18.0,
+            "threshold": 18.0
+          },
+          {
+            "feature": "decisive_action_edge",
+            "matched_negative_rule": true,
+            "operator": "<=",
+            "subject_value": 0.073054,
+            "threshold": 0.075402
+          },
+          {
+            "feature": "decisive_confidence_gate",
+            "matched_negative_rule": true,
+            "operator": "<=",
+            "subject_value": 0.536527,
+            "threshold": 0.537701
+          },
+          {
+            "feature": "decisive_clarity_score",
+            "matched_negative_rule": true,
+            "operator": "<=",
+            "subject_value": 39.0,
+            "threshold": 39.0
+          },
+          {
+            "feature": "cluster_policy_diff_rows",
+            "matched_negative_rule": true,
+            "operator": ">=",
+            "subject_value": 5.0,
+            "threshold": 4.5
+          },
+          {
+            "feature": "cluster_switch_diff_rows",
+            "matched_negative_rule": true,
+            "operator": ">=",
+            "subject_value": 5.0,
+            "threshold": 4.5
+          },
+          {
+            "feature": "cluster_size_diff_rows",
+            "matched_negative_rule": false,
+            "operator": ">=",
+            "subject_value": 1.0,
+            "threshold": 1.5
+          }
+        ],
+        "hit_count": 6,
+        "hit_share": 0.666667,
+        "satisfied_features": [
+          "decisive_hours_from_cluster_start",
+          "decisive_action_edge",
+          "decisive_confidence_gate",
+          "decisive_clarity_score",
+          "cluster_policy_diff_rows",
+          "cluster_switch_diff_rows"
+        ],
+        "total": 9,
+        "unsatisfied_features": [
+          "release_retention_ratio",
+          "decisive_rank_pct",
+          "cluster_size_diff_rows"
+        ]
+      },
+      "role": "negative_like_candidate",
+      "subject_features": {
+        "cluster_policy_diff_rows": 5.0,
+        "cluster_row_count": 11.0,
+        "cluster_size_diff_rows": 1.0,
+        "cluster_switch_diff_rows": 5.0,
+        "decisive_action_edge": 0.073054,
+        "decisive_clarity_score": 39.0,
+        "decisive_confidence_gate": 0.536527,
+        "decisive_hours_from_cluster_start": 18.0,
+        "decisive_index_within_cluster": 3.0,
+        "decisive_rank_pct": 0.3,
+        "release_retention_ratio": 0.727273
+      },
+      "subject_id": "2024-01"
+    }
+  }
+}

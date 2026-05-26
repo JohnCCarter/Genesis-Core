@@ -1,0 +1,44 @@
+{
+  "status": "edge_topology_phase_6_canonical_summary",
+  "base_sha": "fe591061",
+  "coverage": {
+    "user_requested_horizon": "2016-04_to_2026-04",
+    "annual_full_year_surface": "2017_to_2025",
+    "full_calendar_month_surface": "2016-07_to_2026-03",
+    "monthly_local_exact_subjects": [
+      "2021-08",
+      "2025-10",
+      "2018-03"
+    ]
+  },
+  "topology_axes": [
+    "absolute_performance_quality",
+    "control_relative_contribution_quality",
+    "local_release_structure_on_frozen_monthly_sidecar"
+  ],
+  "zone_summary_by_label": {
+    "ACTIVE": 1,
+    "WEAK": 4,
+    "REJECTED": 2,
+    "SUPERSEDED": 1,
+    "UNKNOWN": 2
+  },
+  "strongest_supported_readings": [
+    "Absolute performance and control-relative contribution diverge materially on the annual surface.",
+    "The late low-zone bars-8+ pocket is recurrent but sign-unstable and therefore not a standalone discriminator.",
+    "Blocked baseline-long quality inversion is the strongest repeated anti-edge boundary on the current retained annual proxy surface.",
+    "Control-positive annual periods lean continuation-dominant while control-negative periods lean suppressor-heavier on the bounded primary cohort.",
+    "The frozen monthly exact-subject seam is real but local and sign-mixed rather than universally directional."
+  ],
+  "open_contradictions": [
+    "2024 is the strongest absolute full year while still being control-negative and drawdown-worse than control.",
+    "2018-03 has the largest local behavioral drift in the exact month triad while still being the negative subject."
+  ],
+  "open_unknowns": [
+    "general_monthly_enabled_vs_absent_control_surface",
+    "flat_period_structural_coherence",
+    "feature_indicator_behavior_map_without_raw_feature_reopen",
+    "trigger_pattern_exit_family_map_without_wider_period_surface"
+  ],
+  "authority_boundary": "observational_only_non_authorizing"
+}

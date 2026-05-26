@@ -4,7 +4,7 @@ Date: 2026-05-26
 Branch: `feature/research-attribution-layer-foundation-2026-05-26`
 Mode: `RESEARCH`
 Base SHA anchor: `cdcfc5a632dab6afff9649933188b38474e0535b`
-Status: `current working research plan / phase-0 and phase-1 completed / observational only / no runtime authority`
+Status: `phase-0 through phase-6 completed on current branch / observational only / no runtime authority`
 
 ## Purpose
 
@@ -152,6 +152,21 @@ Compare the content and system state of selected period buckets instead of only 
 - one top-vs-worst-vs-flat comparison note
 - one machine-readable period comparison artifact bundle
 
+**Done means**
+
+- the lane has one bounded annual primary comparison pack spanning distinct topology classes
+- the lane has one explicit monthly sidecar instead of a fake general monthly control surface
+- later attribution and failure-mode phases can reuse a frozen comparison bundle rather than reselect periods ad hoc
+
+**Outputs landed on current branch**
+
+- `docs/analysis/edge_topology/edge_topology_phase_2_period_comparison_packs_2016_06_to_2026_04.md`
+- `results/research/edge_topology/phase_2_period_comparisons/phase_2_period_comparison_bundle_annual_primary_with_monthly_sidecar_2019_2025.json`
+
+**Status**
+
+- `completed on current branch`
+
 ### Phase 3 — attribution-layer period maps
 
 **Goal**
@@ -170,6 +185,26 @@ Map which state clusters appear repeatedly inside strong, weak, and anti-edge pe
 This phase must prefer currently observable or deterministically derivable surfaces.
 It must not quietly widen into full raw-feature mining unless a later slice explicitly opens that question.
 
+**Required outputs**
+
+- one attribution-map note
+- one machine-readable attribution-map artifact
+- explicit unknown labels for unsupported attribution layers
+
+**Done means**
+
+- the lane can distinguish shared background structure from relative-beneficial and relative-harmful annual clusters
+- the month-sidecar seam is mapped as a local attribution surface rather than a global month rule
+
+**Outputs landed on current branch**
+
+- `docs/analysis/edge_topology/edge_topology_phase_3_attribution_maps_2016_06_to_2026_04.md`
+- `results/research/edge_topology/phase_3_attribution_maps/phase_3_attribution_map_annual_primary_with_monthly_sidecar_2019_2025.json`
+
+**Status**
+
+- `completed on current branch`
+
 ### Phase 4 — failure-mode and anti-edge topology
 
 **Goal**
@@ -181,6 +216,15 @@ Identify repeated losing structures, anti-edge states, and the boundaries where 
 - failure-mode map
 - anti-edge map
 - first explicit boundary inventory between edge and anti-edge neighborhoods
+
+**Outputs landed on current branch**
+
+- `docs/analysis/edge_topology/edge_topology_phase_4_failure_and_anti_edge_2016_06_to_2026_04.md`
+- `results/research/edge_topology/phase_4_failure_mode_maps/phase_4_failure_and_anti_edge_map_2016_06_to_2026_04.json`
+
+**Status**
+
+- `completed on current branch`
 
 ### Phase 5 — edge zones / anti-edge zones / unknown zones synthesis
 
@@ -201,6 +245,20 @@ Promote only the repeated and evidenced structures into provisional topology zon
 No zone may be promoted to `ACTIVE` from one-off local period behavior alone.
 Repeated support across admissible periods is required.
 
+**Required outputs**
+
+- one zone-synthesis note
+- one machine-readable provisional zone registry
+
+**Outputs landed on current branch**
+
+- `docs/analysis/edge_topology/edge_topology_phase_5_zone_synthesis_2016_06_to_2026_04.md`
+- `results/research/edge_topology/phase_5_zone_synthesis/phase_5_provisional_zone_registry_2016_06_to_2026_04.json`
+
+**Status**
+
+- `completed on current branch`
+
 ### Phase 6 — canonical Edge Topology summary
 
 **Goal**
@@ -218,6 +276,15 @@ Close the lane with one bounded synthesis of:
 - the branch can explain where Genesis-Core appears strong, weak, neutral, or harmful
 - the synthesis still remains observational and non-authorizing
 - future runtime/tuning ideas remain explicitly separate from this evidence layer
+
+**Outputs landed on current branch**
+
+- `docs/analysis/edge_topology/edge_topology_phase_6_canonical_summary_2016_06_to_2026_04.md`
+- `results/research/edge_topology/phase_6_canonical_summary/edge_topology_summary_2016_06_to_2026_04.json`
+
+**Status**
+
+- `completed on current branch`
 
 ## Phase 0 — observed starting inventory
 
@@ -386,16 +453,17 @@ They need their own first-class map surfaces.
 - This branch has **not** yet verified that the strongest and weakest periods form stable, cleanly separable edge neighborhoods rather than overlapping mixed structures.
 - This branch has **not** yet verified that the current monthly delta surface can be generalized beyond the specific continuation-release hysteresis comparator.
 
-## Active next step
+## Lane completion status
 
-The next admissible step is **Phase 2 — top / worst / flat period comparison packs**.
+The current bounded Edge Topology lane is complete through **Phase 6**.
 
-That phase should:
+If this lane is reopened later, the next admissible follow-up is **not** another pass over the same bounded pack.
+It would need a fresh bounded slice that explicitly widens one currently frozen gap, for example:
 
-1. select one bounded comparison set from the now-frozen year and month ranking buckets
-2. include both aligned and misaligned period types rather than only obvious winners and losers
-3. compare decision, policy, regime/state, execution, exit-family, and failure-mode content on those selected periods
-4. keep annual and monthly comparator semantics explicit instead of forcing false unification
+1. a general monthly `enabled vs absent` control surface
+2. flat-period structural-coherence testing beyond the current anchor set
+3. feature / indicator behavior mapping from reopened raw-feature surfaces
+4. trigger-pattern / exit-family mapping from a wider retained period surface
 
 ## What changed and what did not
 
@@ -405,12 +473,16 @@ What changed:
 - the lane is phased rather than left as one giant “analyze everything” request
 - Phase 0 has already locked real coverage boundaries and initial period-ranking anchors
 - Phase 1 has now materialized canonical year and month ranking tables plus first-pass bucket registries
-- the first support artifact path under `results/research/edge_topology/` is now explicit
+- Phase 2 has now frozen one annual-primary comparison pack plus one explicit monthly-sidecar bundle
+- Phase 3 has now materialized one bounded attribution map with explicit unsupported layers marked unknown
+- Phase 4 has now materialized one failure-mode and anti-edge boundary map
+- Phase 5 has now materialized one provisional zone registry using controlled labels
+- Phase 6 has now materialized one canonical bounded summary artifact
 
 What did **not** change:
 
 - no runtime behavior changed
 - no strategy behavior changed
 - no tuning or optimization was performed
-- no topology zone has yet been promoted as durable truth
+- no topology zone has been promoted as runtime or durable truth
 - no causal claim was made

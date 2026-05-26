@@ -1,0 +1,103 @@
+{
+  "status": "edge_topology_phase_5_provisional_zone_registry",
+  "base_sha": "fe591061",
+  "label_legend": [
+    "ACTIVE",
+    "WEAK",
+    "REJECTED",
+    "SUPERSEDED",
+    "UNKNOWN"
+  ],
+  "zone_registry": [
+    {
+      "zone_id": "annual_shared_late_low_zone_pocket",
+      "zone_kind": "structural_zone",
+      "label": "WEAK",
+      "supporting_periods": [2025, 2024, 2022, 2019],
+      "why": "Repeated across all annual primary classes but sign-unstable on current retained surfaces."
+    },
+    {
+      "zone_id": "blocked_baseline_long_quality_inversion_boundary",
+      "zone_kind": "anti_edge_boundary",
+      "label": "ACTIVE",
+      "supporting_periods": [
+        "negative_full_years",
+        "positive_full_years"
+      ],
+      "why": "Strongest repeated sign-separating boundary on the current annual proxy surface; supported across multiple years rather than one-off local behavior."
+    },
+    {
+      "zone_id": "continuation_dominant_control_positive_relative_cluster",
+      "zone_kind": "edge_relative_cluster",
+      "label": "WEAK",
+      "supporting_periods": [2025, 2022],
+      "why": "Repeated control-positive annual pattern with stronger continuation share and lighter suppressor mass, but still not a universal edge rule."
+    },
+    {
+      "zone_id": "suppressor_heavier_control_negative_relative_cluster",
+      "zone_kind": "anti_edge_cluster",
+      "label": "WEAK",
+      "supporting_periods": [2024, 2019],
+      "why": "Repeated control-negative annual pattern with heavier no-trade and aged-weak concentration, but still based on a bounded primary cohort."
+    },
+    {
+      "zone_id": "monthly_early_band_release_sign_pattern",
+      "zone_kind": "local_monthly_seam",
+      "label": "WEAK",
+      "supporting_periods": [
+        "2021-08",
+        "2025-10",
+        "2018-03"
+      ],
+      "why": "Frozen exact-subject triad supports a local sign pattern, but the bench is still too small for stronger promotion."
+    },
+    {
+      "zone_id": "absolute_top_equals_control_edge_claim",
+      "zone_kind": "claim_boundary",
+      "label": "REJECTED",
+      "supporting_periods": [2024],
+      "why": "The strongest absolute year is still control-negative and drawdown-worse than control."
+    },
+    {
+      "zone_id": "negative_year_unique_shared_pocket_claim",
+      "zone_kind": "claim_boundary",
+      "label": "REJECTED",
+      "supporting_periods": [
+        "2018",
+        "2020",
+        "2022",
+        "2025",
+        "2019",
+        "2021",
+        "2024"
+      ],
+      "why": "Positive and negative year groups both carry the same broad late low-zone shared pocket."
+    },
+    {
+      "zone_id": "single_aged_weak_root_cause_claim",
+      "zone_kind": "claim_boundary",
+      "label": "SUPERSEDED",
+      "supporting_periods": [
+        "negative_full_years",
+        "positive_full_years"
+      ],
+      "why": "Blocked-cohort splits show a mixed displacement-plus-suppression surface, and insufficient_evidence remains a sharper local suspect than a pure aged-weak-only story."
+    },
+    {
+      "zone_id": "monthly_general_control_surface",
+      "zone_kind": "surface_gap",
+      "label": "UNKNOWN",
+      "supporting_periods": [
+        "all_full_calendar_months_on_current_monthly_surface"
+      ],
+      "why": "The current retained month surface does not yet expose a general enabled-vs-absent control map."
+    },
+    {
+      "zone_id": "flat_period_structural_coherence",
+      "zone_kind": "evidence_gap",
+      "label": "UNKNOWN",
+      "supporting_periods": [2019, "2016-08"],
+      "why": "Flat periods remain useful anchors but are not yet proven to form one coherent structural class across annual and monthly levels."
+    }
+  ]
+}

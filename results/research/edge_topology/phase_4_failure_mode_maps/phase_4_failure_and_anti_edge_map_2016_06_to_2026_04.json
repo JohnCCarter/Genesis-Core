@@ -1,0 +1,101 @@
+{
+  "status": "edge_topology_phase_4_failure_and_anti_edge_map",
+  "base_sha": "fe591061",
+  "repeated_failure_modes": [
+    {
+      "failure_mode_id": "blocked_baseline_long_quality_inversion",
+      "surface": "annual_group_proxy_boundary",
+      "evidence": {
+        "negative_blocked_fwd16_mean_pct": 0.356117,
+        "positive_blocked_fwd16_mean_pct": -0.172585,
+        "negative_blocked_fwd16_median_pct": 0.076866,
+        "positive_blocked_fwd16_median_pct": -0.261849,
+        "negative_blocked_gt_zero_share": 0.510802,
+        "positive_blocked_gt_zero_share": 0.459926
+      },
+      "reading": "The anti-edge boundary appears when the router suppresses a blocked baseline-long cohort that no longer looks weak on the same observational proxy surface."
+    },
+    {
+      "failure_mode_id": "suppressor_heavier_control_negative_relative_state",
+      "surface": "annual_primary_cohort",
+      "supporting_periods": [2024, 2019],
+      "evidence": {
+        "no_trade_policy_share_range": [0.355932, 0.410359],
+        "aged_weak_guard_share_range": [0.204694, 0.257636],
+        "enabled_drawdown_worse_than_absent": true
+      },
+      "reading": "Control-negative annual periods concentrate more suppressor mass and also carry worse drawdown containment than their controls."
+    },
+    {
+      "failure_mode_id": "shared_pocket_presence_without_sign_discrimination",
+      "surface": "annual_positive_vs_negative_pocket_comparison",
+      "supporting_periods": [
+        "2018",
+        "2020",
+        "2022",
+        "2025",
+        "2019",
+        "2021",
+        "2024"
+      ],
+      "reading": "The late low-zone bars-8+ pocket is shared across positive and negative year groups, so pocket presence alone is a non-discriminative failure explanation."
+    },
+    {
+      "failure_mode_id": "early_release_weak_decisive_local_monthly_seam",
+      "surface": "monthly_exact_subject_triad",
+      "supporting_periods": [
+        "2018-03",
+        "2021-08",
+        "2025-10"
+      ],
+      "evidence": {
+        "negative_subject": "2018-03",
+        "local_signature": [
+          "earlier_release_within_cluster",
+          "weaker_decisive_row_support",
+          "longer_path_divergence_from_baseline"
+        ],
+        "topline_delta_pct_points": -0.009372
+      },
+      "reading": "The month-level local anti-edge seam appears when the release happens earlier and weaker inside the same broad early band."
+    }
+  ],
+  "anti_edge_boundaries": [
+    {
+      "boundary_id": "absolute_strength_vs_relative_harm",
+      "supporting_periods": [2024],
+      "reading": "A period can be the strongest absolute year while still sitting on the harmful side of the control-relative boundary."
+    },
+    {
+      "boundary_id": "pocket_presence_vs_pocket_quality",
+      "supporting_periods": [
+        "negative_full_years",
+        "positive_full_years"
+      ],
+      "reading": "The meaningful boundary is not whether the shared pocket exists but whether the blocked entries inside it still look weak or have become flat-to-positive."
+    },
+    {
+      "boundary_id": "broad_phase_band_vs_local_release_structure",
+      "supporting_periods": [
+        "2018-03",
+        "2021-08",
+        "2025-10"
+      ],
+      "reading": "The monthly local boundary sits inside the shared early band and is carried by release timing, decisive support, and retention rather than by broad phase placement alone."
+    }
+  ],
+  "rejected_or_superseded_explanations": [
+    {
+      "claim": "negative_years_have_a_unique_shared_pocket_not_seen_in_positive_years",
+      "status": "rejected"
+    },
+    {
+      "claim": "behavioral_diff_magnitude_monotonically_predicts_monthly_sign",
+      "status": "rejected"
+    },
+    {
+      "claim": "aged_weak_guard_is_the_single_root_cause_of_the_annual_failure_surface",
+      "status": "superseded"
+    }
+  ]
+}

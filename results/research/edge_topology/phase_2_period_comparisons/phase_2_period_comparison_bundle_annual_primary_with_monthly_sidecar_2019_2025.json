@@ -1,0 +1,247 @@
+{
+  "status": "edge_topology_phase_2_period_comparison_bundle",
+  "base_sha": "fe591061",
+  "phase_scope": {
+    "annual_primary_surface": "results/backtests/ri_policy_router_enabled_vs_absent_all_years_20260428_curated_only + retained annual pocket summaries",
+    "monthly_sidecar_surface": "continuation_release_hysteresis exact-subject triad only",
+    "causality": "observational_only"
+  },
+  "cohort_selection": {
+    "annual_primary": [
+      {
+        "year": 2025,
+        "topology_class": "absolute_positive_and_control_positive"
+      },
+      {
+        "year": 2024,
+        "topology_class": "absolute_top_but_control_negative"
+      },
+      {
+        "year": 2022,
+        "topology_class": "absolute_negative_but_control_positive"
+      },
+      {
+        "year": 2019,
+        "topology_class": "flat_absolute_and_control_negative"
+      }
+    ],
+    "monthly_sidecar": {
+      "reason": "Detailed local monthly policy/behavior evidence exists only on the frozen continuation_release_hysteresis exact-subject triad. General monthly enabled-vs-absent control remains unknown on the current retained monthly surface.",
+      "exact_subjects": [
+        "2021-08",
+        "2025-10",
+        "2018-03"
+      ]
+    }
+  },
+  "annual_primary_cohort": [
+    {
+      "year": 2025,
+      "enabled_return_pct": 2.926866,
+      "absent_return_pct": 1.231387,
+      "delta_pct_points": 1.695479,
+      "control_alignment": "aligned_positive",
+      "enabled_profit_factor": 2.189868,
+      "absent_profit_factor": 1.724203,
+      "enabled_max_drawdown_pct": 2.622936,
+      "absent_max_drawdown_pct": 3.489014,
+      "action_diff_count": 740,
+      "reason_only_diff_count": 2050,
+      "blocked_long_to_none_count": 501,
+      "blocked_long_to_none_share": 0.677027,
+      "substituted_none_to_long_count": 236,
+      "substituted_none_to_long_share": 0.318919,
+      "continuation_policy_count": 472,
+      "continuation_policy_share": 0.637838,
+      "no_trade_policy_count": 268,
+      "no_trade_policy_share": 0.362162,
+      "defensive_transition_policy_count": 0,
+      "defensive_transition_policy_share": 0.0,
+      "low_zone_count": 485,
+      "low_zone_share": 0.655405,
+      "bars_8_plus_count": 719,
+      "bars_8_plus_share": 0.971622,
+      "stable_continuation_state_count": 454,
+      "stable_continuation_state_share": 0.613514,
+      "aged_weak_guard_count": 147,
+      "aged_weak_guard_share": 0.198649,
+      "insufficient_evidence_count": 103,
+      "insufficient_evidence_share": 0.139189
+    },
+    {
+      "year": 2024,
+      "enabled_return_pct": 4.745629,
+      "absent_return_pct": 6.339013,
+      "delta_pct_points": -1.593385,
+      "control_alignment": "positive_but_control_worse",
+      "enabled_profit_factor": 2.131609,
+      "absent_profit_factor": 2.251805,
+      "enabled_max_drawdown_pct": 2.219202,
+      "absent_max_drawdown_pct": 1.428062,
+      "action_diff_count": 753,
+      "reason_only_diff_count": 2048,
+      "blocked_long_to_none_count": 527,
+      "blocked_long_to_none_share": 0.699867,
+      "substituted_none_to_long_count": 222,
+      "substituted_none_to_long_share": 0.294821,
+      "continuation_policy_count": 436,
+      "continuation_policy_share": 0.579017,
+      "no_trade_policy_count": 309,
+      "no_trade_policy_share": 0.410359,
+      "defensive_transition_policy_count": 8,
+      "defensive_transition_policy_share": 0.010624,
+      "low_zone_count": 516,
+      "low_zone_share": 0.685259,
+      "bars_8_plus_count": 736,
+      "bars_8_plus_share": 0.977424,
+      "stable_continuation_state_count": 422,
+      "stable_continuation_state_share": 0.560425,
+      "aged_weak_guard_count": 194,
+      "aged_weak_guard_share": 0.257636,
+      "insufficient_evidence_count": 101,
+      "insufficient_evidence_share": 0.13413
+    },
+    {
+      "year": 2022,
+      "enabled_return_pct": -0.876681,
+      "absent_return_pct": -2.751242,
+      "delta_pct_points": 1.874561,
+      "control_alignment": "negative_but_control_better",
+      "enabled_profit_factor": 1.130356,
+      "absent_profit_factor": 0.831965,
+      "enabled_max_drawdown_pct": 2.354833,
+      "absent_max_drawdown_pct": 3.350683,
+      "action_diff_count": 872,
+      "reason_only_diff_count": 1920,
+      "blocked_long_to_none_count": 564,
+      "blocked_long_to_none_share": 0.646789,
+      "substituted_none_to_long_count": 307,
+      "substituted_none_to_long_share": 0.352064,
+      "continuation_policy_count": 614,
+      "continuation_policy_share": 0.704128,
+      "no_trade_policy_count": 258,
+      "no_trade_policy_share": 0.295872,
+      "defensive_transition_policy_count": 0,
+      "defensive_transition_policy_share": 0.0,
+      "low_zone_count": 599,
+      "low_zone_share": 0.686927,
+      "bars_8_plus_count": 872,
+      "bars_8_plus_share": 1.0,
+      "stable_continuation_state_count": 614,
+      "stable_continuation_state_share": 0.704128,
+      "aged_weak_guard_count": 148,
+      "aged_weak_guard_share": 0.169725,
+      "insufficient_evidence_count": 94,
+      "insufficient_evidence_share": 0.107798
+    },
+    {
+      "year": 2019,
+      "enabled_return_pct": -0.248774,
+      "absent_return_pct": 0.299303,
+      "delta_pct_points": -0.548077,
+      "control_alignment": "aligned_negative",
+      "enabled_profit_factor": 1.137791,
+      "absent_profit_factor": 1.438744,
+      "enabled_max_drawdown_pct": 1.073599,
+      "absent_max_drawdown_pct": 0.489823,
+      "action_diff_count": 767,
+      "reason_only_diff_count": 2026,
+      "blocked_long_to_none_count": 513,
+      "blocked_long_to_none_share": 0.66884,
+      "substituted_none_to_long_count": 247,
+      "substituted_none_to_long_share": 0.322034,
+      "continuation_policy_count": 494,
+      "continuation_policy_share": 0.644068,
+      "no_trade_policy_count": 273,
+      "no_trade_policy_share": 0.355932,
+      "defensive_transition_policy_count": 0,
+      "defensive_transition_policy_share": 0.0,
+      "low_zone_count": 515,
+      "low_zone_share": 0.671447,
+      "bars_8_plus_count": 758,
+      "bars_8_plus_share": 0.988266,
+      "stable_continuation_state_count": 488,
+      "stable_continuation_state_share": 0.636245,
+      "aged_weak_guard_count": 157,
+      "aged_weak_guard_share": 0.204694,
+      "insufficient_evidence_count": 94,
+      "insufficient_evidence_share": 0.122555
+    }
+  ],
+  "group_level_proxy_split": {
+    "blocked_baseline_longs": {
+      "negative_full_years": {
+        "count": 648,
+        "mean": 0.356117,
+        "median": 0.076866,
+        "gt_zero_share": 0.510802
+      },
+      "positive_full_years": {
+        "count": 811,
+        "mean": -0.172585,
+        "median": -0.261849,
+        "gt_zero_share": 0.459926
+      }
+    },
+    "substituted_continuation_longs": {
+      "negative_full_years": {
+        "count": 415,
+        "mean": 0.458476,
+        "median": 0.18204,
+        "gt_zero_share": 0.53494
+      },
+      "positive_full_years": {
+        "count": 698,
+        "mean": -0.307565,
+        "median": 0.212351,
+        "gt_zero_share": 0.524355
+      }
+    }
+  },
+  "monthly_sidecar": {
+    "absolute_buckets": {
+      "top_absolute_first": "2025-04",
+      "worst_absolute_first": "2024-12",
+      "flat_absolute_first": "2016-08",
+      "positive_toggle_delta": [
+        "2021-08",
+        "2025-10"
+      ],
+      "negative_toggle_delta": [
+        "2018-03"
+      ]
+    },
+    "exact_subject_triad": {
+      "2021-08": {
+        "total_return_diff_pct_points": 0.188901,
+        "behavioral_row_diff_count": 13,
+        "selected_policy_diff_count": 9,
+        "switch_reason_diff_count": 9,
+        "baseline_release_rows": 6,
+        "release_zero_rows": 6
+      },
+      "2025-10": {
+        "total_return_diff_pct_points": 0.171348,
+        "behavioral_row_diff_count": 19,
+        "selected_policy_diff_count": 6,
+        "switch_reason_diff_count": 9,
+        "baseline_release_rows": 13,
+        "release_zero_rows": 10
+      },
+      "2018-03": {
+        "total_return_diff_pct_points": -0.009372,
+        "behavioral_row_diff_count": 35,
+        "selected_policy_diff_count": 6,
+        "switch_reason_diff_count": 6,
+        "baseline_release_rows": 12,
+        "release_zero_rows": 6
+      }
+    }
+  },
+  "unsupported_dimensions": [
+    "annual_exit_family_mix_unknown_on_current_action_diff_surface",
+    "monthly_general_enabled_vs_absent_control_unknown_on_current_retained_surface",
+    "feature_indicator_behavior_map_not_opened_from_raw_feature_surfaces",
+    "flat_month_local_policy_map_not_observed_on_current_retained_artifacts"
+  ]
+}

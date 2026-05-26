@@ -1,0 +1,96 @@
+{
+  "status": "edge_topology_phase_3_attribution_map",
+  "base_sha": "fe591061",
+  "derived_from": [
+    "results/research/edge_topology/phase_2_period_comparisons/phase_2_period_comparison_bundle_annual_primary_with_monthly_sidecar_2019_2025.json",
+    "docs/analysis/regime_intelligence/policy_router/ri_policy_router_shared_pocket_outcome_quality_2026-04-28.md",
+    "docs/analysis/regime_intelligence/policy_router/ri_policy_router_continuation_release_hysteresis_intra_band_sign_candidates_2026-05-26.md"
+  ],
+  "recurring_clusters": [
+    {
+      "cluster_id": "annual_shared_late_low_zone_pocket",
+      "level": "annual_primary",
+      "supporting_periods": [2025, 2024, 2022, 2019],
+      "state_axes": {
+        "low_zone_share_range": [0.655405, 0.686927],
+        "bars_8_plus_share_range": [0.971622, 1.0],
+        "blocked_long_to_none_share_range": [0.646789, 0.699867],
+        "substituted_none_to_long_share_range": [0.294821, 0.352064],
+        "dominant_policies": [
+          "RI_continuation_policy",
+          "RI_no_trade_policy"
+        ]
+      },
+      "reading": "Recurring structural pocket present across strong, weak, flat, and misaligned annual periods. Structural recurrence alone does not determine sign."
+    },
+    {
+      "cluster_id": "annual_control_positive_continuation_dominant",
+      "level": "annual_primary",
+      "supporting_periods": [2025, 2022],
+      "state_axes": {
+        "continuation_policy_share_range": [0.637838, 0.704128],
+        "no_trade_policy_share_range": [0.295872, 0.362162],
+        "aged_weak_guard_share_range": [0.169725, 0.198649],
+        "insufficient_evidence_share_range": [0.107798, 0.139189],
+        "drawdown_vs_control": "enabled_better"
+      },
+      "reading": "Relative-beneficial annual cluster with stronger continuation weight, lighter suppressor concentration, and better drawdown containment versus control."
+    },
+    {
+      "cluster_id": "annual_control_negative_suppressor_heavier",
+      "level": "annual_primary",
+      "supporting_periods": [2024, 2019],
+      "state_axes": {
+        "continuation_policy_share_range": [0.579017, 0.644068],
+        "no_trade_policy_share_range": [0.355932, 0.410359],
+        "aged_weak_guard_share_range": [0.204694, 0.257636],
+        "insufficient_evidence_share_range": [0.122555, 0.13413],
+        "drawdown_vs_control": "enabled_worse"
+      },
+      "reading": "Relative-harmful annual cluster with heavier suppressor mass and worse drawdown containment versus control, even when one subject remains absolute-top on return."
+    },
+    {
+      "cluster_id": "blocked_baseline_long_quality_inversion",
+      "level": "annual_group_boundary",
+      "supporting_periods": [
+        "negative_full_years",
+        "positive_full_years"
+      ],
+      "state_axes": {
+        "blocked_negative_mean_fwd16": 0.356117,
+        "blocked_positive_mean_fwd16": -0.172585,
+        "blocked_negative_median_fwd16": 0.076866,
+        "blocked_positive_median_fwd16": -0.261849
+      },
+      "reading": "The strongest recurring annual boundary is not pocket presence but the ex-post quality of the blocked baseline-long cohort."
+    },
+    {
+      "cluster_id": "monthly_early_band_release_split_triad",
+      "level": "monthly_sidecar",
+      "supporting_periods": [
+        "2021-08",
+        "2025-10",
+        "2018-03"
+      ],
+      "state_axes": {
+        "shared_mechanism": "continuation_release_hysteresis baseline vs release_zero",
+        "positive_subjects": [
+          "2021-08",
+          "2025-10"
+        ],
+        "negative_subject": "2018-03",
+        "negative_subject_signature": [
+          "earlier_release_within_cluster",
+          "weaker_decisive_row_support",
+          "longer_path_divergence_from_baseline"
+        ]
+      },
+      "reading": "The month-level local seam is sign-mixed; the discriminative structure appears inside decisive timing, support, and retention rather than broad phase placement alone."
+    }
+  ],
+  "unsupported_layers": {
+    "feature_indicator_behavior_map": "unknown_on_current_retained_surface_without_raw_feature_reopen",
+    "trigger_pattern_exit_family_map": "unknown_on_current_retained_annual_period_surface",
+    "general_monthly_enabled_vs_absent_map": "unknown_on_current_monthly_inventory_surface"
+  }
+}

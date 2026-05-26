@@ -1,0 +1,296 @@
+{
+  "status": "edge_topology_phase_0_period_inventory_observed",
+  "base_sha": "cdcfc5a632dab6afff9649933188b38474e0535b",
+  "requested_target_window": {
+    "start": "2016-04",
+    "end": "2026-04"
+  },
+  "observed_admissible_coverage": {
+    "common_start": "2016-06-07T00:00:00+00:00",
+    "common_end": "2026-04-15T00:00:00+00:00",
+    "full_years": [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025],
+    "full_calendar_months": {
+      "start": "2016-07",
+      "end": "2026-03"
+    }
+  },
+  "source_artifacts": {
+    "annual_enabled_vs_absent_summary": "results/backtests/ri_policy_router_enabled_vs_absent_all_years_20260428_curated_only/enabled_vs_absent_all_years_summary.json",
+    "monthly_hysteresis_inventory": "results/backtests/ri_policy_router_continuation_release_hysteresis_monthly_inventory_20260504/continuation_release_hysteresis_monthly_inventory_windows.json",
+    "mixed_year_month_shape_notes": [
+      "docs/analysis/regime_intelligence/policy_router/ri_policy_router_2023_mixed_year_pocket_isolation_2026-05-06.md",
+      "docs/analysis/regime_intelligence/policy_router/ri_policy_router_2023_vs_2017_mixed_year_shape_comparison_2026-05-06.md"
+    ]
+  },
+  "semantics": {
+    "annual_absolute_metric": "enabled_total_return_pct",
+    "annual_delta_metric": "enabled_total_return_pct - absent_total_return_pct",
+    "monthly_absolute_metric": "baseline_summary.total_return on continuation_release_hysteresis monthly inventory",
+    "monthly_delta_metric": "total_return_diff on continuation_release_hysteresis monthly inventory only",
+    "causality": "observational_only",
+    "do_not_conflate": [
+      "annual enabled-vs-absent delta is not the same surface as the current monthly hysteresis delta",
+      "best absolute periods are not automatically best control-relative edge periods"
+    ]
+  },
+  "top_enabled_years": [
+    {
+      "year": 2024,
+      "enabled_return_pct": 4.74562887722514,
+      "delta_pct_points": -1.59338459579989
+    },
+    {
+      "year": 2025,
+      "enabled_return_pct": 2.92686599887507,
+      "delta_pct_points": 1.69547920557496
+    },
+    {
+      "year": 2020,
+      "enabled_return_pct": 1.8645825546378,
+      "delta_pct_points": 0.250003658014575
+    },
+    {
+      "year": 2023,
+      "enabled_return_pct": 0.990290823475007,
+      "delta_pct_points": -0.794216685350038
+    },
+    {
+      "year": 2017,
+      "enabled_return_pct": 0.348883788484636,
+      "delta_pct_points": -0.0875312356800714
+    }
+  ],
+  "worst_enabled_years": [
+    {
+      "year": 2021,
+      "enabled_return_pct": -1.97842263866694,
+      "delta_pct_points": -3.05634438292624
+    },
+    {
+      "year": 2022,
+      "enabled_return_pct": -0.876680854625593,
+      "delta_pct_points": 1.87456142290503
+    },
+    {
+      "year": 2018,
+      "enabled_return_pct": -0.322712507048727,
+      "delta_pct_points": 0.317459720854658
+    },
+    {
+      "year": 2019,
+      "enabled_return_pct": -0.248773509729435,
+      "delta_pct_points": -0.548076764847738
+    },
+    {
+      "year": 2017,
+      "enabled_return_pct": 0.348883788484636,
+      "delta_pct_points": -0.0875312356800714
+    }
+  ],
+  "flattest_years_by_absolute_enabled_return": [
+    {
+      "year": 2019,
+      "enabled_return_pct": -0.248773509729435,
+      "delta_pct_points": -0.548076764847738
+    },
+    {
+      "year": 2018,
+      "enabled_return_pct": -0.322712507048727,
+      "delta_pct_points": 0.317459720854658
+    },
+    {
+      "year": 2017,
+      "enabled_return_pct": 0.348883788484636,
+      "delta_pct_points": -0.0875312356800714
+    },
+    {
+      "year": 2022,
+      "enabled_return_pct": -0.876680854625593,
+      "delta_pct_points": 1.87456142290503
+    },
+    {
+      "year": 2023,
+      "enabled_return_pct": 0.990290823475007,
+      "delta_pct_points": -0.794216685350038
+    }
+  ],
+  "top_years_by_delta": [
+    {
+      "year": 2022,
+      "enabled_return_pct": -0.876680854625593,
+      "delta_pct_points": 1.87456142290503
+    },
+    {
+      "year": 2025,
+      "enabled_return_pct": 2.92686599887507,
+      "delta_pct_points": 1.69547920557496
+    },
+    {
+      "year": 2018,
+      "enabled_return_pct": -0.322712507048727,
+      "delta_pct_points": 0.317459720854658
+    },
+    {
+      "year": 2020,
+      "enabled_return_pct": 1.8645825546378,
+      "delta_pct_points": 0.250003658014575
+    },
+    {
+      "year": 2017,
+      "enabled_return_pct": 0.348883788484636,
+      "delta_pct_points": -0.0875312356800714
+    }
+  ],
+  "top_months_by_baseline": [
+    {
+      "label": "2025-04",
+      "baseline_return_pct": 1.95939125999999,
+      "delta_pct_points": 0.0
+    },
+    {
+      "label": "2021-01",
+      "baseline_return_pct": 0.829550829186628,
+      "delta_pct_points": 0.0
+    },
+    {
+      "label": "2024-09",
+      "baseline_return_pct": 0.813809524999997,
+      "delta_pct_points": 0.0
+    },
+    {
+      "label": "2025-12",
+      "baseline_return_pct": 0.776185377875008,
+      "delta_pct_points": 0.0
+    },
+    {
+      "label": "2023-03",
+      "baseline_return_pct": 0.701333475749998,
+      "delta_pct_points": 0.0
+    },
+    {
+      "label": "2022-03",
+      "baseline_return_pct": 0.683130846000004,
+      "delta_pct_points": 0.0
+    },
+    {
+      "label": "2025-05",
+      "baseline_return_pct": 0.661430520000013,
+      "delta_pct_points": 0.0
+    },
+    {
+      "label": "2021-07",
+      "baseline_return_pct": 0.613564504211645,
+      "delta_pct_points": 0.0
+    }
+  ],
+  "worst_months_by_baseline": [
+    {
+      "label": "2024-12",
+      "baseline_return_pct": -1.53255086374997,
+      "delta_pct_points": 0.0
+    },
+    {
+      "label": "2021-05",
+      "baseline_return_pct": -1.4150030470674,
+      "delta_pct_points": 0.0
+    },
+    {
+      "label": "2021-04",
+      "baseline_return_pct": -1.09265934999998,
+      "delta_pct_points": 0.0
+    },
+    {
+      "label": "2025-02",
+      "baseline_return_pct": -1.0714201485,
+      "delta_pct_points": 0.0
+    },
+    {
+      "label": "2021-06",
+      "baseline_return_pct": -0.965292643980993,
+      "delta_pct_points": 0.0
+    },
+    {
+      "label": "2025-08",
+      "baseline_return_pct": -0.929421999999995,
+      "delta_pct_points": 0.0
+    },
+    {
+      "label": "2024-06",
+      "baseline_return_pct": -0.877697496000001,
+      "delta_pct_points": 0.0
+    },
+    {
+      "label": "2026-01",
+      "baseline_return_pct": -0.787683967499979,
+      "delta_pct_points": 0.0
+    }
+  ],
+  "flattest_months_by_absolute_baseline_return": [
+    {
+      "label": "2016-08",
+      "baseline_return_pct": -0.0000577839600009611,
+      "delta_pct_points": 0.0
+    },
+    {
+      "label": "2017-01",
+      "baseline_return_pct": -0.0000772932029940421,
+      "delta_pct_points": 0.0
+    },
+    {
+      "label": "2016-09",
+      "baseline_return_pct": -0.00033360729999913,
+      "delta_pct_points": 0.0
+    },
+    {
+      "label": "2016-11",
+      "baseline_return_pct": 0.000451545050000277,
+      "delta_pct_points": 0.0
+    },
+    {
+      "label": "2017-07",
+      "baseline_return_pct": 0.00223752693498682,
+      "delta_pct_points": 0.0
+    },
+    {
+      "label": "2018-09",
+      "baseline_return_pct": -0.00263911369469497,
+      "delta_pct_points": 0.0
+    },
+    {
+      "label": "2016-07",
+      "baseline_return_pct": -0.00265458588499314,
+      "delta_pct_points": 0.0
+    },
+    {
+      "label": "2019-03",
+      "baseline_return_pct": -0.0043712200308255,
+      "delta_pct_points": 0.0
+    }
+  ],
+  "top_months_by_visible_delta": [
+    {
+      "label": "2021-08",
+      "baseline_return_pct": -0.134225467436499,
+      "delta_pct_points": 0.188900863416493,
+      "delta_surface": "continuation_release_hysteresis baseline vs release_zero"
+    },
+    {
+      "label": "2025-10",
+      "baseline_return_pct": -0.066192038249992,
+      "delta_pct_points": 0.171348401249998,
+      "delta_surface": "continuation_release_hysteresis baseline vs release_zero"
+    }
+  ],
+  "mixed_year_month_shape_observations": {
+    "2023": {
+      "top_combined_month": "December",
+      "top_continuation_month": "December",
+      "top_suppression_month": "June"
+    },
+    "2017": {
+      "top_combined_month": "July",
+      "top_continuation_month": "March",
+      "top_suppression_month": "June"
+    }
+  }
+}

@@ -144,6 +144,9 @@ Join the decision surface to actual trade outcomes and classify stop / exit sema
 - one deterministic join helper
 - one stop / exit taxonomy note
 - one artifact proving which joins are observed versus derived
+- `scripts/analyze/feature_attribution_post_phase14_ri_trade_exit_join_fixed_three_cohort_20260526.py`
+- `results/evaluation/feature_attribution_post_phase14_ri_trade_exit_join_fixed_three_cohort_2026-05-26.json`
+- `docs/analysis/feature_attribution/post_phase14/feature_attribution_post_phase14_ri_trade_exit_join_fixed_three_cohort_2026-05-26.md`
 
 **Done means**
 
@@ -151,7 +154,7 @@ Join the decision surface to actual trade outcomes and classify stop / exit sema
 
 **Status**
 
-- `next active slice`
+- `completed on current branch`
 
 ### Slice 4 — regime- and policy-separated attribution metrics
 
@@ -212,14 +215,14 @@ Run the first full attribution pass on one bounded RI-first surface.
 
 ## Active next step
 
-The next admissible step is **Slice 3 — trade / exit join and stop taxonomy pass**.
+The next admissible step is **Slice 4 — regime- and policy-separated attribution metrics**.
 
 That slice should stay tightly bounded and answer only these questions:
 
-1. which current trade / position surfaces can be joined back to the new canonical `decision_row` artifact without inventing runtime fields?
-2. can `position_id`, `entry_time`, `exit_time`, and `entry_reasons` support an honest bounded join contract?
-3. which stop / exit families are truly recoverable from current `exit_reason` plus bounded config context?
-4. which parts of the decision -> trade -> ledger chain remain observed, and which parts must stay explicitly derived?
+1. how do decision rows, observed opens, positions, and trade legs split by regime and selected policy on this fixed cohort surface?
+2. where does activity collapse between decision, open, trade, and exit-family stages?
+3. which regime/policy buckets carry the stop-loss, take-profit, and trailing-stop outcomes already frozen by Slice 3?
+4. which comparator-ready fields must be preserved now so Slice 5 can do same-stack `OFF vs ON` alignment without redefining the schema?
 
 ## What changed and what did not
 
@@ -227,7 +230,7 @@ What changed:
 
 - the current branch now has a concrete current-branch plan surface for the attribution-layer foundation lane
 - the plan is tied to current observed repo surfaces, not to archived `plan/**` guidance
-- Slice 1 and Slice 2 are now frozen as completed and the next bounded slice is explicit instead of implied
+- Slice 1, Slice 2, and Slice 3 are now frozen as completed and the next bounded slice is explicit instead of implied
 
 What did **not** change:
 

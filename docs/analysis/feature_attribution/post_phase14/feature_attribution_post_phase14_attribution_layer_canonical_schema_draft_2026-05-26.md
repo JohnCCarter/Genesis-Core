@@ -438,9 +438,10 @@ The following remain open after this schema freeze:
 
 ## Consequence
 
-The next admissible step is now **Slice 2 — deterministic decision-surface extractor**.
+The next admissible step is now **Slice 4 — regime- and policy-separated attribution metrics**.
 
-That extractor should target only the now-frozen `decision_row` schema and should not try to solve the trade join or ledger projection in the same slice.
+Slice 2 and Slice 3 have now supplied the bounded `decision_row` surface and the first honest trade / exit join evidence.
+This schema note therefore remains the frozen field-and-join contract those later slices should continue reusing, not a prompt to rebuild earlier surfaces again.
 
 ## What changed and what did not
 

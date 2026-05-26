@@ -1,0 +1,1418 @@
+{
+  "audit_version": "ri-policy-router-continuation-release-hysteresis-annual-2025-control-2026-05-26",
+  "base_sha": "b5fb83191f17a836c57a6276ba5b4decedba9cc4",
+  "baseline": {
+    "backtest_info": {
+      "bars_processed": 2793,
+      "bars_total": 2913,
+      "commission_rate": 0.0,
+      "data_source_policy": "curated_only",
+      "effective_config_fingerprint": "70f082360e0a2565e68afeabd14940b58b91a754441acf0e03b9aebc70bfc0db",
+      "end_date": "2025-12-31 00:00:00+00:00",
+      "execution_mode": {
+        "env_precompute_features": "1",
+        "fast_window": true,
+        "mode_explicit": "1",
+        "precompute_enabled": true,
+        "precomputed_ready": true
+      },
+      "git_hash": "b5fb83191f17a836c57a6276ba5b4decedba9cc4",
+      "htf": {
+        "env_htf_exits": "1",
+        "htf_candles_loaded": true,
+        "htf_candles_source": "C:\\Users\\fa06662\\Projects\\Genesis-Core\\data\\curated\\v1\\candles\\tBTCUSD_1D.parquet",
+        "htf_context_seen": true,
+        "use_new_exit_engine": true
+      },
+      "initial_capital": 10000.0,
+      "ltf_candles_source": "C:\\Users\\fa06662\\Projects\\Genesis-Core\\data\\curated\\v1\\candles\\tBTCUSD_3h.parquet",
+      "seed": "42",
+      "slippage_rate": 0.0005,
+      "start_date": "2025-01-01 00:00:00+00:00",
+      "symbol": "tBTCUSD",
+      "timeframe": "3h",
+      "timestamp": "2026-05-26T12:37:59.281581",
+      "warmup_bars": 120
+    },
+    "metrics": {
+      "max_drawdown": 0.026229356638018876,
+      "num_trades": 100,
+      "profit_factor": 2.189867693236175,
+      "total_return": 0.029268659988750733,
+      "total_return_pct": 2.926865998875073,
+      "total_trades": 100,
+      "win_rate": 0.68
+    },
+    "position_summary": {
+      "avg_loss": -25.903288434374886,
+      "avg_win": 40.05685106383944,
+      "breakeven_positions": 0,
+      "entry_commission": 0.0,
+      "exit_commission": 0.0,
+      "gross_pnl": 292.686599887508,
+      "losing_positions": 32,
+      "multi_event_positions": 26,
+      "net_pnl": 292.686599887508,
+      "num_positions": 60,
+      "pnl_basis": "net_after_commission",
+      "profit_factor": 1.353100196898045,
+      "total_commission": 0.0,
+      "win_rate": 46.666666666666664,
+      "winning_positions": 28
+    },
+    "summary": {
+      "avg_loss": -25.903288434374886,
+      "avg_win": 26.69401152518392,
+      "final_capital": 10292.686599887507,
+      "initial_capital": 10000.0,
+      "losing_trades": 32,
+      "max_capital": 10396.818067875003,
+      "max_drawdown": 2.6229356638018877,
+      "min_capital": 9818.260811600003,
+      "num_trades": 100,
+      "profit_factor": 2.189867693236175,
+      "total_commission": 0.0,
+      "total_return": 2.926865998875073,
+      "total_return_usd": 292.6865998875073,
+      "win_rate": 68.0,
+      "winning_trades": 68
+    }
+  },
+  "classification_boundary": {
+    "outcome_metrics_observational_only": true,
+    "question": "On the fixed 2025 annual control surface, does continuation_release_hysteresis contribute positively, negatively, or only through compensated row changes when compared as baseline vs release_zero under the same active stack?",
+    "reference_surface": "fixed full-year 2025 same-stack control comparison on the landed continuation_release_hysteresis carrier, holding the active router stack constant while toggling only continuation_release_hysteresis"
+  },
+  "comparison": {
+    "action_diff_count": 0,
+    "all_row_diff_count": 2790,
+    "behavioral_row_diff_count": 0,
+    "continuation_release_diff_count": 0,
+    "continuation_release_row_count_baseline": 0,
+    "continuation_release_row_count_release_zero": 0,
+    "parameter_only_diff_count": 2790,
+    "reason_only_diff_count": 2790,
+    "representative_continuation_release_rows": [],
+    "representative_diffs": [
+      {
+        "action_changed": false,
+        "baseline": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_NO_TRADE"
+          ],
+          "router_debug": {
+            "action_edge": 0.013668796408140282,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 0,
+            "candidate": "LONG",
+            "clarity_raw": 0.35272166004715094,
+            "clarity_score": 35,
+            "confidence_gate": 0.5068343982040691,
+            "confidence_level": 0,
+            "dwell_duration": 1,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 0,
+            "previous_policy": null,
+            "raw_target_policy": "RI_no_trade_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 1,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_no_trade_policy",
+            "size_multiplier": 0.0,
+            "switch_blocked": false,
+            "switch_control_mode": "default",
+            "switch_proposed": false,
+            "switch_reason": "insufficient_evidence",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "low"
+          },
+          "router_state": {
+            "confidence": 0,
+            "dwell_duration": 1,
+            "mandate_level": 0,
+            "selected_policy": "RI_no_trade_policy"
+          },
+          "size": null
+        },
+        "behavior_changed": false,
+        "continuation_release_involved": false,
+        "release_zero": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_NO_TRADE"
+          ],
+          "router_debug": {
+            "action_edge": 0.013668796408140282,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 0,
+            "candidate": "LONG",
+            "clarity_raw": 0.35272166004715094,
+            "clarity_score": 35,
+            "confidence_gate": 0.5068343982040691,
+            "confidence_level": 0,
+            "dwell_duration": 1,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 0,
+            "previous_policy": null,
+            "raw_target_policy": "RI_no_trade_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 0,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_no_trade_policy",
+            "size_multiplier": 0.0,
+            "switch_blocked": false,
+            "switch_control_mode": "default",
+            "switch_proposed": false,
+            "switch_reason": "insufficient_evidence",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "low"
+          },
+          "router_state": {
+            "confidence": 0,
+            "dwell_duration": 1,
+            "mandate_level": 0,
+            "selected_policy": "RI_no_trade_policy"
+          },
+          "size": null
+        },
+        "timestamp": "2025-01-16T09:00:00+00:00"
+      },
+      {
+        "action_changed": false,
+        "baseline": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:mid@0.400",
+            "RESEARCH_POLICY_ROUTER_NO_TRADE"
+          ],
+          "router_debug": {
+            "action_edge": 0.048161942303202365,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 0,
+            "candidate": "LONG",
+            "clarity_raw": 0.3736091761724948,
+            "clarity_score": 37,
+            "confidence_gate": 0.5240809711516012,
+            "confidence_level": 0,
+            "dwell_duration": 2,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 0,
+            "previous_policy": "RI_no_trade_policy",
+            "raw_target_policy": "RI_defensive_transition_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 1,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_no_trade_policy",
+            "size_multiplier": 0.0,
+            "switch_blocked": true,
+            "switch_control_mode": "default",
+            "switch_proposed": true,
+            "switch_reason": "switch_blocked_by_min_dwell",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 0,
+            "dwell_duration": 2,
+            "mandate_level": 0,
+            "selected_policy": "RI_no_trade_policy"
+          },
+          "size": null
+        },
+        "behavior_changed": false,
+        "continuation_release_involved": false,
+        "release_zero": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:mid@0.400",
+            "RESEARCH_POLICY_ROUTER_NO_TRADE"
+          ],
+          "router_debug": {
+            "action_edge": 0.048161942303202365,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 0,
+            "candidate": "LONG",
+            "clarity_raw": 0.3736091761724948,
+            "clarity_score": 37,
+            "confidence_gate": 0.5240809711516012,
+            "confidence_level": 0,
+            "dwell_duration": 2,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 0,
+            "previous_policy": "RI_no_trade_policy",
+            "raw_target_policy": "RI_defensive_transition_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 0,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_no_trade_policy",
+            "size_multiplier": 0.0,
+            "switch_blocked": true,
+            "switch_control_mode": "default",
+            "switch_proposed": true,
+            "switch_reason": "switch_blocked_by_min_dwell",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 0,
+            "dwell_duration": 2,
+            "mandate_level": 0,
+            "selected_policy": "RI_no_trade_policy"
+          },
+          "size": null
+        },
+        "timestamp": "2025-01-16T12:00:00+00:00"
+      },
+      {
+        "action_changed": false,
+        "baseline": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:high@0.320"
+          ],
+          "router_debug": {
+            "action_edge": 0.048161942303202365,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 0,
+            "candidate": "LONG",
+            "clarity_raw": 0.3736091761724948,
+            "clarity_score": 37,
+            "confidence_gate": 0.5240809711516012,
+            "confidence_level": 0,
+            "dwell_duration": 2,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 0,
+            "previous_policy": "RI_no_trade_policy",
+            "raw_target_policy": "RI_defensive_transition_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 1,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_no_trade_policy",
+            "size_multiplier": 0.0,
+            "switch_blocked": true,
+            "switch_control_mode": "default",
+            "switch_proposed": true,
+            "switch_reason": "switch_blocked_by_min_dwell",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 0,
+            "dwell_duration": 2,
+            "mandate_level": 0,
+            "selected_policy": "RI_no_trade_policy"
+          },
+          "size": null
+        },
+        "behavior_changed": false,
+        "continuation_release_involved": false,
+        "release_zero": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:high@0.320"
+          ],
+          "router_debug": {
+            "action_edge": 0.048161942303202365,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 0,
+            "candidate": "LONG",
+            "clarity_raw": 0.3736091761724948,
+            "clarity_score": 37,
+            "confidence_gate": 0.5240809711516012,
+            "confidence_level": 0,
+            "dwell_duration": 2,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 0,
+            "previous_policy": "RI_no_trade_policy",
+            "raw_target_policy": "RI_defensive_transition_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 0,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_no_trade_policy",
+            "size_multiplier": 0.0,
+            "switch_blocked": true,
+            "switch_control_mode": "default",
+            "switch_proposed": true,
+            "switch_reason": "switch_blocked_by_min_dwell",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 0,
+            "dwell_duration": 2,
+            "mandate_level": 0,
+            "selected_policy": "RI_no_trade_policy"
+          },
+          "size": null
+        },
+        "timestamp": "2025-01-16T15:00:00+00:00"
+      },
+      {
+        "action_changed": false,
+        "baseline": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:high@0.320"
+          ],
+          "router_debug": {
+            "action_edge": 0.048161942303202365,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 0,
+            "candidate": "LONG",
+            "clarity_raw": 0.3736091761724948,
+            "clarity_score": 37,
+            "confidence_gate": 0.5240809711516012,
+            "confidence_level": 0,
+            "dwell_duration": 2,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 0,
+            "previous_policy": "RI_no_trade_policy",
+            "raw_target_policy": "RI_defensive_transition_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 1,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_no_trade_policy",
+            "size_multiplier": 0.0,
+            "switch_blocked": true,
+            "switch_control_mode": "default",
+            "switch_proposed": true,
+            "switch_reason": "switch_blocked_by_min_dwell",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 0,
+            "dwell_duration": 2,
+            "mandate_level": 0,
+            "selected_policy": "RI_no_trade_policy"
+          },
+          "size": null
+        },
+        "behavior_changed": false,
+        "continuation_release_involved": false,
+        "release_zero": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:high@0.320"
+          ],
+          "router_debug": {
+            "action_edge": 0.048161942303202365,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 0,
+            "candidate": "LONG",
+            "clarity_raw": 0.3736091761724948,
+            "clarity_score": 37,
+            "confidence_gate": 0.5240809711516012,
+            "confidence_level": 0,
+            "dwell_duration": 2,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 0,
+            "previous_policy": "RI_no_trade_policy",
+            "raw_target_policy": "RI_defensive_transition_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 0,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_no_trade_policy",
+            "size_multiplier": 0.0,
+            "switch_blocked": true,
+            "switch_control_mode": "default",
+            "switch_proposed": true,
+            "switch_reason": "switch_blocked_by_min_dwell",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 0,
+            "dwell_duration": 2,
+            "mandate_level": 0,
+            "selected_policy": "RI_no_trade_policy"
+          },
+          "size": null
+        },
+        "timestamp": "2025-01-16T18:00:00+00:00"
+      },
+      {
+        "action_changed": false,
+        "baseline": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:high@0.320"
+          ],
+          "router_debug": {
+            "action_edge": 0.048161942303202365,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 0,
+            "candidate": "LONG",
+            "clarity_raw": 0.3736091761724948,
+            "clarity_score": 37,
+            "confidence_gate": 0.5240809711516012,
+            "confidence_level": 0,
+            "dwell_duration": 2,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 0,
+            "previous_policy": "RI_no_trade_policy",
+            "raw_target_policy": "RI_defensive_transition_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 1,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_no_trade_policy",
+            "size_multiplier": 0.0,
+            "switch_blocked": true,
+            "switch_control_mode": "default",
+            "switch_proposed": true,
+            "switch_reason": "switch_blocked_by_min_dwell",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 0,
+            "dwell_duration": 2,
+            "mandate_level": 0,
+            "selected_policy": "RI_no_trade_policy"
+          },
+          "size": null
+        },
+        "behavior_changed": false,
+        "continuation_release_involved": false,
+        "release_zero": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:high@0.320"
+          ],
+          "router_debug": {
+            "action_edge": 0.048161942303202365,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 0,
+            "candidate": "LONG",
+            "clarity_raw": 0.3736091761724948,
+            "clarity_score": 37,
+            "confidence_gate": 0.5240809711516012,
+            "confidence_level": 0,
+            "dwell_duration": 2,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 0,
+            "previous_policy": "RI_no_trade_policy",
+            "raw_target_policy": "RI_defensive_transition_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 0,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_no_trade_policy",
+            "size_multiplier": 0.0,
+            "switch_blocked": true,
+            "switch_control_mode": "default",
+            "switch_proposed": true,
+            "switch_reason": "switch_blocked_by_min_dwell",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 0,
+            "dwell_duration": 2,
+            "mandate_level": 0,
+            "selected_policy": "RI_no_trade_policy"
+          },
+          "size": null
+        },
+        "timestamp": "2025-01-16T21:00:00+00:00"
+      },
+      {
+        "action_changed": false,
+        "baseline": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:high@0.320"
+          ],
+          "router_debug": {
+            "action_edge": 0.048161942303202365,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 0,
+            "candidate": "LONG",
+            "clarity_raw": 0.3736091761724948,
+            "clarity_score": 37,
+            "confidence_gate": 0.5240809711516012,
+            "confidence_level": 0,
+            "dwell_duration": 2,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 0,
+            "previous_policy": "RI_no_trade_policy",
+            "raw_target_policy": "RI_defensive_transition_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 1,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_no_trade_policy",
+            "size_multiplier": 0.0,
+            "switch_blocked": true,
+            "switch_control_mode": "default",
+            "switch_proposed": true,
+            "switch_reason": "switch_blocked_by_min_dwell",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 0,
+            "dwell_duration": 2,
+            "mandate_level": 0,
+            "selected_policy": "RI_no_trade_policy"
+          },
+          "size": null
+        },
+        "behavior_changed": false,
+        "continuation_release_involved": false,
+        "release_zero": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:high@0.320"
+          ],
+          "router_debug": {
+            "action_edge": 0.048161942303202365,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 0,
+            "candidate": "LONG",
+            "clarity_raw": 0.3736091761724948,
+            "clarity_score": 37,
+            "confidence_gate": 0.5240809711516012,
+            "confidence_level": 0,
+            "dwell_duration": 2,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 0,
+            "previous_policy": "RI_no_trade_policy",
+            "raw_target_policy": "RI_defensive_transition_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 0,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_no_trade_policy",
+            "size_multiplier": 0.0,
+            "switch_blocked": true,
+            "switch_control_mode": "default",
+            "switch_proposed": true,
+            "switch_reason": "switch_blocked_by_min_dwell",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 0,
+            "dwell_duration": 2,
+            "mandate_level": 0,
+            "selected_policy": "RI_no_trade_policy"
+          },
+          "size": null
+        },
+        "timestamp": "2025-01-17T00:00:00+00:00"
+      },
+      {
+        "action_changed": false,
+        "baseline": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:mid@0.400"
+          ],
+          "router_debug": {
+            "action_edge": 0.048161942303202365,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 0,
+            "candidate": "LONG",
+            "clarity_raw": 0.3736091761724948,
+            "clarity_score": 37,
+            "confidence_gate": 0.5240809711516012,
+            "confidence_level": 0,
+            "dwell_duration": 2,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 0,
+            "previous_policy": "RI_no_trade_policy",
+            "raw_target_policy": "RI_defensive_transition_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 1,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_no_trade_policy",
+            "size_multiplier": 0.0,
+            "switch_blocked": true,
+            "switch_control_mode": "default",
+            "switch_proposed": true,
+            "switch_reason": "switch_blocked_by_min_dwell",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 0,
+            "dwell_duration": 2,
+            "mandate_level": 0,
+            "selected_policy": "RI_no_trade_policy"
+          },
+          "size": null
+        },
+        "behavior_changed": false,
+        "continuation_release_involved": false,
+        "release_zero": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:mid@0.400"
+          ],
+          "router_debug": {
+            "action_edge": 0.048161942303202365,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 0,
+            "candidate": "LONG",
+            "clarity_raw": 0.3736091761724948,
+            "clarity_score": 37,
+            "confidence_gate": 0.5240809711516012,
+            "confidence_level": 0,
+            "dwell_duration": 2,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 0,
+            "previous_policy": "RI_no_trade_policy",
+            "raw_target_policy": "RI_defensive_transition_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 0,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_no_trade_policy",
+            "size_multiplier": 0.0,
+            "switch_blocked": true,
+            "switch_control_mode": "default",
+            "switch_proposed": true,
+            "switch_reason": "switch_blocked_by_min_dwell",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 0,
+            "dwell_duration": 2,
+            "mandate_level": 0,
+            "selected_policy": "RI_no_trade_policy"
+          },
+          "size": null
+        },
+        "timestamp": "2025-01-17T03:00:00+00:00"
+      },
+      {
+        "action_changed": false,
+        "baseline": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:mid@0.400"
+          ],
+          "router_debug": {
+            "action_edge": 0.048161942303202365,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 0,
+            "candidate": "LONG",
+            "clarity_raw": 0.3736091761724948,
+            "clarity_score": 37,
+            "confidence_gate": 0.5240809711516012,
+            "confidence_level": 0,
+            "dwell_duration": 2,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 0,
+            "previous_policy": "RI_no_trade_policy",
+            "raw_target_policy": "RI_defensive_transition_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 1,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_no_trade_policy",
+            "size_multiplier": 0.0,
+            "switch_blocked": true,
+            "switch_control_mode": "default",
+            "switch_proposed": true,
+            "switch_reason": "switch_blocked_by_min_dwell",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 0,
+            "dwell_duration": 2,
+            "mandate_level": 0,
+            "selected_policy": "RI_no_trade_policy"
+          },
+          "size": null
+        },
+        "behavior_changed": false,
+        "continuation_release_involved": false,
+        "release_zero": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:mid@0.400"
+          ],
+          "router_debug": {
+            "action_edge": 0.048161942303202365,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 0,
+            "candidate": "LONG",
+            "clarity_raw": 0.3736091761724948,
+            "clarity_score": 37,
+            "confidence_gate": 0.5240809711516012,
+            "confidence_level": 0,
+            "dwell_duration": 2,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 0,
+            "previous_policy": "RI_no_trade_policy",
+            "raw_target_policy": "RI_defensive_transition_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 0,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_no_trade_policy",
+            "size_multiplier": 0.0,
+            "switch_blocked": true,
+            "switch_control_mode": "default",
+            "switch_proposed": true,
+            "switch_reason": "switch_blocked_by_min_dwell",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 0,
+            "dwell_duration": 2,
+            "mandate_level": 0,
+            "selected_policy": "RI_no_trade_policy"
+          },
+          "size": null
+        },
+        "timestamp": "2025-01-17T06:00:00+00:00"
+      },
+      {
+        "action_changed": false,
+        "baseline": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:mid@0.400"
+          ],
+          "router_debug": {
+            "action_edge": 0.048161942303202365,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 0,
+            "candidate": "LONG",
+            "clarity_raw": 0.3736091761724948,
+            "clarity_score": 37,
+            "confidence_gate": 0.5240809711516012,
+            "confidence_level": 0,
+            "dwell_duration": 2,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 0,
+            "previous_policy": "RI_no_trade_policy",
+            "raw_target_policy": "RI_defensive_transition_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 1,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_no_trade_policy",
+            "size_multiplier": 0.0,
+            "switch_blocked": true,
+            "switch_control_mode": "default",
+            "switch_proposed": true,
+            "switch_reason": "switch_blocked_by_min_dwell",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 0,
+            "dwell_duration": 2,
+            "mandate_level": 0,
+            "selected_policy": "RI_no_trade_policy"
+          },
+          "size": null
+        },
+        "behavior_changed": false,
+        "continuation_release_involved": false,
+        "release_zero": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:mid@0.400"
+          ],
+          "router_debug": {
+            "action_edge": 0.048161942303202365,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 0,
+            "candidate": "LONG",
+            "clarity_raw": 0.3736091761724948,
+            "clarity_score": 37,
+            "confidence_gate": 0.5240809711516012,
+            "confidence_level": 0,
+            "dwell_duration": 2,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 0,
+            "previous_policy": "RI_no_trade_policy",
+            "raw_target_policy": "RI_defensive_transition_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 0,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_no_trade_policy",
+            "size_multiplier": 0.0,
+            "switch_blocked": true,
+            "switch_control_mode": "default",
+            "switch_proposed": true,
+            "switch_reason": "switch_blocked_by_min_dwell",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 0,
+            "dwell_duration": 2,
+            "mandate_level": 0,
+            "selected_policy": "RI_no_trade_policy"
+          },
+          "size": null
+        },
+        "timestamp": "2025-01-17T09:00:00+00:00"
+      },
+      {
+        "action_changed": false,
+        "baseline": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:mid@0.400"
+          ],
+          "router_debug": {
+            "action_edge": 0.048161942303202365,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 0,
+            "candidate": "LONG",
+            "clarity_raw": 0.3736091761724948,
+            "clarity_score": 37,
+            "confidence_gate": 0.5240809711516012,
+            "confidence_level": 0,
+            "dwell_duration": 2,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 0,
+            "previous_policy": "RI_no_trade_policy",
+            "raw_target_policy": "RI_defensive_transition_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 1,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_no_trade_policy",
+            "size_multiplier": 0.0,
+            "switch_blocked": true,
+            "switch_control_mode": "default",
+            "switch_proposed": true,
+            "switch_reason": "switch_blocked_by_min_dwell",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 0,
+            "dwell_duration": 2,
+            "mandate_level": 0,
+            "selected_policy": "RI_no_trade_policy"
+          },
+          "size": null
+        },
+        "behavior_changed": false,
+        "continuation_release_involved": false,
+        "release_zero": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:mid@0.400"
+          ],
+          "router_debug": {
+            "action_edge": 0.048161942303202365,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 0,
+            "candidate": "LONG",
+            "clarity_raw": 0.3736091761724948,
+            "clarity_score": 37,
+            "confidence_gate": 0.5240809711516012,
+            "confidence_level": 0,
+            "dwell_duration": 2,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 0,
+            "previous_policy": "RI_no_trade_policy",
+            "raw_target_policy": "RI_defensive_transition_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 0,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_no_trade_policy",
+            "size_multiplier": 0.0,
+            "switch_blocked": true,
+            "switch_control_mode": "default",
+            "switch_proposed": true,
+            "switch_reason": "switch_blocked_by_min_dwell",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 0,
+            "dwell_duration": 2,
+            "mandate_level": 0,
+            "selected_policy": "RI_no_trade_policy"
+          },
+          "size": null
+        },
+        "timestamp": "2025-01-17T12:00:00+00:00"
+      },
+      {
+        "action_changed": false,
+        "baseline": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:mid@0.400"
+          ],
+          "router_debug": {
+            "action_edge": 0.048161942303202365,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 0,
+            "candidate": "LONG",
+            "clarity_raw": 0.3736091761724948,
+            "clarity_score": 37,
+            "confidence_gate": 0.5240809711516012,
+            "confidence_level": 0,
+            "dwell_duration": 2,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 0,
+            "previous_policy": "RI_no_trade_policy",
+            "raw_target_policy": "RI_defensive_transition_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 1,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_no_trade_policy",
+            "size_multiplier": 0.0,
+            "switch_blocked": true,
+            "switch_control_mode": "default",
+            "switch_proposed": true,
+            "switch_reason": "switch_blocked_by_min_dwell",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 0,
+            "dwell_duration": 2,
+            "mandate_level": 0,
+            "selected_policy": "RI_no_trade_policy"
+          },
+          "size": null
+        },
+        "behavior_changed": false,
+        "continuation_release_involved": false,
+        "release_zero": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:mid@0.400"
+          ],
+          "router_debug": {
+            "action_edge": 0.048161942303202365,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 0,
+            "candidate": "LONG",
+            "clarity_raw": 0.3736091761724948,
+            "clarity_score": 37,
+            "confidence_gate": 0.5240809711516012,
+            "confidence_level": 0,
+            "dwell_duration": 2,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 0,
+            "previous_policy": "RI_no_trade_policy",
+            "raw_target_policy": "RI_defensive_transition_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 0,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_no_trade_policy",
+            "size_multiplier": 0.0,
+            "switch_blocked": true,
+            "switch_control_mode": "default",
+            "switch_proposed": true,
+            "switch_reason": "switch_blocked_by_min_dwell",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 0,
+            "dwell_duration": 2,
+            "mandate_level": 0,
+            "selected_policy": "RI_no_trade_policy"
+          },
+          "size": null
+        },
+        "timestamp": "2025-01-17T15:00:00+00:00"
+      },
+      {
+        "action_changed": false,
+        "baseline": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:mid@0.400"
+          ],
+          "router_debug": {
+            "action_edge": 0.048161942303202365,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 0,
+            "candidate": "LONG",
+            "clarity_raw": 0.3736091761724948,
+            "clarity_score": 37,
+            "confidence_gate": 0.5240809711516012,
+            "confidence_level": 0,
+            "dwell_duration": 2,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 0,
+            "previous_policy": "RI_no_trade_policy",
+            "raw_target_policy": "RI_defensive_transition_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 1,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_no_trade_policy",
+            "size_multiplier": 0.0,
+            "switch_blocked": true,
+            "switch_control_mode": "default",
+            "switch_proposed": true,
+            "switch_reason": "switch_blocked_by_min_dwell",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 0,
+            "dwell_duration": 2,
+            "mandate_level": 0,
+            "selected_policy": "RI_no_trade_policy"
+          },
+          "size": null
+        },
+        "behavior_changed": false,
+        "continuation_release_involved": false,
+        "release_zero": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:mid@0.400"
+          ],
+          "router_debug": {
+            "action_edge": 0.048161942303202365,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 0,
+            "candidate": "LONG",
+            "clarity_raw": 0.3736091761724948,
+            "clarity_score": 37,
+            "confidence_gate": 0.5240809711516012,
+            "confidence_level": 0,
+            "dwell_duration": 2,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 0,
+            "previous_policy": "RI_no_trade_policy",
+            "raw_target_policy": "RI_defensive_transition_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 0,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_no_trade_policy",
+            "size_multiplier": 0.0,
+            "switch_blocked": true,
+            "switch_control_mode": "default",
+            "switch_proposed": true,
+            "switch_reason": "switch_blocked_by_min_dwell",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 0,
+            "dwell_duration": 2,
+            "mandate_level": 0,
+            "selected_policy": "RI_no_trade_policy"
+          },
+          "size": null
+        },
+        "timestamp": "2025-01-17T18:00:00+00:00"
+      }
+    ]
+  },
+  "inputs": {
+    "carrier_path": "tmp\\policy_router_evidence\\tBTCUSD_3h_slice8_runtime_bridge_weak_pre_aged_release_guard_20260424.json",
+    "comparison": {
+      "baseline": "enabled carrier as-is (implicit shared hysteresis)",
+      "release_zero": "same enabled carrier with continuation_release_hysteresis=0",
+      "variant_setting": {
+        "baseline_value": "implicit shared hysteresis",
+        "field": "multi_timeframe.research_policy_router.continuation_release_hysteresis",
+        "release_zero_value": 0
+      }
+    },
+    "subject": {
+      "data_source_policy": "curated_only",
+      "end": "2025-12-31",
+      "start": "2025-01-01",
+      "symbol": "tBTCUSD",
+      "timeframe": "3h",
+      "warmup": 120
+    }
+  },
+  "non_authoritative": true,
+  "observational_only": true,
+  "packet_summary": {
+    "action_diff_count": 0,
+    "all_row_diff_count": 2790,
+    "behavioral_row_diff_count": 0,
+    "continuation_release_diff_count": 0,
+    "final_capital_diff": 0.0,
+    "inference": "On the fixed 2025 full-year control surface, the release-zero-minus-baseline top line is mixed or flat. The seam still changes many rows, but the broader annual control year cannot be reduced to a simple one-direction win from total return and final capital alone.",
+    "max_drawdown_pct_diff": 0.0,
+    "net_position_pnl_diff": 0.0,
+    "next_hypothesis": "With both bad-year and positive-year annual surfaces measured, the next honest comparison is a bounded cross-year side-by-side read of where annual seam deltas stay action-neutral, versus whether one smaller row family explains any surviving annual sign difference.",
+    "num_trades_diff": 0.0,
+    "profit_factor_diff": 0.0,
+    "status": "annual_2025_topline_mixed_or_flat_between_baseline_and_release_zero",
+    "total_return_diff": 0.0
+  },
+  "release_zero": {
+    "backtest_info": {
+      "bars_processed": 2793,
+      "bars_total": 2913,
+      "commission_rate": 0.0,
+      "data_source_policy": "curated_only",
+      "effective_config_fingerprint": "847f5b079068fb00d9e344587544e9502f1ef6ac2c3812ad9c1490ebcea75a20",
+      "end_date": "2025-12-31 00:00:00+00:00",
+      "execution_mode": {
+        "env_precompute_features": "1",
+        "fast_window": true,
+        "mode_explicit": "1",
+        "precompute_enabled": true,
+        "precomputed_ready": true
+      },
+      "git_hash": "b5fb83191f17a836c57a6276ba5b4decedba9cc4",
+      "htf": {
+        "env_htf_exits": "1",
+        "htf_candles_loaded": true,
+        "htf_candles_source": "C:\\Users\\fa06662\\Projects\\Genesis-Core\\data\\curated\\v1\\candles\\tBTCUSD_1D.parquet",
+        "htf_context_seen": true,
+        "use_new_exit_engine": true
+      },
+      "initial_capital": 10000.0,
+      "ltf_candles_source": "C:\\Users\\fa06662\\Projects\\Genesis-Core\\data\\curated\\v1\\candles\\tBTCUSD_3h.parquet",
+      "seed": "42",
+      "slippage_rate": 0.0005,
+      "start_date": "2025-01-01 00:00:00+00:00",
+      "symbol": "tBTCUSD",
+      "timeframe": "3h",
+      "timestamp": "2026-05-26T12:38:36.353435",
+      "warmup_bars": 120
+    },
+    "metrics": {
+      "max_drawdown": 0.026229356638018876,
+      "num_trades": 100,
+      "profit_factor": 2.189867693236175,
+      "total_return": 0.029268659988750733,
+      "total_return_pct": 2.926865998875073,
+      "total_trades": 100,
+      "win_rate": 0.68
+    },
+    "position_summary": {
+      "avg_loss": -25.903288434374886,
+      "avg_win": 40.05685106383944,
+      "breakeven_positions": 0,
+      "entry_commission": 0.0,
+      "exit_commission": 0.0,
+      "gross_pnl": 292.686599887508,
+      "losing_positions": 32,
+      "multi_event_positions": 26,
+      "net_pnl": 292.686599887508,
+      "num_positions": 60,
+      "pnl_basis": "net_after_commission",
+      "profit_factor": 1.353100196898045,
+      "total_commission": 0.0,
+      "win_rate": 46.666666666666664,
+      "winning_positions": 28
+    },
+    "summary": {
+      "avg_loss": -25.903288434374886,
+      "avg_win": 26.69401152518392,
+      "final_capital": 10292.686599887507,
+      "initial_capital": 10000.0,
+      "losing_trades": 32,
+      "max_capital": 10396.818067875003,
+      "max_drawdown": 2.6229356638018877,
+      "min_capital": 9818.260811600003,
+      "num_trades": 100,
+      "profit_factor": 2.189867693236175,
+      "total_commission": 0.0,
+      "total_return": 2.926865998875073,
+      "total_return_usd": 292.6865998875073,
+      "win_rate": 68.0,
+      "winning_trades": 68
+    }
+  },
+  "status": "continuation_release_hysteresis_annual_2025_control_generated"
+}

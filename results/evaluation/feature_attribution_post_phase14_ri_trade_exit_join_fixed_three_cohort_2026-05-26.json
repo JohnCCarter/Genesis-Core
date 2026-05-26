@@ -1,0 +1,1428 @@
+{
+  "actual_head_sha": "a437c0da62ee46537c29381fbe10e89a4778f4c8",
+  "audit_version": "feature-attribution-post-phase14-ri-trade-exit-join-fixed-three-cohort-2026-05-26",
+  "base_sha": "a437c0da62ee46537c29381fbe10e89a4778f4c8",
+  "classification_boundary": {
+    "observed_execution_support": "helper-side open-event capture via post_execution_hook only",
+    "schema_target": "trade_row join contract and exit taxonomy over the fixed cohort surface",
+    "source_surface": "Slice 2 fixed-three-cohort decision artifact plus bounded same-stack cohort reruns",
+    "still_not_a_canonical_runtime_execution_row": true
+  },
+  "cohorts": {
+    "blocked_dominant_mixed_pocket": {
+      "cohort_label": "blocked_dominant_mixed_pocket",
+      "decision_join_rows": [
+        {
+          "action": "NONE",
+          "decision_identity_key": "row_id=tBTCUSD|3h|245|bar_index=245|timestamp=2024-11-28T15:00:00+00:00|symbol=tBTCUSD|timeframe=3h",
+          "entry_reasons_exact_match": false,
+          "join_status": "no_action_decision",
+          "matched_open_event_count": 0,
+          "matched_position_keys": [],
+          "reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_NO_TRADE"
+          ],
+          "timestamp": "2024-11-28T15:00:00+00:00"
+        },
+        {
+          "action": "NONE",
+          "decision_identity_key": "row_id=tBTCUSD|3h|248|bar_index=248|timestamp=2024-11-29T00:00:00+00:00|symbol=tBTCUSD|timeframe=3h",
+          "entry_reasons_exact_match": false,
+          "join_status": "no_action_decision",
+          "matched_open_event_count": 0,
+          "matched_position_keys": [],
+          "reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_NO_TRADE"
+          ],
+          "timestamp": "2024-11-29T00:00:00+00:00"
+        },
+        {
+          "action": "NONE",
+          "decision_identity_key": "row_id=tBTCUSD|3h|251|bar_index=251|timestamp=2024-11-29T09:00:00+00:00|symbol=tBTCUSD|timeframe=3h",
+          "entry_reasons_exact_match": false,
+          "join_status": "no_action_decision",
+          "matched_open_event_count": 0,
+          "matched_position_keys": [],
+          "reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_NO_TRADE"
+          ],
+          "timestamp": "2024-11-29T09:00:00+00:00"
+        },
+        {
+          "action": "NONE",
+          "decision_identity_key": "row_id=tBTCUSD|3h|254|bar_index=254|timestamp=2024-11-29T18:00:00+00:00|symbol=tBTCUSD|timeframe=3h",
+          "entry_reasons_exact_match": false,
+          "join_status": "no_action_decision",
+          "matched_open_event_count": 0,
+          "matched_position_keys": [],
+          "reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_NO_TRADE"
+          ],
+          "timestamp": "2024-11-29T18:00:00+00:00"
+        },
+        {
+          "action": "NONE",
+          "decision_identity_key": "row_id=tBTCUSD|3h|257|bar_index=257|timestamp=2024-11-30T03:00:00+00:00|symbol=tBTCUSD|timeframe=3h",
+          "entry_reasons_exact_match": false,
+          "join_status": "no_action_decision",
+          "matched_open_event_count": 0,
+          "matched_position_keys": [],
+          "reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_NO_TRADE"
+          ],
+          "timestamp": "2024-11-30T03:00:00+00:00"
+        },
+        {
+          "action": "NONE",
+          "decision_identity_key": "row_id=tBTCUSD|3h|260|bar_index=260|timestamp=2024-11-30T12:00:00+00:00|symbol=tBTCUSD|timeframe=3h",
+          "entry_reasons_exact_match": false,
+          "join_status": "no_action_decision",
+          "matched_open_event_count": 0,
+          "matched_position_keys": [],
+          "reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_NO_TRADE"
+          ],
+          "timestamp": "2024-11-30T12:00:00+00:00"
+        },
+        {
+          "action": "NONE",
+          "decision_identity_key": "row_id=tBTCUSD|3h|263|bar_index=263|timestamp=2024-11-30T21:00:00+00:00|symbol=tBTCUSD|timeframe=3h",
+          "entry_reasons_exact_match": false,
+          "join_status": "no_action_decision",
+          "matched_open_event_count": 0,
+          "matched_position_keys": [],
+          "reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_NO_TRADE"
+          ],
+          "timestamp": "2024-11-30T21:00:00+00:00"
+        },
+        {
+          "action": "NONE",
+          "decision_identity_key": "row_id=tBTCUSD|3h|269|bar_index=269|timestamp=2024-12-01T15:00:00+00:00|symbol=tBTCUSD|timeframe=3h",
+          "entry_reasons_exact_match": false,
+          "join_status": "no_action_decision",
+          "matched_open_event_count": 0,
+          "matched_position_keys": [],
+          "reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_NO_TRADE"
+          ],
+          "timestamp": "2024-12-01T15:00:00+00:00"
+        },
+        {
+          "action": "NONE",
+          "decision_identity_key": "row_id=tBTCUSD|3h|272|bar_index=272|timestamp=2024-12-02T00:00:00+00:00|symbol=tBTCUSD|timeframe=3h",
+          "entry_reasons_exact_match": false,
+          "join_status": "no_action_decision",
+          "matched_open_event_count": 0,
+          "matched_position_keys": [],
+          "reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_NO_TRADE"
+          ],
+          "timestamp": "2024-12-02T00:00:00+00:00"
+        }
+      ],
+      "display_name": "2024 harmful target",
+      "entry_open_events": [],
+      "observed_vs_derived_contract": {
+        "derived_steps": [
+          "decision_row.timestamp == entry_open_event.entry_time for open-event matching",
+          "decision_row.reasons == entry_open_event.entry_reasons for bounded join strengthening",
+          "entry_open_event.position_key == trade.position_id for position grouping",
+          "exit_family derived from trade.exit_reason"
+        ],
+        "not_directly_observed_in_current_outputs": [
+          "decision_row.position_id",
+          "decision_row.execution_status for non-opening signals",
+          "canonical decision_to_trade join without helper-side execution capture"
+        ],
+        "observed_surfaces": [
+          "decision_row.timestamp",
+          "decision_row.action",
+          "decision_row.reasons",
+          "entry_open_event.entry_time",
+          "entry_open_event.entry_reasons",
+          "trade.position_id",
+          "trade.entry_time",
+          "trade.exit_time",
+          "trade.exit_reason",
+          "trade.is_partial",
+          "trade.remaining_size"
+        ]
+      },
+      "position_summaries": [],
+      "run_context": {
+        "bars_processed": 161,
+        "bars_total": 281,
+        "data_source_policy": "curated_only",
+        "effective_config_fingerprint": "70f082360e0a2565e68afeabd14940b58b91a754441acf0e03b9aebc70bfc0db",
+        "execution_mode": {
+          "env_precompute_features": "1",
+          "fast_window": true,
+          "mode_explicit": "1",
+          "precompute_enabled": true,
+          "precomputed_ready": true
+        },
+        "exit_config_context": {
+          "enabled": true,
+          "exit_conf_threshold": 0.42,
+          "max_hold_bars": 8,
+          "regime_aware_exits": true,
+          "stop_loss_pct": 0.016,
+          "take_profit_pct": 0.05,
+          "trailing_stop_enabled": true,
+          "trailing_stop_pct": 0.022
+        },
+        "htf_exit_config_context": {
+          "enable_partials": true,
+          "enable_structure_breaks": true,
+          "enable_trailing": true,
+          "fib_threshold_atr": 0.9,
+          "partial_1_pct": 0.5,
+          "partial_2_pct": 0.45,
+          "swing_update_strategy": "fixed",
+          "trail_atr_multiplier": 2.5
+        }
+      },
+      "source_key": "harmful_2024_regression_target",
+      "summary": {
+        "exact_decision_row_count": 9,
+        "exit_family_counts": {},
+        "exit_reason_counts": {},
+        "full_trade_event_count": 0,
+        "non_none_decision_row_count": 0,
+        "observed_open_decision_count": 0,
+        "observed_open_event_count": 0,
+        "partial_trade_event_count": 0,
+        "position_count": 0,
+        "trade_event_count": 0,
+        "unresolved_non_none_decision_count": 0
+      },
+      "window": {
+        "exact_timestamp_count": 9,
+        "exact_timestamps": [
+          "2024-11-28T15:00:00+00:00",
+          "2024-11-29T00:00:00+00:00",
+          "2024-11-29T09:00:00+00:00",
+          "2024-11-29T18:00:00+00:00",
+          "2024-11-30T03:00:00+00:00",
+          "2024-11-30T12:00:00+00:00",
+          "2024-11-30T21:00:00+00:00",
+          "2024-12-01T15:00:00+00:00",
+          "2024-12-02T00:00:00+00:00"
+        ],
+        "run_end_date": "2024-12-03",
+        "run_start_date": "2024-10-29"
+      }
+    },
+    "less_hostile_clean_continuation": {
+      "cohort_label": "less_hostile_clean_continuation",
+      "decision_join_rows": [
+        {
+          "action": "LONG",
+          "decision_identity_key": "row_id=tBTCUSD|3h|247|bar_index=247|timestamp=2023-12-15T21:00:00+00:00|symbol=tBTCUSD|timeframe=3h",
+          "entry_reasons_exact_match": true,
+          "join_status": "observed_open_event_matched",
+          "matched_open_event_count": 1,
+          "matched_position_keys": [
+            "tBTCUSD_2023-12-15T21:00:00"
+          ],
+          "reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_CONTINUATION",
+            "ENTRY_LONG"
+          ],
+          "timestamp": "2023-12-15T21:00:00+00:00"
+        },
+        {
+          "action": "LONG",
+          "decision_identity_key": "row_id=tBTCUSD|3h|250|bar_index=250|timestamp=2023-12-16T06:00:00+00:00|symbol=tBTCUSD|timeframe=3h",
+          "entry_reasons_exact_match": false,
+          "join_status": "non_opening_signal_without_execution_row",
+          "matched_open_event_count": 0,
+          "matched_position_keys": [],
+          "reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_CONTINUATION",
+            "ENTRY_LONG"
+          ],
+          "timestamp": "2023-12-16T06:00:00+00:00"
+        },
+        {
+          "action": "LONG",
+          "decision_identity_key": "row_id=tBTCUSD|3h|253|bar_index=253|timestamp=2023-12-16T15:00:00+00:00|symbol=tBTCUSD|timeframe=3h",
+          "entry_reasons_exact_match": false,
+          "join_status": "non_opening_signal_without_execution_row",
+          "matched_open_event_count": 0,
+          "matched_position_keys": [],
+          "reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_CONTINUATION",
+            "ENTRY_LONG"
+          ],
+          "timestamp": "2023-12-16T15:00:00+00:00"
+        },
+        {
+          "action": "LONG",
+          "decision_identity_key": "row_id=tBTCUSD|3h|256|bar_index=256|timestamp=2023-12-17T00:00:00+00:00|symbol=tBTCUSD|timeframe=3h",
+          "entry_reasons_exact_match": true,
+          "join_status": "observed_open_event_matched",
+          "matched_open_event_count": 1,
+          "matched_position_keys": [
+            "tBTCUSD_2023-12-17T00:00:00"
+          ],
+          "reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_CONTINUATION",
+            "ENTRY_LONG"
+          ],
+          "timestamp": "2023-12-17T00:00:00+00:00"
+        },
+        {
+          "action": "LONG",
+          "decision_identity_key": "row_id=tBTCUSD|3h|259|bar_index=259|timestamp=2023-12-17T09:00:00+00:00|symbol=tBTCUSD|timeframe=3h",
+          "entry_reasons_exact_match": false,
+          "join_status": "non_opening_signal_without_execution_row",
+          "matched_open_event_count": 0,
+          "matched_position_keys": [],
+          "reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_CONTINUATION",
+            "ENTRY_LONG"
+          ],
+          "timestamp": "2023-12-17T09:00:00+00:00"
+        },
+        {
+          "action": "LONG",
+          "decision_identity_key": "row_id=tBTCUSD|3h|262|bar_index=262|timestamp=2023-12-17T18:00:00+00:00|symbol=tBTCUSD|timeframe=3h",
+          "entry_reasons_exact_match": false,
+          "join_status": "non_opening_signal_without_execution_row",
+          "matched_open_event_count": 0,
+          "matched_position_keys": [],
+          "reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_CONTINUATION",
+            "ENTRY_LONG"
+          ],
+          "timestamp": "2023-12-17T18:00:00+00:00"
+        }
+      ],
+      "display_name": "2023-12 wave 1",
+      "entry_open_events": [
+        {
+          "action": "LONG",
+          "bar_index": 247,
+          "entry_price": 41994.987,
+          "entry_reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_CONTINUATION",
+            "ENTRY_LONG"
+          ],
+          "entry_regime": "balanced",
+          "entry_size": 0.012,
+          "entry_time": "2023-12-15T21:00:00+00:00",
+          "executed": true,
+          "position_key": "tBTCUSD_2023-12-15T21:00:00",
+          "symbol": "tBTCUSD",
+          "timeframe": "3h"
+        },
+        {
+          "action": "LONG",
+          "bar_index": 256,
+          "entry_price": 41940.96,
+          "entry_reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_CONTINUATION",
+            "ENTRY_LONG"
+          ],
+          "entry_regime": "balanced",
+          "entry_size": 0.020000000000000004,
+          "entry_time": "2023-12-17T00:00:00+00:00",
+          "executed": true,
+          "position_key": "tBTCUSD_2023-12-17T00:00:00",
+          "symbol": "tBTCUSD",
+          "timeframe": "3h"
+        }
+      ],
+      "observed_vs_derived_contract": {
+        "derived_steps": [
+          "decision_row.timestamp == entry_open_event.entry_time for open-event matching",
+          "decision_row.reasons == entry_open_event.entry_reasons for bounded join strengthening",
+          "entry_open_event.position_key == trade.position_id for position grouping",
+          "exit_family derived from trade.exit_reason"
+        ],
+        "not_directly_observed_in_current_outputs": [
+          "decision_row.position_id",
+          "decision_row.execution_status for non-opening signals",
+          "canonical decision_to_trade join without helper-side execution capture"
+        ],
+        "observed_surfaces": [
+          "decision_row.timestamp",
+          "decision_row.action",
+          "decision_row.reasons",
+          "entry_open_event.entry_time",
+          "entry_open_event.entry_reasons",
+          "trade.position_id",
+          "trade.entry_time",
+          "trade.exit_time",
+          "trade.exit_reason",
+          "trade.is_partial",
+          "trade.remaining_size"
+        ]
+      },
+      "position_summaries": [
+        {
+          "decision_reason_exact_match": true,
+          "entry_reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_CONTINUATION",
+            "ENTRY_LONG"
+          ],
+          "entry_regime": "balanced",
+          "entry_time": "2023-12-15T21:00:00+00:00",
+          "exit_family_counts": {
+            "take_profit": 1,
+            "trailing_stop": 1
+          },
+          "exit_reason_counts": {
+            "TP1 Hit (42448.50)": 1,
+            "TRAIL_STOP": 1
+          },
+          "final_exit_family": "trailing_stop",
+          "final_exit_reason": "TRAIL_STOP",
+          "full_trade_event_count": 1,
+          "gross_trade_pnl": 5.781198,
+          "matched_decision_count": 1,
+          "matched_decision_identity_keys": [
+            "row_id=tBTCUSD|3h|247|bar_index=247|timestamp=2023-12-15T21:00:00+00:00|symbol=tBTCUSD|timeframe=3h"
+          ],
+          "observed_entry_open_event": true,
+          "partial_trade_event_count": 1,
+          "position_key": "tBTCUSD_2023-12-15T21:00:00",
+          "total_exit_commission": 0.0,
+          "trade_event_count": 2,
+          "trade_events": [
+            {
+              "commission": 0.0,
+              "entry_fib_debug": {
+                "htf": {
+                  "atr": 348.43642944721864,
+                  "config": {
+                    "long_min_level": null,
+                    "long_target_levels": null,
+                    "short_max_level": null,
+                    "short_target_levels": null
+                  },
+                  "levels": {
+                    "0.382": 36753.51,
+                    "0.5": 36376.5,
+                    "0.618": 35999.49,
+                    "0.786": 35462.73
+                  },
+                  "price": 37879.0,
+                  "reason": "PASS",
+                  "targets": [],
+                  "tolerance": 1393.7457177888746
+                },
+                "ltf": {
+                  "atr": 543.6138148443181,
+                  "config": {
+                    "long_max_level": 0.146,
+                    "short_min_level": 0.236
+                  },
+                  "levels": {},
+                  "price": 41974.0,
+                  "reason": "PASS",
+                  "tolerance": 815.4207222664771
+                },
+                "reasons": [
+                  "ZONE:low@0.160",
+                  "RESEARCH_POLICY_ROUTER_CONTINUATION",
+                  "ENTRY_LONG"
+                ],
+                "summary": {
+                  "candidate": "LONG",
+                  "htf": {
+                    "config": {
+                      "long_min_level": null,
+                      "long_target_levels": null,
+                      "short_max_level": null,
+                      "short_target_levels": null
+                    },
+                    "level_price": null,
+                    "reason": "PASS",
+                    "targets": [],
+                    "tolerance": 1393.7457177888746
+                  },
+                  "ltf": {
+                    "config": {
+                      "long_max_level": 0.146,
+                      "short_min_level": 0.236
+                    },
+                    "level_price": null,
+                    "reason": "PASS",
+                    "tolerance": 815.4207222664771
+                  }
+                },
+                "timestamp": "2023-12-15T21:00:00"
+              },
+              "entry_price": 41994.987,
+              "entry_reasons": [
+                "ZONE:low@0.160",
+                "RESEARCH_POLICY_ROUTER_CONTINUATION",
+                "ENTRY_LONG"
+              ],
+              "entry_regime": "balanced",
+              "entry_time": "2023-12-15T21:00:00+00:00",
+              "exit_fib_debug": [
+                {
+                  "actions": [
+                    {
+                      "action": "PARTIAL",
+                      "reason": "TP1 Hit (42448.50)",
+                      "size": 0.006,
+                      "stop_price": 0.0
+                    }
+                  ],
+                  "current_atr": 311.6039305565097,
+                  "fib_gate_summary": {
+                    "candidate": "LONG",
+                    "htf": {
+                      "config": {
+                        "long_min_level": null,
+                        "long_target_levels": null,
+                        "short_max_level": null,
+                        "short_target_levels": null
+                      },
+                      "level_price": null,
+                      "reason": "PASS",
+                      "targets": [],
+                      "tolerance": 1393.7457177888746
+                    },
+                    "ltf": {
+                      "config": {
+                        "long_max_level": 0.146,
+                        "short_min_level": 0.236
+                      },
+                      "level_price": null,
+                      "reason": "PASS",
+                      "tolerance": 684.9432628811991
+                    }
+                  },
+                  "htf_entry_debug": {
+                    "atr": 348.43642944721864,
+                    "config": {
+                      "long_min_level": null,
+                      "long_target_levels": null,
+                      "short_max_level": null,
+                      "short_target_levels": null
+                    },
+                    "levels": {
+                      "0.382": 36753.51,
+                      "0.5": 36376.5,
+                      "0.618": 35999.49,
+                      "0.786": 35462.73
+                    },
+                    "price": 37879.0,
+                    "reason": "PASS",
+                    "targets": [],
+                    "tolerance": 1393.7457177888746
+                  },
+                  "htf_exit_config": {
+                    "fib_threshold_atr": 0.9,
+                    "trail_atr_multiplier": 2.5
+                  },
+                  "ltf_entry_debug": {
+                    "atr": 456.6288419207994,
+                    "config": {
+                      "long_max_level": 0.146,
+                      "short_min_level": 0.236
+                    },
+                    "levels": {},
+                    "price": 42546.0,
+                    "reason": "PASS",
+                    "tolerance": 684.9432628811991
+                  },
+                  "position_side": "LONG",
+                  "price": 42546.0,
+                  "timestamp": "2023-12-16T15:00:00"
+                },
+                {
+                  "action": "PARTIAL",
+                  "close_size": 0.006,
+                  "reason": "TP1 Hit (42448.50)",
+                  "remaining_size": 0.006,
+                  "timestamp": "2023-12-16T15:00:00"
+                }
+              ],
+              "exit_price": 42524.727,
+              "exit_reason": "TP1 Hit (42448.50)",
+              "exit_time": "2023-12-16T15:00:00+00:00",
+              "is_partial": true,
+              "pnl": 3.1784399999999877,
+              "pnl_pct": 1.2614362757154751,
+              "position_id": "tBTCUSD_2023-12-15T21:00:00",
+              "remaining_size": 0.006,
+              "side": "CLOSE_LONG",
+              "size": 0.006,
+              "symbol": "tBTCUSD"
+            },
+            {
+              "commission": 0.0,
+              "entry_fib_debug": {
+                "htf": {
+                  "atr": 348.43642944721864,
+                  "config": {
+                    "long_min_level": null,
+                    "long_target_levels": null,
+                    "short_max_level": null,
+                    "short_target_levels": null
+                  },
+                  "levels": {
+                    "0.382": 36753.51,
+                    "0.5": 36376.5,
+                    "0.618": 35999.49,
+                    "0.786": 35462.73
+                  },
+                  "price": 37879.0,
+                  "reason": "PASS",
+                  "targets": [],
+                  "tolerance": 1393.7457177888746
+                },
+                "ltf": {
+                  "atr": 543.6138148443181,
+                  "config": {
+                    "long_max_level": 0.146,
+                    "short_min_level": 0.236
+                  },
+                  "levels": {},
+                  "price": 41974.0,
+                  "reason": "PASS",
+                  "tolerance": 815.4207222664771
+                },
+                "reasons": [
+                  "ZONE:low@0.160",
+                  "RESEARCH_POLICY_ROUTER_CONTINUATION",
+                  "ENTRY_LONG"
+                ],
+                "summary": {
+                  "candidate": "LONG",
+                  "htf": {
+                    "config": {
+                      "long_min_level": null,
+                      "long_target_levels": null,
+                      "short_max_level": null,
+                      "short_target_levels": null
+                    },
+                    "level_price": null,
+                    "reason": "PASS",
+                    "targets": [],
+                    "tolerance": 1393.7457177888746
+                  },
+                  "ltf": {
+                    "config": {
+                      "long_max_level": 0.146,
+                      "short_min_level": 0.236
+                    },
+                    "level_price": null,
+                    "reason": "PASS",
+                    "tolerance": 815.4207222664771
+                  }
+                },
+                "timestamp": "2023-12-15T21:00:00"
+              },
+              "entry_price": 41994.987,
+              "entry_reasons": [
+                "ZONE:low@0.160",
+                "RESEARCH_POLICY_ROUTER_CONTINUATION",
+                "ENTRY_LONG"
+              ],
+              "entry_regime": "balanced",
+              "entry_time": "2023-12-15T21:00:00+00:00",
+              "exit_fib_debug": [
+                {
+                  "actions": [
+                    {
+                      "action": "PARTIAL",
+                      "reason": "TP1 Hit (42448.50)",
+                      "size": 0.006,
+                      "stop_price": 0.0
+                    }
+                  ],
+                  "current_atr": 311.6039305565097,
+                  "fib_gate_summary": {
+                    "candidate": "LONG",
+                    "htf": {
+                      "config": {
+                        "long_min_level": null,
+                        "long_target_levels": null,
+                        "short_max_level": null,
+                        "short_target_levels": null
+                      },
+                      "level_price": null,
+                      "reason": "PASS",
+                      "targets": [],
+                      "tolerance": 1393.7457177888746
+                    },
+                    "ltf": {
+                      "config": {
+                        "long_max_level": 0.146,
+                        "short_min_level": 0.236
+                      },
+                      "level_price": null,
+                      "reason": "PASS",
+                      "tolerance": 684.9432628811991
+                    }
+                  },
+                  "htf_entry_debug": {
+                    "atr": 348.43642944721864,
+                    "config": {
+                      "long_min_level": null,
+                      "long_target_levels": null,
+                      "short_max_level": null,
+                      "short_target_levels": null
+                    },
+                    "levels": {
+                      "0.382": 36753.51,
+                      "0.5": 36376.5,
+                      "0.618": 35999.49,
+                      "0.786": 35462.73
+                    },
+                    "price": 37879.0,
+                    "reason": "PASS",
+                    "targets": [],
+                    "tolerance": 1393.7457177888746
+                  },
+                  "htf_exit_config": {
+                    "fib_threshold_atr": 0.9,
+                    "trail_atr_multiplier": 2.5
+                  },
+                  "ltf_entry_debug": {
+                    "atr": 456.6288419207994,
+                    "config": {
+                      "long_max_level": 0.146,
+                      "short_min_level": 0.236
+                    },
+                    "levels": {},
+                    "price": 42546.0,
+                    "reason": "PASS",
+                    "tolerance": 684.9432628811991
+                  },
+                  "position_side": "LONG",
+                  "price": 42546.0,
+                  "timestamp": "2023-12-16T15:00:00"
+                },
+                {
+                  "action": "PARTIAL",
+                  "close_size": 0.006,
+                  "reason": "TP1 Hit (42448.50)",
+                  "remaining_size": 0.006,
+                  "timestamp": "2023-12-16T15:00:00"
+                },
+                {
+                  "fib_gate_summary": {
+                    "candidate": "LONG",
+                    "htf": {
+                      "config": {
+                        "long_min_level": null,
+                        "long_target_levels": null,
+                        "short_max_level": null,
+                        "short_target_levels": null
+                      },
+                      "level_price": null,
+                      "reason": "PASS",
+                      "targets": [],
+                      "tolerance": 1393.7457177888746
+                    },
+                    "ltf": {
+                      "config": {
+                        "long_max_level": 0.146,
+                        "short_min_level": 0.236
+                      },
+                      "level_price": null,
+                      "reason": "PASS",
+                      "tolerance": 635.4015588745351
+                    }
+                  },
+                  "price": 41920.0,
+                  "reason": "TRAIL_STOP",
+                  "source": "TRAIL_STOP",
+                  "timestamp": "2023-12-17T00:00:00"
+                },
+                {
+                  "pnl_pct": 0.5164818838972349,
+                  "reason": "TRAIL_STOP",
+                  "remaining_size": 0.0,
+                  "timestamp": "2023-12-17T00:00:00"
+                }
+              ],
+              "exit_price": 41899.04,
+              "exit_reason": "TRAIL_STOP",
+              "exit_time": "2023-12-17T00:00:00+00:00",
+              "is_partial": false,
+              "pnl": 2.6027579999999872,
+              "pnl_pct": 0.5164818838972349,
+              "position_id": "tBTCUSD_2023-12-15T21:00:00",
+              "remaining_size": 0.0,
+              "side": "CLOSE_LONG",
+              "size": 0.006,
+              "symbol": "tBTCUSD"
+            }
+          ]
+        },
+        {
+          "decision_reason_exact_match": true,
+          "entry_reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_CONTINUATION",
+            "ENTRY_LONG"
+          ],
+          "entry_regime": "balanced",
+          "entry_time": "2023-12-17T00:00:00+00:00",
+          "exit_family_counts": {
+            "stop_loss": 1
+          },
+          "exit_reason_counts": {
+            "EMERGENCY_SL": 1
+          },
+          "final_exit_family": "stop_loss",
+          "final_exit_reason": "EMERGENCY_SL",
+          "full_trade_event_count": 1,
+          "gross_trade_pnl": -20.90836,
+          "matched_decision_count": 1,
+          "matched_decision_identity_keys": [
+            "row_id=tBTCUSD|3h|256|bar_index=256|timestamp=2023-12-17T00:00:00+00:00|symbol=tBTCUSD|timeframe=3h"
+          ],
+          "observed_entry_open_event": true,
+          "partial_trade_event_count": 0,
+          "position_key": "tBTCUSD_2023-12-17T00:00:00",
+          "total_exit_commission": 0.0,
+          "trade_event_count": 1,
+          "trade_events": [
+            {
+              "commission": 0.0,
+              "entry_fib_debug": {
+                "htf": {
+                  "atr": 348.43642944721864,
+                  "config": {
+                    "long_min_level": null,
+                    "long_target_levels": null,
+                    "short_max_level": null,
+                    "short_target_levels": null
+                  },
+                  "levels": {
+                    "0.382": 36753.51,
+                    "0.5": 36376.5,
+                    "0.618": 35999.49,
+                    "0.786": 35462.73
+                  },
+                  "price": 37879.0,
+                  "reason": "PASS",
+                  "targets": [],
+                  "tolerance": 1393.7457177888746
+                },
+                "ltf": {
+                  "atr": 423.6010392496901,
+                  "config": {
+                    "long_max_level": 0.146,
+                    "short_min_level": 0.236
+                  },
+                  "levels": {},
+                  "price": 41920.0,
+                  "reason": "PASS",
+                  "tolerance": 635.4015588745351
+                },
+                "reasons": [
+                  "ZONE:low@0.160",
+                  "RESEARCH_POLICY_ROUTER_CONTINUATION",
+                  "ENTRY_LONG"
+                ],
+                "summary": {
+                  "candidate": "LONG",
+                  "htf": {
+                    "config": {
+                      "long_min_level": null,
+                      "long_target_levels": null,
+                      "short_max_level": null,
+                      "short_target_levels": null
+                    },
+                    "level_price": null,
+                    "reason": "PASS",
+                    "targets": [],
+                    "tolerance": 1393.7457177888746
+                  },
+                  "ltf": {
+                    "config": {
+                      "long_max_level": 0.146,
+                      "short_min_level": 0.236
+                    },
+                    "level_price": null,
+                    "reason": "PASS",
+                    "tolerance": 635.4015588745351
+                  }
+                },
+                "timestamp": "2023-12-17T00:00:00"
+              },
+              "entry_price": 41940.96,
+              "entry_reasons": [
+                "ZONE:low@0.160",
+                "RESEARCH_POLICY_ROUTER_CONTINUATION",
+                "ENTRY_LONG"
+              ],
+              "entry_regime": "balanced",
+              "entry_time": "2023-12-17T00:00:00+00:00",
+              "exit_fib_debug": [
+                {
+                  "fib_gate_summary": {
+                    "candidate": "LONG",
+                    "htf": {
+                      "config": {
+                        "long_min_level": null,
+                        "long_target_levels": null,
+                        "short_max_level": null,
+                        "short_target_levels": null
+                      },
+                      "level_price": null,
+                      "reason": "PASS",
+                      "targets": [],
+                      "tolerance": 1393.7457177888746
+                    },
+                    "ltf": {
+                      "config": {
+                        "long_max_level": 0.146,
+                        "short_min_level": 0.236
+                      },
+                      "level_price": null,
+                      "reason": "PASS",
+                      "tolerance": 681.4597425358891
+                    }
+                  },
+                  "price": 40916.0,
+                  "reason": "EMERGENCY_SL",
+                  "source": "TRADITIONAL_EXIT",
+                  "timestamp": "2023-12-18T00:00:00"
+                },
+                {
+                  "pnl_pct": -2.4925943516791174,
+                  "reason": "EMERGENCY_SL",
+                  "remaining_size": 0.0,
+                  "timestamp": "2023-12-18T00:00:00"
+                }
+              ],
+              "exit_price": 40895.542,
+              "exit_reason": "EMERGENCY_SL",
+              "exit_time": "2023-12-18T00:00:00+00:00",
+              "is_partial": false,
+              "pnl": -20.908359999999963,
+              "pnl_pct": -2.4925943516791174,
+              "position_id": "tBTCUSD_2023-12-17T00:00:00",
+              "remaining_size": 0.0,
+              "side": "CLOSE_LONG",
+              "size": 0.020000000000000004,
+              "symbol": "tBTCUSD"
+            }
+          ]
+        }
+      ],
+      "run_context": {
+        "bars_processed": 145,
+        "bars_total": 265,
+        "data_source_policy": "curated_only",
+        "effective_config_fingerprint": "70f082360e0a2565e68afeabd14940b58b91a754441acf0e03b9aebc70bfc0db",
+        "execution_mode": {
+          "env_precompute_features": "1",
+          "fast_window": true,
+          "mode_explicit": "1",
+          "precompute_enabled": true,
+          "precomputed_ready": true
+        },
+        "exit_config_context": {
+          "enabled": true,
+          "exit_conf_threshold": 0.42,
+          "max_hold_bars": 8,
+          "regime_aware_exits": true,
+          "stop_loss_pct": 0.016,
+          "take_profit_pct": 0.05,
+          "trailing_stop_enabled": true,
+          "trailing_stop_pct": 0.022
+        },
+        "htf_exit_config_context": {
+          "enable_partials": true,
+          "enable_structure_breaks": true,
+          "enable_trailing": true,
+          "fib_threshold_atr": 0.9,
+          "partial_1_pct": 0.5,
+          "partial_2_pct": 0.45,
+          "swing_update_strategy": "fixed",
+          "trail_atr_multiplier": 2.5
+        }
+      },
+      "source_key": "continuation_2023_wave_one",
+      "summary": {
+        "exact_decision_row_count": 6,
+        "exit_family_counts": {
+          "stop_loss": 1,
+          "take_profit": 1,
+          "trailing_stop": 1
+        },
+        "exit_reason_counts": {
+          "EMERGENCY_SL": 1,
+          "TP1 Hit (42448.50)": 1,
+          "TRAIL_STOP": 1
+        },
+        "full_trade_event_count": 2,
+        "non_none_decision_row_count": 6,
+        "observed_open_decision_count": 2,
+        "observed_open_event_count": 2,
+        "partial_trade_event_count": 1,
+        "position_count": 2,
+        "trade_event_count": 3,
+        "unresolved_non_none_decision_count": 4
+      },
+      "window": {
+        "exact_timestamp_count": 6,
+        "exact_timestamps": [
+          "2023-12-15T21:00:00+00:00",
+          "2023-12-16T06:00:00+00:00",
+          "2023-12-16T15:00:00+00:00",
+          "2023-12-17T00:00:00+00:00",
+          "2023-12-17T09:00:00+00:00",
+          "2023-12-17T18:00:00+00:00"
+        ],
+        "run_end_date": "2023-12-18",
+        "run_start_date": "2023-11-15"
+      }
+    },
+    "weak_clean_continuation": {
+      "cohort_label": "weak_clean_continuation",
+      "decision_join_rows": [
+        {
+          "action": "LONG",
+          "decision_identity_key": "row_id=tBTCUSD|3h|245|bar_index=245|timestamp=2023-12-22T15:00:00+00:00|symbol=tBTCUSD|timeframe=3h",
+          "entry_reasons_exact_match": true,
+          "join_status": "observed_open_event_matched",
+          "matched_open_event_count": 1,
+          "matched_position_keys": [
+            "tBTCUSD_2023-12-22T15:00:00"
+          ],
+          "reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_CONTINUATION",
+            "ENTRY_LONG"
+          ],
+          "timestamp": "2023-12-22T15:00:00+00:00"
+        },
+        {
+          "action": "LONG",
+          "decision_identity_key": "row_id=tBTCUSD|3h|248|bar_index=248|timestamp=2023-12-23T00:00:00+00:00|symbol=tBTCUSD|timeframe=3h",
+          "entry_reasons_exact_match": false,
+          "join_status": "non_opening_signal_without_execution_row",
+          "matched_open_event_count": 0,
+          "matched_position_keys": [],
+          "reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_CONTINUATION",
+            "ENTRY_LONG"
+          ],
+          "timestamp": "2023-12-23T00:00:00+00:00"
+        },
+        {
+          "action": "LONG",
+          "decision_identity_key": "row_id=tBTCUSD|3h|251|bar_index=251|timestamp=2023-12-23T09:00:00+00:00|symbol=tBTCUSD|timeframe=3h",
+          "entry_reasons_exact_match": false,
+          "join_status": "non_opening_signal_without_execution_row",
+          "matched_open_event_count": 0,
+          "matched_position_keys": [],
+          "reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_CONTINUATION",
+            "ENTRY_LONG"
+          ],
+          "timestamp": "2023-12-23T09:00:00+00:00"
+        },
+        {
+          "action": "LONG",
+          "decision_identity_key": "row_id=tBTCUSD|3h|257|bar_index=257|timestamp=2023-12-24T03:00:00+00:00|symbol=tBTCUSD|timeframe=3h",
+          "entry_reasons_exact_match": false,
+          "join_status": "non_opening_signal_without_execution_row",
+          "matched_open_event_count": 0,
+          "matched_position_keys": [],
+          "reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_CONTINUATION",
+            "ENTRY_LONG"
+          ],
+          "timestamp": "2023-12-24T03:00:00+00:00"
+        },
+        {
+          "action": "LONG",
+          "decision_identity_key": "row_id=tBTCUSD|3h|260|bar_index=260|timestamp=2023-12-24T12:00:00+00:00|symbol=tBTCUSD|timeframe=3h",
+          "entry_reasons_exact_match": false,
+          "join_status": "non_opening_signal_without_execution_row",
+          "matched_open_event_count": 0,
+          "matched_position_keys": [],
+          "reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_CONTINUATION",
+            "ENTRY_LONG"
+          ],
+          "timestamp": "2023-12-24T12:00:00+00:00"
+        },
+        {
+          "action": "LONG",
+          "decision_identity_key": "row_id=tBTCUSD|3h|266|bar_index=266|timestamp=2023-12-25T06:00:00+00:00|symbol=tBTCUSD|timeframe=3h",
+          "entry_reasons_exact_match": false,
+          "join_status": "non_opening_signal_without_execution_row",
+          "matched_open_event_count": 0,
+          "matched_position_keys": [],
+          "reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_CONTINUATION",
+            "ENTRY_LONG"
+          ],
+          "timestamp": "2023-12-25T06:00:00+00:00"
+        },
+        {
+          "action": "LONG",
+          "decision_identity_key": "row_id=tBTCUSD|3h|272|bar_index=272|timestamp=2023-12-26T00:00:00+00:00|symbol=tBTCUSD|timeframe=3h",
+          "entry_reasons_exact_match": false,
+          "join_status": "non_opening_signal_without_execution_row",
+          "matched_open_event_count": 0,
+          "matched_position_keys": [],
+          "reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_CONTINUATION",
+            "ENTRY_LONG"
+          ],
+          "timestamp": "2023-12-26T00:00:00+00:00"
+        }
+      ],
+      "display_name": "2023-12 wave 2",
+      "entry_open_events": [
+        {
+          "action": "LONG",
+          "bar_index": 245,
+          "entry_price": 43766.8725,
+          "entry_reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_CONTINUATION",
+            "ENTRY_LONG"
+          ],
+          "entry_regime": "balanced",
+          "entry_size": 0.012,
+          "entry_time": "2023-12-22T15:00:00+00:00",
+          "executed": true,
+          "position_key": "tBTCUSD_2023-12-22T15:00:00",
+          "symbol": "tBTCUSD",
+          "timeframe": "3h"
+        }
+      ],
+      "observed_vs_derived_contract": {
+        "derived_steps": [
+          "decision_row.timestamp == entry_open_event.entry_time for open-event matching",
+          "decision_row.reasons == entry_open_event.entry_reasons for bounded join strengthening",
+          "entry_open_event.position_key == trade.position_id for position grouping",
+          "exit_family derived from trade.exit_reason"
+        ],
+        "not_directly_observed_in_current_outputs": [
+          "decision_row.position_id",
+          "decision_row.execution_status for non-opening signals",
+          "canonical decision_to_trade join without helper-side execution capture"
+        ],
+        "observed_surfaces": [
+          "decision_row.timestamp",
+          "decision_row.action",
+          "decision_row.reasons",
+          "entry_open_event.entry_time",
+          "entry_open_event.entry_reasons",
+          "trade.position_id",
+          "trade.entry_time",
+          "trade.exit_time",
+          "trade.exit_reason",
+          "trade.is_partial",
+          "trade.remaining_size"
+        ]
+      },
+      "position_summaries": [
+        {
+          "decision_reason_exact_match": true,
+          "entry_reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_CONTINUATION",
+            "ENTRY_LONG"
+          ],
+          "entry_regime": "balanced",
+          "entry_time": "2023-12-22T15:00:00+00:00",
+          "exit_family_counts": {
+            "stop_loss": 1
+          },
+          "exit_reason_counts": {
+            "EMERGENCY_SL": 1
+          },
+          "final_exit_family": "stop_loss",
+          "final_exit_reason": "EMERGENCY_SL",
+          "full_trade_event_count": 1,
+          "gross_trade_pnl": -8.944728,
+          "matched_decision_count": 1,
+          "matched_decision_identity_keys": [
+            "row_id=tBTCUSD|3h|245|bar_index=245|timestamp=2023-12-22T15:00:00+00:00|symbol=tBTCUSD|timeframe=3h"
+          ],
+          "observed_entry_open_event": true,
+          "partial_trade_event_count": 0,
+          "position_key": "tBTCUSD_2023-12-22T15:00:00",
+          "total_exit_commission": 0.0,
+          "trade_event_count": 1,
+          "trade_events": [
+            {
+              "commission": 0.0,
+              "entry_fib_debug": {
+                "htf": {
+                  "atr": 495.60296214833403,
+                  "config": {
+                    "long_min_level": null,
+                    "long_target_levels": null,
+                    "short_max_level": null,
+                    "short_target_levels": null
+                  },
+                  "levels": {
+                    "0.382": 36753.51,
+                    "0.5": 36376.5,
+                    "0.618": 35999.49,
+                    "0.786": 35462.73
+                  },
+                  "price": 44026.0,
+                  "reason": "PASS",
+                  "targets": [],
+                  "tolerance": 1982.4118485933361
+                },
+                "ltf": {
+                  "atr": 502.07346338605936,
+                  "config": {
+                    "long_max_level": 0.146,
+                    "short_min_level": 0.236
+                  },
+                  "levels": {},
+                  "price": 43745.0,
+                  "reason": "PASS",
+                  "tolerance": 753.1101950790891
+                },
+                "reasons": [
+                  "ZONE:low@0.160",
+                  "RESEARCH_POLICY_ROUTER_CONTINUATION",
+                  "ENTRY_LONG"
+                ],
+                "summary": {
+                  "candidate": "LONG",
+                  "htf": {
+                    "config": {
+                      "long_min_level": null,
+                      "long_target_levels": null,
+                      "short_max_level": null,
+                      "short_target_levels": null
+                    },
+                    "level_price": null,
+                    "reason": "PASS",
+                    "targets": [],
+                    "tolerance": 1982.4118485933361
+                  },
+                  "ltf": {
+                    "config": {
+                      "long_max_level": 0.146,
+                      "short_min_level": 0.236
+                    },
+                    "level_price": null,
+                    "reason": "PASS",
+                    "tolerance": 753.1101950790891
+                  }
+                },
+                "timestamp": "2023-12-22T15:00:00"
+              },
+              "entry_price": 43766.8725,
+              "entry_reasons": [
+                "ZONE:low@0.160",
+                "RESEARCH_POLICY_ROUTER_CONTINUATION",
+                "ENTRY_LONG"
+              ],
+              "entry_regime": "balanced",
+              "entry_time": "2023-12-22T15:00:00+00:00",
+              "exit_fib_debug": [
+                {
+                  "fib_gate_summary": {
+                    "candidate": "LONG",
+                    "htf": {
+                      "config": {
+                        "long_min_level": null,
+                        "long_target_levels": null,
+                        "short_max_level": null,
+                        "short_target_levels": null
+                      },
+                      "level_price": null,
+                      "reason": "PASS",
+                      "targets": [],
+                      "tolerance": 1982.4118485933361
+                    },
+                    "ltf": {
+                      "config": {
+                        "long_max_level": 0.146,
+                        "short_min_level": 0.236
+                      },
+                      "level_price": null,
+                      "reason": "PASS",
+                      "tolerance": 552.1490389095424
+                    }
+                  },
+                  "price": 43043.0,
+                  "reason": "EMERGENCY_SL",
+                  "source": "TRADITIONAL_EXIT",
+                  "timestamp": "2023-12-24T21:00:00"
+                },
+                {
+                  "pnl_pct": -1.7031009012581217,
+                  "reason": "EMERGENCY_SL",
+                  "remaining_size": 0.0,
+                  "timestamp": "2023-12-24T21:00:00"
+                }
+              ],
+              "exit_price": 43021.478500000005,
+              "exit_reason": "EMERGENCY_SL",
+              "exit_time": "2023-12-24T21:00:00+00:00",
+              "is_partial": false,
+              "pnl": -8.944727999999916,
+              "pnl_pct": -1.7031009012581217,
+              "position_id": "tBTCUSD_2023-12-22T15:00:00",
+              "remaining_size": 0.0,
+              "side": "CLOSE_LONG",
+              "size": 0.012,
+              "symbol": "tBTCUSD"
+            }
+          ]
+        }
+      ],
+      "run_context": {
+        "bars_processed": 161,
+        "bars_total": 281,
+        "data_source_policy": "curated_only",
+        "effective_config_fingerprint": "70f082360e0a2565e68afeabd14940b58b91a754441acf0e03b9aebc70bfc0db",
+        "execution_mode": {
+          "env_precompute_features": "1",
+          "fast_window": true,
+          "mode_explicit": "1",
+          "precompute_enabled": true,
+          "precomputed_ready": true
+        },
+        "exit_config_context": {
+          "enabled": true,
+          "exit_conf_threshold": 0.42,
+          "max_hold_bars": 8,
+          "regime_aware_exits": true,
+          "stop_loss_pct": 0.016,
+          "take_profit_pct": 0.05,
+          "trailing_stop_enabled": true,
+          "trailing_stop_pct": 0.022
+        },
+        "htf_exit_config_context": {
+          "enable_partials": true,
+          "enable_structure_breaks": true,
+          "enable_trailing": true,
+          "fib_threshold_atr": 0.9,
+          "partial_1_pct": 0.5,
+          "partial_2_pct": 0.45,
+          "swing_update_strategy": "fixed",
+          "trail_atr_multiplier": 2.5
+        }
+      },
+      "source_key": "continuation_2023_wave_two",
+      "summary": {
+        "exact_decision_row_count": 7,
+        "exit_family_counts": {
+          "stop_loss": 1
+        },
+        "exit_reason_counts": {
+          "EMERGENCY_SL": 1
+        },
+        "full_trade_event_count": 1,
+        "non_none_decision_row_count": 7,
+        "observed_open_decision_count": 1,
+        "observed_open_event_count": 1,
+        "partial_trade_event_count": 0,
+        "position_count": 1,
+        "trade_event_count": 1,
+        "unresolved_non_none_decision_count": 6
+      },
+      "window": {
+        "exact_timestamp_count": 7,
+        "exact_timestamps": [
+          "2023-12-22T15:00:00+00:00",
+          "2023-12-23T00:00:00+00:00",
+          "2023-12-23T09:00:00+00:00",
+          "2023-12-24T03:00:00+00:00",
+          "2023-12-24T12:00:00+00:00",
+          "2023-12-25T06:00:00+00:00",
+          "2023-12-26T00:00:00+00:00"
+        ],
+        "run_end_date": "2023-12-27",
+        "run_start_date": "2023-11-22"
+      }
+    }
+  },
+  "exit_taxonomy_contract": {
+    "derived_target_field": "exit_family",
+    "mapping": {
+      "*unknown*": "unknown_unclassified",
+      "CONF_DROP": "confidence_exit",
+      "EMERGENCY_SL": "stop_loss",
+      "EMERGENCY_TP": "take_profit",
+      "FALLBACK_TRAIL": "trailing_stop",
+      "OPPOSITE_SIGNAL": "manual_or_other",
+      "REGIME_CHANGE": "regime_exit",
+      "TP*": "take_profit",
+      "TRAIL_STOP": "trailing_stop"
+    },
+    "observed_source_field": "trade.exit_reason"
+  },
+  "global_summary": {
+    "cohort_count": 3,
+    "exit_family_counts": {
+      "stop_loss": 2,
+      "take_profit": 1,
+      "trailing_stop": 1
+    },
+    "exit_reason_counts": {
+      "EMERGENCY_SL": 2,
+      "TP1 Hit (42448.50)": 1,
+      "TRAIL_STOP": 1
+    },
+    "total_observed_open_event_count": 3,
+    "total_position_count": 3,
+    "total_trade_event_count": 4,
+    "total_unresolved_non_none_decisions": 10
+  },
+  "inputs": {
+    "carrier_path": "tmp\\policy_router_evidence\\tBTCUSD_3h_slice8_runtime_bridge_weak_pre_aged_release_guard_20260424.json",
+    "data_source_policy": "curated_only",
+    "decision_artifact": "results\\evaluation\\feature_attribution_post_phase14_ri_decision_surface_fixed_three_cohort_2026-05-26.json",
+    "env": {
+      "GENESIS_FAST_HASH": "0",
+      "GENESIS_FAST_WINDOW": "1",
+      "GENESIS_MODE_EXPLICIT": "1",
+      "GENESIS_PRECOMPUTE_CACHE_WRITE": "0",
+      "GENESIS_PRECOMPUTE_FEATURES": "1",
+      "GENESIS_RANDOM_SEED": "42",
+      "GENESIS_SCORE_VERSION": "v2"
+    },
+    "symbol": "tBTCUSD",
+    "timeframe": "3h",
+    "working_contract_reference": "GENESIS_WORKING_CONTRACT.md"
+  },
+  "non_authoritative": true,
+  "observational_only": true,
+  "status": "feature_attribution_ri_trade_exit_join_fixed_three_cohort_generated"
+}

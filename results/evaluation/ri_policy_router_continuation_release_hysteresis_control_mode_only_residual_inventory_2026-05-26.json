@@ -1,0 +1,151 @@
+{
+  "audit_version": "ri-policy-router-continuation-release-hysteresis-control-mode-only-residual-inventory-2026-05-26",
+  "base_sha": "92593960c0bc3e5277a3515c3cf4c30c918abf2e",
+  "classification_boundary": {
+    "outcome_metrics_observational_only": true,
+    "question": "Inside the exact local envelopes, are control-mode-only residual rows unique to the `2021-04` candidate, or do they also appear in the `2023-05` control?",
+    "reference_surface": "artifact-only inventory over the landed action-position-equivalence artifact, limited to rows where `switch_control_mode` is the sole surviving diff field"
+  },
+  "inputs": {
+    "action_position_equivalence_artifact": "results\\evaluation\\ri_policy_router_continuation_release_hysteresis_local_action_position_equivalence_2026-05-26.json",
+    "candidate_dormant_field_decay_artifact": "results\\evaluation\\ri_policy_router_continuation_release_hysteresis_candidate_dormant_field_decay_2026-05-26.json",
+    "focus_surface": "rows where switch_control_mode is the only surviving diff field",
+    "subjects": [
+      "2021-04",
+      "2023-05"
+    ],
+    "working_contract_reference": "GENESIS_WORKING_CONTRACT.md"
+  },
+  "non_authoritative": true,
+  "observational_only": true,
+  "packet_summary": {
+    "candidate_all_rows_at_or_after_reentry": true,
+    "candidate_control_mode_only_row_count": 4,
+    "candidate_first_timestamp": "2021-04-17T21:00:00+00:00",
+    "candidate_last_timestamp": "2021-04-18T06:00:00+00:00",
+    "control_control_mode_only_row_count": 0,
+    "inference": "Only the `2021-04` candidate retains rows where `switch_control_mode` is the sole remaining diff field. Those rows persist after the first shared re-entry while action, policy selection, switch reason, size, and execution effect already match.",
+    "next_hypothesis": "If this breadcrumb remains the only surviving candidate-specific residual, the next honest decision is whether to inspect the semantics of `switch_control_mode` directly or retire `2021-04` and widen to the next negative-like month.",
+    "status": "candidate_only_control_mode_residual_rows_persist_after_reentry"
+  },
+  "status": "continuation_release_hysteresis_control_mode_only_residual_inventory_generated",
+  "subject_payloads": {
+    "2021-04": {
+      "all_rows_at_or_after_candidate_reentry": true,
+      "classification_counts": {
+        "execution_equivalent_other": 4
+      },
+      "control_mode_only_row_count": 4,
+      "envelope_window": {
+        "end": "2021-04-18T06:00:00+00:00",
+        "row_count": 16,
+        "span_hours": 45.0,
+        "start": "2021-04-16T09:00:00+00:00"
+      },
+      "month_window": {
+        "end": "2021-04-30",
+        "inventory_final_capital_diff": 0.0,
+        "inventory_total_return_diff": 0.0,
+        "start": "2021-04-01"
+      },
+      "rows": [
+        {
+          "at_or_after_candidate_reentry": true,
+          "baseline_action": "LONG",
+          "baseline_execution_effect": "open_position",
+          "baseline_position_has_position": false,
+          "baseline_selected_policy": "RI_continuation_policy",
+          "baseline_size": 0.02,
+          "baseline_switch_control_mode": "continuation_release",
+          "baseline_switch_reason": "stable_continuation_state",
+          "classification": "execution_equivalent_other",
+          "release_zero_action": "LONG",
+          "release_zero_execution_effect": "open_position",
+          "release_zero_position_has_position": false,
+          "release_zero_selected_policy": "RI_continuation_policy",
+          "release_zero_size": 0.02,
+          "release_zero_switch_control_mode": "default",
+          "release_zero_switch_reason": "stable_continuation_state",
+          "timestamp": "2021-04-17T21:00:00+00:00"
+        },
+        {
+          "at_or_after_candidate_reentry": true,
+          "baseline_action": "NONE",
+          "baseline_execution_effect": "hold_existing",
+          "baseline_position_has_position": true,
+          "baseline_selected_policy": "RI_continuation_policy",
+          "baseline_size": null,
+          "baseline_switch_control_mode": "continuation_release",
+          "baseline_switch_reason": "stable_continuation_state",
+          "classification": "execution_equivalent_other",
+          "release_zero_action": "NONE",
+          "release_zero_execution_effect": "hold_existing",
+          "release_zero_position_has_position": true,
+          "release_zero_selected_policy": "RI_continuation_policy",
+          "release_zero_size": null,
+          "release_zero_switch_control_mode": "default",
+          "release_zero_switch_reason": "stable_continuation_state",
+          "timestamp": "2021-04-18T00:00:00+00:00"
+        },
+        {
+          "at_or_after_candidate_reentry": true,
+          "baseline_action": "NONE",
+          "baseline_execution_effect": "hold_flat",
+          "baseline_position_has_position": false,
+          "baseline_selected_policy": "RI_continuation_policy",
+          "baseline_size": null,
+          "baseline_switch_control_mode": "continuation_release",
+          "baseline_switch_reason": "stable_continuation_state",
+          "classification": "execution_equivalent_other",
+          "release_zero_action": "NONE",
+          "release_zero_execution_effect": "hold_flat",
+          "release_zero_position_has_position": false,
+          "release_zero_selected_policy": "RI_continuation_policy",
+          "release_zero_size": null,
+          "release_zero_switch_control_mode": "default",
+          "release_zero_switch_reason": "stable_continuation_state",
+          "timestamp": "2021-04-18T03:00:00+00:00"
+        },
+        {
+          "at_or_after_candidate_reentry": true,
+          "baseline_action": "NONE",
+          "baseline_execution_effect": "hold_flat",
+          "baseline_position_has_position": false,
+          "baseline_selected_policy": "RI_continuation_policy",
+          "baseline_size": null,
+          "baseline_switch_control_mode": "continuation_release",
+          "baseline_switch_reason": "stable_continuation_state",
+          "classification": "execution_equivalent_other",
+          "release_zero_action": "NONE",
+          "release_zero_execution_effect": "hold_flat",
+          "release_zero_position_has_position": false,
+          "release_zero_selected_policy": "RI_continuation_policy",
+          "release_zero_size": null,
+          "release_zero_switch_control_mode": "default",
+          "release_zero_switch_reason": "stable_continuation_state",
+          "timestamp": "2021-04-18T06:00:00+00:00"
+        }
+      ],
+      "subject_id": "2021-04"
+    },
+    "2023-05": {
+      "all_rows_at_or_after_candidate_reentry": null,
+      "classification_counts": {},
+      "control_mode_only_row_count": 0,
+      "envelope_window": {
+        "end": "2023-05-18T00:00:00+00:00",
+        "row_count": 7,
+        "span_hours": 18.0,
+        "start": "2023-05-17T06:00:00+00:00"
+      },
+      "month_window": {
+        "end": "2023-05-31",
+        "inventory_final_capital_diff": 0.0,
+        "inventory_total_return_diff": 0.0,
+        "start": "2023-05-01"
+      },
+      "rows": [],
+      "subject_id": "2023-05"
+    }
+  }
+}

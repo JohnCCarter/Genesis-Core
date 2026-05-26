@@ -1,0 +1,2880 @@
+{
+  "annual_surface": {
+    "baseline": {
+      "backtest_info": {
+        "bars_processed": 2793,
+        "bars_total": 2913,
+        "commission_rate": 0.0,
+        "data_source_policy": "curated_only",
+        "effective_config_fingerprint": "70f082360e0a2565e68afeabd14940b58b91a754441acf0e03b9aebc70bfc0db",
+        "end_date": "2025-12-31 00:00:00+00:00",
+        "execution_mode": {
+          "env_precompute_features": "1",
+          "fast_window": true,
+          "mode_explicit": "1",
+          "precompute_enabled": true,
+          "precomputed_ready": true
+        },
+        "git_hash": "67ae999293336ed30020babef85576a4f69f6f89",
+        "htf": {
+          "env_htf_exits": "1",
+          "htf_candles_loaded": true,
+          "htf_candles_source": "C:\\Users\\fa06662\\Projects\\Genesis-Core\\data\\curated\\v1\\candles\\tBTCUSD_1D.parquet",
+          "htf_context_seen": true,
+          "use_new_exit_engine": true
+        },
+        "initial_capital": 10000.0,
+        "ltf_candles_source": "C:\\Users\\fa06662\\Projects\\Genesis-Core\\data\\curated\\v1\\candles\\tBTCUSD_3h.parquet",
+        "seed": "42",
+        "slippage_rate": 0.0005,
+        "start_date": "2025-01-01 00:00:00+00:00",
+        "symbol": "tBTCUSD",
+        "timeframe": "3h",
+        "timestamp": "2026-05-26T12:40:41.892157",
+        "warmup_bars": 120
+      },
+      "metrics": {
+        "max_drawdown": 0.026229356638018876,
+        "num_trades": 100,
+        "profit_factor": 2.189867693236175,
+        "total_return": 0.029268659988750733,
+        "total_return_pct": 2.926865998875073,
+        "total_trades": 100,
+        "win_rate": 0.68
+      },
+      "position_summary": {
+        "avg_loss": -25.903288434374886,
+        "avg_win": 40.05685106383944,
+        "breakeven_positions": 0,
+        "entry_commission": 0.0,
+        "exit_commission": 0.0,
+        "gross_pnl": 292.686599887508,
+        "losing_positions": 32,
+        "multi_event_positions": 26,
+        "net_pnl": 292.686599887508,
+        "num_positions": 60,
+        "pnl_basis": "net_after_commission",
+        "profit_factor": 1.353100196898045,
+        "total_commission": 0.0,
+        "win_rate": 46.666666666666664,
+        "winning_positions": 28
+      },
+      "summary": {
+        "avg_loss": -25.903288434374886,
+        "avg_win": 26.69401152518392,
+        "final_capital": 10292.686599887507,
+        "initial_capital": 10000.0,
+        "losing_trades": 32,
+        "max_capital": 10396.818067875003,
+        "max_drawdown": 2.6229356638018877,
+        "min_capital": 9818.260811600003,
+        "num_trades": 100,
+        "profit_factor": 2.189867693236175,
+        "total_commission": 0.0,
+        "total_return": 2.926865998875073,
+        "total_return_usd": 292.6865998875073,
+        "win_rate": 68.0,
+        "winning_trades": 68
+      }
+    },
+    "release_zero": {
+      "backtest_info": {
+        "bars_processed": 2793,
+        "bars_total": 2913,
+        "commission_rate": 0.0,
+        "data_source_policy": "curated_only",
+        "effective_config_fingerprint": "847f5b079068fb00d9e344587544e9502f1ef6ac2c3812ad9c1490ebcea75a20",
+        "end_date": "2025-12-31 00:00:00+00:00",
+        "execution_mode": {
+          "env_precompute_features": "1",
+          "fast_window": true,
+          "mode_explicit": "1",
+          "precompute_enabled": true,
+          "precomputed_ready": true
+        },
+        "git_hash": "67ae999293336ed30020babef85576a4f69f6f89",
+        "htf": {
+          "env_htf_exits": "1",
+          "htf_candles_loaded": true,
+          "htf_candles_source": "C:\\Users\\fa06662\\Projects\\Genesis-Core\\data\\curated\\v1\\candles\\tBTCUSD_1D.parquet",
+          "htf_context_seen": true,
+          "use_new_exit_engine": true
+        },
+        "initial_capital": 10000.0,
+        "ltf_candles_source": "C:\\Users\\fa06662\\Projects\\Genesis-Core\\data\\curated\\v1\\candles\\tBTCUSD_3h.parquet",
+        "seed": "42",
+        "slippage_rate": 0.0005,
+        "start_date": "2025-01-01 00:00:00+00:00",
+        "symbol": "tBTCUSD",
+        "timeframe": "3h",
+        "timestamp": "2026-05-26T12:41:21.056968",
+        "warmup_bars": 120
+      },
+      "metrics": {
+        "max_drawdown": 0.026229356638018876,
+        "num_trades": 100,
+        "profit_factor": 2.189867693236175,
+        "total_return": 0.029268659988750733,
+        "total_return_pct": 2.926865998875073,
+        "total_trades": 100,
+        "win_rate": 0.68
+      },
+      "position_summary": {
+        "avg_loss": -25.903288434374886,
+        "avg_win": 40.05685106383944,
+        "breakeven_positions": 0,
+        "entry_commission": 0.0,
+        "exit_commission": 0.0,
+        "gross_pnl": 292.686599887508,
+        "losing_positions": 32,
+        "multi_event_positions": 26,
+        "net_pnl": 292.686599887508,
+        "num_positions": 60,
+        "pnl_basis": "net_after_commission",
+        "profit_factor": 1.353100196898045,
+        "total_commission": 0.0,
+        "win_rate": 46.666666666666664,
+        "winning_positions": 28
+      },
+      "summary": {
+        "avg_loss": -25.903288434374886,
+        "avg_win": 26.69401152518392,
+        "final_capital": 10292.686599887507,
+        "initial_capital": 10000.0,
+        "losing_trades": 32,
+        "max_capital": 10396.818067875003,
+        "max_drawdown": 2.6229356638018877,
+        "min_capital": 9818.260811600003,
+        "num_trades": 100,
+        "profit_factor": 2.189867693236175,
+        "total_commission": 0.0,
+        "total_return": 2.926865998875073,
+        "total_return_usd": 292.6865998875073,
+        "win_rate": 68.0,
+        "winning_trades": 68
+      }
+    }
+  },
+  "audit_version": "ri-policy-router-continuation-release-hysteresis-window-sensitivity-2025-10-vs-annual-2025-2026-05-26",
+  "base_sha": "67ae999293336ed30020babef85576a4f69f6f89",
+  "classification_boundary": {
+    "outcome_metrics_observational_only": true,
+    "question": "Does the continuation-release behavior seen on the exact 2025-10 subject persist when October is reached through the full-year 2025 path, or is the observed October seam footprint anchor-sensitive?",
+    "reference_surface": "exact 2025-10 subject versus the October rows embedded inside the full-year 2025 same-stack path, comparing both baseline and release_zero under the same landed continuation_release_hysteresis carrier"
+  },
+  "comparison": {
+    "baseline_exact_vs_annual_embedded_october": {
+      "action_diff_count": 151,
+      "all_row_diff_count": 248,
+      "annual_embedded_continuation_release_row_count": 0,
+      "annual_embedded_continuation_release_timestamps": [],
+      "annual_embedded_row_count": 248,
+      "annual_only_timestamp_count": 127,
+      "behavioral_row_diff_count": 248,
+      "continuation_release_presence_diff_count": 13,
+      "exact_continuation_release_row_count": 13,
+      "exact_continuation_release_timestamps": [
+        "2025-10-17T00:00:00+00:00",
+        "2025-10-17T03:00:00+00:00",
+        "2025-10-17T06:00:00+00:00",
+        "2025-10-17T09:00:00+00:00",
+        "2025-10-17T12:00:00+00:00",
+        "2025-10-17T15:00:00+00:00",
+        "2025-10-17T18:00:00+00:00",
+        "2025-10-17T21:00:00+00:00",
+        "2025-10-18T00:00:00+00:00",
+        "2025-10-18T03:00:00+00:00",
+        "2025-10-18T15:00:00+00:00",
+        "2025-10-18T18:00:00+00:00",
+        "2025-10-18T21:00:00+00:00"
+      ],
+      "exact_only_timestamp_count": 0,
+      "exact_row_count": 121,
+      "first_behavior_diff": {
+        "annual_embedded": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:high@0.320"
+          ],
+          "router_debug": {
+            "action_edge": 0.07116191054509824,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 246,
+            "candidate": "LONG",
+            "clarity_raw": 0.38753693471897616,
+            "clarity_score": 39,
+            "confidence_gate": 0.5355809552725491,
+            "confidence_level": 3,
+            "dwell_duration": 1,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 3,
+            "previous_policy": "RI_no_trade_policy",
+            "raw_target_policy": "RI_continuation_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 1,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_continuation_policy",
+            "size_after_policy_router": 0.0078,
+            "size_before_policy_router": 0.0078,
+            "size_multiplier": 1.0,
+            "switch_blocked": false,
+            "switch_control_mode": "default",
+            "switch_proposed": true,
+            "switch_reason": "stable_continuation_state",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 3,
+            "dwell_duration": 1,
+            "mandate_level": 3,
+            "selected_policy": "RI_continuation_policy"
+          },
+          "size": null
+        },
+        "exact": null,
+        "timestamp": "2025-10-01T00:00:00+00:00"
+      },
+      "first_continuation_release_presence_diff": {
+        "annual_embedded": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:mid@0.400",
+            "COOLDOWN_ACTIVE"
+          ],
+          "router_debug": {
+            "action_edge": 0.10526400869414643,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 263,
+            "candidate": "LONG",
+            "clarity_raw": 0.4081876497092331,
+            "clarity_score": 41,
+            "confidence_gate": 0.5526320043470732,
+            "confidence_level": 3,
+            "dwell_duration": 7,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 3,
+            "previous_policy": "RI_continuation_policy",
+            "raw_target_policy": "RI_continuation_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 1,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_continuation_policy",
+            "size_after_policy_router": 0.013000000000000001,
+            "size_before_policy_router": 0.013000000000000001,
+            "size_multiplier": 1.0,
+            "switch_blocked": false,
+            "switch_control_mode": "default",
+            "switch_proposed": false,
+            "switch_reason": "stable_continuation_state",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 3,
+            "dwell_duration": 7,
+            "mandate_level": 3,
+            "selected_policy": "RI_continuation_policy"
+          },
+          "size": null
+        },
+        "exact": {
+          "action": "LONG",
+          "reasons": [
+            "ZONE:mid@0.400",
+            "RESEARCH_POLICY_ROUTER_DEFENSIVE",
+            "ENTRY_LONG"
+          ],
+          "router_debug": {
+            "action_edge": 0.09444316634994487,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 2,
+            "candidate": "LONG",
+            "clarity_raw": 0.401635028511911,
+            "clarity_score": 40,
+            "confidence_gate": 0.5472215831749724,
+            "confidence_level": 2,
+            "dwell_duration": 3,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 2,
+            "previous_policy": "RI_defensive_transition_policy",
+            "raw_target_policy": "RI_continuation_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 1,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_defensive_transition_policy",
+            "size_after_policy_router": 0.002535,
+            "size_before_policy_router": 0.00507,
+            "size_multiplier": 0.5,
+            "switch_blocked": true,
+            "switch_control_mode": "continuation_release",
+            "switch_proposed": true,
+            "switch_reason": "switch_blocked_by_min_dwell",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 2,
+            "dwell_duration": 3,
+            "mandate_level": 2,
+            "selected_policy": "RI_defensive_transition_policy"
+          },
+          "size": 0.002535
+        },
+        "timestamp": "2025-10-17T00:00:00+00:00"
+      },
+      "first_row_diff": {
+        "annual_embedded": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:high@0.320"
+          ],
+          "router_debug": {
+            "action_edge": 0.07116191054509824,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 246,
+            "candidate": "LONG",
+            "clarity_raw": 0.38753693471897616,
+            "clarity_score": 39,
+            "confidence_gate": 0.5355809552725491,
+            "confidence_level": 3,
+            "dwell_duration": 1,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 3,
+            "previous_policy": "RI_no_trade_policy",
+            "raw_target_policy": "RI_continuation_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 1,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_continuation_policy",
+            "size_after_policy_router": 0.0078,
+            "size_before_policy_router": 0.0078,
+            "size_multiplier": 1.0,
+            "switch_blocked": false,
+            "switch_control_mode": "default",
+            "switch_proposed": true,
+            "switch_reason": "stable_continuation_state",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 3,
+            "dwell_duration": 1,
+            "mandate_level": 3,
+            "selected_policy": "RI_continuation_policy"
+          },
+          "size": null
+        },
+        "exact": null,
+        "timestamp": "2025-10-01T00:00:00+00:00"
+      },
+      "first_shared_behavior_diff": {
+        "annual_embedded": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:low@0.160",
+            "COOLDOWN_ACTIVE"
+          ],
+          "router_debug": {
+            "action_edge": 0.08743074768569159,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 261,
+            "candidate": "LONG",
+            "clarity_raw": 0.397388619431891,
+            "clarity_score": 40,
+            "confidence_gate": 0.5437153738428457,
+            "confidence_level": 3,
+            "dwell_duration": 5,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 3,
+            "previous_policy": "RI_continuation_policy",
+            "raw_target_policy": "RI_continuation_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 1,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_continuation_policy",
+            "size_after_policy_router": 0.0078,
+            "size_before_policy_router": 0.0078,
+            "size_multiplier": 1.0,
+            "switch_blocked": false,
+            "switch_control_mode": "default",
+            "switch_proposed": false,
+            "switch_reason": "stable_continuation_state",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "low"
+          },
+          "router_state": {
+            "confidence": 3,
+            "dwell_duration": 5,
+            "mandate_level": 3,
+            "selected_policy": "RI_continuation_policy"
+          },
+          "size": null
+        },
+        "exact": {
+          "action": "LONG",
+          "reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_DEFENSIVE",
+            "ENTRY_LONG"
+          ],
+          "router_debug": {
+            "action_edge": 0.06527584653968066,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 0,
+            "candidate": "LONG",
+            "clarity_raw": 0.38397259596013983,
+            "clarity_score": 38,
+            "confidence_gate": 0.53263792326984,
+            "confidence_level": 2,
+            "dwell_duration": 1,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 2,
+            "previous_policy": null,
+            "raw_target_policy": "RI_defensive_transition_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 1,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_defensive_transition_policy",
+            "size_after_policy_router": 0.0039,
+            "size_before_policy_router": 0.0078,
+            "size_multiplier": 0.5,
+            "switch_blocked": false,
+            "switch_control_mode": "default",
+            "switch_proposed": false,
+            "switch_reason": "transition_pressure_detected",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "low"
+          },
+          "router_state": {
+            "confidence": 2,
+            "dwell_duration": 1,
+            "mandate_level": 2,
+            "selected_policy": "RI_defensive_transition_policy"
+          },
+          "size": 0.0039
+        },
+        "timestamp": "2025-10-16T00:00:00+00:00"
+      },
+      "first_shared_continuation_release_presence_diff": {
+        "annual_embedded": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:mid@0.400",
+            "COOLDOWN_ACTIVE"
+          ],
+          "router_debug": {
+            "action_edge": 0.10526400869414643,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 263,
+            "candidate": "LONG",
+            "clarity_raw": 0.4081876497092331,
+            "clarity_score": 41,
+            "confidence_gate": 0.5526320043470732,
+            "confidence_level": 3,
+            "dwell_duration": 7,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 3,
+            "previous_policy": "RI_continuation_policy",
+            "raw_target_policy": "RI_continuation_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 1,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_continuation_policy",
+            "size_after_policy_router": 0.013000000000000001,
+            "size_before_policy_router": 0.013000000000000001,
+            "size_multiplier": 1.0,
+            "switch_blocked": false,
+            "switch_control_mode": "default",
+            "switch_proposed": false,
+            "switch_reason": "stable_continuation_state",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 3,
+            "dwell_duration": 7,
+            "mandate_level": 3,
+            "selected_policy": "RI_continuation_policy"
+          },
+          "size": null
+        },
+        "exact": {
+          "action": "LONG",
+          "reasons": [
+            "ZONE:mid@0.400",
+            "RESEARCH_POLICY_ROUTER_DEFENSIVE",
+            "ENTRY_LONG"
+          ],
+          "router_debug": {
+            "action_edge": 0.09444316634994487,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 2,
+            "candidate": "LONG",
+            "clarity_raw": 0.401635028511911,
+            "clarity_score": 40,
+            "confidence_gate": 0.5472215831749724,
+            "confidence_level": 2,
+            "dwell_duration": 3,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 2,
+            "previous_policy": "RI_defensive_transition_policy",
+            "raw_target_policy": "RI_continuation_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 1,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_defensive_transition_policy",
+            "size_after_policy_router": 0.002535,
+            "size_before_policy_router": 0.00507,
+            "size_multiplier": 0.5,
+            "switch_blocked": true,
+            "switch_control_mode": "continuation_release",
+            "switch_proposed": true,
+            "switch_reason": "switch_blocked_by_min_dwell",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 2,
+            "dwell_duration": 3,
+            "mandate_level": 2,
+            "selected_policy": "RI_defensive_transition_policy"
+          },
+          "size": 0.002535
+        },
+        "timestamp": "2025-10-17T00:00:00+00:00"
+      },
+      "first_shared_row_diff": {
+        "annual_embedded": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:low@0.160",
+            "COOLDOWN_ACTIVE"
+          ],
+          "router_debug": {
+            "action_edge": 0.08743074768569159,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 261,
+            "candidate": "LONG",
+            "clarity_raw": 0.397388619431891,
+            "clarity_score": 40,
+            "confidence_gate": 0.5437153738428457,
+            "confidence_level": 3,
+            "dwell_duration": 5,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 3,
+            "previous_policy": "RI_continuation_policy",
+            "raw_target_policy": "RI_continuation_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 1,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_continuation_policy",
+            "size_after_policy_router": 0.0078,
+            "size_before_policy_router": 0.0078,
+            "size_multiplier": 1.0,
+            "switch_blocked": false,
+            "switch_control_mode": "default",
+            "switch_proposed": false,
+            "switch_reason": "stable_continuation_state",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "low"
+          },
+          "router_state": {
+            "confidence": 3,
+            "dwell_duration": 5,
+            "mandate_level": 3,
+            "selected_policy": "RI_continuation_policy"
+          },
+          "size": null
+        },
+        "exact": {
+          "action": "LONG",
+          "reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_DEFENSIVE",
+            "ENTRY_LONG"
+          ],
+          "router_debug": {
+            "action_edge": 0.06527584653968066,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 0,
+            "candidate": "LONG",
+            "clarity_raw": 0.38397259596013983,
+            "clarity_score": 38,
+            "confidence_gate": 0.53263792326984,
+            "confidence_level": 2,
+            "dwell_duration": 1,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 2,
+            "previous_policy": null,
+            "raw_target_policy": "RI_defensive_transition_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 1,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_defensive_transition_policy",
+            "size_after_policy_router": 0.0039,
+            "size_before_policy_router": 0.0078,
+            "size_multiplier": 0.5,
+            "switch_blocked": false,
+            "switch_control_mode": "default",
+            "switch_proposed": false,
+            "switch_reason": "transition_pressure_detected",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "low"
+          },
+          "router_state": {
+            "confidence": 2,
+            "dwell_duration": 1,
+            "mandate_level": 2,
+            "selected_policy": "RI_defensive_transition_policy"
+          },
+          "size": 0.0039
+        },
+        "timestamp": "2025-10-16T00:00:00+00:00"
+      },
+      "mode": "baseline",
+      "representative_diffs": [
+        {
+          "action_diff": true,
+          "annual_embedded": {
+            "action": "NONE",
+            "reasons": [
+              "ZONE:high@0.320"
+            ],
+            "router_debug": {
+              "action_edge": 0.07116191054509824,
+              "bars7_continuation_persistence_reconsideration_applied": false,
+              "bars_since_regime_change": 246,
+              "candidate": "LONG",
+              "clarity_raw": 0.38753693471897616,
+              "clarity_score": 39,
+              "confidence_gate": 0.5355809552725491,
+              "confidence_level": 3,
+              "dwell_duration": 1,
+              "effective_hysteresis": 1,
+              "effective_switch_threshold": 2,
+              "enabled": true,
+              "mandate_level": 3,
+              "previous_policy": "RI_no_trade_policy",
+              "raw_target_policy": "RI_continuation_policy",
+              "regime": "balanced",
+              "router_params": {
+                "continuation_release_hysteresis": 1,
+                "defensive_size_multiplier": 0.5,
+                "hysteresis": 1,
+                "min_dwell": 3,
+                "switch_threshold": 2
+              },
+              "selected_policy": "RI_continuation_policy",
+              "size_after_policy_router": 0.0078,
+              "size_before_policy_router": 0.0078,
+              "size_multiplier": 1.0,
+              "switch_blocked": false,
+              "switch_control_mode": "default",
+              "switch_proposed": true,
+              "switch_reason": "stable_continuation_state",
+              "version": "ri_policy_router_v1",
+              "weak_pre_aged_single_veto_latch": false,
+              "zone": "mid"
+            },
+            "router_state": {
+              "confidence": 3,
+              "dwell_duration": 1,
+              "mandate_level": 3,
+              "selected_policy": "RI_continuation_policy"
+            },
+            "size": null
+          },
+          "annual_embedded_continuation_release": false,
+          "behavior_diff": true,
+          "exact": null,
+          "exact_continuation_release": false,
+          "row_differs": true,
+          "timestamp": "2025-10-01T00:00:00+00:00"
+        },
+        {
+          "action_diff": true,
+          "annual_embedded": {
+            "action": "NONE",
+            "reasons": [
+              "ZONE:mid@0.400",
+              "COOLDOWN_ACTIVE"
+            ],
+            "router_debug": {
+              "action_edge": 0.07116191054509824,
+              "bars7_continuation_persistence_reconsideration_applied": false,
+              "bars_since_regime_change": 246,
+              "candidate": "LONG",
+              "clarity_raw": 0.38753693471897616,
+              "clarity_score": 39,
+              "confidence_gate": 0.5355809552725491,
+              "confidence_level": 3,
+              "dwell_duration": 1,
+              "effective_hysteresis": 1,
+              "effective_switch_threshold": 2,
+              "enabled": true,
+              "mandate_level": 3,
+              "previous_policy": "RI_no_trade_policy",
+              "raw_target_policy": "RI_continuation_policy",
+              "regime": "balanced",
+              "router_params": {
+                "continuation_release_hysteresis": 1,
+                "defensive_size_multiplier": 0.5,
+                "hysteresis": 1,
+                "min_dwell": 3,
+                "switch_threshold": 2
+              },
+              "selected_policy": "RI_continuation_policy",
+              "size_after_policy_router": 0.0078,
+              "size_before_policy_router": 0.0078,
+              "size_multiplier": 1.0,
+              "switch_blocked": false,
+              "switch_control_mode": "default",
+              "switch_proposed": true,
+              "switch_reason": "stable_continuation_state",
+              "version": "ri_policy_router_v1",
+              "weak_pre_aged_single_veto_latch": false,
+              "zone": "mid"
+            },
+            "router_state": {
+              "confidence": 3,
+              "dwell_duration": 1,
+              "mandate_level": 3,
+              "selected_policy": "RI_continuation_policy"
+            },
+            "size": null
+          },
+          "annual_embedded_continuation_release": false,
+          "behavior_diff": true,
+          "exact": null,
+          "exact_continuation_release": false,
+          "row_differs": true,
+          "timestamp": "2025-10-01T03:00:00+00:00"
+        },
+        {
+          "action_diff": true,
+          "annual_embedded": {
+            "action": "NONE",
+            "reasons": [
+              "ZONE:high@0.320"
+            ],
+            "router_debug": {
+              "action_edge": 0.07116191054509824,
+              "bars7_continuation_persistence_reconsideration_applied": false,
+              "bars_since_regime_change": 246,
+              "candidate": "LONG",
+              "clarity_raw": 0.38753693471897616,
+              "clarity_score": 39,
+              "confidence_gate": 0.5355809552725491,
+              "confidence_level": 3,
+              "dwell_duration": 1,
+              "effective_hysteresis": 1,
+              "effective_switch_threshold": 2,
+              "enabled": true,
+              "mandate_level": 3,
+              "previous_policy": "RI_no_trade_policy",
+              "raw_target_policy": "RI_continuation_policy",
+              "regime": "balanced",
+              "router_params": {
+                "continuation_release_hysteresis": 1,
+                "defensive_size_multiplier": 0.5,
+                "hysteresis": 1,
+                "min_dwell": 3,
+                "switch_threshold": 2
+              },
+              "selected_policy": "RI_continuation_policy",
+              "size_after_policy_router": 0.0078,
+              "size_before_policy_router": 0.0078,
+              "size_multiplier": 1.0,
+              "switch_blocked": false,
+              "switch_control_mode": "default",
+              "switch_proposed": true,
+              "switch_reason": "stable_continuation_state",
+              "version": "ri_policy_router_v1",
+              "weak_pre_aged_single_veto_latch": false,
+              "zone": "mid"
+            },
+            "router_state": {
+              "confidence": 3,
+              "dwell_duration": 1,
+              "mandate_level": 3,
+              "selected_policy": "RI_continuation_policy"
+            },
+            "size": null
+          },
+          "annual_embedded_continuation_release": false,
+          "behavior_diff": true,
+          "exact": null,
+          "exact_continuation_release": false,
+          "row_differs": true,
+          "timestamp": "2025-10-01T06:00:00+00:00"
+        },
+        {
+          "action_diff": true,
+          "annual_embedded": {
+            "action": "NONE",
+            "reasons": [
+              "ZONE:high@0.320"
+            ],
+            "router_debug": {
+              "action_edge": 0.07116191054509824,
+              "bars7_continuation_persistence_reconsideration_applied": false,
+              "bars_since_regime_change": 246,
+              "candidate": "LONG",
+              "clarity_raw": 0.38753693471897616,
+              "clarity_score": 39,
+              "confidence_gate": 0.5355809552725491,
+              "confidence_level": 3,
+              "dwell_duration": 1,
+              "effective_hysteresis": 1,
+              "effective_switch_threshold": 2,
+              "enabled": true,
+              "mandate_level": 3,
+              "previous_policy": "RI_no_trade_policy",
+              "raw_target_policy": "RI_continuation_policy",
+              "regime": "balanced",
+              "router_params": {
+                "continuation_release_hysteresis": 1,
+                "defensive_size_multiplier": 0.5,
+                "hysteresis": 1,
+                "min_dwell": 3,
+                "switch_threshold": 2
+              },
+              "selected_policy": "RI_continuation_policy",
+              "size_after_policy_router": 0.0078,
+              "size_before_policy_router": 0.0078,
+              "size_multiplier": 1.0,
+              "switch_blocked": false,
+              "switch_control_mode": "default",
+              "switch_proposed": true,
+              "switch_reason": "stable_continuation_state",
+              "version": "ri_policy_router_v1",
+              "weak_pre_aged_single_veto_latch": false,
+              "zone": "mid"
+            },
+            "router_state": {
+              "confidence": 3,
+              "dwell_duration": 1,
+              "mandate_level": 3,
+              "selected_policy": "RI_continuation_policy"
+            },
+            "size": null
+          },
+          "annual_embedded_continuation_release": false,
+          "behavior_diff": true,
+          "exact": null,
+          "exact_continuation_release": false,
+          "row_differs": true,
+          "timestamp": "2025-10-01T09:00:00+00:00"
+        },
+        {
+          "action_diff": true,
+          "annual_embedded": {
+            "action": "NONE",
+            "reasons": [
+              "ZONE:high@0.320"
+            ],
+            "router_debug": {
+              "action_edge": 0.07116191054509824,
+              "bars7_continuation_persistence_reconsideration_applied": false,
+              "bars_since_regime_change": 246,
+              "candidate": "LONG",
+              "clarity_raw": 0.38753693471897616,
+              "clarity_score": 39,
+              "confidence_gate": 0.5355809552725491,
+              "confidence_level": 3,
+              "dwell_duration": 1,
+              "effective_hysteresis": 1,
+              "effective_switch_threshold": 2,
+              "enabled": true,
+              "mandate_level": 3,
+              "previous_policy": "RI_no_trade_policy",
+              "raw_target_policy": "RI_continuation_policy",
+              "regime": "balanced",
+              "router_params": {
+                "continuation_release_hysteresis": 1,
+                "defensive_size_multiplier": 0.5,
+                "hysteresis": 1,
+                "min_dwell": 3,
+                "switch_threshold": 2
+              },
+              "selected_policy": "RI_continuation_policy",
+              "size_after_policy_router": 0.0078,
+              "size_before_policy_router": 0.0078,
+              "size_multiplier": 1.0,
+              "switch_blocked": false,
+              "switch_control_mode": "default",
+              "switch_proposed": true,
+              "switch_reason": "stable_continuation_state",
+              "version": "ri_policy_router_v1",
+              "weak_pre_aged_single_veto_latch": false,
+              "zone": "mid"
+            },
+            "router_state": {
+              "confidence": 3,
+              "dwell_duration": 1,
+              "mandate_level": 3,
+              "selected_policy": "RI_continuation_policy"
+            },
+            "size": null
+          },
+          "annual_embedded_continuation_release": false,
+          "behavior_diff": true,
+          "exact": null,
+          "exact_continuation_release": false,
+          "row_differs": true,
+          "timestamp": "2025-10-01T12:00:00+00:00"
+        },
+        {
+          "action_diff": true,
+          "annual_embedded": {
+            "action": "NONE",
+            "reasons": [
+              "ZONE:high@0.320"
+            ],
+            "router_debug": {
+              "action_edge": 0.07116191054509824,
+              "bars7_continuation_persistence_reconsideration_applied": false,
+              "bars_since_regime_change": 246,
+              "candidate": "LONG",
+              "clarity_raw": 0.38753693471897616,
+              "clarity_score": 39,
+              "confidence_gate": 0.5355809552725491,
+              "confidence_level": 3,
+              "dwell_duration": 1,
+              "effective_hysteresis": 1,
+              "effective_switch_threshold": 2,
+              "enabled": true,
+              "mandate_level": 3,
+              "previous_policy": "RI_no_trade_policy",
+              "raw_target_policy": "RI_continuation_policy",
+              "regime": "balanced",
+              "router_params": {
+                "continuation_release_hysteresis": 1,
+                "defensive_size_multiplier": 0.5,
+                "hysteresis": 1,
+                "min_dwell": 3,
+                "switch_threshold": 2
+              },
+              "selected_policy": "RI_continuation_policy",
+              "size_after_policy_router": 0.0078,
+              "size_before_policy_router": 0.0078,
+              "size_multiplier": 1.0,
+              "switch_blocked": false,
+              "switch_control_mode": "default",
+              "switch_proposed": true,
+              "switch_reason": "stable_continuation_state",
+              "version": "ri_policy_router_v1",
+              "weak_pre_aged_single_veto_latch": false,
+              "zone": "mid"
+            },
+            "router_state": {
+              "confidence": 3,
+              "dwell_duration": 1,
+              "mandate_level": 3,
+              "selected_policy": "RI_continuation_policy"
+            },
+            "size": null
+          },
+          "annual_embedded_continuation_release": false,
+          "behavior_diff": true,
+          "exact": null,
+          "exact_continuation_release": false,
+          "row_differs": true,
+          "timestamp": "2025-10-01T15:00:00+00:00"
+        },
+        {
+          "action_diff": true,
+          "annual_embedded": {
+            "action": "NONE",
+            "reasons": [
+              "ZONE:high@0.320"
+            ],
+            "router_debug": {
+              "action_edge": 0.07116191054509824,
+              "bars7_continuation_persistence_reconsideration_applied": false,
+              "bars_since_regime_change": 246,
+              "candidate": "LONG",
+              "clarity_raw": 0.38753693471897616,
+              "clarity_score": 39,
+              "confidence_gate": 0.5355809552725491,
+              "confidence_level": 3,
+              "dwell_duration": 1,
+              "effective_hysteresis": 1,
+              "effective_switch_threshold": 2,
+              "enabled": true,
+              "mandate_level": 3,
+              "previous_policy": "RI_no_trade_policy",
+              "raw_target_policy": "RI_continuation_policy",
+              "regime": "balanced",
+              "router_params": {
+                "continuation_release_hysteresis": 1,
+                "defensive_size_multiplier": 0.5,
+                "hysteresis": 1,
+                "min_dwell": 3,
+                "switch_threshold": 2
+              },
+              "selected_policy": "RI_continuation_policy",
+              "size_after_policy_router": 0.0078,
+              "size_before_policy_router": 0.0078,
+              "size_multiplier": 1.0,
+              "switch_blocked": false,
+              "switch_control_mode": "default",
+              "switch_proposed": true,
+              "switch_reason": "stable_continuation_state",
+              "version": "ri_policy_router_v1",
+              "weak_pre_aged_single_veto_latch": false,
+              "zone": "mid"
+            },
+            "router_state": {
+              "confidence": 3,
+              "dwell_duration": 1,
+              "mandate_level": 3,
+              "selected_policy": "RI_continuation_policy"
+            },
+            "size": null
+          },
+          "annual_embedded_continuation_release": false,
+          "behavior_diff": true,
+          "exact": null,
+          "exact_continuation_release": false,
+          "row_differs": true,
+          "timestamp": "2025-10-01T18:00:00+00:00"
+        },
+        {
+          "action_diff": true,
+          "annual_embedded": {
+            "action": "NONE",
+            "reasons": [
+              "ZONE:high@0.320"
+            ],
+            "router_debug": {
+              "action_edge": 0.07116191054509824,
+              "bars7_continuation_persistence_reconsideration_applied": false,
+              "bars_since_regime_change": 246,
+              "candidate": "LONG",
+              "clarity_raw": 0.38753693471897616,
+              "clarity_score": 39,
+              "confidence_gate": 0.5355809552725491,
+              "confidence_level": 3,
+              "dwell_duration": 1,
+              "effective_hysteresis": 1,
+              "effective_switch_threshold": 2,
+              "enabled": true,
+              "mandate_level": 3,
+              "previous_policy": "RI_no_trade_policy",
+              "raw_target_policy": "RI_continuation_policy",
+              "regime": "balanced",
+              "router_params": {
+                "continuation_release_hysteresis": 1,
+                "defensive_size_multiplier": 0.5,
+                "hysteresis": 1,
+                "min_dwell": 3,
+                "switch_threshold": 2
+              },
+              "selected_policy": "RI_continuation_policy",
+              "size_after_policy_router": 0.0078,
+              "size_before_policy_router": 0.0078,
+              "size_multiplier": 1.0,
+              "switch_blocked": false,
+              "switch_control_mode": "default",
+              "switch_proposed": true,
+              "switch_reason": "stable_continuation_state",
+              "version": "ri_policy_router_v1",
+              "weak_pre_aged_single_veto_latch": false,
+              "zone": "mid"
+            },
+            "router_state": {
+              "confidence": 3,
+              "dwell_duration": 1,
+              "mandate_level": 3,
+              "selected_policy": "RI_continuation_policy"
+            },
+            "size": null
+          },
+          "annual_embedded_continuation_release": false,
+          "behavior_diff": true,
+          "exact": null,
+          "exact_continuation_release": false,
+          "row_differs": true,
+          "timestamp": "2025-10-01T21:00:00+00:00"
+        },
+        {
+          "action_diff": true,
+          "annual_embedded": {
+            "action": "NONE",
+            "reasons": [
+              "ZONE:high@0.320"
+            ],
+            "router_debug": {
+              "action_edge": 0.07116191054509824,
+              "bars7_continuation_persistence_reconsideration_applied": false,
+              "bars_since_regime_change": 246,
+              "candidate": "LONG",
+              "clarity_raw": 0.38753693471897616,
+              "clarity_score": 39,
+              "confidence_gate": 0.5355809552725491,
+              "confidence_level": 3,
+              "dwell_duration": 1,
+              "effective_hysteresis": 1,
+              "effective_switch_threshold": 2,
+              "enabled": true,
+              "mandate_level": 3,
+              "previous_policy": "RI_no_trade_policy",
+              "raw_target_policy": "RI_continuation_policy",
+              "regime": "balanced",
+              "router_params": {
+                "continuation_release_hysteresis": 1,
+                "defensive_size_multiplier": 0.5,
+                "hysteresis": 1,
+                "min_dwell": 3,
+                "switch_threshold": 2
+              },
+              "selected_policy": "RI_continuation_policy",
+              "size_after_policy_router": 0.0078,
+              "size_before_policy_router": 0.0078,
+              "size_multiplier": 1.0,
+              "switch_blocked": false,
+              "switch_control_mode": "default",
+              "switch_proposed": true,
+              "switch_reason": "stable_continuation_state",
+              "version": "ri_policy_router_v1",
+              "weak_pre_aged_single_veto_latch": false,
+              "zone": "mid"
+            },
+            "router_state": {
+              "confidence": 3,
+              "dwell_duration": 1,
+              "mandate_level": 3,
+              "selected_policy": "RI_continuation_policy"
+            },
+            "size": null
+          },
+          "annual_embedded_continuation_release": false,
+          "behavior_diff": true,
+          "exact": null,
+          "exact_continuation_release": false,
+          "row_differs": true,
+          "timestamp": "2025-10-02T00:00:00+00:00"
+        },
+        {
+          "action_diff": true,
+          "annual_embedded": {
+            "action": "NONE",
+            "reasons": [
+              "ZONE:high@0.320"
+            ],
+            "router_debug": {
+              "action_edge": 0.07116191054509824,
+              "bars7_continuation_persistence_reconsideration_applied": false,
+              "bars_since_regime_change": 246,
+              "candidate": "LONG",
+              "clarity_raw": 0.38753693471897616,
+              "clarity_score": 39,
+              "confidence_gate": 0.5355809552725491,
+              "confidence_level": 3,
+              "dwell_duration": 1,
+              "effective_hysteresis": 1,
+              "effective_switch_threshold": 2,
+              "enabled": true,
+              "mandate_level": 3,
+              "previous_policy": "RI_no_trade_policy",
+              "raw_target_policy": "RI_continuation_policy",
+              "regime": "balanced",
+              "router_params": {
+                "continuation_release_hysteresis": 1,
+                "defensive_size_multiplier": 0.5,
+                "hysteresis": 1,
+                "min_dwell": 3,
+                "switch_threshold": 2
+              },
+              "selected_policy": "RI_continuation_policy",
+              "size_after_policy_router": 0.0078,
+              "size_before_policy_router": 0.0078,
+              "size_multiplier": 1.0,
+              "switch_blocked": false,
+              "switch_control_mode": "default",
+              "switch_proposed": true,
+              "switch_reason": "stable_continuation_state",
+              "version": "ri_policy_router_v1",
+              "weak_pre_aged_single_veto_latch": false,
+              "zone": "mid"
+            },
+            "router_state": {
+              "confidence": 3,
+              "dwell_duration": 1,
+              "mandate_level": 3,
+              "selected_policy": "RI_continuation_policy"
+            },
+            "size": null
+          },
+          "annual_embedded_continuation_release": false,
+          "behavior_diff": true,
+          "exact": null,
+          "exact_continuation_release": false,
+          "row_differs": true,
+          "timestamp": "2025-10-02T03:00:00+00:00"
+        },
+        {
+          "action_diff": true,
+          "annual_embedded": {
+            "action": "NONE",
+            "reasons": [
+              "ZONE:mid@0.400"
+            ],
+            "router_debug": {
+              "action_edge": 0.07116191054509824,
+              "bars7_continuation_persistence_reconsideration_applied": false,
+              "bars_since_regime_change": 246,
+              "candidate": "LONG",
+              "clarity_raw": 0.38753693471897616,
+              "clarity_score": 39,
+              "confidence_gate": 0.5355809552725491,
+              "confidence_level": 3,
+              "dwell_duration": 1,
+              "effective_hysteresis": 1,
+              "effective_switch_threshold": 2,
+              "enabled": true,
+              "mandate_level": 3,
+              "previous_policy": "RI_no_trade_policy",
+              "raw_target_policy": "RI_continuation_policy",
+              "regime": "balanced",
+              "router_params": {
+                "continuation_release_hysteresis": 1,
+                "defensive_size_multiplier": 0.5,
+                "hysteresis": 1,
+                "min_dwell": 3,
+                "switch_threshold": 2
+              },
+              "selected_policy": "RI_continuation_policy",
+              "size_after_policy_router": 0.0078,
+              "size_before_policy_router": 0.0078,
+              "size_multiplier": 1.0,
+              "switch_blocked": false,
+              "switch_control_mode": "default",
+              "switch_proposed": true,
+              "switch_reason": "stable_continuation_state",
+              "version": "ri_policy_router_v1",
+              "weak_pre_aged_single_veto_latch": false,
+              "zone": "mid"
+            },
+            "router_state": {
+              "confidence": 3,
+              "dwell_duration": 1,
+              "mandate_level": 3,
+              "selected_policy": "RI_continuation_policy"
+            },
+            "size": null
+          },
+          "annual_embedded_continuation_release": false,
+          "behavior_diff": true,
+          "exact": null,
+          "exact_continuation_release": false,
+          "row_differs": true,
+          "timestamp": "2025-10-02T06:00:00+00:00"
+        },
+        {
+          "action_diff": true,
+          "annual_embedded": {
+            "action": "NONE",
+            "reasons": [
+              "ZONE:low@0.160",
+              "RESEARCH_POLICY_ROUTER_NO_TRADE"
+            ],
+            "router_debug": {
+              "action_edge": 0.019598384112276213,
+              "bars7_continuation_persistence_reconsideration_applied": false,
+              "bars_since_regime_change": 247,
+              "candidate": "LONG",
+              "clarity_raw": 0.35631235482354506,
+              "clarity_score": 36,
+              "confidence_gate": 0.5097991920561381,
+              "confidence_level": 0,
+              "dwell_duration": 1,
+              "effective_hysteresis": 1,
+              "effective_switch_threshold": 2,
+              "enabled": true,
+              "mandate_level": 0,
+              "previous_policy": "RI_continuation_policy",
+              "raw_target_policy": "RI_no_trade_policy",
+              "regime": "balanced",
+              "router_params": {
+                "continuation_release_hysteresis": 1,
+                "defensive_size_multiplier": 0.5,
+                "hysteresis": 1,
+                "min_dwell": 3,
+                "switch_threshold": 2
+              },
+              "selected_policy": "RI_no_trade_policy",
+              "size_multiplier": 0.0,
+              "switch_blocked": false,
+              "switch_control_mode": "default",
+              "switch_proposed": true,
+              "switch_reason": "insufficient_evidence",
+              "version": "ri_policy_router_v1",
+              "weak_pre_aged_single_veto_latch": false,
+              "zone": "low"
+            },
+            "router_state": {
+              "confidence": 0,
+              "dwell_duration": 1,
+              "mandate_level": 0,
+              "selected_policy": "RI_no_trade_policy"
+            },
+            "size": null
+          },
+          "annual_embedded_continuation_release": false,
+          "behavior_diff": true,
+          "exact": null,
+          "exact_continuation_release": false,
+          "row_differs": true,
+          "timestamp": "2025-10-02T09:00:00+00:00"
+        }
+      ],
+      "shared_action_diff_count": 24,
+      "shared_behavioral_row_diff_count": 121,
+      "shared_continuation_release_presence_diff_count": 13,
+      "shared_row_diff_count": 121,
+      "shared_timestamp_count": 121
+    },
+    "release_zero_exact_vs_annual_embedded_october": {
+      "action_diff_count": 151,
+      "all_row_diff_count": 248,
+      "annual_embedded_continuation_release_row_count": 0,
+      "annual_embedded_continuation_release_timestamps": [],
+      "annual_embedded_row_count": 248,
+      "annual_only_timestamp_count": 127,
+      "behavioral_row_diff_count": 248,
+      "continuation_release_presence_diff_count": 10,
+      "exact_continuation_release_row_count": 10,
+      "exact_continuation_release_timestamps": [
+        "2025-10-17T00:00:00+00:00",
+        "2025-10-17T03:00:00+00:00",
+        "2025-10-17T06:00:00+00:00",
+        "2025-10-17T09:00:00+00:00",
+        "2025-10-17T12:00:00+00:00",
+        "2025-10-17T15:00:00+00:00",
+        "2025-10-17T18:00:00+00:00",
+        "2025-10-17T21:00:00+00:00",
+        "2025-10-18T00:00:00+00:00",
+        "2025-10-18T03:00:00+00:00"
+      ],
+      "exact_only_timestamp_count": 0,
+      "exact_row_count": 121,
+      "first_behavior_diff": {
+        "annual_embedded": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:high@0.320"
+          ],
+          "router_debug": {
+            "action_edge": 0.07116191054509824,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 246,
+            "candidate": "LONG",
+            "clarity_raw": 0.38753693471897616,
+            "clarity_score": 39,
+            "confidence_gate": 0.5355809552725491,
+            "confidence_level": 3,
+            "dwell_duration": 1,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 3,
+            "previous_policy": "RI_no_trade_policy",
+            "raw_target_policy": "RI_continuation_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 0,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_continuation_policy",
+            "size_after_policy_router": 0.0078,
+            "size_before_policy_router": 0.0078,
+            "size_multiplier": 1.0,
+            "switch_blocked": false,
+            "switch_control_mode": "default",
+            "switch_proposed": true,
+            "switch_reason": "stable_continuation_state",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 3,
+            "dwell_duration": 1,
+            "mandate_level": 3,
+            "selected_policy": "RI_continuation_policy"
+          },
+          "size": null
+        },
+        "exact": null,
+        "timestamp": "2025-10-01T00:00:00+00:00"
+      },
+      "first_continuation_release_presence_diff": {
+        "annual_embedded": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:mid@0.400",
+            "COOLDOWN_ACTIVE"
+          ],
+          "router_debug": {
+            "action_edge": 0.10526400869414643,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 263,
+            "candidate": "LONG",
+            "clarity_raw": 0.4081876497092331,
+            "clarity_score": 41,
+            "confidence_gate": 0.5526320043470732,
+            "confidence_level": 3,
+            "dwell_duration": 7,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 3,
+            "previous_policy": "RI_continuation_policy",
+            "raw_target_policy": "RI_continuation_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 0,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_continuation_policy",
+            "size_after_policy_router": 0.013000000000000001,
+            "size_before_policy_router": 0.013000000000000001,
+            "size_multiplier": 1.0,
+            "switch_blocked": false,
+            "switch_control_mode": "default",
+            "switch_proposed": false,
+            "switch_reason": "stable_continuation_state",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 3,
+            "dwell_duration": 7,
+            "mandate_level": 3,
+            "selected_policy": "RI_continuation_policy"
+          },
+          "size": null
+        },
+        "exact": {
+          "action": "LONG",
+          "reasons": [
+            "ZONE:mid@0.400",
+            "RESEARCH_POLICY_ROUTER_DEFENSIVE",
+            "ENTRY_LONG"
+          ],
+          "router_debug": {
+            "action_edge": 0.09444316634994487,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 2,
+            "candidate": "LONG",
+            "clarity_raw": 0.401635028511911,
+            "clarity_score": 40,
+            "confidence_gate": 0.5472215831749724,
+            "confidence_level": 2,
+            "dwell_duration": 3,
+            "effective_hysteresis": 0,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 2,
+            "previous_policy": "RI_defensive_transition_policy",
+            "raw_target_policy": "RI_continuation_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 0,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_defensive_transition_policy",
+            "size_after_policy_router": 0.002535,
+            "size_before_policy_router": 0.00507,
+            "size_multiplier": 0.5,
+            "switch_blocked": true,
+            "switch_control_mode": "continuation_release",
+            "switch_proposed": true,
+            "switch_reason": "switch_blocked_by_min_dwell",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 2,
+            "dwell_duration": 3,
+            "mandate_level": 2,
+            "selected_policy": "RI_defensive_transition_policy"
+          },
+          "size": 0.002535
+        },
+        "timestamp": "2025-10-17T00:00:00+00:00"
+      },
+      "first_row_diff": {
+        "annual_embedded": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:high@0.320"
+          ],
+          "router_debug": {
+            "action_edge": 0.07116191054509824,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 246,
+            "candidate": "LONG",
+            "clarity_raw": 0.38753693471897616,
+            "clarity_score": 39,
+            "confidence_gate": 0.5355809552725491,
+            "confidence_level": 3,
+            "dwell_duration": 1,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 3,
+            "previous_policy": "RI_no_trade_policy",
+            "raw_target_policy": "RI_continuation_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 0,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_continuation_policy",
+            "size_after_policy_router": 0.0078,
+            "size_before_policy_router": 0.0078,
+            "size_multiplier": 1.0,
+            "switch_blocked": false,
+            "switch_control_mode": "default",
+            "switch_proposed": true,
+            "switch_reason": "stable_continuation_state",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 3,
+            "dwell_duration": 1,
+            "mandate_level": 3,
+            "selected_policy": "RI_continuation_policy"
+          },
+          "size": null
+        },
+        "exact": null,
+        "timestamp": "2025-10-01T00:00:00+00:00"
+      },
+      "first_shared_behavior_diff": {
+        "annual_embedded": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:low@0.160",
+            "COOLDOWN_ACTIVE"
+          ],
+          "router_debug": {
+            "action_edge": 0.08743074768569159,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 261,
+            "candidate": "LONG",
+            "clarity_raw": 0.397388619431891,
+            "clarity_score": 40,
+            "confidence_gate": 0.5437153738428457,
+            "confidence_level": 3,
+            "dwell_duration": 5,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 3,
+            "previous_policy": "RI_continuation_policy",
+            "raw_target_policy": "RI_continuation_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 0,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_continuation_policy",
+            "size_after_policy_router": 0.0078,
+            "size_before_policy_router": 0.0078,
+            "size_multiplier": 1.0,
+            "switch_blocked": false,
+            "switch_control_mode": "default",
+            "switch_proposed": false,
+            "switch_reason": "stable_continuation_state",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "low"
+          },
+          "router_state": {
+            "confidence": 3,
+            "dwell_duration": 5,
+            "mandate_level": 3,
+            "selected_policy": "RI_continuation_policy"
+          },
+          "size": null
+        },
+        "exact": {
+          "action": "LONG",
+          "reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_DEFENSIVE",
+            "ENTRY_LONG"
+          ],
+          "router_debug": {
+            "action_edge": 0.06527584653968066,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 0,
+            "candidate": "LONG",
+            "clarity_raw": 0.38397259596013983,
+            "clarity_score": 38,
+            "confidence_gate": 0.53263792326984,
+            "confidence_level": 2,
+            "dwell_duration": 1,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 2,
+            "previous_policy": null,
+            "raw_target_policy": "RI_defensive_transition_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 0,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_defensive_transition_policy",
+            "size_after_policy_router": 0.0039,
+            "size_before_policy_router": 0.0078,
+            "size_multiplier": 0.5,
+            "switch_blocked": false,
+            "switch_control_mode": "default",
+            "switch_proposed": false,
+            "switch_reason": "transition_pressure_detected",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "low"
+          },
+          "router_state": {
+            "confidence": 2,
+            "dwell_duration": 1,
+            "mandate_level": 2,
+            "selected_policy": "RI_defensive_transition_policy"
+          },
+          "size": 0.0039
+        },
+        "timestamp": "2025-10-16T00:00:00+00:00"
+      },
+      "first_shared_continuation_release_presence_diff": {
+        "annual_embedded": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:mid@0.400",
+            "COOLDOWN_ACTIVE"
+          ],
+          "router_debug": {
+            "action_edge": 0.10526400869414643,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 263,
+            "candidate": "LONG",
+            "clarity_raw": 0.4081876497092331,
+            "clarity_score": 41,
+            "confidence_gate": 0.5526320043470732,
+            "confidence_level": 3,
+            "dwell_duration": 7,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 3,
+            "previous_policy": "RI_continuation_policy",
+            "raw_target_policy": "RI_continuation_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 0,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_continuation_policy",
+            "size_after_policy_router": 0.013000000000000001,
+            "size_before_policy_router": 0.013000000000000001,
+            "size_multiplier": 1.0,
+            "switch_blocked": false,
+            "switch_control_mode": "default",
+            "switch_proposed": false,
+            "switch_reason": "stable_continuation_state",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 3,
+            "dwell_duration": 7,
+            "mandate_level": 3,
+            "selected_policy": "RI_continuation_policy"
+          },
+          "size": null
+        },
+        "exact": {
+          "action": "LONG",
+          "reasons": [
+            "ZONE:mid@0.400",
+            "RESEARCH_POLICY_ROUTER_DEFENSIVE",
+            "ENTRY_LONG"
+          ],
+          "router_debug": {
+            "action_edge": 0.09444316634994487,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 2,
+            "candidate": "LONG",
+            "clarity_raw": 0.401635028511911,
+            "clarity_score": 40,
+            "confidence_gate": 0.5472215831749724,
+            "confidence_level": 2,
+            "dwell_duration": 3,
+            "effective_hysteresis": 0,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 2,
+            "previous_policy": "RI_defensive_transition_policy",
+            "raw_target_policy": "RI_continuation_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 0,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_defensive_transition_policy",
+            "size_after_policy_router": 0.002535,
+            "size_before_policy_router": 0.00507,
+            "size_multiplier": 0.5,
+            "switch_blocked": true,
+            "switch_control_mode": "continuation_release",
+            "switch_proposed": true,
+            "switch_reason": "switch_blocked_by_min_dwell",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "mid"
+          },
+          "router_state": {
+            "confidence": 2,
+            "dwell_duration": 3,
+            "mandate_level": 2,
+            "selected_policy": "RI_defensive_transition_policy"
+          },
+          "size": 0.002535
+        },
+        "timestamp": "2025-10-17T00:00:00+00:00"
+      },
+      "first_shared_row_diff": {
+        "annual_embedded": {
+          "action": "NONE",
+          "reasons": [
+            "ZONE:low@0.160",
+            "COOLDOWN_ACTIVE"
+          ],
+          "router_debug": {
+            "action_edge": 0.08743074768569159,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 261,
+            "candidate": "LONG",
+            "clarity_raw": 0.397388619431891,
+            "clarity_score": 40,
+            "confidence_gate": 0.5437153738428457,
+            "confidence_level": 3,
+            "dwell_duration": 5,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 3,
+            "previous_policy": "RI_continuation_policy",
+            "raw_target_policy": "RI_continuation_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 0,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_continuation_policy",
+            "size_after_policy_router": 0.0078,
+            "size_before_policy_router": 0.0078,
+            "size_multiplier": 1.0,
+            "switch_blocked": false,
+            "switch_control_mode": "default",
+            "switch_proposed": false,
+            "switch_reason": "stable_continuation_state",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "low"
+          },
+          "router_state": {
+            "confidence": 3,
+            "dwell_duration": 5,
+            "mandate_level": 3,
+            "selected_policy": "RI_continuation_policy"
+          },
+          "size": null
+        },
+        "exact": {
+          "action": "LONG",
+          "reasons": [
+            "ZONE:low@0.160",
+            "RESEARCH_POLICY_ROUTER_DEFENSIVE",
+            "ENTRY_LONG"
+          ],
+          "router_debug": {
+            "action_edge": 0.06527584653968066,
+            "bars7_continuation_persistence_reconsideration_applied": false,
+            "bars_since_regime_change": 0,
+            "candidate": "LONG",
+            "clarity_raw": 0.38397259596013983,
+            "clarity_score": 38,
+            "confidence_gate": 0.53263792326984,
+            "confidence_level": 2,
+            "dwell_duration": 1,
+            "effective_hysteresis": 1,
+            "effective_switch_threshold": 2,
+            "enabled": true,
+            "mandate_level": 2,
+            "previous_policy": null,
+            "raw_target_policy": "RI_defensive_transition_policy",
+            "regime": "balanced",
+            "router_params": {
+              "continuation_release_hysteresis": 0,
+              "defensive_size_multiplier": 0.5,
+              "hysteresis": 1,
+              "min_dwell": 3,
+              "switch_threshold": 2
+            },
+            "selected_policy": "RI_defensive_transition_policy",
+            "size_after_policy_router": 0.0039,
+            "size_before_policy_router": 0.0078,
+            "size_multiplier": 0.5,
+            "switch_blocked": false,
+            "switch_control_mode": "default",
+            "switch_proposed": false,
+            "switch_reason": "transition_pressure_detected",
+            "version": "ri_policy_router_v1",
+            "weak_pre_aged_single_veto_latch": false,
+            "zone": "low"
+          },
+          "router_state": {
+            "confidence": 2,
+            "dwell_duration": 1,
+            "mandate_level": 2,
+            "selected_policy": "RI_defensive_transition_policy"
+          },
+          "size": 0.0039
+        },
+        "timestamp": "2025-10-16T00:00:00+00:00"
+      },
+      "mode": "release_zero",
+      "representative_diffs": [
+        {
+          "action_diff": true,
+          "annual_embedded": {
+            "action": "NONE",
+            "reasons": [
+              "ZONE:high@0.320"
+            ],
+            "router_debug": {
+              "action_edge": 0.07116191054509824,
+              "bars7_continuation_persistence_reconsideration_applied": false,
+              "bars_since_regime_change": 246,
+              "candidate": "LONG",
+              "clarity_raw": 0.38753693471897616,
+              "clarity_score": 39,
+              "confidence_gate": 0.5355809552725491,
+              "confidence_level": 3,
+              "dwell_duration": 1,
+              "effective_hysteresis": 1,
+              "effective_switch_threshold": 2,
+              "enabled": true,
+              "mandate_level": 3,
+              "previous_policy": "RI_no_trade_policy",
+              "raw_target_policy": "RI_continuation_policy",
+              "regime": "balanced",
+              "router_params": {
+                "continuation_release_hysteresis": 0,
+                "defensive_size_multiplier": 0.5,
+                "hysteresis": 1,
+                "min_dwell": 3,
+                "switch_threshold": 2
+              },
+              "selected_policy": "RI_continuation_policy",
+              "size_after_policy_router": 0.0078,
+              "size_before_policy_router": 0.0078,
+              "size_multiplier": 1.0,
+              "switch_blocked": false,
+              "switch_control_mode": "default",
+              "switch_proposed": true,
+              "switch_reason": "stable_continuation_state",
+              "version": "ri_policy_router_v1",
+              "weak_pre_aged_single_veto_latch": false,
+              "zone": "mid"
+            },
+            "router_state": {
+              "confidence": 3,
+              "dwell_duration": 1,
+              "mandate_level": 3,
+              "selected_policy": "RI_continuation_policy"
+            },
+            "size": null
+          },
+          "annual_embedded_continuation_release": false,
+          "behavior_diff": true,
+          "exact": null,
+          "exact_continuation_release": false,
+          "row_differs": true,
+          "timestamp": "2025-10-01T00:00:00+00:00"
+        },
+        {
+          "action_diff": true,
+          "annual_embedded": {
+            "action": "NONE",
+            "reasons": [
+              "ZONE:mid@0.400",
+              "COOLDOWN_ACTIVE"
+            ],
+            "router_debug": {
+              "action_edge": 0.07116191054509824,
+              "bars7_continuation_persistence_reconsideration_applied": false,
+              "bars_since_regime_change": 246,
+              "candidate": "LONG",
+              "clarity_raw": 0.38753693471897616,
+              "clarity_score": 39,
+              "confidence_gate": 0.5355809552725491,
+              "confidence_level": 3,
+              "dwell_duration": 1,
+              "effective_hysteresis": 1,
+              "effective_switch_threshold": 2,
+              "enabled": true,
+              "mandate_level": 3,
+              "previous_policy": "RI_no_trade_policy",
+              "raw_target_policy": "RI_continuation_policy",
+              "regime": "balanced",
+              "router_params": {
+                "continuation_release_hysteresis": 0,
+                "defensive_size_multiplier": 0.5,
+                "hysteresis": 1,
+                "min_dwell": 3,
+                "switch_threshold": 2
+              },
+              "selected_policy": "RI_continuation_policy",
+              "size_after_policy_router": 0.0078,
+              "size_before_policy_router": 0.0078,
+              "size_multiplier": 1.0,
+              "switch_blocked": false,
+              "switch_control_mode": "default",
+              "switch_proposed": true,
+              "switch_reason": "stable_continuation_state",
+              "version": "ri_policy_router_v1",
+              "weak_pre_aged_single_veto_latch": false,
+              "zone": "mid"
+            },
+            "router_state": {
+              "confidence": 3,
+              "dwell_duration": 1,
+              "mandate_level": 3,
+              "selected_policy": "RI_continuation_policy"
+            },
+            "size": null
+          },
+          "annual_embedded_continuation_release": false,
+          "behavior_diff": true,
+          "exact": null,
+          "exact_continuation_release": false,
+          "row_differs": true,
+          "timestamp": "2025-10-01T03:00:00+00:00"
+        },
+        {
+          "action_diff": true,
+          "annual_embedded": {
+            "action": "NONE",
+            "reasons": [
+              "ZONE:high@0.320"
+            ],
+            "router_debug": {
+              "action_edge": 0.07116191054509824,
+              "bars7_continuation_persistence_reconsideration_applied": false,
+              "bars_since_regime_change": 246,
+              "candidate": "LONG",
+              "clarity_raw": 0.38753693471897616,
+              "clarity_score": 39,
+              "confidence_gate": 0.5355809552725491,
+              "confidence_level": 3,
+              "dwell_duration": 1,
+              "effective_hysteresis": 1,
+              "effective_switch_threshold": 2,
+              "enabled": true,
+              "mandate_level": 3,
+              "previous_policy": "RI_no_trade_policy",
+              "raw_target_policy": "RI_continuation_policy",
+              "regime": "balanced",
+              "router_params": {
+                "continuation_release_hysteresis": 0,
+                "defensive_size_multiplier": 0.5,
+                "hysteresis": 1,
+                "min_dwell": 3,
+                "switch_threshold": 2
+              },
+              "selected_policy": "RI_continuation_policy",
+              "size_after_policy_router": 0.0078,
+              "size_before_policy_router": 0.0078,
+              "size_multiplier": 1.0,
+              "switch_blocked": false,
+              "switch_control_mode": "default",
+              "switch_proposed": true,
+              "switch_reason": "stable_continuation_state",
+              "version": "ri_policy_router_v1",
+              "weak_pre_aged_single_veto_latch": false,
+              "zone": "mid"
+            },
+            "router_state": {
+              "confidence": 3,
+              "dwell_duration": 1,
+              "mandate_level": 3,
+              "selected_policy": "RI_continuation_policy"
+            },
+            "size": null
+          },
+          "annual_embedded_continuation_release": false,
+          "behavior_diff": true,
+          "exact": null,
+          "exact_continuation_release": false,
+          "row_differs": true,
+          "timestamp": "2025-10-01T06:00:00+00:00"
+        },
+        {
+          "action_diff": true,
+          "annual_embedded": {
+            "action": "NONE",
+            "reasons": [
+              "ZONE:high@0.320"
+            ],
+            "router_debug": {
+              "action_edge": 0.07116191054509824,
+              "bars7_continuation_persistence_reconsideration_applied": false,
+              "bars_since_regime_change": 246,
+              "candidate": "LONG",
+              "clarity_raw": 0.38753693471897616,
+              "clarity_score": 39,
+              "confidence_gate": 0.5355809552725491,
+              "confidence_level": 3,
+              "dwell_duration": 1,
+              "effective_hysteresis": 1,
+              "effective_switch_threshold": 2,
+              "enabled": true,
+              "mandate_level": 3,
+              "previous_policy": "RI_no_trade_policy",
+              "raw_target_policy": "RI_continuation_policy",
+              "regime": "balanced",
+              "router_params": {
+                "continuation_release_hysteresis": 0,
+                "defensive_size_multiplier": 0.5,
+                "hysteresis": 1,
+                "min_dwell": 3,
+                "switch_threshold": 2
+              },
+              "selected_policy": "RI_continuation_policy",
+              "size_after_policy_router": 0.0078,
+              "size_before_policy_router": 0.0078,
+              "size_multiplier": 1.0,
+              "switch_blocked": false,
+              "switch_control_mode": "default",
+              "switch_proposed": true,
+              "switch_reason": "stable_continuation_state",
+              "version": "ri_policy_router_v1",
+              "weak_pre_aged_single_veto_latch": false,
+              "zone": "mid"
+            },
+            "router_state": {
+              "confidence": 3,
+              "dwell_duration": 1,
+              "mandate_level": 3,
+              "selected_policy": "RI_continuation_policy"
+            },
+            "size": null
+          },
+          "annual_embedded_continuation_release": false,
+          "behavior_diff": true,
+          "exact": null,
+          "exact_continuation_release": false,
+          "row_differs": true,
+          "timestamp": "2025-10-01T09:00:00+00:00"
+        },
+        {
+          "action_diff": true,
+          "annual_embedded": {
+            "action": "NONE",
+            "reasons": [
+              "ZONE:high@0.320"
+            ],
+            "router_debug": {
+              "action_edge": 0.07116191054509824,
+              "bars7_continuation_persistence_reconsideration_applied": false,
+              "bars_since_regime_change": 246,
+              "candidate": "LONG",
+              "clarity_raw": 0.38753693471897616,
+              "clarity_score": 39,
+              "confidence_gate": 0.5355809552725491,
+              "confidence_level": 3,
+              "dwell_duration": 1,
+              "effective_hysteresis": 1,
+              "effective_switch_threshold": 2,
+              "enabled": true,
+              "mandate_level": 3,
+              "previous_policy": "RI_no_trade_policy",
+              "raw_target_policy": "RI_continuation_policy",
+              "regime": "balanced",
+              "router_params": {
+                "continuation_release_hysteresis": 0,
+                "defensive_size_multiplier": 0.5,
+                "hysteresis": 1,
+                "min_dwell": 3,
+                "switch_threshold": 2
+              },
+              "selected_policy": "RI_continuation_policy",
+              "size_after_policy_router": 0.0078,
+              "size_before_policy_router": 0.0078,
+              "size_multiplier": 1.0,
+              "switch_blocked": false,
+              "switch_control_mode": "default",
+              "switch_proposed": true,
+              "switch_reason": "stable_continuation_state",
+              "version": "ri_policy_router_v1",
+              "weak_pre_aged_single_veto_latch": false,
+              "zone": "mid"
+            },
+            "router_state": {
+              "confidence": 3,
+              "dwell_duration": 1,
+              "mandate_level": 3,
+              "selected_policy": "RI_continuation_policy"
+            },
+            "size": null
+          },
+          "annual_embedded_continuation_release": false,
+          "behavior_diff": true,
+          "exact": null,
+          "exact_continuation_release": false,
+          "row_differs": true,
+          "timestamp": "2025-10-01T12:00:00+00:00"
+        },
+        {
+          "action_diff": true,
+          "annual_embedded": {
+            "action": "NONE",
+            "reasons": [
+              "ZONE:high@0.320"
+            ],
+            "router_debug": {
+              "action_edge": 0.07116191054509824,
+              "bars7_continuation_persistence_reconsideration_applied": false,
+              "bars_since_regime_change": 246,
+              "candidate": "LONG",
+              "clarity_raw": 0.38753693471897616,
+              "clarity_score": 39,
+              "confidence_gate": 0.5355809552725491,
+              "confidence_level": 3,
+              "dwell_duration": 1,
+              "effective_hysteresis": 1,
+              "effective_switch_threshold": 2,
+              "enabled": true,
+              "mandate_level": 3,
+              "previous_policy": "RI_no_trade_policy",
+              "raw_target_policy": "RI_continuation_policy",
+              "regime": "balanced",
+              "router_params": {
+                "continuation_release_hysteresis": 0,
+                "defensive_size_multiplier": 0.5,
+                "hysteresis": 1,
+                "min_dwell": 3,
+                "switch_threshold": 2
+              },
+              "selected_policy": "RI_continuation_policy",
+              "size_after_policy_router": 0.0078,
+              "size_before_policy_router": 0.0078,
+              "size_multiplier": 1.0,
+              "switch_blocked": false,
+              "switch_control_mode": "default",
+              "switch_proposed": true,
+              "switch_reason": "stable_continuation_state",
+              "version": "ri_policy_router_v1",
+              "weak_pre_aged_single_veto_latch": false,
+              "zone": "mid"
+            },
+            "router_state": {
+              "confidence": 3,
+              "dwell_duration": 1,
+              "mandate_level": 3,
+              "selected_policy": "RI_continuation_policy"
+            },
+            "size": null
+          },
+          "annual_embedded_continuation_release": false,
+          "behavior_diff": true,
+          "exact": null,
+          "exact_continuation_release": false,
+          "row_differs": true,
+          "timestamp": "2025-10-01T15:00:00+00:00"
+        },
+        {
+          "action_diff": true,
+          "annual_embedded": {
+            "action": "NONE",
+            "reasons": [
+              "ZONE:high@0.320"
+            ],
+            "router_debug": {
+              "action_edge": 0.07116191054509824,
+              "bars7_continuation_persistence_reconsideration_applied": false,
+              "bars_since_regime_change": 246,
+              "candidate": "LONG",
+              "clarity_raw": 0.38753693471897616,
+              "clarity_score": 39,
+              "confidence_gate": 0.5355809552725491,
+              "confidence_level": 3,
+              "dwell_duration": 1,
+              "effective_hysteresis": 1,
+              "effective_switch_threshold": 2,
+              "enabled": true,
+              "mandate_level": 3,
+              "previous_policy": "RI_no_trade_policy",
+              "raw_target_policy": "RI_continuation_policy",
+              "regime": "balanced",
+              "router_params": {
+                "continuation_release_hysteresis": 0,
+                "defensive_size_multiplier": 0.5,
+                "hysteresis": 1,
+                "min_dwell": 3,
+                "switch_threshold": 2
+              },
+              "selected_policy": "RI_continuation_policy",
+              "size_after_policy_router": 0.0078,
+              "size_before_policy_router": 0.0078,
+              "size_multiplier": 1.0,
+              "switch_blocked": false,
+              "switch_control_mode": "default",
+              "switch_proposed": true,
+              "switch_reason": "stable_continuation_state",
+              "version": "ri_policy_router_v1",
+              "weak_pre_aged_single_veto_latch": false,
+              "zone": "mid"
+            },
+            "router_state": {
+              "confidence": 3,
+              "dwell_duration": 1,
+              "mandate_level": 3,
+              "selected_policy": "RI_continuation_policy"
+            },
+            "size": null
+          },
+          "annual_embedded_continuation_release": false,
+          "behavior_diff": true,
+          "exact": null,
+          "exact_continuation_release": false,
+          "row_differs": true,
+          "timestamp": "2025-10-01T18:00:00+00:00"
+        },
+        {
+          "action_diff": true,
+          "annual_embedded": {
+            "action": "NONE",
+            "reasons": [
+              "ZONE:high@0.320"
+            ],
+            "router_debug": {
+              "action_edge": 0.07116191054509824,
+              "bars7_continuation_persistence_reconsideration_applied": false,
+              "bars_since_regime_change": 246,
+              "candidate": "LONG",
+              "clarity_raw": 0.38753693471897616,
+              "clarity_score": 39,
+              "confidence_gate": 0.5355809552725491,
+              "confidence_level": 3,
+              "dwell_duration": 1,
+              "effective_hysteresis": 1,
+              "effective_switch_threshold": 2,
+              "enabled": true,
+              "mandate_level": 3,
+              "previous_policy": "RI_no_trade_policy",
+              "raw_target_policy": "RI_continuation_policy",
+              "regime": "balanced",
+              "router_params": {
+                "continuation_release_hysteresis": 0,
+                "defensive_size_multiplier": 0.5,
+                "hysteresis": 1,
+                "min_dwell": 3,
+                "switch_threshold": 2
+              },
+              "selected_policy": "RI_continuation_policy",
+              "size_after_policy_router": 0.0078,
+              "size_before_policy_router": 0.0078,
+              "size_multiplier": 1.0,
+              "switch_blocked": false,
+              "switch_control_mode": "default",
+              "switch_proposed": true,
+              "switch_reason": "stable_continuation_state",
+              "version": "ri_policy_router_v1",
+              "weak_pre_aged_single_veto_latch": false,
+              "zone": "mid"
+            },
+            "router_state": {
+              "confidence": 3,
+              "dwell_duration": 1,
+              "mandate_level": 3,
+              "selected_policy": "RI_continuation_policy"
+            },
+            "size": null
+          },
+          "annual_embedded_continuation_release": false,
+          "behavior_diff": true,
+          "exact": null,
+          "exact_continuation_release": false,
+          "row_differs": true,
+          "timestamp": "2025-10-01T21:00:00+00:00"
+        },
+        {
+          "action_diff": true,
+          "annual_embedded": {
+            "action": "NONE",
+            "reasons": [
+              "ZONE:high@0.320"
+            ],
+            "router_debug": {
+              "action_edge": 0.07116191054509824,
+              "bars7_continuation_persistence_reconsideration_applied": false,
+              "bars_since_regime_change": 246,
+              "candidate": "LONG",
+              "clarity_raw": 0.38753693471897616,
+              "clarity_score": 39,
+              "confidence_gate": 0.5355809552725491,
+              "confidence_level": 3,
+              "dwell_duration": 1,
+              "effective_hysteresis": 1,
+              "effective_switch_threshold": 2,
+              "enabled": true,
+              "mandate_level": 3,
+              "previous_policy": "RI_no_trade_policy",
+              "raw_target_policy": "RI_continuation_policy",
+              "regime": "balanced",
+              "router_params": {
+                "continuation_release_hysteresis": 0,
+                "defensive_size_multiplier": 0.5,
+                "hysteresis": 1,
+                "min_dwell": 3,
+                "switch_threshold": 2
+              },
+              "selected_policy": "RI_continuation_policy",
+              "size_after_policy_router": 0.0078,
+              "size_before_policy_router": 0.0078,
+              "size_multiplier": 1.0,
+              "switch_blocked": false,
+              "switch_control_mode": "default",
+              "switch_proposed": true,
+              "switch_reason": "stable_continuation_state",
+              "version": "ri_policy_router_v1",
+              "weak_pre_aged_single_veto_latch": false,
+              "zone": "mid"
+            },
+            "router_state": {
+              "confidence": 3,
+              "dwell_duration": 1,
+              "mandate_level": 3,
+              "selected_policy": "RI_continuation_policy"
+            },
+            "size": null
+          },
+          "annual_embedded_continuation_release": false,
+          "behavior_diff": true,
+          "exact": null,
+          "exact_continuation_release": false,
+          "row_differs": true,
+          "timestamp": "2025-10-02T00:00:00+00:00"
+        },
+        {
+          "action_diff": true,
+          "annual_embedded": {
+            "action": "NONE",
+            "reasons": [
+              "ZONE:high@0.320"
+            ],
+            "router_debug": {
+              "action_edge": 0.07116191054509824,
+              "bars7_continuation_persistence_reconsideration_applied": false,
+              "bars_since_regime_change": 246,
+              "candidate": "LONG",
+              "clarity_raw": 0.38753693471897616,
+              "clarity_score": 39,
+              "confidence_gate": 0.5355809552725491,
+              "confidence_level": 3,
+              "dwell_duration": 1,
+              "effective_hysteresis": 1,
+              "effective_switch_threshold": 2,
+              "enabled": true,
+              "mandate_level": 3,
+              "previous_policy": "RI_no_trade_policy",
+              "raw_target_policy": "RI_continuation_policy",
+              "regime": "balanced",
+              "router_params": {
+                "continuation_release_hysteresis": 0,
+                "defensive_size_multiplier": 0.5,
+                "hysteresis": 1,
+                "min_dwell": 3,
+                "switch_threshold": 2
+              },
+              "selected_policy": "RI_continuation_policy",
+              "size_after_policy_router": 0.0078,
+              "size_before_policy_router": 0.0078,
+              "size_multiplier": 1.0,
+              "switch_blocked": false,
+              "switch_control_mode": "default",
+              "switch_proposed": true,
+              "switch_reason": "stable_continuation_state",
+              "version": "ri_policy_router_v1",
+              "weak_pre_aged_single_veto_latch": false,
+              "zone": "mid"
+            },
+            "router_state": {
+              "confidence": 3,
+              "dwell_duration": 1,
+              "mandate_level": 3,
+              "selected_policy": "RI_continuation_policy"
+            },
+            "size": null
+          },
+          "annual_embedded_continuation_release": false,
+          "behavior_diff": true,
+          "exact": null,
+          "exact_continuation_release": false,
+          "row_differs": true,
+          "timestamp": "2025-10-02T03:00:00+00:00"
+        },
+        {
+          "action_diff": true,
+          "annual_embedded": {
+            "action": "NONE",
+            "reasons": [
+              "ZONE:mid@0.400"
+            ],
+            "router_debug": {
+              "action_edge": 0.07116191054509824,
+              "bars7_continuation_persistence_reconsideration_applied": false,
+              "bars_since_regime_change": 246,
+              "candidate": "LONG",
+              "clarity_raw": 0.38753693471897616,
+              "clarity_score": 39,
+              "confidence_gate": 0.5355809552725491,
+              "confidence_level": 3,
+              "dwell_duration": 1,
+              "effective_hysteresis": 1,
+              "effective_switch_threshold": 2,
+              "enabled": true,
+              "mandate_level": 3,
+              "previous_policy": "RI_no_trade_policy",
+              "raw_target_policy": "RI_continuation_policy",
+              "regime": "balanced",
+              "router_params": {
+                "continuation_release_hysteresis": 0,
+                "defensive_size_multiplier": 0.5,
+                "hysteresis": 1,
+                "min_dwell": 3,
+                "switch_threshold": 2
+              },
+              "selected_policy": "RI_continuation_policy",
+              "size_after_policy_router": 0.0078,
+              "size_before_policy_router": 0.0078,
+              "size_multiplier": 1.0,
+              "switch_blocked": false,
+              "switch_control_mode": "default",
+              "switch_proposed": true,
+              "switch_reason": "stable_continuation_state",
+              "version": "ri_policy_router_v1",
+              "weak_pre_aged_single_veto_latch": false,
+              "zone": "mid"
+            },
+            "router_state": {
+              "confidence": 3,
+              "dwell_duration": 1,
+              "mandate_level": 3,
+              "selected_policy": "RI_continuation_policy"
+            },
+            "size": null
+          },
+          "annual_embedded_continuation_release": false,
+          "behavior_diff": true,
+          "exact": null,
+          "exact_continuation_release": false,
+          "row_differs": true,
+          "timestamp": "2025-10-02T06:00:00+00:00"
+        },
+        {
+          "action_diff": true,
+          "annual_embedded": {
+            "action": "NONE",
+            "reasons": [
+              "ZONE:low@0.160",
+              "RESEARCH_POLICY_ROUTER_NO_TRADE"
+            ],
+            "router_debug": {
+              "action_edge": 0.019598384112276213,
+              "bars7_continuation_persistence_reconsideration_applied": false,
+              "bars_since_regime_change": 247,
+              "candidate": "LONG",
+              "clarity_raw": 0.35631235482354506,
+              "clarity_score": 36,
+              "confidence_gate": 0.5097991920561381,
+              "confidence_level": 0,
+              "dwell_duration": 1,
+              "effective_hysteresis": 1,
+              "effective_switch_threshold": 2,
+              "enabled": true,
+              "mandate_level": 0,
+              "previous_policy": "RI_continuation_policy",
+              "raw_target_policy": "RI_no_trade_policy",
+              "regime": "balanced",
+              "router_params": {
+                "continuation_release_hysteresis": 0,
+                "defensive_size_multiplier": 0.5,
+                "hysteresis": 1,
+                "min_dwell": 3,
+                "switch_threshold": 2
+              },
+              "selected_policy": "RI_no_trade_policy",
+              "size_multiplier": 0.0,
+              "switch_blocked": false,
+              "switch_control_mode": "default",
+              "switch_proposed": true,
+              "switch_reason": "insufficient_evidence",
+              "version": "ri_policy_router_v1",
+              "weak_pre_aged_single_veto_latch": false,
+              "zone": "low"
+            },
+            "router_state": {
+              "confidence": 0,
+              "dwell_duration": 1,
+              "mandate_level": 0,
+              "selected_policy": "RI_no_trade_policy"
+            },
+            "size": null
+          },
+          "annual_embedded_continuation_release": false,
+          "behavior_diff": true,
+          "exact": null,
+          "exact_continuation_release": false,
+          "row_differs": true,
+          "timestamp": "2025-10-02T09:00:00+00:00"
+        }
+      ],
+      "shared_action_diff_count": 24,
+      "shared_behavioral_row_diff_count": 121,
+      "shared_continuation_release_presence_diff_count": 10,
+      "shared_row_diff_count": 121,
+      "shared_timestamp_count": 121
+    }
+  },
+  "exact_surface": {
+    "baseline": {
+      "backtest_info": {
+        "bars_processed": 121,
+        "bars_total": 241,
+        "commission_rate": 0.0,
+        "data_source_policy": "curated_only",
+        "effective_config_fingerprint": "70f082360e0a2565e68afeabd14940b58b91a754441acf0e03b9aebc70bfc0db",
+        "end_date": "2025-10-31 00:00:00+00:00",
+        "execution_mode": {
+          "env_precompute_features": "1",
+          "fast_window": true,
+          "mode_explicit": "1",
+          "precompute_enabled": true,
+          "precomputed_ready": true
+        },
+        "git_hash": "67ae999293336ed30020babef85576a4f69f6f89",
+        "htf": {
+          "env_htf_exits": "1",
+          "htf_candles_loaded": true,
+          "htf_candles_source": "C:\\Users\\fa06662\\Projects\\Genesis-Core\\data\\curated\\v1\\candles\\tBTCUSD_1D.parquet",
+          "htf_context_seen": true,
+          "use_new_exit_engine": true
+        },
+        "initial_capital": 10000.0,
+        "ltf_candles_source": "C:\\Users\\fa06662\\Projects\\Genesis-Core\\data\\curated\\v1\\candles\\tBTCUSD_3h.parquet",
+        "seed": "42",
+        "slippage_rate": 0.0005,
+        "start_date": "2025-10-01 00:00:00+00:00",
+        "symbol": "tBTCUSD",
+        "timeframe": "3h",
+        "timestamp": "2026-05-26T12:40:05.107817",
+        "warmup_bars": 120
+      },
+      "metrics": {
+        "max_drawdown": 0.00237447527852395,
+        "num_trades": 5,
+        "profit_factor": 1.3414558487208776,
+        "total_return": -0.0006619203824999204,
+        "total_return_pct": -0.06619203824999204,
+        "total_trades": 5,
+        "win_rate": 0.6
+      },
+      "position_summary": {
+        "avg_loss": -11.877021974999941,
+        "avg_win": 17.134840125000068,
+        "breakeven_positions": 0,
+        "entry_commission": 0.0,
+        "exit_commission": 0.0,
+        "gross_pnl": -6.619203824999815,
+        "losing_positions": 2,
+        "multi_event_positions": 1,
+        "net_pnl": -6.619203824999815,
+        "num_positions": 3,
+        "pnl_basis": "net_after_commission",
+        "profit_factor": 0.7213441282279076,
+        "total_commission": 0.0,
+        "win_rate": 33.33333333333333,
+        "winning_positions": 1
+      },
+      "summary": {
+        "avg_loss": -11.877021974999941,
+        "avg_win": 10.62166706250004,
+        "final_capital": 9993.380796175,
+        "initial_capital": 10000.0,
+        "losing_trades": 2,
+        "max_capital": 10000.496324237502,
+        "max_drawdown": 0.237447527852395,
+        "min_capital": 9976.03789105,
+        "num_trades": 5,
+        "profit_factor": 1.3414558487208776,
+        "total_commission": 0.0,
+        "total_return": -0.06619203824999204,
+        "total_return_usd": -6.619203824999204,
+        "win_rate": 60.0,
+        "winning_trades": 3
+      }
+    },
+    "release_zero": {
+      "backtest_info": {
+        "bars_processed": 121,
+        "bars_total": 241,
+        "commission_rate": 0.0,
+        "data_source_policy": "curated_only",
+        "effective_config_fingerprint": "847f5b079068fb00d9e344587544e9502f1ef6ac2c3812ad9c1490ebcea75a20",
+        "end_date": "2025-10-31 00:00:00+00:00",
+        "execution_mode": {
+          "env_precompute_features": "1",
+          "fast_window": true,
+          "mode_explicit": "1",
+          "precompute_enabled": true,
+          "precomputed_ready": true
+        },
+        "git_hash": "67ae999293336ed30020babef85576a4f69f6f89",
+        "htf": {
+          "env_htf_exits": "1",
+          "htf_candles_loaded": true,
+          "htf_candles_source": "C:\\Users\\fa06662\\Projects\\Genesis-Core\\data\\curated\\v1\\candles\\tBTCUSD_1D.parquet",
+          "htf_context_seen": true,
+          "use_new_exit_engine": true
+        },
+        "initial_capital": 10000.0,
+        "ltf_candles_source": "C:\\Users\\fa06662\\Projects\\Genesis-Core\\data\\curated\\v1\\candles\\tBTCUSD_3h.parquet",
+        "seed": "42",
+        "slippage_rate": 0.0005,
+        "start_date": "2025-10-01 00:00:00+00:00",
+        "symbol": "tBTCUSD",
+        "timeframe": "3h",
+        "timestamp": "2026-05-26T12:40:06.564103",
+        "warmup_bars": 120
+      },
+      "metrics": {
+        "max_drawdown": 0.0028511722180659415,
+        "num_trades": 5,
+        "profit_factor": 2.6829116974417553,
+        "total_return": 0.001051563630000055,
+        "total_return_pct": 0.10515636300000551,
+        "total_trades": 5,
+        "win_rate": 0.6
+      },
+      "position_summary": {
+        "avg_loss": -11.877021974999941,
+        "avg_win": 34.269680250000135,
+        "breakeven_positions": 0,
+        "entry_commission": 0.0,
+        "exit_commission": 0.0,
+        "gross_pnl": 10.515636300000253,
+        "losing_positions": 2,
+        "multi_event_positions": 1,
+        "net_pnl": 10.515636300000253,
+        "num_positions": 3,
+        "pnl_basis": "net_after_commission",
+        "profit_factor": 1.4426882564558152,
+        "total_commission": 0.0,
+        "win_rate": 33.33333333333333,
+        "winning_positions": 1
+      },
+      "summary": {
+        "avg_loss": -11.877021974999941,
+        "avg_win": 21.24333412500008,
+        "final_capital": 10010.5156363,
+        "initial_capital": 10000.0,
+        "losing_trades": 2,
+        "max_capital": 10024.746692425,
+        "max_drawdown": 0.28511722180659416,
+        "min_capital": 9975.829826050001,
+        "num_trades": 5,
+        "profit_factor": 2.6829116974417553,
+        "total_commission": 0.0,
+        "total_return": 0.10515636300000551,
+        "total_return_usd": 10.515636300000551,
+        "win_rate": 60.0,
+        "winning_trades": 3
+      }
+    }
+  },
+  "inputs": {
+    "carrier_path": "tmp\\policy_router_evidence\\tBTCUSD_3h_slice8_runtime_bridge_weak_pre_aged_release_guard_20260424.json",
+    "comparison": {
+      "baseline": "enabled carrier as-is (implicit shared hysteresis)",
+      "release_zero": "same enabled carrier with continuation_release_hysteresis=0",
+      "variant_setting": {
+        "baseline_value": "implicit shared hysteresis",
+        "field": "multi_timeframe.research_policy_router.continuation_release_hysteresis",
+        "release_zero_value": 0
+      }
+    },
+    "embedded_annual_subject": {
+      "data_source_policy": "curated_only",
+      "end": "2025-12-31",
+      "month_prefix": "2025-10-",
+      "start": "2025-01-01",
+      "symbol": "tBTCUSD",
+      "timeframe": "3h",
+      "warmup": 120
+    },
+    "exact_subject": {
+      "data_source_policy": "curated_only",
+      "end": "2025-10-31",
+      "start": "2025-10-01",
+      "symbol": "tBTCUSD",
+      "timeframe": "3h",
+      "warmup": 120
+    }
+  },
+  "non_authoritative": true,
+  "observational_only": true,
+  "packet_summary": {
+    "annual_final_capital_diff": 0.0,
+    "annual_total_return_diff": 0.0,
+    "baseline_annual_embedded_continuation_release_row_count": 0,
+    "baseline_exact_continuation_release_row_count": 13,
+    "baseline_first_shared_row_diff_timestamp": "2025-10-16T00:00:00+00:00",
+    "baseline_first_union_row_diff_timestamp": "2025-10-01T00:00:00+00:00",
+    "baseline_shared_row_diff_count": 121,
+    "exact_final_capital_diff": 17.13484,
+    "exact_total_return_diff": 0.171348,
+    "inference": "The exact October 2025 subject is not equivalent to October as reached through the full-year 2025 path. That means the local October seam behavior is anchor- or carry-in-sensitive rather than a simple property of calendar rows viewed in isolation.",
+    "next_hypothesis": "If exact October and embedded October separate immediately or before continuation-release rows appear, the next honest slice is to isolate the first state-carry timestamp that makes the exact month enter a different router path than the annual run.",
+    "release_zero_annual_embedded_continuation_release_row_count": 0,
+    "release_zero_exact_continuation_release_row_count": 10,
+    "release_zero_first_shared_row_diff_timestamp": "2025-10-16T00:00:00+00:00",
+    "release_zero_first_union_row_diff_timestamp": "2025-10-01T00:00:00+00:00",
+    "release_zero_shared_row_diff_count": 121,
+    "status": "exact_october_vs_embedded_october_window_sensitivity_detected",
+    "top_line_read": "The exact October subject still shows a local top-line delta while the full-year 2025 same-stack surface stays flat, which reinforces that exact-month evidence and annual evidence are answering different questions."
+  },
+  "status": "continuation_release_hysteresis_window_sensitivity_2025_10_vs_annual_2025_generated"
+}

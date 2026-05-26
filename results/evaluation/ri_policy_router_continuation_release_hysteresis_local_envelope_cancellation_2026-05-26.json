@@ -1,0 +1,489 @@
+{
+  "audit_version": "ri-policy-router-continuation-release-hysteresis-local-envelope-cancellation-2026-05-26",
+  "base_sha": "b3a7fd71485086a115c52db33955260c8ce882de",
+  "classification_boundary": {
+    "outcome_metrics_observational_only": true,
+    "question": "Does the `2021-04` candidate open a larger local equity gap than the `2023-05` control inside the same continuation-release envelope, and is that local gap later canceled back to flat by month end?",
+    "reference_surface": "exact local envelopes imported from the landed local packet, rerun on the same carrier and measured only on the release_zero-minus-baseline equity path"
+  },
+  "inputs": {
+    "carrier_path": "tmp\\policy_router_evidence\\tBTCUSD_3h_slice8_runtime_bridge_weak_pre_aged_release_guard_20260424.json",
+    "comparison": {
+      "baseline": "enabled carrier as-is (implicit shared hysteresis)",
+      "economic_diff_basis": "release_zero_total_equity_minus_baseline_total_equity",
+      "release_zero": "same enabled carrier with continuation_release_hysteresis=0"
+    },
+    "local_packet_artifact": "results\\evaluation\\ri_policy_router_continuation_release_hysteresis_local_packet_2026-05-26.json",
+    "subjects": [
+      "2021-04",
+      "2023-05"
+    ],
+    "working_contract_reference": "GENESIS_WORKING_CONTRACT.md"
+  },
+  "non_authoritative": true,
+  "observational_only": true,
+  "packet_summary": {
+    "candidate_envelope_end_total_equity_diff": 0.0,
+    "candidate_month_end_total_equity_diff": 0.0,
+    "candidate_peak_absolute_total_equity_diff": 0.0,
+    "candidate_subject_id": "2021-04",
+    "control_envelope_end_total_equity_diff": 0.0,
+    "control_month_end_total_equity_diff": 0.0,
+    "control_peak_absolute_total_equity_diff": 0.0,
+    "control_subject_id": "2023-05",
+    "inference": "`2021-04` and `2023-05` remain economically invariant on the bounded local envelope path: the release_zero-minus-baseline total-equity series stays flat, so the observed policy-router asymmetry does not materialize as a local economic gap on this surface.",
+    "next_hypothesis": "If this chain continues, the next honest slice is a local action-or-position equivalence check inside the `2021-04` envelope to determine whether the retained policy/size differences are economically inert because they preserve the same executed trade path.",
+    "status": "candidate_and_control_remain_economically_invariant_on_local_envelope_path"
+  },
+  "status": "continuation_release_hysteresis_local_envelope_cancellation_generated",
+  "subject_payloads": {
+    "2021-04": {
+      "continuation_release_timestamp_validation": {
+        "baseline_matches_local_packet": true,
+        "release_zero_matches_local_packet": true
+      },
+      "envelope_diff_series": [
+        {
+          "baseline_total_equity": 9993.128456,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 9993.128456,
+          "timestamp": "2021-04-16T09:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        {
+          "baseline_total_equity": 9996.456456,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 9996.456456,
+          "timestamp": "2021-04-16T12:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        {
+          "baseline_total_equity": 9998.217956,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 9998.217956,
+          "timestamp": "2021-04-16T15:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        {
+          "baseline_total_equity": 10000.206956,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 10000.206956,
+          "timestamp": "2021-04-16T18:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        {
+          "baseline_total_equity": 9996.521456,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 9996.521456,
+          "timestamp": "2021-04-16T21:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        {
+          "baseline_total_equity": 10001.975837,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 10001.975837,
+          "timestamp": "2021-04-17T00:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        {
+          "baseline_total_equity": 10001.643456,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 10001.643456,
+          "timestamp": "2021-04-17T03:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        {
+          "baseline_total_equity": 10003.281456,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 10003.281456,
+          "timestamp": "2021-04-17T06:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        {
+          "baseline_total_equity": 9993.602956,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 9993.602956,
+          "timestamp": "2021-04-17T09:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        {
+          "baseline_total_equity": 9992.068956,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 9992.068956,
+          "timestamp": "2021-04-17T12:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        {
+          "baseline_total_equity": 9985.784431,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 9985.784431,
+          "timestamp": "2021-04-17T15:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        {
+          "baseline_total_equity": 9985.784431,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 9985.784431,
+          "timestamp": "2021-04-17T18:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        {
+          "baseline_total_equity": 9985.185161,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 9985.185161,
+          "timestamp": "2021-04-17T21:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        {
+          "baseline_total_equity": 9961.377501,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 9961.377501,
+          "timestamp": "2021-04-18T00:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        {
+          "baseline_total_equity": 9961.377501,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 9961.377501,
+          "timestamp": "2021-04-18T03:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        {
+          "baseline_total_equity": 9961.377501,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 9961.377501,
+          "timestamp": "2021-04-18T06:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        }
+      ],
+      "envelope_extrema": {
+        "envelope_captures_full_month_peak_absolute_gap": false,
+        "full_month_peak_absolute_gap": {
+          "baseline_total_equity": 9999.811453,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 9999.811453,
+          "timestamp": "2021-04-16T00:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        "peak_absolute_gap": {
+          "baseline_total_equity": 9993.128456,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 9993.128456,
+          "timestamp": "2021-04-16T09:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        "peak_baseline_advantage": {
+          "baseline_total_equity": 9993.128456,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 9993.128456,
+          "timestamp": "2021-04-16T09:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        "peak_release_zero_advantage": {
+          "baseline_total_equity": 9993.128456,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 9993.128456,
+          "timestamp": "2021-04-16T09:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        }
+      },
+      "envelope_window": {
+        "end": "2021-04-18T06:00:00+00:00",
+        "row_count": 16,
+        "span_hours": 45.0,
+        "start": "2021-04-16T09:00:00+00:00"
+      },
+      "equity_diff_basis": "release_zero_total_equity_minus_baseline_total_equity",
+      "keypoints": {
+        "envelope_end": {
+          "baseline_total_equity": 9961.377501,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 9961.377501,
+          "timestamp": "2021-04-18T06:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        "envelope_start": {
+          "baseline_total_equity": 9993.128456,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 9993.128456,
+          "timestamp": "2021-04-16T09:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        "first_return_to_month_end_diff_after_peak": {
+          "baseline_total_equity": 9996.456456,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 9996.456456,
+          "timestamp": "2021-04-16T12:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        "month_end": {
+          "baseline_total_equity": 9891.269705,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 9891.269705,
+          "timestamp": "2021-04-30T00:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        "pre_envelope_anchor": {
+          "baseline_total_equity": 9993.326056,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 9993.326056,
+          "timestamp": "2021-04-16T06:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        }
+      },
+      "month_window": {
+        "end": "2021-04-30",
+        "inventory_final_capital_diff": 0.0,
+        "inventory_total_return_diff": 0.0,
+        "start": "2021-04-01"
+      },
+      "monthly_reproduction": {
+        "matches_local_packet_final_capital_diff": true,
+        "matches_local_packet_total_return_diff": true,
+        "rerun_final_capital_diff": 0.0,
+        "rerun_total_return_diff": 0.0,
+        "top_line_sign": "flat"
+      },
+      "path_summary": {
+        "envelope_end_to_month_end_cancellation_amount": 0.0,
+        "envelope_end_to_month_end_cancellation_share": null,
+        "envelope_end_total_equity_diff": 0.0,
+        "initial_capital": 10000.0,
+        "month_end_total_equity_diff": 0.0,
+        "peak_absolute_direction": "flat",
+        "peak_absolute_pct_of_initial_capital": 0.0,
+        "peak_absolute_total_equity_diff": 0.0,
+        "peak_to_month_end_cancellation_amount": 0.0,
+        "peak_to_month_end_cancellation_share": null,
+        "pre_anchor_to_envelope_end_change": 0.0,
+        "pre_anchor_to_peak_change": 0.0,
+        "pre_envelope_anchor_total_equity_diff": 0.0
+      },
+      "role": "negative_like_candidate",
+      "subject_id": "2021-04",
+      "trade_path_summary": {
+        "baseline_exit_event_count_inside_envelope": 2,
+        "baseline_overlap_trade_event_count": 2,
+        "baseline_trade_event_count": 7,
+        "full_month_trade_signature_match": true,
+        "overlap_trade_signature_match": true,
+        "release_zero_exit_event_count_inside_envelope": 2,
+        "release_zero_overlap_trade_event_count": 2,
+        "release_zero_trade_event_count": 7
+      }
+    },
+    "2023-05": {
+      "continuation_release_timestamp_validation": {
+        "baseline_matches_local_packet": true,
+        "release_zero_matches_local_packet": true
+      },
+      "envelope_diff_series": [
+        {
+          "baseline_total_equity": 9999.003384,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 9999.003384,
+          "timestamp": "2023-05-17T06:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        {
+          "baseline_total_equity": 9998.324784,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 9998.324784,
+          "timestamp": "2023-05-17T09:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        {
+          "baseline_total_equity": 9998.882484,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 9998.882484,
+          "timestamp": "2023-05-17T12:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        {
+          "baseline_total_equity": 10000.060284,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 10000.060284,
+          "timestamp": "2023-05-17T15:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        {
+          "baseline_total_equity": 10001.027484,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 10001.027484,
+          "timestamp": "2023-05-17T18:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        {
+          "baseline_total_equity": 10001.273184,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 10001.273184,
+          "timestamp": "2023-05-17T21:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        {
+          "baseline_total_equity": 10001.074284,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 10001.074284,
+          "timestamp": "2023-05-18T00:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        }
+      ],
+      "envelope_extrema": {
+        "envelope_captures_full_month_peak_absolute_gap": false,
+        "full_month_peak_absolute_gap": {
+          "baseline_total_equity": 10000.0,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 10000.0,
+          "timestamp": "2023-05-16T00:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        "peak_absolute_gap": {
+          "baseline_total_equity": 9999.003384,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 9999.003384,
+          "timestamp": "2023-05-17T06:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        "peak_baseline_advantage": {
+          "baseline_total_equity": 9999.003384,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 9999.003384,
+          "timestamp": "2023-05-17T06:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        "peak_release_zero_advantage": {
+          "baseline_total_equity": 9999.003384,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 9999.003384,
+          "timestamp": "2023-05-17T06:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        }
+      },
+      "envelope_window": {
+        "end": "2023-05-18T00:00:00+00:00",
+        "row_count": 7,
+        "span_hours": 18.0,
+        "start": "2023-05-17T06:00:00+00:00"
+      },
+      "equity_diff_basis": "release_zero_total_equity_minus_baseline_total_equity",
+      "keypoints": {
+        "envelope_end": {
+          "baseline_total_equity": 10001.074284,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 10001.074284,
+          "timestamp": "2023-05-18T00:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        "envelope_start": {
+          "baseline_total_equity": 9999.003384,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 9999.003384,
+          "timestamp": "2023-05-17T06:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        "first_return_to_month_end_diff_after_peak": {
+          "baseline_total_equity": 9998.324784,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 9998.324784,
+          "timestamp": "2023-05-17T09:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        "month_end": {
+          "baseline_total_equity": 10010.878809,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 10010.878809,
+          "timestamp": "2023-05-31T00:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        },
+        "pre_envelope_anchor": {
+          "baseline_total_equity": 9999.744384,
+          "capital_diff": 0.0,
+          "release_zero_total_equity": 9999.744384,
+          "timestamp": "2023-05-17T03:00:00+00:00",
+          "total_equity_diff": 0.0,
+          "unrealized_pnl_diff": 0.0
+        }
+      },
+      "month_window": {
+        "end": "2023-05-31",
+        "inventory_final_capital_diff": 0.0,
+        "inventory_total_return_diff": 0.0,
+        "start": "2023-05-01"
+      },
+      "monthly_reproduction": {
+        "matches_local_packet_final_capital_diff": true,
+        "matches_local_packet_total_return_diff": true,
+        "rerun_final_capital_diff": 0.0,
+        "rerun_total_return_diff": 0.0,
+        "top_line_sign": "flat"
+      },
+      "path_summary": {
+        "envelope_end_to_month_end_cancellation_amount": 0.0,
+        "envelope_end_to_month_end_cancellation_share": null,
+        "envelope_end_total_equity_diff": 0.0,
+        "initial_capital": 10000.0,
+        "month_end_total_equity_diff": 0.0,
+        "peak_absolute_direction": "flat",
+        "peak_absolute_pct_of_initial_capital": 0.0,
+        "peak_absolute_total_equity_diff": 0.0,
+        "peak_to_month_end_cancellation_amount": 0.0,
+        "peak_to_month_end_cancellation_share": null,
+        "pre_anchor_to_envelope_end_change": 0.0,
+        "pre_anchor_to_peak_change": 0.0,
+        "pre_envelope_anchor_total_equity_diff": 0.0
+      },
+      "role": "positive_control",
+      "subject_id": "2023-05",
+      "trade_path_summary": {
+        "baseline_exit_event_count_inside_envelope": 0,
+        "baseline_overlap_trade_event_count": 1,
+        "baseline_trade_event_count": 5,
+        "full_month_trade_signature_match": true,
+        "overlap_trade_signature_match": true,
+        "release_zero_exit_event_count_inside_envelope": 0,
+        "release_zero_overlap_trade_event_count": 1,
+        "release_zero_trade_event_count": 5
+      }
+    }
+  }
+}

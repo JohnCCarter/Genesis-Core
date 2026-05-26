@@ -1,0 +1,1095 @@
+{
+  "audit_version": "ri-policy-router-continuation-release-hysteresis-intra-band-sign-candidates-2026-05-26",
+  "base_sha": "584245f7d17537372cb611cfda8563d917c9a404",
+  "candidate_comparison": {
+    "cluster_policy_diff_rows": {
+      "family": "path_divergence",
+      "negative_subjects": {
+        "count": 1,
+        "max": 6.0,
+        "mean": 6.0,
+        "min": 6.0,
+        "values": [
+          6.0
+        ]
+      },
+      "positive_subjects": {
+        "count": 2,
+        "max": 3.0,
+        "mean": 3.0,
+        "min": 3.0,
+        "values": [
+          3.0,
+          3.0
+        ]
+      }
+    },
+    "cluster_row_count": {
+      "family": "cluster_shape",
+      "negative_subjects": {
+        "count": 1,
+        "max": 12.0,
+        "mean": 12.0,
+        "min": 12.0,
+        "values": [
+          12.0
+        ]
+      },
+      "positive_subjects": {
+        "count": 2,
+        "max": 13.0,
+        "mean": 9.5,
+        "min": 6.0,
+        "values": [
+          6.0,
+          13.0
+        ]
+      }
+    },
+    "cluster_size_diff_rows": {
+      "family": "path_divergence",
+      "negative_subjects": {
+        "count": 1,
+        "max": 2.0,
+        "mean": 2.0,
+        "min": 2.0,
+        "values": [
+          2.0
+        ]
+      },
+      "positive_subjects": {
+        "count": 2,
+        "max": 1.0,
+        "mean": 1.0,
+        "min": 1.0,
+        "values": [
+          1.0,
+          1.0
+        ]
+      }
+    },
+    "cluster_switch_diff_rows": {
+      "family": "path_divergence",
+      "negative_subjects": {
+        "count": 1,
+        "max": 6.0,
+        "mean": 6.0,
+        "min": 6.0,
+        "values": [
+          6.0
+        ]
+      },
+      "positive_subjects": {
+        "count": 2,
+        "max": 3.0,
+        "mean": 3.0,
+        "min": 3.0,
+        "values": [
+          3.0,
+          3.0
+        ]
+      }
+    },
+    "decisive_action_edge": {
+      "family": "decisive_support",
+      "negative_subjects": {
+        "count": 1,
+        "max": 0.075402,
+        "mean": 0.075402,
+        "min": 0.075402,
+        "values": [
+          0.075402
+        ]
+      },
+      "positive_subjects": {
+        "count": 2,
+        "max": 0.095446,
+        "mean": 0.094586,
+        "min": 0.093725,
+        "values": [
+          0.095446,
+          0.093725
+        ]
+      }
+    },
+    "decisive_clarity_score": {
+      "family": "decisive_support",
+      "negative_subjects": {
+        "count": 1,
+        "max": 39.0,
+        "mean": 39.0,
+        "min": 39.0,
+        "values": [
+          39.0
+        ]
+      },
+      "positive_subjects": {
+        "count": 2,
+        "max": 40.0,
+        "mean": 40.0,
+        "min": 40.0,
+        "values": [
+          40.0,
+          40.0
+        ]
+      }
+    },
+    "decisive_confidence_gate": {
+      "family": "decisive_support",
+      "negative_subjects": {
+        "count": 1,
+        "max": 0.537701,
+        "mean": 0.537701,
+        "min": 0.537701,
+        "values": [
+          0.537701
+        ]
+      },
+      "positive_subjects": {
+        "count": 2,
+        "max": 0.547723,
+        "mean": 0.547292,
+        "min": 0.546862,
+        "values": [
+          0.547723,
+          0.546862
+        ]
+      }
+    },
+    "decisive_hours_from_cluster_start": {
+      "family": "decisive_timing",
+      "negative_subjects": {
+        "count": 1,
+        "max": 18.0,
+        "mean": 18.0,
+        "min": 18.0,
+        "values": [
+          18.0
+        ]
+      },
+      "positive_subjects": {
+        "count": 2,
+        "max": 24.0,
+        "mean": 22.5,
+        "min": 21.0,
+        "values": [
+          24.0,
+          21.0
+        ]
+      }
+    },
+    "decisive_index_within_cluster": {
+      "family": "decisive_timing",
+      "negative_subjects": {
+        "count": 1,
+        "max": 3.0,
+        "mean": 3.0,
+        "min": 3.0,
+        "values": [
+          3.0
+        ]
+      },
+      "positive_subjects": {
+        "count": 2,
+        "max": 7.0,
+        "mean": 5.0,
+        "min": 3.0,
+        "values": [
+          3.0,
+          7.0
+        ]
+      }
+    },
+    "decisive_rank_pct": {
+      "family": "decisive_timing",
+      "negative_subjects": {
+        "count": 1,
+        "max": 0.272727,
+        "mean": 0.272727,
+        "min": 0.272727,
+        "values": [
+          0.272727
+        ]
+      },
+      "positive_subjects": {
+        "count": 2,
+        "max": 0.6,
+        "mean": 0.591666,
+        "min": 0.583333,
+        "values": [
+          0.6,
+          0.583333
+        ]
+      }
+    },
+    "release_retention_ratio": {
+      "family": "cluster_shape",
+      "negative_subjects": {
+        "count": 1,
+        "max": 0.5,
+        "mean": 0.5,
+        "min": 0.5,
+        "values": [
+          0.5
+        ]
+      },
+      "positive_subjects": {
+        "count": 2,
+        "max": 1.0,
+        "mean": 0.884615,
+        "min": 0.769231,
+        "values": [
+          1.0,
+          0.769231
+        ]
+      }
+    }
+  },
+  "classification_boundary": {
+    "candidate_scope": {
+      "cluster_shape": [
+        "cluster_row_count",
+        "release_retention_ratio"
+      ],
+      "decisive_support": [
+        "decisive_action_edge",
+        "decisive_confidence_gate",
+        "decisive_clarity_score"
+      ],
+      "decisive_timing": [
+        "decisive_index_within_cluster",
+        "decisive_rank_pct",
+        "decisive_hours_from_cluster_start"
+      ],
+      "path_divergence": [
+        "cluster_policy_diff_rows",
+        "cluster_switch_diff_rows",
+        "cluster_size_diff_rows"
+      ]
+    },
+    "outcome_metrics_observational_only": true,
+    "question": "Within the already-shared early phase band, do any cluster-local subject features separate the lone negative exact subject from the two positive exact subjects on the frozen triad?",
+    "reference_surface": "frozen continuation_release_hysteresis exact-subject triad already shown to share one early phase-age band"
+  },
+  "inputs": {
+    "exact_subjects": [
+      {
+        "row_diff_artifact": "results\\backtests\\ri_policy_router_continuation_release_hysteresis_topline_subject_20260504\\continuation_release_hysteresis_topline_subject_row_diffs.json",
+        "subject_id": "2021-08",
+        "summary_artifact": "results\\backtests\\ri_policy_router_continuation_release_hysteresis_topline_subject_20260504\\continuation_release_hysteresis_topline_subject_summary.json"
+      },
+      {
+        "row_diff_artifact": "results\\backtests\\ri_policy_router_continuation_release_hysteresis_topline_subject_2025_10_20260504\\continuation_release_hysteresis_topline_subject_2025_10_row_diffs.json",
+        "subject_id": "2025-10",
+        "summary_artifact": "results\\backtests\\ri_policy_router_continuation_release_hysteresis_topline_subject_2025_10_20260504\\continuation_release_hysteresis_topline_subject_2025_10_summary.json"
+      },
+      {
+        "row_diff_artifact": "results\\backtests\\ri_policy_router_continuation_release_hysteresis_topline_subject_2018_03_20260504\\continuation_release_hysteresis_topline_subject_2018_03_row_diffs.json",
+        "subject_id": "2018-03",
+        "summary_artifact": "results\\backtests\\ri_policy_router_continuation_release_hysteresis_topline_subject_2018_03_20260504\\continuation_release_hysteresis_topline_subject_2018_03_summary.json"
+      }
+    ],
+    "phase_age_transport_artifact": "results\\evaluation\\ri_policy_router_continuation_release_hysteresis_phase_age_transport_2026-05-25.json",
+    "triad_synthesis_note": "docs\\analysis\\regime_intelligence\\policy_router\\ri_policy_router_continuation_release_hysteresis_topline_subject_triad_synthesis_2026-05-04.md",
+    "working_contract_reference": "GENESIS_WORKING_CONTRACT.md"
+  },
+  "non_authoritative": true,
+  "observational_only": true,
+  "rule_search": {
+    "best_rule_per_feature": [
+      {
+        "accuracy": 0.666667,
+        "confusion": {
+          "false_negative": 1,
+          "false_positive": 0,
+          "true_negative": 1,
+          "true_positive": 1
+        },
+        "feature": "cluster_row_count",
+        "operator": "<=",
+        "positive_label": "positive",
+        "precision": 1.0,
+        "recall": 0.5,
+        "threshold": 6.0
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 2,
+          "true_positive": 1
+        },
+        "feature": "release_retention_ratio",
+        "operator": "<=",
+        "positive_label": "negative",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 0.5
+      },
+      {
+        "accuracy": 0.666667,
+        "confusion": {
+          "false_negative": 1,
+          "false_positive": 0,
+          "true_negative": 1,
+          "true_positive": 1
+        },
+        "feature": "decisive_index_within_cluster",
+        "operator": ">=",
+        "positive_label": "positive",
+        "precision": 1.0,
+        "recall": 0.5,
+        "threshold": 5.0
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 2,
+          "true_positive": 1
+        },
+        "feature": "decisive_rank_pct",
+        "operator": "<=",
+        "positive_label": "negative",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 0.272727
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 2,
+          "true_positive": 1
+        },
+        "feature": "decisive_hours_from_cluster_start",
+        "operator": "<=",
+        "positive_label": "negative",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 18.0
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 2,
+          "true_positive": 1
+        },
+        "feature": "decisive_action_edge",
+        "operator": "<=",
+        "positive_label": "negative",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 0.075402
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 2,
+          "true_positive": 1
+        },
+        "feature": "decisive_confidence_gate",
+        "operator": "<=",
+        "positive_label": "negative",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 0.537701
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 2,
+          "true_positive": 1
+        },
+        "feature": "decisive_clarity_score",
+        "operator": "<=",
+        "positive_label": "negative",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 39.0
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 2,
+          "true_positive": 1
+        },
+        "feature": "cluster_policy_diff_rows",
+        "operator": ">=",
+        "positive_label": "negative",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 4.5
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 2,
+          "true_positive": 1
+        },
+        "feature": "cluster_switch_diff_rows",
+        "operator": ">=",
+        "positive_label": "negative",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 4.5
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 2,
+          "true_positive": 1
+        },
+        "feature": "cluster_size_diff_rows",
+        "operator": ">=",
+        "positive_label": "negative",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 1.5
+      }
+    ],
+    "perfect_rules": [
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 2,
+          "true_positive": 1
+        },
+        "feature": "cluster_policy_diff_rows",
+        "operator": ">=",
+        "positive_label": "negative",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 4.5
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 2,
+          "true_positive": 1
+        },
+        "feature": "cluster_policy_diff_rows",
+        "operator": ">=",
+        "positive_label": "negative",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 6.0
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 1,
+          "true_positive": 2
+        },
+        "feature": "cluster_policy_diff_rows",
+        "operator": "<=",
+        "positive_label": "positive",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 3.0
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 1,
+          "true_positive": 2
+        },
+        "feature": "cluster_policy_diff_rows",
+        "operator": "<=",
+        "positive_label": "positive",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 4.5
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 2,
+          "true_positive": 1
+        },
+        "feature": "cluster_size_diff_rows",
+        "operator": ">=",
+        "positive_label": "negative",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 1.5
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 2,
+          "true_positive": 1
+        },
+        "feature": "cluster_size_diff_rows",
+        "operator": ">=",
+        "positive_label": "negative",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 2.0
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 1,
+          "true_positive": 2
+        },
+        "feature": "cluster_size_diff_rows",
+        "operator": "<=",
+        "positive_label": "positive",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 1.0
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 1,
+          "true_positive": 2
+        },
+        "feature": "cluster_size_diff_rows",
+        "operator": "<=",
+        "positive_label": "positive",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 1.5
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 2,
+          "true_positive": 1
+        },
+        "feature": "cluster_switch_diff_rows",
+        "operator": ">=",
+        "positive_label": "negative",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 4.5
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 2,
+          "true_positive": 1
+        },
+        "feature": "cluster_switch_diff_rows",
+        "operator": ">=",
+        "positive_label": "negative",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 6.0
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 1,
+          "true_positive": 2
+        },
+        "feature": "cluster_switch_diff_rows",
+        "operator": "<=",
+        "positive_label": "positive",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 3.0
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 1,
+          "true_positive": 2
+        },
+        "feature": "cluster_switch_diff_rows",
+        "operator": "<=",
+        "positive_label": "positive",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 4.5
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 2,
+          "true_positive": 1
+        },
+        "feature": "decisive_action_edge",
+        "operator": "<=",
+        "positive_label": "negative",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 0.075402
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 2,
+          "true_positive": 1
+        },
+        "feature": "decisive_action_edge",
+        "operator": "<=",
+        "positive_label": "negative",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 0.084563
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 1,
+          "true_positive": 2
+        },
+        "feature": "decisive_action_edge",
+        "operator": ">=",
+        "positive_label": "positive",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 0.084563
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 2,
+          "true_positive": 1
+        },
+        "feature": "decisive_clarity_score",
+        "operator": "<=",
+        "positive_label": "negative",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 39.0
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 2,
+          "true_positive": 1
+        },
+        "feature": "decisive_clarity_score",
+        "operator": "<=",
+        "positive_label": "negative",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 39.5
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 1,
+          "true_positive": 2
+        },
+        "feature": "decisive_clarity_score",
+        "operator": ">=",
+        "positive_label": "positive",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 39.5
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 1,
+          "true_positive": 2
+        },
+        "feature": "decisive_clarity_score",
+        "operator": ">=",
+        "positive_label": "positive",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 40.0
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 2,
+          "true_positive": 1
+        },
+        "feature": "decisive_confidence_gate",
+        "operator": "<=",
+        "positive_label": "negative",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 0.537701
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 2,
+          "true_positive": 1
+        },
+        "feature": "decisive_confidence_gate",
+        "operator": "<=",
+        "positive_label": "negative",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 0.542281
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 1,
+          "true_positive": 2
+        },
+        "feature": "decisive_confidence_gate",
+        "operator": ">=",
+        "positive_label": "positive",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 0.542281
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 2,
+          "true_positive": 1
+        },
+        "feature": "decisive_hours_from_cluster_start",
+        "operator": "<=",
+        "positive_label": "negative",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 18.0
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 2,
+          "true_positive": 1
+        },
+        "feature": "decisive_hours_from_cluster_start",
+        "operator": "<=",
+        "positive_label": "negative",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 19.5
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 1,
+          "true_positive": 2
+        },
+        "feature": "decisive_hours_from_cluster_start",
+        "operator": ">=",
+        "positive_label": "positive",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 19.5
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 2,
+          "true_positive": 1
+        },
+        "feature": "decisive_rank_pct",
+        "operator": "<=",
+        "positive_label": "negative",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 0.272727
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 2,
+          "true_positive": 1
+        },
+        "feature": "decisive_rank_pct",
+        "operator": "<=",
+        "positive_label": "negative",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 0.42803
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 1,
+          "true_positive": 2
+        },
+        "feature": "decisive_rank_pct",
+        "operator": ">=",
+        "positive_label": "positive",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 0.42803
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 2,
+          "true_positive": 1
+        },
+        "feature": "release_retention_ratio",
+        "operator": "<=",
+        "positive_label": "negative",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 0.5
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 2,
+          "true_positive": 1
+        },
+        "feature": "release_retention_ratio",
+        "operator": "<=",
+        "positive_label": "negative",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 0.634615
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 1,
+          "true_positive": 2
+        },
+        "feature": "release_retention_ratio",
+        "operator": ">=",
+        "positive_label": "positive",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 0.634615
+      }
+    ]
+  },
+  "sign_summary": {
+    "inference": "Inside the same early continuation-release phase band, several cluster-local features perfectly separate the lone negative exact subject from the two positive exact subjects on the frozen triad. The strongest triad-local signals are lower release retention, earlier decisive timing within the cluster, weaker decisive support, and heavier policy/size divergence.",
+    "next_hypothesis": "Because this bench still contains only one negative subject, the next honest test is not to claim a portable sign law but to widen the exact-subject bench or find another opposite-sign seam-active subject before trusting any of these intra-band features beyond the frozen triad.",
+    "non_perfect_features": [
+      "cluster_row_count",
+      "decisive_index_within_cluster"
+    ],
+    "perfect_negative_separator_families": [
+      "cluster_shape",
+      "decisive_support",
+      "decisive_timing",
+      "path_divergence"
+    ],
+    "perfect_negative_separators": [
+      "release_retention_ratio",
+      "decisive_rank_pct",
+      "decisive_hours_from_cluster_start",
+      "decisive_action_edge",
+      "decisive_confidence_gate",
+      "decisive_clarity_score",
+      "cluster_policy_diff_rows",
+      "cluster_switch_diff_rows",
+      "cluster_size_diff_rows"
+    ],
+    "status": "frozen_triad_intra_band_structure_yields_sign_candidates"
+  },
+  "status": "continuation_release_hysteresis_intra_band_sign_candidates_generated",
+  "subject_summaries": {
+    "2018-03": {
+      "cluster_context": {
+        "baseline_continuation_release_row_count": 12,
+        "cluster_action_edge": {
+          "count": 12,
+          "max": 0.136911,
+          "mean": 0.100715,
+          "min": 0.075402
+        },
+        "cluster_clarity_score": {
+          "count": 12,
+          "max": 43.0,
+          "mean": 40.75,
+          "min": 39.0
+        },
+        "cluster_confidence_gate": {
+          "count": 12,
+          "max": 0.568455,
+          "mean": 0.550358,
+          "min": 0.537701
+        },
+        "decisive_timestamp": "2018-03-17T03:00:00+00:00",
+        "first_timestamp": "2018-03-16T09:00:00+00:00",
+        "last_timestamp": "2018-03-18T03:00:00+00:00",
+        "release_zero_continuation_release_row_count": 6
+      },
+      "final_capital_diff": -0.937167,
+      "subject_features": {
+        "cluster_policy_diff_rows": 6.0,
+        "cluster_row_count": 12.0,
+        "cluster_size_diff_rows": 2.0,
+        "cluster_switch_diff_rows": 6.0,
+        "decisive_action_edge": 0.075402,
+        "decisive_clarity_score": 39.0,
+        "decisive_confidence_gate": 0.537701,
+        "decisive_hours_from_cluster_start": 18.0,
+        "decisive_index_within_cluster": 3.0,
+        "decisive_rank_pct": 0.272727,
+        "release_retention_ratio": 0.5
+      },
+      "subject_id": "2018-03",
+      "top_line_sign": "negative",
+      "total_return_diff": -0.009372
+    },
+    "2021-08": {
+      "cluster_context": {
+        "baseline_continuation_release_row_count": 6,
+        "cluster_action_edge": {
+          "count": 6,
+          "max": 0.095446,
+          "mean": 0.094982,
+          "min": 0.094518
+        },
+        "cluster_clarity_score": {
+          "count": 6,
+          "max": 40.0,
+          "mean": 40.0,
+          "min": 40.0
+        },
+        "cluster_confidence_gate": {
+          "count": 6,
+          "max": 0.547723,
+          "mean": 0.547491,
+          "min": 0.547259
+        },
+        "decisive_timestamp": "2021-08-19T03:00:00+00:00",
+        "first_timestamp": "2021-08-18T03:00:00+00:00",
+        "last_timestamp": "2021-08-19T09:00:00+00:00",
+        "release_zero_continuation_release_row_count": 6
+      },
+      "final_capital_diff": 18.890086,
+      "subject_features": {
+        "cluster_policy_diff_rows": 3.0,
+        "cluster_row_count": 6.0,
+        "cluster_size_diff_rows": 1.0,
+        "cluster_switch_diff_rows": 3.0,
+        "decisive_action_edge": 0.095446,
+        "decisive_clarity_score": 40.0,
+        "decisive_confidence_gate": 0.547723,
+        "decisive_hours_from_cluster_start": 24.0,
+        "decisive_index_within_cluster": 3.0,
+        "decisive_rank_pct": 0.6,
+        "release_retention_ratio": 1.0
+      },
+      "subject_id": "2021-08",
+      "top_line_sign": "positive",
+      "total_return_diff": 0.188901
+    },
+    "2025-10": {
+      "cluster_context": {
+        "baseline_continuation_release_row_count": 13,
+        "cluster_action_edge": {
+          "count": 13,
+          "max": 0.094443,
+          "mean": 0.093265,
+          "min": 0.090056
+        },
+        "cluster_clarity_score": {
+          "count": 13,
+          "max": 40.0,
+          "mean": 40.0,
+          "min": 40.0
+        },
+        "cluster_confidence_gate": {
+          "count": 13,
+          "max": 0.547222,
+          "mean": 0.546632,
+          "min": 0.545028
+        },
+        "decisive_timestamp": "2025-10-17T21:00:00+00:00",
+        "first_timestamp": "2025-10-17T00:00:00+00:00",
+        "last_timestamp": "2025-10-18T21:00:00+00:00",
+        "release_zero_continuation_release_row_count": 10
+      },
+      "final_capital_diff": 17.13484,
+      "subject_features": {
+        "cluster_policy_diff_rows": 3.0,
+        "cluster_row_count": 13.0,
+        "cluster_size_diff_rows": 1.0,
+        "cluster_switch_diff_rows": 3.0,
+        "decisive_action_edge": 0.093725,
+        "decisive_clarity_score": 40.0,
+        "decisive_confidence_gate": 0.546862,
+        "decisive_hours_from_cluster_start": 21.0,
+        "decisive_index_within_cluster": 7.0,
+        "decisive_rank_pct": 0.583333,
+        "release_retention_ratio": 0.769231
+      },
+      "subject_id": "2025-10",
+      "top_line_sign": "positive",
+      "total_return_diff": 0.171348
+    }
+  }
+}

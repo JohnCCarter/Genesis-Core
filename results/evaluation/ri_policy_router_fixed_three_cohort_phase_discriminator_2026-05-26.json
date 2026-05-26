@@ -1,0 +1,1051 @@
+{
+  "audit_version": "ri-policy-router-fixed-three-cohort-phase-discriminator-2026-05-26",
+  "base_sha": "f8b9e659ccd106a81bd8033d30dfe1646330ab42",
+  "classification_boundary": {
+    "categorical_features_descriptive_only": [
+      "phase_label",
+      "phase_family",
+      "selected_policy",
+      "switch_reason",
+      "previous_policy",
+      "action_pair",
+      "zone"
+    ],
+    "decision_time_numeric_features_only_for_rule_search": [
+      "bars_since_regime_change",
+      "action_edge",
+      "confidence_gate",
+      "clarity_score"
+    ],
+    "outcome_metrics_observational_only": true,
+    "source_surface": "fixed local subjects only"
+  },
+  "decision_time_comparison": {
+    "categorical_features": {
+      "action_pair": {
+        "all_label_sets_equal": false,
+        "cohorts": {
+          "blocked_dominant_mixed_pocket": {
+            "counts": [
+              {
+                "count": 9,
+                "label": "LONG->NONE"
+              }
+            ],
+            "display_name": "2024 harmful target"
+          },
+          "less_hostile_clean_continuation": {
+            "counts": [
+              {
+                "count": 6,
+                "label": "NONE->LONG"
+              }
+            ],
+            "display_name": "2023-12 wave 1"
+          },
+          "weak_clean_continuation": {
+            "counts": [
+              {
+                "count": 7,
+                "label": "NONE->LONG"
+              }
+            ],
+            "display_name": "2023-12 wave 2"
+          }
+        }
+      },
+      "phase_family": {
+        "all_label_sets_equal": false,
+        "cohorts": {
+          "blocked_dominant_mixed_pocket": {
+            "counts": [
+              {
+                "count": 9,
+                "label": "blocked_like"
+              }
+            ],
+            "display_name": "2024 harmful target"
+          },
+          "less_hostile_clean_continuation": {
+            "counts": [
+              {
+                "count": 6,
+                "label": "continuation_like"
+              }
+            ],
+            "display_name": "2023-12 wave 1"
+          },
+          "weak_clean_continuation": {
+            "counts": [
+              {
+                "count": 7,
+                "label": "continuation_like"
+              }
+            ],
+            "display_name": "2023-12 wave 2"
+          }
+        }
+      },
+      "phase_label": {
+        "all_label_sets_equal": false,
+        "cohorts": {
+          "blocked_dominant_mixed_pocket": {
+            "counts": [
+              {
+                "count": 4,
+                "label": "blocked_aged_weak_continuation_guard"
+              },
+              {
+                "count": 5,
+                "label": "blocked_insufficient_evidence"
+              }
+            ],
+            "display_name": "2024 harmful target"
+          },
+          "less_hostile_clean_continuation": {
+            "counts": [
+              {
+                "count": 6,
+                "label": "continuation_release"
+              }
+            ],
+            "display_name": "2023-12 wave 1"
+          },
+          "weak_clean_continuation": {
+            "counts": [
+              {
+                "count": 7,
+                "label": "continuation_release"
+              }
+            ],
+            "display_name": "2023-12 wave 2"
+          }
+        }
+      },
+      "previous_policy": {
+        "all_label_sets_equal": true,
+        "cohorts": {
+          "blocked_dominant_mixed_pocket": {
+            "counts": [
+              {
+                "count": 1,
+                "label": "RI_continuation_policy"
+              },
+              {
+                "count": 8,
+                "label": "RI_no_trade_policy"
+              }
+            ],
+            "display_name": "2024 harmful target"
+          },
+          "less_hostile_clean_continuation": {
+            "counts": [
+              {
+                "count": 5,
+                "label": "RI_continuation_policy"
+              },
+              {
+                "count": 1,
+                "label": "RI_no_trade_policy"
+              }
+            ],
+            "display_name": "2023-12 wave 1"
+          },
+          "weak_clean_continuation": {
+            "counts": [
+              {
+                "count": 5,
+                "label": "RI_continuation_policy"
+              },
+              {
+                "count": 2,
+                "label": "RI_no_trade_policy"
+              }
+            ],
+            "display_name": "2023-12 wave 2"
+          }
+        }
+      },
+      "selected_policy": {
+        "all_label_sets_equal": false,
+        "cohorts": {
+          "blocked_dominant_mixed_pocket": {
+            "counts": [
+              {
+                "count": 9,
+                "label": "RI_no_trade_policy"
+              }
+            ],
+            "display_name": "2024 harmful target"
+          },
+          "less_hostile_clean_continuation": {
+            "counts": [
+              {
+                "count": 6,
+                "label": "RI_continuation_policy"
+              }
+            ],
+            "display_name": "2023-12 wave 1"
+          },
+          "weak_clean_continuation": {
+            "counts": [
+              {
+                "count": 7,
+                "label": "RI_continuation_policy"
+              }
+            ],
+            "display_name": "2023-12 wave 2"
+          }
+        }
+      },
+      "switch_reason": {
+        "all_label_sets_equal": false,
+        "cohorts": {
+          "blocked_dominant_mixed_pocket": {
+            "counts": [
+              {
+                "count": 4,
+                "label": "AGED_WEAK_CONTINUATION_GUARD"
+              },
+              {
+                "count": 5,
+                "label": "insufficient_evidence"
+              }
+            ],
+            "display_name": "2024 harmful target"
+          },
+          "less_hostile_clean_continuation": {
+            "counts": [
+              {
+                "count": 6,
+                "label": "stable_continuation_state"
+              }
+            ],
+            "display_name": "2023-12 wave 1"
+          },
+          "weak_clean_continuation": {
+            "counts": [
+              {
+                "count": 7,
+                "label": "stable_continuation_state"
+              }
+            ],
+            "display_name": "2023-12 wave 2"
+          }
+        }
+      },
+      "zone": {
+        "all_label_sets_equal": true,
+        "cohorts": {
+          "blocked_dominant_mixed_pocket": {
+            "counts": [
+              {
+                "count": 9,
+                "label": "low"
+              }
+            ],
+            "display_name": "2024 harmful target"
+          },
+          "less_hostile_clean_continuation": {
+            "counts": [
+              {
+                "count": 6,
+                "label": "low"
+              }
+            ],
+            "display_name": "2023-12 wave 1"
+          },
+          "weak_clean_continuation": {
+            "counts": [
+              {
+                "count": 7,
+                "label": "low"
+              }
+            ],
+            "display_name": "2023-12 wave 2"
+          }
+        }
+      }
+    },
+    "numeric_features": {
+      "action_edge": {
+        "cohorts": {
+          "blocked_dominant_mixed_pocket": {
+            "count": 9,
+            "display_name": "2024 harmful target",
+            "max": 0.06358,
+            "mean": 0.040542,
+            "min": 0.021236
+          },
+          "less_hostile_clean_continuation": {
+            "count": 6,
+            "display_name": "2023-12 wave 1",
+            "max": 0.139812,
+            "mean": 0.108708,
+            "min": 0.091018
+          },
+          "weak_clean_continuation": {
+            "count": 7,
+            "display_name": "2023-12 wave 2",
+            "max": 0.134143,
+            "mean": 0.095016,
+            "min": 0.072364
+          }
+        },
+        "ordered_by_mean_low_to_high": [
+          {
+            "cohort": "blocked_dominant_mixed_pocket",
+            "display_name": "2024 harmful target",
+            "mean": 0.040542
+          },
+          {
+            "cohort": "weak_clean_continuation",
+            "display_name": "2023-12 wave 2",
+            "mean": 0.095016
+          },
+          {
+            "cohort": "less_hostile_clean_continuation",
+            "display_name": "2023-12 wave 1",
+            "mean": 0.108708
+          }
+        ]
+      },
+      "bars_since_regime_change": {
+        "cohorts": {
+          "blocked_dominant_mixed_pocket": {
+            "count": 9,
+            "display_name": "2024 harmful target",
+            "max": 282.0,
+            "mean": 281.222222,
+            "min": 281.0
+          },
+          "less_hostile_clean_continuation": {
+            "count": 6,
+            "display_name": "2023-12 wave 1",
+            "max": 368.0,
+            "mean": 365.5,
+            "min": 363.0
+          },
+          "weak_clean_continuation": {
+            "count": 7,
+            "display_name": "2023-12 wave 2",
+            "max": 378.0,
+            "mean": 373.428571,
+            "min": 370.0
+          }
+        },
+        "ordered_by_mean_low_to_high": [
+          {
+            "cohort": "blocked_dominant_mixed_pocket",
+            "display_name": "2024 harmful target",
+            "mean": 281.222222
+          },
+          {
+            "cohort": "less_hostile_clean_continuation",
+            "display_name": "2023-12 wave 1",
+            "mean": 365.5
+          },
+          {
+            "cohort": "weak_clean_continuation",
+            "display_name": "2023-12 wave 2",
+            "mean": 373.428571
+          }
+        ]
+      },
+      "clarity_score": {
+        "cohorts": {
+          "blocked_dominant_mixed_pocket": {
+            "count": 9,
+            "display_name": "2024 harmful target",
+            "max": 38.0,
+            "mean": 36.888889,
+            "min": 36.0
+          },
+          "less_hostile_clean_continuation": {
+            "count": 6,
+            "display_name": "2023-12 wave 1",
+            "max": 43.0,
+            "mean": 41.0,
+            "min": 40.0
+          },
+          "weak_clean_continuation": {
+            "count": 7,
+            "display_name": "2023-12 wave 2",
+            "max": 43.0,
+            "mean": 40.285714,
+            "min": 39.0
+          }
+        },
+        "ordered_by_mean_low_to_high": [
+          {
+            "cohort": "blocked_dominant_mixed_pocket",
+            "display_name": "2024 harmful target",
+            "mean": 36.888889
+          },
+          {
+            "cohort": "weak_clean_continuation",
+            "display_name": "2023-12 wave 2",
+            "mean": 40.285714
+          },
+          {
+            "cohort": "less_hostile_clean_continuation",
+            "display_name": "2023-12 wave 1",
+            "mean": 41.0
+          }
+        ]
+      },
+      "confidence_gate": {
+        "cohorts": {
+          "blocked_dominant_mixed_pocket": {
+            "count": 9,
+            "display_name": "2024 harmful target",
+            "max": 0.53179,
+            "mean": 0.520271,
+            "min": 0.510618
+          },
+          "less_hostile_clean_continuation": {
+            "count": 6,
+            "display_name": "2023-12 wave 1",
+            "max": 0.569906,
+            "mean": 0.554354,
+            "min": 0.545509
+          },
+          "weak_clean_continuation": {
+            "count": 7,
+            "display_name": "2023-12 wave 2",
+            "max": 0.567071,
+            "mean": 0.547508,
+            "min": 0.536182
+          }
+        },
+        "ordered_by_mean_low_to_high": [
+          {
+            "cohort": "blocked_dominant_mixed_pocket",
+            "display_name": "2024 harmful target",
+            "mean": 0.520271
+          },
+          {
+            "cohort": "weak_clean_continuation",
+            "display_name": "2023-12 wave 2",
+            "mean": 0.547508
+          },
+          {
+            "cohort": "less_hostile_clean_continuation",
+            "display_name": "2023-12 wave 1",
+            "mean": 0.554354
+          }
+        ]
+      }
+    }
+  },
+  "inputs": {
+    "source_artifact": "results\\evaluation\\ri_policy_router_2023_12_vs_2024_fixed_window_phase_contrast_2026-05-25.json",
+    "working_contract_reference": "GENESIS_WORKING_CONTRACT.md"
+  },
+  "non_authoritative": true,
+  "observational_only": true,
+  "observational_outcome_context": {
+    "fwd_16_close_return_pct": {
+      "cohorts": {
+        "blocked_dominant_mixed_pocket": {
+          "count": 9,
+          "display_name": "2024 harmful target",
+          "gt_zero_share": 0.111111,
+          "mean": -0.441517
+        },
+        "less_hostile_clean_continuation": {
+          "count": 6,
+          "display_name": "2023-12 wave 1",
+          "gt_zero_share": 0.5,
+          "mean": -0.154828
+        },
+        "weak_clean_continuation": {
+          "count": 7,
+          "display_name": "2023-12 wave 2",
+          "gt_zero_share": 0.0,
+          "mean": -1.027688
+        }
+      }
+    },
+    "fwd_4_close_return_pct": {
+      "cohorts": {
+        "blocked_dominant_mixed_pocket": {
+          "count": 9,
+          "display_name": "2024 harmful target",
+          "gt_zero_share": 0.444444,
+          "mean": 0.002144
+        },
+        "less_hostile_clean_continuation": {
+          "count": 6,
+          "display_name": "2023-12 wave 1",
+          "gt_zero_share": 0.333333,
+          "mean": -0.736705
+        },
+        "weak_clean_continuation": {
+          "count": 7,
+          "display_name": "2023-12 wave 2",
+          "gt_zero_share": 0.571429,
+          "mean": -0.21816
+        }
+      }
+    },
+    "fwd_8_close_return_pct": {
+      "cohorts": {
+        "blocked_dominant_mixed_pocket": {
+          "count": 9,
+          "display_name": "2024 harmful target",
+          "gt_zero_share": 0.333333,
+          "mean": -0.294416
+        },
+        "less_hostile_clean_continuation": {
+          "count": 6,
+          "display_name": "2023-12 wave 1",
+          "gt_zero_share": 0.166667,
+          "mean": -0.966556
+        },
+        "weak_clean_continuation": {
+          "count": 7,
+          "display_name": "2023-12 wave 2",
+          "gt_zero_share": 0.428571,
+          "mean": -0.482743
+        }
+      }
+    },
+    "mae_16_pct": {
+      "cohorts": {
+        "blocked_dominant_mixed_pocket": {
+          "count": 9,
+          "display_name": "2024 harmful target",
+          "gt_zero_share": 0.0,
+          "mean": -1.918417
+        },
+        "less_hostile_clean_continuation": {
+          "count": 6,
+          "display_name": "2023-12 wave 1",
+          "gt_zero_share": 0.0,
+          "mean": -3.43294
+        },
+        "weak_clean_continuation": {
+          "count": 7,
+          "display_name": "2023-12 wave 2",
+          "gt_zero_share": 0.0,
+          "mean": -2.62073
+        }
+      }
+    },
+    "mfe_16_pct": {
+      "cohorts": {
+        "blocked_dominant_mixed_pocket": {
+          "count": 9,
+          "display_name": "2024 harmful target",
+          "gt_zero_share": 0.888889,
+          "mean": 1.443341
+        },
+        "less_hostile_clean_continuation": {
+          "count": 6,
+          "display_name": "2023-12 wave 1",
+          "gt_zero_share": 0.833333,
+          "mean": 2.296131
+        },
+        "weak_clean_continuation": {
+          "count": 7,
+          "display_name": "2023-12 wave 2",
+          "gt_zero_share": 1.0,
+          "mean": 0.883337
+        }
+      }
+    }
+  },
+  "one_vs_rest_rule_search": {
+    "best_rule_per_feature_and_cohort": [
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 13,
+          "true_positive": 9
+        },
+        "feature": "action_edge",
+        "operator": "<=",
+        "positive_cohort": "blocked_dominant_mixed_pocket",
+        "positive_display_name": "2024 harmful target",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 0.067972
+      },
+      {
+        "accuracy": 0.863636,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 3,
+          "true_negative": 13,
+          "true_positive": 6
+        },
+        "feature": "action_edge",
+        "operator": ">=",
+        "positive_cohort": "less_hostile_clean_continuation",
+        "positive_display_name": "2023-12 wave 1",
+        "precision": 0.666667,
+        "recall": 1.0,
+        "threshold": 0.088612
+      },
+      {
+        "accuracy": 0.727273,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 6,
+          "true_negative": 9,
+          "true_positive": 7
+        },
+        "feature": "action_edge",
+        "operator": ">=",
+        "positive_cohort": "weak_clean_continuation",
+        "positive_display_name": "2023-12 wave 2",
+        "precision": 0.538462,
+        "recall": 1.0,
+        "threshold": 0.067972
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 13,
+          "true_positive": 9
+        },
+        "feature": "bars_since_regime_change",
+        "operator": "<=",
+        "positive_cohort": "blocked_dominant_mixed_pocket",
+        "positive_display_name": "2024 harmful target",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 322.5
+      },
+      {
+        "accuracy": 0.681818,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 7,
+          "true_negative": 9,
+          "true_positive": 6
+        },
+        "feature": "bars_since_regime_change",
+        "operator": ">=",
+        "positive_cohort": "less_hostile_clean_continuation",
+        "positive_display_name": "2023-12 wave 1",
+        "precision": 0.461538,
+        "recall": 1.0,
+        "threshold": 322.5
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 15,
+          "true_positive": 7
+        },
+        "feature": "bars_since_regime_change",
+        "operator": ">=",
+        "positive_cohort": "weak_clean_continuation",
+        "positive_display_name": "2023-12 wave 2",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 369.0
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 13,
+          "true_positive": 9
+        },
+        "feature": "clarity_score",
+        "operator": "<=",
+        "positive_cohort": "blocked_dominant_mixed_pocket",
+        "positive_display_name": "2024 harmful target",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 38.5
+      },
+      {
+        "accuracy": 0.818182,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 4,
+          "true_negative": 12,
+          "true_positive": 6
+        },
+        "feature": "clarity_score",
+        "operator": ">=",
+        "positive_cohort": "less_hostile_clean_continuation",
+        "positive_display_name": "2023-12 wave 1",
+        "precision": 0.6,
+        "recall": 1.0,
+        "threshold": 39.5
+      },
+      {
+        "accuracy": 0.727273,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 6,
+          "true_negative": 9,
+          "true_positive": 7
+        },
+        "feature": "clarity_score",
+        "operator": ">=",
+        "positive_cohort": "weak_clean_continuation",
+        "positive_display_name": "2023-12 wave 2",
+        "precision": 0.538462,
+        "recall": 1.0,
+        "threshold": 38.5
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 13,
+          "true_positive": 9
+        },
+        "feature": "confidence_gate",
+        "operator": "<=",
+        "positive_cohort": "blocked_dominant_mixed_pocket",
+        "positive_display_name": "2024 harmful target",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 0.533986
+      },
+      {
+        "accuracy": 0.863636,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 3,
+          "true_negative": 13,
+          "true_positive": 6
+        },
+        "feature": "confidence_gate",
+        "operator": ">=",
+        "positive_cohort": "less_hostile_clean_continuation",
+        "positive_display_name": "2023-12 wave 1",
+        "precision": 0.666667,
+        "recall": 1.0,
+        "threshold": 0.544306
+      },
+      {
+        "accuracy": 0.727273,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 6,
+          "true_negative": 9,
+          "true_positive": 7
+        },
+        "feature": "confidence_gate",
+        "operator": ">=",
+        "positive_cohort": "weak_clean_continuation",
+        "positive_display_name": "2023-12 wave 2",
+        "precision": 0.538462,
+        "recall": 1.0,
+        "threshold": 0.533986
+      }
+    ],
+    "perfect_rules": [
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 13,
+          "true_positive": 9
+        },
+        "feature": "action_edge",
+        "operator": "<=",
+        "positive_cohort": "blocked_dominant_mixed_pocket",
+        "positive_display_name": "2024 harmful target",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 0.067972
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 13,
+          "true_positive": 9
+        },
+        "feature": "bars_since_regime_change",
+        "operator": "<=",
+        "positive_cohort": "blocked_dominant_mixed_pocket",
+        "positive_display_name": "2024 harmful target",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 322.5
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 15,
+          "true_positive": 7
+        },
+        "feature": "bars_since_regime_change",
+        "operator": ">=",
+        "positive_cohort": "weak_clean_continuation",
+        "positive_display_name": "2023-12 wave 2",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 369.0
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 13,
+          "true_positive": 9
+        },
+        "feature": "clarity_score",
+        "operator": "<=",
+        "positive_cohort": "blocked_dominant_mixed_pocket",
+        "positive_display_name": "2024 harmful target",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 38.5
+      },
+      {
+        "accuracy": 1.0,
+        "confusion": {
+          "false_negative": 0,
+          "false_positive": 0,
+          "true_negative": 13,
+          "true_positive": 9
+        },
+        "feature": "confidence_gate",
+        "operator": "<=",
+        "positive_cohort": "blocked_dominant_mixed_pocket",
+        "positive_display_name": "2024 harmful target",
+        "precision": 1.0,
+        "recall": 1.0,
+        "threshold": 0.533986
+      }
+    ]
+  },
+  "single_feature_ordered_split_search": {
+    "best_split_per_feature": [
+      {
+        "accuracy": 0.863636,
+        "cohort_order": [
+          "blocked_dominant_mixed_pocket",
+          "weak_clean_continuation",
+          "less_hostile_clean_continuation"
+        ],
+        "cohort_order_display": [
+          "2024 harmful target",
+          "2023-12 wave 2",
+          "2023-12 wave 1"
+        ],
+        "confusion": {
+          "blocked_dominant_mixed_pocket": {
+            "blocked_dominant_mixed_pocket": 9,
+            "less_hostile_clean_continuation": 0,
+            "weak_clean_continuation": 0
+          },
+          "less_hostile_clean_continuation": {
+            "blocked_dominant_mixed_pocket": 0,
+            "less_hostile_clean_continuation": 6,
+            "weak_clean_continuation": 0
+          },
+          "weak_clean_continuation": {
+            "blocked_dominant_mixed_pocket": 0,
+            "less_hostile_clean_continuation": 3,
+            "weak_clean_continuation": 4
+          }
+        },
+        "feature": "action_edge",
+        "lower_threshold": 0.067972,
+        "upper_threshold": 0.088612
+      },
+      {
+        "accuracy": 1.0,
+        "cohort_order": [
+          "blocked_dominant_mixed_pocket",
+          "less_hostile_clean_continuation",
+          "weak_clean_continuation"
+        ],
+        "cohort_order_display": [
+          "2024 harmful target",
+          "2023-12 wave 1",
+          "2023-12 wave 2"
+        ],
+        "confusion": {
+          "blocked_dominant_mixed_pocket": {
+            "blocked_dominant_mixed_pocket": 9,
+            "less_hostile_clean_continuation": 0,
+            "weak_clean_continuation": 0
+          },
+          "less_hostile_clean_continuation": {
+            "blocked_dominant_mixed_pocket": 0,
+            "less_hostile_clean_continuation": 6,
+            "weak_clean_continuation": 0
+          },
+          "weak_clean_continuation": {
+            "blocked_dominant_mixed_pocket": 0,
+            "less_hostile_clean_continuation": 0,
+            "weak_clean_continuation": 7
+          }
+        },
+        "feature": "bars_since_regime_change",
+        "lower_threshold": 322.5,
+        "upper_threshold": 369.0
+      },
+      {
+        "accuracy": 0.818182,
+        "cohort_order": [
+          "blocked_dominant_mixed_pocket",
+          "weak_clean_continuation",
+          "less_hostile_clean_continuation"
+        ],
+        "cohort_order_display": [
+          "2024 harmful target",
+          "2023-12 wave 2",
+          "2023-12 wave 1"
+        ],
+        "confusion": {
+          "blocked_dominant_mixed_pocket": {
+            "blocked_dominant_mixed_pocket": 9,
+            "less_hostile_clean_continuation": 0,
+            "weak_clean_continuation": 0
+          },
+          "less_hostile_clean_continuation": {
+            "blocked_dominant_mixed_pocket": 0,
+            "less_hostile_clean_continuation": 6,
+            "weak_clean_continuation": 0
+          },
+          "weak_clean_continuation": {
+            "blocked_dominant_mixed_pocket": 0,
+            "less_hostile_clean_continuation": 4,
+            "weak_clean_continuation": 3
+          }
+        },
+        "feature": "clarity_score",
+        "lower_threshold": 38.5,
+        "upper_threshold": 39.5
+      },
+      {
+        "accuracy": 0.863636,
+        "cohort_order": [
+          "blocked_dominant_mixed_pocket",
+          "weak_clean_continuation",
+          "less_hostile_clean_continuation"
+        ],
+        "cohort_order_display": [
+          "2024 harmful target",
+          "2023-12 wave 2",
+          "2023-12 wave 1"
+        ],
+        "confusion": {
+          "blocked_dominant_mixed_pocket": {
+            "blocked_dominant_mixed_pocket": 9,
+            "less_hostile_clean_continuation": 0,
+            "weak_clean_continuation": 0
+          },
+          "less_hostile_clean_continuation": {
+            "blocked_dominant_mixed_pocket": 0,
+            "less_hostile_clean_continuation": 6,
+            "weak_clean_continuation": 0
+          },
+          "weak_clean_continuation": {
+            "blocked_dominant_mixed_pocket": 0,
+            "less_hostile_clean_continuation": 3,
+            "weak_clean_continuation": 4
+          }
+        },
+        "feature": "confidence_gate",
+        "lower_threshold": 0.533986,
+        "upper_threshold": 0.544306
+      }
+    ],
+    "perfect_splits": [
+      {
+        "accuracy": 1.0,
+        "cohort_order": [
+          "blocked_dominant_mixed_pocket",
+          "less_hostile_clean_continuation",
+          "weak_clean_continuation"
+        ],
+        "cohort_order_display": [
+          "2024 harmful target",
+          "2023-12 wave 1",
+          "2023-12 wave 2"
+        ],
+        "confusion": {
+          "blocked_dominant_mixed_pocket": {
+            "blocked_dominant_mixed_pocket": 9,
+            "less_hostile_clean_continuation": 0,
+            "weak_clean_continuation": 0
+          },
+          "less_hostile_clean_continuation": {
+            "blocked_dominant_mixed_pocket": 0,
+            "less_hostile_clean_continuation": 6,
+            "weak_clean_continuation": 0
+          },
+          "weak_clean_continuation": {
+            "blocked_dominant_mixed_pocket": 0,
+            "less_hostile_clean_continuation": 0,
+            "weak_clean_continuation": 7
+          }
+        },
+        "feature": "bars_since_regime_change",
+        "lower_threshold": 322.5,
+        "upper_threshold": 369.0
+      }
+    ]
+  },
+  "status": "fixed_three_cohort_phase_discriminator_generated",
+  "subjects": {
+    "blocked_dominant_mixed_pocket": {
+      "display_name": "2024 harmful target",
+      "row_count": 9,
+      "timestamps": [
+        "2024-11-28T15:00:00+00:00",
+        "2024-11-29T00:00:00+00:00",
+        "2024-11-29T09:00:00+00:00",
+        "2024-11-29T18:00:00+00:00",
+        "2024-11-30T03:00:00+00:00",
+        "2024-11-30T12:00:00+00:00",
+        "2024-11-30T21:00:00+00:00",
+        "2024-12-01T15:00:00+00:00",
+        "2024-12-02T00:00:00+00:00"
+      ]
+    },
+    "less_hostile_clean_continuation": {
+      "display_name": "2023-12 wave 1",
+      "row_count": 6,
+      "timestamps": [
+        "2023-12-15T21:00:00+00:00",
+        "2023-12-16T06:00:00+00:00",
+        "2023-12-16T15:00:00+00:00",
+        "2023-12-17T00:00:00+00:00",
+        "2023-12-17T09:00:00+00:00",
+        "2023-12-17T18:00:00+00:00"
+      ]
+    },
+    "weak_clean_continuation": {
+      "display_name": "2023-12 wave 2",
+      "row_count": 7,
+      "timestamps": [
+        "2023-12-22T15:00:00+00:00",
+        "2023-12-23T00:00:00+00:00",
+        "2023-12-23T09:00:00+00:00",
+        "2023-12-24T03:00:00+00:00",
+        "2023-12-24T12:00:00+00:00",
+        "2023-12-25T06:00:00+00:00",
+        "2023-12-26T00:00:00+00:00"
+      ]
+    }
+  }
+}

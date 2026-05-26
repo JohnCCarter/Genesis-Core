@@ -172,11 +172,18 @@ Build the first regime-separated / policy-separated attribution cube on the boun
   - stop-loss share
   - performance by regime and policy
 - funnel metrics from decision to ledger impact
+- `scripts/analyze/feature_attribution_post_phase14_ri_regime_policy_attribution_cube_fixed_three_cohort_20260526.py`
+- `results/evaluation/feature_attribution_post_phase14_ri_regime_policy_attribution_cube_fixed_three_cohort_2026-05-26.json`
+- `docs/analysis/feature_attribution/post_phase14/feature_attribution_post_phase14_ri_regime_policy_attribution_cube_fixed_three_cohort_2026-05-26.md`
 
 **Done means**
 
 - the bounded artifact can distinguish high activity from actual edge
 - the artifact identifies collapse points before execution or before ledger impact
+
+**Status**
+
+- `completed on current branch`
 
 ### Slice 5 — `OFF vs ON` comparator contract
 
@@ -215,14 +222,14 @@ Run the first full attribution pass on one bounded RI-first surface.
 
 ## Active next step
 
-The next admissible step is **Slice 4 — regime- and policy-separated attribution metrics**.
+The next admissible step is **Slice 5 — `OFF vs ON` comparator contract**.
 
 That slice should stay tightly bounded and answer only these questions:
 
-1. how do decision rows, observed opens, positions, and trade legs split by regime and selected policy on this fixed cohort surface?
-2. where does activity collapse between decision, open, trade, and exit-family stages?
-3. which regime/policy buckets carry the stop-loss, take-profit, and trailing-stop outcomes already frozen by Slice 3?
-4. which comparator-ready fields must be preserved now so Slice 5 can do same-stack `OFF vs ON` alignment without redefining the schema?
+1. how should same-stack `OFF` and `ON` runs align decision, observed-open, realized-position, and trade-event rows on this now-frozen schema?
+2. which identity fields are mandatory, and which fields must remain explicitly derived after alignment?
+3. how should added / missing rows and non-opening actionable decisions be represented so comparator diffs stay honest?
+4. how should exit-family and realized-drawdown-proxy metrics be compared without pretending that a canonical `ledger_impact_row` already exists?
 
 ## What changed and what did not
 
@@ -230,7 +237,7 @@ What changed:
 
 - the current branch now has a concrete current-branch plan surface for the attribution-layer foundation lane
 - the plan is tied to current observed repo surfaces, not to archived `plan/**` guidance
-- Slice 1, Slice 2, and Slice 3 are now frozen as completed and the next bounded slice is explicit instead of implied
+- Slice 1, Slice 2, Slice 3, and Slice 4 are now frozen as completed and the next bounded slice is explicit instead of implied
 
 What did **not** change:
 

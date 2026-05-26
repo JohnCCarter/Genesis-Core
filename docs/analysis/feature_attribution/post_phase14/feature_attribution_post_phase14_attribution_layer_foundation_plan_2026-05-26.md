@@ -98,6 +98,7 @@ Define the canonical row families and joins for a bounded RI-first attribution l
   - join keys
   - required regime / policy / stop / outcome fields
 - explicit field-level support for `OFF vs ON` same-stack evidence
+- `docs/analysis/feature_attribution/post_phase14/feature_attribution_post_phase14_attribution_layer_canonical_schema_draft_2026-05-26.md`
 
 **Done means**
 
@@ -106,7 +107,7 @@ Define the canonical row families and joins for a bounded RI-first attribution l
 
 **Status**
 
-- `next active slice`
+- `completed on current branch`
 
 ### Slice 2 — deterministic decision-surface extractor
 
@@ -119,11 +120,18 @@ Materialize the canonical decision-side surface on one bounded RI carrier.
 - one read-only helper under `scripts/analyze/`
 - one emitted artifact under `results/evaluation/`
 - one bounded analysis note under `docs/analysis/feature_attribution/post_phase14/`
+- `scripts/analyze/feature_attribution_post_phase14_ri_decision_surface_fixed_three_cohort_20260526.py`
+- `results/evaluation/feature_attribution_post_phase14_ri_decision_surface_fixed_three_cohort_2026-05-26.json`
+- `docs/analysis/feature_attribution/post_phase14/feature_attribution_post_phase14_ri_decision_surface_fixed_three_cohort_2026-05-26.md`
 
 **Done means**
 
 - rerunning with the same stack reproduces the same schema-compatible decision rows
 - regime / policy / switch / blocker fields are explicit in the artifact
+
+**Status**
+
+- `completed on current branch`
 
 ### Slice 3 — trade / exit join and stop taxonomy pass
 
@@ -140,6 +148,10 @@ Join the decision surface to actual trade outcomes and classify stop / exit sema
 **Done means**
 
 - the bounded surface can answer which decisions became trades, which trades exited by what mechanism, and what reached ledger impact
+
+**Status**
+
+- `next active slice`
 
 ### Slice 4 — regime- and policy-separated attribution metrics
 
@@ -200,14 +212,14 @@ Run the first full attribution pass on one bounded RI-first surface.
 
 ## Active next step
 
-The next admissible step is **Slice 1 — canonical attribution schema draft**.
+The next admissible step is **Slice 3 — trade / exit join and stop taxonomy pass**.
 
-That slice should stay docs-first and answer only these questions:
+That slice should stay tightly bounded and answer only these questions:
 
-1. what is the minimal canonical row family set?
-2. what are the stable join keys?
-3. which fields are truly observed today?
-4. which labels are derived and therefore must stay explicitly marked as derived?
+1. which current trade / position surfaces can be joined back to the new canonical `decision_row` artifact without inventing runtime fields?
+2. can `position_id`, `entry_time`, `exit_time`, and `entry_reasons` support an honest bounded join contract?
+3. which stop / exit families are truly recoverable from current `exit_reason` plus bounded config context?
+4. which parts of the decision -> trade -> ledger chain remain observed, and which parts must stay explicitly derived?
 
 ## What changed and what did not
 
@@ -215,7 +227,7 @@ What changed:
 
 - the current branch now has a concrete current-branch plan surface for the attribution-layer foundation lane
 - the plan is tied to current observed repo surfaces, not to archived `plan/**` guidance
-- the next bounded slice is explicit instead of implied
+- Slice 1 and Slice 2 are now frozen as completed and the next bounded slice is explicit instead of implied
 
 What did **not** change:
 

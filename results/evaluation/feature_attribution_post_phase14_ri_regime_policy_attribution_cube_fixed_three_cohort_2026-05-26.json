@@ -1,0 +1,1456 @@
+{
+  "actual_head_sha": "8b5cbe779a99bd2311df3cb1a69c04d035acc439",
+  "audit_version": "feature-attribution-post-phase14-ri-regime-policy-attribution-cube-fixed-three-cohort-2026-05-26",
+  "base_sha": "8b5cbe779a99bd2311df3cb1a69c04d035acc439",
+  "classification_boundary": {
+    "ledger_impact_semantics": "realized trade-row impact proxy only; no canonical ledger_impact_row introduced",
+    "schema_target": "regime-/policy-separated attribution cube over the fixed three-cohort RI surface",
+    "source_surface": "Slice 2 decision rows plus Slice 3 bounded trade/exit join artifact",
+    "still_not_a_canonical_runtime_execution_row": true
+  },
+  "global_summary": {
+    "context_metrics": {
+      "action_edge": {
+        "count": 22,
+        "max": 0.139992265108,
+        "mean": 0.076152371,
+        "min": 0.020818995125
+      },
+      "bars_since_regime_change": {
+        "count": 22,
+        "max": 27.0,
+        "mean": 20.454545454545,
+        "min": 16.0
+      },
+      "clarity_score": {
+        "count": 22,
+        "max": 43.0,
+        "mean": 39.090909090909,
+        "min": 36.0
+      },
+      "confidence_gate": {
+        "count": 22,
+        "max": 0.569996132554,
+        "mean": 0.5380761855,
+        "min": 0.510409497563
+      },
+      "size_after_policy_router": {
+        "count": 13,
+        "max": 0.02,
+        "mean": 0.016307692308,
+        "min": 0.012
+      }
+    },
+    "decision_metrics": {
+      "action_counts": {
+        "LONG": 13,
+        "NONE": 9
+      },
+      "actionable_decision_count": 13,
+      "cohort_counts": {
+        "blocked_dominant_mixed_pocket": 9,
+        "less_hostile_clean_continuation": 6,
+        "weak_clean_continuation": 7
+      },
+      "decision_count": 22,
+      "no_action_decision_count": 9,
+      "observed_open_decision_count": 3,
+      "regime_counts": {
+        "balanced": 22
+      },
+      "selected_policy_counts": {
+        "RI_continuation_policy": 13,
+        "RI_no_trade_policy": 9
+      },
+      "switch_reason_counts": {
+        "AGED_WEAK_CONTINUATION_GUARD": 4,
+        "insufficient_evidence": 5,
+        "stable_continuation_state": 13
+      },
+      "unresolved_non_opening_decision_count": 10
+    },
+    "dimensions": {
+      "scope": "global"
+    },
+    "exit_metrics": {
+      "final_exit_family_counts": {
+        "stop_loss": 2,
+        "trailing_stop": 1
+      },
+      "final_exit_reason_counts": {
+        "EMERGENCY_SL": 2,
+        "TRAIL_STOP": 1
+      },
+      "positions_with_confidence_exit_leg_count": 0,
+      "positions_with_manual_or_other_leg_count": 0,
+      "positions_with_regime_exit_leg_count": 0,
+      "positions_with_stop_loss_leg_count": 2,
+      "positions_with_take_profit_leg_count": 1,
+      "positions_with_trailing_stop_leg_count": 1,
+      "positions_with_unknown_exit_leg_count": 0,
+      "stop_loss_final_position_share": 0.666666666667,
+      "stop_loss_trade_event_share": 0.5,
+      "take_profit_final_position_share": 0.0,
+      "take_profit_trade_event_share": 0.25,
+      "trade_event_exit_family_counts": {
+        "stop_loss": 2,
+        "take_profit": 1,
+        "trailing_stop": 1
+      },
+      "trade_event_exit_reason_counts": {
+        "EMERGENCY_SL": 2,
+        "TP1 Hit (42448.50)": 1,
+        "TRAIL_STOP": 1
+      },
+      "trailing_stop_final_position_share": 0.333333333333,
+      "trailing_stop_trade_event_share": 0.25
+    },
+    "funnel_metrics": {
+      "actionable_to_non_opening_rate": 0.769230769231,
+      "actionable_to_observed_open_rate": 0.230769230769,
+      "actionable_to_realized_position_rate": 0.230769230769,
+      "decision_to_observed_open_rate": 0.136363636364,
+      "decision_to_realized_position_rate": 0.136363636364,
+      "realized_position_to_trade_event_rate": 1.333333333333
+    },
+    "performance_metrics": {
+      "breakeven_position_count": 0,
+      "expectancy_per_actionable_decision": -1.851683846154,
+      "expectancy_per_position": -8.023963333333,
+      "full_trade_event_count": 3,
+      "gross_loss_abs": 29.853088,
+      "gross_profit": 5.781198,
+      "gross_realized_pnl": -24.07189,
+      "loss_position_count": 2,
+      "partial_trade_event_count": 1,
+      "position_count": 3,
+      "position_loss_rate": 0.666666666667,
+      "position_win_rate": 0.333333333333,
+      "profit_factor": 0.193654941157,
+      "profit_factor_mode": "finite",
+      "realized_drawdown_contribution_share": 1.0,
+      "total_exit_commission": 0.0,
+      "trade_event_count": 4,
+      "win_position_count": 1
+    }
+  },
+  "inputs": {
+    "data_source_policy": "curated_only",
+    "decision_artifact": "results\\evaluation\\feature_attribution_post_phase14_ri_decision_surface_fixed_three_cohort_2026-05-26.json",
+    "decision_artifact_status": "feature_attribution_ri_decision_surface_fixed_three_cohort_generated",
+    "join_artifact": "results\\evaluation\\feature_attribution_post_phase14_ri_trade_exit_join_fixed_three_cohort_2026-05-26.json",
+    "join_artifact_status": "feature_attribution_ri_trade_exit_join_fixed_three_cohort_generated",
+    "symbol": "tBTCUSD",
+    "timeframe": "3h",
+    "working_contract_reference": "GENESIS_WORKING_CONTRACT.md"
+  },
+  "metric_contract": {
+    "decision_to_ledger_impact_proxy": "decision -> observed open -> realized position -> realized trade event funnel; ledger impact remains a trade-row proxy in this slice",
+    "expectancy_per_position": "gross_realized_pnl / position_count",
+    "profit_factor": "gross_profit / gross_loss_abs when gross_loss_abs > 0, else null with explicit mode",
+    "realized_drawdown_contribution_share": "bucket gross_loss_abs / global gross_loss_abs; trade-realized loss proxy only, not a full equity-path drawdown row",
+    "stop_loss_share": "stop_loss trade-event share over realized trade events",
+    "take_profit_share": "take_profit trade-event share over realized trade events",
+    "trailing_stop_share": "trailing_stop trade-event share over realized trade events"
+  },
+  "non_authoritative": true,
+  "observational_only": true,
+  "preserved_comparator_ready_fields": [
+    "decision_identity_key",
+    "row_id",
+    "timestamp",
+    "position_id",
+    "entry_time",
+    "exit_time",
+    "symbol",
+    "timeframe",
+    "regime",
+    "selected_policy",
+    "exit_family"
+  ],
+  "rollups": {
+    "by_cohort": [
+      {
+        "context_metrics": {
+          "action_edge": {
+            "count": 9,
+            "max": 0.062731417544,
+            "mean": 0.039934877276,
+            "min": 0.020818995125
+          },
+          "bars_since_regime_change": {
+            "count": 9,
+            "max": 21.0,
+            "mean": 20.222222222222,
+            "min": 20.0
+          },
+          "clarity_score": {
+            "count": 9,
+            "max": 38.0,
+            "mean": 36.888888888889,
+            "min": 36.0
+          },
+          "confidence_gate": {
+            "count": 9,
+            "max": 0.531365708772,
+            "mean": 0.519967438638,
+            "min": 0.510409497563
+          },
+          "size_after_policy_router": null
+        },
+        "decision_metrics": {
+          "action_counts": {
+            "NONE": 9
+          },
+          "actionable_decision_count": 0,
+          "cohort_counts": {
+            "blocked_dominant_mixed_pocket": 9
+          },
+          "decision_count": 9,
+          "no_action_decision_count": 9,
+          "observed_open_decision_count": 0,
+          "regime_counts": {
+            "balanced": 9
+          },
+          "selected_policy_counts": {
+            "RI_no_trade_policy": 9
+          },
+          "switch_reason_counts": {
+            "AGED_WEAK_CONTINUATION_GUARD": 4,
+            "insufficient_evidence": 5
+          },
+          "unresolved_non_opening_decision_count": 0
+        },
+        "dimensions": {
+          "cohort_label": "blocked_dominant_mixed_pocket"
+        },
+        "exit_metrics": {
+          "final_exit_family_counts": {},
+          "final_exit_reason_counts": {},
+          "positions_with_confidence_exit_leg_count": 0,
+          "positions_with_manual_or_other_leg_count": 0,
+          "positions_with_regime_exit_leg_count": 0,
+          "positions_with_stop_loss_leg_count": 0,
+          "positions_with_take_profit_leg_count": 0,
+          "positions_with_trailing_stop_leg_count": 0,
+          "positions_with_unknown_exit_leg_count": 0,
+          "stop_loss_final_position_share": null,
+          "stop_loss_trade_event_share": null,
+          "take_profit_final_position_share": null,
+          "take_profit_trade_event_share": null,
+          "trade_event_exit_family_counts": {},
+          "trade_event_exit_reason_counts": {},
+          "trailing_stop_final_position_share": null,
+          "trailing_stop_trade_event_share": null
+        },
+        "funnel_metrics": {
+          "actionable_to_non_opening_rate": null,
+          "actionable_to_observed_open_rate": null,
+          "actionable_to_realized_position_rate": null,
+          "decision_to_observed_open_rate": 0.0,
+          "decision_to_realized_position_rate": 0.0,
+          "realized_position_to_trade_event_rate": null
+        },
+        "performance_metrics": {
+          "breakeven_position_count": 0,
+          "expectancy_per_actionable_decision": null,
+          "expectancy_per_position": null,
+          "full_trade_event_count": 0,
+          "gross_loss_abs": 0.0,
+          "gross_profit": 0.0,
+          "gross_realized_pnl": 0.0,
+          "loss_position_count": 0,
+          "partial_trade_event_count": 0,
+          "position_count": 0,
+          "position_loss_rate": null,
+          "position_win_rate": null,
+          "profit_factor": null,
+          "profit_factor_mode": "no_realized_positions",
+          "realized_drawdown_contribution_share": 0.0,
+          "total_exit_commission": 0.0,
+          "trade_event_count": 0,
+          "win_position_count": 0
+        }
+      },
+      {
+        "context_metrics": {
+          "action_edge": {
+            "count": 6,
+            "max": 0.139992265108,
+            "mean": 0.108869132441,
+            "min": 0.091222407543
+          },
+          "bars_since_regime_change": {
+            "count": 6,
+            "max": 21.0,
+            "mean": 18.5,
+            "min": 16.0
+          },
+          "clarity_score": {
+            "count": 6,
+            "max": 43.0,
+            "mean": 41.0,
+            "min": 40.0
+          },
+          "confidence_gate": {
+            "count": 6,
+            "max": 0.569996132554,
+            "mean": 0.554434566221,
+            "min": 0.545611203772
+          },
+          "size_after_policy_router": {
+            "count": 6,
+            "max": 0.02,
+            "mean": 0.017333333333,
+            "min": 0.012
+          }
+        },
+        "decision_metrics": {
+          "action_counts": {
+            "LONG": 6
+          },
+          "actionable_decision_count": 6,
+          "cohort_counts": {
+            "less_hostile_clean_continuation": 6
+          },
+          "decision_count": 6,
+          "no_action_decision_count": 0,
+          "observed_open_decision_count": 2,
+          "regime_counts": {
+            "balanced": 6
+          },
+          "selected_policy_counts": {
+            "RI_continuation_policy": 6
+          },
+          "switch_reason_counts": {
+            "stable_continuation_state": 6
+          },
+          "unresolved_non_opening_decision_count": 4
+        },
+        "dimensions": {
+          "cohort_label": "less_hostile_clean_continuation"
+        },
+        "exit_metrics": {
+          "final_exit_family_counts": {
+            "stop_loss": 1,
+            "trailing_stop": 1
+          },
+          "final_exit_reason_counts": {
+            "EMERGENCY_SL": 1,
+            "TRAIL_STOP": 1
+          },
+          "positions_with_confidence_exit_leg_count": 0,
+          "positions_with_manual_or_other_leg_count": 0,
+          "positions_with_regime_exit_leg_count": 0,
+          "positions_with_stop_loss_leg_count": 1,
+          "positions_with_take_profit_leg_count": 1,
+          "positions_with_trailing_stop_leg_count": 1,
+          "positions_with_unknown_exit_leg_count": 0,
+          "stop_loss_final_position_share": 0.5,
+          "stop_loss_trade_event_share": 0.333333333333,
+          "take_profit_final_position_share": 0.0,
+          "take_profit_trade_event_share": 0.333333333333,
+          "trade_event_exit_family_counts": {
+            "stop_loss": 1,
+            "take_profit": 1,
+            "trailing_stop": 1
+          },
+          "trade_event_exit_reason_counts": {
+            "EMERGENCY_SL": 1,
+            "TP1 Hit (42448.50)": 1,
+            "TRAIL_STOP": 1
+          },
+          "trailing_stop_final_position_share": 0.5,
+          "trailing_stop_trade_event_share": 0.333333333333
+        },
+        "funnel_metrics": {
+          "actionable_to_non_opening_rate": 0.666666666667,
+          "actionable_to_observed_open_rate": 0.333333333333,
+          "actionable_to_realized_position_rate": 0.333333333333,
+          "decision_to_observed_open_rate": 0.333333333333,
+          "decision_to_realized_position_rate": 0.333333333333,
+          "realized_position_to_trade_event_rate": 1.5
+        },
+        "performance_metrics": {
+          "breakeven_position_count": 0,
+          "expectancy_per_actionable_decision": -2.521193666667,
+          "expectancy_per_position": -7.563581,
+          "full_trade_event_count": 2,
+          "gross_loss_abs": 20.90836,
+          "gross_profit": 5.781198,
+          "gross_realized_pnl": -15.127162,
+          "loss_position_count": 1,
+          "partial_trade_event_count": 1,
+          "position_count": 2,
+          "position_loss_rate": 0.5,
+          "position_win_rate": 0.5,
+          "profit_factor": 0.2765017438,
+          "profit_factor_mode": "finite",
+          "realized_drawdown_contribution_share": 0.700375116973,
+          "total_exit_commission": 0.0,
+          "trade_event_count": 3,
+          "win_position_count": 1
+        }
+      },
+      {
+        "context_metrics": {
+          "action_edge": {
+            "count": 7,
+            "max": 0.133850950294,
+            "mean": 0.094674781696,
+            "min": 0.072075206851
+          },
+          "bars_since_regime_change": {
+            "count": 7,
+            "max": 27.0,
+            "mean": 22.428571428571,
+            "min": 19.0
+          },
+          "clarity_score": {
+            "count": 7,
+            "max": 43.0,
+            "mean": 40.285714285714,
+            "min": 39.0
+          },
+          "confidence_gate": {
+            "count": 7,
+            "max": 0.566925475147,
+            "mean": 0.547337390848,
+            "min": 0.536037603426
+          },
+          "size_after_policy_router": {
+            "count": 7,
+            "max": 0.02,
+            "mean": 0.015428571429,
+            "min": 0.012
+          }
+        },
+        "decision_metrics": {
+          "action_counts": {
+            "LONG": 7
+          },
+          "actionable_decision_count": 7,
+          "cohort_counts": {
+            "weak_clean_continuation": 7
+          },
+          "decision_count": 7,
+          "no_action_decision_count": 0,
+          "observed_open_decision_count": 1,
+          "regime_counts": {
+            "balanced": 7
+          },
+          "selected_policy_counts": {
+            "RI_continuation_policy": 7
+          },
+          "switch_reason_counts": {
+            "stable_continuation_state": 7
+          },
+          "unresolved_non_opening_decision_count": 6
+        },
+        "dimensions": {
+          "cohort_label": "weak_clean_continuation"
+        },
+        "exit_metrics": {
+          "final_exit_family_counts": {
+            "stop_loss": 1
+          },
+          "final_exit_reason_counts": {
+            "EMERGENCY_SL": 1
+          },
+          "positions_with_confidence_exit_leg_count": 0,
+          "positions_with_manual_or_other_leg_count": 0,
+          "positions_with_regime_exit_leg_count": 0,
+          "positions_with_stop_loss_leg_count": 1,
+          "positions_with_take_profit_leg_count": 0,
+          "positions_with_trailing_stop_leg_count": 0,
+          "positions_with_unknown_exit_leg_count": 0,
+          "stop_loss_final_position_share": 1.0,
+          "stop_loss_trade_event_share": 1.0,
+          "take_profit_final_position_share": 0.0,
+          "take_profit_trade_event_share": 0.0,
+          "trade_event_exit_family_counts": {
+            "stop_loss": 1
+          },
+          "trade_event_exit_reason_counts": {
+            "EMERGENCY_SL": 1
+          },
+          "trailing_stop_final_position_share": 0.0,
+          "trailing_stop_trade_event_share": 0.0
+        },
+        "funnel_metrics": {
+          "actionable_to_non_opening_rate": 0.857142857143,
+          "actionable_to_observed_open_rate": 0.142857142857,
+          "actionable_to_realized_position_rate": 0.142857142857,
+          "decision_to_observed_open_rate": 0.142857142857,
+          "decision_to_realized_position_rate": 0.142857142857,
+          "realized_position_to_trade_event_rate": 1.0
+        },
+        "performance_metrics": {
+          "breakeven_position_count": 0,
+          "expectancy_per_actionable_decision": -1.277818285714,
+          "expectancy_per_position": -8.944728,
+          "full_trade_event_count": 1,
+          "gross_loss_abs": 8.944728,
+          "gross_profit": 0.0,
+          "gross_realized_pnl": -8.944728,
+          "loss_position_count": 1,
+          "partial_trade_event_count": 0,
+          "position_count": 1,
+          "position_loss_rate": 1.0,
+          "position_win_rate": 0.0,
+          "profit_factor": 0.0,
+          "profit_factor_mode": "finite",
+          "realized_drawdown_contribution_share": 0.299624883027,
+          "total_exit_commission": 0.0,
+          "trade_event_count": 1,
+          "win_position_count": 0
+        }
+      }
+    ],
+    "by_cohort_regime_and_policy": [
+      {
+        "context_metrics": {
+          "action_edge": {
+            "count": 9,
+            "max": 0.062731417544,
+            "mean": 0.039934877276,
+            "min": 0.020818995125
+          },
+          "bars_since_regime_change": {
+            "count": 9,
+            "max": 21.0,
+            "mean": 20.222222222222,
+            "min": 20.0
+          },
+          "clarity_score": {
+            "count": 9,
+            "max": 38.0,
+            "mean": 36.888888888889,
+            "min": 36.0
+          },
+          "confidence_gate": {
+            "count": 9,
+            "max": 0.531365708772,
+            "mean": 0.519967438638,
+            "min": 0.510409497563
+          },
+          "size_after_policy_router": null
+        },
+        "decision_metrics": {
+          "action_counts": {
+            "NONE": 9
+          },
+          "actionable_decision_count": 0,
+          "cohort_counts": {
+            "blocked_dominant_mixed_pocket": 9
+          },
+          "decision_count": 9,
+          "no_action_decision_count": 9,
+          "observed_open_decision_count": 0,
+          "regime_counts": {
+            "balanced": 9
+          },
+          "selected_policy_counts": {
+            "RI_no_trade_policy": 9
+          },
+          "switch_reason_counts": {
+            "AGED_WEAK_CONTINUATION_GUARD": 4,
+            "insufficient_evidence": 5
+          },
+          "unresolved_non_opening_decision_count": 0
+        },
+        "dimensions": {
+          "cohort_label": "blocked_dominant_mixed_pocket",
+          "regime": "balanced",
+          "selected_policy": "RI_no_trade_policy"
+        },
+        "exit_metrics": {
+          "final_exit_family_counts": {},
+          "final_exit_reason_counts": {},
+          "positions_with_confidence_exit_leg_count": 0,
+          "positions_with_manual_or_other_leg_count": 0,
+          "positions_with_regime_exit_leg_count": 0,
+          "positions_with_stop_loss_leg_count": 0,
+          "positions_with_take_profit_leg_count": 0,
+          "positions_with_trailing_stop_leg_count": 0,
+          "positions_with_unknown_exit_leg_count": 0,
+          "stop_loss_final_position_share": null,
+          "stop_loss_trade_event_share": null,
+          "take_profit_final_position_share": null,
+          "take_profit_trade_event_share": null,
+          "trade_event_exit_family_counts": {},
+          "trade_event_exit_reason_counts": {},
+          "trailing_stop_final_position_share": null,
+          "trailing_stop_trade_event_share": null
+        },
+        "funnel_metrics": {
+          "actionable_to_non_opening_rate": null,
+          "actionable_to_observed_open_rate": null,
+          "actionable_to_realized_position_rate": null,
+          "decision_to_observed_open_rate": 0.0,
+          "decision_to_realized_position_rate": 0.0,
+          "realized_position_to_trade_event_rate": null
+        },
+        "performance_metrics": {
+          "breakeven_position_count": 0,
+          "expectancy_per_actionable_decision": null,
+          "expectancy_per_position": null,
+          "full_trade_event_count": 0,
+          "gross_loss_abs": 0.0,
+          "gross_profit": 0.0,
+          "gross_realized_pnl": 0.0,
+          "loss_position_count": 0,
+          "partial_trade_event_count": 0,
+          "position_count": 0,
+          "position_loss_rate": null,
+          "position_win_rate": null,
+          "profit_factor": null,
+          "profit_factor_mode": "no_realized_positions",
+          "realized_drawdown_contribution_share": 0.0,
+          "total_exit_commission": 0.0,
+          "trade_event_count": 0,
+          "win_position_count": 0
+        }
+      },
+      {
+        "context_metrics": {
+          "action_edge": {
+            "count": 6,
+            "max": 0.139992265108,
+            "mean": 0.108869132441,
+            "min": 0.091222407543
+          },
+          "bars_since_regime_change": {
+            "count": 6,
+            "max": 21.0,
+            "mean": 18.5,
+            "min": 16.0
+          },
+          "clarity_score": {
+            "count": 6,
+            "max": 43.0,
+            "mean": 41.0,
+            "min": 40.0
+          },
+          "confidence_gate": {
+            "count": 6,
+            "max": 0.569996132554,
+            "mean": 0.554434566221,
+            "min": 0.545611203772
+          },
+          "size_after_policy_router": {
+            "count": 6,
+            "max": 0.02,
+            "mean": 0.017333333333,
+            "min": 0.012
+          }
+        },
+        "decision_metrics": {
+          "action_counts": {
+            "LONG": 6
+          },
+          "actionable_decision_count": 6,
+          "cohort_counts": {
+            "less_hostile_clean_continuation": 6
+          },
+          "decision_count": 6,
+          "no_action_decision_count": 0,
+          "observed_open_decision_count": 2,
+          "regime_counts": {
+            "balanced": 6
+          },
+          "selected_policy_counts": {
+            "RI_continuation_policy": 6
+          },
+          "switch_reason_counts": {
+            "stable_continuation_state": 6
+          },
+          "unresolved_non_opening_decision_count": 4
+        },
+        "dimensions": {
+          "cohort_label": "less_hostile_clean_continuation",
+          "regime": "balanced",
+          "selected_policy": "RI_continuation_policy"
+        },
+        "exit_metrics": {
+          "final_exit_family_counts": {
+            "stop_loss": 1,
+            "trailing_stop": 1
+          },
+          "final_exit_reason_counts": {
+            "EMERGENCY_SL": 1,
+            "TRAIL_STOP": 1
+          },
+          "positions_with_confidence_exit_leg_count": 0,
+          "positions_with_manual_or_other_leg_count": 0,
+          "positions_with_regime_exit_leg_count": 0,
+          "positions_with_stop_loss_leg_count": 1,
+          "positions_with_take_profit_leg_count": 1,
+          "positions_with_trailing_stop_leg_count": 1,
+          "positions_with_unknown_exit_leg_count": 0,
+          "stop_loss_final_position_share": 0.5,
+          "stop_loss_trade_event_share": 0.333333333333,
+          "take_profit_final_position_share": 0.0,
+          "take_profit_trade_event_share": 0.333333333333,
+          "trade_event_exit_family_counts": {
+            "stop_loss": 1,
+            "take_profit": 1,
+            "trailing_stop": 1
+          },
+          "trade_event_exit_reason_counts": {
+            "EMERGENCY_SL": 1,
+            "TP1 Hit (42448.50)": 1,
+            "TRAIL_STOP": 1
+          },
+          "trailing_stop_final_position_share": 0.5,
+          "trailing_stop_trade_event_share": 0.333333333333
+        },
+        "funnel_metrics": {
+          "actionable_to_non_opening_rate": 0.666666666667,
+          "actionable_to_observed_open_rate": 0.333333333333,
+          "actionable_to_realized_position_rate": 0.333333333333,
+          "decision_to_observed_open_rate": 0.333333333333,
+          "decision_to_realized_position_rate": 0.333333333333,
+          "realized_position_to_trade_event_rate": 1.5
+        },
+        "performance_metrics": {
+          "breakeven_position_count": 0,
+          "expectancy_per_actionable_decision": -2.521193666667,
+          "expectancy_per_position": -7.563581,
+          "full_trade_event_count": 2,
+          "gross_loss_abs": 20.90836,
+          "gross_profit": 5.781198,
+          "gross_realized_pnl": -15.127162,
+          "loss_position_count": 1,
+          "partial_trade_event_count": 1,
+          "position_count": 2,
+          "position_loss_rate": 0.5,
+          "position_win_rate": 0.5,
+          "profit_factor": 0.2765017438,
+          "profit_factor_mode": "finite",
+          "realized_drawdown_contribution_share": 0.700375116973,
+          "total_exit_commission": 0.0,
+          "trade_event_count": 3,
+          "win_position_count": 1
+        }
+      },
+      {
+        "context_metrics": {
+          "action_edge": {
+            "count": 7,
+            "max": 0.133850950294,
+            "mean": 0.094674781696,
+            "min": 0.072075206851
+          },
+          "bars_since_regime_change": {
+            "count": 7,
+            "max": 27.0,
+            "mean": 22.428571428571,
+            "min": 19.0
+          },
+          "clarity_score": {
+            "count": 7,
+            "max": 43.0,
+            "mean": 40.285714285714,
+            "min": 39.0
+          },
+          "confidence_gate": {
+            "count": 7,
+            "max": 0.566925475147,
+            "mean": 0.547337390848,
+            "min": 0.536037603426
+          },
+          "size_after_policy_router": {
+            "count": 7,
+            "max": 0.02,
+            "mean": 0.015428571429,
+            "min": 0.012
+          }
+        },
+        "decision_metrics": {
+          "action_counts": {
+            "LONG": 7
+          },
+          "actionable_decision_count": 7,
+          "cohort_counts": {
+            "weak_clean_continuation": 7
+          },
+          "decision_count": 7,
+          "no_action_decision_count": 0,
+          "observed_open_decision_count": 1,
+          "regime_counts": {
+            "balanced": 7
+          },
+          "selected_policy_counts": {
+            "RI_continuation_policy": 7
+          },
+          "switch_reason_counts": {
+            "stable_continuation_state": 7
+          },
+          "unresolved_non_opening_decision_count": 6
+        },
+        "dimensions": {
+          "cohort_label": "weak_clean_continuation",
+          "regime": "balanced",
+          "selected_policy": "RI_continuation_policy"
+        },
+        "exit_metrics": {
+          "final_exit_family_counts": {
+            "stop_loss": 1
+          },
+          "final_exit_reason_counts": {
+            "EMERGENCY_SL": 1
+          },
+          "positions_with_confidence_exit_leg_count": 0,
+          "positions_with_manual_or_other_leg_count": 0,
+          "positions_with_regime_exit_leg_count": 0,
+          "positions_with_stop_loss_leg_count": 1,
+          "positions_with_take_profit_leg_count": 0,
+          "positions_with_trailing_stop_leg_count": 0,
+          "positions_with_unknown_exit_leg_count": 0,
+          "stop_loss_final_position_share": 1.0,
+          "stop_loss_trade_event_share": 1.0,
+          "take_profit_final_position_share": 0.0,
+          "take_profit_trade_event_share": 0.0,
+          "trade_event_exit_family_counts": {
+            "stop_loss": 1
+          },
+          "trade_event_exit_reason_counts": {
+            "EMERGENCY_SL": 1
+          },
+          "trailing_stop_final_position_share": 0.0,
+          "trailing_stop_trade_event_share": 0.0
+        },
+        "funnel_metrics": {
+          "actionable_to_non_opening_rate": 0.857142857143,
+          "actionable_to_observed_open_rate": 0.142857142857,
+          "actionable_to_realized_position_rate": 0.142857142857,
+          "decision_to_observed_open_rate": 0.142857142857,
+          "decision_to_realized_position_rate": 0.142857142857,
+          "realized_position_to_trade_event_rate": 1.0
+        },
+        "performance_metrics": {
+          "breakeven_position_count": 0,
+          "expectancy_per_actionable_decision": -1.277818285714,
+          "expectancy_per_position": -8.944728,
+          "full_trade_event_count": 1,
+          "gross_loss_abs": 8.944728,
+          "gross_profit": 0.0,
+          "gross_realized_pnl": -8.944728,
+          "loss_position_count": 1,
+          "partial_trade_event_count": 0,
+          "position_count": 1,
+          "position_loss_rate": 1.0,
+          "position_win_rate": 0.0,
+          "profit_factor": 0.0,
+          "profit_factor_mode": "finite",
+          "realized_drawdown_contribution_share": 0.299624883027,
+          "total_exit_commission": 0.0,
+          "trade_event_count": 1,
+          "win_position_count": 0
+        }
+      }
+    ],
+    "by_policy": [
+      {
+        "context_metrics": {
+          "action_edge": {
+            "count": 13,
+            "max": 0.139992265108,
+            "mean": 0.101226020501,
+            "min": 0.072075206851
+          },
+          "bars_since_regime_change": {
+            "count": 13,
+            "max": 27.0,
+            "mean": 20.615384615385,
+            "min": 16.0
+          },
+          "clarity_score": {
+            "count": 13,
+            "max": 43.0,
+            "mean": 40.615384615385,
+            "min": 39.0
+          },
+          "confidence_gate": {
+            "count": 13,
+            "max": 0.569996132554,
+            "mean": 0.550613010251,
+            "min": 0.536037603426
+          },
+          "size_after_policy_router": {
+            "count": 13,
+            "max": 0.02,
+            "mean": 0.016307692308,
+            "min": 0.012
+          }
+        },
+        "decision_metrics": {
+          "action_counts": {
+            "LONG": 13
+          },
+          "actionable_decision_count": 13,
+          "cohort_counts": {
+            "less_hostile_clean_continuation": 6,
+            "weak_clean_continuation": 7
+          },
+          "decision_count": 13,
+          "no_action_decision_count": 0,
+          "observed_open_decision_count": 3,
+          "regime_counts": {
+            "balanced": 13
+          },
+          "selected_policy_counts": {
+            "RI_continuation_policy": 13
+          },
+          "switch_reason_counts": {
+            "stable_continuation_state": 13
+          },
+          "unresolved_non_opening_decision_count": 10
+        },
+        "dimensions": {
+          "selected_policy": "RI_continuation_policy"
+        },
+        "exit_metrics": {
+          "final_exit_family_counts": {
+            "stop_loss": 2,
+            "trailing_stop": 1
+          },
+          "final_exit_reason_counts": {
+            "EMERGENCY_SL": 2,
+            "TRAIL_STOP": 1
+          },
+          "positions_with_confidence_exit_leg_count": 0,
+          "positions_with_manual_or_other_leg_count": 0,
+          "positions_with_regime_exit_leg_count": 0,
+          "positions_with_stop_loss_leg_count": 2,
+          "positions_with_take_profit_leg_count": 1,
+          "positions_with_trailing_stop_leg_count": 1,
+          "positions_with_unknown_exit_leg_count": 0,
+          "stop_loss_final_position_share": 0.666666666667,
+          "stop_loss_trade_event_share": 0.5,
+          "take_profit_final_position_share": 0.0,
+          "take_profit_trade_event_share": 0.25,
+          "trade_event_exit_family_counts": {
+            "stop_loss": 2,
+            "take_profit": 1,
+            "trailing_stop": 1
+          },
+          "trade_event_exit_reason_counts": {
+            "EMERGENCY_SL": 2,
+            "TP1 Hit (42448.50)": 1,
+            "TRAIL_STOP": 1
+          },
+          "trailing_stop_final_position_share": 0.333333333333,
+          "trailing_stop_trade_event_share": 0.25
+        },
+        "funnel_metrics": {
+          "actionable_to_non_opening_rate": 0.769230769231,
+          "actionable_to_observed_open_rate": 0.230769230769,
+          "actionable_to_realized_position_rate": 0.230769230769,
+          "decision_to_observed_open_rate": 0.230769230769,
+          "decision_to_realized_position_rate": 0.230769230769,
+          "realized_position_to_trade_event_rate": 1.333333333333
+        },
+        "performance_metrics": {
+          "breakeven_position_count": 0,
+          "expectancy_per_actionable_decision": -1.851683846154,
+          "expectancy_per_position": -8.023963333333,
+          "full_trade_event_count": 3,
+          "gross_loss_abs": 29.853088,
+          "gross_profit": 5.781198,
+          "gross_realized_pnl": -24.07189,
+          "loss_position_count": 2,
+          "partial_trade_event_count": 1,
+          "position_count": 3,
+          "position_loss_rate": 0.666666666667,
+          "position_win_rate": 0.333333333333,
+          "profit_factor": 0.193654941157,
+          "profit_factor_mode": "finite",
+          "realized_drawdown_contribution_share": 1.0,
+          "total_exit_commission": 0.0,
+          "trade_event_count": 4,
+          "win_position_count": 1
+        }
+      },
+      {
+        "context_metrics": {
+          "action_edge": {
+            "count": 9,
+            "max": 0.062731417544,
+            "mean": 0.039934877276,
+            "min": 0.020818995125
+          },
+          "bars_since_regime_change": {
+            "count": 9,
+            "max": 21.0,
+            "mean": 20.222222222222,
+            "min": 20.0
+          },
+          "clarity_score": {
+            "count": 9,
+            "max": 38.0,
+            "mean": 36.888888888889,
+            "min": 36.0
+          },
+          "confidence_gate": {
+            "count": 9,
+            "max": 0.531365708772,
+            "mean": 0.519967438638,
+            "min": 0.510409497563
+          },
+          "size_after_policy_router": null
+        },
+        "decision_metrics": {
+          "action_counts": {
+            "NONE": 9
+          },
+          "actionable_decision_count": 0,
+          "cohort_counts": {
+            "blocked_dominant_mixed_pocket": 9
+          },
+          "decision_count": 9,
+          "no_action_decision_count": 9,
+          "observed_open_decision_count": 0,
+          "regime_counts": {
+            "balanced": 9
+          },
+          "selected_policy_counts": {
+            "RI_no_trade_policy": 9
+          },
+          "switch_reason_counts": {
+            "AGED_WEAK_CONTINUATION_GUARD": 4,
+            "insufficient_evidence": 5
+          },
+          "unresolved_non_opening_decision_count": 0
+        },
+        "dimensions": {
+          "selected_policy": "RI_no_trade_policy"
+        },
+        "exit_metrics": {
+          "final_exit_family_counts": {},
+          "final_exit_reason_counts": {},
+          "positions_with_confidence_exit_leg_count": 0,
+          "positions_with_manual_or_other_leg_count": 0,
+          "positions_with_regime_exit_leg_count": 0,
+          "positions_with_stop_loss_leg_count": 0,
+          "positions_with_take_profit_leg_count": 0,
+          "positions_with_trailing_stop_leg_count": 0,
+          "positions_with_unknown_exit_leg_count": 0,
+          "stop_loss_final_position_share": null,
+          "stop_loss_trade_event_share": null,
+          "take_profit_final_position_share": null,
+          "take_profit_trade_event_share": null,
+          "trade_event_exit_family_counts": {},
+          "trade_event_exit_reason_counts": {},
+          "trailing_stop_final_position_share": null,
+          "trailing_stop_trade_event_share": null
+        },
+        "funnel_metrics": {
+          "actionable_to_non_opening_rate": null,
+          "actionable_to_observed_open_rate": null,
+          "actionable_to_realized_position_rate": null,
+          "decision_to_observed_open_rate": 0.0,
+          "decision_to_realized_position_rate": 0.0,
+          "realized_position_to_trade_event_rate": null
+        },
+        "performance_metrics": {
+          "breakeven_position_count": 0,
+          "expectancy_per_actionable_decision": null,
+          "expectancy_per_position": null,
+          "full_trade_event_count": 0,
+          "gross_loss_abs": 0.0,
+          "gross_profit": 0.0,
+          "gross_realized_pnl": 0.0,
+          "loss_position_count": 0,
+          "partial_trade_event_count": 0,
+          "position_count": 0,
+          "position_loss_rate": null,
+          "position_win_rate": null,
+          "profit_factor": null,
+          "profit_factor_mode": "no_realized_positions",
+          "realized_drawdown_contribution_share": 0.0,
+          "total_exit_commission": 0.0,
+          "trade_event_count": 0,
+          "win_position_count": 0
+        }
+      }
+    ],
+    "by_regime": [
+      {
+        "context_metrics": {
+          "action_edge": {
+            "count": 22,
+            "max": 0.139992265108,
+            "mean": 0.076152371,
+            "min": 0.020818995125
+          },
+          "bars_since_regime_change": {
+            "count": 22,
+            "max": 27.0,
+            "mean": 20.454545454545,
+            "min": 16.0
+          },
+          "clarity_score": {
+            "count": 22,
+            "max": 43.0,
+            "mean": 39.090909090909,
+            "min": 36.0
+          },
+          "confidence_gate": {
+            "count": 22,
+            "max": 0.569996132554,
+            "mean": 0.5380761855,
+            "min": 0.510409497563
+          },
+          "size_after_policy_router": {
+            "count": 13,
+            "max": 0.02,
+            "mean": 0.016307692308,
+            "min": 0.012
+          }
+        },
+        "decision_metrics": {
+          "action_counts": {
+            "LONG": 13,
+            "NONE": 9
+          },
+          "actionable_decision_count": 13,
+          "cohort_counts": {
+            "blocked_dominant_mixed_pocket": 9,
+            "less_hostile_clean_continuation": 6,
+            "weak_clean_continuation": 7
+          },
+          "decision_count": 22,
+          "no_action_decision_count": 9,
+          "observed_open_decision_count": 3,
+          "regime_counts": {
+            "balanced": 22
+          },
+          "selected_policy_counts": {
+            "RI_continuation_policy": 13,
+            "RI_no_trade_policy": 9
+          },
+          "switch_reason_counts": {
+            "AGED_WEAK_CONTINUATION_GUARD": 4,
+            "insufficient_evidence": 5,
+            "stable_continuation_state": 13
+          },
+          "unresolved_non_opening_decision_count": 10
+        },
+        "dimensions": {
+          "regime": "balanced"
+        },
+        "exit_metrics": {
+          "final_exit_family_counts": {
+            "stop_loss": 2,
+            "trailing_stop": 1
+          },
+          "final_exit_reason_counts": {
+            "EMERGENCY_SL": 2,
+            "TRAIL_STOP": 1
+          },
+          "positions_with_confidence_exit_leg_count": 0,
+          "positions_with_manual_or_other_leg_count": 0,
+          "positions_with_regime_exit_leg_count": 0,
+          "positions_with_stop_loss_leg_count": 2,
+          "positions_with_take_profit_leg_count": 1,
+          "positions_with_trailing_stop_leg_count": 1,
+          "positions_with_unknown_exit_leg_count": 0,
+          "stop_loss_final_position_share": 0.666666666667,
+          "stop_loss_trade_event_share": 0.5,
+          "take_profit_final_position_share": 0.0,
+          "take_profit_trade_event_share": 0.25,
+          "trade_event_exit_family_counts": {
+            "stop_loss": 2,
+            "take_profit": 1,
+            "trailing_stop": 1
+          },
+          "trade_event_exit_reason_counts": {
+            "EMERGENCY_SL": 2,
+            "TP1 Hit (42448.50)": 1,
+            "TRAIL_STOP": 1
+          },
+          "trailing_stop_final_position_share": 0.333333333333,
+          "trailing_stop_trade_event_share": 0.25
+        },
+        "funnel_metrics": {
+          "actionable_to_non_opening_rate": 0.769230769231,
+          "actionable_to_observed_open_rate": 0.230769230769,
+          "actionable_to_realized_position_rate": 0.230769230769,
+          "decision_to_observed_open_rate": 0.136363636364,
+          "decision_to_realized_position_rate": 0.136363636364,
+          "realized_position_to_trade_event_rate": 1.333333333333
+        },
+        "performance_metrics": {
+          "breakeven_position_count": 0,
+          "expectancy_per_actionable_decision": -1.851683846154,
+          "expectancy_per_position": -8.023963333333,
+          "full_trade_event_count": 3,
+          "gross_loss_abs": 29.853088,
+          "gross_profit": 5.781198,
+          "gross_realized_pnl": -24.07189,
+          "loss_position_count": 2,
+          "partial_trade_event_count": 1,
+          "position_count": 3,
+          "position_loss_rate": 0.666666666667,
+          "position_win_rate": 0.333333333333,
+          "profit_factor": 0.193654941157,
+          "profit_factor_mode": "finite",
+          "realized_drawdown_contribution_share": 1.0,
+          "total_exit_commission": 0.0,
+          "trade_event_count": 4,
+          "win_position_count": 1
+        }
+      }
+    ],
+    "by_regime_and_policy": [
+      {
+        "context_metrics": {
+          "action_edge": {
+            "count": 13,
+            "max": 0.139992265108,
+            "mean": 0.101226020501,
+            "min": 0.072075206851
+          },
+          "bars_since_regime_change": {
+            "count": 13,
+            "max": 27.0,
+            "mean": 20.615384615385,
+            "min": 16.0
+          },
+          "clarity_score": {
+            "count": 13,
+            "max": 43.0,
+            "mean": 40.615384615385,
+            "min": 39.0
+          },
+          "confidence_gate": {
+            "count": 13,
+            "max": 0.569996132554,
+            "mean": 0.550613010251,
+            "min": 0.536037603426
+          },
+          "size_after_policy_router": {
+            "count": 13,
+            "max": 0.02,
+            "mean": 0.016307692308,
+            "min": 0.012
+          }
+        },
+        "decision_metrics": {
+          "action_counts": {
+            "LONG": 13
+          },
+          "actionable_decision_count": 13,
+          "cohort_counts": {
+            "less_hostile_clean_continuation": 6,
+            "weak_clean_continuation": 7
+          },
+          "decision_count": 13,
+          "no_action_decision_count": 0,
+          "observed_open_decision_count": 3,
+          "regime_counts": {
+            "balanced": 13
+          },
+          "selected_policy_counts": {
+            "RI_continuation_policy": 13
+          },
+          "switch_reason_counts": {
+            "stable_continuation_state": 13
+          },
+          "unresolved_non_opening_decision_count": 10
+        },
+        "dimensions": {
+          "regime": "balanced",
+          "selected_policy": "RI_continuation_policy"
+        },
+        "exit_metrics": {
+          "final_exit_family_counts": {
+            "stop_loss": 2,
+            "trailing_stop": 1
+          },
+          "final_exit_reason_counts": {
+            "EMERGENCY_SL": 2,
+            "TRAIL_STOP": 1
+          },
+          "positions_with_confidence_exit_leg_count": 0,
+          "positions_with_manual_or_other_leg_count": 0,
+          "positions_with_regime_exit_leg_count": 0,
+          "positions_with_stop_loss_leg_count": 2,
+          "positions_with_take_profit_leg_count": 1,
+          "positions_with_trailing_stop_leg_count": 1,
+          "positions_with_unknown_exit_leg_count": 0,
+          "stop_loss_final_position_share": 0.666666666667,
+          "stop_loss_trade_event_share": 0.5,
+          "take_profit_final_position_share": 0.0,
+          "take_profit_trade_event_share": 0.25,
+          "trade_event_exit_family_counts": {
+            "stop_loss": 2,
+            "take_profit": 1,
+            "trailing_stop": 1
+          },
+          "trade_event_exit_reason_counts": {
+            "EMERGENCY_SL": 2,
+            "TP1 Hit (42448.50)": 1,
+            "TRAIL_STOP": 1
+          },
+          "trailing_stop_final_position_share": 0.333333333333,
+          "trailing_stop_trade_event_share": 0.25
+        },
+        "funnel_metrics": {
+          "actionable_to_non_opening_rate": 0.769230769231,
+          "actionable_to_observed_open_rate": 0.230769230769,
+          "actionable_to_realized_position_rate": 0.230769230769,
+          "decision_to_observed_open_rate": 0.230769230769,
+          "decision_to_realized_position_rate": 0.230769230769,
+          "realized_position_to_trade_event_rate": 1.333333333333
+        },
+        "performance_metrics": {
+          "breakeven_position_count": 0,
+          "expectancy_per_actionable_decision": -1.851683846154,
+          "expectancy_per_position": -8.023963333333,
+          "full_trade_event_count": 3,
+          "gross_loss_abs": 29.853088,
+          "gross_profit": 5.781198,
+          "gross_realized_pnl": -24.07189,
+          "loss_position_count": 2,
+          "partial_trade_event_count": 1,
+          "position_count": 3,
+          "position_loss_rate": 0.666666666667,
+          "position_win_rate": 0.333333333333,
+          "profit_factor": 0.193654941157,
+          "profit_factor_mode": "finite",
+          "realized_drawdown_contribution_share": 1.0,
+          "total_exit_commission": 0.0,
+          "trade_event_count": 4,
+          "win_position_count": 1
+        }
+      },
+      {
+        "context_metrics": {
+          "action_edge": {
+            "count": 9,
+            "max": 0.062731417544,
+            "mean": 0.039934877276,
+            "min": 0.020818995125
+          },
+          "bars_since_regime_change": {
+            "count": 9,
+            "max": 21.0,
+            "mean": 20.222222222222,
+            "min": 20.0
+          },
+          "clarity_score": {
+            "count": 9,
+            "max": 38.0,
+            "mean": 36.888888888889,
+            "min": 36.0
+          },
+          "confidence_gate": {
+            "count": 9,
+            "max": 0.531365708772,
+            "mean": 0.519967438638,
+            "min": 0.510409497563
+          },
+          "size_after_policy_router": null
+        },
+        "decision_metrics": {
+          "action_counts": {
+            "NONE": 9
+          },
+          "actionable_decision_count": 0,
+          "cohort_counts": {
+            "blocked_dominant_mixed_pocket": 9
+          },
+          "decision_count": 9,
+          "no_action_decision_count": 9,
+          "observed_open_decision_count": 0,
+          "regime_counts": {
+            "balanced": 9
+          },
+          "selected_policy_counts": {
+            "RI_no_trade_policy": 9
+          },
+          "switch_reason_counts": {
+            "AGED_WEAK_CONTINUATION_GUARD": 4,
+            "insufficient_evidence": 5
+          },
+          "unresolved_non_opening_decision_count": 0
+        },
+        "dimensions": {
+          "regime": "balanced",
+          "selected_policy": "RI_no_trade_policy"
+        },
+        "exit_metrics": {
+          "final_exit_family_counts": {},
+          "final_exit_reason_counts": {},
+          "positions_with_confidence_exit_leg_count": 0,
+          "positions_with_manual_or_other_leg_count": 0,
+          "positions_with_regime_exit_leg_count": 0,
+          "positions_with_stop_loss_leg_count": 0,
+          "positions_with_take_profit_leg_count": 0,
+          "positions_with_trailing_stop_leg_count": 0,
+          "positions_with_unknown_exit_leg_count": 0,
+          "stop_loss_final_position_share": null,
+          "stop_loss_trade_event_share": null,
+          "take_profit_final_position_share": null,
+          "take_profit_trade_event_share": null,
+          "trade_event_exit_family_counts": {},
+          "trade_event_exit_reason_counts": {},
+          "trailing_stop_final_position_share": null,
+          "trailing_stop_trade_event_share": null
+        },
+        "funnel_metrics": {
+          "actionable_to_non_opening_rate": null,
+          "actionable_to_observed_open_rate": null,
+          "actionable_to_realized_position_rate": null,
+          "decision_to_observed_open_rate": 0.0,
+          "decision_to_realized_position_rate": 0.0,
+          "realized_position_to_trade_event_rate": null
+        },
+        "performance_metrics": {
+          "breakeven_position_count": 0,
+          "expectancy_per_actionable_decision": null,
+          "expectancy_per_position": null,
+          "full_trade_event_count": 0,
+          "gross_loss_abs": 0.0,
+          "gross_profit": 0.0,
+          "gross_realized_pnl": 0.0,
+          "loss_position_count": 0,
+          "partial_trade_event_count": 0,
+          "position_count": 0,
+          "position_loss_rate": null,
+          "position_win_rate": null,
+          "profit_factor": null,
+          "profit_factor_mode": "no_realized_positions",
+          "realized_drawdown_contribution_share": 0.0,
+          "total_exit_commission": 0.0,
+          "trade_event_count": 0,
+          "win_position_count": 0
+        }
+      }
+    ]
+  },
+  "status": "feature_attribution_ri_regime_policy_attribution_cube_fixed_three_cohort_generated",
+  "surface_characteristics": {
+    "policy_dimension_is_flat_on_fixed_surface": false,
+    "realized_positions_by_selected_policy": {
+      "RI_continuation_policy": 3,
+      "RI_no_trade_policy": 0
+    },
+    "regime_dimension_is_flat_on_fixed_surface": true,
+    "unique_regimes_observed": [
+      "balanced"
+    ],
+    "unique_selected_policies_observed": [
+      "RI_continuation_policy",
+      "RI_no_trade_policy"
+    ],
+    "unique_switch_reasons_observed": [
+      "AGED_WEAK_CONTINUATION_GUARD",
+      "insufficient_evidence",
+      "stable_continuation_state"
+    ]
+  }
+}

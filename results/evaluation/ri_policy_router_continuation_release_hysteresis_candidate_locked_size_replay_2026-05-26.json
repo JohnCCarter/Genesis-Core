@@ -1,0 +1,238 @@
+{
+  "audit_version": "ri-policy-router-continuation-release-hysteresis-candidate-locked-size-replay-2026-05-26",
+  "base_sha": "01d0316264f1b94141e186755fb7c29de01232ac",
+  "classification_boundary": {
+    "outcome_metrics_observational_only": true,
+    "question": "For the `2021-04` candidate, does the dormant locked-size gap persist into the next shared entry, or does it expire while both runs stay trapped in the same open-position context?",
+    "reference_surface": "candidate-only post-processing of the landed action-position-equivalence artifact, limited to the rows where size differences were absorbed by the same locked position"
+  },
+  "inputs": {
+    "action_position_equivalence_artifact": "results\\evaluation\\ri_policy_router_continuation_release_hysteresis_local_action_position_equivalence_2026-05-26.json",
+    "focus_surface": "candidate-only locked-position size-gap lifecycle until unlock and next shared entry",
+    "subject_id": "2021-04",
+    "working_contract_reference": "GENESIS_WORKING_CONTRACT.md"
+  },
+  "non_authoritative": true,
+  "observational_only": true,
+  "packet_summary": {
+    "inference": "The candidate's locked-size gap stays dormant while the same `LONG` remains open, survives into the shared flat unlock boundary as policy-only drift, and then disappears before the next shared `LONG` entry. The negative-like signal therefore expires at the unlock/re-entry boundary rather than turning into execution divergence.",
+    "locked_size_episode_count": 1,
+    "max_requested_size_gap": 0.006,
+    "next_hypothesis": "If this chain continues, the next honest slice is a candidate-only dormant-state replay on the same episode to test whether any non-economic router/debug field remains informative after the locked-size gap has already expired at re-entry.",
+    "status": "candidate_locked_size_gap_expires_before_next_shared_entry",
+    "subject_id": "2021-04",
+    "total_trigger_row_count": 2
+  },
+  "status": "continuation_release_hysteresis_candidate_locked_size_replay_generated",
+  "subject_payload": {
+    "envelope_window": {
+      "end": "2021-04-18T06:00:00+00:00",
+      "row_count": 16,
+      "span_hours": 45.0,
+      "start": "2021-04-16T09:00:00+00:00"
+    },
+    "episode_count": 1,
+    "episodes": [
+      {
+        "episode_trace": [
+          {
+            "baseline_action": "LONG",
+            "baseline_effect": "hold_existing",
+            "baseline_position_has_position": true,
+            "baseline_selected_policy": "RI_defensive_transition_policy",
+            "baseline_size": 0.006,
+            "baseline_switch_reason": "switch_blocked_by_hysteresis",
+            "classification": "size_diff_absorbed_by_locked_position",
+            "release_zero_action": "LONG",
+            "release_zero_effect": "hold_existing",
+            "release_zero_position_has_position": true,
+            "release_zero_selected_policy": "RI_continuation_policy",
+            "release_zero_size": 0.012,
+            "release_zero_switch_reason": "continuation_state_supported",
+            "requested_size_gap": 0.006,
+            "timestamp": "2021-04-17T03:00:00+00:00"
+          },
+          {
+            "baseline_action": "NONE",
+            "baseline_effect": "hold_existing",
+            "baseline_position_has_position": true,
+            "baseline_selected_policy": "RI_defensive_transition_policy",
+            "baseline_size": null,
+            "baseline_switch_reason": "switch_blocked_by_hysteresis",
+            "classification": "router_internal_only",
+            "release_zero_action": "NONE",
+            "release_zero_effect": "hold_existing",
+            "release_zero_position_has_position": true,
+            "release_zero_selected_policy": "RI_continuation_policy",
+            "release_zero_size": null,
+            "release_zero_switch_reason": "continuation_state_supported",
+            "requested_size_gap": null,
+            "timestamp": "2021-04-17T06:00:00+00:00"
+          },
+          {
+            "baseline_action": "NONE",
+            "baseline_effect": "hold_existing",
+            "baseline_position_has_position": true,
+            "baseline_selected_policy": "RI_defensive_transition_policy",
+            "baseline_size": null,
+            "baseline_switch_reason": "switch_blocked_by_hysteresis",
+            "classification": "router_internal_only",
+            "release_zero_action": "NONE",
+            "release_zero_effect": "hold_existing",
+            "release_zero_position_has_position": true,
+            "release_zero_selected_policy": "RI_continuation_policy",
+            "release_zero_size": null,
+            "release_zero_switch_reason": "continuation_state_supported",
+            "requested_size_gap": null,
+            "timestamp": "2021-04-17T09:00:00+00:00"
+          },
+          {
+            "baseline_action": "LONG",
+            "baseline_effect": "hold_existing",
+            "baseline_position_has_position": true,
+            "baseline_selected_policy": "RI_defensive_transition_policy",
+            "baseline_size": 0.006,
+            "baseline_switch_reason": "switch_blocked_by_hysteresis",
+            "classification": "size_diff_absorbed_by_locked_position",
+            "release_zero_action": "LONG",
+            "release_zero_effect": "hold_existing",
+            "release_zero_position_has_position": true,
+            "release_zero_selected_policy": "RI_continuation_policy",
+            "release_zero_size": 0.012,
+            "release_zero_switch_reason": "continuation_state_supported",
+            "requested_size_gap": 0.006,
+            "timestamp": "2021-04-17T12:00:00+00:00"
+          },
+          {
+            "baseline_action": "NONE",
+            "baseline_effect": "hold_existing",
+            "baseline_position_has_position": true,
+            "baseline_selected_policy": "RI_defensive_transition_policy",
+            "baseline_size": null,
+            "baseline_switch_reason": "switch_blocked_by_hysteresis",
+            "classification": "router_internal_only",
+            "release_zero_action": "NONE",
+            "release_zero_effect": "hold_existing",
+            "release_zero_position_has_position": true,
+            "release_zero_selected_policy": "RI_continuation_policy",
+            "release_zero_size": null,
+            "release_zero_switch_reason": "continuation_state_supported",
+            "requested_size_gap": null,
+            "timestamp": "2021-04-17T15:00:00+00:00"
+          },
+          {
+            "baseline_action": "NONE",
+            "baseline_effect": "hold_flat",
+            "baseline_position_has_position": false,
+            "baseline_selected_policy": "RI_defensive_transition_policy",
+            "baseline_size": null,
+            "baseline_switch_reason": "switch_blocked_by_hysteresis",
+            "classification": "router_internal_only",
+            "release_zero_action": "NONE",
+            "release_zero_effect": "hold_flat",
+            "release_zero_position_has_position": false,
+            "release_zero_selected_policy": "RI_continuation_policy",
+            "release_zero_size": null,
+            "release_zero_switch_reason": "continuation_state_supported",
+            "requested_size_gap": null,
+            "timestamp": "2021-04-17T18:00:00+00:00"
+          },
+          {
+            "baseline_action": "LONG",
+            "baseline_effect": "open_position",
+            "baseline_position_has_position": false,
+            "baseline_selected_policy": "RI_continuation_policy",
+            "baseline_size": 0.02,
+            "baseline_switch_reason": "stable_continuation_state",
+            "classification": "execution_equivalent_other",
+            "release_zero_action": "LONG",
+            "release_zero_effect": "open_position",
+            "release_zero_position_has_position": false,
+            "release_zero_selected_policy": "RI_continuation_policy",
+            "release_zero_size": 0.02,
+            "release_zero_switch_reason": "stable_continuation_state",
+            "requested_size_gap": 0.0,
+            "timestamp": "2021-04-17T21:00:00+00:00"
+          }
+        ],
+        "execution_divergence_rows_before_unlock": 0,
+        "first_shared_open_after_unlock": {
+          "baseline_effect": "open_position",
+          "baseline_size": 0.02,
+          "hours_after_unlock": 3.0,
+          "release_zero_effect": "open_position",
+          "release_zero_size": 0.02,
+          "requested_size_gap": 0.0,
+          "selected_policy_match": true,
+          "timestamp": "2021-04-17T21:00:00+00:00"
+        },
+        "gap_resolved_before_next_shared_entry": true,
+        "hours_until_unlock": 15.0,
+        "locked_position_key": {
+          "current_size": 0.0065,
+          "entry_time": "2021-04-16T09:00:00+00:00",
+          "side": "LONG"
+        },
+        "max_requested_size_gap": 0.006,
+        "max_requested_size_gap_pct_of_locked_size": 0.923077,
+        "router_internal_only_rows_while_locked": 3,
+        "rows_until_unlock": 6,
+        "trigger_duration_hours": 9.0,
+        "trigger_row_count": 2,
+        "trigger_rows": [
+          {
+            "baseline_proposed_size": 0.006,
+            "baseline_requested_minus_locked": -0.0005,
+            "baseline_selected_policy": "RI_defensive_transition_policy",
+            "baseline_switch_reason": "switch_blocked_by_hysteresis",
+            "execution_effect": "hold_existing",
+            "locked_current_size": 0.0065,
+            "locked_position_entry_time": "2021-04-16T09:00:00+00:00",
+            "locked_position_side": "LONG",
+            "release_zero_proposed_size": 0.012,
+            "release_zero_requested_minus_locked": 0.0055,
+            "release_zero_selected_policy": "RI_continuation_policy",
+            "release_zero_switch_reason": "continuation_state_supported",
+            "requested_size_gap": 0.006,
+            "timestamp": "2021-04-17T03:00:00+00:00"
+          },
+          {
+            "baseline_proposed_size": 0.006,
+            "baseline_requested_minus_locked": -0.0005,
+            "baseline_selected_policy": "RI_defensive_transition_policy",
+            "baseline_switch_reason": "switch_blocked_by_hysteresis",
+            "execution_effect": "hold_existing",
+            "locked_current_size": 0.0065,
+            "locked_position_entry_time": "2021-04-16T09:00:00+00:00",
+            "locked_position_side": "LONG",
+            "release_zero_proposed_size": 0.012,
+            "release_zero_requested_minus_locked": 0.0055,
+            "release_zero_selected_policy": "RI_continuation_policy",
+            "release_zero_switch_reason": "continuation_state_supported",
+            "requested_size_gap": 0.006,
+            "timestamp": "2021-04-17T12:00:00+00:00"
+          }
+        ],
+        "trigger_timestamps": [
+          "2021-04-17T03:00:00+00:00",
+          "2021-04-17T12:00:00+00:00"
+        ],
+        "unlock_boundary": {
+          "baseline_effect": "hold_flat",
+          "classification": "router_internal_only",
+          "release_zero_effect": "hold_flat",
+          "selected_policy_still_diff": true,
+          "switch_reason_still_diff": true,
+          "timestamp": "2021-04-17T18:00:00+00:00"
+        }
+      }
+    ],
+    "month_window": {
+      "end": "2021-04-30",
+      "inventory_final_capital_diff": 0.0,
+      "inventory_total_return_diff": 0.0,
+      "start": "2021-04-01"
+    },
+    "subject_id": "2021-04"
+  }
+}

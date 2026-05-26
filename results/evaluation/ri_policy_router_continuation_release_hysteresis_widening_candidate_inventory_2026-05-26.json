@@ -1,0 +1,1921 @@
+{
+  "audit_version": "ri-policy-router-continuation-release-hysteresis-widening-candidate-inventory-2026-05-26",
+  "base_sha": "907b94d2126d34b366f46544e8a422a508e0860a",
+  "classification_boundary": {
+    "outcome_metrics_observational_only": true,
+    "proxy_features": [
+      "behavioral_row_diff_count",
+      "selected_policy_diff_count",
+      "switch_reason_diff_count",
+      "size_diff_count",
+      "baseline_continuation_release_row_count",
+      "release_zero_continuation_release_row_count",
+      "release_retention_ratio"
+    ],
+    "proxy_limitations": [
+      "monthly inventory exposes whole-window count/retention proxies, not the decisive-timing or decisive-support fields used in the intra-band triad slice",
+      "selected_policy_diff_count, switch_reason_diff_count, and size_diff_count are inventory-level counts, not exact continuation-release cluster-only counts",
+      "this slice ranks widening candidates for a fresh packet; it does not create new exact-subject verdicts or claim hidden local top-line divergence already exists"
+    ],
+    "question": "Which seam-active monthly windows with zero monthly top-line divergence are the best current widening candidates for a fresh packet, when ranked by monthly inventory proxies for the triad-local negative vs positive signatures?",
+    "reference_surface": "frozen continuation_release_hysteresis monthly inventory plus the triad-local intra-band sign candidate slice"
+  },
+  "inputs": {
+    "intra_band_sign_candidates_artifact": "results\\evaluation\\ri_policy_router_continuation_release_hysteresis_intra_band_sign_candidates_2026-05-26.json",
+    "monthly_inventory_windows": "results\\backtests\\ri_policy_router_continuation_release_hysteresis_monthly_inventory_20260504\\continuation_release_hysteresis_monthly_inventory_windows.json",
+    "triad_synthesis_note": "docs\\analysis\\regime_intelligence\\policy_router\\ri_policy_router_continuation_release_hysteresis_topline_subject_triad_synthesis_2026-05-04.md",
+    "working_contract_reference": "GENESIS_WORKING_CONTRACT.md"
+  },
+  "non_authoritative": true,
+  "observational_only": true,
+  "ranking_summary": {
+    "inference": "The frozen monthly inventory remains exhausted as an exact top-line-divergent subject bench, but it still contains seam-active non-divergent months that look materially closer to the negative triad signature than to the positive centroid on the monthly count/retention proxies. Those months are the smallest current widening targets for a fresh packet.",
+    "negative_like_candidate_count": 8,
+    "next_hypothesis": "If this chain continues, the next honest widening packet should localize around the top negative-like near-miss months and pair them with positive-like controls, rather than reopening the full monthly bench without a narrowing target.",
+    "positive_like_or_neutral_candidate_count": 43,
+    "status": "seam_active_non_divergent_months_ranked_for_widening",
+    "top_negative_like_labels": [
+      "2021-04",
+      "2020-06",
+      "2024-01",
+      "2018-09"
+    ],
+    "top_positive_control_labels": [
+      "2023-05",
+      "2024-02",
+      "2018-12"
+    ]
+  },
+  "rankings": {
+    "all_non_divergent_candidates": [
+      {
+        "label": "2016-07",
+        "negative_signature_distance": 0.527536,
+        "orientation": "negative_like",
+        "orientation_margin": 0.537768,
+        "positive_signature_distance": 1.065304,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 12.0,
+          "behavioral_row_diff_count": 39.0,
+          "release_retention_ratio": 0.25,
+          "release_zero_continuation_release_row_count": 3.0,
+          "selected_policy_diff_count": 9.0,
+          "size_diff_count": 3.0,
+          "switch_reason_diff_count": 9.0
+        }
+      },
+      {
+        "label": "2016-08",
+        "negative_signature_distance": 0.912531,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.09777,
+        "positive_signature_distance": 0.814761,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 15.0,
+          "behavioral_row_diff_count": 33.0,
+          "release_retention_ratio": 0.8,
+          "release_zero_continuation_release_row_count": 12.0,
+          "selected_policy_diff_count": 12.0,
+          "size_diff_count": 4.0,
+          "switch_reason_diff_count": 12.0
+        }
+      },
+      {
+        "label": "2016-10",
+        "negative_signature_distance": 1.152363,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.257836,
+        "positive_signature_distance": 0.894527,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 9.0,
+          "behavioral_row_diff_count": 9.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 9.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2016-12",
+        "negative_signature_distance": 1.210339,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.274834,
+        "positive_signature_distance": 0.935505,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 6.0,
+          "behavioral_row_diff_count": 6.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2017-02",
+        "negative_signature_distance": 0.858626,
+        "orientation": "negative_like",
+        "orientation_margin": 0.022915,
+        "positive_signature_distance": 0.881541,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 6.0,
+          "behavioral_row_diff_count": 23.0,
+          "release_retention_ratio": 0.5,
+          "release_zero_continuation_release_row_count": 3.0,
+          "selected_policy_diff_count": 3.0,
+          "size_diff_count": 1.0,
+          "switch_reason_diff_count": 17.0
+        }
+      },
+      {
+        "label": "2017-06",
+        "negative_signature_distance": 1.210339,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.274834,
+        "positive_signature_distance": 0.935505,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 6.0,
+          "behavioral_row_diff_count": 6.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2017-07",
+        "negative_signature_distance": 1.317047,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.276434,
+        "positive_signature_distance": 1.040613,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 3.0,
+          "behavioral_row_diff_count": 3.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 3.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2017-08",
+        "negative_signature_distance": 1.152363,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.257836,
+        "positive_signature_distance": 0.894527,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 9.0,
+          "behavioral_row_diff_count": 9.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 9.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2017-12",
+        "negative_signature_distance": 1.40041,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.111739,
+        "positive_signature_distance": 1.288671,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 20.0,
+          "behavioral_row_diff_count": 20.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 20.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2018-01",
+        "negative_signature_distance": 1.185122,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.271105,
+        "positive_signature_distance": 0.914017,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 7.0,
+          "behavioral_row_diff_count": 7.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 7.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2018-02",
+        "negative_signature_distance": 1.180919,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.195972,
+        "positive_signature_distance": 0.984946,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 14.0,
+          "behavioral_row_diff_count": 14.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 14.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2018-04",
+        "negative_signature_distance": 0.646316,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.077172,
+        "positive_signature_distance": 0.569143,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 12.0,
+          "behavioral_row_diff_count": 17.0,
+          "release_retention_ratio": 0.75,
+          "release_zero_continuation_release_row_count": 9.0,
+          "selected_policy_diff_count": 3.0,
+          "size_diff_count": 1.0,
+          "switch_reason_diff_count": 3.0
+        }
+      },
+      {
+        "label": "2018-06",
+        "negative_signature_distance": 1.210339,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.274834,
+        "positive_signature_distance": 0.935505,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 6.0,
+          "behavioral_row_diff_count": 6.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2018-07",
+        "negative_signature_distance": 1.210339,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.274834,
+        "positive_signature_distance": 0.935505,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 6.0,
+          "behavioral_row_diff_count": 6.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2018-08",
+        "negative_signature_distance": 0.839207,
+        "orientation": "negative_like",
+        "orientation_margin": 0.143046,
+        "positive_signature_distance": 0.982253,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 13.0,
+          "behavioral_row_diff_count": 49.0,
+          "release_retention_ratio": 0.692308,
+          "release_zero_continuation_release_row_count": 9.0,
+          "selected_policy_diff_count": 12.0,
+          "size_diff_count": 4.0,
+          "switch_reason_diff_count": 12.0
+        }
+      },
+      {
+        "label": "2018-09",
+        "negative_signature_distance": 0.514624,
+        "orientation": "negative_like",
+        "orientation_margin": 0.407888,
+        "positive_signature_distance": 0.922512,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 14.0,
+          "behavioral_row_diff_count": 46.0,
+          "release_retention_ratio": 0.642857,
+          "release_zero_continuation_release_row_count": 9.0,
+          "selected_policy_diff_count": 3.0,
+          "size_diff_count": 1.0,
+          "switch_reason_diff_count": 3.0
+        }
+      },
+      {
+        "label": "2018-12",
+        "negative_signature_distance": 0.599382,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.077511,
+        "positive_signature_distance": 0.521871,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 9.0,
+          "behavioral_row_diff_count": 15.0,
+          "release_retention_ratio": 0.666667,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 3.0,
+          "size_diff_count": 1.0,
+          "switch_reason_diff_count": 6.0
+        }
+      },
+      {
+        "label": "2019-04",
+        "negative_signature_distance": 1.317047,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.276434,
+        "positive_signature_distance": 1.040613,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 3.0,
+          "behavioral_row_diff_count": 3.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 3.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2019-06",
+        "negative_signature_distance": 0.813551,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.001672,
+        "positive_signature_distance": 0.811879,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 12.0,
+          "behavioral_row_diff_count": 17.0,
+          "release_retention_ratio": 0.5,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 12.0,
+          "size_diff_count": 4.0,
+          "switch_reason_diff_count": 12.0
+        }
+      },
+      {
+        "label": "2019-09",
+        "negative_signature_distance": 1.144707,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.237008,
+        "positive_signature_distance": 0.907699,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 11.0,
+          "behavioral_row_diff_count": 11.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 11.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2019-12",
+        "negative_signature_distance": 1.449059,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.319387,
+        "positive_signature_distance": 1.129671,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 19.0,
+          "behavioral_row_diff_count": 20.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 19.0,
+          "selected_policy_diff_count": 16.0,
+          "size_diff_count": 1.0,
+          "switch_reason_diff_count": 16.0
+        }
+      },
+      {
+        "label": "2020-01",
+        "negative_signature_distance": 1.185122,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.271105,
+        "positive_signature_distance": 0.914017,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 7.0,
+          "behavioral_row_diff_count": 7.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 7.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2020-06",
+        "negative_signature_distance": 0.365853,
+        "orientation": "negative_like",
+        "orientation_margin": 0.490171,
+        "positive_signature_distance": 0.856024,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 9.0,
+          "behavioral_row_diff_count": 28.0,
+          "release_retention_ratio": 0.333333,
+          "release_zero_continuation_release_row_count": 3.0,
+          "selected_policy_diff_count": 6.0,
+          "size_diff_count": 2.0,
+          "switch_reason_diff_count": 6.0
+        }
+      },
+      {
+        "label": "2020-08",
+        "negative_signature_distance": 1.210339,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.274834,
+        "positive_signature_distance": 0.935505,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 6.0,
+          "behavioral_row_diff_count": 6.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2020-09",
+        "negative_signature_distance": 1.210339,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.274834,
+        "positive_signature_distance": 0.935505,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 6.0,
+          "behavioral_row_diff_count": 6.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2021-04",
+        "negative_signature_distance": 0.308643,
+        "orientation": "negative_like",
+        "orientation_margin": 0.448775,
+        "positive_signature_distance": 0.757418,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 16.0,
+          "behavioral_row_diff_count": 37.0,
+          "release_retention_ratio": 0.5625,
+          "release_zero_continuation_release_row_count": 9.0,
+          "selected_policy_diff_count": 6.0,
+          "size_diff_count": 2.0,
+          "switch_reason_diff_count": 6.0
+        }
+      },
+      {
+        "label": "2021-09",
+        "negative_signature_distance": 0.669924,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.059542,
+        "positive_signature_distance": 0.610381,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 9.0,
+          "behavioral_row_diff_count": 12.0,
+          "release_retention_ratio": 0.666667,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 3.0,
+          "size_diff_count": 1.0,
+          "switch_reason_diff_count": 3.0
+        }
+      },
+      {
+        "label": "2021-10",
+        "negative_signature_distance": 1.144707,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.237008,
+        "positive_signature_distance": 0.907699,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 11.0,
+          "behavioral_row_diff_count": 11.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 11.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2021-12",
+        "negative_signature_distance": 1.144707,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.237008,
+        "positive_signature_distance": 0.907699,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 11.0,
+          "behavioral_row_diff_count": 11.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 11.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2022-01",
+        "negative_signature_distance": 1.317047,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.276434,
+        "positive_signature_distance": 1.040613,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 3.0,
+          "behavioral_row_diff_count": 3.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 3.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2022-02",
+        "negative_signature_distance": 0.585082,
+        "orientation": "negative_like",
+        "orientation_margin": 0.605356,
+        "positive_signature_distance": 1.190437,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 9.0,
+          "behavioral_row_diff_count": 50.0,
+          "release_retention_ratio": 0.333333,
+          "release_zero_continuation_release_row_count": 3.0,
+          "selected_policy_diff_count": 3.0,
+          "size_diff_count": 1.0,
+          "switch_reason_diff_count": 3.0
+        }
+      },
+      {
+        "label": "2022-03",
+        "negative_signature_distance": 1.210339,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.274834,
+        "positive_signature_distance": 0.935505,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 6.0,
+          "behavioral_row_diff_count": 6.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2022-04",
+        "negative_signature_distance": 1.145327,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.248291,
+        "positive_signature_distance": 0.897037,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 10.0,
+          "behavioral_row_diff_count": 10.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 10.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2022-05",
+        "negative_signature_distance": 1.210339,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.274834,
+        "positive_signature_distance": 0.935505,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 6.0,
+          "behavioral_row_diff_count": 6.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2022-07",
+        "negative_signature_distance": 1.210339,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.274834,
+        "positive_signature_distance": 0.935505,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 6.0,
+          "behavioral_row_diff_count": 6.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2022-10",
+        "negative_signature_distance": 1.152363,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.257836,
+        "positive_signature_distance": 0.894527,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 9.0,
+          "behavioral_row_diff_count": 9.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 9.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2022-11",
+        "negative_signature_distance": 0.669924,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.059542,
+        "positive_signature_distance": 0.610381,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 9.0,
+          "behavioral_row_diff_count": 12.0,
+          "release_retention_ratio": 0.666667,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 3.0,
+          "size_diff_count": 1.0,
+          "switch_reason_diff_count": 3.0
+        }
+      },
+      {
+        "label": "2023-02",
+        "negative_signature_distance": 1.145327,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.248291,
+        "positive_signature_distance": 0.897037,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 10.0,
+          "behavioral_row_diff_count": 10.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 10.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2023-05",
+        "negative_signature_distance": 0.941918,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.564599,
+        "positive_signature_distance": 0.377319,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 7.0,
+          "behavioral_row_diff_count": 10.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 7.0,
+          "selected_policy_diff_count": 7.0,
+          "size_diff_count": 1.0,
+          "switch_reason_diff_count": 7.0
+        }
+      },
+      {
+        "label": "2023-09",
+        "negative_signature_distance": 1.210339,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.274834,
+        "positive_signature_distance": 0.935505,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 6.0,
+          "behavioral_row_diff_count": 6.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2024-01",
+        "negative_signature_distance": 0.431553,
+        "orientation": "negative_like",
+        "orientation_margin": 0.112442,
+        "positive_signature_distance": 0.543995,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 11.0,
+          "behavioral_row_diff_count": 31.0,
+          "release_retention_ratio": 0.727273,
+          "release_zero_continuation_release_row_count": 8.0,
+          "selected_policy_diff_count": 5.0,
+          "size_diff_count": 1.0,
+          "switch_reason_diff_count": 5.0
+        }
+      },
+      {
+        "label": "2024-02",
+        "negative_signature_distance": 0.608882,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.127368,
+        "positive_signature_distance": 0.481515,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 12.0,
+          "behavioral_row_diff_count": 18.0,
+          "release_retention_ratio": 0.75,
+          "release_zero_continuation_release_row_count": 9.0,
+          "selected_policy_diff_count": 3.0,
+          "size_diff_count": 1.0,
+          "switch_reason_diff_count": 6.0
+        }
+      },
+      {
+        "label": "2024-05",
+        "negative_signature_distance": 1.165699,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.26546,
+        "positive_signature_distance": 0.900239,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 8.0,
+          "behavioral_row_diff_count": 8.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 8.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2024-07",
+        "negative_signature_distance": 1.210339,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.274834,
+        "positive_signature_distance": 0.935505,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 6.0,
+          "behavioral_row_diff_count": 6.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2024-11",
+        "negative_signature_distance": 1.210339,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.274834,
+        "positive_signature_distance": 0.935505,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 6.0,
+          "behavioral_row_diff_count": 6.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2024-12",
+        "negative_signature_distance": 1.234684,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.166358,
+        "positive_signature_distance": 1.068325,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 16.0,
+          "behavioral_row_diff_count": 16.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 16.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2025-02",
+        "negative_signature_distance": 1.210339,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.274834,
+        "positive_signature_distance": 0.935505,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 6.0,
+          "behavioral_row_diff_count": 6.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2025-03",
+        "negative_signature_distance": 1.165699,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.26546,
+        "positive_signature_distance": 0.900239,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 8.0,
+          "behavioral_row_diff_count": 8.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 8.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2025-06",
+        "negative_signature_distance": 1.150513,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.224281,
+        "positive_signature_distance": 0.926231,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 12.0,
+          "behavioral_row_diff_count": 12.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 12.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2025-11",
+        "negative_signature_distance": 1.40041,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.111739,
+        "positive_signature_distance": 1.288671,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 20.0,
+          "behavioral_row_diff_count": 20.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 20.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2026-03",
+        "negative_signature_distance": 1.145327,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.248291,
+        "positive_signature_distance": 0.897037,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 10.0,
+          "behavioral_row_diff_count": 10.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 10.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      }
+    ],
+    "extrema": {
+      "baseline_continuation_release_row_count": {
+        "max": 20.0,
+        "min": 3.0
+      },
+      "behavioral_row_diff_count": {
+        "max": 50.0,
+        "min": 3.0
+      },
+      "release_retention_ratio": {
+        "max": 1.0,
+        "min": 0.25
+      },
+      "release_zero_continuation_release_row_count": {
+        "max": 20.0,
+        "min": 3.0
+      },
+      "selected_policy_diff_count": {
+        "max": 16.0,
+        "min": 0.0
+      },
+      "size_diff_count": {
+        "max": 4.0,
+        "min": 0.0
+      },
+      "switch_reason_diff_count": {
+        "max": 17.0,
+        "min": 0.0
+      }
+    },
+    "negative_like_ranked": [
+      {
+        "label": "2021-04",
+        "negative_signature_distance": 0.308643,
+        "orientation": "negative_like",
+        "orientation_margin": 0.448775,
+        "positive_signature_distance": 0.757418,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 16.0,
+          "behavioral_row_diff_count": 37.0,
+          "release_retention_ratio": 0.5625,
+          "release_zero_continuation_release_row_count": 9.0,
+          "selected_policy_diff_count": 6.0,
+          "size_diff_count": 2.0,
+          "switch_reason_diff_count": 6.0
+        }
+      },
+      {
+        "label": "2020-06",
+        "negative_signature_distance": 0.365853,
+        "orientation": "negative_like",
+        "orientation_margin": 0.490171,
+        "positive_signature_distance": 0.856024,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 9.0,
+          "behavioral_row_diff_count": 28.0,
+          "release_retention_ratio": 0.333333,
+          "release_zero_continuation_release_row_count": 3.0,
+          "selected_policy_diff_count": 6.0,
+          "size_diff_count": 2.0,
+          "switch_reason_diff_count": 6.0
+        }
+      },
+      {
+        "label": "2024-01",
+        "negative_signature_distance": 0.431553,
+        "orientation": "negative_like",
+        "orientation_margin": 0.112442,
+        "positive_signature_distance": 0.543995,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 11.0,
+          "behavioral_row_diff_count": 31.0,
+          "release_retention_ratio": 0.727273,
+          "release_zero_continuation_release_row_count": 8.0,
+          "selected_policy_diff_count": 5.0,
+          "size_diff_count": 1.0,
+          "switch_reason_diff_count": 5.0
+        }
+      },
+      {
+        "label": "2018-09",
+        "negative_signature_distance": 0.514624,
+        "orientation": "negative_like",
+        "orientation_margin": 0.407888,
+        "positive_signature_distance": 0.922512,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 14.0,
+          "behavioral_row_diff_count": 46.0,
+          "release_retention_ratio": 0.642857,
+          "release_zero_continuation_release_row_count": 9.0,
+          "selected_policy_diff_count": 3.0,
+          "size_diff_count": 1.0,
+          "switch_reason_diff_count": 3.0
+        }
+      },
+      {
+        "label": "2016-07",
+        "negative_signature_distance": 0.527536,
+        "orientation": "negative_like",
+        "orientation_margin": 0.537768,
+        "positive_signature_distance": 1.065304,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 12.0,
+          "behavioral_row_diff_count": 39.0,
+          "release_retention_ratio": 0.25,
+          "release_zero_continuation_release_row_count": 3.0,
+          "selected_policy_diff_count": 9.0,
+          "size_diff_count": 3.0,
+          "switch_reason_diff_count": 9.0
+        }
+      },
+      {
+        "label": "2022-02",
+        "negative_signature_distance": 0.585082,
+        "orientation": "negative_like",
+        "orientation_margin": 0.605356,
+        "positive_signature_distance": 1.190437,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 9.0,
+          "behavioral_row_diff_count": 50.0,
+          "release_retention_ratio": 0.333333,
+          "release_zero_continuation_release_row_count": 3.0,
+          "selected_policy_diff_count": 3.0,
+          "size_diff_count": 1.0,
+          "switch_reason_diff_count": 3.0
+        }
+      },
+      {
+        "label": "2018-08",
+        "negative_signature_distance": 0.839207,
+        "orientation": "negative_like",
+        "orientation_margin": 0.143046,
+        "positive_signature_distance": 0.982253,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 13.0,
+          "behavioral_row_diff_count": 49.0,
+          "release_retention_ratio": 0.692308,
+          "release_zero_continuation_release_row_count": 9.0,
+          "selected_policy_diff_count": 12.0,
+          "size_diff_count": 4.0,
+          "switch_reason_diff_count": 12.0
+        }
+      },
+      {
+        "label": "2017-02",
+        "negative_signature_distance": 0.858626,
+        "orientation": "negative_like",
+        "orientation_margin": 0.022915,
+        "positive_signature_distance": 0.881541,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 6.0,
+          "behavioral_row_diff_count": 23.0,
+          "release_retention_ratio": 0.5,
+          "release_zero_continuation_release_row_count": 3.0,
+          "selected_policy_diff_count": 3.0,
+          "size_diff_count": 1.0,
+          "switch_reason_diff_count": 17.0
+        }
+      }
+    ],
+    "negative_signature_anchor": {
+      "label": "2018-03",
+      "normalized_features": {
+        "baseline_continuation_release_row_count": 0.529412,
+        "behavioral_row_diff_count": 0.680851,
+        "release_retention_ratio": 0.333333,
+        "release_zero_continuation_release_row_count": 0.176471,
+        "selected_policy_diff_count": 0.375,
+        "size_diff_count": 0.5,
+        "switch_reason_diff_count": 0.352941
+      }
+    },
+    "next_packet_shortlist": {
+      "negative_like_candidates": [
+        {
+          "label": "2021-04",
+          "negative_signature_distance": 0.308643,
+          "orientation": "negative_like",
+          "orientation_margin": 0.448775,
+          "positive_signature_distance": 0.757418,
+          "subject_features": {
+            "baseline_continuation_release_row_count": 16.0,
+            "behavioral_row_diff_count": 37.0,
+            "release_retention_ratio": 0.5625,
+            "release_zero_continuation_release_row_count": 9.0,
+            "selected_policy_diff_count": 6.0,
+            "size_diff_count": 2.0,
+            "switch_reason_diff_count": 6.0
+          }
+        },
+        {
+          "label": "2020-06",
+          "negative_signature_distance": 0.365853,
+          "orientation": "negative_like",
+          "orientation_margin": 0.490171,
+          "positive_signature_distance": 0.856024,
+          "subject_features": {
+            "baseline_continuation_release_row_count": 9.0,
+            "behavioral_row_diff_count": 28.0,
+            "release_retention_ratio": 0.333333,
+            "release_zero_continuation_release_row_count": 3.0,
+            "selected_policy_diff_count": 6.0,
+            "size_diff_count": 2.0,
+            "switch_reason_diff_count": 6.0
+          }
+        },
+        {
+          "label": "2024-01",
+          "negative_signature_distance": 0.431553,
+          "orientation": "negative_like",
+          "orientation_margin": 0.112442,
+          "positive_signature_distance": 0.543995,
+          "subject_features": {
+            "baseline_continuation_release_row_count": 11.0,
+            "behavioral_row_diff_count": 31.0,
+            "release_retention_ratio": 0.727273,
+            "release_zero_continuation_release_row_count": 8.0,
+            "selected_policy_diff_count": 5.0,
+            "size_diff_count": 1.0,
+            "switch_reason_diff_count": 5.0
+          }
+        },
+        {
+          "label": "2018-09",
+          "negative_signature_distance": 0.514624,
+          "orientation": "negative_like",
+          "orientation_margin": 0.407888,
+          "positive_signature_distance": 0.922512,
+          "subject_features": {
+            "baseline_continuation_release_row_count": 14.0,
+            "behavioral_row_diff_count": 46.0,
+            "release_retention_ratio": 0.642857,
+            "release_zero_continuation_release_row_count": 9.0,
+            "selected_policy_diff_count": 3.0,
+            "size_diff_count": 1.0,
+            "switch_reason_diff_count": 3.0
+          }
+        }
+      ],
+      "positive_control_candidates": [
+        {
+          "label": "2023-05",
+          "negative_signature_distance": 0.941918,
+          "orientation": "positive_like_or_neutral",
+          "orientation_margin": -0.564599,
+          "positive_signature_distance": 0.377319,
+          "subject_features": {
+            "baseline_continuation_release_row_count": 7.0,
+            "behavioral_row_diff_count": 10.0,
+            "release_retention_ratio": 1.0,
+            "release_zero_continuation_release_row_count": 7.0,
+            "selected_policy_diff_count": 7.0,
+            "size_diff_count": 1.0,
+            "switch_reason_diff_count": 7.0
+          }
+        },
+        {
+          "label": "2024-02",
+          "negative_signature_distance": 0.608882,
+          "orientation": "positive_like_or_neutral",
+          "orientation_margin": -0.127368,
+          "positive_signature_distance": 0.481515,
+          "subject_features": {
+            "baseline_continuation_release_row_count": 12.0,
+            "behavioral_row_diff_count": 18.0,
+            "release_retention_ratio": 0.75,
+            "release_zero_continuation_release_row_count": 9.0,
+            "selected_policy_diff_count": 3.0,
+            "size_diff_count": 1.0,
+            "switch_reason_diff_count": 6.0
+          }
+        },
+        {
+          "label": "2018-12",
+          "negative_signature_distance": 0.599382,
+          "orientation": "positive_like_or_neutral",
+          "orientation_margin": -0.077511,
+          "positive_signature_distance": 0.521871,
+          "subject_features": {
+            "baseline_continuation_release_row_count": 9.0,
+            "behavioral_row_diff_count": 15.0,
+            "release_retention_ratio": 0.666667,
+            "release_zero_continuation_release_row_count": 6.0,
+            "selected_policy_diff_count": 3.0,
+            "size_diff_count": 1.0,
+            "switch_reason_diff_count": 6.0
+          }
+        }
+      ]
+    },
+    "positive_like_or_neutral_ranked": [
+      {
+        "label": "2023-05",
+        "negative_signature_distance": 0.941918,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.564599,
+        "positive_signature_distance": 0.377319,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 7.0,
+          "behavioral_row_diff_count": 10.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 7.0,
+          "selected_policy_diff_count": 7.0,
+          "size_diff_count": 1.0,
+          "switch_reason_diff_count": 7.0
+        }
+      },
+      {
+        "label": "2024-02",
+        "negative_signature_distance": 0.608882,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.127368,
+        "positive_signature_distance": 0.481515,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 12.0,
+          "behavioral_row_diff_count": 18.0,
+          "release_retention_ratio": 0.75,
+          "release_zero_continuation_release_row_count": 9.0,
+          "selected_policy_diff_count": 3.0,
+          "size_diff_count": 1.0,
+          "switch_reason_diff_count": 6.0
+        }
+      },
+      {
+        "label": "2018-12",
+        "negative_signature_distance": 0.599382,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.077511,
+        "positive_signature_distance": 0.521871,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 9.0,
+          "behavioral_row_diff_count": 15.0,
+          "release_retention_ratio": 0.666667,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 3.0,
+          "size_diff_count": 1.0,
+          "switch_reason_diff_count": 6.0
+        }
+      },
+      {
+        "label": "2018-04",
+        "negative_signature_distance": 0.646316,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.077172,
+        "positive_signature_distance": 0.569143,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 12.0,
+          "behavioral_row_diff_count": 17.0,
+          "release_retention_ratio": 0.75,
+          "release_zero_continuation_release_row_count": 9.0,
+          "selected_policy_diff_count": 3.0,
+          "size_diff_count": 1.0,
+          "switch_reason_diff_count": 3.0
+        }
+      },
+      {
+        "label": "2021-09",
+        "negative_signature_distance": 0.669924,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.059542,
+        "positive_signature_distance": 0.610381,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 9.0,
+          "behavioral_row_diff_count": 12.0,
+          "release_retention_ratio": 0.666667,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 3.0,
+          "size_diff_count": 1.0,
+          "switch_reason_diff_count": 3.0
+        }
+      },
+      {
+        "label": "2022-11",
+        "negative_signature_distance": 0.669924,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.059542,
+        "positive_signature_distance": 0.610381,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 9.0,
+          "behavioral_row_diff_count": 12.0,
+          "release_retention_ratio": 0.666667,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 3.0,
+          "size_diff_count": 1.0,
+          "switch_reason_diff_count": 3.0
+        }
+      },
+      {
+        "label": "2019-06",
+        "negative_signature_distance": 0.813551,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.001672,
+        "positive_signature_distance": 0.811879,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 12.0,
+          "behavioral_row_diff_count": 17.0,
+          "release_retention_ratio": 0.5,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 12.0,
+          "size_diff_count": 4.0,
+          "switch_reason_diff_count": 12.0
+        }
+      },
+      {
+        "label": "2016-08",
+        "negative_signature_distance": 0.912531,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.09777,
+        "positive_signature_distance": 0.814761,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 15.0,
+          "behavioral_row_diff_count": 33.0,
+          "release_retention_ratio": 0.8,
+          "release_zero_continuation_release_row_count": 12.0,
+          "selected_policy_diff_count": 12.0,
+          "size_diff_count": 4.0,
+          "switch_reason_diff_count": 12.0
+        }
+      },
+      {
+        "label": "2016-10",
+        "negative_signature_distance": 1.152363,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.257836,
+        "positive_signature_distance": 0.894527,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 9.0,
+          "behavioral_row_diff_count": 9.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 9.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2017-08",
+        "negative_signature_distance": 1.152363,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.257836,
+        "positive_signature_distance": 0.894527,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 9.0,
+          "behavioral_row_diff_count": 9.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 9.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2022-10",
+        "negative_signature_distance": 1.152363,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.257836,
+        "positive_signature_distance": 0.894527,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 9.0,
+          "behavioral_row_diff_count": 9.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 9.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2022-04",
+        "negative_signature_distance": 1.145327,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.248291,
+        "positive_signature_distance": 0.897037,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 10.0,
+          "behavioral_row_diff_count": 10.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 10.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2023-02",
+        "negative_signature_distance": 1.145327,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.248291,
+        "positive_signature_distance": 0.897037,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 10.0,
+          "behavioral_row_diff_count": 10.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 10.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2026-03",
+        "negative_signature_distance": 1.145327,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.248291,
+        "positive_signature_distance": 0.897037,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 10.0,
+          "behavioral_row_diff_count": 10.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 10.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2024-05",
+        "negative_signature_distance": 1.165699,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.26546,
+        "positive_signature_distance": 0.900239,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 8.0,
+          "behavioral_row_diff_count": 8.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 8.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2025-03",
+        "negative_signature_distance": 1.165699,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.26546,
+        "positive_signature_distance": 0.900239,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 8.0,
+          "behavioral_row_diff_count": 8.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 8.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2019-09",
+        "negative_signature_distance": 1.144707,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.237008,
+        "positive_signature_distance": 0.907699,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 11.0,
+          "behavioral_row_diff_count": 11.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 11.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2021-10",
+        "negative_signature_distance": 1.144707,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.237008,
+        "positive_signature_distance": 0.907699,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 11.0,
+          "behavioral_row_diff_count": 11.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 11.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2021-12",
+        "negative_signature_distance": 1.144707,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.237008,
+        "positive_signature_distance": 0.907699,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 11.0,
+          "behavioral_row_diff_count": 11.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 11.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2018-01",
+        "negative_signature_distance": 1.185122,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.271105,
+        "positive_signature_distance": 0.914017,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 7.0,
+          "behavioral_row_diff_count": 7.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 7.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2020-01",
+        "negative_signature_distance": 1.185122,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.271105,
+        "positive_signature_distance": 0.914017,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 7.0,
+          "behavioral_row_diff_count": 7.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 7.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2025-06",
+        "negative_signature_distance": 1.150513,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.224281,
+        "positive_signature_distance": 0.926231,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 12.0,
+          "behavioral_row_diff_count": 12.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 12.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2016-12",
+        "negative_signature_distance": 1.210339,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.274834,
+        "positive_signature_distance": 0.935505,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 6.0,
+          "behavioral_row_diff_count": 6.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2017-06",
+        "negative_signature_distance": 1.210339,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.274834,
+        "positive_signature_distance": 0.935505,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 6.0,
+          "behavioral_row_diff_count": 6.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2018-06",
+        "negative_signature_distance": 1.210339,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.274834,
+        "positive_signature_distance": 0.935505,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 6.0,
+          "behavioral_row_diff_count": 6.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2018-07",
+        "negative_signature_distance": 1.210339,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.274834,
+        "positive_signature_distance": 0.935505,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 6.0,
+          "behavioral_row_diff_count": 6.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2020-08",
+        "negative_signature_distance": 1.210339,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.274834,
+        "positive_signature_distance": 0.935505,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 6.0,
+          "behavioral_row_diff_count": 6.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2020-09",
+        "negative_signature_distance": 1.210339,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.274834,
+        "positive_signature_distance": 0.935505,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 6.0,
+          "behavioral_row_diff_count": 6.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2022-03",
+        "negative_signature_distance": 1.210339,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.274834,
+        "positive_signature_distance": 0.935505,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 6.0,
+          "behavioral_row_diff_count": 6.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2022-05",
+        "negative_signature_distance": 1.210339,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.274834,
+        "positive_signature_distance": 0.935505,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 6.0,
+          "behavioral_row_diff_count": 6.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2022-07",
+        "negative_signature_distance": 1.210339,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.274834,
+        "positive_signature_distance": 0.935505,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 6.0,
+          "behavioral_row_diff_count": 6.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2023-09",
+        "negative_signature_distance": 1.210339,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.274834,
+        "positive_signature_distance": 0.935505,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 6.0,
+          "behavioral_row_diff_count": 6.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2024-07",
+        "negative_signature_distance": 1.210339,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.274834,
+        "positive_signature_distance": 0.935505,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 6.0,
+          "behavioral_row_diff_count": 6.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2024-11",
+        "negative_signature_distance": 1.210339,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.274834,
+        "positive_signature_distance": 0.935505,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 6.0,
+          "behavioral_row_diff_count": 6.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2025-02",
+        "negative_signature_distance": 1.210339,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.274834,
+        "positive_signature_distance": 0.935505,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 6.0,
+          "behavioral_row_diff_count": 6.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2018-02",
+        "negative_signature_distance": 1.180919,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.195972,
+        "positive_signature_distance": 0.984946,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 14.0,
+          "behavioral_row_diff_count": 14.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 14.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2017-07",
+        "negative_signature_distance": 1.317047,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.276434,
+        "positive_signature_distance": 1.040613,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 3.0,
+          "behavioral_row_diff_count": 3.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 3.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2019-04",
+        "negative_signature_distance": 1.317047,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.276434,
+        "positive_signature_distance": 1.040613,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 3.0,
+          "behavioral_row_diff_count": 3.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 3.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2022-01",
+        "negative_signature_distance": 1.317047,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.276434,
+        "positive_signature_distance": 1.040613,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 3.0,
+          "behavioral_row_diff_count": 3.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 3.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2024-12",
+        "negative_signature_distance": 1.234684,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.166358,
+        "positive_signature_distance": 1.068325,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 16.0,
+          "behavioral_row_diff_count": 16.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 16.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2019-12",
+        "negative_signature_distance": 1.449059,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.319387,
+        "positive_signature_distance": 1.129671,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 19.0,
+          "behavioral_row_diff_count": 20.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 19.0,
+          "selected_policy_diff_count": 16.0,
+          "size_diff_count": 1.0,
+          "switch_reason_diff_count": 16.0
+        }
+      },
+      {
+        "label": "2017-12",
+        "negative_signature_distance": 1.40041,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.111739,
+        "positive_signature_distance": 1.288671,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 20.0,
+          "behavioral_row_diff_count": 20.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 20.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      },
+      {
+        "label": "2025-11",
+        "negative_signature_distance": 1.40041,
+        "orientation": "positive_like_or_neutral",
+        "orientation_margin": -0.111739,
+        "positive_signature_distance": 1.288671,
+        "subject_features": {
+          "baseline_continuation_release_row_count": 20.0,
+          "behavioral_row_diff_count": 20.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 20.0,
+          "selected_policy_diff_count": 0.0,
+          "size_diff_count": 0.0,
+          "switch_reason_diff_count": 0.0
+        }
+      }
+    ],
+    "positive_signature_centroid": {
+      "labels": [
+        "2021-08",
+        "2025-10"
+      ],
+      "normalized_features": {
+        "baseline_continuation_release_row_count": 0.382353,
+        "behavioral_row_diff_count": 0.276596,
+        "release_retention_ratio": 0.846154,
+        "release_zero_continuation_release_row_count": 0.294118,
+        "selected_policy_diff_count": 0.46875,
+        "size_diff_count": 0.5,
+        "switch_reason_diff_count": 0.529412
+      }
+    },
+    "triad_reference": {
+      "2018-03": {
+        "subject_features": {
+          "baseline_continuation_release_row_count": 12.0,
+          "behavioral_row_diff_count": 35.0,
+          "release_retention_ratio": 0.5,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 6.0,
+          "size_diff_count": 2.0,
+          "switch_reason_diff_count": 6.0
+        },
+        "top_line_sign": "negative"
+      },
+      "2021-08": {
+        "subject_features": {
+          "baseline_continuation_release_row_count": 6.0,
+          "behavioral_row_diff_count": 13.0,
+          "release_retention_ratio": 1.0,
+          "release_zero_continuation_release_row_count": 6.0,
+          "selected_policy_diff_count": 9.0,
+          "size_diff_count": 2.0,
+          "switch_reason_diff_count": 9.0
+        },
+        "top_line_sign": "positive"
+      },
+      "2025-10": {
+        "subject_features": {
+          "baseline_continuation_release_row_count": 13.0,
+          "behavioral_row_diff_count": 19.0,
+          "release_retention_ratio": 0.769231,
+          "release_zero_continuation_release_row_count": 10.0,
+          "selected_policy_diff_count": 6.0,
+          "size_diff_count": 2.0,
+          "switch_reason_diff_count": 9.0
+        },
+        "top_line_sign": "positive"
+      }
+    }
+  },
+  "sign_candidate_context": {
+    "non_perfect_features": [
+      "cluster_row_count",
+      "decisive_index_within_cluster"
+    ],
+    "perfect_negative_separators": [
+      "release_retention_ratio",
+      "decisive_rank_pct",
+      "decisive_hours_from_cluster_start",
+      "decisive_action_edge",
+      "decisive_confidence_gate",
+      "decisive_clarity_score",
+      "cluster_policy_diff_rows",
+      "cluster_switch_diff_rows",
+      "cluster_size_diff_rows"
+    ],
+    "status": "frozen_triad_intra_band_structure_yields_sign_candidates"
+  },
+  "status": "continuation_release_hysteresis_widening_candidate_inventory_generated"
+}

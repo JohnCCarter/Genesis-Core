@@ -199,10 +199,15 @@ Freeze how bounded component toggles will be compared without changing the inter
   - executions
   - trades
   - ledger outcomes
+- `docs/analysis/feature_attribution/post_phase14/feature_attribution_post_phase14_ri_off_vs_on_comparator_contract_fixed_three_cohort_2026-05-26.md`
 
 **Done means**
 
 - later attribution claims can say whether a component merely correlates with outcomes or actually changes them on the same stack
+
+**Status**
+
+- `completed on current branch`
 
 ### Slice 6 — first bounded execution tranche
 
@@ -222,14 +227,14 @@ Run the first full attribution pass on one bounded RI-first surface.
 
 ## Active next step
 
-The next admissible step is **Slice 5 — `OFF vs ON` comparator contract**.
+The next admissible step is **Slice 6 — first bounded execution tranche**.
 
 That slice should stay tightly bounded and answer only these questions:
 
-1. how should same-stack `OFF` and `ON` runs align decision, observed-open, realized-position, and trade-event rows on this now-frozen schema?
-2. which identity fields are mandatory, and which fields must remain explicitly derived after alignment?
-3. how should added / missing rows and non-opening actionable decisions be represented so comparator diffs stay honest?
-4. how should exit-family and realized-drawdown-proxy metrics be compared without pretending that a canonical `ledger_impact_row` already exists?
+1. which single bounded component toggle is admissible for the first same-stack `OFF` vs `ON` execution pack on the fixed three-cohort RI surface?
+2. how should the `OFF` and `ON` runs be emitted so the new comparator contract can align decision, execution-proxy, trade, and ledger-proxy rows without extra transformation?
+3. which retained artifacts are mandatory so the execution tranche proves both envelope validity and downstream deltas?
+4. what remains explicitly unresolved after the first bounded `OFF` vs `ON` run, especially around non-opening actionable decisions and ledger-proxy semantics?
 
 ## What changed and what did not
 
@@ -237,7 +242,7 @@ What changed:
 
 - the current branch now has a concrete current-branch plan surface for the attribution-layer foundation lane
 - the plan is tied to current observed repo surfaces, not to archived `plan/**` guidance
-- Slice 1, Slice 2, Slice 3, and Slice 4 are now frozen as completed and the next bounded slice is explicit instead of implied
+- Slice 1, Slice 2, Slice 3, Slice 4, and Slice 5 are now frozen as completed and the next bounded slice is explicit instead of implied
 
 What did **not** change:
 

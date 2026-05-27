@@ -83,6 +83,7 @@ GENERATED_FILES = {
     "src/core/bootstrap/smoke_suite.py",
     "src/core/utils/diffing/__init__.py",
     "tests/governance/test_pyproject_console_scripts.py",
+    "tests/runtime/test_installed_console_scripts.py",
     "tests/runtime/test_backtest_bootstrap_smoke.py",
     "tests/governance/test_v2_seed_boundaries.py",
     "tests/runtime/test_backtest_engine_fixture_smoke.py",
@@ -940,6 +941,76 @@ def test_runtime_smoke_suite_runs_all_smokes() -> None:
 """
 
 
+def _runtime_installed_console_scripts_test_content() -> str:
+    return """from __future__ import annotations
+
+import importlib.metadata as importlib_metadata
+import json
+import shutil
+import subprocess
+
+import pytest
+
+
+EXPECTED_ENTRYPOINTS = {
+    "genesis-v2-fixture-smoke": "core.bootstrap.fixture_smoke:main",
+    "genesis-v2-backtest-smoke": "core.bootstrap.backtest_smoke:main",
+    "genesis-v2-smoke-suite": "core.bootstrap.smoke_suite:main",
+}
+
+
+def _require_installed_distribution() -> None:
+    try:
+        importlib_metadata.distribution("genesis-core-v2")
+    except importlib_metadata.PackageNotFoundError:
+        pytest.skip("Editable install required for console script verification")
+
+
+def test_installed_distribution_registers_expected_console_scripts() -> None:
+    _require_installed_distribution()
+
+    entry_points = {
+        entry_point.name: f"{entry_point.module}:{entry_point.attr}"
+        for entry_point in importlib_metadata.entry_points(group="console_scripts")
+        if entry_point.name in EXPECTED_ENTRYPOINTS
+    }
+
+    assert entry_points == EXPECTED_ENTRYPOINTS
+
+
+@pytest.mark.parametrize(
+    ("command", "expected_pairs"),
+    [
+        ("genesis-v2-fixture-smoke", {"action": "NONE"}),
+        (
+            "genesis-v2-backtest-smoke",
+            {"trade_count": 1, "deterministic": True},
+        ),
+        (
+            "genesis-v2-smoke-suite",
+            {"suite": "runtime_smoke_suite_v1"},
+        ),
+    ],
+)
+def test_installed_console_scripts_execute(command: str, expected_pairs: dict[str, object]) -> None:
+    _require_installed_distribution()
+
+    executable = shutil.which(command)
+    assert executable is not None
+
+    completed = subprocess.run(
+        [executable],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    payload = json.loads(completed.stdout)
+
+    for key, expected_value in expected_pairs.items():
+        assert payload.get(key) == expected_value
+"""
+
+
 def _runtime_backtest_engine_smoke_test_content() -> str:
     return """from __future__ import annotations
 
@@ -1085,6 +1156,10 @@ Local runtime smoke suite: `python -m core.bootstrap.smoke_suite`
 
 Console scripts after editable install:
 `genesis-v2-fixture-smoke`, `genesis-v2-backtest-smoke`, `genesis-v2-smoke-suite`
+
+Suggested install verification:
+`python -m pip install -e \".[dev]\"`
+then run `pytest tests/runtime/test_installed_console_scripts.py -q`
 """
 
 
@@ -1203,6 +1278,7 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
         "src/core/bootstrap/smoke_suite.py": _runtime_smoke_suite_module_content(),
         "src/core/utils/diffing/__init__.py": _runtime_diffing_init_content(),
         "tests/governance/test_pyproject_console_scripts.py": _pyproject_console_scripts_test_content(),
+        "tests/runtime/test_installed_console_scripts.py": _runtime_installed_console_scripts_test_content(),
         "tests/runtime/test_backtest_bootstrap_smoke.py": _runtime_backtest_bootstrap_test_content(),
         "tests/governance/test_v2_seed_boundaries.py": _v2_boundary_test_content(),
         "tests/runtime/test_backtest_engine_fixture_smoke.py": _runtime_backtest_engine_smoke_test_content(),
@@ -1249,6 +1325,7 @@ def _manifest_payload(
         "copied_files": sorted(copied_paths),
         "generated_files": sorted(generated_paths),
         "smoke_entrypoints": {
+            "editable_install_command": 'python -m pip install -e ".[dev]"',
             "module_commands": [
                 "python -m core.bootstrap.fixture_smoke",
                 "python -m core.bootstrap.backtest_smoke",

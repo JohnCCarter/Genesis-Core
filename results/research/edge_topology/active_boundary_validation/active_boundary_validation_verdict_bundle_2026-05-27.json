@@ -1,0 +1,69 @@
+{
+  "status": "edge_topology_active_boundary_validation_verdict",
+  "base_sha": "921ed06a",
+  "mode": "RESEARCH",
+  "anchor_zone": "blocked_baseline_long_quality_inversion_boundary",
+  "input_label": "ACTIVE",
+  "verdict": {
+    "label_after_validation": "ACTIVE",
+    "decision": "KEEP_ACTIVE_NARROWED",
+    "boundary_scope_after_validation": "grouped_annual_proxy_level_only",
+    "boundary_reading": "Blocked baseline longs look materially less weak on the first retained proxy surface in negative full years than in positive full years inside the shared late low-zone pocket.",
+    "not_supported_as": [
+      "single_carrier_rule",
+      "portable_exact_surface_transport_rule",
+      "runtime_target",
+      "global_threshold_law"
+    ]
+  },
+  "supporting_balance": {
+    "grouped_support": {
+      "negative_full_years_blocked_mean_pct": 0.356117,
+      "negative_full_years_blocked_median_pct": 0.076866,
+      "negative_full_years_blocked_gt_zero_share": 0.510802,
+      "positive_full_years_blocked_mean_pct": -0.172585,
+      "positive_full_years_blocked_median_pct": -0.261849,
+      "positive_full_years_blocked_gt_zero_share": 0.459926,
+      "reading": "Strongest retained sign-separating annual proxy surface"
+    },
+    "narrowing_facts": [
+      "shared pocket presence alone is rejected as the discriminator",
+      "blocked action-layer surface is mixed with stable_continuation_state as the largest bucket",
+      "insufficient_evidence is sharper than aged_weak among true suppressors",
+      "exact-surface D1 evidence is context-leaky and bounded"
+    ],
+    "challenge_facts": [
+      "first fresh late-2024 external falsifier breaks unchanged D1 carrier transport",
+      "fixed three-cohort local discriminator suggests a broader harmful local shell than one narrow insufficient_evidence carrier"
+    ]
+  },
+  "carrier_labels": [
+    {
+      "carrier": "mixed_blocked_action_layer_explanation",
+      "label": "WEAK",
+      "why": "The grouped boundary is real, but the blocked cohort is mixed and not one pure suppressor family."
+    },
+    {
+      "carrier": "insufficient_evidence_exact_surface_d1_family",
+      "label": "WEAK",
+      "why": "Exact-surface recurrence exists, but the evidence remains context-leaky and unchanged external transport is falsified on the first fresh late-2024 surface."
+    },
+    {
+      "carrier": "broader_local_harmful_2024_shell",
+      "label": "WEAK",
+      "why": "The local harmful pocket is structurally distinct on a fixed local surface, but still not portable annual authority."
+    }
+  ],
+  "downgrade_not_chosen_because": [
+    "No retained challenge surface directly falsifies the grouped annual blocked-baseline-long quality inversion split itself.",
+    "Current challenge surfaces attack carrier purity and portability more than the grouped proxy boundary that originally earned the ACTIVE label."
+  ],
+  "next_admissible_follow_up": "Only open a new helper-backed slice if a genuinely decisive unresolved question remains after this narrowed ACTIVE reading; otherwise treat the annual boundary as ACTIVE and its carrier stories as WEAK.",
+  "untouched_local_modifications": [
+    "results/research/edge_topology/phase_2_period_comparisons/phase_2_period_comparison_bundle_annual_primary_with_monthly_sidecar_2019_2025.json",
+    "results/research/edge_topology/phase_3_attribution_maps/phase_3_attribution_map_annual_primary_with_monthly_sidecar_2019_2025.json",
+    "results/research/edge_topology/phase_4_failure_mode_maps/phase_4_failure_and_anti_edge_map_2016_06_to_2026_04.json",
+    "results/research/edge_topology/phase_5_zone_synthesis/phase_5_provisional_zone_registry_2016_06_to_2026_04.json",
+    "results/research/edge_topology/phase_6_canonical_summary/edge_topology_summary_2016_06_to_2026_04.json"
+  ]
+}

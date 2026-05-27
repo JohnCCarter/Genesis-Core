@@ -1,0 +1,104 @@
+{
+  "status": "edge_topology_active_boundary_validation_kickoff",
+  "base_sha": "921ed06a",
+  "mode": "RESEARCH",
+  "anchor_zone": "blocked_baseline_long_quality_inversion_boundary",
+  "current_zone_label": "ACTIVE",
+  "current_question": "Does the current ACTIVE annual anti-edge boundary remain strong enough to keep ACTIVE when pressure-tested against grouped support, mixed blocked-cohort decomposition, exact-surface D1 evidence, and first external falsification?",
+  "scope": {
+    "in": [
+      "grouped annual proxy support for blocked baseline-long quality inversion",
+      "blocked-cohort decomposition into displacement and suppressor carriers",
+      "exact-surface insufficient_evidence D1 evidence only as a narrowing carrier surface",
+      "external falsifier evidence that limits transport and portability",
+      "fixed local 2024 harmful-pocket discriminator only as challenge-context evidence"
+    ],
+    "out": [
+      "runtime or policy changes",
+      "broad annual reruns",
+      "monthly control-surface unification",
+      "claiming one narrow carrier is the full explanation",
+      "editing previously modified edge_topology phase artifacts"
+    ]
+  },
+  "source_inventory": {
+    "grouped_support_surfaces": [
+      {
+        "path": "docs/analysis/regime_intelligence/policy_router/ri_policy_router_shared_pocket_outcome_quality_2026-04-28.md",
+        "role": "strongest grouped blocked-baseline-long proxy split"
+      },
+      {
+        "path": "results/research/ri_policy_router_shared_pocket_outcome_quality_20260428/shared_pocket_outcome_quality_summary.json",
+        "role": "machine-readable grouped blocked/substituted proxy metrics"
+      },
+      {
+        "path": "docs/analysis/edge_topology/edge_topology_phase_4_failure_and_anti_edge_2016_06_to_2026_04.md",
+        "role": "current annual anti-edge boundary wording"
+      },
+      {
+        "path": "results/research/edge_topology/phase_5_zone_synthesis/phase_5_provisional_zone_registry_2016_06_to_2026_04.json",
+        "role": "current ACTIVE label registry"
+      }
+    ],
+    "narrowing_surfaces": [
+      {
+        "path": "docs/analysis/regime_intelligence/policy_router/ri_policy_router_blocked_reason_split_2026-04-29.md",
+        "role": "mixed blocked-surface decomposition; insufficient_evidence sharper than aged_weak among true suppressors"
+      },
+      {
+        "path": "docs/analysis/regime_intelligence/policy_router/ri_policy_router_2024_regression_pocket_reason_split_2026-04-30.md",
+        "role": "exact 2024 local blocked-target split; local weakness carried more by insufficient_evidence subset"
+      },
+      {
+        "path": "docs/analysis/regime_intelligence/policy_router/ri_policy_router_insufficient_evidence_d1_four_surface_synthesis_2026-05-05.md",
+        "role": "re-anchored exact-surface D1 family on action_edge/confidence_gate/clarity_raw"
+      },
+      {
+        "path": "docs/analysis/regime_intelligence/policy_router/ri_policy_router_insufficient_evidence_d1_exact_subject_pair_2019_06_vs_2022_06_2026-05-04.md",
+        "role": "first exact harmful-vs-control subject pair evidence"
+      }
+    ],
+    "challenge_surfaces": [
+      {
+        "path": "docs/analysis/regime_intelligence/policy_router/ri_policy_router_insufficient_evidence_d1_late_2024_external_surface_falsifier_2026-05-06.md",
+        "role": "first fresh external falsifier; unchanged transport fails"
+      },
+      {
+        "path": "docs/analysis/regime_intelligence/policy_router/ri_policy_router_fixed_three_cohort_phase_discriminator_2026-05-26.md",
+        "role": "local harmful-pocket shell may be broader than one narrow insufficient_evidence carrier"
+      },
+      {
+        "path": "docs/analysis/regime_intelligence/policy_router/ri_policy_router_positive_vs_negative_pocket_comparison_2026-04-28.md",
+        "role": "rejection of shared-pocket-presence as the main discriminator"
+      }
+    ]
+  },
+  "working_hypotheses": [
+    {
+      "id": "H1",
+      "claim": "The ACTIVE label survives at the grouped annual proxy level, but must be explicitly narrowed away from portable carrier claims.",
+      "status": "open"
+    },
+    {
+      "id": "H2",
+      "claim": "The blocked action-layer boundary is real, but carrier explanations should stay WEAK because the mixed blocked surface and external falsifier limit transport.",
+      "status": "open"
+    },
+    {
+      "id": "H3",
+      "claim": "The total evidence now undercuts the ACTIVE label enough that the zone should be downgraded to WEAK.",
+      "status": "open"
+    }
+  ],
+  "next_deliverables": [
+    "docs/analysis/edge_topology/edge_topology_active_boundary_validation_2026-05-27.md",
+    "results/research/edge_topology/active_boundary_validation/active_boundary_validation_verdict_bundle_2026-05-27.json"
+  ],
+  "local_modifications_left_untouched": [
+    "results/research/edge_topology/phase_2_period_comparisons/phase_2_period_comparison_bundle_annual_primary_with_monthly_sidecar_2019_2025.json",
+    "results/research/edge_topology/phase_3_attribution_maps/phase_3_attribution_map_annual_primary_with_monthly_sidecar_2019_2025.json",
+    "results/research/edge_topology/phase_4_failure_mode_maps/phase_4_failure_and_anti_edge_map_2016_06_to_2026_04.json",
+    "results/research/edge_topology/phase_5_zone_synthesis/phase_5_provisional_zone_registry_2016_06_to_2026_04.json",
+    "results/research/edge_topology/phase_6_canonical_summary/edge_topology_summary_2016_06_to_2026_04.json"
+  ]
+}

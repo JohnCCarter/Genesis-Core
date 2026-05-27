@@ -1,0 +1,86 @@
+{
+  "status": "edge_topology_monthly_overlay_translation_adjudication",
+  "base_sha": "5a4b2f73",
+  "mode": "RESEARCH",
+  "question": "Can the 2023 December-led continuation-plus-combined annual overlay be translated onto the current month-level comparator surface?",
+  "inputs": {
+    "mixed_year_adjudication_note": "docs/analysis/edge_topology/edge_topology_mixed_year_shape_adjudication_2026-05-27.md",
+    "mixed_year_adjudication_artifact": "results/research/edge_topology/mixed_year_shape_followups/edge_topology_mixed_year_shape_adjudication_2026-05-27.json",
+    "edge_topology_map": "docs/analysis/edge_topology/EDGE_TOPOLOGY_MAP_2016_04_TO_2026_04.md",
+    "monthly_inventory_note": "docs/analysis/regime_intelligence/policy_router/ri_policy_router_continuation_release_hysteresis_monthly_inventory_2026-05-04.md",
+    "monthly_triad_synthesis_note": "docs/analysis/regime_intelligence/policy_router/ri_policy_router_continuation_release_hysteresis_topline_subject_triad_synthesis_2026-05-04.md",
+    "monthly_intra_band_note": "docs/analysis/regime_intelligence/policy_router/ri_policy_router_continuation_release_hysteresis_intra_band_sign_candidates_2026-05-26.md",
+    "annual_2024_contribution_note": "docs/analysis/regime_intelligence/policy_router/ri_policy_router_continuation_release_hysteresis_annual_2024_contribution_2026-05-26.md",
+    "annual_2024_contribution_artifact": "results/evaluation/ri_policy_router_continuation_release_hysteresis_annual_2024_contribution_2026-05-26.json"
+  },
+  "monthly_surface_characterization": {
+    "comparator_family": "continuation_release_hysteresis_baseline_vs_release_zero",
+    "is_general_monthly_enabled_vs_absent_control": false,
+    "supports_whole_leaf_monthly_contribution": false,
+    "current_registry_read": "monthly_general_control_surface_remains_unknown"
+  },
+  "monthly_surface_evidence": {
+    "topline_divergent_exact_subjects": [
+      {
+        "month": "2021-08",
+        "sign": "positive"
+      },
+      {
+        "month": "2025-10",
+        "sign": "positive"
+      },
+      {
+        "month": "2018-03",
+        "sign": "negative"
+      }
+    ],
+    "topline_divergent_subject_count": 3,
+    "subject_2023_12_present_as_topline_divergent_exact_subject": false,
+    "sign_mixed_exact_bench": true,
+    "best_local_sign_read": "triad_local_intra_band_structure_yields_sign_candidates_only"
+  },
+  "annual_overlay_reference": {
+    "subject_year": "2023",
+    "top_combined_month": "2023-12",
+    "top_continuation_month": "2023-12",
+    "top_suppression_month": "2023-06",
+    "read": "december_led_continuation_plus_combined_overlay_on_annual_shared_shape_surface"
+  },
+  "annual_2024_seam_contribution": {
+    "status": "annual_2024_topline_mixed_or_flat_between_baseline_and_release_zero",
+    "action_diff_count": 0,
+    "total_return_diff": 0.0,
+    "final_capital_diff": 0.0,
+    "profit_factor_diff": 0.0,
+    "max_drawdown_diff": 0.0,
+    "interpretation": "The seam itself does not explain broader 2024 annual harm on the fixed same-stack annual surface."
+  },
+  "decision": "KEEP_MONTHLY_TRANSLATION_CLOSED",
+  "translation_result": {
+    "can_translate_2023_december_overlay_to_current_month_surface": false,
+    "because": [
+      "The current month-level comparator surface is seam-specific and not a general monthly enabled-vs-absent control map.",
+      "The exact top-line-divergent monthly seam bench is sign-mixed and does not include 2023-12 as a top-line-divergent exact subject.",
+      "Annual 2024 same-stack contribution evidence shows the seam is top-line invariant at year scale, so it cannot be used as a lazy explanation for broader annual harm or annual mixed-year overlays."
+    ]
+  },
+  "topology_implications": [
+    "The 2023 December-led continuation-plus-combined overlay remains annual-shared-shape only on current retained evidence.",
+    "The monthly seam surface remains useful local evidence, but not a monthly general control-relative contribution map.",
+    "monthly_general_control_surface remains UNKNOWN on the current retained Edge Topology lane.",
+    "No new monthly Edge Topology zone promotion is justified from this follow-up."
+  ],
+  "promotion_result": {
+    "promoted_zones": [],
+    "not_promoted_because": [
+      "The current month surface does not measure the same comparator semantics as the annual enabled-vs-absent surface.",
+      "The available month-level evidence remains local, seam-specific, and sign-mixed rather than a generalized monthly control-relative map."
+    ]
+  },
+  "next_admissible_follow_up": "Only reopen this translation question with a true monthly enabled-vs-absent control surface or an explicitly governed monthly bridge slice that preserves comparator-family separation.",
+  "untouched_local_modifications": [
+    "docs/analysis/edge_topology/edge_topology_phase_5_zone_synthesis_2016_06_to_2026_04.md",
+    "docs/analysis/edge_topology/edge_topology_phase_6_canonical_summary_2016_06_to_2026_04.md",
+    "results/research/edge_topology/mixed_year_shape_followups/edge_topology_mixed_year_shape_adjudication_2026-05-27.json"
+  ]
+}

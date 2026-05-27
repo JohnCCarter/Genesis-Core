@@ -1,0 +1,90 @@
+{
+  "status": "genesis_v2_seed_manifest_candidate",
+  "mode": "RESEARCH",
+  "base_sha": "5f081e63",
+  "base_inputs": {
+    "v2_seed_boundary_note": "docs/analysis/system/genesis_v2_seed_boundary_map_2026-05-27.md",
+    "legacy_external_usage_note": "docs/analysis/system/genesis_legacy_external_usage_uncertainty_2026-05-27.md",
+    "legacy_external_usage_artifact_read_only_input": "results/research/runtime_truth_inventory/genesis_legacy_external_usage_uncertainty_2026-05-27.json",
+    "repository_layout_policy": "docs/repository-layout-policy.md"
+  },
+  "question": "Which top-level current paths should be treated as include-now roots, verify-before-include roots, exclude-by-default roots, or reference-only inputs for a future Genesis-Core-V2 seed?",
+  "manifest_kind": "top_level_selected_path_candidate",
+  "dependency_complete": false,
+  "authorizing": false,
+  "include_now_roots": [
+    "src/core/pipeline.py",
+    "src/core/backtest/engine.py",
+    "src/core/backtest/engine_precompute.py",
+    "src/core/strategy/evaluate.py",
+    "src/core/strategy/features_asof.py",
+    "src/core/strategy/decision.py",
+    "src/core/strategy/model_registry.py",
+    "src/core/strategy/champion_loader.py",
+    "src/core/intelligence/regime/authority.py",
+    "src/core/strategy/regime.py",
+    "tests/governance/test_no_legacy_feature_imports.py",
+    "tests/governance/test_dead_code_tripwires.py",
+    "tests/integration/test_config_endpoints.py"
+  ],
+  "verify_before_include_roots": [
+    "pyproject.toml",
+    "README.md",
+    "src/core/server.py",
+    "src/core/api/**",
+    "config/runtime.json",
+    "config/runtime.seed.json",
+    "config/models/**",
+    "config/strategy/champions/**",
+    "paper/live API entrypoints and operational assumptions",
+    "unresolved helper territory such as MACD/helper-class paths"
+  ],
+  "exclude_by_default_roots": [
+    "src/core/strategy/features.py",
+    "src/core/config/validator.py",
+    "results/research/**",
+    "docs/analysis/edge_topology/**",
+    "branch-local historical planning and explanation surfaces"
+  ],
+  "reference_only_inputs": [
+    "docs/analysis/system/genesis_runtime_truth_inventory_2026-05-27.md",
+    "docs/analysis/system/genesis_runtime_surface_classification_2026-05-27.md",
+    "docs/analysis/system/genesis_runtime_legacy_containment_2026-05-27.md",
+    "docs/analysis/system/genesis_v2_seed_boundary_map_2026-05-27.md",
+    "docs/analysis/system/genesis_legacy_external_usage_uncertainty_2026-05-27.md"
+  ],
+  "key_observations": [
+    "The current V2 boundary work is strong enough for a selected-path manifest, but not for a full dependency-closure manifest.",
+    "Repository layout policy supports domain-grouped roots rather than root-level scatter.",
+    "Active runtime logic and guardrails remain the strongest include-now carriers.",
+    "Root/bootstrap files and current-state artifacts still belong in verify-before-include buckets."
+  ],
+  "inferred": {
+    "best_first_manifest_shape": "primary_carrier_manifest",
+    "next_decisions_enabled": [
+      "expand into transitive dependency manifest",
+      "decide runtime-only versus runtime-plus-API V2",
+      "resolve packaging versus service-edge versus stateful-artifact verify buckets"
+    ],
+    "narrower_than_current_repo_by_design": true
+  },
+  "unverified": [
+    "Full transitive import closure for the selected runtime roots.",
+    "Whether src/core/server.py and src/core/api/** belong in the first V2 seed or a later expansion.",
+    "Whether pyproject.toml should stay close to current shape or be narrowed/renamed.",
+    "Whether any current config/model/champion payload should carry unchanged into a future seed."
+  ],
+  "decision": "FREEZE_TOP_LEVEL_V2_SEED_MANIFEST_CANDIDATE_NOT_DEPENDENCY_COMPLETE",
+  "what_changed": [
+    "A bounded V2 seed manifest candidate now exists.",
+    "The V2 boundary map is translated into a more concrete path-root artifact.",
+    "The next V2 decision can now focus on specific verify buckets instead of vague repo-wide intuition."
+  ],
+  "what_did_not_change": [
+    "No V2 repository was created.",
+    "No files were copied, moved, or deleted.",
+    "No runtime/config/champion behavior changed.",
+    "The locally modified legacy uncertainty artifact remained untouched.",
+    "The locally modified runtime surface classification artifact remained untouched."
+  ]
+}

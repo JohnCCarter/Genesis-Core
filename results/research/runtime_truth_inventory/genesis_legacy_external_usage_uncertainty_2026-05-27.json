@@ -1,0 +1,96 @@
+{
+  "status": "genesis_legacy_external_usage_uncertainty",
+  "mode": "RESEARCH",
+  "base_sha": "24d7c7c2",
+  "base_v2_boundary": {
+    "note": "docs/analysis/system/genesis_v2_seed_boundary_map_2026-05-27.md",
+    "artifact_read_only_input": "results/research/runtime_truth_inventory/genesis_v2_seed_boundary_map_2026-05-27.json"
+  },
+  "question": "Does the current repository provide positive evidence that the retained legacy surfaces have external/public consumers, or does the uncertainty remain unresolved?",
+  "target_surfaces": [
+    "src/core/strategy/features.py",
+    "src/core/config/validator.py"
+  ],
+  "inputs": {
+    "legacy_feature_shim": "src/core/strategy/features.py",
+    "legacy_validator": "src/core/config/validator.py",
+    "feature_guardrail_test": "tests/governance/test_no_legacy_feature_imports.py",
+    "tripwire_test": "tests/governance/test_dead_code_tripwires.py",
+    "integration_test": "tests/integration/test_config_endpoints.py",
+    "package_metadata": "pyproject.toml",
+    "readme": "README.md",
+    "server_entrypoint": "src/core/server.py",
+    "architecture_note": "docs/architecture/ARCHITECTURE.md",
+    "architecture_visual": "docs/architecture/ARCHITECTURE_VISUAL.md",
+    "runtime_config_boundary_note": "docs/governance/runtime_config_live_update_matrix_2026-05-15.md"
+  },
+  "observed": {
+    "legacy_demotions": [
+      "features.py declares itself a legacy compatibility shim and points internal runtime to features_asof.",
+      "validator.py declares itself intentionally legacy/test-only and points runtime validation to ConfigAuthority.validate.",
+      "ARCHITECTURE.md says core.config.validator exposes only legacy/test-only helpers and is not runtime authority.",
+      "runtime_config_live_update_matrix lists core.config.validator helpers under Legacy helper surface.",
+      "ARCHITECTURE_VISUAL classifies core.strategy.features as DEPRECATED_PATH and core.config.validator as TEST_ONLY."
+    ],
+    "public_repo_guidance": [
+      "README describes Genesis-Core as deterministic backtest/optimization plus a FastAPI service.",
+      "README quickstart points to uvicorn core.server:app and config/API usage, not legacy module imports.",
+      "src/core/server.py is the canonical application assembler/entrypoint."
+    ],
+    "package_surface": [
+      "pyproject.toml packages core* from src.",
+      "Editable install guidance exists, so the modules remain technically importable by external consumers."
+    ],
+    "repo_local_usage": [
+      "test_no_legacy_feature_imports.py blocks internal repo imports of core.strategy.features.",
+      "test_dead_code_tripwires.py uses the legacy surfaces only for containment/delegation enforcement.",
+      "test_config_endpoints.py imports legacy validator helpers for explicit test-only compatibility coverage."
+    ]
+  },
+  "repo_local_conclusions": {
+    "positive_public_api_endorsement_found": false,
+    "repo_is_app_oriented": true,
+    "package_importability_exists": true,
+    "positive_external_consumer_evidence_found": false,
+    "external_consumer_absence_proven": false
+  },
+  "inferred": {
+    "best_read": "No positive repo-local external/public consumer evidence exists, but package importability keeps absence unproven.",
+    "current_v2_default_exclusion_supported": true,
+    "delete_or_archive_readiness_supported_by_external_usage_proof": false
+  },
+  "unverified": [
+    "Whether any private/local automation outside this repo imports core.strategy.features.",
+    "Whether any private/local automation outside this repo imports core.config.validator.",
+    "Whether any published wheel/editable-install consumers rely on these modules today.",
+    "Whether a future explicit package/public-API contract slice would narrow the uncertainty enough for stronger lifecycle action."
+  ],
+  "decision": "NO_POSITIVE_REPO_LOCAL_EXTERNAL_USAGE_EVIDENCE_KEEP_UNCERTAINTY_OPEN",
+  "recommended_follow_up": {
+    "keep_now": [
+      "current legacy containment boundary",
+      "V2 default exclusion for the retained legacy surfaces"
+    ],
+    "do_not_do_from_this_slice": [
+      "claim zero external consumers",
+      "claim delete-ready by external-usage proof",
+      "claim archive-ready by external-usage proof"
+    ],
+    "open_later_if_needed": [
+      "package/public-API contract audit",
+      "external-consumer audit outside this repo"
+    ]
+  },
+  "what_changed": [
+    "A bounded external-usage uncertainty artifact now exists for the retained legacy surfaces.",
+    "The distinction between no positive repo-local evidence and no possible external consumers is now explicit.",
+    "The current V2 exclusion rationale is better grounded."
+  ],
+  "what_did_not_change": [
+    "No runtime behavior changed.",
+    "No packaging behavior changed.",
+    "No file was moved, archived, or deleted.",
+    "The locally modified V2 boundary artifact remained untouched.",
+    "The locally modified runtime surface classification artifact remained untouched."
+  ]
+}

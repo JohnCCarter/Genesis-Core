@@ -1,13 +1,7 @@
 {
   "status": "edge_topology_phase_5_provisional_zone_registry",
   "base_sha": "fe591061",
-  "label_legend": [
-    "ACTIVE",
-    "WEAK",
-    "REJECTED",
-    "SUPERSEDED",
-    "UNKNOWN"
-  ],
+  "label_legend": ["ACTIVE", "WEAK", "REJECTED", "SUPERSEDED", "UNKNOWN"],
   "zone_registry": [
     {
       "zone_id": "annual_shared_late_low_zone_pocket",
@@ -20,10 +14,7 @@
       "zone_id": "blocked_baseline_long_quality_inversion_boundary",
       "zone_kind": "anti_edge_boundary",
       "label": "ACTIVE",
-      "supporting_periods": [
-        "negative_full_years",
-        "positive_full_years"
-      ],
+      "supporting_periods": ["negative_full_years", "positive_full_years"],
       "why": "Strongest repeated sign-separating boundary on the current annual proxy surface; supported across multiple years rather than one-off local behavior."
     },
     {
@@ -44,11 +35,7 @@
       "zone_id": "monthly_early_band_release_sign_pattern",
       "zone_kind": "local_monthly_seam",
       "label": "WEAK",
-      "supporting_periods": [
-        "2021-08",
-        "2025-10",
-        "2018-03"
-      ],
+      "supporting_periods": ["2021-08", "2025-10", "2018-03"],
       "why": "Frozen exact-subject triad supports a local sign pattern, but the bench is still too small for stronger promotion."
     },
     {
@@ -77,10 +64,7 @@
       "zone_id": "single_aged_weak_root_cause_claim",
       "zone_kind": "claim_boundary",
       "label": "SUPERSEDED",
-      "supporting_periods": [
-        "negative_full_years",
-        "positive_full_years"
-      ],
+      "supporting_periods": ["negative_full_years", "positive_full_years"],
       "why": "Blocked-cohort splits show a mixed displacement-plus-suppression surface, and insufficient_evidence remains a sharper local suspect than a pure aged-weak-only story."
     },
     {

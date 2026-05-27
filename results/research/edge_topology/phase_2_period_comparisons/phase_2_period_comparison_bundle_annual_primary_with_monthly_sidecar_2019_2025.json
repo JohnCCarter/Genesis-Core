@@ -27,11 +27,7 @@
     ],
     "monthly_sidecar": {
       "reason": "Detailed local monthly policy/behavior evidence exists only on the frozen continuation_release_hysteresis exact-subject triad. General monthly enabled-vs-absent control remains unknown on the current retained monthly surface.",
-      "exact_subjects": [
-        "2021-08",
-        "2025-10",
-        "2018-03"
-      ]
+      "exact_subjects": ["2021-08", "2025-10", "2018-03"]
     }
   },
   "annual_primary_cohort": [
@@ -203,13 +199,8 @@
       "top_absolute_first": "2025-04",
       "worst_absolute_first": "2024-12",
       "flat_absolute_first": "2016-08",
-      "positive_toggle_delta": [
-        "2021-08",
-        "2025-10"
-      ],
-      "negative_toggle_delta": [
-        "2018-03"
-      ]
+      "positive_toggle_delta": ["2021-08", "2025-10"],
+      "negative_toggle_delta": ["2018-03"]
     },
     "exact_subject_triad": {
       "2021-08": {

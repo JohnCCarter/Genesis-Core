@@ -43,11 +43,7 @@
     {
       "failure_mode_id": "early_release_weak_decisive_local_monthly_seam",
       "surface": "monthly_exact_subject_triad",
-      "supporting_periods": [
-        "2018-03",
-        "2021-08",
-        "2025-10"
-      ],
+      "supporting_periods": ["2018-03", "2021-08", "2025-10"],
       "evidence": {
         "negative_subject": "2018-03",
         "local_signature": [
@@ -68,19 +64,12 @@
     },
     {
       "boundary_id": "pocket_presence_vs_pocket_quality",
-      "supporting_periods": [
-        "negative_full_years",
-        "positive_full_years"
-      ],
+      "supporting_periods": ["negative_full_years", "positive_full_years"],
       "reading": "The meaningful boundary is not whether the shared pocket exists but whether the blocked entries inside it still look weak or have become flat-to-positive."
     },
     {
       "boundary_id": "broad_phase_band_vs_local_release_structure",
-      "supporting_periods": [
-        "2018-03",
-        "2021-08",
-        "2025-10"
-      ],
+      "supporting_periods": ["2018-03", "2021-08", "2025-10"],
       "reading": "The monthly local boundary sits inside the shared early band and is carried by release timing, decisive support, and retention rather than by broad phase placement alone."
     }
   ],

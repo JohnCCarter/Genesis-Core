@@ -16,10 +16,7 @@
         "bars_8_plus_share_range": [0.971622, 1.0],
         "blocked_long_to_none_share_range": [0.646789, 0.699867],
         "substituted_none_to_long_share_range": [0.294821, 0.352064],
-        "dominant_policies": [
-          "RI_continuation_policy",
-          "RI_no_trade_policy"
-        ]
+        "dominant_policies": ["RI_continuation_policy", "RI_no_trade_policy"]
       },
       "reading": "Recurring structural pocket present across strong, weak, flat, and misaligned annual periods. Structural recurrence alone does not determine sign."
     },
@@ -52,10 +49,7 @@
     {
       "cluster_id": "blocked_baseline_long_quality_inversion",
       "level": "annual_group_boundary",
-      "supporting_periods": [
-        "negative_full_years",
-        "positive_full_years"
-      ],
+      "supporting_periods": ["negative_full_years", "positive_full_years"],
       "state_axes": {
         "blocked_negative_mean_fwd16": 0.356117,
         "blocked_positive_mean_fwd16": -0.172585,
@@ -67,17 +61,10 @@
     {
       "cluster_id": "monthly_early_band_release_split_triad",
       "level": "monthly_sidecar",
-      "supporting_periods": [
-        "2021-08",
-        "2025-10",
-        "2018-03"
-      ],
+      "supporting_periods": ["2021-08", "2025-10", "2018-03"],
       "state_axes": {
         "shared_mechanism": "continuation_release_hysteresis baseline vs release_zero",
-        "positive_subjects": [
-          "2021-08",
-          "2025-10"
-        ],
+        "positive_subjects": ["2021-08", "2025-10"],
         "negative_subject": "2018-03",
         "negative_subject_signature": [
           "earlier_release_within_cluster",

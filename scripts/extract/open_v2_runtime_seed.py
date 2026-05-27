@@ -78,8 +78,10 @@ GENERATED_FILES = {
     ".gitignore",
     "registry/fixtures/runtime_fixture_smoke_minimal.json",
     "src/core/bootstrap/__init__.py",
+    "src/core/bootstrap/backtest_smoke.py",
     "src/core/bootstrap/fixture_smoke.py",
     "src/core/utils/diffing/__init__.py",
+    "tests/runtime/test_backtest_bootstrap_smoke.py",
     "tests/governance/test_v2_seed_boundaries.py",
     "tests/runtime/test_backtest_engine_fixture_smoke.py",
     "tests/runtime/test_evaluate_pipeline_smoke.py",
@@ -697,6 +699,156 @@ def test_runtime_fixture_smoke_runs_end_to_end() -> None:
 """
 
 
+def _runtime_backtest_bootstrap_module_content() -> str:
+    return """from __future__ import annotations
+
+import json
+from pathlib import Path
+from typing import Any
+from unittest.mock import patch
+
+import pandas as pd
+
+from core.backtest.engine import BacktestEngine
+from core.bootstrap.fixture_smoke import DEFAULT_FIXTURE_PATH, load_fixture
+
+
+class _DummyChampionCfg:
+    def __init__(self) -> None:
+        self.config: dict = {}
+        self.source = "seed_dummy"
+        self.version = "0"
+        self.checksum = "seed_dummy"
+        self.loaded_at = "now"
+
+
+def _fake_evaluate_pipeline(*, candles, policy, configs, state):
+    _ = (candles, policy, configs)
+    already_entered = bool((state or {}).get("entered"))
+    if already_entered:
+        result = {"action": "NONE", "confidence": 0.5, "regime": "BALANCED"}
+        meta = {
+            "decision": {"size": 0.0, "reasons": [], "state_out": {"entered": True}},
+            "features": {},
+        }
+        return result, meta
+
+    result = {"action": "LONG", "confidence": {"overall": 0.6}, "regime": {"name": "BALANCED"}}
+    meta = {
+        "decision": {
+            "size": 0.01,
+            "reasons": ["FIXTURE_ENTRY"],
+            "state_out": {"entered": True},
+        },
+        "features": {},
+    }
+    return result, meta
+
+
+def _fixture_frame(payload: dict[str, Any]) -> pd.DataFrame:
+    candles = payload["candles"]
+    return pd.DataFrame(
+        {
+            "timestamp": pd.to_datetime(candles["timestamp"], unit="s"),
+            "open": candles["open"],
+            "high": candles["high"],
+            "low": candles["low"],
+            "close": candles["close"],
+            "volume": candles["volume"],
+        }
+    )
+
+
+def run_backtest_fixture_smoke(path: Path | None = None) -> dict[str, Any]:
+    fixture_path = Path(path) if path is not None else DEFAULT_FIXTURE_PATH
+    payload = load_fixture(fixture_path)
+    policy = dict(payload["policy"])
+    configs = dict(payload["configs"])
+    configs["exit"] = {"enabled": False}
+
+    engine = BacktestEngine(
+        symbol=str(policy["symbol"]),
+        timeframe=str(policy["timeframe"]),
+        warmup_bars=0,
+        fast_window=False,
+    )
+    engine.candles_df = _fixture_frame(payload)
+
+    with patch.object(
+        engine.champion_loader,
+        "load_cached",
+        return_value=_DummyChampionCfg(),
+    ), patch(
+        "core.backtest.engine.evaluate_pipeline",
+        new=_fake_evaluate_pipeline,
+    ), patch(
+        "core.backtest.engine_results.shutil.which",
+        return_value=None,
+    ):
+        first = engine.run(configs=configs)
+        second = engine.run(configs=configs)
+
+    if first.get("error") is not None or second.get("error") is not None:
+        raise RuntimeError(
+            "Backtest fixture smoke failed: "
+            f"first={first.get('error')} second={second.get('error')}"
+        )
+
+    first_trades = first.get("trades") or []
+    second_trades = second.get("trades") or []
+    first_summary = first.get("summary") or {}
+    second_summary = second.get("summary") or {}
+    first_metrics = first.get("metrics") or {}
+    second_metrics = second.get("metrics") or {}
+
+    deterministic = (
+        first_trades == second_trades
+        and first_summary == second_summary
+        and first_metrics == second_metrics
+    )
+    if not deterministic:
+        raise AssertionError("Backtest fixture smoke must be deterministic across two runs")
+
+    return {
+        "fixture_path": str(fixture_path.resolve()),
+        "bar_count": len(engine.candles_df),
+        "trade_count": len(first_trades),
+        "entry_reasons": list(first_trades[0].get("entry_reasons") or []) if first_trades else [],
+        "deterministic": deterministic,
+        "git_hash": (first.get("backtest_info") or {}).get("git_hash"),
+        "final_capital": first_summary.get("final_capital"),
+        "total_return_pct": first_summary.get("total_return"),
+    }
+
+
+def main() -> int:
+    print(json.dumps(run_backtest_fixture_smoke(), indent=2, ensure_ascii=False, sort_keys=True))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+"""
+
+
+def _runtime_backtest_bootstrap_test_content() -> str:
+    return """from __future__ import annotations
+
+from core.bootstrap.backtest_smoke import run_backtest_fixture_smoke
+
+
+def test_runtime_backtest_fixture_bootstrap_smoke_runs_end_to_end() -> None:
+    result = run_backtest_fixture_smoke()
+
+    assert result["bar_count"] == 120
+    assert result["trade_count"] == 1
+    assert result["entry_reasons"] == ["FIXTURE_ENTRY"]
+    assert result["deterministic"] is True
+    assert result["git_hash"] == "unknown"
+    assert result["final_capital"] is not None
+"""
+
+
 def _runtime_backtest_engine_smoke_test_content() -> str:
     return """from __future__ import annotations
 
@@ -732,6 +884,7 @@ def _fixture_frame() -> pd.DataFrame:
 
 def test_backtest_engine_fixture_smoke_is_deterministic(monkeypatch) -> None:
     monkeypatch.setenv("GENESIS_DISABLE_METRICS", "1")
+    monkeypatch.setattr("core.backtest.engine_results.shutil.which", lambda *_args, **_kwargs: None)
 
     def _fake_evaluate_pipeline(*, candles, policy, configs, state):
         _ = (candles, policy, configs)
@@ -807,6 +960,7 @@ Runtime-only Phase-1 seed generated from the current `Genesis-Core` repository.
 - runtime-only governance guardrails
 - fixture-driven bootstrap smoke (`registry/fixtures/runtime_fixture_smoke_minimal.json`,
   `core.bootstrap.fixture_smoke`)
+- fixture-driven backtest bootstrap smoke (`core.bootstrap.backtest_smoke`)
 - fixture-driven backtest engine smoke (`tests/runtime/test_backtest_engine_fixture_smoke.py`)
 
 ## What is intentionally excluded
@@ -824,6 +978,7 @@ It is a local starting point, not a claim that all later bootstrap, model, champ
 or API/service decisions are already resolved.
 
 Local bootstrap smoke: `python -m core.bootstrap.fixture_smoke`
+Local backtest bootstrap smoke: `python -m core.bootstrap.backtest_smoke`
 """
 
 
@@ -932,8 +1087,10 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
         )
         + "\n",
         "src/core/bootstrap/__init__.py": _runtime_bootstrap_init_content(),
+        "src/core/bootstrap/backtest_smoke.py": _runtime_backtest_bootstrap_module_content(),
         "src/core/bootstrap/fixture_smoke.py": _runtime_bootstrap_module_content(),
         "src/core/utils/diffing/__init__.py": _runtime_diffing_init_content(),
+        "tests/runtime/test_backtest_bootstrap_smoke.py": _runtime_backtest_bootstrap_test_content(),
         "tests/governance/test_v2_seed_boundaries.py": _v2_boundary_test_content(),
         "tests/runtime/test_backtest_engine_fixture_smoke.py": _runtime_backtest_engine_smoke_test_content(),
         "tests/runtime/test_evaluate_pipeline_smoke.py": _runtime_pipeline_smoke_test_content(),

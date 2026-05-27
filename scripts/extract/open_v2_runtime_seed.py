@@ -82,6 +82,7 @@ GENERATED_FILES = {
     "src/core/bootstrap/fixture_smoke.py",
     "src/core/bootstrap/smoke_suite.py",
     "src/core/utils/diffing/__init__.py",
+    "tests/governance/test_pyproject_console_scripts.py",
     "tests/runtime/test_backtest_bootstrap_smoke.py",
     "tests/governance/test_v2_seed_boundaries.py",
     "tests/runtime/test_backtest_engine_fixture_smoke.py",
@@ -419,6 +420,25 @@ def test_runtime_source_has_no_service_or_legacy_imports() -> None:
                     violations.append(f"{rel_path}:{node.lineno} from {module}")
 
     assert not violations, "Excluded import found:\\n" + "\\n".join(violations)
+"""
+
+
+def _pyproject_console_scripts_test_content() -> str:
+    return """from __future__ import annotations
+
+import tomllib
+from pathlib import Path
+
+
+def test_pyproject_declares_runtime_smoke_console_scripts() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+    payload = tomllib.loads((repo_root / "pyproject.toml").read_text(encoding="utf-8"))
+
+    assert payload["project"]["scripts"] == {
+        "genesis-v2-fixture-smoke": "core.bootstrap.fixture_smoke:main",
+        "genesis-v2-backtest-smoke": "core.bootstrap.backtest_smoke:main",
+        "genesis-v2-smoke-suite": "core.bootstrap.smoke_suite:main",
+    }
 """
 
 
@@ -1043,6 +1063,7 @@ Runtime-only Phase-1 seed generated from the current `Genesis-Core` repository.
 - fixture-driven backtest bootstrap smoke (`core.bootstrap.backtest_smoke`)
 - combined runtime smoke suite (`core.bootstrap.smoke_suite`)
 - fixture-driven backtest engine smoke (`tests/runtime/test_backtest_engine_fixture_smoke.py`)
+- installable console scripts for the three smoke entrypoints
 
 ## What is intentionally excluded
 
@@ -1061,6 +1082,9 @@ or API/service decisions are already resolved.
 Local bootstrap smoke: `python -m core.bootstrap.fixture_smoke`
 Local backtest bootstrap smoke: `python -m core.bootstrap.backtest_smoke`
 Local runtime smoke suite: `python -m core.bootstrap.smoke_suite`
+
+Console scripts after editable install:
+`genesis-v2-fixture-smoke`, `genesis-v2-backtest-smoke`, `genesis-v2-smoke-suite`
 """
 
 
@@ -1079,6 +1103,11 @@ requires-python = ">=3.11"
 dependencies = [
 {runtime_deps}
 ]
+
+[project.scripts]
+genesis-v2-fixture-smoke = "core.bootstrap.fixture_smoke:main"
+genesis-v2-backtest-smoke = "core.bootstrap.backtest_smoke:main"
+genesis-v2-smoke-suite = "core.bootstrap.smoke_suite:main"
 
 [project.optional-dependencies]
 dev = [
@@ -1173,6 +1202,7 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
         "src/core/bootstrap/fixture_smoke.py": _runtime_bootstrap_module_content(),
         "src/core/bootstrap/smoke_suite.py": _runtime_smoke_suite_module_content(),
         "src/core/utils/diffing/__init__.py": _runtime_diffing_init_content(),
+        "tests/governance/test_pyproject_console_scripts.py": _pyproject_console_scripts_test_content(),
         "tests/runtime/test_backtest_bootstrap_smoke.py": _runtime_backtest_bootstrap_test_content(),
         "tests/governance/test_v2_seed_boundaries.py": _v2_boundary_test_content(),
         "tests/runtime/test_backtest_engine_fixture_smoke.py": _runtime_backtest_engine_smoke_test_content(),
@@ -1218,6 +1248,18 @@ def _manifest_payload(
         "excluded_path_prefixes": list(EXCLUDED_PATH_PREFIXES),
         "copied_files": sorted(copied_paths),
         "generated_files": sorted(generated_paths),
+        "smoke_entrypoints": {
+            "module_commands": [
+                "python -m core.bootstrap.fixture_smoke",
+                "python -m core.bootstrap.backtest_smoke",
+                "python -m core.bootstrap.smoke_suite",
+            ],
+            "console_scripts": [
+                "genesis-v2-fixture-smoke",
+                "genesis-v2-backtest-smoke",
+                "genesis-v2-smoke-suite",
+            ],
+        },
         "blocked_imports": blocked_imports,
         "output_hashes": output_hashes,
         "notes": [

@@ -1,0 +1,138 @@
+{
+  "status": "genesis_runtime_surface_classification",
+  "mode": "RESEARCH",
+  "base_sha": "f0f1d4b4",
+  "base_inventory": {
+    "note": "docs/analysis/system/genesis_runtime_truth_inventory_2026-05-27.md",
+    "artifact": "results/research/runtime_truth_inventory/genesis_runtime_truth_inventory_2026-05-27.json"
+  },
+  "question": "For the branch-current runtime-adjacent surfaces identified in the runtime truth inventory, what should be treated as keep-now runtime, keep-as-support, keep-but-off, retained legacy compatibility, maybe-later archive territory, or still-needs-verification?",
+  "inputs": {
+    "runtime_inventory_note": "docs/analysis/system/genesis_runtime_truth_inventory_2026-05-27.md",
+    "runtime_inventory_artifact": "results/research/runtime_truth_inventory/genesis_runtime_truth_inventory_2026-05-27.json",
+    "legacy_feature_shim": "src/core/strategy/features.py",
+    "legacy_validator": "src/core/config/validator.py",
+    "runtime_orchestrator": "src/core/strategy/evaluate.py",
+    "shadow_regime_surface": "src/core/strategy/regime.py",
+    "indicator_helpers": "src/core/indicators/vectorized.py",
+    "dead_ghost_zombie_audit": "docs/audits/DEAD_GHOST_ZOMBIE.md",
+    "topology_work_queue": "docs/system/GENESIS_TOPOLOGY_WORK_QUEUE.md"
+  },
+  "classification_rules": {
+    "keep_now_runtime": "Observed on the dominant branch-current runtime spine or runtime SSOT path.",
+    "keep_runtime_support": "Not the primary observed runtime authority, but still mode-gated, support-relevant, or directly adjacent to active execution.",
+    "keep_optional_off": "Declared surface exists but is currently null or disabled on the active runtime snapshot.",
+    "keep_legacy_compatibility": "Explicitly retained compatibility/test-only surface; not branch-current runtime SSOT.",
+    "needs_verification": "Present in code/helpers but not observed strongly enough on the active runtime spine to justify lifecycle action.",
+    "archive_now": "Not established by this slice; archive workflow requires reference/provenance checks."
+  },
+  "disposition": {
+    "keep_now_runtime": [
+      "config/runtime.json via ConfigAuthority",
+      "scripts/run/run_backtest.py",
+      "src/core/pipeline.py",
+      "src/core/backtest/engine.py",
+      "src/core/strategy/evaluate.py",
+      "src/core/strategy/features_asof.py",
+      "src/core/strategy/model_registry.py",
+      "src/core/strategy/champion_loader.py",
+      "src/core/strategy/decision.py"
+    ],
+    "keep_runtime_support": [
+      "src/core/backtest/engine_precompute.py",
+      "src/core/intelligence/regime/authority.py",
+      "src/core/strategy/regime.py",
+      "HTF Fibonacci support",
+      "Exit Fibonacci support",
+      "champion/runtime merge policy surfaces"
+    ],
+    "keep_optional_off": [
+      "features",
+      "htf_fib",
+      "ltf_fib",
+      "research_bull_high_persistence_override",
+      "research_current_atr_high_vol_multiplier_override",
+      "other disabled research override surfaces on the active runtime snapshot"
+    ],
+    "keep_legacy_compatibility": [
+      {
+        "surface": "src/core/strategy/features.py",
+        "reason": "File header says legacy compatibility shim; internal runtime should import features_asof SSOT instead."
+      },
+      {
+        "surface": "src/core/config/validator.py",
+        "reason": "File header says intentionally legacy/test-only and must not be treated as runtime-config authority."
+      }
+    ],
+    "needs_verification": [
+      {
+        "surface": "MACD helper surfaces",
+        "reason": "Observed in vectorized helper code, but not strongly observed on the dominant runtime spine."
+      },
+      {
+        "surface": "Generic SMA helper surfaces",
+        "reason": "Present in helpers/indicator implementations, but not proven as a dominant active runtime decision path in this slice."
+      },
+      {
+        "surface": "Volume-SMA-adjacent helper surfaces",
+        "reason": "Present as helper territory, but not proven as a dominant current decision input."
+      }
+    ],
+    "archive_now": []
+  },
+  "key_observations": [
+    "evaluate.py imports extract_features_backtest/extract_features_live directly and comments that deprecated wrappers should be avoided in core runtime code.",
+    "evaluate.py still keeps a compatibility wrapper around core.strategy.regime for shadow-observer/test-parity behavior, so regime.py is support/mode-gated rather than archive-ready.",
+    "DEAD_GHOST_ZOMBIE audit already treats features.py and validator.py conservatively as compatibility/test-only style surfaces rather than active runtime SSOT.",
+    "GENESIS_TOPOLOGY_WORK_QUEUE says archive work requires its own provenance/reference checks, so this slice cannot honestly classify any runtime-adjacent code surface as archive-now."
+  ],
+  "inferred": {
+    "classification_posture": "keep-heavy rather than move-heavy",
+    "cleanup_pilot": "legacy containment",
+    "v2_seed_default": [
+      "keep_now_runtime",
+      "keep_runtime_support"
+    ],
+    "v2_seed_default_exclusions": [
+      "keep_legacy_compatibility",
+      "needs_verification"
+    ]
+  },
+  "recommended_cleanup_pilot": {
+    "name": "Pilot 01 — legacy containment",
+    "goal": "Keep compatibility surfaces visible but clearly demoted from SSOT/runtime status.",
+    "target_surfaces": [
+      "src/core/strategy/features.py",
+      "src/core/config/validator.py"
+    ],
+    "admissible": [
+      "docs/routing clarification",
+      "tripwire-strengthening proposal",
+      "narrow follow-up audit"
+    ],
+    "inadmissible": [
+      "delete or move execution",
+      "archive execution",
+      "runtime behavior change",
+      "config authority change"
+    ]
+  },
+  "unverified": [
+    "Whether core.strategy.regime is materially exercised in paper/live paths outside the inspected spine.",
+    "Whether MACD/helper surfaces become active in symbol/timeframe-specific paths not sampled here.",
+    "Whether external consumers still rely on the compatibility shim or legacy validator.",
+    "Whether a later provenance-checked archive workflow would clear any of these surfaces."
+  ],
+  "decision": "CLASSIFY_RUNTIME_SURFACES_AND_RECOMMEND_LEGACY_CONTAINMENT",
+  "what_changed": [
+    "The runtime inventory now has an explicit disposition map.",
+    "A smallest admissible cleanup pilot is named.",
+    "No archive-now surfaces were established in this slice."
+  ],
+  "what_did_not_change": [
+    "No runtime behavior changed.",
+    "No files were moved, archived, or deleted.",
+    "No champion/config/runtime-authority surface was edited.",
+    "Unrelated local modifications remained out of scope."
+  ]
+}

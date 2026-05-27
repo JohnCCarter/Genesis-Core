@@ -1,0 +1,61 @@
+{
+  "status": "edge_topology_active_boundary_carrier_adjudication",
+  "base_sha": "be5e03a0",
+  "mode": "RESEARCH",
+  "anchor_zone": "blocked_baseline_long_quality_inversion_boundary",
+  "parent_boundary_state": {
+    "label": "ACTIVE",
+    "scope": "grouped_annual_proxy_level_only"
+  },
+  "decision": "KEEP_ALL_CARRIERS_WEAK",
+  "carrier_verdicts": [
+    {
+      "carrier": "mixed_blocked_action_layer_explanation",
+      "label_after_adjudication": "WEAK",
+      "strongest_support": "Broadest annual relevance beneath the grouped boundary",
+      "limiting_facts": [
+        "stable_continuation_state is the largest blocked bucket",
+        "displacement and true suppression remain mixed on the action-layer surface",
+        "the carrier is too compositionally impure to promote"
+      ]
+    },
+    {
+      "carrier": "insufficient_evidence_exact_surface_d1_family",
+      "label_after_adjudication": "WEAK",
+      "strongest_support": "Recurring exact-surface non-age family on action_edge, confidence_gate, and clarity_raw across the four-surface D1 bank",
+      "limiting_facts": [
+        "exact-surface only",
+        "context-leaky on the fixed bank",
+        "unchanged transport is falsified on the first fresh late-2024 external surface"
+      ]
+    },
+    {
+      "carrier": "broader_local_harmful_2024_shell",
+      "label_after_adjudication": "WEAK",
+      "strongest_support": "Fixed three-cohort local discriminator isolates the harmful 2024 target pocket on weaker local shell fields",
+      "limiting_facts": [
+        "fixed-subject only",
+        "not externally transported",
+        "not yet a portable annual rule"
+      ]
+    }
+  ],
+  "promotion_result": {
+    "promoted_carriers": [],
+    "not_promoted_because": [
+      "No carrier combines sufficient purity, recurrence, and external portability on current retained evidence.",
+      "The grouped annual proxy boundary remains stronger than any carrier explanation beneath it."
+    ]
+  },
+  "current_best_read": {
+    "active_boundary": "blocked_baseline_long_quality_inversion_boundary",
+    "active_boundary_label": "ACTIVE",
+    "active_boundary_scope": "grouped_annual_proxy_level_only",
+    "carrier_layer_role": "interpretive_support_only"
+  },
+  "next_admissible_follow_up": "Only open a new helper-backed carrier question if the user wants one genuinely decisive fresh test; otherwise keep the grouped annual proxy boundary as ACTIVE and all current carriers as WEAK.",
+  "untouched_local_modifications": [
+    "docs/analysis/edge_topology/edge_topology_phase_5_zone_synthesis_2016_06_to_2026_04.md",
+    "docs/analysis/edge_topology/edge_topology_phase_6_canonical_summary_2016_06_to_2026_04.md"
+  ]
+}

@@ -946,8 +946,9 @@ def _runtime_installed_console_scripts_test_content() -> str:
 
 import importlib.metadata as importlib_metadata
 import json
-import shutil
 import subprocess
+import sys
+from pathlib import Path
 
 import pytest
 
@@ -978,6 +979,22 @@ def test_installed_distribution_registers_expected_console_scripts() -> None:
     assert entry_points == EXPECTED_ENTRYPOINTS
 
 
+def _resolve_console_script(command: str) -> list[str]:
+    scripts_dir = Path(sys.executable).resolve().parent
+    candidates = [
+        scripts_dir / command,
+        scripts_dir / f"{command}.exe",
+        scripts_dir / f"{command}-script.py",
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            if candidate.suffix.lower() == ".py":
+                return [sys.executable, str(candidate)]
+            return [str(candidate)]
+
+    raise AssertionError(f"Console script wrapper not found for {command!r} in {scripts_dir}")
+
+
 @pytest.mark.parametrize(
     ("command", "expected_pairs"),
     [
@@ -995,11 +1012,8 @@ def test_installed_distribution_registers_expected_console_scripts() -> None:
 def test_installed_console_scripts_execute(command: str, expected_pairs: dict[str, object]) -> None:
     _require_installed_distribution()
 
-    executable = shutil.which(command)
-    assert executable is not None
-
     completed = subprocess.run(
-        [executable],
+        _resolve_console_script(command),
         capture_output=True,
         text=True,
         check=True,

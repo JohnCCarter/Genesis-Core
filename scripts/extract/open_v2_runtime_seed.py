@@ -81,6 +81,7 @@ GENERATED_FILES = {
     "src/core/bootstrap/__init__.py",
     "src/core/bootstrap/backtest_smoke.py",
     "src/core/bootstrap/champion_smoke.py",
+    "src/core/bootstrap/evaluate_champion_smoke.py",
     "src/core/bootstrap/fixture_smoke.py",
     "src/core/bootstrap/smoke_suite.py",
     "src/core/utils/diffing/__init__.py",
@@ -88,6 +89,7 @@ GENERATED_FILES = {
     "tests/runtime/test_installed_console_scripts.py",
     "tests/runtime/test_backtest_bootstrap_smoke.py",
     "tests/runtime/test_champion_smoke.py",
+    "tests/runtime/test_evaluate_champion_smoke.py",
     "tests/governance/test_v2_seed_boundaries.py",
     "tests/runtime/test_backtest_engine_fixture_smoke.py",
     "tests/runtime/test_evaluate_pipeline_smoke.py",
@@ -942,6 +944,113 @@ if __name__ == "__main__":
 """
 
 
+def _runtime_evaluate_champion_smoke_module_content() -> str:
+    return """from __future__ import annotations
+
+import json
+from pathlib import Path
+from unittest.mock import patch
+
+from core.bootstrap.champion_smoke import DEFAULT_CHAMPION_FIXTURE_PATH
+from core.bootstrap.fixture_smoke import load_fixture
+from core.strategy.champion_loader import ChampionLoader
+from core.strategy import evaluate as evaluate_mod
+
+
+def run_evaluate_champion_smoke(path: Path | None = None) -> dict[str, object]:
+    fixture_path = Path(path) if path is not None else DEFAULT_CHAMPION_FIXTURE_PATH
+    runtime_fixture = load_fixture()
+    candles = dict(runtime_fixture.get("candles") or {})
+    policy = dict(runtime_fixture.get("policy") or {})
+    configs = {
+        "precomputed_features": {"ema_50": list(candles.get("close") or [])},
+    }
+    captured: dict[str, object] = {}
+
+    def _fake_extract_features_live(candles, *, config, timeframe, symbol):
+        _ = candles
+        captured["config"] = config
+        captured["timeframe"] = timeframe
+        captured["symbol"] = symbol
+        return {"ema_50": 1.0}, {"reasons": [], "htf_fibonacci": {}, "ltf_fibonacci": {}}
+
+    with patch.object(
+        evaluate_mod,
+        "champion_loader",
+        ChampionLoader(champions_dir=fixture_path.parent),
+    ), patch.object(
+        evaluate_mod,
+        "extract_features_live",
+        new=_fake_extract_features_live,
+    ), patch.object(
+        evaluate_mod,
+        "_detect_authoritative_regime",
+        lambda *_args, **_kwargs: "balanced",
+    ), patch.object(
+        evaluate_mod,
+        "_detect_shadow_regime_from_regime_module",
+        lambda *_args, **_kwargs: "balanced",
+    ), patch.object(
+        evaluate_mod,
+        "predict_proba_for",
+        lambda *_args, **_kwargs: (
+            {"buy": 0.55, "sell": 0.45, "hold": 0.0},
+            {"schema": [], "versions": {}},
+        ),
+    ), patch.object(
+        evaluate_mod,
+        "compute_confidence",
+        lambda *_args, **_kwargs: (
+            {"buy": 0.55, "sell": 0.45, "overall": 0.55},
+            {"versions": {"confidence": "v1"}},
+        ),
+    ), patch.object(
+        evaluate_mod,
+        "compute_htf_regime",
+        lambda *_args, **_kwargs: "balanced",
+    ), patch.object(
+        evaluate_mod,
+        "decide",
+        lambda *_args, **_kwargs: (
+            "NONE",
+            {"versions": {"decision": "v1"}, "reasons": [], "state_out": {}, "size": 0.0},
+        ),
+    ):
+        result, meta = evaluate_mod.evaluate_pipeline(
+            candles,
+            policy=policy,
+            configs=configs,
+            state={},
+        )
+
+    effective_config = dict(captured.get("config") or {})
+    normalized_source = str(meta.get("champion", {}).get("source") or "").replace("\\\\", "/")
+
+    return {
+        "fixture_path": str(fixture_path.resolve()),
+        "symbol": captured.get("symbol"),
+        "timeframe": captured.get("timeframe"),
+        "action": result.get("action"),
+        "champion_source": normalized_source,
+        "threshold_entry_conf_overall": (effective_config.get("thresholds") or {}).get(
+            "entry_conf_overall"
+        ),
+        "risk_map_rows": len((effective_config.get("risk") or {}).get("risk_map") or []),
+        "meta_note": (effective_config.get("meta") or {}).get("note"),
+        "precomputed_feature_keys": sorted((effective_config.get("precomputed_features") or {}).keys()),
+    }
+
+
+def main() -> int:
+    print(json.dumps(run_evaluate_champion_smoke(), indent=2, ensure_ascii=False, sort_keys=True))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+"""
+
+
 def _runtime_smoke_suite_module_content() -> str:
     return """from __future__ import annotations
 
@@ -950,22 +1059,26 @@ from typing import Any
 
 from core.bootstrap.backtest_smoke import run_backtest_fixture_smoke
 from core.bootstrap.champion_smoke import run_champion_smoke
+from core.bootstrap.evaluate_champion_smoke import run_evaluate_champion_smoke
 from core.bootstrap.fixture_smoke import run_fixture_smoke
 
 
 def run_smoke_suite() -> dict[str, Any]:
     fixture = run_fixture_smoke()
     champion = run_champion_smoke()
+    evaluate_champion = run_evaluate_champion_smoke()
     backtest = run_backtest_fixture_smoke()
     return {
         "suite": "runtime_smoke_suite_v1",
         "checks": {
             "fixture_smoke": "passed",
             "champion_smoke": "passed",
+            "evaluate_champion_smoke": "passed",
             "backtest_smoke": "passed",
         },
         "fixture_smoke": fixture,
         "champion_smoke": champion,
+        "evaluate_champion_smoke": evaluate_champion,
         "backtest_smoke": backtest,
     }
 
@@ -1015,6 +1128,26 @@ def test_runtime_champion_smoke_loads_local_fixture() -> None:
 """
 
 
+def _runtime_evaluate_champion_smoke_test_content() -> str:
+    return """from __future__ import annotations
+
+from core.bootstrap.evaluate_champion_smoke import run_evaluate_champion_smoke
+
+
+def test_runtime_evaluate_champion_smoke_uses_local_champion_fixture() -> None:
+    result = run_evaluate_champion_smoke()
+
+    assert result["symbol"] == "tBTCUSD"
+    assert result["timeframe"] == "1h"
+    assert result["action"] == "NONE"
+    assert result["champion_source"] == "registry/fixtures/champions/tBTCUSD_1h.json"
+    assert result["threshold_entry_conf_overall"] == 0.7
+    assert result["risk_map_rows"] == 2
+    assert result["meta_note"] == "seed_fixture_champion"
+    assert result["precomputed_feature_keys"] == ["ema_50"]
+"""
+
+
 def _runtime_smoke_suite_test_content() -> str:
     return """from __future__ import annotations
 
@@ -1028,10 +1161,12 @@ def test_runtime_smoke_suite_runs_all_smokes() -> None:
     assert result["checks"] == {
         "fixture_smoke": "passed",
         "champion_smoke": "passed",
+        "evaluate_champion_smoke": "passed",
         "backtest_smoke": "passed",
     }
     assert result["fixture_smoke"]["action"] == "NONE"
     assert result["champion_smoke"]["threshold_entry_conf_overall"] == 0.7
+    assert result["evaluate_champion_smoke"]["champion_source"] == "registry/fixtures/champions/tBTCUSD_1h.json"
     assert result["backtest_smoke"]["deterministic"] is True
     assert result["backtest_smoke"]["trade_count"] == 1
 """
@@ -1241,6 +1376,7 @@ Runtime-only Phase-1 seed generated from the current `Genesis-Core` repository.
 - runtime-only governance guardrails
 - local champion fixture/bootstrap smoke (`registry/fixtures/champions/tBTCUSD_1h.json`,
   `core.bootstrap.champion_smoke`)
+- live evaluate smoke backed by the local champion fixture (`core.bootstrap.evaluate_champion_smoke`)
 - fixture-driven bootstrap smoke (`registry/fixtures/runtime_fixture_smoke_minimal.json`,
   `core.bootstrap.fixture_smoke`)
 - fixture-driven backtest bootstrap smoke (`core.bootstrap.backtest_smoke`)
@@ -1263,6 +1399,7 @@ It is a local starting point, not a claim that all later bootstrap, model, champ
 or API/service decisions are already resolved.
 
 Local champion smoke: `python -m core.bootstrap.champion_smoke`
+Local champion-backed evaluate smoke: `python -m core.bootstrap.evaluate_champion_smoke`
 Local bootstrap smoke: `python -m core.bootstrap.fixture_smoke`
 Local backtest bootstrap smoke: `python -m core.bootstrap.backtest_smoke`
 Local runtime smoke suite: `python -m core.bootstrap.smoke_suite`
@@ -1395,6 +1532,7 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
         "src/core/bootstrap/__init__.py": _runtime_bootstrap_init_content(),
         "src/core/bootstrap/backtest_smoke.py": _runtime_backtest_bootstrap_module_content(),
         "src/core/bootstrap/champion_smoke.py": _runtime_champion_smoke_module_content(),
+        "src/core/bootstrap/evaluate_champion_smoke.py": _runtime_evaluate_champion_smoke_module_content(),
         "src/core/bootstrap/fixture_smoke.py": _runtime_bootstrap_module_content(),
         "src/core/bootstrap/smoke_suite.py": _runtime_smoke_suite_module_content(),
         "src/core/utils/diffing/__init__.py": _runtime_diffing_init_content(),
@@ -1402,6 +1540,7 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
         "tests/runtime/test_installed_console_scripts.py": _runtime_installed_console_scripts_test_content(),
         "tests/runtime/test_backtest_bootstrap_smoke.py": _runtime_backtest_bootstrap_test_content(),
         "tests/runtime/test_champion_smoke.py": _runtime_champion_smoke_test_content(),
+        "tests/runtime/test_evaluate_champion_smoke.py": _runtime_evaluate_champion_smoke_test_content(),
         "tests/governance/test_v2_seed_boundaries.py": _v2_boundary_test_content(),
         "tests/runtime/test_backtest_engine_fixture_smoke.py": _runtime_backtest_engine_smoke_test_content(),
         "tests/runtime/test_evaluate_pipeline_smoke.py": _runtime_pipeline_smoke_test_content(),
@@ -1450,6 +1589,7 @@ def _manifest_payload(
             "editable_install_command": 'python -m pip install -e ".[dev]"',
             "module_commands": [
                 "python -m core.bootstrap.champion_smoke",
+                "python -m core.bootstrap.evaluate_champion_smoke",
                 "python -m core.bootstrap.fixture_smoke",
                 "python -m core.bootstrap.backtest_smoke",
                 "python -m core.bootstrap.smoke_suite",

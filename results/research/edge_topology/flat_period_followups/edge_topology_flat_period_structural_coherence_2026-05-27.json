@@ -1,0 +1,208 @@
+{
+  "status": "edge_topology_flat_period_structural_coherence",
+  "base_sha": "5c515718",
+  "mode": "RESEARCH",
+  "question": "On the current retained month surface, do the flattest full months behave like sparse/no-trade windows or like low-amplitude periods with still-present trading and no realized continuation-release seam effect?",
+  "inputs": {
+    "phase_1_note": "docs/analysis/edge_topology/edge_topology_phase_1_period_rankings_2016_06_to_2026_04.md",
+    "phase_1_month_rankings": "results/research/edge_topology/phase_1_period_rankings/month_rankings_2016_07_to_2026_03.json",
+    "phase_2_note": "docs/analysis/edge_topology/edge_topology_phase_2_period_comparison_packs_2016_06_to_2026_04.md",
+    "phase_2_bundle": "results/research/edge_topology/phase_2_period_comparisons/phase_2_period_comparison_bundle_annual_primary_with_monthly_sidecar_2019_2025.json",
+    "phase_6_summary_note": "docs/analysis/edge_topology/edge_topology_phase_6_canonical_summary_2016_06_to_2026_04.md",
+    "monthly_inventory_windows": "results/backtests/ri_policy_router_continuation_release_hysteresis_monthly_inventory_20260504/continuation_release_hysteresis_monthly_inventory_windows.json"
+  },
+  "current_registry_read": {
+    "phase_5_zone": "flat_period_structural_coherence -> UNKNOWN",
+    "phase_6_summary": "flat_period_structural_coherence -> UNKNOWN"
+  },
+  "flat_bucket": {
+    "bucket_name": "flat_absolute",
+    "labels": [
+      "2016-08",
+      "2017-01",
+      "2016-09",
+      "2016-11",
+      "2017-07",
+      "2018-09",
+      "2016-07",
+      "2019-03",
+      "2017-04",
+      "2019-10",
+      "2019-02",
+      "2016-10"
+    ],
+    "size": 12
+  },
+  "bucket_comparison": {
+    "top_absolute": {
+      "num_trades_min": 2,
+      "num_trades_median": 5.5,
+      "num_trades_max": 14,
+      "abs_total_return_median_pct": 0.672280683,
+      "nonzero_action_diff_months": 0,
+      "nonzero_total_return_diff_months": 0
+    },
+    "worst_absolute": {
+      "num_trades_min": 5,
+      "num_trades_median": 7.0,
+      "num_trades_max": 18,
+      "abs_total_return_median_pct": 0.903559748,
+      "nonzero_action_diff_months": 0,
+      "nonzero_total_return_diff_months": 0
+    },
+    "flat_absolute": {
+      "num_trades_min": 2,
+      "num_trades_median": 4.5,
+      "num_trades_max": 10,
+      "abs_total_return_median_pct": 0.00264685,
+      "nonzero_action_diff_months": 0,
+      "nonzero_total_return_diff_months": 0
+    }
+  },
+  "flat_bucket_month_details": [
+    {
+      "label": "2016-08",
+      "num_trades": 2,
+      "total_return_pct": -0.000057784,
+      "action_diff_count": 0,
+      "selected_policy_diff_count": 12,
+      "switch_reason_diff_count": 12,
+      "total_return_diff_pct_points": 0.0
+    },
+    {
+      "label": "2017-01",
+      "num_trades": 2,
+      "total_return_pct": -0.000077293,
+      "action_diff_count": 0,
+      "selected_policy_diff_count": 0,
+      "switch_reason_diff_count": 0,
+      "total_return_diff_pct_points": 0.0
+    },
+    {
+      "label": "2016-09",
+      "num_trades": 2,
+      "total_return_pct": -0.000333607,
+      "action_diff_count": 0,
+      "selected_policy_diff_count": 0,
+      "switch_reason_diff_count": 0,
+      "total_return_diff_pct_points": 0.0
+    },
+    {
+      "label": "2016-11",
+      "num_trades": 9,
+      "total_return_pct": 0.000451545,
+      "action_diff_count": 0,
+      "selected_policy_diff_count": 0,
+      "switch_reason_diff_count": 0,
+      "total_return_diff_pct_points": 0.0
+    },
+    {
+      "label": "2017-07",
+      "num_trades": 9,
+      "total_return_pct": 0.002237527,
+      "action_diff_count": 0,
+      "selected_policy_diff_count": 0,
+      "switch_reason_diff_count": 0,
+      "total_return_diff_pct_points": 0.0
+    },
+    {
+      "label": "2018-09",
+      "num_trades": 5,
+      "total_return_pct": -0.002639114,
+      "action_diff_count": 0,
+      "selected_policy_diff_count": 3,
+      "switch_reason_diff_count": 3,
+      "total_return_diff_pct_points": 0.0
+    },
+    {
+      "label": "2016-07",
+      "num_trades": 7,
+      "total_return_pct": -0.002654586,
+      "action_diff_count": 0,
+      "selected_policy_diff_count": 9,
+      "switch_reason_diff_count": 9,
+      "total_return_diff_pct_points": 0.0
+    },
+    {
+      "label": "2019-03",
+      "num_trades": 10,
+      "total_return_pct": -0.00437122,
+      "action_diff_count": 0,
+      "selected_policy_diff_count": 0,
+      "switch_reason_diff_count": 0,
+      "total_return_diff_pct_points": 0.0
+    },
+    {
+      "label": "2017-04",
+      "num_trades": 3,
+      "total_return_pct": 0.004943699,
+      "action_diff_count": 0,
+      "selected_policy_diff_count": 0,
+      "switch_reason_diff_count": 0,
+      "total_return_diff_pct_points": 0.0
+    },
+    {
+      "label": "2019-10",
+      "num_trades": 10,
+      "total_return_pct": 0.005512958,
+      "action_diff_count": 0,
+      "selected_policy_diff_count": 0,
+      "switch_reason_diff_count": 0,
+      "total_return_diff_pct_points": 0.0
+    },
+    {
+      "label": "2019-02",
+      "num_trades": 3,
+      "total_return_pct": -0.006572054,
+      "action_diff_count": 0,
+      "selected_policy_diff_count": 0,
+      "switch_reason_diff_count": 0,
+      "total_return_diff_pct_points": 0.0
+    },
+    {
+      "label": "2016-10",
+      "num_trades": 4,
+      "total_return_pct": 0.007032889,
+      "action_diff_count": 0,
+      "selected_policy_diff_count": 0,
+      "switch_reason_diff_count": 0,
+      "total_return_diff_pct_points": 0.0
+    }
+  ],
+  "annual_context": {
+    "retained_flat_primary_year": 2019,
+    "control_alignment": "aligned_negative",
+    "enabled_return_pct": -0.248774,
+    "absent_return_pct": 0.299303,
+    "delta_pct_points": -0.548077,
+    "interpretation": "Useful as one flat annual subject, but insufficient to prove a general annual flat topology class."
+  },
+  "decision": "KEEP_FLAT_PERIOD_UNKNOWN_NARROWED",
+  "narrowed_read": {
+    "flat_month_bucket_is_pure_no_trade": false,
+    "flat_month_bucket_is_still_trading": true,
+    "flat_month_bucket_is_uniformly_seam_inert_on_current_comparator": true,
+    "current_seam_uniquely_explains_flatness": false,
+    "global_flat_period_structural_coherence_resolved": false
+  },
+  "topology_implications": [
+    "The current retained flat month bucket is better characterized as low-amplitude and still-trading rather than empty or inactive.",
+    "The current continuation-release seam does not produce realized action or return separation anywhere inside the retained flat month bucket.",
+    "Seam-inertness alone is not a unique flat-zone rule because the retained top and worst month buckets are also seam-inert on the current comparator surface.",
+    "flat_period_structural_coherence should remain globally UNKNOWN, but its current retained monthly read is narrower and more honest."
+  ],
+  "promotion_result": {
+    "promoted_zones": [],
+    "not_promoted_because": [
+      "The current month surface is comparator-family specific and not a general monthly enabled-vs-absent control map.",
+      "Seam-inertness is not unique to the flat bucket on the current retained monthly surface.",
+      "The retained annual flat evidence still consists of only one primary annual subject."
+    ]
+  },
+  "next_admissible_follow_up": "Only reopen global flat-period coherence with a wider flat-period comparison pack or a true monthly enabled-vs-absent control surface that can test whether the narrowed flat-bucket read survives beyond the current comparator family.",
+  "untouched_local_modifications": [
+    "docs/analysis/edge_topology/edge_topology_phase_5_zone_synthesis_2016_06_to_2026_04.md",
+    "docs/analysis/edge_topology/edge_topology_phase_6_canonical_summary_2016_06_to_2026_04.md",
+    "results/research/edge_topology/mixed_year_shape_followups/edge_topology_mixed_year_shape_adjudication_2026-05-27.json"
+  ]
+}

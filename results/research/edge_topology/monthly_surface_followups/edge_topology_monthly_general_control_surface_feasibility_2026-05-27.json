@@ -1,0 +1,77 @@
+{
+  "status": "edge_topology_monthly_general_control_surface_feasibility",
+  "base_sha": "8d8e972b",
+  "mode": "RESEARCH",
+  "question": "Can a true monthly enabled-vs-absent control surface be honestly derived from the current retained repo-visible artifacts, or is monthly_general_control_surface still blocked by a material artifact gap?",
+  "inputs": {
+    "phase_1_month_rankings": "results/research/edge_topology/phase_1_period_rankings/month_rankings_2016_07_to_2026_03.json",
+    "phase_2_bundle": "results/research/edge_topology/phase_2_period_comparisons/phase_2_period_comparison_bundle_annual_primary_with_monthly_sidecar_2019_2025.json",
+    "phase_3_attribution_map": "results/research/edge_topology/phase_3_attribution_maps/phase_3_attribution_map_annual_primary_with_monthly_sidecar_2019_2025.json",
+    "phase_5_zone_registry": "results/research/edge_topology/phase_5_zone_synthesis/phase_5_provisional_zone_registry_2016_06_to_2026_04.json",
+    "phase_1_note": "docs/analysis/edge_topology/edge_topology_phase_1_period_rankings_2016_06_to_2026_04.md",
+    "phase_6_summary_note": "docs/analysis/edge_topology/edge_topology_phase_6_canonical_summary_2016_06_to_2026_04.md",
+    "monthly_overlay_translation_note": "docs/analysis/edge_topology/edge_topology_monthly_overlay_translation_adjudication_2026-05-27.md"
+  },
+  "canonical_surface_reads": {
+    "phase_1_month_surface": {
+      "source_artifact": "results/backtests/ri_policy_router_continuation_release_hysteresis_monthly_inventory_20260504/continuation_release_hysteresis_monthly_inventory_windows.json",
+      "delta_surface": "continuation_release_hysteresis baseline vs release_zero",
+      "general_monthly_enabled_vs_absent_control": "unknown_on_current_retained_surface"
+    },
+    "phase_2_unsupported_dimension": "monthly_general_enabled_vs_absent_control_unknown_on_current_retained_surface",
+    "phase_3_unsupported_layer": "general_monthly_enabled_vs_absent_map = unknown_on_current_monthly_inventory_surface",
+    "phase_5_registry_label": "monthly_general_control_surface -> UNKNOWN",
+    "phase_6_summary_label": "monthly_general_control_surface -> UNKNOWN"
+  },
+  "repo_visible_artifact_scan": {
+    "query": "results/**/*monthly*enabled*absent*",
+    "matches_found": [],
+    "interpretation": "No repo-visible retained monthly artifact with monthly+enabled+absent naming was found under results/** during this feasibility slice."
+  },
+  "retained_enabled_vs_absent_artifact_families_observed": [
+    "results/backtests/ri_policy_router_enabled_vs_absent_all_years_20260428_curated_only/enabled_vs_absent_all_years_summary.json",
+    "results/backtests/ri_policy_router_enabled_vs_absent_all_years_20260428_curated_only/*_enabled_vs_absent_action_diffs.json",
+    "results/backtests/ri_policy_router_enabled_vs_absent_annual_20260428/enabled_vs_absent_annual_summary.json",
+    "results/backtests/ri_policy_router_enabled_vs_absent_annual_20260428/*_enabled_vs_absent_action_diffs.json"
+  ],
+  "current_monthly_surface_read": {
+    "surface_kind": "comparator_family_specific_local_month_surface",
+    "comparator_family": "continuation_release_hysteresis baseline vs release_zero",
+    "is_general_monthly_enabled_vs_absent_control": false,
+    "best_current_use": [
+      "local seam existence",
+      "exact-subject triad sign structure",
+      "local timing/support/retention contrasts"
+    ]
+  },
+  "decision": "KEEP_MONTHLY_GENERAL_CONTROL_SURFACE_UNKNOWN_BLOCKED",
+  "feasibility_result": {
+    "currently_feasible_from_retained_repo_visible_artifacts": false,
+    "blocked_because": [
+      "The current canonical month ranking surface is not an enabled-vs-absent surface; it is continuation_release_hysteresis baseline vs release_zero.",
+      "Canonical Edge Topology artifacts from Phase 2 and Phase 3 still mark the general monthly enabled-vs-absent layer as unsupported/unknown on the current retained monthly surface.",
+      "Phase 5 and Phase 6 already classify monthly_general_control_surface as UNKNOWN for this exact surface-gap reason.",
+      "The repo-visible retained results scan found no monthly enabled-vs-absent artifact family under results/**."
+    ]
+  },
+  "topology_implications": [
+    "monthly_general_control_surface should remain UNKNOWN on the current retained Edge Topology lane.",
+    "The blocker is a material artifact-gap blocker, not just interpretive caution.",
+    "The current monthly seam inventory must not be re-labeled as a general monthly control map.",
+    "Closing this gap requires an explicit new materialization slice, not more reinterpretation of the current seam evidence."
+  ],
+  "promotion_result": {
+    "promoted_zones": [],
+    "not_promoted_because": [
+      "No retained repo-visible monthly enabled-vs-absent control surface currently exists for the lane to cite.",
+      "The current monthly evidence remains comparator-family specific and locally scoped."
+    ]
+  },
+  "next_admissible_follow_up": "Only reopen monthly_general_control_surface with an explicit bounded slice that materializes or validates a true monthly enabled-vs-absent control surface, or proves an honest bridge without changing comparator semantics.",
+  "untouched_local_modifications": [
+    "docs/analysis/edge_topology/edge_topology_phase_5_zone_synthesis_2016_06_to_2026_04.md",
+    "docs/analysis/edge_topology/edge_topology_phase_6_canonical_summary_2016_06_to_2026_04.md",
+    "results/research/edge_topology/flat_period_followups/edge_topology_flat_period_structural_coherence_2026-05-27.json",
+    "results/research/edge_topology/mixed_year_shape_followups/edge_topology_mixed_year_shape_adjudication_2026-05-27.json"
+  ]
+}

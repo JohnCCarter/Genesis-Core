@@ -19,11 +19,29 @@
     "SUPERSEDED": 1,
     "UNKNOWN": 2
   },
+  "current_active_boundary_state": {
+    "zone_id": "blocked_baseline_long_quality_inversion_boundary",
+    "label": "ACTIVE",
+    "decision": "KEEP_ACTIVE_NARROWED",
+    "scope": "grouped_annual_proxy_level_only",
+    "not_supported_as": [
+      "single_carrier_rule",
+      "portable_exact_surface_transport_rule",
+      "runtime_target",
+      "global_threshold_law"
+    ],
+    "carrier_labels": {
+      "mixed_blocked_action_layer_explanation": "WEAK",
+      "insufficient_evidence_exact_surface_d1_family": "WEAK",
+      "broader_local_harmful_2024_shell": "WEAK"
+    }
+  },
   "strongest_supported_readings": [
     "Absolute performance and control-relative contribution diverge materially on the annual surface.",
     "The late low-zone bars-8+ pocket is recurrent but sign-unstable and therefore not a standalone discriminator.",
-    "Blocked baseline-long quality inversion is the strongest repeated anti-edge boundary on the current retained annual proxy surface.",
+    "Blocked baseline-long quality inversion remains the strongest repeated anti-edge boundary, but only at the grouped annual proxy level on the current retained surface.",
     "Control-positive annual periods lean continuation-dominant while control-negative periods lean suppressor-heavier on the bounded primary cohort.",
+    "Carrier explanations beneath the sole ACTIVE anti-edge boundary remain weak, mixed, and non-portable on current retained evidence.",
     "The frozen monthly exact-subject seam is real but local and sign-mixed rather than universally directional."
   ],
   "open_contradictions": [

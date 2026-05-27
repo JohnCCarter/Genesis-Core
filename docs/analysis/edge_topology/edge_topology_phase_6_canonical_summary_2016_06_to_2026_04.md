@@ -64,14 +64,24 @@ It appears across all annual primary topology classes.
 That makes it a real structural zone, but only a `WEAK` one in the registry.
 It is part of the background shape of the system, not by itself the thing that decides whether the period is strong or harmful.
 
-### 3. The strongest current anti-edge boundary is blocked-entry quality inversion
+### 3. The strongest current anti-edge boundary survives, but only at the grouped annual proxy level
 
 The clearest repeated harmful boundary on the current retained annual proxy surface is:
 
 - the router still blocking baseline-long entries even after the blocked cohort no longer looks clearly weak on the same observational proxy surface
 
-That boundary is the only one promoted to `ACTIVE`.
-Not because it is absolute truth forever, but because it is the strongest repeated sign-separating structure currently visible on this bounded research lane.
+That boundary is still the only one promoted to `ACTIVE`.
+After the 2026-05-27 active-boundary validation slice, the correct current reading is narrower:
+
+- keep it `ACTIVE`
+- interpret it only as a **grouped annual proxy boundary**
+- do **not** interpret it as:
+	- a clean single-carrier rule
+	- a portable exact-surface transport rule
+	- a runtime target
+	- a global threshold law
+
+So the label survives, but only on the grouped annual boundary that originally earned it.
 
 ### 4. Relative-beneficial annual periods are continuation-dominant; relative-harmful annual periods are suppressor-heavier
 
@@ -85,6 +95,12 @@ The harmful side is heavier on `RI_no_trade_policy`, heavier on `AGED_WEAK_CONTI
 
 This remains a `WEAK` pair of zones because the cohort is deliberately bounded, not universal.
 But it is already informative enough to belong in the topology summary.
+
+The post-validation carrier state under the sole `ACTIVE` anti-edge boundary is also now clearer:
+
+- mixed blocked action-layer explanation -> `WEAK`
+- exact-surface `insufficient_evidence` D1 carrier -> `WEAK`
+- broader local harmful `2024` shell -> `WEAK`
 
 ### 5. The month-level local seam is real, but it stays local
 
@@ -111,7 +127,7 @@ But this remains `WEAK` and local because the current month bench is too small f
 
 ### Relatively harmful / anti-edge side
 
-- `blocked_baseline_long_quality_inversion_boundary` -> `ACTIVE`
+- `blocked_baseline_long_quality_inversion_boundary` -> `ACTIVE` (grouped annual proxy level only)
 - `suppressor_heavier_control_negative_relative_cluster` -> `WEAK`
 - `monthly_early_band_release_sign_pattern` -> `WEAK` (local only)
 
@@ -166,7 +182,7 @@ It is now:
 
 - strong relative contribution exists, but is not identical to absolute strength
 - one recurrent annual pocket exists, but is weak as a discriminator
-- the strongest repeated anti-edge boundary is blocked-entry quality inversion
+- the strongest repeated anti-edge boundary is blocked-entry quality inversion at the grouped annual proxy level only
 - the monthly exact seam is real but local and sign-mixed
 - several important areas remain explicitly unknown
 

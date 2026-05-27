@@ -15,7 +15,7 @@
       "zone_kind": "anti_edge_boundary",
       "label": "ACTIVE",
       "supporting_periods": ["negative_full_years", "positive_full_years"],
-      "why": "Strongest repeated sign-separating boundary on the current annual proxy surface; supported across multiple years rather than one-off local behavior."
+      "why": "Strongest repeated sign-separating boundary on the current grouped annual proxy surface; retained as ACTIVE only at that grouped boundary level rather than as a portable carrier rule."
     },
     {
       "zone_id": "continuation_dominant_control_positive_relative_cluster",
@@ -83,5 +83,33 @@
       "supporting_periods": [2019, "2016-08"],
       "why": "Flat periods remain useful anchors but are not yet proven to form one coherent structural class across annual and monthly levels."
     }
-  ]
+  ],
+  "post_validation_update_2026_05_27": {
+    "source_note": "docs/analysis/edge_topology/edge_topology_active_boundary_validation_2026-05-27.md",
+    "source_artifact": "results/research/edge_topology/active_boundary_validation/active_boundary_validation_verdict_bundle_2026-05-27.json",
+    "validated_zone_id": "blocked_baseline_long_quality_inversion_boundary",
+    "label_after_validation": "ACTIVE",
+    "decision": "KEEP_ACTIVE_NARROWED",
+    "interpret_as": "grouped_annual_proxy_level_only",
+    "not_supported_as": [
+      "single_carrier_rule",
+      "portable_exact_surface_transport_rule",
+      "runtime_target",
+      "global_threshold_law"
+    ],
+    "carrier_labels": [
+      {
+        "carrier": "mixed_blocked_action_layer_explanation",
+        "label": "WEAK"
+      },
+      {
+        "carrier": "insufficient_evidence_exact_surface_d1_family",
+        "label": "WEAK"
+      },
+      {
+        "carrier": "broader_local_harmful_2024_shell",
+        "label": "WEAK"
+      }
+    ]
+  }
 }

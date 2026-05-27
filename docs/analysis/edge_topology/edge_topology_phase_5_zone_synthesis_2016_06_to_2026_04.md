@@ -131,6 +131,33 @@ It simply reflects what the retained evidence currently supports.
 - This slice does **not** prove that the `ACTIVE` annual anti-edge boundary is the only one that matters.
 - This slice does **not** convert any zone label into runtime or promotion authority.
 
+## Post-validation addendum (2026-05-27)
+
+After the bounded validation slice in `docs/analysis/edge_topology/edge_topology_active_boundary_validation_2026-05-27.md`, the registry reading tightens in one specific place.
+
+### Observed
+
+- `blocked_baseline_long_quality_inversion_boundary` remains `ACTIVE`
+- that label now reads only at the **grouped annual proxy** level
+- the label should **not** currently be read as:
+	- a clean single-carrier rule
+	- a portable exact-surface transport rule
+	- a runtime target
+	- a global threshold law
+
+### Carrier parking state
+
+The validation slice also parks the inner carrier stories below the label itself:
+
+- mixed blocked action-layer explanation -> `WEAK`
+- exact-surface `insufficient_evidence` D1 carrier -> `WEAK`
+- broader local harmful `2024` shell -> `WEAK`
+
+### Consequence for the registry
+
+The registry does **not** lose its only `ACTIVE` zone.
+But the `ACTIVE` zone is now narrower and cleaner than the original Phase 5 wording alone.
+
 ## Consequence
 
 Phase 5 is now complete.

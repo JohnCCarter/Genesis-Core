@@ -76,9 +76,13 @@ GENERATED_FILES = {
     "README.md",
     "pyproject.toml",
     ".gitignore",
+    "registry/fixtures/runtime_fixture_smoke_minimal.json",
+    "src/core/bootstrap/__init__.py",
+    "src/core/bootstrap/fixture_smoke.py",
     "src/core/utils/diffing/__init__.py",
     "tests/governance/test_v2_seed_boundaries.py",
     "tests/runtime/test_evaluate_pipeline_smoke.py",
+    "tests/runtime/test_runtime_fixture_smoke.py",
     "seed_manifest.json",
 }
 
@@ -439,8 +443,8 @@ from types import SimpleNamespace
 def _synthetic_candles(n: int = 80) -> dict[str, list[float]]:
     close = [100.0 + (i * 0.5) for i in range(n)]
     open_ = [close[0]] + close[:-1]
-    high = [max(o, c) + 0.5 for o, c in zip(open_, close)]
-    low = [min(o, c) - 0.5 for o, c in zip(open_, close)]
+    high = [max(o, c) + 0.5 for o, c in zip(open_, close, strict=False)]
+    low = [min(o, c) - 0.5 for o, c in zip(open_, close, strict=False)]
     volume = [100.0] * n
     timestamp = [float(i * 3600) for i in range(n)]
     return {
@@ -517,6 +521,181 @@ def test_runtime_seed_evaluate_pipeline_smoke(monkeypatch) -> None:
 """
 
 
+def _runtime_fixture_payload() -> dict[str, Any]:
+    bar_count = 120
+    close = [100.0 + (i * 0.25) for i in range(bar_count)]
+    open_ = [close[0]] + close[:-1]
+    high = [max(o, c) + 0.5 for o, c in zip(open_, close, strict=False)]
+    low = [min(o, c) - 0.5 for o, c in zip(open_, close, strict=False)]
+    volume = [100.0 + float(i % 5) for i in range(bar_count)]
+    timestamp = [float(i * 3600) for i in range(bar_count)]
+
+    return {
+        "name": "runtime_fixture_smoke_minimal",
+        "policy": {"symbol": "tBTCUSD", "timeframe": "1h"},
+        "configs": {
+            "thresholds": {
+                "entry_conf_overall": 0.7,
+                "regime_proba": {"balanced": 0.55},
+            },
+            "gates": {"hysteresis_steps": 2, "cooldown_bars": 0},
+            "risk": {"risk_map": [[0.6, 0.005], [0.7, 0.01]]},
+            "ev": {"R_default": 1.5},
+        },
+        "model_meta": {
+            "version": "seed_fixture_smoke_v1",
+            "calibration_version": "seed_fixture_smoke_v1",
+            "schema": [],
+            "buy": {"b": 0.2, "calib": {"a": 1.0, "b": 0.0}},
+            "sell": {"b": -0.2, "calib": {"a": 1.0, "b": 0.0}},
+        },
+        "candles": {
+            "timestamp": timestamp,
+            "open": open_,
+            "high": high,
+            "low": low,
+            "close": close,
+            "volume": volume,
+        },
+    }
+
+
+def _runtime_bootstrap_init_content() -> str:
+    return '''"""Bootstrap helpers for the runtime-only V2 seed."""
+
+from __future__ import annotations
+
+__all__: list[str] = []
+'''
+
+
+def _runtime_bootstrap_module_content() -> str:
+    return """from __future__ import annotations
+
+import json
+from pathlib import Path
+from typing import Any
+
+from core.strategy.confidence import compute_confidence
+from core.strategy.decision import decide
+from core.strategy.features_asof import extract_features_backtest
+from core.strategy.prob_model import predict_proba_for
+from core.strategy.regime import detect_regime_from_candles
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+DEFAULT_FIXTURE_PATH = REPO_ROOT / "registry" / "fixtures" / "runtime_fixture_smoke_minimal.json"
+
+
+def load_fixture(path: Path | None = None) -> dict[str, Any]:
+    fixture_path = Path(path) if path is not None else DEFAULT_FIXTURE_PATH
+    payload = json.loads(fixture_path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise TypeError("Runtime fixture payload must be a JSON object")
+    return payload
+
+
+def run_fixture_smoke(path: Path | None = None) -> dict[str, Any]:
+    fixture_path = Path(path) if path is not None else DEFAULT_FIXTURE_PATH
+    payload = load_fixture(fixture_path)
+    candles = dict(payload.get("candles") or {})
+    policy = dict(payload.get("policy") or {})
+    configs = dict(payload.get("configs") or {})
+    model_meta = dict(payload.get("model_meta") or {})
+
+    timeframe = str(policy.get("timeframe") or "1h")
+    symbol = str(policy.get("symbol") or "tBTCUSD")
+    asof_bar = len(candles.get("close") or []) - 1
+    if asof_bar < 0:
+        raise ValueError("Runtime fixture must contain at least one close bar")
+
+    features, features_meta = extract_features_backtest(
+        candles,
+        asof_bar,
+        config=configs,
+        timeframe=timeframe,
+        symbol=symbol,
+    )
+    regime = detect_regime_from_candles(candles, config=configs)
+    probas, proba_meta = predict_proba_for(
+        symbol,
+        timeframe,
+        features,
+        model_meta=model_meta,
+        regime=regime,
+    )
+    confidence, confidence_meta = compute_confidence(probas, config=configs.get("quality"))
+    action, decision_meta = decide(
+        policy,
+        probas=probas,
+        confidence=confidence,
+        regime=regime,
+        state={},
+        risk_ctx=configs.get("risk"),
+        cfg=configs,
+    )
+
+    return {
+        "fixture_path": str(fixture_path.resolve()),
+        "bar_count": len(candles.get("close") or []),
+        "features_count": len(features),
+        "feature_reasons": list(features_meta.get("reasons", [])),
+        "regime": regime,
+        "probas": probas,
+        "confidence": confidence,
+        "action": action,
+        "decision_reasons": list(decision_meta.get("reasons", [])),
+        "versions": {
+            "prob_model": proba_meta.get("versions", {}).get("prob_model_version"),
+            "calibration": proba_meta.get("versions", {}).get("calibration_version"),
+            "confidence": confidence_meta.get("versions", {}).get("confidence"),
+            "decision": decision_meta.get("versions", {}).get("decision"),
+        },
+    }
+
+
+def main() -> int:
+    print(json.dumps(run_fixture_smoke(), indent=2, ensure_ascii=False, sort_keys=True))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+"""
+
+
+def _runtime_bootstrap_test_content() -> str:
+    return """from __future__ import annotations
+
+from core.bootstrap.fixture_smoke import DEFAULT_FIXTURE_PATH, load_fixture, run_fixture_smoke
+
+
+def test_runtime_fixture_file_exists_with_expected_shape() -> None:
+    payload = load_fixture()
+
+    assert DEFAULT_FIXTURE_PATH.exists()
+    assert payload["policy"] == {"symbol": "tBTCUSD", "timeframe": "1h"}
+    assert payload["name"] == "runtime_fixture_smoke_minimal"
+    assert len(payload["candles"]["close"]) == 120
+
+
+def test_runtime_fixture_smoke_runs_end_to_end() -> None:
+    result = run_fixture_smoke()
+
+    assert result["bar_count"] == 120
+    assert result["features_count"] > 0
+    assert result["regime"] in {"bull", "bear", "ranging", "balanced"}
+    assert result["probas"]["buy"] > result["probas"]["sell"]
+    assert result["confidence"]["overall"] < 0.7
+    assert result["action"] == "NONE"
+    assert result["versions"] == {
+        "prob_model": "seed_fixture_smoke_v1",
+        "calibration": "seed_fixture_smoke_v1",
+        "confidence": "v1",
+        "decision": "v1",
+    }
+"""
+
+
 def _readme_content(source_head: str | None) -> str:
     source_line = (
         f"Source Genesis-Core HEAD: `{source_head}`"
@@ -535,6 +714,8 @@ Runtime-only Phase-1 seed generated from the current `Genesis-Core` repository.
 - local dependency closure required by those roots
 - narrow config bootstrap (`config/__init__.py`, `config/timeframe_configs.py`)
 - runtime-only governance guardrails
+- fixture-driven bootstrap smoke (`registry/fixtures/runtime_fixture_smoke_minimal.json`,
+  `core.bootstrap.fixture_smoke`)
 
 ## What is intentionally excluded
 
@@ -549,6 +730,8 @@ Runtime-only Phase-1 seed generated from the current `Genesis-Core` repository.
 This seed is intentionally narrower than the source repository.
 It is a local starting point, not a claim that all later bootstrap, model, champion,
 or API/service decisions are already resolved.
+
+Local bootstrap smoke: `python -m core.bootstrap.fixture_smoke`
 """
 
 
@@ -649,9 +832,19 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
         "README.md": _readme_content(source_head),
         "pyproject.toml": _pyproject_content(),
         ".gitignore": _gitignore_content(),
+        "registry/fixtures/runtime_fixture_smoke_minimal.json": json.dumps(
+            _runtime_fixture_payload(),
+            indent=2,
+            ensure_ascii=False,
+            sort_keys=True,
+        )
+        + "\n",
+        "src/core/bootstrap/__init__.py": _runtime_bootstrap_init_content(),
+        "src/core/bootstrap/fixture_smoke.py": _runtime_bootstrap_module_content(),
         "src/core/utils/diffing/__init__.py": _runtime_diffing_init_content(),
         "tests/governance/test_v2_seed_boundaries.py": _v2_boundary_test_content(),
         "tests/runtime/test_evaluate_pipeline_smoke.py": _runtime_pipeline_smoke_test_content(),
+        "tests/runtime/test_runtime_fixture_smoke.py": _runtime_bootstrap_test_content(),
     }
 
     for relative_path, content in generated_map.items():

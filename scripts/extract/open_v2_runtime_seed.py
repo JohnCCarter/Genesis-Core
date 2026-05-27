@@ -917,10 +917,11 @@ def run_champion_smoke(path: Path | None = None) -> dict[str, Any]:
 
     first = loader.load("tBTCUSD", "1h")
     second = loader.load_cached("tBTCUSD", "1h")
+    normalized_source = str(first.source).replace("\\", "/")
 
     return {
         "fixture_path": str(fixture_path.resolve()),
-        "source": first.source,
+        "source": normalized_source,
         "version": first.version,
         "checksum": first.checksum,
         "cache_reused": first.checksum == second.checksum,

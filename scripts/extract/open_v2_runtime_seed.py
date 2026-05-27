@@ -76,6 +76,8 @@ GENERATED_FILES = {
     "README.md",
     "pyproject.toml",
     ".gitignore",
+    "config/models/registry.json",
+    "config/models/tBTCUSD_1h.json",
     "registry/fixtures/champions/tBTCUSD_1h.json",
     "registry/fixtures/runtime_fixture_smoke_minimal.json",
     "src/core/bootstrap/__init__.py",
@@ -83,6 +85,7 @@ GENERATED_FILES = {
     "src/core/bootstrap/champion_smoke.py",
     "src/core/bootstrap/evaluate_champion_smoke.py",
     "src/core/bootstrap/fixture_smoke.py",
+    "src/core/bootstrap/model_smoke.py",
     "src/core/bootstrap/smoke_suite.py",
     "src/core/utils/diffing/__init__.py",
     "tests/governance/test_pyproject_console_scripts.py",
@@ -92,6 +95,7 @@ GENERATED_FILES = {
     "tests/runtime/test_evaluate_champion_smoke.py",
     "tests/governance/test_v2_seed_boundaries.py",
     "tests/runtime/test_backtest_engine_fixture_smoke.py",
+    "tests/runtime/test_model_smoke.py",
     "tests/runtime/test_evaluate_pipeline_smoke.py",
     "tests/runtime/test_runtime_fixture_smoke.py",
     "tests/runtime/test_smoke_suite.py",
@@ -606,6 +610,36 @@ def _runtime_champion_fixture_payload() -> dict[str, Any]:
     }
 
 
+def _runtime_model_fixture_payload() -> dict[str, Any]:
+    return {
+        "version": "seed_model_fixture_v1",
+        "calibration_version": "seed_model_fixture_v1",
+        "schema": ["ema_50"],
+        "buy": {
+            "w": [1.0],
+            "b": 0.0,
+            "calib": {"a": 1.0, "b": 0.0},
+        },
+        "sell": {
+            "w": [-1.0],
+            "b": 0.0,
+            "calib": {"a": 1.0, "b": 0.0},
+        },
+        "calibration_by_regime": {
+            "buy": {"balanced": {"a": 1.0, "b": 0.1}},
+            "sell": {"balanced": {"a": 1.0, "b": -0.1}},
+        },
+    }
+
+
+def _runtime_model_registry_fixture_payload() -> dict[str, Any]:
+    return {
+        "tBTCUSD:1h": {
+            "champion": "config/models/tBTCUSD_1h.json",
+        }
+    }
+
+
 def _runtime_bootstrap_init_content() -> str:
     return '''"""Bootstrap helpers for the runtime-only V2 seed."""
 
@@ -1051,6 +1085,59 @@ if __name__ == "__main__":
 """
 
 
+def _runtime_model_smoke_module_content() -> str:
+    return """from __future__ import annotations
+
+import json
+from pathlib import Path
+from typing import Any
+
+from core.strategy.model_registry import ModelRegistry
+from core.strategy.prob_model import predict_proba_for
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+DEFAULT_MODEL_REGISTRY_PATH = REPO_ROOT / "config" / "models" / "registry.json"
+DEFAULT_MODEL_FIXTURE_PATH = REPO_ROOT / "config" / "models" / "tBTCUSD_1h.json"
+
+
+def run_model_smoke() -> dict[str, Any]:
+    registry = ModelRegistry(root=REPO_ROOT)
+    model_meta = registry.get_meta("tBTCUSD", "1h") or {}
+    schema = list(model_meta.get("schema") or [])
+    if not schema:
+        raise AssertionError("Expected local V2 model fixture to expose a non-empty schema")
+
+    features = {schema[0]: 1.0}
+    previous_registry = getattr(predict_proba_for, "_registry", None)
+    predict_proba_for._registry = registry
+    try:
+        probas, meta = predict_proba_for("tBTCUSD", "1h", features, regime="balanced")
+    finally:
+        if previous_registry is None:
+            delattr(predict_proba_for, "_registry")
+        else:
+            predict_proba_for._registry = previous_registry
+
+    return {
+        "registry_path": str(DEFAULT_MODEL_REGISTRY_PATH.resolve()),
+        "model_path": str(DEFAULT_MODEL_FIXTURE_PATH.resolve()),
+        "schema": schema,
+        "probas": probas,
+        "versions": dict(meta.get("versions") or {}),
+        "calibration_used": dict(meta.get("calibration_used") or {}),
+    }
+
+
+def main() -> int:
+    print(json.dumps(run_model_smoke(), indent=2, ensure_ascii=False, sort_keys=True))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+"""
+
+
 def _runtime_smoke_suite_module_content() -> str:
     return """from __future__ import annotations
 
@@ -1061,12 +1148,14 @@ from core.bootstrap.backtest_smoke import run_backtest_fixture_smoke
 from core.bootstrap.champion_smoke import run_champion_smoke
 from core.bootstrap.evaluate_champion_smoke import run_evaluate_champion_smoke
 from core.bootstrap.fixture_smoke import run_fixture_smoke
+from core.bootstrap.model_smoke import run_model_smoke
 
 
 def run_smoke_suite() -> dict[str, Any]:
     fixture = run_fixture_smoke()
     champion = run_champion_smoke()
     evaluate_champion = run_evaluate_champion_smoke()
+    model = run_model_smoke()
     backtest = run_backtest_fixture_smoke()
     return {
         "suite": "runtime_smoke_suite_v1",
@@ -1074,11 +1163,13 @@ def run_smoke_suite() -> dict[str, Any]:
             "fixture_smoke": "passed",
             "champion_smoke": "passed",
             "evaluate_champion_smoke": "passed",
+            "model_smoke": "passed",
             "backtest_smoke": "passed",
         },
         "fixture_smoke": fixture,
         "champion_smoke": champion,
         "evaluate_champion_smoke": evaluate_champion,
+        "model_smoke": model,
         "backtest_smoke": backtest,
     }
 
@@ -1148,6 +1239,29 @@ def test_runtime_evaluate_champion_smoke_uses_local_champion_fixture() -> None:
 """
 
 
+def _runtime_model_smoke_test_content() -> str:
+    return """from __future__ import annotations
+
+from core.bootstrap.model_smoke import run_model_smoke
+
+
+def test_runtime_model_smoke_uses_local_registry_and_model_fixture() -> None:
+    result = run_model_smoke()
+
+    assert result["schema"] == ["ema_50"]
+    assert result["probas"]["buy"] > result["probas"]["sell"]
+    assert abs(result["probas"]["hold"]) < 1e-12
+    assert result["versions"] == {
+        "prob_model_version": "seed_model_fixture_v1",
+        "calibration_version": "seed_model_fixture_v1",
+        "regime_aware_calibration": True,
+    }
+    assert result["calibration_used"]["regime"] == "balanced"
+    assert result["calibration_used"]["buy_calib"] == {"a": 1.0, "b": 0.1}
+    assert result["calibration_used"]["sell_calib"] == {"a": 1.0, "b": -0.1}
+"""
+
+
 def _runtime_smoke_suite_test_content() -> str:
     return """from __future__ import annotations
 
@@ -1162,11 +1276,13 @@ def test_runtime_smoke_suite_runs_all_smokes() -> None:
         "fixture_smoke": "passed",
         "champion_smoke": "passed",
         "evaluate_champion_smoke": "passed",
+        "model_smoke": "passed",
         "backtest_smoke": "passed",
     }
     assert result["fixture_smoke"]["action"] == "NONE"
     assert result["champion_smoke"]["threshold_entry_conf_overall"] == 0.7
     assert result["evaluate_champion_smoke"]["champion_source"] == "registry/fixtures/champions/tBTCUSD_1h.json"
+    assert result["model_smoke"]["versions"]["prob_model_version"] == "seed_model_fixture_v1"
     assert result["backtest_smoke"]["deterministic"] is True
     assert result["backtest_smoke"]["trade_count"] == 1
 """
@@ -1374,6 +1490,8 @@ Runtime-only Phase-1 seed generated from the current `Genesis-Core` repository.
 - local dependency closure required by those roots
 - narrow config bootstrap (`config/__init__.py`, `config/timeframe_configs.py`)
 - runtime-only governance guardrails
+- local model-registry/prob-model smoke (`config/models/registry.json`,
+  `config/models/tBTCUSD_1h.json`, `core.bootstrap.model_smoke`)
 - local champion fixture/bootstrap smoke (`registry/fixtures/champions/tBTCUSD_1h.json`,
   `core.bootstrap.champion_smoke`)
 - live evaluate smoke backed by the local champion fixture (`core.bootstrap.evaluate_champion_smoke`)
@@ -1398,6 +1516,7 @@ This seed is intentionally narrower than the source repository.
 It is a local starting point, not a claim that all later bootstrap, model, champion,
 or API/service decisions are already resolved.
 
+Local model smoke: `python -m core.bootstrap.model_smoke`
 Local champion smoke: `python -m core.bootstrap.champion_smoke`
 Local champion-backed evaluate smoke: `python -m core.bootstrap.evaluate_champion_smoke`
 Local bootstrap smoke: `python -m core.bootstrap.fixture_smoke`
@@ -1515,6 +1634,20 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
         "README.md": _readme_content(source_head),
         "pyproject.toml": _pyproject_content(),
         ".gitignore": _gitignore_content(),
+        "config/models/registry.json": json.dumps(
+            _runtime_model_registry_fixture_payload(),
+            indent=2,
+            ensure_ascii=False,
+            sort_keys=True,
+        )
+        + "\n",
+        "config/models/tBTCUSD_1h.json": json.dumps(
+            _runtime_model_fixture_payload(),
+            indent=2,
+            ensure_ascii=False,
+            sort_keys=True,
+        )
+        + "\n",
         "registry/fixtures/champions/tBTCUSD_1h.json": json.dumps(
             _runtime_champion_fixture_payload(),
             indent=2,
@@ -1534,6 +1667,7 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
         "src/core/bootstrap/champion_smoke.py": _runtime_champion_smoke_module_content(),
         "src/core/bootstrap/evaluate_champion_smoke.py": _runtime_evaluate_champion_smoke_module_content(),
         "src/core/bootstrap/fixture_smoke.py": _runtime_bootstrap_module_content(),
+        "src/core/bootstrap/model_smoke.py": _runtime_model_smoke_module_content(),
         "src/core/bootstrap/smoke_suite.py": _runtime_smoke_suite_module_content(),
         "src/core/utils/diffing/__init__.py": _runtime_diffing_init_content(),
         "tests/governance/test_pyproject_console_scripts.py": _pyproject_console_scripts_test_content(),
@@ -1543,6 +1677,7 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
         "tests/runtime/test_evaluate_champion_smoke.py": _runtime_evaluate_champion_smoke_test_content(),
         "tests/governance/test_v2_seed_boundaries.py": _v2_boundary_test_content(),
         "tests/runtime/test_backtest_engine_fixture_smoke.py": _runtime_backtest_engine_smoke_test_content(),
+        "tests/runtime/test_model_smoke.py": _runtime_model_smoke_test_content(),
         "tests/runtime/test_evaluate_pipeline_smoke.py": _runtime_pipeline_smoke_test_content(),
         "tests/runtime/test_runtime_fixture_smoke.py": _runtime_bootstrap_test_content(),
         "tests/runtime/test_smoke_suite.py": _runtime_smoke_suite_test_content(),
@@ -1588,6 +1723,7 @@ def _manifest_payload(
         "smoke_entrypoints": {
             "editable_install_command": 'python -m pip install -e ".[dev]"',
             "module_commands": [
+                "python -m core.bootstrap.model_smoke",
                 "python -m core.bootstrap.champion_smoke",
                 "python -m core.bootstrap.evaluate_champion_smoke",
                 "python -m core.bootstrap.fixture_smoke",

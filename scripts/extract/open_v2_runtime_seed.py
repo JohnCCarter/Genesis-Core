@@ -577,13 +577,6 @@ def _runtime_fixture_payload() -> dict[str, Any]:
             "risk": {"risk_map": [[0.6, 0.005], [0.7, 0.01]]},
             "ev": {"R_default": 1.5},
         },
-        "model_meta": {
-            "version": "seed_fixture_smoke_v1",
-            "calibration_version": "seed_fixture_smoke_v1",
-            "schema": [],
-            "buy": {"b": 0.2, "calib": {"a": 1.0, "b": 0.0}},
-            "sell": {"b": -0.2, "calib": {"a": 1.0, "b": 0.0}},
-        },
         "candles": {
             "timestamp": timestamp,
             "open": open_,
@@ -616,13 +609,13 @@ def _runtime_model_fixture_payload() -> dict[str, Any]:
         "calibration_version": "seed_model_fixture_v1",
         "schema": ["ema_50"],
         "buy": {
-            "w": [1.0],
-            "b": 0.0,
+            "w": [0.0],
+            "b": 0.2,
             "calib": {"a": 1.0, "b": 0.0},
         },
         "sell": {
-            "w": [-1.0],
-            "b": 0.0,
+            "w": [0.0],
+            "b": -0.2,
             "calib": {"a": 1.0, "b": 0.0},
         },
         "calibration_by_regime": {
@@ -680,7 +673,6 @@ def run_fixture_smoke(path: Path | None = None) -> dict[str, Any]:
     candles = dict(payload.get("candles") or {})
     policy = dict(payload.get("policy") or {})
     configs = dict(payload.get("configs") or {})
-    model_meta = dict(payload.get("model_meta") or {})
 
     timeframe = str(policy.get("timeframe") or "1h")
     symbol = str(policy.get("symbol") or "tBTCUSD")
@@ -700,7 +692,6 @@ def run_fixture_smoke(path: Path | None = None) -> dict[str, Any]:
         symbol,
         timeframe,
         features,
-        model_meta=model_meta,
         regime=regime,
     )
     confidence, confidence_meta = compute_confidence(probas, config=configs.get("quality"))
@@ -768,8 +759,8 @@ def test_runtime_fixture_smoke_runs_end_to_end() -> None:
     assert result["confidence"]["overall"] < 0.7
     assert result["action"] == "NONE"
     assert result["versions"] == {
-        "prob_model": "seed_fixture_smoke_v1",
-        "calibration": "seed_fixture_smoke_v1",
+        "prob_model": "seed_model_fixture_v1",
+        "calibration": "seed_model_fixture_v1",
         "confidence": "v1",
         "decision": "v1",
     }

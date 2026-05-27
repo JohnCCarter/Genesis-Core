@@ -80,12 +80,14 @@ GENERATED_FILES = {
     "src/core/bootstrap/__init__.py",
     "src/core/bootstrap/backtest_smoke.py",
     "src/core/bootstrap/fixture_smoke.py",
+    "src/core/bootstrap/smoke_suite.py",
     "src/core/utils/diffing/__init__.py",
     "tests/runtime/test_backtest_bootstrap_smoke.py",
     "tests/governance/test_v2_seed_boundaries.py",
     "tests/runtime/test_backtest_engine_fixture_smoke.py",
     "tests/runtime/test_evaluate_pipeline_smoke.py",
     "tests/runtime/test_runtime_fixture_smoke.py",
+    "tests/runtime/test_smoke_suite.py",
     "seed_manifest.json",
 }
 
@@ -722,6 +724,18 @@ class _DummyChampionCfg:
         self.loaded_at = "now"
 
 
+class _QuietProgress:
+    def update(self, *_args, **_kwargs) -> None:
+        return None
+
+    def close(self) -> None:
+        return None
+
+
+def _quiet_tqdm(*_args, **_kwargs) -> _QuietProgress:
+    return _QuietProgress()
+
+
 def _fake_evaluate_pipeline(*, candles, policy, configs, state):
     _ = (candles, policy, configs)
     already_entered = bool((state or {}).get("entered"))
@@ -784,6 +798,9 @@ def run_backtest_fixture_smoke(path: Path | None = None) -> dict[str, Any]:
     ), patch(
         "core.backtest.engine_results.shutil.which",
         return_value=None,
+    ), patch(
+        "core.backtest.engine.tqdm",
+        new=_quiet_tqdm,
     ):
         first = engine.run(configs=configs)
         second = engine.run(configs=configs)
@@ -831,6 +848,40 @@ if __name__ == "__main__":
 """
 
 
+def _runtime_smoke_suite_module_content() -> str:
+    return """from __future__ import annotations
+
+import json
+from typing import Any
+
+from core.bootstrap.backtest_smoke import run_backtest_fixture_smoke
+from core.bootstrap.fixture_smoke import run_fixture_smoke
+
+
+def run_smoke_suite() -> dict[str, Any]:
+    fixture = run_fixture_smoke()
+    backtest = run_backtest_fixture_smoke()
+    return {
+        "suite": "runtime_smoke_suite_v1",
+        "checks": {
+            "fixture_smoke": "passed",
+            "backtest_smoke": "passed",
+        },
+        "fixture_smoke": fixture,
+        "backtest_smoke": backtest,
+    }
+
+
+def main() -> int:
+    print(json.dumps(run_smoke_suite(), indent=2, ensure_ascii=False, sort_keys=True))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+"""
+
+
 def _runtime_backtest_bootstrap_test_content() -> str:
     return """from __future__ import annotations
 
@@ -846,6 +897,26 @@ def test_runtime_backtest_fixture_bootstrap_smoke_runs_end_to_end() -> None:
     assert result["deterministic"] is True
     assert result["git_hash"] == "unknown"
     assert result["final_capital"] is not None
+"""
+
+
+def _runtime_smoke_suite_test_content() -> str:
+    return """from __future__ import annotations
+
+from core.bootstrap.smoke_suite import run_smoke_suite
+
+
+def test_runtime_smoke_suite_runs_all_smokes() -> None:
+    result = run_smoke_suite()
+
+    assert result["suite"] == "runtime_smoke_suite_v1"
+    assert result["checks"] == {
+        "fixture_smoke": "passed",
+        "backtest_smoke": "passed",
+    }
+    assert result["fixture_smoke"]["action"] == "NONE"
+    assert result["backtest_smoke"]["deterministic"] is True
+    assert result["backtest_smoke"]["trade_count"] == 1
 """
 
 
@@ -885,6 +956,15 @@ def _fixture_frame() -> pd.DataFrame:
 def test_backtest_engine_fixture_smoke_is_deterministic(monkeypatch) -> None:
     monkeypatch.setenv("GENESIS_DISABLE_METRICS", "1")
     monkeypatch.setattr("core.backtest.engine_results.shutil.which", lambda *_args, **_kwargs: None)
+
+    class _QuietProgress:
+        def update(self, *_args, **_kwargs) -> None:
+            return None
+
+        def close(self) -> None:
+            return None
+
+    monkeypatch.setattr("core.backtest.engine.tqdm", lambda *_args, **_kwargs: _QuietProgress())
 
     def _fake_evaluate_pipeline(*, candles, policy, configs, state):
         _ = (candles, policy, configs)
@@ -961,6 +1041,7 @@ Runtime-only Phase-1 seed generated from the current `Genesis-Core` repository.
 - fixture-driven bootstrap smoke (`registry/fixtures/runtime_fixture_smoke_minimal.json`,
   `core.bootstrap.fixture_smoke`)
 - fixture-driven backtest bootstrap smoke (`core.bootstrap.backtest_smoke`)
+- combined runtime smoke suite (`core.bootstrap.smoke_suite`)
 - fixture-driven backtest engine smoke (`tests/runtime/test_backtest_engine_fixture_smoke.py`)
 
 ## What is intentionally excluded
@@ -979,6 +1060,7 @@ or API/service decisions are already resolved.
 
 Local bootstrap smoke: `python -m core.bootstrap.fixture_smoke`
 Local backtest bootstrap smoke: `python -m core.bootstrap.backtest_smoke`
+Local runtime smoke suite: `python -m core.bootstrap.smoke_suite`
 """
 
 
@@ -1089,12 +1171,14 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
         "src/core/bootstrap/__init__.py": _runtime_bootstrap_init_content(),
         "src/core/bootstrap/backtest_smoke.py": _runtime_backtest_bootstrap_module_content(),
         "src/core/bootstrap/fixture_smoke.py": _runtime_bootstrap_module_content(),
+        "src/core/bootstrap/smoke_suite.py": _runtime_smoke_suite_module_content(),
         "src/core/utils/diffing/__init__.py": _runtime_diffing_init_content(),
         "tests/runtime/test_backtest_bootstrap_smoke.py": _runtime_backtest_bootstrap_test_content(),
         "tests/governance/test_v2_seed_boundaries.py": _v2_boundary_test_content(),
         "tests/runtime/test_backtest_engine_fixture_smoke.py": _runtime_backtest_engine_smoke_test_content(),
         "tests/runtime/test_evaluate_pipeline_smoke.py": _runtime_pipeline_smoke_test_content(),
         "tests/runtime/test_runtime_fixture_smoke.py": _runtime_bootstrap_test_content(),
+        "tests/runtime/test_smoke_suite.py": _runtime_smoke_suite_test_content(),
     }
 
     for relative_path, content in generated_map.items():

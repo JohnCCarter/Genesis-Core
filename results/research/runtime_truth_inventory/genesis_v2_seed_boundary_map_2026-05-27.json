@@ -1,0 +1,100 @@
+{
+  "status": "genesis_v2_seed_boundary_map",
+  "mode": "RESEARCH",
+  "base_sha": "f82fc37c",
+  "base_inputs": {
+    "runtime_truth_inventory": "docs/analysis/system/genesis_runtime_truth_inventory_2026-05-27.md",
+    "runtime_surface_classification": "docs/analysis/system/genesis_runtime_surface_classification_2026-05-27.md",
+    "runtime_legacy_containment": "docs/analysis/system/genesis_runtime_legacy_containment_2026-05-27.md",
+    "legacy_containment_artifact_read_only_input": "results/research/runtime_truth_inventory/genesis_runtime_legacy_containment_2026-05-27.json"
+  },
+  "question": "If a future Genesis-Core-V2 seed is opened, which current Genesis-Core surfaces should be treated as seed-now, promote-later, exclude-by-default, or verify-before-seed?",
+  "inputs": {
+    "runtime_truth_note": "docs/analysis/system/genesis_runtime_truth_inventory_2026-05-27.md",
+    "surface_classification_note": "docs/analysis/system/genesis_runtime_surface_classification_2026-05-27.md",
+    "legacy_containment_note": "docs/analysis/system/genesis_runtime_legacy_containment_2026-05-27.md",
+    "work_queue": "docs/system/GENESIS_TOPOLOGY_WORK_QUEUE.md",
+    "zone_lifecycle_map": "docs/knowledge/GENESIS_TOPOLOGY_LIFECYCLE_AUTHORITY_MAP.md",
+    "knowledge_rules": "docs/knowledge/KNOWLEDGE_AUTHORITY_RULES.md",
+    "runtime_config_boundary_note": "docs/governance/runtime_config_live_update_matrix_2026-05-15.md",
+    "config_readme": "config/README.md"
+  },
+  "boundary_principles": [
+    "Seed executable logic before seeding branch-current state.",
+    "Treat retained legacy compatibility surfaces as excluded by default.",
+    "Treat optional-off surfaces as promote-later-only unless explicitly chosen.",
+    "Treat mixed-freshness artifacts and unresolved helper territory as verify-before-seed.",
+    "This map is non-authorizing and does not itself create a V2 repository."
+  ],
+  "seed_now_runtime_logic": [
+    "src/core/pipeline.py",
+    "src/core/backtest/engine.py",
+    "src/core/backtest/engine_precompute.py",
+    "src/core/strategy/evaluate.py",
+    "src/core/strategy/features_asof.py",
+    "src/core/strategy/decision.py",
+    "src/core/strategy/model_registry.py",
+    "src/core/strategy/champion_loader.py",
+    "src/core/intelligence/regime/authority.py",
+    "src/core/strategy/regime.py"
+  ],
+  "seed_now_guardrails": [
+    "tests/governance/test_no_legacy_feature_imports.py",
+    "tests/governance/test_dead_code_tripwires.py",
+    "tests/integration/test_config_endpoints.py",
+    "runtime truth / classification / containment boundary notes"
+  ],
+  "promote_later_only_if_explicit": [
+    "features",
+    "htf_fib",
+    "ltf_fib",
+    "disabled research override surfaces",
+    "any deliberate family or authority-mode change relative to the current branch snapshot"
+  ],
+  "verify_before_seed": [
+    "config/runtime.json current payload",
+    "config/models/registry.json",
+    "champion JSON payloads",
+    "sample model/champion freshness",
+    "paper/live API entrypoints and operational assumptions",
+    "MACD/helper territory and other unresolved helper surfaces"
+  ],
+  "exclude_by_default": [
+    "src/core/strategy/features.py",
+    "src/core/config/validator.py",
+    "broad results/research corpora not needed for executable bootstrapping",
+    "Edge Topology evidence corpus as default seed material",
+    "branch-local historical planning and explanation surfaces"
+  ],
+  "key_observations": [
+    "No direct Genesis-Core-V2 packet or seed artifact was found; current anchors are runtime truth, surface classification, and legacy containment.",
+    "The active runtime logic spine is a stronger seed candidate than the current branch runtime state.",
+    "The current branch runtime snapshot remains legacy-shaped and was previously left unresolved as a long-term target state.",
+    "Legacy compatibility surfaces already have verified containment and should default to exclusion from a future V2 seed."
+  ],
+  "inferred": {
+    "best_default_seed_shape": "active_runtime_logic_plus_support_plus_guardrails",
+    "copy_whole_branch_shape": false,
+    "blind_state_carryover": false,
+    "non_authorizing_boundary_map": true
+  },
+  "unverified": [
+    "Whether a future V2 should preserve the current legacy family as a temporary bootstrap or change family posture during extraction.",
+    "Whether any model/champion artifacts are fresh enough to carry unchanged.",
+    "Whether paper/live API edges match the desired future seed boundary.",
+    "Whether external consumers exist for the retained legacy surfaces."
+  ],
+  "decision": "FREEZE_V2_SEED_BOUNDARY_AS_LOGIC_PLUS_SUPPORT_NOT_BRANCH_STATE",
+  "what_changed": [
+    "A bounded V2 seed boundary artifact now exists.",
+    "Runtime findings are converted into seed-now / promote-later / verify / exclude buckets.",
+    "The distinction between executable logic and branch-current state is now explicit."
+  ],
+  "what_did_not_change": [
+    "No V2 repository was created.",
+    "No files were moved or copied.",
+    "No runtime/config/champion behavior changed.",
+    "The locally modified runtime surface classification artifact remained untouched.",
+    "The locally modified runtime legacy containment artifact remained untouched."
+  ]
+}

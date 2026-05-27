@@ -988,7 +988,11 @@ from unittest.mock import patch
 from core.bootstrap.champion_smoke import DEFAULT_CHAMPION_FIXTURE_PATH
 from core.bootstrap.fixture_smoke import load_fixture
 from core.strategy.champion_loader import ChampionLoader
+from core.strategy.model_registry import ModelRegistry
+from core.strategy.prob_model import predict_proba_for
 from core.strategy import evaluate as evaluate_mod
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
 def run_evaluate_champion_smoke(path: Path | None = None) -> dict[str, object]:
@@ -1008,64 +1012,72 @@ def run_evaluate_champion_smoke(path: Path | None = None) -> dict[str, object]:
         captured["symbol"] = symbol
         return {"ema_50": 1.0}, {"reasons": [], "htf_fibonacci": {}, "ltf_fibonacci": {}}
 
-    with patch.object(
-        evaluate_mod,
-        "champion_loader",
-        ChampionLoader(champions_dir=fixture_path.parent),
-    ), patch.object(
-        evaluate_mod,
-        "extract_features_live",
-        new=_fake_extract_features_live,
-    ), patch.object(
-        evaluate_mod,
-        "_detect_authoritative_regime",
-        lambda *_args, **_kwargs: "balanced",
-    ), patch.object(
-        evaluate_mod,
-        "_detect_shadow_regime_from_regime_module",
-        lambda *_args, **_kwargs: "balanced",
-    ), patch.object(
-        evaluate_mod,
-        "predict_proba_for",
-        lambda *_args, **_kwargs: (
-            {"buy": 0.55, "sell": 0.45, "hold": 0.0},
-            {"schema": [], "versions": {}},
-        ),
-    ), patch.object(
-        evaluate_mod,
-        "compute_confidence",
-        lambda *_args, **_kwargs: (
-            {"buy": 0.55, "sell": 0.45, "overall": 0.55},
-            {"versions": {"confidence": "v1"}},
-        ),
-    ), patch.object(
-        evaluate_mod,
-        "compute_htf_regime",
-        lambda *_args, **_kwargs: "balanced",
-    ), patch.object(
-        evaluate_mod,
-        "decide",
-        lambda *_args, **_kwargs: (
-            "NONE",
-            {"versions": {"decision": "v1"}, "reasons": [], "state_out": {}, "size": 0.0},
-        ),
-    ):
-        result, meta = evaluate_mod.evaluate_pipeline(
-            candles,
-            policy=policy,
-            configs=configs,
-            state={},
-        )
+    previous_registry = getattr(predict_proba_for, "_registry", None)
+    predict_proba_for._registry = ModelRegistry(root=REPO_ROOT)
+    try:
+        with patch.object(
+            evaluate_mod,
+            "champion_loader",
+            ChampionLoader(champions_dir=fixture_path.parent),
+        ), patch.object(
+            evaluate_mod,
+            "extract_features_live",
+            new=_fake_extract_features_live,
+        ), patch.object(
+            evaluate_mod,
+            "_detect_authoritative_regime",
+            lambda *_args, **_kwargs: "balanced",
+        ), patch.object(
+            evaluate_mod,
+            "_detect_shadow_regime_from_regime_module",
+            lambda *_args, **_kwargs: "balanced",
+        ), patch.object(
+            evaluate_mod,
+            "compute_confidence",
+            lambda *_args, **_kwargs: (
+                {"buy": 0.55, "sell": 0.45, "overall": 0.55},
+                {"versions": {"confidence": "v1"}},
+            ),
+        ), patch.object(
+            evaluate_mod,
+            "compute_htf_regime",
+            lambda *_args, **_kwargs: "balanced",
+        ), patch.object(
+            evaluate_mod,
+            "decide",
+            lambda *_args, **_kwargs: (
+                "NONE",
+                {"versions": {"decision": "v1"}, "reasons": [], "state_out": {}, "size": 0.0},
+            ),
+        ):
+            result, meta = evaluate_mod.evaluate_pipeline(
+                candles,
+                policy=policy,
+                configs=configs,
+                state={},
+            )
+    finally:
+        if previous_registry is None:
+            delattr(predict_proba_for, "_registry")
+        else:
+            predict_proba_for._registry = previous_registry
 
     effective_config = dict(captured.get("config") or {})
     normalized_source = str(meta.get("champion", {}).get("source") or "").replace("\\\\", "/")
+    proba_versions = dict((meta.get("proba") or {}).get("versions") or {})
 
     return {
         "fixture_path": str(fixture_path.resolve()),
         "symbol": captured.get("symbol"),
         "timeframe": captured.get("timeframe"),
         "action": result.get("action"),
+        "buy_proba": (result.get("probas") or {}).get("buy"),
+        "sell_proba": (result.get("probas") or {}).get("sell"),
         "champion_source": normalized_source,
+        "prob_model_version": proba_versions.get("prob_model_version"),
+        "calibration_version": proba_versions.get("calibration_version"),
+        "regime_aware_calibration": proba_versions.get("regime_aware_calibration"),
+        "model_schema": list((meta.get("proba") or {}).get("schema") or []),
         "threshold_entry_conf_overall": (effective_config.get("thresholds") or {}).get(
             "entry_conf_overall"
         ),
@@ -1231,7 +1243,12 @@ def test_runtime_evaluate_champion_smoke_uses_local_champion_fixture() -> None:
     assert result["symbol"] == "tBTCUSD"
     assert result["timeframe"] == "1h"
     assert result["action"] == "NONE"
+    assert result["buy_proba"] > result["sell_proba"]
     assert result["champion_source"] == "registry/fixtures/champions/tBTCUSD_1h.json"
+    assert result["prob_model_version"] == "seed_model_fixture_v1"
+    assert result["calibration_version"] == "seed_model_fixture_v1"
+    assert result["regime_aware_calibration"] is True
+    assert result["model_schema"] == ["ema_50"]
     assert result["threshold_entry_conf_overall"] == 0.7
     assert result["risk_map_rows"] == 2
     assert result["meta_note"] == "seed_fixture_champion"
@@ -1282,6 +1299,7 @@ def test_runtime_smoke_suite_runs_all_smokes() -> None:
     assert result["fixture_smoke"]["action"] == "NONE"
     assert result["champion_smoke"]["threshold_entry_conf_overall"] == 0.7
     assert result["evaluate_champion_smoke"]["champion_source"] == "registry/fixtures/champions/tBTCUSD_1h.json"
+    assert result["evaluate_champion_smoke"]["prob_model_version"] == "seed_model_fixture_v1"
     assert result["model_smoke"]["versions"]["prob_model_version"] == "seed_model_fixture_v1"
     assert result["backtest_smoke"]["deterministic"] is True
     assert result["backtest_smoke"]["trade_count"] == 1

@@ -1,0 +1,77 @@
+{
+  "status": "edge_topology_mixed_year_shape_adjudication",
+  "base_sha": "c61b3c4c",
+  "mode": "RESEARCH",
+  "question": "Do the currently retained mixed-year surfaces justify one unified mixed-year topology class, or a split composition with shared suppression and divergent month leadership?",
+  "inputs": {
+    "mixed_2023_isolation_note": "docs/analysis/regime_intelligence/policy_router/ri_policy_router_2023_mixed_year_pocket_isolation_2026-05-06.md",
+    "mixed_2023_isolation_artifact": "results/evaluation/ri_policy_router_2023_mixed_year_pocket_isolation_2026-05-06.json",
+    "mixed_2023_vs_2017_note": "docs/analysis/regime_intelligence/policy_router/ri_policy_router_2023_vs_2017_mixed_year_shape_comparison_2026-05-06.md",
+    "edge_topology_map": "docs/analysis/edge_topology/EDGE_TOPOLOGY_MAP_2016_04_TO_2026_04.md"
+  },
+  "mixed_2023_shape": {
+    "top_combined_month": {
+      "month": "2023-12",
+      "count": 38,
+      "share_of_counted_rows": 0.119874
+    },
+    "top_continuation_month": {
+      "month": "2023-12",
+      "count": 22,
+      "share_of_counted_rows": 0.152778
+    },
+    "top_suppression_month": {
+      "month": "2023-06",
+      "count": 19,
+      "share_of_counted_rows": 0.109827
+    },
+    "december_anchor_overlap": {
+      "matching_shared_shape_count": 1,
+      "matching_shared_shape_timestamps": [
+        "2023-12-20T03:00:00+00:00"
+      ],
+      "missing_from_counted_annual_surface": [
+        "2023-12-21T18:00:00+00:00",
+        "2023-12-22T09:00:00+00:00",
+        "2023-12-28T09:00:00+00:00",
+        "2023-12-30T21:00:00+00:00"
+      ]
+    }
+  },
+  "mixed_year_control_comparison": {
+    "control_year": "2017",
+    "same_top_combined_month_set": false,
+    "same_top_continuation_month_set": false,
+    "same_top_suppression_month_set": true,
+    "control_2017": {
+      "top_combined_month": "July",
+      "top_continuation_month": "March",
+      "top_suppression_month": "June"
+    },
+    "subject_2023": {
+      "top_combined_month": "December",
+      "top_continuation_month": "December",
+      "top_suppression_month": "June"
+    }
+  },
+  "decision": "KEEP_MIXED_YEARS_NON_UNIFIED",
+  "topology_implications": [
+    "Shared June-led suppression exists across both mixed full years and is best treated as mixed-year background structure.",
+    "The strongest 2023-specific signal is December-led continuation-plus-combined mass rather than June suppression alone.",
+    "The current retained mixed-year evidence is too split to justify one unified mixed-year topology class.",
+    "No new Edge Topology zone promotion is justified from this follow-up alone."
+  ],
+  "promotion_result": {
+    "promoted_zones": [],
+    "not_promoted_because": [
+      "The mixed-year evidence splits into shared suppression overlap and divergent combined/continuation leadership.",
+      "The 2023 December-led overlay is real but still observational only and not strong enough to justify a new zone label or stronger authority."
+    ]
+  },
+  "next_admissible_follow_up": "If reopened later, ask whether a monthly control-relative surface preserves the 2023 December-led continuation overlay or whether that signal remains annual-shared-shape only.",
+  "untouched_local_modifications": [
+    "docs/analysis/edge_topology/edge_topology_phase_5_zone_synthesis_2016_06_to_2026_04.md",
+    "docs/analysis/edge_topology/edge_topology_phase_6_canonical_summary_2016_06_to_2026_04.md",
+    "results/research/edge_topology/active_boundary_validation/active_boundary_carrier_adjudication_2026-05-27.json"
+  ]
+}

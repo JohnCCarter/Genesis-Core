@@ -1,0 +1,141 @@
+{
+  "status": "genesis_runtime_truth_inventory",
+  "base_sha": "83d0771b",
+  "mode": "RESEARCH",
+  "question": "What is actually active in the current Genesis-Core runtime spine, what is runtime-support, and what appears to be compatibility or legacy rather than branch-current authority?",
+  "inputs": {
+    "runtime_snapshot": "config/runtime.json",
+    "config_authority": "src/core/config/authority.py",
+    "config_schema": "src/core/config/schema.py",
+    "authority_mode_resolver": "src/core/config/authority_mode_resolver.py",
+    "family_registry": "src/core/strategy/family_registry.py",
+    "backtest_runner": "scripts/run/run_backtest.py",
+    "pipeline": "src/core/pipeline.py",
+    "backtest_engine": "src/core/backtest/engine.py",
+    "engine_precompute": "src/core/backtest/engine_precompute.py",
+    "evaluate_pipeline": "src/core/strategy/evaluate.py",
+    "feature_ssot": "src/core/strategy/features_asof.py",
+    "decision": "src/core/strategy/decision.py",
+    "authoritative_regime": "src/core/intelligence/regime/authority.py",
+    "shadow_regime_surface": "src/core/strategy/regime.py",
+    "model_registry": "src/core/strategy/model_registry.py",
+    "champion_loader": "src/core/strategy/champion_loader.py",
+    "model_registry_file": "config/models/registry.json",
+    "sample_model_schema": "config/models/tAPTUSD_1h.json",
+    "sample_champion_1h": "config/strategy/champions/tBTCUSD_1h.json",
+    "sample_champion_3h": "config/strategy/champions/tBTCUSD_3h.json",
+    "legacy_feature_shim": "src/core/strategy/features.py",
+    "legacy_config_validator": "src/core/config/validator.py"
+  },
+  "current_runtime_snapshot": {
+    "runtime_version": 630,
+    "strategy_family": "legacy",
+    "authority_mode": "legacy",
+    "features": null,
+    "htf_fib": null,
+    "ltf_fib": null,
+    "research_bull_high_persistence_override_enabled": false,
+    "research_current_atr_high_vol_multiplier_override_enabled": false,
+    "use_htf_block": true,
+    "allow_ltf_override": true
+  },
+  "active_runtime_spine": [
+    "scripts/run/run_backtest.py",
+    "src/core/config/authority.py",
+    "src/core/pipeline.py",
+    "src/core/backtest/engine.py",
+    "src/core/strategy/evaluate.py",
+    "src/core/strategy/features_asof.py",
+    "src/core/strategy/model_registry.py",
+    "src/core/strategy/champion_loader.py",
+    "src/core/strategy/decision.py"
+  ],
+  "active_runtime_roles": {
+    "runtime_ssot": "ConfigAuthority loads and validates config/runtime.json",
+    "mode_control": "GenesisPipeline enforces canonical 1/1 mode unless explicit override",
+    "backtest_execution": "BacktestEngine runs evaluate_pipeline bar-by-bar",
+    "feature_ssot": "features_asof.py",
+    "model_resolution": "ModelRegistry resolves per symbol/timeframe model metadata",
+    "champion_resolution": "ChampionLoader resolves timeframe champion configs"
+  },
+  "active_indicator_families_observed": [
+    "ATR",
+    "EMA",
+    "RSI",
+    "Bollinger",
+    "ADX",
+    "Fibonacci",
+    "HTF_Fibonacci_mapping",
+    "Exit_Fibonacci"
+  ],
+  "model_and_champion_state": {
+    "sample_model_features_observed": [
+      "rsi_inv_lag1",
+      "bb_position_inv_ma3",
+      "rsi_vol_interaction",
+      "vol_regime"
+    ],
+    "sample_1h_champion": {
+      "strategy_family": "legacy",
+      "created_at": "2026-02-03T13:11:04.317790Z",
+      "shape": "complete_champion_with_merged_config"
+    },
+    "sample_3h_champion": {
+      "strategy_family": "legacy",
+      "created_at": "2026-01-28T00:00:00Z",
+      "shape": "bootstrap_champion",
+      "metadata_note": "Optuna/backtest follow-up still recommended"
+    }
+  },
+  "declared_but_currently_null_or_disabled": [
+    "features",
+    "htf_fib",
+    "ltf_fib",
+    "research_bull_high_persistence_override",
+    "research_current_atr_high_vol_multiplier_override",
+    "research_policy_router"
+  ],
+  "compatibility_or_legacy_surfaces": [
+    {
+      "path": "src/core/strategy/features.py",
+      "reason": "Explicit legacy compatibility shim that delegates to features_asof SSOT."
+    },
+    {
+      "path": "src/core/config/validator.py",
+      "reason": "Explicit legacy schema-v1 helper; code comments say runtime validation must go through ConfigAuthority."
+    }
+  ],
+  "present_but_not_observed_active_in_this_slice": [
+    {
+      "surface": "MACD helpers",
+      "reason": "Observed in vectorized helper code, but not on the inspected dominant runtime spine."
+    },
+    {
+      "surface": "Generic SMA helpers",
+      "reason": "Present inside indicator/helper implementations, but not observed as a dominant standalone active runtime decision path."
+    },
+    {
+      "surface": "Volume SMA as core decision feature",
+      "reason": "Helper exists, but was not observed as a dominant active runtime feature in the inspected spine."
+    }
+  ],
+  "decision": "FREEZE_RUNTIME_TRUTH_INVENTORY",
+  "topology_of_runtime_truth": {
+    "active_runtime": true,
+    "ri_primary_authority_on_current_snapshot": false,
+    "legacy_primary_authority_on_current_snapshot": true,
+    "indicator_stack_still_material": true,
+    "main_repo_problem": "Too many adjacent research/compatibility/optional surfaces obscure the active runtime truth."
+  },
+  "recommended_next_use": [
+    "Build a keep/move/archive/legacy/maybe classification from this inventory.",
+    "Use this inventory as the basis for any Genesis-Core-V2 extraction.",
+    "Avoid new Optuna work until the active runtime spine is treated as explicit truth."
+  ],
+  "untouched_local_modifications": [
+    "docs/analysis/edge_topology/edge_topology_phase_5_zone_synthesis_2016_06_to_2026_04.md",
+    "docs/analysis/edge_topology/edge_topology_phase_6_canonical_summary_2016_06_to_2026_04.md",
+    "results/research/edge_topology/mixed_year_shape_followups/edge_topology_mixed_year_shape_adjudication_2026-05-27.json",
+    "results/research/edge_topology/monthly_surface_followups/edge_topology_monthly_general_control_surface_feasibility_2026-05-27.json"
+  ]
+}

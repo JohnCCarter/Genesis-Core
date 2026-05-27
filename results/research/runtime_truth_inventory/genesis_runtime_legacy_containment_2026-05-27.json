@@ -1,0 +1,102 @@
+{
+  "status": "genesis_runtime_legacy_containment",
+  "mode": "RESEARCH",
+  "base_sha": "96af7d12",
+  "base_classification": {
+    "note": "docs/analysis/system/genesis_runtime_surface_classification_2026-05-27.md",
+    "artifact_read_only_input": "results/research/runtime_truth_inventory/genesis_runtime_surface_classification_2026-05-27.json"
+  },
+  "question": "Are the two identified retained legacy surfaces already materially contained by current guardrails, and what is the smallest admissible lifecycle conclusion today?",
+  "target_surfaces": [
+    "src/core/strategy/features.py",
+    "src/core/config/validator.py"
+  ],
+  "inputs": {
+    "legacy_feature_shim": "src/core/strategy/features.py",
+    "legacy_validator": "src/core/config/validator.py",
+    "runtime_orchestrator": "src/core/strategy/evaluate.py",
+    "feature_guardrail_test": "tests/governance/test_no_legacy_feature_imports.py",
+    "tripwire_test": "tests/governance/test_dead_code_tripwires.py",
+    "integration_test": "tests/integration/test_config_endpoints.py"
+  },
+  "verification": {
+    "test_files": [
+      "tests/governance/test_no_legacy_feature_imports.py",
+      "tests/governance/test_dead_code_tripwires.py",
+      "tests/integration/test_config_endpoints.py"
+    ],
+    "passed": 17,
+    "failed": 0,
+    "result": "green"
+  },
+  "observed": {
+    "feature_shim_containment": [
+      "features.py declares itself a legacy compatibility shim.",
+      "Module text says internal runtime code should import core.strategy.features_asof instead.",
+      "test_no_legacy_feature_imports.py blocks imports of core.strategy.features except a narrow allow-list.",
+      "test_no_legacy_feature_imports.py also blocks deprecated internal imports of features_asof.extract_features.",
+      "test_dead_code_tripwires.py verifies the shim delegates to _extract_features_asof."
+    ],
+    "legacy_validator_containment": [
+      "validator.py declares itself intentionally legacy/test-only.",
+      "validator.py says runtime config validation must go through ConfigAuthority.validate.",
+      "test_dead_code_tripwires.py asserts runtime source under src/ must not import core.config.validator.",
+      "test_dead_code_tripwires.py asserts the module exports only legacy-named helpers.",
+      "test_config_endpoints.py still imports validate_legacy_config and diff_legacy_config, proving a retained test-only compatibility role."
+    ]
+  },
+  "containment_verdict": {
+    "features_py": "retained_legacy_with_verified_containment",
+    "validator_py": "retained_legacy_with_verified_containment",
+    "runtime_leak_detected": false,
+    "archive_ready": false,
+    "delete_ready": false
+  },
+  "verified_guardrails": [
+    "No internal repo imports of core.strategy.features except the narrow governance allow-list.",
+    "No internal repo imports of deprecated features_asof.extract_features except approved compatibility/test allow-list.",
+    "No runtime-source imports of core.config.validator.",
+    "Legacy validator exports remain legacy-named only.",
+    "Feature legacy shim remains a delegator.",
+    "Focused verification tests passed 17/17."
+  ],
+  "inferred": {
+    "legacy_containment_already_present": true,
+    "next_smallest_step": "Maintain the containment boundary rather than expanding cleanup.",
+    "default_v2_exclusion": [
+      "src/core/strategy/features.py",
+      "src/core/config/validator.py"
+    ]
+  },
+  "unverified": [
+    "Whether any external consumer outside the repo still imports core.strategy.features.",
+    "Whether any external consumer outside the repo still imports core.config.validator.",
+    "Whether a later provenance-checked lifecycle slice could demote these surfaces further."
+  ],
+  "decision": "CONFIRM_LEGACY_CONTAINMENT_ALREADY_PRESENT_AND_HOLD_BOUNDARY",
+  "recommended_follow_up": {
+    "action": "preserve_containment_boundary",
+    "do": [
+      "Keep existing guardrails green.",
+      "Keep legacy labels intact.",
+      "Avoid promoting these surfaces back into runtime SSOT."
+    ],
+    "do_not": [
+      "archive from this slice",
+      "delete from this slice",
+      "reintroduce generic validator aliases",
+      "reintroduce internal runtime imports of the legacy feature shim"
+    ]
+  },
+  "what_changed": [
+    "A bounded legacy-containment verification artifact now exists.",
+    "The containment pilot is recorded as already materially present.",
+    "Focused governance/integration evidence from this session is frozen in one place."
+  ],
+  "what_did_not_change": [
+    "No runtime behavior changed.",
+    "No code file was moved, archived, or deleted.",
+    "No new runtime authority was introduced.",
+    "The locally modified runtime surface classification artifact remained untouched."
+  ]
+}

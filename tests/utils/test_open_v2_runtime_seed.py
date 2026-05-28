@@ -87,6 +87,11 @@ EXPECTED_LOCAL_LAUNCH_FILES = [
     "tests/runtime/test_local_vscode_launch.py",
 ]
 
+EXPECTED_LOCAL_SETTINGS_FILES = [
+    ".vscode/settings.json",
+    "tests/runtime/test_local_vscode_settings.py",
+]
+
 EXPECTED_REMOTE_MCP_DEFERRED_FILES = [
     "config/mcp_settings.remote_git.json",
     "config/mcp_settings.remote_safe.json",
@@ -107,6 +112,15 @@ EXPECTED_WORKSPACE_LAUNCH_LABELS = [
     "genesis-v2: api shell",
     "genesis-v2: smoke suite",
     "genesis-v2: pytest",
+]
+
+EXPECTED_WORKSPACE_SETTINGS_KEYS = [
+    "python.analysis.extraPaths",
+    "python.envFile",
+    "python.testing.cwd",
+    "python.testing.pytestArgs",
+    "python.testing.pytestEnabled",
+    "python.testing.unittestEnabled",
 ]
 
 EXPECTED_WORKSPACE_LOOP_ENV = {"PYTHONPATH": "${workspaceFolder}/src"}
@@ -347,6 +361,39 @@ def test_generate_seed_emits_local_vscode_task_loop(tmp_path: Path) -> None:
     assert "Local VS Code tasks:" in readme
     assert ".vscode/tasks.json" in scope_text
     assert "generated local VS Code tasks" in instructions_text
+
+
+def test_generate_seed_emits_local_vscode_settings(tmp_path: Path) -> None:
+    seed_module = _load_open_v2_runtime_seed_module()
+    destination = tmp_path / "Genesis-Core-V2"
+
+    seed_module.generate_seed(destination, clean=True, dry_run=False)
+
+    for relative_path in EXPECTED_LOCAL_SETTINGS_FILES:
+        assert (destination / relative_path).exists(), relative_path
+
+    readme = (destination / "README.md").read_text(encoding="utf-8")
+    scope_text = (destination / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+    manifest = json.loads((destination / "seed_manifest.json").read_text(encoding="utf-8"))
+    settings_payload = json.loads(
+        (destination / ".vscode" / "settings.json").read_text(encoding="utf-8")
+    )
+
+    assert ".vscode/settings.json" in manifest["local_tooling_surfaces"]
+    assert manifest["workspace_settings_keys"] == EXPECTED_WORKSPACE_SETTINGS_KEYS
+    assert (
+        "Generated `.vscode/settings.json` aligns Python analysis and pytest discovery with the V2 `src` layout."
+        in manifest["notes"]
+    )
+    assert settings_payload["python.analysis.extraPaths"] == ["${workspaceFolder}/src"]
+    assert settings_payload["python.envFile"] == "${workspaceFolder}/.env"
+    assert settings_payload["python.testing.cwd"] == "${workspaceFolder}"
+    assert settings_payload["python.testing.pytestArgs"] == ["-q"]
+    assert settings_payload["python.testing.pytestEnabled"] is True
+    assert settings_payload["python.testing.unittestEnabled"] is False
+    assert ".vscode/settings.json" in readme
+    assert "Python analysis/test settings" in readme
+    assert ".vscode/settings.json" in scope_text
 
 
 def test_generate_seed_emits_local_vscode_launch_loop(tmp_path: Path) -> None:

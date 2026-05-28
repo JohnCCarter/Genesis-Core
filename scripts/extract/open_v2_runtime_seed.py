@@ -116,6 +116,7 @@ CHAMPIONLESS_FALLBACK_CONTRACT = {
 GENERATED_FILES = {
     ".vscode/launch.json",
     ".vscode/mcp.json",
+    ".vscode/settings.json",
     ".vscode/tasks.json",
     ".github/copilot-instructions.md",
     "README.md",
@@ -150,6 +151,7 @@ GENERATED_FILES = {
     "tests/runtime/test_backtest_engine_fixture_smoke.py",
     "tests/runtime/test_local_mcp_setup.py",
     "tests/runtime/test_local_vscode_launch.py",
+    "tests/runtime/test_local_vscode_settings.py",
     "tests/runtime/test_local_vscode_tasks.py",
     "tests/runtime/test_model_smoke.py",
     "tests/runtime/test_evaluate_pipeline_smoke.py",
@@ -497,6 +499,12 @@ _TASK_FILES = [
 ]
 
 
+_SETTINGS_FILES = [
+    ".vscode/settings.json",
+    "tests/runtime/test_local_vscode_settings.py",
+]
+
+
 _LAUNCH_FILES = [
     ".vscode/launch.json",
     "tests/runtime/test_local_vscode_launch.py",
@@ -617,6 +625,20 @@ def test_seed_contains_local_vscode_task_loop() -> None:
     assert "Local VS Code tasks:" in readme
     assert "genesis-v2: api shell" in readme
     assert ".vscode/tasks.json" in scope_text
+
+
+def test_seed_contains_local_vscode_settings() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+
+    for relative_path in _SETTINGS_FILES:
+        assert (repo_root / relative_path).exists(), relative_path
+
+    readme = (repo_root / "README.md").read_text(encoding="utf-8")
+    scope_text = (repo_root / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+
+    assert ".vscode/settings.json" in readme
+    assert "Python analysis/test settings" in readme
+    assert ".vscode/settings.json" in scope_text
 
 
 def test_seed_contains_local_vscode_launch_loop() -> None:
@@ -806,6 +828,17 @@ def _v2_vscode_launch_payload() -> dict[str, Any]:
     }
 
 
+def _v2_vscode_settings_payload() -> dict[str, Any]:
+    return {
+        "python.analysis.extraPaths": ["${workspaceFolder}/src"],
+        "python.envFile": "${workspaceFolder}/.env",
+        "python.testing.cwd": "${workspaceFolder}",
+        "python.testing.pytestArgs": ["-q"],
+        "python.testing.pytestEnabled": True,
+        "python.testing.unittestEnabled": False,
+    }
+
+
 def _v2_vscode_tasks_payload() -> dict[str, Any]:
     return {
         "version": "2.0.0",
@@ -867,7 +900,7 @@ Use this track for:
 
 - repo structure and generated workflow files
 - local MCP stdio shell and safe editor hookup
-- local VS Code tasks and debug profiles
+- local VS Code tasks, debug profiles, and settings
 - local-only API shell
 - fixture-backed smoke tests
 - README/docs that explain the current admitted boundary
@@ -912,7 +945,7 @@ Read `AGENTS.md` and `docs/SKELETON_SCOPE.md` before widening scope.
 - Prefer generator-driven changes in `Genesis-Core` over manual drift in this repo.
 - Keep the local-only API shell runnable and tested.
 - Keep the local MCP stdio shell local-first and safe by default.
-- Prefer the generated local VS Code tasks and debug profiles for repeatable API/smoke/test loops when working interactively.
+- Prefer the generated local VS Code tasks, debug profiles, and settings for repeatable API/smoke/test loops when working interactively.
 - Prefer fixture-backed smoke tests before moving wider runtime content.
 
 ## Out of scope by default
@@ -947,7 +980,7 @@ Included in the current priority lane:
 
 - README and local workflow docs
 - `AGENTS.md` and `.github/copilot-instructions.md`
-- `.vscode/mcp.json`, `.vscode/tasks.json`, and `.vscode/launch.json` for local editor workflow
+- `.vscode/mcp.json`, `.vscode/tasks.json`, `.vscode/launch.json`, and `.vscode/settings.json` for local editor workflow
 - `config/mcp_settings.json` and `mcp_server/**` for local MCP use
 - local-only API shell (`config`, `status`, `models`, `strategy`)
 - fixture-backed smoke tests and console scripts
@@ -971,6 +1004,7 @@ Deferred to separate verified slices:
 - In `Genesis-Core-V2`: `python -m pytest -q`
 - Local task loop: `genesis-v2: api shell`, `genesis-v2: smoke suite`, `genesis-v2: pytest`
 - Local debug loop: `genesis-v2: api shell`, `genesis-v2: smoke suite`, `genesis-v2: pytest`
+- Local editor settings: `python.analysis.extraPaths`, `python.testing.*`, `python.envFile`
 - Optional local MCP install: `python -m pip install -e ".[mcp]"`
 """
 
@@ -1108,6 +1142,26 @@ def test_local_vscode_launch_profiles_encode_repeatable_debug_loop() -> None:
     ]
     assert configs["genesis-v2: pytest"]["args"] == ["-q"]
     assert configs["genesis-v2: pytest"]["purpose"] == ["debug-test"]
+"""
+
+
+def _runtime_local_vscode_settings_test_content() -> str:
+    return """from __future__ import annotations
+
+import json
+from pathlib import Path
+
+
+def test_local_vscode_settings_align_python_analysis_and_test_discovery() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+    payload = json.loads((repo_root / ".vscode" / "settings.json").read_text(encoding="utf-8"))
+
+    assert payload["python.analysis.extraPaths"] == ["${workspaceFolder}/src"]
+    assert payload["python.envFile"] == "${workspaceFolder}/.env"
+    assert payload["python.testing.cwd"] == "${workspaceFolder}"
+    assert payload["python.testing.pytestArgs"] == ["-q"]
+    assert payload["python.testing.pytestEnabled"] is True
+    assert payload["python.testing.unittestEnabled"] is False
 """
 
 
@@ -2274,6 +2328,7 @@ Runtime-first seed with admitted local-only API shell generated from the current
     `config/backtest_defaults.yaml`)
 - local MCP stdio shell (`mcp_server/*.py`, `.vscode/mcp.json`, `config/mcp_settings.json`)
 - local VS Code task/debug loop (`.vscode/tasks.json`, `.vscode/launch.json`)
+- local VS Code Python analysis/test settings (`.vscode/settings.json`)
 - runtime-only governance guardrails
 - admitted source model payloads under `config/models/**`
 - deterministic fixture model-registry/prob-model smoke
@@ -2332,6 +2387,7 @@ allowlist variants remain deferred.
 - `docs/SKELETON_SCOPE.md` records Track A vs Track B and the verification loop.
 - `.vscode/mcp.json` wires VS Code to the local stdio MCP server using `config/mcp_settings.json`.
 - `.vscode/tasks.json` and `.vscode/launch.json` inject `PYTHONPATH=${{workspaceFolder}}/src` for local non-installed loops.
+- `.vscode/settings.json` aligns Python analysis/test discovery with the `src/` layout and local `.env` placeholder.
 
 After editable install, local module commands:
 
@@ -2347,6 +2403,9 @@ Local VS Code tasks:
 
 Local VS Code debug profiles:
 `genesis-v2: api shell`, `genesis-v2: smoke suite`, `genesis-v2: pytest`
+
+Python analysis/test settings:
+`.vscode/settings.json`
 
 Console scripts after editable install:
 `genesis-v2-fixture-smoke`, `genesis-v2-backtest-smoke`, `genesis-v2-smoke-suite`
@@ -2492,6 +2551,13 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
             sort_keys=True,
         )
         + "\n",
+        ".vscode/settings.json": json.dumps(
+            _v2_vscode_settings_payload(),
+            indent=2,
+            ensure_ascii=False,
+            sort_keys=True,
+        )
+        + "\n",
         ".vscode/tasks.json": json.dumps(
             _v2_vscode_tasks_payload(),
             indent=2,
@@ -2561,6 +2627,7 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
         "tests/runtime/test_backtest_engine_fixture_smoke.py": _runtime_backtest_engine_smoke_test_content(),
         "tests/runtime/test_local_mcp_setup.py": _runtime_local_mcp_setup_test_content(),
         "tests/runtime/test_local_vscode_launch.py": _runtime_local_vscode_launch_test_content(),
+        "tests/runtime/test_local_vscode_settings.py": _runtime_local_vscode_settings_test_content(),
         "tests/runtime/test_local_vscode_tasks.py": _runtime_local_vscode_tasks_test_content(),
         "tests/runtime/test_model_smoke.py": _runtime_model_smoke_test_content(),
         "tests/runtime/test_evaluate_pipeline_smoke.py": _runtime_pipeline_smoke_test_content(),
@@ -2616,6 +2683,7 @@ def _manifest_payload(
         "local_tooling_surfaces": [
             ".vscode/launch.json",
             ".vscode/mcp.json",
+            ".vscode/settings.json",
             ".vscode/tasks.json",
             "config/mcp_settings.json",
             "mcp_server/server.py",
@@ -2629,6 +2697,14 @@ def _manifest_payload(
             "genesis-v2: api shell",
             "genesis-v2: smoke suite",
             "genesis-v2: pytest",
+        ],
+        "workspace_settings_keys": [
+            "python.analysis.extraPaths",
+            "python.envFile",
+            "python.testing.cwd",
+            "python.testing.pytestArgs",
+            "python.testing.pytestEnabled",
+            "python.testing.unittestEnabled",
         ],
         "workspace_loop_env": {"PYTHONPATH": "${workspaceFolder}/src"},
         "copied_files": sorted(copied_paths),
@@ -2656,6 +2732,7 @@ def _manifest_payload(
             "Workflow files make the V2 seed self-describing as a skeleton-first repository.",
             "Local stdio MCP tooling is admitted with a safe V2-specific config; remote MCP surfaces remain excluded.",
             "Generated `.vscode/tasks.json` and `.vscode/launch.json` provide repeatable local API/smoke/test loops via `PYTHONPATH=${workspaceFolder}/src`.",
+            "Generated `.vscode/settings.json` aligns Python analysis and pytest discovery with the V2 `src` layout.",
             "Exchange-facing, paper, public-data, and UI service edges are intentionally excluded.",
             "Pipeline, Optuna, and optimizer-only closure are intentionally excluded.",
             "Legacy `core.strategy.features` surface intentionally excluded.",

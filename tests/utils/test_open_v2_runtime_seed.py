@@ -76,6 +76,11 @@ EXPECTED_LOCAL_MCP_FILES = [
     "tests/runtime/test_local_mcp_setup.py",
 ]
 
+EXPECTED_LOCAL_TASK_FILES = [
+    ".vscode/tasks.json",
+    "tests/runtime/test_local_vscode_tasks.py",
+]
+
 EXPECTED_REMOTE_MCP_DEFERRED_FILES = [
     "config/mcp_settings.remote_git.json",
     "config/mcp_settings.remote_safe.json",
@@ -84,6 +89,12 @@ EXPECTED_REMOTE_MCP_DEFERRED_FILES = [
 
 EXPECTED_MCP_OPTIONAL_DEPS = [
     "mcp>=0.9,<1",
+]
+
+EXPECTED_WORKSPACE_TASK_LABELS = [
+    "genesis-v2: api shell",
+    "genesis-v2: smoke suite",
+    "genesis-v2: pytest",
 ]
 
 EXPECTED_DEFERRED_SERVICE_EDGE_FILES = [
@@ -267,15 +278,57 @@ def test_generate_seed_admits_local_mcp_shell(tmp_path: Path) -> None:
     assert "config/runtime.json" in settings_payload["security"]["blocked_patterns"]
     assert "local MCP stdio shell" in readme
     assert "Optional local MCP install:" in readme
-    assert manifest["local_tooling_surfaces"] == [
+    assert {
         ".vscode/mcp.json",
         "config/mcp_settings.json",
         "mcp_server/server.py",
-    ]
+    }.issubset(set(manifest["local_tooling_surfaces"]))
     assert (
         "Local stdio MCP tooling is admitted with a safe V2-specific config; remote MCP surfaces remain excluded."
         in manifest["notes"]
     )
+
+
+def test_generate_seed_emits_local_vscode_task_loop(tmp_path: Path) -> None:
+    seed_module = _load_open_v2_runtime_seed_module()
+    destination = tmp_path / "Genesis-Core-V2"
+
+    seed_module.generate_seed(destination, clean=True, dry_run=False)
+
+    for relative_path in EXPECTED_LOCAL_TASK_FILES:
+        assert (destination / relative_path).exists(), relative_path
+
+    readme = (destination / "README.md").read_text(encoding="utf-8")
+    scope_text = (destination / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+    instructions_text = (destination / ".github" / "copilot-instructions.md").read_text(
+        encoding="utf-8"
+    )
+    manifest = json.loads((destination / "seed_manifest.json").read_text(encoding="utf-8"))
+    tasks_payload = json.loads((destination / ".vscode" / "tasks.json").read_text(encoding="utf-8"))
+    tasks = {task["label"]: task for task in tasks_payload["tasks"]}
+
+    assert tasks_payload["version"] == "2.0.0"
+    assert manifest["workspace_task_labels"] == EXPECTED_WORKSPACE_TASK_LABELS
+    assert ".vscode/tasks.json" in manifest["local_tooling_surfaces"]
+    assert (
+        "Generated `.vscode/tasks.json` provides a repeatable local API/smoke/test loop."
+        in manifest["notes"]
+    )
+    assert tasks["genesis-v2: api shell"]["args"] == [
+        "-m",
+        "uvicorn",
+        "core.server:app",
+        "--app-dir",
+        "src",
+        "--reload",
+    ]
+    assert tasks["genesis-v2: api shell"]["isBackground"] is True
+    assert tasks["genesis-v2: smoke suite"]["args"] == ["-m", "core.bootstrap.smoke_suite"]
+    assert tasks["genesis-v2: pytest"]["args"] == ["-m", "pytest", "-q"]
+    assert tasks["genesis-v2: pytest"]["group"] == {"kind": "test", "isDefault": True}
+    assert "Local VS Code tasks:" in readme
+    assert ".vscode/tasks.json" in scope_text
+    assert "generated local VS Code tasks" in instructions_text
 
 
 def test_generate_seed_emits_api_runtime_dependencies_and_placeholder_env(tmp_path: Path) -> None:

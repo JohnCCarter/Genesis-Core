@@ -72,6 +72,17 @@ EXCLUDED_PATH_PREFIXES = (
     "docs/analysis/edge_topology/",
 )
 
+VERIFY_BEFORE_INCLUDE_PATHS = (
+    "config/runtime.json",
+    "config/runtime.seed.json",
+    "config/strategy/champions/**",
+)
+
+EXPLICIT_STATEFUL_ADMISSIONS = (
+    "config/backtest_defaults.yaml",
+    "config/models/**",
+)
+
 GENERATED_FILES = {
     "README.md",
     "pyproject.toml",
@@ -404,10 +415,16 @@ _EXCLUDED_FILES = [
     "src/core/server.py",
     "src/core/strategy/features.py",
     "src/core/config/validator.py",
+    "config/runtime.json",
+    "config/runtime.seed.json",
 ]
 
 _EXCLUDED_PREFIXES = [
     "src/core/api",
+]
+
+_EXCLUDED_JSON_PAYLOAD_DIRS = [
+    "config/strategy/champions",
 ]
 
 _EXCLUDED_MODULE_PREFIXES = [
@@ -433,6 +450,17 @@ def test_phase_one_seed_excludes_service_and_legacy_surfaces() -> None:
 
     for prefix in _EXCLUDED_PREFIXES:
         assert not (repo_root / prefix).exists(), prefix
+
+
+def test_phase_one_seed_has_no_excluded_json_payloads() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+
+    for relative_dir in _EXCLUDED_JSON_PAYLOAD_DIRS:
+        candidate_dir = repo_root / relative_dir
+        if not candidate_dir.exists():
+            continue
+        leaked = sorted(path.relative_to(repo_root).as_posix() for path in candidate_dir.rglob("*.json"))
+        assert not leaked, relative_dir + "\\n" + "\\n".join(leaked)
 
 
 def test_runtime_source_has_no_service_or_legacy_imports() -> None:
@@ -1609,6 +1637,9 @@ Runtime-only Phase-1 seed generated from the current `Genesis-Core` repository.
 - `src/core/api/**`
 - `src/core/strategy/features.py`
 - `src/core/config/validator.py`
+- `config/runtime.json`
+- `config/runtime.seed.json`
+- `config/strategy/champions/**`
 - branch-local research corpora and historical explanation surfaces
 
 ## Notes
@@ -1824,6 +1855,8 @@ def _manifest_payload(
         "excluded_modules": list(EXCLUDED_MODULE_PREFIXES),
         "excluded_relative_paths": sorted(EXCLUDED_RELATIVE_PATHS),
         "excluded_path_prefixes": list(EXCLUDED_PATH_PREFIXES),
+        "explicit_stateful_admissions": list(EXPLICIT_STATEFUL_ADMISSIONS),
+        "verify_before_include_paths": list(VERIFY_BEFORE_INCLUDE_PATHS),
         "copied_files": sorted(copied_paths),
         "generated_files": sorted(generated_paths),
         "smoke_entrypoints": {

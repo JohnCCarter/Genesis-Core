@@ -20,6 +20,17 @@ EXPECTED_BACKTEST_DEFAULTS = {
     "precompute_features": True,
 }
 
+EXPECTED_EXPLICIT_STATEFUL_ADMISSIONS = [
+    "config/backtest_defaults.yaml",
+    "config/models/**",
+]
+
+EXPECTED_VERIFY_BEFORE_INCLUDE_PATHS = [
+    "config/runtime.json",
+    "config/runtime.seed.json",
+    "config/strategy/champions/**",
+]
+
 
 def _source_model_file_names(repo_root: Path) -> list[str]:
     return sorted(path.name for path in (repo_root / "config" / "models").glob("*.json"))
@@ -153,3 +164,21 @@ def test_generated_console_script_shim_prefers_local_v2_src(tmp_path: Path) -> N
 
     assert '"action": "NONE"' in completed.stdout
     assert '"prob_model": "seed_model_fixture_v1"' in completed.stdout
+
+
+def test_generate_seed_keeps_runtime_state_and_champion_authority_out_of_phase_one(
+    tmp_path: Path,
+) -> None:
+    seed_module = _load_open_v2_runtime_seed_module()
+    destination = tmp_path / "Genesis-Core-V2"
+
+    seed_module.generate_seed(destination, clean=True, dry_run=False)
+
+    assert not (destination / "config" / "runtime.json").exists()
+    assert not (destination / "config" / "runtime.seed.json").exists()
+    assert not (destination / "config" / "strategy" / "champions").exists()
+
+    manifest = json.loads((destination / "seed_manifest.json").read_text(encoding="utf-8"))
+
+    assert manifest["explicit_stateful_admissions"] == EXPECTED_EXPLICIT_STATEFUL_ADMISSIONS
+    assert manifest["verify_before_include_paths"] == EXPECTED_VERIFY_BEFORE_INCLUDE_PATHS

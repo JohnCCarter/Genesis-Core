@@ -56,6 +56,14 @@ EXPECTED_ADMITTED_API_SLICE_FILES = [
     "tests/integration/test_config_endpoints.py",
 ]
 
+EXPECTED_WORKFLOW_FILES = [
+    ".github/copilot-instructions.md",
+    "AGENTS.md",
+    "docs/SKELETON_SCOPE.md",
+]
+
+EXPECTED_SKELETON_PRIORITY = "prioritize_v2_skeleton_completeness_before_content_migration"
+
 EXPECTED_DEFERRED_SERVICE_EDGE_FILES = [
     "src/core/api/account.py",
     "src/core/api/info.py",
@@ -160,6 +168,44 @@ def test_generate_seed_admits_api_service_shell_and_validator_schema(tmp_path: P
     readme = (destination / "README.md").read_text(encoding="utf-8")
     assert "admitted local-only API shell (`src/core/server.py`," in readme
     assert "generated `.env` contains only\nlocal-shell placeholders" in readme
+    assert "## Skeleton workflow" in readme
+    assert "`docs/SKELETON_SCOPE.md` records Track A vs Track B" in readme
+
+
+def test_generate_seed_emits_skeleton_workflow_files(tmp_path: Path) -> None:
+    seed_module = _load_open_v2_runtime_seed_module()
+    destination = tmp_path / "Genesis-Core-V2"
+
+    seed_module.generate_seed(destination, clean=True, dry_run=False)
+
+    for relative_path in EXPECTED_WORKFLOW_FILES:
+        assert (destination / relative_path).exists(), relative_path
+
+    agents_text = (destination / "AGENTS.md").read_text(encoding="utf-8")
+    instructions_text = (destination / ".github" / "copilot-instructions.md").read_text(
+        encoding="utf-8"
+    )
+    scope_text = (destination / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+    manifest = json.loads((destination / "seed_manifest.json").read_text(encoding="utf-8"))
+
+    assert "Prioritize V2 skeleton completeness before content migration." in agents_text
+    assert (
+        "Prefer generator-driven changes in `Genesis-Core` over manual drift in this repo."
+        in instructions_text
+    )
+    assert "Track A — skeleton completeness" in scope_text
+    assert "Track B — authority migration" in scope_text
+    assert manifest["source_of_truth_repo"] == "Genesis-Core"
+    assert manifest["skeleton_priority"] == EXPECTED_SKELETON_PRIORITY
+    assert manifest["workflow_files"] == [
+        "AGENTS.md",
+        ".github/copilot-instructions.md",
+        "docs/SKELETON_SCOPE.md",
+    ]
+    assert (
+        "Workflow files make the V2 seed self-describing as a skeleton-first repository."
+        in manifest["notes"]
+    )
 
 
 def test_generate_seed_emits_api_runtime_dependencies_and_placeholder_env(tmp_path: Path) -> None:

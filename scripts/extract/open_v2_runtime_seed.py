@@ -110,11 +110,14 @@ CHAMPIONLESS_FALLBACK_CONTRACT = {
 }
 
 GENERATED_FILES = {
+    ".github/copilot-instructions.md",
     "README.md",
+    "AGENTS.md",
     "pyproject.toml",
     ".gitignore",
     ".env",
     "config/backtest_defaults.yaml",
+    "docs/SKELETON_SCOPE.md",
     "registry/fixtures/champions/tBTCUSD_1h.json",
     "registry/fixtures/model_registry/config/models/registry.json",
     "registry/fixtures/model_registry/config/models/tBTCUSD_1h.json",
@@ -459,6 +462,13 @@ _ADMITTED_FILES = [
 ]
 
 
+_WORKFLOW_FILES = [
+    ".github/copilot-instructions.md",
+    "AGENTS.md",
+    "docs/SKELETON_SCOPE.md",
+]
+
+
 _EXCLUDED_FILES = [
     "src/core/api/account.py",
     "src/core/api/info.py",
@@ -514,6 +524,24 @@ def test_seed_contains_admitted_local_api_shell_slice() -> None:
 
     for relative_path in _ADMITTED_FILES:
         assert (repo_root / relative_path).exists(), relative_path
+
+
+def test_seed_contains_skeleton_workflow_guidance() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+
+    for relative_path in _WORKFLOW_FILES:
+        assert (repo_root / relative_path).exists(), relative_path
+
+    agents_text = (repo_root / "AGENTS.md").read_text(encoding="utf-8")
+    instructions_text = (repo_root / ".github" / "copilot-instructions.md").read_text(
+        encoding="utf-8"
+    )
+    scope_text = (repo_root / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+
+    assert "Prioritize V2 skeleton completeness before content migration." in agents_text
+    assert "Prefer generator-driven changes in `Genesis-Core` over manual drift in this repo." in instructions_text
+    assert "Track A — skeleton completeness" in scope_text
+    assert "Track B — authority migration" in scope_text
 
 
 def test_seed_excludes_legacy_and_stateful_surfaces() -> None:
@@ -591,6 +619,119 @@ def _env_placeholder_content() -> str:
 BEARER_TOKEN=change-me
 SYMBOL_MODE=realistic
 LOG_LEVEL=INFO
+"""
+
+
+def _v2_agents_content() -> str:
+    return """# AGENTS.md — Genesis-Core-V2 Skeleton Contract
+
+## Purpose
+
+`Genesis-Core-V2` is a generated, local-only skeleton repository.
+`Genesis-Core` remains the source of truth until a slice is explicitly admitted and verified.
+
+## Working rule
+
+Prioritize V2 skeleton completeness before content migration.
+
+## Track A — skeleton completeness
+
+Use this track for:
+
+- repo structure and generated workflow files
+- local-only API shell
+- fixture-backed smoke tests
+- README/docs that explain the current admitted boundary
+- local developer and agent workflow guidance
+
+## Track B — authority migration
+
+Defer these to separate verified slices:
+
+- strategy authority expansion
+- config semantics and runtime authority
+- backtest authority, comparison, readiness, and promotion surfaces
+- exchange, paper, UI, and other private/live-adjacent edges
+- freeze-sensitive surfaces
+
+## Change workflow
+
+1. Change the generator in `Genesis-Core`.
+2. Regenerate `Genesis-Core-V2`.
+3. Run the focused generator regressions in `Genesis-Core`.
+4. Run `pytest -q` in `Genesis-Core-V2`.
+5. Commit only green, scoped slices.
+
+## Default
+
+If a surface is not explicitly admitted into the seed, treat it as deferred.
+"""
+
+
+def _v2_copilot_instructions_content() -> str:
+    return """# Copilot Instructions — Genesis-Core-V2
+
+This repository is a skeleton-first, local-only V2 seed.
+Read `AGENTS.md` and `docs/SKELETON_SCOPE.md` before widening scope.
+
+## Default behavior
+
+- Prefer the smallest admissible slice.
+- Prioritize V2 skeleton completeness before content migration.
+- Keep `Genesis-Core` as the source of truth for authority-bearing behavior until a slice is admitted.
+- Prefer generator-driven changes in `Genesis-Core` over manual drift in this repo.
+- Keep the local-only API shell runnable and tested.
+- Prefer fixture-backed smoke tests before moving wider runtime content.
+
+## Out of scope by default
+
+- exchange, paper, UI, and private runtime edges
+- runtime state and champion authority payloads
+- freeze-sensitive and governance-sensitive authority surfaces
+- unverified content migration for its own sake
+"""
+
+
+def _v2_skeleton_scope_content() -> str:
+    return """# Genesis-Core-V2 Skeleton Scope
+
+## Current target
+
+`Genesis-Core-V2` is intentionally a thin, runnable shell:
+
+- minimal repo structure
+- local-only API
+- generated workflow guidance for agent-driven work
+- fixture-backed smoke tests
+- no exchange, no UI, and no private runtime edges
+
+`Genesis-Core` remains the source of truth until each slice is proven.
+
+## Track A — skeleton completeness
+
+Included in the current priority lane:
+
+- README and local workflow docs
+- `AGENTS.md` and `.github/copilot-instructions.md`
+- local-only API shell (`config`, `status`, `models`, `strategy`)
+- fixture-backed smoke tests and console scripts
+- explicitly admitted non-sensitive config/model artifacts already carried into the seed
+
+## Track B — authority migration
+
+Deferred to separate verified slices:
+
+- strategy authority expansion
+- config semantics and runtime authority
+- backtest authority plus comparison/readiness surfaces
+- exchange, paper, UI, and other private/live-adjacent edges
+- freeze-sensitive surfaces
+
+## Verification loop
+
+- In `Genesis-Core`: `python -m pytest tests/utils/test_open_v2_runtime_seed.py -q`
+- Regenerate the seed: `python scripts/extract/open_v2_runtime_seed.py --clean`
+- In `Genesis-Core-V2`: `python -m pytest -q`
 """
 
 
@@ -1801,6 +1942,12 @@ local-shell placeholders.
 Unneeded Optuna/optimizer closure is intentionally pruned from the seed until and unless a later
 explicit slice admits those higher-sensitivity surfaces.
 
+## Skeleton workflow
+
+- `AGENTS.md` defines the skeleton-first repo contract.
+- `.github/copilot-instructions.md` keeps local agent work aligned with generator-driven slices.
+- `docs/SKELETON_SCOPE.md` records Track A vs Track B and the verification loop.
+
 Local model smoke: `python -m core.bootstrap.model_smoke`
 Local champion smoke: `python -m core.bootstrap.champion_smoke`
 Local champion-backed evaluate smoke: `python -m core.bootstrap.evaluate_champion_smoke`
@@ -1929,11 +2076,14 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
     generated_paths: list[str] = []
 
     generated_map = {
+        ".github/copilot-instructions.md": _v2_copilot_instructions_content(),
         "README.md": _readme_content(source_head),
+        "AGENTS.md": _v2_agents_content(),
         "pyproject.toml": _pyproject_content(),
         ".gitignore": _gitignore_content(),
         ".env": _env_placeholder_content(),
         "config/backtest_defaults.yaml": _backtest_defaults_content(),
+        "docs/SKELETON_SCOPE.md": _v2_skeleton_scope_content(),
         "registry/fixtures/champions/tBTCUSD_1h.json": json.dumps(
             _runtime_champion_fixture_payload(),
             indent=2,
@@ -2024,6 +2174,13 @@ def _manifest_payload(
         "championless_fallback_contract": dict(CHAMPIONLESS_FALLBACK_CONTRACT),
         "explicit_stateful_admissions": list(EXPLICIT_STATEFUL_ADMISSIONS),
         "verify_before_include_paths": list(VERIFY_BEFORE_INCLUDE_PATHS),
+        "source_of_truth_repo": "Genesis-Core",
+        "skeleton_priority": "prioritize_v2_skeleton_completeness_before_content_migration",
+        "workflow_files": [
+            "AGENTS.md",
+            ".github/copilot-instructions.md",
+            "docs/SKELETON_SCOPE.md",
+        ],
         "copied_files": sorted(copied_paths),
         "generated_files": sorted(generated_paths),
         "smoke_entrypoints": {
@@ -2046,6 +2203,7 @@ def _manifest_payload(
         "output_hashes": output_hashes,
         "notes": [
             "Runtime-first seed with local-only API shell generated locally.",
+            "Workflow files make the V2 seed self-describing as a skeleton-first repository.",
             "Exchange-facing, paper, public-data, and UI service edges are intentionally excluded.",
             "Pipeline, Optuna, and optimizer-only closure are intentionally excluded.",
             "Legacy `core.strategy.features` surface intentionally excluded.",

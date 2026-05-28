@@ -265,6 +265,18 @@ EXPECTED_BOOTSTRAP_VERIFICATION = {
     },
 }
 
+EXPECTED_MCP_VERIFICATION = {
+    "workspace_registration": {
+        "config_file": "config/mcp_settings.json",
+        "runtime_test_file": "tests/runtime/test_local_mcp_setup.py",
+        "workspace_file": ".vscode/mcp.json",
+    },
+    "local_launcher": {
+        "runtime_test_file": "tests/runtime/test_local_mcp_script.py",
+        "tracked_file": "scripts/mcp/mcp_stdio.py",
+    },
+}
+
 EXPECTED_PRECOMMIT_HOOK_IDS = [
     "black",
     "ruff",
@@ -525,6 +537,26 @@ def test_generate_seed_emits_bootstrap_verification_manifest(tmp_path: Path) -> 
 
     for payload in EXPECTED_BOOTSTRAP_VERIFICATION.values():
         assert (destination / payload["tracked_file"]).exists(), payload["tracked_file"]
+        assert (destination / payload["runtime_test_file"]).exists(), payload["runtime_test_file"]
+
+
+def test_generate_seed_emits_mcp_verification_manifest(tmp_path: Path) -> None:
+    seed_module = _load_open_v2_runtime_seed_module()
+    destination = tmp_path / "Genesis-Core-V2"
+
+    seed_module.generate_seed(destination, clean=True, dry_run=False)
+
+    manifest = json.loads((destination / "seed_manifest.json").read_text(encoding="utf-8"))
+
+    assert manifest["mcp_verification"] == EXPECTED_MCP_VERIFICATION
+
+    for payload in EXPECTED_MCP_VERIFICATION.values():
+        if "workspace_file" in payload:
+            assert (destination / payload["workspace_file"]).exists(), payload["workspace_file"]
+        if "config_file" in payload:
+            assert (destination / payload["config_file"]).exists(), payload["config_file"]
+        if "tracked_file" in payload:
+            assert (destination / payload["tracked_file"]).exists(), payload["tracked_file"]
         assert (destination / payload["runtime_test_file"]).exists(), payload["runtime_test_file"]
 
 

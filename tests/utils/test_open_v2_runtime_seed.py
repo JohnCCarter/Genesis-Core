@@ -145,6 +145,28 @@ EXPECTED_WORKSPACE_EXTENSION_RECOMMENDATIONS = [
     "charliermarsh.ruff",
 ]
 
+EXPECTED_PYPROJECT_PYTEST_NORECURSEDIRS = [
+    "cache",
+    "data",
+    "logs",
+    "results",
+    ".venv",
+]
+
+EXPECTED_PYPROJECT_RUFF_EXTEND_EXCLUDE = [
+    ".venv/",
+    "cache/",
+    "data/",
+    "logs/",
+    "results/",
+]
+
+EXPECTED_PYPROJECT_RUFF_SELECT = ["E", "W", "F", "I", "B", "C4", "UP"]
+
+EXPECTED_PYPROJECT_RUFF_IGNORE = ["E501", "B008", "C901"]
+
+EXPECTED_PYPROJECT_BLACK_EXTEND_EXCLUDE = "(^cache/|^data/|^logs/|^results/)"
+
 EXPECTED_PRECOMMIT_HOOK_IDS = [
     "black",
     "ruff",
@@ -236,6 +258,40 @@ def test_generate_seed_emits_conflict_free_console_script_targets(tmp_path: Path
         "genesis_core_v2_cli*",
     ]
     assert (destination / "src" / "genesis_core_v2_cli" / "console_scripts.py").exists()
+
+
+def test_generate_seed_emits_narrow_pyproject_tooling_defaults(tmp_path: Path) -> None:
+    seed_module = _load_open_v2_runtime_seed_module()
+    destination = tmp_path / "Genesis-Core-V2"
+
+    seed_module.generate_seed(destination, clean=True, dry_run=False)
+
+    pyproject = tomllib.loads((destination / "pyproject.toml").read_text(encoding="utf-8"))
+    manifest = json.loads((destination / "seed_manifest.json").read_text(encoding="utf-8"))
+    readme = (destination / "README.md").read_text(encoding="utf-8")
+    scope_text = (destination / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+
+    assert (
+        pyproject["tool"]["pytest"]["ini_options"]["norecursedirs"]
+        == EXPECTED_PYPROJECT_PYTEST_NORECURSEDIRS
+    )
+    assert pyproject["tool"]["ruff"]["extend-exclude"] == EXPECTED_PYPROJECT_RUFF_EXTEND_EXCLUDE
+    assert pyproject["tool"]["ruff"]["lint"]["select"] == EXPECTED_PYPROJECT_RUFF_SELECT
+    assert pyproject["tool"]["ruff"]["lint"]["ignore"] == EXPECTED_PYPROJECT_RUFF_IGNORE
+    assert pyproject["tool"]["black"]["extend-exclude"] == EXPECTED_PYPROJECT_BLACK_EXTEND_EXCLUDE
+    assert manifest["pyproject_tooling_sections"] == [
+        "tool.pytest.ini_options.norecursedirs",
+        "tool.ruff.extend-exclude",
+        "tool.ruff.lint",
+        "tool.black.extend-exclude",
+    ]
+    assert (
+        "Generated `pyproject.toml` carries narrow local pytest/ruff/black QA defaults for the V2 workspace."
+        in manifest["notes"]
+    )
+    assert "pyproject.toml" in readme
+    assert "narrow local QA defaults" in readme
+    assert "pyproject.toml" in scope_text
 
 
 def test_generate_seed_emits_narrow_backtest_defaults(tmp_path: Path) -> None:

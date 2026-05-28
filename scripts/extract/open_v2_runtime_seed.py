@@ -780,6 +780,29 @@ def test_pyproject_declares_runtime_smoke_console_scripts() -> None:
         "genesis-v2-backtest-smoke": "genesis_core_v2_cli.console_scripts:backtest_smoke_main",
         "genesis-v2-smoke-suite": "genesis_core_v2_cli.console_scripts:smoke_suite_main",
     }
+
+
+def test_pyproject_declares_narrow_local_tooling_defaults() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+    payload = tomllib.loads((repo_root / "pyproject.toml").read_text(encoding="utf-8"))
+
+    assert payload["tool"]["pytest"]["ini_options"]["norecursedirs"] == [
+        "cache",
+        "data",
+        "logs",
+        "results",
+        ".venv",
+    ]
+    assert payload["tool"]["ruff"]["extend-exclude"] == [
+        ".venv/",
+        "cache/",
+        "data/",
+        "logs/",
+        "results/",
+    ]
+    assert payload["tool"]["ruff"]["lint"]["select"] == ["E", "W", "F", "I", "B", "C4", "UP"]
+    assert payload["tool"]["ruff"]["lint"]["ignore"] == ["E501", "B008", "C901"]
+    assert payload["tool"]["black"]["extend-exclude"] == "(^cache/|^data/|^logs/|^results/)"
 """
 
 
@@ -1099,6 +1122,7 @@ Included in the current priority lane:
 - `AGENTS.md`, `.github/copilot-instructions.md`, and `.pre-commit-config.yaml`
 - `.vscode/mcp.json`, `.vscode/tasks.json`, `.vscode/launch.json`, `.vscode/settings.json`, and `.vscode/extensions.json` for local editor workflow
 - tracked local env bootstrap template (`.env.example`) plus ignored local placeholder `.env`
+- narrow local pytest/ruff/black defaults in `pyproject.toml`
 - `config/mcp_settings.json` and `mcp_server/**` for local MCP use
 - local-only API shell (`config`, `status`, `models`, `strategy`)
 - fixture-backed smoke tests and console scripts
@@ -1125,6 +1149,7 @@ Deferred to separate verified slices:
 - Local editor settings: `python.analysis.extraPaths`, `python.testing.*`, `python.envFile`
 - Local editor recommendations: `ms-python.python`, `ms-python.vscode-pylance`, `charliermarsh.ruff`
 - Local pre-commit workflow: `pre-commit install`, then `pre-commit run --all-files`
+- Local QA defaults: `pytest` recursion guards plus narrow `ruff`/`black` excludes in `pyproject.toml`
 - Optional local MCP install: `python -m pip install -e ".[mcp]"`
 """
 
@@ -2524,6 +2549,7 @@ Runtime-first seed with admitted local-only API shell generated from the current
 - local VS Code extension recommendations (`.vscode/extensions.json`)
 - tracked env bootstrap template (`.env.example`)
 - local pre-commit hook config (`.pre-commit-config.yaml`)
+- narrow local QA defaults in `pyproject.toml`
 - runtime-only governance guardrails
 - admitted source model payloads under `config/models/**`
 - deterministic fixture model-registry/prob-model smoke
@@ -2586,6 +2612,7 @@ allowlist variants remain deferred.
 - `.vscode/extensions.json` recommends the Python/Pylance/Ruff stack for local skeleton work.
 - `.env.example` keeps the narrow local placeholder values tracked even though `.env` stays ignored.
 - `.pre-commit-config.yaml` keeps a narrow local formatting/lint/sanity hook loop tracked in the seed.
+- `pyproject.toml` carries narrow local pytest/ruff/black defaults for the generated V2 workspace.
 
 After editable install, local module commands:
 
@@ -2666,14 +2693,27 @@ include = ["core*", "genesis_core_v2_cli*"]
 addopts = "-q"
 pythonpath = ["src"]
 testpaths = ["tests"]
+norecursedirs = ["cache", "data", "logs", "results", ".venv"]
 
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+extend-exclude = [
+    ".venv/",
+    "cache/",
+    "data/",
+    "logs/",
+    "results/"
+]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "C4", "UP"]
+ignore = ["E501", "B008", "C901"]
 
 [tool.black]
 line-length = 100
 target-version = ['py311']
+extend-exclude = '(^cache/|^data/|^logs/|^results/)'
 """
 
 
@@ -2940,6 +2980,12 @@ def _manifest_payload(
             "python.testing.pytestEnabled",
             "python.testing.unittestEnabled",
         ],
+        "pyproject_tooling_sections": [
+            "tool.pytest.ini_options.norecursedirs",
+            "tool.ruff.extend-exclude",
+            "tool.ruff.lint",
+            "tool.black.extend-exclude",
+        ],
         "workspace_loop_env": {"PYTHONPATH": "${workspaceFolder}/src"},
         "copied_files": sorted(copied_paths),
         "generated_files": sorted(generated_paths),
@@ -2970,6 +3016,7 @@ def _manifest_payload(
             "Generated `.vscode/extensions.json` recommends Python/Pylance/Ruff extensions for the V2 editor workflow.",
             "Generated `.env.example` mirrors the narrow local placeholder `.env` for tracked bootstrap guidance.",
             "Generated `.pre-commit-config.yaml` keeps a narrow local formatting/lint/sanity hook loop tracked in the seed.",
+            "Generated `pyproject.toml` carries narrow local pytest/ruff/black QA defaults for the V2 workspace.",
             "Exchange-facing, paper, public-data, and UI service edges are intentionally excluded.",
             "Pipeline, Optuna, and optimizer-only closure are intentionally excluded.",
             "Legacy `core.strategy.features` surface intentionally excluded.",

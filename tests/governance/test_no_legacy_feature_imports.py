@@ -43,7 +43,7 @@ def test_no_imports_of_core_strategy_features_module() -> None:
 
     # Explicit allow-list: this test imports the legacy module intentionally to enforce delegation.
     allow_list = {
-        "tests/governance/test_dead_code_tripwires.py",
+        "tests/governance/test_legacy_features_shim_tripwires.py",
     }
 
     offenders: list[str] = []

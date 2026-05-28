@@ -285,6 +285,11 @@ EXPECTED_PIPELINE_VERIFICATION = {
     },
 }
 
+EXPECTED_RUNTIME_GUARDRAIL_FILES = [
+    "tests/governance/test_no_legacy_feature_imports.py",
+    "tests/governance/test_dead_code_tripwires.py",
+]
+
 EXPECTED_PRECOMMIT_HOOK_IDS = [
     "black",
     "ruff",
@@ -584,6 +589,20 @@ def test_generate_seed_emits_pipeline_verification_manifest(tmp_path: Path) -> N
     assert (destination / payload["runtime_test_file"]).exists(), payload["runtime_test_file"]
     assert "runtime pipeline orchestration (`src/core/pipeline.py`)" in readme
     assert "src/core/pipeline.py" in scope_text
+
+
+def test_generate_seed_admits_runtime_governance_guardrails(tmp_path: Path) -> None:
+    seed_module = _load_open_v2_runtime_seed_module()
+    destination = tmp_path / "Genesis-Core-V2"
+
+    seed_module.generate_seed(destination, clean=True, dry_run=False)
+
+    readme = (destination / "README.md").read_text(encoding="utf-8")
+
+    for relative_path in EXPECTED_RUNTIME_GUARDRAIL_FILES:
+        assert (destination / relative_path).exists(), relative_path
+
+    assert "runtime-only governance guardrails" in readme
 
 
 def test_generate_seed_admits_local_mcp_shell(tmp_path: Path) -> None:

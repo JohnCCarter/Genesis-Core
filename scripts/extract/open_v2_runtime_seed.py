@@ -56,6 +56,7 @@ PHASE_ONE_ROOTS = [
     "src/core/config/legacy_schema_v1.json",
     "tests/integration/test_config_endpoints.py",
     "tests/governance/test_no_legacy_feature_imports.py",
+    "tests/governance/test_dead_code_tripwires.py",
 ]
 
 EXCLUDED_MODULE_PREFIXES = (
@@ -153,6 +154,7 @@ GENERATED_FILES = {
     "src/core/utils/diffing/__init__.py",
     "src/genesis_core_v2_cli/__init__.py",
     "src/genesis_core_v2_cli/console_scripts.py",
+    "tests/governance/test_dead_code_tripwires.py",
     "tests/governance/test_pyproject_console_scripts.py",
     "tests/runtime/test_installed_console_scripts.py",
     "tests/runtime/test_backtest_bootstrap_smoke.py",
@@ -624,6 +626,12 @@ _PIPELINE_VERIFICATION_FILES = [
 ]
 
 
+_RUNTIME_GUARDRAIL_FILES = [
+    "tests/governance/test_no_legacy_feature_imports.py",
+    "tests/governance/test_dead_code_tripwires.py",
+]
+
+
 _MODULE_LOOP_FILES = [
     "src/core/server.py",
     "mcp_server/server.py",
@@ -1000,6 +1008,16 @@ def test_seed_contains_pipeline_verification_manifest() -> None:
     }
     assert "runtime pipeline orchestration (`src/core/pipeline.py`)" in readme
     assert "src/core/pipeline.py" in scope_text
+
+
+def test_seed_contains_runtime_governance_guardrails() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+
+    for relative_path in _RUNTIME_GUARDRAIL_FILES:
+        assert (repo_root / relative_path).exists(), relative_path
+
+    readme = (repo_root / "README.md").read_text(encoding="utf-8")
+    assert "runtime-only governance guardrails" in readme
 
 
 def test_seed_contains_editable_install_module_loop() -> None:

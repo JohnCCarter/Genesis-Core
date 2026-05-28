@@ -297,8 +297,13 @@ def test_generate_seed_emits_conflict_free_console_script_targets(tmp_path: Path
     seed_module.generate_seed(destination, clean=True, dry_run=False)
 
     payload = tomllib.loads((destination / "pyproject.toml").read_text(encoding="utf-8"))
+    console_scripts_path = destination / "src" / "genesis_core_v2_cli" / "console_scripts.py"
+    installed_test_path = destination / "tests" / "runtime" / "test_installed_console_scripts.py"
 
     assert payload["project"]["scripts"] == {
+        "genesis-v2-api-shell": "genesis_core_v2_cli.console_scripts:api_shell_main",
+        "genesis-v2-mcp-stdio": "genesis_core_v2_cli.console_scripts:mcp_stdio_main",
+        "genesis-v2-pytest": "genesis_core_v2_cli.console_scripts:pytest_suite_main",
         "genesis-v2-champion-smoke": "genesis_core_v2_cli.console_scripts:champion_smoke_main",
         "genesis-v2-evaluate-champion-smoke": "genesis_core_v2_cli.console_scripts:evaluate_champion_smoke_main",
         "genesis-v2-fixture-smoke": "genesis_core_v2_cli.console_scripts:fixture_smoke_main",
@@ -310,7 +315,10 @@ def test_generate_seed_emits_conflict_free_console_script_targets(tmp_path: Path
         "core*",
         "genesis_core_v2_cli*",
     ]
-    assert (destination / "src" / "genesis_core_v2_cli" / "console_scripts.py").exists()
+    assert console_scripts_path.exists()
+    assert installed_test_path.exists()
+    ast.parse(console_scripts_path.read_text(encoding="utf-8"), filename=str(console_scripts_path))
+    ast.parse(installed_test_path.read_text(encoding="utf-8"), filename=str(installed_test_path))
 
 
 def test_generate_seed_emits_narrow_pyproject_tooling_defaults(tmp_path: Path) -> None:
@@ -473,6 +481,8 @@ def test_generate_seed_emits_local_mcp_script(tmp_path: Path) -> None:
     ast.parse(generated_test_path.read_text(encoding="utf-8"), filename=str(generated_test_path))
     assert "scripts/mcp/mcp_stdio.py" in manifest["local_tooling_surfaces"]
     assert manifest["mcp_entrypoints"] == {
+        "console_scripts": ["genesis-v2-mcp-stdio"],
+        "editable_install_command": 'python -m pip install -e ".[mcp]"',
         "module_command": "python -m mcp_server.server",
         "script_commands": EXPECTED_LOCAL_MCP_SCRIPT_COMMANDS,
     }
@@ -482,6 +492,7 @@ def test_generate_seed_emits_local_mcp_script(tmp_path: Path) -> None:
     )
     assert "Non-installed local MCP launcher:" in readme
     assert "python scripts/mcp/mcp_stdio.py --print-config" in readme
+    assert "genesis-v2-mcp-stdio" in readme
     assert "scripts/mcp/mcp_stdio.py" in scope_text
 
 
@@ -666,6 +677,7 @@ def test_generate_seed_emits_local_api_shell_script(tmp_path: Path) -> None:
     ast.parse(generated_test_path.read_text(encoding="utf-8"), filename=str(generated_test_path))
     assert "scripts/api/api_shell.py" in manifest["local_tooling_surfaces"]
     assert manifest["api_entrypoints"] == {
+        "console_scripts": ["genesis-v2-api-shell"],
         "module_command": "python -m uvicorn core.server:app --app-dir src --reload",
         "script_commands": EXPECTED_LOCAL_API_SCRIPT_COMMANDS,
     }
@@ -675,6 +687,7 @@ def test_generate_seed_emits_local_api_shell_script(tmp_path: Path) -> None:
     )
     assert "Non-installed local API launcher:" in readme
     assert "python scripts/api/api_shell.py --reload" in readme
+    assert "genesis-v2-api-shell" in readme
     assert "scripts/api/api_shell.py" in scope_text
 
 
@@ -695,6 +708,8 @@ def test_generate_seed_emits_local_pytest_script(tmp_path: Path) -> None:
     ast.parse(generated_test_path.read_text(encoding="utf-8"), filename=str(generated_test_path))
     assert "scripts/validate/pytest_suite.py" in manifest["local_tooling_surfaces"]
     assert manifest["pytest_entrypoints"] == {
+        "console_scripts": ["genesis-v2-pytest"],
+        "editable_install_command": 'python -m pip install -e ".[dev]"',
         "module_command": "python -m pytest -q",
         "script_commands": EXPECTED_LOCAL_PYTEST_SCRIPT_COMMANDS,
     }
@@ -704,6 +719,7 @@ def test_generate_seed_emits_local_pytest_script(tmp_path: Path) -> None:
     )
     assert "Non-installed local pytest launcher:" in readme
     assert "python scripts/validate/pytest_suite.py" in readme
+    assert "genesis-v2-pytest" in readme
     assert "scripts/validate/pytest_suite.py" in scope_text
 
 

@@ -869,11 +869,14 @@ import tomllib
 from pathlib import Path
 
 
-def test_pyproject_declares_runtime_smoke_console_scripts() -> None:
+def test_pyproject_declares_local_tooling_console_scripts() -> None:
     repo_root = Path(__file__).resolve().parents[2]
     payload = tomllib.loads((repo_root / "pyproject.toml").read_text(encoding="utf-8"))
 
     assert payload["project"]["scripts"] == {
+        "genesis-v2-api-shell": "genesis_core_v2_cli.console_scripts:api_shell_main",
+        "genesis-v2-mcp-stdio": "genesis_core_v2_cli.console_scripts:mcp_stdio_main",
+        "genesis-v2-pytest": "genesis_core_v2_cli.console_scripts:pytest_suite_main",
         "genesis-v2-champion-smoke": "genesis_core_v2_cli.console_scripts:champion_smoke_main",
         "genesis-v2-evaluate-champion-smoke": "genesis_core_v2_cli.console_scripts:evaluate_champion_smoke_main",
         "genesis-v2-fixture-smoke": "genesis_core_v2_cli.console_scripts:fixture_smoke_main",
@@ -1901,27 +1904,176 @@ __all__: list[str] = []
 def _genesis_core_v2_cli_console_scripts_content() -> str:
     return """from __future__ import annotations
 
+import argparse
+import asyncio
+import json
+import os
 import sys
 from pathlib import Path
+from typing import Any
 
-LOCAL_SRC_ROOT = Path(__file__).resolve().parents[1]
+LOCAL_REPO_ROOT = Path(__file__).resolve().parents[2]
+LOCAL_SRC_ROOT = LOCAL_REPO_ROOT / "src"
+DEFAULT_MCP_CONFIG_PATH = LOCAL_REPO_ROOT / "config" / "mcp_settings.json"
+DEFAULT_PYTEST_ARGS = ["-q"]
 
 
-def _prefer_local_src() -> None:
-    normalized_local = str(LOCAL_SRC_ROOT.resolve())
+def _prefer_local_paths() -> None:
+    normalized_local_src = str(LOCAL_SRC_ROOT.resolve())
+    normalized_local_repo = str(LOCAL_REPO_ROOT.resolve())
     filtered: list[str] = []
     for entry in sys.path:
         try:
             normalized_entry = str(Path(entry).resolve())
         except Exception:
             normalized_entry = entry
-        if normalized_entry == normalized_local:
+        if normalized_entry in {normalized_local_src, normalized_local_repo}:
             continue
         filtered.append(entry)
-    sys.path[:] = [str(LOCAL_SRC_ROOT), *filtered]
+    sys.path[:] = [str(LOCAL_SRC_ROOT), str(LOCAL_REPO_ROOT), *filtered]
 
 
-_prefer_local_src()
+def _prefer_local_pythonpath() -> None:
+    normalized_src = str(LOCAL_SRC_ROOT)
+    existing = [entry for entry in os.environ.get("PYTHONPATH", "").split(os.pathsep) if entry]
+    if normalized_src not in existing:
+        os.environ["PYTHONPATH"] = os.pathsep.join([normalized_src, *existing]) if existing else normalized_src
+
+
+def _load_api_server_module():
+    import core.server as server_mod
+
+    return server_mod
+
+
+def _load_mcp_server_module():
+    os.environ["GENESIS_MCP_CONFIG_PATH"] = str(DEFAULT_MCP_CONFIG_PATH)
+
+    import mcp_server.server as server_mod
+
+    return server_mod
+
+
+def _build_api_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Run the local Genesis-Core-V2 API shell")
+    parser.add_argument("--host", default="127.0.0.1")
+    parser.add_argument("--port", type=int, default=8000)
+    parser.add_argument("--reload", action="store_true")
+    parser.add_argument("--print-config", action="store_true")
+    return parser
+
+
+def _build_api_runtime_config(args: argparse.Namespace) -> dict[str, Any]:
+    server_mod = _load_api_server_module()
+    app = getattr(server_mod, "app")
+    routes = getattr(app, "routes", [])
+    return {
+        "app": "core.server:app",
+        "app_dir": str(LOCAL_SRC_ROOT),
+        "host": args.host,
+        "port": args.port,
+        "reload": bool(args.reload),
+        "module_file": str(Path(server_mod.__file__).resolve()),
+        "route_count": len(routes),
+    }
+
+
+def api_shell_main(argv: list[str] | None = None) -> int:
+    args = _build_api_parser().parse_args(argv)
+    config = _build_api_runtime_config(args)
+    if args.print_config:
+        print(json.dumps(config, indent=2, ensure_ascii=False, sort_keys=True))
+        return 0
+
+    import uvicorn
+
+    uvicorn.run(
+        config["app"],
+        app_dir=config["app_dir"],
+        host=config["host"],
+        port=config["port"],
+        reload=config["reload"],
+    )
+    return 0
+
+
+def _build_mcp_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Run the local Genesis-Core-V2 MCP stdio shell")
+    parser.add_argument("--print-config", action="store_true")
+    return parser
+
+
+def _build_mcp_runtime_config(server_mod) -> dict[str, Any]:
+    return {
+        "config_env": os.environ.get("GENESIS_MCP_CONFIG_PATH", ""),
+        "config_path": str(DEFAULT_MCP_CONFIG_PATH),
+        "feature_flags": {
+            "file_operations": server_mod.config.features.file_operations,
+            "code_execution": server_mod.config.features.code_execution,
+            "git_integration": server_mod.config.features.git_integration,
+        },
+        "log_level": server_mod.config.log_level,
+        "module_file": str(Path(server_mod.__file__).resolve()),
+        "server_name": server_mod.config.server_name,
+        "tool_count": len(server_mod.TOOLS),
+    }
+
+
+def mcp_stdio_main(argv: list[str] | None = None) -> int:
+    args = _build_mcp_parser().parse_args(argv)
+    try:
+        server_mod = _load_mcp_server_module()
+    except ModuleNotFoundError as exc:
+        missing_name = getattr(exc, "name", "mcp")
+        raise SystemExit(
+            f'genesis-v2-mcp-stdio requires the [{missing_name}] dependency; install with `python -m pip install -e ".[mcp]"`.'
+        ) from exc
+
+    config = _build_mcp_runtime_config(server_mod)
+    if args.print_config:
+        print(json.dumps(config, indent=2, ensure_ascii=False, sort_keys=True))
+        return 0
+
+    asyncio.run(server_mod.main())
+    return 0
+
+
+def _build_pytest_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Run the local Genesis-Core-V2 pytest suite")
+    parser.add_argument("--print-config", action="store_true")
+    return parser
+
+
+def _build_pytest_runtime_config(pytest_args: list[str] | None = None) -> dict[str, Any]:
+    return {
+        "cwd": str(LOCAL_REPO_ROOT),
+        "src_root": str(LOCAL_SRC_ROOT),
+        "pythonpath": os.environ.get("PYTHONPATH", ""),
+        "pytest_args": list(pytest_args or DEFAULT_PYTEST_ARGS),
+    }
+
+
+def pytest_suite_main(argv: list[str] | None = None) -> int:
+    _prefer_local_pythonpath()
+    parsed_args, pytest_args = _build_pytest_parser().parse_known_args(argv)
+    config = _build_pytest_runtime_config(pytest_args or DEFAULT_PYTEST_ARGS)
+    if parsed_args.print_config:
+        print(json.dumps(config, indent=2, ensure_ascii=False, sort_keys=True))
+        return 0
+
+    os.chdir(LOCAL_REPO_ROOT)
+
+    try:
+        import pytest
+    except ModuleNotFoundError as exc:
+        raise SystemExit(
+            'genesis-v2-pytest requires pytest; install with `python -m pip install -e ".[dev]"`.'
+        ) from exc
+
+    return int(pytest.main(config["pytest_args"]))
+
+
+_prefer_local_paths()
 
 from core.bootstrap.backtest_smoke import main as backtest_smoke_main
 from core.bootstrap.champion_smoke import main as champion_smoke_main
@@ -1931,6 +2083,9 @@ from core.bootstrap.model_smoke import main as model_smoke_main
 from core.bootstrap.smoke_suite import main as smoke_suite_main
 
 __all__ = [
+    "api_shell_main",
+    "mcp_stdio_main",
+    "pytest_suite_main",
     "champion_smoke_main",
     "evaluate_champion_smoke_main",
     "fixture_smoke_main",
@@ -2811,6 +2966,7 @@ def _runtime_installed_console_scripts_test_content() -> str:
     return """from __future__ import annotations
 
 import importlib.metadata as importlib_metadata
+import importlib.util
 import json
 import subprocess
 import sys
@@ -2820,6 +2976,9 @@ import pytest
 
 
 EXPECTED_ENTRYPOINTS = {
+    "genesis-v2-api-shell": "genesis_core_v2_cli.console_scripts:api_shell_main",
+    "genesis-v2-mcp-stdio": "genesis_core_v2_cli.console_scripts:mcp_stdio_main",
+    "genesis-v2-pytest": "genesis_core_v2_cli.console_scripts:pytest_suite_main",
     "genesis-v2-champion-smoke": "genesis_core_v2_cli.console_scripts:champion_smoke_main",
     "genesis-v2-evaluate-champion-smoke": "genesis_core_v2_cli.console_scripts:evaluate_champion_smoke_main",
     "genesis-v2-fixture-smoke": "genesis_core_v2_cli.console_scripts:fixture_smoke_main",
@@ -2836,6 +2995,11 @@ def _require_installed_distribution() -> None:
         pytest.skip("Editable install required for console script verification")
 
 
+def _require_module(module_name: str, install_hint: str) -> None:
+    if importlib.util.find_spec(module_name) is None:
+        pytest.skip(f"Console script verification requires {install_hint}")
+
+
 def test_installed_distribution_registers_expected_console_scripts() -> None:
     _require_installed_distribution()
 
@@ -2848,57 +3012,114 @@ def test_installed_distribution_registers_expected_console_scripts() -> None:
     assert entry_points == EXPECTED_ENTRYPOINTS
 
 
-def _resolve_console_script(command: str) -> list[str]:
-    scripts_dir = Path(sys.executable).resolve().parent
-    candidates = [
-        scripts_dir / command,
-        scripts_dir / f"{command}.exe",
-        scripts_dir / f"{command}-script.py",
-    ]
-    for candidate in candidates:
-        if candidate.exists():
-            if candidate.suffix.lower() == ".py":
-                return [sys.executable, str(candidate)]
-            return [str(candidate)]
+def _run_installed_entrypoint(command: str, command_args: list[str]) -> subprocess.CompletedProcess[str]:
+    repo_root = Path(__file__).resolve().parents[2]
+    code = '''
+import importlib.metadata as importlib_metadata
+import sys
 
-    raise AssertionError(f"Console script wrapper not found for {command!r} in {scripts_dir}")
-
-
-@pytest.mark.parametrize(
-    ("command", "expected_pairs"),
-    [
-        (
-            "genesis-v2-champion-smoke",
-            {"version": "seed_champion_fixture_v1"},
-        ),
-        (
-            "genesis-v2-evaluate-champion-smoke",
-            {"action": "NONE", "champion_source": "registry/fixtures/champions/tBTCUSD_1h.json"},
-        ),
-        ("genesis-v2-fixture-smoke", {"action": "NONE"}),
-        (
-            "genesis-v2-backtest-smoke",
-            {"trade_count": 1, "deterministic": True},
-        ),
-        (
-            "genesis-v2-model-smoke",
-            {"schema": ["ema_50"]},
-        ),
-        (
-            "genesis-v2-smoke-suite",
-            {"suite": "runtime_smoke_suite_v1"},
-        ),
-    ],
-)
-def test_installed_console_scripts_execute(command: str, expected_pairs: dict[str, object]) -> None:
-    _require_installed_distribution()
-
-    completed = subprocess.run(
-        _resolve_console_script(command),
+entry_points = {
+    entry_point.name: entry_point
+    for entry_point in importlib_metadata.entry_points(group='console_scripts')
+}
+entry_point = entry_points[sys.argv[1]]
+callable_obj = entry_point.load()
+sys.argv = [sys.argv[1], *sys.argv[2:]]
+raise SystemExit(callable_obj())
+'''
+    return subprocess.run(
+        [sys.executable, "-c", code, command, *command_args],
+        cwd=repo_root,
         capture_output=True,
         text=True,
         check=True,
     )
+
+
+@pytest.mark.parametrize(
+    ("command", "command_args", "required_module", "install_hint", "expected_pairs"),
+    [
+        (
+            "genesis-v2-api-shell",
+            ["--print-config"],
+            None,
+            None,
+            {
+                "app": "core.server:app",
+                "host": "127.0.0.1",
+                "port": 8000,
+                "reload": False,
+            },
+        ),
+        (
+            "genesis-v2-mcp-stdio",
+            ["--print-config"],
+            "mcp",
+            'the optional `[mcp]` extra (`python -m pip install -e ".[mcp]")',
+            {
+                "server_name": "genesis-core-v2",
+                "log_level": "INFO",
+            },
+        ),
+        (
+            "genesis-v2-pytest",
+            ["--print-config"],
+            "pytest",
+            'the local test dependencies (`python -m pip install -e ".[dev]")',
+            {
+                "pytest_args": ["-q"],
+            },
+        ),
+        (
+            "genesis-v2-champion-smoke",
+            [],
+            None,
+            None,
+            {"version": "seed_champion_fixture_v1"},
+        ),
+        (
+            "genesis-v2-evaluate-champion-smoke",
+            [],
+            None,
+            None,
+            {"action": "NONE", "champion_source": "registry/fixtures/champions/tBTCUSD_1h.json"},
+        ),
+        ("genesis-v2-fixture-smoke", [], None, None, {"action": "NONE"}),
+        (
+            "genesis-v2-backtest-smoke",
+            [],
+            None,
+            None,
+            {"trade_count": 1, "deterministic": True},
+        ),
+        (
+            "genesis-v2-model-smoke",
+            [],
+            None,
+            None,
+            {"schema": ["ema_50"]},
+        ),
+        (
+            "genesis-v2-smoke-suite",
+            [],
+            None,
+            None,
+            {"suite": "runtime_smoke_suite_v1"},
+        ),
+    ],
+)
+def test_installed_console_scripts_execute(
+    command: str,
+    command_args: list[str],
+    required_module: str | None,
+    install_hint: str | None,
+    expected_pairs: dict[str, object],
+) -> None:
+    _require_installed_distribution()
+    if required_module is not None and install_hint is not None:
+        _require_module(required_module, install_hint)
+
+    completed = _run_installed_entrypoint(command, command_args)
     payload = json.loads(completed.stdout)
 
     for key, expected_value in expected_pairs.items():
@@ -3054,7 +3275,7 @@ Runtime-first seed with admitted local-only API shell generated from the current
 - fixture-driven backtest bootstrap smoke (`core.bootstrap.backtest_smoke`)
 - combined runtime smoke suite (`core.bootstrap.smoke_suite`)
 - fixture-driven backtest engine smoke (`tests/runtime/test_backtest_engine_fixture_smoke.py`)
-- installable console scripts for the three smoke entrypoints
+- installable console scripts for local API/MCP/pytest and smoke entrypoints
 
 ## What is intentionally excluded
 
@@ -3159,12 +3380,13 @@ Python analysis/test settings:
 `.vscode/settings.json`
 
 Console scripts after editable install:
+`genesis-v2-api-shell`, `genesis-v2-mcp-stdio`, `genesis-v2-pytest`
 `genesis-v2-champion-smoke`, `genesis-v2-evaluate-champion-smoke`
 `genesis-v2-fixture-smoke`, `genesis-v2-backtest-smoke`, `genesis-v2-smoke-suite`
 `genesis-v2-model-smoke`
 
 Suggested install verification:
-`python -m pip install -e \".[dev]\"`
+`python -m pip install -e \".[dev,mcp]\"`
 then run `pytest tests/runtime/test_installed_console_scripts.py -q`
 
 Local pre-commit workflow:
@@ -3195,6 +3417,9 @@ dependencies = [
 ]
 
 [project.scripts]
+genesis-v2-api-shell = "genesis_core_v2_cli.console_scripts:api_shell_main"
+genesis-v2-mcp-stdio = "genesis_core_v2_cli.console_scripts:mcp_stdio_main"
+genesis-v2-pytest = "genesis_core_v2_cli.console_scripts:pytest_suite_main"
 genesis-v2-champion-smoke = "genesis_core_v2_cli.console_scripts:champion_smoke_main"
 genesis-v2-evaluate-champion-smoke = "genesis_core_v2_cli.console_scripts:evaluate_champion_smoke_main"
 genesis-v2-fixture-smoke = "genesis_core_v2_cli.console_scripts:fixture_smoke_main"
@@ -3544,12 +3769,15 @@ def _manifest_payload(
         ],
         "api_entrypoints": {
             "module_command": "python -m uvicorn core.server:app --app-dir src --reload",
+            "console_scripts": ["genesis-v2-api-shell"],
             "script_commands": [
                 "python scripts/api/api_shell.py",
                 "python scripts/api/api_shell.py --reload",
             ],
         },
         "mcp_entrypoints": {
+            "console_scripts": ["genesis-v2-mcp-stdio"],
+            "editable_install_command": 'python -m pip install -e ".[mcp]"',
             "module_command": "python -m mcp_server.server",
             "script_commands": [
                 "python scripts/mcp/mcp_stdio.py",
@@ -3557,6 +3785,8 @@ def _manifest_payload(
             ],
         },
         "pytest_entrypoints": {
+            "console_scripts": ["genesis-v2-pytest"],
+            "editable_install_command": 'python -m pip install -e ".[dev]"',
             "module_command": "python -m pytest -q",
             "script_commands": [
                 "python scripts/validate/pytest_suite.py",

@@ -569,6 +569,14 @@ _SCRIPT_FILES = [
 ]
 
 
+_CONSOLE_SCRIPT_FILES = [
+    "pyproject.toml",
+    "src/genesis_core_v2_cli/console_scripts.py",
+    "tests/governance/test_pyproject_console_scripts.py",
+    "tests/runtime/test_installed_console_scripts.py",
+]
+
+
 _LAUNCH_FILES = [
     ".vscode/launch.json",
     "tests/runtime/test_local_vscode_launch.py",
@@ -807,6 +815,24 @@ def test_seed_contains_local_smoke_scripts() -> None:
     assert "scripts/smoke/smoke_suite.py" in readme
     assert "scripts/smoke/model_smoke.py" in scope_text
     assert "scripts/smoke/*.py" in scope_text
+
+
+def test_seed_contains_installed_console_script_loop() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+
+    for relative_path in _CONSOLE_SCRIPT_FILES:
+        assert (repo_root / relative_path).exists(), relative_path
+
+    readme = (repo_root / "README.md").read_text(encoding="utf-8")
+    scope_text = (repo_root / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+
+    assert "Console scripts after editable install:" in readme
+    assert "genesis-v2-api-shell" in readme
+    assert "genesis-v2-model-smoke" in readme
+    assert "genesis-v2-api-shell" in scope_text
+    assert "genesis-v2-model-smoke" in scope_text
+    assert 'python -m pip install -e ".[dev,mcp]"' in scope_text
+    assert "tests/runtime/test_installed_console_scripts.py" in scope_text
 
 
 def test_seed_contains_local_vscode_launch_loop() -> None:
@@ -1290,6 +1316,8 @@ Deferred to separate verified slices:
 - Non-installed local API launcher: `python scripts/api/api_shell.py`, optional reload via `python scripts/api/api_shell.py --reload`
 - Non-installed local pytest launcher: `python scripts/validate/pytest_suite.py`, optional focused run via `python scripts/validate/pytest_suite.py tests/runtime/test_local_api_shell_script.py -q`
 - Non-installed local smoke scripts: `python scripts/smoke/fixture_smoke.py`, `python scripts/smoke/backtest_smoke.py`, `python scripts/smoke/champion_smoke.py`, `python scripts/smoke/evaluate_champion_smoke.py`, `python scripts/smoke/model_smoke.py`, `python scripts/smoke/smoke_suite.py`
+- Installable local console scripts: `genesis-v2-api-shell`, `genesis-v2-mcp-stdio`, `genesis-v2-pytest`, `genesis-v2-champion-smoke`, `genesis-v2-evaluate-champion-smoke`, `genesis-v2-fixture-smoke`, `genesis-v2-backtest-smoke`, `genesis-v2-model-smoke`, `genesis-v2-smoke-suite`
+- Installable console-script verification: `python -m pip install -e ".[dev,mcp]"`, then `pytest tests/runtime/test_installed_console_scripts.py -q`
 - Optional local MCP install: `python -m pip install -e ".[mcp]"`
 """
 

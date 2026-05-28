@@ -299,6 +299,9 @@ def test_generate_seed_emits_conflict_free_console_script_targets(tmp_path: Path
     seed_module.generate_seed(destination, clean=True, dry_run=False)
 
     payload = tomllib.loads((destination / "pyproject.toml").read_text(encoding="utf-8"))
+    manifest = json.loads((destination / "seed_manifest.json").read_text(encoding="utf-8"))
+    readme = (destination / "README.md").read_text(encoding="utf-8")
+    scope_text = (destination / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
     console_scripts_path = destination / "src" / "genesis_core_v2_cli" / "console_scripts.py"
     installed_test_path = destination / "tests" / "runtime" / "test_installed_console_scripts.py"
 
@@ -317,8 +320,26 @@ def test_generate_seed_emits_conflict_free_console_script_targets(tmp_path: Path
         "core*",
         "genesis_core_v2_cli*",
     ]
+    assert manifest["api_entrypoints"]["console_scripts"] == ["genesis-v2-api-shell"]
+    assert manifest["mcp_entrypoints"]["console_scripts"] == ["genesis-v2-mcp-stdio"]
+    assert manifest["pytest_entrypoints"]["console_scripts"] == ["genesis-v2-pytest"]
+    assert manifest["smoke_entrypoints"]["console_scripts"] == [
+        "genesis-v2-champion-smoke",
+        "genesis-v2-evaluate-champion-smoke",
+        "genesis-v2-fixture-smoke",
+        "genesis-v2-backtest-smoke",
+        "genesis-v2-model-smoke",
+        "genesis-v2-smoke-suite",
+    ]
     assert console_scripts_path.exists()
     assert installed_test_path.exists()
+    assert "Console scripts after editable install:" in readme
+    assert "genesis-v2-api-shell" in readme
+    assert "genesis-v2-model-smoke" in readme
+    assert "genesis-v2-api-shell" in scope_text
+    assert "genesis-v2-model-smoke" in scope_text
+    assert 'python -m pip install -e ".[dev,mcp]"' in scope_text
+    assert "tests/runtime/test_installed_console_scripts.py" in scope_text
     ast.parse(console_scripts_path.read_text(encoding="utf-8"), filename=str(console_scripts_path))
     ast.parse(installed_test_path.read_text(encoding="utf-8"), filename=str(installed_test_path))
 

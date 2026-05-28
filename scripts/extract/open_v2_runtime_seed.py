@@ -120,6 +120,7 @@ GENERATED_FILES = {
     ".vscode/settings.json",
     ".vscode/tasks.json",
     ".github/copilot-instructions.md",
+    ".pre-commit-config.yaml",
     "README.md",
     "AGENTS.md",
     "pyproject.toml",
@@ -185,6 +186,7 @@ PYPROJECT_DEV_DEPS = [
     "pytest>=8",
     "black>=24.10",
     "ruff>=0.6",
+    "pre-commit>=3.0",
 ]
 
 PYPROJECT_MCP_DEPS = [
@@ -513,6 +515,12 @@ _ENV_TEMPLATE_FILES = [
 ]
 
 
+_PRECOMMIT_FILES = [
+    ".pre-commit-config.yaml",
+    "tests/runtime/test_local_precommit_config.py",
+]
+
+
 _EXTENSIONS_FILES = [
     ".vscode/extensions.json",
     "tests/runtime/test_local_vscode_extensions.py",
@@ -669,6 +677,20 @@ def test_seed_contains_local_env_template() -> None:
     assert ".env.example" in scope_text
 
 
+def test_seed_contains_local_precommit_workflow() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+
+    for relative_path in _PRECOMMIT_FILES:
+        assert (repo_root / relative_path).exists(), relative_path
+
+    readme = (repo_root / "README.md").read_text(encoding="utf-8")
+    scope_text = (repo_root / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+
+    assert ".pre-commit-config.yaml" in readme
+    assert "Local pre-commit workflow" in readme
+    assert ".pre-commit-config.yaml" in scope_text
+
+
 def test_seed_contains_local_vscode_extensions() -> None:
     repo_root = Path(__file__).resolve().parents[2]
 
@@ -785,6 +807,36 @@ def _env_placeholder_content() -> str:
 
 def _env_example_content() -> str:
     return "# Copy this file to .env for local use.\n" + _env_placeholder_content()
+
+
+def _precommit_config_content() -> str:
+    return (
+        "repos:\n"
+        "  - repo: https://github.com/psf/black\n"
+        "    rev: 24.10.0\n"
+        "    hooks:\n"
+        "      - id: black\n"
+        "        language_version: python3.11\n"
+        "        files: \\.py$\n"
+        "\n"
+        "  - repo: https://github.com/astral-sh/ruff-pre-commit\n"
+        "    rev: v0.6.9\n"
+        "    hooks:\n"
+        "      - id: ruff\n"
+        "        language_version: python3.11\n"
+        "        files: \\.py$\n"
+        "\n"
+        "  - repo: https://github.com/pre-commit/pre-commit-hooks\n"
+        "    rev: v4.6.0\n"
+        "    hooks:\n"
+        "      - id: check-added-large-files\n"
+        "        args: [--maxkb=1000]\n"
+        "      - id: check-merge-conflict\n"
+        "      - id: check-yaml\n"
+        "      - id: end-of-file-fixer\n"
+        "      - id: trailing-whitespace\n"
+        "      - id: check-json\n"
+    )
 
 
 def _v2_mcp_settings_payload() -> dict[str, Any]:
@@ -1044,7 +1096,7 @@ def _v2_skeleton_scope_content() -> str:
 Included in the current priority lane:
 
 - README and local workflow docs
-- `AGENTS.md` and `.github/copilot-instructions.md`
+- `AGENTS.md`, `.github/copilot-instructions.md`, and `.pre-commit-config.yaml`
 - `.vscode/mcp.json`, `.vscode/tasks.json`, `.vscode/launch.json`, `.vscode/settings.json`, and `.vscode/extensions.json` for local editor workflow
 - tracked local env bootstrap template (`.env.example`) plus ignored local placeholder `.env`
 - `config/mcp_settings.json` and `mcp_server/**` for local MCP use
@@ -1072,6 +1124,7 @@ Deferred to separate verified slices:
 - Local debug loop: `genesis-v2: api shell`, `genesis-v2: smoke suite`, `genesis-v2: pytest`
 - Local editor settings: `python.analysis.extraPaths`, `python.testing.*`, `python.envFile`
 - Local editor recommendations: `ms-python.python`, `ms-python.vscode-pylance`, `charliermarsh.ruff`
+- Local pre-commit workflow: `pre-commit install`, then `pre-commit run --all-files`
 - Optional local MCP install: `python -m pip install -e ".[mcp]"`
 """
 
@@ -1271,6 +1324,36 @@ def test_local_env_example_tracks_the_narrow_placeholder_values() -> None:
     ]:
         assert expected_line in env_text
         assert expected_line in template_text
+"""
+
+
+def _runtime_local_precommit_config_test_content() -> str:
+    return """from __future__ import annotations
+
+from pathlib import Path
+
+import yaml
+
+
+def test_local_precommit_config_encodes_narrow_dev_hooks() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+    payload = yaml.safe_load((repo_root / ".pre-commit-config.yaml").read_text(encoding="utf-8"))
+
+    hook_ids = [
+        hook["id"]
+        for repo in payload["repos"]
+        for hook in repo.get("hooks", [])
+    ]
+    assert hook_ids == [
+        "black",
+        "ruff",
+        "check-added-large-files",
+        "check-merge-conflict",
+        "check-yaml",
+        "end-of-file-fixer",
+        "trailing-whitespace",
+        "check-json",
+    ]
 """
 
 
@@ -2440,6 +2523,7 @@ Runtime-first seed with admitted local-only API shell generated from the current
 - local VS Code Python analysis/test settings (`.vscode/settings.json`)
 - local VS Code extension recommendations (`.vscode/extensions.json`)
 - tracked env bootstrap template (`.env.example`)
+- local pre-commit hook config (`.pre-commit-config.yaml`)
 - runtime-only governance guardrails
 - admitted source model payloads under `config/models/**`
 - deterministic fixture model-registry/prob-model smoke
@@ -2501,6 +2585,7 @@ allowlist variants remain deferred.
 - `.vscode/settings.json` aligns Python analysis/test discovery with the `src/` layout and local `.env` placeholder.
 - `.vscode/extensions.json` recommends the Python/Pylance/Ruff stack for local skeleton work.
 - `.env.example` keeps the narrow local placeholder values tracked even though `.env` stays ignored.
+- `.pre-commit-config.yaml` keeps a narrow local formatting/lint/sanity hook loop tracked in the seed.
 
 After editable install, local module commands:
 
@@ -2529,6 +2614,10 @@ Console scripts after editable install:
 Suggested install verification:
 `python -m pip install -e \".[dev]\"`
 then run `pytest tests/runtime/test_installed_console_scripts.py -q`
+
+Local pre-commit workflow:
+`pre-commit install`
+then run `pre-commit run --all-files`
 
 Optional local MCP install:
 `python -m pip install -e \".[mcp]\"`
@@ -2653,6 +2742,7 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
 
     generated_map = {
         ".github/copilot-instructions.md": _v2_copilot_instructions_content(),
+        ".pre-commit-config.yaml": _precommit_config_content(),
         ".vscode/extensions.json": json.dumps(
             _v2_vscode_extensions_payload(),
             indent=2,
@@ -2750,6 +2840,7 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
         "tests/governance/test_v2_seed_boundaries.py": _v2_boundary_test_content(),
         "tests/runtime/test_backtest_engine_fixture_smoke.py": _runtime_backtest_engine_smoke_test_content(),
         "tests/runtime/test_local_env_template.py": _runtime_local_env_template_test_content(),
+        "tests/runtime/test_local_precommit_config.py": _runtime_local_precommit_config_test_content(),
         "tests/runtime/test_local_vscode_extensions.py": _runtime_local_vscode_extensions_test_content(),
         "tests/runtime/test_local_mcp_setup.py": _runtime_local_mcp_setup_test_content(),
         "tests/runtime/test_local_vscode_launch.py": _runtime_local_vscode_launch_test_content(),
@@ -2802,9 +2893,20 @@ def _manifest_payload(
         "source_of_truth_repo": "Genesis-Core",
         "skeleton_priority": "prioritize_v2_skeleton_completeness_before_content_migration",
         "workflow_files": [
+            ".pre-commit-config.yaml",
             "AGENTS.md",
             ".github/copilot-instructions.md",
             "docs/SKELETON_SCOPE.md",
+        ],
+        "precommit_hook_ids": [
+            "black",
+            "ruff",
+            "check-added-large-files",
+            "check-merge-conflict",
+            "check-yaml",
+            "end-of-file-fixer",
+            "trailing-whitespace",
+            "check-json",
         ],
         "local_tooling_surfaces": [
             ".vscode/extensions.json",
@@ -2867,6 +2969,7 @@ def _manifest_payload(
             "Generated `.vscode/settings.json` aligns Python analysis and pytest discovery with the V2 `src` layout.",
             "Generated `.vscode/extensions.json` recommends Python/Pylance/Ruff extensions for the V2 editor workflow.",
             "Generated `.env.example` mirrors the narrow local placeholder `.env` for tracked bootstrap guidance.",
+            "Generated `.pre-commit-config.yaml` keeps a narrow local formatting/lint/sanity hook loop tracked in the seed.",
             "Exchange-facing, paper, public-data, and UI service edges are intentionally excluded.",
             "Pipeline, Optuna, and optimizer-only closure are intentionally excluded.",
             "Legacy `core.strategy.features` surface intentionally excluded.",

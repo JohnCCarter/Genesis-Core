@@ -58,8 +58,9 @@ EXPECTED_ADMITTED_API_SLICE_FILES = [
 ]
 
 EXPECTED_WORKFLOW_FILES = [
-    ".github/copilot-instructions.md",
+    ".pre-commit-config.yaml",
     "AGENTS.md",
+    ".github/copilot-instructions.md",
     "docs/SKELETON_SCOPE.md",
 ]
 
@@ -95,6 +96,11 @@ EXPECTED_LOCAL_SETTINGS_FILES = [
 EXPECTED_LOCAL_ENV_TEMPLATE_FILES = [
     ".env.example",
     "tests/runtime/test_local_env_template.py",
+]
+
+EXPECTED_LOCAL_PRECOMMIT_FILES = [
+    ".pre-commit-config.yaml",
+    "tests/runtime/test_local_precommit_config.py",
 ]
 
 EXPECTED_LOCAL_EXTENSION_FILES = [
@@ -137,6 +143,17 @@ EXPECTED_WORKSPACE_EXTENSION_RECOMMENDATIONS = [
     "ms-python.python",
     "ms-python.vscode-pylance",
     "charliermarsh.ruff",
+]
+
+EXPECTED_PRECOMMIT_HOOK_IDS = [
+    "black",
+    "ruff",
+    "check-added-large-files",
+    "check-merge-conflict",
+    "check-yaml",
+    "end-of-file-fixer",
+    "trailing-whitespace",
+    "check-json",
 ]
 
 EXPECTED_WORKSPACE_LOOP_ENV = {"PYTHONPATH": "${workspaceFolder}/src"}
@@ -274,11 +291,7 @@ def test_generate_seed_emits_skeleton_workflow_files(tmp_path: Path) -> None:
     assert "Track B — authority migration" in scope_text
     assert manifest["source_of_truth_repo"] == "Genesis-Core"
     assert manifest["skeleton_priority"] == EXPECTED_SKELETON_PRIORITY
-    assert manifest["workflow_files"] == [
-        "AGENTS.md",
-        ".github/copilot-instructions.md",
-        "docs/SKELETON_SCOPE.md",
-    ]
+    assert manifest["workflow_files"] == EXPECTED_WORKFLOW_FILES
     assert (
         "Workflow files make the V2 seed self-describing as a skeleton-first repository."
         in manifest["notes"]
@@ -438,6 +451,38 @@ def test_generate_seed_emits_local_env_template(tmp_path: Path) -> None:
     assert ".env.example" in readme
     assert "tracked env bootstrap template" in readme
     assert ".env.example" in scope_text
+
+
+def test_generate_seed_emits_local_precommit_workflow(tmp_path: Path) -> None:
+    seed_module = _load_open_v2_runtime_seed_module()
+    destination = tmp_path / "Genesis-Core-V2"
+
+    seed_module.generate_seed(destination, clean=True, dry_run=False)
+
+    for relative_path in EXPECTED_LOCAL_PRECOMMIT_FILES:
+        assert (destination / relative_path).exists(), relative_path
+
+    readme = (destination / "README.md").read_text(encoding="utf-8")
+    scope_text = (destination / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+    manifest = json.loads((destination / "seed_manifest.json").read_text(encoding="utf-8"))
+    pyproject = tomllib.loads((destination / "pyproject.toml").read_text(encoding="utf-8"))
+    precommit_payload = yaml.safe_load(
+        (destination / ".pre-commit-config.yaml").read_text(encoding="utf-8")
+    )
+
+    hook_ids = [hook["id"] for repo in precommit_payload["repos"] for hook in repo.get("hooks", [])]
+
+    assert ".pre-commit-config.yaml" in manifest["generated_files"]
+    assert manifest["precommit_hook_ids"] == EXPECTED_PRECOMMIT_HOOK_IDS
+    assert "pre-commit>=3.0" in pyproject["project"]["optional-dependencies"]["dev"]
+    assert hook_ids == EXPECTED_PRECOMMIT_HOOK_IDS
+    assert (
+        "Generated `.pre-commit-config.yaml` keeps a narrow local formatting/lint/sanity hook loop tracked in the seed."
+        in manifest["notes"]
+    )
+    assert ".pre-commit-config.yaml" in readme
+    assert "Local pre-commit workflow" in readme
+    assert ".pre-commit-config.yaml" in scope_text
 
 
 def test_generate_seed_emits_local_vscode_extensions(tmp_path: Path) -> None:

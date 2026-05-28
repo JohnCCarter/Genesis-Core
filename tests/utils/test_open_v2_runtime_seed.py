@@ -749,6 +749,7 @@ def test_generate_seed_emits_local_smoke_scripts(tmp_path: Path) -> None:
     )
     assert "Non-installed local smoke scripts:" in readme
     assert "python scripts/smoke/smoke_suite.py" in readme
+    assert "python scripts/smoke/model_smoke.py" in scope_text
     assert "scripts/smoke/*.py" in scope_text
 
 

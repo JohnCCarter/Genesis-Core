@@ -1281,7 +1281,7 @@ Deferred to separate verified slices:
 - Non-installed local MCP launcher: `python scripts/mcp/mcp_stdio.py`, optional config probe via `python scripts/mcp/mcp_stdio.py --print-config`
 - Non-installed local API launcher: `python scripts/api/api_shell.py`, optional reload via `python scripts/api/api_shell.py --reload`
 - Non-installed local pytest launcher: `python scripts/validate/pytest_suite.py`, optional focused run via `python scripts/validate/pytest_suite.py tests/runtime/test_local_api_shell_script.py -q`
-- Non-installed local smoke scripts: `python scripts/smoke/fixture_smoke.py`, `python scripts/smoke/backtest_smoke.py`, `python scripts/smoke/smoke_suite.py`
+- Non-installed local smoke scripts: `python scripts/smoke/fixture_smoke.py`, `python scripts/smoke/backtest_smoke.py`, `python scripts/smoke/champion_smoke.py`, `python scripts/smoke/evaluate_champion_smoke.py`, `python scripts/smoke/model_smoke.py`, `python scripts/smoke/smoke_suite.py`
 - Optional local MCP install: `python -m pip install -e ".[mcp]"`
 """
 

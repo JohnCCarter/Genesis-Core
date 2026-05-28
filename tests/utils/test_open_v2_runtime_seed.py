@@ -299,8 +299,11 @@ def test_generate_seed_emits_conflict_free_console_script_targets(tmp_path: Path
     payload = tomllib.loads((destination / "pyproject.toml").read_text(encoding="utf-8"))
 
     assert payload["project"]["scripts"] == {
+        "genesis-v2-champion-smoke": "genesis_core_v2_cli.console_scripts:champion_smoke_main",
+        "genesis-v2-evaluate-champion-smoke": "genesis_core_v2_cli.console_scripts:evaluate_champion_smoke_main",
         "genesis-v2-fixture-smoke": "genesis_core_v2_cli.console_scripts:fixture_smoke_main",
         "genesis-v2-backtest-smoke": "genesis_core_v2_cli.console_scripts:backtest_smoke_main",
+        "genesis-v2-model-smoke": "genesis_core_v2_cli.console_scripts:model_smoke_main",
         "genesis-v2-smoke-suite": "genesis_core_v2_cli.console_scripts:smoke_suite_main",
     }
     assert payload["tool"]["setuptools"]["packages"]["find"]["include"] == [

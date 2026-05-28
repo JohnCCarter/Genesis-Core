@@ -874,8 +874,11 @@ def test_pyproject_declares_runtime_smoke_console_scripts() -> None:
     payload = tomllib.loads((repo_root / "pyproject.toml").read_text(encoding="utf-8"))
 
     assert payload["project"]["scripts"] == {
+        "genesis-v2-champion-smoke": "genesis_core_v2_cli.console_scripts:champion_smoke_main",
+        "genesis-v2-evaluate-champion-smoke": "genesis_core_v2_cli.console_scripts:evaluate_champion_smoke_main",
         "genesis-v2-fixture-smoke": "genesis_core_v2_cli.console_scripts:fixture_smoke_main",
         "genesis-v2-backtest-smoke": "genesis_core_v2_cli.console_scripts:backtest_smoke_main",
+        "genesis-v2-model-smoke": "genesis_core_v2_cli.console_scripts:model_smoke_main",
         "genesis-v2-smoke-suite": "genesis_core_v2_cli.console_scripts:smoke_suite_main",
     }
 
@@ -1921,12 +1924,18 @@ def _prefer_local_src() -> None:
 _prefer_local_src()
 
 from core.bootstrap.backtest_smoke import main as backtest_smoke_main
+from core.bootstrap.champion_smoke import main as champion_smoke_main
+from core.bootstrap.evaluate_champion_smoke import main as evaluate_champion_smoke_main
 from core.bootstrap.fixture_smoke import main as fixture_smoke_main
+from core.bootstrap.model_smoke import main as model_smoke_main
 from core.bootstrap.smoke_suite import main as smoke_suite_main
 
 __all__ = [
+    "champion_smoke_main",
+    "evaluate_champion_smoke_main",
     "fixture_smoke_main",
     "backtest_smoke_main",
+    "model_smoke_main",
     "smoke_suite_main",
 ]
 """
@@ -2811,8 +2820,11 @@ import pytest
 
 
 EXPECTED_ENTRYPOINTS = {
+    "genesis-v2-champion-smoke": "genesis_core_v2_cli.console_scripts:champion_smoke_main",
+    "genesis-v2-evaluate-champion-smoke": "genesis_core_v2_cli.console_scripts:evaluate_champion_smoke_main",
     "genesis-v2-fixture-smoke": "genesis_core_v2_cli.console_scripts:fixture_smoke_main",
     "genesis-v2-backtest-smoke": "genesis_core_v2_cli.console_scripts:backtest_smoke_main",
+    "genesis-v2-model-smoke": "genesis_core_v2_cli.console_scripts:model_smoke_main",
     "genesis-v2-smoke-suite": "genesis_core_v2_cli.console_scripts:smoke_suite_main",
 }
 
@@ -2855,10 +2867,22 @@ def _resolve_console_script(command: str) -> list[str]:
 @pytest.mark.parametrize(
     ("command", "expected_pairs"),
     [
+        (
+            "genesis-v2-champion-smoke",
+            {"version": "seed_champion_fixture_v1"},
+        ),
+        (
+            "genesis-v2-evaluate-champion-smoke",
+            {"action": "NONE", "champion_source": "registry/fixtures/champions/tBTCUSD_1h.json"},
+        ),
         ("genesis-v2-fixture-smoke", {"action": "NONE"}),
         (
             "genesis-v2-backtest-smoke",
             {"trade_count": 1, "deterministic": True},
+        ),
+        (
+            "genesis-v2-model-smoke",
+            {"schema": ["ema_50"]},
         ),
         (
             "genesis-v2-smoke-suite",
@@ -3135,7 +3159,9 @@ Python analysis/test settings:
 `.vscode/settings.json`
 
 Console scripts after editable install:
+`genesis-v2-champion-smoke`, `genesis-v2-evaluate-champion-smoke`
 `genesis-v2-fixture-smoke`, `genesis-v2-backtest-smoke`, `genesis-v2-smoke-suite`
+`genesis-v2-model-smoke`
 
 Suggested install verification:
 `python -m pip install -e \".[dev]\"`
@@ -3169,8 +3195,11 @@ dependencies = [
 ]
 
 [project.scripts]
+genesis-v2-champion-smoke = "genesis_core_v2_cli.console_scripts:champion_smoke_main"
+genesis-v2-evaluate-champion-smoke = "genesis_core_v2_cli.console_scripts:evaluate_champion_smoke_main"
 genesis-v2-fixture-smoke = "genesis_core_v2_cli.console_scripts:fixture_smoke_main"
 genesis-v2-backtest-smoke = "genesis_core_v2_cli.console_scripts:backtest_smoke_main"
+genesis-v2-model-smoke = "genesis_core_v2_cli.console_scripts:model_smoke_main"
 genesis-v2-smoke-suite = "genesis_core_v2_cli.console_scripts:smoke_suite_main"
 
 [project.optional-dependencies]
@@ -3562,8 +3591,11 @@ def _manifest_payload(
                 "python scripts/smoke/smoke_suite.py",
             ],
             "console_scripts": [
+                "genesis-v2-champion-smoke",
+                "genesis-v2-evaluate-champion-smoke",
                 "genesis-v2-fixture-smoke",
                 "genesis-v2-backtest-smoke",
+                "genesis-v2-model-smoke",
                 "genesis-v2-smoke-suite",
             ],
         },

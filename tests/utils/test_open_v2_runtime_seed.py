@@ -126,7 +126,10 @@ EXPECTED_LOCAL_PYTEST_SCRIPT_FILES = [
 
 EXPECTED_LOCAL_SCRIPT_FILES = [
     "scripts/smoke/backtest_smoke.py",
+    "scripts/smoke/champion_smoke.py",
+    "scripts/smoke/evaluate_champion_smoke.py",
     "scripts/smoke/fixture_smoke.py",
+    "scripts/smoke/model_smoke.py",
     "scripts/smoke/smoke_suite.py",
     "tests/runtime/test_local_smoke_scripts.py",
 ]
@@ -193,6 +196,9 @@ EXPECTED_PYPROJECT_BLACK_EXTEND_EXCLUDE = "(^cache/|^data/|^logs/|^results/)"
 EXPECTED_LOCAL_SCRIPT_COMMANDS = [
     "python scripts/smoke/fixture_smoke.py",
     "python scripts/smoke/backtest_smoke.py",
+    "python scripts/smoke/champion_smoke.py",
+    "python scripts/smoke/evaluate_champion_smoke.py",
+    "python scripts/smoke/model_smoke.py",
     "python scripts/smoke/smoke_suite.py",
 ]
 

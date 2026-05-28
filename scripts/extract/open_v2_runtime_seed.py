@@ -136,8 +136,11 @@ GENERATED_FILES = {
     "registry/fixtures/runtime_fixture_smoke_minimal.json",
     "scripts/api/api_shell.py",
     "scripts/mcp/mcp_stdio.py",
+    "scripts/smoke/champion_smoke.py",
+    "scripts/smoke/evaluate_champion_smoke.py",
     "scripts/smoke/backtest_smoke.py",
     "scripts/smoke/fixture_smoke.py",
+    "scripts/smoke/model_smoke.py",
     "scripts/smoke/smoke_suite.py",
     "scripts/validate/pytest_suite.py",
     "src/core/bootstrap/__init__.py",
@@ -557,7 +560,10 @@ _PYTEST_SCRIPT_FILES = [
 
 _SCRIPT_FILES = [
     "scripts/smoke/backtest_smoke.py",
+    "scripts/smoke/champion_smoke.py",
+    "scripts/smoke/evaluate_champion_smoke.py",
     "scripts/smoke/fixture_smoke.py",
+    "scripts/smoke/model_smoke.py",
     "scripts/smoke/smoke_suite.py",
     "tests/runtime/test_local_smoke_scripts.py",
 ]
@@ -1513,6 +1519,12 @@ import pytest
     [
         ("scripts/smoke/fixture_smoke.py", {"action": "NONE"}),
         ("scripts/smoke/backtest_smoke.py", {"trade_count": 1, "deterministic": True}),
+        ("scripts/smoke/champion_smoke.py", {"version": "seed_champion_fixture_v1"}),
+        (
+            "scripts/smoke/evaluate_champion_smoke.py",
+            {"action": "NONE", "champion_source": "registry/fixtures/champions/tBTCUSD_1h.json"},
+        ),
+        ("scripts/smoke/model_smoke.py", {"schema": ["ema_50"]}),
         ("scripts/smoke/smoke_suite.py", {"suite": "runtime_smoke_suite_v1"}),
     ],
 )
@@ -3004,7 +3016,7 @@ Runtime-first seed with admitted local-only API shell generated from the current
 - repo-local MCP launcher (`scripts/mcp/mcp_stdio.py`)
 - repo-local API launcher (`scripts/api/api_shell.py`)
 - repo-local pytest launcher (`scripts/validate/pytest_suite.py`)
-- repo-local smoke scripts (`scripts/smoke/{{fixture_smoke,backtest_smoke,smoke_suite}}.py`)
+- repo-local smoke scripts (`scripts/smoke/{{backtest_smoke,champion_smoke,evaluate_champion_smoke,fixture_smoke,model_smoke,smoke_suite}}.py`)
 - runtime-only governance guardrails
 - admitted source model payloads under `config/models/**`
 - deterministic fixture model-registry/prob-model smoke
@@ -3079,7 +3091,7 @@ editor-specific tasks or an editable install first.
 - `scripts/mcp/mcp_stdio.py` wraps the local MCP stdio shell with repo-root bootstrap and the generated config path.
 - `scripts/api/api_shell.py` wraps the local API shell with `src/` bootstrapping for non-installed startup.
 - `scripts/validate/pytest_suite.py` wraps `pytest` with local `src/` bootstrapping for non-installed test execution.
-- `scripts/smoke/*.py` wraps the core smoke modules with local `src/` bootstrapping so the seed is runnable before install.
+- `scripts/smoke/*.py` wraps the admitted core smoke modules with local `src/` bootstrapping so the seed is runnable before install.
 
 After editable install, local module commands:
 
@@ -3105,6 +3117,9 @@ Non-installed local pytest launcher:
 Non-installed local smoke scripts:
 `python scripts/smoke/fixture_smoke.py`
 `python scripts/smoke/backtest_smoke.py`
+`python scripts/smoke/champion_smoke.py`
+`python scripts/smoke/evaluate_champion_smoke.py`
+`python scripts/smoke/model_smoke.py`
 `python scripts/smoke/smoke_suite.py`
 
 Local VS Code tasks:
@@ -3350,8 +3365,17 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
         "scripts/smoke/backtest_smoke.py": _runtime_local_smoke_script_content(
             "core.bootstrap.backtest_smoke"
         ),
+        "scripts/smoke/champion_smoke.py": _runtime_local_smoke_script_content(
+            "core.bootstrap.champion_smoke"
+        ),
+        "scripts/smoke/evaluate_champion_smoke.py": _runtime_local_smoke_script_content(
+            "core.bootstrap.evaluate_champion_smoke"
+        ),
         "scripts/smoke/fixture_smoke.py": _runtime_local_smoke_script_content(
             "core.bootstrap.fixture_smoke"
+        ),
+        "scripts/smoke/model_smoke.py": _runtime_local_smoke_script_content(
+            "core.bootstrap.model_smoke"
         ),
         "scripts/smoke/smoke_suite.py": _runtime_local_smoke_script_content(
             "core.bootstrap.smoke_suite"
@@ -3459,7 +3483,10 @@ def _manifest_payload(
             "scripts/api/api_shell.py",
             "scripts/mcp/mcp_stdio.py",
             "scripts/smoke/backtest_smoke.py",
+            "scripts/smoke/champion_smoke.py",
+            "scripts/smoke/evaluate_champion_smoke.py",
             "scripts/smoke/fixture_smoke.py",
+            "scripts/smoke/model_smoke.py",
             "scripts/smoke/smoke_suite.py",
             "scripts/validate/pytest_suite.py",
         ],
@@ -3529,6 +3556,9 @@ def _manifest_payload(
             "script_commands": [
                 "python scripts/smoke/fixture_smoke.py",
                 "python scripts/smoke/backtest_smoke.py",
+                "python scripts/smoke/champion_smoke.py",
+                "python scripts/smoke/evaluate_champion_smoke.py",
+                "python scripts/smoke/model_smoke.py",
                 "python scripts/smoke/smoke_suite.py",
             ],
             "console_scripts": [

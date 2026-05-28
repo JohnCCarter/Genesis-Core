@@ -134,6 +134,9 @@ GENERATED_FILES = {
     "registry/fixtures/model_registry/config/models/registry.json",
     "registry/fixtures/model_registry/config/models/tBTCUSD_1h.json",
     "registry/fixtures/runtime_fixture_smoke_minimal.json",
+    "scripts/smoke/backtest_smoke.py",
+    "scripts/smoke/fixture_smoke.py",
+    "scripts/smoke/smoke_suite.py",
     "src/core/bootstrap/__init__.py",
     "src/core/bootstrap/backtest_smoke.py",
     "src/core/bootstrap/champion_smoke.py",
@@ -153,6 +156,7 @@ GENERATED_FILES = {
     "tests/governance/test_v2_seed_boundaries.py",
     "tests/runtime/test_backtest_engine_fixture_smoke.py",
     "tests/runtime/test_local_mcp_setup.py",
+    "tests/runtime/test_local_smoke_scripts.py",
     "tests/runtime/test_local_vscode_launch.py",
     "tests/runtime/test_local_vscode_settings.py",
     "tests/runtime/test_local_vscode_tasks.py",
@@ -527,6 +531,14 @@ _EXTENSIONS_FILES = [
 ]
 
 
+_SCRIPT_FILES = [
+    "scripts/smoke/backtest_smoke.py",
+    "scripts/smoke/fixture_smoke.py",
+    "scripts/smoke/smoke_suite.py",
+    "tests/runtime/test_local_smoke_scripts.py",
+]
+
+
 _LAUNCH_FILES = [
     ".vscode/launch.json",
     "tests/runtime/test_local_vscode_launch.py",
@@ -703,6 +715,20 @@ def test_seed_contains_local_vscode_extensions() -> None:
     assert ".vscode/extensions.json" in readme
     assert "Suggested VS Code extensions" in readme
     assert ".vscode/extensions.json" in scope_text
+
+
+def test_seed_contains_local_smoke_scripts() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+
+    for relative_path in _SCRIPT_FILES:
+        assert (repo_root / relative_path).exists(), relative_path
+
+    readme = (repo_root / "README.md").read_text(encoding="utf-8")
+    scope_text = (repo_root / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+
+    assert "Non-installed local smoke scripts:" in readme
+    assert "scripts/smoke/smoke_suite.py" in readme
+    assert "scripts/smoke/*.py" in scope_text
 
 
 def test_seed_contains_local_vscode_launch_loop() -> None:
@@ -884,6 +910,7 @@ def _v2_mcp_settings_payload() -> dict[str, Any]:
                 "mcp_server",
                 "pyproject.toml",
                 "registry",
+                "scripts",
                 "seed_manifest.json",
                 "src",
                 "tests",
@@ -1040,6 +1067,7 @@ Use this track for:
 
 - repo structure and generated workflow files
 - local MCP stdio shell and safe editor hookup
+- repo-local smoke scripts under `scripts/smoke/`
 - local VS Code tasks, debug profiles, settings, and extension recommendations
 - local-only API shell
 - fixture-backed smoke tests
@@ -1085,6 +1113,7 @@ Read `AGENTS.md` and `docs/SKELETON_SCOPE.md` before widening scope.
 - Prefer generator-driven changes in `Genesis-Core` over manual drift in this repo.
 - Keep the local-only API shell runnable and tested.
 - Keep the local MCP stdio shell local-first and safe by default.
+- Prefer generated local `scripts/smoke/*.py` wrappers or `python -m core.bootstrap...` commands for non-installed smoke loops.
 - Prefer the generated local VS Code tasks, debug profiles, settings, and extension recommendations for repeatable API/smoke/test loops when working interactively.
 - Prefer fixture-backed smoke tests before moving wider runtime content.
 
@@ -1123,6 +1152,7 @@ Included in the current priority lane:
 - `.vscode/mcp.json`, `.vscode/tasks.json`, `.vscode/launch.json`, `.vscode/settings.json`, and `.vscode/extensions.json` for local editor workflow
 - tracked local env bootstrap template (`.env.example`) plus ignored local placeholder `.env`
 - narrow local pytest/ruff/black defaults in `pyproject.toml`
+- repo-local smoke scripts (`scripts/smoke/*.py`) for non-installed execution
 - `config/mcp_settings.json` and `mcp_server/**` for local MCP use
 - local-only API shell (`config`, `status`, `models`, `strategy`)
 - fixture-backed smoke tests and console scripts
@@ -1150,6 +1180,7 @@ Deferred to separate verified slices:
 - Local editor recommendations: `ms-python.python`, `ms-python.vscode-pylance`, `charliermarsh.ruff`
 - Local pre-commit workflow: `pre-commit install`, then `pre-commit run --all-files`
 - Local QA defaults: `pytest` recursion guards plus narrow `ruff`/`black` excludes in `pyproject.toml`
+- Non-installed local smoke scripts: `python scripts/smoke/fixture_smoke.py`, `python scripts/smoke/backtest_smoke.py`, `python scripts/smoke/smoke_suite.py`
 - Optional local MCP install: `python -m pip install -e ".[mcp]"`
 """
 
@@ -1379,6 +1410,69 @@ def test_local_precommit_config_encodes_narrow_dev_hooks() -> None:
         "trailing-whitespace",
         "check-json",
     ]
+"""
+
+
+def _runtime_local_smoke_script_content(module_name: str) -> str:
+    return f"""from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+SRC_ROOT = REPO_ROOT / \"src\"
+
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+
+from {module_name} import main as _target_main
+
+
+def main() -> int:
+    return _target_main()
+
+
+if __name__ == \"__main__\":
+    raise SystemExit(main())
+"""
+
+
+def _runtime_local_smoke_scripts_test_content() -> str:
+    return """from __future__ import annotations
+
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+import pytest
+
+
+@pytest.mark.parametrize(
+    ("relative_path", "expected_pairs"),
+    [
+        ("scripts/smoke/fixture_smoke.py", {"action": "NONE"}),
+        ("scripts/smoke/backtest_smoke.py", {"trade_count": 1, "deterministic": True}),
+        ("scripts/smoke/smoke_suite.py", {"suite": "runtime_smoke_suite_v1"}),
+    ],
+)
+def test_local_smoke_scripts_execute_without_editable_install(
+    relative_path: str,
+    expected_pairs: dict[str, object],
+) -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+
+    completed = subprocess.run(
+        [sys.executable, str(repo_root / relative_path)],
+        cwd=repo_root,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    payload = json.loads(completed.stdout)
+
+    for key, expected_value in expected_pairs.items():
+        assert payload.get(key) == expected_value
 """
 
 
@@ -2550,6 +2644,7 @@ Runtime-first seed with admitted local-only API shell generated from the current
 - tracked env bootstrap template (`.env.example`)
 - local pre-commit hook config (`.pre-commit-config.yaml`)
 - narrow local QA defaults in `pyproject.toml`
+- repo-local smoke scripts (`scripts/smoke/{{fixture_smoke,backtest_smoke,smoke_suite}}.py`)
 - runtime-only governance guardrails
 - admitted source model payloads under `config/models/**`
 - deterministic fixture model-registry/prob-model smoke
@@ -2600,6 +2695,8 @@ Unneeded Optuna/optimizer closure is intentionally pruned from the seed until an
 explicit slice admits those higher-sensitivity surfaces.
 Local MCP support is admitted for stdio-only workspace usage; remote MCP entrypoints and remote
 allowlist variants remain deferred.
+Repo-local smoke scripts are generated so the seed can run its core smoke loops without relying on
+editor-specific tasks or an editable install first.
 
 ## Skeleton workflow
 
@@ -2613,6 +2710,7 @@ allowlist variants remain deferred.
 - `.env.example` keeps the narrow local placeholder values tracked even though `.env` stays ignored.
 - `.pre-commit-config.yaml` keeps a narrow local formatting/lint/sanity hook loop tracked in the seed.
 - `pyproject.toml` carries narrow local pytest/ruff/black defaults for the generated V2 workspace.
+- `scripts/smoke/*.py` wraps the core smoke modules with local `src/` bootstrapping so the seed is runnable before install.
 
 After editable install, local module commands:
 
@@ -2622,6 +2720,11 @@ Local champion-backed evaluate smoke: `python -m core.bootstrap.evaluate_champio
 Local bootstrap smoke: `python -m core.bootstrap.fixture_smoke`
 Local backtest bootstrap smoke: `python -m core.bootstrap.backtest_smoke`
 Local runtime smoke suite: `python -m core.bootstrap.smoke_suite`
+
+Non-installed local smoke scripts:
+`python scripts/smoke/fixture_smoke.py`
+`python scripts/smoke/backtest_smoke.py`
+`python scripts/smoke/smoke_suite.py`
 
 Local VS Code tasks:
 `genesis-v2: api shell`, `genesis-v2: smoke suite`, `genesis-v2: pytest`
@@ -2861,6 +2964,15 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
             sort_keys=True,
         )
         + "\n",
+        "scripts/smoke/backtest_smoke.py": _runtime_local_smoke_script_content(
+            "core.bootstrap.backtest_smoke"
+        ),
+        "scripts/smoke/fixture_smoke.py": _runtime_local_smoke_script_content(
+            "core.bootstrap.fixture_smoke"
+        ),
+        "scripts/smoke/smoke_suite.py": _runtime_local_smoke_script_content(
+            "core.bootstrap.smoke_suite"
+        ),
         "src/core/bootstrap/__init__.py": _runtime_bootstrap_init_content(),
         "src/core/bootstrap/backtest_smoke.py": _runtime_backtest_bootstrap_module_content(),
         "src/core/bootstrap/champion_smoke.py": _runtime_champion_smoke_module_content(),
@@ -2883,6 +2995,7 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
         "tests/runtime/test_local_precommit_config.py": _runtime_local_precommit_config_test_content(),
         "tests/runtime/test_local_vscode_extensions.py": _runtime_local_vscode_extensions_test_content(),
         "tests/runtime/test_local_mcp_setup.py": _runtime_local_mcp_setup_test_content(),
+        "tests/runtime/test_local_smoke_scripts.py": _runtime_local_smoke_scripts_test_content(),
         "tests/runtime/test_local_vscode_launch.py": _runtime_local_vscode_launch_test_content(),
         "tests/runtime/test_local_vscode_settings.py": _runtime_local_vscode_settings_test_content(),
         "tests/runtime/test_local_vscode_tasks.py": _runtime_local_vscode_tasks_test_content(),
@@ -2956,6 +3069,9 @@ def _manifest_payload(
             ".vscode/tasks.json",
             "config/mcp_settings.json",
             "mcp_server/server.py",
+            "scripts/smoke/backtest_smoke.py",
+            "scripts/smoke/fixture_smoke.py",
+            "scripts/smoke/smoke_suite.py",
         ],
         "workspace_extension_recommendations": [
             "ms-python.python",
@@ -2999,6 +3115,11 @@ def _manifest_payload(
                 "python -m core.bootstrap.backtest_smoke",
                 "python -m core.bootstrap.smoke_suite",
             ],
+            "script_commands": [
+                "python scripts/smoke/fixture_smoke.py",
+                "python scripts/smoke/backtest_smoke.py",
+                "python scripts/smoke/smoke_suite.py",
+            ],
             "console_scripts": [
                 "genesis-v2-fixture-smoke",
                 "genesis-v2-backtest-smoke",
@@ -3017,6 +3138,7 @@ def _manifest_payload(
             "Generated `.env.example` mirrors the narrow local placeholder `.env` for tracked bootstrap guidance.",
             "Generated `.pre-commit-config.yaml` keeps a narrow local formatting/lint/sanity hook loop tracked in the seed.",
             "Generated `pyproject.toml` carries narrow local pytest/ruff/black QA defaults for the V2 workspace.",
+            "Generated `scripts/smoke/*.py` provide non-installed local smoke entrypoints against the V2 `src` layout.",
             "Exchange-facing, paper, public-data, and UI service edges are intentionally excluded.",
             "Pipeline, Optuna, and optimizer-only closure are intentionally excluded.",
             "Legacy `core.strategy.features` surface intentionally excluded.",

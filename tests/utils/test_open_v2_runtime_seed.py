@@ -108,6 +108,13 @@ EXPECTED_LOCAL_EXTENSION_FILES = [
     "tests/runtime/test_local_vscode_extensions.py",
 ]
 
+EXPECTED_LOCAL_SCRIPT_FILES = [
+    "scripts/smoke/backtest_smoke.py",
+    "scripts/smoke/fixture_smoke.py",
+    "scripts/smoke/smoke_suite.py",
+    "tests/runtime/test_local_smoke_scripts.py",
+]
+
 EXPECTED_REMOTE_MCP_DEFERRED_FILES = [
     "config/mcp_settings.remote_git.json",
     "config/mcp_settings.remote_safe.json",
@@ -166,6 +173,12 @@ EXPECTED_PYPROJECT_RUFF_SELECT = ["E", "W", "F", "I", "B", "C4", "UP"]
 EXPECTED_PYPROJECT_RUFF_IGNORE = ["E501", "B008", "C901"]
 
 EXPECTED_PYPROJECT_BLACK_EXTEND_EXCLUDE = "(^cache/|^data/|^logs/|^results/)"
+
+EXPECTED_LOCAL_SCRIPT_COMMANDS = [
+    "python scripts/smoke/fixture_smoke.py",
+    "python scripts/smoke/backtest_smoke.py",
+    "python scripts/smoke/smoke_suite.py",
+]
 
 EXPECTED_PRECOMMIT_HOOK_IDS = [
     "black",
@@ -388,6 +401,7 @@ def test_generate_seed_admits_local_mcp_shell(tmp_path: Path) -> None:
     }
     assert ".vscode" in settings_payload["security"]["allowed_paths"]
     assert "mcp_server" in settings_payload["security"]["allowed_paths"]
+    assert "scripts" in settings_payload["security"]["allowed_paths"]
     assert "config/runtime.json" in settings_payload["security"]["blocked_patterns"]
     assert "local MCP stdio shell" in readme
     assert "Optional local MCP install:" in readme
@@ -571,6 +585,30 @@ def test_generate_seed_emits_local_vscode_extensions(tmp_path: Path) -> None:
     assert ".vscode/extensions.json" in readme
     assert "Suggested VS Code extensions" in readme
     assert ".vscode/extensions.json" in scope_text
+
+
+def test_generate_seed_emits_local_smoke_scripts(tmp_path: Path) -> None:
+    seed_module = _load_open_v2_runtime_seed_module()
+    destination = tmp_path / "Genesis-Core-V2"
+
+    seed_module.generate_seed(destination, clean=True, dry_run=False)
+
+    readme = (destination / "README.md").read_text(encoding="utf-8")
+    scope_text = (destination / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+    manifest = json.loads((destination / "seed_manifest.json").read_text(encoding="utf-8"))
+
+    for relative_path in EXPECTED_LOCAL_SCRIPT_FILES:
+        assert (destination / relative_path).exists(), relative_path
+
+    assert set(EXPECTED_LOCAL_SCRIPT_FILES[:-1]).issubset(set(manifest["local_tooling_surfaces"]))
+    assert manifest["smoke_entrypoints"]["script_commands"] == EXPECTED_LOCAL_SCRIPT_COMMANDS
+    assert (
+        "Generated `scripts/smoke/*.py` provide non-installed local smoke entrypoints against the V2 `src` layout."
+        in manifest["notes"]
+    )
+    assert "Non-installed local smoke scripts:" in readme
+    assert "python scripts/smoke/smoke_suite.py" in readme
+    assert "scripts/smoke/*.py" in scope_text
 
 
 def test_generate_seed_emits_local_vscode_launch_loop(tmp_path: Path) -> None:

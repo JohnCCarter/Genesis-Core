@@ -1039,6 +1039,15 @@ def _v2_vscode_launch_payload() -> dict[str, Any]:
                 "console": "integratedTerminal",
             },
             {
+                "name": "genesis-v2: mcp stdio",
+                "type": "debugpy",
+                "request": "launch",
+                "program": "${workspaceFolder}/scripts/mcp/mcp_stdio.py",
+                "cwd": "${workspaceFolder}",
+                "env": {"PYTHONPATH": "${workspaceFolder}/src"},
+                "console": "integratedTerminal",
+            },
+            {
                 "name": "genesis-v2: smoke suite",
                 "type": "debugpy",
                 "request": "launch",
@@ -1097,6 +1106,15 @@ def _v2_vscode_tasks_payload() -> dict[str, Any]:
                 "type": "shell",
                 "command": "python",
                 "args": ["scripts/api/api_shell.py", "--reload"],
+                "isBackground": True,
+                "problemMatcher": [],
+                "presentation": {"panel": "dedicated", "reveal": "always"},
+            },
+            {
+                "label": "genesis-v2: mcp stdio",
+                "type": "shell",
+                "command": "python",
+                "args": ["scripts/mcp/mcp_stdio.py"],
                 "isBackground": True,
                 "problemMatcher": [],
                 "presentation": {"panel": "dedicated", "reveal": "always"},
@@ -1330,6 +1348,7 @@ from pathlib import Path
 
 EXPECTED_TASK_ARGS = {
     "genesis-v2: api shell": ["scripts/api/api_shell.py", "--reload"],
+    "genesis-v2: mcp stdio": ["scripts/mcp/mcp_stdio.py"],
     "genesis-v2: smoke suite": ["scripts/smoke/smoke_suite.py"],
     "genesis-v2: pytest": ["scripts/validate/pytest_suite.py", "-q"],
 }
@@ -1352,6 +1371,7 @@ def test_local_vscode_tasks_encode_repeatable_skeleton_loop() -> None:
         assert tasks[label]["args"] == expected_args
 
     assert tasks["genesis-v2: api shell"]["isBackground"] is True
+    assert tasks["genesis-v2: mcp stdio"]["isBackground"] is True
     assert tasks["genesis-v2: pytest"]["group"] == {"kind": "test", "isDefault": True}
 """
 
@@ -1365,6 +1385,7 @@ from pathlib import Path
 
 EXPECTED_LAUNCH_PROGRAMS = {
     "genesis-v2: api shell": "${workspaceFolder}/scripts/api/api_shell.py",
+    "genesis-v2: mcp stdio": "${workspaceFolder}/scripts/mcp/mcp_stdio.py",
     "genesis-v2: smoke suite": "${workspaceFolder}/scripts/smoke/smoke_suite.py",
     "genesis-v2: pytest": "${workspaceFolder}/scripts/validate/pytest_suite.py",
 }
@@ -1387,6 +1408,7 @@ def test_local_vscode_launch_profiles_encode_repeatable_debug_loop() -> None:
         assert configs[name]["console"] == "integratedTerminal"
 
     assert configs["genesis-v2: api shell"]["args"] == ["--reload"]
+    assert configs["genesis-v2: mcp stdio"].get("args", []) == []
     assert configs["genesis-v2: smoke suite"].get("args", []) == []
     assert configs["genesis-v2: pytest"]["args"] == ["-q"]
     assert configs["genesis-v2: pytest"]["purpose"] == ["debug-test"]
@@ -3327,7 +3349,7 @@ editor-specific tasks or an editable install first.
 - `.github/copilot-instructions.md` keeps local agent work aligned with generator-driven slices.
 - `docs/SKELETON_SCOPE.md` records Track A vs Track B and the verification loop.
 - `.vscode/mcp.json` wires VS Code to the local `scripts/mcp/mcp_stdio.py` wrapper using `config/mcp_settings.json`.
-- `.vscode/tasks.json` and `.vscode/launch.json` route local API/smoke/test loops through the repo-local wrappers while keeping `PYTHONPATH=${{workspaceFolder}}/src` available.
+- `.vscode/tasks.json` and `.vscode/launch.json` route local API/MCP/smoke/test loops through the repo-local wrappers while keeping `PYTHONPATH=${{workspaceFolder}}/src` available.
 - `.vscode/settings.json` aligns Python analysis/test discovery with the `src/` layout and local `.env` placeholder.
 - `.vscode/extensions.json` recommends the Python/Pylance/Ruff stack for local skeleton work.
 - `.env.example` keeps the narrow local placeholder values tracked even though `.env` stays ignored.
@@ -3368,10 +3390,10 @@ Non-installed local smoke scripts:
 `python scripts/smoke/smoke_suite.py`
 
 Local VS Code tasks:
-`genesis-v2: api shell`, `genesis-v2: smoke suite`, `genesis-v2: pytest`
+`genesis-v2: api shell`, `genesis-v2: mcp stdio`, `genesis-v2: smoke suite`, `genesis-v2: pytest`
 
 Local VS Code debug profiles:
-`genesis-v2: api shell`, `genesis-v2: smoke suite`, `genesis-v2: pytest`
+`genesis-v2: api shell`, `genesis-v2: mcp stdio`, `genesis-v2: smoke suite`, `genesis-v2: pytest`
 
 Suggested VS Code extensions:
 `ms-python.python`, `ms-python.vscode-pylance`, `charliermarsh.ruff`
@@ -3751,11 +3773,13 @@ def _manifest_payload(
         ],
         "workspace_task_labels": [
             "genesis-v2: api shell",
+            "genesis-v2: mcp stdio",
             "genesis-v2: smoke suite",
             "genesis-v2: pytest",
         ],
         "workspace_launch_labels": [
             "genesis-v2: api shell",
+            "genesis-v2: mcp stdio",
             "genesis-v2: smoke suite",
             "genesis-v2: pytest",
         ],
@@ -3835,7 +3859,7 @@ def _manifest_payload(
             "Runtime-first seed with local-only API shell generated locally.",
             "Workflow files make the V2 seed self-describing as a skeleton-first repository.",
             "Local stdio MCP tooling is admitted with a safe V2-specific config; remote MCP surfaces remain excluded.",
-            "Generated `.vscode/tasks.json` and `.vscode/launch.json` provide repeatable local API/smoke/test loops via `PYTHONPATH=${workspaceFolder}/src`.",
+            "Generated `.vscode/tasks.json` and `.vscode/launch.json` provide repeatable local API/MCP/smoke/test loops via `PYTHONPATH=${workspaceFolder}/src`.",
             "Generated `.vscode/settings.json` aligns Python analysis and pytest discovery with the V2 `src` layout.",
             "Generated `.vscode/extensions.json` recommends Python/Pylance/Ruff extensions for the V2 editor workflow.",
             "Generated `.env.example` mirrors the narrow local placeholder `.env` for tracked bootstrap guidance.",

@@ -146,12 +146,14 @@ EXPECTED_MCP_OPTIONAL_DEPS = [
 
 EXPECTED_WORKSPACE_TASK_LABELS = [
     "genesis-v2: api shell",
+    "genesis-v2: mcp stdio",
     "genesis-v2: smoke suite",
     "genesis-v2: pytest",
 ]
 
 EXPECTED_WORKSPACE_LAUNCH_LABELS = [
     "genesis-v2: api shell",
+    "genesis-v2: mcp stdio",
     "genesis-v2: smoke suite",
     "genesis-v2: pytest",
 ]
@@ -522,11 +524,13 @@ def test_generate_seed_emits_local_vscode_task_loop(tmp_path: Path) -> None:
     assert manifest["workspace_task_labels"] == EXPECTED_WORKSPACE_TASK_LABELS
     assert ".vscode/tasks.json" in manifest["local_tooling_surfaces"]
     assert (
-        "Generated `.vscode/tasks.json` and `.vscode/launch.json` provide repeatable local API/smoke/test loops via `PYTHONPATH=${workspaceFolder}/src`."
+        "Generated `.vscode/tasks.json` and `.vscode/launch.json` provide repeatable local API/MCP/smoke/test loops via `PYTHONPATH=${workspaceFolder}/src`."
         in manifest["notes"]
     )
     assert tasks["genesis-v2: api shell"]["args"] == ["scripts/api/api_shell.py", "--reload"]
     assert tasks["genesis-v2: api shell"]["isBackground"] is True
+    assert tasks["genesis-v2: mcp stdio"]["args"] == ["scripts/mcp/mcp_stdio.py"]
+    assert tasks["genesis-v2: mcp stdio"]["isBackground"] is True
     assert tasks["genesis-v2: smoke suite"]["args"] == ["scripts/smoke/smoke_suite.py"]
     assert tasks["genesis-v2: pytest"]["args"] == ["scripts/validate/pytest_suite.py", "-q"]
     assert tasks["genesis-v2: pytest"]["group"] == {"kind": "test", "isDefault": True}
@@ -771,13 +775,17 @@ def test_generate_seed_emits_local_vscode_launch_loop(tmp_path: Path) -> None:
     assert ".vscode/launch.json" in manifest["local_tooling_surfaces"]
     assert manifest["workspace_loop_env"] == EXPECTED_WORKSPACE_LOOP_ENV
     assert (
-        "Generated `.vscode/tasks.json` and `.vscode/launch.json` provide repeatable local API/smoke/test loops via `PYTHONPATH=${workspaceFolder}/src`."
+        "Generated `.vscode/tasks.json` and `.vscode/launch.json` provide repeatable local API/MCP/smoke/test loops via `PYTHONPATH=${workspaceFolder}/src`."
         in manifest["notes"]
     )
     assert launch_payload["version"] == "0.2.0"
     assert (
         launch_configs["genesis-v2: api shell"]["program"]
         == "${workspaceFolder}/scripts/api/api_shell.py"
+    )
+    assert (
+        launch_configs["genesis-v2: mcp stdio"]["program"]
+        == "${workspaceFolder}/scripts/mcp/mcp_stdio.py"
     )
     assert (
         launch_configs["genesis-v2: smoke suite"]["program"]
@@ -788,6 +796,7 @@ def test_generate_seed_emits_local_vscode_launch_loop(tmp_path: Path) -> None:
         == "${workspaceFolder}/scripts/validate/pytest_suite.py"
     )
     assert launch_configs["genesis-v2: api shell"]["args"] == ["--reload"]
+    assert launch_configs["genesis-v2: mcp stdio"].get("args", []) == []
     assert launch_configs["genesis-v2: smoke suite"].get("args", []) == []
     assert launch_configs["genesis-v2: pytest"]["purpose"] == ["debug-test"]
     assert launch_configs["genesis-v2: smoke suite"]["env"] == EXPECTED_WORKSPACE_LOOP_ENV

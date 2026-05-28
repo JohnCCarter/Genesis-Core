@@ -64,6 +64,27 @@ EXPECTED_ADMITTED_API_SLICE_FILES = [
     "tests/integration/test_config_endpoints.py",
 ]
 
+EXPECTED_PRUNED_CLOSURE_FILES = [
+    "src/core/pipeline.py",
+    "src/core/utils/optuna_helpers.py",
+    "src/core/utils/diffing/optuna_guard.py",
+    "src/core/utils/diffing/results_diff.py",
+    "src/core/utils/diffing/trial_cache.py",
+]
+
+EXPECTED_PRUNED_CLOSURE_PREFIXES = [
+    "src/core/optimizer",
+]
+
+EXPECTED_PRUNED_MODULE_PREFIXES = {
+    "core.optimizer",
+    "core.pipeline",
+    "core.utils.diffing.optuna_guard",
+    "core.utils.diffing.results_diff",
+    "core.utils.diffing.trial_cache",
+    "core.utils.optuna_helpers",
+}
+
 
 def _source_model_file_names(repo_root: Path) -> list[str]:
     return sorted(path.name for path in (repo_root / "config" / "models").glob("*.json"))
@@ -144,6 +165,7 @@ def test_generate_seed_emits_api_runtime_dependencies_and_placeholder_env(tmp_pa
     assert "BITFINEX_API_KEY=" in env_text
     assert "BITFINEX_API_SECRET=" in env_text
     assert "SYMBOL_MODE=realistic" in env_text
+    assert "optuna>=3.5,<5" not in dependencies
 
 
 def test_generate_seed_clean_preserves_existing_git_directory(tmp_path: Path) -> None:
@@ -163,6 +185,32 @@ def test_generate_seed_clean_preserves_existing_git_directory(tmp_path: Path) ->
     assert git_object.read_text(encoding="utf-8") == "keep-me"
     assert not stale_file.exists()
     assert (destination / "seed_manifest.json").exists()
+
+
+def test_generate_seed_prunes_pipeline_optimizer_and_optuna_closure(tmp_path: Path) -> None:
+    seed_module = _load_open_v2_runtime_seed_module()
+    destination = tmp_path / "Genesis-Core-V2"
+
+    seed_module.generate_seed(destination, clean=True, dry_run=False)
+
+    for relative_path in EXPECTED_PRUNED_CLOSURE_FILES:
+        assert not (destination / relative_path).exists(), relative_path
+
+    for relative_prefix in EXPECTED_PRUNED_CLOSURE_PREFIXES:
+        assert not (destination / relative_prefix).exists(), relative_prefix
+
+    manifest = json.loads((destination / "seed_manifest.json").read_text(encoding="utf-8"))
+    readme = (destination / "README.md").read_text(encoding="utf-8")
+
+    assert EXPECTED_PRUNED_MODULE_PREFIXES.issubset(set(manifest["excluded_modules"]))
+    assert "src/core/pipeline.py" in manifest["excluded_relative_paths"]
+    assert "src/core/optimizer/" in manifest["excluded_path_prefixes"]
+    assert (
+        "Pipeline, Optuna, and optimizer-only closure are intentionally excluded."
+        in manifest["notes"]
+    )
+    assert "`src/core/optimizer/**`" in readme
+    assert "`src/core/utils/optuna_helpers.py`" in readme
 
 
 def test_generate_seed_copies_source_config_models_and_keeps_fixture_models_separate(

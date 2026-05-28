@@ -39,7 +39,6 @@ from pathlib import Path
 from typing import Any
 
 PHASE_ONE_ROOTS = [
-    "src/core/pipeline.py",
     "src/core/backtest/engine.py",
     "src/core/backtest/engine_precompute.py",
     "src/core/server.py",
@@ -57,13 +56,24 @@ PHASE_ONE_ROOTS = [
     "tests/governance/test_no_legacy_feature_imports.py",
 ]
 
-EXCLUDED_MODULE_PREFIXES = ("core.strategy.features",)
+EXCLUDED_MODULE_PREFIXES = (
+    "core.optimizer",
+    "core.pipeline",
+    "core.strategy.features",
+    "core.utils.diffing.optuna_guard",
+    "core.utils.diffing.results_diff",
+    "core.utils.diffing.trial_cache",
+    "core.utils.optuna_helpers",
+)
 
 EXCLUDED_RELATIVE_PATHS = {
+    "src/core/pipeline.py",
     "src/core/strategy/features.py",
+    "src/core/utils/optuna_helpers.py",
 }
 
 EXCLUDED_PATH_PREFIXES = (
+    "src/core/optimizer/",
     "results/",
     "docs/analysis/edge_topology/",
 )
@@ -134,7 +144,6 @@ PYPROJECT_RUNTIME_DEPS = [
     "pandas>=2.0,<3",
     "PyYAML>=6.0,<7",
     "tqdm>=4.65,<5",
-    "optuna>=3.5,<5",
     "pyarrow>=14,<16",
 ]
 
@@ -386,7 +395,7 @@ def _build_closure(repo_root: Path) -> tuple[list[SourceFile], list[str]]:
         if absolute_path.suffix != ".py":
             continue
 
-        text = _load_source_text(absolute_path)
+        text = _closure_scan_text(relative_path, absolute_path)
         targets, blocked = _collect_local_import_targets(relative_path, text)
         blocked_imports.extend(blocked)
 
@@ -441,12 +450,18 @@ _ADMITTED_FILES = [
 
 
 _EXCLUDED_FILES = [
+    "src/core/pipeline.py",
     "src/core/strategy/features.py",
+    "src/core/utils/diffing/optuna_guard.py",
+    "src/core/utils/diffing/results_diff.py",
+    "src/core/utils/diffing/trial_cache.py",
+    "src/core/utils/optuna_helpers.py",
     "config/runtime.json",
     "config/runtime.seed.json",
 ]
 
 _EXCLUDED_PREFIXES = [
+    "src/core/optimizer",
     "data",
 ]
 
@@ -455,7 +470,13 @@ _EXCLUDED_JSON_PAYLOAD_DIRS = [
 ]
 
 _EXCLUDED_MODULE_PREFIXES = [
+    "core.optimizer",
+    "core.pipeline",
     "core.strategy.features",
+    "core.utils.diffing.optuna_guard",
+    "core.utils.diffing.results_diff",
+    "core.utils.diffing.trial_cache",
+    "core.utils.optuna_helpers",
 ]
 
 
@@ -617,6 +638,13 @@ __all__ = [
     "make_indicator_fingerprint",
 ]
 '''
+
+
+def _closure_scan_text(relative_path: str, absolute_path: Path) -> str:
+    normalized = relative_path.replace("\\", "/")
+    if normalized == "src/core/utils/diffing/__init__.py":
+        return _runtime_diffing_init_content()
+    return _load_source_text(absolute_path)
 
 
 def _runtime_pipeline_smoke_test_content() -> str:
@@ -1658,7 +1686,7 @@ Runtime-first seed with admitted API/service shell generated from the current
 
 ## What is included
 
-- runtime kernel roots (`pipeline`, `backtest`, `strategy`, `regime`)
+- runtime kernel roots (`backtest`, `strategy`, `regime`)
 - local dependency closure required by those roots
 - admitted API/service shell (`src/core/server.py`, `src/core/api/**`)
 - source-backed config validation seam (`src/core/config/validator.py`,
@@ -1683,7 +1711,11 @@ Runtime-first seed with admitted API/service shell generated from the current
 
 ## What is intentionally excluded
 
+- `src/core/pipeline.py`
+- `src/core/optimizer/**`
 - `src/core/strategy/features.py`
+- `src/core/utils/optuna_helpers.py`
+- `src/core/utils/diffing/{{optuna_guard,results_diff,trial_cache}}.py`
 - `config/runtime.json`
 - `config/runtime.seed.json`
 - `config/strategy/champions/**`
@@ -1701,6 +1733,8 @@ Phase 1 intentionally excludes `config/strategy/champions/**`; runtime falls bac
 `config/timeframe_configs.py` through `ChampionLoader` when champion payloads are absent.
 The API/service shell is admitted, but runtime state and champion authority payloads remain
 excluded; generated `.env` contains placeholder values for bearer/auth seams only.
+Unneeded Optuna/optimizer closure is intentionally pruned from the seed until and unless a later
+explicit slice admits those higher-sensitivity surfaces.
 
 Local model smoke: `python -m core.bootstrap.model_smoke`
 Local champion smoke: `python -m core.bootstrap.champion_smoke`
@@ -1946,6 +1980,7 @@ def _manifest_payload(
         "output_hashes": output_hashes,
         "notes": [
             "Runtime-first seed with API/service shell generated locally.",
+            "Pipeline, Optuna, and optimizer-only closure are intentionally excluded.",
             "Legacy `core.strategy.features` surface intentionally excluded.",
             "Only explicitly admitted stateful artifacts were carried over; champions and runtime state remained excluded.",
             "Generated `.env` contains placeholder bearer and Bitfinex auth values only.",

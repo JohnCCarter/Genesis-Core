@@ -1003,7 +1003,7 @@ def _v2_vscode_mcp_payload() -> dict[str, Any]:
         "servers": {
             "genesis-core-v2": {
                 "command": "python",
-                "args": ["-m", "mcp_server.server"],
+                "args": ["scripts/mcp/mcp_stdio.py"],
                 "env": {
                     "GENESIS_MCP_CONFIG_PATH": "config/mcp_settings.json",
                 },
@@ -1020,8 +1020,8 @@ def _v2_vscode_launch_payload() -> dict[str, Any]:
                 "name": "genesis-v2: api shell",
                 "type": "debugpy",
                 "request": "launch",
-                "module": "uvicorn",
-                "args": ["core.server:app", "--app-dir", "src", "--reload"],
+                "program": "${workspaceFolder}/scripts/api/api_shell.py",
+                "args": ["--reload"],
                 "cwd": "${workspaceFolder}",
                 "env": {"PYTHONPATH": "${workspaceFolder}/src"},
                 "console": "integratedTerminal",
@@ -1030,7 +1030,7 @@ def _v2_vscode_launch_payload() -> dict[str, Any]:
                 "name": "genesis-v2: smoke suite",
                 "type": "debugpy",
                 "request": "launch",
-                "module": "core.bootstrap.smoke_suite",
+                "program": "${workspaceFolder}/scripts/smoke/smoke_suite.py",
                 "cwd": "${workspaceFolder}",
                 "env": {"PYTHONPATH": "${workspaceFolder}/src"},
                 "console": "integratedTerminal",
@@ -1039,7 +1039,7 @@ def _v2_vscode_launch_payload() -> dict[str, Any]:
                 "name": "genesis-v2: pytest",
                 "type": "debugpy",
                 "request": "launch",
-                "module": "pytest",
+                "program": "${workspaceFolder}/scripts/validate/pytest_suite.py",
                 "args": ["-q"],
                 "cwd": "${workspaceFolder}",
                 "env": {"PYTHONPATH": "${workspaceFolder}/src"},
@@ -1084,14 +1084,7 @@ def _v2_vscode_tasks_payload() -> dict[str, Any]:
                 "label": "genesis-v2: api shell",
                 "type": "shell",
                 "command": "python",
-                "args": [
-                    "-m",
-                    "uvicorn",
-                    "core.server:app",
-                    "--app-dir",
-                    "src",
-                    "--reload",
-                ],
+                "args": ["scripts/api/api_shell.py", "--reload"],
                 "isBackground": True,
                 "problemMatcher": [],
                 "presentation": {"panel": "dedicated", "reveal": "always"},
@@ -1100,14 +1093,14 @@ def _v2_vscode_tasks_payload() -> dict[str, Any]:
                 "label": "genesis-v2: smoke suite",
                 "type": "shell",
                 "command": "python",
-                "args": ["-m", "core.bootstrap.smoke_suite"],
+                "args": ["scripts/smoke/smoke_suite.py"],
                 "presentation": {"panel": "shared", "reveal": "always"},
             },
             {
                 "label": "genesis-v2: pytest",
                 "type": "shell",
                 "command": "python",
-                "args": ["-m", "pytest", "-q"],
+                "args": ["scripts/validate/pytest_suite.py", "-q"],
                 "group": {"kind": "test", "isDefault": True},
                 "presentation": {"panel": "shared", "reveal": "always"},
             },
@@ -1281,7 +1274,7 @@ def test_local_mcp_files_encode_safe_skeleton_defaults() -> None:
     )
 
     server = vscode_payload["servers"]["genesis-core-v2"]
-    assert server["args"] == ["-m", "mcp_server.server"]
+    assert server["args"] == ["scripts/mcp/mcp_stdio.py"]
     assert server["env"]["GENESIS_MCP_CONFIG_PATH"] == "config/mcp_settings.json"
 
     assert settings_payload["server_name"] == "genesis-core-v2"
@@ -1324,16 +1317,9 @@ from pathlib import Path
 
 
 EXPECTED_TASK_ARGS = {
-    "genesis-v2: api shell": [
-        "-m",
-        "uvicorn",
-        "core.server:app",
-        "--app-dir",
-        "src",
-        "--reload",
-    ],
-    "genesis-v2: smoke suite": ["-m", "core.bootstrap.smoke_suite"],
-    "genesis-v2: pytest": ["-m", "pytest", "-q"],
+    "genesis-v2: api shell": ["scripts/api/api_shell.py", "--reload"],
+    "genesis-v2: smoke suite": ["scripts/smoke/smoke_suite.py"],
+    "genesis-v2: pytest": ["scripts/validate/pytest_suite.py", "-q"],
 }
 
 
@@ -1365,10 +1351,10 @@ import json
 from pathlib import Path
 
 
-EXPECTED_LAUNCH_MODULES = {
-    "genesis-v2: api shell": "uvicorn",
-    "genesis-v2: smoke suite": "core.bootstrap.smoke_suite",
-    "genesis-v2: pytest": "pytest",
+EXPECTED_LAUNCH_PROGRAMS = {
+    "genesis-v2: api shell": "${workspaceFolder}/scripts/api/api_shell.py",
+    "genesis-v2: smoke suite": "${workspaceFolder}/scripts/smoke/smoke_suite.py",
+    "genesis-v2: pytest": "${workspaceFolder}/scripts/validate/pytest_suite.py",
 }
 
 
@@ -1378,22 +1364,18 @@ def test_local_vscode_launch_profiles_encode_repeatable_debug_loop() -> None:
     configs = {config["name"]: config for config in payload["configurations"]}
 
     assert payload["version"] == "0.2.0"
-    assert set(EXPECTED_LAUNCH_MODULES).issubset(configs)
+    assert set(EXPECTED_LAUNCH_PROGRAMS).issubset(configs)
 
-    for name, expected_module in EXPECTED_LAUNCH_MODULES.items():
+    for name, expected_program in EXPECTED_LAUNCH_PROGRAMS.items():
         assert configs[name]["type"] == "debugpy"
         assert configs[name]["request"] == "launch"
-        assert configs[name]["module"] == expected_module
+        assert configs[name]["program"] == expected_program
         assert configs[name]["cwd"] == "${workspaceFolder}"
         assert configs[name]["env"] == {"PYTHONPATH": "${workspaceFolder}/src"}
         assert configs[name]["console"] == "integratedTerminal"
 
-    assert configs["genesis-v2: api shell"]["args"] == [
-        "core.server:app",
-        "--app-dir",
-        "src",
-        "--reload",
-    ]
+    assert configs["genesis-v2: api shell"]["args"] == ["--reload"]
+    assert configs["genesis-v2: smoke suite"].get("args", []) == []
     assert configs["genesis-v2: pytest"]["args"] == ["-q"]
     assert configs["genesis-v2: pytest"]["purpose"] == ["debug-test"]
 """
@@ -3087,8 +3069,8 @@ editor-specific tasks or an editable install first.
 - `AGENTS.md` defines the skeleton-first repo contract.
 - `.github/copilot-instructions.md` keeps local agent work aligned with generator-driven slices.
 - `docs/SKELETON_SCOPE.md` records Track A vs Track B and the verification loop.
-- `.vscode/mcp.json` wires VS Code to the local stdio MCP server using `config/mcp_settings.json`.
-- `.vscode/tasks.json` and `.vscode/launch.json` inject `PYTHONPATH=${{workspaceFolder}}/src` for local non-installed loops.
+- `.vscode/mcp.json` wires VS Code to the local `scripts/mcp/mcp_stdio.py` wrapper using `config/mcp_settings.json`.
+- `.vscode/tasks.json` and `.vscode/launch.json` route local API/smoke/test loops through the repo-local wrappers while keeping `PYTHONPATH=${{workspaceFolder}}/src` available.
 - `.vscode/settings.json` aligns Python analysis/test discovery with the `src/` layout and local `.env` placeholder.
 - `.vscode/extensions.json` recommends the Python/Pylance/Ruff stack for local skeleton work.
 - `.env.example` keeps the narrow local placeholder values tracked even though `.env` stays ignored.

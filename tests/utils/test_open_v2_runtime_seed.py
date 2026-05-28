@@ -419,7 +419,7 @@ def test_generate_seed_admits_local_mcp_shell(tmp_path: Path) -> None:
     )
 
     assert pyproject["project"]["optional-dependencies"]["mcp"] == EXPECTED_MCP_OPTIONAL_DEPS
-    assert vscode_payload["servers"]["genesis-core-v2"]["args"] == ["-m", "mcp_server.server"]
+    assert vscode_payload["servers"]["genesis-core-v2"]["args"] == ["scripts/mcp/mcp_stdio.py"]
     assert (
         vscode_payload["servers"]["genesis-core-v2"]["env"]["GENESIS_MCP_CONFIG_PATH"]
         == "config/mcp_settings.json"
@@ -505,17 +505,10 @@ def test_generate_seed_emits_local_vscode_task_loop(tmp_path: Path) -> None:
         "Generated `.vscode/tasks.json` and `.vscode/launch.json` provide repeatable local API/smoke/test loops via `PYTHONPATH=${workspaceFolder}/src`."
         in manifest["notes"]
     )
-    assert tasks["genesis-v2: api shell"]["args"] == [
-        "-m",
-        "uvicorn",
-        "core.server:app",
-        "--app-dir",
-        "src",
-        "--reload",
-    ]
+    assert tasks["genesis-v2: api shell"]["args"] == ["scripts/api/api_shell.py", "--reload"]
     assert tasks["genesis-v2: api shell"]["isBackground"] is True
-    assert tasks["genesis-v2: smoke suite"]["args"] == ["-m", "core.bootstrap.smoke_suite"]
-    assert tasks["genesis-v2: pytest"]["args"] == ["-m", "pytest", "-q"]
+    assert tasks["genesis-v2: smoke suite"]["args"] == ["scripts/smoke/smoke_suite.py"]
+    assert tasks["genesis-v2: pytest"]["args"] == ["scripts/validate/pytest_suite.py", "-q"]
     assert tasks["genesis-v2: pytest"]["group"] == {"kind": "test", "isDefault": True}
     assert "Local VS Code tasks:" in readme
     assert ".vscode/tasks.json" in scope_text
@@ -757,9 +750,20 @@ def test_generate_seed_emits_local_vscode_launch_loop(tmp_path: Path) -> None:
         in manifest["notes"]
     )
     assert launch_payload["version"] == "0.2.0"
-    assert launch_configs["genesis-v2: api shell"]["module"] == "uvicorn"
-    assert launch_configs["genesis-v2: smoke suite"]["module"] == "core.bootstrap.smoke_suite"
-    assert launch_configs["genesis-v2: pytest"]["module"] == "pytest"
+    assert (
+        launch_configs["genesis-v2: api shell"]["program"]
+        == "${workspaceFolder}/scripts/api/api_shell.py"
+    )
+    assert (
+        launch_configs["genesis-v2: smoke suite"]["program"]
+        == "${workspaceFolder}/scripts/smoke/smoke_suite.py"
+    )
+    assert (
+        launch_configs["genesis-v2: pytest"]["program"]
+        == "${workspaceFolder}/scripts/validate/pytest_suite.py"
+    )
+    assert launch_configs["genesis-v2: api shell"]["args"] == ["--reload"]
+    assert launch_configs["genesis-v2: smoke suite"].get("args", []) == []
     assert launch_configs["genesis-v2: pytest"]["purpose"] == ["debug-test"]
     assert launch_configs["genesis-v2: smoke suite"]["env"] == EXPECTED_WORKSPACE_LOOP_ENV
     assert "Local VS Code debug profiles:" in readme
@@ -769,7 +773,7 @@ def test_generate_seed_emits_local_vscode_launch_loop(tmp_path: Path) -> None:
     loop_env = dict(os.environ)
     loop_env["PYTHONPATH"] = str(destination / "src")
     completed = subprocess.run(
-        [sys.executable, "-m", "core.bootstrap.smoke_suite"],
+        [sys.executable, str(destination / "scripts" / "smoke" / "smoke_suite.py")],
         cwd=destination,
         env=loop_env,
         capture_output=True,

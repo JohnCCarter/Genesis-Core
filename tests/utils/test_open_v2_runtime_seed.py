@@ -254,6 +254,17 @@ EXPECTED_WORKSPACE_VERIFICATION = {
     },
 }
 
+EXPECTED_BOOTSTRAP_VERIFICATION = {
+    "env_template": {
+        "runtime_test_file": "tests/runtime/test_local_env_template.py",
+        "tracked_file": ".env.example",
+    },
+    "precommit": {
+        "runtime_test_file": "tests/runtime/test_local_precommit_config.py",
+        "tracked_file": ".pre-commit-config.yaml",
+    },
+}
+
 EXPECTED_PRECOMMIT_HOOK_IDS = [
     "black",
     "ruff",
@@ -499,6 +510,21 @@ def test_generate_seed_emits_workspace_verification_manifest(tmp_path: Path) -> 
 
     for payload in EXPECTED_WORKSPACE_VERIFICATION.values():
         assert (destination / payload["workspace_file"]).exists(), payload["workspace_file"]
+        assert (destination / payload["runtime_test_file"]).exists(), payload["runtime_test_file"]
+
+
+def test_generate_seed_emits_bootstrap_verification_manifest(tmp_path: Path) -> None:
+    seed_module = _load_open_v2_runtime_seed_module()
+    destination = tmp_path / "Genesis-Core-V2"
+
+    seed_module.generate_seed(destination, clean=True, dry_run=False)
+
+    manifest = json.loads((destination / "seed_manifest.json").read_text(encoding="utf-8"))
+
+    assert manifest["bootstrap_verification"] == EXPECTED_BOOTSTRAP_VERIFICATION
+
+    for payload in EXPECTED_BOOTSTRAP_VERIFICATION.values():
+        assert (destination / payload["tracked_file"]).exists(), payload["tracked_file"]
         assert (destination / payload["runtime_test_file"]).exists(), payload["runtime_test_file"]
 
 

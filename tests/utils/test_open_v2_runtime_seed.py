@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import subprocess
 import sys
 import textwrap
@@ -81,6 +82,11 @@ EXPECTED_LOCAL_TASK_FILES = [
     "tests/runtime/test_local_vscode_tasks.py",
 ]
 
+EXPECTED_LOCAL_LAUNCH_FILES = [
+    ".vscode/launch.json",
+    "tests/runtime/test_local_vscode_launch.py",
+]
+
 EXPECTED_REMOTE_MCP_DEFERRED_FILES = [
     "config/mcp_settings.remote_git.json",
     "config/mcp_settings.remote_safe.json",
@@ -96,6 +102,14 @@ EXPECTED_WORKSPACE_TASK_LABELS = [
     "genesis-v2: smoke suite",
     "genesis-v2: pytest",
 ]
+
+EXPECTED_WORKSPACE_LAUNCH_LABELS = [
+    "genesis-v2: api shell",
+    "genesis-v2: smoke suite",
+    "genesis-v2: pytest",
+]
+
+EXPECTED_WORKSPACE_LOOP_ENV = {"PYTHONPATH": "${workspaceFolder}/src"}
 
 EXPECTED_DEFERRED_SERVICE_EDGE_FILES = [
     "src/core/api/account.py",
@@ -308,10 +322,14 @@ def test_generate_seed_emits_local_vscode_task_loop(tmp_path: Path) -> None:
     tasks = {task["label"]: task for task in tasks_payload["tasks"]}
 
     assert tasks_payload["version"] == "2.0.0"
+    assert tasks_payload["options"] == {
+        "cwd": "${workspaceFolder}",
+        "env": EXPECTED_WORKSPACE_LOOP_ENV,
+    }
     assert manifest["workspace_task_labels"] == EXPECTED_WORKSPACE_TASK_LABELS
     assert ".vscode/tasks.json" in manifest["local_tooling_surfaces"]
     assert (
-        "Generated `.vscode/tasks.json` provides a repeatable local API/smoke/test loop."
+        "Generated `.vscode/tasks.json` and `.vscode/launch.json` provide repeatable local API/smoke/test loops via `PYTHONPATH=${workspaceFolder}/src`."
         in manifest["notes"]
     )
     assert tasks["genesis-v2: api shell"]["args"] == [
@@ -329,6 +347,58 @@ def test_generate_seed_emits_local_vscode_task_loop(tmp_path: Path) -> None:
     assert "Local VS Code tasks:" in readme
     assert ".vscode/tasks.json" in scope_text
     assert "generated local VS Code tasks" in instructions_text
+
+
+def test_generate_seed_emits_local_vscode_launch_loop(tmp_path: Path) -> None:
+    seed_module = _load_open_v2_runtime_seed_module()
+    destination = tmp_path / "Genesis-Core-V2"
+
+    seed_module.generate_seed(destination, clean=True, dry_run=False)
+
+    for relative_path in EXPECTED_LOCAL_LAUNCH_FILES:
+        assert (destination / relative_path).exists(), relative_path
+
+    readme = (destination / "README.md").read_text(encoding="utf-8")
+    scope_text = (destination / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+    instructions_text = (destination / ".github" / "copilot-instructions.md").read_text(
+        encoding="utf-8"
+    )
+    manifest = json.loads((destination / "seed_manifest.json").read_text(encoding="utf-8"))
+    launch_payload = json.loads(
+        (destination / ".vscode" / "launch.json").read_text(encoding="utf-8")
+    )
+    launch_configs = {config["name"]: config for config in launch_payload["configurations"]}
+
+    assert manifest["workspace_launch_labels"] == EXPECTED_WORKSPACE_LAUNCH_LABELS
+    assert ".vscode/launch.json" in manifest["local_tooling_surfaces"]
+    assert manifest["workspace_loop_env"] == EXPECTED_WORKSPACE_LOOP_ENV
+    assert (
+        "Generated `.vscode/tasks.json` and `.vscode/launch.json` provide repeatable local API/smoke/test loops via `PYTHONPATH=${workspaceFolder}/src`."
+        in manifest["notes"]
+    )
+    assert launch_payload["version"] == "0.2.0"
+    assert launch_configs["genesis-v2: api shell"]["module"] == "uvicorn"
+    assert launch_configs["genesis-v2: smoke suite"]["module"] == "core.bootstrap.smoke_suite"
+    assert launch_configs["genesis-v2: pytest"]["module"] == "pytest"
+    assert launch_configs["genesis-v2: pytest"]["purpose"] == ["debug-test"]
+    assert launch_configs["genesis-v2: smoke suite"]["env"] == EXPECTED_WORKSPACE_LOOP_ENV
+    assert "Local VS Code debug profiles:" in readme
+    assert ".vscode/launch.json" in scope_text
+    assert "debug profiles" in instructions_text
+
+    loop_env = dict(os.environ)
+    loop_env["PYTHONPATH"] = str(destination / "src")
+    completed = subprocess.run(
+        [sys.executable, "-m", "core.bootstrap.smoke_suite"],
+        cwd=destination,
+        env=loop_env,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    payload = json.loads(completed.stdout)
+    assert payload["suite"] == "runtime_smoke_suite_v1"
+    assert payload["checks"]["fixture_smoke"] == "passed"
 
 
 def test_generate_seed_emits_api_runtime_dependencies_and_placeholder_env(tmp_path: Path) -> None:

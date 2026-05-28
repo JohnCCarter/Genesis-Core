@@ -92,6 +92,11 @@ EXPECTED_LOCAL_SETTINGS_FILES = [
     "tests/runtime/test_local_vscode_settings.py",
 ]
 
+EXPECTED_LOCAL_ENV_TEMPLATE_FILES = [
+    ".env.example",
+    "tests/runtime/test_local_env_template.py",
+]
+
 EXPECTED_LOCAL_EXTENSION_FILES = [
     ".vscode/extensions.json",
     "tests/runtime/test_local_vscode_extensions.py",
@@ -407,6 +412,34 @@ def test_generate_seed_emits_local_vscode_settings(tmp_path: Path) -> None:
     assert ".vscode/settings.json" in scope_text
 
 
+def test_generate_seed_emits_local_env_template(tmp_path: Path) -> None:
+    seed_module = _load_open_v2_runtime_seed_module()
+    destination = tmp_path / "Genesis-Core-V2"
+
+    seed_module.generate_seed(destination, clean=True, dry_run=False)
+
+    for relative_path in EXPECTED_LOCAL_ENV_TEMPLATE_FILES:
+        assert (destination / relative_path).exists(), relative_path
+
+    readme = (destination / "README.md").read_text(encoding="utf-8")
+    scope_text = (destination / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+    manifest = json.loads((destination / "seed_manifest.json").read_text(encoding="utf-8"))
+    template_text = (destination / ".env.example").read_text(encoding="utf-8")
+
+    assert ".env.example" in manifest["generated_files"]
+    assert (
+        "Generated `.env.example` mirrors the narrow local placeholder `.env` for tracked bootstrap guidance."
+        in manifest["notes"]
+    )
+    assert "# Copy this file to .env for local use." in template_text
+    assert "BEARER_TOKEN=change-me" in template_text
+    assert "SYMBOL_MODE=realistic" in template_text
+    assert "LOG_LEVEL=INFO" in template_text
+    assert ".env.example" in readme
+    assert "tracked env bootstrap template" in readme
+    assert ".env.example" in scope_text
+
+
 def test_generate_seed_emits_local_vscode_extensions(tmp_path: Path) -> None:
     seed_module = _load_open_v2_runtime_seed_module()
     destination = tmp_path / "Genesis-Core-V2"
@@ -503,9 +536,12 @@ def test_generate_seed_emits_api_runtime_dependencies_and_placeholder_env(tmp_pa
     assert EXPECTED_API_RUNTIME_DEPS.issubset(dependencies)
 
     env_text = (destination / ".env").read_text(encoding="utf-8")
+    env_example_text = (destination / ".env.example").read_text(encoding="utf-8")
     assert "BEARER_TOKEN=change-me" in env_text
     assert "SYMBOL_MODE=realistic" in env_text
     assert "LOG_LEVEL=INFO" in env_text
+    assert "# Copy this file to .env for local use." in env_example_text
+    assert "BITFINEX_API_KEY=" not in env_example_text
     assert "httpx>=0.25,<0.26" not in dependencies
     assert "websockets>=12,<13" not in dependencies
     assert "BITFINEX_API_KEY=" not in env_text

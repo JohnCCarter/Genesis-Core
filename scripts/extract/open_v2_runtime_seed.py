@@ -125,6 +125,7 @@ GENERATED_FILES = {
     "pyproject.toml",
     ".gitignore",
     ".env",
+    ".env.example",
     "config/backtest_defaults.yaml",
     "config/mcp_settings.json",
     "docs/SKELETON_SCOPE.md",
@@ -506,6 +507,12 @@ _SETTINGS_FILES = [
 ]
 
 
+_ENV_TEMPLATE_FILES = [
+    ".env.example",
+    "tests/runtime/test_local_env_template.py",
+]
+
+
 _EXTENSIONS_FILES = [
     ".vscode/extensions.json",
     "tests/runtime/test_local_vscode_extensions.py",
@@ -648,6 +655,20 @@ def test_seed_contains_local_vscode_settings() -> None:
     assert ".vscode/settings.json" in scope_text
 
 
+def test_seed_contains_local_env_template() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+
+    for relative_path in _ENV_TEMPLATE_FILES:
+        assert (repo_root / relative_path).exists(), relative_path
+
+    readme = (repo_root / "README.md").read_text(encoding="utf-8")
+    scope_text = (repo_root / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+
+    assert ".env.example" in readme
+    assert "tracked env bootstrap template" in readme
+    assert ".env.example" in scope_text
+
+
 def test_seed_contains_local_vscode_extensions() -> None:
     repo_root = Path(__file__).resolve().parents[2]
 
@@ -745,13 +766,25 @@ def _backtest_defaults_content() -> str:
     return content if content.endswith("\n") else f"{content}\n"
 
 
+def _env_placeholder_lines() -> list[str]:
+    return [
+        "BEARER_TOKEN=change-me",
+        "SYMBOL_MODE=realistic",
+        "LOG_LEVEL=INFO",
+    ]
+
+
 def _env_placeholder_content() -> str:
-    return """# Placeholder environment values for the generated Genesis-Core-V2 seed
-# Replace before using protected local config-write endpoints.
-BEARER_TOKEN=change-me
-SYMBOL_MODE=realistic
-LOG_LEVEL=INFO
-"""
+    placeholder_lines = "\n".join(_env_placeholder_lines())
+    return (
+        "# Placeholder environment values for the generated Genesis-Core-V2 seed\n"
+        "# Replace before using protected local config-write endpoints.\n"
+        f"{placeholder_lines}\n"
+    )
+
+
+def _env_example_content() -> str:
+    return "# Copy this file to .env for local use.\n" + _env_placeholder_content()
 
 
 def _v2_mcp_settings_payload() -> dict[str, Any]:
@@ -1013,6 +1046,7 @@ Included in the current priority lane:
 - README and local workflow docs
 - `AGENTS.md` and `.github/copilot-instructions.md`
 - `.vscode/mcp.json`, `.vscode/tasks.json`, `.vscode/launch.json`, `.vscode/settings.json`, and `.vscode/extensions.json` for local editor workflow
+- tracked local env bootstrap template (`.env.example`) plus ignored local placeholder `.env`
 - `config/mcp_settings.json` and `mcp_server/**` for local MCP use
 - local-only API shell (`config`, `status`, `models`, `strategy`)
 - fixture-backed smoke tests and console scripts
@@ -1215,6 +1249,28 @@ def test_local_vscode_extensions_recommend_python_workflow_stack() -> None:
         "charliermarsh.ruff",
     ]
     assert payload["unwantedRecommendations"] == []
+"""
+
+
+def _runtime_local_env_template_test_content() -> str:
+    return """from __future__ import annotations
+
+from pathlib import Path
+
+
+def test_local_env_example_tracks_the_narrow_placeholder_values() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+    env_text = (repo_root / ".env").read_text(encoding="utf-8")
+    template_text = (repo_root / ".env.example").read_text(encoding="utf-8")
+
+    assert "# Copy this file to .env for local use." in template_text
+    for expected_line in [
+        "BEARER_TOKEN=change-me",
+        "SYMBOL_MODE=realistic",
+        "LOG_LEVEL=INFO",
+    ]:
+        assert expected_line in env_text
+        assert expected_line in template_text
 """
 
 
@@ -2383,6 +2439,7 @@ Runtime-first seed with admitted local-only API shell generated from the current
 - local VS Code task/debug loop (`.vscode/tasks.json`, `.vscode/launch.json`)
 - local VS Code Python analysis/test settings (`.vscode/settings.json`)
 - local VS Code extension recommendations (`.vscode/extensions.json`)
+- tracked env bootstrap template (`.env.example`)
 - runtime-only governance guardrails
 - admitted source model payloads under `config/models/**`
 - deterministic fixture model-registry/prob-model smoke
@@ -2428,7 +2485,7 @@ Phase 1 intentionally excludes `config/strategy/champions/**`; runtime falls bac
 The admitted API shell is local-only (`config/status/models/strategy`); exchange-facing,
 paper, public-data, and UI surfaces remain excluded for a later slice.
 Runtime state and champion authority payloads remain excluded; generated `.env` contains only
-local-shell placeholders.
+local-shell placeholders. Tracked `.env.example` mirrors the same narrow values for copy-forward bootstrap.
 Unneeded Optuna/optimizer closure is intentionally pruned from the seed until and unless a later
 explicit slice admits those higher-sensitivity surfaces.
 Local MCP support is admitted for stdio-only workspace usage; remote MCP entrypoints and remote
@@ -2443,6 +2500,7 @@ allowlist variants remain deferred.
 - `.vscode/tasks.json` and `.vscode/launch.json` inject `PYTHONPATH=${{workspaceFolder}}/src` for local non-installed loops.
 - `.vscode/settings.json` aligns Python analysis/test discovery with the `src/` layout and local `.env` placeholder.
 - `.vscode/extensions.json` recommends the Python/Pylance/Ruff stack for local skeleton work.
+- `.env.example` keeps the narrow local placeholder values tracked even though `.env` stays ignored.
 
 After editable install, local module commands:
 
@@ -2635,6 +2693,7 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
         "pyproject.toml": _pyproject_content(),
         ".gitignore": _gitignore_content(),
         ".env": _env_placeholder_content(),
+        ".env.example": _env_example_content(),
         "config/backtest_defaults.yaml": _backtest_defaults_content(),
         "config/mcp_settings.json": json.dumps(
             _v2_mcp_settings_payload(),
@@ -2690,6 +2749,7 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
         "tests/runtime/test_evaluate_champion_smoke.py": _runtime_evaluate_champion_smoke_test_content(),
         "tests/governance/test_v2_seed_boundaries.py": _v2_boundary_test_content(),
         "tests/runtime/test_backtest_engine_fixture_smoke.py": _runtime_backtest_engine_smoke_test_content(),
+        "tests/runtime/test_local_env_template.py": _runtime_local_env_template_test_content(),
         "tests/runtime/test_local_vscode_extensions.py": _runtime_local_vscode_extensions_test_content(),
         "tests/runtime/test_local_mcp_setup.py": _runtime_local_mcp_setup_test_content(),
         "tests/runtime/test_local_vscode_launch.py": _runtime_local_vscode_launch_test_content(),
@@ -2806,6 +2866,7 @@ def _manifest_payload(
             "Generated `.vscode/tasks.json` and `.vscode/launch.json` provide repeatable local API/smoke/test loops via `PYTHONPATH=${workspaceFolder}/src`.",
             "Generated `.vscode/settings.json` aligns Python analysis and pytest discovery with the V2 `src` layout.",
             "Generated `.vscode/extensions.json` recommends Python/Pylance/Ruff extensions for the V2 editor workflow.",
+            "Generated `.env.example` mirrors the narrow local placeholder `.env` for tracked bootstrap guidance.",
             "Exchange-facing, paper, public-data, and UI service edges are intentionally excluded.",
             "Pipeline, Optuna, and optimizer-only closure are intentionally excluded.",
             "Legacy `core.strategy.features` surface intentionally excluded.",

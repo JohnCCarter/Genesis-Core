@@ -39,6 +39,7 @@ from pathlib import Path
 from typing import Any
 
 PHASE_ONE_ROOTS = [
+    "src/core/pipeline.py",
     "src/core/backtest/engine.py",
     "src/core/backtest/engine_precompute.py",
     "src/core/server.py",
@@ -65,7 +66,6 @@ EXCLUDED_MODULE_PREFIXES = (
     "core.api.ui",
     "core.io",
     "core.optimizer",
-    "core.pipeline",
     "core.strategy.features",
     "core.utils.diffing.optuna_guard",
     "core.utils.diffing.results_diff",
@@ -82,7 +82,6 @@ EXCLUDED_RELATIVE_PATHS = {
     "src/core/api/paper.py",
     "src/core/api/public.py",
     "src/core/api/ui.py",
-    "src/core/pipeline.py",
     "src/core/strategy/features.py",
     "src/core/utils/optuna_helpers.py",
 }
@@ -164,6 +163,7 @@ GENERATED_FILES = {
     "tests/runtime/test_local_api_shell_script.py",
     "tests/runtime/test_local_mcp_script.py",
     "tests/runtime/test_local_mcp_setup.py",
+    "tests/runtime/test_pipeline_defaults.py",
     "tests/runtime/test_local_pytest_script.py",
     "tests/runtime/test_local_smoke_scripts.py",
     "tests/runtime/test_local_vscode_launch.py",
@@ -616,6 +616,14 @@ _MCP_VERIFICATION_FILES = [
 ]
 
 
+_PIPELINE_VERIFICATION_FILES = [
+    "seed_manifest.json",
+    "src/core/pipeline.py",
+    "src/core/utils/random_seeds.py",
+    "tests/runtime/test_pipeline_defaults.py",
+]
+
+
 _MODULE_LOOP_FILES = [
     "src/core/server.py",
     "mcp_server/server.py",
@@ -654,7 +662,6 @@ _EXCLUDED_FILES = [
     "src/core/api/paper.py",
     "src/core/api/public.py",
     "src/core/api/ui.py",
-    "src/core/pipeline.py",
     "src/core/strategy/features.py",
     "src/core/utils/diffing/optuna_guard.py",
     "src/core/utils/diffing/results_diff.py",
@@ -682,7 +689,6 @@ _EXCLUDED_MODULE_PREFIXES = [
     "core.api.ui",
     "core.io",
     "core.optimizer",
-    "core.pipeline",
     "core.strategy.features",
     "core.utils.diffing.optuna_guard",
     "core.utils.diffing.results_diff",
@@ -973,6 +979,27 @@ def test_seed_contains_mcp_verification_manifest() -> None:
             "runtime_test_file": "tests/runtime/test_local_mcp_script.py",
         },
     }
+
+
+def test_seed_contains_pipeline_verification_manifest() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+
+    for relative_path in _PIPELINE_VERIFICATION_FILES:
+        assert (repo_root / relative_path).exists(), relative_path
+
+    manifest = json.loads((repo_root / "seed_manifest.json").read_text(encoding="utf-8"))
+    readme = (repo_root / "README.md").read_text(encoding="utf-8")
+    scope_text = (repo_root / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+
+    assert manifest["pipeline_verification"] == {
+        "defaults_and_seeding": {
+            "module_file": "src/core/pipeline.py",
+            "seed_helper_file": "src/core/utils/random_seeds.py",
+            "runtime_test_file": "tests/runtime/test_pipeline_defaults.py",
+        }
+    }
+    assert "runtime pipeline orchestration (`src/core/pipeline.py`)" in readme
+    assert "src/core/pipeline.py" in scope_text
 
 
 def test_seed_contains_editable_install_module_loop() -> None:
@@ -1425,6 +1452,7 @@ def _v2_skeleton_scope_content() -> str:
 `Genesis-Core-V2` is intentionally a thin, runnable shell:
 
 - minimal repo structure
+- runtime pipeline orchestration via `src/core/pipeline.py`
 - local-only API
 - local MCP stdio shell
 - generated workflow guidance for agent-driven work
@@ -1448,6 +1476,7 @@ Included in the current priority lane:
 - repo-local smoke scripts (`scripts/smoke/*.py`) for non-installed execution
 - `config/mcp_settings.json` and `mcp_server/**` for local MCP use
 - local-only API shell (`config`, `status`, `models`, `strategy`)
+- `src/core/pipeline.py` plus narrow deterministic seeding helper `src/core/utils/random_seeds.py`
 - fixture-backed smoke tests and console scripts
 - explicitly admitted non-sensitive config/model artifacts already carried into the seed
 
@@ -2069,6 +2098,53 @@ def test_local_pytest_script_runs_focused_runtime_test() -> None:
     combined_output = completed.stdout + completed.stderr
 
     assert combined_output.strip()
+"""
+
+
+def _runtime_pipeline_defaults_test_content() -> str:
+    return """from __future__ import annotations
+
+import os
+from pathlib import Path
+
+import pytest
+import yaml
+
+from core.pipeline import GenesisPipeline
+
+
+def test_pipeline_uses_backtest_defaults_for_costs(monkeypatch: pytest.MonkeyPatch) -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+    defaults = yaml.safe_load((repo_root / "config" / "backtest_defaults.yaml").read_text(encoding="utf-8"))
+
+    assert defaults["commission"] == pytest.approx(0.0)
+    assert defaults["slippage"] == pytest.approx(0.0005)
+
+    monkeypatch.setenv("GENESIS_PRECOMPUTE_FEATURES", "1")
+    monkeypatch.setenv("GENESIS_FAST_WINDOW", "1")
+
+    pipeline = GenesisPipeline()
+    engine = pipeline.create_engine(symbol="tBTCUSD", timeframe="3h")
+
+    assert engine.position_tracker.commission_rate == pytest.approx(0.0)
+    assert engine.position_tracker.slippage_rate == pytest.approx(0.0005)
+
+
+def test_pipeline_setup_environment_sets_seed_and_canonical_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("GENESIS_RANDOM_SEED", raising=False)
+    monkeypatch.delenv("GENESIS_FAST_WINDOW", raising=False)
+    monkeypatch.delenv("GENESIS_PRECOMPUTE_FEATURES", raising=False)
+    monkeypatch.delenv("GENESIS_MODE_EXPLICIT", raising=False)
+    monkeypatch.delenv("GENESIS_FAST_HASH", raising=False)
+
+    pipeline = GenesisPipeline()
+    pipeline.setup_environment(seed=123)
+
+    assert os.environ["GENESIS_RANDOM_SEED"] == "123"
+    assert os.environ["PYTHONHASHSEED"] == "123"
+    assert os.environ["GENESIS_FAST_WINDOW"] == "1"
+    assert os.environ["GENESIS_PRECOMPUTE_FEATURES"] == "1"
+    assert os.environ["GENESIS_FAST_HASH"] == "0"
 """
 
 
@@ -3464,6 +3540,7 @@ Runtime-first seed with admitted local-only API shell generated from the current
 ## What is included
 
 - runtime kernel roots (`backtest`, `strategy`, `regime`)
+- runtime pipeline orchestration (`src/core/pipeline.py`)
 - local dependency closure required by those roots
 - admitted local-only API shell (`src/core/server.py`,
   `src/core/api/{{config,models,status,strategy}}.py`)
@@ -3502,7 +3579,6 @@ Runtime-first seed with admitted local-only API shell generated from the current
 
 - `src/core/api/{{account,info,paper,public,ui}}.py`
 - `src/core/io/**`
-- `src/core/pipeline.py`
 - `src/core/optimizer/**`
 - `src/core/strategy/features.py`
 - `src/core/utils/optuna_helpers.py`
@@ -3529,6 +3605,8 @@ The admitted API shell is local-only (`config/status/models/strategy`); exchange
 paper, public-data, and UI surfaces remain excluded for a later slice.
 Runtime state and champion authority payloads remain excluded; generated `.env` contains only
 local-shell placeholders. Tracked `.env.example` mirrors the same narrow values for copy-forward bootstrap.
+Runtime pipeline orchestration is admitted through `src/core/pipeline.py`, while the narrower
+`src/core/utils/random_seeds.py` helper keeps Optuna/optimizer-only helpers out of the seed.
 Unneeded Optuna/optimizer closure is intentionally pruned from the seed until and unless a later
 explicit slice admits those higher-sensitivity surfaces.
 Local MCP support is admitted for stdio-only workspace usage; remote MCP entrypoints and remote
@@ -3881,6 +3959,7 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
         "tests/runtime/test_local_env_template.py": _runtime_local_env_template_test_content(),
         "tests/runtime/test_local_api_shell_script.py": _runtime_local_api_shell_script_test_content(),
         "tests/runtime/test_local_mcp_script.py": _runtime_local_mcp_script_test_content(),
+        "tests/runtime/test_pipeline_defaults.py": _runtime_pipeline_defaults_test_content(),
         "tests/runtime/test_local_pytest_script.py": _runtime_local_pytest_script_test_content(),
         "tests/runtime/test_local_precommit_config.py": _runtime_local_precommit_config_test_content(),
         "tests/runtime/test_local_vscode_extensions.py": _runtime_local_vscode_extensions_test_content(),
@@ -4033,6 +4112,13 @@ def _manifest_payload(
                 "runtime_test_file": "tests/runtime/test_local_mcp_script.py",
             },
         },
+        "pipeline_verification": {
+            "defaults_and_seeding": {
+                "module_file": "src/core/pipeline.py",
+                "seed_helper_file": "src/core/utils/random_seeds.py",
+                "runtime_test_file": "tests/runtime/test_pipeline_defaults.py",
+            }
+        },
         "api_entrypoints": {
             "module_command": "python -m uvicorn core.server:app --app-dir src --reload",
             "console_scripts": ["genesis-v2-api-shell"],
@@ -4118,7 +4204,7 @@ def _manifest_payload(
             "Generated `scripts/validate/pytest_suite.py` provides a non-installed local pytest entrypoint against the V2 `src` layout.",
             "Generated `scripts/smoke/*.py` provide non-installed local smoke entrypoints against the V2 `src` layout.",
             "Exchange-facing, paper, public-data, and UI service edges are intentionally excluded.",
-            "Pipeline, Optuna, and optimizer-only closure are intentionally excluded.",
+            "Optuna-heavy helpers and optimizer-only closure are intentionally excluded even after pipeline admission.",
             "Legacy `core.strategy.features` surface intentionally excluded.",
             "Only explicitly admitted stateful artifacts were carried over; champions and runtime state remained excluded.",
             "Generated `.env` contains placeholder local-shell values only.",

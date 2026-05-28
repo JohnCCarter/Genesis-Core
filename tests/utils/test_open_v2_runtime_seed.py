@@ -277,6 +277,14 @@ EXPECTED_MCP_VERIFICATION = {
     },
 }
 
+EXPECTED_PIPELINE_VERIFICATION = {
+    "defaults_and_seeding": {
+        "module_file": "src/core/pipeline.py",
+        "runtime_test_file": "tests/runtime/test_pipeline_defaults.py",
+        "seed_helper_file": "src/core/utils/random_seeds.py",
+    },
+}
+
 EXPECTED_PRECOMMIT_HOOK_IDS = [
     "black",
     "ruff",
@@ -312,7 +320,6 @@ EXPECTED_DEFERRED_SERVICE_EDGE_MODULE_PREFIXES = {
 }
 
 EXPECTED_PRUNED_CLOSURE_FILES = [
-    "src/core/pipeline.py",
     "src/core/utils/optuna_helpers.py",
     "src/core/utils/diffing/optuna_guard.py",
     "src/core/utils/diffing/results_diff.py",
@@ -325,7 +332,6 @@ EXPECTED_PRUNED_CLOSURE_PREFIXES = [
 
 EXPECTED_PRUNED_MODULE_PREFIXES = {
     "core.optimizer",
-    "core.pipeline",
     "core.utils.diffing.optuna_guard",
     "core.utils.diffing.results_diff",
     "core.utils.diffing.trial_cache",
@@ -558,6 +564,26 @@ def test_generate_seed_emits_mcp_verification_manifest(tmp_path: Path) -> None:
         if "tracked_file" in payload:
             assert (destination / payload["tracked_file"]).exists(), payload["tracked_file"]
         assert (destination / payload["runtime_test_file"]).exists(), payload["runtime_test_file"]
+
+
+def test_generate_seed_emits_pipeline_verification_manifest(tmp_path: Path) -> None:
+    seed_module = _load_open_v2_runtime_seed_module()
+    destination = tmp_path / "Genesis-Core-V2"
+
+    seed_module.generate_seed(destination, clean=True, dry_run=False)
+
+    manifest = json.loads((destination / "seed_manifest.json").read_text(encoding="utf-8"))
+    readme = (destination / "README.md").read_text(encoding="utf-8")
+    scope_text = (destination / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+
+    assert manifest["pipeline_verification"] == EXPECTED_PIPELINE_VERIFICATION
+
+    payload = EXPECTED_PIPELINE_VERIFICATION["defaults_and_seeding"]
+    assert (destination / payload["module_file"]).exists(), payload["module_file"]
+    assert (destination / payload["seed_helper_file"]).exists(), payload["seed_helper_file"]
+    assert (destination / payload["runtime_test_file"]).exists(), payload["runtime_test_file"]
+    assert "runtime pipeline orchestration (`src/core/pipeline.py`)" in readme
+    assert "src/core/pipeline.py" in scope_text
 
 
 def test_generate_seed_admits_local_mcp_shell(tmp_path: Path) -> None:
@@ -1024,7 +1050,9 @@ def test_generate_seed_clean_preserves_existing_git_directory(tmp_path: Path) ->
     assert (destination / "seed_manifest.json").exists()
 
 
-def test_generate_seed_prunes_pipeline_optimizer_and_optuna_closure(tmp_path: Path) -> None:
+def test_generate_seed_prunes_optuna_and_optimizer_closure_after_pipeline_admission(
+    tmp_path: Path,
+) -> None:
     seed_module = _load_open_v2_runtime_seed_module()
     destination = tmp_path / "Genesis-Core-V2"
 
@@ -1040,10 +1068,9 @@ def test_generate_seed_prunes_pipeline_optimizer_and_optuna_closure(tmp_path: Pa
     readme = (destination / "README.md").read_text(encoding="utf-8")
 
     assert EXPECTED_PRUNED_MODULE_PREFIXES.issubset(set(manifest["excluded_modules"]))
-    assert "src/core/pipeline.py" in manifest["excluded_relative_paths"]
     assert "src/core/optimizer/" in manifest["excluded_path_prefixes"]
     assert (
-        "Pipeline, Optuna, and optimizer-only closure are intentionally excluded."
+        "Optuna-heavy helpers and optimizer-only closure are intentionally excluded even after pipeline admission."
         in manifest["notes"]
     )
     assert "`src/core/optimizer/**`" in readme

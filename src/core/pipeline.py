@@ -11,7 +11,7 @@ except ImportError:  # pragma: no cover
     load_dotenv = None
 
 from core.backtest.engine import BacktestEngine
-from core.utils.optuna_helpers import set_global_seeds
+from core.utils.random_seeds import set_global_seeds
 
 logger = logging.getLogger(__name__)
 

@@ -1,28 +1,29 @@
-"""Materialize the Phase-1 runtime-only Genesis-Core-V2 seed.
+"""Materialize the runtime-first Genesis-Core-V2 seed with admitted API shell.
 
 Why this exists
 ---------------
-The current repository now has a bounded V2 plan that says the first seed should be
-runtime-only, not runtime+API. This script turns that plan into a repeatable local
-materialization step by copying the runtime kernel and its local dependency closure
-into a sibling `Genesis-Core-V2` folder while explicitly excluding legacy and
-service-shell surfaces.
+The current repository now has a bounded V2 plan that starts runtime-first and admits
+additional surfaces in controlled slices. This script turns the currently admitted
+seed boundary into a repeatable local materialization step by copying the runtime
+kernel, the API/service shell, and their local dependency closure into a sibling
+`Genesis-Core-V2` folder while explicitly excluding legacy-only and freeze-sensitive
+authority/state surfaces.
 
 What this script does
 ---------------------
-- starts from the approved Phase-1 runtime roots
+- starts from the approved runtime roots plus the admitted API/service shell
 - resolves local `core.*` and `config.*` imports transitively via AST
 - copies only the required local files into a destination tree
 - generates a narrow README, pyproject, .gitignore, and seed manifest
-- writes V2-specific guardrails instead of blindly copying current API/legacy tests
+- writes V2-specific guardrails instead of blindly copying current stateful surfaces
 
 What this script does not do
 ----------------------------
 - it does not change the current Genesis-Core runtime
 - it does not push or publish a new repository
 - it does not copy current branch state/artifacts as future V2 defaults
-- it does not include `src/core/server.py`, `src/core/api/**`,
-  `src/core/strategy/features.py`, or `src/core/config/validator.py`
+- it does not include `src/core/strategy/features.py`
+- it does not copy runtime state, champion authority payloads, or `data/**`
 """
 
 from __future__ import annotations
@@ -41,6 +42,7 @@ PHASE_ONE_ROOTS = [
     "src/core/pipeline.py",
     "src/core/backtest/engine.py",
     "src/core/backtest/engine_precompute.py",
+    "src/core/server.py",
     "src/core/strategy/evaluate.py",
     "src/core/strategy/features_asof.py",
     "src/core/strategy/decision.py",
@@ -50,24 +52,18 @@ PHASE_ONE_ROOTS = [
     "src/core/strategy/regime.py",
     "config/__init__.py",
     "config/timeframe_configs.py",
+    "src/core/config/legacy_schema_v1.json",
+    "tests/integration/test_config_endpoints.py",
     "tests/governance/test_no_legacy_feature_imports.py",
 ]
 
-EXCLUDED_MODULE_PREFIXES = (
-    "core.api",
-    "core.server",
-    "core.strategy.features",
-    "core.config.validator",
-)
+EXCLUDED_MODULE_PREFIXES = ("core.strategy.features",)
 
 EXCLUDED_RELATIVE_PATHS = {
-    "src/core/server.py",
     "src/core/strategy/features.py",
-    "src/core/config/validator.py",
 }
 
 EXCLUDED_PATH_PREFIXES = (
-    "src/core/api/",
     "results/",
     "docs/analysis/edge_topology/",
 )
@@ -95,6 +91,7 @@ GENERATED_FILES = {
     "README.md",
     "pyproject.toml",
     ".gitignore",
+    ".env",
     "config/backtest_defaults.yaml",
     "registry/fixtures/champions/tBTCUSD_1h.json",
     "registry/fixtures/model_registry/config/models/registry.json",
@@ -125,13 +122,19 @@ GENERATED_FILES = {
 }
 
 PYPROJECT_RUNTIME_DEPS = [
+    "fastapi>=0.116,<0.117",
+    "uvicorn>=0.24,<0.25",
+    "httpx>=0.25,<0.26",
+    "websockets>=12,<13",
+    "pydantic>=2.7,<3",
+    "pydantic-settings>=2,<3",
     "python-dotenv>=1,<2",
     "jsonschema>=4.20,<5",
     "numpy>=1.26,<2",
     "pandas>=2.0,<3",
     "PyYAML>=6.0,<7",
     "tqdm>=4.65,<5",
-    "pydantic>=2.7,<3",
+    "optuna>=3.5,<5",
     "pyarrow>=14,<16",
 ]
 
@@ -419,16 +422,31 @@ import ast
 from pathlib import Path
 
 
-_EXCLUDED_FILES = [
+_ADMITTED_FILES = [
     "src/core/server.py",
-    "src/core/strategy/features.py",
+    "src/core/api/__init__.py",
+    "src/core/api/account.py",
+    "src/core/api/config.py",
+    "src/core/api/info.py",
+    "src/core/api/models.py",
+    "src/core/api/paper.py",
+    "src/core/api/public.py",
+    "src/core/api/status.py",
+    "src/core/api/strategy.py",
+    "src/core/api/ui.py",
     "src/core/config/validator.py",
+    "src/core/config/legacy_schema_v1.json",
+    "tests/integration/test_config_endpoints.py",
+]
+
+
+_EXCLUDED_FILES = [
+    "src/core/strategy/features.py",
     "config/runtime.json",
     "config/runtime.seed.json",
 ]
 
 _EXCLUDED_PREFIXES = [
-    "src/core/api",
     "data",
 ]
 
@@ -437,10 +455,7 @@ _EXCLUDED_JSON_PAYLOAD_DIRS = [
 ]
 
 _EXCLUDED_MODULE_PREFIXES = [
-    "core.server",
-    "core.api",
     "core.strategy.features",
-    "core.config.validator",
 ]
 
 
@@ -451,7 +466,14 @@ def _is_excluded_module(module: str) -> bool:
     )
 
 
-def test_phase_one_seed_excludes_service_and_legacy_surfaces() -> None:
+def test_seed_contains_admitted_api_service_shell_slice() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+
+    for relative_path in _ADMITTED_FILES:
+        assert (repo_root / relative_path).exists(), relative_path
+
+
+def test_seed_excludes_legacy_and_stateful_surfaces() -> None:
     repo_root = Path(__file__).resolve().parents[2]
 
     for relative_path in _EXCLUDED_FILES:
@@ -472,7 +494,7 @@ def test_phase_one_seed_has_no_excluded_json_payloads() -> None:
         assert not leaked, relative_dir + "\\n" + "\\n".join(leaked)
 
 
-def test_runtime_source_has_no_service_or_legacy_imports() -> None:
+def test_runtime_source_has_no_excluded_imports() -> None:
     repo_root = Path(__file__).resolve().parents[2]
     src_root = repo_root / "src"
     assert src_root.exists()
@@ -518,6 +540,20 @@ def test_pyproject_declares_runtime_smoke_console_scripts() -> None:
 def _backtest_defaults_content() -> str:
     content = _load_source_text(_repo_root() / "config" / "backtest_defaults.yaml")
     return content if content.endswith("\n") else f"{content}\n"
+
+
+def _env_placeholder_content() -> str:
+    return """# Placeholder environment values for the generated Genesis-Core-V2 seed
+# Replace before using protected config writes or signed Bitfinex endpoints.
+BEARER_TOKEN=change-me
+BITFINEX_API_KEY=
+BITFINEX_API_SECRET=
+BITFINEX_WS_API_KEY=
+BITFINEX_WS_API_SECRET=
+SYMBOL_MODE=realistic
+LOG_LEVEL=INFO
+WALLET_CAP_ENABLED=0
+"""
 
 
 def _genesis_core_v2_cli_init_content() -> str:
@@ -1615,7 +1651,8 @@ def _readme_content(source_head: str | None) -> str:
     )
     return f"""# Genesis-Core-V2
 
-Runtime-only Phase-1 seed generated from the current `Genesis-Core` repository.
+Runtime-first seed with admitted API/service shell generated from the current
+`Genesis-Core` repository.
 
 {source_line}
 
@@ -1623,6 +1660,10 @@ Runtime-only Phase-1 seed generated from the current `Genesis-Core` repository.
 
 - runtime kernel roots (`pipeline`, `backtest`, `strategy`, `regime`)
 - local dependency closure required by those roots
+- admitted API/service shell (`src/core/server.py`, `src/core/api/**`)
+- source-backed config validation seam (`src/core/config/validator.py`,
+  `src/core/config/legacy_schema_v1.json`)
+- source-backed config endpoint integration smoke (`tests/integration/test_config_endpoints.py`)
 - narrow config bootstrap (`config/__init__.py`, `config/timeframe_configs.py`,
     `config/backtest_defaults.yaml`)
 - runtime-only governance guardrails
@@ -1642,10 +1683,7 @@ Runtime-only Phase-1 seed generated from the current `Genesis-Core` repository.
 
 ## What is intentionally excluded
 
-- `src/core/server.py`
-- `src/core/api/**`
 - `src/core/strategy/features.py`
-- `src/core/config/validator.py`
 - `config/runtime.json`
 - `config/runtime.seed.json`
 - `config/strategy/champions/**`
@@ -1656,11 +1694,13 @@ Runtime-only Phase-1 seed generated from the current `Genesis-Core` repository.
 
 This seed is intentionally narrower than the source repository.
 It is a local starting point, not a claim that all later bootstrap, model, champion,
-or API/service decisions are already resolved.
+or wider state-authority decisions are already resolved.
 Source `config/models/**` payloads are copied into the seed, while deterministic smoke
 paths use fixture-backed model registry payloads under `registry/fixtures/model_registry/**`.
 Phase 1 intentionally excludes `config/strategy/champions/**`; runtime falls back to
 `config/timeframe_configs.py` through `ChampionLoader` when champion payloads are absent.
+The API/service shell is admitted, but runtime state and champion authority payloads remain
+excluded; generated `.env` contains placeholder values for bearer/auth seams only.
 
 Local model smoke: `python -m core.bootstrap.model_smoke`
 Local champion smoke: `python -m core.bootstrap.champion_smoke`
@@ -1688,7 +1728,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "genesis-core-v2"
 version = "0.1.0"
-description = "Runtime-only seed extracted from Genesis-Core"
+description = "Runtime-first seed with admitted API shell extracted from Genesis-Core"
 requires-python = ">=3.11"
 dependencies = [
 {runtime_deps}
@@ -1748,6 +1788,16 @@ def _write_text(path: Path, content: str) -> None:
     path.write_text(content, encoding="utf-8")
 
 
+def _clear_destination_contents(destination: Path) -> None:
+    for child in destination.iterdir():
+        if child.name == ".git":
+            continue
+        if child.is_dir() and not child.is_symlink():
+            shutil.rmtree(child)
+        else:
+            child.unlink(missing_ok=True)
+
+
 def _prepare_destination(destination: Path, *, clean: bool) -> None:
     if destination.exists() and any(destination.iterdir()):
         if not clean:
@@ -1755,7 +1805,10 @@ def _prepare_destination(destination: Path, *, clean: bool) -> None:
                 f"Destination already exists and is not empty: {destination}. "
                 "Use --clean to replace it."
             )
-        shutil.rmtree(destination)
+        if (destination / ".git").exists():
+            _clear_destination_contents(destination)
+        else:
+            shutil.rmtree(destination)
 
     destination.mkdir(parents=True, exist_ok=True)
 
@@ -1780,6 +1833,7 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
         "README.md": _readme_content(source_head),
         "pyproject.toml": _pyproject_content(),
         ".gitignore": _gitignore_content(),
+        ".env": _env_placeholder_content(),
         "config/backtest_defaults.yaml": _backtest_defaults_content(),
         "registry/fixtures/champions/tBTCUSD_1h.json": json.dumps(
             _runtime_champion_fixture_payload(),
@@ -1861,7 +1915,7 @@ def _manifest_payload(
         "source_repo": str(repo_root),
         "destination_repo": str(destination),
         "source_head": source_head,
-        "phase": "runtime_only_seed",
+        "phase": "runtime_seed_with_api_shell",
         "authorizing": False,
         "entry_roots": list(PHASE_ONE_ROOTS),
         "excluded_modules": list(EXCLUDED_MODULE_PREFIXES),
@@ -1891,10 +1945,10 @@ def _manifest_payload(
         "blocked_imports": blocked_imports,
         "output_hashes": output_hashes,
         "notes": [
-            "Runtime-only seed generated locally.",
-            "API/service shell intentionally excluded.",
-            "Legacy compatibility surfaces intentionally excluded.",
-            "Only explicitly admitted stateful artifacts were carried over; champions remained excluded.",
+            "Runtime-first seed with API/service shell generated locally.",
+            "Legacy `core.strategy.features` surface intentionally excluded.",
+            "Only explicitly admitted stateful artifacts were carried over; champions and runtime state remained excluded.",
+            "Generated `.env` contains placeholder bearer and Bitfinex auth values only.",
         ],
     }
 
@@ -1945,7 +1999,7 @@ def generate_seed(destination: Path, *, clean: bool, dry_run: bool) -> dict[str,
 def main() -> int:
     repo_root = _repo_root()
     parser = argparse.ArgumentParser(
-        description="Materialize the Phase-1 Genesis-Core-V2 runtime seed"
+        description="Materialize the Genesis-Core-V2 runtime-first seed with admitted API shell"
     )
     parser.add_argument(
         "--dest",

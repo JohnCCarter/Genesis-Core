@@ -39,6 +39,31 @@ EXPECTED_VERIFY_BEFORE_INCLUDE_PATHS = [
     "data/**",
 ]
 
+EXPECTED_API_RUNTIME_DEPS = {
+    "fastapi>=0.116,<0.117",
+    "uvicorn>=0.24,<0.25",
+    "httpx>=0.25,<0.26",
+    "websockets>=12,<13",
+    "pydantic-settings>=2,<3",
+}
+
+EXPECTED_ADMITTED_API_SLICE_FILES = [
+    "src/core/server.py",
+    "src/core/api/__init__.py",
+    "src/core/api/account.py",
+    "src/core/api/config.py",
+    "src/core/api/info.py",
+    "src/core/api/models.py",
+    "src/core/api/paper.py",
+    "src/core/api/public.py",
+    "src/core/api/status.py",
+    "src/core/api/strategy.py",
+    "src/core/api/ui.py",
+    "src/core/config/validator.py",
+    "src/core/config/legacy_schema_v1.json",
+    "tests/integration/test_config_endpoints.py",
+]
+
 
 def _source_model_file_names(repo_root: Path) -> list[str]:
     return sorted(path.name for path in (repo_root / "config" / "models").glob("*.json"))
@@ -87,6 +112,57 @@ def test_generate_seed_emits_narrow_backtest_defaults(tmp_path: Path) -> None:
 
     assert defaults_path.exists()
     assert yaml.safe_load(defaults_path.read_text(encoding="utf-8")) == EXPECTED_BACKTEST_DEFAULTS
+
+
+def test_generate_seed_admits_api_service_shell_and_validator_schema(tmp_path: Path) -> None:
+    seed_module = _load_open_v2_runtime_seed_module()
+    destination = tmp_path / "Genesis-Core-V2"
+
+    seed_module.generate_seed(destination, clean=True, dry_run=False)
+
+    for relative_path in EXPECTED_ADMITTED_API_SLICE_FILES:
+        assert (destination / relative_path).exists(), relative_path
+
+    readme = (destination / "README.md").read_text(encoding="utf-8")
+    assert "admitted API/service shell (`src/core/server.py`, `src/core/api/**`)" in readme
+    assert "generated `.env` contains placeholder values" in readme
+
+
+def test_generate_seed_emits_api_runtime_dependencies_and_placeholder_env(tmp_path: Path) -> None:
+    seed_module = _load_open_v2_runtime_seed_module()
+    destination = tmp_path / "Genesis-Core-V2"
+
+    seed_module.generate_seed(destination, clean=True, dry_run=False)
+
+    payload = tomllib.loads((destination / "pyproject.toml").read_text(encoding="utf-8"))
+    dependencies = set(payload["project"]["dependencies"])
+
+    assert EXPECTED_API_RUNTIME_DEPS.issubset(dependencies)
+
+    env_text = (destination / ".env").read_text(encoding="utf-8")
+    assert "BEARER_TOKEN=change-me" in env_text
+    assert "BITFINEX_API_KEY=" in env_text
+    assert "BITFINEX_API_SECRET=" in env_text
+    assert "SYMBOL_MODE=realistic" in env_text
+
+
+def test_generate_seed_clean_preserves_existing_git_directory(tmp_path: Path) -> None:
+    seed_module = _load_open_v2_runtime_seed_module()
+    destination = tmp_path / "Genesis-Core-V2"
+    git_object = destination / ".git" / "objects" / "01" / "placeholder"
+    stale_file = destination / "stale.txt"
+
+    git_object.parent.mkdir(parents=True, exist_ok=True)
+    git_object.write_text("keep-me", encoding="utf-8")
+    stale_file.parent.mkdir(parents=True, exist_ok=True)
+    stale_file.write_text("remove-me", encoding="utf-8")
+
+    seed_module.generate_seed(destination, clean=True, dry_run=False)
+
+    assert git_object.exists()
+    assert git_object.read_text(encoding="utf-8") == "keep-me"
+    assert not stale_file.exists()
+    assert (destination / "seed_manifest.json").exists()
 
 
 def test_generate_seed_copies_source_config_models_and_keeps_fixture_models_separate(

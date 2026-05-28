@@ -42,27 +42,40 @@ EXPECTED_VERIFY_BEFORE_INCLUDE_PATHS = [
 EXPECTED_API_RUNTIME_DEPS = {
     "fastapi>=0.116,<0.117",
     "uvicorn>=0.24,<0.25",
-    "httpx>=0.25,<0.26",
-    "websockets>=12,<13",
     "pydantic-settings>=2,<3",
 }
 
 EXPECTED_ADMITTED_API_SLICE_FILES = [
     "src/core/server.py",
-    "src/core/api/__init__.py",
-    "src/core/api/account.py",
     "src/core/api/config.py",
-    "src/core/api/info.py",
     "src/core/api/models.py",
-    "src/core/api/paper.py",
-    "src/core/api/public.py",
     "src/core/api/status.py",
     "src/core/api/strategy.py",
-    "src/core/api/ui.py",
     "src/core/config/validator.py",
     "src/core/config/legacy_schema_v1.json",
     "tests/integration/test_config_endpoints.py",
 ]
+
+EXPECTED_DEFERRED_SERVICE_EDGE_FILES = [
+    "src/core/api/account.py",
+    "src/core/api/info.py",
+    "src/core/api/paper.py",
+    "src/core/api/public.py",
+    "src/core/api/ui.py",
+]
+
+EXPECTED_DEFERRED_SERVICE_EDGE_PREFIXES = [
+    "src/core/io",
+]
+
+EXPECTED_DEFERRED_SERVICE_EDGE_MODULE_PREFIXES = {
+    "core.api.account",
+    "core.api.info",
+    "core.api.paper",
+    "core.api.public",
+    "core.api.ui",
+    "core.io",
+}
 
 EXPECTED_PRUNED_CLOSURE_FILES = [
     "src/core/pipeline.py",
@@ -145,8 +158,8 @@ def test_generate_seed_admits_api_service_shell_and_validator_schema(tmp_path: P
         assert (destination / relative_path).exists(), relative_path
 
     readme = (destination / "README.md").read_text(encoding="utf-8")
-    assert "admitted API/service shell (`src/core/server.py`, `src/core/api/**`)" in readme
-    assert "generated `.env` contains placeholder values" in readme
+    assert "admitted local-only API shell (`src/core/server.py`," in readme
+    assert "generated `.env` contains only\nlocal-shell placeholders" in readme
 
 
 def test_generate_seed_emits_api_runtime_dependencies_and_placeholder_env(tmp_path: Path) -> None:
@@ -162,9 +175,11 @@ def test_generate_seed_emits_api_runtime_dependencies_and_placeholder_env(tmp_pa
 
     env_text = (destination / ".env").read_text(encoding="utf-8")
     assert "BEARER_TOKEN=change-me" in env_text
-    assert "BITFINEX_API_KEY=" in env_text
-    assert "BITFINEX_API_SECRET=" in env_text
     assert "SYMBOL_MODE=realistic" in env_text
+    assert "LOG_LEVEL=INFO" in env_text
+    assert "httpx>=0.25,<0.26" not in dependencies
+    assert "websockets>=12,<13" not in dependencies
+    assert "BITFINEX_API_KEY=" not in env_text
     assert "optuna>=3.5,<5" not in dependencies
 
 
@@ -211,6 +226,33 @@ def test_generate_seed_prunes_pipeline_optimizer_and_optuna_closure(tmp_path: Pa
     )
     assert "`src/core/optimizer/**`" in readme
     assert "`src/core/utils/optuna_helpers.py`" in readme
+
+
+def test_generate_seed_defers_private_exchange_service_edges(tmp_path: Path) -> None:
+    seed_module = _load_open_v2_runtime_seed_module()
+    destination = tmp_path / "Genesis-Core-V2"
+
+    seed_module.generate_seed(destination, clean=True, dry_run=False)
+
+    for relative_path in EXPECTED_DEFERRED_SERVICE_EDGE_FILES:
+        assert not (destination / relative_path).exists(), relative_path
+
+    for relative_prefix in EXPECTED_DEFERRED_SERVICE_EDGE_PREFIXES:
+        assert not (destination / relative_prefix).exists(), relative_prefix
+
+    manifest = json.loads((destination / "seed_manifest.json").read_text(encoding="utf-8"))
+    readme = (destination / "README.md").read_text(encoding="utf-8")
+
+    assert EXPECTED_DEFERRED_SERVICE_EDGE_MODULE_PREFIXES.issubset(
+        set(manifest["excluded_modules"])
+    )
+    assert "src/core/io/" in manifest["excluded_path_prefixes"]
+    assert (
+        "Exchange-facing, paper, public-data, and UI service edges are intentionally excluded."
+        in manifest["notes"]
+    )
+    assert "`src/core/api/{account,info,paper,public,ui}.py`" in readme
+    assert "`src/core/io/**`" in readme
 
 
 def test_generate_seed_copies_source_config_models_and_keeps_fixture_models_separate(

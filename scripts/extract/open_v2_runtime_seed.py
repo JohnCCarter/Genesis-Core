@@ -57,6 +57,12 @@ PHASE_ONE_ROOTS = [
 ]
 
 EXCLUDED_MODULE_PREFIXES = (
+    "core.api.account",
+    "core.api.info",
+    "core.api.paper",
+    "core.api.public",
+    "core.api.ui",
+    "core.io",
     "core.optimizer",
     "core.pipeline",
     "core.strategy.features",
@@ -67,12 +73,18 @@ EXCLUDED_MODULE_PREFIXES = (
 )
 
 EXCLUDED_RELATIVE_PATHS = {
+    "src/core/api/account.py",
+    "src/core/api/info.py",
+    "src/core/api/paper.py",
+    "src/core/api/public.py",
+    "src/core/api/ui.py",
     "src/core/pipeline.py",
     "src/core/strategy/features.py",
     "src/core/utils/optuna_helpers.py",
 }
 
 EXCLUDED_PATH_PREFIXES = (
+    "src/core/io/",
     "src/core/optimizer/",
     "results/",
     "docs/analysis/edge_topology/",
@@ -114,6 +126,7 @@ GENERATED_FILES = {
     "src/core/bootstrap/fixture_smoke.py",
     "src/core/bootstrap/model_smoke.py",
     "src/core/bootstrap/smoke_suite.py",
+    "src/core/server.py",
     "src/core/utils/diffing/__init__.py",
     "src/genesis_core_v2_cli/__init__.py",
     "src/genesis_core_v2_cli/console_scripts.py",
@@ -134,8 +147,6 @@ GENERATED_FILES = {
 PYPROJECT_RUNTIME_DEPS = [
     "fastapi>=0.116,<0.117",
     "uvicorn>=0.24,<0.25",
-    "httpx>=0.25,<0.26",
-    "websockets>=12,<13",
     "pydantic>=2.7,<3",
     "pydantic-settings>=2,<3",
     "python-dotenv>=1,<2",
@@ -146,6 +157,11 @@ PYPROJECT_RUNTIME_DEPS = [
     "tqdm>=4.65,<5",
     "pyarrow>=14,<16",
 ]
+
+GENERATED_SOURCE_OVERRIDES = {
+    "src/core/server.py",
+    "src/core/utils/diffing/__init__.py",
+}
 
 PYPROJECT_DEV_DEPS = [
     "pytest>=8",
@@ -433,16 +449,10 @@ from pathlib import Path
 
 _ADMITTED_FILES = [
     "src/core/server.py",
-    "src/core/api/__init__.py",
-    "src/core/api/account.py",
     "src/core/api/config.py",
-    "src/core/api/info.py",
     "src/core/api/models.py",
-    "src/core/api/paper.py",
-    "src/core/api/public.py",
     "src/core/api/status.py",
     "src/core/api/strategy.py",
-    "src/core/api/ui.py",
     "src/core/config/validator.py",
     "src/core/config/legacy_schema_v1.json",
     "tests/integration/test_config_endpoints.py",
@@ -450,6 +460,11 @@ _ADMITTED_FILES = [
 
 
 _EXCLUDED_FILES = [
+    "src/core/api/account.py",
+    "src/core/api/info.py",
+    "src/core/api/paper.py",
+    "src/core/api/public.py",
+    "src/core/api/ui.py",
     "src/core/pipeline.py",
     "src/core/strategy/features.py",
     "src/core/utils/diffing/optuna_guard.py",
@@ -461,6 +476,7 @@ _EXCLUDED_FILES = [
 ]
 
 _EXCLUDED_PREFIXES = [
+    "src/core/io",
     "src/core/optimizer",
     "data",
 ]
@@ -470,6 +486,12 @@ _EXCLUDED_JSON_PAYLOAD_DIRS = [
 ]
 
 _EXCLUDED_MODULE_PREFIXES = [
+    "core.api.account",
+    "core.api.info",
+    "core.api.paper",
+    "core.api.public",
+    "core.api.ui",
+    "core.io",
     "core.optimizer",
     "core.pipeline",
     "core.strategy.features",
@@ -487,7 +509,7 @@ def _is_excluded_module(module: str) -> bool:
     )
 
 
-def test_seed_contains_admitted_api_service_shell_slice() -> None:
+def test_seed_contains_admitted_local_api_shell_slice() -> None:
     repo_root = Path(__file__).resolve().parents[2]
 
     for relative_path in _ADMITTED_FILES:
@@ -565,15 +587,51 @@ def _backtest_defaults_content() -> str:
 
 def _env_placeholder_content() -> str:
     return """# Placeholder environment values for the generated Genesis-Core-V2 seed
-# Replace before using protected config writes or signed Bitfinex endpoints.
+# Replace before using protected local config-write endpoints.
 BEARER_TOKEN=change-me
-BITFINEX_API_KEY=
-BITFINEX_API_SECRET=
-BITFINEX_WS_API_KEY=
-BITFINEX_WS_API_SECRET=
 SYMBOL_MODE=realistic
 LOG_LEVEL=INFO
-WALLET_CAP_ENABLED=0
+"""
+
+
+def _local_api_server_content() -> str:
+    return """from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+
+from core.api.config import router as config_router
+from core.api.models import reload_models, router as models_router
+from core.api.status import _AUTH, debug_auth, health, router as status_router
+from core.api.strategy import router as strategy_router
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    \"\"\"Lifespan event handler for startup only in the local-only V2 API shell.\"\"\"
+    try:
+        _, h, v = _AUTH.get()
+        print(f\"CONFIG_VERSION={v} CONFIG_HASH={h[:12]}\")
+    except Exception as e:
+        print(f\"CONFIG_READ_FAILED: {e}\")
+
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
+app.include_router(config_router)
+app.include_router(status_router)
+app.include_router(models_router)
+app.include_router(strategy_router)
+
+__all__ = [
+    \"app\",
+    \"debug_auth\",
+    \"health\",
+    \"models_router\",
+    \"reload_models\",
+    \"status_router\",
+    \"strategy_router\",
+]
 """
 
 
@@ -642,6 +700,8 @@ __all__ = [
 
 def _closure_scan_text(relative_path: str, absolute_path: Path) -> str:
     normalized = relative_path.replace("\\", "/")
+    if normalized == "src/core/server.py":
+        return _local_api_server_content()
     if normalized == "src/core/utils/diffing/__init__.py":
         return _runtime_diffing_init_content()
     return _load_source_text(absolute_path)
@@ -1679,7 +1739,7 @@ def _readme_content(source_head: str | None) -> str:
     )
     return f"""# Genesis-Core-V2
 
-Runtime-first seed with admitted API/service shell generated from the current
+Runtime-first seed with admitted local-only API shell generated from the current
 `Genesis-Core` repository.
 
 {source_line}
@@ -1688,7 +1748,8 @@ Runtime-first seed with admitted API/service shell generated from the current
 
 - runtime kernel roots (`backtest`, `strategy`, `regime`)
 - local dependency closure required by those roots
-- admitted API/service shell (`src/core/server.py`, `src/core/api/**`)
+- admitted local-only API shell (`src/core/server.py`,
+  `src/core/api/{{config,models,status,strategy}}.py`)
 - source-backed config validation seam (`src/core/config/validator.py`,
   `src/core/config/legacy_schema_v1.json`)
 - source-backed config endpoint integration smoke (`tests/integration/test_config_endpoints.py`)
@@ -1711,6 +1772,8 @@ Runtime-first seed with admitted API/service shell generated from the current
 
 ## What is intentionally excluded
 
+- `src/core/api/{{account,info,paper,public,ui}}.py`
+- `src/core/io/**`
 - `src/core/pipeline.py`
 - `src/core/optimizer/**`
 - `src/core/strategy/features.py`
@@ -1731,8 +1794,10 @@ Source `config/models/**` payloads are copied into the seed, while deterministic
 paths use fixture-backed model registry payloads under `registry/fixtures/model_registry/**`.
 Phase 1 intentionally excludes `config/strategy/champions/**`; runtime falls back to
 `config/timeframe_configs.py` through `ChampionLoader` when champion payloads are absent.
-The API/service shell is admitted, but runtime state and champion authority payloads remain
-excluded; generated `.env` contains placeholder values for bearer/auth seams only.
+The admitted API shell is local-only (`config/status/models/strategy`); exchange-facing,
+paper, public-data, and UI surfaces remain excluded for a later slice.
+Runtime state and champion authority payloads remain excluded; generated `.env` contains only
+local-shell placeholders.
 Unneeded Optuna/optimizer closure is intentionally pruned from the seed until and unless a later
 explicit slice admits those higher-sensitivity surfaces.
 
@@ -1762,7 +1827,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "genesis-core-v2"
 version = "0.1.0"
-description = "Runtime-first seed with admitted API shell extracted from Genesis-Core"
+description = "Runtime-first seed with admitted local-only API shell extracted from Genesis-Core"
 requires-python = ">=3.11"
 dependencies = [
 {runtime_deps}
@@ -1851,7 +1916,7 @@ def _copy_sources(destination: Path, source_files: list[SourceFile], repo_root: 
     copied: list[str] = []
     for source_file in source_files:
         relative_path = source_file.relative_path
-        if relative_path == "src/core/utils/diffing/__init__.py":
+        if relative_path in GENERATED_SOURCE_OVERRIDES:
             continue
         destination_path = destination / relative_path
         destination_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1904,6 +1969,7 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
         "src/core/bootstrap/fixture_smoke.py": _runtime_bootstrap_module_content(),
         "src/core/bootstrap/model_smoke.py": _runtime_model_smoke_module_content(),
         "src/core/bootstrap/smoke_suite.py": _runtime_smoke_suite_module_content(),
+        "src/core/server.py": _local_api_server_content(),
         "src/core/utils/diffing/__init__.py": _runtime_diffing_init_content(),
         "src/genesis_core_v2_cli/__init__.py": _genesis_core_v2_cli_init_content(),
         "src/genesis_core_v2_cli/console_scripts.py": _genesis_core_v2_cli_console_scripts_content(),
@@ -1949,7 +2015,7 @@ def _manifest_payload(
         "source_repo": str(repo_root),
         "destination_repo": str(destination),
         "source_head": source_head,
-        "phase": "runtime_seed_with_api_shell",
+        "phase": "runtime_seed_with_local_api_shell",
         "authorizing": False,
         "entry_roots": list(PHASE_ONE_ROOTS),
         "excluded_modules": list(EXCLUDED_MODULE_PREFIXES),
@@ -1979,11 +2045,12 @@ def _manifest_payload(
         "blocked_imports": blocked_imports,
         "output_hashes": output_hashes,
         "notes": [
-            "Runtime-first seed with API/service shell generated locally.",
+            "Runtime-first seed with local-only API shell generated locally.",
+            "Exchange-facing, paper, public-data, and UI service edges are intentionally excluded.",
             "Pipeline, Optuna, and optimizer-only closure are intentionally excluded.",
             "Legacy `core.strategy.features` surface intentionally excluded.",
             "Only explicitly admitted stateful artifacts were carried over; champions and runtime state remained excluded.",
-            "Generated `.env` contains placeholder bearer and Bitfinex auth values only.",
+            "Generated `.env` contains placeholder local-shell values only.",
         ],
     }
 
@@ -2008,7 +2075,11 @@ def generate_seed(destination: Path, *, clean: bool, dry_run: bool) -> dict[str,
         )
 
     source_head = _git_short_head(repo_root)
-    copied_paths = [source.relative_path for source in source_files] + source_model_paths
+    copied_paths = [
+        source.relative_path
+        for source in source_files
+        if source.relative_path not in GENERATED_SOURCE_OVERRIDES
+    ] + source_model_paths
     generated_paths = [path for path in sorted(GENERATED_FILES) if path != "seed_manifest.json"]
 
     payload = _manifest_payload(

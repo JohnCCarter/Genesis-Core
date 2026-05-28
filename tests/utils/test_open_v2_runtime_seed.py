@@ -79,6 +79,11 @@ EXPECTED_LOCAL_MCP_FILES = [
     "tests/runtime/test_local_mcp_setup.py",
 ]
 
+EXPECTED_LOCAL_MCP_SCRIPT_FILES = [
+    "scripts/mcp/mcp_stdio.py",
+    "tests/runtime/test_local_mcp_script.py",
+]
+
 EXPECTED_LOCAL_TASK_FILES = [
     ".vscode/tasks.json",
     "tests/runtime/test_local_vscode_tasks.py",
@@ -194,6 +199,11 @@ EXPECTED_LOCAL_SCRIPT_COMMANDS = [
 EXPECTED_LOCAL_API_SCRIPT_COMMANDS = [
     "python scripts/api/api_shell.py",
     "python scripts/api/api_shell.py --reload",
+]
+
+EXPECTED_LOCAL_MCP_SCRIPT_COMMANDS = [
+    "python scripts/mcp/mcp_stdio.py",
+    "python scripts/mcp/mcp_stdio.py --print-config",
 ]
 
 EXPECTED_LOCAL_PYTEST_SCRIPT_COMMANDS = [
@@ -435,6 +445,35 @@ def test_generate_seed_admits_local_mcp_shell(tmp_path: Path) -> None:
         "Local stdio MCP tooling is admitted with a safe V2-specific config; remote MCP surfaces remain excluded."
         in manifest["notes"]
     )
+
+
+def test_generate_seed_emits_local_mcp_script(tmp_path: Path) -> None:
+    seed_module = _load_open_v2_runtime_seed_module()
+    destination = tmp_path / "Genesis-Core-V2"
+
+    seed_module.generate_seed(destination, clean=True, dry_run=False)
+
+    readme = (destination / "README.md").read_text(encoding="utf-8")
+    scope_text = (destination / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+    manifest = json.loads((destination / "seed_manifest.json").read_text(encoding="utf-8"))
+    generated_test_path = destination / "tests" / "runtime" / "test_local_mcp_script.py"
+
+    for relative_path in EXPECTED_LOCAL_MCP_SCRIPT_FILES:
+        assert (destination / relative_path).exists(), relative_path
+
+    ast.parse(generated_test_path.read_text(encoding="utf-8"), filename=str(generated_test_path))
+    assert "scripts/mcp/mcp_stdio.py" in manifest["local_tooling_surfaces"]
+    assert manifest["mcp_entrypoints"] == {
+        "module_command": "python -m mcp_server.server",
+        "script_commands": EXPECTED_LOCAL_MCP_SCRIPT_COMMANDS,
+    }
+    assert (
+        "Generated `scripts/mcp/mcp_stdio.py` provides a non-installed local MCP stdio entrypoint against the V2 repo root and config path."
+        in manifest["notes"]
+    )
+    assert "Non-installed local MCP launcher:" in readme
+    assert "python scripts/mcp/mcp_stdio.py --print-config" in readme
+    assert "scripts/mcp/mcp_stdio.py" in scope_text
 
 
 def test_generate_seed_emits_local_vscode_task_loop(tmp_path: Path) -> None:

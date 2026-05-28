@@ -135,6 +135,7 @@ GENERATED_FILES = {
     "registry/fixtures/model_registry/config/models/tBTCUSD_1h.json",
     "registry/fixtures/runtime_fixture_smoke_minimal.json",
     "scripts/api/api_shell.py",
+    "scripts/mcp/mcp_stdio.py",
     "scripts/smoke/backtest_smoke.py",
     "scripts/smoke/fixture_smoke.py",
     "scripts/smoke/smoke_suite.py",
@@ -158,6 +159,7 @@ GENERATED_FILES = {
     "tests/governance/test_v2_seed_boundaries.py",
     "tests/runtime/test_backtest_engine_fixture_smoke.py",
     "tests/runtime/test_local_api_shell_script.py",
+    "tests/runtime/test_local_mcp_script.py",
     "tests/runtime/test_local_mcp_setup.py",
     "tests/runtime/test_local_pytest_script.py",
     "tests/runtime/test_local_smoke_scripts.py",
@@ -541,6 +543,12 @@ _API_SCRIPT_FILES = [
 ]
 
 
+_MCP_SCRIPT_FILES = [
+    "scripts/mcp/mcp_stdio.py",
+    "tests/runtime/test_local_mcp_script.py",
+]
+
+
 _PYTEST_SCRIPT_FILES = [
     "scripts/validate/pytest_suite.py",
     "tests/runtime/test_local_pytest_script.py",
@@ -661,6 +669,20 @@ def test_seed_contains_local_mcp_shell() -> None:
     scope_text = (repo_root / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
     assert "local MCP stdio shell" in scope_text
     assert "remote MCP surfaces remain deferred" in scope_text
+
+
+def test_seed_contains_local_mcp_script() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+
+    for relative_path in _MCP_SCRIPT_FILES:
+        assert (repo_root / relative_path).exists(), relative_path
+
+    readme = (repo_root / "README.md").read_text(encoding="utf-8")
+    scope_text = (repo_root / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+
+    assert "Non-installed local MCP launcher:" in readme
+    assert "scripts/mcp/mcp_stdio.py" in readme
+    assert "scripts/mcp/mcp_stdio.py" in scope_text
 
 
 def test_seed_contains_local_vscode_task_loop() -> None:
@@ -1111,6 +1133,7 @@ Use this track for:
 
 - repo structure and generated workflow files
 - local MCP stdio shell and safe editor hookup
+- repo-local MCP launcher under `scripts/mcp/`
 - repo-local API launcher under `scripts/api/`
 - repo-local pytest launcher under `scripts/validate/`
 - repo-local smoke scripts under `scripts/smoke/`
@@ -1159,6 +1182,7 @@ Read `AGENTS.md` and `docs/SKELETON_SCOPE.md` before widening scope.
 - Prefer generator-driven changes in `Genesis-Core` over manual drift in this repo.
 - Keep the local-only API shell runnable and tested.
 - Keep the local MCP stdio shell local-first and safe by default.
+- Prefer generated local `scripts/mcp/mcp_stdio.py` or `.vscode/mcp.json` for non-installed MCP startup.
 - Prefer generated local `scripts/api/api_shell.py` or editor task/debug profiles for non-installed API startup.
 - Prefer generated local `scripts/validate/pytest_suite.py` or editor task/debug profiles for non-installed pytest loops.
 - Prefer generated local `scripts/smoke/*.py` wrappers or `python -m core.bootstrap...` commands for non-installed smoke loops.
@@ -1200,6 +1224,7 @@ Included in the current priority lane:
 - `.vscode/mcp.json`, `.vscode/tasks.json`, `.vscode/launch.json`, `.vscode/settings.json`, and `.vscode/extensions.json` for local editor workflow
 - tracked local env bootstrap template (`.env.example`) plus ignored local placeholder `.env`
 - narrow local pytest/ruff/black defaults in `pyproject.toml`
+- repo-local MCP launcher (`scripts/mcp/mcp_stdio.py`) for non-installed stdio startup
 - repo-local API launcher (`scripts/api/api_shell.py`) for non-installed startup
 - repo-local pytest launcher (`scripts/validate/pytest_suite.py`) for non-installed test execution
 - repo-local smoke scripts (`scripts/smoke/*.py`) for non-installed execution
@@ -1230,6 +1255,7 @@ Deferred to separate verified slices:
 - Local editor recommendations: `ms-python.python`, `ms-python.vscode-pylance`, `charliermarsh.ruff`
 - Local pre-commit workflow: `pre-commit install`, then `pre-commit run --all-files`
 - Local QA defaults: `pytest` recursion guards plus narrow `ruff`/`black` excludes in `pyproject.toml`
+- Non-installed local MCP launcher: `python scripts/mcp/mcp_stdio.py`, optional config probe via `python scripts/mcp/mcp_stdio.py --print-config`
 - Non-installed local API launcher: `python scripts/api/api_shell.py`, optional reload via `python scripts/api/api_shell.py --reload`
 - Non-installed local pytest launcher: `python scripts/validate/pytest_suite.py`, optional focused run via `python scripts/validate/pytest_suite.py tests/runtime/test_local_api_shell_script.py -q`
 - Non-installed local smoke scripts: `python scripts/smoke/fixture_smoke.py`, `python scripts/smoke/backtest_smoke.py`, `python scripts/smoke/smoke_suite.py`
@@ -1618,6 +1644,101 @@ def test_local_api_shell_script_prints_runtime_config() -> None:
     assert payload["reload"] is False
     assert payload["module_file"].replace("\\\\", "/").endswith("/src/core/server.py")
     assert payload["route_count"] >= 4
+"""
+
+
+def _runtime_local_mcp_script_content() -> str:
+    return """from __future__ import annotations
+
+import argparse
+import asyncio
+import json
+import os
+import sys
+from pathlib import Path
+from typing import Any
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_CONFIG_PATH = REPO_ROOT / "config" / "mcp_settings.json"
+
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+os.environ["GENESIS_MCP_CONFIG_PATH"] = str(DEFAULT_CONFIG_PATH)
+
+import mcp_server.server as server_mod
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Run the local Genesis-Core-V2 MCP stdio shell")
+    parser.add_argument("--print-config", action="store_true")
+    return parser
+
+
+def build_runtime_config() -> dict[str, Any]:
+    return {
+        "config_env": os.environ.get("GENESIS_MCP_CONFIG_PATH", ""),
+        "config_path": str(DEFAULT_CONFIG_PATH),
+        "feature_flags": {
+            "file_operations": server_mod.config.features.file_operations,
+            "code_execution": server_mod.config.features.code_execution,
+            "git_integration": server_mod.config.features.git_integration,
+        },
+        "log_level": server_mod.config.log_level,
+        "module_file": str(Path(server_mod.__file__).resolve()),
+        "server_name": server_mod.config.server_name,
+        "tool_count": len(server_mod.TOOLS),
+    }
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+    config = build_runtime_config()
+    if args.print_config:
+        print(json.dumps(config, indent=2, ensure_ascii=False, sort_keys=True))
+        return 0
+
+    asyncio.run(server_mod.main())
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+"""
+
+
+def _runtime_local_mcp_script_test_content() -> str:
+    return """from __future__ import annotations
+
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+
+def test_local_mcp_script_prints_runtime_config() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+
+    completed = subprocess.run(
+        [sys.executable, str(repo_root / "scripts" / "mcp" / "mcp_stdio.py"), "--print-config"],
+        cwd=repo_root,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    payload = json.loads(completed.stdout)
+
+    assert payload["server_name"] == "genesis-core-v2"
+    assert payload["log_level"] == "INFO"
+    assert payload["feature_flags"] == {
+        "file_operations": True,
+        "code_execution": False,
+        "git_integration": True,
+    }
+    assert payload["config_env"].replace("\\\\", "/").endswith("/config/mcp_settings.json")
+    assert payload["config_path"].replace("\\\\", "/").endswith("/config/mcp_settings.json")
+    assert payload["module_file"].replace("\\\\", "/").endswith("/mcp_server/server.py")
+    assert payload["tool_count"] >= 6
 """
 
 
@@ -2898,6 +3019,7 @@ Runtime-first seed with admitted local-only API shell generated from the current
 - tracked env bootstrap template (`.env.example`)
 - local pre-commit hook config (`.pre-commit-config.yaml`)
 - narrow local QA defaults in `pyproject.toml`
+- repo-local MCP launcher (`scripts/mcp/mcp_stdio.py`)
 - repo-local API launcher (`scripts/api/api_shell.py`)
 - repo-local pytest launcher (`scripts/validate/pytest_suite.py`)
 - repo-local smoke scripts (`scripts/smoke/{{fixture_smoke,backtest_smoke,smoke_suite}}.py`)
@@ -2951,6 +3073,8 @@ Unneeded Optuna/optimizer closure is intentionally pruned from the seed until an
 explicit slice admits those higher-sensitivity surfaces.
 Local MCP support is admitted for stdio-only workspace usage; remote MCP entrypoints and remote
 allowlist variants remain deferred.
+Repo-local MCP launcher is generated so the local stdio shell can start without depending on
+editor-specific config wiring first.
 Repo-local API launcher is generated so the local API shell can start without depending on
 editor-specific tasks or an editable install first.
 Repo-local pytest launcher is generated so the seed can run its test loop without depending on
@@ -2970,6 +3094,7 @@ editor-specific tasks or an editable install first.
 - `.env.example` keeps the narrow local placeholder values tracked even though `.env` stays ignored.
 - `.pre-commit-config.yaml` keeps a narrow local formatting/lint/sanity hook loop tracked in the seed.
 - `pyproject.toml` carries narrow local pytest/ruff/black defaults for the generated V2 workspace.
+- `scripts/mcp/mcp_stdio.py` wraps the local MCP stdio shell with repo-root bootstrap and the generated config path.
 - `scripts/api/api_shell.py` wraps the local API shell with `src/` bootstrapping for non-installed startup.
 - `scripts/validate/pytest_suite.py` wraps `pytest` with local `src/` bootstrapping for non-installed test execution.
 - `scripts/smoke/*.py` wraps the core smoke modules with local `src/` bootstrapping so the seed is runnable before install.
@@ -2982,6 +3107,10 @@ Local champion-backed evaluate smoke: `python -m core.bootstrap.evaluate_champio
 Local bootstrap smoke: `python -m core.bootstrap.fixture_smoke`
 Local backtest bootstrap smoke: `python -m core.bootstrap.backtest_smoke`
 Local runtime smoke suite: `python -m core.bootstrap.smoke_suite`
+
+Non-installed local MCP launcher:
+`python scripts/mcp/mcp_stdio.py`
+`python scripts/mcp/mcp_stdio.py --print-config`
 
 Non-installed local API launcher:
 `python scripts/api/api_shell.py`
@@ -3235,6 +3364,7 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
         )
         + "\n",
         "scripts/api/api_shell.py": _runtime_local_api_shell_script_content(),
+        "scripts/mcp/mcp_stdio.py": _runtime_local_mcp_script_content(),
         "scripts/smoke/backtest_smoke.py": _runtime_local_smoke_script_content(
             "core.bootstrap.backtest_smoke"
         ),
@@ -3265,6 +3395,7 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
         "tests/runtime/test_backtest_engine_fixture_smoke.py": _runtime_backtest_engine_smoke_test_content(),
         "tests/runtime/test_local_env_template.py": _runtime_local_env_template_test_content(),
         "tests/runtime/test_local_api_shell_script.py": _runtime_local_api_shell_script_test_content(),
+        "tests/runtime/test_local_mcp_script.py": _runtime_local_mcp_script_test_content(),
         "tests/runtime/test_local_pytest_script.py": _runtime_local_pytest_script_test_content(),
         "tests/runtime/test_local_precommit_config.py": _runtime_local_precommit_config_test_content(),
         "tests/runtime/test_local_vscode_extensions.py": _runtime_local_vscode_extensions_test_content(),
@@ -3344,6 +3475,7 @@ def _manifest_payload(
             "config/mcp_settings.json",
             "mcp_server/server.py",
             "scripts/api/api_shell.py",
+            "scripts/mcp/mcp_stdio.py",
             "scripts/smoke/backtest_smoke.py",
             "scripts/smoke/fixture_smoke.py",
             "scripts/smoke/smoke_suite.py",
@@ -3377,6 +3509,13 @@ def _manifest_payload(
             "script_commands": [
                 "python scripts/api/api_shell.py",
                 "python scripts/api/api_shell.py --reload",
+            ],
+        },
+        "mcp_entrypoints": {
+            "module_command": "python -m mcp_server.server",
+            "script_commands": [
+                "python scripts/mcp/mcp_stdio.py",
+                "python scripts/mcp/mcp_stdio.py --print-config",
             ],
         },
         "pytest_entrypoints": {
@@ -3428,6 +3567,7 @@ def _manifest_payload(
             "Generated `.env.example` mirrors the narrow local placeholder `.env` for tracked bootstrap guidance.",
             "Generated `.pre-commit-config.yaml` keeps a narrow local formatting/lint/sanity hook loop tracked in the seed.",
             "Generated `pyproject.toml` carries narrow local pytest/ruff/black QA defaults for the V2 workspace.",
+            "Generated `scripts/mcp/mcp_stdio.py` provides a non-installed local MCP stdio entrypoint against the V2 repo root and config path.",
             "Generated `scripts/api/api_shell.py` provides a non-installed local API entrypoint against the V2 `src` layout.",
             "Generated `scripts/validate/pytest_suite.py` provides a non-installed local pytest entrypoint against the V2 `src` layout.",
             "Generated `scripts/smoke/*.py` provide non-installed local smoke entrypoints against the V2 `src` layout.",

@@ -536,6 +536,8 @@ def test_generate_seed_emits_local_vscode_task_loop(tmp_path: Path) -> None:
     assert tasks["genesis-v2: pytest"]["args"] == ["scripts/validate/pytest_suite.py", "-q"]
     assert tasks["genesis-v2: pytest"]["group"] == {"kind": "test", "isDefault": True}
     assert "Local VS Code tasks:" in readme
+    assert "genesis-v2: mcp stdio" in readme
+    assert "genesis-v2: mcp stdio" in scope_text
     assert ".vscode/tasks.json" in scope_text
     assert "generated local VS Code tasks" in instructions_text
 
@@ -748,7 +750,10 @@ def test_generate_seed_emits_local_smoke_scripts(tmp_path: Path) -> None:
         in manifest["notes"]
     )
     assert "Non-installed local smoke scripts:" in readme
+    assert "python scripts/smoke/evaluate_champion_smoke.py" in readme
+    assert "python scripts/smoke/model_smoke.py" in readme
     assert "python scripts/smoke/smoke_suite.py" in readme
+    assert "python scripts/smoke/evaluate_champion_smoke.py" in scope_text
     assert "python scripts/smoke/model_smoke.py" in scope_text
     assert "scripts/smoke/*.py" in scope_text
 
@@ -803,6 +808,8 @@ def test_generate_seed_emits_local_vscode_launch_loop(tmp_path: Path) -> None:
     assert launch_configs["genesis-v2: pytest"]["purpose"] == ["debug-test"]
     assert launch_configs["genesis-v2: smoke suite"]["env"] == EXPECTED_WORKSPACE_LOOP_ENV
     assert "Local VS Code debug profiles:" in readme
+    assert "genesis-v2: mcp stdio" in readme
+    assert "genesis-v2: mcp stdio" in scope_text
     assert ".vscode/launch.json" in scope_text
     assert "debug profiles" in instructions_text
 

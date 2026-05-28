@@ -702,6 +702,9 @@ def test_seed_contains_local_vscode_task_loop() -> None:
 
     assert "Local VS Code tasks:" in readme
     assert "genesis-v2: api shell" in readme
+    assert "genesis-v2: mcp stdio" in readme
+    assert "genesis-v2: pytest" in readme
+    assert "genesis-v2: mcp stdio" in scope_text
     assert ".vscode/tasks.json" in scope_text
 
 
@@ -799,7 +802,10 @@ def test_seed_contains_local_smoke_scripts() -> None:
     scope_text = (repo_root / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
 
     assert "Non-installed local smoke scripts:" in readme
+    assert "scripts/smoke/evaluate_champion_smoke.py" in readme
+    assert "scripts/smoke/model_smoke.py" in readme
     assert "scripts/smoke/smoke_suite.py" in readme
+    assert "scripts/smoke/model_smoke.py" in scope_text
     assert "scripts/smoke/*.py" in scope_text
 
 
@@ -813,7 +819,9 @@ def test_seed_contains_local_vscode_launch_loop() -> None:
     scope_text = (repo_root / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
 
     assert "Local VS Code debug profiles:" in readme
+    assert "genesis-v2: mcp stdio" in readme
     assert "genesis-v2: smoke suite" in readme
+    assert "genesis-v2: mcp stdio" in scope_text
     assert ".vscode/launch.json" in scope_text
 
 

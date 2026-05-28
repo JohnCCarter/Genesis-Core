@@ -577,6 +577,16 @@ _CONSOLE_SCRIPT_FILES = [
 ]
 
 
+_MODULE_LOOP_FILES = [
+    "src/core/server.py",
+    "mcp_server/server.py",
+    "scripts/validate/pytest_suite.py",
+    "src/core/bootstrap/model_smoke.py",
+    "src/core/bootstrap/smoke_suite.py",
+    "tests/runtime/test_installed_console_scripts.py",
+]
+
+
 _LAUNCH_FILES = [
     ".vscode/launch.json",
     "tests/runtime/test_local_vscode_launch.py",
@@ -833,6 +843,27 @@ def test_seed_contains_installed_console_script_loop() -> None:
     assert "genesis-v2-model-smoke" in scope_text
     assert 'python -m pip install -e ".[dev,mcp]"' in scope_text
     assert "tests/runtime/test_installed_console_scripts.py" in scope_text
+
+
+def test_seed_contains_editable_install_module_loop() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+
+    for relative_path in _MODULE_LOOP_FILES:
+        assert (repo_root / relative_path).exists(), relative_path
+
+    readme = (repo_root / "README.md").read_text(encoding="utf-8")
+    scope_text = (repo_root / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+
+    assert "python -m uvicorn core.server:app --app-dir src --reload" in readme
+    assert "python -m mcp_server.server" in readme
+    assert "python -m pytest -q" in readme
+    assert "python -m core.bootstrap.model_smoke" in readme
+    assert "python -m core.bootstrap.smoke_suite" in readme
+    assert "python -m uvicorn core.server:app --app-dir src --reload" in scope_text
+    assert "python -m mcp_server.server" in scope_text
+    assert "python -m pytest -q" in scope_text
+    assert "python -m core.bootstrap.model_smoke" in scope_text
+    assert "python -m core.bootstrap.smoke_suite" in scope_text
 
 
 def test_seed_contains_local_vscode_launch_loop() -> None:
@@ -1318,6 +1349,8 @@ Deferred to separate verified slices:
 - Non-installed local smoke scripts: `python scripts/smoke/fixture_smoke.py`, `python scripts/smoke/backtest_smoke.py`, `python scripts/smoke/champion_smoke.py`, `python scripts/smoke/evaluate_champion_smoke.py`, `python scripts/smoke/model_smoke.py`, `python scripts/smoke/smoke_suite.py`
 - Installable local console scripts: `genesis-v2-api-shell`, `genesis-v2-mcp-stdio`, `genesis-v2-pytest`, `genesis-v2-champion-smoke`, `genesis-v2-evaluate-champion-smoke`, `genesis-v2-fixture-smoke`, `genesis-v2-backtest-smoke`, `genesis-v2-model-smoke`, `genesis-v2-smoke-suite`
 - Installable console-script verification: `python -m pip install -e ".[dev,mcp]"`, then `pytest tests/runtime/test_installed_console_scripts.py -q`
+- Editable-install module loop: `python -m uvicorn core.server:app --app-dir src --reload`, `python -m mcp_server.server`, `python -m pytest -q`
+- Editable-install smoke module loop: `python -m core.bootstrap.model_smoke`, `python -m core.bootstrap.champion_smoke`, `python -m core.bootstrap.evaluate_champion_smoke`, `python -m core.bootstrap.fixture_smoke`, `python -m core.bootstrap.backtest_smoke`, `python -m core.bootstrap.smoke_suite`
 - Optional local MCP install: `python -m pip install -e ".[mcp]"`
 """
 
@@ -3397,6 +3430,10 @@ editor-specific tasks or an editable install first.
 - `scripts/smoke/*.py` wraps the admitted core smoke modules with local `src/` bootstrapping so the seed is runnable before install.
 
 After editable install, local module commands:
+
+Local API shell: `python -m uvicorn core.server:app --app-dir src --reload`
+Local MCP stdio shell: `python -m mcp_server.server`
+Local pytest suite: `python -m pytest -q`
 
 Local model smoke: `python -m core.bootstrap.model_smoke`
 Local champion smoke: `python -m core.bootstrap.champion_smoke`

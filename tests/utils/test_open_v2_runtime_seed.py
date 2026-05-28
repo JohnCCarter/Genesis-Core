@@ -204,6 +204,15 @@ EXPECTED_LOCAL_SCRIPT_COMMANDS = [
     "python scripts/smoke/smoke_suite.py",
 ]
 
+EXPECTED_LOCAL_SMOKE_MODULE_COMMANDS = [
+    "python -m core.bootstrap.model_smoke",
+    "python -m core.bootstrap.champion_smoke",
+    "python -m core.bootstrap.evaluate_champion_smoke",
+    "python -m core.bootstrap.fixture_smoke",
+    "python -m core.bootstrap.backtest_smoke",
+    "python -m core.bootstrap.smoke_suite",
+]
+
 EXPECTED_LOCAL_API_SCRIPT_COMMANDS = [
     "python scripts/api/api_shell.py",
     "python scripts/api/api_shell.py --reload",
@@ -333,6 +342,14 @@ def test_generate_seed_emits_conflict_free_console_script_targets(tmp_path: Path
     ]
     assert console_scripts_path.exists()
     assert installed_test_path.exists()
+    assert "python -m uvicorn core.server:app --app-dir src --reload" in readme
+    assert "python -m mcp_server.server" in readme
+    assert "python -m pytest -q" in readme
+    assert "python -m core.bootstrap.model_smoke" in readme
+    assert "python -m uvicorn core.server:app --app-dir src --reload" in scope_text
+    assert "python -m mcp_server.server" in scope_text
+    assert "python -m pytest -q" in scope_text
+    assert "python -m core.bootstrap.model_smoke" in scope_text
     assert "Console scripts after editable install:" in readme
     assert "genesis-v2-api-shell" in readme
     assert "genesis-v2-model-smoke" in readme
@@ -515,8 +532,10 @@ def test_generate_seed_emits_local_mcp_script(tmp_path: Path) -> None:
         in manifest["notes"]
     )
     assert "Non-installed local MCP launcher:" in readme
+    assert "python -m mcp_server.server" in readme
     assert "python scripts/mcp/mcp_stdio.py --print-config" in readme
     assert "genesis-v2-mcp-stdio" in readme
+    assert "python -m mcp_server.server" in scope_text
     assert "scripts/mcp/mcp_stdio.py" in scope_text
 
 
@@ -714,8 +733,10 @@ def test_generate_seed_emits_local_api_shell_script(tmp_path: Path) -> None:
         in manifest["notes"]
     )
     assert "Non-installed local API launcher:" in readme
+    assert "python -m uvicorn core.server:app --app-dir src --reload" in readme
     assert "python scripts/api/api_shell.py --reload" in readme
     assert "genesis-v2-api-shell" in readme
+    assert "python -m uvicorn core.server:app --app-dir src --reload" in scope_text
     assert "scripts/api/api_shell.py" in scope_text
 
 
@@ -746,8 +767,10 @@ def test_generate_seed_emits_local_pytest_script(tmp_path: Path) -> None:
         in manifest["notes"]
     )
     assert "Non-installed local pytest launcher:" in readme
+    assert "python -m pytest -q" in readme
     assert "python scripts/validate/pytest_suite.py" in readme
     assert "genesis-v2-pytest" in readme
+    assert "python -m pytest -q" in scope_text
     assert "scripts/validate/pytest_suite.py" in scope_text
 
 
@@ -765,15 +788,20 @@ def test_generate_seed_emits_local_smoke_scripts(tmp_path: Path) -> None:
         assert (destination / relative_path).exists(), relative_path
 
     assert set(EXPECTED_LOCAL_SCRIPT_FILES[:-1]).issubset(set(manifest["local_tooling_surfaces"]))
+    assert manifest["smoke_entrypoints"]["module_commands"] == EXPECTED_LOCAL_SMOKE_MODULE_COMMANDS
     assert manifest["smoke_entrypoints"]["script_commands"] == EXPECTED_LOCAL_SCRIPT_COMMANDS
     assert (
         "Generated `scripts/smoke/*.py` provide non-installed local smoke entrypoints against the V2 `src` layout."
         in manifest["notes"]
     )
     assert "Non-installed local smoke scripts:" in readme
+    assert "python -m core.bootstrap.model_smoke" in readme
+    assert "python -m core.bootstrap.smoke_suite" in readme
     assert "python scripts/smoke/evaluate_champion_smoke.py" in readme
     assert "python scripts/smoke/model_smoke.py" in readme
     assert "python scripts/smoke/smoke_suite.py" in readme
+    assert "python -m core.bootstrap.model_smoke" in scope_text
+    assert "python -m core.bootstrap.smoke_suite" in scope_text
     assert "python scripts/smoke/evaluate_champion_smoke.py" in scope_text
     assert "python scripts/smoke/model_smoke.py" in scope_text
     assert "scripts/smoke/*.py" in scope_text

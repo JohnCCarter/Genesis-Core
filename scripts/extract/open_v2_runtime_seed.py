@@ -76,6 +76,7 @@ VERIFY_BEFORE_INCLUDE_PATHS = (
     "config/runtime.json",
     "config/runtime.seed.json",
     "config/strategy/champions/**",
+    "data/**",
 )
 
 EXPLICIT_STATEFUL_ADMISSIONS = (
@@ -421,6 +422,7 @@ _EXCLUDED_FILES = [
 
 _EXCLUDED_PREFIXES = [
     "src/core/api",
+    "data",
 ]
 
 _EXCLUDED_JSON_PAYLOAD_DIRS = [
@@ -1640,6 +1642,7 @@ Runtime-only Phase-1 seed generated from the current `Genesis-Core` repository.
 - `config/runtime.json`
 - `config/runtime.seed.json`
 - `config/strategy/champions/**`
+- `data/**`
 - branch-local research corpora and historical explanation surfaces
 
 ## Notes

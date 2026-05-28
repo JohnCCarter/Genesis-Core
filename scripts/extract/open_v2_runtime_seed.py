@@ -84,6 +84,13 @@ EXPLICIT_STATEFUL_ADMISSIONS = (
     "config/models/**",
 )
 
+CHAMPIONLESS_FALLBACK_CONTRACT = {
+    "phase_one_champion_policy": "exclude_config_strategy_champions",
+    "fallback_loader": "core.strategy.champion_loader.ChampionLoader",
+    "runtime_fallback_source": "config/timeframe_configs.py",
+    "runtime_behavior": "fallback_to_timeframe_configs_when_champion_missing_or_invalid",
+}
+
 GENERATED_FILES = {
     "README.md",
     "pyproject.toml",
@@ -1652,6 +1659,8 @@ It is a local starting point, not a claim that all later bootstrap, model, champ
 or API/service decisions are already resolved.
 Source `config/models/**` payloads are copied into the seed, while deterministic smoke
 paths use fixture-backed model registry payloads under `registry/fixtures/model_registry/**`.
+Phase 1 intentionally excludes `config/strategy/champions/**`; runtime falls back to
+`config/timeframe_configs.py` through `ChampionLoader` when champion payloads are absent.
 
 Local model smoke: `python -m core.bootstrap.model_smoke`
 Local champion smoke: `python -m core.bootstrap.champion_smoke`
@@ -1858,6 +1867,7 @@ def _manifest_payload(
         "excluded_modules": list(EXCLUDED_MODULE_PREFIXES),
         "excluded_relative_paths": sorted(EXCLUDED_RELATIVE_PATHS),
         "excluded_path_prefixes": list(EXCLUDED_PATH_PREFIXES),
+        "championless_fallback_contract": dict(CHAMPIONLESS_FALLBACK_CONTRACT),
         "explicit_stateful_admissions": list(EXPLICIT_STATEFUL_ADMISSIONS),
         "verify_before_include_paths": list(VERIFY_BEFORE_INCLUDE_PATHS),
         "copied_files": sorted(copied_paths),

@@ -25,6 +25,13 @@ EXPECTED_EXPLICIT_STATEFUL_ADMISSIONS = [
     "config/models/**",
 ]
 
+EXPECTED_CHAMPIONLESS_FALLBACK_CONTRACT = {
+    "phase_one_champion_policy": "exclude_config_strategy_champions",
+    "fallback_loader": "core.strategy.champion_loader.ChampionLoader",
+    "runtime_fallback_source": "config/timeframe_configs.py",
+    "runtime_behavior": "fallback_to_timeframe_configs_when_champion_missing_or_invalid",
+}
+
 EXPECTED_VERIFY_BEFORE_INCLUDE_PATHS = [
     "config/runtime.json",
     "config/runtime.seed.json",
@@ -181,6 +188,10 @@ def test_generate_seed_keeps_runtime_state_data_and_champion_authority_out_of_ph
     assert not (destination / "data").exists()
 
     manifest = json.loads((destination / "seed_manifest.json").read_text(encoding="utf-8"))
+    readme = (destination / "README.md").read_text(encoding="utf-8")
 
+    assert manifest["championless_fallback_contract"] == EXPECTED_CHAMPIONLESS_FALLBACK_CONTRACT
     assert manifest["explicit_stateful_admissions"] == EXPECTED_EXPLICIT_STATEFUL_ADMISSIONS
     assert manifest["verify_before_include_paths"] == EXPECTED_VERIFY_BEFORE_INCLUDE_PATHS
+    assert "Phase 1 intentionally excludes `config/strategy/champions/**`" in readme
+    assert "`config/timeframe_configs.py` through `ChampionLoader`" in readme

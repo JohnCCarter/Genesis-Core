@@ -76,9 +76,10 @@ GENERATED_FILES = {
     "README.md",
     "pyproject.toml",
     ".gitignore",
-    "config/models/registry.json",
-    "config/models/tBTCUSD_1h.json",
+    "config/backtest_defaults.yaml",
     "registry/fixtures/champions/tBTCUSD_1h.json",
+    "registry/fixtures/model_registry/config/models/registry.json",
+    "registry/fixtures/model_registry/config/models/tBTCUSD_1h.json",
     "registry/fixtures/runtime_fixture_smoke_minimal.json",
     "src/core/bootstrap/__init__.py",
     "src/core/bootstrap/backtest_smoke.py",
@@ -88,6 +89,8 @@ GENERATED_FILES = {
     "src/core/bootstrap/model_smoke.py",
     "src/core/bootstrap/smoke_suite.py",
     "src/core/utils/diffing/__init__.py",
+    "src/genesis_core_v2_cli/__init__.py",
+    "src/genesis_core_v2_cli/console_scripts.py",
     "tests/governance/test_pyproject_console_scripts.py",
     "tests/runtime/test_installed_console_scripts.py",
     "tests/runtime/test_backtest_bootstrap_smoke.py",
@@ -313,6 +316,29 @@ def _load_source_text(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
+def _source_config_model_paths(repo_root: Path) -> list[str]:
+    models_dir = repo_root / "config" / "models"
+    if not models_dir.exists():
+        return []
+
+    return sorted(
+        str(path.relative_to(repo_root)).replace("\\", "/")
+        for path in models_dir.glob("*.json")
+        if path.is_file()
+    )
+
+
+def _copy_source_config_models(destination: Path, repo_root: Path) -> list[str]:
+    copied: list[str] = []
+    for relative_path in _source_config_model_paths(repo_root):
+        source_path = repo_root / relative_path
+        destination_path = destination / relative_path
+        destination_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source_path, destination_path)
+        copied.append(relative_path)
+    return copied
+
+
 def _build_closure(repo_root: Path) -> tuple[list[SourceFile], list[str]]:
     queue: list[str] = list(PHASE_ONE_ROOTS)
     seen_paths: set[str] = set()
@@ -445,10 +471,61 @@ def test_pyproject_declares_runtime_smoke_console_scripts() -> None:
     payload = tomllib.loads((repo_root / "pyproject.toml").read_text(encoding="utf-8"))
 
     assert payload["project"]["scripts"] == {
-        "genesis-v2-fixture-smoke": "core.bootstrap.fixture_smoke:main",
-        "genesis-v2-backtest-smoke": "core.bootstrap.backtest_smoke:main",
-        "genesis-v2-smoke-suite": "core.bootstrap.smoke_suite:main",
+        "genesis-v2-fixture-smoke": "genesis_core_v2_cli.console_scripts:fixture_smoke_main",
+        "genesis-v2-backtest-smoke": "genesis_core_v2_cli.console_scripts:backtest_smoke_main",
+        "genesis-v2-smoke-suite": "genesis_core_v2_cli.console_scripts:smoke_suite_main",
     }
+"""
+
+
+def _backtest_defaults_content() -> str:
+    content = _load_source_text(_repo_root() / "config" / "backtest_defaults.yaml")
+    return content if content.endswith("\n") else f"{content}\n"
+
+
+def _genesis_core_v2_cli_init_content() -> str:
+    return '''"""Console-script helpers for the runtime-only V2 seed."""
+
+from __future__ import annotations
+
+__all__: list[str] = []
+'''
+
+
+def _genesis_core_v2_cli_console_scripts_content() -> str:
+    return """from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+LOCAL_SRC_ROOT = Path(__file__).resolve().parents[1]
+
+
+def _prefer_local_src() -> None:
+    normalized_local = str(LOCAL_SRC_ROOT.resolve())
+    filtered: list[str] = []
+    for entry in sys.path:
+        try:
+            normalized_entry = str(Path(entry).resolve())
+        except Exception:
+            normalized_entry = entry
+        if normalized_entry == normalized_local:
+            continue
+        filtered.append(entry)
+    sys.path[:] = [str(LOCAL_SRC_ROOT), *filtered]
+
+
+_prefer_local_src()
+
+from core.bootstrap.backtest_smoke import main as backtest_smoke_main
+from core.bootstrap.fixture_smoke import main as fixture_smoke_main
+from core.bootstrap.smoke_suite import main as smoke_suite_main
+
+__all__ = [
+    "fixture_smoke_main",
+    "backtest_smoke_main",
+    "smoke_suite_main",
+]
 """
 
 
@@ -652,11 +729,13 @@ from typing import Any
 from core.strategy.confidence import compute_confidence
 from core.strategy.decision import decide
 from core.strategy.features_asof import extract_features_backtest
+from core.strategy.model_registry import ModelRegistry
 from core.strategy.prob_model import predict_proba_for
 from core.strategy.regime import detect_regime_from_candles
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_FIXTURE_PATH = REPO_ROOT / "registry" / "fixtures" / "runtime_fixture_smoke_minimal.json"
+FIXTURE_MODEL_ROOT = REPO_ROOT / "registry" / "fixtures" / "model_registry"
 
 
 def load_fixture(path: Path | None = None) -> dict[str, Any]:
@@ -688,12 +767,20 @@ def run_fixture_smoke(path: Path | None = None) -> dict[str, Any]:
         symbol=symbol,
     )
     regime = detect_regime_from_candles(candles, config=configs)
-    probas, proba_meta = predict_proba_for(
-        symbol,
-        timeframe,
-        features,
-        regime=regime,
-    )
+    previous_registry = getattr(predict_proba_for, "_registry", None)
+    predict_proba_for._registry = ModelRegistry(root=FIXTURE_MODEL_ROOT)
+    try:
+        probas, proba_meta = predict_proba_for(
+            symbol,
+            timeframe,
+            features,
+            regime=regime,
+        )
+    finally:
+        if previous_registry is None:
+            delattr(predict_proba_for, "_registry")
+        else:
+            predict_proba_for._registry = previous_registry
     confidence, confidence_meta = compute_confidence(probas, config=configs.get("quality"))
     action, decision_meta = decide(
         policy,
@@ -984,6 +1071,7 @@ from core.strategy.prob_model import predict_proba_for
 from core.strategy import evaluate as evaluate_mod
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
+FIXTURE_MODEL_ROOT = REPO_ROOT / "registry" / "fixtures" / "model_registry"
 
 
 def run_evaluate_champion_smoke(path: Path | None = None) -> dict[str, object]:
@@ -1004,7 +1092,7 @@ def run_evaluate_champion_smoke(path: Path | None = None) -> dict[str, object]:
         return {"ema_50": 1.0}, {"reasons": [], "htf_fibonacci": {}, "ltf_fibonacci": {}}
 
     previous_registry = getattr(predict_proba_for, "_registry", None)
-    predict_proba_for._registry = ModelRegistry(root=REPO_ROOT)
+    predict_proba_for._registry = ModelRegistry(root=FIXTURE_MODEL_ROOT)
     try:
         with patch.object(
             evaluate_mod,
@@ -1099,12 +1187,13 @@ from core.strategy.model_registry import ModelRegistry
 from core.strategy.prob_model import predict_proba_for
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-DEFAULT_MODEL_REGISTRY_PATH = REPO_ROOT / "config" / "models" / "registry.json"
-DEFAULT_MODEL_FIXTURE_PATH = REPO_ROOT / "config" / "models" / "tBTCUSD_1h.json"
+FIXTURE_MODEL_ROOT = REPO_ROOT / "registry" / "fixtures" / "model_registry"
+DEFAULT_MODEL_REGISTRY_PATH = FIXTURE_MODEL_ROOT / "config" / "models" / "registry.json"
+DEFAULT_MODEL_FIXTURE_PATH = FIXTURE_MODEL_ROOT / "config" / "models" / "tBTCUSD_1h.json"
 
 
 def run_model_smoke() -> dict[str, Any]:
-    registry = ModelRegistry(root=REPO_ROOT)
+    registry = ModelRegistry(root=FIXTURE_MODEL_ROOT)
     model_meta = registry.get_meta("tBTCUSD", "1h") or {}
     schema = list(model_meta.get("schema") or [])
     if not schema:
@@ -1310,9 +1399,9 @@ import pytest
 
 
 EXPECTED_ENTRYPOINTS = {
-    "genesis-v2-fixture-smoke": "core.bootstrap.fixture_smoke:main",
-    "genesis-v2-backtest-smoke": "core.bootstrap.backtest_smoke:main",
-    "genesis-v2-smoke-suite": "core.bootstrap.smoke_suite:main",
+    "genesis-v2-fixture-smoke": "genesis_core_v2_cli.console_scripts:fixture_smoke_main",
+    "genesis-v2-backtest-smoke": "genesis_core_v2_cli.console_scripts:backtest_smoke_main",
+    "genesis-v2-smoke-suite": "genesis_core_v2_cli.console_scripts:smoke_suite_main",
 }
 
 
@@ -1497,10 +1586,13 @@ Runtime-only Phase-1 seed generated from the current `Genesis-Core` repository.
 
 - runtime kernel roots (`pipeline`, `backtest`, `strategy`, `regime`)
 - local dependency closure required by those roots
-- narrow config bootstrap (`config/__init__.py`, `config/timeframe_configs.py`)
+- narrow config bootstrap (`config/__init__.py`, `config/timeframe_configs.py`,
+    `config/backtest_defaults.yaml`)
 - runtime-only governance guardrails
-- local model-registry/prob-model smoke (`config/models/registry.json`,
-  `config/models/tBTCUSD_1h.json`, `core.bootstrap.model_smoke`)
+- admitted source model payloads under `config/models/**`
+- deterministic fixture model-registry/prob-model smoke
+    (`registry/fixtures/model_registry/config/models/{{registry.json,tBTCUSD_1h.json}}`,
+    `core.bootstrap.model_smoke`)
 - local champion fixture/bootstrap smoke (`registry/fixtures/champions/tBTCUSD_1h.json`,
   `core.bootstrap.champion_smoke`)
 - live evaluate smoke backed by the local champion fixture (`core.bootstrap.evaluate_champion_smoke`)
@@ -1524,6 +1616,8 @@ Runtime-only Phase-1 seed generated from the current `Genesis-Core` repository.
 This seed is intentionally narrower than the source repository.
 It is a local starting point, not a claim that all later bootstrap, model, champion,
 or API/service decisions are already resolved.
+Source `config/models/**` payloads are copied into the seed, while deterministic smoke
+paths use fixture-backed model registry payloads under `registry/fixtures/model_registry/**`.
 
 Local model smoke: `python -m core.bootstrap.model_smoke`
 Local champion smoke: `python -m core.bootstrap.champion_smoke`
@@ -1558,9 +1652,9 @@ dependencies = [
 ]
 
 [project.scripts]
-genesis-v2-fixture-smoke = "core.bootstrap.fixture_smoke:main"
-genesis-v2-backtest-smoke = "core.bootstrap.backtest_smoke:main"
-genesis-v2-smoke-suite = "core.bootstrap.smoke_suite:main"
+genesis-v2-fixture-smoke = "genesis_core_v2_cli.console_scripts:fixture_smoke_main"
+genesis-v2-backtest-smoke = "genesis_core_v2_cli.console_scripts:backtest_smoke_main"
+genesis-v2-smoke-suite = "genesis_core_v2_cli.console_scripts:smoke_suite_main"
 
 [project.optional-dependencies]
 dev = [
@@ -1572,7 +1666,7 @@ package-dir = {{"" = "src"}}
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["core*"]
+include = ["core*", "genesis_core_v2_cli*"]
 
 [tool.pytest.ini_options]
 addopts = "-q"
@@ -1643,22 +1737,23 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
         "README.md": _readme_content(source_head),
         "pyproject.toml": _pyproject_content(),
         ".gitignore": _gitignore_content(),
-        "config/models/registry.json": json.dumps(
+        "config/backtest_defaults.yaml": _backtest_defaults_content(),
+        "registry/fixtures/champions/tBTCUSD_1h.json": json.dumps(
+            _runtime_champion_fixture_payload(),
+            indent=2,
+            ensure_ascii=False,
+            sort_keys=True,
+        )
+        + "\n",
+        "registry/fixtures/model_registry/config/models/registry.json": json.dumps(
             _runtime_model_registry_fixture_payload(),
             indent=2,
             ensure_ascii=False,
             sort_keys=True,
         )
         + "\n",
-        "config/models/tBTCUSD_1h.json": json.dumps(
+        "registry/fixtures/model_registry/config/models/tBTCUSD_1h.json": json.dumps(
             _runtime_model_fixture_payload(),
-            indent=2,
-            ensure_ascii=False,
-            sort_keys=True,
-        )
-        + "\n",
-        "registry/fixtures/champions/tBTCUSD_1h.json": json.dumps(
-            _runtime_champion_fixture_payload(),
             indent=2,
             ensure_ascii=False,
             sort_keys=True,
@@ -1679,6 +1774,8 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
         "src/core/bootstrap/model_smoke.py": _runtime_model_smoke_module_content(),
         "src/core/bootstrap/smoke_suite.py": _runtime_smoke_suite_module_content(),
         "src/core/utils/diffing/__init__.py": _runtime_diffing_init_content(),
+        "src/genesis_core_v2_cli/__init__.py": _genesis_core_v2_cli_init_content(),
+        "src/genesis_core_v2_cli/console_scripts.py": _genesis_core_v2_cli_console_scripts_content(),
         "tests/governance/test_pyproject_console_scripts.py": _pyproject_console_scripts_test_content(),
         "tests/runtime/test_installed_console_scripts.py": _runtime_installed_console_scripts_test_content(),
         "tests/runtime/test_backtest_bootstrap_smoke.py": _runtime_backtest_bootstrap_test_content(),
@@ -1751,7 +1848,7 @@ def _manifest_payload(
             "Runtime-only seed generated locally.",
             "API/service shell intentionally excluded.",
             "Legacy compatibility surfaces intentionally excluded.",
-            "Current branch stateful artifacts were not blindly carried over.",
+            "Only explicitly admitted stateful artifacts were carried over; champions remained excluded.",
         ],
     }
 
@@ -1767,6 +1864,7 @@ def _write_manifest(destination: Path, payload: dict[str, Any]) -> None:
 def generate_seed(destination: Path, *, clean: bool, dry_run: bool) -> dict[str, Any]:
     repo_root = _repo_root()
     source_files, blocked_imports = _build_closure(repo_root)
+    source_model_paths = _source_config_model_paths(repo_root)
 
     if blocked_imports:
         raise SeedGenerationError(
@@ -1775,7 +1873,7 @@ def generate_seed(destination: Path, *, clean: bool, dry_run: bool) -> dict[str,
         )
 
     source_head = _git_short_head(repo_root)
-    copied_paths = [source.relative_path for source in source_files]
+    copied_paths = [source.relative_path for source in source_files] + source_model_paths
     generated_paths = [path for path in sorted(GENERATED_FILES) if path != "seed_manifest.json"]
 
     payload = _manifest_payload(
@@ -1792,6 +1890,7 @@ def generate_seed(destination: Path, *, clean: bool, dry_run: bool) -> dict[str,
 
     _prepare_destination(destination, clean=clean)
     _copy_sources(destination, source_files, repo_root)
+    _copy_source_config_models(destination, repo_root)
     _write_generated_files(destination, source_head=source_head)
     _write_manifest(destination, payload)
     return payload

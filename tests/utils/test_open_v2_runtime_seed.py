@@ -114,6 +114,11 @@ EXPECTED_LOCAL_API_SCRIPT_FILES = [
     "tests/runtime/test_local_api_shell_script.py",
 ]
 
+EXPECTED_LOCAL_PYTEST_SCRIPT_FILES = [
+    "scripts/validate/pytest_suite.py",
+    "tests/runtime/test_local_pytest_script.py",
+]
+
 EXPECTED_LOCAL_SCRIPT_FILES = [
     "scripts/smoke/backtest_smoke.py",
     "scripts/smoke/fixture_smoke.py",
@@ -189,6 +194,11 @@ EXPECTED_LOCAL_SCRIPT_COMMANDS = [
 EXPECTED_LOCAL_API_SCRIPT_COMMANDS = [
     "python scripts/api/api_shell.py",
     "python scripts/api/api_shell.py --reload",
+]
+
+EXPECTED_LOCAL_PYTEST_SCRIPT_COMMANDS = [
+    "python scripts/validate/pytest_suite.py",
+    "python scripts/validate/pytest_suite.py tests/runtime/test_local_api_shell_script.py -q",
 ]
 
 EXPECTED_PRECOMMIT_HOOK_IDS = [
@@ -625,6 +635,35 @@ def test_generate_seed_emits_local_api_shell_script(tmp_path: Path) -> None:
     assert "Non-installed local API launcher:" in readme
     assert "python scripts/api/api_shell.py --reload" in readme
     assert "scripts/api/api_shell.py" in scope_text
+
+
+def test_generate_seed_emits_local_pytest_script(tmp_path: Path) -> None:
+    seed_module = _load_open_v2_runtime_seed_module()
+    destination = tmp_path / "Genesis-Core-V2"
+
+    seed_module.generate_seed(destination, clean=True, dry_run=False)
+
+    readme = (destination / "README.md").read_text(encoding="utf-8")
+    scope_text = (destination / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+    manifest = json.loads((destination / "seed_manifest.json").read_text(encoding="utf-8"))
+    generated_test_path = destination / "tests" / "runtime" / "test_local_pytest_script.py"
+
+    for relative_path in EXPECTED_LOCAL_PYTEST_SCRIPT_FILES:
+        assert (destination / relative_path).exists(), relative_path
+
+    ast.parse(generated_test_path.read_text(encoding="utf-8"), filename=str(generated_test_path))
+    assert "scripts/validate/pytest_suite.py" in manifest["local_tooling_surfaces"]
+    assert manifest["pytest_entrypoints"] == {
+        "module_command": "python -m pytest -q",
+        "script_commands": EXPECTED_LOCAL_PYTEST_SCRIPT_COMMANDS,
+    }
+    assert (
+        "Generated `scripts/validate/pytest_suite.py` provides a non-installed local pytest entrypoint against the V2 `src` layout."
+        in manifest["notes"]
+    )
+    assert "Non-installed local pytest launcher:" in readme
+    assert "python scripts/validate/pytest_suite.py" in readme
+    assert "scripts/validate/pytest_suite.py" in scope_text
 
 
 def test_generate_seed_emits_local_smoke_scripts(tmp_path: Path) -> None:

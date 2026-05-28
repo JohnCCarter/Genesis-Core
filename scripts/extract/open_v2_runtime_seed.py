@@ -138,6 +138,7 @@ GENERATED_FILES = {
     "scripts/smoke/backtest_smoke.py",
     "scripts/smoke/fixture_smoke.py",
     "scripts/smoke/smoke_suite.py",
+    "scripts/validate/pytest_suite.py",
     "src/core/bootstrap/__init__.py",
     "src/core/bootstrap/backtest_smoke.py",
     "src/core/bootstrap/champion_smoke.py",
@@ -158,6 +159,7 @@ GENERATED_FILES = {
     "tests/runtime/test_backtest_engine_fixture_smoke.py",
     "tests/runtime/test_local_api_shell_script.py",
     "tests/runtime/test_local_mcp_setup.py",
+    "tests/runtime/test_local_pytest_script.py",
     "tests/runtime/test_local_smoke_scripts.py",
     "tests/runtime/test_local_vscode_launch.py",
     "tests/runtime/test_local_vscode_settings.py",
@@ -539,6 +541,12 @@ _API_SCRIPT_FILES = [
 ]
 
 
+_PYTEST_SCRIPT_FILES = [
+    "scripts/validate/pytest_suite.py",
+    "tests/runtime/test_local_pytest_script.py",
+]
+
+
 _SCRIPT_FILES = [
     "scripts/smoke/backtest_smoke.py",
     "scripts/smoke/fixture_smoke.py",
@@ -737,6 +745,20 @@ def test_seed_contains_local_api_shell_script() -> None:
     assert "Non-installed local API launcher:" in readme
     assert "scripts/api/api_shell.py" in readme
     assert "scripts/api/api_shell.py" in scope_text
+
+
+def test_seed_contains_local_pytest_script() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+
+    for relative_path in _PYTEST_SCRIPT_FILES:
+        assert (repo_root / relative_path).exists(), relative_path
+
+    readme = (repo_root / "README.md").read_text(encoding="utf-8")
+    scope_text = (repo_root / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+
+    assert "Non-installed local pytest launcher:" in readme
+    assert "scripts/validate/pytest_suite.py" in readme
+    assert "scripts/validate/pytest_suite.py" in scope_text
 
 
 def test_seed_contains_local_smoke_scripts() -> None:
@@ -1090,6 +1112,7 @@ Use this track for:
 - repo structure and generated workflow files
 - local MCP stdio shell and safe editor hookup
 - repo-local API launcher under `scripts/api/`
+- repo-local pytest launcher under `scripts/validate/`
 - repo-local smoke scripts under `scripts/smoke/`
 - local VS Code tasks, debug profiles, settings, and extension recommendations
 - local-only API shell
@@ -1137,6 +1160,7 @@ Read `AGENTS.md` and `docs/SKELETON_SCOPE.md` before widening scope.
 - Keep the local-only API shell runnable and tested.
 - Keep the local MCP stdio shell local-first and safe by default.
 - Prefer generated local `scripts/api/api_shell.py` or editor task/debug profiles for non-installed API startup.
+- Prefer generated local `scripts/validate/pytest_suite.py` or editor task/debug profiles for non-installed pytest loops.
 - Prefer generated local `scripts/smoke/*.py` wrappers or `python -m core.bootstrap...` commands for non-installed smoke loops.
 - Prefer the generated local VS Code tasks, debug profiles, settings, and extension recommendations for repeatable API/smoke/test loops when working interactively.
 - Prefer fixture-backed smoke tests before moving wider runtime content.
@@ -1177,6 +1201,7 @@ Included in the current priority lane:
 - tracked local env bootstrap template (`.env.example`) plus ignored local placeholder `.env`
 - narrow local pytest/ruff/black defaults in `pyproject.toml`
 - repo-local API launcher (`scripts/api/api_shell.py`) for non-installed startup
+- repo-local pytest launcher (`scripts/validate/pytest_suite.py`) for non-installed test execution
 - repo-local smoke scripts (`scripts/smoke/*.py`) for non-installed execution
 - `config/mcp_settings.json` and `mcp_server/**` for local MCP use
 - local-only API shell (`config`, `status`, `models`, `strategy`)
@@ -1206,6 +1231,7 @@ Deferred to separate verified slices:
 - Local pre-commit workflow: `pre-commit install`, then `pre-commit run --all-files`
 - Local QA defaults: `pytest` recursion guards plus narrow `ruff`/`black` excludes in `pyproject.toml`
 - Non-installed local API launcher: `python scripts/api/api_shell.py`, optional reload via `python scripts/api/api_shell.py --reload`
+- Non-installed local pytest launcher: `python scripts/validate/pytest_suite.py`, optional focused run via `python scripts/validate/pytest_suite.py tests/runtime/test_local_api_shell_script.py -q`
 - Non-installed local smoke scripts: `python scripts/smoke/fixture_smoke.py`, `python scripts/smoke/backtest_smoke.py`, `python scripts/smoke/smoke_suite.py`
 - Optional local MCP install: `python -m pip install -e ".[mcp]"`
 """
@@ -1592,6 +1618,115 @@ def test_local_api_shell_script_prints_runtime_config() -> None:
     assert payload["reload"] is False
     assert payload["module_file"].replace("\\\\", "/").endswith("/src/core/server.py")
     assert payload["route_count"] >= 4
+"""
+
+
+def _runtime_local_pytest_script_content() -> str:
+    return """from __future__ import annotations
+
+import argparse
+import json
+import os
+import sys
+from pathlib import Path
+from typing import Any
+
+import pytest
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+SRC_ROOT = REPO_ROOT / "src"
+DEFAULT_PYTEST_ARGS = ["-q"]
+
+
+def _prefer_local_src() -> None:
+    normalized_src = str(SRC_ROOT)
+    if normalized_src not in sys.path:
+        sys.path.insert(0, normalized_src)
+
+    existing = [entry for entry in os.environ.get("PYTHONPATH", "").split(os.pathsep) if entry]
+    if normalized_src not in existing:
+        os.environ["PYTHONPATH"] = os.pathsep.join([normalized_src, *existing]) if existing else normalized_src
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Run the local Genesis-Core-V2 pytest suite")
+    parser.add_argument("--print-config", action="store_true")
+    return parser
+
+
+def build_runtime_config(pytest_args: list[str] | None = None) -> dict[str, Any]:
+    return {
+        "cwd": str(REPO_ROOT),
+        "src_root": str(SRC_ROOT),
+        "pythonpath": os.environ.get("PYTHONPATH", ""),
+        "pytest_args": list(pytest_args or DEFAULT_PYTEST_ARGS),
+    }
+
+
+def main(argv: list[str] | None = None) -> int:
+    _prefer_local_src()
+    parsed_args, pytest_args = build_parser().parse_known_args(argv)
+    config = build_runtime_config(pytest_args or DEFAULT_PYTEST_ARGS)
+    if parsed_args.print_config:
+        print(json.dumps(config, indent=2, ensure_ascii=False, sort_keys=True))
+        return 0
+
+    return int(pytest.main(config["pytest_args"]))
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+"""
+
+
+def _runtime_local_pytest_script_test_content() -> str:
+    return """from __future__ import annotations
+
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+
+def test_local_pytest_script_prints_runtime_config() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+
+    completed = subprocess.run(
+        [sys.executable, str(repo_root / "scripts" / "validate" / "pytest_suite.py"), "--print-config"],
+        cwd=repo_root,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    payload = json.loads(completed.stdout)
+
+    assert payload["cwd"].replace("\\\\", "/").endswith("/Genesis-Core-V2")
+    assert payload["src_root"].replace("\\\\", "/").endswith("/Genesis-Core-V2/src")
+    assert payload["pytest_args"] == ["-q"]
+    assert payload["pythonpath"].split(os.pathsep)[0].replace("\\\\", "/").endswith(
+        "/Genesis-Core-V2/src"
+    )
+
+
+def test_local_pytest_script_runs_focused_runtime_test() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(repo_root / "scripts" / "validate" / "pytest_suite.py"),
+            "tests/runtime/test_local_api_shell_script.py",
+            "-q",
+        ],
+        cwd=repo_root,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    combined_output = completed.stdout + completed.stderr
+
+    assert combined_output.strip()
 """
 
 
@@ -2764,6 +2899,7 @@ Runtime-first seed with admitted local-only API shell generated from the current
 - local pre-commit hook config (`.pre-commit-config.yaml`)
 - narrow local QA defaults in `pyproject.toml`
 - repo-local API launcher (`scripts/api/api_shell.py`)
+- repo-local pytest launcher (`scripts/validate/pytest_suite.py`)
 - repo-local smoke scripts (`scripts/smoke/{{fixture_smoke,backtest_smoke,smoke_suite}}.py`)
 - runtime-only governance guardrails
 - admitted source model payloads under `config/models/**`
@@ -2817,6 +2953,8 @@ Local MCP support is admitted for stdio-only workspace usage; remote MCP entrypo
 allowlist variants remain deferred.
 Repo-local API launcher is generated so the local API shell can start without depending on
 editor-specific tasks or an editable install first.
+Repo-local pytest launcher is generated so the seed can run its test loop without depending on
+editor-specific tasks or an editable install first.
 Repo-local smoke scripts are generated so the seed can run its core smoke loops without relying on
 editor-specific tasks or an editable install first.
 
@@ -2833,6 +2971,7 @@ editor-specific tasks or an editable install first.
 - `.pre-commit-config.yaml` keeps a narrow local formatting/lint/sanity hook loop tracked in the seed.
 - `pyproject.toml` carries narrow local pytest/ruff/black defaults for the generated V2 workspace.
 - `scripts/api/api_shell.py` wraps the local API shell with `src/` bootstrapping for non-installed startup.
+- `scripts/validate/pytest_suite.py` wraps `pytest` with local `src/` bootstrapping for non-installed test execution.
 - `scripts/smoke/*.py` wraps the core smoke modules with local `src/` bootstrapping so the seed is runnable before install.
 
 After editable install, local module commands:
@@ -2847,6 +2986,10 @@ Local runtime smoke suite: `python -m core.bootstrap.smoke_suite`
 Non-installed local API launcher:
 `python scripts/api/api_shell.py`
 `python scripts/api/api_shell.py --reload`
+
+Non-installed local pytest launcher:
+`python scripts/validate/pytest_suite.py`
+`python scripts/validate/pytest_suite.py tests/runtime/test_local_api_shell_script.py -q`
 
 Non-installed local smoke scripts:
 `python scripts/smoke/fixture_smoke.py`
@@ -3101,6 +3244,7 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
         "scripts/smoke/smoke_suite.py": _runtime_local_smoke_script_content(
             "core.bootstrap.smoke_suite"
         ),
+        "scripts/validate/pytest_suite.py": _runtime_local_pytest_script_content(),
         "src/core/bootstrap/__init__.py": _runtime_bootstrap_init_content(),
         "src/core/bootstrap/backtest_smoke.py": _runtime_backtest_bootstrap_module_content(),
         "src/core/bootstrap/champion_smoke.py": _runtime_champion_smoke_module_content(),
@@ -3121,6 +3265,7 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
         "tests/runtime/test_backtest_engine_fixture_smoke.py": _runtime_backtest_engine_smoke_test_content(),
         "tests/runtime/test_local_env_template.py": _runtime_local_env_template_test_content(),
         "tests/runtime/test_local_api_shell_script.py": _runtime_local_api_shell_script_test_content(),
+        "tests/runtime/test_local_pytest_script.py": _runtime_local_pytest_script_test_content(),
         "tests/runtime/test_local_precommit_config.py": _runtime_local_precommit_config_test_content(),
         "tests/runtime/test_local_vscode_extensions.py": _runtime_local_vscode_extensions_test_content(),
         "tests/runtime/test_local_mcp_setup.py": _runtime_local_mcp_setup_test_content(),
@@ -3202,6 +3347,7 @@ def _manifest_payload(
             "scripts/smoke/backtest_smoke.py",
             "scripts/smoke/fixture_smoke.py",
             "scripts/smoke/smoke_suite.py",
+            "scripts/validate/pytest_suite.py",
         ],
         "workspace_extension_recommendations": [
             "ms-python.python",
@@ -3231,6 +3377,13 @@ def _manifest_payload(
             "script_commands": [
                 "python scripts/api/api_shell.py",
                 "python scripts/api/api_shell.py --reload",
+            ],
+        },
+        "pytest_entrypoints": {
+            "module_command": "python -m pytest -q",
+            "script_commands": [
+                "python scripts/validate/pytest_suite.py",
+                "python scripts/validate/pytest_suite.py tests/runtime/test_local_api_shell_script.py -q",
             ],
         },
         "pyproject_tooling_sections": [
@@ -3276,6 +3429,7 @@ def _manifest_payload(
             "Generated `.pre-commit-config.yaml` keeps a narrow local formatting/lint/sanity hook loop tracked in the seed.",
             "Generated `pyproject.toml` carries narrow local pytest/ruff/black QA defaults for the V2 workspace.",
             "Generated `scripts/api/api_shell.py` provides a non-installed local API entrypoint against the V2 `src` layout.",
+            "Generated `scripts/validate/pytest_suite.py` provides a non-installed local pytest entrypoint against the V2 `src` layout.",
             "Generated `scripts/smoke/*.py` provide non-installed local smoke entrypoints against the V2 `src` layout.",
             "Exchange-facing, paper, public-data, and UI service edges are intentionally excluded.",
             "Pipeline, Optuna, and optimizer-only closure are intentionally excluded.",

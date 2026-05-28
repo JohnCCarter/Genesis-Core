@@ -64,6 +64,28 @@ EXPECTED_WORKFLOW_FILES = [
 
 EXPECTED_SKELETON_PRIORITY = "prioritize_v2_skeleton_completeness_before_content_migration"
 
+EXPECTED_LOCAL_MCP_FILES = [
+    ".vscode/mcp.json",
+    "config/mcp_settings.json",
+    "mcp_server/__init__.py",
+    "mcp_server/config.py",
+    "mcp_server/resources.py",
+    "mcp_server/server.py",
+    "mcp_server/tools.py",
+    "mcp_server/utils.py",
+    "tests/runtime/test_local_mcp_setup.py",
+]
+
+EXPECTED_REMOTE_MCP_DEFERRED_FILES = [
+    "config/mcp_settings.remote_git.json",
+    "config/mcp_settings.remote_safe.json",
+    "mcp_server/remote_server.py",
+]
+
+EXPECTED_MCP_OPTIONAL_DEPS = [
+    "mcp>=0.9,<1",
+]
+
 EXPECTED_DEFERRED_SERVICE_EDGE_FILES = [
     "src/core/api/account.py",
     "src/core/api/info.py",
@@ -204,6 +226,54 @@ def test_generate_seed_emits_skeleton_workflow_files(tmp_path: Path) -> None:
     ]
     assert (
         "Workflow files make the V2 seed self-describing as a skeleton-first repository."
+        in manifest["notes"]
+    )
+
+
+def test_generate_seed_admits_local_mcp_shell(tmp_path: Path) -> None:
+    seed_module = _load_open_v2_runtime_seed_module()
+    destination = tmp_path / "Genesis-Core-V2"
+
+    seed_module.generate_seed(destination, clean=True, dry_run=False)
+
+    for relative_path in EXPECTED_LOCAL_MCP_FILES:
+        assert (destination / relative_path).exists(), relative_path
+
+    for relative_path in EXPECTED_REMOTE_MCP_DEFERRED_FILES:
+        assert not (destination / relative_path).exists(), relative_path
+
+    pyproject = tomllib.loads((destination / "pyproject.toml").read_text(encoding="utf-8"))
+    readme = (destination / "README.md").read_text(encoding="utf-8")
+    manifest = json.loads((destination / "seed_manifest.json").read_text(encoding="utf-8"))
+    vscode_payload = json.loads((destination / ".vscode" / "mcp.json").read_text(encoding="utf-8"))
+    settings_payload = json.loads(
+        (destination / "config" / "mcp_settings.json").read_text(encoding="utf-8")
+    )
+
+    assert pyproject["project"]["optional-dependencies"]["mcp"] == EXPECTED_MCP_OPTIONAL_DEPS
+    assert vscode_payload["servers"]["genesis-core-v2"]["args"] == ["-m", "mcp_server.server"]
+    assert (
+        vscode_payload["servers"]["genesis-core-v2"]["env"]["GENESIS_MCP_CONFIG_PATH"]
+        == "config/mcp_settings.json"
+    )
+    assert settings_payload["server_name"] == "genesis-core-v2"
+    assert settings_payload["features"] == {
+        "code_execution": False,
+        "file_operations": True,
+        "git_integration": True,
+    }
+    assert ".vscode" in settings_payload["security"]["allowed_paths"]
+    assert "mcp_server" in settings_payload["security"]["allowed_paths"]
+    assert "config/runtime.json" in settings_payload["security"]["blocked_patterns"]
+    assert "local MCP stdio shell" in readme
+    assert "Optional local MCP install:" in readme
+    assert manifest["local_tooling_surfaces"] == [
+        ".vscode/mcp.json",
+        "config/mcp_settings.json",
+        "mcp_server/server.py",
+    ]
+    assert (
+        "Local stdio MCP tooling is admitted with a safe V2-specific config; remote MCP surfaces remain excluded."
         in manifest["notes"]
     )
 

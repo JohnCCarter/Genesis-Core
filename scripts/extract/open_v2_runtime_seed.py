@@ -42,6 +42,7 @@ PHASE_ONE_ROOTS = [
     "src/core/backtest/engine.py",
     "src/core/backtest/engine_precompute.py",
     "src/core/server.py",
+    "mcp_server/server.py",
     "src/core/strategy/evaluate.py",
     "src/core/strategy/features_asof.py",
     "src/core/strategy/decision.py",
@@ -73,6 +74,9 @@ EXCLUDED_MODULE_PREFIXES = (
 )
 
 EXCLUDED_RELATIVE_PATHS = {
+    "config/mcp_settings.remote_git.json",
+    "config/mcp_settings.remote_safe.json",
+    "mcp_server/remote_server.py",
     "src/core/api/account.py",
     "src/core/api/info.py",
     "src/core/api/paper.py",
@@ -110,6 +114,7 @@ CHAMPIONLESS_FALLBACK_CONTRACT = {
 }
 
 GENERATED_FILES = {
+    ".vscode/mcp.json",
     ".github/copilot-instructions.md",
     "README.md",
     "AGENTS.md",
@@ -117,6 +122,7 @@ GENERATED_FILES = {
     ".gitignore",
     ".env",
     "config/backtest_defaults.yaml",
+    "config/mcp_settings.json",
     "docs/SKELETON_SCOPE.md",
     "registry/fixtures/champions/tBTCUSD_1h.json",
     "registry/fixtures/model_registry/config/models/registry.json",
@@ -140,6 +146,7 @@ GENERATED_FILES = {
     "tests/runtime/test_evaluate_champion_smoke.py",
     "tests/governance/test_v2_seed_boundaries.py",
     "tests/runtime/test_backtest_engine_fixture_smoke.py",
+    "tests/runtime/test_local_mcp_setup.py",
     "tests/runtime/test_model_smoke.py",
     "tests/runtime/test_evaluate_pipeline_smoke.py",
     "tests/runtime/test_runtime_fixture_smoke.py",
@@ -170,6 +177,10 @@ PYPROJECT_DEV_DEPS = [
     "pytest>=8",
     "black>=24.10",
     "ruff>=0.6",
+]
+
+PYPROJECT_MCP_DEPS = [
+    "mcp>=0.9,<1",
 ]
 
 
@@ -209,6 +220,11 @@ def _module_name_for_path(relative_path: str) -> str | None:
         if body.endswith("/__init__"):
             body = body[: -len("/__init__")]
         return body.replace("/", ".")
+    if normalized.startswith("mcp_server/") and normalized.endswith(".py"):
+        body = normalized[: -len(".py")]
+        if body.endswith("/__init__"):
+            body = body[: -len("/__init__")]
+        return body.replace("/", ".")
     return None
 
 
@@ -216,6 +232,8 @@ def _path_for_module(repo_root: Path, module_name: str) -> Path | None:
     if module_name.startswith("core.") or module_name == "core":
         base = repo_root / "src" / Path(module_name.replace(".", "/"))
     elif module_name.startswith("config.") or module_name == "config":
+        base = repo_root / Path(module_name.replace(".", "/"))
+    elif module_name.startswith("mcp_server.") or module_name == "mcp_server":
         base = repo_root / Path(module_name.replace(".", "/"))
     elif module_name.startswith("tests.") or module_name == "tests":
         base = repo_root / Path(module_name.replace(".", "/"))
@@ -315,7 +333,7 @@ def _collect_local_import_targets(relative_path: str, text: str) -> tuple[set[st
         if isinstance(node, ast.Import):
             for alias in node.names:
                 imported = alias.name
-                if imported.startswith(("core", "config", "tests")):
+                if imported.startswith(("core", "config", "tests", "mcp_server")):
                     if _is_excluded_module(imported):
                         blocked.append(f"{relative_path}:{node.lineno} import {imported}")
                     else:
@@ -324,7 +342,7 @@ def _collect_local_import_targets(relative_path: str, text: str) -> tuple[set[st
             base_module = _relative_import_module(module_name, node, is_package=is_package)
             if not base_module:
                 continue
-            if not base_module.startswith(("core", "config", "tests")):
+            if not base_module.startswith(("core", "config", "tests", "mcp_server")):
                 continue
             if _is_excluded_module(base_module):
                 blocked.append(f"{relative_path}:{node.lineno} from {base_module}")
@@ -469,7 +487,23 @@ _WORKFLOW_FILES = [
 ]
 
 
+_MCP_FILES = [
+    ".vscode/mcp.json",
+    "config/mcp_settings.json",
+    "mcp_server/__init__.py",
+    "mcp_server/config.py",
+    "mcp_server/resources.py",
+    "mcp_server/server.py",
+    "mcp_server/tools.py",
+    "mcp_server/utils.py",
+    "tests/runtime/test_local_mcp_setup.py",
+]
+
+
 _EXCLUDED_FILES = [
+    "config/mcp_settings.remote_git.json",
+    "config/mcp_settings.remote_safe.json",
+    "mcp_server/remote_server.py",
     "src/core/api/account.py",
     "src/core/api/info.py",
     "src/core/api/paper.py",
@@ -542,6 +576,17 @@ def test_seed_contains_skeleton_workflow_guidance() -> None:
     assert "Prefer generator-driven changes in `Genesis-Core` over manual drift in this repo." in instructions_text
     assert "Track A — skeleton completeness" in scope_text
     assert "Track B — authority migration" in scope_text
+
+
+def test_seed_contains_local_mcp_shell() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+
+    for relative_path in _MCP_FILES:
+        assert (repo_root / relative_path).exists(), relative_path
+
+    scope_text = (repo_root / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+    assert "local MCP stdio shell" in scope_text
+    assert "remote MCP surfaces remain deferred" in scope_text
 
 
 def test_seed_excludes_legacy_and_stateful_surfaces() -> None:
@@ -622,6 +667,63 @@ LOG_LEVEL=INFO
 """
 
 
+def _v2_mcp_settings_payload() -> dict[str, Any]:
+    return {
+        "server_name": "genesis-core-v2",
+        "version": "0.1.0",
+        "features": {
+            "code_execution": False,
+            "file_operations": True,
+            "git_integration": True,
+        },
+        "log_file": "logs/mcp_server.log",
+        "log_level": "INFO",
+        "security": {
+            "allowed_paths": [
+                ".github",
+                ".vscode",
+                "AGENTS.md",
+                "README.md",
+                "config",
+                "docs",
+                "mcp_server",
+                "pyproject.toml",
+                "registry",
+                "seed_manifest.json",
+                "src",
+                "tests",
+            ],
+            "blocked_patterns": [
+                ".git",
+                "__pycache__",
+                "*.pyc",
+                "node_modules",
+                ".env",
+                "config/runtime.json",
+                "config/runtime.seed.json",
+                ".nonce_tracker.json",
+                "dev.overrides.local.json",
+            ],
+            "execution_timeout_seconds": 15,
+            "max_file_size_mb": 5,
+        },
+    }
+
+
+def _v2_vscode_mcp_payload() -> dict[str, Any]:
+    return {
+        "servers": {
+            "genesis-core-v2": {
+                "command": "python",
+                "args": ["-m", "mcp_server.server"],
+                "env": {
+                    "GENESIS_MCP_CONFIG_PATH": "config/mcp_settings.json",
+                },
+            }
+        }
+    }
+
+
 def _v2_agents_content() -> str:
     return """# AGENTS.md — Genesis-Core-V2 Skeleton Contract
 
@@ -639,6 +741,7 @@ Prioritize V2 skeleton completeness before content migration.
 Use this track for:
 
 - repo structure and generated workflow files
+- local MCP stdio shell and safe editor hookup
 - local-only API shell
 - fixture-backed smoke tests
 - README/docs that explain the current admitted boundary
@@ -651,6 +754,7 @@ Defer these to separate verified slices:
 - strategy authority expansion
 - config semantics and runtime authority
 - backtest authority, comparison, readiness, and promotion surfaces
+- remote MCP exposure and remote Git workflow surfaces
 - exchange, paper, UI, and other private/live-adjacent edges
 - freeze-sensitive surfaces
 
@@ -681,11 +785,13 @@ Read `AGENTS.md` and `docs/SKELETON_SCOPE.md` before widening scope.
 - Keep `Genesis-Core` as the source of truth for authority-bearing behavior until a slice is admitted.
 - Prefer generator-driven changes in `Genesis-Core` over manual drift in this repo.
 - Keep the local-only API shell runnable and tested.
+- Keep the local MCP stdio shell local-first and safe by default.
 - Prefer fixture-backed smoke tests before moving wider runtime content.
 
 ## Out of scope by default
 
 - exchange, paper, UI, and private runtime edges
+- remote MCP server and remote MCP config surfaces
 - runtime state and champion authority payloads
 - freeze-sensitive and governance-sensitive authority surfaces
 - unverified content migration for its own sake
@@ -701,6 +807,7 @@ def _v2_skeleton_scope_content() -> str:
 
 - minimal repo structure
 - local-only API
+- local MCP stdio shell
 - generated workflow guidance for agent-driven work
 - fixture-backed smoke tests
 - no exchange, no UI, and no private runtime edges
@@ -713,6 +820,7 @@ Included in the current priority lane:
 
 - README and local workflow docs
 - `AGENTS.md` and `.github/copilot-instructions.md`
+- `.vscode/mcp.json`, `config/mcp_settings.json`, and `mcp_server/**` for local MCP use
 - local-only API shell (`config`, `status`, `models`, `strategy`)
 - fixture-backed smoke tests and console scripts
 - explicitly admitted non-sensitive config/model artifacts already carried into the seed
@@ -724,6 +832,7 @@ Deferred to separate verified slices:
 - strategy authority expansion
 - config semantics and runtime authority
 - backtest authority plus comparison/readiness surfaces
+- remote MCP surfaces remain deferred (`mcp_server/remote_server.py`, remote-safe/git configs)
 - exchange, paper, UI, and other private/live-adjacent edges
 - freeze-sensitive surfaces
 
@@ -732,6 +841,60 @@ Deferred to separate verified slices:
 - In `Genesis-Core`: `python -m pytest tests/utils/test_open_v2_runtime_seed.py -q`
 - Regenerate the seed: `python scripts/extract/open_v2_runtime_seed.py --clean`
 - In `Genesis-Core-V2`: `python -m pytest -q`
+- Optional local MCP install: `python -m pip install -e ".[mcp]"`
+"""
+
+
+def _runtime_local_mcp_setup_test_content() -> str:
+    return """from __future__ import annotations
+
+import json
+from pathlib import Path
+
+from mcp_server.config import load_config
+from mcp_server.server import TOOLS
+
+
+def test_local_mcp_files_encode_safe_skeleton_defaults() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+    vscode_payload = json.loads((repo_root / ".vscode" / "mcp.json").read_text(encoding="utf-8"))
+    settings_payload = json.loads(
+        (repo_root / "config" / "mcp_settings.json").read_text(encoding="utf-8")
+    )
+
+    server = vscode_payload["servers"]["genesis-core-v2"]
+    assert server["args"] == ["-m", "mcp_server.server"]
+    assert server["env"]["GENESIS_MCP_CONFIG_PATH"] == "config/mcp_settings.json"
+
+    assert settings_payload["server_name"] == "genesis-core-v2"
+    assert settings_payload["features"] == {
+        "code_execution": False,
+        "file_operations": True,
+        "git_integration": True,
+    }
+    assert ".vscode" in settings_payload["security"]["allowed_paths"]
+    assert "mcp_server" in settings_payload["security"]["allowed_paths"]
+    assert ".env" in settings_payload["security"]["blocked_patterns"]
+    assert "config/runtime.json" in settings_payload["security"]["blocked_patterns"]
+
+
+def test_local_mcp_server_loads_generated_v2_settings() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+    config = load_config(repo_root / "config" / "mcp_settings.json")
+    tool_names = {tool.name for tool in TOOLS}
+
+    assert config.server_name == "genesis-core-v2"
+    assert config.features.file_operations is True
+    assert config.features.code_execution is False
+    assert config.features.git_integration is True
+    assert {
+        "read_file",
+        "write_file",
+        "list_directory",
+        "get_project_structure",
+        "search_code",
+        "get_git_status",
+    }.issubset(tool_names)
 """
 
 
@@ -1896,6 +2059,7 @@ Runtime-first seed with admitted local-only API shell generated from the current
 - source-backed config endpoint integration smoke (`tests/integration/test_config_endpoints.py`)
 - narrow config bootstrap (`config/__init__.py`, `config/timeframe_configs.py`,
     `config/backtest_defaults.yaml`)
+- local MCP stdio shell (`mcp_server/*.py`, `.vscode/mcp.json`, `config/mcp_settings.json`)
 - runtime-only governance guardrails
 - admitted source model payloads under `config/models/**`
 - deterministic fixture model-registry/prob-model smoke
@@ -1923,6 +2087,9 @@ Runtime-first seed with admitted local-only API shell generated from the current
 - `config/runtime.json`
 - `config/runtime.seed.json`
 - `config/strategy/champions/**`
+- `mcp_server/remote_server.py`
+- `config/mcp_settings.remote_safe.json`
+- `config/mcp_settings.remote_git.json`
 - `data/**`
 - branch-local research corpora and historical explanation surfaces
 
@@ -1941,12 +2108,15 @@ Runtime state and champion authority payloads remain excluded; generated `.env` 
 local-shell placeholders.
 Unneeded Optuna/optimizer closure is intentionally pruned from the seed until and unless a later
 explicit slice admits those higher-sensitivity surfaces.
+Local MCP support is admitted for stdio-only workspace usage; remote MCP entrypoints and remote
+allowlist variants remain deferred.
 
 ## Skeleton workflow
 
 - `AGENTS.md` defines the skeleton-first repo contract.
 - `.github/copilot-instructions.md` keeps local agent work aligned with generator-driven slices.
 - `docs/SKELETON_SCOPE.md` records Track A vs Track B and the verification loop.
+- `.vscode/mcp.json` wires VS Code to the local stdio MCP server using `config/mcp_settings.json`.
 
 Local model smoke: `python -m core.bootstrap.model_smoke`
 Local champion smoke: `python -m core.bootstrap.champion_smoke`
@@ -1961,12 +2131,17 @@ Console scripts after editable install:
 Suggested install verification:
 `python -m pip install -e \".[dev]\"`
 then run `pytest tests/runtime/test_installed_console_scripts.py -q`
+
+Optional local MCP install:
+`python -m pip install -e \".[mcp]\"`
+then connect the `genesis-core-v2` server from `.vscode/mcp.json`
 """
 
 
 def _pyproject_content() -> str:
     runtime_deps = ",\n".join(f'  "{dep}"' for dep in PYPROJECT_RUNTIME_DEPS)
     dev_deps = ",\n".join(f'  "{dep}"' for dep in PYPROJECT_DEV_DEPS)
+    mcp_deps = ",\n".join(f'  "{dep}"' for dep in PYPROJECT_MCP_DEPS)
     return f"""[build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
@@ -1988,6 +2163,9 @@ genesis-v2-smoke-suite = "genesis_core_v2_cli.console_scripts:smoke_suite_main"
 [project.optional-dependencies]
 dev = [
 {dev_deps}
+]
+mcp = [
+{mcp_deps}
 ]
 
 [tool.setuptools]
@@ -2077,12 +2255,26 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
 
     generated_map = {
         ".github/copilot-instructions.md": _v2_copilot_instructions_content(),
+        ".vscode/mcp.json": json.dumps(
+            _v2_vscode_mcp_payload(),
+            indent=2,
+            ensure_ascii=False,
+            sort_keys=True,
+        )
+        + "\n",
         "README.md": _readme_content(source_head),
         "AGENTS.md": _v2_agents_content(),
         "pyproject.toml": _pyproject_content(),
         ".gitignore": _gitignore_content(),
         ".env": _env_placeholder_content(),
         "config/backtest_defaults.yaml": _backtest_defaults_content(),
+        "config/mcp_settings.json": json.dumps(
+            _v2_mcp_settings_payload(),
+            indent=2,
+            ensure_ascii=False,
+            sort_keys=True,
+        )
+        + "\n",
         "docs/SKELETON_SCOPE.md": _v2_skeleton_scope_content(),
         "registry/fixtures/champions/tBTCUSD_1h.json": json.dumps(
             _runtime_champion_fixture_payload(),
@@ -2130,6 +2322,7 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
         "tests/runtime/test_evaluate_champion_smoke.py": _runtime_evaluate_champion_smoke_test_content(),
         "tests/governance/test_v2_seed_boundaries.py": _v2_boundary_test_content(),
         "tests/runtime/test_backtest_engine_fixture_smoke.py": _runtime_backtest_engine_smoke_test_content(),
+        "tests/runtime/test_local_mcp_setup.py": _runtime_local_mcp_setup_test_content(),
         "tests/runtime/test_model_smoke.py": _runtime_model_smoke_test_content(),
         "tests/runtime/test_evaluate_pipeline_smoke.py": _runtime_pipeline_smoke_test_content(),
         "tests/runtime/test_runtime_fixture_smoke.py": _runtime_bootstrap_test_content(),
@@ -2181,6 +2374,11 @@ def _manifest_payload(
             ".github/copilot-instructions.md",
             "docs/SKELETON_SCOPE.md",
         ],
+        "local_tooling_surfaces": [
+            ".vscode/mcp.json",
+            "config/mcp_settings.json",
+            "mcp_server/server.py",
+        ],
         "copied_files": sorted(copied_paths),
         "generated_files": sorted(generated_paths),
         "smoke_entrypoints": {
@@ -2204,6 +2402,7 @@ def _manifest_payload(
         "notes": [
             "Runtime-first seed with local-only API shell generated locally.",
             "Workflow files make the V2 seed self-describing as a skeleton-first repository.",
+            "Local stdio MCP tooling is admitted with a safe V2-specific config; remote MCP surfaces remain excluded.",
             "Exchange-facing, paper, public-data, and UI service edges are intentionally excluded.",
             "Pipeline, Optuna, and optimizer-only closure are intentionally excluded.",
             "Legacy `core.strategy.features` surface intentionally excluded.",
@@ -2263,7 +2462,7 @@ def generate_seed(destination: Path, *, clean: bool, dry_run: bool) -> dict[str,
 def main() -> int:
     repo_root = _repo_root()
     parser = argparse.ArgumentParser(
-        description="Materialize the Genesis-Core-V2 runtime-first seed with admitted API shell"
+        description="Materialize the Genesis-Core-V2 runtime-first seed with admitted local API and MCP shell"
     )
     parser.add_argument(
         "--dest",

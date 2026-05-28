@@ -1272,8 +1272,8 @@ Deferred to separate verified slices:
 - In `Genesis-Core`: `python -m pytest tests/utils/test_open_v2_runtime_seed.py -q`
 - Regenerate the seed: `python scripts/extract/open_v2_runtime_seed.py --clean`
 - In `Genesis-Core-V2`: `python -m pytest -q`
-- Local task loop: `genesis-v2: api shell`, `genesis-v2: smoke suite`, `genesis-v2: pytest`
-- Local debug loop: `genesis-v2: api shell`, `genesis-v2: smoke suite`, `genesis-v2: pytest`
+- Local task loop: `genesis-v2: api shell`, `genesis-v2: mcp stdio`, `genesis-v2: smoke suite`, `genesis-v2: pytest`
+- Local debug loop: `genesis-v2: api shell`, `genesis-v2: mcp stdio`, `genesis-v2: smoke suite`, `genesis-v2: pytest`
 - Local editor settings: `python.analysis.extraPaths`, `python.testing.*`, `python.envFile`
 - Local editor recommendations: `ms-python.python`, `ms-python.vscode-pylance`, `charliermarsh.ruff`
 - Local pre-commit workflow: `pre-commit install`, then `pre-commit run --all-files`

@@ -408,6 +408,7 @@ def test_generate_seed_emits_skeleton_workflow_files(tmp_path: Path) -> None:
     )
     assert "Track A — skeleton completeness" in scope_text
     assert "Track B — authority migration" in scope_text
+    assert "genesis-v2: mcp stdio" in scope_text
     assert manifest["source_of_truth_repo"] == "Genesis-Core"
     assert manifest["skeleton_priority"] == EXPECTED_SKELETON_PRIORITY
     assert manifest["workflow_files"] == EXPECTED_WORKFLOW_FILES

@@ -43,6 +43,7 @@ PHASE_ONE_ROOTS = [
     "src/core/backtest/engine.py",
     "src/core/backtest/engine_precompute.py",
     "src/core/server.py",
+    "src/core/api/info.py",
     "mcp_server/server.py",
     "src/core/strategy/evaluate.py",
     "src/core/strategy/features_asof.py",
@@ -61,7 +62,6 @@ PHASE_ONE_ROOTS = [
 
 EXCLUDED_MODULE_PREFIXES = (
     "core.api.account",
-    "core.api.info",
     "core.api.paper",
     "core.api.public",
     "core.api.ui",
@@ -79,7 +79,6 @@ EXCLUDED_RELATIVE_PATHS = {
     "config/mcp_settings.remote_safe.json",
     "mcp_server/remote_server.py",
     "src/core/api/account.py",
-    "src/core/api/info.py",
     "src/core/api/paper.py",
     "src/core/api/public.py",
     "src/core/api/ui.py",
@@ -163,6 +162,7 @@ GENERATED_FILES = {
     "tests/governance/test_v2_seed_boundaries.py",
     "tests/runtime/test_backtest_engine_fixture_smoke.py",
     "tests/runtime/test_local_api_shell_script.py",
+    "tests/runtime/test_local_info_endpoints.py",
     "tests/runtime/test_local_mcp_script.py",
     "tests/runtime/test_local_mcp_setup.py",
     "tests/runtime/test_pipeline_defaults.py",
@@ -497,6 +497,7 @@ from pathlib import Path
 _ADMITTED_FILES = [
     "src/core/server.py",
     "src/core/api/config.py",
+    "src/core/api/info.py",
     "src/core/api/models.py",
     "src/core/api/status.py",
     "src/core/api/strategy.py",
@@ -546,6 +547,12 @@ _EXTENSIONS_FILES = [
 _API_SCRIPT_FILES = [
     "scripts/api/api_shell.py",
     "tests/runtime/test_local_api_shell_script.py",
+]
+
+
+_INFO_ROUTE_FILES = [
+    "src/core/api/info.py",
+    "tests/runtime/test_local_info_endpoints.py",
 ]
 
 
@@ -666,7 +673,6 @@ _EXCLUDED_FILES = [
     "config/mcp_settings.remote_safe.json",
     "mcp_server/remote_server.py",
     "src/core/api/account.py",
-    "src/core/api/info.py",
     "src/core/api/paper.py",
     "src/core/api/public.py",
     "src/core/api/ui.py",
@@ -691,7 +697,6 @@ _EXCLUDED_JSON_PAYLOAD_DIRS = [
 
 _EXCLUDED_MODULE_PREFIXES = [
     "core.api.account",
-    "core.api.info",
     "core.api.paper",
     "core.api.public",
     "core.api.ui",
@@ -847,6 +852,19 @@ def test_seed_contains_local_api_shell_script() -> None:
     assert "Non-installed local API launcher:" in readme
     assert "scripts/api/api_shell.py" in readme
     assert "scripts/api/api_shell.py" in scope_text
+
+
+def test_seed_contains_local_info_routes() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+
+    for relative_path in _INFO_ROUTE_FILES:
+        assert (repo_root / relative_path).exists(), relative_path
+
+    readme = (repo_root / "README.md").read_text(encoding="utf-8")
+    scope_text = (repo_root / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+
+    assert "src/core/api/{config,info,models,status,strategy}.py" in readme
+    assert "local-only API shell (`config`, `info`, `status`, `models`, `strategy`)" in scope_text
 
 
 def test_seed_contains_local_pytest_script() -> None:
@@ -1493,7 +1511,7 @@ Included in the current priority lane:
 - repo-local pytest launcher (`scripts/validate/pytest_suite.py`) for non-installed test execution
 - repo-local smoke scripts (`scripts/smoke/*.py`) for non-installed execution
 - `config/mcp_settings.json` and `mcp_server/**` for local MCP use
-- local-only API shell (`config`, `status`, `models`, `strategy`)
+- local-only API shell (`config`, `info`, `status`, `models`, `strategy`)
 - `src/core/pipeline.py` plus narrow deterministic seeding helper `src/core/utils/random_seeds.py`
 - fixture-backed smoke tests and console scripts
 - explicitly admitted non-sensitive config/model artifacts already carried into the seed
@@ -1915,6 +1933,50 @@ def test_local_api_shell_script_prints_runtime_config() -> None:
 """
 
 
+def _runtime_local_info_endpoints_test_content() -> str:
+    return """from __future__ import annotations
+
+from fastapi.testclient import TestClient
+
+from core.server import TEST_SPOT_WHITELIST, app
+
+
+def test_local_info_routes_expose_whitelist_and_dashboard() -> None:
+    client = TestClient(app)
+
+    whitelist_response = client.get("/paper/whitelist")
+    assert whitelist_response.status_code == 200
+    assert whitelist_response.json() == {"symbols": sorted(TEST_SPOT_WHITELIST)}
+
+    dashboard_response = client.get("/observability/dashboard")
+    assert dashboard_response.status_code == 200
+    payload = dashboard_response.json()
+
+    assert "counters" in payload and isinstance(payload["counters"], dict)
+    assert "gauges" in payload and isinstance(payload["gauges"], dict)
+    assert "events" in payload and isinstance(payload["events"], list)
+
+
+def test_local_observability_dashboard_passthrough(monkeypatch) -> None:
+    import core.api.info as info_api
+
+    sentinel = {
+        "counters": {"route_calls": 7},
+        "gauges": {"latency_ms": 12.5},
+        "events": [{"kind": "sentinel"}],
+        "extra": {"source": "patched"},
+    }
+
+    monkeypatch.setattr(info_api, "get_dashboard", lambda: sentinel)
+
+    client = TestClient(app)
+    response = client.get("/observability/dashboard")
+
+    assert response.status_code == 200
+    assert response.json() == sentinel
+"""
+
+
 def _runtime_local_mcp_script_content() -> str:
     return """from __future__ import annotations
 
@@ -2172,6 +2234,12 @@ def _local_api_server_content() -> str:
 from fastapi import FastAPI
 
 from core.api.config import router as config_router
+from core.api.info import (
+    TEST_SPOT_WHITELIST,
+    observability_dashboard,
+    paper_whitelist,
+    router as info_router,
+)
 from core.api.models import reload_models, router as models_router
 from core.api.status import _AUTH, debug_auth, health, router as status_router
 from core.api.strategy import router as strategy_router
@@ -2191,6 +2259,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(config_router)
+app.include_router(info_router)
 app.include_router(status_router)
 app.include_router(models_router)
 app.include_router(strategy_router)
@@ -2199,10 +2268,14 @@ __all__ = [
     \"app\",
     \"debug_auth\",
     \"health\",
+    "info_router",
     \"models_router\",
+    "observability_dashboard",
+    "paper_whitelist",
     \"reload_models\",
     \"status_router\",
     \"strategy_router\",
+    "TEST_SPOT_WHITELIST",
 ]
 """
 
@@ -3561,7 +3634,7 @@ Runtime-first seed with admitted local-only API shell generated from the current
 - runtime pipeline orchestration (`src/core/pipeline.py`)
 - local dependency closure required by those roots
 - admitted local-only API shell (`src/core/server.py`,
-  `src/core/api/{{config,models,status,strategy}}.py`)
+    `src/core/api/{{config,info,models,status,strategy}}.py`)
 - source-backed config validation seam (`src/core/config/validator.py`,
   `src/core/config/legacy_schema_v1.json`)
 - source-backed config endpoint integration smoke (`tests/integration/test_config_endpoints.py`)
@@ -3595,7 +3668,7 @@ Runtime-first seed with admitted local-only API shell generated from the current
 
 ## What is intentionally excluded
 
-- `src/core/api/{{account,info,paper,public,ui}}.py`
+- `src/core/api/{{account,paper,public,ui}}.py`
 - `src/core/io/**`
 - `src/core/optimizer/**`
 - `src/core/strategy/features.py`
@@ -3619,7 +3692,7 @@ Source `config/models/**` payloads are copied into the seed, while deterministic
 paths use fixture-backed model registry payloads under `registry/fixtures/model_registry/**`.
 Phase 1 intentionally excludes `config/strategy/champions/**`; runtime falls back to
 `config/timeframe_configs.py` through `ChampionLoader` when champion payloads are absent.
-The admitted API shell is local-only (`config/status/models/strategy`); exchange-facing,
+The admitted API shell is local-only (`config/info/status/models/strategy`); exchange-facing,
 paper, public-data, and UI surfaces remain excluded for a later slice.
 Runtime state and champion authority payloads remain excluded; generated `.env` contains only
 local-shell placeholders. Tracked `.env.example` mirrors the same narrow values for copy-forward bootstrap.
@@ -3976,6 +4049,7 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
         "tests/runtime/test_backtest_engine_fixture_smoke.py": _runtime_backtest_engine_smoke_test_content(),
         "tests/runtime/test_local_env_template.py": _runtime_local_env_template_test_content(),
         "tests/runtime/test_local_api_shell_script.py": _runtime_local_api_shell_script_test_content(),
+        "tests/runtime/test_local_info_endpoints.py": _runtime_local_info_endpoints_test_content(),
         "tests/runtime/test_local_mcp_script.py": _runtime_local_mcp_script_test_content(),
         "tests/runtime/test_pipeline_defaults.py": _runtime_pipeline_defaults_test_content(),
         "tests/runtime/test_local_pytest_script.py": _runtime_local_pytest_script_test_content(),

@@ -50,12 +50,18 @@ EXPECTED_API_RUNTIME_DEPS = {
 EXPECTED_ADMITTED_API_SLICE_FILES = [
     "src/core/server.py",
     "src/core/api/config.py",
+    "src/core/api/info.py",
     "src/core/api/models.py",
     "src/core/api/status.py",
     "src/core/api/strategy.py",
     "src/core/config/validator.py",
     "src/core/config/legacy_schema_v1.json",
     "tests/integration/test_config_endpoints.py",
+]
+
+EXPECTED_LOCAL_INFO_ROUTE_FILES = [
+    "src/core/api/info.py",
+    "tests/runtime/test_local_info_endpoints.py",
 ]
 
 EXPECTED_WORKFLOW_FILES = [
@@ -305,7 +311,6 @@ EXPECTED_WORKSPACE_LOOP_ENV = {"PYTHONPATH": "${workspaceFolder}/src"}
 
 EXPECTED_DEFERRED_SERVICE_EDGE_FILES = [
     "src/core/api/account.py",
-    "src/core/api/info.py",
     "src/core/api/paper.py",
     "src/core/api/public.py",
     "src/core/api/ui.py",
@@ -317,7 +322,6 @@ EXPECTED_DEFERRED_SERVICE_EDGE_PREFIXES = [
 
 EXPECTED_DEFERRED_SERVICE_EDGE_MODULE_PREFIXES = {
     "core.api.account",
-    "core.api.info",
     "core.api.paper",
     "core.api.public",
     "core.api.ui",
@@ -483,9 +487,26 @@ def test_generate_seed_admits_api_service_shell_and_validator_schema(tmp_path: P
 
     readme = (destination / "README.md").read_text(encoding="utf-8")
     assert "admitted local-only API shell (`src/core/server.py`," in readme
+    assert "src/core/api/{config,info,models,status,strategy}.py" in readme
     assert "generated `.env` contains only\nlocal-shell placeholders" in readme
     assert "## Skeleton workflow" in readme
     assert "`docs/SKELETON_SCOPE.md` records Track A vs Track B" in readme
+
+
+def test_generate_seed_admits_local_info_routes(tmp_path: Path) -> None:
+    seed_module = _load_open_v2_runtime_seed_module()
+    destination = tmp_path / "Genesis-Core-V2"
+
+    seed_module.generate_seed(destination, clean=True, dry_run=False)
+
+    readme = (destination / "README.md").read_text(encoding="utf-8")
+    scope_text = (destination / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+
+    for relative_path in EXPECTED_LOCAL_INFO_ROUTE_FILES:
+        assert (destination / relative_path).exists(), relative_path
+
+    assert "src/core/api/{config,info,models,status,strategy}.py" in readme
+    assert "local-only API shell (`config`, `info`, `status`, `models`, `strategy`)" in scope_text
 
 
 def test_generate_seed_emits_skeleton_workflow_files(tmp_path: Path) -> None:
@@ -1119,7 +1140,7 @@ def test_generate_seed_defers_private_exchange_service_edges(tmp_path: Path) -> 
         "Exchange-facing, paper, public-data, and UI service edges are intentionally excluded."
         in manifest["notes"]
     )
-    assert "`src/core/api/{account,info,paper,public,ui}.py`" in readme
+    assert "`src/core/api/{account,paper,public,ui}.py`" in readme
     assert "`src/core/io/**`" in readme
 
 

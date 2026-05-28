@@ -584,6 +584,19 @@ _INSTALL_VERIFICATION_FILES = [
 ]
 
 
+_WORKSPACE_VERIFICATION_FILES = [
+    "seed_manifest.json",
+    ".vscode/tasks.json",
+    ".vscode/launch.json",
+    ".vscode/settings.json",
+    ".vscode/extensions.json",
+    "tests/runtime/test_local_vscode_tasks.py",
+    "tests/runtime/test_local_vscode_launch.py",
+    "tests/runtime/test_local_vscode_settings.py",
+    "tests/runtime/test_local_vscode_extensions.py",
+]
+
+
 _MODULE_LOOP_FILES = [
     "src/core/server.py",
     "mcp_server/server.py",
@@ -872,6 +885,34 @@ def test_seed_contains_install_verification_manifest() -> None:
     assert manifest["install_verification"]["editable_install_command"] in scope_text
     assert manifest["install_verification"]["installed_console_script_test_command"] in readme
     assert manifest["install_verification"]["installed_console_script_test_command"] in scope_text
+
+
+def test_seed_contains_workspace_verification_manifest() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+
+    for relative_path in _WORKSPACE_VERIFICATION_FILES:
+        assert (repo_root / relative_path).exists(), relative_path
+
+    manifest = json.loads((repo_root / "seed_manifest.json").read_text(encoding="utf-8"))
+
+    assert manifest["workspace_verification"] == {
+        "extensions": {
+            "runtime_test_file": "tests/runtime/test_local_vscode_extensions.py",
+            "workspace_file": ".vscode/extensions.json",
+        },
+        "launch": {
+            "runtime_test_file": "tests/runtime/test_local_vscode_launch.py",
+            "workspace_file": ".vscode/launch.json",
+        },
+        "settings": {
+            "runtime_test_file": "tests/runtime/test_local_vscode_settings.py",
+            "workspace_file": ".vscode/settings.json",
+        },
+        "tasks": {
+            "runtime_test_file": "tests/runtime/test_local_vscode_tasks.py",
+            "workspace_file": ".vscode/tasks.json",
+        },
+    }
 
 
 def test_seed_contains_editable_install_module_loop() -> None:
@@ -3893,6 +3934,24 @@ def _manifest_payload(
             "python.testing.pytestEnabled",
             "python.testing.unittestEnabled",
         ],
+        "workspace_verification": {
+            "extensions": {
+                "workspace_file": ".vscode/extensions.json",
+                "runtime_test_file": "tests/runtime/test_local_vscode_extensions.py",
+            },
+            "launch": {
+                "workspace_file": ".vscode/launch.json",
+                "runtime_test_file": "tests/runtime/test_local_vscode_launch.py",
+            },
+            "settings": {
+                "workspace_file": ".vscode/settings.json",
+                "runtime_test_file": "tests/runtime/test_local_vscode_settings.py",
+            },
+            "tasks": {
+                "workspace_file": ".vscode/tasks.json",
+                "runtime_test_file": "tests/runtime/test_local_vscode_tasks.py",
+            },
+        },
         "api_entrypoints": {
             "module_command": "python -m uvicorn core.server:app --app-dir src --reload",
             "console_scripts": ["genesis-v2-api-shell"],

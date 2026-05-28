@@ -235,6 +235,25 @@ EXPECTED_INSTALL_VERIFICATION = {
     "optional_mcp_install_command": 'python -m pip install -e ".[mcp]"',
 }
 
+EXPECTED_WORKSPACE_VERIFICATION = {
+    "extensions": {
+        "runtime_test_file": "tests/runtime/test_local_vscode_extensions.py",
+        "workspace_file": ".vscode/extensions.json",
+    },
+    "launch": {
+        "runtime_test_file": "tests/runtime/test_local_vscode_launch.py",
+        "workspace_file": ".vscode/launch.json",
+    },
+    "settings": {
+        "runtime_test_file": "tests/runtime/test_local_vscode_settings.py",
+        "workspace_file": ".vscode/settings.json",
+    },
+    "tasks": {
+        "runtime_test_file": "tests/runtime/test_local_vscode_tasks.py",
+        "workspace_file": ".vscode/tasks.json",
+    },
+}
+
 EXPECTED_PRECOMMIT_HOOK_IDS = [
     "black",
     "ruff",
@@ -466,6 +485,21 @@ def test_generate_seed_emits_skeleton_workflow_files(tmp_path: Path) -> None:
         "Workflow files make the V2 seed self-describing as a skeleton-first repository."
         in manifest["notes"]
     )
+
+
+def test_generate_seed_emits_workspace_verification_manifest(tmp_path: Path) -> None:
+    seed_module = _load_open_v2_runtime_seed_module()
+    destination = tmp_path / "Genesis-Core-V2"
+
+    seed_module.generate_seed(destination, clean=True, dry_run=False)
+
+    manifest = json.loads((destination / "seed_manifest.json").read_text(encoding="utf-8"))
+
+    assert manifest["workspace_verification"] == EXPECTED_WORKSPACE_VERIFICATION
+
+    for payload in EXPECTED_WORKSPACE_VERIFICATION.values():
+        assert (destination / payload["workspace_file"]).exists(), payload["workspace_file"]
+        assert (destination / payload["runtime_test_file"]).exists(), payload["runtime_test_file"]
 
 
 def test_generate_seed_admits_local_mcp_shell(tmp_path: Path) -> None:

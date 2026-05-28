@@ -134,6 +134,7 @@ GENERATED_FILES = {
     "registry/fixtures/model_registry/config/models/registry.json",
     "registry/fixtures/model_registry/config/models/tBTCUSD_1h.json",
     "registry/fixtures/runtime_fixture_smoke_minimal.json",
+    "scripts/api/api_shell.py",
     "scripts/smoke/backtest_smoke.py",
     "scripts/smoke/fixture_smoke.py",
     "scripts/smoke/smoke_suite.py",
@@ -155,6 +156,7 @@ GENERATED_FILES = {
     "tests/runtime/test_evaluate_champion_smoke.py",
     "tests/governance/test_v2_seed_boundaries.py",
     "tests/runtime/test_backtest_engine_fixture_smoke.py",
+    "tests/runtime/test_local_api_shell_script.py",
     "tests/runtime/test_local_mcp_setup.py",
     "tests/runtime/test_local_smoke_scripts.py",
     "tests/runtime/test_local_vscode_launch.py",
@@ -531,6 +533,12 @@ _EXTENSIONS_FILES = [
 ]
 
 
+_API_SCRIPT_FILES = [
+    "scripts/api/api_shell.py",
+    "tests/runtime/test_local_api_shell_script.py",
+]
+
+
 _SCRIPT_FILES = [
     "scripts/smoke/backtest_smoke.py",
     "scripts/smoke/fixture_smoke.py",
@@ -715,6 +723,20 @@ def test_seed_contains_local_vscode_extensions() -> None:
     assert ".vscode/extensions.json" in readme
     assert "Suggested VS Code extensions" in readme
     assert ".vscode/extensions.json" in scope_text
+
+
+def test_seed_contains_local_api_shell_script() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+
+    for relative_path in _API_SCRIPT_FILES:
+        assert (repo_root / relative_path).exists(), relative_path
+
+    readme = (repo_root / "README.md").read_text(encoding="utf-8")
+    scope_text = (repo_root / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+
+    assert "Non-installed local API launcher:" in readme
+    assert "scripts/api/api_shell.py" in readme
+    assert "scripts/api/api_shell.py" in scope_text
 
 
 def test_seed_contains_local_smoke_scripts() -> None:
@@ -1067,6 +1089,7 @@ Use this track for:
 
 - repo structure and generated workflow files
 - local MCP stdio shell and safe editor hookup
+- repo-local API launcher under `scripts/api/`
 - repo-local smoke scripts under `scripts/smoke/`
 - local VS Code tasks, debug profiles, settings, and extension recommendations
 - local-only API shell
@@ -1113,6 +1136,7 @@ Read `AGENTS.md` and `docs/SKELETON_SCOPE.md` before widening scope.
 - Prefer generator-driven changes in `Genesis-Core` over manual drift in this repo.
 - Keep the local-only API shell runnable and tested.
 - Keep the local MCP stdio shell local-first and safe by default.
+- Prefer generated local `scripts/api/api_shell.py` or editor task/debug profiles for non-installed API startup.
 - Prefer generated local `scripts/smoke/*.py` wrappers or `python -m core.bootstrap...` commands for non-installed smoke loops.
 - Prefer the generated local VS Code tasks, debug profiles, settings, and extension recommendations for repeatable API/smoke/test loops when working interactively.
 - Prefer fixture-backed smoke tests before moving wider runtime content.
@@ -1152,6 +1176,7 @@ Included in the current priority lane:
 - `.vscode/mcp.json`, `.vscode/tasks.json`, `.vscode/launch.json`, `.vscode/settings.json`, and `.vscode/extensions.json` for local editor workflow
 - tracked local env bootstrap template (`.env.example`) plus ignored local placeholder `.env`
 - narrow local pytest/ruff/black defaults in `pyproject.toml`
+- repo-local API launcher (`scripts/api/api_shell.py`) for non-installed startup
 - repo-local smoke scripts (`scripts/smoke/*.py`) for non-installed execution
 - `config/mcp_settings.json` and `mcp_server/**` for local MCP use
 - local-only API shell (`config`, `status`, `models`, `strategy`)
@@ -1180,6 +1205,7 @@ Deferred to separate verified slices:
 - Local editor recommendations: `ms-python.python`, `ms-python.vscode-pylance`, `charliermarsh.ruff`
 - Local pre-commit workflow: `pre-commit install`, then `pre-commit run --all-files`
 - Local QA defaults: `pytest` recursion guards plus narrow `ruff`/`black` excludes in `pyproject.toml`
+- Non-installed local API launcher: `python scripts/api/api_shell.py`, optional reload via `python scripts/api/api_shell.py --reload`
 - Non-installed local smoke scripts: `python scripts/smoke/fixture_smoke.py`, `python scripts/smoke/backtest_smoke.py`, `python scripts/smoke/smoke_suite.py`
 - Optional local MCP install: `python -m pip install -e ".[mcp]"`
 """
@@ -1473,6 +1499,99 @@ def test_local_smoke_scripts_execute_without_editable_install(
 
     for key, expected_value in expected_pairs.items():
         assert payload.get(key) == expected_value
+"""
+
+
+def _runtime_local_api_shell_script_content() -> str:
+    return """from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+from typing import Any
+
+import uvicorn
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+SRC_ROOT = REPO_ROOT / "src"
+
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+
+import core.server as server_mod
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Run the local Genesis-Core-V2 API shell")
+    parser.add_argument("--host", default="127.0.0.1")
+    parser.add_argument("--port", type=int, default=8000)
+    parser.add_argument("--reload", action="store_true")
+    parser.add_argument("--print-config", action="store_true")
+    return parser
+
+
+def build_runtime_config(*, host: str, port: int, reload: bool) -> dict[str, Any]:
+    return {
+        "app": "core.server:app",
+        "app_dir": str(SRC_ROOT),
+        "host": host,
+        "port": port,
+        "reload": reload,
+        "module_file": str(Path(server_mod.__file__).resolve()),
+        "route_count": len(server_mod.app.routes),
+    }
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+    config = build_runtime_config(host=str(args.host), port=int(args.port), reload=bool(args.reload))
+    if args.print_config:
+        print(json.dumps(config, indent=2, ensure_ascii=False, sort_keys=True))
+        return 0
+
+    uvicorn.run(
+        config["app"],
+        app_dir=config["app_dir"],
+        host=config["host"],
+        port=config["port"],
+        reload=config["reload"],
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+"""
+
+
+def _runtime_local_api_shell_script_test_content() -> str:
+    return """from __future__ import annotations
+
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+
+def test_local_api_shell_script_prints_runtime_config() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+
+    completed = subprocess.run(
+        [sys.executable, str(repo_root / "scripts" / "api" / "api_shell.py"), "--print-config"],
+        cwd=repo_root,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    payload = json.loads(completed.stdout)
+
+    assert payload["app"] == "core.server:app"
+    assert payload["host"] == "127.0.0.1"
+    assert payload["port"] == 8000
+    assert payload["reload"] is False
+    assert payload["module_file"].replace("\\\\", "/").endswith("/src/core/server.py")
+    assert payload["route_count"] >= 4
 """
 
 
@@ -2644,6 +2763,7 @@ Runtime-first seed with admitted local-only API shell generated from the current
 - tracked env bootstrap template (`.env.example`)
 - local pre-commit hook config (`.pre-commit-config.yaml`)
 - narrow local QA defaults in `pyproject.toml`
+- repo-local API launcher (`scripts/api/api_shell.py`)
 - repo-local smoke scripts (`scripts/smoke/{{fixture_smoke,backtest_smoke,smoke_suite}}.py`)
 - runtime-only governance guardrails
 - admitted source model payloads under `config/models/**`
@@ -2695,6 +2815,8 @@ Unneeded Optuna/optimizer closure is intentionally pruned from the seed until an
 explicit slice admits those higher-sensitivity surfaces.
 Local MCP support is admitted for stdio-only workspace usage; remote MCP entrypoints and remote
 allowlist variants remain deferred.
+Repo-local API launcher is generated so the local API shell can start without depending on
+editor-specific tasks or an editable install first.
 Repo-local smoke scripts are generated so the seed can run its core smoke loops without relying on
 editor-specific tasks or an editable install first.
 
@@ -2710,6 +2832,7 @@ editor-specific tasks or an editable install first.
 - `.env.example` keeps the narrow local placeholder values tracked even though `.env` stays ignored.
 - `.pre-commit-config.yaml` keeps a narrow local formatting/lint/sanity hook loop tracked in the seed.
 - `pyproject.toml` carries narrow local pytest/ruff/black defaults for the generated V2 workspace.
+- `scripts/api/api_shell.py` wraps the local API shell with `src/` bootstrapping for non-installed startup.
 - `scripts/smoke/*.py` wraps the core smoke modules with local `src/` bootstrapping so the seed is runnable before install.
 
 After editable install, local module commands:
@@ -2720,6 +2843,10 @@ Local champion-backed evaluate smoke: `python -m core.bootstrap.evaluate_champio
 Local bootstrap smoke: `python -m core.bootstrap.fixture_smoke`
 Local backtest bootstrap smoke: `python -m core.bootstrap.backtest_smoke`
 Local runtime smoke suite: `python -m core.bootstrap.smoke_suite`
+
+Non-installed local API launcher:
+`python scripts/api/api_shell.py`
+`python scripts/api/api_shell.py --reload`
 
 Non-installed local smoke scripts:
 `python scripts/smoke/fixture_smoke.py`
@@ -2964,6 +3091,7 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
             sort_keys=True,
         )
         + "\n",
+        "scripts/api/api_shell.py": _runtime_local_api_shell_script_content(),
         "scripts/smoke/backtest_smoke.py": _runtime_local_smoke_script_content(
             "core.bootstrap.backtest_smoke"
         ),
@@ -2992,6 +3120,7 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
         "tests/governance/test_v2_seed_boundaries.py": _v2_boundary_test_content(),
         "tests/runtime/test_backtest_engine_fixture_smoke.py": _runtime_backtest_engine_smoke_test_content(),
         "tests/runtime/test_local_env_template.py": _runtime_local_env_template_test_content(),
+        "tests/runtime/test_local_api_shell_script.py": _runtime_local_api_shell_script_test_content(),
         "tests/runtime/test_local_precommit_config.py": _runtime_local_precommit_config_test_content(),
         "tests/runtime/test_local_vscode_extensions.py": _runtime_local_vscode_extensions_test_content(),
         "tests/runtime/test_local_mcp_setup.py": _runtime_local_mcp_setup_test_content(),
@@ -3069,6 +3198,7 @@ def _manifest_payload(
             ".vscode/tasks.json",
             "config/mcp_settings.json",
             "mcp_server/server.py",
+            "scripts/api/api_shell.py",
             "scripts/smoke/backtest_smoke.py",
             "scripts/smoke/fixture_smoke.py",
             "scripts/smoke/smoke_suite.py",
@@ -3096,6 +3226,13 @@ def _manifest_payload(
             "python.testing.pytestEnabled",
             "python.testing.unittestEnabled",
         ],
+        "api_entrypoints": {
+            "module_command": "python -m uvicorn core.server:app --app-dir src --reload",
+            "script_commands": [
+                "python scripts/api/api_shell.py",
+                "python scripts/api/api_shell.py --reload",
+            ],
+        },
         "pyproject_tooling_sections": [
             "tool.pytest.ini_options.norecursedirs",
             "tool.ruff.extend-exclude",
@@ -3138,6 +3275,7 @@ def _manifest_payload(
             "Generated `.env.example` mirrors the narrow local placeholder `.env` for tracked bootstrap guidance.",
             "Generated `.pre-commit-config.yaml` keeps a narrow local formatting/lint/sanity hook loop tracked in the seed.",
             "Generated `pyproject.toml` carries narrow local pytest/ruff/black QA defaults for the V2 workspace.",
+            "Generated `scripts/api/api_shell.py` provides a non-installed local API entrypoint against the V2 `src` layout.",
             "Generated `scripts/smoke/*.py` provide non-installed local smoke entrypoints against the V2 `src` layout.",
             "Exchange-facing, paper, public-data, and UI service edges are intentionally excluded.",
             "Pipeline, Optuna, and optimizer-only closure are intentionally excluded.",

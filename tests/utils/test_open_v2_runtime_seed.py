@@ -228,6 +228,13 @@ EXPECTED_LOCAL_PYTEST_SCRIPT_COMMANDS = [
     "python scripts/validate/pytest_suite.py tests/runtime/test_local_api_shell_script.py -q",
 ]
 
+EXPECTED_INSTALL_VERIFICATION = {
+    "editable_install_command": 'python -m pip install -e ".[dev,mcp]"',
+    "installed_console_script_test_command": "pytest tests/runtime/test_installed_console_scripts.py -q",
+    "installed_console_script_test_file": "tests/runtime/test_installed_console_scripts.py",
+    "optional_mcp_install_command": 'python -m pip install -e ".[mcp]"',
+}
+
 EXPECTED_PRECOMMIT_HOOK_IDS = [
     "black",
     "ruff",
@@ -340,6 +347,7 @@ def test_generate_seed_emits_conflict_free_console_script_targets(tmp_path: Path
         "genesis-v2-model-smoke",
         "genesis-v2-smoke-suite",
     ]
+    assert manifest["install_verification"] == EXPECTED_INSTALL_VERIFICATION
     assert console_scripts_path.exists()
     assert installed_test_path.exists()
     assert "python -m uvicorn core.server:app --app-dir src --reload" in readme
@@ -355,6 +363,10 @@ def test_generate_seed_emits_conflict_free_console_script_targets(tmp_path: Path
     assert "genesis-v2-model-smoke" in readme
     assert "genesis-v2-api-shell" in scope_text
     assert "genesis-v2-model-smoke" in scope_text
+    assert manifest["install_verification"]["editable_install_command"] in readme
+    assert manifest["install_verification"]["editable_install_command"] in scope_text
+    assert manifest["install_verification"]["installed_console_script_test_command"] in readme
+    assert manifest["install_verification"]["installed_console_script_test_command"] in scope_text
     assert 'python -m pip install -e ".[dev,mcp]"' in scope_text
     assert "tests/runtime/test_installed_console_scripts.py" in scope_text
     ast.parse(console_scripts_path.read_text(encoding="utf-8"), filename=str(console_scripts_path))

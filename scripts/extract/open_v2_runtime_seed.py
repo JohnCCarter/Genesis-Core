@@ -488,6 +488,7 @@ def _v2_boundary_test_content() -> str:
     return """from __future__ import annotations
 
 import ast
+import json
 from pathlib import Path
 
 
@@ -573,6 +574,12 @@ _CONSOLE_SCRIPT_FILES = [
     "pyproject.toml",
     "src/genesis_core_v2_cli/console_scripts.py",
     "tests/governance/test_pyproject_console_scripts.py",
+    "tests/runtime/test_installed_console_scripts.py",
+]
+
+
+_INSTALL_VERIFICATION_FILES = [
+    "seed_manifest.json",
     "tests/runtime/test_installed_console_scripts.py",
 ]
 
@@ -843,6 +850,28 @@ def test_seed_contains_installed_console_script_loop() -> None:
     assert "genesis-v2-model-smoke" in scope_text
     assert 'python -m pip install -e ".[dev,mcp]"' in scope_text
     assert "tests/runtime/test_installed_console_scripts.py" in scope_text
+
+
+def test_seed_contains_install_verification_manifest() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+
+    for relative_path in _INSTALL_VERIFICATION_FILES:
+        assert (repo_root / relative_path).exists(), relative_path
+
+    manifest = json.loads((repo_root / "seed_manifest.json").read_text(encoding="utf-8"))
+    readme = (repo_root / "README.md").read_text(encoding="utf-8")
+    scope_text = (repo_root / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+
+    assert manifest["install_verification"] == {
+        "editable_install_command": 'python -m pip install -e ".[dev,mcp]"',
+        "installed_console_script_test_command": "pytest tests/runtime/test_installed_console_scripts.py -q",
+        "installed_console_script_test_file": "tests/runtime/test_installed_console_scripts.py",
+        "optional_mcp_install_command": 'python -m pip install -e ".[mcp]"',
+    }
+    assert manifest["install_verification"]["editable_install_command"] in readme
+    assert manifest["install_verification"]["editable_install_command"] in scope_text
+    assert manifest["install_verification"]["installed_console_script_test_command"] in readme
+    assert manifest["install_verification"]["installed_console_script_test_command"] in scope_text
 
 
 def test_seed_contains_editable_install_module_loop() -> None:
@@ -3925,6 +3954,12 @@ def _manifest_payload(
                 "genesis-v2-model-smoke",
                 "genesis-v2-smoke-suite",
             ],
+        },
+        "install_verification": {
+            "editable_install_command": 'python -m pip install -e ".[dev,mcp]"',
+            "installed_console_script_test_command": "pytest tests/runtime/test_installed_console_scripts.py -q",
+            "installed_console_script_test_file": "tests/runtime/test_installed_console_scripts.py",
+            "optional_mcp_install_command": 'python -m pip install -e ".[mcp]"',
         },
         "blocked_imports": blocked_imports,
         "output_hashes": output_hashes,

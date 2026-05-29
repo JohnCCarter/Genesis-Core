@@ -54,11 +54,14 @@ PHASE_ONE_ROOTS = [
     "src/core/strategy/model_registry.py",
     "src/core/strategy/champion_loader.py",
     "src/core/strategy/run_intent.py",
+    "src/core/utils/diffing/results_diff.py",
     "src/core/intelligence/regime/authority.py",
     "src/core/strategy/regime.py",
+    "tools/compare_backtest_results.py",
     "config/__init__.py",
     "config/timeframe_configs.py",
     "src/core/config/legacy_schema_v1.json",
+    "tests/backtest/test_compare_backtest_results.py",
     "tests/core/strategy/test_families.py",
     "tests/core/strategy/test_family_admission.py",
     "tests/integration/test_config_endpoints.py",
@@ -66,6 +69,7 @@ PHASE_ONE_ROOTS = [
     "tests/governance/test_no_legacy_feature_imports.py",
     "tests/governance/test_dead_code_tripwires.py",
     "tests/governance/test_pipeline_fast_hash_guard.py",
+    "tests/utils/diffing/test_results_diff.py",
     "tests/utils/test_features_asof_cache_key_deterministic.py",
 ]
 
@@ -78,7 +82,6 @@ EXCLUDED_MODULE_PREFIXES = (
     "core.optimizer",
     "core.strategy.features",
     "core.utils.diffing.optuna_guard",
-    "core.utils.diffing.results_diff",
     "core.utils.diffing.trial_cache",
     "core.utils.optuna_helpers",
 )
@@ -643,6 +646,15 @@ _PIPELINE_VERIFICATION_FILES = [
 ]
 
 
+_BACKTEST_COMPARISON_VERIFICATION_FILES = [
+    "seed_manifest.json",
+    "src/core/utils/diffing/results_diff.py",
+    "tools/compare_backtest_results.py",
+    "tests/backtest/test_compare_backtest_results.py",
+    "tests/utils/diffing/test_results_diff.py",
+]
+
+
 _CONFIG_AUTHORITY_VERIFICATION_FILES = [
     "seed_manifest.json",
     "src/core/api/config.py",
@@ -719,7 +731,6 @@ _EXCLUDED_FILES = [
     "src/core/api/ui.py",
     "src/core/strategy/features.py",
     "src/core/utils/diffing/optuna_guard.py",
-    "src/core/utils/diffing/results_diff.py",
     "src/core/utils/diffing/trial_cache.py",
     "src/core/utils/optuna_helpers.py",
     "config/runtime.json",
@@ -745,7 +756,6 @@ _EXCLUDED_MODULE_PREFIXES = [
     "core.optimizer",
     "core.strategy.features",
     "core.utils.diffing.optuna_guard",
-    "core.utils.diffing.results_diff",
     "core.utils.diffing.trial_cache",
     "core.utils.optuna_helpers",
 ]
@@ -1067,6 +1077,36 @@ def test_seed_contains_pipeline_verification_manifest() -> None:
     }
     assert "runtime pipeline orchestration (`src/core/pipeline.py`)" in readme
     assert "src/core/pipeline.py" in scope_text
+
+
+def test_seed_contains_backtest_comparison_verification_manifest() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+    diffing_init = repo_root / "src" / "core" / "utils" / "diffing" / "__init__.py"
+
+    for relative_path in _BACKTEST_COMPARISON_VERIFICATION_FILES:
+        assert (repo_root / relative_path).exists(), relative_path
+
+    manifest = json.loads((repo_root / "seed_manifest.json").read_text(encoding="utf-8"))
+    readme = (repo_root / "README.md").read_text(encoding="utf-8")
+    scope_text = (repo_root / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+
+    assert manifest["backtest_comparison_verification"] == {
+        "compare_tool": {
+            "module_file": "tools/compare_backtest_results.py",
+            "test_file": "tests/backtest/test_compare_backtest_results.py",
+        },
+        "results_diff": {
+            "module_file": "src/core/utils/diffing/results_diff.py",
+            "test_file": "tests/utils/diffing/test_results_diff.py",
+        },
+    }
+    assert not (repo_root / "scripts" / "run" / "run_backtest.py").exists()
+    init_text = diffing_init.read_text(encoding="utf-8")
+    assert "results_diff" not in init_text
+    assert "optuna_guard" not in init_text
+    assert "trial_cache" not in init_text
+    assert "Backtest comparison/diff semantics and associated tmp-path-isolated tests are admitted" in readme
+    assert "Backtest comparison/diff semantics and associated tmp-path-isolated tests are admitted" in scope_text
 
 
 def test_seed_contains_config_authority_verification_manifest() -> None:
@@ -1541,6 +1581,7 @@ Use this track for:
 - local-only API shell
 - admitted strategy authority helpers (`family_registry`, `family_admission`, `authority_mode_resolver`, `run_intent`)
 - admitted config/runtime authority semantics (`ConfigAuthority`, runtime schema, config API contract) without carrying runtime payloads
+- admitted backtest comparison/diff semantics (`results_diff`, compare/parity tooling) without carrying execution roots or results corpora
 - fixture-backed smoke tests
 - README/docs that explain the current admitted boundary
 - local developer and agent workflow guidance
@@ -1549,7 +1590,6 @@ Use this track for:
 
 Defer these to separate verified slices:
 
-- backtest authority, comparison, readiness, and promotion surfaces
 - remote MCP exposure and remote Git workflow surfaces
 - exchange, paper, UI, and other private/live-adjacent edges
 - freeze-sensitive surfaces
@@ -1584,6 +1624,7 @@ Read `AGENTS.md` and `docs/SKELETON_SCOPE.md` before widening scope.
 - Keep the local MCP stdio shell local-first and safe by default.
 - Keep the admitted strategy authority helpers (`core.config.authority_mode_resolver`, `core.strategy.family_registry`, `core.strategy.family_admission`, `core.strategy.run_intent`) runnable and tested.
 - Keep the admitted config/runtime authority semantics (`core.config.authority`, `core.config.schema`, `core.api.config`) verification-only and isolated from repo-root runtime payload writes.
+- Keep the admitted backtest comparison/diff semantics (`core.utils.diffing.results_diff`, `tools.compare_backtest_results`) tmp-path-isolated and out of execution-root expansion.
 - Prefer generated local `scripts/mcp/mcp_stdio.py` or `.vscode/mcp.json` for non-installed MCP startup.
 - Prefer generated local `scripts/api/api_shell.py` or editor task/debug profiles for non-installed API startup.
 - Prefer generated local `scripts/validate/pytest_suite.py` or editor task/debug profiles for non-installed pytest loops.
@@ -1596,7 +1637,7 @@ Read `AGENTS.md` and `docs/SKELETON_SCOPE.md` before widening scope.
 - exchange, paper, UI, and private runtime edges
 - remote MCP server and remote MCP config surfaces
 - runtime state and champion authority payloads
-- comparison/readiness/promotion and freeze-sensitive surfaces
+- backtest execution roots, results corpora, promotion surfaces, and freeze-sensitive surfaces
 - unverified content migration for its own sake
 """
 
@@ -1635,6 +1676,7 @@ Included in the current priority lane:
 - local-only API shell (`config`, `info`, `status`, `models`, `strategy`)
 - admitted strategy authority helpers (`src/core/config/authority_mode_resolver.py`, `src/core/strategy/{family_registry,family_admission,run_intent}.py`)
 - admitted config/runtime authority semantics (`src/core/config/{authority,authority_mode_resolver,schema}.py`, `src/core/api/config.py`) while runtime payloads remain excluded
+- admitted backtest comparison/diff semantics (`src/core/utils/diffing/results_diff.py`, `tools/compare_backtest_results.py`) while execution roots and corpora remain excluded
 - `src/core/pipeline.py` plus narrow deterministic seeding helper `src/core/utils/random_seeds.py`
 - runtime determinism guardrails for pipeline fast-hash policy and feature-cache hash stability
 - fixture-backed smoke tests and console scripts
@@ -1644,12 +1686,14 @@ Config runtime-authority semantics are admitted for source/verification purposes
 authority/schema/API surfaces already present in the V2 source closure. Runtime state payloads
 (`config/runtime.json`, `config/runtime.seed.json`), champion artifacts, remote MCP surfaces, and
 live-adjacent/promotion surfaces remain deferred and excluded from the seed.
+Backtest comparison/diff semantics and associated tmp-path-isolated tests are admitted. Backtest
+execution roots, results corpora, champions, runtime state payloads, `scripts/run/run_backtest.py`,
+and remote/live edges remain deferred or excluded.
 
 ## Track B — authority migration
 
 Deferred to separate verified slices:
 
-- backtest authority plus comparison/readiness surfaces
 - remote MCP surfaces remain deferred (`mcp_server/remote_server.py`, remote-safe/git configs)
 - exchange, paper, UI, and other private/live-adjacent edges
 - freeze-sensitive surfaces
@@ -4195,6 +4239,8 @@ Runtime-first seed with admitted local-only API shell generated from the current
   `src/core/strategy/{{family_registry,family_admission,run_intent}}.py`)
 - admitted config/runtime authority semantics (`src/core/config/{{authority,authority_mode_resolver,schema}}.py`,
   `src/core/api/config.py`) without carrying runtime payload files
+- admitted backtest comparison/diff semantics (`src/core/utils/diffing/results_diff.py`,
+  `tools/compare_backtest_results.py`) without carrying execution roots or results corpora
 - runtime-only governance guardrails
 - runtime determinism guardrails for pipeline fast-hash policy and feature-cache hash stability
 - admitted source model payloads under `config/models/**`
@@ -4218,7 +4264,8 @@ Runtime-first seed with admitted local-only API shell generated from the current
 - `src/core/optimizer/**`
 - `src/core/strategy/features.py`
 - `src/core/utils/optuna_helpers.py`
-- `src/core/utils/diffing/{{optuna_guard,results_diff,trial_cache}}.py`
+- `src/core/utils/diffing/{{optuna_guard,trial_cache}}.py`
+- `scripts/run/run_backtest.py`
 - `config/runtime.json`
 - `config/runtime.seed.json`
 - `config/strategy/champions/**`
@@ -4245,6 +4292,9 @@ Config runtime-authority semantics are admitted for source/verification purposes
 authority/schema/API surfaces already present in the V2 source closure. Runtime state payloads
 (`config/runtime.json`, `config/runtime.seed.json`), champion artifacts, remote MCP surfaces, and
 live-adjacent/promotion surfaces remain deferred and excluded from the seed.
+Backtest comparison/diff semantics and associated tmp-path-isolated tests are admitted. Backtest
+execution roots, results corpora, champions, runtime state payloads, `scripts/run/run_backtest.py`,
+and remote/live edges remain deferred or excluded.
 Admitted strategy authority helpers keep family classification, run-intent admission, and authority-mode
 precedence observable in the seed without admitting runtime/config state authority or promotion surfaces.
 Runtime pipeline orchestration is admitted through `src/core/pipeline.py`, while the narrower
@@ -4777,6 +4827,16 @@ def _manifest_payload(
                 "validate_smoke_test_file": "tests/integration/test_config_endpoints.py",
             },
         },
+        "backtest_comparison_verification": {
+            "compare_tool": {
+                "module_file": "tools/compare_backtest_results.py",
+                "test_file": "tests/backtest/test_compare_backtest_results.py",
+            },
+            "results_diff": {
+                "module_file": "src/core/utils/diffing/results_diff.py",
+                "test_file": "tests/utils/diffing/test_results_diff.py",
+            },
+        },
         "strategy_authority_verification": {
             "authority_mode_resolver": {
                 "module_file": "src/core/config/authority_mode_resolver.py",
@@ -4885,6 +4945,7 @@ def _manifest_payload(
             "Generated `scripts/validate/pytest_suite.py` provides a non-installed local pytest entrypoint against the V2 `src` layout.",
             "Generated `scripts/smoke/*.py` provide non-installed local smoke entrypoints against the V2 `src` layout.",
             "Config runtime-authority semantics are admitted for source/verification purposes only while runtime payload files remain excluded from the seed.",
+            "Backtest comparison/diff semantics are admitted with tmp-path-isolated tests while execution roots and results corpora remain excluded.",
             "Admitted strategy authority helpers keep family classification, run-intent admission, and authority-mode precedence testable without admitting runtime/config state authority.",
             "Runtime determinism guardrails for pipeline fast-hash policy and feature-cache hash stability are admitted into the seed.",
             "Exchange-facing, paper, public-data, and UI service edges are intentionally excluded.",

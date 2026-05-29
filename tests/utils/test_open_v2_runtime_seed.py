@@ -291,6 +291,17 @@ EXPECTED_PIPELINE_VERIFICATION = {
     },
 }
 
+EXPECTED_BACKTEST_COMPARISON_VERIFICATION = {
+    "compare_tool": {
+        "module_file": "tools/compare_backtest_results.py",
+        "test_file": "tests/backtest/test_compare_backtest_results.py",
+    },
+    "results_diff": {
+        "module_file": "src/core/utils/diffing/results_diff.py",
+        "test_file": "tests/utils/diffing/test_results_diff.py",
+    },
+}
+
 EXPECTED_CONFIG_AUTHORITY_VERIFICATION = {
     "authority_mode_resolver": {
         "module_file": "src/core/config/authority_mode_resolver.py",
@@ -370,7 +381,6 @@ EXPECTED_DEFERRED_SERVICE_EDGE_MODULE_PREFIXES = {
 EXPECTED_PRUNED_CLOSURE_FILES = [
     "src/core/utils/optuna_helpers.py",
     "src/core/utils/diffing/optuna_guard.py",
-    "src/core/utils/diffing/results_diff.py",
     "src/core/utils/diffing/trial_cache.py",
 ]
 
@@ -381,7 +391,6 @@ EXPECTED_PRUNED_CLOSURE_PREFIXES = [
 EXPECTED_PRUNED_MODULE_PREFIXES = {
     "core.optimizer",
     "core.utils.diffing.optuna_guard",
-    "core.utils.diffing.results_diff",
     "core.utils.diffing.trial_cache",
     "core.utils.optuna_helpers",
 }
@@ -649,6 +658,37 @@ def test_generate_seed_emits_pipeline_verification_manifest(tmp_path: Path) -> N
     assert (destination / payload["runtime_test_file"]).exists(), payload["runtime_test_file"]
     assert "runtime pipeline orchestration (`src/core/pipeline.py`)" in readme
     assert "src/core/pipeline.py" in scope_text
+
+
+def test_generate_seed_emits_backtest_comparison_verification_manifest(tmp_path: Path) -> None:
+    seed_module = _load_open_v2_runtime_seed_module()
+    destination = tmp_path / "Genesis-Core-V2"
+
+    seed_module.generate_seed(destination, clean=True, dry_run=False)
+
+    diffing_init = destination / "src" / "core" / "utils" / "diffing" / "__init__.py"
+    manifest = json.loads((destination / "seed_manifest.json").read_text(encoding="utf-8"))
+    readme = (destination / "README.md").read_text(encoding="utf-8")
+    scope_text = (destination / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+
+    assert manifest["backtest_comparison_verification"] == EXPECTED_BACKTEST_COMPARISON_VERIFICATION
+
+    for payload in EXPECTED_BACKTEST_COMPARISON_VERIFICATION.values():
+        assert (destination / payload["module_file"]).exists(), payload["module_file"]
+        assert (destination / payload["test_file"]).exists(), payload["test_file"]
+
+    assert not (destination / "scripts" / "run" / "run_backtest.py").exists()
+    assert "results_diff" not in diffing_init.read_text(encoding="utf-8")
+    assert "optuna_guard" not in diffing_init.read_text(encoding="utf-8")
+    assert "trial_cache" not in diffing_init.read_text(encoding="utf-8")
+    assert (
+        "Backtest comparison/diff semantics and associated tmp-path-isolated tests are admitted"
+        in readme
+    )
+    assert (
+        "Backtest comparison/diff semantics and associated tmp-path-isolated tests are admitted"
+        in scope_text
+    )
 
 
 def test_generate_seed_emits_config_authority_verification_manifest(tmp_path: Path) -> None:

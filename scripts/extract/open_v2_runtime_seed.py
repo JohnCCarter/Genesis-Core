@@ -44,7 +44,10 @@ PHASE_ONE_ROOTS = [
     "src/core/backtest/engine_precompute.py",
     "src/core/server.py",
     "src/core/api/info.py",
+    "config/mcp_settings.remote_safe.json",
+    "config/mcp_settings.remote_git.json",
     "mcp_server/server.py",
+    "mcp_server/remote_server.py",
     "src/core/config/authority_mode_resolver.py",
     "src/core/strategy/evaluate.py",
     "src/core/strategy/family_registry.py",
@@ -65,11 +68,15 @@ PHASE_ONE_ROOTS = [
     "tests/core/strategy/test_families.py",
     "tests/core/strategy/test_family_admission.py",
     "tests/integration/test_config_endpoints.py",
+    "tests/integration/test_mcp_git_status_remote_filters.py",
+    "tests/integration/test_mcp_remote_git_workflow_confirm.py",
+    "tests/governance/test_mcp_remote_authorization.py",
     "tests/governance/test_authority_mode_resolver.py",
     "tests/governance/test_no_legacy_feature_imports.py",
     "tests/governance/test_dead_code_tripwires.py",
     "tests/governance/test_pipeline_fast_hash_guard.py",
     "tests/utils/diffing/test_results_diff.py",
+    "tests/utils/test_remote_server_fastmcp_sse_alias.py",
     "tests/utils/test_features_asof_cache_key_deterministic.py",
 ]
 
@@ -87,9 +94,6 @@ EXCLUDED_MODULE_PREFIXES = (
 )
 
 EXCLUDED_RELATIVE_PATHS = {
-    "config/mcp_settings.remote_git.json",
-    "config/mcp_settings.remote_safe.json",
-    "mcp_server/remote_server.py",
     "src/core/api/account.py",
     "src/core/api/paper.py",
     "src/core/api/public.py",
@@ -638,6 +642,18 @@ _MCP_VERIFICATION_FILES = [
 ]
 
 
+_REMOTE_MCP_VERIFICATION_FILES = [
+    "seed_manifest.json",
+    "config/mcp_settings.remote_git.json",
+    "config/mcp_settings.remote_safe.json",
+    "mcp_server/remote_server.py",
+    "tests/governance/test_mcp_remote_authorization.py",
+    "tests/integration/test_mcp_git_status_remote_filters.py",
+    "tests/integration/test_mcp_remote_git_workflow_confirm.py",
+    "tests/utils/test_remote_server_fastmcp_sse_alias.py",
+]
+
+
 _PIPELINE_VERIFICATION_FILES = [
     "seed_manifest.json",
     "src/core/pipeline.py",
@@ -722,9 +738,6 @@ _MCP_FILES = [
 
 
 _EXCLUDED_FILES = [
-    "config/mcp_settings.remote_git.json",
-    "config/mcp_settings.remote_safe.json",
-    "mcp_server/remote_server.py",
     "src/core/api/account.py",
     "src/core/api/paper.py",
     "src/core/api/public.py",
@@ -801,7 +814,7 @@ def test_seed_contains_local_mcp_shell() -> None:
 
     scope_text = (repo_root / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
     assert "local MCP stdio shell" in scope_text
-    assert "remote MCP surfaces remain deferred" in scope_text
+    assert "constrained remote MCP HTTP semantics without deployment helpers" in scope_text
 
 
 def test_seed_contains_local_mcp_script() -> None:
@@ -1056,6 +1069,61 @@ def test_seed_contains_mcp_verification_manifest() -> None:
             "runtime_test_file": "tests/runtime/test_local_mcp_script.py",
         },
     }
+
+
+def test_seed_contains_remote_mcp_verification_manifest() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+
+    for relative_path in _REMOTE_MCP_VERIFICATION_FILES:
+        assert (repo_root / relative_path).exists(), relative_path
+
+    manifest = json.loads((repo_root / "seed_manifest.json").read_text(encoding="utf-8"))
+    readme = (repo_root / "README.md").read_text(encoding="utf-8")
+    scope_text = (repo_root / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+    remote_safe = json.loads(
+        (repo_root / "config" / "mcp_settings.remote_safe.json").read_text(encoding="utf-8")
+    )
+    remote_git = json.loads(
+        (repo_root / "config" / "mcp_settings.remote_git.json").read_text(encoding="utf-8")
+    )
+
+    assert manifest["remote_mcp_verification"] == {
+        "authorization_and_transport": {
+            "module_file": "mcp_server/remote_server.py",
+            "auth_test_file": "tests/governance/test_mcp_remote_authorization.py",
+            "transport_test_file": "tests/utils/test_remote_server_fastmcp_sse_alias.py",
+        },
+        "remote_git_workflow": {
+            "config_file": "config/mcp_settings.remote_git.json",
+            "confirm_test_file": "tests/integration/test_mcp_remote_git_workflow_confirm.py",
+        },
+        "remote_safe_config": {
+            "config_file": "config/mcp_settings.remote_safe.json",
+            "filter_test_file": "tests/integration/test_mcp_git_status_remote_filters.py",
+        },
+    }
+    assert remote_safe["features"] == {
+        "code_execution": False,
+        "file_operations": True,
+        "git_integration": True,
+    }
+    assert remote_git["features"] == {
+        "code_execution": True,
+        "file_operations": True,
+        "git_integration": True,
+    }
+    assert ".github" not in remote_safe["security"]["allowed_paths"]
+    assert ".github" in remote_git["security"]["allowed_paths"]
+    assert "results" not in remote_safe["security"]["allowed_paths"]
+    assert "results" in remote_git["security"]["allowed_paths"]
+    assert remote_safe["security"]["max_file_size_mb"] == 5
+    assert remote_git["security"]["max_file_size_mb"] == 10
+    assert "config/runtime.json" in remote_safe["security"]["blocked_patterns"]
+    assert "config/runtime.json" in remote_git["security"]["blocked_patterns"]
+    assert not (repo_root / "scripts" / "mcp" / "start_mcp_remote.ps1").exists()
+    assert not (repo_root / "scripts" / "mcp_session_preflight.py").exists()
+    assert "Genesis-Core-V2 admits constrained remote MCP semantics limited to authorization, safe-mode," in readme
+    assert "Genesis-Core-V2 admits constrained remote MCP semantics limited to authorization, safe-mode," in scope_text
 
 
 def test_seed_contains_pipeline_verification_manifest() -> None:
@@ -1582,6 +1650,7 @@ Use this track for:
 - admitted strategy authority helpers (`family_registry`, `family_admission`, `authority_mode_resolver`, `run_intent`)
 - admitted config/runtime authority semantics (`ConfigAuthority`, runtime schema, config API contract) without carrying runtime payloads
 - admitted backtest comparison/diff semantics (`results_diff`, compare/parity tooling) without carrying execution roots or results corpora
+- admitted constrained remote MCP semantics (`remote_server`, remote safe/git configs, auth/confirm/transport tests) without operational launchers or deployment guidance
 - fixture-backed smoke tests
 - README/docs that explain the current admitted boundary
 - local developer and agent workflow guidance
@@ -1590,7 +1659,7 @@ Use this track for:
 
 Defer these to separate verified slices:
 
-- remote MCP exposure and remote Git workflow surfaces
+- remote MCP operational launchers and deployment/tunnel/proxy guidance
 - exchange, paper, UI, and other private/live-adjacent edges
 - freeze-sensitive surfaces
 
@@ -1625,6 +1694,7 @@ Read `AGENTS.md` and `docs/SKELETON_SCOPE.md` before widening scope.
 - Keep the admitted strategy authority helpers (`core.config.authority_mode_resolver`, `core.strategy.family_registry`, `core.strategy.family_admission`, `core.strategy.run_intent`) runnable and tested.
 - Keep the admitted config/runtime authority semantics (`core.config.authority`, `core.config.schema`, `core.api.config`) verification-only and isolated from repo-root runtime payload writes.
 - Keep the admitted backtest comparison/diff semantics (`core.utils.diffing.results_diff`, `tools.compare_backtest_results`) tmp-path-isolated and out of execution-root expansion.
+- Keep the admitted remote MCP semantics (`mcp_server.remote_server`, `config/mcp_settings.remote_{safe,git}.json`) limited to authorization, safe-mode, confirm-token, and transport-alias behavior already present in source.
 - Prefer generated local `scripts/mcp/mcp_stdio.py` or `.vscode/mcp.json` for non-installed MCP startup.
 - Prefer generated local `scripts/api/api_shell.py` or editor task/debug profiles for non-installed API startup.
 - Prefer generated local `scripts/validate/pytest_suite.py` or editor task/debug profiles for non-installed pytest loops.
@@ -1635,7 +1705,7 @@ Read `AGENTS.md` and `docs/SKELETON_SCOPE.md` before widening scope.
 ## Out of scope by default
 
 - exchange, paper, UI, and private runtime edges
-- remote MCP server and remote MCP config surfaces
+- remote MCP operational launchers, deployment/tunnel/proxy guidance, and other live-adjacent surfaces
 - runtime state and champion authority payloads
 - backtest execution roots, results corpora, promotion surfaces, and freeze-sensitive surfaces
 - unverified content migration for its own sake
@@ -1653,6 +1723,7 @@ def _v2_skeleton_scope_content() -> str:
 - runtime pipeline orchestration via `src/core/pipeline.py`
 - local-only API
 - local MCP stdio shell
+- constrained remote MCP HTTP semantics without deployment helpers
 - generated workflow guidance for agent-driven work
 - fixture-backed smoke tests
 - no exchange, no UI, and no private runtime edges
@@ -1677,6 +1748,7 @@ Included in the current priority lane:
 - admitted strategy authority helpers (`src/core/config/authority_mode_resolver.py`, `src/core/strategy/{family_registry,family_admission,run_intent}.py`)
 - admitted config/runtime authority semantics (`src/core/config/{authority,authority_mode_resolver,schema}.py`, `src/core/api/config.py`) while runtime payloads remain excluded
 - admitted backtest comparison/diff semantics (`src/core/utils/diffing/results_diff.py`, `tools/compare_backtest_results.py`) while execution roots and corpora remain excluded
+- admitted constrained remote MCP semantics (`mcp_server/remote_server.py`, `config/mcp_settings.remote_{safe,git}.json`) while launchers and deployment guidance remain excluded
 - `src/core/pipeline.py` plus narrow deterministic seeding helper `src/core/utils/random_seeds.py`
 - runtime determinism guardrails for pipeline fast-hash policy and feature-cache hash stability
 - fixture-backed smoke tests and console scripts
@@ -1684,17 +1756,21 @@ Included in the current priority lane:
 
 Config runtime-authority semantics are admitted for source/verification purposes only, including the
 authority/schema/API surfaces already present in the V2 source closure. Runtime state payloads
-(`config/runtime.json`, `config/runtime.seed.json`), champion artifacts, remote MCP surfaces, and
+(`config/runtime.json`, `config/runtime.seed.json`), champion artifacts, and
 live-adjacent/promotion surfaces remain deferred and excluded from the seed.
 Backtest comparison/diff semantics and associated tmp-path-isolated tests are admitted. Backtest
 execution roots, results corpora, champions, runtime state payloads, `scripts/run/run_backtest.py`,
 and remote/live edges remain deferred or excluded.
+Genesis-Core-V2 admits constrained remote MCP semantics limited to authorization, safe-mode,
+confirm-token, and transport-alias behavior already present in source. Operational launch scripts,
+deployment/tunnel/proxy guidance, and other live-adjacent surfaces remain deferred and are not
+included in this slice.
 
 ## Track B — authority migration
 
 Deferred to separate verified slices:
 
-- remote MCP surfaces remain deferred (`mcp_server/remote_server.py`, remote-safe/git configs)
+- remote MCP operational launchers and deployment/tunnel/proxy guidance remain deferred
 - exchange, paper, UI, and other private/live-adjacent edges
 - freeze-sensitive surfaces
 
@@ -4207,8 +4283,8 @@ def _readme_content(source_head: str | None) -> str:
     )
     return f"""# Genesis-Core-V2
 
-Runtime-first seed with admitted local-only API shell generated from the current
-`Genesis-Core` repository.
+Runtime-first seed with admitted local-only API shell and constrained remote MCP semantics
+generated from the current `Genesis-Core` repository.
 
 {source_line}
 
@@ -4241,6 +4317,8 @@ Runtime-first seed with admitted local-only API shell generated from the current
   `src/core/api/config.py`) without carrying runtime payload files
 - admitted backtest comparison/diff semantics (`src/core/utils/diffing/results_diff.py`,
   `tools/compare_backtest_results.py`) without carrying execution roots or results corpora
+- admitted constrained remote MCP semantics (`mcp_server/remote_server.py`,
+  `config/mcp_settings.remote_{{safe,git}}.json`) without operational launchers or deployment guidance
 - runtime-only governance guardrails
 - runtime determinism guardrails for pipeline fast-hash policy and feature-cache hash stability
 - admitted source model payloads under `config/models/**`
@@ -4266,12 +4344,12 @@ Runtime-first seed with admitted local-only API shell generated from the current
 - `src/core/utils/optuna_helpers.py`
 - `src/core/utils/diffing/{{optuna_guard,trial_cache}}.py`
 - `scripts/run/run_backtest.py`
+- `scripts/mcp/start_mcp_remote.ps1`
+- `scripts/mcp_session_preflight.py`
 - `config/runtime.json`
 - `config/runtime.seed.json`
 - `config/strategy/champions/**`
-- `mcp_server/remote_server.py`
-- `config/mcp_settings.remote_safe.json`
-- `config/mcp_settings.remote_git.json`
+- `docs/mcp/**`
 - `data/**`
 - branch-local research corpora and historical explanation surfaces
 
@@ -4295,14 +4373,18 @@ live-adjacent/promotion surfaces remain deferred and excluded from the seed.
 Backtest comparison/diff semantics and associated tmp-path-isolated tests are admitted. Backtest
 execution roots, results corpora, champions, runtime state payloads, `scripts/run/run_backtest.py`,
 and remote/live edges remain deferred or excluded.
+Genesis-Core-V2 admits constrained remote MCP semantics limited to authorization, safe-mode,
+confirm-token, and transport-alias behavior already present in source. Operational launch scripts,
+deployment/tunnel/proxy guidance, and other live-adjacent surfaces remain deferred and are not
+included in this slice.
 Admitted strategy authority helpers keep family classification, run-intent admission, and authority-mode
 precedence observable in the seed without admitting runtime/config state authority or promotion surfaces.
 Runtime pipeline orchestration is admitted through `src/core/pipeline.py`, while the narrower
 `src/core/utils/random_seeds.py` helper keeps Optuna/optimizer-only helpers out of the seed.
 Unneeded Optuna/optimizer closure is intentionally pruned from the seed until and unless a later
 explicit slice admits those higher-sensitivity surfaces.
-Local MCP support is admitted for stdio-only workspace usage; remote MCP entrypoints and remote
-allowlist variants remain deferred.
+Local MCP support is admitted for stdio-first workspace usage, while the remote HTTP entrypoint and
+remote allowlist variants are admitted only for semantics-level verification.
 Repo-local MCP launcher is generated so the local stdio shell can start without depending on
 editor-specific config wiring first.
 Repo-local API launcher is generated so the local API shell can start without depending on
@@ -4807,6 +4889,21 @@ def _manifest_payload(
                 "runtime_test_file": "tests/runtime/test_local_mcp_script.py",
             },
         },
+        "remote_mcp_verification": {
+            "authorization_and_transport": {
+                "module_file": "mcp_server/remote_server.py",
+                "auth_test_file": "tests/governance/test_mcp_remote_authorization.py",
+                "transport_test_file": "tests/utils/test_remote_server_fastmcp_sse_alias.py",
+            },
+            "remote_git_workflow": {
+                "config_file": "config/mcp_settings.remote_git.json",
+                "confirm_test_file": "tests/integration/test_mcp_remote_git_workflow_confirm.py",
+            },
+            "remote_safe_config": {
+                "config_file": "config/mcp_settings.remote_safe.json",
+                "filter_test_file": "tests/integration/test_mcp_git_status_remote_filters.py",
+            },
+        },
         "pipeline_verification": {
             "defaults_and_seeding": {
                 "module_file": "src/core/pipeline.py",
@@ -4933,7 +5030,8 @@ def _manifest_payload(
         "notes": [
             "Runtime-first seed with local-only API shell generated locally.",
             "Workflow files make the V2 seed self-describing as a skeleton-first repository.",
-            "Local stdio MCP tooling is admitted with a safe V2-specific config; remote MCP surfaces remain excluded.",
+            "Local stdio MCP tooling is admitted with a safe V2-specific config.",
+            "Constrained remote MCP semantics are admitted with auth, safe-mode, confirm-token, and transport-alias verification while launcher and deployment guidance surfaces remain excluded.",
             "Generated `.vscode/tasks.json` and `.vscode/launch.json` provide repeatable local API/MCP/smoke/test loops via `PYTHONPATH=${workspaceFolder}/src`.",
             "Generated `.vscode/settings.json` aligns Python analysis and pytest discovery with the V2 `src` layout.",
             "Generated `.vscode/extensions.json` recommends Python/Pylance/Ruff extensions for the V2 editor workflow.",

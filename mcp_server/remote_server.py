@@ -300,7 +300,7 @@ def _load_privacy_policy_text() -> str:
     for policy_path in policy_paths:
         try:
             return policy_path.read_text(encoding="utf-8")
-        except Exception:
+        except (OSError, UnicodeError):
             continue
 
     return "Privacy policy not found."
@@ -309,8 +309,8 @@ def _load_privacy_policy_text() -> str:
 _HAS_FASTMCP = _FastMCP is not None and _TransportSecuritySettings is not None
 
 if _HAS_FASTMCP:
-    assert _FastMCP is not None
-    assert _TransportSecuritySettings is not None
+    if _FastMCP is None or _TransportSecuritySettings is None:
+        raise RuntimeError("FastMCP transport settings are unavailable")
     mcp = _FastMCP(
         "genesis-core",
         transport_security=_TransportSecuritySettings(
@@ -1419,13 +1419,9 @@ def _build_asgi_app():
     if mcp_endpoint is not None:
         app.add_route("/", mcp_endpoint, methods=["POST"])
         sse_alias_methods = ["POST"]
-        try:
-            route_methods = getattr(mcp_route, "methods", None)
-            if route_methods and "GET" in route_methods:
-                sse_alias_methods = ["GET", "POST"]
-        except Exception:
-            # Best-effort only; if we can't introspect methods, keep POST alias.
-            pass
+        route_methods = getattr(mcp_route, "methods", None)
+        if isinstance(route_methods, set | frozenset | list | tuple) and "GET" in route_methods:
+            sse_alias_methods = ["GET", "POST"]
 
         app.add_route("/sse", mcp_endpoint, methods=sse_alias_methods)
         app.add_route("/sse/", mcp_endpoint, methods=sse_alias_methods)

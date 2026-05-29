@@ -140,10 +140,19 @@ EXPECTED_LOCAL_SCRIPT_FILES = [
     "tests/runtime/test_local_smoke_scripts.py",
 ]
 
-EXPECTED_REMOTE_MCP_DEFERRED_FILES = [
+EXPECTED_REMOTE_MCP_ADMITTED_FILES = [
     "config/mcp_settings.remote_git.json",
     "config/mcp_settings.remote_safe.json",
     "mcp_server/remote_server.py",
+    "tests/governance/test_mcp_remote_authorization.py",
+    "tests/integration/test_mcp_git_status_remote_filters.py",
+    "tests/integration/test_mcp_remote_git_workflow_confirm.py",
+    "tests/utils/test_remote_server_fastmcp_sse_alias.py",
+]
+
+EXPECTED_REMOTE_MCP_OPERATIONAL_DEFERRED_FILES = [
+    "scripts/mcp/start_mcp_remote.ps1",
+    "scripts/mcp_session_preflight.py",
 ]
 
 EXPECTED_MCP_OPTIONAL_DEPS = [
@@ -280,6 +289,22 @@ EXPECTED_MCP_VERIFICATION = {
     "local_launcher": {
         "runtime_test_file": "tests/runtime/test_local_mcp_script.py",
         "tracked_file": "scripts/mcp/mcp_stdio.py",
+    },
+}
+
+EXPECTED_REMOTE_MCP_VERIFICATION = {
+    "authorization_and_transport": {
+        "auth_test_file": "tests/governance/test_mcp_remote_authorization.py",
+        "module_file": "mcp_server/remote_server.py",
+        "transport_test_file": "tests/utils/test_remote_server_fastmcp_sse_alias.py",
+    },
+    "remote_git_workflow": {
+        "config_file": "config/mcp_settings.remote_git.json",
+        "confirm_test_file": "tests/integration/test_mcp_remote_git_workflow_confirm.py",
+    },
+    "remote_safe_config": {
+        "config_file": "config/mcp_settings.remote_safe.json",
+        "filter_test_file": "tests/integration/test_mcp_git_status_remote_filters.py",
     },
 }
 
@@ -640,6 +665,58 @@ def test_generate_seed_emits_mcp_verification_manifest(tmp_path: Path) -> None:
         assert (destination / payload["runtime_test_file"]).exists(), payload["runtime_test_file"]
 
 
+def test_generate_seed_emits_remote_mcp_verification_manifest(tmp_path: Path) -> None:
+    seed_module = _load_open_v2_runtime_seed_module()
+    destination = tmp_path / "Genesis-Core-V2"
+
+    seed_module.generate_seed(destination, clean=True, dry_run=False)
+
+    manifest = json.loads((destination / "seed_manifest.json").read_text(encoding="utf-8"))
+    readme = (destination / "README.md").read_text(encoding="utf-8")
+    scope_text = (destination / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+    remote_safe = json.loads(
+        (destination / "config" / "mcp_settings.remote_safe.json").read_text(encoding="utf-8")
+    )
+    remote_git = json.loads(
+        (destination / "config" / "mcp_settings.remote_git.json").read_text(encoding="utf-8")
+    )
+
+    assert manifest["remote_mcp_verification"] == EXPECTED_REMOTE_MCP_VERIFICATION
+
+    for relative_path in EXPECTED_REMOTE_MCP_ADMITTED_FILES:
+        assert (destination / relative_path).exists(), relative_path
+
+    for relative_path in EXPECTED_REMOTE_MCP_OPERATIONAL_DEFERRED_FILES:
+        assert not (destination / relative_path).exists(), relative_path
+
+    assert remote_safe["features"] == {
+        "code_execution": False,
+        "file_operations": True,
+        "git_integration": True,
+    }
+    assert remote_git["features"] == {
+        "code_execution": True,
+        "file_operations": True,
+        "git_integration": True,
+    }
+    assert ".github" not in remote_safe["security"]["allowed_paths"]
+    assert ".github" in remote_git["security"]["allowed_paths"]
+    assert "results" not in remote_safe["security"]["allowed_paths"]
+    assert "results" in remote_git["security"]["allowed_paths"]
+    assert remote_safe["security"]["max_file_size_mb"] == 5
+    assert remote_git["security"]["max_file_size_mb"] == 10
+    assert "config/runtime.json" in remote_safe["security"]["blocked_patterns"]
+    assert "config/runtime.json" in remote_git["security"]["blocked_patterns"]
+    assert (
+        "Genesis-Core-V2 admits constrained remote MCP semantics limited to authorization, safe-mode,"
+        in readme
+    )
+    assert (
+        "Genesis-Core-V2 admits constrained remote MCP semantics limited to authorization, safe-mode,"
+        in scope_text
+    )
+
+
 def test_generate_seed_emits_pipeline_verification_manifest(tmp_path: Path) -> None:
     seed_module = _load_open_v2_runtime_seed_module()
     destination = tmp_path / "Genesis-Core-V2"
@@ -802,9 +879,6 @@ def test_generate_seed_admits_local_mcp_shell(tmp_path: Path) -> None:
     for relative_path in EXPECTED_LOCAL_MCP_FILES:
         assert (destination / relative_path).exists(), relative_path
 
-    for relative_path in EXPECTED_REMOTE_MCP_DEFERRED_FILES:
-        assert not (destination / relative_path).exists(), relative_path
-
     pyproject = tomllib.loads((destination / "pyproject.toml").read_text(encoding="utf-8"))
     readme = (destination / "README.md").read_text(encoding="utf-8")
     manifest = json.loads((destination / "seed_manifest.json").read_text(encoding="utf-8"))
@@ -837,8 +911,7 @@ def test_generate_seed_admits_local_mcp_shell(tmp_path: Path) -> None:
         "mcp_server/server.py",
     }.issubset(set(manifest["local_tooling_surfaces"]))
     assert (
-        "Local stdio MCP tooling is admitted with a safe V2-specific config; remote MCP surfaces remain excluded."
-        in manifest["notes"]
+        "Local stdio MCP tooling is admitted with a safe V2-specific config." in manifest["notes"]
     )
 
 

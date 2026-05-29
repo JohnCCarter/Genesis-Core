@@ -37,3 +37,17 @@ def test_fastmcp_mode_supports_sse_alias_get_and_post(monkeypatch):
     headers = {"X-Genesis-MCP-Token": "test-token"}
     assert client.get("/sse", headers=headers).status_code == 200
     assert client.post("/sse", json={"jsonrpc": "2.0"}, headers=headers).status_code == 200
+
+
+def test_remote_server_falls_back_to_sse_and_stays_fail_closed(monkeypatch):
+    monkeypatch.setattr(rs, "_HAS_FASTMCP", False, raising=False)
+    monkeypatch.setattr(rs, "mcp", rs._MCPStub(), raising=False)
+    monkeypatch.setattr(rs, "REMOTE_TOKEN", None, raising=False)
+    monkeypatch.setattr(rs, "REMOTE_AUTH_REQUIRED", True, raising=False)
+
+    app = rs._build_asgi_app()
+    client = TestClient(app)
+
+    assert client.get("/healthz").status_code == 200
+    assert client.get("/privacy-policy").status_code == 200
+    assert client.post("/mcp", json={"jsonrpc": "2.0", "id": 1}).status_code == 401

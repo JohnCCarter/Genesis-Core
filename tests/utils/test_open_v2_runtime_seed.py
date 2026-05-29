@@ -291,6 +291,20 @@ EXPECTED_PIPELINE_VERIFICATION = {
     },
 }
 
+EXPECTED_CONFIG_AUTHORITY_VERIFICATION = {
+    "authority_mode_resolver": {
+        "module_file": "src/core/config/authority_mode_resolver.py",
+        "test_file": "tests/governance/test_authority_mode_resolver.py",
+    },
+    "runtime_authority_semantics": {
+        "api_file": "src/core/api/config.py",
+        "authority_file": "src/core/config/authority.py",
+        "runtime_test_file": "tests/runtime/test_config_authority_semantics.py",
+        "schema_file": "src/core/config/schema.py",
+        "validate_smoke_test_file": "tests/integration/test_config_endpoints.py",
+    },
+}
+
 EXPECTED_STRATEGY_AUTHORITY_VERIFICATION = {
     "authority_mode_resolver": {
         "module_file": "src/core/config/authority_mode_resolver.py",
@@ -635,6 +649,48 @@ def test_generate_seed_emits_pipeline_verification_manifest(tmp_path: Path) -> N
     assert (destination / payload["runtime_test_file"]).exists(), payload["runtime_test_file"]
     assert "runtime pipeline orchestration (`src/core/pipeline.py`)" in readme
     assert "src/core/pipeline.py" in scope_text
+
+
+def test_generate_seed_emits_config_authority_verification_manifest(tmp_path: Path) -> None:
+    seed_module = _load_open_v2_runtime_seed_module()
+    destination = tmp_path / "Genesis-Core-V2"
+
+    seed_module.generate_seed(destination, clean=True, dry_run=False)
+
+    manifest = json.loads((destination / "seed_manifest.json").read_text(encoding="utf-8"))
+    readme = (destination / "README.md").read_text(encoding="utf-8")
+    scope_text = (destination / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+
+    assert manifest["config_authority_verification"] == EXPECTED_CONFIG_AUTHORITY_VERIFICATION
+
+    for payload in EXPECTED_CONFIG_AUTHORITY_VERIFICATION.values():
+        if "module_file" in payload:
+            assert (destination / payload["module_file"]).exists(), payload["module_file"]
+        if "test_file" in payload:
+            assert (destination / payload["test_file"]).exists(), payload["test_file"]
+        if "api_file" in payload:
+            assert (destination / payload["api_file"]).exists(), payload["api_file"]
+        if "authority_file" in payload:
+            assert (destination / payload["authority_file"]).exists(), payload["authority_file"]
+        if "schema_file" in payload:
+            assert (destination / payload["schema_file"]).exists(), payload["schema_file"]
+        if "validate_smoke_test_file" in payload:
+            assert (destination / payload["validate_smoke_test_file"]).exists(), payload[
+                "validate_smoke_test_file"
+            ]
+        if "runtime_test_file" in payload:
+            assert (destination / payload["runtime_test_file"]).exists(), payload[
+                "runtime_test_file"
+            ]
+
+    assert (
+        "Config runtime-authority semantics are admitted for source/verification purposes only"
+        in readme
+    )
+    assert (
+        "Config runtime-authority semantics are admitted for source/verification purposes only"
+        in scope_text
+    )
 
 
 def test_generate_seed_emits_strategy_authority_verification_manifest(tmp_path: Path) -> None:

@@ -62,6 +62,7 @@ PHASE_ONE_ROOTS = [
     "tests/core/strategy/test_families.py",
     "tests/core/strategy/test_family_admission.py",
     "tests/integration/test_config_endpoints.py",
+    "tests/governance/test_authority_mode_resolver.py",
     "tests/governance/test_no_legacy_feature_imports.py",
     "tests/governance/test_dead_code_tripwires.py",
     "tests/governance/test_pipeline_fast_hash_guard.py",
@@ -642,6 +643,18 @@ _PIPELINE_VERIFICATION_FILES = [
 ]
 
 
+_CONFIG_AUTHORITY_VERIFICATION_FILES = [
+    "seed_manifest.json",
+    "src/core/api/config.py",
+    "src/core/config/authority.py",
+    "src/core/config/authority_mode_resolver.py",
+    "src/core/config/schema.py",
+    "tests/governance/test_authority_mode_resolver.py",
+    "tests/integration/test_config_endpoints.py",
+    "tests/runtime/test_config_authority_semantics.py",
+]
+
+
 _STRATEGY_AUTHORITY_VERIFICATION_FILES = [
     "seed_manifest.json",
     "src/core/config/authority_mode_resolver.py",
@@ -1054,6 +1067,33 @@ def test_seed_contains_pipeline_verification_manifest() -> None:
     }
     assert "runtime pipeline orchestration (`src/core/pipeline.py`)" in readme
     assert "src/core/pipeline.py" in scope_text
+
+
+def test_seed_contains_config_authority_verification_manifest() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+
+    for relative_path in _CONFIG_AUTHORITY_VERIFICATION_FILES:
+        assert (repo_root / relative_path).exists(), relative_path
+
+    manifest = json.loads((repo_root / "seed_manifest.json").read_text(encoding="utf-8"))
+    readme = (repo_root / "README.md").read_text(encoding="utf-8")
+    scope_text = (repo_root / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+
+    assert manifest["config_authority_verification"] == {
+        "authority_mode_resolver": {
+            "module_file": "src/core/config/authority_mode_resolver.py",
+            "test_file": "tests/governance/test_authority_mode_resolver.py",
+        },
+        "runtime_authority_semantics": {
+            "api_file": "src/core/api/config.py",
+            "authority_file": "src/core/config/authority.py",
+            "runtime_test_file": "tests/runtime/test_config_authority_semantics.py",
+            "schema_file": "src/core/config/schema.py",
+            "validate_smoke_test_file": "tests/integration/test_config_endpoints.py",
+        },
+    }
+    assert "Config runtime-authority semantics are admitted for source/verification purposes only" in readme
+    assert "Config runtime-authority semantics are admitted for source/verification purposes only" in scope_text
 
 
 def test_seed_contains_strategy_authority_verification_manifest() -> None:
@@ -1500,6 +1540,7 @@ Use this track for:
 - local VS Code tasks, debug profiles, settings, and extension recommendations
 - local-only API shell
 - admitted strategy authority helpers (`family_registry`, `family_admission`, `authority_mode_resolver`, `run_intent`)
+- admitted config/runtime authority semantics (`ConfigAuthority`, runtime schema, config API contract) without carrying runtime payloads
 - fixture-backed smoke tests
 - README/docs that explain the current admitted boundary
 - local developer and agent workflow guidance
@@ -1508,7 +1549,6 @@ Use this track for:
 
 Defer these to separate verified slices:
 
-- config semantics and runtime authority
 - backtest authority, comparison, readiness, and promotion surfaces
 - remote MCP exposure and remote Git workflow surfaces
 - exchange, paper, UI, and other private/live-adjacent edges
@@ -1543,6 +1583,7 @@ Read `AGENTS.md` and `docs/SKELETON_SCOPE.md` before widening scope.
 - Keep the local-only API shell runnable and tested.
 - Keep the local MCP stdio shell local-first and safe by default.
 - Keep the admitted strategy authority helpers (`core.config.authority_mode_resolver`, `core.strategy.family_registry`, `core.strategy.family_admission`, `core.strategy.run_intent`) runnable and tested.
+- Keep the admitted config/runtime authority semantics (`core.config.authority`, `core.config.schema`, `core.api.config`) verification-only and isolated from repo-root runtime payload writes.
 - Prefer generated local `scripts/mcp/mcp_stdio.py` or `.vscode/mcp.json` for non-installed MCP startup.
 - Prefer generated local `scripts/api/api_shell.py` or editor task/debug profiles for non-installed API startup.
 - Prefer generated local `scripts/validate/pytest_suite.py` or editor task/debug profiles for non-installed pytest loops.
@@ -1555,7 +1596,7 @@ Read `AGENTS.md` and `docs/SKELETON_SCOPE.md` before widening scope.
 - exchange, paper, UI, and private runtime edges
 - remote MCP server and remote MCP config surfaces
 - runtime state and champion authority payloads
-- config/runtime authority, comparison/readiness/promotion, and freeze-sensitive surfaces
+- comparison/readiness/promotion and freeze-sensitive surfaces
 - unverified content migration for its own sake
 """
 
@@ -1593,16 +1634,21 @@ Included in the current priority lane:
 - `config/mcp_settings.json` and `mcp_server/**` for local MCP use
 - local-only API shell (`config`, `info`, `status`, `models`, `strategy`)
 - admitted strategy authority helpers (`src/core/config/authority_mode_resolver.py`, `src/core/strategy/{family_registry,family_admission,run_intent}.py`)
+- admitted config/runtime authority semantics (`src/core/config/{authority,authority_mode_resolver,schema}.py`, `src/core/api/config.py`) while runtime payloads remain excluded
 - `src/core/pipeline.py` plus narrow deterministic seeding helper `src/core/utils/random_seeds.py`
 - runtime determinism guardrails for pipeline fast-hash policy and feature-cache hash stability
 - fixture-backed smoke tests and console scripts
 - explicitly admitted non-sensitive config/model artifacts already carried into the seed
 
+Config runtime-authority semantics are admitted for source/verification purposes only, including the
+authority/schema/API surfaces already present in the V2 source closure. Runtime state payloads
+(`config/runtime.json`, `config/runtime.seed.json`), champion artifacts, remote MCP surfaces, and
+live-adjacent/promotion surfaces remain deferred and excluded from the seed.
+
 ## Track B — authority migration
 
 Deferred to separate verified slices:
 
-- config semantics and runtime authority
 - backtest authority plus comparison/readiness surfaces
 - remote MCP surfaces remain deferred (`mcp_server/remote_server.py`, remote-safe/git configs)
 - exchange, paper, UI, and other private/live-adjacent edges
@@ -2516,6 +2562,209 @@ def test_strategy_family_admission_contract() -> None:
 
     with pytest.raises(RunIntentValidationError, match="invalid_run_intent"):
         validate_optimizer_family_admission(_ri_optimizer_research_config(run_intent="mystery"))
+"""
+
+
+def _runtime_config_authority_semantics_test_content() -> str:
+    return """from __future__ import annotations
+
+import importlib
+import json
+from pathlib import Path
+
+from fastapi.testclient import TestClient
+
+import core.api.config as api
+import core.config.authority as authority_mod
+from core.server import app
+
+
+def _ri_authority_patch() -> dict[str, object]:
+    return {
+        "strategy_family": "ri",
+        "thresholds": {
+            "entry_conf_overall": 0.25,
+            "regime_proba": {"balanced": 0.36},
+            "signal_adaptation": {
+                "atr_period": 14,
+                "zones": {
+                    "low": {"entry_conf_overall": 0.16, "regime_proba": 0.33},
+                    "mid": {"entry_conf_overall": 0.40, "regime_proba": 0.51},
+                    "high": {"entry_conf_overall": 0.32, "regime_proba": 0.57},
+                },
+            },
+        },
+        "gates": {"hysteresis_steps": 3, "cooldown_bars": 2},
+        "regime_unified": {"authority_mode": "regime_module"},
+    }
+
+
+def _legacy_runtime_patch(*, entry_conf_overall: float = 0.64) -> dict[str, object]:
+    return {
+        "strategy_family": "legacy",
+        "thresholds": {
+            "entry_conf_overall": entry_conf_overall,
+            "regime_proba": {"balanced": 0.5},
+            "signal_adaptation": {
+                "atr_period": 28,
+                "zones": {
+                    "low": {"entry_conf_overall": 0.24, "regime_proba": 0.36},
+                    "mid": {"entry_conf_overall": 0.30, "regime_proba": 0.44},
+                    "high": {"entry_conf_overall": 0.36, "regime_proba": 0.56},
+                },
+            },
+        },
+        "gates": {"hysteresis_steps": 2, "cooldown_bars": 0},
+        "multi_timeframe": {"regime_intelligence": {"authority_mode": "legacy"}},
+    }
+
+
+def _snapshot_file(path: Path) -> tuple[bool, str | None]:
+    return path.exists(), path.read_text(encoding="utf-8") if path.exists() else None
+
+
+def _assert_file_unchanged(path: Path, before_exists: bool, before_text: str | None) -> None:
+    assert path.exists() is before_exists
+    if before_exists:
+        assert path.read_text(encoding="utf-8") == before_text
+
+
+def test_config_authority_paths_do_not_depend_on_cwd(tmp_path, monkeypatch) -> None:
+    other_cwd = tmp_path / "other"
+    other_cwd.mkdir()
+
+    monkeypatch.chdir(tmp_path)
+    importlib.reload(authority_mod)
+    p1 = authority_mod.RUNTIME_PATH
+    a1 = authority_mod.AUDIT_LOG
+    s1 = authority_mod.SEED_PATH
+
+    monkeypatch.chdir(other_cwd)
+    importlib.reload(authority_mod)
+    p2 = authority_mod.RUNTIME_PATH
+    a2 = authority_mod.AUDIT_LOG
+    s2 = authority_mod.SEED_PATH
+
+    assert p1 == p2
+    assert a1 == a2
+    assert s1 == s2
+
+    expected_repo_root = Path(authority_mod.__file__).resolve().parents[3]
+    assert p1 == expected_repo_root / "config" / "runtime.json"
+    assert a1 == expected_repo_root / "logs" / "config_audit.jsonl"
+    assert s1 == expected_repo_root / "config" / "runtime.seed.json"
+
+
+def test_config_authority_api_semantics_are_tmp_path_isolated(monkeypatch, tmp_path: Path) -> None:
+    repo_runtime_path = authority_mod.RUNTIME_PATH
+    repo_audit_path = authority_mod.AUDIT_LOG
+    repo_seed_path = authority_mod.SEED_PATH
+
+    runtime_before = _snapshot_file(repo_runtime_path)
+    audit_before = _snapshot_file(repo_audit_path)
+    seed_before = _snapshot_file(repo_seed_path)
+
+    tmp_runtime_path = tmp_path / "runtime.json"
+    tmp_audit_path = tmp_path / "config_audit.jsonl"
+    tmp_seed_path = tmp_path / "runtime.seed.json"
+
+    monkeypatch.setattr(authority_mod, "RUNTIME_PATH", tmp_runtime_path)
+    monkeypatch.setattr(authority_mod, "AUDIT_LOG", tmp_audit_path)
+    monkeypatch.setattr(authority_mod, "SEED_PATH", tmp_seed_path)
+    monkeypatch.setattr(api, "authority", authority_mod.ConfigAuthority(tmp_runtime_path))
+
+    client = TestClient(app)
+
+    baseline = client.get("/config/runtime")
+    assert baseline.status_code == 200
+    baseline_body = baseline.json()
+    assert int(baseline_body.get("version") or 0) == 0
+    assert baseline_body.get("cfg", {}).get("strategy_family") == "legacy"
+    assert baseline_body.get("cfg", {}).get("multi_timeframe", {}).get("regime_intelligence", {}).get(
+        "authority_mode"
+    ) == "legacy"
+    assert not tmp_runtime_path.exists()
+
+    validate = client.post("/config/runtime/validate", json=_ri_authority_patch())
+    assert validate.status_code == 200
+    validate_body = validate.json()
+    assert validate_body.get("valid") is True
+    assert (
+        validate_body.get("cfg", {})
+        .get("multi_timeframe", {})
+        .get("regime_intelligence", {})
+        .get("authority_mode")
+        == "regime_module"
+    )
+    assert "regime_unified" not in (validate_body.get("cfg", {}) or {})
+
+    monkeypatch.setenv("BEARER_TOKEN", "test-secret")
+
+    unauthorized = client.post(
+        "/config/runtime/propose",
+        json={
+            "patch": _ri_authority_patch(),
+            "actor": "test",
+            "expected_version": 0,
+        },
+    )
+    assert unauthorized.status_code == 401
+
+    accepted = client.post(
+        "/config/runtime/propose",
+        headers={"Authorization": "Bearer test-secret"},
+        json={
+            "patch": _ri_authority_patch(),
+            "actor": "test",
+            "expected_version": 0,
+        },
+    )
+    assert accepted.status_code == 200
+    accepted_body = accepted.json()
+    assert int(accepted_body.get("version") or -1) == 1
+    assert accepted_body.get("cfg", {}).get("strategy_family") == "ri"
+    assert (
+        accepted_body.get("cfg", {})
+        .get("multi_timeframe", {})
+        .get("regime_intelligence", {})
+        .get("authority_mode")
+        == "regime_module"
+    )
+    assert "regime_unified" not in (accepted_body.get("cfg", {}) or {})
+
+    persisted = json.loads(tmp_runtime_path.read_text(encoding="utf-8"))
+    assert persisted["cfg"]["strategy_family"] == "ri"
+    assert persisted["cfg"]["multi_timeframe"]["regime_intelligence"]["authority_mode"] == "regime_module"
+    assert "regime_unified" not in persisted["cfg"]
+    assert tmp_audit_path.exists()
+
+    rejected = client.post(
+        "/config/runtime/propose",
+        headers={"Authorization": "Bearer test-secret"},
+        json={
+            "patch": {"warmup_bars": 12},
+            "actor": "test",
+            "expected_version": 1,
+        },
+    )
+    assert rejected.status_code == 400
+    assert rejected.json() == {"detail": "non_whitelisted_field"}
+
+    conflict = client.post(
+        "/config/runtime/propose",
+        headers={"Authorization": "Bearer test-secret"},
+        json={
+            "patch": _legacy_runtime_patch(),
+            "actor": "test",
+            "expected_version": 0,
+        },
+    )
+    assert conflict.status_code == 409
+    assert conflict.json() == {"detail": "version_conflict"}
+
+    _assert_file_unchanged(repo_runtime_path, *runtime_before)
+    _assert_file_unchanged(repo_audit_path, *audit_before)
+    _assert_file_unchanged(repo_seed_path, *seed_before)
 """
 
 
@@ -3944,6 +4193,8 @@ Runtime-first seed with admitted local-only API shell generated from the current
 - repo-local smoke scripts (`scripts/smoke/{{backtest_smoke,champion_smoke,evaluate_champion_smoke,fixture_smoke,model_smoke,smoke_suite}}.py`)
 - admitted strategy authority helpers (`src/core/config/authority_mode_resolver.py`,
   `src/core/strategy/{{family_registry,family_admission,run_intent}}.py`)
+- admitted config/runtime authority semantics (`src/core/config/{{authority,authority_mode_resolver,schema}}.py`,
+  `src/core/api/config.py`) without carrying runtime payload files
 - runtime-only governance guardrails
 - runtime determinism guardrails for pipeline fast-hash policy and feature-cache hash stability
 - admitted source model payloads under `config/models/**`
@@ -3990,6 +4241,10 @@ The admitted API shell is local-only (`config/info/status/models/strategy`); exc
 paper, public-data, and UI surfaces remain excluded for a later slice.
 Runtime state and champion authority payloads remain excluded; generated `.env` contains only
 local-shell placeholders. Tracked `.env.example` mirrors the same narrow values for copy-forward bootstrap.
+Config runtime-authority semantics are admitted for source/verification purposes only, including the
+authority/schema/API surfaces already present in the V2 source closure. Runtime state payloads
+(`config/runtime.json`, `config/runtime.seed.json`), champion artifacts, remote MCP surfaces, and
+live-adjacent/promotion surfaces remain deferred and excluded from the seed.
 Admitted strategy authority helpers keep family classification, run-intent admission, and authority-mode
 precedence observable in the seed without admitting runtime/config state authority or promotion surfaces.
 Runtime pipeline orchestration is admitted through `src/core/pipeline.py`, while the narrower
@@ -4345,6 +4600,7 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
         "tests/runtime/test_backtest_engine_fixture_smoke.py": _runtime_backtest_engine_smoke_test_content(),
         "tests/runtime/test_local_env_template.py": _runtime_local_env_template_test_content(),
         "tests/runtime/test_local_api_shell_script.py": _runtime_local_api_shell_script_test_content(),
+        "tests/runtime/test_config_authority_semantics.py": _runtime_config_authority_semantics_test_content(),
         "tests/runtime/test_local_info_endpoints.py": _runtime_local_info_endpoints_test_content(),
         "tests/runtime/test_local_mcp_script.py": _runtime_local_mcp_script_test_content(),
         "tests/runtime/test_pipeline_defaults.py": _runtime_pipeline_defaults_test_content(),
@@ -4508,6 +4764,19 @@ def _manifest_payload(
                 "runtime_test_file": "tests/runtime/test_pipeline_defaults.py",
             }
         },
+        "config_authority_verification": {
+            "authority_mode_resolver": {
+                "module_file": "src/core/config/authority_mode_resolver.py",
+                "test_file": "tests/governance/test_authority_mode_resolver.py",
+            },
+            "runtime_authority_semantics": {
+                "api_file": "src/core/api/config.py",
+                "authority_file": "src/core/config/authority.py",
+                "runtime_test_file": "tests/runtime/test_config_authority_semantics.py",
+                "schema_file": "src/core/config/schema.py",
+                "validate_smoke_test_file": "tests/integration/test_config_endpoints.py",
+            },
+        },
         "strategy_authority_verification": {
             "authority_mode_resolver": {
                 "module_file": "src/core/config/authority_mode_resolver.py",
@@ -4615,6 +4884,7 @@ def _manifest_payload(
             "Generated `scripts/api/api_shell.py` provides a non-installed local API entrypoint against the V2 `src` layout.",
             "Generated `scripts/validate/pytest_suite.py` provides a non-installed local pytest entrypoint against the V2 `src` layout.",
             "Generated `scripts/smoke/*.py` provide non-installed local smoke entrypoints against the V2 `src` layout.",
+            "Config runtime-authority semantics are admitted for source/verification purposes only while runtime payload files remain excluded from the seed.",
             "Admitted strategy authority helpers keep family classification, run-intent admission, and authority-mode precedence testable without admitting runtime/config state authority.",
             "Runtime determinism guardrails for pipeline fast-hash policy and feature-cache hash stability are admitted into the seed.",
             "Exchange-facing, paper, public-data, and UI service edges are intentionally excluded.",

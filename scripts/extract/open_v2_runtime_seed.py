@@ -45,16 +45,22 @@ PHASE_ONE_ROOTS = [
     "src/core/server.py",
     "src/core/api/info.py",
     "mcp_server/server.py",
+    "src/core/config/authority_mode_resolver.py",
     "src/core/strategy/evaluate.py",
+    "src/core/strategy/family_registry.py",
+    "src/core/strategy/family_admission.py",
     "src/core/strategy/features_asof.py",
     "src/core/strategy/decision.py",
     "src/core/strategy/model_registry.py",
     "src/core/strategy/champion_loader.py",
+    "src/core/strategy/run_intent.py",
     "src/core/intelligence/regime/authority.py",
     "src/core/strategy/regime.py",
     "config/__init__.py",
     "config/timeframe_configs.py",
     "src/core/config/legacy_schema_v1.json",
+    "tests/core/strategy/test_families.py",
+    "tests/core/strategy/test_family_admission.py",
     "tests/integration/test_config_endpoints.py",
     "tests/governance/test_no_legacy_feature_imports.py",
     "tests/governance/test_dead_code_tripwires.py",
@@ -168,6 +174,7 @@ GENERATED_FILES = {
     "tests/runtime/test_local_mcp_script.py",
     "tests/runtime/test_local_mcp_setup.py",
     "tests/runtime/test_pipeline_defaults.py",
+    "tests/runtime/test_strategy_authority.py",
     "tests/runtime/test_local_pytest_script.py",
     "tests/runtime/test_local_smoke_scripts.py",
     "tests/runtime/test_local_vscode_launch.py",
@@ -635,6 +642,18 @@ _PIPELINE_VERIFICATION_FILES = [
 ]
 
 
+_STRATEGY_AUTHORITY_VERIFICATION_FILES = [
+    "seed_manifest.json",
+    "src/core/config/authority_mode_resolver.py",
+    "src/core/strategy/family_registry.py",
+    "src/core/strategy/family_admission.py",
+    "src/core/strategy/run_intent.py",
+    "tests/core/strategy/test_families.py",
+    "tests/core/strategy/test_family_admission.py",
+    "tests/runtime/test_strategy_authority.py",
+]
+
+
 _DETERMINISM_VERIFICATION_FILES = [
     "seed_manifest.json",
     "tests/governance/test_pipeline_fast_hash_guard.py",
@@ -1035,6 +1054,35 @@ def test_seed_contains_pipeline_verification_manifest() -> None:
     }
     assert "runtime pipeline orchestration (`src/core/pipeline.py`)" in readme
     assert "src/core/pipeline.py" in scope_text
+
+
+def test_seed_contains_strategy_authority_verification_manifest() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+
+    for relative_path in _STRATEGY_AUTHORITY_VERIFICATION_FILES:
+        assert (repo_root / relative_path).exists(), relative_path
+
+    manifest = json.loads((repo_root / "seed_manifest.json").read_text(encoding="utf-8"))
+    readme = (repo_root / "README.md").read_text(encoding="utf-8")
+    scope_text = (repo_root / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+
+    assert manifest["strategy_authority_verification"] == {
+        "authority_mode_resolver": {
+            "module_file": "src/core/config/authority_mode_resolver.py",
+            "runtime_test_file": "tests/runtime/test_strategy_authority.py",
+        },
+        "family_admission": {
+            "module_file": "src/core/strategy/family_admission.py",
+            "run_intent_file": "src/core/strategy/run_intent.py",
+            "test_file": "tests/core/strategy/test_family_admission.py",
+        },
+        "family_registry": {
+            "module_file": "src/core/strategy/family_registry.py",
+            "test_file": "tests/core/strategy/test_families.py",
+        },
+    }
+    assert "admitted strategy authority helpers" in readme
+    assert "admitted strategy authority helpers" in scope_text
 
 
 def test_seed_contains_determinism_verification_manifest() -> None:
@@ -1451,6 +1499,7 @@ Use this track for:
 - repo-local smoke scripts under `scripts/smoke/`
 - local VS Code tasks, debug profiles, settings, and extension recommendations
 - local-only API shell
+- admitted strategy authority helpers (`family_registry`, `family_admission`, `authority_mode_resolver`, `run_intent`)
 - fixture-backed smoke tests
 - README/docs that explain the current admitted boundary
 - local developer and agent workflow guidance
@@ -1459,7 +1508,6 @@ Use this track for:
 
 Defer these to separate verified slices:
 
-- strategy authority expansion
 - config semantics and runtime authority
 - backtest authority, comparison, readiness, and promotion surfaces
 - remote MCP exposure and remote Git workflow surfaces
@@ -1494,6 +1542,7 @@ Read `AGENTS.md` and `docs/SKELETON_SCOPE.md` before widening scope.
 - Prefer generator-driven changes in `Genesis-Core` over manual drift in this repo.
 - Keep the local-only API shell runnable and tested.
 - Keep the local MCP stdio shell local-first and safe by default.
+- Keep the admitted strategy authority helpers (`core.config.authority_mode_resolver`, `core.strategy.family_registry`, `core.strategy.family_admission`, `core.strategy.run_intent`) runnable and tested.
 - Prefer generated local `scripts/mcp/mcp_stdio.py` or `.vscode/mcp.json` for non-installed MCP startup.
 - Prefer generated local `scripts/api/api_shell.py` or editor task/debug profiles for non-installed API startup.
 - Prefer generated local `scripts/validate/pytest_suite.py` or editor task/debug profiles for non-installed pytest loops.
@@ -1506,7 +1555,7 @@ Read `AGENTS.md` and `docs/SKELETON_SCOPE.md` before widening scope.
 - exchange, paper, UI, and private runtime edges
 - remote MCP server and remote MCP config surfaces
 - runtime state and champion authority payloads
-- freeze-sensitive and governance-sensitive authority surfaces
+- config/runtime authority, comparison/readiness/promotion, and freeze-sensitive surfaces
 - unverified content migration for its own sake
 """
 
@@ -1543,6 +1592,7 @@ Included in the current priority lane:
 - repo-local smoke scripts (`scripts/smoke/*.py`) for non-installed execution
 - `config/mcp_settings.json` and `mcp_server/**` for local MCP use
 - local-only API shell (`config`, `info`, `status`, `models`, `strategy`)
+- admitted strategy authority helpers (`src/core/config/authority_mode_resolver.py`, `src/core/strategy/{family_registry,family_admission,run_intent}.py`)
 - `src/core/pipeline.py` plus narrow deterministic seeding helper `src/core/utils/random_seeds.py`
 - runtime determinism guardrails for pipeline fast-hash policy and feature-cache hash stability
 - fixture-backed smoke tests and console scripts
@@ -1552,7 +1602,6 @@ Included in the current priority lane:
 
 Deferred to separate verified slices:
 
-- strategy authority expansion
 - config semantics and runtime authority
 - backtest authority plus comparison/readiness surfaces
 - remote MCP surfaces remain deferred (`mcp_server/remote_server.py`, remote-safe/git configs)
@@ -2267,6 +2316,206 @@ def test_pipeline_setup_environment_sets_seed_and_canonical_env(monkeypatch: pyt
     finally:
         os.environ.clear()
         os.environ.update(original_env)
+"""
+
+
+def _runtime_strategy_authority_test_content() -> str:
+    return """from __future__ import annotations
+
+import pytest
+
+from core.config.authority_mode_resolver import (
+    AUTHORITY_MODE_SOURCE_ALIAS,
+    AUTHORITY_MODE_SOURCE_ALIAS_INVALID_FALLBACK,
+    AUTHORITY_MODE_SOURCE_CANONICAL,
+    AUTHORITY_MODE_SOURCE_CANONICAL_INVALID_FALLBACK,
+    AUTHORITY_MODE_SOURCE_DEFAULT,
+    resolve_authority_mode_with_source_permissive,
+)
+from core.strategy.family_admission import (
+    StrategyFamilyAdmissionError,
+    validate_optimizer_family_admission,
+    validate_strategy_family_admission,
+)
+from core.strategy.family_registry import (
+    STRATEGY_FAMILY_LEGACY,
+    STRATEGY_FAMILY_RI,
+    StrategyFamilyValidationError,
+    inject_strategy_family,
+    resolve_strategy_family,
+    validate_cross_family_promotion,
+)
+from core.strategy.run_intent import RunIntentValidationError
+
+
+def _canonical_ri_config(*, strategy_family: str | None = None) -> dict[str, object]:
+    payload: dict[str, object] = {
+        "thresholds": {
+            "entry_conf_overall": 0.25,
+            "regime_proba": {"balanced": 0.36},
+            "signal_adaptation": {
+                "atr_period": 14,
+                "zones": {
+                    "low": {"entry_conf_overall": 0.16, "regime_proba": 0.33},
+                    "mid": {"entry_conf_overall": 0.40, "regime_proba": 0.51},
+                    "high": {"entry_conf_overall": 0.32, "regime_proba": 0.57},
+                },
+            },
+        },
+        "gates": {"hysteresis_steps": 3, "cooldown_bars": 2},
+        "multi_timeframe": {"regime_intelligence": {"authority_mode": "regime_module"}},
+    }
+    if strategy_family is not None:
+        payload["strategy_family"] = strategy_family
+    return payload
+
+
+def _ri_research_config() -> dict[str, object]:
+    return {
+        "strategy_family": "ri",
+        "thresholds": {
+            "entry_conf_overall": 0.28,
+            "regime_proba": {"balanced": 0.36},
+            "signal_adaptation": {
+                "atr_period": 14,
+                "zones": {
+                    "low": {"entry_conf_overall": 0.14, "regime_proba": 0.32},
+                    "mid": {"entry_conf_overall": 0.42, "regime_proba": 0.52},
+                    "high": {"entry_conf_overall": 0.34, "regime_proba": 0.58},
+                },
+            },
+        },
+        "gates": {"hysteresis_steps": 2, "cooldown_bars": 1},
+        "multi_timeframe": {"regime_intelligence": {"authority_mode": "regime_module"}},
+    }
+
+
+def _ri_optimizer_research_config(
+    *, run_intent: str | None = "research_slice"
+) -> dict[str, object]:
+    runs: dict[str, object] = {}
+    if run_intent is not None:
+        runs["run_intent"] = run_intent
+    return {
+        "strategy_family": "ri",
+        "meta": {"runs": runs},
+        "parameters": {
+            "multi_timeframe.regime_intelligence.authority_mode": {
+                "type": "fixed",
+                "value": "regime_module",
+            },
+            "thresholds.signal_adaptation.atr_period": {"type": "fixed", "value": 14},
+            "gates.hysteresis_steps": {"type": "int", "low": 2, "high": 4, "step": 1},
+            "gates.cooldown_bars": {"type": "int", "low": 1, "high": 3, "step": 1},
+            "thresholds.entry_conf_overall": {"type": "fixed", "value": 0.28},
+            "thresholds.regime_proba.balanced": {"type": "fixed", "value": 0.36},
+            "thresholds.signal_adaptation.zones.low.entry_conf_overall": {
+                "type": "fixed",
+                "value": 0.14,
+            },
+            "thresholds.signal_adaptation.zones.low.regime_proba": {
+                "type": "fixed",
+                "value": 0.32,
+            },
+            "thresholds.signal_adaptation.zones.mid.entry_conf_overall": {
+                "type": "fixed",
+                "value": 0.42,
+            },
+            "thresholds.signal_adaptation.zones.mid.regime_proba": {
+                "type": "fixed",
+                "value": 0.52,
+            },
+            "thresholds.signal_adaptation.zones.high.entry_conf_overall": {
+                "type": "fixed",
+                "value": 0.34,
+            },
+            "thresholds.signal_adaptation.zones.high.regime_proba": {
+                "type": "fixed",
+                "value": 0.58,
+            },
+        },
+    }
+
+
+@pytest.mark.parametrize(
+    ("cfg", "expected"),
+    [
+        ({}, ("legacy", AUTHORITY_MODE_SOURCE_DEFAULT)),
+        (
+            {"regime_unified": {"authority_mode": "regime_module"}},
+            ("regime_module", AUTHORITY_MODE_SOURCE_ALIAS),
+        ),
+        (
+            {
+                "multi_timeframe": {"regime_intelligence": {"authority_mode": " legacy "}},
+                "regime_unified": {"authority_mode": "regime_module"},
+            },
+            ("legacy", AUTHORITY_MODE_SOURCE_CANONICAL),
+        ),
+        (
+            {
+                "multi_timeframe": {"regime_intelligence": {"authority_mode": "invalid_mode"}},
+                "regime_unified": {"authority_mode": "regime_module"},
+            },
+            ("legacy", AUTHORITY_MODE_SOURCE_CANONICAL_INVALID_FALLBACK),
+        ),
+        (
+            {"regime_unified": {"authority_mode": "invalid_mode"}},
+            ("legacy", AUTHORITY_MODE_SOURCE_ALIAS_INVALID_FALLBACK),
+        ),
+    ],
+    ids=[
+        "default_legacy",
+        "alias_regime_module",
+        "canonical_legacy_wins",
+        "canonical_invalid_falls_back_to_legacy",
+        "alias_invalid_falls_back_to_legacy",
+    ],
+)
+def test_strategy_authority_resolver_contract(
+    cfg: dict[str, object], expected: tuple[str, str]
+) -> None:
+    assert resolve_authority_mode_with_source_permissive(cfg) == expected
+
+
+def test_strategy_family_registry_contract() -> None:
+    cfg = _canonical_ri_config(strategy_family="ri")
+
+    assert resolve_strategy_family(cfg) == STRATEGY_FAMILY_RI
+    assert inject_strategy_family({"thresholds": {"entry_conf_overall": 0.6}})["strategy_family"] == STRATEGY_FAMILY_LEGACY
+
+    with pytest.raises(StrategyFamilyValidationError, match="cross_family_promotion"):
+        validate_cross_family_promotion("legacy", "ri")
+
+    validate_cross_family_promotion(
+        "legacy",
+        "ri",
+        explicit_override=True,
+        governance_signoff=True,
+    )
+
+
+def test_strategy_family_admission_contract() -> None:
+    family, run_intent = validate_strategy_family_admission(
+        _ri_research_config(),
+        run_intent="research_slice",
+    )
+    assert family == "ri"
+    assert run_intent == "research_slice"
+
+    with pytest.raises(StrategyFamilyAdmissionError, match="champion_freeze"):
+        validate_strategy_family_admission(
+            _ri_research_config(),
+            run_intent="champion_freeze",
+        )
+
+    with pytest.raises(StrategyFamilyAdmissionError, match="champion_freeze"):
+        validate_optimizer_family_admission(
+            _ri_optimizer_research_config(run_intent="champion_freeze")
+        )
+
+    with pytest.raises(RunIntentValidationError, match="invalid_run_intent"):
+        validate_optimizer_family_admission(_ri_optimizer_research_config(run_intent="mystery"))
 """
 
 
@@ -3693,6 +3942,8 @@ Runtime-first seed with admitted local-only API shell generated from the current
 - repo-local API launcher (`scripts/api/api_shell.py`)
 - repo-local pytest launcher (`scripts/validate/pytest_suite.py`)
 - repo-local smoke scripts (`scripts/smoke/{{backtest_smoke,champion_smoke,evaluate_champion_smoke,fixture_smoke,model_smoke,smoke_suite}}.py`)
+- admitted strategy authority helpers (`src/core/config/authority_mode_resolver.py`,
+  `src/core/strategy/{{family_registry,family_admission,run_intent}}.py`)
 - runtime-only governance guardrails
 - runtime determinism guardrails for pipeline fast-hash policy and feature-cache hash stability
 - admitted source model payloads under `config/models/**`
@@ -3739,6 +3990,8 @@ The admitted API shell is local-only (`config/info/status/models/strategy`); exc
 paper, public-data, and UI surfaces remain excluded for a later slice.
 Runtime state and champion authority payloads remain excluded; generated `.env` contains only
 local-shell placeholders. Tracked `.env.example` mirrors the same narrow values for copy-forward bootstrap.
+Admitted strategy authority helpers keep family classification, run-intent admission, and authority-mode
+precedence observable in the seed without admitting runtime/config state authority or promotion surfaces.
 Runtime pipeline orchestration is admitted through `src/core/pipeline.py`, while the narrower
 `src/core/utils/random_seeds.py` helper keeps Optuna/optimizer-only helpers out of the seed.
 Unneeded Optuna/optimizer closure is intentionally pruned from the seed until and unless a later
@@ -4095,6 +4348,7 @@ def _write_generated_files(destination: Path, *, source_head: str | None) -> lis
         "tests/runtime/test_local_info_endpoints.py": _runtime_local_info_endpoints_test_content(),
         "tests/runtime/test_local_mcp_script.py": _runtime_local_mcp_script_test_content(),
         "tests/runtime/test_pipeline_defaults.py": _runtime_pipeline_defaults_test_content(),
+        "tests/runtime/test_strategy_authority.py": _runtime_strategy_authority_test_content(),
         "tests/runtime/test_local_pytest_script.py": _runtime_local_pytest_script_test_content(),
         "tests/runtime/test_local_precommit_config.py": _runtime_local_precommit_config_test_content(),
         "tests/runtime/test_local_vscode_extensions.py": _runtime_local_vscode_extensions_test_content(),
@@ -4254,6 +4508,21 @@ def _manifest_payload(
                 "runtime_test_file": "tests/runtime/test_pipeline_defaults.py",
             }
         },
+        "strategy_authority_verification": {
+            "authority_mode_resolver": {
+                "module_file": "src/core/config/authority_mode_resolver.py",
+                "runtime_test_file": "tests/runtime/test_strategy_authority.py",
+            },
+            "family_admission": {
+                "module_file": "src/core/strategy/family_admission.py",
+                "run_intent_file": "src/core/strategy/run_intent.py",
+                "test_file": "tests/core/strategy/test_family_admission.py",
+            },
+            "family_registry": {
+                "module_file": "src/core/strategy/family_registry.py",
+                "test_file": "tests/core/strategy/test_families.py",
+            },
+        },
         "determinism_verification": {
             "feature_cache_hash_stability": {
                 "test_file": "tests/utils/test_features_asof_cache_key_deterministic.py"
@@ -4346,6 +4615,7 @@ def _manifest_payload(
             "Generated `scripts/api/api_shell.py` provides a non-installed local API entrypoint against the V2 `src` layout.",
             "Generated `scripts/validate/pytest_suite.py` provides a non-installed local pytest entrypoint against the V2 `src` layout.",
             "Generated `scripts/smoke/*.py` provide non-installed local smoke entrypoints against the V2 `src` layout.",
+            "Admitted strategy authority helpers keep family classification, run-intent admission, and authority-mode precedence testable without admitting runtime/config state authority.",
             "Runtime determinism guardrails for pipeline fast-hash policy and feature-cache hash stability are admitted into the seed.",
             "Exchange-facing, paper, public-data, and UI service edges are intentionally excluded.",
             "Optuna-heavy helpers and optimizer-only closure are intentionally excluded even after pipeline admission.",

@@ -58,6 +58,8 @@ PHASE_ONE_ROOTS = [
     "tests/integration/test_config_endpoints.py",
     "tests/governance/test_no_legacy_feature_imports.py",
     "tests/governance/test_dead_code_tripwires.py",
+    "tests/governance/test_pipeline_fast_hash_guard.py",
+    "tests/utils/test_features_asof_cache_key_deterministic.py",
 ]
 
 EXCLUDED_MODULE_PREFIXES = (
@@ -633,6 +635,13 @@ _PIPELINE_VERIFICATION_FILES = [
 ]
 
 
+_DETERMINISM_VERIFICATION_FILES = [
+    "seed_manifest.json",
+    "tests/governance/test_pipeline_fast_hash_guard.py",
+    "tests/utils/test_features_asof_cache_key_deterministic.py",
+]
+
+
 _RUNTIME_GUARDRAIL_FILES = [
     "tests/governance/test_no_legacy_feature_imports.py",
     "tests/governance/test_dead_code_tripwires.py",
@@ -1026,6 +1035,28 @@ def test_seed_contains_pipeline_verification_manifest() -> None:
     }
     assert "runtime pipeline orchestration (`src/core/pipeline.py`)" in readme
     assert "src/core/pipeline.py" in scope_text
+
+
+def test_seed_contains_determinism_verification_manifest() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+
+    for relative_path in _DETERMINISM_VERIFICATION_FILES:
+        assert (repo_root / relative_path).exists(), relative_path
+
+    manifest = json.loads((repo_root / "seed_manifest.json").read_text(encoding="utf-8"))
+    readme = (repo_root / "README.md").read_text(encoding="utf-8")
+    scope_text = (repo_root / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+
+    assert manifest["determinism_verification"] == {
+        "feature_cache_hash_stability": {
+            "test_file": "tests/utils/test_features_asof_cache_key_deterministic.py"
+        },
+        "pipeline_fast_hash_guard": {
+            "test_file": "tests/governance/test_pipeline_fast_hash_guard.py"
+        },
+    }
+    assert "runtime determinism guardrails" in readme
+    assert "runtime determinism guardrails" in scope_text
 
 
 def test_seed_contains_runtime_governance_guardrails() -> None:
@@ -1513,6 +1544,7 @@ Included in the current priority lane:
 - `config/mcp_settings.json` and `mcp_server/**` for local MCP use
 - local-only API shell (`config`, `info`, `status`, `models`, `strategy`)
 - `src/core/pipeline.py` plus narrow deterministic seeding helper `src/core/utils/random_seeds.py`
+- runtime determinism guardrails for pipeline fast-hash policy and feature-cache hash stability
 - fixture-backed smoke tests and console scripts
 - explicitly admitted non-sensitive config/model artifacts already carried into the seed
 
@@ -2211,20 +2243,30 @@ def test_pipeline_uses_backtest_defaults_for_costs(monkeypatch: pytest.MonkeyPat
 
 
 def test_pipeline_setup_environment_sets_seed_and_canonical_env(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.delenv("GENESIS_RANDOM_SEED", raising=False)
-    monkeypatch.delenv("GENESIS_FAST_WINDOW", raising=False)
-    monkeypatch.delenv("GENESIS_PRECOMPUTE_FEATURES", raising=False)
-    monkeypatch.delenv("GENESIS_MODE_EXPLICIT", raising=False)
-    monkeypatch.delenv("GENESIS_FAST_HASH", raising=False)
+    original_env = os.environ.copy()
 
-    pipeline = GenesisPipeline()
-    pipeline.setup_environment(seed=123)
+    try:
+        for key in (
+            "GENESIS_RANDOM_SEED",
+            "GENESIS_FAST_WINDOW",
+            "GENESIS_PRECOMPUTE_FEATURES",
+            "GENESIS_MODE_EXPLICIT",
+            "GENESIS_FAST_HASH",
+            "PYTHONHASHSEED",
+        ):
+            os.environ.pop(key, None)
 
-    assert os.environ["GENESIS_RANDOM_SEED"] == "123"
-    assert os.environ["PYTHONHASHSEED"] == "123"
-    assert os.environ["GENESIS_FAST_WINDOW"] == "1"
-    assert os.environ["GENESIS_PRECOMPUTE_FEATURES"] == "1"
-    assert os.environ["GENESIS_FAST_HASH"] == "0"
+        pipeline = GenesisPipeline()
+        pipeline.setup_environment(seed=123)
+
+        assert os.environ["GENESIS_RANDOM_SEED"] == "123"
+        assert os.environ["PYTHONHASHSEED"] == "123"
+        assert os.environ["GENESIS_FAST_WINDOW"] == "1"
+        assert os.environ["GENESIS_PRECOMPUTE_FEATURES"] == "1"
+        assert os.environ["GENESIS_FAST_HASH"] == "0"
+    finally:
+        os.environ.clear()
+        os.environ.update(original_env)
 """
 
 
@@ -3652,6 +3694,7 @@ Runtime-first seed with admitted local-only API shell generated from the current
 - repo-local pytest launcher (`scripts/validate/pytest_suite.py`)
 - repo-local smoke scripts (`scripts/smoke/{{backtest_smoke,champion_smoke,evaluate_champion_smoke,fixture_smoke,model_smoke,smoke_suite}}.py`)
 - runtime-only governance guardrails
+- runtime determinism guardrails for pipeline fast-hash policy and feature-cache hash stability
 - admitted source model payloads under `config/models/**`
 - deterministic fixture model-registry/prob-model smoke
     (`registry/fixtures/model_registry/config/models/{{registry.json,tBTCUSD_1h.json}}`,
@@ -4211,6 +4254,14 @@ def _manifest_payload(
                 "runtime_test_file": "tests/runtime/test_pipeline_defaults.py",
             }
         },
+        "determinism_verification": {
+            "feature_cache_hash_stability": {
+                "test_file": "tests/utils/test_features_asof_cache_key_deterministic.py"
+            },
+            "pipeline_fast_hash_guard": {
+                "test_file": "tests/governance/test_pipeline_fast_hash_guard.py"
+            },
+        },
         "api_entrypoints": {
             "module_command": "python -m uvicorn core.server:app --app-dir src --reload",
             "console_scripts": ["genesis-v2-api-shell"],
@@ -4295,6 +4346,7 @@ def _manifest_payload(
             "Generated `scripts/api/api_shell.py` provides a non-installed local API entrypoint against the V2 `src` layout.",
             "Generated `scripts/validate/pytest_suite.py` provides a non-installed local pytest entrypoint against the V2 `src` layout.",
             "Generated `scripts/smoke/*.py` provide non-installed local smoke entrypoints against the V2 `src` layout.",
+            "Runtime determinism guardrails for pipeline fast-hash policy and feature-cache hash stability are admitted into the seed.",
             "Exchange-facing, paper, public-data, and UI service edges are intentionally excluded.",
             "Optuna-heavy helpers and optimizer-only closure are intentionally excluded even after pipeline admission.",
             "Legacy `core.strategy.features` surface intentionally excluded.",

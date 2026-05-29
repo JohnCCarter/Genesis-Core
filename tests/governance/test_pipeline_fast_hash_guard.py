@@ -23,13 +23,22 @@ def test_pipeline_fast_hash_guard(
     # Avoid loading any local .env in tests (developer convenience only).
     monkeypatch.setattr(pipeline_mod, "load_dotenv", None)
 
-    monkeypatch.setenv("GENESIS_MODE_EXPLICIT", genesis_mode_explicit)
-    monkeypatch.setenv("GENESIS_FAST_HASH", genesis_fast_hash)
-    monkeypatch.setenv("GENESIS_RANDOM_SEED", "42")
+    original_env = os.environ.copy()
 
-    pipeline_mod.GenesisPipeline().setup_environment(seed=42)
+    try:
+        for key in ("GENESIS_FAST_WINDOW", "GENESIS_PRECOMPUTE_FEATURES", "PYTHONHASHSEED"):
+            os.environ.pop(key, None)
 
-    assert os.environ.get("GENESIS_FAST_HASH") == expected_fast_hash
+        os.environ["GENESIS_MODE_EXPLICIT"] = genesis_mode_explicit
+        os.environ["GENESIS_FAST_HASH"] = genesis_fast_hash
+        os.environ["GENESIS_RANDOM_SEED"] = "42"
+
+        pipeline_mod.GenesisPipeline().setup_environment(seed=42)
+
+        assert os.environ.get("GENESIS_FAST_HASH") == expected_fast_hash
+    finally:
+        os.environ.clear()
+        os.environ.update(original_env)
 
 
 def test_pipeline_component_order_hash_contract_is_stable():

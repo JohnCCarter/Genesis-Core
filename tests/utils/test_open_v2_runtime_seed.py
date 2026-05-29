@@ -291,6 +291,15 @@ EXPECTED_PIPELINE_VERIFICATION = {
     },
 }
 
+EXPECTED_DETERMINISM_VERIFICATION = {
+    "feature_cache_hash_stability": {
+        "test_file": "tests/utils/test_features_asof_cache_key_deterministic.py",
+    },
+    "pipeline_fast_hash_guard": {
+        "test_file": "tests/governance/test_pipeline_fast_hash_guard.py",
+    },
+}
+
 EXPECTED_RUNTIME_GUARDRAIL_FILES = [
     "tests/governance/test_no_legacy_feature_imports.py",
     "tests/governance/test_dead_code_tripwires.py",
@@ -610,6 +619,25 @@ def test_generate_seed_emits_pipeline_verification_manifest(tmp_path: Path) -> N
     assert (destination / payload["runtime_test_file"]).exists(), payload["runtime_test_file"]
     assert "runtime pipeline orchestration (`src/core/pipeline.py`)" in readme
     assert "src/core/pipeline.py" in scope_text
+
+
+def test_generate_seed_emits_determinism_verification_manifest(tmp_path: Path) -> None:
+    seed_module = _load_open_v2_runtime_seed_module()
+    destination = tmp_path / "Genesis-Core-V2"
+
+    seed_module.generate_seed(destination, clean=True, dry_run=False)
+
+    manifest = json.loads((destination / "seed_manifest.json").read_text(encoding="utf-8"))
+    readme = (destination / "README.md").read_text(encoding="utf-8")
+    scope_text = (destination / "docs" / "SKELETON_SCOPE.md").read_text(encoding="utf-8")
+
+    assert manifest["determinism_verification"] == EXPECTED_DETERMINISM_VERIFICATION
+
+    for payload in EXPECTED_DETERMINISM_VERIFICATION.values():
+        assert (destination / payload["test_file"]).exists(), payload["test_file"]
+
+    assert "runtime determinism guardrails" in readme
+    assert "runtime determinism guardrails" in scope_text
 
 
 def test_generate_seed_admits_runtime_governance_guardrails(tmp_path: Path) -> None:

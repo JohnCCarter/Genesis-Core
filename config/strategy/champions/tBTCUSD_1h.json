@@ -58,6 +58,9 @@
   },
   "merged_config": {
     "strategy_family": "legacy",
+    "thresholds": {
+      "entry_conf_overall": 0.60
+    },
     "components": [
       {
         "type": "ml_confidence",
@@ -86,10 +89,10 @@
     ],
     "risk": {
       "risk_map": [
-        [0.53, 0.005],
-        [0.7, 0.008],
-        [0.8, 0.01],
-        [0.9, 0.012]
+        [0.60, 0.005],
+        [0.70, 0.008],
+        [0.80, 0.010],
+        [0.90, 0.012]
       ],
       "risk_cap_pct": 0.012,
       "symbol_portfolio_cap_pct": 0.025
@@ -97,6 +100,9 @@
   },
   "cfg": {
     "strategy_family": "legacy",
+    "thresholds": {
+      "entry_conf_overall": 0.60
+    },
     "components": [
       {
         "type": "ml_confidence",
@@ -125,10 +131,10 @@
     ],
     "risk": {
       "risk_map": [
-        [0.53, 0.005],
-        [0.7, 0.008],
-        [0.8, 0.01],
-        [0.9, 0.012]
+        [0.60, 0.005],
+        [0.70, 0.008],
+        [0.80, 0.010],
+        [0.90, 0.012]
       ],
       "risk_cap_pct": 0.012,
       "symbol_portfolio_cap_pct": 0.025
